@@ -5,8 +5,15 @@
    Archicad schedule (.schedule) and the footer is a drawing title block (.tblock).
 
    Every page links it as <root>/assets/site.css, together with <root>/assets/site.js, and repeats the
-   same header and footer (between the site-header and site-footer comments), and the head's two
-   inline scripts: the stored theme, and data-i18n-loading while a translation loads (see site.js).
+   same header and footer (between the site-header and site-footer comments), and the head's
+   site-assets block: the favicon, two theme-color metas that colour a phone's browser bars like the
+   header (the dark one first, as a browser takes the first that matches; both are --moss, which the
+   header keeps in dark mode):
+       <meta name="theme-color" content="#2D3A30" media="(prefers-color-scheme: dark)">
+       <meta name="theme-color" content="#2D3A30">
+   the fonts, this file, site.js and two inline scripts: the stored theme, and data-i18n-loading
+   while a translation loads (see site.js). On phones site.js turns the header's nav, language menu
+   and toggle into a menu (.has-menu, below).
 
    Light is the default. Dark applies under prefers-color-scheme: dark, unless the header's toggle
    chose a theme: it sets data-theme="light" or "dark" on <html> (remembered in localStorage).
@@ -25,9 +32,11 @@
     --bg: var(--cream); --surface: var(--paper); --fg: var(--charcoal); --muted: var(--slate-text);
     --line: rgba(112, 124, 128, .28); --grid: rgba(45, 58, 48, .07); --link: var(--ochre-text);
     --badge: rgba(189, 141, 83, .18); --focus: var(--ochre-text);
-    --display: "Fraunces", Georgia, "Times New Roman", serif;
-    --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-    --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+    /* The Devanagari fonts (Hindi) come after the Latin ones, which have no Devanagari, so they never
+       draw Latin text; site.js loads the Noto ones for Hindi only, the others are macOS's and Windows'. */
+    --display: "Fraunces", Georgia, "Times New Roman", "Noto Serif Devanagari", "Kohinoor Devanagari", "Nirmala UI", serif;
+    --body: "Inter", system-ui, -apple-system, "Segoe UI", "Noto Sans Devanagari", "Kohinoor Devanagari", "Nirmala UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, "Noto Sans Devanagari", "Kohinoor Devanagari", "Nirmala UI", monospace;
 
     /* The names the command reference and the coverage pages use, mapped onto the tokens above. */
     --text: var(--fg); --text-secondary: var(--fg); --text-muted: var(--muted);
@@ -106,6 +115,20 @@ main { display: block }
 /* The language menu (site.js adds it), drawn like the toggle; the open list in the brand's colours. */
 .lang-select { max-width: 9.5em }
 .lang-select option { background: var(--moss); color: var(--cream) }
+/* The menu (site.js adds it, .has-menu on the header): below 640 px a button opens a panel under the
+   header with the nav, the language menu and the toggle. On wide screens .site-menu adds no box, so
+   the nav sits in the header row as before, and the language menu and the toggle stay in .right. */
+.site-menu { display: contents }
+.menu-tools, .menu-button { display: none }
+.menu-button { align-items: center; justify-content: center; width: 40px; height: 38px; padding: 0; background: transparent; color: var(--cream); border: 1px solid rgba(244, 241, 234, .3); border-radius: 8px; cursor: pointer }
+.menu-button:hover { border-color: var(--ochre-light); color: var(--ochre-light) }
+.menu-icon, .menu-icon::before, .menu-icon::after { display: block; width: 18px; height: 2px; border-radius: 1px; background: currentColor }
+.menu-icon { position: relative }
+.menu-icon::before, .menu-icon::after { content: ""; position: absolute; left: 0 }
+.menu-icon::before { top: -6px } .menu-icon::after { top: 6px }
+.menu-button[aria-expanded="true"] .menu-icon { background: transparent }
+.menu-button[aria-expanded="true"] .menu-icon::before { top: 0; transform: rotate(45deg) }
+.menu-button[aria-expanded="true"] .menu-icon::after { top: 0; transform: rotate(-45deg) }
 /* Until site.js has translated the page (the head's inline script sets it, for two seconds at most). */
 :root[data-i18n-loading] body { visibility: hidden }
 
@@ -131,7 +154,8 @@ main { display: block }
 .sec-head { display: grid; grid-template-columns: auto 1fr; gap: 12px 40px; align-items: end; margin-bottom: 40px }
 .sec-head p { color: var(--muted); max-width: 34em; font-size: 17px }
 .sec-head h2 { font-size: clamp(32px, 4.6vw, 56px) }
-[id] { scroll-margin-top: 88px }
+/* Clear of the sticky header (one row, also on phones) when a link jumps to it. */
+[id] { scroll-margin-top: calc(88px + env(safe-area-inset-top, 0px)) }
 
 /* ---------- figures (live numbers; a hidden one leaves no gap) ---------- */
 .figures { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); border: 1.5px solid var(--fg); background: var(--surface); overflow: hidden }
@@ -227,6 +251,14 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 .page-head.ochre p { color: #1C1E1F } .page-head.ochre h1 em { color: #1C1E1F }
 .page-head.ochre .crumb { color: #1C1E1F } .page-head.ochre .crumb a, .page-head.ochre p a { color: #1C1E1F }
 .page-body { padding-block: 56px 24px }
+
+/* ---------- reference pages: the command reference, API and Grasshopper coverage ----------
+   Their content sits next to a sidebar. A top-level section opens with .sec-head.ref, the same
+   heading as the sections of every other page; a heading inside a section (a table, a group of
+   commands) is .ref-sub, one fixed size on all three pages. */
+.sec-head.ref { margin: 56px 0 24px }
+.ref-sub { font: 700 26px/1.15 var(--display); letter-spacing: -.01em; margin: 40px 0 12px }
+@media (max-width: 640px) { .sec-head.ref { margin-top: 40px } }
 
 /* ---------- timeline, flow, stack ---------- */
 .timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 0 }
@@ -340,11 +372,32 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
     .site-header .right { margin-left: auto }
 }
 @media (max-width: 640px) {
-    .site-header { position: static }
     .site-header .nav { gap: 10px 16px }
-    .site-nav { order: 3; flex-basis: 100% }
+    /* Without site.js the nav is a row of links under the logo, and the taller header scrolls away. */
+    .site-header:not(.has-menu) { position: static }
+    .site-header:not(.has-menu) .site-nav { order: 3; flex-basis: 100% }
     .site-nav ul { gap: 2px 16px }
     .site-nav a { font-size: 14.5px }
+    /* With it: one row (logo; Download and the menu button), and the menu opens a panel under it. */
+    .has-menu .nav { position: relative; flex-wrap: nowrap }
+    .has-menu .brand { min-width: 0 }
+    .has-menu .right { flex: none }
+    .has-menu .menu-button { display: inline-flex }
+    .has-menu .site-menu {
+        display: none; position: absolute; top: 100%; left: 0; right: 0; margin-top: 1px; z-index: 20;
+        background: var(--moss); border-bottom: 1px solid rgba(244, 241, 234, .12); box-shadow: 0 12px 24px rgba(28, 30, 31, .25);
+        padding: 4px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px));
+        max-height: calc(100vh - 64px - env(safe-area-inset-top, 0px)); max-height: calc(100dvh - 64px - env(safe-area-inset-top, 0px));
+        overflow-y: auto; overscroll-behavior: contain
+    }
+    .has-menu.menu-open .site-menu { display: block }
+    .has-menu .site-nav ul { display: block }
+    .has-menu .site-nav li + li { border-top: 1px solid rgba(244, 241, 234, .12) }
+    .has-menu .site-nav a { display: block; padding-block: 12px; font-size: 17px }
+    .has-menu .site-nav a[aria-current] { box-shadow: none; text-decoration: underline 2px var(--ochre-light); text-underline-offset: 7px }
+    .has-menu .menu-tools { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 14px; border-top: 1px solid rgba(244, 241, 234, .12) }
+    .has-menu .menu-tools .toggle { min-height: 44px; padding: 10px 14px; font-size: 14px }
+    .has-menu .menu-tools .lang-select { max-width: 100% }
     .page-head .wrap { padding-block: 40px 36px }
     .page-head p { font-size: 17px }
     .page-body { padding-top: 36px }
@@ -375,3 +428,10 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
     html { scroll-behavior: auto }
     .way:hover, .teaser:hover, .video:hover, .btn-primary:hover { transform: none }
 }
+
+/* Hindi. Devanagari's vowel signs reach above its headline and below the baseline, so headings need
+   more line height than Fraunces' 1.02, and letter spacing would break the headline between letters. */
+h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
+:lang(hi) { letter-spacing: normal !important }
+/* The floor plan's labels (their font-family attribute names Inter only). */
+.plan-card svg text[data-i18n]:lang(hi) { font-family: var(--body) }

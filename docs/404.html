@@ -1,18 +1,23 @@
 <!DOCTYPE html>
-<html lang="en" data-copy="Copy" data-copied="Copied">
+<html lang="en" data-copy="Copy" data-copied="Copied" data-i18n-pages="notfound">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Page not found - Tapir</title>
+<title data-i18n>Page not found - Tapir</title>
+<meta name="description" data-i18n-attrs="content" content="This page of Tapir's site is not here. Install Tapir, read the reference of every command, browse the scripts or ask the community.">
 <meta name="robots" content="noindex">
 <!-- GitHub Pages serves this page at any missing address, at any depth, so every link and asset is
      relative to the site's root, set by <base>. The script points it at the root this page is served
-     under (…/tapir-archicad-automation/), so it works on a copy of the site too; without JavaScript,
-     the github.io address applies, which redirects to the site's own domain once it has one. -->
+     under: …/tapir-archicad-automation/ when the address has it (github.io, or a copy of the site
+     under that path), else the domain's root (archicad-api.com, or a copy served at its root), so no
+     asset or link goes through a redirect to another domain. Without JavaScript, the github.io
+     address applies, which redirects to the site's own domain. -->
 <base href="https://enzyme-apd.github.io/tapir-archicad-automation/">
-<script>(function () { var m = /^(.*?\/tapir-archicad-automation\/)/.exec (location.pathname); if (m) document.querySelector ('base').href = location.origin + m[1]; }) ();</script>
+<script>(function () { var m = /^(.*?\/tapir-archicad-automation\/)/.exec (location.pathname); document.querySelector ('base').href = location.origin + (m ? m[1] : '/'); }) ();</script>
 <!-- site-assets -->
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#2D3A30" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#2D3A30">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
@@ -48,41 +53,41 @@
     <div class="page-head">
         <div class="wrap">
             <p class="crumb"><a href="./">Tapir</a> / 404</p>
-            <h1>This page is <em>not here.</em></h1>
-            <p>The address may be mistyped, or the page has moved. One of these is probably what you were looking for.</p>
+            <h1 data-i18n>This page is <em>not here.</em></h1>
+            <p data-i18n>The address may be mistyped, or the page has moved. One of these is probably what you were looking for.</p>
         </div>
     </div>
 
     <div class="wrap page-body">
-        <section aria-label="Sections">
+        <section aria-label="Sections" data-i18n-attrs="aria-label">
             <div class="doc-grid">
                 <a class="teaser" href="start/">
-                    <span class="tagline">Get started</span>
-                    <h3>Install Tapir</h3>
-                    <p>Install Tapir and run your first script.</p>
-                    <span class="go">Get started</span>
+                    <span class="tagline" data-i18n>Get started</span>
+                    <h3 data-i18n>Install Tapir</h3>
+                    <p data-i18n>Install Tapir and run your first script.</p>
+                    <span class="go" data-i18n>Get started</span>
                 </a>
                 <a class="teaser" href="docs/">
-                    <span class="tagline">Docs</span>
-                    <h3>The reference</h3>
-                    <p>Every Tapir command, with its parameters and an example.</p>
-                    <span class="go">Open the docs</span>
+                    <span class="tagline" data-i18n>Docs</span>
+                    <h3 data-i18n>The reference</h3>
+                    <p data-i18n>Every Tapir command, with its parameters and an example.</p>
+                    <span class="go" data-i18n>Open the docs</span>
                 </a>
                 <a class="teaser" href="scripts/">
-                    <span class="tagline">Scripts</span>
-                    <h3>The script schedule</h3>
-                    <p>Ready-made scripts shared by the community.</p>
-                    <span class="go">Browse scripts</span>
+                    <span class="tagline" data-i18n>Scripts</span>
+                    <h3 data-i18n>The script schedule</h3>
+                    <p data-i18n>Ready-made scripts shared by the community.</p>
+                    <span class="go" data-i18n>Browse scripts</span>
                 </a>
                 <a class="teaser" href="community/">
-                    <span class="tagline">Community</span>
-                    <h3>Ask, report, test</h3>
-                    <p>Discord, bug reports and how to help.</p>
-                    <span class="go">Join in</span>
+                    <span class="tagline" data-i18n>Community</span>
+                    <h3 data-i18n>Ask, report, test</h3>
+                    <p data-i18n>Discord, bug reports and how to help.</p>
+                    <span class="go" data-i18n>Join in</span>
                 </a>
             </div>
             <p class="ctas" style="margin-top: 32px">
-                <a class="btn btn-primary" href="./">Go to the home page</a>
+                <a class="btn btn-primary" href="./" data-i18n>Go to the home page</a>
             </p>
         </section>
     </div>

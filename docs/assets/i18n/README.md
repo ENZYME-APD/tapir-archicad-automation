@@ -3,7 +3,14 @@
 The site is written in English; `assets/site.js` translates it in the browser into the language
 picked in the header's language menu (or given as `?lang=<code>` in the address, or the browser's
 language on a first visit). Languages: `de` Deutsch, `fr` Français, `es` Español, `it` Italiano,
-`zh` 中文 (简体), `ja` 日本語. The list is `LANGUAGES` in `assets/site.js`.
+`zh` 中文 (简体), `ja` 日本語, `hi` हिन्दी. The list is `LANGUAGES` in `assets/site.js`.
+
+A language whose script the site's fonts (Fraunces, Inter, JetBrains Mono) lack names the web fonts
+to load for it in its `fonts` entry there (Hindi: Noto Serif and Noto Sans Devanagari), and adds them
+to the font stacks in `assets/site.css`, after the Latin fonts.
+
+Hindi is standard Hindi in Devanagari, written for architects: common technical words stay in
+English as Indian architects use them (Archicad, script, BIM, property, layer, API, JSON, ...).
 
 ## The dictionaries
 
@@ -35,6 +42,9 @@ Each file pushes one object of English → translation:
 - A script that writes text uses `TapirI18n.t ('English text')`, one that adds marked HTML calls
   `TapirI18n.apply (element)`, and one that runs before the translation is applied waits with
   `TapirI18n.ready (callback)`.
+- The translation of the page does not reach into a `<template>`: a script that copies one marks its
+  texts as usual and translates them first with `TapirI18n.apply (template.content)`, as
+  `scripts/scripts.js` does.
 
 A text a dictionary lacks stays English, so a page can be translated piece by piece. Command names,
 JSON keys, code and Archicad's own terms stay as Archicad shows them in English.
