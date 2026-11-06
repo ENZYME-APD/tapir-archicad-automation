@@ -1,7 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
   <!-- The source of og.png, the link preview image (1200 x 630) of every page: the moss page head
        of site.css with its 48 px drafting grid, the cream mark, "Tapir" in Fraunces and the tagline
-       in Inter. Export it to og.png at 1200 x 630 with both fonts installed. -->
+       in Inter. Export it to og.png at 1200 x 630 with both fonts installed. The pages do not point
+       to og.png yet: once it is added, add after og:url (og:description on 404.html) of every page
+       og:image (https://archicad-api.com/assets/og.png), og:image:width 1200, og:image:height 630,
+       og:image:alt "Tapir - Automation for Archicad", and set twitter:card to summary_large_image. -->
   <defs>
     <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
       <path d="M0,0.5H48M0.5,0V48" fill="none" stroke="#F4F1EA" stroke-opacity=".06" stroke-width="1"/>
