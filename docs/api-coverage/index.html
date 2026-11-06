@@ -52,7 +52,10 @@
 <main id="main">
 <p class="muted">Which parts of the Archicad API (<span id="archicad-range">every supported Archicad version</span>: C functions with their older names and command ids, and the C++ API) the <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> uses, updated within minutes of every issue and push to main, and within the hour of every pull request. See also the <a href="../archicad-addon/">command reference</a>.</p>
 
-<section aria-label="Overview" id="overview">
+<section aria-labelledby="overview-title" id="overview">
+    <div class="sec-head ref">
+        <h2 id="overview-title">Overview</h2>
+    </div>
     <div class="hero">
         <div>
             <div class="hero-number" id="hero-percent">…</div>
@@ -62,25 +65,27 @@
     </div>
     <div class="bar large" id="overall-bar" role="img"></div>
     <div class="legend" id="legend"></div>
+
+    <h3 class="ref-sub" id="by-part">By part of the API</h3>
+    <div class="scroll"><table id="parts"></table></div>
+
+    <h3 class="ref-sub" id="by-group">By group</h3>
+    <div class="table-actions">
+        <span class="muted">Sort by</span>
+        <div class="options" id="group-sort" role="group" aria-label="Sort groups by">
+            <button type="button" class="option" data-sort="open" aria-pressed="true">most open items</button>
+            <button type="button" class="option" data-sort="coverage" aria-pressed="false">lowest coverage</button>
+            <button type="button" class="option" data-sort="name" aria-pressed="false">name</button>
+        </div>
+        <span class="muted">Select a group to list its items below.</span>
+    </div>
+    <div class="scroll"><table id="groups"></table></div>
+    <div class="table-actions"><button type="button" class="linkbutton" id="groups-more" hidden></button></div>
 </section>
 
-<h2 id="by-part">By part of the API</h2>
-<div class="scroll"><table id="parts"></table></div>
-
-<h2 id="by-group">By group</h2>
-<div class="table-actions">
-    <span class="muted">Sort by</span>
-    <div class="options" id="group-sort" role="group" aria-label="Sort groups by">
-        <button type="button" class="option" data-sort="open" aria-pressed="true">most open items</button>
-        <button type="button" class="option" data-sort="coverage" aria-pressed="false">lowest coverage</button>
-        <button type="button" class="option" data-sort="name" aria-pressed="false">name</button>
-    </div>
-    <span class="muted">Select a group to list its items below.</span>
+<div class="sec-head ref">
+    <h2 id="checklist">Checklist</h2>
 </div>
-<div class="scroll"><table id="groups"></table></div>
-<div class="table-actions"><button type="button" class="linkbutton" id="groups-more" hidden></button></div>
-
-<h2 id="checklist">Checklist</h2>
 <div class="toolbar" id="toolbar">
     <button type="button" class="sections-button" id="sections-button" aria-controls="sidebar">☰ Sections</button>
     <input type="search" id="search" placeholder="Search, e.g. Category or MEP::Pipe" aria-label="Search the checklist">
