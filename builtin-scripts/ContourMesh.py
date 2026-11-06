@@ -501,9 +501,9 @@ class ContourMesh:
             elif origin:
                 cx = min_x * scale
                 cy = min_y * scale
-                # Offset Z so the lowest point sits at the target (0,0,0)
-                min_z = min(p[2] for p in all_pts)
-                cz = -min_z * scale
+                # Preserve absolute Z: a DXF Z=0 contour stays at ArchiCAD Z=0.
+                # Only X/Y are shifted so the bbox min corner lands at the origin.
+                cz = 0.0
             else:
                 cx = cy = cz = 0.0
 
