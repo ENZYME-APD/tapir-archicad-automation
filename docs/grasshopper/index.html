@@ -4,203 +4,256 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Grasshopper - Tapir</title>
-<meta name="description" content="The Tapir Grasshopper plugin: read, change and create Archicad elements from Rhino and Grasshopper, with one component per Archicad tool.">
+<meta name="description" content="Read, change and create Archicad elements from Grasshopper with the Tapir plugin: what the components do, the tool components, installing the tapir package and a first definition.">
+<!-- site-assets -->
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
 <link rel="stylesheet" href="../assets/site.css">
 <script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
 <script src="../assets/site.js" defer></script>
+<!-- /site-assets -->
 </head>
 <body>
+<!-- site-header -->
+<a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header">
-    <div class="site-header-inner">
-        <a class="site-brand" href="../">
-            <img src="../assets/tapir_mark_cream.svg" alt="" width="28" height="28">
-            <span class="wordmark">Tapir</span>
-        </a>
-        <nav class="site-nav" aria-label="Site">
-            <ul>
-                <li><a href="../start/">Get started</a></li>
-                <li>
-                    <details class="nav-menu">
-                        <summary>Docs</summary>
-                        <ul>
-                            <li><a href="../archicad-addon/">Commands</a></li>
-                            <li><a href="../api-coverage/">API coverage</a></li>
-                            <li><a href="../gh-coverage/">Grasshopper coverage</a></li>
-                        </ul>
-                    </details>
-                </li>
-                <li><a href="../scripts/">Scripts</a></li>
-                <li><a href="../community/">Community</a></li>
-            </ul>
-        </nav>
-        <button type="button" class="theme-toggle" id="theme-toggle" aria-pressed="false" hidden>
-            <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-            <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-            <span class="visually-hidden">Dark mode</span>
-        </button>
-        <a class="button" href="../start/#install">Download</a>
+    <div class="wrap nav">
+        <a class="brand" href="../"><img src="../assets/tapir_mark_cream.svg" alt="" width="30" height="30">Tapir</a>
+        <nav class="site-nav" aria-label="Site"><ul>
+            <li><a href="../start/">Get started</a></li>
+            <li><a href="../docs/" aria-current="true">Docs</a></li>
+            <li><a href="../scripts/">Scripts</a></li>
+            <li><a href="../scripts/share/">Share</a></li>
+            <li><a href="../community/">Community</a></li>
+            <li><a href="../about/">About</a></li>
+        </ul></nav>
+        <div class="right">
+            <button class="toggle" id="theme-toggle" type="button" data-dark="Dark" data-light="Light" hidden><span class="toggle-word">Dark</span><span class="visually-hidden"> mode</span></button>
+            <a class="btn btn-primary btn-sm" href="../start/#install">Download</a>
+        </div>
     </div>
 </header>
+<!-- /site-header -->
 
-<main class="narrow">
-    <section>
-        <span class="eyebrow">Grasshopper</span>
-        <h1>Archicad from Grasshopper</h1>
-        <p class="lead">
-            The Tapir plugin connects Grasshopper to a running Archicad. Read elements and their settings, change them,
-            and create new ones from Rhino geometry, without writing code.
-        </p>
-    </section>
-
-    <section aria-labelledby="what-it-does">
-        <h2 id="what-it-does">What the components do</h2>
-        <p>
-            Each component sends a Tapir command to Archicad and gives you the answer as Grasshopper data.
-            You find them on the <strong>Tapir</strong> tab, grouped as in Archicad:
-        </p>
-        <div class="cards">
-            <div class="card">
-                <h3>Read</h3>
-                <p>Elements by type, story or selection; their properties, classifications, settings and geometry.</p>
-            </div>
-            <div class="card">
-                <h3>Change</h3>
-                <p>Property values, classifications, layers, IDs and tool settings of the elements you pass in.</p>
-            </div>
-            <div class="card">
-                <h3>Create</h3>
-                <p>Walls, doors, windows, railings, level dimensions and more, from points and curves in Rhino.</p>
-            </div>
-            <div class="card">
-                <h3>Project</h3>
-                <p>Stories, attributes, navigator views, layouts, issues, favorites and libraries.</p>
-            </div>
+<main id="main">
+    <div class="page-head">
+        <div class="wrap">
+            <p class="crumb"><a href="../">Tapir</a> / <a href="../docs/">Docs</a> / Grasshopper</p>
+            <h1>Grasshopper, <em>visually.</em></h1>
+            <p>The Tapir plugin connects Grasshopper to a running Archicad: read elements and their settings, change them, and create new ones from Rhino geometry, without writing code.</p>
         </div>
-        <p class="muted" style="margin-top: 14px;">
-            Which Tapir commands have a component, and which settings each covers, is on the
-            <a href="../gh-coverage/">Grasshopper coverage</a> page.
-        </p>
-    </section>
+    </div>
 
-    <section aria-labelledby="tool-components">
-        <h2 id="tool-components">Tool components</h2>
-        <p>
-            A tool component works like the Archicad tool of the same name. Its inputs and outputs follow the tool's
-            settings dialog: one JSON input and one JSON output per panel of the dialog, keyed by the labels you see
-            there, such as <code>Wall Height</code> or <code>Wall Thickness</code>.
-        </p>
-        <div class="cards">
-            <div class="card">
-                <h3>Walls</h3>
-                <p>Design Tools. Placed by <code>StartPoint</code> and <code>EndPoint</code>. Refresh, Execute and Create.</p>
+    <div class="wrap page-body">
+        <section aria-labelledby="what-it-does">
+            <div class="sec-head">
+                <h2 id="what-it-does">What the components <em>do.</em></h2>
+                <p>Each component sends a Tapir command to Archicad and gives you the answer as Grasshopper data. You find them on the <strong>Tapir</strong> tab, grouped as in Archicad.</p>
             </div>
-            <div class="card">
-                <h3>Doors</h3>
-                <p>Design Tools. Placed in an <code>OwnerWall</code> at a <code>CenterOffset</code>. Refresh, Execute and Create.</p>
+            <div class="flow flow-4">
+                <div><b>READ</b><strong>Elements and their data</strong><span>Elements by type, story or selection; their properties, classifications, settings and geometry.</span></div>
+                <div><b>CHANGE</b><strong>What you pass in</strong><span>Property values, classifications, layers, IDs and tool settings of the elements you pass in.</span></div>
+                <div><b>CREATE</b><strong>From Rhino geometry</strong><span>Walls, doors, windows, railings, level dimensions and more, from points and curves.</span></div>
+                <div><b>PROJECT</b><strong>The rest of the file</strong><span>Stories, attributes, navigator views, layouts, issues, favorites and libraries.</span></div>
             </div>
-            <div class="card">
-                <h3>Windows</h3>
-                <p>Design Tools. Placed in an <code>OwnerWall</code> at a <code>CenterOffset</code>. Refresh, Execute and Create.</p>
-            </div>
-            <div class="card">
-                <h3>Railings</h3>
-                <p>Design Tools. Placed along a <code>ReferenceLine</code>. Refresh and Create.</p>
-            </div>
-            <div class="card">
-                <h3>LevelDimensions</h3>
-                <p>Document Tools. Placed at a <code>Position</code>, optionally on a parent element. Refresh and Create.</p>
-            </div>
-        </div>
-        <h3 style="margin-top: 24px;">Three buttons</h3>
-        <ul>
-            <li><strong>Refresh</strong> reads the elements in <code>ElementGuid</code> and fills every output.</li>
-            <li><strong>Execute</strong> writes the given settings to those elements. Only the keys you give are written.</li>
-            <li><strong>Create</strong> makes new elements from the geometry inputs, starting from the tool's defaults or from a <code>FavoriteName</code>.</li>
-        </ul>
-        <p>
-            Nothing is written to Archicad until you press Execute or Create. A JSON output read by Refresh can be fed
-            straight back into the same input. Archicad has no command to change railings or level dimensions after
-            they are placed, so for those Execute only writes the ID, layer and draw order.
-        </p>
-        <div class="callout">
-            <p><span class="callout-label">Note</span> Walls remembers the walls its Create made, in the <code>.gh</code> file.
-            The next Create updates them instead of making new ones. Turn this off, or forget them, in the component's menu.</p>
-        </div>
-    </section>
+            <p class="lead-out">
+                Which Tapir commands have a component, and which settings each covers, is on the
+                <a href="../gh-coverage/">Grasshopper coverage</a> page.
+            </p>
+        </section>
 
-    <section aria-labelledby="install">
-        <h2 id="install">Install</h2>
-        <ol class="steps">
-            <li>
-                <h2 id="install-addon">Install the Tapir Add-On in Archicad</h2>
-                <p>The components talk to Archicad through the Add-On. <a href="../start/#install">Get started</a> shows how.</p>
-            </li>
-            <li>
-                <h2 id="install-package">Install the <code>tapir</code> package in Rhino</h2>
+        <div class="dim" aria-hidden="true"><i></i><span>Tool components</span><i></i></div>
+        <section aria-labelledby="tool-components">
+            <div class="sec-head">
+                <h2 id="tool-components">One per Archicad <em>tool.</em></h2>
+                <p>A tool component works like the Archicad tool of the same name. One JSON input and one JSON output per panel of its settings dialog, keyed by the labels you see there, such as <code>Wall Height</code>.</p>
+            </div>
+            <div class="ways">
+                <article class="way">
+                    <span class="who">Design Tools</span>
+                    <h3>Walls</h3>
+                    <p>Placed by <code>StartPoint</code> and <code>EndPoint</code>.</p>
+                    <p class="buttons"><span class="kbd">Refresh</span> <span class="kbd">Execute</span> <span class="kbd">Create</span></p>
+                </article>
+                <article class="way">
+                    <span class="who">Design Tools</span>
+                    <h3>Doors</h3>
+                    <p>Placed in an <code>OwnerWall</code> at a <code>CenterOffset</code>.</p>
+                    <p class="buttons"><span class="kbd">Refresh</span> <span class="kbd">Execute</span> <span class="kbd">Create</span></p>
+                </article>
+                <article class="way">
+                    <span class="who">Design Tools</span>
+                    <h3>Windows</h3>
+                    <p>Placed in an <code>OwnerWall</code> at a <code>CenterOffset</code>.</p>
+                    <p class="buttons"><span class="kbd">Refresh</span> <span class="kbd">Execute</span> <span class="kbd">Create</span></p>
+                </article>
+                <article class="way">
+                    <span class="who">Design Tools</span>
+                    <h3>Railings</h3>
+                    <p>Placed along a <code>ReferenceLine</code>.</p>
+                    <p class="buttons"><span class="kbd">Refresh</span> <span class="kbd">Create</span></p>
+                </article>
+                <article class="way">
+                    <span class="who">Document Tools</span>
+                    <h3>LevelDimensions</h3>
+                    <p>Placed at a <code>Position</code>, optionally on a parent element.</p>
+                    <p class="buttons"><span class="kbd">Refresh</span> <span class="kbd">Create</span></p>
+                </article>
+            </div>
+
+            <div class="flow flow-3" style="margin-top: 32px">
+                <div><b>REFRESH</b><strong>Reads</strong><span>Reads the elements in <code>ElementGuid</code> and fills every output.</span></div>
+                <div><b>EXECUTE</b><strong>Writes</strong><span>Writes the given settings to those elements. Only the keys you give are written.</span></div>
+                <div><b>CREATE</b><strong>Makes new elements</strong><span>From the geometry inputs, starting from the tool's defaults or from a <code>FavoriteName</code>.</span></div>
+            </div>
+            <div class="prose" style="margin-top: 24px">
                 <p>
-                    In Rhino 7 or 8, open <em>Tools &gt; Package Manager</em> (or type <code>PackageManager</code>),
-                    search for <strong>tapir</strong> and click Install. Restart Rhino.
+                    Nothing is written to Archicad until you press Execute or Create. A JSON output read by Refresh can be fed
+                    straight back into the same input. Archicad has no command to change railings or level dimensions after
+                    they are placed, so for those Execute only writes the ID, layer and draw order.
                 </p>
-            </li>
-            <li>
-                <h2 id="install-check">Open Archicad, then Grasshopper</h2>
-                <p>
-                    With a project open in Archicad, start Grasshopper. The <strong>Tapir</strong> tab appears in its
-                    toolbar. With more than one Archicad open, give the port of the one you want to the
-                    <strong>ConnectArchicad</strong> component (<em>Tapir &gt; General</em>); the first Archicad uses 19723.
+                <p class="callout">
+                    <strong class="callout-label"><span aria-hidden="true">&#9432;</span> Note</strong>
+                    Walls remembers the walls its Create made, in the <code>.gh</code> file. The next Create updates them instead
+                    of making new ones. Turn this off, or forget them, in the component's menu.
                 </p>
-            </li>
-        </ol>
-    </section>
+            </div>
+        </section>
 
-    <section aria-labelledby="sample">
-        <h2 id="sample">A first definition: one wall</h2>
-        <p>Build this in an empty Grasshopper canvas, with a project open in Archicad:</p>
-        <ol>
-            <li>Place two <strong>Point</strong> parameters and set them to 0,0,0 and 5,0,0. Archicad reads the numbers as metres.</li>
-            <li>Place the <strong>Walls</strong> component from <em>Tapir &gt; Design Tools</em>. Connect the points to <code>StartPoint</code> and <code>EndPoint</code>.</li>
-            <li>Place a <strong>Panel</strong> with the text below and connect it to <code>GeometryAndPositioning_JSON</code>.</li>
-            <li>Press <strong>Create</strong>. A 5 m wall appears in Archicad, 3 m high and 30 cm thick.</li>
-            <li>Move a point and press Create again: the same wall moves. Change the panel and press Create: the same wall changes.</li>
-        </ol>
-<pre><code>{"Wall Height": 3.0, "Wall Thickness": 0.3}</code></pre>
-        <p>
-            Press <strong>Refresh</strong> to see every setting of the wall in the JSON outputs. Copy a key from there to
-            set it the next time.
-        </p>
-    </section>
+        <div class="dim" aria-hidden="true"><i></i><span>Install</span><i></i></div>
+        <section aria-labelledby="install">
+            <h2 id="install" class="visually-hidden">Install</h2>
+            <ol class="timeline">
+                <li>
+                    <span class="n" aria-hidden="true">1</span>
+                    <div class="body">
+                        <h3 id="install-addon">Install the Tapir Add-On in Archicad</h3>
+                        <p>The components talk to Archicad through the Add-On. <a href="../start/#install">Get started</a> shows how.</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="n" aria-hidden="true">2</span>
+                    <div class="body">
+                        <h3 id="install-package">Install the <span class="mono">tapir</span> package in Rhino</h3>
+                        <p>In Rhino 7 or 8, open <em>Tools &gt; Package Manager</em> (or type <code>PackageManager</code>), search for <strong>tapir</strong> and click Install. Restart Rhino.</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="n" aria-hidden="true">3</span>
+                    <div class="body">
+                        <h3 id="install-check">Open Archicad, then Grasshopper</h3>
+                        <p>
+                            With a project open in Archicad, start Grasshopper. The <strong>Tapir</strong> tab appears in its toolbar.
+                            With more than one Archicad open, give the port of the one you want to the <strong>ConnectArchicad</strong>
+                            component (<em>Tapir &gt; General</em>); the first Archicad uses 19723.
+                        </p>
+                    </div>
+                </li>
+            </ol>
+        </section>
 
-    <section aria-labelledby="gh-next-step">
-        <h2 id="gh-next-step">Next step</h2>
-        <p>Install the Add-On and the <code>tapir</code> package, then try the wall above.</p>
-        <div class="actions">
-            <a class="button" href="../start/">Get started</a>
-            <a class="button button-secondary" href="../gh-coverage/">Grasshopper coverage</a>
-        </div>
-    </section>
+        <div class="dim" aria-hidden="true"><i></i><span>A first definition</span><i></i></div>
+        <section class="two" aria-labelledby="sample">
+            <div class="prose">
+                <h2 id="sample" style="font-size: clamp(30px, 4vw, 48px)">One <em>wall.</em></h2>
+                <p>Build this in an empty Grasshopper canvas, with a project open in Archicad:</p>
+                <ol>
+                    <li>Place two <strong>Point</strong> parameters and set them to 0,0,0 and 5,0,0. Archicad reads the numbers as metres.</li>
+                    <li>Place the <strong>Walls</strong> component from <em>Tapir &gt; Design Tools</em>. Connect the points to <code>StartPoint</code> and <code>EndPoint</code>.</li>
+                    <li>Place a <strong>Panel</strong> with the text on the right and connect it to <code>GeometryAndPositioning_JSON</code>.</li>
+                    <li>Press <strong>Create</strong>. A 5 m wall appears in Archicad, 3 m high and 30 cm thick.</li>
+                    <li>Move a point and press Create again: the same wall moves. Change the panel and press Create: the same wall changes.</li>
+                </ol>
+                <p>Press <strong>Refresh</strong> to see every setting of the wall in the JSON outputs. Copy a key from there to set it the next time.</p>
+            </div>
+            <div>
+                <div class="term">
+                    <div class="bar"><span>Panel → GeometryAndPositioning_JSON</span><span>JSON</span></div>
+<pre><code>{<span class="s">"Wall Height"</span>: 3.0, <span class="s">"Wall Thickness"</span>: 0.3}</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <div class="dim" aria-hidden="true"><i></i><span>Next step</span><i></i></div>
+        <section>
+            <div class="teasers">
+                <a class="teaser" href="../start/">
+                    <span class="tagline">Get started</span>
+                    <h3>Install the Add-On</h3>
+                    <p>Install Tapir and the <span class="mono">tapir</span> package, then try the wall above.</p>
+                    <span class="go">Get started &rarr;</span>
+                </a>
+                <a class="teaser" href="../gh-coverage/">
+                    <span class="tagline">Coverage</span>
+                    <h3>Grasshopper coverage</h3>
+                    <p>Which commands have a component, and which inputs each still lacks.</p>
+                    <span class="go">See the coverage &rarr;</span>
+                </a>
+                <a class="teaser dark" href="../tutorials/">
+                    <span class="tagline">Videos</span>
+                    <h3>Watch it work</h3>
+                    <p>The Archicad and Grasshopper tutorials.</p>
+                    <span class="go">Watch the tutorials &rarr;</span>
+                </a>
+            </div>
+        </section>
+    </div>
 </main>
 
+<!-- site-footer -->
 <footer class="site-footer">
-    <div class="site-footer-inner">
-        <a class="site-brand" href="../">
-            <img src="../assets/tapir_mark_cream.svg" alt="" width="28" height="28">
-            <span class="wordmark">Tapir</span>
-        </a>
-        <p>Open-source automation for Archicad, by <a href="https://github.com/ENZYME-APD">ENZYME-APD</a>.</p>
-        <ul class="footer-links">
-            <li><a href="../start/">Get started</a></li>
-            <li><a href="../archicad-addon/">Commands</a></li>
-            <li><a href="../scripts/">Scripts</a></li>
-            <li><a href="../community/">Community</a></li>
-            <li><a href="https://discord.gg/NAnSennmpY">Discord</a></li>
-            <li><a href="https://github.com/ENZYME-APD/tapir-archicad-automation">GitHub</a></li>
-            <li><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues">Report an issue</a></li>
-        </ul>
+    <div class="wrap">
+        <div class="tblock">
+            <div>
+                <span class="lab">Project</span>
+                <span class="proj">Tapir</span>
+                <p class="note">Open-source automation for Archicad. 100% free and open source (MIT). Maintained by Enzyme APD and the community.</p>
+                <p class="note">Contact: <span class="nowrap">contact@enzyme-apd.com</span></p>
+            </div>
+            <div>
+                <span class="lab">Product</span>
+                <ul>
+                    <li><a href="../start/">Get started</a></li>
+                    <li><a href="../scripts/">Scripts</a></li>
+                    <li><a href="../scripts/share/">Share a script</a></li>
+                    <li><a href="../grasshopper/">Grasshopper</a></li>
+                    <li><a href="../ai/">Tapir and AI</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Docs</span>
+                <ul>
+                    <li><a href="../docs/">All docs</a></li>
+                    <li><a href="../archicad-addon/">Commands</a></li>
+                    <li><a href="../api-coverage/">API coverage</a></li>
+                    <li><a href="../gh-coverage/">Grasshopper coverage</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Community</span>
+                <ul>
+                    <li><a href="https://discord.gg/NAnSennmpY">Discord</a></li>
+                    <li><a href="https://github.com/ENZYME-APD/tapir-archicad-automation">GitHub</a></li>
+                    <li><a href="../tutorials/">Tutorials</a></li>
+                    <li><a href="../community/#bots">How fixes happen</a></li>
+                    <li><a href="../roadmap/">Roadmap</a></li>
+                    <li><a href="../about/">About Tapir</a></li>
+                </ul>
+            </div>
+            <div>
+                <div class="rev" data-live="release" hidden>
+                    <span class="lab">Revision</span>
+                    <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest" data-live-value="release"></a>
+                </div>
+                <span class="lab">Licence</span>
+                <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/LICENSE">MIT</a>
+            </div>
+        </div>
+        <p class="fine">Not affiliated with Graphisoft. Archicad is a trademark of Graphisoft SE.</p>
     </div>
 </footer>
+<!-- /site-footer -->
 </body>
 </html>
