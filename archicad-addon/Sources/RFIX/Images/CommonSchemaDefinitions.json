@@ -8464,12 +8464,22 @@
             },
             "transformationMatrix": {
                 "type": "array",
-                "description": "The full 2D transformation of the view that rotation is derived from: the 3x4 matrix row by row (12 numbers), in the layout Get3DProjectionSettings uses. Read via GetViewSettings; SetViewSettings ignores it, use rotation or SetViewRotation to change it.",
+                "description": "The full 2D transformation of the view that rotation is derived from: the 3x4 matrix row by row (12 numbers), in the layout Get3DProjectionSettings uses. Its translation is at indices 3 and 7. Read via GetViewSettings; SetViewSettings ignores it, use rotation or SetViewRotation to change the rotation and translation to change the translation.",
                 "items": {
                     "type": "number"
                 },
                 "minItems": 12,
                 "maxItems": 12
+            },
+            "translation": {
+                "type": "object",
+                "description": "SetViewSettings only: the translation part of the view transformation (indices 3 and 7 of transformationMatrix), so that view coordinates = rotation applied to model coordinates + translation. rotation leaves the translation as it is; without this field the translation is not changed. {x: 0, y: 0} clears it. Never returned by GetViewSettings (read it from transformationMatrix).",
+                "properties": {
+                    "x": { "type": "number" },
+                    "y": { "type": "number" }
+                },
+                "additionalProperties": false,
+                "required": ["x", "y"]
             },
             "structureDisplay": {
                 "type": "string",

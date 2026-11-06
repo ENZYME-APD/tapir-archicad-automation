@@ -1789,6 +1789,21 @@ GS::ObjectState SetViewSettingsCommand::Execute (const GS::ObjectState& paramete
             navigatorView.tr.tmx[11] = 0.0;
         }
 
+        // Optional: the translation part of the view transformation (tmx[3], tmx[7]), which
+        // "rotation" above leaves as it is. A view oriented by hand (or created from a story
+        // oriented by hand) carries a translation, and the Drawings placed from it are shifted
+        // by it; writing it lets a caller give a view exactly the transformation of another one
+        // (read through transformationMatrix), or clear it with {x: 0, y: 0}.
+        const GS::ObjectState* translationOS = viewSettingsOS->Get ("translation");
+        if (translationOS != nullptr) {
+            double tx = 0.0;
+            double ty = 0.0;
+            if (translationOS->Get ("x", tx) && translationOS->Get ("y", ty)) {
+                navigatorView.tr.tmx[3] = tx;
+                navigatorView.tr.tmx[7] = ty;
+            }
+        }
+
         GS::UniString structureDisplayStr;
         if (viewSettingsOS->Get ("structureDisplay", structureDisplayStr)) {
             if      (structureDisplayStr == "CoreOnly")         navigatorView.structureDisplay = API_CoreOnly;
