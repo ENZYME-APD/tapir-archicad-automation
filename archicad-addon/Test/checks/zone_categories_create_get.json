@@ -1,0 +1,188 @@
+{
+  "title": "CreateZoneCategories creates and overwrites a Zone Category, read back with GetZoneCategories",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "an existing Zone Category",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": {"attributeType": "ZoneCategory"},
+      "save": {"zc0": "attributes[0].attributeId.guid"},
+      "expect": [
+        {"path": "attributes[0].attributeId.guid", "exists": true, "name": "the template has a Zone Category"}
+      ]
+    },
+    {
+      "id": "its zone stamp",
+      "command": "GetZoneCategories",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${zc0}"}}], "fields": ["stampName", "stampMainGuid", "stampRevGuid"]},
+      "save": {
+        "stampName": "zoneCategories[0].stampName",
+        "stampMain": "zoneCategories[0].stampMainGuid",
+        "stampRev": "zoneCategories[0].stampRevGuid"
+      },
+      "expect": [
+        {"path": "zoneCategories", "len": 1},
+        {"path": "zoneCategories[0].stampMainGuid", "exists": true}
+      ]
+    },
+    {
+      "id": "create",
+      "command": "CreateZoneCategories",
+      "creates": false,
+      "params": {
+        "zoneCategoryDataArray": [
+          {
+            "name": "TapirCheck Zone Category 1924",
+            "categoryCode": "TC1924",
+            "color": {"red": 0.25, "green": 0.5, "blue": 0.75},
+            "stampName": "${stampName}",
+            "stampMainGuid": "${stampMain}",
+            "stampRevGuid": "${stampRev}"
+          }
+        ]
+      },
+      "save": {"z1": "attributeIds[0].attributeId.guid"},
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"},
+        {"path": "attributeIds[0].attributeId.guid", "exists": true}
+      ]
+    },
+    {
+      "id": "read back the created Zone Category",
+      "command": "GetZoneCategories",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${z1}"}}]},
+      "expect": [
+        {"path": "zoneCategories", "len": 1},
+        {"path": "zoneCategories[0].error", "exists": false, "name": "no error"},
+        {"path": "zoneCategories[0].index", "exists": true},
+        {"path": "zoneCategories[0].name", "eq": "TapirCheck Zone Category 1924"},
+        {"path": "zoneCategories[0].categoryCode", "eq": "TC1924"},
+        {"path": "zoneCategories[0].color.red", "approx": 0.25, "tol": 0.001},
+        {"path": "zoneCategories[0].color.green", "approx": 0.5, "tol": 0.001},
+        {"path": "zoneCategories[0].color.blue", "approx": 0.75, "tol": 0.001},
+        {"path": "zoneCategories[0].stampMainGuid", "exists": true},
+        {"path": "zoneCategories[0].stampMainGuid", "ne": "00000000-0000-0000-0000-000000000000", "name": "has a stamp"},
+        {"path": "zoneCategories[0].stampRevGuid", "ne": "00000000-0000-0000-0000-000000000000", "name": "has a stamp revision"},
+        {"path": "zoneCategories[0].stampName", "exists": true, "name": "has a stamp name"}
+      ]
+    },
+    {
+      "id": "bad input: the same name without overwriteExisting",
+      "command": "CreateZoneCategories",
+      "creates": false,
+      "params": {
+        "zoneCategoryDataArray": [
+          {
+            "name": "TapirCheck Zone Category 1924",
+            "categoryCode": "BAD",
+            "color": {"red": 1.0, "green": 1.0, "blue": 1.0}
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": true, "name": "failed"},
+        {"path": "attributeIds[0].attributeId", "exists": false, "name": "no attribute returned"}
+      ]
+    },
+    {
+      "id": "the bad input changed nothing",
+      "command": "GetZoneCategories",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${z1}"}}], "fields": ["categoryCode", "color"]},
+      "expect": [
+        {"path": "zoneCategories[0].categoryCode", "eq": "TC1924", "name": "code unchanged"},
+        {"path": "zoneCategories[0].color.red", "approx": 0.25, "tol": 0.001, "name": "color unchanged"}
+      ]
+    },
+    {
+      "id": "overwrite by attributeId: new name and code only",
+      "command": "CreateZoneCategories",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "zoneCategoryDataArray": [
+          {
+            "attributeId": {"guid": "${z1}"},
+            "name": "TapirCheck Zone Category 1924 renamed",
+            "categoryCode": "TC1924B"
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"},
+        {"path": "attributeIds[0].attributeId.guid", "exists": true}
+      ]
+    },
+    {
+      "id": "read back the overwritten Zone Category",
+      "command": "GetZoneCategories",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${z1}"}}]},
+      "expect": [
+        {"path": "zoneCategories", "len": 1},
+        {"path": "zoneCategories[0].name", "eq": "TapirCheck Zone Category 1924 renamed", "name": "renamed"},
+        {"path": "zoneCategories[0].categoryCode", "eq": "TC1924B", "name": "code replaced"},
+        {"path": "zoneCategories[0].color.red", "approx": 0.25, "tol": 0.001, "name": "color kept"},
+        {"path": "zoneCategories[0].color.green", "approx": 0.5, "tol": 0.001},
+        {"path": "zoneCategories[0].color.blue", "approx": 0.75, "tol": 0.001},
+        {"path": "zoneCategories[0].stampMainGuid", "ne": "00000000-0000-0000-0000-000000000000", "name": "stamp kept"}
+      ]
+    },
+    {
+      "id": "overwrite by name: new color only",
+      "command": "CreateZoneCategories",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "zoneCategoryDataArray": [
+          {
+            "name": "TapirCheck Zone Category 1924 renamed",
+            "color": {"red": 0.9, "green": 0.1, "blue": 0.2}
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"},
+        {"path": "attributeIds[0].attributeId.guid", "exists": true}
+      ]
+    },
+    {
+      "id": "read back the color",
+      "command": "GetZoneCategories",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${z1}"}}], "fields": ["categoryCode", "color"]},
+      "expect": [
+        {"path": "zoneCategories[0].name", "eq": "TapirCheck Zone Category 1924 renamed", "name": "name kept"},
+        {"path": "zoneCategories[0].color.red", "approx": 0.9, "tol": 0.001, "name": "color replaced"},
+        {"path": "zoneCategories[0].color.green", "approx": 0.1, "tol": 0.001},
+        {"path": "zoneCategories[0].color.blue", "approx": 0.2, "tol": 0.001},
+        {"path": "zoneCategories[0].categoryCode", "eq": "TC1924B", "name": "code kept"},
+        {"path": "zoneCategories[0].stampName", "exists": false, "name": "fields filter leaves out stampName"}
+      ]
+    },
+    {
+      "id": "GetZoneCategories with a nonexistent guid",
+      "command": "GetZoneCategories",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "00000000-0000-0000-0000-00000000BEEF"}}]},
+      "expect": [
+        {"path": "zoneCategories", "len": 1},
+        {"path": "zoneCategories[0].error", "exists": true, "name": "failed"}
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": {"attributesToDelete": [{"attributeType": "ZoneCategory", "attributeId": {"attributeId": {"guid": "${z1}"}}}]}
+    }
+  ]
+}
