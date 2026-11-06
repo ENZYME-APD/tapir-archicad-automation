@@ -58,7 +58,10 @@
         { code: 'es', tag: 'es', name: 'Español' },
         { code: 'it', tag: 'it', name: 'Italiano' },
         { code: 'zh', tag: 'zh-Hans', name: '中文 (简体)' },
-        { code: 'ja', tag: 'ja', name: '日本語' }
+        { code: 'ja', tag: 'ja', name: '日本語' },
+        // Fraunces and Inter have no Devanagari: the font stacks in site.css fall back to these, loaded
+        // only for Hindi (fonts is a Google Fonts css2 query).
+        { code: 'hi', tag: 'hi', name: 'हिन्दी', fonts: 'family=Noto+Serif+Devanagari:wght@500;700;900&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap' }
     ];
     // The header and footer every page shares, translated as if they were marked data-i18n.
     var SHARED_TEXT = '.skip-link, .site-nav a, .site-header .btn, .site-header .visually-hidden, ' +
@@ -134,6 +137,17 @@
         }
     }
 
+    // Loads the fonts a language's script needs and the site's own fonts lack.
+    function loadLanguageFonts (language) {
+        if (!language.fonts) {
+            return;
+        }
+        var link = document.createElement ('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://fonts.googleapis.com/css2?' + language.fonts;
+        document.head.appendChild (link);
+    }
+
     // Loads common.js and the page's own dictionaries, then calls done, also when some are missing.
     function loadTranslations (language, done) {
         var finished = false;
@@ -147,6 +161,7 @@
             finish ();
             return;
         }
+        loadLanguageFonts (language);
         var names = ['common'].concat ((root.getAttribute ('data-i18n-pages') || '').split (/\s+/).filter (function (name) {
             return NAME_PATTERN.test (name) && name !== 'common';
         }));

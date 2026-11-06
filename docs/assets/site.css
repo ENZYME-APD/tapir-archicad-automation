@@ -25,9 +25,11 @@
     --bg: var(--cream); --surface: var(--paper); --fg: var(--charcoal); --muted: var(--slate-text);
     --line: rgba(112, 124, 128, .28); --grid: rgba(45, 58, 48, .07); --link: var(--ochre-text);
     --badge: rgba(189, 141, 83, .18); --focus: var(--ochre-text);
-    --display: "Fraunces", Georgia, "Times New Roman", serif;
-    --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
-    --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+    /* The Devanagari fonts (Hindi) come after the Latin ones, which have no Devanagari, so they never
+       draw Latin text; site.js loads the Noto ones for Hindi only, the others are macOS's and Windows'. */
+    --display: "Fraunces", Georgia, "Times New Roman", "Noto Serif Devanagari", "Kohinoor Devanagari", "Nirmala UI", serif;
+    --body: "Inter", system-ui, -apple-system, "Segoe UI", "Noto Sans Devanagari", "Kohinoor Devanagari", "Nirmala UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, "Noto Sans Devanagari", "Kohinoor Devanagari", "Nirmala UI", monospace;
 
     /* The names the command reference and the coverage pages use, mapped onto the tokens above. */
     --text: var(--fg); --text-secondary: var(--fg); --text-muted: var(--muted);
@@ -376,3 +378,10 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
     html { scroll-behavior: auto }
     .way:hover, .teaser:hover, .video:hover, .btn-primary:hover { transform: none }
 }
+
+/* Hindi. Devanagari's vowel signs reach above its headline and below the baseline, so headings need
+   more line height than Fraunces' 1.02, and letter spacing would break the headline between letters. */
+h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
+:lang(hi) { letter-spacing: normal !important }
+/* The floor plan's labels (their font-family attribute names Inter only). */
+.plan-card svg text[data-i18n]:lang(hi) { font-family: var(--body) }
