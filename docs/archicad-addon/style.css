@@ -1,7 +1,9 @@
 @charset "UTF-8";
 
 /* The command reference's own layout on top of ../assets/site.css, which gives it the site's
-   fonts, colours (dark, and light under prefers-color-scheme: light) and header. */
+   fonts, colours (light, and dark under prefers-color-scheme: dark or the header's toggle), header,
+   page head and footer. The page's code blocks get site.js's copy button, the examples too: it
+   watches for the code blocks renderer.js adds when an example is opened. */
 
 :root {
     /* The names this page and json-schema-view-js.min.css use, mapped onto the site's palette. */
@@ -38,7 +40,17 @@ section.intro {
 }
 
 section.intro h2 {
-    margin-top: 32px;
+    margin: 32px 0 12px;
+    font-size: 30px;
+}
+
+main.frame p {
+    margin: 0 0 14px;
+    max-width: var(--text-width);
+}
+
+main.frame p.command_example_description {
+    margin: 0.3em 0;
 }
 
 div.call_examples {
@@ -151,13 +163,15 @@ button.toolbar_sections {
 
 details.command_container {
     margin: 0.7em 0;
+    transition: box-shadow 0.15s ease;
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: var(--radius-small);
 }
 
 details.command_container[open] {
-    border-color: var(--border-strong);
+    border-color: var(--fg);
+    box-shadow: 4px 4px 0 var(--ochre);
 }
 
 details ::marker {
@@ -165,7 +179,8 @@ details ::marker {
 }
 
 div.group_name {
-    font-size: 22px;
+    font-family: var(--display);
+    font-size: 26px;
     font-weight: 700;
     letter-spacing: -0.01em;
     color: var(--text);
@@ -432,28 +447,26 @@ div.command_example_link {
     text-align: right;
 }
 
-/* Code highlighted by highlight.js sits in the site's code blocks. github.min.css is a light theme;
-   in the dark palette the tokens get GitHub's dark colours instead. */
+/* Code highlighted by highlight.js sits in the site's code blocks, which are charcoal with cream text
+   in both themes. github.min.css is a light theme, so the tokens get GitHub's dark colours instead. */
 pre code.hljs {
     display: block;
     padding: 0;
     background: transparent;
-    color: var(--text);
+    color: var(--pre-text);
     overflow-x: visible;
 }
 
-@media (prefers-color-scheme: dark) {
-    .hljs-doctag, .hljs-keyword, .hljs-meta .hljs-keyword, .hljs-template-tag,
-    .hljs-template-variable, .hljs-type, .hljs-variable.language_ { color: #ff7b72; }
-    .hljs-title, .hljs-title.class_, .hljs-title.class_.inherited__, .hljs-title.function_ { color: #d2a8ff; }
-    .hljs-attr, .hljs-attribute, .hljs-literal, .hljs-meta, .hljs-number, .hljs-operator,
-    .hljs-selector-attr, .hljs-selector-class, .hljs-selector-id, .hljs-variable { color: #79c0ff; }
-    .hljs-meta .hljs-string, .hljs-regexp, .hljs-string { color: #a5d6ff; }
-    .hljs-built_in, .hljs-symbol { color: #ffa657; }
-    .hljs-code, .hljs-comment, .hljs-formula { color: #8b949e; }
-    .hljs-name, .hljs-quote, .hljs-selector-pseudo, .hljs-selector-tag { color: #7ee787; }
-    .hljs-subst { color: var(--text); }
-}
+pre .hljs-doctag, pre .hljs-keyword, pre .hljs-meta .hljs-keyword, pre .hljs-template-tag,
+pre .hljs-template-variable, pre .hljs-type, pre .hljs-variable.language_ { color: #ff7b72; }
+pre .hljs-title, pre .hljs-title.class_, pre .hljs-title.class_.inherited__, pre .hljs-title.function_ { color: #d2a8ff; }
+pre .hljs-attr, pre .hljs-attribute, pre .hljs-literal, pre .hljs-meta, pre .hljs-number, pre .hljs-operator,
+pre .hljs-selector-attr, pre .hljs-selector-class, pre .hljs-selector-id, pre .hljs-variable { color: #79c0ff; }
+pre .hljs-meta .hljs-string, pre .hljs-regexp, pre .hljs-string { color: #a5d6ff; }
+pre .hljs-built_in, pre .hljs-symbol { color: #ffa657; }
+pre .hljs-code, pre .hljs-comment, pre .hljs-formula { color: #8b949e; }
+pre .hljs-name, pre .hljs-quote, pre .hljs-selector-pseudo, pre .hljs-selector-tag { color: #7ee787; }
+pre .hljs-subst { color: var(--pre-text); }
 
 /* Below this width the sidebar is a drawer opened by "Sections". */
 @media only screen and (max-width: 1150px) {

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en" data-copy="Copy" data-copied="Copied">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tapir and AI - Tapir</title>
+<meta name="description" content="Use Tapir from Claude and other AI tools: Tapir MCP servers, a prompt to start with, and how to let an AI write a script that sends Tapir commands.">
+<!-- site-assets -->
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
+<script src="../assets/site.js" defer></script>
+<!-- /site-assets -->
+</head>
+<body>
+<!-- site-header -->
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+    <div class="wrap nav">
+        <a class="brand" href="../"><img src="../assets/tapir_mark_cream.svg" alt="" width="30" height="30">Tapir</a>
+        <nav class="site-nav" aria-label="Site"><ul>
+            <li><a href="../start/">Get started</a></li>
+            <li><a href="../docs/" aria-current="true">Docs</a></li>
+            <li><a href="../scripts/">Scripts</a></li>
+            <li><a href="../scripts/share/">Share</a></li>
+            <li><a href="../community/">Community</a></li>
+            <li><a href="../about/">About</a></li>
+        </ul></nav>
+        <div class="right">
+            <button class="toggle" id="theme-toggle" type="button" data-dark="Dark" data-light="Light" hidden><span class="toggle-word">Dark</span><span class="visually-hidden"> mode</span></button>
+            <a class="btn btn-primary btn-sm" href="../start/#install">Download</a>
+        </div>
+    </div>
+</header>
+<!-- /site-header -->
+
+<main id="main">
+    <div class="page-head">
+        <div class="wrap">
+            <p class="crumb"><a href="../">Tapir</a> / <a href="../docs/">Docs</a> / AI</p>
+            <h1>Tapir and <em>AI.</em></h1>
+            <p>An AI assistant can read your Archicad project and change it through Tapir. You ask in plain words; it sends the commands to the Archicad running on your computer.</p>
+        </div>
+    </div>
+
+    <div class="wrap page-body">
+        <section aria-labelledby="two-ways">
+            <div class="sec-head">
+                <h2 id="two-ways">Two ways to <em>connect.</em></h2>
+                <p>Both talk to the same Tapir commands on port 19723, on your own computer.</p>
+            </div>
+            <div class="two">
+                <article class="way">
+                    <span class="who">While you chat</span>
+                    <h3>An MCP server</h3>
+                    <p>The AI tool calls Tapir's commands itself, while you chat. Works with tools that support the Model Context Protocol (MCP), such as Claude Desktop.</p>
+                    <a href="#mcp-servers">Tapir MCP servers</a>
+                </article>
+                <article class="way">
+                    <span class="who">Any AI tool</span>
+                    <h3>A script the AI writes</h3>
+                    <p>Any AI tool can write a short Python script that sends Tapir commands. You read it, then run it from the Tapir palette or a terminal.</p>
+                    <a href="#scripts">How it works</a>
+                </article>
+            </div>
+        </section>
+
+        <div class="dim" aria-hidden="true"><i></i><span>MCP servers</span><i></i></div>
+        <section aria-labelledby="mcp-servers">
+            <div class="sec-head">
+                <h2 id="mcp-servers">Tapir MCP <em>servers.</em></h2>
+                <p>
+                    These are community projects, not part of Tapir. Each has its own install steps in its README.
+                    Which one Tapir recommends is still being decided in
+                    <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2070">issue #2070</a>,
+                    so they are listed here without a recommendation.
+                </p>
+            </div>
+            <div class="two">
+                <article class="way">
+                    <span class="who">By SzamosiMate</span>
+                    <h3>tapir-archicad-MCP</h3>
+                    <p>The MCP server for Tapir that the others started from. It is also published on PyPI as the <span class="mono">tapir-archicad-mcp</span> package.</p>
+                    <p class="go-links">
+                        <a href="https://github.com/SzamosiMate/tapir-archicad-MCP">Its repository</a>
+                        <a href="https://pypi.org/project/tapir-archicad-mcp/">The package on PyPI</a>
+                    </p>
+                </article>
+                <article class="way">
+                    <span class="who">By the community</span>
+                    <h3>Its forks</h3>
+                    <p>Versions of it that others changed and published. Check when each was last updated.</p>
+                    <a href="https://github.com/SzamosiMate/tapir-archicad-MCP/forks">See the forks</a>
+                </article>
+            </div>
+            <p class="callout" style="margin-top: 24px">
+                <strong class="callout-label"><span aria-hidden="true">&#9888;</span> Careful</strong>
+                An MCP server can change your model. Try it on a copy of your project first, and read what the AI is about to do before you allow it.
+            </p>
+        </section>
+
+        <div class="dim" aria-hidden="true"><i></i><span>A prompt to start with</span><i></i></div>
+        <section class="two" aria-labelledby="prompt">
+            <div class="prose">
+                <h2 id="prompt" style="font-size: clamp(30px, 4vw, 48px)">Start by <em>reading.</em></h2>
+                <p>
+                    Open a project in Archicad, with the Tapir Add-On loaded, and give your AI tool this prompt.
+                    It only reads, so it is safe to try on any project.
+                </p>
+                <p>
+                    When the answer looks right, ask for a change in the same plain words, and say exactly which elements it
+                    may change: "Set the property X to Y on the selected walls only."
+                </p>
+            </div>
+            <div class="term">
+                <div class="bar"><span>prompt</span><span>read only</span></div>
+<pre><code>Use Tapir to look at the Archicad project I have open.
+Do not change anything; only read.
+1. List the stories with their names and levels.
+2. Count the walls, slabs, columns, doors and windows on each story.
+3. Show the result as one table, one row per story.
+Tell me which Tapir commands you used.</code></pre>
+            </div>
+        </section>
+
+        <div class="dim" aria-hidden="true"><i></i><span>When the AI writes a script</span><i></i></div>
+        <section aria-labelledby="scripts">
+            <div class="sec-head">
+                <h2 id="scripts">Describe it, <em>run it.</em></h2>
+                <p>Without an MCP server, describe the task, give the AI the command list, and run the script it writes.</p>
+            </div>
+            <div class="flow flow-3">
+                <div><b>01</b><strong>Describe what you want</strong><span>For example: "Extract all composite exterior walls on level 2 and calculate their net volume."</span></div>
+                <div><b>02</b><strong>Share the command list</strong><span>Give the AI the <a href="../archicad-addon/">command reference</a> and the working example below. Ask for Python's standard library only, on port 19723.</span></div>
+                <div><b>03</b><strong>Read it, then run it</strong><span>Read the script before you run it, from the Tapir palette or a terminal. Try one that changes the model on a copy of your project first.</span></div>
+            </div>
+            <div class="two" style="margin-top: 32px">
+                <div class="term">
+                    <div class="bar"><span>prompt</span><span>for Claude or any AI tool</span></div>
+<pre><code>Write a Python script that uses only the standard
+library and sends Tapir commands to Archicad on
+http://127.0.0.1:19723, like the example I attach.
+Use the Tapir command reference I attach.
+
+Extract all composite exterior walls on level 2
+and calculate their net volume.
+
+Only read the model; change nothing.</code></pre>
+                </div>
+                <div class="term">
+                    <div class="bar"><span>tapir_example.py</span><span>port 19723</span></div>
+<pre><code><span class="k">import</span> json
+<span class="k">import</span> urllib.request
+
+<span class="k">def</span> run_tapir_command(name, parameters=<span class="k">None</span>, port=19723):
+    request = {
+        <span class="s">"command"</span>: <span class="s">"API.ExecuteAddOnCommand"</span>,
+        <span class="s">"parameters"</span>: {
+            <span class="s">"addOnCommandId"</span>: {<span class="s">"commandNamespace"</span>: <span class="s">"TapirCommand"</span>, <span class="s">"commandName"</span>: name},
+            <span class="s">"addOnCommandParameters"</span>: parameters <span class="k">or</span> {},
+        },
+    }
+    <span class="k">with</span> urllib.request.urlopen(f<span class="s">"http://127.0.0.1:{port}"</span>, json.dumps(request).encode(<span class="s">"utf-8"</span>)) <span class="k">as</span> response:
+        answer = json.loads(response.read())
+    <span class="k">if not</span> answer.get(<span class="s">"succeeded"</span>):
+        <span class="k">raise</span> RuntimeError(answer.get(<span class="s">"error"</span>))
+    <span class="k">return</span> answer[<span class="s">"result"</span>][<span class="s">"addOnCommandResponse"</span>]
+
+print(run_tapir_command(<span class="s">"GetAddOnVersion"</span>))</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <div class="dim" aria-hidden="true"><i></i><span>Next step</span><i></i></div>
+        <section>
+            <div class="teasers">
+                <a class="teaser" href="../start/">
+                    <span class="tagline">Get started</span>
+                    <h3 id="ai-next-step">Install Tapir</h3>
+                    <p>Install Tapir, then give your AI tool the prompt above.</p>
+                    <span class="go">Get started &rarr;</span>
+                </a>
+                <a class="teaser" href="../archicad-addon/">
+                    <span class="tagline">Commands</span>
+                    <h3>The command reference</h3>
+                    <p>The list to give the AI: every command with its schema.</p>
+                    <span class="go">Open the reference &rarr;</span>
+                </a>
+                <a class="teaser dark" href="https://discord.gg/NAnSennmpY">
+                    <span class="tagline">Discord</span>
+                    <h3>Show what you built</h3>
+                    <p>Ask about MCP servers and share your prompts.</p>
+                    <span class="go">Join Discord &rarr;</span>
+                </a>
+            </div>
+        </section>
+    </div>
+</main>
+
+<!-- site-footer -->
+<footer class="site-footer">
+    <div class="wrap">
+        <div class="tblock">
+            <div>
+                <span class="lab">Project</span>
+                <span class="proj">Tapir</span>
+                <p class="note">Open-source automation for Archicad. 100% free and open source (MIT). Maintained by Enzyme APD and the community.</p>
+                <p class="note">Contact: <span class="nowrap">contact@enzyme-apd.com</span></p>
+            </div>
+            <div>
+                <span class="lab">Product</span>
+                <ul>
+                    <li><a href="../start/">Get started</a></li>
+                    <li><a href="../scripts/">Scripts</a></li>
+                    <li><a href="../scripts/share/">Share a script</a></li>
+                    <li><a href="../grasshopper/">Grasshopper</a></li>
+                    <li><a href="../ai/">Tapir and AI</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Docs</span>
+                <ul>
+                    <li><a href="../docs/">All docs</a></li>
+                    <li><a href="../archicad-addon/">Commands</a></li>
+                    <li><a href="../api-coverage/">API coverage</a></li>
+                    <li><a href="../gh-coverage/">Grasshopper coverage</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Community</span>
+                <ul>
+                    <li><a href="https://discord.gg/NAnSennmpY">Discord</a></li>
+                    <li><a href="https://github.com/ENZYME-APD/tapir-archicad-automation">GitHub</a></li>
+                    <li><a href="../tutorials/">Tutorials</a></li>
+                    <li><a href="../community/#bots">How fixes happen</a></li>
+                    <li><a href="../roadmap/">Roadmap</a></li>
+                    <li><a href="../about/">About Tapir</a></li>
+                </ul>
+            </div>
+            <div>
+                <div class="rev" data-live="release" hidden>
+                    <span class="lab">Revision</span>
+                    <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest" data-live-value="release"></a>
+                </div>
+                <span class="lab">Licence</span>
+                <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/LICENSE">MIT</a>
+            </div>
+        </div>
+        <p class="fine">Not affiliated with Graphisoft. Archicad is a trademark of Graphisoft SE.</p>
+    </div>
+</footer>
+<!-- /site-footer -->
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" data-copy="Copy" data-copied="Copied">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Docs - Tapir</title>
+<meta name="description" content="Tapir's documentation: every JSON command, the Grasshopper guide, the Archicad API coverage and the Grasshopper coverage, and how a call to Tapir works.">
+<!-- site-assets -->
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
+<script src="../assets/site.js" defer></script>
+<!-- /site-assets -->
+</head>
+<body>
+<!-- site-header -->
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+    <div class="wrap nav">
+        <a class="brand" href="../"><img src="../assets/tapir_mark_cream.svg" alt="" width="30" height="30">Tapir</a>
+        <nav class="site-nav" aria-label="Site"><ul>
+            <li><a href="../start/">Get started</a></li>
+            <li><a href="../docs/" aria-current="page">Docs</a></li>
+            <li><a href="../scripts/">Scripts</a></li>
+            <li><a href="../scripts/share/">Share</a></li>
+            <li><a href="../community/">Community</a></li>
+            <li><a href="../about/">About</a></li>
+        </ul></nav>
+        <div class="right">
+            <button class="toggle" id="theme-toggle" type="button" data-dark="Dark" data-light="Light" hidden><span class="toggle-word">Dark</span><span class="visually-hidden"> mode</span></button>
+            <a class="btn btn-primary btn-sm" href="../start/#install">Download</a>
+        </div>
+    </div>
+</header>
+<!-- /site-header -->
+
+<main id="main">
+    <div class="page-head">
+        <div class="wrap">
+            <p class="crumb"><a href="../">Tapir</a> / Docs</p>
+            <h1>The <em>reference.</em></h1>
+            <p>Every command, what Tapir covers of the Archicad API, and how the Grasshopper components map to it.</p>
+        </div>
+    </div>
+
+    <div class="wrap page-body">
+        <section aria-label="The docs">
+            <div class="doc-grid">
+                <a class="teaser" href="../archicad-addon/">
+                    <span class="tagline"><span data-live="commands" hidden><span data-live-value="commands"></span> </span>Commands</span>
+                    <h3>Tapir commands</h3>
+                    <p>Search by name, filter by the version a command came in, and open any command for its input and output schema and a Python example.</p>
+                    <span class="go">Open the reference &rarr;</span>
+                </a>
+                <a class="teaser" href="../grasshopper/">
+                    <span class="tagline">Grasshopper</span>
+                    <h3>Grasshopper guide</h3>
+                    <p>The tool components, one per Archicad tool, with inputs named after the settings dialog. Install, a first definition, and what the buttons do.</p>
+                    <span class="go">Read the guide &rarr;</span>
+                </a>
+                <a class="teaser" href="../api-coverage/">
+                    <span class="tagline">Archicad API<span data-live="coverage" hidden> · <span data-live-value="coverage"></span> covered</span></span>
+                    <h3>API coverage</h3>
+                    <p>Every function of Graphisoft's Archicad API and whether Tapir uses it, is working on it, or skipped it, updated every hour.</p>
+                    <span class="go">See the coverage &rarr;</span>
+                </a>
+                <a class="teaser" href="../gh-coverage/">
+                    <span class="tagline">Components</span>
+                    <h3>Grasshopper coverage</h3>
+                    <p>Which Tapir commands have a Grasshopper component, and which inputs each component still lacks.</p>
+                    <span class="go">See the coverage &rarr;</span>
+                </a>
+            </div>
+        </section>
+
+        <div class="dim" aria-hidden="true"><i></i><span>How it works</span><i></i></div>
+        <section aria-labelledby="how-it-works">
+            <div class="sec-head">
+                <h2 id="how-it-works">How it <em>works.</em></h2>
+                <p>Tapir is an Archicad add-on that turns native API functions into a stateless JSON server on port 19723. Anything that can send an HTTP request can drive Archicad.</p>
+            </div>
+            <div class="stack" role="img" aria-label="Grasshopper, Python scripts and AI tools send JSON over HTTP to the Tapir Add-On, which calls Archicad's C++ API on the BIM model.">
+                <div class="clients">
+                    <div class="box"><strong>Grasshopper</strong><span>The tapir components</span></div>
+                    <div class="box"><strong>Python scripts</strong><span>The palette, or your own</span></div>
+                    <div class="box"><strong>AI and MCP</strong><span>Assistants and MCP servers</span></div>
+                </div>
+                <p class="wire" aria-hidden="true">&darr; JSON over HTTP &darr;</p>
+                <div class="box addon"><strong>Tapir Add-On</strong><span>A stateless JSON layer: one command per request</span></div>
+                <p class="wire" aria-hidden="true">&darr;</p>
+                <div class="box archicad"><strong>Archicad</strong><span>The BIM model and its C++ API</span></div>
+            </div>
+        </section>
+
+        <div class="dim" aria-hidden="true"><i></i><span>Anatomy of a call</span><i></i></div>
+        <section aria-labelledby="anatomy">
+            <h2 id="anatomy" class="visually-hidden">Anatomy of a call</h2>
+            <div class="two">
+                <div class="term">
+                    <div class="bar"><span>request</span><span>POST 127.0.0.1:19723</span></div>
+<pre><code>{<span class="s">"command"</span>: <span class="s">"API.ExecuteAddOnCommand"</span>,
+ <span class="s">"parameters"</span>: {
+   <span class="s">"addOnCommandId"</span>: {
+     <span class="s">"commandNamespace"</span>: <span class="s">"TapirCommand"</span>,
+     <span class="s">"commandName"</span>: <span class="s">"GetElementsByType"</span>},
+   <span class="s">"addOnCommandParameters"</span>: {
+     <span class="s">"elementType"</span>: <span class="s">"Wall"</span>}}}</code></pre>
+                </div>
+                <div class="term">
+                    <div class="bar"><span>response</span><span>200</span></div>
+<pre><code>{<span class="s">"succeeded"</span>: <span class="k">true</span>,
+ <span class="s">"result"</span>: {
+   <span class="s">"addOnCommandResponse"</span>: {
+     <span class="s">"elements"</span>: [
+       {<span class="s">"elementId"</span>: {<span class="s">"guid"</span>: <span class="s">"3F2A…"</span>}},
+       <span class="c">…</span>
+     ]}}}</code></pre>
+                </div>
+            </div>
+            <p class="lead-out">
+                Every Tapir command is sent the same way; only <code>commandName</code> and <code>addOnCommandParameters</code> change.
+                <a href="../start/#python">Your first Python script &rarr;</a>
+            </p>
+        </section>
+
+        <div class="dim" aria-hidden="true"><i></i><span>More guides</span><i></i></div>
+        <section>
+            <div class="teasers">
+                <a class="teaser" href="../start/">
+                    <span class="tagline">Get started</span>
+                    <h3>Install and run a script</h3>
+                    <p>Install Tapir, run a script from the palette and write your first Python script.</p>
+                    <span class="go">Get started &rarr;</span>
+                </a>
+                <a class="teaser" href="../ai/">
+                    <span class="tagline">AI</span>
+                    <h3>Tapir and AI</h3>
+                    <p>MCP servers and scripts an AI assistant writes for you.</p>
+                    <span class="go">Use Tapir with AI &rarr;</span>
+                </a>
+                <a class="teaser dark" href="../tutorials/">
+                    <span class="tagline">Tutorials</span>
+                    <h3>Learn by watching</h3>
+                    <p>Six videos, from installing Tapir to whole workflows.</p>
+                    <span class="go">Watch the tutorials &rarr;</span>
+                </a>
+            </div>
+        </section>
+    </div>
+</main>
+
+<!-- site-footer -->
+<footer class="site-footer">
+    <div class="wrap">
+        <div class="tblock">
+            <div>
+                <span class="lab">Project</span>
+                <span class="proj">Tapir</span>
+                <p class="note">Open-source automation for Archicad. 100% free and open source (MIT). Maintained by Enzyme APD and the community.</p>
+                <p class="note">Contact: <span class="nowrap">contact@enzyme-apd.com</span></p>
+            </div>
+            <div>
+                <span class="lab">Product</span>
+                <ul>
+                    <li><a href="../start/">Get started</a></li>
+                    <li><a href="../scripts/">Scripts</a></li>
+                    <li><a href="../scripts/share/">Share a script</a></li>
+                    <li><a href="../grasshopper/">Grasshopper</a></li>
+                    <li><a href="../ai/">Tapir and AI</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Docs</span>
+                <ul>
+                    <li><a href="../docs/">All docs</a></li>
+                    <li><a href="../archicad-addon/">Commands</a></li>
+                    <li><a href="../api-coverage/">API coverage</a></li>
+                    <li><a href="../gh-coverage/">Grasshopper coverage</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Community</span>
+                <ul>
+                    <li><a href="https://discord.gg/NAnSennmpY">Discord</a></li>
+                    <li><a href="https://github.com/ENZYME-APD/tapir-archicad-automation">GitHub</a></li>
+                    <li><a href="../tutorials/">Tutorials</a></li>
+                    <li><a href="../community/#bots">How fixes happen</a></li>
+                    <li><a href="../roadmap/">Roadmap</a></li>
+                    <li><a href="../about/">About Tapir</a></li>
+                </ul>
+            </div>
+            <div>
+                <div class="rev" data-live="release" hidden>
+                    <span class="lab">Revision</span>
+                    <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest" data-live-value="release"></a>
+                </div>
+                <span class="lab">Licence</span>
+                <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/LICENSE">MIT</a>
+            </div>
+        </div>
+        <p class="fine">Not affiliated with Graphisoft. Archicad is a trademark of Graphisoft SE.</p>
+    </div>
+</footer>
+<!-- /site-footer -->
+</body>
+</html>

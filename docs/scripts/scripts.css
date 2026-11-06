@@ -1,0 +1,31 @@
+/* The scripts pages (/scripts/, one script at /scripts/?s=<slug>, and /scripts/share/), on top of
+   ../assets/site.css, which has the schedule, the pills, the chips and the .detail/.spec layout. */
+
+/* The schedule's filters */
+.script-search { flex: 1 1 320px; max-width: 520px; padding: 9px 16px; font-size: 14.5px }
+.script-search:hover { background: transparent }
+#version-chips { margin-top: -4px }
+.script-count { margin: 4px 0 14px; color: var(--muted); font-size: 14.5px }
+.schedule .cell-script { min-width: 240px }
+
+/* One script */
+.detail h2 { font-size: 34px; margin-bottom: 12px }
+.script-section + .script-section { margin-top: 12px }
+.readme { max-width: 46em; display: grid; gap: 12px }
+.readme p, .readme li { color: var(--muted) }
+.readme h3 { margin-top: 12px }
+.readme h4, .readme h5, .readme h6 { margin-top: 8px; font-size: 17px }
+.readme ul, .readme ol { padding-left: 22px; margin: 0; display: grid; gap: 4px }
+.readme img { max-width: 100%; height: auto }
+.screenshots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px }
+.screenshots a { display: block; border: 1.5px solid var(--fg); border-radius: 4px; overflow: hidden; background: var(--surface) }
+.screenshots img { display: block; width: 100%; height: auto }
+.shot a { display: block }
+.script-versions { list-style: none; margin: 0; padding: 0; border: 1.5px solid var(--fg); background: var(--surface) }
+.script-versions li { padding: 14px 16px; border-bottom: 1px solid var(--line) }
+.script-versions li:last-child { border-bottom: 0 }
+.script-versions .version-head { font: 700 17px/1.3 var(--display) }
+.script-versions .version-changelog { margin-top: 4px; color: var(--muted) }
+.script-section .term pre { max-height: 560px }
+.spec .install ol { font-size: 14px }
+.spec .install #detail-report { font-weight: 700 }
