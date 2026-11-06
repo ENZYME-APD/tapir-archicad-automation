@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-06 11:03 UTC",
+ "generatedAt": "2026-11-06 11:54 UTC",
  "counts": {
   "done": 568,
   "merged": 178,
@@ -2759,6 +2759,10 @@
      "path": "Components/DesignToolsComponents/SlabsComponent.cs"
     },
     {
+     "name": "SplinesComponent",
+     "path": "Components/DocumentToolsComponents/SplinesComponent.cs"
+    },
+    {
      "name": "TextsComponent",
      "path": "Components/DocumentToolsComponents/TextsComponent.cs"
     },
@@ -2793,10 +2797,6 @@
     {
      "number": 1979,
      "title": "Grasshopper: Hotspots tool component"
-    },
-    {
-     "number": 1977,
-     "title": "Grasshopper: Splines tool component"
     },
     {
      "number": 1791,
@@ -2895,6 +2895,10 @@
     {
      "name": "SlabsComponent",
      "path": "Components/DesignToolsComponents/SlabsComponent.cs"
+    },
+    {
+     "name": "SplinesComponent",
+     "path": "Components/DocumentToolsComponents/SplinesComponent.cs"
     },
     {
      "name": "TextsComponent",
@@ -6039,6 +6043,10 @@
     {
      "name": "CreateSplinesComponent",
      "path": "Components/ElementsComponents/CreateSplinesComponent.cs"
+    },
+    {
+     "name": "SplinesComponent",
+     "path": "Components/DocumentToolsComponents/SplinesComponent.cs"
     }
    ],
    "parameters": "json",
@@ -6049,27 +6057,17 @@
     "splinesData.coordinates",
     "splinesData.favoriteName",
     "splinesData.floorInd",
+    "splinesData.id",
     "splinesData.layerIndex",
     "splinesData.linePenIndex",
     "splinesData.lineTypeId",
     "splinesData.roomSeparator"
    ],
    "missingParameters": [
-    "databaseId",
-    "splinesData.id"
+    "databaseId"
    ],
-   "pullRequests": [
-    {
-     "number": 2040,
-     "title": "Grasshopper: Splines tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1977,
-     "title": "Grasshopper: Splines tool component"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreateObjects",
@@ -8619,6 +8617,10 @@
     {
      "name": "SlabsComponent",
      "path": "Components/DesignToolsComponents/SlabsComponent.cs"
+    },
+    {
+     "name": "SplinesComponent",
+     "path": "Components/DocumentToolsComponents/SplinesComponent.cs"
     },
     {
      "name": "TextsComponent",

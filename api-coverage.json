@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-06 11:03 UTC",
+ "generatedAt": "2026-11-06 11:54 UTC",
  "versions": [
   25,
   26,
@@ -7014,12 +7014,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2115,
-     "title": "Texts and labels: set multiStyle so the style of each run is kept"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1914,
@@ -9822,12 +9817,7 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "add-on infrastructure",
-   "pullRequests": [
-    {
-     "number": 2104,
-     "title": "[1/6] Tapir Palette: read the scripts' # /// tapir header and summary, show them as tooltips"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16873,12 +16863,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2105,
-     "title": "Property values: accept ',' as the decimal separator for single real values"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
