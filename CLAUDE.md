@@ -468,7 +468,11 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   requests in the project's Discord channels, then dispatches
   `claude_issue_triage.yml` for each (issues created with `GITHUB_TOKEN` trigger
   no workflow on their own; see
-  [tools/discord-issue-bot/README.md](tools/discord-issue-bot/README.md)).
+  [tools/discord-issue-bot/README.md](tools/discord-issue-bot/README.md)). Each
+  run dispatches the next one `DISCORD_BOT_INTERVAL_MINUTES` (default 10) after it
+  ends, from a `next` job that holds only the actions permission, because GitHub
+  drops many scheduled runs; the schedule (:13 and :43) restarts a broken chain,
+  and `DISCORD_BOT_CHAIN=false` turns the chain off.
 - `api_coverage.yml` — keeps the Archicad API coverage checklist live: on a push
   to `main`, a release, issue events, hourly (which picks up pull request changes)
   and by hand, it runs
