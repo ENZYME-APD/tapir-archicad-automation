@@ -10278,6 +10278,17 @@
                 "type": "number",
                 "description": "The height of the curtain wall as calculated by Archicad (ACAPI_CurtainWall_GetCWHeight). Omitted when Archicad cannot calculate it."
             },
+            "zCoordinate": {
+                "type": "number",
+                "description": "The absolute elevation of the bottom of the curtain wall: its home story's level plus its offset from it (API_CurtainWallType::planeOffset), as CreateCurtainWalls and ModifyCurtainWalls take it."
+            },
+            "referenceLine": {
+                "type": "array",
+                "description": "The 2D coordinates of the reference line of the curtain wall on the floor plan, one more than its segments (each pair of consecutive coordinates is one segment), as CreateCurtainWalls and ModifyCurtainWalls take them in coordinates. Empty when Archicad cannot return it.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
             "flipped": {
                 "type": "boolean"
             },
@@ -10366,6 +10377,8 @@
         "additionalProperties": false,
         "required": [
             "height",
+            "zCoordinate",
+            "referenceLine",
             "flipped",
             "angle",
             "displayOption",
