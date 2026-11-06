@@ -14,10 +14,11 @@ docs/community/community.js; this script writes:
 
 Sources, each optional: a series that cannot be read is left out of every month, so the page
 hides it instead of drawing it wrong.
-  - commits per month and per author: `git log` of the checkout (needs the full history).
+  - commits per month and per author: `git log` of the checkout (needs the full history),
+    without merge commits and without bots (Claude, github-actions and names ending in [bot]).
   - issues opened and pull requests merged per month: the GitHub REST API (GITHUB_TOKEN).
-  - Discord messages per month (people, not bots): the history of every text channel the bot
-    can read. Discord members per month: the members still in the server, by the month they
+  - Discord messages per month (people, not bots): the history of every text and announcement
+    channel the bot can read, and of the threads in them and in forum channels. Discord members per month: the members still in the server, by the month they
     joined (people who left are not counted), which needs the bot's Server Members Intent.
     The current member count falls back to the server's public invite. The bot token is read
     from DISCORD_STATS_TOKEN, else DISCORD_BOT_TOKEN; DISCORD_INVITE names the invite.
@@ -48,7 +49,7 @@ GITHUB_API = 'https://api.github.com'
 DISCORD_API = 'https://discord.com/api/v10'
 USER_AGENT = 'TapirCommunityData (https://github.com/ENZYME-APD/tapir-archicad-automation, 1.0)'
 HISTORY_DAYS = 400
-BOT_NAME = re.compile (r'(\[bot\]$|^claude$|^github-actions$)', re.I)
+BOT_NAME = re.compile (r'(\[bot\]$|^claude$|^github-actions$|^dependabot)', re.I)
 
 
 def now ():
@@ -83,12 +84,14 @@ def request_json (url, headers, retries=5):
 # ---- git ----
 
 def read_commits ():
-    output = subprocess.run (['git', 'log', '--format=%aI%x09%aN'], capture_output=True, text=True, check=True).stdout
+    """(date, author) of every commit of the checkout by a person: merges and bots are left out."""
+    output = subprocess.run (['git', 'log', '--no-merges', '--format=%aI%x09%aN'], capture_output=True, text=True, check=True).stdout
     commits = []
     for line in output.splitlines ():
         date, _, author = line.partition ('\t')
-        if date:
-            commits.append ((date, author.strip ()))
+        author = author.strip ()
+        if date and author and not BOT_NAME.search (author):
+            commits.append ((date, author))
     return commits
 
 
@@ -154,30 +157,59 @@ def read_members (guild, token):
         after = page[-1]['user']['id']
 
 
+def read_history (channel_id, token, messages, seen):
+    """Adds the messages by people of one channel or thread; False when the bot cannot read it."""
+    before = ''
+    while True:
+        try:
+            page = discord_get (f'/channels/{channel_id}/messages?limit=100{before}', token)
+        except urllib.error.HTTPError as error:
+            if error.code in (401, 403):
+                return False
+            raise
+        for message in page:
+            if message['id'] not in seen and not message['author'].get ('bot'):
+                seen.add (message['id'])
+                messages.append ((message['timestamp'], 'discord:' + message['author']['id']))
+        if len (page) < 100:
+            return True
+        before = '&before=' + page[-1]['id']
+
+
+def archived_threads (channel_id, token):
+    """The archived public threads of a text, announcement or forum channel."""
+    threads, before = [], ''
+    while True:
+        try:
+            page = discord_get (f'/channels/{channel_id}/threads/archived/public?limit=100{before}', token)
+        except urllib.error.HTTPError as error:
+            if error.code in (401, 403):
+                return threads
+            raise
+        threads += page.get ('threads', [])
+        if not page.get ('has_more') or not page.get ('threads'):
+            return threads
+        before = '&before=' + page['threads'][-1]['thread_metadata']['archive_timestamp']
+
+
 def read_messages (guild, token):
-    """(created_at, author id) of every message by a person in the text channels the bot can read."""
-    channels = discord_get (f'/guilds/{guild}/channels', token)
-    messages, skipped = [], 0
+    """(created_at, author id) of every message by a person that the bot can read: text and
+    announcement channels, and the threads of those and of forum channels (posts), active and
+    archived. Each message is counted once."""
+    channels = [c for c in discord_get (f'/guilds/{guild}/channels', token) if c.get ('type') in (0, 5, 15)]
+    threads = {t['id']: t for t in discord_get (f'/guilds/{guild}/threads/active', token).get ('threads', [])}
+    messages, seen, skipped = [], set (), 0
     for channel in channels:
-        if channel.get ('type') not in (0, 5):  # text and announcement channels
+        if channel['type'] != 15 and not read_history (channel['id'], token, messages, seen):  # a forum has only threads
+            skipped += 1
             continue
-        before = ''
-        while True:
-            try:
-                page = discord_get (f'/channels/{channel["id"]}/messages?limit=100{before}', token)
-            except urllib.error.HTTPError as error:
-                if error.code in (401, 403):
-                    skipped += 1
-                    break
-                raise
-            for message in page:
-                if not message['author'].get ('bot'):
-                    messages.append ((message['timestamp'], 'discord:' + message['author']['id']))
-            if len (page) < 100:
-                break
-            before = '&before=' + page[-1]['id']
+        for thread in archived_threads (channel['id'], token):
+            threads.setdefault (thread['id'], thread)
+    for thread in threads.values ():
+        if not read_history (thread['id'], token, messages, seen):
+            skipped += 1
     if skipped:
-        print (f'{skipped} Discord channels are not readable by the bot and were left out.', file=sys.stderr)
+        print (f'{skipped} Discord channels or threads are not readable by the bot and were left out.', file=sys.stderr)
     return messages
 
 
@@ -220,10 +252,10 @@ def main ():
     commits = read_commits ()
     for date, author in commits:
         series['commits'][month_of (date)] += 1
-        if date >= year_ago and not BOT_NAME.search (author):
+        if date >= year_ago:
             people.add ('git:' + author.lower ())
     totals['commits'] = len (commits)
-    authors = collections.Counter (author for _, author in commits if author)
+    authors = collections.Counter (author for _, author in commits)
     top = [{'name': name, 'commits': count} for name, count in authors.most_common (40)]
 
     try:
