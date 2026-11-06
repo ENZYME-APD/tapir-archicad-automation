@@ -11,8 +11,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateTexts",
                 "Create Text elements based on the given parameters. " +
-                "Multi-run content and the further style settings (effects, frame, anchor, etc.) can be " +
-                "given through the AdditionalSettings input (runs, style); runs take precedence over Texts.",
+                "Multi-run content, the further style settings (effects, frame, anchor, etc.) and a box width " +
+                "that turns word wrap on can be given through the AdditionalSettings input (runs, style, width); " +
+                "runs take precedence over Texts.",
                 GroupNames.ElementCreation)
         {
         }

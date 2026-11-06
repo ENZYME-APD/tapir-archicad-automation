@@ -192,7 +192,7 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
             }
 
             // As for the id below, a new element that could not be finished is deleted again.
-            err = AfterCreate (requestedElement, element.header.guid);
+            err = AfterCreate (requestedElement, element.header.guid, data);
             if (err != NoError) {
                 ACAPI_Element_Delete ({ element.header.guid });
                 elements (CreateErrorResponse (err, "Failed to finish the new " + elemTypeName + ", so it was not created"));
@@ -3206,7 +3206,7 @@ GS::Optional<GS::UniString> ModifyTextsCommand::GetInputParametersSchema () cons
         "properties": {
             "textsWithDetails": {
                 "type": "array",
-                "description": "Array of Text elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content as one paragraph, which makes the element auto-width (word wrap off), as SetDetailsOfElements does, and on a multi-run text applies that style to every run; the other style fields leave the content as it is.",
+                "description": "Array of Text elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content as one paragraph, as SetDetailsOfElements does, which makes the element auto-width (word wrap off) unless the same item gives a width, and on a multi-run text applies that style to every run; the other style fields and a width leave the content as it is.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -3225,7 +3225,12 @@ GS::Optional<GS::UniString> ModifyTextsCommand::GetInputParametersSchema () cons
                             "items": { "$ref": "#/TextRunDetails" },
                             "minItems": 1
                         },
-                        "style": { "$ref": "#/TextStyleSettableDetails" }
+                        "style": { "$ref": "#/TextStyleSettableDetails" },
+                        "width": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "Optional box width in mm (paper size, like height). Turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). Given alone it leaves the content and its runs (and any autotext in them) as they are. When the content is rebuilt in the same item, the width is applied after the rebuild, so the text keeps wrapping. When omitted, the current wrap setting is kept, unless the content is rebuilt. Read back by GetDetailsOfElements as style.boxWidth, with style.nonBreaking false."
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -3287,6 +3292,13 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
             }
             if (GetElemTypeId (element.header) != API_TextID) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADID, "Element is not a Text."));
+                continue;
+            }
+
+            double wrapWidth = 0.0;
+            const bool hasWrapWidth = item.Get ("width", wrapWidth);
+            if (hasWrapWidth && wrapWidth <= 0.0) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "width must be greater than 0 (the box width of the wrapped text in mm). Omit it to keep the current wrap setting."));
                 continue;
             }
 
@@ -3371,11 +3383,24 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
             const double widthFactor = element.text.widthFactor;
             const double charSpaceFactor = element.text.charSpaceFactor;
 
+            // Without a content rebuild the width goes into this change, which carries no memo,
+            // so the content is kept. A rebuild makes the text auto-width (see ApplyTextContent),
+            // so then the width is written after it, by SetTextWrapWidth.
+            if (hasWrapWidth && !contentChanged) {
+                element.text.nonBreaking = false;
+                element.text.width = wrapWidth;
+                ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nonBreaking);
+                ACAPI_ELEMENT_MASK_SET (mask, API_TextType, width);
+            }
+
             // withdel=false was tried and made things WORSE (even the style fields stopped
             // applying) - confirmed live. withdel=true is required here.
             err = ACAPI_Element_Change (&element, &mask, contentChanged ? &memo : nullptr, contentChanged ? TextContentMemoMask : 0, true);
             if (err == NoError && contentChanged) {
                 err = TextLabelDetails::KeepTextFactors (element.header.guid, widthFactor, charSpaceFactor);
+                if (err == NoError && hasWrapWidth) {
+                    err = TextLabelDetails::SetTextWrapWidth (element.header.guid, wrapWidth);
+                }
             }
             if (err == NoError) {
                 changeReporter.MarkChanged (element.header.guid);
@@ -5299,6 +5324,8 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
         SetEOL (memo.paragraphs, 0, eolIndex, offset);
     }
 
+    // Auto-width: the line ends are the ones set above. A wrap width of CreateTexts/ModifyTexts
+    // is written after the content, without a memo (TextLabelDetails::SetTextWrapWidth).
     textData.width = 0;
     textData.height = 0;
     textData.nonBreaking = true;
@@ -5554,6 +5581,28 @@ GSErrCode KeepTextFactors (const API_Guid& elemGuid, double widthFactor, double 
     text->widthFactor = widthFactor;
     text->charSpaceFactor = charSpaceFactor;
     // No memo: a change of these two fields alone is kept (#1585), see the declaration.
+    return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+}
+
+GSErrCode SetTextWrapWidth (const API_Guid& elemGuid, double width)
+{
+    API_Element element = {};
+    element.header.guid = elemGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+    if (GetElemTypeId (element.header) != API_TextID) {
+        return APIERR_BADID;
+    }
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    element.text.nonBreaking = false;
+    element.text.width = width;
+    ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nonBreaking);
+    ACAPI_ELEMENT_MASK_SET (mask, API_TextType, width);
+    // No memo, as in KeepTextFactors: the content and its runs (and any autotext in them) are kept.
     return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
 }
 
@@ -5945,7 +5994,7 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
     return {};
 }
 
-GSErrCode CreateLabelsCommand::AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid) const
+GSErrCode CreateLabelsCommand::AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& /*parameters*/) const
 {
     if (requestedElement.label.labelClass != APILblClass_Text) {
         return NoError;
@@ -6012,6 +6061,11 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
                     "style": {
                         "$ref": "#/TextStyleSettableDetails",
                         "description": "height/pen/angle/justification above take precedence over the same fields here if both are given."
+                    },
+                    "width": {
+                        "type": "number",
+                        "exclusiveMinimum": 0.0,
+                        "description": "Optional box width in mm (paper size, like height). Turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). When omitted the text is auto-width (word wrap off) and grows with its content. Read back by GetDetailsOfElements as style.boxWidth, with style.nonBreaking false."
                     },
                     "floorIndex": {
                         "type": "integer",
@@ -6086,6 +6140,12 @@ GS::Optional<GS::ObjectState> CreateTextsCommand::SetTypeSpecificParameters (API
         element.text.just = ParseJustificationString (justification);
     }
 
+    // Checked before the create; AfterCreate applies it to the new text.
+    double width = 0.0;
+    if (parameters.Get ("width", width) && width <= 0.0) {
+        return CreateErrorResponse (APIERR_BADPARS, "width must be greater than 0 (the box width of the wrapped text in mm). Omit it for an auto-width text.");
+    }
+
     auto err = TextLabelDetails::ApplyTextContent (memo, element.text, parameters);
     if (err.HasValue ()) {
         return err;
@@ -6094,10 +6154,17 @@ GS::Optional<GS::ObjectState> CreateTextsCommand::SetTypeSpecificParameters (API
     return {};
 }
 
-GSErrCode CreateTextsCommand::AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid) const
+GSErrCode CreateTextsCommand::AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const
 {
     // See CreateLabelsCommand::AfterCreate.
-    return TextLabelDetails::KeepTextFactors (newElementGuid, requestedElement.text.widthFactor, requestedElement.text.charSpaceFactor);
+    GSErrCode err = TextLabelDetails::KeepTextFactors (newElementGuid, requestedElement.text.widthFactor, requestedElement.text.charSpaceFactor);
+    double width = 0.0;
+    if (err == NoError && parameters.Get ("width", width)) {
+        // The text is created auto-width, as without a width (see ApplyTextContent); word wrap
+        // is turned on afterwards, the same way ModifyTexts does it for a width alone.
+        err = TextLabelDetails::SetTextWrapWidth (newElementGuid, width);
+    }
+    return err;
 }
 
 const char* DimensionOriginToString (API_DimOriginID origin)
