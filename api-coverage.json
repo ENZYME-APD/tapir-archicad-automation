@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-06 01:39 UTC",
+ "generatedAt": "2026-11-06 05:12 UTC",
  "versions": [
   25,
   26,
@@ -5701,10 +5701,6 @@
    "reason": "memory management",
    "pullRequests": [
     {
-     "number": 1703,
-     "title": "Add CreateSkylights: place skylights in roofs and shells"
-    },
-    {
      "number": 1395,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
     }
@@ -11361,7 +11357,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2022,
+     "title": "Add JSON checks: copying library parts and GDL helpers"
+    }
+   ],
    "issues": []
   },
   {
@@ -11545,7 +11546,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2022,
+     "title": "Add JSON checks: copying library parts and GDL helpers"
+    }
+   ],
    "issues": []
   },
   {
@@ -12332,10 +12338,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1703,
-     "title": "Add CreateSkylights: place skylights in roofs and shells"
-    },
-    {
      "number": 1395,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
     }
@@ -12705,12 +12707,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1703,
-     "title": "Add CreateSkylights: place skylights in roofs and shells"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1538,
@@ -25614,10 +25611,6 @@
      "title": "Grasshopper: Roofs tool component (Design Tools)"
     },
     {
-     "number": 1703,
-     "title": "Add CreateSkylights: place skylights in roofs and shells"
-    },
-    {
      "number": 1537,
      "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
@@ -31374,6 +31367,10 @@
     {
      "number": 2026,
      "title": "Grasshopper: Meshes tool component"
+    },
+    {
+     "number": 2022,
+     "title": "Add JSON checks: copying library parts and GDL helpers"
     },
     {
      "number": 1855,
@@ -37923,10 +37920,6 @@
     {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
-    },
-    {
-     "number": 1703,
-     "title": "Add CreateSkylights: place skylights in roofs and shells"
     },
     {
      "number": 1671,
@@ -44719,6 +44712,10 @@
      "title": "Grasshopper: Meshes tool component"
     },
     {
+     "number": 2022,
+     "title": "Add JSON checks: copying library parts and GDL helpers"
+    },
+    {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
     },
@@ -47980,6 +47977,10 @@
     {
      "number": 2026,
      "title": "Grasshopper: Meshes tool component"
+    },
+    {
+     "number": 2022,
+     "title": "Add JSON checks: copying library parts and GDL helpers"
     },
     {
      "number": 1855,

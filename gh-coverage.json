@@ -1,9 +1,10 @@
 {
- "generatedAt": "2026-11-06 01:39 UTC",
+ "generatedAt": "2026-11-06 05:12 UTC",
  "counts": {
   "done": 568,
   "open": 27,
   "merged": 148,
+  "skipped": 1,
   "not applicable": 1
  },
  "parameters": {
@@ -5399,6 +5400,21 @@
    "components": [],
    "parameters": null,
    "parameterCount": 33,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "CreateSkylights",
+   "group": "Element Commands",
+   "version": "1.8.1",
+   "brief": "Creates Skylight elements with a roof or shell owner and a floor plan anchor position. Width, height, anchor point and library part are optional; other settings come from the Skylight tool defaults or a favorite. Surface placement is handled by Archicad and has not yet been verified for this command.",
+   "status": "skipped",
+   "reason": "Grasshopper component deferred to a follow-up; this PR adds the Add-On command and Python example",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 9,
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
