@@ -1,0 +1,310 @@
+{
+  "title": "ModifyRailings and ModifyStairs: every change read back, bad inputs refused",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "create a railing on story 0",
+      "command": "CreateRailings",
+      "params": {
+        "railingsData": [
+          {
+            "coordinates": [
+              { "x": 700.0, "y": 700.0 },
+              { "x": 704.0, "y": 700.0 },
+              { "x": 704.0, "y": 703.0 }
+            ],
+            "floorIndex": 0,
+            "bottomOffset": 0.2,
+            "height": 1.0
+          }
+        ]
+      },
+      "save": { "r": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "railing created" }
+      ]
+    },
+    {
+      "id": "create a straight stair on story 0",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [
+              { "x": 720.0, "y": 700.0 },
+              { "x": 726.0, "y": 700.0 }
+            ],
+            "baselinePosition": "Center",
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.2,
+            "stepNum": 16,
+            "riserHeight": 0.175,
+            "treadDepth": 0.28,
+            "finishVisible": true
+          }
+        ]
+      },
+      "save": { "s": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "stair created" }
+      ]
+    },
+    {
+      "id": "read both back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${r}" } },
+          { "elementId": { "guid": "${s}" } }
+        ]
+      },
+      "save": {
+        "stepNum0": "detailsOfElements[1].details.stepNum",
+        "riserHeight0": "detailsOfElements[1].details.riserHeight"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "railing homed on story 0" },
+        { "path": "detailsOfElements[0].details.height", "approx": 1.0, "name": "railing height as created" },
+        { "path": "detailsOfElements[0].details.bottomOffset", "approx": 0.2, "name": "railing bottom offset as created" },
+        { "path": "detailsOfElements[0].details.referenceLine", "len": 3, "name": "railing has one node per point" },
+        { "path": "detailsOfElements[0].details.segmentHeights[0]", "approx": 1.0, "name": "railing segment height as created" },
+        { "path": "detailsOfElements[1].floorIndex", "eq": 0, "name": "stair homed on story 0" },
+        { "path": "detailsOfElements[1].details.flightWidth", "approx": 1.2, "name": "stair flight width as created" },
+        { "path": "detailsOfElements[1].details.totalHeight", "approx": 2.8, "name": "stair total height as created" },
+        { "path": "detailsOfElements[1].details.finishVisible", "eq": true, "name": "stair finishes shown as created" },
+        { "expr": "${stepNum0} * ${riserHeight0}", "approx": 2.8, "tol": 0.005, "name": "stair risers add up to its height" }
+      ]
+    },
+    {
+      "id": "ModifyRailings: height only",
+      "command": "ModifyRailings",
+      "creates": false,
+      "params": {
+        "railingsWithDetails": [
+          { "elementId": { "guid": "${r}" }, "height": 1.25 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "height change accepted" }
+      ]
+    },
+    {
+      "id": "railing after the height change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.height", "approx": 1.25, "name": "height changed" },
+        { "path": "detailsOfElements[0].details.segmentHeights[0]", "approx": 1.25, "name": "first segment got the height" },
+        { "path": "detailsOfElements[0].details.segmentHeights[1]", "approx": 1.25, "name": "second segment got the height" },
+        { "path": "detailsOfElements[0].details.bottomOffset", "approx": 0.2, "name": "bottom offset unchanged" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "home story unchanged" },
+        { "path": "detailsOfElements[0].details.referenceLine", "len": 3, "name": "node count unchanged" },
+        { "path": "detailsOfElements[0].details.referenceLine[2].x", "approx": 704.0, "name": "reference line x unchanged" },
+        { "path": "detailsOfElements[0].details.referenceLine[2].y", "approx": 703.0, "name": "reference line y unchanged" }
+      ]
+    },
+    {
+      "id": "ModifyRailings: story 1 with a new bottom offset",
+      "command": "ModifyRailings",
+      "creates": false,
+      "params": {
+        "railingsWithDetails": [
+          { "elementId": { "guid": "${r}" }, "floorIndex": 1, "bottomOffset": 0.4 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "story and bottom offset change accepted" }
+      ]
+    },
+    {
+      "id": "railing after the story and bottom offset change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].floorIndex", "eq": 1, "name": "moved to story 1" },
+        { "path": "detailsOfElements[0].details.bottomOffset", "approx": 0.4, "name": "bottom offset relative to story 1" },
+        { "path": "detailsOfElements[0].details.height", "approx": 1.25, "name": "height unchanged" },
+        { "path": "detailsOfElements[0].details.referenceLine[0].x", "approx": 700.0, "name": "reference line x unchanged" },
+        { "path": "detailsOfElements[0].details.referenceLine[0].y", "approx": 700.0, "name": "reference line y unchanged" }
+      ]
+    },
+    {
+      "id": "ModifyRailings: back to story 0, bottom offset kept",
+      "command": "ModifyRailings",
+      "creates": false,
+      "params": {
+        "railingsWithDetails": [
+          { "elementId": { "guid": "${r}" }, "floorIndex": 0 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "story change alone accepted" }
+      ]
+    },
+    {
+      "id": "railing after the story change alone",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "moved back to story 0" },
+        { "path": "detailsOfElements[0].details.bottomOffset", "approx": 0.4, "name": "bottom offset kept, the railing moved with the story" },
+        { "path": "detailsOfElements[0].details.height", "approx": 1.25, "name": "height unchanged" }
+      ]
+    },
+    {
+      "id": "ModifyRailings: bad inputs",
+      "command": "ModifyRailings",
+      "creates": false,
+      "params": {
+        "railingsWithDetails": [
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "height": 1.5 },
+          { "elementId": { "guid": "${s}" }, "height": 1.5 },
+          { "elementId": { "guid": "${r}" }, "floorIndex": 99 },
+          { "elementId": { "guid": "${r}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "nonexistent guid refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "a stair refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "a story that does not exist refused" },
+        { "path": "executionResults[3].success", "eq": false, "name": "an item with no fields refused" }
+      ]
+    },
+    {
+      "id": "ModifyStairs: flight width only",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          { "elementId": { "guid": "${s}" }, "flightWidth": 1.5 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "flight width change accepted" }
+      ]
+    },
+    {
+      "id": "stair after the flight width change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "save": { "stepNum1": "detailsOfElements[0].details.stepNum" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.flightWidth", "approx": 1.5, "name": "flight width changed" },
+        { "path": "detailsOfElements[0].details.totalHeight", "approx": 2.8, "name": "total height unchanged" },
+        { "expr": "${stepNum1} - ${stepNum0}", "approx": 0, "tol": 0, "name": "riser count unchanged" },
+        { "path": "detailsOfElements[0].details.finishVisible", "eq": true, "name": "finishes unchanged" },
+        { "path": "detailsOfElements[0].details.baseLinePoints[0].x", "approx": 720.0, "name": "baseline start x kept" },
+        { "path": "detailsOfElements[0].details.baseLinePoints[0].y", "approx": 700.0, "name": "baseline start y kept" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "home story unchanged" }
+      ]
+    },
+    {
+      "id": "ModifyStairs: total height, riser count and riser height",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          { "elementId": { "guid": "${s}" }, "totalHeight": 3.15, "stepNum": 18, "riserHeight": 0.175 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "height change accepted" }
+      ]
+    },
+    {
+      "id": "stair after the height change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "save": {
+        "stepNum2": "detailsOfElements[0].details.stepNum",
+        "riserHeight2": "detailsOfElements[0].details.riserHeight"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.totalHeight", "approx": 3.15, "name": "total height changed" },
+        { "expr": "${stepNum2} * ${riserHeight2}", "approx": 3.15, "tol": 0.005, "name": "risers add up to the new height" },
+        { "expr": "${stepNum2} - ${stepNum0}", "gt": 0, "name": "a higher stair has more risers" },
+        { "path": "detailsOfElements[0].details.flightWidth", "approx": 1.5, "name": "flight width unchanged" },
+        { "path": "detailsOfElements[0].details.baseLinePoints[0].x", "approx": 720.0, "name": "baseline start x kept" },
+        { "path": "detailsOfElements[0].details.baseLinePoints[0].y", "approx": 700.0, "name": "baseline start y kept" }
+      ]
+    },
+    {
+      "id": "ModifyStairs: finishes off, tread, riser and structure settings",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          {
+            "elementId": { "guid": "${s}" },
+            "finishVisible": false,
+            "treads": [
+              { "role": "Run", "thickness": 0.06, "nosingType": "ByValue", "nosingValue": 0.03 }
+            ],
+            "risers": [
+              { "role": "Run", "thickness": 0.02, "position": "OnTread" }
+            ],
+            "structures": [
+              { "role": "Run", "side": "UnderSide", "thickness": 0.2 }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "finish, tread, riser and structure change accepted" }
+      ]
+    },
+    {
+      "id": "stair after the finish change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.finishVisible", "eq": false, "name": "finishes hidden" },
+        { "path": "detailsOfElements[0].details.totalHeight", "approx": 3.15, "name": "total height unchanged" },
+        { "path": "detailsOfElements[0].details.flightWidth", "approx": 1.5, "name": "flight width unchanged" },
+        { "path": "detailsOfElements[0].details.baseLinePoints[0].x", "approx": 720.0, "name": "baseline start x kept" }
+      ]
+    },
+    {
+      "id": "ModifyStairs: bad inputs",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "flightWidth": 2.0 },
+          { "elementId": { "guid": "${r}" }, "flightWidth": 2.0 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "nonexistent guid refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "a railing refused" }
+      ]
+    },
+    {
+      "id": "the refused items changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${r}" } },
+          { "elementId": { "guid": "${s}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "railing still on story 0" },
+        { "path": "detailsOfElements[0].details.height", "approx": 1.25, "name": "railing height unchanged" },
+        { "path": "detailsOfElements[0].details.bottomOffset", "approx": 0.4, "name": "railing bottom offset unchanged" },
+        { "path": "detailsOfElements[1].details.flightWidth", "approx": 1.5, "name": "stair flight width unchanged" },
+        { "path": "detailsOfElements[1].details.finishVisible", "eq": false, "name": "stair finishes still hidden" }
+      ]
+    }
+  ]
+}
