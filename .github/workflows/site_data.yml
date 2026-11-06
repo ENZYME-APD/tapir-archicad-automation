@@ -14,7 +14,8 @@
 # Discord: the bot token is DISCORD_STATS_TOKEN, else DISCORD_BOT_TOKEN (the
 # issue bot's). Messages are counted in the text channels the bot can read;
 # members per month need the bot's Server Members Intent. Without a token only
-# the member count of the public invite is read.
+# the member count of the public invite is read. The server is the one the
+# bot is in (DISCORD_GUILD_ID picks one), so a changed invite never stops it.
 #
 # Security: it runs with a write token, so it never checks out or runs code
 # from a pull request; it only runs on schedule and by hand, on main.
@@ -63,6 +64,7 @@ jobs:
           DISCORD_STATS_TOKEN: ${{ secrets.DISCORD_STATS_TOKEN }}
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           DISCORD_INVITE: ${{ vars.DISCORD_INVITE }}
+          DISCORD_GUILD_ID: ${{ vars.DISCORD_GUILD_ID }}
 
       - name: Publish to the site-data branch
         run: |

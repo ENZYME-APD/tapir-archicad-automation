@@ -18,10 +18,13 @@ hides it instead of drawing it wrong.
     without merge commits and without bots (Claude, github-actions and names ending in [bot]).
   - issues opened and pull requests merged per month: the GitHub REST API (GITHUB_TOKEN).
   - Discord messages per month (people, not bots): the history of every text and announcement
-    channel the bot can read, and of the threads in them and in forum channels. Discord members per month: the members still in the server, by the month they
-    joined (people who left are not counted), which needs the bot's Server Members Intent.
+    channel the bot can read, and of the threads in them and in forum channels. Discord members
+    per month: the members still in the server, by the month they joined (people who left are
+    not counted), which needs the bot's Server Members Intent.
     The current member count falls back to the server's public invite. The bot token is read
-    from DISCORD_STATS_TOKEN, else DISCORD_BOT_TOKEN; DISCORD_INVITE names the invite.
+    from DISCORD_STATS_TOKEN, else DISCORD_BOT_TOKEN. The server is the one the bot is in
+    (DISCORD_GUILD_ID picks one if it is in several); without a token, the invite DISCORD_INVITE
+    (default: the one the site links to) gives the server's member count.
   - discordMembersChange compares today's count with the one stored about 30 days earlier in
     memberHistory, carried over from the previous community.json (--previous).
   - participants: distinct people who, in the last 365 days, committed, opened an issue or a
@@ -49,6 +52,8 @@ GITHUB_API = 'https://api.github.com'
 DISCORD_API = 'https://discord.com/api/v10'
 USER_AGENT = 'TapirCommunityData (https://github.com/ENZYME-APD/tapir-archicad-automation, 1.0)'
 HISTORY_DAYS = 400
+# The invite the site links to (docs/), for the member count when there is no bot token.
+DEFAULT_INVITE = 'NAnSennmpY'
 BOT_NAME = re.compile (r'(\[bot\]$|^claude$|^github-actions$|^dependabot)', re.I)
 
 
@@ -283,9 +288,20 @@ def main ():
 
     token = discord_token ()
     members_now = None
+    guild = None
     try:
-        guild, approximate = read_invite (os.environ.get ('DISCORD_INVITE') or 'FZAM7Fbg7C')
-        members_now = approximate
+        if token:
+            # The server the bot is in, so a changed or expired invite never stops the counts.
+            guilds = discord_get ('/users/@me/guilds', token)
+            wanted = os.environ.get ('DISCORD_GUILD_ID') or ''
+            guild = next ((g['id'] for g in guilds if g['id'] == wanted), guilds[0]['id'] if len (guilds) == 1 else None)
+            if guild is None:
+                print ('The bot is in several Discord servers: set DISCORD_GUILD_ID.', file=sys.stderr)
+        if guild is None:
+            guild, members_now = read_invite (os.environ.get ('DISCORD_INVITE') or DEFAULT_INVITE)
+            if token:
+                print ('No Discord bot token for the server: only the member count from the invite is read.', file=sys.stderr)
+                token = ''
         if token:
             result = read_members (guild, token)
             if result is not None:
@@ -293,6 +309,8 @@ def main ():
                 members_now = len (joined)
                 for date in joined:
                     series['discordMembers'][month_of (date)] += 1  # joins; made cumulative below
+            else:
+                _, members_now = read_invite (os.environ.get ('DISCORD_INVITE') or DEFAULT_INVITE)
             messages = read_messages (guild, token)
             if messages:
                 for date, author in messages:
@@ -302,7 +320,7 @@ def main ():
                 totals['discordMessages'] = len (messages)
         else:
             print ('No Discord bot token: only the member count from the invite is read.', file=sys.stderr)
-    except (urllib.error.URLError, KeyError, ValueError) as error:
+    except (urllib.error.URLError, KeyError, ValueError, IndexError) as error:
         print (f'Discord not read: {error}', file=sys.stderr)
 
     if isinstance (members_now, int):
