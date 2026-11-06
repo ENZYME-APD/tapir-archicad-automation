@@ -1,0 +1,6 @@
+# Everyone, AI crawlers included, is welcome to read and learn from this site.
+User-agent: *
+Allow: /
+
+Sitemap: https://archicad-api.com/sitemap.xml
+# For AI assistants: https://archicad-api.com/llms.txt

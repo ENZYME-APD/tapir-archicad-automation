@@ -1,0 +1,59 @@
+# Tapir
+
+> Tapir is a free, open-source (MIT) add-on for Graphisoft Archicad 25–30, by
+> ENZYME-APD and its community. It adds 641 JSON commands to Archicad's own JSON API, a palette
+> that runs Python scripts in one click, a Grasshopper plugin (package `tapir` on the Rhino Package
+> Manager) and MCP servers so AI assistants can drive Archicad. A new release ships every Monday.
+
+- Site: https://archicad-api.com/
+- Source, issues and releases: https://github.com/ENZYME-APD/tapir-archicad-automation
+- Download (Tapir Installer for Windows and macOS): https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest
+- Community (Discord): https://discord.gg/NAnSennmpY
+- Tapir started in 2022 as R&D at Enzyme, an architecture practice; the add-on is built on Tibor
+  Lorántfy's archicad-additional-json-commands template.
+
+## How a Tapir command is sent
+
+Archicad (with a project open) answers JSON on `http://127.0.0.1:19723`. Tapir's commands go
+through Archicad's own `API.ExecuteAddOnCommand`, in the namespace `TapirCommand`:
+
+```json
+{"command": "API.ExecuteAddOnCommand",
+ "parameters": {"addOnCommandId": {"commandNamespace": "TapirCommand", "commandName": "GetAddOnVersion"},
+                "addOnCommandParameters": {}}}
+```
+
+The answer is `{"succeeded": true, "result": {"addOnCommandResponse": {...}}}`. Python's standard
+library is enough (`urllib.request`); the official `archicad` package and the Tapir Grasshopper
+plugin send the same JSON. Every command, with its parameters and an example, is in
+[commands.md](https://archicad-api.com/commands.md) and [commands.json](https://archicad-api.com/commands.json).
+
+## Docs
+
+- [Tapir - automation for Archicad](https://archicad-api.com/index.md): Tapir is a free, open-source Archicad add-on: hundreds of extra JSON commands, a palette that runs scripts in one click, and a Grasshopper plugin.
+- [Get started](https://archicad-api.com/start/index.md): Install Tapir, run a script from the Tapir palette in Archicad, add more scripts, write a first Python script and install the Grasshopper plugin.
+- [Docs](https://archicad-api.com/docs/index.md): Tapir's documentation: every JSON command, the Grasshopper guide, the Archicad API coverage and the Grasshopper coverage, and how a call to Tapir works.
+- [Scripts](https://archicad-api.com/scripts/index.md): Scripts shared by architects for the Tapir palette in Archicad, each one reviewed and adapted to work in any office before it is listed.
+- [Share a script](https://archicad-api.com/scripts/share/index.md): Share an Archicad script you wrote: send it on Discord or as a pull request, and it is checked, adapted to work in any office and listed with your name.
+- [Grasshopper](https://archicad-api.com/grasshopper/index.md): Read, change and create Archicad elements from Grasshopper with the Tapir plugin: what the components do, the tool components, installing the tapir package and a first definition.
+- [Tapir and AI](https://archicad-api.com/ai/index.md): Use Tapir from Claude and other AI tools: Tapir MCP servers, a prompt to start with, and how to let an AI write a script that sends Tapir commands.
+- [Tutorials](https://archicad-api.com/tutorials/index.md): Videos that show Tapir at work in Archicad and Grasshopper: installing it, selecting elements, columns, Grasshopper, spreadsheet sync and filtering.
+
+## Project
+
+- [Community](https://archicad-api.com/community/index.md): Ask on Discord, report a bug, test a fix: how Tapir's community and its bots turn a report into a release.
+- [Roadmap](https://archicad-api.com/roadmap/index.md): How to ask for a feature in Tapir, what is being asked for now, and what shipped recently.
+- [About Tapir](https://archicad-api.com/about/index.md): Why Tapir exists, how it grew from Enzyme's R&D and Tibor Lorántfy's JSON template into an open-source project, the people behind it and how to support it.
+
+## Reference
+
+- [Commands in Markdown](https://archicad-api.com/commands.md): every command with its parameters, results, Grasshopper components and example.
+- [Commands as JSON](https://archicad-api.com/commands.json): the same, with the full JSON schemas and the example code.
+- [archicad-addon](https://archicad-api.com/archicad-addon/): The command reference, also as commands.md and commands.json.
+- [api-coverage](https://archicad-api.com/api-coverage/): Which parts of the Archicad API Tapir uses, updated hourly; data: https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/api-coverage.md
+- [gh-coverage](https://archicad-api.com/gh-coverage/): Which Tapir commands have a Grasshopper component; data: https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/gh-coverage.md
+
+## Optional
+
+- [Everything in one file](https://archicad-api.com/llms-full.txt): all pages, the palette scripts and a one-line reference of every command.
+- [Repository guide for AI assistants](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/CLAUDE.md): how the add-on, the plugin and the bots are built.
