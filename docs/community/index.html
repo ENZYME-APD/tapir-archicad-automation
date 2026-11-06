@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
 <link rel="stylesheet" href="../assets/site.css">
 <script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
+<script>try { var l = /[?&]lang=([A-Za-z]{2})(?:[&#]|$)/.exec (location.search); l = l ? l[1].toLowerCase () : localStorage.getItem ('tapir-lang') || (navigator.language || '').slice (0, 2).toLowerCase (); if (l && l !== 'en') { document.documentElement.setAttribute ('data-i18n-loading', ''); setTimeout (function () { document.documentElement.removeAttribute ('data-i18n-loading'); }, 2000); } } catch (e) {}</script>
 <script src="../assets/site.js" defer></script>
 <!-- /site-assets -->
 <link rel="stylesheet" href="community.css">
@@ -138,7 +139,7 @@
                     <div data-total="commits" hidden><strong></strong><span>Commits</span></div>
                     <div data-total="discordMessages" hidden><strong></strong><span>Discord messages</span></div>
                     <div data-total="discordMembers" hidden><strong></strong><span>Discord members <span class="change"></span></span></div>
-                    <div data-total="participants" hidden><strong></strong><span>People taking part</span></div>
+                    <div data-total="participants" hidden><strong></strong><span>People taking part, last 12 months</span></div>
                 </div>
                 <div class="contributors" id="top-contributors" hidden>
                     <h3>Top code contributors</h3>
@@ -148,34 +149,30 @@
         </div>
 
         <div id="activity-section" hidden
-             data-chart-label="{series} per month, {first} to {last}. The table below lists every number."
+             data-chart-label="Commits, issues and pull requests, and Discord messages per month, stacked, with the number of Discord members as a line, {first} to {last}. The table below lists every number."
              data-months="Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec">
-            <div class="dim" aria-hidden="true"><i></i><span>Activity</span><i></i></div>
+            <div class="dim" aria-hidden="true"><i></i><span>Growth</span><i></i></div>
             <section aria-labelledby="activity">
                 <div class="sec-head">
-                    <h2 id="activity">Month by <em>month.</em></h2>
-                    <p>Counts per month, each on its own scale. Only numbers are collected, never the text of a message.</p>
+                    <h2 id="activity">Growth since <em>2022.</em></h2>
+                    <p>Everything that happens around Tapir each month, from the first commit at Enzyme to today. Only numbers are collected, never the text of a message.</p>
                 </div>
                 <div class="activity-card">
-                    <div class="activity-charts">
-                        <figure class="activity" data-series="issuesOpened" hidden>
-                            <figcaption>Issues opened</figcaption>
-                            <div class="activity-chart"></div>
-                        </figure>
-                        <figure class="activity" data-series="pullRequestsMerged" hidden>
-                            <figcaption>Pull requests merged</figcaption>
-                            <div class="activity-chart"></div>
-                        </figure>
-                        <figure class="activity" data-series="discordMessages" hidden>
-                            <figcaption>Discord messages</figcaption>
-                            <div class="activity-chart"></div>
-                        </figure>
-                    </div>
+                    <figure class="growth">
+                        <ul class="growth-legend">
+                            <li data-key="commits" hidden><i class="swatch layer-commits"></i>Commits</li>
+                            <li data-key="github" hidden><i class="swatch layer-github"></i>Issues and pull requests</li>
+                            <li data-key="discordMessages" hidden><i class="swatch layer-discordMessages"></i>Discord messages</li>
+                            <li data-key="discordMembers" hidden><i class="swatch swatch-line"></i>Discord members, right scale</li>
+                        </ul>
+                        <div class="activity-chart" id="growth-chart"></div>
+                        <figcaption>Per month, stacked, on a square-root scale so the early years stay visible. Commits by people, without merges and bots; Discord messages include threads and forum posts. Discord members are the people in the server at the end of each month, counted by when they joined; people who later left are not included.</figcaption>
+                    </figure>
                     <details class="activity-details">
                         <summary>Show the numbers as a table</summary>
                         <div class="activity-table-wrap">
                             <table class="activity-table" id="activity-table">
-                                <thead><tr><th scope="col">Month</th></tr></thead>
+                                <thead><tr><th scope="col">Month</th><th scope="col" data-key="commits">Commits</th><th scope="col" data-key="issuesOpened">Issues opened</th><th scope="col" data-key="pullRequestsMerged">Pull requests merged</th><th scope="col" data-key="discordMessages">Discord messages</th><th scope="col" data-key="discordMembers">Discord members</th></tr></thead>
                                 <tbody></tbody>
                             </table>
                         </div>

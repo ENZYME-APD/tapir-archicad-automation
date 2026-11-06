@@ -6798,6 +6798,7 @@
     "RailingsComponent",
     "RoofsComponent",
     "SlabsComponent",
+    "SplinesComponent",
     "TextsComponent",
     "WallsApiComponent",
     "WallsComponent",
@@ -6901,6 +6902,7 @@
     "SetDetailsOfTextsComponent",
     "SetDetailsOfWallsComponent",
     "SlabsComponent",
+    "SplinesComponent",
     "TextsComponent",
     "WallsApiComponent",
     "WallsComponent",
@@ -16369,7 +16371,8 @@
     ]
    },
    "grasshopperComponents": [
-    "CreateSplinesComponent"
+    "CreateSplinesComponent",
+    "SplinesComponent"
    ],
    "example": {
     "path": "archicad-addon/Examples/Element/CreateSplines.py",
@@ -22402,6 +22405,7 @@
     "RoofsComponent",
     "SetPropertyValuesOfElementsComponent",
     "SlabsComponent",
+    "SplinesComponent",
     "TextsComponent",
     "WallsApiComponent",
     "WallsComponent",

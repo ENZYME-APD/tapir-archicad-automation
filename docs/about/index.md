@@ -10,6 +10,19 @@ An open-source project that makes Archicad scriptable for architects, not only f
 
 Archicad's own JSON API covers only part of what its add-on API can do. Tapir adds the missing commands as an add-on, then puts them within reach of people who don't code: a palette of ready scripts, Grasshopper components, and AI assistants.
 
+## How it *started.*
+
+Started as R&D at Enzyme, an architecture practice, then opened to everyone, in the spirit of ifc.js: practitioners shouldn't wait for a vendor to support their workflow.
+
+Revisions · Tapir
+
+| Rev | Date | Description | By |
+| --- | --- | --- | --- |
+| A | 5 July 2022 | Born in Enzyme's R&DArchicad's JSON interface was a step forward, but Grasshopper users still needed C++ add-ons to reach native elements. The first commit, with the MIT licence. | Grzeg Wilk, Jorge Beneitez |
+| B | 7 July 2022 | A place to talkThe Discord server opens, where architects and developers say what they need and show what they made. | The first members |
+| C | July 2024 | The templateTibor Lorántfy, whose archicad-additional-json-commands the add-on is built on, joins the project. Almost any function of the Archicad API can now become a JSON command. | Tibor Lorántfy |
+| D | 2026 | Built by its communityA release every Monday. Reports on Discord become GitHub issues, bots draft the fixes and people test them in their own Archicad. [See the growth](https://archicad-api.com/community/#activity). | Everyone who reports, tests and contributes |
+
 ## The people *behind it.*
 
 ENZYME-APD runs the project and publishes Tapir under the MIT licence. Everyone below has written code for it, or tested it and given the feedback it is built on, in alphabetical order.

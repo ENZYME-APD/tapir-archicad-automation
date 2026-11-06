@@ -7,6 +7,7 @@
 #include "Process.hpp"
 #include "Config.hpp"
 #include "UvManager.hpp"
+#include "ScriptInfo.hpp"
 
 #include <atomic>
 #include <mutex>
@@ -56,6 +57,7 @@ private:
         GS::UniString sourceName;        // shown after the file name for scripts from a configured local folder; empty for repository and user-added scripts
         GS::UniString baseDisplayText;   // label as computed by AddScriptToPopUp, before any shortcut-slot suffix
         GS::UniString uvProjectPath;     // the folder of the uv project (uvProject in the config) the script runs in; empty: run it with --script
+        ScriptInfo info;                 // the script's docstring summary and `# /// tapir` header, read by AddScriptToPopUp
 
         explicit PopUpItemData (
             const IO::Location& _fileLocation,
@@ -113,6 +115,10 @@ private:
     virtual void PanelOpened (const DG::PanelOpenEvent& ev) override;
     virtual void ButtonClicked (const DG::ButtonClickEvent& ev) override;
     virtual void PopUpChanged (const DG::PopUpChangeEvent& ev) override;
+    // Overrides the ItemObserver function of both the button and the pop-up observer bases.
+    virtual void ItemToolTipRequested (const DG::ItemHelpEvent& ev, GS::UniString* toolTipText) override;
+
+    static GS::UniString GetScriptDescription (const ScriptInfo& info);   // the summary and the badge, one per line
 
     static GSErrCode PaletteControlCallBack (Int32 paletteId, API_PaletteMessageID messageID, GS::IntPtr param);
 

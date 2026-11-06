@@ -680,8 +680,9 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             {
                 // The home story goes with the Modify command when it takes
                 // it (it pins the story a Z there is measured from), else to
-                // SetDetailsOfElements.
-                if (setting.Key == "floorIndex" && !ModifyKeys.Contains(setting.Key))
+                // SetDetailsOfElements. The Create commands of 2D elements
+                // name the story floorInd.
+                if ((setting.Key == "floorIndex" || setting.Key == "floorInd") && !ModifyKeys.Contains(setting.Key))
                 {
                     details["floorIndex"] = setting.Value;
                 }

@@ -3,13 +3,18 @@
 # dependencies = []
 # ///
 
-##############################################
-# DOOR AND WINDOW NUMBERING BY ZONE
-# For Archicad with the Tapir Add-On
-#
-# Gives every door and window an Element ID built from the zone it opens
-# into, such as 1.04-D1 or 1.04-W2, numbered within each zone.
-###############################################
+# /// tapir
+# changes = "model"
+# ///
+
+"""
+Door and Window Numbering by Zone
+
+Gives every door and window an Element ID built from the zone it opens
+into, such as 1.04-D1 or 1.04-W2, numbered within each zone.
+
+For Archicad with the Tapir Add-On.
+"""
 
 import math
 import tkinter as tk
