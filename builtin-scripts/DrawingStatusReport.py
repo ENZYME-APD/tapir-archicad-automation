@@ -10,7 +10,9 @@ Lists every Drawing placed on the layouts of the Layout Book with the columns
 of Archicad's Drawing Manager: status, update type, stored in project, source
 and path. Export the list to Excel or CSV, or update the drawings whose source
 has changed: the script shows which drawings it will update and asks before
-updating them, then reports the drawings it could not update. Based on the
+updating them, then reports the drawings it could not update. Reading opens
+each layout in turn (Archicad gives a drawing's data only from its own layout)
+and then goes back to the window that was active. Based on the
 get_drawing_manager_data.py workflow example.
 """
 
@@ -82,29 +84,44 @@ class DrawingStatusReport:
 
     def refresh(self) -> None:
         drawings = []
+        details = []
         failed_layouts = 0
         with self.window.busy("Reading the layouts..."):
             layouts = run_tapir("GetDatabases", {"types": ["Layout"]}).get("databases", [])
-            for index, layout in enumerate(layouts):
-                self.window.set_status(f"Reading the drawings of the layouts... {index + 1} / {len(layouts)}")
-                name = " ".join(part for part in (layout.get("referenceId", ""), layout.get("name", "")) if part)
-                try:
-                    elements = run_tapir("GetElementsByType", {
-                        "elementType": "Drawing", "databases": [{"databaseId": layout["databaseId"]}]}).get("elements", [])
-                except ArchicadError as e:
-                    failed_layouts += 1
-                    print(f"Cannot read the drawings of layout {name}: {e}")
-                    continue
-                drawings += [{"elementId": e["elementId"], "layout": name} for e in elements]
-
-            self.window.set_status("Reading the drawing details...")
-            details = get_details_of_elements([{"elementId": d["elementId"]} for d in drawings], ["details"])
+            # GetDetailsOfElements returns the details of the current database's elements only
+            # (a drawing of another layout comes back with fromOtherDatabase and no details),
+            # so each layout is opened before its drawings are read, and the user's window is
+            # brought back afterwards.
+            start_database = run_tapir("GetCurrentWindowType").get("databaseId")
+            try:
+                for index, layout in enumerate(layouts):
+                    self.window.set_status(f"Reading the drawings of the layouts... {index + 1} / {len(layouts)}")
+                    name = " ".join(part for part in (layout.get("referenceId", ""), layout.get("name", "")) if part)
+                    try:
+                        run_tapir("ChangeWindow", {"databaseId": layout["databaseId"]})
+                        elements = run_tapir("GetElementsByType", {
+                            "elementType": "Drawing", "databases": [{"databaseId": layout["databaseId"]}]}).get("elements", [])
+                        layout_details = get_details_of_elements(
+                            [{"elementId": e["elementId"]} for e in elements], ["details"])
+                    except ArchicadError as e:
+                        failed_layouts += 1
+                        print(f"Cannot read the drawings of layout {name}: {e}")
+                        continue
+                    drawings += [{"elementId": e["elementId"], "layout": name} for e in elements]
+                    details += layout_details
+            finally:
+                if start_database is not None:
+                    try:
+                        run_tapir("ChangeWindow", {"databaseId": start_database})
+                    except ArchicadError as e:
+                        print(f"Cannot go back to the window the script started in: {e}")
 
         self.drawings = []
         unreadable = 0
         for drawing, detail in zip(drawings, details):
-            if "error" in detail:
+            if "error" in detail or detail.get("fromOtherDatabase"):
                 unreadable += 1
+                print(f"Cannot read the Drawing Manager data of a drawing on layout {drawing['layout']}.")
                 continue
             d = detail.get("details", {})
             self.drawings.append({
