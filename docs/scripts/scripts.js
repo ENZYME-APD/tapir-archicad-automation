@@ -16,11 +16,12 @@
 
    A script's README, screenshots and code are read at the commit its newest version names. Anything
    that is missing or does not look right is left out rather than shown wrong; when the catalogue
-   cannot be read, the page keeps saying the scripts are opening soon. Every text shown is in the
-   page's HTML, so it is translated like the rest of the page (assets/i18n/README.md): the page
-   starts once the translation is applied (TapirI18n.ready), and translates the marked texts of its
-   <template>s, which the translation of the page does not reach, before it copies them. The
-   catalogue's own texts (names, summaries, READMEs, changelogs) stay as their authors wrote them. */
+   cannot be read or lists no script, the page keeps showing the built-in scripts and saying the
+   scripts are opening soon; the schedule replaces both. Every text shown is in the page's HTML, so
+   it is translated like the rest of the page (assets/i18n/README.md): the page starts once the
+   translation is applied (TapirI18n.ready), and translates the marked texts of its <template>s,
+   which the translation of the page does not reach, before it copies them. The catalogue's own
+   texts (names, summaries, READMEs, changelogs) stay as their authors wrote them. */
 (function () {
     'use strict';
 
@@ -309,6 +310,7 @@
         byId ('script-filters').addEventListener ('submit', function (event) { event.preventDefault (); });
 
         update ();
+        byId ('builtin-scripts').hidden = true;
         byId ('scripts-opening').hidden = true;
         byId ('scripts-browser').hidden = false;
     }

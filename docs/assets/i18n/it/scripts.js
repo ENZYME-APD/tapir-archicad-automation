@@ -11,6 +11,27 @@
     '<strong class="callout-label"><span aria-hidden="true">ⓘ</span> Opening soon</strong> The scripts move to this page, and the list appears here as soon as the first ones are in. Until then, the scripts shared so far are on the <a href="https://tapir-marketplace.vercel.app/">current marketplace</a>, and you can <a href="share/">share your own</a>.':
         '<strong class="callout-label"><span aria-hidden="true">ⓘ</span> In arrivo</strong> Gli script si spostano su questa pagina, e l\'elenco comparirà qui appena ci saranno i primi. Nel frattempo, gli script condivisi finora sono sul <a href="https://tapir-marketplace.vercel.app/">marketplace attuale</a>, e puoi <a href="share/">condividere i tuoi</a>.',
 
+    // The built-in scripts, shown until the marketplace has listings
+    'Built in to <em>Tapir.</em>': 'Inclusi in <em>Tapir.</em>',
+    'These are five of the scripts that come with the Tapir palette: open it in Archicad, pick one and press Run Script. Each is a short Python file you can read and change.':
+        'Questi sono cinque degli script inclusi nella palette Tapir: aprila in Archicad, scegline uno e premi Run Script. Ognuno è un breve file Python che puoi leggere e modificare.',
+    'Built-in script': 'Script incluso',
+    'Number elements along a line': 'Numerare elementi lungo una linea',
+    'Select a polyline and the doors, zones or objects to number. Each one gets its Element ID in the order the polyline passes it.':
+        'Seleziona una polilinea e le porte, le zone o gli oggetti da numerare. Ognuno riceve il suo Element ID nell\'ordine in cui la polilinea lo attraversa.',
+    'Colour the model by a property': 'Colorare il modello per proprietà',
+    'Pick a property; every element gets a colour for its value, with a legend of the values and how many elements have each. Number values can be grouped into ranges.':
+        'Scegli una proprietà; ogni elemento riceve un colore per il suo valore, con una legenda dei valori e di quanti elementi hanno ciascuno. I valori numerici si possono raggruppare in intervalli.',
+    'Check a project before it goes out': 'Controllare un progetto prima della consegna',
+    'Lists elements without an ID, zones with the same number, unclassified and duplicate elements, empty stories and unused layers. Export the list to Excel or turn it into Issues.':
+        'Elenca gli elementi senza ID, le zone con lo stesso numero, gli elementi non classificati e duplicati, i piani vuoti e i layer inutilizzati. Esporta l\'elenco in Excel o trasformalo in Issues.',
+    'Publish on a schedule': 'Pubblicare secondo un programma',
+    'Publishes the chosen Publisher Sets now or on a schedule, every few hours or daily at a set time. It can receive the Teamwork changes and update the drawings first, and logs every run.':
+        'Pubblica i Publisher Sets scelti subito o secondo un programma, ogni poche ore o ogni giorno a un\'ora fissa. Può prima ricevere le modifiche di Teamwork e aggiornare i disegni, e registra ogni esecuzione.',
+    'Tidy up the View Map': 'Riordinare la View Map',
+    'Finds the views that are neither placed on a layout nor published, and moves the ones you choose into a separate folder that keeps their folder structure.':
+        'Trova le viste che non sono né inserite in un layout né pubblicate, e sposta quelle che scegli in una cartella separata che ne mantiene la struttura.',
+
     // The schedule
     'Browse scripts': 'Sfoglia gli script',
     'Search scripts': 'Cerca negli script',
