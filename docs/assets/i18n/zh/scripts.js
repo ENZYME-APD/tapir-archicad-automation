@@ -11,6 +11,27 @@
     '<strong class="callout-label"><span aria-hidden="true">ⓘ</span> Opening soon</strong> The scripts move to this page, and the list appears here as soon as the first ones are in. Until then, the scripts shared so far are on the <a href="https://tapir-marketplace.vercel.app/">current marketplace</a>, and you can <a href="share/">share your own</a>.':
         '<strong class="callout-label"><span aria-hidden="true">ⓘ</span> 即将开放</strong> 脚本将迁移到此页面，第一批脚本上架后，列表就会显示在这里。在此之前，已分享的脚本在<a href="https://tapir-marketplace.vercel.app/">现有的市场</a>上，你也可以<a href="share/">分享自己的脚本</a>。',
 
+    // The built-in scripts, shown until the marketplace has listings
+    'Built in to <em>Tapir.</em>': 'Tapir <em>内置脚本。</em>',
+    'These are five of the scripts that come with the Tapir palette: open it in Archicad, pick one and press Run Script. Each is a short Python file you can read and change.':
+        '以下是 Tapir 面板自带的五个脚本：在 Archicad 中打开面板，选择一个并点击 Run Script。每个都是可以阅读和修改的简短 Python 文件。',
+    'Built-in script': '内置脚本',
+    'Number elements along a line': '沿一条线为构件编号',
+    'Select a polyline and the doors, zones or objects to number. Each one gets its Element ID in the order the polyline passes it.':
+        '选择一条多段线以及要编号的门、区域或对象。每个构件按多段线经过的顺序获得 Element ID。',
+    'Colour the model by a property': '按属性为模型着色',
+    'Pick a property; every element gets a colour for its value, with a legend of the values and how many elements have each. Number values can be grouped into ranges.':
+        '选择一个属性，每个构件按其值获得一种颜色，并附有图例列出各个值及其构件数量。数值可以分组为区间。',
+    'Check a project before it goes out': '在交付前检查项目',
+    'Lists elements without an ID, zones with the same number, unclassified and duplicate elements, empty stories and unused layers. Export the list to Excel or turn it into Issues.':
+        '列出没有 ID 的构件、编号相同的区域、未分类和重复的构件、空楼层以及未使用的图层。可将列表导出到 Excel 或转为 Issues。',
+    'Publish on a schedule': '按计划发布',
+    'Publishes the chosen Publisher Sets now or on a schedule, every few hours or daily at a set time. It can receive the Teamwork changes and update the drawings first, and logs every run.':
+        '立即或按计划发布所选的 Publisher Sets，每隔几小时或每天在固定时间发布。它可以先接收 Teamwork 更改并更新图纸，并记录每次运行。',
+    'Tidy up the View Map': '整理 View Map',
+    'Finds the views that are neither placed on a layout nor published, and moves the ones you choose into a separate folder that keeps their folder structure.':
+        '找出既未放置在布图上也未发布的视图，并把你选择的视图移到一个单独的文件夹中，保留其文件夹结构。',
+
     // The schedule
     'Browse scripts': '浏览脚本',
     'Search scripts': '搜索脚本',
