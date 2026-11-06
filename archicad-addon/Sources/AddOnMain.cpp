@@ -1080,6 +1080,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.8.1",
             "Creates extruded, revolved and ruled Shell elements from profile polylines, with thickness, structure, an optional clipping contour and holes."
         );
+        err |= RegisterCommand<CreateSkylightsCommand> (
+            elementCommands, "1.8.1",
+            "Creates Skylight elements with a roof or shell owner and a floor plan anchor position. Width, height, anchor point and library part are optional; other settings come from the Skylight tool defaults or a favorite. Surface placement is handled by Archicad and has not yet been verified for this command."
+        );
         err |= RegisterCommand<CreateRailingsCommand> (
             elementCommands, "1.8.0",
             "Creates Railing elements along a reference polyline. Posts, rails, handrails, toprails, panels and balusters come from the favorite or from the Railing tool defaults; Archicad generates one node per vertex and one segment per pair of consecutive vertices."
@@ -1735,7 +1739,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ImportAttributesFromProjectCommand> (
             attributeCommands, "1.8.1",
-            "Imports Line, Fill, ZoneCategory, PenTable and OperationProfile attributes from another project or template file into the open project, with their complete definition (symbol and percent fills included), like Append or Overwrite by name in Archicad's Attribute Manager. A new attribute gets a new guid: Archicad does not hand out the guids stored in the source file. An attribute whose name already exists is skipped, or overwritten in place with overwriteExisting. dryRun reports what would happen without changing anything. The names are the legacy 8-bit names of the source file. Available from Archicad 27."
+            "Imports Line, Fill, ZoneCategory, PenTable, OperationProfile, Composite, Profile and LayerCombination attributes from another project or template file into the open project, with their complete definition (symbol and percent fills included), like Append or Overwrite by name in Archicad's Attribute Manager. The lines and fills a composite or profile uses are matched by name; its building materials and surfaces, and the layers of a layer combination, keep their index only with referencesByIndex, since Archicad does not read these types from a closed file. An attribute with a reference that cannot be mapped is not imported. A new attribute gets a new guid: Archicad does not hand out the guids stored in the source file. An attribute whose name already exists is skipped, or overwritten in place with overwriteExisting. dryRun reports what would happen without changing anything. The names are the legacy 8-bit names of the source file. Available from Archicad 27."
         );
         err |= RegisterCommand<GetUsedAttributesCommand> (
             attributeCommands, "1.8.0",
@@ -2422,7 +2426,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<FindModelViewOptionCommand> (
             navigatorCommands, "1.8.0",
-            "Finds a model view option combination by id or by name and returns its index, id, name and flags. The index is the one Archicad uses to switch the model view options of a window to the combination. Available from Archicad 27."
+            "Finds a model view option combination by id or by name and returns its index, id, name and flags. The index is the one SetViewOptions takes to switch the model view options of a window to the combination. Available from Archicad 27."
         );
         err |= RegisterCommand<GetModelViewOptionDetailsCommand> (
             navigatorCommands, "1.8.1",
@@ -2430,11 +2434,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetViewOptionsCommand> (
             navigatorCommands, "1.8.0",
-            "Gets the model view options and on-screen view options of the current plan window, and the index of the model view option combination it applies."
+            "Gets the model view options and on-screen view options of the current plan window, and the index and name of the model view option combination it applies."
         );
         err |= RegisterCommand<SetViewOptionsCommand> (
             navigatorCommands, "1.8.0",
-            "Switches the current plan window to a model view option combination by index, and/or changes the given model view options and on-screen view options."
+            "Switches the current plan window to a model view option combination by index, and/or changes the given model view options and on-screen view options. With an index, the model view options stored in the combination apply."
         );
         err |= RegisterCommand<GetViewSettingsCommand> (
             navigatorCommands, "1.1.4",

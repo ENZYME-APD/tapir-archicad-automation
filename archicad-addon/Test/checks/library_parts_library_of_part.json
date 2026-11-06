@@ -1,0 +1,83 @@
+{
+  "title": "GetLibrariesOfLibParts finds the embedded library of a new library part by file name and by guid",
+  "minTapir": "1.8.1",
+  "minArchicad": "29",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "part in the embedded library",
+      "command": "CreateLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          {
+            "name": "TapirCheckLibOfPart Box",
+            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "path": "TapirCheckLibOfPart/TapirCheckLibOfPart Box.gsm",
+            "a": 1.0,
+            "b": 1.0,
+            "script3D": "BLOCK A, B, 1"
+          }
+        ],
+        "overwriteExisting": true
+      },
+      "save": {
+        "partGuid": "libraryParts[0].guid"
+      },
+      "expect": [
+        { "path": "libraryParts[0].error", "exists": false, "name": "part created" }
+      ]
+    },
+    {
+      "id": "[by file name, by guid, missing name, missing guid, neither]",
+      "command": "GetLibrariesOfLibParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "TapirCheckLibOfPart Box.gsm" },
+          { "guid": "${partGuid}" },
+          { "name": "TapirCheckLibOfPart NoSuchPart.gsm" },
+          { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+          {}
+        ]
+      },
+      "expect": [
+        { "path": "libraries", "len": 5, "name": "one item per input" },
+        { "path": "libraries[0].library.isEmbedded", "eq": true, "name": "by name: in the embedded library" },
+        { "path": "libraries[0].library.isBuiltIn", "eq": false, "name": "by name: not built-in" },
+        { "path": "libraries[0].library.isPackage", "eq": false, "name": "by name: not a package" },
+        { "path": "libraries[0].library.isMissing", "eq": false, "name": "by name: not missing" },
+        { "path": "libraries[0].library.displayName", "exists": true, "name": "by name: the library's name" },
+        { "path": "libraries[0].libraryTreePath", "exists": true, "name": "by name: the library tree path" },
+        { "path": "libraries[1].library.isEmbedded", "eq": true, "name": "by guid: in the embedded library" },
+        { "path": "libraries[1].library.isMissing", "eq": false, "name": "by guid: not missing" },
+        { "path": "libraries[2].error", "exists": true, "name": "missing name: an error item" },
+        { "path": "libraries[3].error", "exists": true, "name": "missing guid: an error item" },
+        { "path": "libraries[4].error", "exists": true, "name": "neither name nor guid: an error item" }
+      ]
+    },
+    {
+      "id": "both name and guid",
+      "command": "GetLibrariesOfLibParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "TapirCheckLibOfPart Box.gsm", "guid": "${partGuid}" }
+        ]
+      },
+      "expect": [
+        { "path": "libraries[0].error", "exists": true, "name": "an error item: exactly one of them is allowed" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteEmbeddedLibraryItems",
+      "params": {
+        "embeddedLibraryItems": [
+          { "path": "TapirCheckLibOfPart" }
+        ]
+      }
+    }
+  ]
+}

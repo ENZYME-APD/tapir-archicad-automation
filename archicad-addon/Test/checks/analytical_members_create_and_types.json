@@ -1,0 +1,144 @@
+{
+  "title": "CreateElementsFromAnalyticalMembers makes a beam and a column from curve members and refuses incomplete members; GetAnalyticalMemberTypesOfElements names their member types",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [ "Wall", "Slab", "Roof", "Beam", "Column" ],
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      }
+    },
+    {
+      "id": "wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 704, "y": 700 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 }
+        ]
+      },
+      "save": {
+        "wall": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "beam, column and two incomplete members",
+      "command": "CreateElementsFromAnalyticalMembers",
+      "params": {
+        "members": [
+          {
+            "curveMember": {
+              "analyticalMemberType": "Beam",
+              "crossSection": { "crossSectionType": "Rectangle", "width": 0.3, "height": 0.5 },
+              "curve": {
+                "type": "Line",
+                "begNode": { "nodeId": 1, "coord": { "x": 710.0, "y": 700.0, "z": 3.0 } },
+                "endNode": { "nodeId": 2, "coord": { "x": 716.0, "y": 700.0, "z": 3.0 } },
+                "midCoords": []
+              }
+            }
+          },
+          {
+            "curveMember": {
+              "analyticalMemberType": "Column",
+              "crossSection": { "crossSectionType": "Rectangle", "width": 0.4, "height": 0.4 },
+              "curve": {
+                "type": "Line",
+                "begNode": { "nodeId": 3, "coord": { "x": 720.0, "y": 700.0, "z": 0.0 } },
+                "endNode": { "nodeId": 4, "coord": { "x": 720.0, "y": 700.0, "z": 3.0 } },
+                "midCoords": []
+              }
+            }
+          },
+          {
+            "curveMember": {
+              "analyticalMemberType": "Beam",
+              "crossSection": { "crossSectionType": "Rectangle", "width": 0.3, "height": 0.5 }
+            }
+          },
+          {
+            "surfaceMember": {
+              "analyticalMemberType": "Slab",
+              "contour": []
+            }
+          }
+        ]
+      },
+      "save": {
+        "beam": "elements[0].elementId.guid",
+        "column": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "beam created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "column created" },
+        { "path": "elements[2].error.code", "exists": true, "name": "curve member without curve refused" },
+        { "path": "elements[3].error.code", "exists": true, "name": "surface member with empty contour refused" }
+      ]
+    },
+    {
+      "id": "read the new elements",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${beam}" } },
+          { "elementId": { "guid": "${column}" } }
+        ]
+      },
+      "save": {
+        "beamBegX": "detailsOfElements[0].details.begCoordinate.x",
+        "beamEndX": "detailsOfElements[0].details.endCoordinate.x"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Beam", "name": "a beam" },
+        { "path": "detailsOfElements[0].details.begCoordinate.y", "approx": 700.0, "tol": 0.05, "name": "beam on the member's line" },
+        { "expr": "${beamEndX} - ${beamBegX}", "approx": 6.0, "tol": 0.05, "name": "beam as long as the member" },
+        { "path": "detailsOfElements[1].type", "eq": "Column", "name": "a column" }
+      ]
+    },
+    {
+      "id": "only the two valid members made elements",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": {
+        "elementType": "Beam"
+      },
+      "expect": [
+        { "path": "elements", "len": 1 }
+      ]
+    },
+    {
+      "id": "one column",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": {
+        "elementType": "Column"
+      },
+      "expect": [
+        { "path": "elements", "len": 1 }
+      ]
+    },
+    {
+      "id": "member types of wall, beam, column and an unknown guid",
+      "command": "GetAnalyticalMemberTypesOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${wall}" } },
+          { "elementId": { "guid": "${beam}" } },
+          { "elementId": { "guid": "${column}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "memberTypesOfElements[0].memberType", "eq": "Wall" },
+        { "path": "memberTypesOfElements[1].memberType", "eq": "Beam" },
+        { "path": "memberTypesOfElements[2].memberType", "eq": "Column" },
+        { "path": "memberTypesOfElements[3].error.code", "exists": true, "name": "unknown guid is an error item" }
+      ]
+    }
+  ]
+}
