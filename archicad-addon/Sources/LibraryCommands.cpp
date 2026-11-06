@@ -1908,6 +1908,58 @@ GS::ObjectState ReloadLibrariesCommand::Execute (const GS::ObjectState& /*parame
     return CreateSuccessfulExecutionResult ();
 }
 
+// ACAPI_LibraryManagement_GetGDLDate and ChangeGDLDate read and write an Int32 array of six:
+// year, month, day, hour, minute and second.
+static const char* GDLDateComponentNames[] = { "year", "month", "day", "hour", "minute", "second" };
+static const USize GDLDateComponentCount = 6;
+
+static GS::UniString GetGDLDateSchema (const char* description)
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "description": ")") + description + R"(",
+        "properties": {
+            "year": {
+                "type": "integer"
+            },
+            "month": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 12
+            },
+            "day": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 31
+            },
+            "hour": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 23
+            },
+            "minute": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 59
+            },
+            "second": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 59
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "year",
+            "month",
+            "day",
+            "hour",
+            "minute",
+            "second"
+        ]
+    })";
+}
+
 GetGDLDateCommand::GetGDLDateCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1920,13 +1972,10 @@ GS::String GetGDLDateCommand::GetName () const
 
 GS::Optional<GS::UniString> GetGDLDateCommand::GetRawResponseSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
-            "date": {
-                "type": "integer",
-                "description": "The date GDL scripts see, as the Int32 value of ACAPI_LibraryManagement_GetGDLDate."
-            }
+            "date": )") + GetGDLDateSchema ("The date GDL scripts see.") + R"(
         },
         "additionalProperties": false,
         "required": [
@@ -1937,13 +1986,18 @@ GS::Optional<GS::UniString> GetGDLDateCommand::GetRawResponseSchema () const
 
 GS::ObjectState GetGDLDateCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-    Int32 date = 0;
-    GSErrCode err = ACAPI_LibraryManagement_GetGDLDate (&date);
+    Int32 date[GDLDateComponentCount] = {};
+    GSErrCode err = ACAPI_LibraryManagement_GetGDLDate (date);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to get the GDL date.");
     }
 
-    return GS::ObjectState ("date", date);
+    GS::ObjectState dateOs;
+    for (USize i = 0; i < GDLDateComponentCount; ++i) {
+        dateOs.Add (GDLDateComponentNames[i], date[i]);
+    }
+
+    return GS::ObjectState ("date", dateOs);
 }
 
 SetGDLDateCommand::SetGDLDateCommand () :
@@ -1958,13 +2012,10 @@ GS::String SetGDLDateCommand::GetName () const
 
 GS::Optional<GS::UniString> SetGDLDateCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
-            "date": {
-                "type": "integer",
-                "description": "The date GDL scripts should see, in the same Int32 format GetGDLDate returns."
-            }
+            "date": )") + GetGDLDateSchema ("The date GDL scripts should see, in the format GetGDLDate returns.") + R"(
         },
         "additionalProperties": false,
         "required": [
@@ -1982,12 +2033,19 @@ GS::Optional<GS::UniString> SetGDLDateCommand::GetRawResponseSchema () const
 
 GS::ObjectState SetGDLDateCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    Int32 date = 0;
-    if (!parameters.Get ("date", date)) {
+    GS::ObjectState dateOs;
+    if (!parameters.Get ("date", dateOs)) {
         return CreateFailedExecutionResult (APIERR_BADPARS, "The date parameter is missing.");
     }
 
-    GSErrCode err = ACAPI_LibraryManagement_ChangeGDLDate (&date);
+    Int32 date[GDLDateComponentCount] = {};
+    for (USize i = 0; i < GDLDateComponentCount; ++i) {
+        if (!dateOs.Get (GDLDateComponentNames[i], date[i])) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString ("The date has no ") + GDLDateComponentNames[i] + ".");
+        }
+    }
+
+    GSErrCode err = ACAPI_LibraryManagement_ChangeGDLDate (date);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to set the GDL date.");
     }

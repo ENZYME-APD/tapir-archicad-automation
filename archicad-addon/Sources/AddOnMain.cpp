@@ -2138,11 +2138,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetGDLDateCommand> (
             libraryCommands, "1.8.1",
-            "Gets the date GDL scripts see, as the integer value the Archicad API returns."
+            "Gets the date GDL scripts see: year, month, day, hour, minute and second."
         );
         err |= RegisterCommand<SetGDLDateCommand> (
             libraryCommands, "1.8.1",
-            "Sets the date GDL scripts see, in the integer format GetGDLDate returns. Useful to test date-dependent library parts; set the value read with GetGDLDate back to restore it."
+            "Sets the date GDL scripts see: year, month, day, hour, minute and second, as GetGDLDate returns them. Useful to test date-dependent library parts; set the value read with GetGDLDate back to restore it."
         );
         err |= RegisterCommand<CheckLibrariesCommand> (
             libraryCommands, "1.8.0",
