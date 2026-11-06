@@ -86,6 +86,11 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         protected abstract string ModifyCommand { get; }
         protected abstract string ModifyArrayKey { get; }
 
+        // The key a Modify command expects the settings of an item under,
+        // next to its elementId (e.g. ModifyMeshes' meshData); null when the
+        // settings are the item's own properties (e.g. ModifyWalls).
+        protected virtual string ModifyItemSettingsKey => null;
+
         // The item keys the Create and the Modify command accept (their input
         // schemas), so a setting goes to the command that can write it.
         protected abstract ISet<string> CreateKeys { get; }
@@ -1050,11 +1055,29 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 return;
             }
 
-            var parameters = new JObject { [ModifyArrayKey] = new JArray(items.Select(p => p.Value)) };
+            var parameters = new JObject { [ModifyArrayKey] = new JArray(items.Select(p => ModifyItemOf(p.Value))) };
             if (TryGetCadResponse(ModifyCommand, parameters, ToAddOn, out var response))
             {
                 AddExecutionResults(response, items.Select(p => p.Key).ToList(), errors);
             }
+        }
+
+        // { elementId, settings... } as the Modify command takes it: as is,
+        // or with the settings under ModifyItemSettingsKey.
+        private JObject ModifyItemOf(
+            JObject item)
+        {
+            if (ModifyItemSettingsKey == null)
+            {
+                return item;
+            }
+
+            var settings = new JObject(item.Properties().Where(p => p.Name != "elementId"));
+            return new JObject
+            {
+                ["elementId"] = item["elementId"],
+                [ModifyItemSettingsKey] = settings
+            };
         }
 
         private void SendDetails(
