@@ -124,50 +124,35 @@ as `<file name> (My scripts)`. Edits to the file take effect the next time you r
 
 ## Sharing your script
 
-### A pull request to this folder
+### The Tapir Marketplace
 
-Put the script into `builtin-scripts/` and open a pull request. Once it is merged into `main`, it
-appears in every Tapir user's palette the next time they start Archicad or reload the scripts; no
-Tapir release is needed. Keep it to the standard library and the helpers above, and check that it
-works with the released Tapir Add-On.
+Community scripts are shared on the [Tapir Marketplace](https://tapir-marketplace.vercel.app/),
+the script hub promoted on [archicad-api.com](https://www.archicad-api.com/). Publish your script
+there through its dashboard, by a pull request to
+[giza611/tapir_marketplace](https://github.com/giza611/tapir_marketplace), or through its MCP
+server.
 
-### Your own GitHub repository
+### A built-in script: a pull request to this folder
 
-Put the script, with copies of `utilities/` and `aclib/`, into a public GitHub repository, in its
-root or in a folder. Its users add an entry to `repositories` in their `config.json`, after the
-Tapir one:
+To propose a built-in script, put it into `builtin-scripts/` and open a pull request here. Once it
+is merged into `main`, it appears in every Tapir user's palette the next time they start Archicad
+or reload the scripts; no Tapir release is needed. Keep it to the standard library and the helpers
+above, and check that it works with the released Tapir Add-On.
 
-```json
-{
-    "displayName": "Jane's scripts",
-    "repoOwner": "jane",
-    "repoName": "my-tapir-scripts",
-    "relativeLoc": "scripts"
-}
-```
+## Using a marketplace script in the palette
 
-Leave `relativeLoc` empty (`""`) when the scripts are in the root. Add `includePattern` or
-`excludePattern` (see above) when other files should or should not be listed. The scripts are read
-from the repository's default branch, and the palette's *Open in Browser* button links to the file on the
-`main` branch, so name it `main`.
-
-### The community list
-
-[community.json](community.json) lists community script repositories. It is a list of entries
-like this:
+Download the script from the marketplace into a folder on your computer and add that folder to
+`localFolders` in `Documents/Tapir/config.json`, keeping the existing entries:
 
 ```json
-{
-    "displayName": "Jane's scripts",
-    "repoOwner": "jane",
-    "repoName": "my-tapir-scripts",
-    "relativeLoc": "scripts",
-    "description": "Scripts for renumbering doors and windows.",
-    "author": "Jane Doe"
-}
+"localFolders": [
+    {
+        "displayName": "Marketplace",
+        "path": "C:\\Users\\me\\Tapir marketplace scripts"
+    }
+]
 ```
 
-To list your repository, open a pull request that adds one line, your entry, to it. Each entry can
-be pasted into `repositories` in `config.json` as it is (the palette ignores `description` and
-`author`). The palette does not read `community.json` itself yet
-([#1847](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1847)).
+On macOS the path looks like `/Users/me/Tapir marketplace scripts`. A script that imports
+`utilities` or `aclib` needs copies of the `utilities/` and `aclib/` folders next to it. Then choose
+*Reload scripts...* in the palette: the script appears as `<file name> (Marketplace)`.

@@ -108,6 +108,6 @@ These are plain HTTPS requests. Like any web request they show your IP address a
 
 - [Archicad JSON commands](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon), each with a Python example from [archicad-addon/Examples](archicad-addon/Examples/)
 - [Workflows](archicad-addon/Workflows/): Python scripts that combine several commands into a task
-- [Tapir palette scripts](builtin-scripts/README.md): how to write a script for the Tapir palette, test it and share it (a [template](builtin-scripts/template/TEMPLATE.py) and a [list of community script repositories](builtin-scripts/community.json))
+- [Tapir palette scripts](builtin-scripts/README.md): how to write a script for the Tapir palette, test it and share it, with a [template](builtin-scripts/template/TEMPLATE.py); community scripts are shared on the [Tapir Marketplace](https://tapir-marketplace.vercel.app/)
 - [Tapir GitHub wiki](https://github.com/ENZYME-APD/tapir-archicad-automation/wiki)
 
