@@ -1,16 +1,16 @@
 {
- "generatedAt": "2026-11-06 05:54 UTC",
+ "generatedAt": "2026-11-06 06:03 UTC",
  "counts": {
   "done": 568,
-  "open": 27,
+  "in progress": 27,
   "merged": 148,
   "skipped": 1,
   "not applicable": 1
  },
  "parameters": {
-  "all": 656,
+  "all": 670,
   "partial": 12,
-  "json": 48
+  "json": 34
  },
  "items": [
   {
@@ -38,14 +38,19 @@
    "group": "Application Commands",
    "version": "1.8.1",
    "brief": "Retrieves every command of the Tapir Add-On with its command group, the Tapir version it was introduced in and its description, so a script can check that a command exists before calling it.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2100,
+     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1127,14 +1132,19 @@
    "group": "Project Commands",
    "version": "1.8.1",
    "brief": "Retrieves every autotext key Archicad knows (not only the property-based ones returned by GetAutoTextKeys) with its current value, resolved without an element context.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2100,
+     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -1142,14 +1152,19 @@
    "group": "Project Commands",
    "version": "1.8.1",
    "brief": "Resolves one or more autotexts (e.g. '<LAYOUTID>') to their values, optionally in the context of an element, so a key can be tested before it is written into a Text or Label.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2100,
+     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -2632,8 +2647,24 @@
    "reason": "",
    "components": [
     {
+     "name": "ArcsComponent",
+     "path": "Components/DocumentToolsComponents/ArcsComponent.cs"
+    },
+    {
+     "name": "BeamsComponent",
+     "path": "Components/DesignToolsComponents/BeamsComponent.cs"
+    },
+    {
      "name": "DoorsComponent",
      "path": "Components/DesignToolsComponents/DoorsComponent.cs"
+    },
+    {
+     "name": "DrawingsComponent",
+     "path": "Components/DocumentToolsComponents/DrawingsComponent.cs"
+    },
+    {
+     "name": "FillsComponent",
+     "path": "Components/DocumentToolsComponents/FillsComponent.cs"
     },
     {
      "name": "GetDetailsOfBeamsComponent",
@@ -2676,12 +2707,48 @@
      "path": "Components/ElementsComponents/GetDetailsOfElementsComponent.cs"
     },
     {
+     "name": "LabelsComponent",
+     "path": "Components/DocumentToolsComponents/LabelsComponent.cs"
+    },
+    {
+     "name": "LampsComponent",
+     "path": "Components/DesignToolsComponents/LampsComponent.cs"
+    },
+    {
      "name": "LevelDimensionsComponent",
      "path": "Components/DocumentToolsComponents/LevelDimensionsComponent.cs"
     },
     {
+     "name": "LinesComponent",
+     "path": "Components/DocumentToolsComponents/LinesComponent.cs"
+    },
+    {
+     "name": "MeshesComponent",
+     "path": "Components/DesignToolsComponents/MeshesComponent.cs"
+    },
+    {
+     "name": "MorphsComponent",
+     "path": "Components/DesignToolsComponents/MorphsComponent.cs"
+    },
+    {
+     "name": "ObjectsComponent",
+     "path": "Components/DesignToolsComponents/ObjectsComponent.cs"
+    },
+    {
+     "name": "PolylinesComponent",
+     "path": "Components/DocumentToolsComponents/PolylinesComponent.cs"
+    },
+    {
      "name": "RailingsComponent",
      "path": "Components/DesignToolsComponents/RailingsComponent.cs"
+    },
+    {
+     "name": "SlabsComponent",
+     "path": "Components/DesignToolsComponents/SlabsComponent.cs"
+    },
+    {
+     "name": "TextsComponent",
+     "path": "Components/DocumentToolsComponents/TextsComponent.cs"
     },
     {
      "name": "WallsApiComponent",
@@ -2694,6 +2761,10 @@
     {
      "name": "WindowsComponent",
      "path": "Components/DesignToolsComponents/WindowsComponent.cs"
+    },
+    {
+     "name": "ZonesComponent",
+     "path": "Components/DesignToolsComponents/ZonesComponent.cs"
     }
    ],
    "parameters": "json",
@@ -2708,84 +2779,28 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1980,
-     "title": "Grasshopper: Drawings tool component"
-    },
-    {
      "number": 1979,
      "title": "Grasshopper: Hotspots tool component"
-    },
-    {
-     "number": 1978,
-     "title": "Grasshopper: Fills tool component"
     },
     {
      "number": 1977,
      "title": "Grasshopper: Splines tool component"
     },
     {
-     "number": 1976,
-     "title": "Grasshopper: Polylines tool component"
-    },
-    {
      "number": 1975,
      "title": "Grasshopper: Circles tool component"
-    },
-    {
-     "number": 1974,
-     "title": "Grasshopper: Arcs tool component"
-    },
-    {
-     "number": 1973,
-     "title": "Grasshopper: Lines tool component"
-    },
-    {
-     "number": 1972,
-     "title": "Grasshopper: Labels tool component"
-    },
-    {
-     "number": 1971,
-     "title": "Grasshopper: Texts tool component"
     },
     {
      "number": 1970,
      "title": "Grasshopper: CurtainWalls tool component"
     },
     {
-     "number": 1969,
-     "title": "Grasshopper: Lamps tool component"
-    },
-    {
-     "number": 1968,
-     "title": "Grasshopper: Objects tool component"
-    },
-    {
-     "number": 1967,
-     "title": "Grasshopper: Zones tool component"
-    },
-    {
-     "number": 1966,
-     "title": "Grasshopper: Morphs tool component"
-    },
-    {
-     "number": 1965,
-     "title": "Grasshopper: Meshes tool component"
-    },
-    {
      "number": 1964,
      "title": "Grasshopper: Roofs tool component"
     },
     {
-     "number": 1963,
-     "title": "Grasshopper: Beams tool component"
-    },
-    {
      "number": 1962,
      "title": "Grasshopper: Columns tool component"
-    },
-    {
-     "number": 1961,
-     "title": "Grasshopper: Slabs tool component"
     },
     {
      "number": 1791,
@@ -2802,12 +2817,56 @@
    "reason": "",
    "components": [
     {
+     "name": "ArcsComponent",
+     "path": "Components/DocumentToolsComponents/ArcsComponent.cs"
+    },
+    {
+     "name": "BeamsComponent",
+     "path": "Components/DesignToolsComponents/BeamsComponent.cs"
+    },
+    {
      "name": "DoorsComponent",
      "path": "Components/DesignToolsComponents/DoorsComponent.cs"
     },
     {
+     "name": "DrawingsComponent",
+     "path": "Components/DocumentToolsComponents/DrawingsComponent.cs"
+    },
+    {
+     "name": "FillsComponent",
+     "path": "Components/DocumentToolsComponents/FillsComponent.cs"
+    },
+    {
+     "name": "LabelsComponent",
+     "path": "Components/DocumentToolsComponents/LabelsComponent.cs"
+    },
+    {
+     "name": "LampsComponent",
+     "path": "Components/DesignToolsComponents/LampsComponent.cs"
+    },
+    {
      "name": "LevelDimensionsComponent",
      "path": "Components/DocumentToolsComponents/LevelDimensionsComponent.cs"
+    },
+    {
+     "name": "LinesComponent",
+     "path": "Components/DocumentToolsComponents/LinesComponent.cs"
+    },
+    {
+     "name": "MeshesComponent",
+     "path": "Components/DesignToolsComponents/MeshesComponent.cs"
+    },
+    {
+     "name": "MorphsComponent",
+     "path": "Components/DesignToolsComponents/MorphsComponent.cs"
+    },
+    {
+     "name": "ObjectsComponent",
+     "path": "Components/DesignToolsComponents/ObjectsComponent.cs"
+    },
+    {
+     "name": "PolylinesComponent",
+     "path": "Components/DocumentToolsComponents/PolylinesComponent.cs"
     },
     {
      "name": "RailingsComponent",
@@ -2822,6 +2881,14 @@
      "path": "Components/ElementsComponents/SetDetailsOfElementsComponent.cs"
     },
     {
+     "name": "SlabsComponent",
+     "path": "Components/DesignToolsComponents/SlabsComponent.cs"
+    },
+    {
+     "name": "TextsComponent",
+     "path": "Components/DocumentToolsComponents/TextsComponent.cs"
+    },
+    {
      "name": "WallsApiComponent",
      "path": "Components/DesignToolsComponents/WallsComponent.cs"
     },
@@ -2832,6 +2899,10 @@
     {
      "name": "WindowsComponent",
      "path": "Components/DesignToolsComponents/WindowsComponent.cs"
+    },
+    {
+     "name": "ZonesComponent",
+     "path": "Components/DesignToolsComponents/ZonesComponent.cs"
     }
    ],
    "parameters": "all",
@@ -4636,11 +4707,15 @@
    "reason": "",
    "components": [
     {
+     "name": "BeamsComponent",
+     "path": "Components/DesignToolsComponents/BeamsComponent.cs"
+    },
+    {
      "name": "CreateBeamsComponent",
      "path": "Components/ElementsComponents/CreateBeamsComponent.cs"
     }
    ],
-   "parameters": "json",
+   "parameters": "all",
    "parameterCount": 21,
    "coveredParameters": [
     "beamsData",
@@ -4653,32 +4728,21 @@
     "beamsData.favoriteName",
     "beamsData.floorIndex",
     "beamsData.height",
+    "beamsData.id",
+    "beamsData.isSlanted",
+    "beamsData.isWidthAndHeightLinked",
+    "beamsData.layerIndex",
     "beamsData.offset",
+    "beamsData.profileAngle",
     "beamsData.profileId",
     "beamsData.slantAngle",
     "beamsData.verticalCurveHeight",
     "beamsData.width",
     "beamsData.zCoordinate"
    ],
-   "missingParameters": [
-    "beamsData.id",
-    "beamsData.isSlanted",
-    "beamsData.isWidthAndHeightLinked",
-    "beamsData.layerIndex",
-    "beamsData.profileAngle"
-   ],
-   "pullRequests": [
-    {
-     "number": 2024,
-     "title": "Grasshopper: Beams tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1963,
-     "title": "Grasshopper: Beams tool component"
-    }
-   ]
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreateStairs",
@@ -4755,9 +4819,13 @@
     {
      "name": "CreateSlabsComponent",
      "path": "Components/ElementsComponents/CreateSlabsComponent.cs"
+    },
+    {
+     "name": "SlabsComponent",
+     "path": "Components/DesignToolsComponents/SlabsComponent.cs"
     }
    ],
-   "parameters": "json",
+   "parameters": "all",
    "parameterCount": 14,
    "coveredParameters": [
     "slabsData",
@@ -4766,6 +4834,8 @@
     "slabsData.favoriteName",
     "slabsData.floorIndex",
     "slabsData.holes",
+    "slabsData.id",
+    "slabsData.layerIndex",
     "slabsData.level",
     "slabsData.polygonArcs",
     "slabsData.polygonCoordinates",
@@ -4773,22 +4843,9 @@
     "slabsData.structureType",
     "slabsData.thickness"
    ],
-   "missingParameters": [
-    "slabsData.id",
-    "slabsData.layerIndex"
-   ],
-   "pullRequests": [
-    {
-     "number": 2028,
-     "title": "Grasshopper: Slabs tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1961,
-     "title": "Grasshopper: Slabs tool component"
-    }
-   ]
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreateWindows",
@@ -5283,23 +5340,20 @@
     {
      "name": "CreateMorphsComponent",
      "path": "Components/ElementsComponents/CreateMorphsComponent.cs"
+    },
+    {
+     "name": "MorphsComponent",
+     "path": "Components/DesignToolsComponents/MorphsComponent.cs"
     }
    ],
-   "parameters": "json",
+   "parameters": "all",
    "parameterCount": 41,
    "coveredParameters": [
     "morphsData",
     "morphsData.basePoint",
+    "morphsData.body",
     "morphsData.buildingMaterialId",
     "morphsData.castShadow",
-    "morphsData.floorIndex",
-    "morphsData.level",
-    "morphsData.receiveShadow",
-    "morphsData.size",
-    "morphsData.surfaceId"
-   ],
-   "missingParameters": [
-    "morphsData.body",
     "morphsData.coverFillBGPen",
     "morphsData.coverFillOrientation",
     "morphsData.coverFillPen",
@@ -5310,15 +5364,20 @@
     "morphsData.cutLineType",
     "morphsData.displayOption",
     "morphsData.favoriteName",
+    "morphsData.floorIndex",
     "morphsData.id",
     "morphsData.isAutoOnStoryVisibility",
     "morphsData.layerIndex",
+    "morphsData.level",
     "morphsData.linkToSettings",
     "morphsData.outlineContourDisplay",
     "morphsData.overheadLinePen",
     "morphsData.overheadLineType",
+    "morphsData.receiveShadow",
     "morphsData.showContour",
     "morphsData.showFill",
+    "morphsData.size",
+    "morphsData.surfaceId",
     "morphsData.textureProjectionCoords",
     "morphsData.textureProjectionType",
     "morphsData.topExpansion",
@@ -5332,18 +5391,9 @@
     "morphsData.yAxis",
     "morphsData.zAxis"
    ],
-   "pullRequests": [
-    {
-     "number": 2030,
-     "title": "Grasshopper: Morphs tool component, built from ToolSettings/Morph.json"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1966,
-     "title": "Grasshopper: Morphs tool component"
-    }
-   ]
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreateRoofs",
@@ -5395,14 +5445,19 @@
    "group": "Element Commands",
    "version": "1.8.1",
    "brief": "Creates extruded, revolved and ruled Shell elements from profile polylines, with thickness, structure, an optional clipping contour and holes.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 33,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2101,
+     "title": "Grasshopper: components for the new element and property commands, and the overwrite/dryRun inputs"
+    }
+   ],
    "issues": []
   },
   {
@@ -5678,45 +5733,38 @@
     {
      "name": "CreateZonesComponent",
      "path": "Components/ElementsComponents/CreateZonesComponent.cs"
+    },
+    {
+     "name": "ZonesComponent",
+     "path": "Components/DesignToolsComponents/ZonesComponent.cs"
     }
    ],
-   "parameters": "json",
+   "parameters": "all",
    "parameterCount": 19,
    "coveredParameters": [
     "zonesData",
+    "zonesData.allowOverlap",
     "zonesData.bottomOffset",
     "zonesData.categoryAttributeId",
-    "zonesData.favoriteName",
-    "zonesData.geometry",
-    "zonesData.height",
-    "zonesData.name",
-    "zonesData.numberStr",
-    "zonesData.stampPosition"
-   ],
-   "missingParameters": [
-    "zonesData.allowOverlap",
     "zonesData.contourLine",
     "zonesData.coverFill",
+    "zonesData.favoriteName",
     "zonesData.fixedStampAngle",
     "zonesData.floorIndex",
     "zonesData.floorThickness",
+    "zonesData.geometry",
+    "zonesData.height",
     "zonesData.id",
+    "zonesData.name",
+    "zonesData.numberStr",
     "zonesData.relativeTopStory",
     "zonesData.stampAngle",
+    "zonesData.stampPosition",
     "zonesData.topOffset"
    ],
-   "pullRequests": [
-    {
-     "number": 2033,
-     "title": "Grasshopper: Zones tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1967,
-     "title": "Grasshopper: Zones tool component"
-    }
-   ]
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreatePolylines",
@@ -5729,6 +5777,10 @@
     {
      "name": "CreatePolylinesComponent",
      "path": "Components/ElementsComponents/CreatePolylinesComponent.cs"
+    },
+    {
+     "name": "PolylinesComponent",
+     "path": "Components/DocumentToolsComponents/PolylinesComponent.cs"
     }
    ],
    "parameters": "json",
@@ -5738,29 +5790,19 @@
     "polylinesData.arcs",
     "polylinesData.coordinates",
     "polylinesData.favoriteName",
+    "polylinesData.floorInd",
+    "polylinesData.id",
     "polylinesData.layerIndex",
     "polylinesData.linePenIndex",
     "polylinesData.lineTypeIndex",
+    "polylinesData.penWeightMm",
     "polylinesData.roomSeparator"
    ],
    "missingParameters": [
-    "databaseId",
-    "polylinesData.floorInd",
-    "polylinesData.id",
-    "polylinesData.penWeightMm"
+    "databaseId"
    ],
-   "pullRequests": [
-    {
-     "number": 2041,
-     "title": "Grasshopper: Polylines tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1976,
-     "title": "Grasshopper: Polylines tool component"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreateLineElements",
@@ -5773,6 +5815,10 @@
     {
      "name": "CreateLineElementsComponent",
      "path": "Components/ElementsComponents/CreateLineElementsComponent.cs"
+    },
+    {
+     "name": "LinesComponent",
+     "path": "Components/DocumentToolsComponents/LinesComponent.cs"
     }
    ],
    "parameters": "json",
@@ -5783,27 +5829,17 @@
     "linesData.endCoordinate",
     "linesData.favoriteName",
     "linesData.floorInd",
+    "linesData.id",
     "linesData.layerIndex",
     "linesData.linePenIndex",
     "linesData.lineTypeId",
     "linesData.roomSeparator"
    ],
    "missingParameters": [
-    "databaseId",
-    "linesData.id"
+    "databaseId"
    ],
-   "pullRequests": [
-    {
-     "number": 2036,
-     "title": "Grasshopper: Lines tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1973,
-     "title": "Grasshopper: Lines tool component"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreateArcs",
@@ -5813,6 +5849,10 @@
    "status": "done",
    "reason": "",
    "components": [
+    {
+     "name": "ArcsComponent",
+     "path": "Components/DocumentToolsComponents/ArcsComponent.cs"
+    },
     {
      "name": "CreateArcsComponent",
      "path": "Components/ElementsComponents/CreateArcsComponent.cs"
@@ -5826,6 +5866,7 @@
     "arcsData.endAngle",
     "arcsData.favoriteName",
     "arcsData.floorInd",
+    "arcsData.id",
     "arcsData.layerIndex",
     "arcsData.linePenIndex",
     "arcsData.lineTypeId",
@@ -5834,21 +5875,10 @@
     "arcsData.roomSeparator"
    ],
    "missingParameters": [
-    "arcsData.id",
     "databaseId"
    ],
-   "pullRequests": [
-    {
-     "number": 2037,
-     "title": "Grasshopper: Arcs tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1974,
-     "title": "Grasshopper: Arcs tool component"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreateCircles",
@@ -5945,6 +5975,10 @@
     {
      "name": "CreateHatchesComponent",
      "path": "Components/ElementsComponents/CreateHatchesComponent.cs"
+    },
+    {
+     "name": "FillsComponent",
+     "path": "Components/DocumentToolsComponents/FillsComponent.cs"
     }
    ],
    "parameters": "json",
@@ -5963,26 +5997,16 @@
     "hatchesData.floorInd",
     "hatchesData.foregroundColor",
     "hatchesData.holes",
+    "hatchesData.id",
     "hatchesData.layerIndex",
+    "hatchesData.roomSpecial",
     "hatchesData.showArea"
    ],
    "missingParameters": [
-    "databaseId",
-    "hatchesData.id",
-    "hatchesData.roomSpecial"
+    "databaseId"
    ],
-   "pullRequests": [
-    {
-     "number": 2043,
-     "title": "Grasshopper: Fills tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1978,
-     "title": "Grasshopper: Fills tool component"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreateSplines",
@@ -6038,27 +6062,29 @@
     {
      "name": "CreateObjectsComponent",
      "path": "Components/ElementsComponents/CreateObjectsComponent.cs"
+    },
+    {
+     "name": "ObjectsComponent",
+     "path": "Components/DesignToolsComponents/ObjectsComponent.cs"
     }
    ],
-   "parameters": "json",
+   "parameters": "all",
    "parameterCount": 27,
    "coveredParameters": [
     "objectsData",
     "objectsData.angle",
     "objectsData.coordinates",
-    "objectsData.favoriteName",
-    "objectsData.floorIndex",
-    "objectsData.libraryPartName",
-    "objectsData.offset",
-    "objectsData.pen"
-   ],
-   "missingParameters": [
     "objectsData.dimensions",
+    "objectsData.favoriteName",
     "objectsData.fixPoint",
+    "objectsData.floorIndex",
     "objectsData.id",
     "objectsData.isAutoOnStoryVisibility",
+    "objectsData.libraryPartName",
     "objectsData.lineTypeId",
     "objectsData.linkToSettings",
+    "objectsData.offset",
+    "objectsData.pen",
     "objectsData.reflected",
     "objectsData.sectionContourPen",
     "objectsData.sectionFillBackgroundPen",
@@ -6073,18 +6099,9 @@
     "objectsData.useObjectSectionAttributes",
     "objectsData.visibility"
    ],
-   "pullRequests": [
-    {
-     "number": 2031,
-     "title": "Grasshopper: Objects tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1968,
-     "title": "Grasshopper: Objects tool component"
-    }
-   ]
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreateLamps",
@@ -6097,29 +6114,31 @@
     {
      "name": "CreateLampsComponent",
      "path": "Components/ElementsComponents/CreateLampsComponent.cs"
+    },
+    {
+     "name": "LampsComponent",
+     "path": "Components/DesignToolsComponents/LampsComponent.cs"
     }
    ],
-   "parameters": "json",
+   "parameters": "all",
    "parameterCount": 29,
    "coveredParameters": [
     "lampsData",
     "lampsData.angle",
     "lampsData.coordinates",
-    "lampsData.favoriteName",
-    "lampsData.floorIndex",
-    "lampsData.libraryPartName",
-    "lampsData.offset",
-    "lampsData.pen"
-   ],
-   "missingParameters": [
     "lampsData.dimensions",
+    "lampsData.favoriteName",
     "lampsData.fixPoint",
+    "lampsData.floorIndex",
     "lampsData.id",
     "lampsData.isAutoOnStoryVisibility",
+    "lampsData.libraryPartName",
     "lampsData.lightColor",
     "lampsData.lightIsOn",
     "lampsData.lineTypeId",
     "lampsData.linkToSettings",
+    "lampsData.offset",
+    "lampsData.pen",
     "lampsData.reflected",
     "lampsData.sectionContourPen",
     "lampsData.sectionFillBackgroundPen",
@@ -6134,18 +6153,9 @@
     "lampsData.useObjectSectionAttributes",
     "lampsData.visibility"
    ],
-   "pullRequests": [
-    {
-     "number": 2032,
-     "title": "Grasshopper: Lamps tool component (Design Tools)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1969,
-     "title": "Grasshopper: Lamps tool component"
-    }
-   ]
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "GetGridElementDefaults",
@@ -6231,43 +6241,36 @@
     {
      "name": "CreateMeshesComponent",
      "path": "Components/ElementsComponents/CreateMeshesComponent.cs"
+    },
+    {
+     "name": "MeshesComponent",
+     "path": "Components/DesignToolsComponents/MeshesComponent.cs"
     }
    ],
-   "parameters": "json",
+   "parameters": "all",
    "parameterCount": 17,
    "coveredParameters": [
     "meshesData",
     "meshesData.buildingMaterialId",
+    "meshesData.contourPen",
     "meshesData.favoriteName",
     "meshesData.floorIndex",
     "meshesData.holes",
+    "meshesData.id",
     "meshesData.level",
+    "meshesData.levelPen",
+    "meshesData.lineTypeIndex",
     "meshesData.polygonArcs",
     "meshesData.polygonCoordinates",
     "meshesData.ridges",
-    "meshesData.skirtLevel",
-    "meshesData.skirtType"
-   ],
-   "missingParameters": [
-    "meshesData.contourPen",
-    "meshesData.id",
-    "meshesData.levelPen",
-    "meshesData.lineTypeIndex",
     "meshesData.showLines",
+    "meshesData.skirtLevel",
+    "meshesData.skirtType",
     "meshesData.sublines"
    ],
-   "pullRequests": [
-    {
-     "number": 2026,
-     "title": "Grasshopper: Meshes tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1965,
-     "title": "Grasshopper: Meshes tool component"
-    }
-   ]
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreateLabels",
@@ -6280,6 +6283,10 @@
     {
      "name": "LabelElementsComponent",
      "path": "Components/ElementsComponents/LabelElementsComponent.cs"
+    },
+    {
+     "name": "LabelsComponent",
+     "path": "Components/DocumentToolsComponents/LabelsComponent.cs"
     }
    ],
    "parameters": "json",
@@ -6290,31 +6297,21 @@
     "labelsData.endCoordinate",
     "labelsData.favoriteName",
     "labelsData.floorInd",
+    "labelsData.id",
     "labelsData.labelClass",
+    "labelsData.leaderLine",
     "labelsData.midCoordinate",
     "labelsData.parentElementId",
+    "labelsData.runs",
     "labelsData.style",
+    "labelsData.symbolStyle",
     "labelsData.text"
    ],
    "missingParameters": [
-    "databaseId",
-    "labelsData.id",
-    "labelsData.leaderLine",
-    "labelsData.runs",
-    "labelsData.symbolStyle"
+    "databaseId"
    ],
-   "pullRequests": [
-    {
-     "number": 2034,
-     "title": "Grasshopper: Labels tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1972,
-     "title": "Grasshopper: Labels tool component"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreateTexts",
@@ -6327,6 +6324,10 @@
     {
      "name": "CreateTextsComponent",
      "path": "Components/ElementsComponents/CreateTextsComponent.cs"
+    },
+    {
+     "name": "TextsComponent",
+     "path": "Components/DocumentToolsComponents/TextsComponent.cs"
     }
    ],
    "parameters": "json",
@@ -6338,29 +6339,19 @@
     "textsData.favoriteName",
     "textsData.floorIndex",
     "textsData.height",
+    "textsData.id",
     "textsData.justification",
+    "textsData.layerIndex",
     "textsData.pen",
+    "textsData.runs",
     "textsData.style",
     "textsData.text"
    ],
    "missingParameters": [
-    "databaseId",
-    "textsData.id",
-    "textsData.layerIndex",
-    "textsData.runs"
+    "databaseId"
    ],
-   "pullRequests": [
-    {
-     "number": 2035,
-     "title": "Grasshopper: Texts tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1971,
-     "title": "Grasshopper: Texts tool component"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreateLevelDimensions",
@@ -6481,52 +6472,45 @@
    "reason": "",
    "components": [
     {
+     "name": "BeamsComponent",
+     "path": "Components/DesignToolsComponents/BeamsComponent.cs"
+    },
+    {
      "name": "ModifyBeamsComponent",
      "path": "Components/ElementsComponents/ModifyBeamsComponent.cs"
     }
    ],
-   "parameters": "json",
+   "parameters": "all",
    "parameterCount": 24,
    "coveredParameters": [
     "beamsWithDetails",
     "beamsWithDetails.anchorPoint",
     "beamsWithDetails.arcAngle",
+    "beamsWithDetails.beamShape",
     "beamsWithDetails.begCoordinate",
     "beamsWithDetails.buildingMaterialId",
     "beamsWithDetails.circleBased",
+    "beamsWithDetails.coverFill",
+    "beamsWithDetails.cutFillBackgroundPen",
+    "beamsWithDetails.cutFillPen",
     "beamsWithDetails.elementId",
     "beamsWithDetails.endCoordinate",
     "beamsWithDetails.height",
     "beamsWithDetails.holes",
+    "beamsWithDetails.isFlipped",
+    "beamsWithDetails.isSlanted",
+    "beamsWithDetails.isWidthAndHeightLinked",
     "beamsWithDetails.level",
     "beamsWithDetails.offset",
+    "beamsWithDetails.profileAngle",
     "beamsWithDetails.profileId",
     "beamsWithDetails.slantAngle",
     "beamsWithDetails.verticalCurveHeight",
     "beamsWithDetails.width"
    ],
-   "missingParameters": [
-    "beamsWithDetails.beamShape",
-    "beamsWithDetails.coverFill",
-    "beamsWithDetails.cutFillBackgroundPen",
-    "beamsWithDetails.cutFillPen",
-    "beamsWithDetails.isFlipped",
-    "beamsWithDetails.isSlanted",
-    "beamsWithDetails.isWidthAndHeightLinked",
-    "beamsWithDetails.profileAngle"
-   ],
-   "pullRequests": [
-    {
-     "number": 2024,
-     "title": "Grasshopper: Beams tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1963,
-     "title": "Grasshopper: Beams tool component"
-    }
-   ]
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ModifySlabs",
@@ -6539,44 +6523,37 @@
     {
      "name": "ModifySlabsComponent",
      "path": "Components/ElementsComponents/ModifySlabsComponent.cs"
+    },
+    {
+     "name": "SlabsComponent",
+     "path": "Components/DesignToolsComponents/SlabsComponent.cs"
     }
    ],
-   "parameters": "json",
+   "parameters": "all",
    "parameterCount": 18,
    "coveredParameters": [
     "slabsWithDetails",
+    "slabsWithDetails.bottomMaterial",
     "slabsWithDetails.buildingMaterialId",
     "slabsWithDetails.compositeId",
+    "slabsWithDetails.cutFillBackgroundPen",
+    "slabsWithDetails.cutFillPen",
     "slabsWithDetails.elementId",
+    "slabsWithDetails.floorFill",
+    "slabsWithDetails.floorIndex",
     "slabsWithDetails.holes",
     "slabsWithDetails.polygonArcs",
     "slabsWithDetails.polygonOutline",
     "slabsWithDetails.referencePlaneLocation",
+    "slabsWithDetails.sideMaterial",
     "slabsWithDetails.structureType",
     "slabsWithDetails.thickness",
+    "slabsWithDetails.topMaterial",
     "slabsWithDetails.zCoordinate"
    ],
-   "missingParameters": [
-    "slabsWithDetails.bottomMaterial",
-    "slabsWithDetails.cutFillBackgroundPen",
-    "slabsWithDetails.cutFillPen",
-    "slabsWithDetails.floorFill",
-    "slabsWithDetails.floorIndex",
-    "slabsWithDetails.sideMaterial",
-    "slabsWithDetails.topMaterial"
-   ],
-   "pullRequests": [
-    {
-     "number": 2028,
-     "title": "Grasshopper: Slabs tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1961,
-     "title": "Grasshopper: Slabs tool component"
-    }
-   ]
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ModifyColumns",
@@ -6785,23 +6762,19 @@
     {
      "name": "ModifyMorphsComponent",
      "path": "Components/ElementsComponents/ModifyMorphsComponent.cs"
+    },
+    {
+     "name": "MorphsComponent",
+     "path": "Components/DesignToolsComponents/MorphsComponent.cs"
     }
    ],
-   "parameters": "json",
+   "parameters": "all",
    "parameterCount": 37,
    "coveredParameters": [
     "morphsWithDetails",
+    "morphsWithDetails.body",
     "morphsWithDetails.buildingMaterialId",
     "morphsWithDetails.castShadow",
-    "morphsWithDetails.elementId",
-    "morphsWithDetails.level",
-    "morphsWithDetails.receiveShadow",
-    "morphsWithDetails.rotationDegreesZ",
-    "morphsWithDetails.surfaceId",
-    "morphsWithDetails.translation"
-   ],
-   "missingParameters": [
-    "morphsWithDetails.body",
     "morphsWithDetails.coverFillBGPen",
     "morphsWithDetails.coverFillOrientation",
     "morphsWithDetails.coverFillPen",
@@ -6811,15 +6784,21 @@
     "morphsWithDetails.cutLinePen",
     "morphsWithDetails.cutLineType",
     "morphsWithDetails.displayOption",
+    "morphsWithDetails.elementId",
     "morphsWithDetails.isAutoOnStoryVisibility",
+    "morphsWithDetails.level",
     "morphsWithDetails.linkToSettings",
     "morphsWithDetails.outlineContourDisplay",
     "morphsWithDetails.overheadLinePen",
     "morphsWithDetails.overheadLineType",
+    "morphsWithDetails.receiveShadow",
+    "morphsWithDetails.rotationDegreesZ",
     "morphsWithDetails.showContour",
     "morphsWithDetails.showFill",
+    "morphsWithDetails.surfaceId",
     "morphsWithDetails.textureProjectionCoords",
     "morphsWithDetails.textureProjectionType",
+    "morphsWithDetails.translation",
     "morphsWithDetails.uncutLinePen",
     "morphsWithDetails.uncutLineType",
     "morphsWithDetails.use3DHatching",
@@ -6830,18 +6809,9 @@
     "morphsWithDetails.yAxis",
     "morphsWithDetails.zAxis"
    ],
-   "pullRequests": [
-    {
-     "number": 2030,
-     "title": "Grasshopper: Morphs tool component, built from ToolSettings/Morph.json"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1966,
-     "title": "Grasshopper: Morphs tool component"
-    }
-   ]
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ModifyRoofs",
@@ -6930,6 +6900,10 @@
    "reason": "",
    "components": [
     {
+     "name": "MeshesComponent",
+     "path": "Components/DesignToolsComponents/MeshesComponent.cs"
+    },
+    {
      "name": "ModifyMeshesComponent",
      "path": "Components/ElementsComponents/ModifyMeshesComponent.cs"
     }
@@ -6942,32 +6916,27 @@
     "meshesData.meshData"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2026,
-     "title": "Grasshopper: Meshes tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1965,
-     "title": "Grasshopper: Meshes tool component"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ModifyRailings",
    "group": "Element Commands",
    "version": "1.8.1",
    "brief": "Modifies Railing elements in place: the height of their segments, the bottom offset and the home story. The reference line, the nodes and segments, and the posts, rails and panels stay as they are. Each railing is read back after the change, and a value Archicad did not apply gets a failed execution result.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 5,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2101,
+     "title": "Grasshopper: components for the new element and property commands, and the overwrite/dryRun inputs"
+    }
+   ],
    "issues": []
   },
   {
@@ -6981,9 +6950,13 @@
     {
      "name": "ModifyObjectsComponent",
      "path": "Components/ElementsComponents/ModifyObjectsComponent.cs"
+    },
+    {
+     "name": "ObjectsComponent",
+     "path": "Components/DesignToolsComponents/ObjectsComponent.cs"
     }
    ],
-   "parameters": "json",
+   "parameters": "all",
    "parameterCount": 24,
    "coveredParameters": [
     "objectsWithDetails",
@@ -6991,20 +6964,18 @@
     "objectsWithDetails.coordinates",
     "objectsWithDetails.dimensions",
     "objectsWithDetails.elementId",
+    "objectsWithDetails.fixPoint",
+    "objectsWithDetails.isAutoOnStoryVisibility",
     "objectsWithDetails.lineTypeId",
+    "objectsWithDetails.linkToSettings",
     "objectsWithDetails.offset",
     "objectsWithDetails.pen",
     "objectsWithDetails.reflected",
-    "objectsWithDetails.surfaceId"
-   ],
-   "missingParameters": [
-    "objectsWithDetails.fixPoint",
-    "objectsWithDetails.isAutoOnStoryVisibility",
-    "objectsWithDetails.linkToSettings",
     "objectsWithDetails.sectionContourPen",
     "objectsWithDetails.sectionFillBackgroundPen",
     "objectsWithDetails.sectionFillId",
     "objectsWithDetails.sectionFillPen",
+    "objectsWithDetails.surfaceId",
     "objectsWithDetails.useFixSize",
     "objectsWithDetails.useFixedAngle",
     "objectsWithDetails.useObjectLineTypes",
@@ -7013,18 +6984,9 @@
     "objectsWithDetails.useObjectSectionAttributes",
     "objectsWithDetails.visibility"
    ],
-   "pullRequests": [
-    {
-     "number": 2031,
-     "title": "Grasshopper: Objects tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1968,
-     "title": "Grasshopper: Objects tool component"
-    }
-   ]
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ModifyLamps",
@@ -7035,11 +6997,15 @@
    "reason": "",
    "components": [
     {
+     "name": "LampsComponent",
+     "path": "Components/DesignToolsComponents/LampsComponent.cs"
+    },
+    {
      "name": "ModifyLampsComponent",
      "path": "Components/ElementsComponents/ModifyLampsComponent.cs"
     }
    ],
-   "parameters": "json",
+   "parameters": "all",
    "parameterCount": 26,
    "coveredParameters": [
     "lampsWithDetails",
@@ -7047,22 +7013,20 @@
     "lampsWithDetails.coordinates",
     "lampsWithDetails.dimensions",
     "lampsWithDetails.elementId",
-    "lampsWithDetails.lightIsOn",
-    "lampsWithDetails.lineTypeId",
-    "lampsWithDetails.offset",
-    "lampsWithDetails.pen",
-    "lampsWithDetails.reflected",
-    "lampsWithDetails.surfaceId"
-   ],
-   "missingParameters": [
     "lampsWithDetails.fixPoint",
     "lampsWithDetails.isAutoOnStoryVisibility",
     "lampsWithDetails.lightColor",
+    "lampsWithDetails.lightIsOn",
+    "lampsWithDetails.lineTypeId",
     "lampsWithDetails.linkToSettings",
+    "lampsWithDetails.offset",
+    "lampsWithDetails.pen",
+    "lampsWithDetails.reflected",
     "lampsWithDetails.sectionContourPen",
     "lampsWithDetails.sectionFillBackgroundPen",
     "lampsWithDetails.sectionFillId",
     "lampsWithDetails.sectionFillPen",
+    "lampsWithDetails.surfaceId",
     "lampsWithDetails.useFixSize",
     "lampsWithDetails.useFixedAngle",
     "lampsWithDetails.useObjectLineTypes",
@@ -7071,18 +7035,9 @@
     "lampsWithDetails.useObjectSectionAttributes",
     "lampsWithDetails.visibility"
    ],
-   "pullRequests": [
-    {
-     "number": 2032,
-     "title": "Grasshopper: Lamps tool component (Design Tools)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1969,
-     "title": "Grasshopper: Lamps tool component"
-    }
-   ]
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ModifyTexts",
@@ -7095,33 +7050,26 @@
     {
      "name": "ModifyTextsComponent",
      "path": "Components/ElementsComponents/ModifyTextsComponent.cs"
+    },
+    {
+     "name": "TextsComponent",
+     "path": "Components/DocumentToolsComponents/TextsComponent.cs"
     }
    ],
-   "parameters": "json",
+   "parameters": "all",
    "parameterCount": 7,
    "coveredParameters": [
     "textsWithDetails",
     "textsWithDetails.coordinate",
     "textsWithDetails.elementId",
     "textsWithDetails.floorIndex",
+    "textsWithDetails.runs",
     "textsWithDetails.style",
     "textsWithDetails.text"
    ],
-   "missingParameters": [
-    "textsWithDetails.runs"
-   ],
-   "pullRequests": [
-    {
-     "number": 2035,
-     "title": "Grasshopper: Texts tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1971,
-     "title": "Grasshopper: Texts tool component"
-    }
-   ]
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ModifyLabels",
@@ -7132,35 +7080,28 @@
    "reason": "",
    "components": [
     {
+     "name": "LabelsComponent",
+     "path": "Components/DocumentToolsComponents/LabelsComponent.cs"
+    },
+    {
      "name": "ModifyLabelsComponent",
      "path": "Components/ElementsComponents/ModifyLabelsComponent.cs"
     }
    ],
-   "parameters": "json",
+   "parameters": "all",
    "parameterCount": 7,
    "coveredParameters": [
     "labelsWithDetails",
     "labelsWithDetails.elementId",
     "labelsWithDetails.leaderLine",
+    "labelsWithDetails.runs",
     "labelsWithDetails.style",
+    "labelsWithDetails.symbolStyle",
     "labelsWithDetails.text"
    ],
-   "missingParameters": [
-    "labelsWithDetails.runs",
-    "labelsWithDetails.symbolStyle"
-   ],
-   "pullRequests": [
-    {
-     "number": 2034,
-     "title": "Grasshopper: Labels tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1972,
-     "title": "Grasshopper: Labels tool component"
-    }
-   ]
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ModifyCurtainWalls",
@@ -7208,14 +7149,19 @@
    "group": "Element Commands",
    "version": "1.8.1",
    "brief": "EXPERIMENTAL. Modifies single Curtain Wall Frames by their GUID: the frame contour (a1, a2, b1, b2), the frame class and the frame type. ACAPI_Element_Change does not take a frame on its own, so the change is written through the memo of the owner curtain wall, and read back to check that Archicad applied it.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 9,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2101,
+     "title": "Grasshopper: components for the new element and property commands, and the overwrite/dryRun inputs"
+    }
+   ],
    "issues": []
   },
   {
@@ -7223,14 +7169,19 @@
    "group": "Element Commands",
    "version": "1.8.1",
    "brief": "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the finish visibility, and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness). Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 27,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2101,
+     "title": "Grasshopper: components for the new element and property commands, and the overwrite/dryRun inputs"
+    }
+   ],
    "issues": []
   },
   {
@@ -7270,6 +7221,10 @@
     {
      "name": "ModifyZonesComponent",
      "path": "Components/ElementsComponents/ModifyZonesComponent.cs"
+    },
+    {
+     "name": "ZonesComponent",
+     "path": "Components/DesignToolsComponents/ZonesComponent.cs"
     }
    ],
    "parameters": "all",
@@ -7290,18 +7245,8 @@
     "zonesWithDetails.topOffset"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2033,
-     "title": "Grasshopper: Zones tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1967,
-     "title": "Grasshopper: Zones tool component"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "MeasureTexts",
@@ -7393,14 +7338,19 @@
    "group": "Element Commands",
    "version": "1.8.1",
    "brief": "Returns the 3D extent (xMin, yMin, zMin, xMax, yMax, zMax) of the current database, the region Archicad's Fit in Window would show.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2101,
+     "title": "Grasshopper: components for the new element and property commands, and the overwrite/dryRun inputs"
+    }
+   ],
    "issues": []
   },
   {
@@ -8496,16 +8446,60 @@
    "reason": "",
    "components": [
     {
+     "name": "ArcsComponent",
+     "path": "Components/DocumentToolsComponents/ArcsComponent.cs"
+    },
+    {
+     "name": "BeamsComponent",
+     "path": "Components/DesignToolsComponents/BeamsComponent.cs"
+    },
+    {
      "name": "DoorsComponent",
      "path": "Components/DesignToolsComponents/DoorsComponent.cs"
+    },
+    {
+     "name": "DrawingsComponent",
+     "path": "Components/DocumentToolsComponents/DrawingsComponent.cs"
     },
     {
      "name": "ElementMetadata",
      "path": "Components/ElementMetadata.cs"
     },
     {
+     "name": "FillsComponent",
+     "path": "Components/DocumentToolsComponents/FillsComponent.cs"
+    },
+    {
+     "name": "LabelsComponent",
+     "path": "Components/DocumentToolsComponents/LabelsComponent.cs"
+    },
+    {
+     "name": "LampsComponent",
+     "path": "Components/DesignToolsComponents/LampsComponent.cs"
+    },
+    {
      "name": "LevelDimensionsComponent",
      "path": "Components/DocumentToolsComponents/LevelDimensionsComponent.cs"
+    },
+    {
+     "name": "LinesComponent",
+     "path": "Components/DocumentToolsComponents/LinesComponent.cs"
+    },
+    {
+     "name": "MeshesComponent",
+     "path": "Components/DesignToolsComponents/MeshesComponent.cs"
+    },
+    {
+     "name": "MorphsComponent",
+     "path": "Components/DesignToolsComponents/MorphsComponent.cs"
+    },
+    {
+     "name": "ObjectsComponent",
+     "path": "Components/DesignToolsComponents/ObjectsComponent.cs"
+    },
+    {
+     "name": "PolylinesComponent",
+     "path": "Components/DocumentToolsComponents/PolylinesComponent.cs"
     },
     {
      "name": "RailingsComponent",
@@ -8514,6 +8508,14 @@
     {
      "name": "SetPropertyValuesOfElementsComponent",
      "path": "Components/PropertiesComponents/SetPropertyValuesOfElementsComponent.cs"
+    },
+    {
+     "name": "SlabsComponent",
+     "path": "Components/DesignToolsComponents/SlabsComponent.cs"
+    },
+    {
+     "name": "TextsComponent",
+     "path": "Components/DocumentToolsComponents/TextsComponent.cs"
     },
     {
      "name": "WallsApiComponent",
@@ -8526,6 +8528,10 @@
     {
      "name": "WindowsComponent",
      "path": "Components/DesignToolsComponents/WindowsComponent.cs"
+    },
+    {
+     "name": "ZonesComponent",
+     "path": "Components/DesignToolsComponents/ZonesComponent.cs"
     }
    ],
    "parameters": "all",
@@ -8542,14 +8548,19 @@
    "group": "Property Commands",
    "version": "1.8.1",
    "brief": "Returns the components of the elements: the building material skins of composite walls, slabs, roofs and shells, and the parts of complex profile walls, beams and columns. The components have their own property values (building material, thickness, area, volume and the properties of the building material); read them with GetPropertyValuesOfElementComponents.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2101,
+     "title": "Grasshopper: components for the new element and property commands, and the overwrite/dryRun inputs"
+    }
+   ],
    "issues": []
   },
   {
@@ -8557,14 +8568,19 @@
    "group": "Property Commands",
    "version": "1.8.1",
    "brief": "Returns the property definitions available on the given element components, optionally filtered to user defined or built-in ones.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2101,
+     "title": "Grasshopper: components for the new element and property commands, and the overwrite/dryRun inputs"
+    }
+   ],
    "issues": []
   },
   {
@@ -8572,14 +8588,19 @@
    "group": "Property Commands",
    "version": "1.8.1",
    "brief": "Returns the property values of the given element components for the given properties, in the shape of GetPropertyValuesOfElements. Use GetComponentsOfElements to list the components of an element.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2101,
+     "title": "Grasshopper: components for the new element and property commands, and the overwrite/dryRun inputs"
+    }
+   ],
    "issues": []
   },
   {
@@ -9033,14 +9054,19 @@
    "group": "Property Commands",
    "version": "1.8.1",
    "brief": "Checks whether the given values are acceptable for the given property definitions, without changing anything.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2101,
+     "title": "Grasshopper: components for the new element and property commands, and the overwrite/dryRun inputs"
+    }
+   ],
    "issues": []
   },
   {
@@ -9575,6 +9601,10 @@
     {
      "name": "GetAttributesByTypeComponent",
      "path": "Components/AttributesComponents/GetAttributesByTypeComponent.cs"
+    },
+    {
+     "name": "PolylinesComponent",
+     "path": "Components/DocumentToolsComponents/PolylinesComponent.cs"
     }
    ],
    "parameters": "all",
@@ -9583,12 +9613,7 @@
     "attributeType"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2041,
-     "title": "Grasshopper: Polylines tool component"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9596,14 +9621,19 @@
    "group": "Attribute Commands",
    "version": "1.8.1",
    "brief": "Reports for each given attribute type how many attributes there are, the first valid and the highest index in use, and the free indexes between them (for example those of deleted attributes). Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2100,
+     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9890,14 +9920,19 @@
    "group": "Attribute Commands",
    "version": "1.8.1",
    "brief": "Deletes fills, line types, surfaces or building materials and replaces each by another attribute of the same type wherever it was used, like Delete and Replace in the Attribute Manager. Every reference is rewritten to the replacement, the way ReindexAttributes rewrites them: the fields of the elements in the floor plan and in every view and layout, the parameters of library part based elements, their memo data, the tool defaults, the Favorites, the other attributes that refer to it (composites, building materials, surfaces, profiles, MEP systems) and the graphic override rules. Elements on a hidden or locked layer are changed too: their layers are shown and unlocked for the change and put back afterwards (in the current window). If an element cannot be changed (it is locked itself, or not reserved in Teamwork), everything is put back and that attribute is not deleted. Elements from hotlinked modules cannot be changed and are listed. Indices typed into GDL scripts are not found, and the frame and panel classes of curtain wall Favorites and of the Curtain Wall tool default keep the deleted attribute (named in the warnings). If a tool default, Favorite, attribute or rule cannot be rewritten to the replacement, it keeps a copy of the deleted attribute with its name and a new attribute id, named in the warnings. dryRun lists every reference without changing anything. The whole call is one undo step. Available from Archicad 27.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 5,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2100,
+     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11769,14 +11804,19 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Lists the sections of library parts given by index: their four-character type code, sub-identifier, size and whether they are text (scripts, comments) or binary (previews).",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2100,
+     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11784,14 +11824,19 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Reads the text of a text section (a script or the comment) of a library part given by index, without opening it in the GDL editor. Takes the password of a protected library part.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 4,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2100,
+     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11799,14 +11844,19 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Gets the library of each given library part (by file name or guid): display name, location, embedded/built-in/package/local/missing flags and the Library Manager tree path. Available from Archicad 29.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2100,
+     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11814,14 +11864,19 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Returns the type details of the given library parts (ACAPI_LibraryPart_GetDetails): full unique ID and its direct parent's, type, the detail flags of objects, lamps, labels and zones, the frame and orientation settings of doors and windows, and the element type and variation of the tool that places the library part. For their path, library, GUID, license and scripts see GetLibraryPartDetails.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2100,
+     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11829,14 +11884,19 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Checks for each of the given library parts whether the given ancestor is anywhere up its subtype hierarchy (e.g. whether a part is a kind of furniture), independent of its name. A library part is not a subtype of itself. With matchAncestorByMainId any revision of the ancestor matches.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2100,
+     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -11844,14 +11904,19 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Gets the default GDL parameters (name, display name, type, array dimensions, value, flags) of the given library parts by name, read from the library part without placing it or changing any defaults. The output is in the format of GetGDLParametersOfElements, without isLocked and possibleValues, which need a placed element.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2100,
+     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -12297,14 +12362,19 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Replaces the text of existing sections (scripts, comment, keywords, copyright) of a loaded library part, found by its name. Each section is read back after the update, and the output has one execution result per section.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 5,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2100,
+     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -12312,14 +12382,19 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Gets the lines, arcs and polygons (with their holes, and whether they are fills) of the 2D symbol of a loaded library part, drawn with its default parameters or with the parameters of a placed instance.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2100,
+     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -12327,14 +12402,19 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Sets the preview picture and the GDL pictures of a loaded library part from base64 encoded PNGs, and from Archicad 29 also their dark user interface variants. All pictures are set in one step; an invalid picture changes nothing. A library part that is not editable is refused and left unchanged. Available from Archicad 28.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 5,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2100,
+     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -12342,14 +12422,19 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Sets the parameter values, and optionally the parameter descriptions, of loaded library parts, in the format of SetGDLParametersOfElements. Only the given parameters are changed; with merge, the changed list is merged into the parameters of the part instead of replacing them. A library part that is not editable, or with an invalid value given, is left unchanged. Available from Archicad 28.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 8,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2100,
+     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -12383,14 +12468,19 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Reads library part files (.gsm) without loading them into the libraries of the project: the unique ID of the part, the unique ID of its subtype and its master, parameter, 2D, 3D and properties scripts. Password protected parts need their password. Available from Archicad 28.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2100,
+     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -12398,14 +12488,19 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Copies loaded library parts, given by name or by an element placed from them, under a new file name into a folder, by default the embedded library. The copy gets a new unique ID unless the main GUID is kept. An existing file is never overwritten. The libraries are reloaded once afterwards, so the copies can be found by name. Available from Archicad 28.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 6,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2100,
+     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -12480,14 +12575,19 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Finds the loaded library parts derived from an ancestor library part (by its unique ID) whose name matches a pattern with * wildcards. Archicad returns at most 50 of them.",
-   "status": "open",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2100,
+     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -13357,6 +13457,10 @@
     {
      "name": "CreateDrawingsComponent",
      "path": "Components/NavigatorComponents/CreateDrawingsComponent.cs"
+    },
+    {
+     "name": "DrawingsComponent",
+     "path": "Components/DocumentToolsComponents/DrawingsComponent.cs"
     }
    ],
    "parameters": "all",
@@ -13375,18 +13479,8 @@
     "drawingsData.scale"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2045,
-     "title": "Grasshopper: Drawings tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1980,
-     "title": "Grasshopper: Drawings tool component"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ChangeDrawingLink",
