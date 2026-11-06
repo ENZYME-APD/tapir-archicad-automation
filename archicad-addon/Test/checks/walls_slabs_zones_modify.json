@@ -15,7 +15,7 @@
             "height": 2.7,
             "structureType": "Basic",
             "thickness": 0.2,
-            "referenceLineLocation": "Center",
+            "referenceLineLocation": "Outside",
             "offset": 0.0,
             "flipped": false
           }
@@ -70,7 +70,7 @@
         { "path": "detailsOfElements[0].details.begCoordinate.x", "approx": 700.0, "name": "start kept" },
         { "path": "detailsOfElements[0].details.begCoordinate.y", "approx": 700.0, "name": "start kept (y)" },
         { "path": "detailsOfElements[0].details.structureType", "eq": "Basic", "name": "structure kept" },
-        { "path": "detailsOfElements[0].details.referenceLineLocation", "eq": "Center", "name": "reference line kept" },
+        { "path": "detailsOfElements[0].details.referenceLineLocation", "eq": "Outside", "name": "reference line kept" },
         { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "home story kept" }
       ]
     },
