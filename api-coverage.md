@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 61 | 53 | 8 |  |  |  | 8 | 70 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1423 | 1207 | 216 |  |  |  | 12 | 392 |
 
-Archicad 25–30 DevKits; updated 2026-11-06 14:26 UTC.
+Archicad 25–30 DevKits; updated 2026-11-06 14:49 UTC.
 
 | | Status |
 |---|---|
@@ -1027,7 +1027,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## Favorite
 
-- ✅ `ACAPI_Favorite_Change` – Changes an existing Favorite (identifed by name).
+- ✅ `ACAPI_Favorite_Change` – Changes an existing Favorite (identifed by name). — [#2143](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2143 "ReindexAttributes: move zone categories too")
 - ✅ `ACAPI_Favorite_Create` – Creates a new Favorites entry based on the given element.
 - ✅ `ACAPI_Favorite_Delete` – Deletes a Favorites entry.
 - ✅ `ACAPI_Favorite_Export` – Exports the Favorites in the plan into a Favorites file or folder.

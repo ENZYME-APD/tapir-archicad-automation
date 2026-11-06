@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-06 14:26 UTC",
+ "generatedAt": "2026-11-06 14:49 UTC",
  "versions": [
   25,
   26,
@@ -9279,7 +9279,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2143,
+     "title": "ReindexAttributes: move zone categories too"
+    }
+   ],
    "issues": []
   },
   {
