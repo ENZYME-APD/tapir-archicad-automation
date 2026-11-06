@@ -1,0 +1,216 @@
+{
+  "title": "CreateDetailMarkers, CreateWorksheetMarkers and ModifyDetailMarkers: clip polygon, name and ID read back, bad input refused",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [ "Wall", "Slab", "Stair", "Roof", "Zone", "Detail", "Worksheet" ],
+  "steps": [
+    {
+      "id": "floor plan, story 0",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "detail marker with a rectangle",
+      "command": "CreateDetailMarkers",
+      "params": {
+        "detailMarkersData": [
+          {
+            "clipPolygon": [ { "x": 900.0, "y": 900.0 }, { "x": 904.0, "y": 900.0 }, { "x": 904.0, "y": 903.0 }, { "x": 900.0, "y": 903.0 } ],
+            "markerCoordinate": { "x": 899.0, "y": 899.0 },
+            "angle": 0.0,
+            "name": "TapirCheck Detail Marker",
+            "id": "TDM-1",
+            "floorIndex": 0
+          }
+        ]
+      },
+      "save": { "dm1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "detail marker created" }
+      ]
+    },
+    {
+      "id": "read the detail marker back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${dm1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Detail" },
+        { "path": "detailsOfElements[0].details.detailName", "eq": "TapirCheck Detail Marker" },
+        { "path": "detailsOfElements[0].details.detailIdStr", "eq": "TDM-1" },
+        { "path": "detailsOfElements[0].details.clipPolygon", "len": 5, "name": "four corners, closed" },
+        { "path": "detailsOfElements[0].details.basePoint.x", "approx": 902.0, "name": "base point at the polygon's center" },
+        { "path": "detailsOfElements[0].details.basePoint.y", "approx": 901.5, "name": "base point at the polygon's center" }
+      ]
+    },
+    {
+      "id": "worksheet marker with a triangle",
+      "command": "CreateWorksheetMarkers",
+      "params": {
+        "worksheetMarkersData": [
+          {
+            "clipPolygon": [ { "x": 910.0, "y": 900.0 }, { "x": 914.0, "y": 900.0 }, { "x": 912.0, "y": 903.0 } ],
+            "markerCoordinate": { "x": 909.0, "y": 899.0 },
+            "angle": 0.0,
+            "name": "TapirCheck Worksheet Marker",
+            "id": "TWM-1",
+            "floorIndex": 0
+          }
+        ]
+      },
+      "save": { "wm1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "worksheet marker created" }
+      ]
+    },
+    {
+      "id": "read the worksheet marker back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${wm1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Worksheet" },
+        { "path": "detailsOfElements[0].details.detailName", "eq": "TapirCheck Worksheet Marker" },
+        { "path": "detailsOfElements[0].details.detailIdStr", "eq": "TWM-1" },
+        { "path": "detailsOfElements[0].details.clipPolygon", "len": 4, "name": "three corners, closed" },
+        { "path": "detailsOfElements[0].details.basePoint.x", "approx": 912.0, "name": "base point at the polygon's center" },
+        { "path": "detailsOfElements[0].details.basePoint.y", "approx": 901.5, "name": "base point at the polygon's center" }
+      ]
+    },
+    {
+      "id": "rename and re-ID the detail marker",
+      "command": "ModifyDetailMarkers",
+      "creates": false,
+      "params": {
+        "detailMarkersWithDetails": [
+          { "elementId": { "guid": "${dm1}" }, "name": "TapirCheck Detail Marker B", "id": "TDM-2" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the new name and ID",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${dm1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.detailName", "eq": "TapirCheck Detail Marker B" },
+        { "path": "detailsOfElements[0].details.detailIdStr", "eq": "TDM-2" },
+        { "path": "detailsOfElements[0].details.clipPolygon", "len": 5, "name": "polygon kept" }
+      ]
+    },
+    {
+      "id": "new clip polygon: a triangle",
+      "command": "ModifyDetailMarkers",
+      "creates": false,
+      "params": {
+        "detailMarkersWithDetails": [
+          {
+            "elementId": { "guid": "${dm1}" },
+            "clipPolygon": [ { "x": 900.0, "y": 900.0 }, { "x": 906.0, "y": 900.0 }, { "x": 903.0, "y": 905.0 } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the new clip polygon",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${dm1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.clipPolygon", "len": 4, "name": "three corners, closed" },
+        { "path": "detailsOfElements[0].details.clipPolygon[1].x", "approx": 906.0 },
+        { "path": "detailsOfElements[0].details.clipPolygon[2].y", "approx": 905.0 },
+        { "path": "detailsOfElements[0].details.detailName", "eq": "TapirCheck Detail Marker B", "name": "name kept" }
+      ]
+    },
+    {
+      "id": "re-ID the worksheet marker",
+      "command": "ModifyDetailMarkers",
+      "creates": false,
+      "params": {
+        "detailMarkersWithDetails": [
+          { "elementId": { "guid": "${wm1}" }, "id": "TWM-2" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "worksheet marker ID changed, name kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${wm1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.detailIdStr", "eq": "TWM-2" },
+        { "path": "detailsOfElements[0].details.detailName", "eq": "TapirCheck Worksheet Marker", "name": "name kept" }
+      ]
+    },
+    {
+      "id": "bad input: ModifyDetailMarkers on a nonexistent element",
+      "command": "ModifyDetailMarkers",
+      "creates": false,
+      "params": {
+        "detailMarkersWithDetails": [
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "name": "TapirCheck none" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "bad input: detail marker with a two-point clip polygon",
+      "command": "CreateDetailMarkers",
+      "allowEnvelopeError": true,
+      "params": {
+        "detailMarkersData": [
+          { "clipPolygon": [ { "x": 920.0, "y": 900.0 }, { "x": 924.0, "y": 900.0 } ], "name": "TapirCheck bad" }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the input schema (clipPolygon minItems 3)" }
+      ]
+    },
+    {
+      "id": "bad input: worksheet marker with a two-point clip polygon",
+      "command": "CreateWorksheetMarkers",
+      "allowEnvelopeError": true,
+      "params": {
+        "worksheetMarkersData": [
+          { "clipPolygon": [ { "x": 930.0, "y": 900.0 }, { "x": 934.0, "y": 900.0 } ], "name": "TapirCheck bad" }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the input schema (clipPolygon minItems 3)" }
+      ]
+    },
+    {
+      "id": "still one detail marker",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Detail" },
+      "expect": [
+        { "path": "elements", "len": 1 }
+      ]
+    },
+    {
+      "id": "still one worksheet marker",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Worksheet" },
+      "expect": [
+        { "path": "elements", "len": 1 }
+      ]
+    }
+  ]
+}

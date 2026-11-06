@@ -1,0 +1,173 @@
+{
+  "title": "MoveElements, RotateElements, MirrorElements and ElevateElements change the geometry they report, and refuse a bad item",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "id": "four walls",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 800, "y": 800 }, "endCoordinate": { "x": 804, "y": 800 }, "floorIndex": 0, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 },
+          { "begCoordinate": { "x": 800, "y": 810 }, "endCoordinate": { "x": 804, "y": 810 }, "floorIndex": 0, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 },
+          { "begCoordinate": { "x": 800, "y": 820 }, "endCoordinate": { "x": 804, "y": 820 }, "floorIndex": 0, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 },
+          { "begCoordinate": { "x": 800, "y": 830 }, "endCoordinate": { "x": 804, "y": 830 }, "floorIndex": 0, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 }
+        ]
+      },
+      "save": {
+        "wMove": "elements[0].elementId.guid",
+        "wRotate": "elements[1].elementId.guid",
+        "wMirror": "elements[2].elementId.guid",
+        "wElevate": "elements[3].elementId.guid"
+      }
+    },
+    {
+      "id": "[move by (2, 3, 0), nonexistent guid]",
+      "command": "MoveElements",
+      "creates": false,
+      "params": {
+        "elementsWithMoveVectors": [
+          { "elementId": { "guid": "${wMove}" }, "moveVector": { "x": 2.0, "y": 3.0, "z": 0.0 } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "moveVector": { "x": 1.0, "y": 0.0, "z": 0.0 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "wall moved" },
+        { "path": "executionResults[1].success", "eq": false, "name": "nonexistent guid refused" }
+      ]
+    },
+    {
+      "id": "[rotate 90 degrees counterclockwise around the begin point, nonexistent guid]",
+      "command": "RotateElements",
+      "creates": false,
+      "params": {
+        "elementsWithRotations": [
+          {
+            "elementId": { "guid": "${wRotate}" },
+            "rotation": { "beginPoint": { "x": 801, "y": 810 }, "endPoint": { "x": 800, "y": 811 }, "origin": { "x": 800, "y": 810 } }
+          },
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "rotation": { "beginPoint": { "x": 801, "y": 810 }, "endPoint": { "x": 800, "y": 811 }, "origin": { "x": 800, "y": 810 } }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "wall rotated" },
+        { "path": "executionResults[1].success", "eq": false, "name": "nonexistent guid refused" }
+      ]
+    },
+    {
+      "id": "mirrored copy across y = 822",
+      "command": "MirrorElements",
+      "creates": false,
+      "params": {
+        "elementsWithMirrorAxes": [
+          {
+            "elementId": { "guid": "${wMirror}" },
+            "mirrorAxis": { "beginPoint": { "x": 790, "y": 822 }, "endPoint": { "x": 810, "y": 822 } },
+            "copy": true
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "copy mirrored" }
+      ]
+    },
+    {
+      "id": "the copy is a fifth wall",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Wall" },
+      "save": { "allWalls": "elements" },
+      "expect": [
+        { "path": "elements", "len": 5, "name": "four walls and the mirrored copy" }
+      ]
+    },
+    {
+      "id": "[mirror across x = 806, axis of two equal points]",
+      "command": "MirrorElements",
+      "creates": false,
+      "params": {
+        "elementsWithMirrorAxes": [
+          {
+            "elementId": { "guid": "${wMirror}" },
+            "mirrorAxis": { "beginPoint": { "x": 806, "y": 800 }, "endPoint": { "x": 806, "y": 840 } }
+          },
+          {
+            "elementId": { "guid": "${wMirror}" },
+            "mirrorAxis": { "beginPoint": { "x": 806, "y": 800 }, "endPoint": { "x": 806, "y": 800 } }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "wall mirrored" },
+        { "path": "executionResults[1].success", "eq": false, "name": "axis of two equal points refused" }
+      ]
+    },
+    {
+      "id": "[elevate by 1 m, nonexistent guid]",
+      "command": "ElevateElements",
+      "creates": false,
+      "params": {
+        "elementsWithElevations": [
+          { "elementId": { "guid": "${wElevate}" }, "elevation": 1.0 },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "elevation": 1.0 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "wall elevated" },
+        { "path": "executionResults[1].success", "eq": false, "name": "nonexistent guid refused" }
+      ]
+    },
+    {
+      "id": "read the four walls back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${wMove}" } },
+          { "elementId": { "guid": "${wRotate}" } },
+          { "elementId": { "guid": "${wMirror}" } },
+          { "elementId": { "guid": "${wElevate}" } }
+        ],
+        "fields": [ "floorIndex", "details" ]
+      },
+      "save": {
+        "mirrorBegX": "detailsOfElements[2].details.begCoordinate.x",
+        "mirrorEndX": "detailsOfElements[2].details.endCoordinate.x"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.begCoordinate.x", "approx": 802.0, "name": "moved: begin x + 2" },
+        { "path": "detailsOfElements[0].details.begCoordinate.y", "approx": 803.0, "name": "moved: begin y + 3" },
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 806.0, "name": "moved: end x + 2" },
+        { "path": "detailsOfElements[1].details.begCoordinate.x", "approx": 800.0, "name": "rotated: begin on the origin stays" },
+        { "path": "detailsOfElements[1].details.begCoordinate.y", "approx": 810.0 },
+        { "path": "detailsOfElements[1].details.endCoordinate.x", "approx": 800.0, "name": "rotated: end turned to the north" },
+        { "path": "detailsOfElements[1].details.endCoordinate.y", "approx": 814.0 },
+        { "path": "detailsOfElements[2].details.begCoordinate.y", "approx": 820.0, "name": "mirrored: stays on y = 820" },
+        { "path": "detailsOfElements[2].details.endCoordinate.y", "approx": 820.0 },
+        { "path": "detailsOfElements[3].details.bottomOffset", "approx": 1.0, "name": "elevated: bottom 1 m up" },
+        { "path": "detailsOfElements[3].floorIndex", "eq": 0, "name": "elevated: home story unchanged" },
+        { "path": "detailsOfElements[3].details.begCoordinate.x", "approx": 800.0, "name": "elevated: not moved in plan" },
+        { "expr": "${mirrorBegX} + ${mirrorEndX}", "approx": 1620.0, "name": "mirrored: ends at x = 808 and 812, in either order" },
+        { "expr": "(${mirrorBegX} - ${mirrorEndX}) * (${mirrorBegX} - ${mirrorEndX})", "approx": 16.0, "name": "mirrored: length kept" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteElements",
+      "params": { "elements": "${allWalls}" }
+    }
+  ]
+}

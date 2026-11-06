@@ -1,15 +1,16 @@
-"""Prints the settings of the first model view option combination with GetModelViewOptionDetails, then lists the library part options of every combination.
+"""Prints the settings of the first named model view option combination with GetModelViewOptionDetails, then lists the library part options of every combination.
 
 Requires Archicad 27 or later.
 """
 import aclib
 
-modelViewOptions = aclib.RunTapirCommand ('GetModelViewOptions')['modelViewOptions']
-if not modelViewOptions:
+# Archicad may list a combination without a name once the view options of a window changed.
+names = [modelViewOption['name'] for modelViewOption in aclib.RunTapirCommand ('GetModelViewOptions')['modelViewOptions'] if modelViewOption['name']]
+if not names:
     raise SystemExit ('No model view option combination in the project.')
 
 aclib.PrintJson (aclib.RunTapirCommand ('GetModelViewOptionDetails', {
-    'modelViewOptions': [{'name': modelViewOptions[0]['name']}]
+    'modelViewOptions': [{'name': names[0]}]
 }))
 
 for details in aclib.RunTapirCommand ('GetModelViewOptionDetails')['modelViewOptionDetails']:

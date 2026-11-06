@@ -86,16 +86,21 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         protected abstract string ModifyCommand { get; }
         protected abstract string ModifyArrayKey { get; }
 
+        // The key a Modify command expects the settings of an item under,
+        // next to its elementId (e.g. ModifyMeshes' meshData); null when the
+        // settings are the item's own properties (e.g. ModifyWalls).
+        protected virtual string ModifyItemSettingsKey => null;
+
         // The item keys the Create and the Modify command accept (their input
         // schemas), so a setting goes to the command that can write it.
         protected abstract ISet<string> CreateKeys { get; }
         protected abstract ISet<string> ModifyKeys { get; }
 
-        // The item keys SetDetailsOfElements takes in "typeSpecificDetails"
-        // for this tool, for a setting no Modify command writes.
-        protected virtual ISet<string> DetailsKeys { get; } = new HashSet<string>();
+        // The keys the Modify command does not take but SetDetailsOfElements
+        // does, in its typeSpecificDetails; Execute writes them there.
+        protected virtual ISet<string> TypeSpecificDetailsKeys { get; } = new HashSet<string>();
 
-        // A key of DetailsKeys only this tool's settings have. The
+        // A key of TypeSpecificDetailsKeys only this tool's settings have. The
         // typeSpecificDetails of SetDetailsOfElements is a oneOf, and e.g.
         // a pen alone fits the settings of several element types, so the
         // element's current value of this key is sent along.
@@ -130,6 +135,16 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         // as given, e.g. values a Refresh returns but the Modify command does
         // not take. Each note is shown once as a remark.
         protected virtual void PrepareSettings(
+            JObject settings,
+            ISet<string> notes)
+        {
+        }
+
+        // Lets a tool drop settings (Add-On keys) of a new element that its
+        // geometry inputs define, e.g. a beam's offset to its home story,
+        // which the Z of its reference line sets. Called after PrepareSettings,
+        // only for the elements Create makes (not for the ones it updates).
+        protected virtual void PrepareCreateSettings(
             JObject settings,
             ISet<string> notes)
         {
@@ -648,7 +663,10 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             var typeSpecific = new JObject();
             foreach (var setting in settings)
             {
-                if (setting.Key == "floorIndex")
+                // The home story goes with the Modify command when it takes
+                // it (it pins the story a Z there is measured from), else to
+                // SetDetailsOfElements.
+                if (setting.Key == "floorIndex" && !ModifyKeys.Contains(setting.Key))
                 {
                     details["floorIndex"] = setting.Value;
                 }
@@ -656,7 +674,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 {
                     modify[setting.Key] = setting.Value;
                 }
-                else if (DetailsKeys.Contains(setting.Key))
+                else if (TypeSpecificDetailsKeys.Contains(setting.Key))
                 {
                     typeSpecific[setting.Key] = setting.Value;
                 }
@@ -676,7 +694,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                     {
                         modify[property.Name] = property.Value;
                     }
-                    else if (DetailsKeys.Contains(property.Name))
+                    else if (TypeSpecificDetailsKeys.Contains(property.Name))
                     {
                         typeSpecific[property.Name] = property.Value;
                     }
@@ -776,6 +794,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                     updated++;
                     continue;
                 }
+                PrepareCreateSettings(settings, notes);
 
                 var item = new JObject();
                 var rest = new JObject();
@@ -1064,7 +1083,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 return;
             }
 
-            var parameters = new JObject { [ModifyArrayKey] = new JArray(items.Select(p => p.Value)) };
+            var parameters = new JObject { [ModifyArrayKey] = new JArray(items.Select(p => ModifyItemOf(p.Value))) };
             if (TryGetCadResponse(ModifyCommand, parameters, ToAddOn, out var response))
             {
                 AddExecutionResults(response, items.Select(p => p.Key).ToList(), errors);
@@ -1115,6 +1134,24 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 ((JObject) p.Value["typeSpecificDetails"])[DetailsTypeKey] = value.DeepClone();
             }
             items.RemoveAll(p => p.Value.Count == 0);
+        }
+
+        // { elementId, settings... } as the Modify command takes it: as is,
+        // or with the settings under ModifyItemSettingsKey.
+        private JObject ModifyItemOf(
+            JObject item)
+        {
+            if (ModifyItemSettingsKey == null)
+            {
+                return item;
+            }
+
+            var settings = new JObject(item.Properties().Where(p => p.Name != "elementId"));
+            return new JObject
+            {
+                ["elementId"] = item["elementId"],
+                [ModifyItemSettingsKey] = settings
+            };
         }
 
         private void SendDetails(

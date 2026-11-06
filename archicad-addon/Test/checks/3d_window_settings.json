@@ -1,0 +1,137 @@
+{
+  "title": "Set3DWindowSettings changes the zoom and the pixel size of the 3D window, keeps the values not given and refuses a zero size",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "3D window",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "3DModel"
+      }
+    },
+    {
+      "id": "the settings before",
+      "command": "Get3DWindowSettings",
+      "creates": false,
+      "params": {},
+      "save": {
+        "h0": "hSize",
+        "v0": "vSize",
+        "zx0": "zoomScaleX",
+        "zy0": "zoomScaleY",
+        "dx0": "zoomDispX",
+        "dy0": "zoomDispY"
+      },
+      "expect": [
+        { "path": "hSize", "gt": 0, "name": "the 3D window has a width" },
+        { "path": "vSize", "gt": 0, "name": "the 3D window has a height" }
+      ]
+    },
+    {
+      "id": "zoom scale and displacement",
+      "command": "Set3DWindowSettings",
+      "creates": false,
+      "params": {
+        "zoomScaleX": 0.5,
+        "zoomScaleY": 0.5,
+        "zoomDispX": 0.25,
+        "zoomDispY": -0.25
+      },
+      "save": {
+        "hAfterZoom": "hSize"
+      },
+      "expect": [
+        { "path": "zoomScaleX", "approx": 0.5, "tol": 1e-6, "name": "answer: zoomScaleX" },
+        { "path": "zoomScaleY", "approx": 0.5, "tol": 1e-6, "name": "answer: zoomScaleY" },
+        { "path": "zoomDispX", "approx": 0.25, "tol": 1e-6, "name": "answer: zoomDispX" },
+        { "path": "zoomDispY", "approx": -0.25, "tol": 1e-6, "name": "answer: zoomDispY" },
+        { "expr": "${hAfterZoom} - ${h0}", "approx": 0, "tol": 0, "name": "width kept" }
+      ]
+    },
+    {
+      "id": "read the zoom",
+      "command": "Get3DWindowSettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "zoomScaleX", "approx": 0.5, "tol": 1e-6 },
+        { "path": "zoomScaleY", "approx": 0.5, "tol": 1e-6 },
+        { "path": "zoomDispX", "approx": 0.25, "tol": 1e-6 },
+        { "path": "zoomDispY", "approx": -0.25, "tol": 1e-6 }
+      ]
+    },
+    {
+      "id": "only the horizontal displacement",
+      "command": "Set3DWindowSettings",
+      "creates": false,
+      "params": {
+        "zoomDispX": 0.5
+      },
+      "expect": [
+        { "path": "zoomDispX", "approx": 0.5, "tol": 1e-6, "name": "changed" },
+        { "path": "zoomDispY", "approx": -0.25, "tol": 1e-6, "name": "zoomDispY kept" },
+        { "path": "zoomScaleX", "approx": 0.5, "tol": 1e-6, "name": "zoomScaleX kept" }
+      ]
+    },
+    {
+      "id": "pixel size 640 x 480",
+      "command": "Set3DWindowSettings",
+      "creates": false,
+      "params": {
+        "hSize": 640,
+        "vSize": 480
+      },
+      "expect": [
+        { "path": "hSize", "eq": 640, "name": "answer: hSize" },
+        { "path": "vSize", "eq": 480, "name": "answer: vSize" }
+      ]
+    },
+    {
+      "id": "read the pixel size",
+      "command": "Get3DWindowSettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "hSize", "eq": 640 },
+        { "path": "vSize", "eq": 480 },
+        { "path": "zoomDispX", "approx": 0.5, "tol": 1e-6, "name": "zoom kept" }
+      ]
+    },
+    {
+      "id": "zero width",
+      "command": "Set3DWindowSettings",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "hSize": 0
+      },
+      "expect": [
+        { "path": "hSize", "exists": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "the size is kept after the refused call",
+      "command": "Get3DWindowSettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "hSize", "eq": 640 },
+        { "path": "vSize", "eq": 480 }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "Set3DWindowSettings",
+      "params": {
+        "hSize": "${h0}",
+        "vSize": "${v0}",
+        "zoomScaleX": "${zx0}",
+        "zoomScaleY": "${zy0}",
+        "zoomDispX": "${dx0}",
+        "zoomDispY": "${dy0}"
+      }
+    }
+  ]
+}

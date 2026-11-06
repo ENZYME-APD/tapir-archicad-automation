@@ -41,7 +41,7 @@ namespace TapirGrasshopperPlugin.Components.DocumentToolsComponents
 
         // What SetDetailsOfElements writes of a circle (its ArcSettings);
         // "radius" is a key only the arc settings have.
-        protected override ISet<string> DetailsKeys { get; } = new HashSet<string>
+        protected override ISet<string> TypeSpecificDetailsKeys { get; } = new HashSet<string>
         {
             "linePenIndex", "lineTypeId", "origin", "radius", "roomSeparator"
         };

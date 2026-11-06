@@ -36,6 +36,12 @@ fork you don't trust). **Test selected**, **Test everything due**, **Pause autom
 The runner only works while the Archicad it tests is closed, and never touches an open one: close
 Archicad and the next pass runs.
 
+**Testing while you work.** With `"hidden": true` (`setup` asks, and suggests it) the runner starts
+Archicad on a Windows desktop of its own, which is never shown: the test Archicad takes no focus
+and covers nothing, even while you work in another Archicad version. If it stops at a dialog
+there (licence, project recovery), its message says so; `show` switches the screen to that
+desktop, with a small window to switch back.
+
 ## What a test does
 
 For each pull request and each Archicad version:
@@ -88,6 +94,7 @@ waiting out `startTimeout`.
 | `trial --ac 30 --build x.apx [files]` | the whole load, start, check, quit, restore cycle with a build of your own, no GitHub |
 | `record --out x.json` | write a check from the commands you send through it (below) |
 | `restore` | put your add-on back after a test that did not finish |
+| `show` | switch to the runner's own desktop, to answer a dialog of a hidden Archicad |
 | `bench` | speed and token benchmark of the open Archicad (below); `bench-compare old.json new.json` compares two runs |
 | `once`, `poll` | one pass, or a pass every `pollMinutes`, over what is labelled (for a scheduled task) |
 

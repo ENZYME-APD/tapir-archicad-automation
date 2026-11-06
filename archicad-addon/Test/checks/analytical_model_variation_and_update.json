@@ -1,0 +1,176 @@
+{
+  "title": "GetCurrentAnalyticalModel, GetAnalyticalModelVariation and GetAnalyticalModel find the model of the view; SetAnalyticalGenerationSettingsToNoRule and UpdateAnalyticalModel bring a new beam into it, and an unknown model is refused",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "requiresEmpty": [ "Wall", "Slab", "Roof", "Beam", "Column" ],
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      }
+    },
+    {
+      "id": "model of the current view",
+      "command": "GetCurrentAnalyticalModel",
+      "creates": false,
+      "params": {},
+      "save": {
+        "model": "analyticalModelId.guid"
+      },
+      "expect": [
+        { "path": "analyticalModelId.guid", "ne": "00000000-0000-0000-0000-000000000000", "name": "a model" }
+      ]
+    },
+    {
+      "id": "variation of the current view's model",
+      "command": "GetAnalyticalModelVariation",
+      "creates": false,
+      "params": {},
+      "save": {
+        "variation": "variation.amVariationGuid.guid"
+      },
+      "expect": [
+        { "path": "variation.amVariationGuid.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "variation of the model by its id",
+      "command": "GetAnalyticalModelVariation",
+      "creates": false,
+      "params": {
+        "analyticalModelId": { "guid": "${model}" }
+      },
+      "expect": [
+        { "path": "variation.amVariationGuid.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "model of the variation",
+      "command": "GetAnalyticalModel",
+      "creates": false,
+      "params": {
+        "variation": { "amVariationGuid": { "guid": "${variation}" } }
+      },
+      "save": {
+        "modelOfVariation": "analyticalModelId.guid"
+      },
+      "expect": [
+        { "path": "analyticalModelId.guid", "ne": "00000000-0000-0000-0000-000000000000", "name": "a model" }
+      ]
+    },
+    {
+      "id": "the model of the variation has a variation too",
+      "command": "GetAnalyticalModelVariation",
+      "creates": false,
+      "params": {
+        "analyticalModelId": { "guid": "${modelOfVariation}" }
+      },
+      "expect": [
+        { "path": "variation.amVariationGuid.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "variation of an unknown model",
+      "command": "GetAnalyticalModelVariation",
+      "creates": false,
+      "params": {
+        "analyticalModelId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }
+      },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "refused" }
+      ]
+    },
+    {
+      "id": "generation without rules",
+      "command": "SetAnalyticalGenerationSettingsToNoRule",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "beam from a curve member",
+      "command": "CreateElementsFromAnalyticalMembers",
+      "params": {
+        "members": [
+          {
+            "curveMember": {
+              "analyticalMemberType": "Beam",
+              "crossSection": { "crossSectionType": "Rectangle", "width": 0.3, "height": 0.5 },
+              "curve": {
+                "type": "Line",
+                "begNode": { "nodeId": 1, "coord": { "x": 710.0, "y": 700.0, "z": 3.0 } },
+                "endNode": { "nodeId": 2, "coord": { "x": 716.0, "y": 700.0, "z": 3.0 } },
+                "midCoords": []
+              }
+            }
+          }
+        ]
+      },
+      "save": {
+        "beam": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "update the model of the current view",
+      "command": "UpdateAnalyticalModel",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "the beam is a member of the model",
+      "command": "GetAnalyticalMembers",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "curveMembers", "len": 1 }
+      ]
+    },
+    {
+      "id": "the member follows the beam",
+      "command": "GetAnalyticalMemberDetails",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${beam}" } } ]
+      },
+      "save": {
+        "begX": "analyticalMembers[0].curveMember.curve.begNode.coord.x",
+        "endX": "analyticalMembers[0].curveMember.curve.endNode.coord.x"
+      },
+      "expect": [
+        { "path": "analyticalMembers[0].curveMember.analyticalMemberType", "eq": "Beam" },
+        { "expr": "${endX} - ${begX}", "approx": 6.0, "tol": 0.05, "name": "member as long as the beam" }
+      ]
+    },
+    {
+      "id": "update the model by its id",
+      "command": "UpdateAnalyticalModel",
+      "creates": false,
+      "params": {
+        "analyticalModelId": { "guid": "${model}" }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "update an unknown model",
+      "command": "UpdateAnalyticalModel",
+      "creates": false,
+      "params": {
+        "analyticalModelId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "refused" }
+      ]
+    }
+  ]
+}
