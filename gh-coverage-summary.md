@@ -1,6 +1,6 @@
 **746 of 746** applicable Tapir commands have a Grasshopper component (100 %): ✅ 568 done, 🔀 178 merged, ⛔ 1 skipped, ➖ 1 not applicable.
 
-Parameters of the 746 used commands: 🟢 713 every parameter has an input, 🟡 32 the rest through a JSON input, 🟠 1 some parameters missing.
+Parameters of the 746 used commands: 🟢 714 every parameter has an input, 🟡 32 the rest through a JSON input, 🟠 0 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -14,7 +14,7 @@ Parameters of the 746 used commands: 🟢 713 every parameter has an input, 🟡
 | Classification Commands | 100 % | 19 | 17 | 2 |  |  |  |  |  | 19 |  |  |
 | Attribute Commands | 100 % | 64 | 55 | 9 |  |  |  |  |  | 55 | 9 |  |
 | IFC Commands | 100 % | 15 | 13 | 2 |  |  |  |  |  | 15 |  |  |
-| Library Commands | 100 % | 50 | 18 | 32 |  |  |  |  |  | 49 |  | 1 |
+| Library Commands | 100 % | 50 | 18 | 32 |  |  |  |  |  | 50 |  |  |
 | Teamwork Commands | 100 % | 18 | 15 | 3 |  |  |  |  |  | 18 |  |  |
 | Navigator Commands | 100 % | 80 | 61 | 19 |  |  |  |  |  | 77 | 3 |  |
 | Graphic Override Commands | 100 % | 4 | 4 |  |  |  |  |  |  | 4 |  |  |
@@ -30,4 +30,4 @@ Parameters of the 746 used commands: 🟢 713 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-06 10:46 UTC.
+Updated 2026-11-06 11:03 UTC.

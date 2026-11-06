@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-06 10:46 UTC",
+ "generatedAt": "2026-11-06 11:03 UTC",
  "counts": {
   "done": 568,
   "merged": 178,
@@ -7,9 +7,8 @@
   "not applicable": 1
  },
  "parameters": {
-  "all": 713,
-  "json": 32,
-  "partial": 1
+  "all": 714,
+  "json": 32
  },
  "items": [
   {
@@ -12266,12 +12265,10 @@
      "path": "Components/LibraryComponents/SetGDLDateComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 7,
    "coveredParameters": [
-    "date"
-   ],
-   "missingParameters": [
+    "date",
     "date.day",
     "date.hour",
     "date.minute",
@@ -12279,6 +12276,7 @@
     "date.second",
     "date.year"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
