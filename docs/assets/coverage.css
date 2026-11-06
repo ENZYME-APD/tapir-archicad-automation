@@ -1,0 +1,133 @@
+/* The two coverage pages (api-coverage/ and gh-coverage/), on top of site.css and its tokens:
+   an overview (headline, tiles, bar, legend, tables) over a sticky filter bar and the full
+   checklist, with a sidebar that becomes a drawer on narrow screens.
+
+   Statuses are drawn the same way on both pages: a .pill.status with a .swatch in the colour
+   of its segment in the bars, and the legend shows the same pills. Progress uses one moss ramp:
+   used on main is the strongest step, open is the neutral track. */
+
+:root {
+    --track: #E3DED3; --done: var(--moss); --merged: #5E7A64; --progress: #A3B8A7; --claimed: #A3B8A7;
+}
+:root[data-theme="dark"] { --track: #3A4042; --done: #C7D6CA; --merged: #8EAA94; --progress: #557060; --claimed: #557060; }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --track: #3A4042; --done: #C7D6CA; --merged: #8EAA94; --progress: #557060; --claimed: #557060; }
+}
+/* The filter bar and the sidebar stick to the top of the window, so the site header scrolls away. */
+.site-header { position: static }
+.site-footer { margin-top: 0 }
+main { max-width: 1100px; min-width: 0; margin: 0 auto; padding-block: 28px 72px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+main section { margin: 0 }
+main p { margin: 0 0 8px }
+main h2 { font-size: 20px; margin: 32px 0 10px }
+button { font: inherit; color: inherit; cursor: pointer }
+
+/* Sidebar: section links, filters and every group. A drawer on narrow screens. */
+.layout { display: grid; grid-template-columns: 230px minmax(0, 1100px); justify-content: center }
+.sidebar { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding: 16px 8px 32px 16px; font-size: 14px; border-right: 1px solid var(--line) }
+.sidebar-title { font: 700 12px/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--link); margin: 18px 0 6px }
+.sidebar-title:first-child { margin-top: 0 }
+.sidebar ul { list-style: none; padding: 0; margin: 0 }
+.sidebar-link { display: flex; justify-content: space-between; gap: 8px; width: 100%; padding: 3px 8px; border: 0; border-radius: 4px; background: none; color: inherit; text-align: left; text-decoration: none; font: inherit }
+.sidebar-link:hover { background: var(--badge); color: var(--fg) }
+.sidebar-link[aria-current] { background: var(--badge); font-weight: 700; box-shadow: inset 2px 0 0 var(--link) }
+.sidebar-link .count { color: var(--muted); font-variant-numeric: tabular-nums }
+.options { display: flex; flex-wrap: wrap; gap: 4px }
+.option { font: 600 13px var(--body); background: transparent; color: var(--fg); border: 1px solid var(--border-strong); border-radius: 999px; padding: 2px 10px }
+.option:hover { background: var(--badge) }
+.option[aria-pressed="true"] { background: var(--fg); border-color: var(--fg); color: var(--bg) }
+.sections-button { display: none }
+
+/* Headline */
+.hero { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 16px 24px; align-items: center; margin-top: 16px }
+.hero-number { font: 900 56px/1 var(--display); letter-spacing: -.02em; font-variant-numeric: tabular-nums }
+.hero-caption { color: var(--muted); margin-top: 6px }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(112px, 1fr)); gap: 8px }
+.tile { text-align: left; background: var(--surface); color: var(--fg); border: 1.5px solid var(--fg); border-radius: 4px; padding: 8px 10px; transition: transform .15s ease, box-shadow .15s ease }
+.tile:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--ochre) }
+.tile[aria-pressed="true"] { box-shadow: 4px 4px 0 var(--ochre); background: var(--badge) }
+.tile .value { display: flex; align-items: center; gap: 8px; font: 700 24px/1.2 var(--display); font-variant-numeric: tabular-nums }
+.tile .label { display: block; font-size: 13px; color: var(--muted) }
+
+/* Stacked progress bars: 2px surface gaps between segments, rounded ends. */
+.bar { display: flex; gap: 2px; height: 10px; border-radius: 4px; overflow: hidden; background: var(--bg); min-width: 60px }
+.bar.large { height: 16px; margin: 16px 0 8px }
+.bar span { display: block; height: 100%; min-width: 2px }
+.bar .done { background: var(--done) }
+.bar .merged { background: var(--merged) }
+.bar .progress { background: var(--progress) }
+.bar .claimed { background: repeating-linear-gradient(45deg, var(--claimed) 0 3px, var(--track) 3px 6px) }
+.bar .open { background: var(--track); flex-grow: 1 }
+
+/* Status marks: the colour of the status in the bars, in a pill with its short name. */
+.swatch { display: inline-block; flex: none; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px }
+.swatch.done { background: var(--done) }
+.swatch.merged { background: var(--merged) }
+.swatch.progress { background: var(--progress) }
+.swatch.claimed { background: repeating-linear-gradient(45deg, var(--claimed) 0 3px, var(--track) 3px 6px) }
+.swatch.open { background: var(--track); box-shadow: inset 0 0 0 1px var(--border-strong) }
+.swatch.skipped { background: var(--slate) }
+.swatch.na { background: transparent; box-shadow: inset 0 0 0 1px var(--slate) }
+/* Parameter coverage of a used command (gh-coverage/). */
+.swatch.p-all { background: var(--done) }
+.swatch.p-json { background: var(--ochre) }
+.swatch.p-partial { background: transparent; box-shadow: inset 0 0 0 1.5px var(--ochre) }
+.pill.status { display: inline-flex; align-items: center; gap: 6px; vertical-align: 1px }
+ul.items .pill.status { min-width: 6.4em }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted) }
+.legend > span { display: inline-flex; align-items: center; gap: 6px }
+
+/* Overview tables */
+.scroll { overflow-x: auto }
+main table { border-collapse: collapse; width: 100% }
+main th, main td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: middle }
+main th { font: 700 11.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
+td.num, th.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums }
+td.barcell { width: 40%; min-width: 120px }
+td .sub { display: block; font-size: 12px; color: var(--muted) }
+.linkbutton { display: inline-flex; align-items: center; gap: 6px; background: none; border: 0; padding: 0; color: var(--link); text-align: left; text-decoration: underline; text-underline-offset: 3px }
+.linkbutton:hover { color: var(--link-hover) }
+.table-actions { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin: 8px 0; font-size: 14px }
+
+/* Sticky filters */
+.toolbar { position: sticky; top: 0; z-index: 2; background: var(--bg); border-bottom: 1px solid var(--line); padding: 10px 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+.toolbar input, .toolbar .sections-button { font: 500 14px var(--body); color: var(--fg); background: var(--surface); border: 1.5px solid var(--fg); border-radius: 999px; padding: 5px 14px }
+.toolbar input::placeholder { color: var(--muted); opacity: 1 }
+.toolbar input[type=search] { flex: 1 1 220px; min-width: 0 }
+.chips { display: flex; flex-wrap: wrap; gap: 6px }
+.toolbar .chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px }
+.toolbar .chip[aria-pressed="true"] { background: var(--badge); color: var(--fg) }
+.toolbar .chip[aria-pressed="false"] { border-color: var(--border-strong); color: var(--muted); text-decoration: line-through }
+.filter-status { font-size: 14px; color: var(--muted) }
+.filter-status button { margin-left: 6px; font: 600 13px var(--body); background: var(--badge); color: var(--fg); border: 1px solid var(--border-strong); border-radius: 999px; padding: 1px 10px }
+
+/* Checklist */
+details.group { border-bottom: 1px solid var(--line); scroll-margin-top: calc(var(--toolbar-height, 60px) + 8px) }
+details.group > summary { cursor: pointer; padding: 8px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px }
+details.group > summary .name { font-weight: 600 }
+details.group > summary .counts { font-size: 13px; color: var(--muted) }
+details.group > summary .bar { flex: 1 1 160px; max-width: 320px; margin-left: auto }
+ul.items { list-style: none; padding: 0 0 10px 0; margin: 0 }
+ul.items li { padding: 3px 0; overflow-wrap: anywhere }
+.tag { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted) }
+ul.items li .detail { display: block; padding-left: 1.6em; font-size: 13.5px; color: var(--muted) }
+
+@media (max-width: 1100px) {
+    .layout { display: block }
+    .sidebar { position: fixed; z-index: 3; top: 0; bottom: 0; left: 0; width: min(300px, 85vw); max-height: none; align-self: stretch;
+        background: var(--bg); box-shadow: 0 0 20px rgba(0, 0, 0, .3); transform: translateX(-105%); visibility: hidden; transition: transform .2s, visibility .2s }
+    body.sidebar-open .sidebar { transform: none; visibility: visible }
+    .sections-button { display: inline-block }
+}
+@media (max-width: 640px) {
+    .hero { grid-template-columns: 1fr }
+    .hero-number { font-size: 44px }
+    td.barcell { width: 30%; min-width: 80px }
+    /* Swatches only, so the sticky bar stays short; the label is the button's name and tooltip. */
+    .chip-label { display: none }
+    .chips { flex: 1 1 100% }
+    details.group > summary .bar { flex-basis: 100%; max-width: none; margin-left: 0 }
+}
+@media (prefers-reduced-motion: reduce) {
+    .tile:hover { transform: none }
+}
