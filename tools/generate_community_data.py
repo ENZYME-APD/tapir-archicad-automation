@@ -127,7 +127,13 @@ def read_github (repo):
 # ---- Discord ----
 
 def discord_token ():
-    return os.environ.get ('DISCORD_STATS_TOKEN') or os.environ.get ('DISCORD_BOT_TOKEN') or ''
+    # Stripped: a token pasted into a secret often ends with a line break, which is not a valid
+    # header value and would stop every Discord request.
+    for name in ('DISCORD_STATS_TOKEN', 'DISCORD_BOT_TOKEN'):
+        token = (os.environ.get (name) or '').strip ()
+        if token:
+            return token
+    return ''
 
 
 def discord_get (path, token=None):
@@ -321,7 +327,13 @@ def main ():
         else:
             print ('No Discord bot token: only the member count from the invite is read.', file=sys.stderr)
     except (urllib.error.URLError, KeyError, ValueError, IndexError) as error:
-        print (f'Discord not read: {error}', file=sys.stderr)
+        print (f'Discord not read with the bot: {error}', file=sys.stderr)
+        if members_now is None:
+            # The public invite still gives the member count when the bot cannot be used.
+            try:
+                _, members_now = read_invite (os.environ.get ('DISCORD_INVITE') or DEFAULT_INVITE)
+            except (urllib.error.URLError, KeyError, ValueError) as invite_error:
+                print (f'Discord invite not read either: {invite_error}', file=sys.stderr)
 
     if isinstance (members_now, int):
         totals['discordMembers'] = members_now
