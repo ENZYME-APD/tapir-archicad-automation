@@ -8,14 +8,9 @@ name: Discord Issue Bot
 # on one message per channel marks the last message checked; each run
 # continues after it.
 #
-# How often: GitHub drops many scheduled runs when it is busy (the half-hourly
-# schedule ran only every 4 to 8 hours), so each run starts the next one itself:
-# the `next` job waits DISCORD_BOT_INTERVAL_MINUTES (default 10) and dispatches
-# this workflow again. workflow_dispatch does not depend on the scheduler, and
-# the concurrency group keeps at most one run going and one waiting, so a
-# scheduled run that fires as well only merges into the chain. The schedule
-# stays as the restart when a chain breaks (a cancelled run, an outage).
-# DISCORD_BOT_CHAIN=false turns the chain off and leaves only the schedule.
+# GitHub drops many scheduled runs when it is busy, most of all at the full and
+# half hour, so the schedule runs at :13 and :43. A run that GitHub drops loses
+# nothing: each run scans the last day and continues after the 👀 checkpoint.
 #
 # Setup and tuning: tools/discord-issue-bot/README.md. Until the secrets
 # and the DISCORD_CHANNEL_IDS variable are configured, runs exit quietly
@@ -154,41 +149,3 @@ jobs:
               echo "::warning::Could not start the issue triage for #$NUMBER - apply the claude-fix label to run it."
             fi
           done
-
-  next:
-    # Starts the next run (see the header). Not after a dry run or a cleanup
-    # run, not on forks, and not when DISCORD_BOT_CHAIN is false. The wait is
-    # in this job, which holds only the actions permission and never sees
-    # Discord content; the dispatched run queues behind this one in the
-    # concurrency group and starts when it ends.
-    needs: [scan, triage]
-    if: >-
-      ${{ !cancelled()
-        && github.repository == 'ENZYME-APD/tapir-archicad-automation'
-        && vars.DISCORD_BOT_CHAIN != 'false'
-        && !(github.event_name == 'workflow_dispatch' && (inputs.dry_run || inputs.cleanup_seen_marks)) }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 70
-    permissions:
-      actions: write
-    steps:
-      - name: Wait, then start the next run
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-          INTERVAL: ${{ vars.DISCORD_BOT_INTERVAL_MINUTES }}
-        run: |
-          set -u
-          # Whole minutes from 1 to 60; anything else uses the default.
-          case "${INTERVAL:-}" in
-            ''|*[!0-9]*) INTERVAL=10 ;;
-            # Base 10: bash would read a leading zero (08) as octal.
-            *) INTERVAL=$((10#$INTERVAL)) ;;
-          esac
-          if [ "$INTERVAL" -lt 1 ] || [ "$INTERVAL" -gt 60 ]; then
-            INTERVAL=10
-          fi
-          echo "Starting the next scan in $INTERVAL minutes."
-          sleep $((INTERVAL * 60))
-          # A failed dispatch only ends the chain: the schedule starts it again.
-          gh workflow run discord_issue_bot.yml --ref main || echo "::warning::Could not start the next run; the schedule will."
