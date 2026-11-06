@@ -20,18 +20,20 @@ namespace TapirGrasshopperPlugin.Components.LibraryComponents
         {
         }
 
-        private static readonly string[] DateComponents =
+        // The inputs and the keys of the command's "date" object they fill.
+        private static readonly (string Input, string Key)[] DateComponents =
         {
-            "Year", "Month", "Day", "Hour", "Minute", "Second"
+            ("Year", "year"), ("Month", "month"), ("Day", "day"),
+            ("Hour", "hour"), ("Minute", "minute"), ("Second", "second")
         };
 
         protected override void AddInputs()
         {
-            foreach (var name in DateComponents)
+            foreach (var (input, key) in DateComponents)
             {
                 InInteger(
-                    name,
-                    $"The {name.ToLowerInvariant()} of the date GDL scripts should see.");
+                    input,
+                    $"The {key} of the date GDL scripts should see.");
             }
         }
 
@@ -53,7 +55,7 @@ namespace TapirGrasshopperPlugin.Components.LibraryComponents
                     return;
                 }
 
-                date[DateComponents[i].ToLowerInvariant()] = value;
+                date[DateComponents[i].Key] = value;
             }
 
             if (!TryGetConvertedCadValues(
