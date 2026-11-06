@@ -5,13 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Archicad API coverage - Tapir documentation</title>
 <meta name="description" content="Which parts of the Archicad API the Tapir add-on uses, kept up to date from every issue, pull request and push.">
+<!-- site-assets -->
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
 <link rel="stylesheet" href="../assets/site.css">
 <script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
 <script src="../assets/site.js" defer></script>
+<!-- /site-assets -->
 <style>
 /* The page's own layout on top of ../assets/site.css, which gives it the site's fonts, colours
    (light, and dark under prefers-color-scheme: dark or the header's toggle), header and footer. */
@@ -30,7 +32,7 @@
 .site-header { position: static; }
 html { scroll-behavior: smooth; }
 body { font-size: 15px; line-height: 1.5; }
-main { max-width: 1100px; min-width: 0; margin: 0 auto; padding-block: 28px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+main { max-width: 1100px; min-width: 0; margin: 0 auto; padding-block: 28px 72px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 main section { margin: 0; }
 h1 { margin: 0 0 8px; }
 h2 { font-size: 20px; margin: 32px 0 10px; }
@@ -95,7 +97,8 @@ td .sub { display: block; font-size: 12px; color: var(--muted); }
 .toolbar input, .toolbar .chip, .toolbar .sections-button { font: inherit; font-size: 14px; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; }
 .toolbar input[type=search] { flex: 1 1 220px; min-width: 0; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip[aria-pressed="true"] { background: var(--panel); border-color: var(--link); }
+.chip[aria-pressed="true"] { background: var(--panel); border-color: var(--link); color: var(--fg); }
+.site-footer { margin-top: 0; }
 .chip[aria-pressed="false"] { color: var(--muted); text-decoration: line-through; }
 .filter-status { font-size: 14px; color: var(--muted); }
 .filter-status button { margin-left: 6px; font-size: 13px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 1px 8px; }
@@ -129,42 +132,36 @@ ul.items li { padding: 3px 0; overflow-wrap: anywhere; }
 </style>
 </head>
 <body>
+<!-- site-header -->
+<a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header">
-    <div class="site-header-inner">
-        <a class="site-brand" href="../">
-            <img src="../assets/tapir_mark_cream.svg" alt="" width="28" height="28">
-            <span class="wordmark">Tapir</span>
-        </a>
-        <nav class="site-nav" aria-label="Site">
-            <ul>
-                <li><a href="../start/">Get started</a></li>
-                <li>
-                    <details class="nav-menu current">
-                        <summary>Docs</summary>
-                        <ul>
-                            <li><a href="../archicad-addon/">Commands</a></li>
-                            <li><a href="./" aria-current="page">API coverage</a></li>
-                            <li><a href="../gh-coverage/">Grasshopper coverage</a></li>
-                        </ul>
-                    </details>
-                </li>
-                <li><a href="../scripts/">Scripts</a></li>
-                <li><a href="../community/">Community</a></li>
-            </ul>
-        </nav>
-        <button type="button" class="theme-toggle" id="theme-toggle" aria-pressed="false" hidden>
-            <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-            <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-            <span class="visually-hidden">Dark mode</span>
-        </button>
-        <a class="button" href="../start/#install">Download</a>
+    <div class="wrap nav">
+        <a class="brand" href="../"><img src="../assets/tapir_mark_cream.svg" alt="" width="30" height="30">Tapir</a>
+        <nav class="site-nav" aria-label="Site"><ul>
+            <li><a href="../start/">Get started</a></li>
+            <li><a href="../docs/" aria-current="true">Docs</a></li>
+            <li><a href="../scripts/">Scripts</a></li>
+            <li><a href="../scripts/share/">Share</a></li>
+            <li><a href="../community/">Community</a></li>
+            <li><a href="../about/">About</a></li>
+        </ul></nav>
+        <div class="right">
+            <button class="toggle" id="theme-toggle" type="button" data-dark="Dark" data-light="Light" hidden><span class="toggle-word">Dark</span><span class="visually-hidden"> mode</span></button>
+            <a class="btn btn-primary btn-sm" href="../start/#install">Download</a>
+        </div>
     </div>
 </header>
+<!-- /site-header -->
+<div class="page-head">
+    <div class="wrap">
+        <p class="crumb"><a href="../">Tapir</a> / <a href="../docs/">Docs</a> / API coverage</p>
+        <h1>Archicad API <em>coverage.</em></h1>
+        <p>What Tapir covers of Graphisoft's Archicad API, item by item.</p>
+    </div>
+</div>
 <div class="layout">
 <nav class="sidebar" id="sidebar" aria-label="Sections"></nav>
-<main>
-<span class="eyebrow">Coverage</span>
-<h1>Archicad API coverage</h1>
+<main id="main">
 <p class="muted">Which parts of the Archicad API (<span id="archicad-range">every supported Archicad version</span>: C functions with their older names and command ids, and the C++ API) the <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> uses, updated within minutes of every issue and push to main, and within the hour of every pull request. See also the <a href="../archicad-addon/">command reference</a>.</p>
 
 <section aria-label="Overview" id="overview">
@@ -205,24 +202,59 @@ ul.items li { padding: 3px 0; overflow-wrap: anywhere; }
 <div id="list"></div>
 </main>
 </div>
+<!-- site-footer -->
 <footer class="site-footer">
-    <div class="site-footer-inner">
-        <a class="site-brand" href="../">
-            <img src="../assets/tapir_mark_cream.svg" alt="" width="28" height="28">
-            <span class="wordmark">Tapir</span>
-        </a>
-        <p>Open-source automation for Archicad, by <a href="https://github.com/ENZYME-APD">ENZYME-APD</a>.</p>
-        <ul class="footer-links">
-            <li><a href="../start/">Get started</a></li>
-            <li><a href="../archicad-addon/">Commands</a></li>
-            <li><a href="../scripts/">Scripts</a></li>
-            <li><a href="../community/">Community</a></li>
-            <li><a href="https://discord.gg/NAnSennmpY">Discord</a></li>
-            <li><a href="https://github.com/ENZYME-APD/tapir-archicad-automation">GitHub</a></li>
-            <li><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues">Report an issue</a></li>
-        </ul>
+    <div class="wrap">
+        <div class="tblock">
+            <div>
+                <span class="lab">Project</span>
+                <span class="proj">Tapir</span>
+                <p class="note">Open-source automation for Archicad. 100% free and open source (MIT). Maintained by Enzyme APD and the community.</p>
+                <p class="note">Contact: <span class="nowrap">contact@enzyme-apd.com</span></p>
+            </div>
+            <div>
+                <span class="lab">Product</span>
+                <ul>
+                    <li><a href="../start/">Get started</a></li>
+                    <li><a href="../scripts/">Scripts</a></li>
+                    <li><a href="../scripts/share/">Share a script</a></li>
+                    <li><a href="../grasshopper/">Grasshopper</a></li>
+                    <li><a href="../ai/">Tapir and AI</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Docs</span>
+                <ul>
+                    <li><a href="../docs/">All docs</a></li>
+                    <li><a href="../archicad-addon/">Commands</a></li>
+                    <li><a href="../api-coverage/">API coverage</a></li>
+                    <li><a href="../gh-coverage/">Grasshopper coverage</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Community</span>
+                <ul>
+                    <li><a href="https://discord.gg/NAnSennmpY">Discord</a></li>
+                    <li><a href="https://github.com/ENZYME-APD/tapir-archicad-automation">GitHub</a></li>
+                    <li><a href="../tutorials/">Tutorials</a></li>
+                    <li><a href="../community/#bots">How fixes happen</a></li>
+                    <li><a href="../roadmap/">Roadmap</a></li>
+                    <li><a href="../about/">About Tapir</a></li>
+                </ul>
+            </div>
+            <div>
+                <div class="rev" data-live="release" hidden>
+                    <span class="lab">Revision</span>
+                    <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest" data-live-value="release"></a>
+                </div>
+                <span class="lab">Licence</span>
+                <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/LICENSE">MIT</a>
+            </div>
+        </div>
+        <p class="fine">Not affiliated with Graphisoft. Archicad is a trademark of Graphisoft SE.</p>
     </div>
 </footer>
+<!-- /site-footer -->
 <script>
 const DATA_URL = new URLSearchParams (location.search).get ('data') ||
     'https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/api-coverage.json';
