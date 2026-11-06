@@ -11,6 +11,27 @@
     '<strong class="callout-label"><span aria-hidden="true">ⓘ</span> Opening soon</strong> The scripts move to this page, and the list appears here as soon as the first ones are in. Until then, the scripts shared so far are on the <a href="https://tapir-marketplace.vercel.app/">current marketplace</a>, and you can <a href="share/">share your own</a>.':
         '<strong class="callout-label"><span aria-hidden="true">ⓘ</span> まもなく公開</strong> スクリプトはこのページに移ります。最初のスクリプトが揃いしだい、ここに一覧が表示されます。それまでは、これまでに共有されたスクリプトは<a href="https://tapir-marketplace.vercel.app/">現在のマーケットプレイス</a>にあります。<a href="share/">自分のスクリプトを共有</a>することもできます。',
 
+    // The built-in scripts, shown until the marketplace has listings
+    'Built in to <em>Tapir.</em>': 'Tapir に<em>組み込み済み。</em>',
+    'These are five of the scripts that come with the Tapir palette: open it in Archicad, pick one and press Run Script. Each is a short Python file you can read and change.':
+        'Tapir パレットに付属するスクリプトのうちの 5 つです。Archicad でパレットを開き、1 つ選んで Run Script を押します。どれも読んで変更できる短い Python ファイルです。',
+    'Built-in script': '組み込みスクリプト',
+    'Number elements along a line': '線に沿って要素に番号を付ける',
+    'Select a polyline and the doors, zones or objects to number. Each one gets its Element ID in the order the polyline passes it.':
+        'ポリラインと、番号を付けるドア、ゾーン、オブジェクトを選択します。ポリラインが通過する順に、それぞれに Element ID が付きます。',
+    'Colour the model by a property': 'プロパティでモデルを色分け',
+    'Pick a property; every element gets a colour for its value, with a legend of the values and how many elements have each. Number values can be grouped into ranges.':
+        'プロパティを選ぶと、各要素がその値に応じた色になり、値とそれぞれの要素数を示す凡例が付きます。数値は範囲ごとにまとめられます。',
+    'Check a project before it goes out': '提出前にプロジェクトをチェック',
+    'Lists elements without an ID, zones with the same number, unclassified and duplicate elements, empty stories and unused layers. Export the list to Excel or turn it into Issues.':
+        'ID のない要素、同じ番号のゾーン、未分類や重複した要素、空のフロア、使われていないレイヤーを一覧にします。一覧は Excel に書き出すか、Issues にできます。',
+    'Publish on a schedule': 'スケジュールで発行',
+    'Publishes the chosen Publisher Sets now or on a schedule, every few hours or daily at a set time. It can receive the Teamwork changes and update the drawings first, and logs every run.':
+        '選んだ Publisher Sets を今すぐ、または数時間ごとや毎日決まった時刻にスケジュールで発行します。先に Teamwork の変更を受信して図面を更新でき、毎回の実行を記録します。',
+    'Tidy up the View Map': 'View Map を整理',
+    'Finds the views that are neither placed on a layout nor published, and moves the ones you choose into a separate folder that keeps their folder structure.':
+        'レイアウトに配置されておらず発行もされていないビューを見つけ、選んだものをフォルダ構成を保ったまま別のフォルダに移動します。',
+
     // The schedule
     'Browse scripts': 'スクリプトを見る',
     'Search scripts': 'スクリプトを検索',

@@ -11,6 +11,27 @@
     '<strong class="callout-label"><span aria-hidden="true">ⓘ</span> Opening soon</strong> The scripts move to this page, and the list appears here as soon as the first ones are in. Until then, the scripts shared so far are on the <a href="https://tapir-marketplace.vercel.app/">current marketplace</a>, and you can <a href="share/">share your own</a>.':
         '<strong class="callout-label"><span aria-hidden="true">ⓘ</span> Bald verfügbar</strong> Die Skripte ziehen auf diese Seite um, und die Liste erscheint hier, sobald die ersten da sind. Bis dahin finden Sie die bisher geteilten Skripte auf dem <a href="https://tapir-marketplace.vercel.app/">aktuellen Marketplace</a>, und Sie können <a href="share/">Ihre eigenen teilen</a>.',
 
+    // The built-in scripts, shown until the marketplace has listings
+    'Built in to <em>Tapir.</em>': 'Mitgeliefert mit <em>Tapir.</em>',
+    'These are five of the scripts that come with the Tapir palette: open it in Archicad, pick one and press Run Script. Each is a short Python file you can read and change.':
+        'Das sind fünf der Skripte, die mit der Tapir-Palette geliefert werden: Öffnen Sie sie in Archicad, wählen Sie eines und klicken Sie auf Run Script. Jedes ist eine kurze Python-Datei, die Sie lesen und ändern können.',
+    'Built-in script': 'Mitgeliefertes Skript',
+    'Number elements along a line': 'Elemente entlang einer Linie nummerieren',
+    'Select a polyline and the doors, zones or objects to number. Each one gets its Element ID in the order the polyline passes it.':
+        'Wählen Sie eine Polylinie und die Türen, Zonen oder Objekte, die nummeriert werden sollen. Jedes erhält seine Element ID in der Reihenfolge, in der die Polylinie es passiert.',
+    'Colour the model by a property': 'Das Modell nach einer Eigenschaft einfärben',
+    'Pick a property; every element gets a colour for its value, with a legend of the values and how many elements have each. Number values can be grouped into ranges.':
+        'Wählen Sie eine Eigenschaft; jedes Element erhält eine Farbe für seinen Wert, mit einer Legende der Werte und wie viele Elemente jeden haben. Zahlenwerte lassen sich in Bereiche gruppieren.',
+    'Check a project before it goes out': 'Ein Projekt prüfen, bevor es rausgeht',
+    'Lists elements without an ID, zones with the same number, unclassified and duplicate elements, empty stories and unused layers. Export the list to Excel or turn it into Issues.':
+        'Listet Elemente ohne ID, Zonen mit derselben Nummer, nicht klassifizierte und doppelte Elemente, leere Geschosse und unbenutzte Ebenen auf. Exportieren Sie die Liste nach Excel oder machen Sie daraus Issues.',
+    'Publish on a schedule': 'Nach Zeitplan publizieren',
+    'Publishes the chosen Publisher Sets now or on a schedule, every few hours or daily at a set time. It can receive the Teamwork changes and update the drawings first, and logs every run.':
+        'Publiziert die gewählten Publisher Sets sofort oder nach Zeitplan, alle paar Stunden oder täglich zu einer festen Uhrzeit. Es kann vorher die Teamwork-Änderungen empfangen und die Zeichnungen aktualisieren und protokolliert jeden Lauf.',
+    'Tidy up the View Map': 'Die View Map aufräumen',
+    'Finds the views that are neither placed on a layout nor published, and moves the ones you choose into a separate folder that keeps their folder structure.':
+        'Findet die Ansichten, die weder auf einem Layout platziert noch publiziert sind, und verschiebt die gewählten in einen eigenen Ordner, der ihre Ordnerstruktur beibehält.',
+
     // The schedule
     'Browse scripts': 'Skripte durchsehen',
     'Search scripts': 'Skripte durchsuchen',

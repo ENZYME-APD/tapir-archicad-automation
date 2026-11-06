@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title data-i18n>Scripts - Tapir</title>
 <meta name="description" data-i18n-attrs="content" content="Scripts shared by architects for the Tapir palette in Archicad, each one reviewed and adapted to work in any office before it is listed.">
+<!-- link-preview: the preview of a link to this page shared on Discord, WhatsApp and the like -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tapir">
+<meta property="og:title" content="Scripts - Tapir">
+<meta property="og:description" content="Scripts shared by architects for the Tapir palette in Archicad, each one reviewed and adapted to work in any office before it is listed.">
+<meta property="og:url" content="https://archicad-api.com/scripts/">
+<meta name="twitter:card" content="summary">
 <!-- site-assets -->
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <meta name="theme-color" content="#2D3A30" media="(prefers-color-scheme: dark)">
@@ -16,6 +23,8 @@
 <script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
 <script>try { var l = /[?&]lang=([A-Za-z]{2})(?:[&#]|$)/.exec (location.search); l = l ? l[1].toLowerCase () : localStorage.getItem ('tapir-lang') || (navigator.language || '').slice (0, 2).toLowerCase (); if (l && l !== 'en') { document.documentElement.setAttribute ('data-i18n-loading', ''); setTimeout (function () { document.documentElement.removeAttribute ('data-i18n-loading'); }, 2000); } } catch (e) {}</script>
 <script src="../assets/site.js" defer></script>
+<link rel="stylesheet" href="../assets/motion.css"><script src="../assets/motion.js" defer></script>
+<script>try { if ((!sessionStorage.getItem ('tapir-splash') || /[?&]splash/.test (location.search)) && !/nomotion/.test (location.search + location.hash) && 'IntersectionObserver' in window && !matchMedia ('(prefers-reduced-motion: reduce)').matches) { var h = document.documentElement; h.classList.add ('m-splash'); var f = function () { h.classList.add ('m-font'); }; setTimeout (f, 2500); if (document.fonts && document.fonts.load) document.fonts.load ('900 56px Fraunces').then (f, f); else f (); } } catch (e) {}</script>
 <!-- /site-assets -->
 <link rel="stylesheet" href="scripts.css">
 <script src="scripts.js" defer></script>
@@ -53,6 +62,52 @@
         </div>
 
         <div class="wrap page-body">
+            <!-- The five built-in scripts the home page links to, shown until the marketplace has
+                 listings: scripts.js hides this section when the schedule appears. -->
+            <section id="builtin-scripts" aria-labelledby="builtin-scripts-title">
+                <div class="sec-head">
+                    <h2 id="builtin-scripts-title" data-i18n>Built in to <em>Tapir.</em></h2>
+                    <p data-i18n>These are five of the scripts that come with the Tapir palette: open it in Archicad, pick one and press Run Script. Each is a short Python file you can read and change.</p>
+                </div>
+                <ul class="uses">
+                    <li class="way">
+                        <span class="who" data-i18n>Built-in script</span>
+                        <h3 data-i18n>Number elements along a line</h3>
+                        <p data-i18n>Select a polyline and the doors, zones or objects to number. Each one gets its Element ID in the order the polyline passes it.</p>
+                        <p class="meta"><span class="pill chg" data-i18n>Changes the model</span> <code>SetPropertyValuesOfElements</code></p>
+                        <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/AutomaticNumberingBasedOnPolyline.py">Automatic Numbering Based on Polyline</a>
+                    </li>
+                    <li class="way">
+                        <span class="who" data-i18n>Built-in script</span>
+                        <h3 data-i18n>Colour the model by a property</h3>
+                        <p data-i18n>Pick a property; every element gets a colour for its value, with a legend of the values and how many elements have each. Number values can be grouped into ranges.</p>
+                        <p class="meta"><span class="pill ro" data-i18n>Read only</span> <code>HighlightElements</code></p>
+                        <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/PropertyHighlighter.py">Property Highlighter</a>
+                    </li>
+                    <li class="way">
+                        <span class="who" data-i18n>Built-in script</span>
+                        <h3 data-i18n>Check a project before it goes out</h3>
+                        <p data-i18n>Lists elements without an ID, zones with the same number, unclassified and duplicate elements, empty stories and unused layers. Export the list to Excel or turn it into Issues.</p>
+                        <p class="meta"><span class="pill ro" data-i18n>Read only</span> <code>GetClassificationsOfElements</code></p>
+                        <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/ProjectHealthCheck.py">Project Health Check</a>
+                    </li>
+                    <li class="way">
+                        <span class="who" data-i18n>Built-in script</span>
+                        <h3 data-i18n>Publish on a schedule</h3>
+                        <p data-i18n>Publishes the chosen Publisher Sets now or on a schedule, every few hours or daily at a set time. It can receive the Teamwork changes and update the drawings first, and logs every run.</p>
+                        <p class="meta"><span class="pill" data-i18n>Writes files</span> <code>PublishPublisherSet</code></p>
+                        <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/BatchPublisher.py">Batch Publisher</a>
+                    </li>
+                    <li class="way">
+                        <span class="who" data-i18n>Built-in script</span>
+                        <h3 data-i18n>Tidy up the View Map</h3>
+                        <p data-i18n>Finds the views that are neither placed on a layout nor published, and moves the ones you choose into a separate folder that keeps their folder structure.</p>
+                        <p class="meta"><span class="pill chg" data-i18n>Changes the model</span> <code>API.MoveNavigatorItem</code></p>
+                        <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/UnusedViewCleaner.py">Unused View Cleaner</a>
+                    </li>
+                </ul>
+            </section>
+
             <p class="callout" id="scripts-opening" data-i18n>
                 <strong class="callout-label"><span aria-hidden="true">&#9432;</span> Opening soon</strong>
                 The scripts move to this page, and the list appears here as soon as the first ones are in.
