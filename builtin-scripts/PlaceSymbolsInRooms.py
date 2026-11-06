@@ -3,6 +3,10 @@
 # dependencies = []
 # ///
 
+# /// tapir
+# changes = "model"
+# ///
+
 """
 Place Symbols in Rooms
 

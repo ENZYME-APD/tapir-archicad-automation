@@ -3,6 +3,10 @@
 # dependencies = []
 # ///
 
+# /// tapir
+# changes = "model"
+# ///
+
 """
 Drawing Status Report
 

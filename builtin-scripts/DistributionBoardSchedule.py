@@ -3,6 +3,10 @@
 # dependencies = []
 # ///
 
+# /// tapir
+# changes = "files"
+# ///
+
 '''
 Distribution board schedule
 
