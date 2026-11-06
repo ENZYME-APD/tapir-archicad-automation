@@ -121,13 +121,13 @@
         return months.every (function (month) { return valueOf (month, key) !== null; });
     }
 
-    // A round top for an axis: 1, 2 or 5 times a power of ten, at least the largest value.
+    // A round top for an axis, at least the largest value and close above it.
     function niceMax (value) {
         if (value <= 0) {
             return 1;
         }
         var power = Math.pow (10, Math.floor (Math.log10 (value)));
-        var steps = [1, 2, 2.5, 5, 10];
+        var steps = [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];
         for (var i = 0; i < steps.length; i++) {
             if (steps[i] * power >= value) {
                 return steps[i] * power;
@@ -136,14 +136,60 @@
         return 10 * power;
     }
 
+    // The nearest value of the 1, 2, 5 series, for the ticks of the square-root scale.
+    function niceRound (value) {
+        if (value <= 0) {
+            return 0;
+        }
+        var power = Math.pow (10, Math.floor (Math.log10 (value)));
+        var best = power;
+        [1, 2, 5, 10].forEach (function (step) {
+            if (Math.abs (step * power - value) < Math.abs (best - value)) {
+                best = step * power;
+            }
+        });
+        return best;
+    }
+
     function shortNumber (value) {
         return value >= 10000 ? Math.round (value / 1000) + 'k' : value.toLocaleString (LOCALE);
+    }
+
+    // A smooth path through the points that never overshoots them (monotone cubic, Fritsch and
+    // Carlson), so a month is never drawn above or below its count. 'M' starts it, 'L' joins it on.
+    function smoothPath (points, start) {
+        var n = points.length;
+        var d = start + points[0][0].toFixed (1) + ',' + points[0][1].toFixed (1);
+        if (n < 3) {
+            for (var k = 1; k < n; k++) {
+                d += 'L' + points[k][0].toFixed (1) + ',' + points[k][1].toFixed (1);
+            }
+            return d;
+        }
+        var slopes = [];
+        for (var i = 0; i < n - 1; i++) {
+            slopes.push ((points[i + 1][1] - points[i][1]) / (points[i + 1][0] - points[i][0]));
+        }
+        // The tangent at each point: the harmonic mean of its two slopes (0 at a peak or a
+        // trough), which keeps the curve monotone; the end points take their one slope.
+        var tangents = [slopes[0]];
+        for (var m = 1; m < n - 1; m++) {
+            tangents.push (slopes[m - 1] * slopes[m] <= 0 ? 0 : 2 / (1 / slopes[m - 1] + 1 / slopes[m]));
+        }
+        tangents.push (slopes[n - 2]);
+        for (var t = 0; t < n - 1; t++) {
+            var dx = (points[t + 1][0] - points[t][0]) / 3;
+            d += 'C' + (points[t][0] + dx).toFixed (1) + ',' + (points[t][1] + tangents[t] * dx).toFixed (1) + ' ' +
+                (points[t + 1][0] - dx).toFixed (1) + ',' + (points[t + 1][1] - tangents[t + 1] * dx).toFixed (1) + ' ' +
+                points[t + 1][0].toFixed (1) + ',' + points[t + 1][1].toFixed (1);
+        }
+        return d;
     }
 
     function drawGrowth (container, months, layers, withLine) {
         var small = phone.matches;
         var width = small ? 380 : 760;
-        var height = small ? 260 : 320;
+        var height = small ? 280 : 360;
         var left = small ? 44 : 48;
         var right = withLine ? (small ? 36 : 48) : 12;
         var top = 16;
@@ -160,8 +206,10 @@
                 return [below, sum];
             });
         });
+        // The left scale grows by the square root: a month with a quarter of the top count is
+        // drawn at half the height, so the early years stay readable next to the latest months.
         var leftMax = niceMax (Math.max.apply (null, stacks.map (function (stack) { return stack[stack.length - 1][1]; })));
-        var y = function (value) { return bottom - (bottom - top) * value / leftMax; };
+        var y = function (value) { return bottom - (bottom - top) * Math.sqrt (value / leftMax); };
 
         var svg = svgElement ('svg', {
             viewBox: '0 0 ' + width + ' ' + height,
@@ -172,30 +220,52 @@
             })
         });
 
-        // Grid and left scale.
-        [0, 0.5, 1].forEach (function (share) {
-            var level = y (leftMax * share);
-            svg.appendChild (svgElement ('line', { 'class': share === 0 ? 'axis' : 'grid', x1: left, x2: width - right, y1: level.toFixed (1), y2: level.toFixed (1) }));
-            svg.appendChild (svgElement ('text', { x: left - 6, y: (level + 4).toFixed (1), 'text-anchor': 'end' }, shortNumber (leftMax * share)));
+        // One gradient per layer: full colour at the top, lighter towards the axis.
+        var defs = svgElement ('defs', {});
+        layers.forEach (function (key) {
+            var gradient = svgElement ('linearGradient', { id: 'growth-fill-' + key, x1: 0, x2: 0, y1: 0, y2: 1 });
+            gradient.appendChild (svgElement ('stop', { offset: '0%', 'class': 'stop stop-' + key }));
+            gradient.appendChild (svgElement ('stop', { offset: '100%', 'class': 'stop stop-' + key + ' stop-low' }));
+            defs.appendChild (gradient);
+        });
+        svg.appendChild (defs);
+
+        // Grid and left scale: 0, then the round values at about a quarter, half and all of the height.
+        var ticks = [0];
+        [0.0625, 0.25, 1].forEach (function (share) {
+            var value = share === 1 ? leftMax : niceRound (leftMax * share);
+            if (value > ticks[ticks.length - 1]) {
+                ticks.push (value);
+            }
+        });
+        ticks.forEach (function (value) {
+            var level = y (value);
+            svg.appendChild (svgElement ('line', { 'class': value === 0 ? 'axis' : 'grid', x1: left, x2: width - right, y1: level.toFixed (1), y2: level.toFixed (1) }));
+            svg.appendChild (svgElement ('text', { x: left - 6, y: (level + 4).toFixed (1), 'text-anchor': 'end' }, shortNumber (value)));
         });
 
-        // The stacked areas.
+        // The stacked areas, top layer last so its edge reads on top.
         layers.forEach (function (key, layer) {
-            var upper = months.map (function (month, index) { return x (index).toFixed (1) + ',' + y (stacks[index][layer][1]).toFixed (1); });
-            var lower = months.map (function (month, index) { return x (index).toFixed (1) + ',' + y (stacks[index][layer][0]).toFixed (1); }).reverse ();
-            svg.appendChild (svgElement ('path', { 'class': 'layer layer-' + key, d: 'M' + upper.join ('L') + 'L' + lower.join ('L') + 'Z' }));
+            var upper = months.map (function (month, index) { return [x (index), y (stacks[index][layer][1])]; });
+            var lower = months.map (function (month, index) { return [x (index), y (stacks[index][layer][0])]; }).reverse ();
+            svg.appendChild (svgElement ('path', {
+                'class': 'layer layer-' + key,
+                fill: 'url(#growth-fill-' + key + ')',
+                d: smoothPath (upper, 'M') + smoothPath (lower, 'L') + 'Z'
+            }));
+            svg.appendChild (svgElement ('path', { 'class': 'edge edge-' + key, d: smoothPath (upper, 'M') }));
         });
 
-        // The line on the right scale.
+        // The line on its own, linear right scale.
         if (withLine) {
             var lineMax = niceMax (Math.max.apply (null, months.map (function (month) { return month[LINE]; })));
             var yLine = function (value) { return bottom - (bottom - top) * value / lineMax; };
             [0.5, 1].forEach (function (share) {
                 svg.appendChild (svgElement ('text', { 'class': 'line-scale', x: width - right + 6, y: (yLine (lineMax * share) + 4).toFixed (1) }, shortNumber (lineMax * share)));
             });
-            var points = months.map (function (month, index) { return x (index).toFixed (1) + ',' + yLine (month[LINE]).toFixed (1); });
-            svg.appendChild (svgElement ('path', { 'class': 'line-halo', d: 'M' + points.join ('L') }));
-            svg.appendChild (svgElement ('path', { 'class': 'line', d: 'M' + points.join ('L') }));
+            var points = months.map (function (month, index) { return [x (index), yLine (month[LINE])]; });
+            svg.appendChild (svgElement ('path', { 'class': 'line-halo', d: smoothPath (points, 'M') }));
+            svg.appendChild (svgElement ('path', { 'class': 'line', d: smoothPath (points, 'M') }));
             var lastValue = months[count - 1][LINE];
             svg.appendChild (svgElement ('circle', { 'class': 'line-dot', cx: x (count - 1).toFixed (1), cy: yLine (lastValue).toFixed (1), r: 4 }));
         }

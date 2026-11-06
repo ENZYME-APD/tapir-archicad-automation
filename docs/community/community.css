@@ -36,7 +36,15 @@
 .swatch.layer-discordMessages, .activity-chart .layer-discordMessages { background: var(--layer-discord); fill: var(--layer-discord) }
 .growth figcaption { margin-top: 8px; font-size: 13px; color: var(--muted) }
 .activity-chart svg { display: block; width: 100%; height: auto }
-.activity-chart .layer { stroke: var(--surface); stroke-width: .75 }
+.activity-chart .layer { stroke: none }
+.activity-chart .edge { fill: none; stroke-width: 1.5 }
+.activity-chart .edge-commits { stroke: var(--layer-commits) }
+.activity-chart .edge-github { stroke: var(--layer-github) }
+.activity-chart .edge-discordMessages { stroke: var(--layer-discord) }
+.activity-chart .stop-commits { stop-color: var(--layer-commits); stop-opacity: .95 }
+.activity-chart .stop-github { stop-color: var(--layer-github); stop-opacity: .95 }
+.activity-chart .stop-discordMessages { stop-color: var(--layer-discord); stop-opacity: .95 }
+.activity-chart .stop-low { stop-opacity: .45 }
 .activity-chart .axis { stroke: var(--border-strong); stroke-width: 1 }
 .activity-chart .grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 4 }
 .activity-chart .tick { stroke: var(--border-strong) }
