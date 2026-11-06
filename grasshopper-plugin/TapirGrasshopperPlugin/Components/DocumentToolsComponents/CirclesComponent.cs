@@ -12,8 +12,9 @@ namespace TapirGrasshopperPlugin.Components.DocumentToolsComponents
     // The Circle tool (the Arc/Circle tool's circles): reads and creates
     // circles with the settings of its settings dialog, from
     // ToolSettings/Circle.json. Origin and Radius define a new circle. There
-    // is no ModifyCircles command, so Execute only writes the Element ID, the
-    // layer, the draw order and the story of existing circles.
+    // is no ModifyCircles command: Execute writes the General Settings with
+    // SetDetailsOfElements (typeSpecificDetails, ArcSettings), and the
+    // Element ID, the layer, the draw order and the story.
     public class CirclesComponent : ElementToolComponent
     {
         protected override string ToolName => "Circle";
@@ -38,6 +39,15 @@ namespace TapirGrasshopperPlugin.Components.DocumentToolsComponents
         protected override ISet<string> CreateKeys => CreateCirclesKeys;
         protected override ISet<string> ModifyKeys { get; } = new HashSet<string>();
 
+        // What SetDetailsOfElements writes of a circle (its ArcSettings);
+        // "radius" is a key only the arc settings have.
+        protected override ISet<string> DetailsKeys { get; } = new HashSet<string>
+        {
+            "linePenIndex", "lineTypeId", "origin", "radius", "roomSeparator"
+        };
+
+        protected override string DetailsTypeKey => "radius";
+
         // The settings dialog's panels, in its order; append-only (see
         // ElementToolComponent.JsonGroups).
         protected override IReadOnlyList<string> JsonGroups { get; } = new[]
@@ -48,11 +58,10 @@ namespace TapirGrasshopperPlugin.Components.DocumentToolsComponents
         public CirclesComponent()
             : base(
                 "Circles",
-                "Reads (Refresh) and creates (Create) circles, with the settings of the circle's settings dialog " +
-                "as one JSON object per dialog panel. A new circle starts from the tool defaults, or from " +
-                "FavoriteName, and the given settings override them. The story can be given as " +
-                "{\"floorIndex\": ...} in any JSON input. Archicad has no command to modify circles, so Execute " +
-                "only writes ElementID, LayerIndex, DrawOrder and the story.",
+                "Reads (Refresh), writes (Execute) and creates (Create) circles, with the settings of the circle's " +
+                "settings dialog as one JSON object per dialog panel. A new circle starts from the tool defaults, " +
+                "or from FavoriteName, and the given settings override them. The story can be given as " +
+                "{\"floorIndex\": ...} in any JSON input. Origin and Radius are only used by Create.",
                 GroupNames.DocumentTools)
         {
         }
