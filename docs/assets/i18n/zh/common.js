@@ -22,7 +22,7 @@
     'Licence': '许可证',
     'Open-source automation for Archicad. 100% free and open source (MIT). Maintained by Enzyme APD and the community.':
         '面向 Archicad 的开源自动化工具。100% 免费、开源（MIT）。由 Enzyme APD 与社区共同维护。',
-    'Contact: <span class="nowrap">contact@enzyme-apd.com</span>': '联系方式：<span class="nowrap">contact@enzyme-apd.com</span>',
+    'Contact: <span class="nowrap">tapir@weareenzyme.com</span>': '联系方式：<span class="nowrap">tapir@weareenzyme.com</span>',
     'Share a script': '分享脚本',
     'Tapir and AI': 'Tapir 与 AI',
     'All docs': '全部文档',
