@@ -5930,5 +5930,29 @@ namespace TapirGrasshopperPlugin.Properties
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
+
+        internal static System.Drawing.Bitmap DeleteFavoritesWithManager
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteFavoritesWithManager", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetFavoriteContents
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetFavoriteContents", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetLibraryPartParameterValues
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetLibraryPartParameterValues", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
     }
 }

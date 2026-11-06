@@ -63,10 +63,12 @@ grasshopper-plugin/      C# Grasshopper plugin (.NET, produces .gha), packaged v
   TapirGrasshopperPlugin/  Components/, Types/, Helps/, Resources/,
                          ToolSettings/ (API field -> Archicad GUI label tables per tool)
 builtin-scripts/         Bundled automation scripts
+marketplace/             Shared scripts, one <slug>/ folder each (format in its README.md)
 branding/                Logos, diagrams
 docs/                    Generated docs (archicad-addon command reference),
                          api-coverage/ page of the Archicad API coverage checklist,
-                         gh-coverage/ page of the Grasshopper coverage checklist
+                         gh-coverage/ page of the Grasshopper coverage checklist,
+                         community/ and about/ pages (growth chart, momentum, origin story)
 tools/                   Version bump scripts (update_version.py), package_info.json,
                          Add-On docs generator (generate_addon_docs.py),
                          command scaffolder (new_command.py),
@@ -76,7 +78,8 @@ tools/                   Version bump scripts (update_version.py), package_info.
                          fetch_api_coverage_github_data.py, api_coverage_rules.json),
                          Grasshopper coverage generator (generate_gh_coverage.py,
                          gh_coverage_rules.json),
-                         Archicad version list reader and updater (devkits.py)
+                         Archicad version list reader and updater (devkits.py),
+                         Community page data (generate_community_data.py)
   discord-issue-bot/     Discord -> GitHub issue bot (run by .github/workflows/discord_issue_bot.yml)
 sandbox/                 Experiments / scratch
 .github/workflows/       CI: build checks + release pipelines for both components
@@ -288,6 +291,16 @@ twin); new work on an element tool follows these rules:
   GUID when moving it. Archicad attributes (building materials, surfaces, composites, …) will follow
   the same pattern later.
 
+## Script marketplace
+
+Scripts shared by users live in [marketplace/](marketplace/), one `<slug>/` folder each
+(`listing.json`, the script, `README.md`, optional `screenshots/`). They are never added to
+`builtin-scripts/`. [marketplace/README.md](marketplace/README.md) is the format (with
+[listing.schema.json](marketplace/listing.schema.json)), the `# /// tapir` header and its
+`changes` key, and the rules for adapting a shared script for public use. An issue labelled
+`script-share` becomes one pull request adding its folder, adapted by those rules, keeping what
+the script does, listing every change in plain words and asking the author to confirm it.
+
 ## Versioning
 
 Version lives in multiple places that must stay in sync:
@@ -319,6 +332,16 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   check also runs `tools/check_examples.py` (one example per command). The installer
   check also runs `Installer/test_update_mode.py` and syntax-checks the legacy
   auto-update script.
+  A pull request (or the steward's dispatch on a branch) whose changed files are
+  all in the skip list of [.github/actions/build-gate](.github/actions/build-gate/action.yml)
+  — `docs/**`, `archicad-addon/Test/**`, `archicad-addon/Examples/**`,
+  `archicad-addon/Workflows/**`, `builtin-scripts/**`, `marketplace/**`,
+  `branding/**`, `**/*.md` — skips the add-on and installer builds: a cheap
+  `changes` job gates `build_win`, `build_mac` and `build_installer` by `if:`, so
+  their checks still appear as skipped, which the steward, auto-merge and required
+  checks count as passing (not `paths-ignore`, whose missing checks would hang
+  them). `build_win` still runs when `archicad-addon/Test/checks/` changed, for the
+  community test runner; pushes to `main` and the release workflows always build.
 - `archicad_addon.yml`, `grasshopper_plugin.yml` — release/publish pipelines.
   `archicad_addon.yml` also builds the Tapir Installer executables
   (`TapirInstaller_Win.exe`, `TapirInstaller_Mac.zip`), and attaches them a second time
@@ -440,7 +463,7 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   request of this repository, however it was merged, when its tip is still the
   merged head and no open pull request uses it; run by hand (dry run by default)
   it sweeps the leftovers. `KEEP` in it lists the branches without a pull
-  request that must stay (`api-coverage`, image branches).
+  request that must stay (`api-coverage`, `site-data`, image branches).
 - `discord_issue_bot.yml` — files GitHub issues from bug reports and feature
   requests in the project's Discord channels, then dispatches
   `claude_issue_triage.yml` for each (issues created with `GITHUB_TOKEN` trigger
@@ -471,6 +494,16 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   rest through a JSON input, or miss some. It publishes `gh-coverage.*` to the
   same branch, read by `docs/gh-coverage/index.html`; commands that need no
   component go in `tools/gh_coverage_rules.json`.
+- `site_data.yml` — daily and by hand: `tools/generate_community_data.py` counts,
+  per month, the commits of `main`, the issues opened and pull requests merged, and
+  the Discord messages and members of the project's server (only counts, never the
+  text of a message), plus the totals and top contributors, and publishes
+  `community.json` to the `site-data` branch (never to `main`), read by
+  `docs/community/community.js` (the Momentum figures and the growth chart). The
+  Discord bot token is `DISCORD_STATS_TOKEN`, else `DISCORD_BOT_TOKEN`; members per
+  month need the bot's Server Members Intent, and without a token only the public
+  invite's member count is read. It never runs on pull request events and never
+  checks out pull request code; `SITE_DATA=false` turns it off.
 
 ## Installation (end users)
 

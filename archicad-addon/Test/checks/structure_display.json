@@ -1,0 +1,147 @@
+{
+  "title": "SetStructureDisplay changes the Partial Structure Display of the floor plan and the 3D window, GetStructureDisplay reads it back",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "3D window",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "3DModel" },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "3D setting before",
+      "command": "GetStructureDisplay",
+      "creates": false,
+      "params": {},
+      "save": { "before3D": "structureDisplay" },
+      "expect": [
+        { "path": "is3D", "eq": true }
+      ]
+    },
+    {
+      "id": "floor plan, story 0",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "floor plan setting before",
+      "command": "GetStructureDisplay",
+      "creates": false,
+      "params": {},
+      "save": { "beforePlan": "structureDisplay" },
+      "expect": [
+        { "path": "is3D", "eq": false }
+      ]
+    },
+    {
+      "id": "floor plan: core only",
+      "command": "SetStructureDisplay",
+      "creates": false,
+      "params": { "structureDisplay": "CoreOnly" },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read core only",
+      "command": "GetStructureDisplay",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "structureDisplay", "eq": "CoreOnly" },
+        { "path": "is3D", "eq": false }
+      ]
+    },
+    {
+      "id": "floor plan: structure only",
+      "command": "SetStructureDisplay",
+      "creates": false,
+      "params": { "structureDisplay": "StructureOnly" },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read structure only",
+      "command": "GetStructureDisplay",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "structureDisplay", "eq": "StructureOnly" }
+      ]
+    },
+    {
+      "id": "bad input: unknown value",
+      "command": "SetStructureDisplay",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": { "structureDisplay": "OnlyFinishes" },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the input schema (PartialStructureDisplay enum)" }
+      ]
+    },
+    {
+      "id": "unchanged after the refused call",
+      "command": "GetStructureDisplay",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "structureDisplay", "eq": "StructureOnly" }
+      ]
+    },
+    {
+      "id": "3D window again",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "3DModel" },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "3D: without finishes",
+      "command": "SetStructureDisplay",
+      "creates": false,
+      "params": { "structureDisplay": "WithoutFinishes" },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read without finishes in 3D",
+      "command": "GetStructureDisplay",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "structureDisplay", "eq": "WithoutFinishes" },
+        { "path": "is3D", "eq": true }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "ChangeWindow",
+      "params": { "windowType": "3DModel" }
+    },
+    {
+      "command": "SetStructureDisplay",
+      "params": { "structureDisplay": "${before3D}" }
+    },
+    {
+      "command": "ChangeWindow",
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "command": "SetStructureDisplay",
+      "params": { "structureDisplay": "${beforePlan}" }
+    }
+  ]
+}

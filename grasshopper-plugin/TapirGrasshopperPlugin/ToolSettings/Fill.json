@@ -9,6 +9,7 @@
   },
   "plainKeys": [
     "favoriteName",
+    "id",
     "layerIndex"
   ],
   "sources": {
@@ -40,7 +41,7 @@
     },
     {
       "get": "holes",
-      "set": null,
+      "set": "holes",
       "apiMember": "API_HatchType::poly",
       "apiDescription": "Polygon of the hatch element.",
       "label": null,
@@ -157,6 +158,16 @@
       "label": "Subtract from Zones",
       "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-31.htm (heading \"Subtract from Zones\"; screenshot FillGeneralSettings.png \"Subtract from Zones\" with its \"% of Fill Area\" field)",
       "group": "General Settings",
+      "subgroup": null
+    },
+    {
+      "get": "fillOrientation",
+      "set": null,
+      "apiMember": "API_HatchType::hatchOrientation",
+      "apiDescription": "Orientation, origin and distortion of the fill pattern.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
       "subgroup": null
     }
   ]

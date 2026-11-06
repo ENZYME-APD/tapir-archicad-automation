@@ -1080,6 +1080,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.8.1",
             "Creates extruded, revolved and ruled Shell elements from profile polylines, with thickness, structure, an optional clipping contour and holes."
         );
+        err |= RegisterCommand<CreateSkylightsCommand> (
+            elementCommands, "1.8.1",
+            "Creates Skylight elements with a roof or shell owner and a floor plan anchor position. Width, height, anchor point and library part are optional; other settings come from the Skylight tool defaults or a favorite. Surface placement is handled by Archicad and has not yet been verified for this command."
+        );
         err |= RegisterCommand<CreateRailingsCommand> (
             elementCommands, "1.8.0",
             "Creates Railing elements along a reference polyline. Posts, rails, handrails, toprails, panels and balusters come from the favorite or from the Railing tool defaults; Archicad generates one node per vertex and one segment per pair of consecutive vertices."
@@ -1493,6 +1497,17 @@ GSErrCode Initialize (void)
             "Moves a folder of the Favorites palette, with its Favorites and subfolders, into another folder. Folders are "
             "given as their path of folder names from the root. Returns the new path of the folder. Available from Archicad 29."
         );
+        err |= RegisterCommand<GetFavoriteContentsCommand> (
+            favoritesCommands, "1.8.1",
+            "Returns the Favorites of a folder of the Favorites palette and of its subfolders (every Favorite when no folder "
+            "is given), each with its folder path, classifications, element category values and property values, read through "
+            "the Favorite manager. Available from Archicad 29."
+        );
+        err |= RegisterCommand<DeleteFavoritesWithManagerCommand> (
+            favoritesCommands, "1.8.1",
+            "Deletes the given Favorites through the Favorite manager, each found by name, optionally only in the given folder. "
+            "One execution result for each. Available from Archicad 29."
+        );
         err |= RegisterCommand<MoveFavoritesCommand> (
             favoritesCommands, "1.8.0",
             "Moves Favorites given by their names into a folder of the Favorites palette given by its path. "
@@ -1735,7 +1750,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ImportAttributesFromProjectCommand> (
             attributeCommands, "1.8.1",
-            "Imports Line, Fill, ZoneCategory, PenTable and OperationProfile attributes from another project or template file into the open project, with their complete definition (symbol and percent fills included), like Append or Overwrite by name in Archicad's Attribute Manager. A new attribute gets a new guid: Archicad does not hand out the guids stored in the source file. An attribute whose name already exists is skipped, or overwritten in place with overwriteExisting. dryRun reports what would happen without changing anything. The names are the legacy 8-bit names of the source file. Available from Archicad 27."
+            "Imports Line, Fill, ZoneCategory, PenTable, OperationProfile, Composite, Profile and LayerCombination attributes from another project or template file into the open project, with their complete definition (symbol and percent fills included), like Append or Overwrite by name in Archicad's Attribute Manager. The lines and fills a composite or profile uses are matched by name; its building materials and surfaces, and the layers of a layer combination, keep their index only with referencesByIndex, since Archicad does not read these types from a closed file. An attribute with a reference that cannot be mapped is not imported. A new attribute gets a new guid: Archicad does not hand out the guids stored in the source file. An attribute whose name already exists is skipped, or overwritten in place with overwriteExisting. dryRun reports what would happen without changing anything. The names are the legacy 8-bit names of the source file. Available from Archicad 27."
         );
         err |= RegisterCommand<GetUsedAttributesCommand> (
             attributeCommands, "1.8.0",
@@ -1771,7 +1786,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ReindexAttributesCommand> (
             attributeCommands, "1.8.1",
-            "Moves fills, line types, surfaces and building materials to new indices, the way ReindexLayers moves layers. Archicad cannot renumber an attribute, so the attribute is recreated at its new index (free indices below it are filled with temporary attributes, which are deleted again) and every reference to the old index is rewritten to the new one: the fields of the elements in the floor plan and in every view and layout, the parameters of library part based elements, the memo data of roofs, slabs, meshes, morphs, curtain walls, beams, columns, stairs and interior elevations, the tool defaults, the Favorites (with their sub-elements: a curtain wall's frame and panel classes, a stair's structures), the other attributes that refer to it (composites, building materials, surfaces, profiles, MEP systems) and the graphic override rules. Only then is the old attribute deleted. The new attribute has a new attribute id (Archicad does not keep a given id); its name, definition and attribute folder are the old ones. Elements on a hidden or locked layer cannot be changed, so their layers are shown and unlocked for the move and put back afterwards (in the current window, as Archicad keeps these flags per window). If an element still cannot be changed (it is locked itself, or not reserved in Teamwork), everything is put back and that attribute is not moved. Elements from hotlinked modules cannot be changed and are listed; their module file has to be reindexed on its own. Indices typed into GDL scripts are not found, and the frame and panel classes of curtain wall Favorites and of the Curtain Wall tool default keep the old index (Archicad does not take them from ACAPI_Favorite_Change, so such Favorites are left as they are and named in the warnings). dryRun lists every reference without changing anything. The whole call is one undo step. Pens, layers (see ReindexLayers) and the other attribute types are not supported. Available from Archicad 27."
+            "Moves fills, line types, surfaces, building materials and zone categories to new indices, the way ReindexLayers moves layers. Archicad cannot renumber an attribute, so the attribute is recreated at its new index (free indices below it are filled with temporary attributes, which are deleted again) and every reference to the old index is rewritten to the new one: the fields of the elements in the floor plan and in every view and layout, the parameters of library part based elements, the memo data of roofs, slabs, meshes, morphs, curtain walls, beams, columns, stairs and interior elevations, the tool defaults, the Favorites (with their sub-elements: a curtain wall's frame and panel classes, a stair's structures), the other attributes that refer to it (composites, building materials, surfaces, profiles, MEP systems) and the graphic override rules. Only then is the old attribute deleted. The new attribute has a new attribute id (Archicad does not keep a given id); its name, definition and attribute folder are the old ones. Elements on a hidden or locked layer cannot be changed, so their layers are shown and unlocked for the move and put back afterwards (in the current window, as Archicad keeps these flags per window). If an element still cannot be changed (it is locked itself, or not reserved in Teamwork), everything is put back and that attribute is not moved. Elements from hotlinked modules cannot be changed and are listed; their module file has to be reindexed on its own. Indices typed into GDL scripts are not found, and the frame and panel classes of curtain wall Favorites and of the Curtain Wall tool default keep the old index (Archicad does not take them from ACAPI_Favorite_Change, so such Favorites are left as they are and named in the warnings). dryRun lists every reference without changing anything. The whole call is one undo step. Pens, layers (see ReindexLayers) and the other attribute types are not supported. Available from Archicad 27."
         );
         err |= RegisterCommand<DeleteAndReplaceAttributesCommand> (
             attributeCommands, "1.8.1",
@@ -2105,7 +2120,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetGDLParametersOfLibraryPartsCommand> (
             libraryCommands, "1.8.1",
-            "Gets the default GDL parameters (name, display name, type, array dimensions, value, flags) of the given library parts by name, read from the library part without placing it or changing any defaults. The output is in the format of GetGDLParametersOfElements, without isLocked and possibleValues, which need a placed element."
+            "Gets the default GDL parameters (name, display name, type, array dimensions, value, flags) of the given library parts by name, read from the library part without placing it or changing any defaults. The output is in the format of GetGDLParametersOfElements, without isLocked and possibleValues, which need a placed element. To read a part by its file name, as SetLibraryPartParameters writes it, use GetLibraryPartParameterValues."
         );
         err |= RegisterCommand<GetMissingLibPartNamesCommand> (
             libraryCommands, "1.8.1",
@@ -2138,11 +2153,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetGDLDateCommand> (
             libraryCommands, "1.8.1",
-            "Gets the date GDL scripts see, as the integer value the Archicad API returns."
+            "Gets the date GDL scripts see: year, month, day, hour, minute and second."
         );
         err |= RegisterCommand<SetGDLDateCommand> (
             libraryCommands, "1.8.1",
-            "Sets the date GDL scripts see, in the integer format GetGDLDate returns. Useful to test date-dependent library parts; set the value read with GetGDLDate back to restore it."
+            "Sets the date GDL scripts see: year, month, day, hour, minute and second, as GetGDLDate returns them. Useful to test date-dependent library parts; set the value read with GetGDLDate back to restore it."
         );
         err |= RegisterCommand<CheckLibrariesCommand> (
             libraryCommands, "1.8.0",
@@ -2179,6 +2194,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateLibraryPartCommand> (
             libraryCommands, "1.8.0",
             "Creates a new library part file (.gsm) of the given loaded subtype, inheriting its parameters, and reports whether it is loaded with its index and names. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetLibraryPartParameterValuesCommand> (
+            libraryCommands, "1.8.1",
+            "Returns the parameters of loaded library parts, given by their file name as GetAvailableLibraryParts returns it, with their default values and descriptions, in the format of GetGDLParametersOfElements: the read counterpart of SetLibraryPartParameters. Unlike GetGDLParametersOfLibraryParts, which finds a part by its name and also returns the index, flags and value descriptions of each parameter, it reads through the Library Manager. Available from Archicad 28."
         );
         err |= RegisterCommand<UpdateLibraryPartSectionsCommand> (
             libraryCommands, "1.8.1",
@@ -2422,7 +2441,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<FindModelViewOptionCommand> (
             navigatorCommands, "1.8.0",
-            "Finds a model view option combination by id or by name and returns its index, id, name and flags. The index is the one Archicad uses to switch the model view options of a window to the combination. Available from Archicad 27."
+            "Finds a model view option combination by id or by name and returns its index, id, name and flags. The index is the one SetViewOptions takes to switch the model view options of a window to the combination. Available from Archicad 27."
         );
         err |= RegisterCommand<GetModelViewOptionDetailsCommand> (
             navigatorCommands, "1.8.1",
@@ -2430,11 +2449,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetViewOptionsCommand> (
             navigatorCommands, "1.8.0",
-            "Gets the model view options and on-screen view options of the current plan window, and the index of the model view option combination it applies."
+            "Gets the model view options and on-screen view options of the current plan window, and the index and name of the model view option combination it applies."
         );
         err |= RegisterCommand<SetViewOptionsCommand> (
             navigatorCommands, "1.8.0",
-            "Switches the current plan window to a model view option combination by index, and/or changes the given model view options and on-screen view options."
+            "Switches the current plan window to a model view option combination by index, and/or changes the given model view options and on-screen view options. With an index, the model view options stored in the combination apply."
         );
         err |= RegisterCommand<GetViewSettingsCommand> (
             navigatorCommands, "1.1.4",

@@ -2114,8 +2114,13 @@ static GS::Optional<GS::UniString> GetLocationOfHotlink (const API_Guid& hotlink
     return hotlinkNode.sourceLocation->ToDisplayText ();
 }
 
+// `path` holds the nodes from the root down to the current one. A module placed in itself (or in
+// one of its own modules) makes the node tree cyclic once its cache is updated: the node then
+// shows up again among its own descendants. Such a node is listed, but its children are not
+// walked again, otherwise the recursion never ends and Archicad crashes on a stack overflow.
 static GS::ObjectState DumpHotlinkWithChildren (const API_Guid& hotlinkGuid,
-    GS::HashTable<API_Guid, GS::Array<API_Guid>>& hotlinkTree)
+    GS::HashTable<API_Guid, GS::Array<API_Guid>>& hotlinkTree,
+    GS::HashSet<API_Guid>& path)
 {
     GS::ObjectState hotlinkNodeOS;
 
@@ -2146,12 +2151,18 @@ static GS::ObjectState DumpHotlinkWithChildren (const API_Guid& hotlinkGuid,
         }
     }
 
+    if (path.Contains (hotlinkGuid)) {
+        return hotlinkNodeOS;
+    }
+
     const auto& children = hotlinkTree.Retrieve (hotlinkGuid);
     if (!children.IsEmpty ()) {
+        path.Add (hotlinkGuid);
         const auto& listAdder = hotlinkNodeOS.AddList<GS::ObjectState> ("children");
-        for (const API_Guid& childNodeGuid : hotlinkTree.Retrieve (hotlinkGuid)) {
-            listAdder (DumpHotlinkWithChildren (childNodeGuid, hotlinkTree));
+        for (const API_Guid& childNodeGuid : children) {
+            listAdder (DumpHotlinkWithChildren (childNodeGuid, hotlinkTree, path));
         }
+        path.Delete (hotlinkGuid);
     }
 
     return hotlinkNodeOS;
@@ -2167,8 +2178,9 @@ GS::ObjectState GetHotlinksCommand::Execute (const GS::ObjectState& /*parameters
         if (ACAPI_Hotlink_GetHotlinkRootNodeGuid (&type, &hotlinkRootNodeGuid) == NoError) {
             GS::HashTable<API_Guid, GS::Array<API_Guid>> hotlinkTree;
             if (ACAPI_Hotlink_GetHotlinkNodeTree (&hotlinkRootNodeGuid, &hotlinkTree) == NoError) {
+                GS::HashSet<API_Guid> path;
                 for (const API_Guid& childNodeGuid : hotlinkTree.Retrieve (hotlinkRootNodeGuid)) {
-                    listAdder (DumpHotlinkWithChildren (childNodeGuid, hotlinkTree));
+                    listAdder (DumpHotlinkWithChildren (childNodeGuid, hotlinkTree, path));
                 }
             }
         }

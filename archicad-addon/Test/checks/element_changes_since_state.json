@@ -1,0 +1,158 @@
+{
+  "title": "GetElementChangesSince lists the wall created, the wall whose info string SetElementInfoStrings changed and the wall deleted since CaptureElementState",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "id": "wall to modify, wall to delete",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 800, "y": 800 }, "endCoordinate": { "x": 804, "y": 800 }, "floorIndex": 0, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 },
+          { "begCoordinate": { "x": 800, "y": 810 }, "endCoordinate": { "x": 804, "y": 810 }, "floorIndex": 0, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 }
+        ]
+      },
+      "save": { "wModify": "elements[0].elementId.guid", "wDelete": "elements[1].elementId.guid" }
+    },
+    {
+      "id": "capture the state",
+      "command": "CaptureElementState",
+      "creates": false,
+      "params": { "type": "ModificationStamp" },
+      "save": { "before": "stateId.guid" },
+      "expect": [
+        { "path": "type", "eq": "ModificationStamp" }
+      ]
+    },
+    {
+      "id": "new wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 800, "y": 820 }, "endCoordinate": { "x": 804, "y": 820 }, "floorIndex": 0, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 }
+        ]
+      },
+      "save": { "wNew": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "[set the info string, nonexistent guid]",
+      "command": "SetElementInfoStrings",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${wModify}" }, "infoString": "TAPIRCHECK-INFO-1" },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "infoString": "TAPIRCHECK-INFO-2" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per element" },
+        { "path": "executionResults[0].success", "eq": true, "name": "info string set" },
+        { "path": "executionResults[1].success", "eq": false, "name": "nonexistent guid refused" }
+      ]
+    },
+    {
+      "id": "read the info string",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${wModify}" } } ],
+        "fields": [ "id" ],
+        "additionalFields": [ "infoString" ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].id", "eq": "TAPIRCHECK-INFO-1", "name": "the Element ID is the new info string" },
+        { "path": "detailsOfElements[0].infoString", "eq": "TAPIRCHECK-INFO-1", "name": "and so is the info string" }
+      ]
+    },
+    {
+      "id": "delete a wall",
+      "command": "DeleteElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${wDelete}" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "changes since the state",
+      "command": "GetElementChangesSince",
+      "creates": false,
+      "params": { "stateId": { "guid": "${before}" } },
+      "expect": [
+        { "path": "newElements", "len": 1, "name": "the new wall" },
+        { "path": "modifiedElements", "len": 1, "name": "the wall with the new info string" },
+        { "path": "deletedElements", "len": 1, "name": "the deleted wall" }
+      ]
+    },
+    {
+      "id": "capture the state after the changes",
+      "command": "CaptureElementState",
+      "creates": false,
+      "params": {},
+      "save": { "after": "stateId.guid" },
+      "expect": [
+        { "path": "type", "eq": "ModificationStamp", "name": "ModificationStamp by default" }
+      ]
+    },
+    {
+      "id": "changes between the two states",
+      "command": "GetElementChangesSince",
+      "creates": false,
+      "params": { "stateId": { "guid": "${before}" }, "toStateId": { "guid": "${after}" } },
+      "expect": [
+        { "path": "newElements", "len": 1 },
+        { "path": "modifiedElements", "len": 1 },
+        { "path": "deletedElements", "len": 1 }
+      ]
+    },
+    {
+      "id": "nothing changed since the second state",
+      "command": "GetElementChangesSince",
+      "creates": false,
+      "params": { "stateId": { "guid": "${after}" } },
+      "expect": [
+        { "path": "newElements", "len": 0 },
+        { "path": "modifiedElements", "len": 0 },
+        { "path": "deletedElements", "len": 0 }
+      ]
+    },
+    {
+      "id": "3D model state",
+      "command": "CaptureElementState",
+      "creates": false,
+      "params": { "type": "3DModel" },
+      "save": { "model": "stateId.guid" },
+      "expect": [
+        { "path": "type", "eq": "3DModel" }
+      ]
+    },
+    {
+      "id": "states of different types",
+      "command": "GetElementChangesSince",
+      "creates": false,
+      "params": { "stateId": { "guid": "${before}" }, "toStateId": { "guid": "${model}" } },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "refused" }
+      ]
+    },
+    {
+      "id": "a state that was never captured",
+      "command": "GetElementChangesSince",
+      "creates": false,
+      "params": { "stateId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "refused" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "ReleaseElementState", "params": { "stateId": { "guid": "${before}" } } },
+    { "command": "ReleaseElementState", "params": { "stateId": { "guid": "${after}" } } },
+    { "command": "ReleaseElementState", "params": { "stateId": { "guid": "${model}" } } }
+  ]
+}

@@ -1,0 +1,302 @@
+{
+  "title": "CreateRailings and CreateCurtainWalls keep the reference line, heights, story, pattern and id, and refuse bad items",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [ "Railing", "CurtainWall" ],
+  "steps": [
+    {
+      "id": "a three-point railing on story 0 and a straight railing on story 1",
+      "command": "CreateRailings",
+      "params": {
+        "railingsData": [
+          {
+            "floorIndex": 0,
+            "bottomOffset": 0.3,
+            "height": 1.1,
+            "id": "CHK-RAIL-1",
+            "coordinates": [
+              { "x": 900.0, "y": 700.0 },
+              { "x": 904.0, "y": 700.0 },
+              { "x": 904.0, "y": 703.0 }
+            ]
+          },
+          {
+            "floorIndex": 1,
+            "bottomOffset": 0.0,
+            "height": 0.9,
+            "id": "CHK-RAIL-2",
+            "coordinates": [
+              { "x": 900.0, "y": 710.0 },
+              { "x": 905.0, "y": 710.0 }
+            ]
+          }
+        ]
+      },
+      "save": { "r1": "elements[0].elementId.guid", "r2": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements", "len": 2 },
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "railing on story 0 created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "railing on story 1 created" }
+      ]
+    },
+    {
+      "id": "read the railings back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${r1}" } }, { "elementId": { "guid": "${r2}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Railing" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "floorIndex 0 applied" },
+        { "path": "detailsOfElements[0].id", "eq": "CHK-RAIL-1", "name": "id applied" },
+        { "path": "detailsOfElements[0].details.bottomOffset", "approx": 0.3, "name": "bottom offset applied" },
+        { "path": "detailsOfElements[0].details.height", "approx": 1.1, "name": "segment height applied" },
+        { "path": "detailsOfElements[0].details.referenceLine", "len": 3, "name": "one node per coordinate" },
+        { "path": "detailsOfElements[0].details.referenceLine[0].x", "approx": 900.0, "name": "first node x kept" },
+        { "path": "detailsOfElements[0].details.referenceLine[0].y", "approx": 700.0, "name": "first node y kept" },
+        { "path": "detailsOfElements[0].details.referenceLine[1].x", "approx": 904.0, "name": "second node x kept" },
+        { "path": "detailsOfElements[0].details.referenceLine[2].y", "approx": 703.0, "name": "third node y kept" },
+        { "path": "detailsOfElements[0].details.segmentHeights", "len": 2, "name": "one segment per pair of coordinates" },
+        { "path": "detailsOfElements[0].details.segmentHeights[0]", "approx": 1.1, "name": "first segment height" },
+        { "path": "detailsOfElements[0].details.segmentHeights[1]", "approx": 1.1, "name": "second segment height" },
+        { "path": "detailsOfElements[1].type", "eq": "Railing" },
+        { "path": "detailsOfElements[1].floorIndex", "eq": 1, "name": "floorIndex 1 applied" },
+        { "path": "detailsOfElements[1].id", "eq": "CHK-RAIL-2", "name": "second id applied" },
+        { "path": "detailsOfElements[1].details.bottomOffset", "approx": 0.0, "name": "bottom offset relative to story 1" },
+        { "path": "detailsOfElements[1].details.height", "approx": 0.9, "name": "second segment height applied" },
+        { "path": "detailsOfElements[1].details.referenceLine", "len": 2, "name": "two nodes" },
+        { "path": "detailsOfElements[1].details.referenceLine[1].x", "approx": 905.0, "name": "end node x kept" },
+        { "path": "detailsOfElements[1].details.referenceLine[1].y", "approx": 710.0, "name": "end node y kept" },
+        { "path": "detailsOfElements[1].details.segmentHeights", "len": 1, "name": "one segment" },
+        { "path": "detailsOfElements[1].details.segmentHeights[0]", "approx": 0.9, "name": "segment height of the straight railing" }
+      ]
+    },
+    {
+      "id": "railing with an unknown favorite",
+      "command": "CreateRailings",
+      "params": {
+        "railingsData": [
+          {
+            "favoriteName": "Tapir check: no such favorite",
+            "floorIndex": 0,
+            "coordinates": [
+              { "x": 900.0, "y": 720.0 },
+              { "x": 904.0, "y": 720.0 }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements", "len": 1 },
+        { "path": "elements[0].error.code", "exists": true, "name": "railing with an unknown favorite refused" }
+      ]
+    },
+    {
+      "id": "railing with a zero-length segment",
+      "command": "CreateRailings",
+      "params": {
+        "railingsData": [
+          {
+            "floorIndex": 0,
+            "coordinates": [
+              { "x": 900.0, "y": 730.0 },
+              { "x": 904.0, "y": 730.0 },
+              { "x": 904.0, "y": 730.0 }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements", "len": 1 },
+        { "path": "elements[0].error.code", "exists": true, "name": "railing with a zero-length segment refused" }
+      ]
+    },
+    {
+      "id": "a two-segment curtain wall with a 1 m grid on story 0 and a straight one on story 1",
+      "command": "CreateCurtainWalls",
+      "params": {
+        "curtainWallsData": [
+          {
+            "floorIndex": 0,
+            "zCoordinate": 0.5,
+            "height": 2.0,
+            "id": "CHK-CW-1",
+            "coordinates": [
+              { "x": 950.0, "y": 700.0 },
+              { "x": 953.0, "y": 700.0 },
+              { "x": 953.0, "y": 702.0 }
+            ],
+            "primaryPattern": { "sizes": [ 1.0 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "secondaryPattern": { "sizes": [ 1.0 ], "logic": "FixedSizes", "origin": "StartWithPattern" }
+          },
+          {
+            "floorIndex": 1,
+            "height": 3.0,
+            "id": "CHK-CW-2",
+            "coordinates": [
+              { "x": 950.0, "y": 710.0 },
+              { "x": 954.0, "y": 710.0 }
+            ],
+            "primaryPattern": { "sizes": [ 1.0, 1.0 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "secondaryPattern": { "sizes": [ 3.0 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "cells": [
+              { "columnIndex": 1, "rowIndex": 0, "panelClassIndex": 1, "crossingFrameType": "None" }
+            ]
+          }
+        ]
+      },
+      "save": { "c1": "elements[0].elementId.guid", "c2": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements", "len": 2 },
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "two-segment curtain wall created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "straight curtain wall with a cell assignment created" }
+      ]
+    },
+    {
+      "id": "read the curtain walls back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${c1}" } }, { "elementId": { "guid": "${c2}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "CurtainWall" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "floorIndex 0 applied" },
+        { "path": "detailsOfElements[0].id", "eq": "CHK-CW-1", "name": "id applied" },
+        { "path": "detailsOfElements[0].details.height", "approx": 2.0, "name": "height applied" },
+        { "path": "detailsOfElements[1].type", "eq": "CurtainWall" },
+        { "path": "detailsOfElements[1].floorIndex", "eq": 1, "name": "floorIndex 1 applied" },
+        { "path": "detailsOfElements[1].id", "eq": "CHK-CW-2", "name": "second id applied" },
+        { "path": "detailsOfElements[1].details.height", "approx": 3.0, "name": "second height applied" }
+      ]
+    },
+    {
+      "id": "absolute bottom of the first curtain wall",
+      "command": "GetCurtainWallAbsoluteBottoms",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c1}" } } ] },
+      "expect": [
+        { "path": "absoluteBottoms[0].absoluteBottom", "approx": 0.5, "name": "zCoordinate is the absolute bottom" }
+      ]
+    },
+    {
+      "id": "subelements of the curtain walls",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${c1}" } }, { "elementId": { "guid": "${c2}" } } ]
+      },
+      "save": {
+        "s1": "subelements[0].cWallSegments[0].elementId.guid",
+        "s2": "subelements[0].cWallSegments[1].elementId.guid",
+        "s3": "subelements[1].cWallSegments[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "subelements[0].cWallSegments", "len": 2, "name": "one segment per pair of coordinates" },
+        { "path": "subelements[0].cWallPanels", "len": 10, "name": "3 + 2 columns of 1 m times 2 rows of 1 m give 10 panels" },
+        { "path": "subelements[1].cWallSegments", "len": 1, "name": "one segment" },
+        { "path": "subelements[1].cWallPanels", "len": 4, "name": "4 columns of 1 m times 1 row of 3 m give 4 panels" }
+      ]
+    },
+    {
+      "id": "read the segments back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${s1}" } },
+          { "elementId": { "guid": "${s2}" } },
+          { "elementId": { "guid": "${s3}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "CurtainWallSegment" },
+        { "path": "detailsOfElements[0].details.begCoordinate.x", "approx": 950.0, "name": "first segment begins at the first coordinate (x)" },
+        { "path": "detailsOfElements[0].details.begCoordinate.y", "approx": 700.0, "name": "first segment begins at the first coordinate (y)" },
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 953.0, "name": "first segment ends at the second coordinate (x)" },
+        { "path": "detailsOfElements[0].details.endCoordinate.y", "approx": 700.0, "name": "first segment ends at the second coordinate (y)" },
+        { "path": "detailsOfElements[1].details.begCoordinate.x", "approx": 953.0, "name": "second segment begins at the second coordinate (x)" },
+        { "path": "detailsOfElements[1].details.endCoordinate.x", "approx": 953.0, "name": "second segment ends at the third coordinate (x)" },
+        { "path": "detailsOfElements[1].details.endCoordinate.y", "approx": 702.0, "name": "second segment ends at the third coordinate (y)" },
+        { "path": "detailsOfElements[2].details.begCoordinate.x", "approx": 950.0, "name": "straight segment begins where given" },
+        { "path": "detailsOfElements[2].details.endCoordinate.x", "approx": 954.0, "name": "straight segment ends where given (x)" },
+        { "path": "detailsOfElements[2].details.endCoordinate.y", "approx": 710.0, "name": "straight segment ends where given (y)" }
+      ]
+    },
+    {
+      "id": "curtain wall with an unknown favorite",
+      "command": "CreateCurtainWalls",
+      "params": {
+        "curtainWallsData": [
+          {
+            "favoriteName": "Tapir check: no such favorite",
+            "floorIndex": 0,
+            "coordinates": [
+              { "x": 950.0, "y": 720.0 },
+              { "x": 954.0, "y": 720.0 }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements", "len": 1 },
+        { "path": "elements[0].error.code", "exists": true, "name": "curtain wall with an unknown favorite refused" }
+      ]
+    },
+    {
+      "id": "curtain walls with a zero-length segment, a cell outside the pattern and a flexible index outside the pattern",
+      "command": "CreateCurtainWalls",
+      "params": {
+        "curtainWallsData": [
+          {
+            "floorIndex": 0,
+            "coordinates": [
+              { "x": 950.0, "y": 730.0 },
+              { "x": 950.0, "y": 730.0 }
+            ]
+          },
+          {
+            "floorIndex": 0,
+            "height": 2.0,
+            "coordinates": [
+              { "x": 950.0, "y": 740.0 },
+              { "x": 954.0, "y": 740.0 }
+            ],
+            "primaryPattern": { "sizes": [ 1.0 ], "logic": "FixedSizes" },
+            "secondaryPattern": { "sizes": [ 1.0 ], "logic": "FixedSizes" },
+            "cells": [ { "columnIndex": 3, "rowIndex": 0, "panelClassIndex": 1 } ]
+          },
+          {
+            "floorIndex": 0,
+            "height": 2.0,
+            "coordinates": [
+              { "x": 950.0, "y": 750.0 },
+              { "x": 954.0, "y": 750.0 }
+            ],
+            "primaryPattern": { "sizes": [ 1.0, 2.0 ], "logic": "BestDivision", "flexibleIndices": [ 2 ] }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements", "len": 3 },
+        { "path": "elements[0].error.code", "exists": true, "name": "curtain wall with a zero-length segment refused" },
+        { "path": "elements[1].error.code", "exists": true, "name": "cell outside the pattern unit refused" },
+        { "path": "elements[2].error.code", "exists": true, "name": "flexible index outside the pattern unit refused" }
+      ]
+    },
+    {
+      "id": "only the valid railings were created",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Railing" },
+      "expect": [ { "path": "elements", "len": 2 } ]
+    },
+    {
+      "id": "only the valid curtain walls were created",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "CurtainWall" },
+      "expect": [ { "path": "elements", "len": 2 } ]
+    }
+  ]
+}

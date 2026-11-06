@@ -2,6 +2,9 @@
 
 #include "CommandBase.hpp"
 
+// The ElementCategoryType name of the category, or nullptr for a category the commands do not know.
+const char* CategoryTypeToString (API_ElemCategoryID categoryID);
+
 class GetElementCategoriesCommand : public CommandBase
 {
 public:

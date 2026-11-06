@@ -1,0 +1,356 @@
+{
+  "title": "Favorite folders: CreateFavoriteFolder, RenameFavoriteFolder, MoveFavorites, MoveFavoriteFolder, DeleteFavoriteFolder, GetFavoriteFolders and GetAllFavorites change and read the Favorites palette and refuse bad paths",
+  "minTapir": "1.8.1",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 1300.0, "y": 1300.0 }, "endCoordinate": { "x": 1305.0, "y": 1300.0 },
+            "zCoordinate": 0, "height": 2.5, "structureType": "Basic", "thickness": 0.2 }
+        ]
+      },
+      "save": {
+        "wall": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "spline",
+      "command": "CreateSplines",
+      "params": {
+        "splinesData": [
+          { "coordinates": [ { "x": 1300.0, "y": 1310.0 }, { "x": 1302.0, "y": 1313.0 }, { "x": 1304.0, "y": 1310.0 } ] }
+        ]
+      },
+      "save": {
+        "spline": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "folder A in the root",
+      "command": "CreateFavoriteFolder",
+      "creates": false,
+      "params": {
+        "parentPath": [],
+        "name": "Tapir check folder A"
+      },
+      "expect": [
+        { "path": "folder.name", "eq": "Tapir check folder A" },
+        { "path": "folder.path", "eq": [ "Tapir check folder A" ] },
+        { "path": "folder.favorites", "len": 0 },
+        { "path": "folder.subFolders", "len": 0 }
+      ]
+    },
+    {
+      "id": "Sub in folder A",
+      "command": "CreateFavoriteFolder",
+      "creates": false,
+      "params": {
+        "parentPath": [ "Tapir check folder A" ],
+        "name": "Sub"
+      },
+      "expect": [
+        { "path": "folder.name", "eq": "Sub" },
+        { "path": "folder.path", "eq": [ "Tapir check folder A", "Sub" ] }
+      ]
+    },
+    {
+      "id": "folder B in the root",
+      "command": "CreateFavoriteFolder",
+      "creates": false,
+      "params": {
+        "parentPath": [],
+        "name": "Tapir check folder B"
+      },
+      "expect": [
+        { "path": "folder.path", "eq": [ "Tapir check folder B" ] }
+      ]
+    },
+    {
+      "id": "folder in a parent that does not exist",
+      "command": "CreateFavoriteFolder",
+      "creates": false,
+      "params": {
+        "parentPath": [ "Tapir check no such folder" ],
+        "name": "Tapir check orphan"
+      },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "refused" },
+        { "path": "folder", "exists": false, "name": "no folder returned" }
+      ]
+    },
+    {
+      "id": "two wall favorites into folder A, a spline favorite into the root",
+      "command": "CreateFavoritesFromElements",
+      "creates": false,
+      "params": {
+        "favoritesFromElements": [
+          { "elementId": { "guid": "${wall}" }, "favorite": "Tapir check folder favorite 1", "folder": [ "Tapir check folder A" ] },
+          { "elementId": { "guid": "${wall}" }, "favorite": "Tapir check folder favorite 2", "folder": [ "Tapir check folder A" ] },
+          { "elementId": { "guid": "${spline}" }, "favorite": "Tapir check folder spline favorite" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[1].success", "eq": true },
+        { "path": "executionResults[2].success", "eq": true }
+      ]
+    },
+    {
+      "id": "the root folder",
+      "command": "GetFavoriteFolders",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "rootFolder.name", "eq": "" },
+        { "path": "rootFolder.path", "len": 0 },
+        { "path": "rootFolder.subFolders[0].path[0]", "exists": true, "name": "subfolders carry their path" }
+      ]
+    },
+    {
+      "id": "spline favorites",
+      "command": "GetAllFavorites",
+      "creates": false,
+      "params": {
+        "elementType": "Spline"
+      },
+      "expect": [
+        { "path": "favorites", "len": 1, "name": "only the new spline favorite (the templates have none)" },
+        { "path": "favorites[0].name", "eq": "Tapir check folder spline favorite" },
+        { "path": "favorites[0].elementType", "eq": "Spline" }
+      ]
+    },
+    {
+      "id": "every favorite",
+      "command": "GetAllFavorites",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "favorites[0].name", "exists": true, "name": "favorites listed without a type" }
+      ]
+    },
+    {
+      "id": "rename folder A",
+      "command": "RenameFavoriteFolder",
+      "creates": false,
+      "params": {
+        "path": [ "Tapir check folder A" ],
+        "newName": "Tapir check folder A2"
+      },
+      "expect": [
+        { "path": "folder.name", "eq": "Tapir check folder A2" },
+        { "path": "folder.path", "eq": [ "Tapir check folder A2" ] },
+        { "path": "folder.favorites", "len": 2, "name": "with the two favorites created into it" },
+        { "path": "folder.subFolders", "len": 1, "name": "with Sub" },
+        { "path": "folder.subFolders[0].path", "eq": [ "Tapir check folder A2", "Sub" ], "name": "Sub's path follows the rename" }
+      ]
+    },
+    {
+      "id": "rename a folder that does not exist",
+      "command": "RenameFavoriteFolder",
+      "creates": false,
+      "params": {
+        "path": [ "Tapir check folder A" ],
+        "newName": "Tapir check folder A3"
+      },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "old path refused" }
+      ]
+    },
+    {
+      "id": "rename folder B to a taken name",
+      "command": "RenameFavoriteFolder",
+      "creates": false,
+      "params": {
+        "path": [ "Tapir check folder B" ],
+        "newName": "Tapir check folder A2"
+      },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "sibling name refused" }
+      ]
+    },
+    {
+      "id": "favorite 1 is in folder A2",
+      "command": "GetFavoriteSettings",
+      "creates": false,
+      "params": {
+        "favorites": [ "Tapir check folder favorite 1" ]
+      },
+      "expect": [
+        { "path": "favoriteSettings[0].folder", "eq": [ "Tapir check folder A2" ] }
+      ]
+    },
+    {
+      "id": "[favorite 1 to folder B, a favorite that does not exist]",
+      "command": "MoveFavorites",
+      "creates": false,
+      "params": {
+        "favorites": [ "Tapir check folder favorite 1", "Tapir check no such favorite" ],
+        "targetPath": [ "Tapir check folder B" ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per favorite" },
+        { "path": "executionResults[0].success", "eq": true, "name": "moved" },
+        { "path": "executionResults[1].success", "eq": false, "name": "missing favorite refused" }
+      ]
+    },
+    {
+      "id": "favorites into a folder that does not exist",
+      "command": "MoveFavorites",
+      "creates": false,
+      "params": {
+        "favorites": [ "Tapir check folder favorite 2" ],
+        "targetPath": [ "Tapir check no such folder" ]
+      },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "refused" }
+      ]
+    },
+    {
+      "id": "favorite 1 is in folder B, favorite 2 still in A2",
+      "command": "GetFavoriteSettings",
+      "creates": false,
+      "params": {
+        "favorites": [ "Tapir check folder favorite 1", "Tapir check folder favorite 2" ]
+      },
+      "expect": [
+        { "path": "favoriteSettings[0].folder", "eq": [ "Tapir check folder B" ] },
+        { "path": "favoriteSettings[1].folder", "eq": [ "Tapir check folder A2" ] }
+      ]
+    },
+    {
+      "id": "folder B into folder A2",
+      "command": "MoveFavoriteFolder",
+      "creates": false,
+      "params": {
+        "folder": [ "Tapir check folder B" ],
+        "targetFolder": [ "Tapir check folder A2" ]
+      },
+      "expect": [
+        { "path": "folder", "eq": [ "Tapir check folder A2", "Tapir check folder B" ] }
+      ]
+    },
+    {
+      "id": "favorite 1 moved with folder B",
+      "command": "GetFavoriteSettings",
+      "creates": false,
+      "params": {
+        "favorites": [ "Tapir check folder favorite 1" ]
+      },
+      "expect": [
+        { "path": "favoriteSettings[0].folder", "eq": [ "Tapir check folder A2", "Tapir check folder B" ] }
+      ]
+    },
+    {
+      "id": "folder A2 into its own subfolder",
+      "command": "MoveFavoriteFolder",
+      "creates": false,
+      "params": {
+        "folder": [ "Tapir check folder A2" ],
+        "targetFolder": [ "Tapir check folder A2", "Tapir check folder B" ]
+      },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "refused" }
+      ]
+    },
+    {
+      "id": "a folder that does not exist",
+      "command": "MoveFavoriteFolder",
+      "creates": false,
+      "params": {
+        "folder": [ "Tapir check no such folder" ],
+        "targetFolder": []
+      },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "refused" }
+      ]
+    },
+    {
+      "id": "folder A2 without recursive",
+      "command": "DeleteFavoriteFolder",
+      "creates": false,
+      "params": {
+        "path": [ "Tapir check folder A2" ]
+      },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "a folder that is not empty is refused" }
+      ]
+    },
+    {
+      "id": "favorites still there",
+      "command": "GetFavoriteSettings",
+      "creates": false,
+      "params": {
+        "favorites": [ "Tapir check folder favorite 1", "Tapir check folder favorite 2" ]
+      },
+      "expect": [
+        { "path": "favoriteSettings[0].elementType", "eq": "Wall" },
+        { "path": "favoriteSettings[1].elementType", "eq": "Wall" }
+      ]
+    },
+    {
+      "id": "the empty Sub",
+      "command": "DeleteFavoriteFolder",
+      "creates": false,
+      "params": {
+        "path": [ "Tapir check folder A2", "Sub" ]
+      },
+      "expect": [
+        { "path": "deletedFolder.path", "eq": [ "Tapir check folder A2", "Sub" ] }
+      ]
+    },
+    {
+      "id": "folder A2 recursive",
+      "command": "DeleteFavoriteFolder",
+      "creates": false,
+      "params": {
+        "path": [ "Tapir check folder A2" ],
+        "recursive": true
+      },
+      "expect": [
+        { "path": "deletedFolder.path", "eq": [ "Tapir check folder A2" ] },
+        { "path": "deletedFolder.favorites", "eq": [ "Tapir check folder favorite 2" ] },
+        { "path": "deletedFolder.subFolders", "len": 1, "name": "folder B in it, Sub already gone" },
+        { "path": "deletedFolder.subFolders[0].favorites", "eq": [ "Tapir check folder favorite 1" ] }
+      ]
+    },
+    {
+      "id": "its favorites went with it",
+      "command": "GetFavoriteSettings",
+      "creates": false,
+      "params": {
+        "favorites": [ "Tapir check folder favorite 1", "Tapir check folder favorite 2" ]
+      },
+      "expect": [
+        { "path": "favoriteSettings[0].error.code", "exists": true },
+        { "path": "favoriteSettings[1].error.code", "exists": true }
+      ]
+    },
+    {
+      "id": "folder A2 again",
+      "command": "DeleteFavoriteFolder",
+      "creates": false,
+      "params": {
+        "path": [ "Tapir check folder A2" ],
+        "recursive": true
+      },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "already deleted" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteFavoriteFolder", "params": { "path": [ "Tapir check folder A2" ], "recursive": true } },
+    { "command": "DeleteFavoriteFolder", "params": { "path": [ "Tapir check folder A" ], "recursive": true } },
+    { "command": "DeleteFavoriteFolder", "params": { "path": [ "Tapir check folder B" ], "recursive": true } },
+    { "command": "DeleteFavoriteFolder", "params": { "path": [ "Tapir check folder A3" ], "recursive": true } },
+    {
+      "command": "DeleteFavorites",
+      "params": {
+        "favorites": [ "Tapir check folder favorite 1", "Tapir check folder favorite 2", "Tapir check folder spline favorite" ]
+      }
+    }
+  ]
+}

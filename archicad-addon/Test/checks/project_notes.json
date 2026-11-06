@@ -1,0 +1,150 @@
+{
+  "title": "SetProjectNotes changes only the given Project Notes fields, GetProjectNotes reads them back, names are not doubled",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "notes before",
+      "command": "GetProjectNotes",
+      "creates": false,
+      "params": {},
+      "save": {
+        "client": "client",
+        "projectName": "projectName",
+        "company": "company",
+        "street": "street",
+        "city": "city",
+        "country": "country",
+        "postalCode": "postalCode",
+        "architect": "architect",
+        "draftsmen": "draftsmen",
+        "projectStatus": "projectStatus",
+        "dateOfIssue": "dateOfIssue",
+        "keywords": "keywords",
+        "notes": "notes"
+      }
+    },
+    {
+      "id": "set every field",
+      "command": "SetProjectNotes",
+      "creates": false,
+      "params": {
+        "client": "Tapir check client",
+        "projectName": "Tapir check project",
+        "company": "Tapir check company",
+        "street": "Tapir check street 1",
+        "city": "Tapir check city",
+        "country": "Tapir check country",
+        "postalCode": "TC-1234",
+        "architect": "Tapir Architect",
+        "draftsmen": "Tapir Draftsman",
+        "projectStatus": "Tapir check status",
+        "dateOfIssue": "Tapir check date",
+        "keywords": "Tapir check keywords",
+        "notes": "Tapir check notes"
+      },
+      "expect": [
+        { "path": "success", "eq": true, "name": "changed" }
+      ]
+    },
+    {
+      "id": "read every field",
+      "command": "GetProjectNotes",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "client", "eq": "Tapir check client" },
+        { "path": "projectName", "eq": "Tapir check project" },
+        { "path": "company", "eq": "Tapir check company" },
+        { "path": "street", "eq": "Tapir check street 1" },
+        { "path": "city", "eq": "Tapir check city" },
+        { "path": "country", "eq": "Tapir check country" },
+        { "path": "postalCode", "eq": "TC-1234" },
+        { "path": "architect", "eq": "Tapir Architect" },
+        { "path": "draftsmen", "eq": "Tapir Draftsman" },
+        { "path": "projectStatus", "eq": "Tapir check status" },
+        { "path": "dateOfIssue", "eq": "Tapir check date" },
+        { "path": "keywords", "eq": "Tapir check keywords" },
+        { "path": "notes", "eq": "Tapir check notes" }
+      ]
+    },
+    {
+      "id": "set only the notes and the architect, the architect unchanged",
+      "command": "SetProjectNotes",
+      "creates": false,
+      "params": {
+        "notes": "Tapir check notes 2",
+        "architect": "Tapir Architect"
+      },
+      "expect": [
+        { "path": "success", "eq": true, "name": "changed" }
+      ]
+    },
+    {
+      "id": "read the notes changed, the rest kept",
+      "command": "GetProjectNotes",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "notes", "eq": "Tapir check notes 2", "name": "notes changed" },
+        { "path": "client", "eq": "Tapir check client", "name": "client kept" },
+        { "path": "keywords", "eq": "Tapir check keywords", "name": "keywords kept" },
+        { "path": "architect", "eq": "Tapir Architect", "name": "architect written again is not doubled (#1559)" },
+        { "path": "draftsmen", "eq": "Tapir Draftsman", "name": "draftsmen kept" }
+      ]
+    },
+    {
+      "id": "set a new architect and draftsman",
+      "command": "SetProjectNotes",
+      "creates": false,
+      "params": {
+        "architect": "Tapir Second Architect",
+        "draftsmen": "Tapir Second Draftsman"
+      },
+      "expect": [
+        { "path": "success", "eq": true, "name": "changed" }
+      ]
+    },
+    {
+      "id": "read the new names as written",
+      "command": "GetProjectNotes",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "architect", "eq": "Tapir Second Architect", "name": "new architect, not merged with the old one" },
+        { "path": "draftsmen", "eq": "Tapir Second Draftsman", "name": "new draftsman, not merged with the old one" },
+        { "path": "notes", "eq": "Tapir check notes 2", "name": "notes kept" }
+      ]
+    },
+    {
+      "id": "[no field given]",
+      "command": "SetProjectNotes",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "success", "eq": false, "name": "failed" },
+        { "path": "error.code", "exists": true, "name": "with an error" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "SetProjectNotes",
+      "params": {
+        "client": "${client}",
+        "projectName": "${projectName}",
+        "company": "${company}",
+        "street": "${street}",
+        "city": "${city}",
+        "country": "${country}",
+        "postalCode": "${postalCode}",
+        "architect": "${architect}",
+        "draftsmen": "${draftsmen}",
+        "projectStatus": "${projectStatus}",
+        "dateOfIssue": "${dateOfIssue}",
+        "keywords": "${keywords}",
+        "notes": "${notes}"
+      }
+    }
+  ]
+}

@@ -1,0 +1,494 @@
+{
+  "title": "ModifyMeshes and ModifyMorphs change what they are given, keep the rest and refuse bad items",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "create a mesh",
+      "command": "CreateMeshes",
+      "params": {
+        "meshesData": [
+          {
+            "floorIndex": 0,
+            "level": 0.0,
+            "skirtType": "WithSkirt",
+            "skirtLevel": 1.0,
+            "ridges": "AllSharp",
+            "showLines": true,
+            "contourPen": 5,
+            "levelPen": 6,
+            "polygonCoordinates": [
+              { "x": 820.0, "y": 700.0, "z": 0.0 },
+              { "x": 830.0, "y": 700.0, "z": 0.5 },
+              { "x": 830.0, "y": 708.0, "z": 1.0 },
+              { "x": 820.0, "y": 708.0, "z": 0.0 }
+            ]
+          }
+        ]
+      },
+      "save": { "mesh": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "mesh created" }
+      ]
+    },
+    {
+      "id": "create a box morph",
+      "command": "CreateMorphs",
+      "params": {
+        "morphsData": [
+          {
+            "floorIndex": 0,
+            "basePoint": { "x": 850.0, "y": 700.0, "z": 0.0 },
+            "size": { "x": 2.0, "y": 3.0, "z": 1.0 },
+            "castShadow": true,
+            "receiveShadow": true,
+            "cutLinePen": 5,
+            "uncutLinePen": 6
+          }
+        ]
+      },
+      "save": { "morph": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "morph created" }
+      ]
+    },
+    {
+      "id": "read the mesh and the morph as created",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${mesh}" } },
+          { "elementId": { "guid": "${morph}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.level", "approx": 0.0, "name": "mesh level as created" },
+        { "path": "detailsOfElements[0].details.skirtType", "eq": "WithSkirt", "name": "mesh skirt as created" },
+        { "path": "detailsOfElements[0].details.skirtLevel", "approx": 1.0, "name": "mesh skirt level as created" },
+        { "path": "detailsOfElements[0].details.ridges", "eq": "AllSharp", "name": "mesh ridges as created" },
+        { "path": "detailsOfElements[0].details.showLines", "eq": true, "name": "mesh lines shown as created" },
+        { "path": "detailsOfElements[0].details.contourPen", "eq": 5, "name": "mesh contour pen as created" },
+        { "path": "detailsOfElements[0].details.levelPen", "eq": 6, "name": "mesh level pen as created" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[2].z", "approx": 1.0, "name": "mesh corner z as created" },
+        { "path": "detailsOfElements[0].details.holes", "len": 0, "name": "mesh has no holes" },
+        { "path": "detailsOfElements[0].details.sublines", "exists": false, "name": "mesh has no sublines" },
+        { "path": "detailsOfElements[1].details.origin.x", "approx": 850.0, "name": "morph origin x as created" },
+        { "path": "detailsOfElements[1].details.origin.y", "approx": 700.0, "name": "morph origin y as created" },
+        { "path": "detailsOfElements[1].details.castShadow", "eq": true, "name": "morph casts shadow as created" },
+        { "path": "detailsOfElements[1].details.receiveShadow", "eq": true, "name": "morph receives shadow as created" },
+        { "path": "detailsOfElements[1].details.cutLinePen", "eq": 5, "name": "morph cut line pen as created" },
+        { "path": "detailsOfElements[1].details.uncutLinePen", "eq": 6, "name": "morph uncut line pen as created" },
+        { "path": "detailsOfElements[1].details.body.vertices", "len": 8, "name": "box morph has 8 vertices" },
+        { "path": "detailsOfElements[1].details.body.polygons", "len": 6, "name": "box morph has 6 faces" }
+      ]
+    },
+    {
+      "id": "ModifyMeshes: level, skirt, ridges, lines and pens",
+      "command": "ModifyMeshes",
+      "creates": false,
+      "params": {
+        "meshesData": [
+          {
+            "elementId": { "guid": "${mesh}" },
+            "meshData": {
+              "level": 0.5,
+              "skirtType": "SolidBodyWithSkirt",
+              "skirtLevel": 2.0,
+              "ridges": "AllSmooth",
+              "showLines": false,
+              "contourPen": 7,
+              "levelPen": 8
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the mesh attributes back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${mesh}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.level", "approx": 0.5, "name": "level changed" },
+        { "path": "detailsOfElements[0].details.skirtType", "eq": "SolidBodyWithSkirt", "name": "skirt changed" },
+        { "path": "detailsOfElements[0].details.skirtLevel", "approx": 2.0, "name": "skirt level changed" },
+        { "path": "detailsOfElements[0].details.ridges", "eq": "AllSmooth", "name": "ridges changed" },
+        { "path": "detailsOfElements[0].details.showLines", "eq": false, "name": "lines hidden" },
+        { "path": "detailsOfElements[0].details.contourPen", "eq": 7, "name": "contour pen changed" },
+        { "path": "detailsOfElements[0].details.levelPen", "eq": 8, "name": "level pen changed" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "home story kept" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[2].x", "approx": 830.0, "name": "outline x kept" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[2].y", "approx": 708.0, "name": "outline y kept" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[2].z", "approx": 1.0, "name": "outline z kept" },
+        { "path": "detailsOfElements[0].details.holes", "len": 0, "name": "still no holes" }
+      ]
+    },
+    {
+      "id": "ModifyMeshes: replace the outline with a 5-corner one",
+      "command": "ModifyMeshes",
+      "creates": false,
+      "params": {
+        "meshesData": [
+          {
+            "elementId": { "guid": "${mesh}" },
+            "meshData": {
+              "polygonCoordinates": [
+                { "x": 820.0, "y": 700.0, "z": 0.0 },
+                { "x": 834.0, "y": 700.0, "z": 0.2 },
+                { "x": 834.0, "y": 710.0, "z": 0.4 },
+                { "x": 827.0, "y": 712.0, "z": 0.6 },
+                { "x": 820.0, "y": 710.0, "z": 0.0 }
+              ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the new outline back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${mesh}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.polygonCoordinates[1].x", "approx": 834.0, "name": "second corner moved" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[3].x", "approx": 827.0, "name": "new fourth corner x" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[3].y", "approx": 712.0, "name": "new fourth corner y" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[3].z", "approx": 0.6, "name": "new fourth corner z" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[4].y", "approx": 710.0, "name": "fifth corner there" },
+        { "path": "detailsOfElements[0].details.level", "approx": 0.5, "name": "level kept" },
+        { "path": "detailsOfElements[0].details.skirtType", "eq": "SolidBodyWithSkirt", "name": "skirt kept" },
+        { "path": "detailsOfElements[0].details.contourPen", "eq": 7, "name": "contour pen kept" },
+        { "path": "detailsOfElements[0].details.holes", "len": 0, "name": "no holes added" }
+      ]
+    },
+    {
+      "id": "ModifyMeshes: holes alone keep the outline",
+      "command": "ModifyMeshes",
+      "creates": false,
+      "params": {
+        "meshesData": [
+          {
+            "elementId": { "guid": "${mesh}" },
+            "meshData": {
+              "holes": [
+                {
+                  "polygonCoordinates": [
+                    { "x": 824.0, "y": 703.0, "z": 0.1 },
+                    { "x": 826.0, "y": 703.0, "z": 0.1 },
+                    { "x": 826.0, "y": 705.0, "z": 0.1 },
+                    { "x": 824.0, "y": 705.0, "z": 0.1 }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the hole back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${mesh}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.holes", "len": 1, "name": "one hole" },
+        { "path": "detailsOfElements[0].details.holes[0].polygonCoordinates[0].x", "approx": 825.0, "tol": 1.01, "name": "hole where it was given (x)" },
+        { "path": "detailsOfElements[0].details.holes[0].polygonCoordinates[0].y", "approx": 704.0, "tol": 1.01, "name": "hole where it was given (y)" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[3].x", "approx": 827.0, "name": "outline kept (x)" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[3].y", "approx": 712.0, "name": "outline kept (y)" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[3].z", "approx": 0.6, "name": "outline kept (z)" }
+      ]
+    },
+    {
+      "id": "ModifyMeshes: an empty holes array removes the hole",
+      "command": "ModifyMeshes",
+      "creates": false,
+      "params": {
+        "meshesData": [
+          {
+            "elementId": { "guid": "${mesh}" },
+            "meshData": { "holes": [] }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the mesh without the hole",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${mesh}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.holes", "len": 0, "name": "hole removed" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[3].y", "approx": 712.0, "name": "outline kept" }
+      ]
+    },
+    {
+      "id": "ModifyMeshes: add a leveling subline",
+      "command": "ModifyMeshes",
+      "creates": false,
+      "params": {
+        "meshesData": [
+          {
+            "elementId": { "guid": "${mesh}" },
+            "meshData": {
+              "sublines": [
+                {
+                  "coordinates": [
+                    { "x": 823.0, "y": 702.0, "z": 0.3 },
+                    { "x": 831.0, "y": 706.0, "z": 0.3 }
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the subline back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${mesh}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.sublines", "len": 1, "name": "one subline" },
+        { "path": "detailsOfElements[0].details.sublines[0].coordinates[0].z", "approx": 0.3, "name": "subline z" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[3].y", "approx": 712.0, "name": "outline kept" }
+      ]
+    },
+    {
+      "id": "ModifyMeshes: an empty sublines array removes them",
+      "command": "ModifyMeshes",
+      "creates": false,
+      "params": {
+        "meshesData": [
+          {
+            "elementId": { "guid": "${mesh}" },
+            "meshData": { "sublines": [] }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the mesh without sublines",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${mesh}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.sublines", "exists": false, "name": "sublines removed" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[3].y", "approx": 712.0, "name": "outline kept" }
+      ]
+    },
+    {
+      "id": "ModifyMeshes: a nonexistent guid and a morph",
+      "command": "ModifyMeshes",
+      "creates": false,
+      "params": {
+        "meshesData": [
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "meshData": { "level": 1.0 }
+          },
+          {
+            "elementId": { "guid": "${morph}" },
+            "meshData": { "level": 1.0 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2 },
+        { "path": "executionResults[0].success", "eq": false, "name": "nonexistent guid refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "morph refused" }
+      ]
+    },
+    {
+      "id": "ModifyMorphs: move, shadows and pens",
+      "command": "ModifyMorphs",
+      "creates": false,
+      "params": {
+        "morphsWithDetails": [
+          {
+            "elementId": { "guid": "${morph}" },
+            "translation": { "x": 1.0, "y": 2.0, "z": 0.5 },
+            "castShadow": false,
+            "receiveShadow": false,
+            "cutLinePen": 7,
+            "uncutLinePen": 8
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the moved morph back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${morph}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.origin.x", "approx": 851.0, "name": "moved by x" },
+        { "path": "detailsOfElements[0].details.origin.y", "approx": 702.0, "name": "moved by y" },
+        { "path": "detailsOfElements[0].details.origin.z", "approx": 0.5, "name": "moved by z" },
+        { "path": "detailsOfElements[0].details.castShadow", "eq": false, "name": "casts no shadow" },
+        { "path": "detailsOfElements[0].details.receiveShadow", "eq": false, "name": "receives no shadow" },
+        { "path": "detailsOfElements[0].details.cutLinePen", "eq": 7, "name": "cut line pen changed" },
+        { "path": "detailsOfElements[0].details.uncutLinePen", "eq": 8, "name": "uncut line pen changed" },
+        { "path": "detailsOfElements[0].details.xAxis.x", "approx": 1.0, "name": "not turned" },
+        { "path": "detailsOfElements[0].details.body.vertices", "len": 8, "name": "body kept" }
+      ]
+    },
+    {
+      "id": "ModifyMorphs: turn 90 degrees",
+      "command": "ModifyMorphs",
+      "creates": false,
+      "params": {
+        "morphsWithDetails": [
+          {
+            "elementId": { "guid": "${morph}" },
+            "rotationDegreesZ": 90.0
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the turned morph back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${morph}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.xAxis.x", "approx": 0.0, "name": "x axis turned (x)" },
+        { "path": "detailsOfElements[0].details.zAxis.z", "approx": 1.0, "name": "z axis kept vertical" },
+        { "path": "detailsOfElements[0].details.origin.x", "approx": 851.0, "name": "turned about its origin (x)" },
+        { "path": "detailsOfElements[0].details.origin.y", "approx": 702.0, "name": "turned about its origin (y)" },
+        { "path": "detailsOfElements[0].details.castShadow", "eq": false, "name": "shadow setting kept" }
+      ]
+    },
+    {
+      "id": "ModifyMorphs: replace the body with a tetrahedron",
+      "command": "ModifyMorphs",
+      "creates": false,
+      "params": {
+        "morphsWithDetails": [
+          {
+            "elementId": { "guid": "${morph}" },
+            "body": {
+              "bodyType": "Solid",
+              "vertices": [
+                { "x": 0.0, "y": 0.0, "z": 0.0 },
+                { "x": 1.0, "y": 0.0, "z": 0.0 },
+                { "x": 0.0, "y": 1.0, "z": 0.0 },
+                { "x": 0.0, "y": 0.0, "z": 1.0 }
+              ],
+              "polygons": [
+                { "vertexIds": [ 0, 2, 1 ] },
+                { "vertexIds": [ 0, 1, 3 ] },
+                { "vertexIds": [ 0, 3, 2 ] },
+                { "vertexIds": [ 1, 2, 3 ] }
+              ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the new body back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${morph}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.body.vertices", "len": 4, "name": "4 vertices" },
+        { "path": "detailsOfElements[0].details.body.polygons", "len": 4, "name": "4 faces" },
+        { "path": "detailsOfElements[0].details.body.isClosed", "eq": true, "name": "closed solid" },
+        { "path": "detailsOfElements[0].details.origin.x", "approx": 851.0, "name": "placement kept (x)" },
+        { "path": "detailsOfElements[0].details.origin.z", "approx": 0.5, "name": "placement kept (z)" },
+        { "path": "detailsOfElements[0].details.cutLinePen", "eq": 7, "name": "pen kept" }
+      ]
+    },
+    {
+      "id": "ModifyMorphs: a nonexistent guid, no fields, one axis only",
+      "command": "ModifyMorphs",
+      "creates": false,
+      "params": {
+        "morphsWithDetails": [
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "castShadow": true
+          },
+          {
+            "elementId": { "guid": "${morph}" }
+          },
+          {
+            "elementId": { "guid": "${morph}" },
+            "xAxis": { "x": 1.0, "y": 0.0, "z": 0.0 },
+            "castShadow": true
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3 },
+        { "path": "executionResults[0].success", "eq": false, "name": "nonexistent guid refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "item without fields refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "xAxis without yAxis and zAxis refused" }
+      ]
+    },
+    {
+      "id": "the refused items changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${morph}" } },
+          { "elementId": { "guid": "${mesh}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.castShadow", "eq": false, "name": "morph shadow not changed by the refused item" },
+        { "path": "detailsOfElements[0].details.body.vertices", "len": 4, "name": "morph body unchanged" },
+        { "path": "detailsOfElements[0].details.origin.x", "approx": 851.0, "name": "morph not moved" },
+        { "path": "detailsOfElements[1].details.level", "approx": 0.5, "name": "mesh level not changed by the refused items" }
+      ]
+    }
+  ]
+}

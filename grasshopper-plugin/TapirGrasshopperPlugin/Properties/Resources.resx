@@ -2211,4 +2211,13 @@
   <data name="TransferMEPSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\TransferMEPSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="DeleteFavoritesWithManager" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DeleteFavoritesWithManager.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetFavoriteContents" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetFavoriteContents.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetLibraryPartParameterValues" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetLibraryPartParameterValues.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

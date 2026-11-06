@@ -52,6 +52,11 @@ std::vector<GS::RunnableTask> TapirPalette::finishedTasks;
 // Run button and the shortcut slots must not start a script that the installer would then interrupt.
 static bool isUpdatingAddOn = false;
 
+// True while the palette is hidden by Archicad (APIPalMsg_HidePalette_Begin, e.g. on a tab switch or Hide All Palettes)
+// and was visible before. Only then does APIPalMsg_HidePalette_End show it again: a palette the user closed stays
+// closed (#1915). Showing or hiding it any other way clears it.
+static bool isHiddenByArchicad = false;
+
 // The script repositories are read from GitHub while Archicad starts, on the main thread. Without a timeout
 // a connection that GitHub accepts but never answers kept Archicad from starting or opening a project (#798).
 static constexpr int RepositoryRequestTimeoutMs = 15 * 1000;
@@ -534,12 +539,14 @@ void TapirPalette::ForgetPostedTask (const GS::Runnable* task)
 
 void TapirPalette::Show ()
 {
+    isHiddenByArchicad = false;
     DG::Palette::Show ();
     SetMenuItemCheckedState (true);
 }
 
 void TapirPalette::Hide ()
 {
+    isHiddenByArchicad = false;
     DG::Palette::Hide ();
     SetMenuItemCheckedState (false);
 }
@@ -679,6 +686,56 @@ void TapirPalette::PopUpChanged (const DG::PopUpChangeEvent& ev)
 
         SaveScriptsToPreferences ();
         SetDeleteScriptButtonStatus ();
+    }
+}
+
+GS::UniString TapirPalette::GetScriptDescription (const ScriptInfo& info)
+{
+    GS::UniString badge;
+    if (info.ChangesModel ()) {
+        badge = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_BADGE_CHANGES_MODEL, ACAPI_GetOwnResModule ());
+    } else if (info.WritesFiles ()) {
+        badge = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_BADGE_WRITES_FILES, ACAPI_GetOwnResModule ());
+    } else if (info.IsReadOnly ()) {
+        badge = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_BADGE_READ_ONLY, ACAPI_GetOwnResModule ());
+    }
+
+    if (info.summary.IsEmpty ()) {
+        return badge;
+    }
+    if (badge.IsEmpty ()) {
+        return info.summary;
+    }
+    return info.summary + "\n" + badge;
+}
+
+// The selected script's summary and badge, on the script list and on the Run button (while no script runs, when
+// the button is Stop).
+void TapirPalette::ItemToolTipRequested (const DG::ItemHelpEvent& ev, GS::UniString* toolTipText)
+{
+    const bool isPopUp = ev.GetSource () == &scriptSelectionPopUp;
+    const bool isRunButton = ev.GetSource () == &runScriptButton;
+    if (toolTipText == nullptr || !(isPopUp || isRunButton) || (isRunButton && IsProcessRunning ())) {
+        return;
+    }
+
+    const short selectedItem = scriptSelectionPopUp.GetSelectedItem ();
+    if (selectedItem <= 0 || scriptSelectionPopUp.IsSeparator (selectedItem)) {
+        return;
+    }
+    GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (selectedItem));
+    if (popUpItemData == nullptr) {
+        return;
+    }
+
+    const GS::UniString description = GetScriptDescription (popUpItemData->info);
+    if (description.IsEmpty ()) {
+        return;
+    }
+    if (isRunButton) {
+        *toolTipText = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_RUN_SCRIPT, ACAPI_GetOwnResModule ()) + "\n" + description;
+    } else {
+        *toolTipText = description;
     }
 }
 
@@ -1003,13 +1060,16 @@ GSErrCode TapirPalette::PaletteControlCallBack (Int32, API_PaletteMessageID mess
             break;
 
         case APIPalMsg_HidePalette_Begin:
-            if (HasInstance () && Instance ().IsVisible ())
+            if (HasInstance () && Instance ().IsVisible ()) {
                 Instance ().Hide ();
+                isHiddenByArchicad = true;
+            }
             break;
 
         case APIPalMsg_HidePalette_End:
-            if (HasInstance () && !Instance ().IsVisible ())
+            if (isHiddenByArchicad && HasInstance () && !Instance ().IsVisible ())
                 Instance ().Show ();
+            isHiddenByArchicad = false;
             break;
 
         case APIPalMsg_IsPaletteVisible:
@@ -1480,6 +1540,7 @@ bool TapirPalette::AddScriptToPopUp (GS::Ref<PopUpItemData> popUpData, short ind
     } else {
         popUpData->baseDisplayText = name.ToString ();
     }
+    popUpData->info = ReadScriptInfo (popUpData->fileLocation);
     scriptSelectionPopUp.SetItemText (index, popUpData->baseDisplayText);
     scriptSelectionPopUp.SetItemObjectData (index, popUpData);
 

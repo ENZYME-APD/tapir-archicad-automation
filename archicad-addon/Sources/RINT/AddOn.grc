@@ -59,6 +59,10 @@
 'STR#' ID_PALETTE_STRINGS "Tapir Palette Strings" {
 /* [  1] */ "Select Python Scripts"
 /* [  2] */ "Add"
+/* [  3] */ "Changes the model"
+/* [  4] */ "Writes files"
+/* [  5] */ "Read only"
+/* [  6] */ "Run Script"
 }
 
 'STR#' ID_AUTOUPDATE_STRINGS "Tapir Update Strings" {
