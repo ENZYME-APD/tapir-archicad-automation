@@ -14,6 +14,34 @@
     'Archicad\'s own JSON API covers only part of what its add-on API can do. Tapir adds the missing commands as an add-on, then puts them within reach of people who don\'t code: a palette of ready scripts, Grasshopper components, and AI assistants.':
         'Archicad 自带的 JSON API 只覆盖了其插件 API 能力的一部分。Tapir 以插件形式补上缺少的命令，再让不写代码的人也能用上它们：现成脚本的面板、Grasshopper 组件和 AI 助手。',
 
+    // How it started
+    'Revision history': '修订历史',
+    'How it <em>started.</em>': '它是如何<em>开始的。</em>',
+    'Started as R&amp;D at Enzyme, an architecture practice, then opened to everyone, in the spirit of ifc.js: practitioners shouldn\'t wait for a vendor to support their workflow.':
+        '最初是建筑事务所 Enzyme 的研发项目，后来本着 ifc.js 的精神向所有人开放：从业者不应等待厂商来支持自己的工作流程。',
+    'Revisions · Tapir': '修订记录 · Tapir',
+    'Rev': '版次',
+    'Date': '日期',
+    'Description': '说明',
+    'By': '贡献者',
+    '5 July 2022': '2022 年 7 月 5 日',
+    'Born in Enzyme\'s R&amp;D': '诞生于 Enzyme 的研发',
+    'Archicad\'s JSON interface was a step forward, but Grasshopper users still needed C++ add-ons to reach native elements. The first commit, with the MIT licence.':
+        'Archicad 的 JSON 接口是一大进步，但 Grasshopper 用户仍需要 C++ 插件才能访问原生构件。第一次提交，采用 MIT 许可证。',
+    '7 July 2022': '2022 年 7 月 7 日',
+    'A place to talk': '交流的地方',
+    'The Discord server opens, where architects and developers say what they need and show what they made.':
+        'Discord 服务器开放，建筑师和开发者在这里说出需求，展示自己的作品。',
+    'The first members': '首批成员',
+    'July 2024': '2024 年 7 月',
+    'The template': '模板',
+    'Tibor Lorántfy, whose archicad-additional-json-commands the add-on is built on, joins the project. Almost any function of the Archicad API can now become a JSON command.':
+        'Tibor Lorántfy 加入项目，插件正是基于他的 archicad-additional-json-commands 构建。如今 Archicad API 的几乎所有函数都能成为 JSON 命令。',
+    'Built by its community': '由社区共建',
+    'A release every Monday. Reports on Discord become GitHub issues, bots draft the fixes and people test them in their own Archicad. <a href="../community/#activity">See the growth</a>.':
+        '每周一发布。Discord 上的报告变成 GitHub issue，机器人起草修复，再由人们在自己的 Archicad 中测试。<a href="../community/#activity">查看增长</a>。',
+    'Everyone who reports, tests and contributes': '所有报告、测试和贡献的人',
+
     // The people
     'The people': '人们',
     'The people <em>behind it.</em>': '背后的<em>人们。</em>',

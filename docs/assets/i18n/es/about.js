@@ -14,6 +14,34 @@
     'Archicad\'s own JSON API covers only part of what its add-on API can do. Tapir adds the missing commands as an add-on, then puts them within reach of people who don\'t code: a palette of ready scripts, Grasshopper components, and AI assistants.':
         'La API JSON propia de Archicad solo cubre parte de lo que puede hacer su API de add-ons. Tapir añade los comandos que faltan como add-on y luego los pone al alcance de quienes no programan: una paleta de scripts listos, componentes de Grasshopper y asistentes de IA.',
 
+    // How it started
+    'Revision history': 'Historial de revisiones',
+    'How it <em>started.</em>': 'Cómo <em>empezó.</em>',
+    'Started as R&amp;D at Enzyme, an architecture practice, then opened to everyone, in the spirit of ifc.js: practitioners shouldn\'t wait for a vendor to support their workflow.':
+        'Empezó como I+D en Enzyme, un estudio de arquitectura, y luego se abrió a todos, con el espíritu de ifc.js: los profesionales no deberían esperar a que un proveedor admita su flujo de trabajo.',
+    'Revisions · Tapir': 'Revisiones · Tapir',
+    'Rev': 'Rev.',
+    'Date': 'Fecha',
+    'Description': 'Descripción',
+    'By': 'Por',
+    '5 July 2022': '5 de julio de 2022',
+    'Born in Enzyme\'s R&amp;D': 'Nacido en la I+D de Enzyme',
+    'Archicad\'s JSON interface was a step forward, but Grasshopper users still needed C++ add-ons to reach native elements. The first commit, with the MIT licence.':
+        'La interfaz JSON de Archicad fue un paso adelante, pero los usuarios de Grasshopper aún necesitaban add-ons en C++ para llegar a los elementos nativos. El primer commit, con la licencia MIT.',
+    '7 July 2022': '7 de julio de 2022',
+    'A place to talk': 'Un lugar para hablar',
+    'The Discord server opens, where architects and developers say what they need and show what they made.':
+        'Se abre el servidor de Discord, donde arquitectos y desarrolladores cuentan lo que necesitan y muestran lo que han hecho.',
+    'The first members': 'Los primeros miembros',
+    'July 2024': 'Julio de 2024',
+    'The template': 'La plantilla',
+    'Tibor Lorántfy, whose archicad-additional-json-commands the add-on is built on, joins the project. Almost any function of the Archicad API can now become a JSON command.':
+        'Tibor Lorántfy, en cuyo archicad-additional-json-commands se basa el add-on, se une al proyecto. Ahora casi cualquier función de la API de Archicad puede convertirse en un comando JSON.',
+    'Built by its community': 'Hecho por su comunidad',
+    'A release every Monday. Reports on Discord become GitHub issues, bots draft the fixes and people test them in their own Archicad. <a href="../community/#activity">See the growth</a>.':
+        'Una versión cada lunes. Los informes en Discord se convierten en issues de GitHub, los bots preparan las correcciones y las personas las prueban en su propio Archicad. <a href="../community/#activity">Ver el crecimiento</a>.',
+    'Everyone who reports, tests and contributes': 'Todos los que informan, prueban y contribuyen',
+
     // The people
     'The people': 'Las personas',
     'The people <em>behind it.</em>': 'Las personas <em>detrás.</em>',
