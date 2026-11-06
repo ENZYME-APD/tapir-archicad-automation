@@ -772,31 +772,40 @@ GS::ObjectState FindModelViewOptionCommand::Execute (const GS::ObjectState& para
             return CreateErrorResponse (APIERR_BADPARS, "modelViewOptionId is corrupt or missing.");
         }
         searchHead.guid = guidToSearch;
-    } else if (parameters.Get ("name", nameToSearch)) {
-        searchHead.uniStringNamePtr = &nameToSearch;
-    } else {
+    } else if (!parameters.Get ("name", nameToSearch)) {
         return CreateErrorResponse (APIERR_BADPARS, "Either modelViewOptionId or name is required.");
     }
 
-    GSErrCode err = ACAPI_Navigator_ModelViewOptions_Search (&searchHead);
+    // A name is looked up by walking the combinations the way GetModelViewOptions reads them.
+    // ACAPI_Navigator_ModelViewOptions_Search does not compare the name given in
+    // uniStringNamePtr: on Archicad 29 it fails for every name, or, once the project has a
+    // combination with an empty name, returns that one for any name. The guid search is not
+    // documented, so a guid it does not find is looked up by walking as well.
+    GSErrCode err = APIERR_BADNAME;
+    if (guidToSearch != APINULLGuid) {
+        err = ACAPI_Navigator_ModelViewOptions_Search (&searchHead);
+    }
 
-    // The search is documented with the name only; when it does not find the guid, the
-    // combinations are walked through the way GetModelViewOptions reads them.
-    if (guidToSearch != APINULLGuid && (err != NoError || searchHead.guid != guidToSearch)) {
-        err = APIERR_BADID;
+    if (guidToSearch == APINULLGuid || err != NoError || searchHead.guid != guidToSearch) {
+        err = (guidToSearch != APINULLGuid) ? APIERR_BADID : APIERR_BADNAME;
 
         UInt32 count = 0;
         ACAPI_Navigator_ModelViewOptions_GetNum (count);
 
         for (UInt32 i = 1; i <= count; ++i) {
+            GS::UniString name;
             API_ModelViewOptionsType modelViewOption = {};
             modelViewOption.head.index = i;
+            modelViewOption.head.uniStringNamePtr = &name;
 
             if (ACAPI_Navigator_ModelViewOptions_Get (&modelViewOption) != NoError) {
                 continue;
             }
             ACAPI_FreeGDLModelViewOptionsPtr (&modelViewOption.modelViewOpt.gdlOptions);
-            if (modelViewOption.head.guid == guidToSearch) {
+            const bool matches = (guidToSearch != APINULLGuid)
+                ? modelViewOption.head.guid == guidToSearch
+                : name.Compare (nameToSearch, CaseInsensitive) == GS::UniString::Equal;
+            if (matches) {
                 searchHead.index = modelViewOption.head.index;
                 err = NoError;
                 break;
@@ -1333,7 +1342,11 @@ GS::Optional<GS::UniString> GetViewOptionsCommand::GetRawResponseSchema () const
     "properties": {
         "modelViewOptionIndex": {
             "type": "integer",
-            "description": "The index of the model view option combination the window applies. Matches the order of GetModelViewOptions, starting from 1."
+            "description": "The index of the model view option combination the window applies, 0 when its options are not a stored combination (Custom). It is the index FindModelViewOption and GetModelViewOptionDetails return, which is not always the position in the list of GetModelViewOptions."
+        },
+        "modelViewOptionName": {
+            "type": "string",
+            "description": "The name of that combination, empty when there is none. Archicad may renumber the combinations when the view options of a window change, so look the index up by this name (FindModelViewOption) before switching back to it with SetViewOptions."
         },
         "viewOptions": {
             "type": "object",
@@ -1360,9 +1373,43 @@ GS::Optional<GS::UniString> GetViewOptionsCommand::GetRawResponseSchema () const
     "additionalProperties": false,
     "required": [
         "modelViewOptionIndex",
+        "modelViewOptionName",
         "viewOptions"
     ]
 })";
+}
+
+namespace {
+
+// The name of the model view option combination with the given index, read the way
+// GetModelViewOptions reads them; empty when there is no such combination.
+GS::UniString GetModelViewOptionName (short index)
+{
+    GS::UniString name;
+    if (index <= 0) {
+        return name;
+    }
+#ifdef ServerMainVers_2700
+    API_ModelViewOptionsType modelViewOption = {};
+    modelViewOption.head.index = index;
+    modelViewOption.head.uniStringNamePtr = &name;
+    if (ACAPI_Navigator_ModelViewOptions_Get (&modelViewOption) != NoError) {
+        return GS::UniString ();
+    }
+    ACAPI_FreeGDLModelViewOptionsPtr (&modelViewOption.modelViewOpt.gdlOptions);
+#else
+    API_Attribute attr = {};
+    attr.header.typeID = API_ModelViewOptionsID;
+    attr.header.index = index;
+    attr.header.uniStringNamePtr = &name;
+    if (ACAPI_Attribute_Get (&attr) != NoError) {
+        return GS::UniString ();
+    }
+    ACAPI_FreeGDLModelViewOptionsPtr (&attr.modelViewOpt.modelViewOpt.gdlOptions);
+#endif
+    return name;
+}
+
 }
 
 GS::ObjectState GetViewOptionsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
@@ -1382,6 +1429,7 @@ GS::ObjectState GetViewOptionsCommand::Execute (const GS::ObjectState& /*paramet
 
     GS::ObjectState response;
     response.Add ("modelViewOptionIndex", (Int32) modelViewOptionIndex);
+    response.Add ("modelViewOptionName", GetModelViewOptionName (modelViewOptionIndex));
     response.Add ("viewOptions", viewOptionsOS);
     return response;
 }
@@ -1402,12 +1450,12 @@ GS::Optional<GS::UniString> SetViewOptionsCommand::GetInputParametersSchema () c
     "properties": {
         "modelViewOptionIndex": {
             "type": "integer",
-            "description": "Switches the window to the model view option combination with this index (see GetModelViewOptions, starting from 1). Without viewOptions only the combination is switched.",
+            "description": "Switches the window to the model view option combination with this index, as GetViewOptions, FindModelViewOption and GetModelViewOptionDetails return it. Archicad then applies the model view options stored in the combination: viewOptions.modelViewOptions are not applied together with an index, viewOptions.onScreenViewOptions are. Archicad may renumber the combinations when the view options of a window change, so look the index up by name with FindModelViewOption right before switching.",
             "minimum": 1
         },
         "viewOptions": {
             "type": "object",
-            "description": "The fields to change, named as in the response of GetViewOptions. Fields not given keep their current value.",
+            "description": "The fields to change, named as in the response of GetViewOptions. Fields not given keep their current value. Without an index, the window then uses Custom model view options (index 0), also when only on-screen view options are given. To keep the combination, give its index as well.",
             "properties": {
                 "modelViewOptions": {
                     "type": "object",
@@ -1436,25 +1484,26 @@ GS::ObjectState SetViewOptionsCommand::Execute (const GS::ObjectState& parameter
     }
 
     short modelViewOptionIndex = (short) requestedIndex;
-    GSErrCode err = NoError;
 
-    if (viewOptionsOS == nullptr) {
-        err = ACAPI_Navigator_ChangeViewOptions (nullptr, &modelViewOptionIndex);
-    } else {
-        API_ViewOptions viewOptions = {};
-        short currentIndex = 0;
-        err = ACAPI_Navigator_GetViewOptions (&viewOptions, &currentIndex);
-        if (err != NoError) {
-            DisposeViewOptions (viewOptions);
-            return CreateErrorResponse (err, "Failed to get the view options. Is a plan window open?");
-        }
+    // ACAPI_Navigator_ChangeViewOptions needs the options also when only the combination is
+    // switched: up to Archicad 29 a null pointer fails with APIERR_BADPARS. So the current
+    // options are passed, with the given fields changed. With an index, Archicad applies the
+    // model view options stored in the combination and takes the on-screen options passed.
+    API_ViewOptions viewOptions = {};
+    short currentIndex = 0;
+    GSErrCode err = ACAPI_Navigator_GetViewOptions (&viewOptions, &currentIndex);
+    if (err != NoError) {
+        DisposeViewOptions (viewOptions);
+        return CreateErrorResponse (err, "Failed to get the view options. Is a plan window open?");
+    }
 
+    if (viewOptionsOS != nullptr) {
         ViewOptionsReader reader { viewOptionsOS };
         VisitViewOptions (reader, viewOptions);
-
-        err = ACAPI_Navigator_ChangeViewOptions (&viewOptions, switchCombination ? &modelViewOptionIndex : nullptr);
-        DisposeViewOptions (viewOptions);
     }
+
+    err = ACAPI_Navigator_ChangeViewOptions (&viewOptions, switchCombination ? &modelViewOptionIndex : nullptr);
+    DisposeViewOptions (viewOptions);
 
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to change the view options. Check the model view option index and that a plan window is open.");

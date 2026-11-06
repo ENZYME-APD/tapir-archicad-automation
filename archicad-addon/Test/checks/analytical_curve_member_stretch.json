@@ -1,0 +1,141 @@
+{
+  "title": "SetCustomCurveMemberStretch sets the lengths added to both ends of a beam's curve member, GetCustomCurveMemberStretch reads them back, and a non-member is refused",
+  "minTapir": "1.8.1",
+  "minArchicad": "29",
+  "requiresEmpty": [ "Wall", "Slab", "Roof", "Shell", "Beam", "Column" ],
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      }
+    },
+    {
+      "id": "beam",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 620.0, "y": 600.0 },
+            "endCoordinate": { "x": 626.0, "y": 600.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "anchorPoint": "Center",
+            "circleBased": false,
+            "isWidthAndHeightLinked": false,
+            "width": 0.2,
+            "height": 0.4
+          }
+        ]
+      },
+      "save": {
+        "b1": "elements[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "beam created" }
+      ]
+    },
+    {
+      "id": "make it load-bearing",
+      "command": "SetCategoryValuesOfElements",
+      "creates": false,
+      "params": {
+        "elementCategoryValues": [
+          { "elementId": { "guid": "${b1}" }, "type": "StructuralFunction", "categoryValueId": { "guid": "C852BD7D-1198-2802-7E37-E4925B997B8B" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "update the analytical model",
+      "command": "UpdateAnalyticalModel",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "the beam is a curve member",
+      "command": "GetAnalyticalMembers",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "curveMembers", "len": 1 }
+      ]
+    },
+    {
+      "id": "stretch before",
+      "command": "GetCustomCurveMemberStretch",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${b1}" } } ]
+      },
+      "expect": [
+        { "path": "stretches[0].begAdditionalLength", "exists": true },
+        { "path": "stretches[0].endAdditionalLength", "exists": true }
+      ]
+    },
+    {
+      "id": "stretch both ends, different lengths",
+      "command": "SetCustomCurveMemberStretch",
+      "creates": false,
+      "params": {
+        "stretches": [
+          { "elementId": { "guid": "${b1}" }, "begAdditionalLength": 0.15, "endAdditionalLength": 0.25 },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "begAdditionalLength": 0.1, "endAdditionalLength": 0.1 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[1].success", "eq": false, "name": "nonexistent element refused" }
+      ]
+    },
+    {
+      "id": "read the stretch",
+      "command": "GetCustomCurveMemberStretch",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${b1}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "stretches[0].begAdditionalLength", "approx": 0.15 },
+        { "path": "stretches[0].endAdditionalLength", "approx": 0.25 },
+        { "path": "stretches[1].error.code", "exists": true, "name": "nonexistent element refused" }
+      ]
+    },
+    {
+      "id": "back to no stretch",
+      "command": "SetCustomCurveMemberStretch",
+      "creates": false,
+      "params": {
+        "stretches": [
+          { "elementId": { "guid": "${b1}" }, "begAdditionalLength": 0.0, "endAdditionalLength": 0.0 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read it again",
+      "command": "GetCustomCurveMemberStretch",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${b1}" } } ]
+      },
+      "expect": [
+        { "path": "stretches[0].begAdditionalLength", "approx": 0.0 },
+        { "path": "stretches[0].endAdditionalLength", "approx": 0.0 }
+      ]
+    }
+  ]
+}

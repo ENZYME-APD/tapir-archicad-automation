@@ -1,0 +1,199 @@
+{
+  "title": "SetActiveGraphicalOverrideCombination applies a combination to the floor plan; its rules show in the style of a wall when the combination changes",
+  "minTapir": "1.8.1",
+  "minArchicad": "30",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "id": "combination of the window before",
+      "command": "GetActiveGraphicalOverrideCombination",
+      "creates": false,
+      "params": {},
+      "save": { "original": "combinationId.guid" }
+    },
+    {
+      "id": "a wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [{ "begCoordinate": { "x": 0, "y": 0 }, "endCoordinate": { "x": 4, "y": 0 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 }]
+      },
+      "save": { "wall": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "rule for every element, pen 17",
+      "command": "CreateGraphicalOverrideRule",
+      "creates": false,
+      "params": { "name": "TapirCheck active rule", "ruleGroupName": "TapirCheck active", "criterionXML": "", "linePenIndex": 17 },
+      "save": { "rule": "ruleId.guid" }
+    },
+    {
+      "id": "combination with the rule",
+      "command": "CreateGraphicalOverrideCombination",
+      "creates": false,
+      "params": { "name": "TapirCheck active combination", "ruleNames": ["TapirCheck active rule"] },
+      "save": { "combination": "combinationId.guid" }
+    },
+    {
+      "id": "apply it by name",
+      "command": "SetActiveGraphicalOverrideCombination",
+      "creates": false,
+      "params": { "name": "TapirCheck active combination" },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the applied combination",
+      "command": "GetActiveGraphicalOverrideCombination",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "name", "eq": "TapirCheck active combination" },
+        { "path": "combinationId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "wall drawn with pen 17",
+      "command": "GetGraphicalOverrideStyleOfElements",
+      "creates": false,
+      "params": { "elements": [{ "elementId": { "guid": "${wall}" } }] },
+      "expect": [
+        { "path": "styles[0].lineMarkerTextPen.overridden", "eq": true },
+        { "path": "styles[0].lineMarkerTextPen.penIndex", "eq": 17 }
+      ]
+    },
+    {
+      "id": "replace the rules by name with none",
+      "command": "CreateGraphicalOverrideCombination",
+      "creates": false,
+      "params": { "name": "TapirCheck active combination", "ruleNames": [] },
+      "expect": [
+        { "path": "combinationId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "wall not overridden",
+      "command": "GetGraphicalOverrideStyleOfElements",
+      "creates": false,
+      "params": { "elements": [{ "elementId": { "guid": "${wall}" } }] },
+      "expect": [
+        { "path": "styles[0].lineMarkerTextPen.overridden", "eq": false, "name": "the combination has no rule left" }
+      ]
+    },
+    {
+      "id": "give the rule back",
+      "command": "ModifyGraphicOverrideCombinations",
+      "creates": false,
+      "params": {
+        "graphicOverrideCombinations": [
+          { "graphicOverrideCombinationId": { "guid": "${combination}" }, "graphicOverrideRuleIds": [{ "graphicOverrideRuleId": { "guid": "${rule}" } }] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "wall drawn with pen 17 again",
+      "command": "GetGraphicalOverrideStyleOfElements",
+      "creates": false,
+      "params": { "elements": [{ "elementId": { "guid": "${wall}" } }] },
+      "expect": [
+        { "path": "styles[0].lineMarkerTextPen.overridden", "eq": true },
+        { "path": "styles[0].lineMarkerTextPen.penIndex", "eq": 17 }
+      ]
+    },
+    {
+      "id": "rename it, keeping its rules",
+      "command": "ModifyGraphicOverrideCombinations",
+      "creates": false,
+      "params": { "graphicOverrideCombinations": [{ "graphicOverrideCombinationId": { "guid": "${combination}" }, "name": "TapirCheck active combination renamed" }] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "applied combination has the new name",
+      "command": "GetActiveGraphicalOverrideCombination",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "name", "eq": "TapirCheck active combination renamed" }
+      ]
+    },
+    {
+      "id": "rules kept by the rename",
+      "command": "GetGraphicalOverrideStyleOfElements",
+      "creates": false,
+      "params": { "elements": [{ "elementId": { "guid": "${wall}" } }] },
+      "expect": [
+        { "path": "styles[0].lineMarkerTextPen.penIndex", "eq": 17 }
+      ]
+    },
+    {
+      "id": "apply an unknown name",
+      "command": "SetActiveGraphicalOverrideCombination",
+      "creates": false,
+      "params": { "name": "TapirCheck no such combination" },
+      "expect": [
+        { "path": "success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "still applied",
+      "command": "GetActiveGraphicalOverrideCombination",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "name", "eq": "TapirCheck active combination renamed" }
+      ]
+    },
+    {
+      "id": "apply the original by id",
+      "command": "SetActiveGraphicalOverrideCombination",
+      "creates": false,
+      "params": { "combinationId": { "guid": "${original}" } },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "original applied",
+      "command": "GetActiveGraphicalOverrideCombination",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "name", "ne": "TapirCheck active combination renamed" },
+        { "path": "combinationId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "wall not overridden by the original",
+      "command": "GetGraphicalOverrideStyleOfElements",
+      "creates": false,
+      "params": { "elements": [{ "elementId": { "guid": "${wall}" } }] },
+      "expect": [
+        { "path": "styles[0].lineMarkerTextPen.penIndex", "ne": 17 }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "SetActiveGraphicalOverrideCombination",
+      "params": { "combinationId": { "guid": "${original}" } }
+    },
+    {
+      "command": "DeleteGraphicOverrideCombinations",
+      "params": { "graphicOverrideCombinationIds": [{ "graphicOverrideCombinationId": { "guid": "${combination}" } }] }
+    },
+    {
+      "command": "DeleteGraphicOverrideRuleGroups",
+      "params": { "ruleGroupNames": ["TapirCheck active"], "deleteRules": true }
+    }
+  ]
+}

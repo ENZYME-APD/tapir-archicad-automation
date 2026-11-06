@@ -1,0 +1,197 @@
+{
+  "title": "MEP preference tables: a new pipe segment table gets its row set, read, changed by index, emptied and deleted, and bad rows are refused",
+  "minTapir": "1.8.1",
+  "minArchicad": "28",
+  "steps": [
+    {
+      "id": "pipe reference set",
+      "command": "GetMEPPreferenceTables",
+      "creates": false,
+      "params": { "domain": "Piping" },
+      "save": { "ref": "referenceSet.referenceIds[0]" },
+      "expect": [
+        { "path": "tables", "exists": true },
+        { "path": "referenceSet.referenceIds[0]", "exists": true, "name": "the reference set has a reference id" }
+      ]
+    },
+    {
+      "id": "add a segment table",
+      "command": "ModifyMEPPreferenceTables",
+      "creates": false,
+      "params": {
+        "domain": "Piping",
+        "tablesToAdd": [ { "type": "Segment", "name": "Tapir check segment table" } ]
+      },
+      "save": { "seg": "addedTables[0].guid" },
+      "expect": [
+        { "path": "addedTables[0].guid", "exists": true, "name": "table added" }
+      ]
+    },
+    {
+      "id": "the new table exists",
+      "command": "GetMEPPreferenceTableRows",
+      "creates": false,
+      "params": { "tableId": { "guid": "${seg}" }, "keys": [] },
+      "expect": [
+        { "path": "exists", "eq": true }
+      ]
+    },
+    {
+      "id": "set the row of the first reference id",
+      "command": "SetMEPPreferenceTableRows",
+      "creates": false,
+      "params": {
+        "tableId": { "guid": "${seg}" },
+        "rows": [
+          { "key": { "referenceId": "${ref}" }, "values": { "diameter": 0.05, "wallThickness": 0.003, "description": "Tapir check row" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the row",
+      "command": "GetMEPPreferenceTableRows",
+      "creates": false,
+      "params": { "tableId": { "guid": "${seg}" }, "keys": [ { "referenceId": "${ref}" } ] },
+      "expect": [
+        { "path": "rows[0].valid", "eq": true, "name": "row valid" },
+        { "path": "rows[0].values.diameter", "approx": 0.05, "tol": 1e-6 },
+        { "path": "rows[0].values.wallThickness", "approx": 0.003, "tol": 1e-6 },
+        { "path": "rows[0].values.description", "eq": "Tapir check row" }
+      ]
+    },
+    {
+      "id": "set a radius on a segment row",
+      "command": "SetMEPPreferenceTableRows",
+      "creates": false,
+      "params": {
+        "tableId": { "guid": "${seg}" },
+        "rows": [ { "key": { "referenceId": "${ref}" }, "values": { "radius": 0.1 } } ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "add a row to a segment table",
+      "command": "AddMEPPreferenceTableRows",
+      "creates": false,
+      "params": {
+        "tableId": { "guid": "${seg}" },
+        "rows": [ { "key": { "referenceId": "${ref}" }, "values": { "diameter": 0.05 } } ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused, segment tables have a row for each reference id" }
+      ]
+    },
+    {
+      "id": "change the row by index, rename the table",
+      "command": "ModifyMEPPreferenceTables",
+      "creates": false,
+      "params": {
+        "domain": "Piping",
+        "tables": [
+          {
+            "guid": "${seg}",
+            "name": "Tapir check segment table renamed",
+            "rows": [ { "index": 0, "diameter": 0.06, "description": "Tapir check modified" } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "tables[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the changed row",
+      "command": "GetMEPPreferenceTableRows",
+      "creates": false,
+      "params": { "tableId": { "guid": "${seg}" }, "keys": [ { "referenceId": "${ref}" } ] },
+      "expect": [
+        { "path": "rows[0].values.diameter", "approx": 0.06, "tol": 1e-6, "name": "new diameter" },
+        { "path": "rows[0].values.description", "eq": "Tapir check modified" },
+        { "path": "rows[0].values.wallThickness", "approx": 0.003, "tol": 1e-6, "name": "wall thickness kept" }
+      ]
+    },
+    {
+      "id": "give a segment row a radius",
+      "command": "ModifyMEPPreferenceTables",
+      "creates": false,
+      "params": {
+        "domain": "Piping",
+        "tables": [ { "guid": "${seg}", "rows": [ { "index": 0, "radius": 0.1 } ] } ]
+      },
+      "expect": [
+        { "path": "tables[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "read the row after the refused change",
+      "command": "GetMEPPreferenceTableRows",
+      "creates": false,
+      "params": { "tableId": { "guid": "${seg}" }, "keys": [ { "referenceId": "${ref}" } ] },
+      "expect": [
+        { "path": "rows[0].values.diameter", "approx": 0.06, "tol": 1e-6, "name": "unchanged" }
+      ]
+    },
+    {
+      "id": "delete the row",
+      "command": "DeleteMEPPreferenceTableRows",
+      "creates": false,
+      "params": { "tableId": { "guid": "${seg}" }, "keys": [ { "referenceId": "${ref}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the emptied row",
+      "command": "GetMEPPreferenceTableRows",
+      "creates": false,
+      "params": { "tableId": { "guid": "${seg}" }, "keys": [ { "referenceId": "${ref}" } ] },
+      "expect": [
+        { "path": "rows[0].valid", "ne": true, "name": "no longer valid" }
+      ]
+    },
+    {
+      "id": "delete with an elbow key",
+      "command": "DeleteMEPPreferenceTableRows",
+      "creates": false,
+      "params": { "tableId": { "guid": "${seg}" }, "keys": [ { "referenceId": "${ref}", "angle": 45 } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "delete the table",
+      "command": "ModifyMEPPreferenceTables",
+      "creates": false,
+      "params": { "domain": "Piping", "tablesToDelete": [ "${seg}" ] },
+      "expect": [
+        { "path": "deletedTables[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "the table is gone",
+      "command": "GetMEPPreferenceTableRows",
+      "creates": false,
+      "params": { "tableId": { "guid": "${seg}" }, "keys": [] },
+      "expect": [
+        { "path": "exists", "ne": true }
+      ]
+    },
+    {
+      "id": "delete a table that is not there",
+      "command": "ModifyMEPPreferenceTables",
+      "creates": false,
+      "params": { "domain": "Piping", "tablesToDelete": [ "00000000-0000-0000-0000-00000000BEEF" ] },
+      "expect": [
+        { "path": "deletedTables[0].success", "eq": false, "name": "refused" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "ModifyMEPPreferenceTables", "params": { "domain": "Piping", "tablesToDelete": [ "${seg}" ] } }
+  ]
+}

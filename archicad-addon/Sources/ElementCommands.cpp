@@ -2897,6 +2897,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             } break;
 
             case API_MeshID: {
+                // MeshDetails documents the home story here too (the Meshes tool component reads it).
+                typeSpecificDetails.Add ("floorIndex", elem.header.floorInd);
                 typeSpecificDetails.Add ("level", elem.mesh.level);
                 if (elem.mesh.skirt == 3) {
                     typeSpecificDetails.Add ("skirtType", "SurfaceOnlyWithoutSkirt");
@@ -6605,8 +6607,10 @@ GS::ObjectState GetCollisionsCommand::Execute (const GS::ObjectState& parameters
             "elementId1", CreateGuidObjectState (collisionElement.first.collidedElemGuid),
             "elementId2", CreateGuidObjectState (collisionElement.second.collidedElemGuid),
             "hasBodyCollision", collisionElement.first.hasBodyCollision,
+            // The published key stays "hasClearenceCollision" on every version;
+            // only the API struct member was renamed in Archicad 30.
 #ifdef ServerMainVers_3000
-            "hasClearanceCollision", collisionElement.second.hasClearanceCollision));
+            "hasClearenceCollision", collisionElement.second.hasClearanceCollision));
 #else
             "hasClearenceCollision", collisionElement.second.hasClearenceCollision));
 #endif

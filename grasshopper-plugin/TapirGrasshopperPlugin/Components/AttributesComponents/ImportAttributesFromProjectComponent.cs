@@ -16,9 +16,11 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         public ImportAttributesFromProjectComponent()
             : base(
                 "ImportAttributesFromProject",
-                "Imports Line, Fill, ZoneCategory, PenTable and OperationProfile attributes from another project or " +
-                "template file into the open project, with their complete definition, like Append or Overwrite by " +
-                "name in Archicad's Attribute Manager. A new attribute gets a new guid. An attribute whose name " +
+                "Imports Line, Fill, ZoneCategory, PenTable, OperationProfile, Composite, Profile and LayerCombination " +
+                "attributes from another project or template file into the open project, with their complete " +
+                "definition, like Append or Overwrite by name in Archicad's Attribute Manager. The lines and fills a " +
+                "composite or profile uses are matched by name; building materials, surfaces and layers keep their " +
+                "index only with ReferencesByIndex. A new attribute gets a new guid. An attribute whose name " +
                 "already exists is skipped, or overwritten in place with OverwriteExisting. DryRun reports what " +
                 "would happen without changing anything. The names are the legacy 8-bit names of the source file. " +
                 "Available from Archicad 27.",
@@ -34,8 +36,9 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
             InTexts(
                 "AttributeTypes",
-                "The attribute types to import: Line, Fill, ZoneCategory, PenTable or OperationProfile. Other " +
-                "types get an error.");
+                "The attribute types to import, in this order: Line, Fill, ZoneCategory, PenTable, OperationProfile, " +
+                "Composite, Profile or LayerCombination. Other types get an error. List Line and Fill before " +
+                "Composite and Profile to bring the lines and fills they use.");
 
             InTexts(
                 "AttributeNames",
@@ -50,7 +53,14 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 "DryRun",
                 "Change nothing, only report what an import would do. Default is false.");
 
-            SetOptionality(new[] { 2, 3, 4 });
+            InBoolean(
+                "ReferencesByIndex",
+                "Let the building materials and surfaces of a Composite or Profile, and the layers of a " +
+                "LayerCombination, keep their index: Archicad does not read these attributes from a closed file, " +
+                "so they cannot be matched by name. Right only when both files share them at the same indexes, " +
+                "for example from the same template. Default is false: such an attribute fails.");
+
+            SetOptionality(new[] { 2, 3, 4, 5 });
         }
 
         protected override void AddOutputs()
@@ -113,13 +123,17 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             var dryRun = da.GetOptional(
                 4,
                 false);
+            var referencesByIndex = da.GetOptional(
+                5,
+                false);
 
             var parameters = new JObject
             {
                 ["projectFilePath"] = projectFilePath,
                 ["attributeTypes"] = new JArray(attributeTypes),
                 ["overwriteExisting"] = overwriteExisting,
-                ["dryRun"] = dryRun
+                ["dryRun"] = dryRun,
+                ["referencesByIndex"] = referencesByIndex
             };
             if (attributeNames.Count > 0)
             {

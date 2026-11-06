@@ -1,0 +1,60 @@
+{
+  "title": "GetElementAtCoordinate finds a slab inside its outline, nothing outside it, and refuses a type that is not polygonal",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "id": "slab with its top at the story level",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          { "level": 0, "floorIndex": 0, "polygonCoordinates": [ { "x": 800, "y": 800 }, { "x": 804, "y": 800 }, { "x": 804, "y": 804 }, { "x": 800, "y": 804 } ] }
+        ]
+      },
+      "save": { "slab": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "inside the slab",
+      "command": "GetElementAtCoordinate",
+      "creates": false,
+      "params": { "elementType": "Slab", "coordinate": { "x": 802, "y": 802 } },
+      "expect": [
+        { "path": "found", "eq": true, "name": "found" },
+        { "path": "elementId.guid", "exists": true, "name": "with its id" }
+      ]
+    },
+    {
+      "id": "inside the slab, only visible by layer",
+      "command": "GetElementAtCoordinate",
+      "creates": false,
+      "params": { "elementType": "Slab", "coordinate": { "x": 802, "y": 802 }, "filters": [ "IsVisibleByLayer" ] },
+      "expect": [
+        { "path": "found", "eq": true, "name": "found on its visible layer" }
+      ]
+    },
+    {
+      "id": "outside the slab",
+      "command": "GetElementAtCoordinate",
+      "creates": false,
+      "params": { "elementType": "Slab", "coordinate": { "x": 810, "y": 810 } },
+      "expect": [
+        { "path": "found", "eq": false, "name": "nothing found" },
+        { "path": "elementId", "exists": false, "name": "no id" }
+      ]
+    },
+    {
+      "id": "a type that is not polygonal",
+      "command": "GetElementAtCoordinate",
+      "creates": false,
+      "params": { "elementType": "Wall", "coordinate": { "x": 802, "y": 802 } },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "refused" }
+      ]
+    }
+  ]
+}

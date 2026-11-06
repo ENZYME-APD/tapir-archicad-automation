@@ -1,0 +1,446 @@
+{
+  "title": "Groups: create nested groups, read them back, store user data on them and ungroup them; Suspend Groups and Auto Group modes",
+  "minTapir": "1.8.1",
+  "minArchicad": "26",
+  "steps": [
+    {
+      "id": "Suspend Groups mode before the check",
+      "command": "GetSuspendGroupsMode",
+      "creates": false,
+      "params": {},
+      "save": { "s0": "suspendGroups" },
+      "expect": [
+        { "path": "suspendGroups", "exists": true }
+      ]
+    },
+    {
+      "id": "suspend groups on",
+      "command": "SetSuspendGroupsMode",
+      "creates": false,
+      "params": { "suspendGroups": true },
+      "expect": [
+        { "path": "executionResult.success", "eq": true }
+      ]
+    },
+    {
+      "id": "Suspend Groups is on",
+      "command": "GetSuspendGroupsMode",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "suspendGroups", "eq": true }
+      ]
+    },
+    {
+      "id": "suspend groups off",
+      "command": "SetSuspendGroupsMode",
+      "creates": false,
+      "params": { "suspendGroups": false },
+      "expect": [
+        { "path": "executionResult.success", "eq": true }
+      ]
+    },
+    {
+      "id": "Suspend Groups is off",
+      "command": "GetSuspendGroupsMode",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "suspendGroups", "eq": false }
+      ]
+    },
+    {
+      "id": "suspendGroups that is not a boolean",
+      "command": "SetSuspendGroupsMode",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": { "suspendGroups": "on" },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "rejected" }
+      ]
+    },
+    {
+      "id": "Suspend Groups is still off",
+      "command": "GetSuspendGroupsMode",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "suspendGroups", "eq": false }
+      ]
+    },
+    {
+      "id": "Auto Group mode",
+      "command": "GetAutoGroupMode",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "autoGroup", "exists": true }
+      ]
+    },
+    {
+      "id": "five walls",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 800, "y": 800 }, "endCoordinate": { "x": 803, "y": 800 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2, "floorIndex": 0 },
+          { "begCoordinate": { "x": 800, "y": 802 }, "endCoordinate": { "x": 803, "y": 802 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2, "floorIndex": 0 },
+          { "begCoordinate": { "x": 800, "y": 804 }, "endCoordinate": { "x": 803, "y": 804 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2, "floorIndex": 0 },
+          { "begCoordinate": { "x": 800, "y": 806 }, "endCoordinate": { "x": 803, "y": 806 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2, "floorIndex": 0 },
+          { "begCoordinate": { "x": 800, "y": 808 }, "endCoordinate": { "x": 803, "y": 808 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2, "floorIndex": 0 }
+        ]
+      },
+      "save": {
+        "w1": "elements[0].elementId.guid",
+        "w2": "elements[1].elementId.guid",
+        "w3": "elements[2].elementId.guid",
+        "w4": "elements[3].elementId.guid",
+        "w5": "elements[4].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements", "len": 5 }
+      ]
+    },
+    {
+      "id": "no wall is grouped yet",
+      "command": "GetGroupsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } } ] },
+      "expect": [
+        { "path": "groupGuids[0].error.code", "exists": true, "name": "w1 is not grouped" }
+      ]
+    },
+    {
+      "id": "inner group of w1 and w2",
+      "command": "CreateGroups",
+      "creates": false,
+      "params": {
+        "elementGroups": [
+          { "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ] }
+        ]
+      },
+      "save": { "g1": "groupGuids[0].groupId" },
+      "expect": [
+        { "path": "groupGuids", "len": 1 },
+        { "path": "groupGuids[0].groupId.guid", "exists": true, "name": "inner group created" }
+      ],
+      "stopOnFail": true
+    },
+    {
+      "id": "outer group of the inner group, w3 and w4",
+      "command": "CreateGroups",
+      "creates": false,
+      "params": {
+        "elementGroups": [
+          { "elements": [ { "groupId": "${g1}" }, { "elementId": { "guid": "${w3}" } }, { "elementId": { "guid": "${w4}" } } ] }
+        ]
+      },
+      "save": { "g2": "groupGuids[0].groupId" },
+      "expect": [
+        { "path": "groupGuids", "len": 1 },
+        { "path": "groupGuids[0].groupId.guid", "exists": true, "name": "outer group created" }
+      ],
+      "stopOnFail": true
+    },
+    {
+      "id": "group of two elements that do not exist",
+      "command": "CreateGroups",
+      "creates": false,
+      "params": {
+        "elementGroups": [
+          { "elements": [ { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }, { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEF0" } } ] }
+        ]
+      },
+      "expect": [
+        { "path": "groupGuids", "len": 1 },
+        { "path": "groupGuids[0].error.code", "exists": true, "name": "refused" }
+      ]
+    },
+    {
+      "id": "groups of w1, w3 and w5",
+      "command": "GetGroupsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${w1}" } },
+          { "elementId": { "guid": "${w3}" } },
+          { "elementId": { "guid": "${w5}" } }
+        ]
+      },
+      "save": { "gw1": "groupGuids[0].groupId", "gw3": "groupGuids[1].groupId" },
+      "expect": [
+        { "path": "groupGuids", "len": 3 },
+        { "path": "groupGuids[0].groupId.guid", "exists": true, "name": "w1 is grouped" },
+        { "path": "groupGuids[1].groupId.guid", "exists": true, "name": "w3 is grouped" },
+        { "path": "groupGuids[2].error.code", "exists": true, "name": "w5 is not grouped" }
+      ]
+    },
+    {
+      "id": "the group of w1 is the inner group, the group of w3 the outer one",
+      "command": "GetElementsOfGroups",
+      "creates": false,
+      "params": { "groups": [ { "groupId": "${gw1}" }, { "groupId": "${gw3}" } ] },
+      "expect": [
+        { "path": "elementsOfGroups[0].elements", "len": 2, "name": "group of w1: w1 and w2" },
+        { "path": "elementsOfGroups[1].elements", "len": 3, "name": "group of w3: inner group, w3 and w4" }
+      ]
+    },
+    {
+      "id": "direct elements of the groups",
+      "command": "GetElementsOfGroups",
+      "creates": false,
+      "params": {
+        "groups": [
+          { "groupId": "${g1}" },
+          { "groupId": "${g2}" },
+          { "groupId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "elementsOfGroups[0].elements", "len": 2, "name": "inner: w1 and w2" },
+        { "path": "elementsOfGroups[1].elements", "len": 3, "name": "outer: inner group, w3 and w4" },
+        { "path": "elementsOfGroups[2].error.code", "exists": true, "name": "no such group" }
+      ]
+    },
+    {
+      "id": "all elements of the groups",
+      "command": "GetAllElementsOfGroups",
+      "creates": false,
+      "params": {
+        "groups": [
+          { "groupId": "${g1}" },
+          { "groupId": "${g2}" },
+          { "groupId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "elementsOfGroups[0].elements", "len": 2, "name": "inner: w1 and w2" },
+        { "path": "elementsOfGroups[1].elements", "len": 4, "name": "outer: w1 to w4" },
+        { "path": "elementsOfGroups[2].error.code", "exists": true, "name": "no such group" }
+      ]
+    },
+    {
+      "id": "top level groups",
+      "command": "GetMainGroups",
+      "creates": false,
+      "params": {
+        "groups": [
+          { "groupId": "${g1}" },
+          { "groupId": "${g2}" },
+          { "groupId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "save": { "m1": "mainGroups[0].groupId", "m2": "mainGroups[1].groupId" },
+      "expect": [
+        { "path": "mainGroups", "len": 3 },
+        { "path": "mainGroups[2].error.code", "exists": true, "name": "no such group" }
+      ]
+    },
+    {
+      "id": "the top level group of both is the outer group",
+      "command": "GetElementsOfGroups",
+      "creates": false,
+      "params": { "groups": [ { "groupId": "${m1}" }, { "groupId": "${m2}" } ] },
+      "expect": [
+        { "path": "elementsOfGroups[0].elements", "len": 3, "name": "top level of inner is outer" },
+        { "path": "elementsOfGroups[1].elements", "len": 3, "name": "top level of outer is itself" }
+      ]
+    },
+    {
+      "id": "no user data on the outer group yet",
+      "command": "GetUserDataOfGroups",
+      "creates": false,
+      "params": { "groups": [ { "groupId": "${g2}" } ] },
+      "expect": [
+        { "path": "userDataOfGroups[0].error.code", "exists": true, "name": "no user data" }
+      ]
+    },
+    {
+      "id": "store two pairs on the outer group",
+      "command": "SetUserDataOfGroups",
+      "creates": false,
+      "params": {
+        "groups": [ { "groupId": "${g2}" } ],
+        "pairs": [
+          { "key": "tapircheck.a", "value": "1" },
+          { "key": "tapircheck.b", "value": "2" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "the two pairs are stored",
+      "command": "GetUserDataOfGroups",
+      "creates": false,
+      "params": { "groups": [ { "groupId": "${g2}" }, { "groupId": "${g1}" } ] },
+      "expect": [
+        { "path": "userDataOfGroups[0].userData.dataVersion", "eq": 1 },
+        { "path": "userDataOfGroups[0].userData.flags", "eq": 0 },
+        { "path": "userDataOfGroups[0].userData.pairs", "len": 2 },
+        { "path": "userDataOfGroups[0].userData.pairs[0].key", "eq": "tapircheck.a" },
+        { "path": "userDataOfGroups[0].userData.pairs[0].value", "eq": "1" },
+        { "path": "userDataOfGroups[0].userData.pairs[1].key", "eq": "tapircheck.b" },
+        { "path": "userDataOfGroups[0].userData.pairs[1].value", "eq": "2" },
+        { "path": "userDataOfGroups[1].error.code", "exists": true, "name": "inner group still has none" }
+      ]
+    },
+    {
+      "id": "change a, delete b",
+      "command": "SetUserDataOfGroups",
+      "creates": false,
+      "params": {
+        "groups": [ { "groupId": "${g2}" } ],
+        "pairs": [ { "key": "tapircheck.a", "value": "3" } ],
+        "keysToDelete": [ "tapircheck.b" ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "a is changed, b is gone",
+      "command": "GetUserDataOfGroups",
+      "creates": false,
+      "params": { "groups": [ { "groupId": "${g2}" } ] },
+      "expect": [
+        { "path": "userDataOfGroups[0].userData.pairs", "len": 1 },
+        { "path": "userDataOfGroups[0].userData.pairs[0].key", "eq": "tapircheck.a" },
+        { "path": "userDataOfGroups[0].userData.pairs[0].value", "eq": "3" }
+      ]
+    },
+    {
+      "id": "user data on a group that does not exist",
+      "command": "SetUserDataOfGroups",
+      "creates": false,
+      "params": {
+        "groups": [ { "groupId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } ],
+        "pairs": [ { "key": "tapircheck.a", "value": "4" } ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false }
+      ]
+    },
+    {
+      "id": "the outer group still holds a=3",
+      "command": "GetUserDataOfGroups",
+      "creates": false,
+      "params": { "groups": [ { "groupId": "${g2}" } ] },
+      "expect": [
+        { "path": "userDataOfGroups[0].userData.pairs", "len": 1 },
+        { "path": "userDataOfGroups[0].userData.pairs[0].value", "eq": "3" }
+      ]
+    },
+    {
+      "id": "ungroup the nested inner group, and a group that does not exist",
+      "command": "UngroupElements",
+      "creates": false,
+      "params": {
+        "groups": [
+          { "groupId": "${g1}" },
+          { "groupId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "nested group refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "no such group" }
+      ]
+    },
+    {
+      "id": "nothing was ungrouped",
+      "command": "GetElementsOfGroups",
+      "creates": false,
+      "params": { "groups": [ { "groupId": "${g1}" }, { "groupId": "${g2}" } ] },
+      "expect": [
+        { "path": "elementsOfGroups[0].elements", "len": 2 },
+        { "path": "elementsOfGroups[1].elements", "len": 3 }
+      ]
+    },
+    {
+      "id": "ungroup the outer group",
+      "command": "UngroupElements",
+      "creates": false,
+      "params": { "groups": [ { "groupId": "${g2}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "w3 is free, w1 still in the inner group",
+      "command": "GetGroupsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${w3}" } },
+          { "elementId": { "guid": "${w1}" } }
+        ]
+      },
+      "expect": [
+        { "path": "groupGuids[0].error.code", "exists": true, "name": "w3 is not grouped" },
+        { "path": "groupGuids[1].groupId.guid", "exists": true, "name": "w1 is grouped" }
+      ]
+    },
+    {
+      "id": "the inner group is now its own top level group",
+      "command": "GetMainGroups",
+      "creates": false,
+      "params": { "groups": [ { "groupId": "${g1}" } ] },
+      "save": { "m3": "mainGroups[0].groupId" },
+      "expect": [
+        { "path": "mainGroups[0].groupId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "that top level group holds w1 and w2",
+      "command": "GetElementsOfGroups",
+      "creates": false,
+      "params": { "groups": [ { "groupId": "${m3}" } ] },
+      "expect": [
+        { "path": "elementsOfGroups[0].elements", "len": 2 }
+      ]
+    },
+    {
+      "id": "ungroup the inner group",
+      "command": "UngroupElements",
+      "creates": false,
+      "params": { "groups": [ { "groupId": "${g1}" } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "no wall is grouped any more",
+      "command": "GetGroupsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${w1}" } },
+          { "elementId": { "guid": "${w2}" } },
+          { "elementId": { "guid": "${w3}" } },
+          { "elementId": { "guid": "${w4}" } }
+        ]
+      },
+      "expect": [
+        { "path": "groupGuids[0].error.code", "exists": true, "name": "w1" },
+        { "path": "groupGuids[1].error.code", "exists": true, "name": "w2" },
+        { "path": "groupGuids[2].error.code", "exists": true, "name": "w3" },
+        { "path": "groupGuids[3].error.code", "exists": true, "name": "w4" }
+      ]
+    },
+    {
+      "id": "the walls are still there",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Wall" },
+      "expect": [
+        { "path": "elements", "len": 5 }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "SetSuspendGroupsMode",
+      "params": { "suspendGroups": "${s0}" }
+    }
+  ]
+}

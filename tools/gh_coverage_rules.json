@@ -8,7 +8,9 @@
     },
     "skip": {
         "groups": {},
-        "items": {},
+        "items": {
+            "CreateSkylights": "Grasshopper component deferred to a follow-up; this PR adds the Add-On command and Python example"
+        },
         "patterns": {}
     }
 }
