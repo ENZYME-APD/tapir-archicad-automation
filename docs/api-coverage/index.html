@@ -1,49 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-copy="Copy" data-copied="Copied">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tapir Archicad API Coverage</title>
+<title>Archicad API coverage - Tapir documentation</title>
+<meta name="description" content="Which parts of the Archicad API the Tapir add-on uses, kept up to date from every issue, pull request and push.">
+<!-- site-assets -->
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
+<script src="../assets/site.js" defer></script>
+<!-- /site-assets -->
 <style>
+/* The page's own layout on top of ../assets/site.css, which gives it the site's fonts, colours
+   (light, and dark under prefers-color-scheme: dark or the header's toggle), header and footer. */
 :root {
     /* An overview (headline, parts, groups) over a sticky filter bar and the
-       full checklist. Progress uses one blue ordinal ramp: used on main is the
-       strongest step, open is the neutral track. */
-    --bg: #fcfcfb; --fg: #1f2328; --muted: #59636e; --line: #d1d9e0; --panel: #f6f8fa; --link: #0969da;
-    --track: #e6e8eb; --done: #1c5cab; --merged: #3987e5; --progress: #86b6ef; --claimed: #86b6ef;
+       full checklist. Progress uses one moss ordinal ramp: used on main is the
+       strongest step, open is the neutral track. The other names map onto the site's palette. */
+    --fg: var(--text); --muted: var(--text-muted); --line: var(--border); --panel: var(--card-hover);
+    --track: #E3DED3; --done: #2D3A30; --merged: #5E7A64; --progress: #A3B8A7; --claimed: #A3B8A7;
 }
+:root[data-theme="dark"] { --track: #3A4042; --done: #C7D6CA; --merged: #8EAA94; --progress: #557060; --claimed: #557060; }
 @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-        --bg: #1a1a19; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --panel: #22262c; --link: #4493f8;
-        --track: #33373d; --done: #9ec5f4; --merged: #5598e7; --progress: #256abf; --claimed: #256abf; color-scheme: dark;
-    }
+    :root:not([data-theme="light"]) { --track: #3A4042; --done: #C7D6CA; --merged: #8EAA94; --progress: #557060; --claimed: #557060; }
 }
-:root[data-theme="dark"] {
-    --bg: #1a1a19; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --panel: #22262c; --link: #4493f8;
-    --track: #33373d; --done: #9ec5f4; --merged: #5598e7; --progress: #256abf; --claimed: #256abf; color-scheme: dark;
-}
-* { box-sizing: border-box; }
+/* The filter bar and the sidebar stick to the top of the window, so the site header scrolls away. */
+.site-header { position: static; }
 html { scroll-behavior: smooth; }
-body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
-main { max-width: 1100px; min-width: 0; margin: 0 auto; padding-block: 16px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-h1 { font-size: 26px; margin: 8px 0 4px; }
-h2 { font-size: 18px; margin: 28px 0 10px; }
-a { color: var(--link); }
+body { font-size: 15px; line-height: 1.5; }
+main { max-width: 1100px; min-width: 0; margin: 0 auto; padding-block: 28px 72px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+main section { margin: 0; }
+h1 { margin: 0 0 8px; }
+h2 { font-size: 20px; margin: 32px 0 10px; }
 .muted { color: var(--muted); }
 p { margin: 0 0 8px; }
-code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
-:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+main code { background: none; border: 0; padding: 0; font-size: 13px; }
 button { font: inherit; color: inherit; cursor: pointer; }
 
 /* Sidebar: section links, filters and every group. A drawer on narrow screens. */
 .layout { display: grid; grid-template-columns: 230px minmax(0, 1100px); justify-content: center; }
 .sidebar { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding: 16px 8px 32px 16px; font-size: 14px; border-right: 1px solid var(--line); }
-.sidebar-title { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; margin: 18px 0 6px; }
+.sidebar-title { color: var(--eyebrow); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; margin: 18px 0 6px; }
 .sidebar-title:first-child { margin-top: 0; }
 .sidebar ul { list-style: none; padding: 0; margin: 0; }
 .sidebar-link { display: flex; justify-content: space-between; gap: 8px; width: 100%; padding: 3px 8px; border: 0; border-radius: 6px; background: none; color: inherit; text-align: left; text-decoration: none; font: inherit; }
 .sidebar-link:hover { background: var(--panel); }
-.sidebar-link[aria-current] { background: var(--panel); font-weight: 600; box-shadow: inset 2px 0 0 var(--fg); }
+.sidebar-link[aria-current] { background: var(--panel); font-weight: 700; box-shadow: inset 2px 0 0 var(--accent); }
 .sidebar-link .count { color: var(--muted); font-variant-numeric: tabular-nums; }
 .options { display: flex; flex-wrap: wrap; gap: 4px; }
 .option { font-size: 13px; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; }
@@ -52,13 +58,13 @@ button { font: inherit; color: inherit; cursor: pointer; }
 
 /* Headline */
 .hero { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 16px 24px; align-items: center; margin-top: 16px; }
-.hero-number { font-size: 56px; line-height: 1; font-weight: 600; font-variant-numeric: tabular-nums; }
+.hero-number { font-size: 56px; line-height: 1; font-weight: 800; font-variant-numeric: tabular-nums; }
 .hero-caption { color: var(--muted); margin-top: 6px; }
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(112px, 1fr)); gap: 8px; }
-.tile { text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
-.tile:hover { border-color: var(--muted); }
+.tile { text-align: left; background: var(--card); border: 1px solid var(--line); border-radius: var(--radius-small); padding: 8px 10px; }
+.tile:hover { border-color: var(--accent); background: var(--card-hover); }
 .tile[aria-pressed="true"] { border-color: var(--link); box-shadow: inset 0 0 0 1px var(--link); }
-.tile .value { display: block; font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.tile .value { display: block; font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .tile .label { display: block; font-size: 13px; color: var(--muted); }
 
 /* Stacked progress bars: 2px surface gaps between segments, rounded ends. */
@@ -91,7 +97,8 @@ td .sub { display: block; font-size: 12px; color: var(--muted); }
 .toolbar input, .toolbar .chip, .toolbar .sections-button { font: inherit; font-size: 14px; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; }
 .toolbar input[type=search] { flex: 1 1 220px; min-width: 0; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip[aria-pressed="true"] { background: var(--panel); border-color: var(--link); }
+.chip[aria-pressed="true"] { background: var(--panel); border-color: var(--link); color: var(--fg); }
+.site-footer { margin-top: 0; }
 .chip[aria-pressed="false"] { color: var(--muted); text-decoration: line-through; }
 .filter-status { font-size: 14px; color: var(--muted); }
 .filter-status button { margin-left: 6px; font-size: 13px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 1px 8px; }
@@ -125,10 +132,36 @@ ul.items li { padding: 3px 0; overflow-wrap: anywhere; }
 </style>
 </head>
 <body>
+<!-- site-header -->
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+    <div class="wrap nav">
+        <a class="brand" href="../"><img src="../assets/tapir_mark_cream.svg" alt="" width="30" height="30">Tapir</a>
+        <nav class="site-nav" aria-label="Site"><ul>
+            <li><a href="../start/">Get started</a></li>
+            <li><a href="../docs/" aria-current="true">Docs</a></li>
+            <li><a href="../scripts/">Scripts</a></li>
+            <li><a href="../scripts/share/">Share</a></li>
+            <li><a href="../community/">Community</a></li>
+            <li><a href="../about/">About</a></li>
+        </ul></nav>
+        <div class="right">
+            <button class="toggle" id="theme-toggle" type="button" data-dark="Dark" data-light="Light" hidden><span class="toggle-word">Dark</span><span class="visually-hidden"> mode</span></button>
+            <a class="btn btn-primary btn-sm" href="../start/#install">Download</a>
+        </div>
+    </div>
+</header>
+<!-- /site-header -->
+<div class="page-head">
+    <div class="wrap">
+        <p class="crumb"><a href="../">Tapir</a> / <a href="../docs/">Docs</a> / API coverage</p>
+        <h1>Archicad API <em>coverage.</em></h1>
+        <p>What Tapir covers of Graphisoft's Archicad API, item by item.</p>
+    </div>
+</div>
 <div class="layout">
 <nav class="sidebar" id="sidebar" aria-label="Sections"></nav>
-<main>
-<h1>Archicad API coverage</h1>
+<main id="main">
 <p class="muted">Which parts of the Archicad API (<span id="archicad-range">every supported Archicad version</span>: C functions with their older names and command ids, and the C++ API) the <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> uses, updated within minutes of every issue and push to main, and within the hour of every pull request. See also the <a href="../archicad-addon/">command reference</a>.</p>
 
 <section aria-label="Overview" id="overview">
@@ -169,6 +202,59 @@ ul.items li { padding: 3px 0; overflow-wrap: anywhere; }
 <div id="list"></div>
 </main>
 </div>
+<!-- site-footer -->
+<footer class="site-footer">
+    <div class="wrap">
+        <div class="tblock">
+            <div>
+                <span class="lab">Project</span>
+                <span class="proj">Tapir</span>
+                <p class="note">Open-source automation for Archicad. 100% free and open source (MIT). Maintained by Enzyme APD and the community.</p>
+                <p class="note">Contact: <span class="nowrap">contact@enzyme-apd.com</span></p>
+            </div>
+            <div>
+                <span class="lab">Product</span>
+                <ul>
+                    <li><a href="../start/">Get started</a></li>
+                    <li><a href="../scripts/">Scripts</a></li>
+                    <li><a href="../scripts/share/">Share a script</a></li>
+                    <li><a href="../grasshopper/">Grasshopper</a></li>
+                    <li><a href="../ai/">Tapir and AI</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Docs</span>
+                <ul>
+                    <li><a href="../docs/">All docs</a></li>
+                    <li><a href="../archicad-addon/">Commands</a></li>
+                    <li><a href="../api-coverage/">API coverage</a></li>
+                    <li><a href="../gh-coverage/">Grasshopper coverage</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Community</span>
+                <ul>
+                    <li><a href="https://discord.gg/NAnSennmpY">Discord</a></li>
+                    <li><a href="https://github.com/ENZYME-APD/tapir-archicad-automation">GitHub</a></li>
+                    <li><a href="../tutorials/">Tutorials</a></li>
+                    <li><a href="../community/#bots">How fixes happen</a></li>
+                    <li><a href="../roadmap/">Roadmap</a></li>
+                    <li><a href="../about/">About Tapir</a></li>
+                </ul>
+            </div>
+            <div>
+                <div class="rev" data-live="release" hidden>
+                    <span class="lab">Revision</span>
+                    <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest" data-live-value="release"></a>
+                </div>
+                <span class="lab">Licence</span>
+                <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/LICENSE">MIT</a>
+            </div>
+        </div>
+        <p class="fine">Not affiliated with Graphisoft. Archicad is a trademark of Graphisoft SE.</p>
+    </div>
+</footer>
+<!-- /site-footer -->
 <script>
 const DATA_URL = new URLSearchParams (location.search).get ('data') ||
     'https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/api-coverage.json';

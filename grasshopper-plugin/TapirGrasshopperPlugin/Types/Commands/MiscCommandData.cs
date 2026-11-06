@@ -98,6 +98,12 @@ namespace TapirGrasshopperPlugin.Types.Commands
             "format",
             NullValueHandling = NullValueHandling.Ignore)]
         public string Format;
+
+        // Only set when false; true is the command's default.
+        [JsonProperty(
+            "overwrite",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public bool? Overwrite;
     }
 
     // Solid element operations

@@ -1,0 +1,368 @@
+/* The shared look of Tapir's site: an architect's drawing set. Cream drafting paper with a 24 px
+   grid, charcoal ink, moss page heads and ochre accents; Fraunces for headings, Inter for text,
+   JetBrains Mono for code, labels and command names. Sections are separated by dimension lines
+   (.dim), cards are drawn with an ink line and lift onto an ochre shadow, the scripts read like an
+   Archicad schedule (.schedule) and the footer is a drawing title block (.tblock).
+
+   Every page links it as <root>/assets/site.css, together with <root>/assets/site.js, and repeats the
+   same header and footer (between the site-header and site-footer comments).
+
+   Light is the default. Dark applies under prefers-color-scheme: dark, unless the header's toggle
+   chose a theme: it sets data-theme="light" or "dark" on <html> (remembered in localStorage).
+   A page's own colours for dark mode use the same two selectors as below:
+       :root[data-theme="dark"] { ... }
+       @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { ... } }
+
+   Brand colours: Deep Charcoal #1C1E1F, Natural Cream #F4F1EA, Paper #FFFFFF, Jungle Moss #2D3A30,
+   Earthy Ochre #BD8D53 (text on it is always charcoal), Deep Ochre #8A6235 (links on light),
+   River Slate #707C80 (icons and dividers only, never text), Deep Slate #5F6A6E (subtext on light),
+   Light Ochre #D4A876 (links in dark mode and on moss). Every text pair passes WCAG AA. */
+
+:root {
+    --charcoal: #1C1E1F; --cream: #F4F1EA; --paper: #FFFFFF; --moss: #2D3A30; --moss-deep: #222C25;
+    --ochre: #BD8D53; --ochre-text: #8A6235; --ochre-light: #D4A876; --slate: #707C80; --slate-text: #5F6A6E;
+    --bg: var(--cream); --surface: var(--paper); --fg: var(--charcoal); --muted: var(--slate-text);
+    --line: rgba(112, 124, 128, .28); --grid: rgba(45, 58, 48, .07); --link: var(--ochre-text);
+    --badge: rgba(189, 141, 83, .18); --focus: var(--ochre-text);
+    --display: "Fraunces", Georgia, "Times New Roman", serif;
+    --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+
+    /* The names the command reference and the coverage pages use, mapped onto the tokens above. */
+    --text: var(--fg); --text-secondary: var(--fg); --text-muted: var(--muted);
+    --card: var(--surface); --card-hover: #FAF8F3; --bg-raised: var(--surface);
+    --border: var(--line); --border-strong: rgba(112, 124, 128, .55);
+    --accent: var(--link); --eyebrow: var(--link); --link-hover: #6B4B27;
+    --button-bg: var(--ochre); --button-text: var(--charcoal);
+    --badge-bg: var(--badge); --badge-text: var(--fg);
+    --code-bg: rgba(112, 124, 128, .12); --pre-bg: var(--charcoal); --pre-text: var(--cream);
+    --font-heading: var(--display); --font-sans: var(--body); --font-mono: var(--mono);
+    --radius: 4px; --radius-small: 4px; --content-width: 1200px; --text-width: 72ch;
+    color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+    --bg: #1C1E1F; --surface: #262A2B; --fg: #F4F1EA; --muted: #97A2A6; --line: rgba(151, 162, 166, .24);
+    --grid: rgba(244, 241, 234, .045); --link: #D4A876; --badge: rgba(212, 168, 118, .16); --focus: var(--ochre-light);
+    --card-hover: #2E3334; --border-strong: rgba(151, 162, 166, .5); --link-hover: #E6C79E;
+    --code-bg: rgba(151, 162, 166, .16); --pre-bg: #141617; color-scheme: dark } }
+:root[data-theme="dark"] {
+    --bg: #1C1E1F; --surface: #262A2B; --fg: #F4F1EA; --muted: #97A2A6; --line: rgba(151, 162, 166, .24);
+    --grid: rgba(244, 241, 234, .045); --link: #D4A876; --badge: rgba(212, 168, 118, .16); --focus: var(--ochre-light);
+    --card-hover: #2E3334; --border-strong: rgba(151, 162, 166, .5); --link-hover: #E6C79E;
+    --code-bg: rgba(151, 162, 166, .16); --pre-bg: #141617; color-scheme: dark }
+
+* { box-sizing: border-box }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100% }
+body {
+    margin: 0; background: var(--bg); color: var(--fg); font: 400 16px/1.6 var(--body);
+    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 24px 24px;
+    overflow-wrap: break-word;
+}
+a { color: var(--link); text-underline-offset: 3px }
+a:hover { color: var(--link-hover) }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; border-radius: 4px }
+img, svg { max-width: 100% }
+.wrap { max-width: 1200px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+h1, h2, h3, h4 { font-family: var(--display); line-height: 1.02; text-wrap: balance; margin: 0; letter-spacing: -.01em; color: inherit }
+h1 { font-size: clamp(40px, 6vw, 72px); font-weight: 900 }
+h2 { font-size: clamp(34px, 5.4vw, 64px); font-weight: 700 }
+h1 em, h2 em, h3 em { font-style: italic; font-weight: 500 }
+h3 { font-size: 22px; font-weight: 700; line-height: 1.15 }
+h4 { font-size: 17px; font-weight: 700; line-height: 1.25 }
+p { margin: 0 }
+code, pre, kbd { font-family: var(--mono) }
+code { font-size: .88em; background: var(--code-bg); color: var(--fg); border-radius: 3px; padding: .1em .35em }
+.page-head code, .teaser.dark code, .term code, .stack .box code { color: inherit }
+pre { margin: 0; padding: 18px; overflow-x: auto; background: var(--pre-bg); color: var(--pre-text); border-radius: 6px; font: 400 13px/1.65 var(--mono) }
+pre code { background: none; padding: 0; font-size: inherit; color: inherit; border-radius: 0 }
+.mono { font-family: var(--mono); font-size: .9em }
+.muted { color: var(--muted) }
+.nowrap { white-space: nowrap }
+.tagline { display: block; font: 700 12px/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--link) }
+[hidden] { display: none !important }
+.visually-hidden {
+    position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
+    clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+.skip-link { position: absolute; left: 16px; top: -100px; z-index: 100; padding: 10px 14px; background: var(--ochre); color: var(--charcoal); font-weight: 700; border-radius: 4px; text-decoration: none }
+.skip-link:focus { top: 12px; color: var(--charcoal) }
+main { display: block }
+
+/* ---------- header ---------- */
+.site-header { background: var(--moss); color: var(--cream); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; border-bottom: 1px solid rgba(244, 241, 234, .12); --focus: var(--ochre-light) }
+.site-header .nav { display: flex; align-items: center; gap: 8px 28px; padding-block: 12px; flex-wrap: wrap }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--cream); text-decoration: none; font: 900 24px/1 var(--display) }
+.brand:hover { color: var(--cream) }
+.brand img { width: 30px; height: 30px; display: block }
+.site-nav ul { display: flex; gap: 4px 22px; list-style: none; margin: 0; padding: 0; flex-wrap: wrap }
+.site-nav a { display: inline-block; padding-block: 4px; color: var(--cream); text-decoration: none; font-weight: 500; font-size: 15px; opacity: .88 }
+.site-nav a:hover { opacity: 1; color: var(--ochre-light) }
+.site-nav a[aria-current] { opacity: 1; color: var(--ochre-light); box-shadow: inset 0 -2px 0 var(--ochre-light) }
+.site-header .right { margin-left: auto; display: flex; gap: 10px; align-items: center }
+.toggle { background: transparent; color: var(--cream); border: 1px solid rgba(244, 241, 234, .3); border-radius: 8px; padding: 7px 11px; font: 500 12px var(--mono); cursor: pointer }
+.toggle:hover { border-color: var(--ochre-light); color: var(--ochre-light) }
+
+/* ---------- buttons ---------- */
+.btn { display: inline-flex; align-items: center; gap: 10px; border-radius: 8px; padding: 14px 22px; font: 700 15px/1 var(--body); text-decoration: none; border: 1.5px solid transparent; cursor: pointer; white-space: nowrap; transition: transform .15s ease, box-shadow .15s ease }
+.btn-primary { background: var(--ochre); color: var(--charcoal) }
+.btn-primary:hover { color: var(--charcoal); transform: translateY(-2px); box-shadow: 0 6px 0 -2px var(--charcoal) }
+.btn-ghost { border-color: rgba(244, 241, 234, .55); color: var(--cream); background: transparent }
+.btn-ghost:hover { border-color: var(--ochre-light); color: var(--ochre-light) }
+.btn-line { border-color: currentColor; color: var(--fg); background: transparent }
+.btn-line:hover { color: var(--link) }
+.btn-sm { padding: 9px 14px; font-size: 14px }
+.btn .os { font: 500 11px var(--mono); letter-spacing: .06em }
+.ctas { display: flex; gap: 12px; flex-wrap: wrap }
+
+/* ---------- dimension line, sections ---------- */
+.dim { display: flex; align-items: center; gap: 12px; color: var(--muted); font: 500 12px var(--mono); letter-spacing: .04em; text-transform: uppercase; padding-block: 40px 0 }
+.dim::before, .dim::after { content: ""; height: 1px; background: var(--muted); flex: 1; opacity: .6 }
+.dim span { position: relative; padding-inline: 4px; text-align: center }
+.dim i { width: 1px; height: 14px; background: var(--muted); opacity: .6; flex: none }
+.wrap > section, .page-body > section { padding-block: 56px 32px }
+.page-body > section:first-child, .page-body > .dim + section { padding-top: 32px }
+.sec-head { display: grid; grid-template-columns: auto 1fr; gap: 12px 40px; align-items: end; margin-bottom: 40px }
+.sec-head p { color: var(--muted); max-width: 34em; font-size: 17px }
+.sec-head h2 { font-size: clamp(32px, 4.6vw, 56px) }
+[id] { scroll-margin-top: 88px }
+
+/* ---------- figures (live numbers; a hidden one leaves no gap) ---------- */
+.figures { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); border: 1.5px solid var(--fg); background: var(--surface); overflow: hidden }
+.figures > div { padding: 26px 24px; display: grid; gap: 8px; align-content: start; box-shadow: -1px 0 0 var(--line), 0 -1px 0 var(--line); min-width: 0 }
+.figures strong { font: 900 clamp(40px, 5vw, 64px)/.9 var(--display); font-variant-numeric: tabular-nums; letter-spacing: -.02em }
+.figures strong sup { font-size: .4em; vertical-align: top; color: var(--link) }
+.figures span { font: 500 12.5px/1.4 var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .06em }
+.figures span a { color: inherit }
+
+/* ---------- cards: ways in, teasers ---------- */
+.ways { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
+.way { background: var(--surface); border: 1.5px solid var(--fg); border-radius: 4px; padding: 26px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-content: start; position: relative; min-width: 0; transition: transform .15s ease, box-shadow .15s ease }
+.way:hover { transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--ochre) }
+.way .who { font: 700 11.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--link) }
+.way p, .way li { color: var(--muted) }
+.way > a, .way .go-links a { font-weight: 700; text-decoration: none }
+.way > a::after, .way .go-links a::after { content: " \2192" }
+.way > a:hover, .way .go-links a:hover { text-decoration: underline }
+.way .go-links { display: flex; flex-wrap: wrap; gap: 6px 20px }
+.way svg { width: 44px; height: 44px; color: var(--fg) }
+.way ul, .way ol { margin: 0; padding-left: 20px; display: grid; gap: 6px }
+.comm { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
+.comm .way h3 { font-size: 26px }
+.teasers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
+.teaser { display: grid; gap: 10px; align-content: start; padding: 28px; border: 1.5px solid var(--fg); border-radius: 4px; text-decoration: none; color: var(--fg); background: var(--surface); transition: transform .15s ease, box-shadow .15s ease; min-width: 0 }
+.teaser:hover { color: var(--fg); transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--ochre) }
+.teaser h3 { font-size: 30px } .teaser p { color: var(--muted) } .teaser .go { font-weight: 700; color: var(--link) }
+.teaser.dark { background: var(--charcoal); color: var(--cream); border-color: var(--charcoal); --focus: var(--ochre-light) }
+.teaser.dark:hover { color: var(--cream) }
+.teaser.dark p { color: #97A2A6 } .teaser.dark .go, .teaser.dark .tagline { color: var(--ochre-light) }
+:root[data-theme="dark"] .teaser.dark { border-color: rgba(244, 241, 234, .35) }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .teaser.dark { border-color: rgba(244, 241, 234, .35) } }
+div.teaser.dark .ctas { margin-top: 8px }
+.doc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 20px }
+.two > * { min-width: 0 }
+
+/* ---------- code panel ---------- */
+.term { background: #1C1E1F; color: #F4F1EA; border-radius: 6px; overflow: hidden; box-shadow: 12px 12px 0 var(--moss); min-width: 0; --focus: var(--ochre-light) }
+:root[data-theme="dark"] .term { box-shadow: 12px 12px 0 #3C4D40; border: 1px solid rgba(244, 241, 234, .12) }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .term { box-shadow: 12px 12px 0 #3C4D40; border: 1px solid rgba(244, 241, 234, .12) } }
+.term .bar { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; font: 500 11.5px var(--mono); color: #97A2A6; border-bottom: 1px solid rgba(244, 241, 234, .1) }
+.term pre { margin: 0; padding: 18px; background: transparent; border-radius: 0; overflow-x: auto; font: 400 13px/1.65 var(--mono); color: #F4F1EA }
+.term .k { color: #D4A876 } .term .s { color: #B9C7B4 } .term .c { color: #97A2A6 } .term .o { color: #F4F1EA; font-weight: 700 }
+/* The copy button site.js adds to every code block. */
+.code-block { position: relative }
+.code-block > pre { padding-right: 76px }
+.copy-button { position: absolute; top: 8px; right: 8px; padding: 3px 10px; border: 1px solid rgba(244, 241, 234, .35); border-radius: 6px; background: rgba(28, 30, 31, .9); color: #F4F1EA; font: 500 12.5px/1.4 var(--body); cursor: pointer; --focus: var(--ochre-light) }
+.copy-button:hover { border-color: var(--ochre-light) }
+.copy-button:focus-visible { outline-color: var(--ochre-light) }
+
+/* ---------- schedule (the scripts) ---------- */
+.schedule-wrap { border: 1.5px solid var(--fg); background: var(--surface); overflow-x: auto }
+table.schedule { width: 100%; border-collapse: collapse; font-size: 14.5px }
+.schedule caption { text-align: left; padding: 12px 16px; font: 700 12px var(--mono); letter-spacing: .1em; text-transform: uppercase; border-bottom: 1.5px solid var(--fg); background: var(--badge) }
+.schedule th { text-align: left; font: 700 11.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 10px 16px; border-bottom: 1px solid var(--line) }
+.schedule td { padding: 14px 16px; border-bottom: 1px solid var(--line); vertical-align: top }
+.schedule tr:last-child td { border-bottom: 0 }
+.schedule tbody tr { transition: background .15s ease }
+.schedule tbody tr:hover { background: var(--badge) }
+.schedule .id { font: 700 13px var(--mono); color: var(--link); white-space: nowrap }
+.schedule .nm { font: 700 17px/1.2 var(--display) }
+.schedule .ds { color: var(--muted); font-size: 13.5px; margin-top: 2px }
+a.nm { color: var(--fg); text-decoration: none } a.nm:hover { color: var(--link); text-decoration: underline }
+.pill { display: inline-block; font: 600 11.5px/1.5 var(--body); border-radius: 999px; padding: 3px 10px; white-space: nowrap; background: var(--badge); color: var(--fg) }
+.pill.chg { background: var(--ochre); color: #1C1E1F }
+.pill.ro { background: transparent; border: 1px solid var(--border-strong); padding: 2px 9px }
+.pills { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0 }
+.pills.people .pill { font-size: 13.5px; padding: 6px 14px; white-space: normal }
+.pills.people .pill.ro { padding: 5px 13px }
+.filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px }
+.chip { border: 1.5px solid var(--fg); border-radius: 999px; padding: 6px 14px; font: 600 13px var(--body); background: transparent; color: var(--fg); cursor: pointer }
+.chip:hover { background: var(--badge) }
+.chip[aria-pressed="true"] { background: var(--fg); color: var(--bg) }
+input.chip { cursor: text; font-weight: 500; min-width: 0 }
+input.chip::placeholder { color: var(--muted); opacity: 1 }
+.kbd { font: 600 13px var(--mono); border: 1px solid var(--border-strong); border-bottom-width: 2px; border-radius: 4px; padding: 1px 6px; background: var(--surface); white-space: nowrap }
+
+/* ---------- page heads ---------- */
+.page-head { background-color: var(--moss); color: var(--cream); --focus: var(--ochre-light);
+    background-image: linear-gradient(rgba(244, 241, 234, .06) 1px, transparent 1px), linear-gradient(90deg, rgba(244, 241, 234, .06) 1px, transparent 1px);
+    background-size: 48px 48px }
+.page-head .wrap { padding-block: 56px 48px; display: grid; gap: 16px }
+.page-head h1 { font-size: clamp(44px, 7vw, 88px); font-weight: 900; line-height: .95; letter-spacing: -.02em }
+.page-head h1 em { color: var(--ochre-light); font-weight: 500 }
+.page-head p { font-size: 19px; color: rgba(244, 241, 234, .86); max-width: 36em }
+.page-head p a { color: var(--ochre-light) }
+.crumb { font: 500 12.5px var(--mono); color: rgba(244, 241, 234, .72) } .page-head .crumb { font-size: 12.5px } .crumb a { color: var(--ochre-light) }
+.page-head.ochre { background-color: var(--ochre); color: #1C1E1F; --focus: #1C1E1F; background-image: repeating-linear-gradient(45deg, rgba(28, 30, 31, .12) 0 1px, transparent 1px 12px) }
+.page-head.ochre p { color: #1C1E1F } .page-head.ochre h1 em { color: #1C1E1F }
+.page-head.ochre .crumb { color: #1C1E1F } .page-head.ochre .crumb a, .page-head.ochre p a { color: #1C1E1F }
+.page-body { padding-block: 56px 24px }
+
+/* ---------- timeline, flow, stack ---------- */
+.timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 0 }
+.timeline > li { display: grid; grid-template-columns: 96px 1fr; gap: 24px; padding-block: 32px; border-top: 1px solid var(--line) }
+.timeline > li:first-child { border-top: 0; padding-top: 0 }
+.timeline .n { font: 900 72px/.85 var(--display); color: var(--link); font-variant-numeric: lining-nums }
+.timeline h2, .timeline h3 { font-size: 30px; font-weight: 700; margin-bottom: 4px }
+.timeline p, .timeline li li { color: var(--muted); max-width: 40em }
+.timeline .body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; min-width: 0; align-content: start }
+.timeline .body ul, .timeline .body ol { margin: 0; padding-left: 22px; display: grid; gap: 6px; color: var(--muted); max-width: 40em }
+.timeline .ctas { display: flex; gap: 10px; flex-wrap: wrap }
+.flow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; border: 1.5px solid var(--fg); background: var(--surface) }
+.flow.flow-3 { grid-template-columns: repeat(3, 1fr) }
+.flow.flow-4 { grid-template-columns: repeat(4, 1fr) }
+.flow > div { padding: 20px; border-right: 1px solid var(--line); display: grid; gap: 8px; align-content: start; position: relative; min-width: 0 }
+.flow > div:last-child { border-right: 0 }
+.flow b { font: 700 12px var(--mono); color: var(--link) } .flow strong { font: 700 18px/1.2 var(--display) } .flow span { color: var(--muted); font-size: 14px }
+/* "How it works": the clients, the add-on and Archicad, stacked as in a section drawing. */
+.stack { display: grid; gap: 10px; max-width: 760px; margin-inline: auto; text-align: center }
+.stack .clients { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px }
+.stack .box { border: 1.5px solid var(--fg); border-radius: 4px; padding: 16px 14px; background: var(--surface); display: grid; gap: 4px }
+.stack .box strong { font: 700 19px/1.2 var(--display) }
+.stack .box span { color: var(--muted); font-size: 14px }
+.stack .box.addon { background: var(--ochre); border-color: var(--ochre); color: #1C1E1F }
+.stack .box.addon span { color: #1C1E1F }
+.stack .box.archicad { background: var(--charcoal); border-color: var(--charcoal); color: #F4F1EA }
+.stack .box.archicad span { color: #C9CFD1 }
+:root[data-theme="dark"] .stack .box.archicad { border-color: rgba(244, 241, 234, .35) }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .stack .box.archicad { border-color: rgba(244, 241, 234, .35) } }
+.stack .wire { font: 600 12.5px var(--mono); color: var(--muted); letter-spacing: .06em; text-transform: uppercase }
+
+/* ---------- use cases ---------- */
+.uses { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
+.uses .way h3 { font-size: 21px }
+.uses .meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+.uses .meta code { font-size: 12px }
+.uses-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); border: 1.5px solid var(--fg); background: var(--surface); overflow: hidden }
+.uses-grid li { padding: 20px; display: grid; gap: 6px; align-content: start; box-shadow: -1px 0 0 var(--line), 0 -1px 0 var(--line); min-width: 0 }
+.uses-grid h3 { font-size: 19px }
+.uses-grid p { color: var(--muted); font-size: 14.5px }
+.uses-grid.three { grid-template-columns: repeat(3, 1fr) }
+
+/* ---------- one script ---------- */
+.detail { display: grid; grid-template-columns: 1.4fr .8fr; gap: 40px; align-items: start }
+.detail > div { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 22px; align-content: start }
+.spec { border: 1.5px solid var(--fg); background: var(--surface); min-width: 0 }
+.spec dl { margin: 0; display: grid; grid-template-columns: auto 1fr }
+.spec dt, .spec dd { margin: 0; padding: 11px 16px; border-bottom: 1px solid var(--line); min-width: 0 }
+.spec dt { font: 700 11.5px/1.9 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
+.spec dd { font-weight: 600; overflow-wrap: anywhere }
+.spec dd code { font-size: 11.5px; font-weight: 400 }
+.spec .install { padding: 18px 16px; display: grid; gap: 10px; background: var(--badge) }
+.spec .install > strong { font: 700 20px/1.2 var(--display) }
+.spec .install p, .spec .install ol { color: var(--fg); font-size: 14px }
+.shot { border: 1.5px solid var(--fg); background: #F4F1EA; border-radius: 4px; overflow: hidden }
+.shot img, .shot svg { display: block; width: 100%; height: auto }
+.bullets { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: var(--muted) }
+.share-steps ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
+.share-steps li { background: var(--surface); border: 1.5px solid var(--fg); border-radius: 4px; padding: 22px; display: grid; gap: 10px; align-content: start }
+.share-steps li b { font: 900 48px/1 var(--display); color: var(--link) }
+.share-steps li strong { display: block; font: 700 22px/1.2 var(--display) } .share-steps li span { color: var(--muted) }
+
+/* ---------- videos ---------- */
+.videos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
+.video { display: grid; align-content: start; border: 1.5px solid var(--fg); border-radius: 4px; background: var(--surface); color: var(--fg); text-decoration: none; overflow: hidden; height: 100%; transition: transform .15s ease, box-shadow .15s ease }
+.video:hover { color: var(--fg); transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--ochre) }
+.video .frame { aspect-ratio: 16 / 9; display: grid; place-items: center; background-color: var(--moss);
+    background-image: linear-gradient(rgba(244, 241, 234, .07) 1px, transparent 1px), linear-gradient(90deg, rgba(244, 241, 234, .07) 1px, transparent 1px);
+    background-size: 24px 24px; border-bottom: 1.5px solid var(--fg) }
+.video .play { width: 64px; height: 64px; border-radius: 50%; background: var(--ochre); display: grid; place-items: center; box-shadow: 0 6px 0 -2px #1C1E1F }
+.video .play svg { width: 24px; height: 24px; margin-left: 4px; color: #1C1E1F }
+.video .text { padding: 18px 20px 22px; display: grid; gap: 8px }
+.video h3 { font-size: 22px }
+.video p { color: var(--muted); font-size: 14.5px }
+
+/* ---------- prose and callouts ---------- */
+.prose { max-width: 46em }
+.prose > * + * { margin-top: 14px }
+.prose > h3 { margin-top: 28px }
+.prose ul, .prose ol { padding-left: 22px; display: grid; gap: 6px; margin-bottom: 0 }
+.prose p, .prose li { color: var(--muted) }
+.prose strong { color: var(--fg) }
+.callout { padding: 14px 18px; border: 1.5px solid var(--fg); border-left-width: 6px; border-left-color: var(--ochre); border-radius: 4px; background: var(--surface); color: var(--muted) }
+.callout strong.callout-label { color: var(--fg); margin-right: 6px }
+.lead-out { margin-top: 28px; color: var(--muted) }
+
+/* ---------- footer: the drawing's title block ---------- */
+.site-footer { margin-top: 72px; border-top: 1.5px solid var(--fg); background: var(--surface) }
+.tblock { display: grid; grid-template-columns: 2fr repeat(4, 1fr); border-left: 1.5px solid var(--fg); border-right: 1.5px solid var(--fg); margin-block: 32px 0 }
+.tblock > div { padding: 14px 16px; border-right: 1px solid var(--line); display: grid; gap: 6px; align-content: start; min-width: 0 }
+.tblock > div:last-child { border-right: 0 }
+.tblock .lab { font: 700 10.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted) }
+.tblock .val { font: 700 15px var(--body) }
+.tblock .proj { font: 900 34px/1 var(--display) }
+.tblock .note { color: var(--muted); font-size: 14px }
+.tblock ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 14px }
+.tblock a { color: var(--fg); text-decoration: none } .tblock a:hover { color: var(--link); text-decoration: underline }
+.tblock .rev { display: grid; gap: 6px; margin-bottom: 8px }
+.fine { padding-block: 14px 28px; color: var(--muted); font-size: 13px }
+
+@media (max-width: 900px) {
+    .two, .detail { grid-template-columns: 1fr }
+    .ways, .comm, .teasers, .doc-grid, .share-steps ol, .uses, .videos { grid-template-columns: 1fr }
+    .uses-grid, .uses-grid.three { grid-template-columns: repeat(2, 1fr) }
+    .sec-head { grid-template-columns: 1fr }
+    .tblock { grid-template-columns: 1fr 1fr } .tblock > div:first-child { grid-column: 1 / -1; border-right: 0; border-bottom: 1px solid var(--line) }
+    .tblock > div:nth-child(3) { border-right: 0 } .tblock > div:nth-child(-n+3) { border-bottom: 1px solid var(--line) }
+    .flow, .flow.flow-3, .flow.flow-4 { grid-template-columns: 1fr } .flow > div { border-right: 0; border-bottom: 1px solid var(--line) } .flow > div:last-child { border-bottom: 0 }
+    .timeline > li { grid-template-columns: 56px 1fr; gap: 16px } .timeline .n { font-size: 48px }
+    .timeline h2, .timeline h3 { font-size: 25px }
+    .site-header .right { margin-left: auto }
+}
+@media (max-width: 640px) {
+    .site-header { position: static }
+    .site-header .nav { gap: 10px 16px }
+    .site-nav { order: 3; flex-basis: 100% }
+    .site-nav ul { gap: 2px 16px }
+    .site-nav a { font-size: 14.5px }
+    .page-head .wrap { padding-block: 40px 36px }
+    .page-head p { font-size: 17px }
+    .page-body { padding-top: 36px }
+    .wrap > section, .page-body > section { padding-block: 40px 24px }
+    .way, .teaser { padding: 22px }
+    .teaser h3 { font-size: 26px }
+    .stack .clients { grid-template-columns: 1fr }
+    .term { box-shadow: 6px 6px 0 var(--moss) }
+    .term pre { font-size: 12.5px; padding: 14px }
+    .spec dl { grid-template-columns: 1fr } .spec dt { border-bottom: 0; padding-bottom: 0 } .spec dd { padding-top: 2px }
+    .btn { padding: 12px 18px }
+    .tblock .proj { font-size: 28px }
+    /* The schedule becomes one card per script. */
+    table.schedule, .schedule tbody, .schedule tr, .schedule td, .schedule caption { display: block }
+    .schedule thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0) }
+    .schedule tr { padding: 14px 16px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px }
+    .schedule tbody tr:last-child { border-bottom: 0 }
+    .schedule td { padding: 0; border: 0; min-width: 0 }
+    .schedule td.cell-script { grid-column: 1 / -1; order: -1 }
+    .schedule td[data-label]::before { content: attr(data-label); display: block; font: 700 10.5px/1.6 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
+}
+@media (max-width: 400px) {
+    .uses-grid, .uses-grid.three { grid-template-columns: 1fr }
+    .site-header .right .btn-sm { padding: 8px 12px }
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important }
+    html { scroll-behavior: auto }
+    .way:hover, .teaser:hover, .video:hover, .btn-primary:hover { transform: none }
+}

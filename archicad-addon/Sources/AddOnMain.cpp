@@ -1497,6 +1497,17 @@ GSErrCode Initialize (void)
             "Moves a folder of the Favorites palette, with its Favorites and subfolders, into another folder. Folders are "
             "given as their path of folder names from the root. Returns the new path of the folder. Available from Archicad 29."
         );
+        err |= RegisterCommand<GetFavoriteContentsCommand> (
+            favoritesCommands, "1.8.1",
+            "Returns the Favorites of a folder of the Favorites palette and of its subfolders (every Favorite when no folder "
+            "is given), each with its folder path, classifications, element category values and property values, read through "
+            "the Favorite manager. Available from Archicad 29."
+        );
+        err |= RegisterCommand<DeleteFavoritesWithManagerCommand> (
+            favoritesCommands, "1.8.1",
+            "Deletes the given Favorites through the Favorite manager, each found by name, optionally only in the given folder. "
+            "One execution result for each. Available from Archicad 29."
+        );
         err |= RegisterCommand<MoveFavoritesCommand> (
             favoritesCommands, "1.8.0",
             "Moves Favorites given by their names into a folder of the Favorites palette given by its path. "
@@ -2109,7 +2120,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetGDLParametersOfLibraryPartsCommand> (
             libraryCommands, "1.8.1",
-            "Gets the default GDL parameters (name, display name, type, array dimensions, value, flags) of the given library parts by name, read from the library part without placing it or changing any defaults. The output is in the format of GetGDLParametersOfElements, without isLocked and possibleValues, which need a placed element."
+            "Gets the default GDL parameters (name, display name, type, array dimensions, value, flags) of the given library parts by name, read from the library part without placing it or changing any defaults. The output is in the format of GetGDLParametersOfElements, without isLocked and possibleValues, which need a placed element. To read a part by its file name, as SetLibraryPartParameters writes it, use GetLibraryPartParameterValues."
         );
         err |= RegisterCommand<GetMissingLibPartNamesCommand> (
             libraryCommands, "1.8.1",
@@ -2183,6 +2194,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateLibraryPartCommand> (
             libraryCommands, "1.8.0",
             "Creates a new library part file (.gsm) of the given loaded subtype, inheriting its parameters, and reports whether it is loaded with its index and names. Available from Archicad 28."
+        );
+        err |= RegisterCommand<GetLibraryPartParameterValuesCommand> (
+            libraryCommands, "1.8.1",
+            "Returns the parameters of loaded library parts, given by their file name as GetAvailableLibraryParts returns it, with their default values and descriptions, in the format of GetGDLParametersOfElements: the read counterpart of SetLibraryPartParameters. Unlike GetGDLParametersOfLibraryParts, which finds a part by its name and also returns the index, flags and value descriptions of each parameter, it reads through the Library Manager. Available from Archicad 28."
         );
         err |= RegisterCommand<UpdateLibraryPartSectionsCommand> (
             libraryCommands, "1.8.1",

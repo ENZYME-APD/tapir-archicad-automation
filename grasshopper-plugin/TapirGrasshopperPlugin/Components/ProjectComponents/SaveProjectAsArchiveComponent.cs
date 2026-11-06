@@ -25,7 +25,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             InText(
                 "ArchiveFilePath",
                 "Absolute path of the .pla archive file to write. An existing " +
-                "file is overwritten.");
+                "file is overwritten unless Overwrite is false.");
 
             InBoolean(
                 "IncludeLibraryParts",
@@ -46,6 +46,15 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 "IncludeBackgroundPicture",
                 "Include the background picture in the archive. Off by default, as in the Archive dialog.",
                 false);
+
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "Overwrite",
+                "false refuses to save when a file already exists at ArchiveFilePath, and writes nothing. " +
+                "Default is true.",
+                true);
+
+            SetOptionality(5);
         }
 
         protected override void AddOutputs()
@@ -73,6 +82,12 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 ["includeTextures"] = da.GetOptional(3, false),
                 ["includeBackgroundPicture"] = da.GetOptional(4, false)
             };
+
+            // Only sent when it differs from the command's default.
+            if (!da.GetOptional(5, true))
+            {
+                parameters["overwrite"] = false;
+            }
 
             if (!TryGetConvertedCadValues(
                     CommandName,

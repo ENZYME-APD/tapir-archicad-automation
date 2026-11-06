@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en" data-copy="Copy" data-copied="Copied">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tapir - automation for Archicad</title>
+<meta name="description" content="Tapir is a free, open-source Archicad add-on: hundreds of extra JSON commands, a palette that runs scripts in one click, and a Grasshopper plugin.">
+<!-- site-assets -->
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="assets/site.css">
+<script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
+<script src="assets/site.js" defer></script>
+<!-- /site-assets -->
+<link rel="stylesheet" href="home.css">
+<script src="home.js" defer></script>
+</head>
+<body>
+<!-- site-header -->
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+    <div class="wrap nav">
+        <a class="brand" href="./"><img src="assets/tapir_mark_cream.svg" alt="" width="30" height="30">Tapir</a>
+        <nav class="site-nav" aria-label="Site"><ul>
+            <li><a href="start/">Get started</a></li>
+            <li><a href="docs/">Docs</a></li>
+            <li><a href="scripts/">Scripts</a></li>
+            <li><a href="scripts/share/">Share</a></li>
+            <li><a href="community/">Community</a></li>
+            <li><a href="about/">About</a></li>
+        </ul></nav>
+        <div class="right">
+            <button class="toggle" id="theme-toggle" type="button" data-dark="Dark" data-light="Light" hidden><span class="toggle-word">Dark</span><span class="visually-hidden"> mode</span></button>
+            <a class="btn btn-primary btn-sm" href="start/#install">Download</a>
+        </div>
+    </div>
+</header>
+<!-- /site-header -->
+
+<main id="main">
+    <!-- The hero: the pitch, the installers and a floor plan on which three built-in scripts run.
+         Without JavaScript the plan shows the numbered doors and the tabs stay hidden. -->
+    <div class="hero">
+        <div class="wrap">
+            <div>
+                <p class="tagline">Automation for Archicad</p>
+                <h1>Archicad, on <em>autopilot.</em></h1>
+                <p class="lead">
+                    Number every door along a line. Colour the model by any property. Check a project before it goes out.
+                    Tapir adds hundreds of commands to Archicad and a palette that runs scripts in one click.
+                </p>
+                <div class="ctas" id="install" role="group" aria-label="Download the Tapir Installer">
+                    <a class="btn btn-primary" href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirInstaller_Win.exe">Download <span class="os">WINDOWS</span></a>
+                    <a class="btn btn-ghost" href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest/download/TapirInstaller_Mac.zip">Download <span class="os">MACOS</span></a>
+                </div>
+                <!-- The version and the Archicad versions are read live and left out when they can't be read. -->
+                <p class="meta">
+                    <span data-live="release" hidden>v<span data-live-value="release"></span><span class="sep" aria-hidden="true">·</span></span><span data-live="archicad-range" hidden>Archicad <span data-live-value="archicad-range"></span><span class="sep" aria-hidden="true">·</span></span>100% free<span class="sep" aria-hidden="true">·</span>Open source (MIT)<span class="sep" aria-hidden="true">·</span><a href="tutorials/">Watch the tutorials</a><span class="sep" aria-hidden="true">·</span><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest">All downloads</a>
+                </p>
+            </div>
+
+            <figure class="plan-card" id="plan" data-running="running…">
+                <div class="plan-head" aria-hidden="true"><span class="dots"><i></i><i></i><i></i></span><span>Ground Floor · 1:100</span><span>Tapir</span></div>
+                <div class="plan-tabs" id="plan-tabs" role="group" aria-label="Try a built-in script" hidden>
+                    <button type="button" data-demo="number" data-name="Automatic Numbering Based on Polyline" data-done="6 doors numbered D01–D06" aria-pressed="true">Number doors</button>
+                    <button type="button" data-demo="heat" data-name="Property Highlighter" data-done="6 zones coloured by area" aria-pressed="false">Colour by area</button>
+                    <button type="button" data-demo="check" data-name="Project Health Check" data-done="3 problems found" aria-pressed="false">Health check</button>
+                </div>
+                <svg viewBox="0 0 560 340" role="img" aria-labelledby="plan-title">
+                    <title id="plan-title">A floor plan of six rooms on which a script numbers the doors, colours the rooms by area or marks problems</title>
+                    <defs>
+                        <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#1C1E1F" stroke-width="2.2"/></pattern>
+                    </defs>
+                    <g font-family="Inter, sans-serif" font-size="11" fill="#5F6A6E">
+                        <rect class="zone" data-area="24" x="30" y="30" width="170" height="130" fill="#FFFFFF"/>
+                        <rect class="zone" data-area="18" x="200" y="30" width="130" height="130" fill="#FFFFFF"/>
+                        <rect class="zone" data-area="32" x="330" y="30" width="200" height="130" fill="#FFFFFF"/>
+                        <rect class="zone" data-area="9" x="30" y="190" width="110" height="120" fill="#FFFFFF"/>
+                        <rect class="zone" data-area="14" x="140" y="190" width="120" height="120" fill="#FFFFFF"/>
+                        <rect class="zone" data-area="28" x="260" y="190" width="270" height="120" fill="#FFFFFF"/>
+                        <rect x="30" y="160" width="500" height="30" fill="#FFFFFF"/>
+                        <text x="44" y="52">Studio · 24 m²</text><text x="214" y="52">Office · 18 m²</text><text x="344" y="52">Meeting · 32 m²</text>
+                        <text x="44" y="298">WC · 9 m²</text><text x="154" y="298">Store · 14 m²</text><text x="274" y="298">Kitchen · 28 m²</text>
+                        <text x="44" y="179" font-size="10">Corridor</text>
+                    </g>
+                    <g fill="url(#hatch)" stroke="#1C1E1F" stroke-width="1.2">
+                        <rect x="22" y="22" width="516" height="8"/><rect x="22" y="310" width="516" height="8"/>
+                        <rect x="22" y="22" width="8" height="296"/><rect x="530" y="22" width="8" height="296"/>
+                        <rect x="196" y="30" width="6" height="130"/><rect x="326" y="30" width="6" height="130"/>
+                        <rect x="136" y="190" width="6" height="120"/><rect x="256" y="190" width="6" height="120"/>
+                    </g>
+                    <g stroke="#1C1E1F" stroke-width="1.2" fill="none">
+                        <line x1="30" y1="160" x2="100" y2="160"/><line x1="140" y1="160" x2="230" y2="160"/><line x1="270" y1="160" x2="390" y2="160"/><line x1="430" y1="160" x2="530" y2="160"/>
+                        <line x1="30" y1="190" x2="60" y2="190"/><line x1="100" y1="190" x2="170" y2="190"/><line x1="210" y1="190" x2="330" y2="190"/><line x1="370" y1="190" x2="530" y2="190"/>
+                        <path d="M100 160 A40 40 0 0 0 140 120" stroke-dasharray="2 2"/><path d="M230 160 A40 40 0 0 0 270 120" stroke-dasharray="2 2"/><path d="M390 160 A40 40 0 0 0 430 120" stroke-dasharray="2 2"/>
+                        <path d="M60 190 A40 40 0 0 1 100 230" stroke-dasharray="2 2"/><path d="M170 190 A40 40 0 0 1 210 230" stroke-dasharray="2 2"/><path d="M330 190 A40 40 0 0 1 370 230" stroke-dasharray="2 2"/>
+                    </g>
+                    <g id="plan-numbering">
+                        <polyline points="40,175 120,175 250,175 410,175 450,175" fill="none" stroke="#BD8D53" stroke-width="2" stroke-dasharray="6 4"/>
+                        <g font-family="JetBrains Mono, monospace" font-size="11" font-weight="600">
+                            <g class="tagnum"><rect x="104" y="138" width="34" height="18" rx="3" fill="#1C1E1F"/><text x="121" y="151" fill="#F4F1EA" text-anchor="middle">D01</text></g>
+                            <g class="tagnum"><rect x="62" y="196" width="34" height="18" rx="3" fill="#1C1E1F"/><text x="79" y="209" fill="#F4F1EA" text-anchor="middle">D02</text></g>
+                            <g class="tagnum"><rect x="234" y="138" width="34" height="18" rx="3" fill="#1C1E1F"/><text x="251" y="151" fill="#F4F1EA" text-anchor="middle">D03</text></g>
+                            <g class="tagnum"><rect x="172" y="196" width="34" height="18" rx="3" fill="#1C1E1F"/><text x="189" y="209" fill="#F4F1EA" text-anchor="middle">D04</text></g>
+                            <g class="tagnum"><rect x="332" y="196" width="34" height="18" rx="3" fill="#1C1E1F"/><text x="349" y="209" fill="#F4F1EA" text-anchor="middle">D05</text></g>
+                            <g class="tagnum"><rect x="394" y="138" width="34" height="18" rx="3" fill="#1C1E1F"/><text x="411" y="151" fill="#F4F1EA" text-anchor="middle">D06</text></g>
+                        </g>
+                    </g>
+                    <g id="plan-check" font-family="Inter, sans-serif" font-size="10.5" font-weight="600" style="display:none">
+                        <circle cx="265" cy="95" r="16" fill="none" stroke="#BD8D53" stroke-width="2.5"/><rect x="284" y="84" width="128" height="20" rx="3" fill="#1C1E1F"/><text x="292" y="98" fill="#F4F1EA">Zone number used twice</text>
+                        <circle cx="85" cy="250" r="16" fill="none" stroke="#BD8D53" stroke-width="2.5"/><rect x="104" y="240" width="108" height="20" rx="3" fill="#1C1E1F"/><text x="112" y="254" fill="#F4F1EA">Door without an ID</text>
+                        <circle cx="470" cy="260" r="16" fill="none" stroke="#BD8D53" stroke-width="2.5"/><rect x="352" y="282" width="134" height="20" rx="3" fill="#1C1E1F"/><text x="360" y="296" fill="#F4F1EA">Unclassified object</text>
+                    </g>
+                    <g id="plan-legend" font-family="Inter, sans-serif" font-size="10" fill="#1C1E1F" style="display:none">
+                        <rect x="390" y="232" width="128" height="66" rx="4" fill="#FFFFFF" stroke="#1C1E1F" stroke-width="1"/>
+                        <text x="400" y="248" font-weight="600">Zone area</text>
+                        <rect x="400" y="256" width="12" height="10" fill="#E9DCC6"/><text x="418" y="265">under 15 m²</text>
+                        <rect x="400" y="270" width="12" height="10" fill="#D4A876"/><text x="418" y="279">15 to 25 m²</text>
+                        <rect x="400" y="284" width="12" height="10" fill="#8A6235"/><text x="418" y="293">over 25 m²</text>
+                    </g>
+                </svg>
+                <figcaption class="plan-status" id="plan-status" aria-live="polite"><span class="pulse" aria-hidden="true"></span><span id="plan-status-text"><b>Automatic Numbering Based on Polyline</b> · 6 doors numbered D01–D06</span></figcaption>
+            </figure>
+        </div>
+    </div>
+
+    <!-- Real Tapir commands, decoration only: hidden from screen readers, still under reduced motion. -->
+    <div class="ticker" aria-hidden="true">
+        <div class="ticker-track" id="ticker-track">
+            <span>GetElementsByType</span><span>CreateWalls</span><span>SetPropertyValuesOfElements</span><span>GetQuantitiesOfElements</span><span>GetCollisions</span><span>CreateZones</span><span>CreateStairs</span><span>MirrorElements</span><span>GetDesignOptions</span><span>TeamworkSend</span><span>GetHotlinks</span><span>GetElectricalPanels</span><span>CreateHotlinkInstances</span><span>GetRevisionChangesOfElements</span><span>SetIFCClassificationReferencesOfElements</span><span>GetDocumentRevisions</span>
+        </div>
+    </div>
+
+    <div class="wrap">
+        <!-- Live numbers: each one is hidden in the HTML and only shown once it was read. -->
+        <div class="dim" aria-hidden="true"><i></i><span>Tapir in figures</span><i></i></div>
+        <section style="padding-top: 28px" aria-label="Tapir in figures">
+            <div class="figures">
+                <div data-live="commands" hidden>
+                    <strong data-live-value="commands"></strong>
+                    <span><a href="archicad-addon/">JSON commands</a></span>
+                </div>
+                <div data-live="archicad-count archicad-range" hidden>
+                    <strong data-live-value="archicad-count"></strong>
+                    <span>Archicad versions, <span data-live-value="archicad-range"></span></span>
+                </div>
+                <div data-live="coverage" hidden>
+                    <strong data-live-value="coverage"></strong>
+                    <span><a href="api-coverage/">Of the Archicad API</a></span>
+                </div>
+                <div data-live="scripts" hidden>
+                    <strong data-live-value="scripts"></strong>
+                    <span><a href="scripts/">Scripts to install</a></span>
+                </div>
+                <div>
+                    <strong>Mon</strong>
+                    <span><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">A new release every week</a></span>
+                </div>
+            </div>
+        </section>
+
+        <div class="dim" aria-hidden="true"><i></i><span>Three ways in</span><i></i></div>
+        <section aria-labelledby="ways">
+            <div class="sec-head">
+                <h2 id="ways">Start where you <em>already work.</em></h2>
+                <p>Two of the three need no programming. All of them use the same commands.</p>
+            </div>
+            <div class="ways">
+                <article class="way">
+                    <svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="8" width="36" height="28" rx="2"/><line x1="4" y1="16" x2="40" y2="16"/><rect x="10" y="22" width="16" height="4"/><rect x="10" y="29" width="10" height="3"/><circle cx="33" cy="26" r="4" fill="#BD8D53" stroke="none"/></svg>
+                    <span class="who">For architects</span>
+                    <h3>Scripts in the palette</h3>
+                    <p>Open the Tapir palette, pick a script and press Run Script. The built-in scripts are there from the start, and more are shared by the community.</p>
+                    <a href="scripts/">Browse scripts</a>
+                </article>
+                <article class="way">
+                    <svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="4" y="10" width="12" height="10" rx="2"/><rect x="28" y="24" width="12" height="10" rx="2"/><path d="M16 15 C 24 15, 20 29, 28 29"/><circle cx="16" cy="15" r="2.5" fill="#BD8D53" stroke="none"/><circle cx="28" cy="29" r="2.5" fill="#BD8D53" stroke="none"/></svg>
+                    <span class="who">For computational designers</span>
+                    <h3>Grasshopper</h3>
+                    <p>The <span class="mono">tapir</span> package in Rhino's Package Manager. Walls, doors, windows and more as components that read and change the model, with the names of Archicad's settings dialogs.</p>
+                    <a href="grasshopper/">Grasshopper guide</a>
+                </article>
+                <article class="way">
+                    <svg viewBox="0 0 44 44" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="12,14 4,22 12,30"/><polyline points="32,14 40,22 32,30"/><line x1="25" y1="10" x2="19" y2="34" stroke="#BD8D53"/></svg>
+                    <span class="who">For developers</span>
+                    <h3>Python and the JSON API</h3>
+                    <p>Every command answers on port 19723, each with a schema and an example. Python's standard library is enough.</p>
+                    <a href="archicad-addon/">Command reference</a>
+                </article>
+            </div>
+        </section>
+
+        <div class="dim" aria-hidden="true"><i></i><span>What it does</span><i></i></div>
+        <section aria-labelledby="use-cases">
+            <div class="sec-head">
+                <h2 id="use-cases">Six jobs it <em>already does.</em></h2>
+                <p>Five built-in scripts of the Tapir palette and one workflow script, each a short Python file you can read and change.</p>
+            </div>
+            <ul class="uses">
+                <li class="way">
+                    <span class="who">Built-in script</span>
+                    <h3>Number elements along a line</h3>
+                    <p>Select a polyline and the doors, zones or objects to number. Each one gets its Element ID in the order the polyline passes it.</p>
+                    <p class="meta"><span class="pill chg">Changes the model</span> <code>SetPropertyValuesOfElements</code></p>
+                    <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/AutomaticNumberingBasedOnPolyline.py">Automatic Numbering Based on Polyline</a>
+                </li>
+                <li class="way">
+                    <span class="who">Built-in script</span>
+                    <h3>Colour the model by a property</h3>
+                    <p>Pick a property; every element gets a colour for its value, with a legend of the values and how many elements have each. Number values can be grouped into ranges.</p>
+                    <p class="meta"><span class="pill ro">Read only</span> <code>HighlightElements</code></p>
+                    <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/PropertyHighlighter.py">Property Highlighter</a>
+                </li>
+                <li class="way">
+                    <span class="who">Built-in script</span>
+                    <h3>Check a project before it goes out</h3>
+                    <p>Lists elements without an ID, zones with the same number, unclassified and duplicate elements, empty stories and unused layers. Export the list to Excel or turn it into Issues.</p>
+                    <p class="meta"><span class="pill ro">Read only</span> <code>GetClassificationsOfElements</code></p>
+                    <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/ProjectHealthCheck.py">Project Health Check</a>
+                </li>
+                <li class="way">
+                    <span class="who">Built-in script</span>
+                    <h3>Publish on a schedule</h3>
+                    <p>Publishes the chosen Publisher Sets now or on a schedule, every few hours or daily at a set time. It can receive the Teamwork changes and update the drawings first, and logs every run.</p>
+                    <p class="meta"><span class="pill">Writes files</span> <code>PublishPublisherSet</code></p>
+                    <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/BatchPublisher.py">Batch Publisher</a>
+                </li>
+                <li class="way">
+                    <span class="who">Built-in script</span>
+                    <h3>Tidy up the View Map</h3>
+                    <p>Finds the views that are neither placed on a layout nor published, and moves the ones you choose into a separate folder that keeps their folder structure.</p>
+                    <p class="meta"><span class="pill chg">Changes the model</span> <code>API.MoveNavigatorItem</code></p>
+                    <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/UnusedViewCleaner.py">Unused View Cleaner</a>
+                </li>
+                <li class="way">
+                    <span class="who">Workflow</span>
+                    <h3>Export the model to OBJ</h3>
+                    <p>Writes the 3D model, or only the selected elements, to a Wavefront OBJ file, one object per element, for Blender and other tools.</p>
+                    <p class="meta"><span class="pill">Writes files</span> <code>Get3DGeometryOfElements</code></p>
+                    <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Workflows/export_obj.py">export_obj.py</a>
+                </li>
+            </ul>
+        </section>
+
+        <div class="dim" aria-hidden="true"><i></i><span>What you can do today</span><i></i></div>
+        <section aria-labelledby="today">
+            <div class="sec-head">
+                <h2 id="today">What you can do <em>today.</em></h2>
+                <p>Twelve kinds of work offices automate with Tapir, from a palette script to a Grasshopper definition.</p>
+            </div>
+            <ul class="uses-grid">
+                <li><h3>Property management</h3><p>Read and update the properties of hundreds of elements in seconds.</p></li>
+                <li><h3>Geometry generation</h3><p>Create walls, slabs and beams from Python, with the settings you choose.</p></li>
+                <li><h3>Quantity take-offs</h3><p>Material and element quantities for reports, straight from the model.</p></li>
+                <li><h3>AI assistants (MCP)</h3><p>Let an AI assistant read and change your model through a Tapir MCP server.</p></li>
+                <li><h3>BCF issue tracking</h3><p>Create and track issues and exchange them as BCF files from Python.</p></li>
+                <li><h3>Classification mapping</h3><p>Classify elements by naming conventions or by rules on their geometry.</p></li>
+                <li><h3>Views and layouts</h3><p>Script views, sections and the Layout Book.</p></li>
+                <li><h3>Model checking</h3><p>Find missing values and elements that break the office's standards.</p></li>
+                <li><h3>Office workflows</h3><p>Python scripts made for your office's standards, run from the palette.</p></li>
+                <li><h3>Grasshopper links</h3><p>Connect Rhino and Grasshopper definitions to native Archicad elements.</p></li>
+                <li><h3>Element filtering</h3><p>Select elements by type, layer, classification or nested properties.</p></li>
+                <li><h3>Bulk renaming</h3><p>Rename views, layouts and Publisher Sets to match the project's standards.</p></li>
+            </ul>
+        </section>
+
+        <div class="dim" aria-hidden="true"><i></i><span>Your first script</span><i></i></div>
+        <section class="try" aria-labelledby="python">
+            <div class="prose">
+                <h2 id="python">One file, <em>no packages.</em></h2>
+                <p>
+                    With a project open, Archicad answers JSON commands on <code>http://127.0.0.1:19723</code>.
+                    Tapir's commands go through Archicad's <code>API.ExecuteAddOnCommand</code>. Save this as
+                    <code>walls.py</code> and run it with any Python 3.
+                </p>
+                <p>With several Archicads open, the next ones answer on 19724, 19725 and so on.</p>
+                <p><a href="start/#python">Your first Python script, step by step &rarr;</a></p>
+            </div>
+            <div class="term">
+                <div class="bar"><span>walls.py</span><span>port 19723</span></div>
+<pre><code><span class="k">import</span> json
+<span class="k">import</span> urllib.request
+
+<span class="k">def</span> run_tapir_command(command, parameters=None):
+    body = json.dumps({
+        <span class="s">'command'</span>: <span class="s">'API.ExecuteAddOnCommand'</span>,
+        <span class="s">'parameters'</span>: {
+            <span class="s">'addOnCommandId'</span>: {<span class="s">'commandNamespace'</span>: <span class="s">'TapirCommand'</span>, <span class="s">'commandName'</span>: command},
+            <span class="s">'addOnCommandParameters'</span>: parameters <span class="k">or</span> {}
+        }
+    }).encode(<span class="s">'utf-8'</span>)
+    request = urllib.request.Request(<span class="s">'http://127.0.0.1:19723'</span>, body, {<span class="s">'Content-Type'</span>: <span class="s">'application/json'</span>})
+    <span class="k">with</span> urllib.request.urlopen(request) <span class="k">as</span> response:
+        result = json.loads(response.read())
+    <span class="k">if not</span> result[<span class="s">'succeeded'</span>]:
+        <span class="k">raise</span> RuntimeError(result[<span class="s">'error'</span>])
+    <span class="k">return</span> result[<span class="s">'result'</span>][<span class="s">'addOnCommandResponse'</span>]
+
+print(run_tapir_command(<span class="s">'GetAddOnVersion'</span>))
+walls = run_tapir_command(<span class="s">'GetElementsByType'</span>, {<span class="s">'elementType'</span>: <span class="s">'Wall'</span>})[<span class="s">'elements'</span>]
+print(len(walls), <span class="s">'walls'</span>)</code></pre>
+            </div>
+        </section>
+
+        <div class="dim" aria-hidden="true"><i></i><span>More</span><i></i></div>
+        <section aria-labelledby="docs">
+            <div class="sec-head">
+                <h2 id="docs">Where to go <em>next.</em></h2>
+                <p>The reference, sharing your own scripts, and the people who build Tapir.</p>
+            </div>
+            <div class="teasers">
+                <a class="teaser" href="docs/">
+                    <span class="tagline">Docs</span>
+                    <h3>The reference</h3>
+                    <p>Every command with its schema and an example, the Grasshopper guide, and what Tapir covers of the Archicad API.</p>
+                    <span class="go">Open the docs &rarr;</span>
+                </a>
+                <a class="teaser dark" href="scripts/share/">
+                    <span class="tagline">Share</span>
+                    <h3>Send yours in</h3>
+                    <p>Post a script on Discord or as a pull request. It is checked, adapted for any office and listed with your name. No GitHub account needed.</p>
+                    <span class="go">How sharing works &rarr;</span>
+                </a>
+                <a class="teaser" id="learn" href="community/">
+                    <span class="tagline">Community</span>
+                    <h3>Ask, report, test</h3>
+                    <p>Discord, the video series, and how a bug report becomes a fix.</p>
+                    <span class="go">Join in &rarr;</span>
+                </a>
+            </div>
+        </section>
+    </div>
+</main>
+
+<!-- site-footer -->
+<footer class="site-footer">
+    <div class="wrap">
+        <div class="tblock">
+            <div>
+                <span class="lab">Project</span>
+                <span class="proj">Tapir</span>
+                <p class="note">Open-source automation for Archicad. 100% free and open source (MIT). Maintained by Enzyme APD and the community.</p>
+                <p class="note">Contact: <span class="nowrap">contact@enzyme-apd.com</span></p>
+            </div>
+            <div>
+                <span class="lab">Product</span>
+                <ul>
+                    <li><a href="start/">Get started</a></li>
+                    <li><a href="scripts/">Scripts</a></li>
+                    <li><a href="scripts/share/">Share a script</a></li>
+                    <li><a href="grasshopper/">Grasshopper</a></li>
+                    <li><a href="ai/">Tapir and AI</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Docs</span>
+                <ul>
+                    <li><a href="docs/">All docs</a></li>
+                    <li><a href="archicad-addon/">Commands</a></li>
+                    <li><a href="api-coverage/">API coverage</a></li>
+                    <li><a href="gh-coverage/">Grasshopper coverage</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Community</span>
+                <ul>
+                    <li><a href="https://discord.gg/NAnSennmpY">Discord</a></li>
+                    <li><a href="https://github.com/ENZYME-APD/tapir-archicad-automation">GitHub</a></li>
+                    <li><a href="tutorials/">Tutorials</a></li>
+                    <li><a href="community/#bots">How fixes happen</a></li>
+                    <li><a href="roadmap/">Roadmap</a></li>
+                    <li><a href="about/">About Tapir</a></li>
+                </ul>
+            </div>
+            <div>
+                <div class="rev" data-live="release" hidden>
+                    <span class="lab">Revision</span>
+                    <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest" data-live-value="release"></a>
+                </div>
+                <span class="lab">Licence</span>
+                <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/LICENSE">MIT</a>
+            </div>
+        </div>
+        <p class="fine">Not affiliated with Graphisoft. Archicad is a trademark of Graphisoft SE.</p>
+    </div>
+</footer>
+<!-- /site-footer -->
+</body>
+</html>
