@@ -2034,7 +2034,7 @@ Returns:
 
 - `detailsOfElements` (array of object or object or ErrorItem, required): One entry per input element, in the same order as the input elements array. An element that cannot be read gets an error entry in its place, so the position of an entry tells which input element it belongs to.
 
-Grasshopper: `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `FillsComponent`, `GetDetailsOfBeamsComponent`, `GetDetailsOfColumnsComponent`, `GetDetailsOfElementsComponent`, `GetDetailsOfLabelsComponent`, `GetDetailsOfPolylinesComponent`, `GetDetailsOfRoofsComponent`, `GetDetailsOfSlabsComponent`, `GetDetailsOfTextsComponent`, `GetDetailsOfWallsComponent`, `GetDetailsOfZonesComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent`
+Grasshopper: `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `FillsComponent`, `GetDetailsOfBeamsComponent`, `GetDetailsOfColumnsComponent`, `GetDetailsOfElementsComponent`, `GetDetailsOfLabelsComponent`, `GetDetailsOfPolylinesComponent`, `GetDetailsOfRoofsComponent`, `GetDetailsOfSlabsComponent`, `GetDetailsOfTextsComponent`, `GetDetailsOfWallsComponent`, `GetDetailsOfZonesComponent`, `HotspotsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent`
 
 Example: [archicad-addon/Examples/Element/GetDetailsOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetDetailsOfElements.py): Reads the details (type, story, layer, geometry etc.) of the first walls with GetDetailsOfElements. Needs at least one Wall. The second call asks only for the fields it needs, which is faster.
 
@@ -2054,7 +2054,7 @@ Returns:
 
 - `executionResults` (ExecutionResults, required)
 
-Grasshopper: `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `FillsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SetDetailsOfTextsComponent`, `SetDetailsOfWallsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent`
+Grasshopper: `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `FillsComponent`, `HotspotsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SetDetailsOfTextsComponent`, `SetDetailsOfWallsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent`
 
 Example: [archicad-addon/Examples/Element/SetDetailsOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/SetDetailsOfElements.py): Raises the height of a wall by 0.5 m with SetDetailsOfElements, reads it back, then restores it. Needs at least one editable Wall.
 
@@ -4266,7 +4266,7 @@ Returns:
 
 - `elements` (ElementIdsOrErrors, required)
 
-Grasshopper: `CreateHotspotsComponent`
+Grasshopper: `CreateHotspotsComponent`, `HotspotsComponent`
 
 Example: [archicad-addon/Examples/Element/CreateHotspots.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateHotspots.py): Creates two hotspots with CreateHotspots, the second at 1.5 m height.
 
@@ -6120,7 +6120,7 @@ Returns:
 
 - `executionResults` (ExecutionResults, required)
 
-Grasshopper: `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `ElementMetadata`, `FillsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SetPropertyValuesOfElementsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent`
+Grasshopper: `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `ElementMetadata`, `FillsComponent`, `HotspotsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SetPropertyValuesOfElementsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent`
 
 Example: [archicad-addon/Examples/Property/SetPropertyValuesOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/SetPropertyValuesOfElements.py): Sets the Element ID of the first Wall with SetPropertyValuesOfElements, reads it back, then restores it. Needs at least one Wall.
 

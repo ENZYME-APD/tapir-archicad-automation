@@ -30,14 +30,14 @@ plugin send the same JSON. Every command, with its parameters and an example, is
 
 ## Docs
 
-- [Tapir - automation for Archicad](https://archicad-api.com/index.md): Tapir is a free, open-source Archicad add-on: hundreds of extra JSON commands, a palette that runs scripts in one click, and a Grasshopper plugin.
-- [Get started](https://archicad-api.com/start/index.md): Install Tapir, run a script from the Tapir palette in Archicad, add more scripts, write a first Python script and install the Grasshopper plugin.
-- [Docs](https://archicad-api.com/docs/index.md): Tapir's documentation: every JSON command, the Grasshopper guide, the Archicad API coverage and the Grasshopper coverage, and how a call to Tapir works.
+- [docs](https://archicad-api.com/index.md): 
+- [start](https://archicad-api.com/start/index.md): 
+- [docs](https://archicad-api.com/docs/index.md): 
 - [Scripts](https://archicad-api.com/scripts/index.md): Scripts shared by architects for the Tapir palette in Archicad, each one reviewed and adapted to work in any office before it is listed.
 - [Share a script](https://archicad-api.com/scripts/share/index.md): Share an Archicad script you wrote: send it on Discord or as a pull request, and it is checked, adapted to work in any office and listed with your name.
 - [Grasshopper](https://archicad-api.com/grasshopper/index.md): Read, change and create Archicad elements from Grasshopper with the Tapir plugin: what the components do, the tool components, installing the tapir package and a first definition.
 - [Tapir and AI](https://archicad-api.com/ai/index.md): Use Tapir from Claude and other AI tools: Tapir MCP servers, a prompt to start with, and how to let an AI write a script that sends Tapir commands.
-- [Tutorials](https://archicad-api.com/tutorials/index.md): Videos that show Tapir at work in Archicad and Grasshopper: installing it, selecting elements, columns, Grasshopper, spreadsheet sync and filtering.
+- [tutorials](https://archicad-api.com/tutorials/index.md): 
 
 ## Project
 

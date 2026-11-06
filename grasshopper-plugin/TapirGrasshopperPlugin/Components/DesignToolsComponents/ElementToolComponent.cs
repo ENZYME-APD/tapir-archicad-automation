@@ -96,9 +96,19 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         protected abstract ISet<string> CreateKeys { get; }
         protected abstract ISet<string> ModifyKeys { get; }
 
-        // The keys the Modify command does not take but SetDetailsOfElements
-        // does, in its typeSpecificDetails; Execute writes them there.
+        // The keys the Modify command does not take (or a tool without a
+        // Modify command, e.g. hotspots) but SetDetailsOfElements does, in
+        // its typeSpecificDetails; Execute writes them there.
         protected virtual ISet<string> TypeSpecificDetailsKeys { get; } = new HashSet<string>();
+
+        // Lets a tool drop typeSpecificDetails (Add-On keys) of an existing
+        // element that SetDetailsOfElements cannot take as given. Each note
+        // is shown once as a remark.
+        protected virtual void PrepareTypeSpecificDetails(
+            JObject typeSpecificDetails,
+            ISet<string> notes)
+        {
+        }
 
         // A key of TypeSpecificDetailsKeys only this tool's settings have. The
         // typeSpecificDetails of SetDetailsOfElements is a oneOf, and e.g.
@@ -634,7 +644,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                     continue;
                 }
                 PrepareSettings(settings, notes);
-                AddWriteItems(inputs, i, guids[i], settings, null, createOnly, modifyItems, detailItems);
+                AddWriteItems(inputs, i, guids[i], settings, null, createOnly, notes, modifyItems, detailItems);
             }
 
             AddDetailsTypeKey(targets, detailItems, errors);
@@ -670,6 +680,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             JObject settings,
             JObject geometry,
             ISet<string> createOnly,
+            ISet<string> notes,
             List<KeyValuePair<int, JObject>> modifyItems,
             List<KeyValuePair<int, JObject>> detailItems)
         {
@@ -719,6 +730,10 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                         createOnly.Add(KeyOf(property.Name));
                     }
                 }
+            }
+            if (typeSpecific.Count > 0)
+            {
+                PrepareTypeSpecificDetails(typeSpecific, notes);
             }
             if (typeSpecific.Count > 0)
             {
@@ -809,7 +824,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 if (existing[i] != null)
                 {
                     guids[i] = existing[i];
-                    AddWriteItems(inputs, i, guids[i], settings, geometry[i], createOnly, modifyItems, detailItems);
+                    AddWriteItems(inputs, i, guids[i], settings, geometry[i], createOnly, notes, modifyItems, detailItems);
                     if (!string.IsNullOrEmpty(ItemOf(inputs.FavoriteNames, i)))
                     {
                         createOnly.Add("FavoriteName");
@@ -1321,7 +1336,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         // Helpers
         // ---------------------------------------------------------------
 
-        private string KeyOf(
+        protected string KeyOf(
             string apiName)
         {
             return Table.Find(apiName)?.Key(UseLabels) ?? apiName;
