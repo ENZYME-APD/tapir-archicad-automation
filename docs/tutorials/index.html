@@ -55,7 +55,7 @@
             <ul class="videos">
                 <li>
                     <a class="video" href="https://www.youtube.com/watch?v=llWnPbS7zJU">
-                        <div class="frame" aria-hidden="true"><span class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg></span></div>
+                        <div class="frame" aria-hidden="true"><img src="https://i.ytimg.com/vi/llWnPbS7zJU/hqdefault.jpg" alt="" width="480" height="360" loading="lazy" decoding="async" onerror="this.remove ()"><span class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg></span></div>
                         <div class="text">
                             <span class="tagline" data-i18n>Getting started</span>
                             <h3 data-i18n>Download and install</h3>
@@ -65,7 +65,7 @@
                 </li>
                 <li>
                     <a class="video" href="https://www.youtube.com/watch?v=Eh5hB756Oko">
-                        <div class="frame" aria-hidden="true"><span class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg></span></div>
+                        <div class="frame" aria-hidden="true"><img src="https://i.ytimg.com/vi/Eh5hB756Oko/hqdefault.jpg" alt="" width="480" height="360" loading="lazy" decoding="async" onerror="this.remove ()"><span class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg></span></div>
                         <div class="text">
                             <span class="tagline" data-i18n>Core workflow</span>
                             <h3 data-i18n>Selection methods</h3>
@@ -75,7 +75,7 @@
                 </li>
                 <li>
                     <a class="video" href="https://www.youtube.com/watch?v=sS6Uz8qClWo">
-                        <div class="frame" aria-hidden="true"><span class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg></span></div>
+                        <div class="frame" aria-hidden="true"><img src="https://i.ytimg.com/vi/sS6Uz8qClWo/hqdefault.jpg" alt="" width="480" height="360" loading="lazy" decoding="async" onerror="this.remove ()"><span class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg></span></div>
                         <div class="text">
                             <span class="tagline" data-i18n>Parametric BIM</span>
                             <h3 data-i18n>Column workflow</h3>
@@ -85,7 +85,7 @@
                 </li>
                 <li>
                     <a class="video" href="https://www.youtube.com/watch?v=PfivmfXDv9o">
-                        <div class="frame" aria-hidden="true"><span class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg></span></div>
+                        <div class="frame" aria-hidden="true"><img src="https://i.ytimg.com/vi/PfivmfXDv9o/hqdefault.jpg" alt="" width="480" height="360" loading="lazy" decoding="async" onerror="this.remove ()"><span class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg></span></div>
                         <div class="text">
                             <span class="tagline" data-i18n>Grasshopper</span>
                             <h3 data-i18n>Archicad and Grasshopper</h3>
@@ -95,7 +95,7 @@
                 </li>
                 <li>
                     <a class="video" href="https://www.youtube.com/watch?v=rT4gEMrYuYw">
-                        <div class="frame" aria-hidden="true"><span class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg></span></div>
+                        <div class="frame" aria-hidden="true"><img src="https://i.ytimg.com/vi/rT4gEMrYuYw/hqdefault.jpg" alt="" width="480" height="360" loading="lazy" decoding="async" onerror="this.remove ()"><span class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg></span></div>
                         <div class="text">
                             <span class="tagline" data-i18n>Data</span>
                             <h3 data-i18n>Excel and Airtable sync</h3>
@@ -105,7 +105,7 @@
                 </li>
                 <li>
                     <a class="video" href="https://www.youtube.com/watch?v=tfiAvH_fAJo">
-                        <div class="frame" aria-hidden="true"><span class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg></span></div>
+                        <div class="frame" aria-hidden="true"><img src="https://i.ytimg.com/vi/tfiAvH_fAJo/hqdefault.jpg" alt="" width="480" height="360" loading="lazy" decoding="async" onerror="this.remove ()"><span class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg></span></div>
                         <div class="text">
                             <span class="tagline" data-i18n>Power tools</span>
                             <h3 data-i18n>Advanced element filtering</h3>
@@ -119,8 +119,19 @@
             </p>
         </section>
 
-        <!-- More videos: add a <li> like the ones above, with the video's id, a short tag, its title and one line.
-             Only add videos that are in the playlist. Under a topic below, a video can also be linked as:
+        <!-- More videos: add a <li> like the ones above, with the video's id (in the link and in the thumbnail),
+             a short tag, its title and one line. Only add videos that are in the playlist:
+             <li>
+                 <a class="video" href="https://www.youtube.com/watch?v=VIDEO_ID">
+                     <div class="frame" aria-hidden="true"><img src="https://i.ytimg.com/vi/VIDEO_ID/hqdefault.jpg" alt="" width="480" height="360" loading="lazy" decoding="async" onerror="this.remove ()"><span class="play"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8z"/></svg></span></div>
+                     <div class="text">
+                         <span class="tagline" data-i18n>Short tag</span>
+                         <h3 data-i18n>Video title</h3>
+                         <p data-i18n>One line about the video.</p>
+                     </div>
+                 </a>
+             </li>
+             Under a topic below, a video can also be linked as:
              <p><a href="https://www.youtube.com/watch?v=VIDEO_ID&amp;list=PLGc943dgyfjjqzeFglpYLIPrcn_HFicDn">Video title</a></p> -->
 
         <div class="dim" aria-hidden="true"><i></i><span data-i18n>By topic, with the written guides</span><i></i></div>
