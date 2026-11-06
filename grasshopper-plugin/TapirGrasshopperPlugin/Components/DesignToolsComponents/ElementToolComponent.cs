@@ -91,6 +91,11 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         protected abstract ISet<string> CreateKeys { get; }
         protected abstract ISet<string> ModifyKeys { get; }
 
+        // The item keys SetDetailsOfElements writes for this element type in
+        // its details' typeSpecificDetails (and the Modify command does not),
+        // e.g. a spline's pen; Execute sends them there.
+        protected virtual ISet<string> TypeSpecificDetailKeys { get; } = new HashSet<string>();
+
         // The inputs that define the geometry, drawn in Archicad (e.g. a
         // wall's start and end point). Only Create uses them.
         protected abstract int GeometryInputCount { get; }
@@ -636,13 +641,23 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             var details = new JObject();
             foreach (var setting in settings)
             {
-                if (setting.Key == "floorIndex")
+                // The Create commands of 2D elements name the story floorInd.
+                if (setting.Key == "floorIndex" || setting.Key == "floorInd")
                 {
                     details["floorIndex"] = setting.Value;
                 }
                 else if (ModifyKeys.Contains(setting.Key))
                 {
                     modify[setting.Key] = setting.Value;
+                }
+                else if (TypeSpecificDetailKeys.Contains(setting.Key))
+                {
+                    if (!(details["typeSpecificDetails"] is JObject typeSpecific))
+                    {
+                        typeSpecific = new JObject();
+                        details["typeSpecificDetails"] = typeSpecific;
+                    }
+                    typeSpecific[setting.Key] = setting.Value;
                 }
                 else
                 {

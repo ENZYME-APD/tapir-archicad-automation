@@ -13,8 +13,10 @@ namespace TapirGrasshopperPlugin.Components.DocumentToolsComponents
     // Spline Settings dialog, from ToolSettings/Spline.json. Polyline defines a
     // new spline: a polyline whose vertices the spline passes through (only
     // X and Y are used; Archicad smooths the curve itself). There is no
-    // ModifySplines command, so Execute only writes the Element ID, the layer
-    // and the draw order of existing splines.
+    // ModifySplines command: Execute writes the pen, line type, zone boundary
+    // and story of existing splines with SetDetailsOfElements, which cannot
+    // change their points or closed state, and the Element ID, the layer and
+    // the draw order.
     public class SplinesComponent : ElementToolComponent
     {
         protected override string ToolName => "Spline";
@@ -37,6 +39,13 @@ namespace TapirGrasshopperPlugin.Components.DocumentToolsComponents
         protected override ISet<string> CreateKeys => CreateSplinesKeys;
         protected override ISet<string> ModifyKeys { get; } = new HashSet<string>();
 
+        // What SetDetailsOfElements writes on a spline (ElementCommands.cpp,
+        // API_SplineID); its points and closed state are read-only there.
+        protected override ISet<string> TypeSpecificDetailKeys { get; } = new HashSet<string>
+        {
+            "linePenIndex", "lineTypeId", "roomSeparator"
+        };
+
         // The Spline Settings dialog's panels, in its order; append-only (see
         // ElementToolComponent.JsonGroups).
         protected override IReadOnlyList<string> JsonGroups { get; } = new[]
@@ -51,8 +60,9 @@ namespace TapirGrasshopperPlugin.Components.DocumentToolsComponents
                 "as one JSON object per dialog panel. A new spline starts from the Spline tool defaults, or from " +
                 "FavoriteName, and the given settings override them. Only auto-smoothed splines are created: " +
                 "Archicad calculates the curve through the given points. The story can be given as " +
-                "{\"floorIndex\": ...} in any JSON input. Archicad has no command to modify splines, so Execute " +
-                "only writes ElementID, LayerIndex and DrawOrder.",
+                "{\"floorIndex\": ...} in any JSON input. Execute writes Pen, Line Type, Zone Boundary, the story, " +
+                "ElementID, LayerIndex and DrawOrder of existing splines; Archicad cannot change their points " +
+                "or whether they are closed.",
                 GroupNames.DocumentTools)
         {
         }
@@ -64,9 +74,9 @@ namespace TapirGrasshopperPlugin.Components.DocumentToolsComponents
             inManager.AddCurveParameter(
                 "Polyline",
                 "Polyline",
-                "A polyline per new spline whose vertices the spline passes through (Create; at least 3 " +
-                "points; only X and Y are used). A closed polyline makes a closed spline; for an open one " +
-                "\"closed\" in GeneralSettings_JSON decides."
+                ("A polyline per new spline whose vertices the spline passes through (Create; at least 3 " +
+                 "points; only X and Y are used). A closed polyline makes a closed spline; for an open one " +
+                 "\"closed\" in GeneralSettings_JSON decides.")
                     .WithTypeName("curveList"),
                 GH_ParamAccess.list);
         }
