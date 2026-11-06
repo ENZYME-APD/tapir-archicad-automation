@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 61 | 53 | 8 |  |  |  | 8 | 70 |
 | C++ API (ACAPI::, IFCAPI::) | 99 % | 1423 | 1207 | 214 | 2 |  |  | 12 | 392 |
 
-Archicad 25–30 DevKits; updated 2026-11-06 07:51 UTC.
+Archicad 25–30 DevKits; updated 2026-11-06 08:12 UTC.
 
 | | Status |
 |---|---|
@@ -522,7 +522,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `ACAPI_GetExtensionInstance` – Returns the HINSTANCE of the add-on's DLL. *(add-on infrastructure)*
 - ➖ `ACAPI_GetMainWindow` – Returns the application's main window where the add-on works. *(user interface)*
 - ➖ `ACAPI_GetOwnLocation` – Returns the location of the add-on in the file system. *(add-on infrastructure)*
-- ➖ `ACAPI_GetOwnResModule` – Returns the add-on's resource module identifier for loading resources. *(add-on infrastructure)*
+- ➖ `ACAPI_GetOwnResModule` – Returns the add-on's resource module identifier for loading resources. — [#2104](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2104 "[1/6] Tapir Palette: read the scripts' # /// tapir header and summary, show them as tooltips") *(add-on infrastructure)*
 - ➖ `ACAPI_GetPreferences` – Returns the stored preferences of the add-on. *(add-on preferences)*
 - ✅ `ACAPI_GetReleaseNumber`
 - ➖ `ACAPI_GetToken` <sub>AC26–30</sub> – Returns the token associated with the AddOn. *(add-on infrastructure)*
@@ -715,7 +715,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Property_ModifyPropertyValue` <sub>AC27–30</sub> – Sets the value of a property for multiple elements. If the property is not available for at least one of the given element then returns with an error without changing any property value.
 - ➖ `ACAPI_Property_RegisterPropertyObjectHandler` <sub>AC27–30</sub> – Registers a property handler. *(event handlers, not commands)*
 - ➖ `ACAPI_Property_RegisterPropertyVisibilityHandler` <sub>AC27–30</sub> – Tells Archicad that your add-on wants to modify property visibility. *(event handlers, not commands)*
-- ✅ `ACAPI_Property_SetPropertyValueFromString` – Sets the value of a property value from a passed string.
+- ✅ `ACAPI_Property_SetPropertyValueFromString` – Sets the value of a property value from a passed string. — [#2105](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2105 "Property values: accept ',' as the decimal separator for single real values")
 - ✅ `ACAPI_Property_AddProperty` <sub>AC27</sub> – Makes a property definition available for all of given elements (it is created if it does not exist).
 - ✅ `ACAPI_Property_DeleteProperty` <sub>AC27</sub> – Makes a property definition unavailable for all of given elements.
 
