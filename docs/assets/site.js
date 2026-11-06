@@ -1,5 +1,5 @@
 /* The shared behaviour of every page of Tapir's site: the language menu and the translations, the
-   dark mode toggle, a copy button on code blocks, and the live figures. The pages are complete
+   dark mode toggle, the header's menu on phones, a copy button on code blocks, and the live figures. The pages are complete
    without it; it only adds to them. Every text it shows is in the page's HTML, so the pages can be
    translated: the toggle's two words are its data-dark and data-light attributes, the copy button's
    labels are data-copy and data-copied on the <html> element.
@@ -58,7 +58,10 @@
         { code: 'es', tag: 'es', name: 'Español' },
         { code: 'it', tag: 'it', name: 'Italiano' },
         { code: 'zh', tag: 'zh-Hans', name: '中文 (简体)' },
-        { code: 'ja', tag: 'ja', name: '日本語' }
+        { code: 'ja', tag: 'ja', name: '日本語' },
+        // Fraunces and Inter have no Devanagari: the font stacks in site.css fall back to these, loaded
+        // only for Hindi (fonts is a Google Fonts css2 query).
+        { code: 'hi', tag: 'hi', name: 'हिन्दी', fonts: 'family=Noto+Serif+Devanagari:wght@500;700;900&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap' }
     ];
     // The header and footer every page shares, translated as if they were marked data-i18n.
     var SHARED_TEXT = '.skip-link, .site-nav a, .site-header .btn, .site-header .visually-hidden, ' +
@@ -134,6 +137,17 @@
         }
     }
 
+    // Loads the fonts a language's script needs and the site's own fonts lack.
+    function loadLanguageFonts (language) {
+        if (!language.fonts) {
+            return;
+        }
+        var link = document.createElement ('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://fonts.googleapis.com/css2?' + language.fonts;
+        document.head.appendChild (link);
+    }
+
     // Loads common.js and the page's own dictionaries, then calls done, also when some are missing.
     function loadTranslations (language, done) {
         var finished = false;
@@ -147,6 +161,7 @@
             finish ();
             return;
         }
+        loadLanguageFonts (language);
         var names = ['common'].concat ((root.getAttribute ('data-i18n-pages') || '').split (/\s+/).filter (function (name) {
             return NAME_PATTERN.test (name) && name !== 'common';
         }));
@@ -348,6 +363,135 @@
         }
         update ();
         toggle.hidden = false;
+    }
+
+    // ---- The header's menu on phones ----
+
+    // Below 640 px (as in site.css) the nav, the language menu and the dark mode toggle move into a
+    // panel under the header, opened by a menu button next to Download; on wider screens they stay
+    // where they are. Without this script the nav stays a row of links under the logo.
+    var NARROW_QUERY = '(max-width: 640px)';
+
+    function setUpMenu () {
+        var header = document.querySelector ('.site-header');
+        var nav = header ? header.querySelector ('.site-nav') : null;
+        var right = header ? header.querySelector ('.right') : null;
+        if (!nav || !right || !window.matchMedia || header.querySelector ('.menu-button')) {
+            return;
+        }
+        var narrow = window.matchMedia (NARROW_QUERY);
+
+        var menu = document.createElement ('div');
+        menu.className = 'site-menu';
+        menu.id = 'site-menu';
+        nav.parentNode.insertBefore (menu, nav);
+        menu.appendChild (nav);
+        var tools = document.createElement ('div');
+        tools.className = 'menu-tools';
+        menu.appendChild (tools);
+
+        var button = document.createElement ('button');
+        button.type = 'button';
+        button.className = 'menu-button';
+        button.setAttribute ('aria-controls', menu.id);
+        button.setAttribute ('aria-expanded', 'false');
+        var icon = document.createElement ('span');
+        icon.className = 'menu-icon';
+        icon.setAttribute ('aria-hidden', 'true');
+        var label = document.createElement ('span');
+        label.className = 'visually-hidden';
+        label.textContent = translate ('Menu') || 'Menu';
+        button.appendChild (icon);
+        button.appendChild (label);
+        right.appendChild (button);
+
+        // The language menu and the toggle, in their order, and what follows them in .right.
+        var moved = Array.prototype.filter.call (right.children, function (child) {
+            return child.id === 'lang-select' || child.id === 'theme-toggle';
+        });
+        var movedBefore = moved.length ? moved[moved.length - 1].nextSibling : null;
+        header.classList.add ('has-menu');
+
+        function isOpen () {
+            return header.classList.contains ('menu-open');
+        }
+
+        function open () {
+            header.classList.add ('menu-open');
+            button.setAttribute ('aria-expanded', 'true');
+            var first = menu.querySelector ('a[href], select, button');
+            if (first) {
+                first.focus ();
+            }
+        }
+
+        function close (focusButton) {
+            if (!isOpen ()) {
+                return;
+            }
+            header.classList.remove ('menu-open');
+            button.setAttribute ('aria-expanded', 'false');
+            if (focusButton) {
+                button.focus ();
+            }
+        }
+
+        function place () {
+            if (narrow.matches) {
+                moved.forEach (function (element) {
+                    tools.appendChild (element);
+                });
+            } else {
+                close (false);
+                moved.forEach (function (element) {
+                    right.insertBefore (element, movedBefore);
+                });
+            }
+        }
+
+        button.addEventListener ('click', function () {
+            if (isOpen ()) {
+                close (true);
+            } else {
+                open ();
+            }
+        });
+        document.addEventListener ('keydown', function (event) {
+            if ((event.key === 'Escape' || event.key === 'Esc') && isOpen ()) {
+                close (true);
+            }
+        });
+        // A tap on a link closes it (it may only scroll this page), and so does a tap outside it.
+        menu.addEventListener ('click', function (event) {
+            var target = event.target;
+            while (target && target !== menu) {
+                if (target.tagName === 'A') {
+                    close (false);
+                    return;
+                }
+                target = target.parentNode;
+            }
+        });
+        // A tap on text sends no click on iOS, so outside the panel it listens to pointerdown.
+        document.addEventListener (window.PointerEvent ? 'pointerdown' : 'click', function (event) {
+            if (isOpen () && !menu.contains (event.target) && !button.contains (event.target)) {
+                close (false);
+            }
+        });
+        // Tabbing out of the panel closes it too.
+        menu.addEventListener ('focusout', function (event) {
+            var next = event.relatedTarget;
+            if (next && !menu.contains (next) && next !== button) {
+                close (false);
+            }
+        });
+
+        if (narrow.addEventListener) {
+            narrow.addEventListener ('change', place);
+        } else if (narrow.addListener) {
+            narrow.addListener (place);
+        }
+        place ();
     }
 
     // ---- Copy buttons, also on code blocks a page adds later (the command reference's examples) ----
@@ -590,6 +734,7 @@
             root.removeAttribute ('data-i18n-loading');
             setUpLanguageMenu (language);
             setUpThemeToggle ();
+            setUpMenu ();
             setUpCopyButtons ();
             setUpLiveFigures ();
             translationReady = true;
