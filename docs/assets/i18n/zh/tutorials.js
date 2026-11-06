@@ -44,17 +44,17 @@
     'Installing Tapir': '安装 Tapir',
     'Install the Add-On with the Tapir Installer, load it in Archicad and open the Tapir palette.':
         '用 Tapir Installer 安装插件，在 Archicad 中加载它并打开 Tapir 面板。',
-    'Written guide: Get started →': '文字指南：快速开始 →',
+    'Written guide: Get started': '文字指南：快速开始',
     'Scripts from the palette': '从面板运行脚本',
     'Run the scripts that come with Tapir, and add your own, from the Tapir palette without writing code.':
         '在 Tapir 面板中运行 Tapir 自带的脚本，并添加你自己的脚本，无需编写代码。',
-    'Written guide: Scripts →': '文字指南：脚本 →',
+    'Written guide: Scripts': '文字指南：脚本',
     'Send Tapir commands from a Python script, read the answers and change elements.':
         '从 Python 脚本发送 Tapir 命令，读取响应并修改构件。',
-    'Written guide: the command reference →': '文字指南：命令参考 →',
+    'Written guide: the command reference': '文字指南：命令参考',
     'Connect Grasshopper to Archicad, read elements and create them from Rhino geometry.':
         '将 Grasshopper 连接到 Archicad，读取构件并从 Rhino 几何体创建构件。',
-    'Written guide: Grasshopper →': '文字指南：Grasshopper →',
+    'Written guide: Grasshopper': '文字指南：Grasshopper',
 
     // Next step
     'Next step': '下一步',

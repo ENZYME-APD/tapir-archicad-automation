@@ -122,8 +122,8 @@
     'Next step': 'Nächster Schritt',
     'All scripts': 'Alle Skripte',
     'Back to the schedule of every script.': 'Zurück zur Liste aller Skripte.',
-    'Browse scripts →': 'Skripte durchsehen →',
+    'Browse scripts': 'Skripte durchsehen',
     'Made one of your own?': 'Selbst eins geschrieben?',
     'Share it, and any office can install it from the palette.': 'Teilen Sie es, und jedes Büro kann es aus der Palette installieren.',
-    'How sharing works →': 'So funktioniert das Teilen →'
+    'How sharing works': 'So funktioniert das Teilen'
 });

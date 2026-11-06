@@ -22,9 +22,8 @@
     'running…': 'ejecutando…',
     'Ground Floor · 1:100': 'Planta baja · 1:100',
     'Try a built-in script': 'Probar un script incluido',
-    'Number doors': 'Numerar puertas',
-    'Colour by area': 'Colorear por área',
-    'Health check': 'Revisión del proyecto',
+    'Script': 'Script',
+    'Run': 'Ejecutar',
     '6 doors numbered D01–D06': '6 puertas numeradas D01–D06',
     '6 zones coloured by area': '6 zonas coloreadas por área',
     '3 problems found': '3 problemas encontrados',
@@ -142,7 +141,7 @@
         'Con un proyecto abierto, Archicad responde a comandos JSON en <code>http://127.0.0.1:19723</code>. Los comandos de Tapir pasan por <code>API.ExecuteAddOnCommand</code> de Archicad. Guarde esto como <code>walls.py</code> y ejecútelo con cualquier Python 3.',
     'With several Archicads open, the next ones answer on 19724, 19725 and so on.':
         'Con varios Archicad abiertos, los siguientes responden en 19724, 19725, etc.',
-    'Your first Python script, step by step →': 'Su primer script de Python, paso a paso →',
+    'Your first Python script, step by step': 'Su primer script de Python, paso a paso',
 
     // More
     'More': 'Más',
@@ -152,12 +151,12 @@
     'The reference': 'La referencia',
     'Every command with its schema and an example, the Grasshopper guide, and what Tapir covers of the Archicad API.':
         'Cada comando con su esquema y un ejemplo, la guía de Grasshopper y lo que Tapir cubre de la API de Archicad.',
-    'Open the docs →': 'Abrir la documentación →',
+    'Open the docs': 'Abrir la documentación',
     'Send yours in': 'Envíe el suyo',
     'Post a script on Discord or as a pull request. It is checked, adapted for any office and listed with your name. No GitHub account needed.':
         'Publique un script en Discord o como pull request. Se revisa, se adapta para cualquier estudio y se publica con su nombre. No hace falta cuenta de GitHub.',
-    'How sharing works →': 'Cómo funciona compartir →',
+    'How sharing works': 'Cómo funciona compartir',
     'Ask, report, test': 'Preguntar, informar, probar',
     'Discord, the video series, and how a bug report becomes a fix.': 'Discord, la serie de vídeos y cómo un informe de error se convierte en una corrección.',
-    'Join in →': 'Participe →'
+    'Join in': 'Participe'
 });

@@ -13,16 +13,16 @@
     'Tapir commands': 'Tapir-Befehle',
     'Search by name, filter by the version a command came in, and open any command for its input and output schema and a Python example.':
         'Nach Namen suchen, nach der Version filtern, in der ein Befehl kam, und jeden Befehl mit seinem Ein- und Ausgabeschema und einem Python-Beispiel öffnen.',
-    'Open the reference →': 'Zur Referenz →',
+    'Open the reference': 'Zur Referenz',
     'Grasshopper guide': 'Grasshopper-Anleitung',
     'The tool components, one per Archicad tool, with inputs named after the settings dialog. Install, a first definition, and what the buttons do.':
         'Die Werkzeug-Komponenten, eine pro Archicad-Werkzeug, mit Eingängen, die wie im Einstellungsdialog heißen. Installation, eine erste Definition und was die Schaltflächen tun.',
-    'Read the guide →': 'Zur Anleitung →',
+    'Read the guide': 'Zur Anleitung',
     'Archicad API': 'Archicad-API',
     '· <span data-live-value="coverage"></span> covered': '· <span data-live-value="coverage"></span> abgedeckt',
     'Every function of Graphisoft\'s Archicad API and whether Tapir uses it, is working on it, or skipped it, updated every hour.':
         'Jede Funktion der Archicad-API von Graphisoft und ob Tapir sie nutzt, daran arbeitet oder sie ausgelassen hat, stündlich aktualisiert.',
-    'See the coverage →': 'Zur Abdeckung →',
+    'See the coverage': 'Zur Abdeckung',
     'Components': 'Komponenten',
     'Which Tapir commands have a Grasshopper component, and which inputs each component still lacks.':
         'Welche Tapir-Befehle eine Grasshopper-Komponente haben und welche Eingänge jeder Komponente noch fehlen.',
@@ -44,19 +44,19 @@
 
     // Anatomy of a call
     'Anatomy of a call': 'Anatomie eines Aufrufs',
-    'Every Tapir command is sent the same way; only <code>commandName</code> and <code>addOnCommandParameters</code> change. <a href="../start/#python">Your first Python script →</a>':
-        'Jeder Tapir-Befehl wird auf dieselbe Weise gesendet; nur <code>commandName</code> und <code>addOnCommandParameters</code> ändern sich. <a href="../start/#python">Ihr erstes Python-Skript →</a>',
+    'Every Tapir command is sent the same way; only <code>commandName</code> and <code>addOnCommandParameters</code> change. <a href="../start/#python">Your first Python script</a>':
+        'Jeder Tapir-Befehl wird auf dieselbe Weise gesendet; nur <code>commandName</code> und <code>addOnCommandParameters</code> ändern sich. <a href="../start/#python">Ihr erstes Python-Skript</a>',
 
     // More guides
     'More guides': 'Weitere Anleitungen',
     'Install and run a script': 'Installieren und ein Skript ausführen',
     'Install Tapir, run a script from the palette and write your first Python script.':
         'Tapir installieren, ein Skript aus der Palette ausführen und Ihr erstes Python-Skript schreiben.',
-    'Get started →': 'Loslegen →',
+    'Get started': 'Loslegen',
     'AI': 'KI',
     'MCP servers and scripts an AI assistant writes for you.': 'MCP-Server und Skripte, die ein KI-Assistent für Sie schreibt.',
-    'Use Tapir with AI →': 'Tapir mit KI nutzen →',
+    'Use Tapir with AI': 'Tapir mit KI nutzen',
     'Learn by watching': 'Lernen durch Zuschauen',
     'Six videos, from installing Tapir to whole workflows.': 'Sechs Videos, von der Installation von Tapir bis zu ganzen Arbeitsabläufen.',
-    'Watch the tutorials →': 'Die Tutorials ansehen →'
+    'Watch the tutorials': 'Die Tutorials ansehen'
 });

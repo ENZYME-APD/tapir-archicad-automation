@@ -22,9 +22,8 @@
     'running…': 'चल रहा है…',
     'Ground Floor · 1:100': 'भूतल · 1:100',
     'Try a built-in script': 'एक built-in script आज़माएँ',
-    'Number doors': 'दरवाज़ों को नंबर दें',
-    'Colour by area': 'क्षेत्रफल से रंगें',
-    'Health check': 'प्रोजेक्ट जाँच',
+    'Script': 'Script',
+    'Run': 'चलाएँ',
     '6 doors numbered D01–D06': '6 दरवाज़ों को D01–D06 नंबर दिए',
     '6 zones coloured by area': '6 zones क्षेत्रफल से रंगे',
     '3 problems found': '3 समस्याएँ मिलीं',
@@ -142,7 +141,7 @@
         'प्रोजेक्ट खुला होने पर Archicad <code>http://127.0.0.1:19723</code> पर JSON कमांड का जवाब देता है। Tapir के कमांड Archicad के <code>API.ExecuteAddOnCommand</code> से होकर जाते हैं। इसे <code>walls.py</code> नाम से सेव करें और किसी भी Python 3 से चलाएँ।',
     'With several Archicads open, the next ones answer on 19724, 19725 and so on.':
         'कई Archicad खुले हों तो अगले वाले 19724, 19725 इत्यादि पर जवाब देते हैं।',
-    'Your first Python script, step by step →': 'आपकी पहली Python script, क़दम-दर-क़दम →',
+    'Your first Python script, step by step': 'आपकी पहली Python script, क़दम-दर-क़दम',
 
     // More
     'More': 'और',
@@ -152,12 +151,12 @@
     'The reference': 'संदर्भ',
     'Every command with its schema and an example, the Grasshopper guide, and what Tapir covers of the Archicad API.':
         'हर कमांड अपने schema और एक उदाहरण के साथ, Grasshopper गाइड, और Tapir, Archicad API का कितना हिस्सा cover करता है।',
-    'Open the docs →': 'दस्तावेज़ खोलें →',
+    'Open the docs': 'दस्तावेज़ खोलें',
     'Send yours in': 'अपनी script भेजें',
     'Post a script on Discord or as a pull request. It is checked, adapted for any office and listed with your name. No GitHub account needed.':
         'Discord पर या pull request के रूप में एक script पोस्ट करें। उसकी जाँच होती है, उसे किसी भी ऑफ़िस के लिए ढाला जाता है और आपके नाम के साथ सूचीबद्ध किया जाता है। GitHub account की ज़रूरत नहीं।',
-    'How sharing works →': 'शेयर करना कैसे काम करता है →',
+    'How sharing works': 'शेयर करना कैसे काम करता है',
     'Ask, report, test': 'पूछें, रिपोर्ट करें, टेस्ट करें',
     'Discord, the video series, and how a bug report becomes a fix.': 'Discord, वीडियो सीरीज़, और कैसे एक bug report एक fix बनती है।',
-    'Join in →': 'जुड़ें →'
+    'Join in': 'जुड़ें'
 });

@@ -13,16 +13,16 @@
     'Tapir commands': 'Tapir 命令',
     'Search by name, filter by the version a command came in, and open any command for its input and output schema and a Python example.':
         '按名称搜索，按命令加入的版本筛选，打开任意命令查看其输入和输出结构定义及 Python 示例。',
-    'Open the reference →': '打开参考 →',
+    'Open the reference': '打开参考',
     'Grasshopper guide': 'Grasshopper 指南',
     'The tool components, one per Archicad tool, with inputs named after the settings dialog. Install, a first definition, and what the buttons do.':
         '工具运算器，每个 Archicad 工具一个，输入端按设置对话框命名。包括安装、第一个定义，以及各按钮的作用。',
-    'Read the guide →': '阅读指南 →',
+    'Read the guide': '阅读指南',
     'Archicad API': 'Archicad API',
     '· <span data-live-value="coverage"></span> covered': '· 已覆盖 <span data-live-value="coverage"></span>',
     'Every function of Graphisoft\'s Archicad API and whether Tapir uses it, is working on it, or skipped it, updated every hour.':
         'Graphisoft Archicad API 的每个函数，以及 Tapir 是否已使用、正在实现或已跳过，每小时更新。',
-    'See the coverage →': '查看覆盖率 →',
+    'See the coverage': '查看覆盖率',
     'Components': '运算器',
     'Which Tapir commands have a Grasshopper component, and which inputs each component still lacks.':
         '哪些 Tapir 命令有 Grasshopper 运算器，以及每个运算器还缺少哪些输入。',
@@ -44,19 +44,19 @@
 
     // Anatomy of a call
     'Anatomy of a call': '一次调用的结构',
-    'Every Tapir command is sent the same way; only <code>commandName</code> and <code>addOnCommandParameters</code> change. <a href="../start/#python">Your first Python script →</a>':
-        '每个 Tapir 命令的发送方式都相同，只有 <code>commandName</code> 和 <code>addOnCommandParameters</code> 不同。<a href="../start/#python">你的第一个 Python 脚本 →</a>',
+    'Every Tapir command is sent the same way; only <code>commandName</code> and <code>addOnCommandParameters</code> change. <a href="../start/#python">Your first Python script</a>':
+        '每个 Tapir 命令的发送方式都相同，只有 <code>commandName</code> 和 <code>addOnCommandParameters</code> 不同。<a href="../start/#python">你的第一个 Python 脚本</a>',
 
     // More guides
     'More guides': '更多指南',
     'Install and run a script': '安装并运行脚本',
     'Install Tapir, run a script from the palette and write your first Python script.':
         '安装 Tapir，从面板运行脚本，并编写你的第一个 Python 脚本。',
-    'Get started →': '快速开始 →',
+    'Get started': '快速开始',
     'AI': 'AI',
     'MCP servers and scripts an AI assistant writes for you.': 'MCP 服务器，以及 AI 助手为你编写的脚本。',
-    'Use Tapir with AI →': '用 AI 使用 Tapir →',
+    'Use Tapir with AI': '用 AI 使用 Tapir',
     'Learn by watching': '看视频学习',
     'Six videos, from installing Tapir to whole workflows.': '六个视频，从安装 Tapir 到完整的工作流程。',
-    'Watch the tutorials →': '观看教程 →'
+    'Watch the tutorials': '观看教程'
 });
