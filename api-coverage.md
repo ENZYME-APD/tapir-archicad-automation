@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 61 | 53 | 8 |  |  |  | 8 | 70 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1423 | 1207 | 216 |  |  |  | 12 | 392 |
 
-Archicad 25–30 DevKits; updated 2026-11-06 14:49 UTC.
+Archicad 25–30 DevKits; updated 2026-11-06 15:11 UTC.
 
 | | Status |
 |---|---|
@@ -171,7 +171,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_GetElementsWithClassification` – Query elements with the given classification.
 - ✅ `ACAPI_Element_GetExtent` – Returns the drawing extent of the current database. <sub>(was `APIDb_GetExtentID`)</sub>
 - 🔀 `ACAPI_Element_GetExtent3D` – Returns the model extent of the current database. <sub>(was `APIDb_GetExtent3DID`)</sub>
-- ✅ `ACAPI_Element_GetHeader` – Returns general information on the given element. — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI_Element_GetHeader` – Returns general information on the given element. — [#2148](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2148 "ChangeSelectionOfElements: report elements Archicad did not select"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
 - 🔀 `ACAPI_Element_GetHotspots` – Retrieves the hotspots of the given element.
 - ✅ `ACAPI_Element_GetMemo` — [#463](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/463 "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"), [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols")
 - ✅ `ACAPI_Element_GetMemo_ExternalHierarchical` <sub>AC27–30</sub> – @brief Retrieves all additional information of the sub-elements of an external hierarchical element.
@@ -221,7 +221,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_SetProperty` – Sets the specified property for the given values on an element.
 - 🔀 `ACAPI_Element_SetPropertyOfDefaultElem` – Sets the specified property to the given value on an element default.
 - ✅ `ACAPI_Element_SetUserData` – Attaches the user data to an element or an element default.
-- ✅ `ACAPI_Element_SolidLink_Create` – Defines a new Solid Operation Link. — [#2136](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2136 "CreateSolidElementLinks: say why a link could not be created")
+- ✅ `ACAPI_Element_SolidLink_Create` – Defines a new Solid Operation Link.
 - ✅ `ACAPI_Element_SolidLink_GetFlags` – Retrieves the flag of a Solid Operation Link.
 - ✅ `ACAPI_Element_SolidLink_GetOperation` – Retrieves the operation code of a Solid Operation Link.
 - ✅ `ACAPI_Element_SolidLink_GetOperators` – Retrieves the operator elements linked to a target element.
@@ -1027,7 +1027,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## Favorite
 
-- ✅ `ACAPI_Favorite_Change` – Changes an existing Favorite (identifed by name). — [#2143](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2143 "ReindexAttributes: move zone categories too")
+- ✅ `ACAPI_Favorite_Change` – Changes an existing Favorite (identifed by name).
 - ✅ `ACAPI_Favorite_Create` – Creates a new Favorites entry based on the given element.
 - ✅ `ACAPI_Favorite_Delete` – Deletes a Favorites entry.
 - ✅ `ACAPI_Favorite_Export` – Exports the Favorites in the plan into a Favorites file or folder.
@@ -1200,9 +1200,9 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 ## Selection
 
 - 🔀 `ACAPI_Selection_DeselectAll` – Adds/removes a number of elements to/from the current selection. <sub>(was `ACAPI_Element_DeselectAll`)</sub>
-- ✅ `ACAPI_Selection_Get` – Returns information on the selection, and the selected elements.
+- ✅ `ACAPI_Selection_Get` – Returns information on the selection, and the selected elements. — [#2148](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2148 "ChangeSelectionOfElements: report elements Archicad did not select")
 - ✅ `ACAPI_Selection_GetSelectedElement` – Converts an @ref API_Neig structure to an @ref API_Guid. <sub>(was `APIAny_GetSelectedElementID`)</sub>
-- ✅ `ACAPI_Selection_Select` – Adds/removes a number of elements to/from the current selection. <sub>(was `ACAPI_Element_Select`)</sub> — [#314](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/314 "Bug: ChangeSelectionOfElements is really slow")
+- ✅ `ACAPI_Selection_Select` – Adds/removes a number of elements to/from the current selection. <sub>(was `ACAPI_Element_Select`)</sub> — [#2148](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2148 "ChangeSelectionOfElements: report elements Archicad did not select"), [#314](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/314 "Bug: ChangeSelectionOfElements is really slow")
 - 🔀 `ACAPI_Selection_SetMarquee` – Changes the current marquee selection.
 - ➖ `ACAPI_Selection_SetSelectedElementNeig` – Converts an @ref API_Guid structure to an @ref API_Neig. <sub>(was `APIAny_SetSelectedElementNeigID`)</sub> *(selects a neig (part of an element) for interactive input, user interface)*
 
@@ -1392,7 +1392,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::AngleSetBase::GetSize` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::IsAngleDefined` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::IsEditable` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::AngleSetBase::Modifier::Add` <sub>AC29–30</sub> — [#1855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1855 "CreateTexts / ModifyTexts: optional width turns word wrap on"), [#1671](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1671 "Drawing anchor placement, offset, and pen table control"), [#1431](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1431 "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
+- ✅ `ACAPI::MEP::AngleSetBase::Modifier::Add` <sub>AC29–30</sub> — [#2148](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2148 "ChangeSelectionOfElements: report elements Archicad did not select"), [#1855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1855 "CreateTexts / ModifyTexts: optional width turns word wrap on"), [#1671](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1671 "Drawing anchor placement, offset, and pen table control"), [#1431](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1431 "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
 - ✅ `ACAPI::MEP::AngleSetBase::Modifier::Delete` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::Modifier::SetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::Modify` <sub>AC29–30</sub>
@@ -1764,7 +1764,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::RemoveWiringType` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::SetVoltage` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modify` <sub>AC30</sub>
-- ✅ `ACAPI::MEP::Element::Get` <sub>AC27–30</sub> — [#1855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1855 "CreateTexts / ModifyTexts: optional width turns word wrap on"), [#1671](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1671 "Drawing anchor placement, offset, and pen table control"), [#1431](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1431 "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"), [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#463](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/463 "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters")
+- ✅ `ACAPI::MEP::Element::Get` <sub>AC27–30</sub> — [#2149](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2149 "GetHotlinks: no endless walk on self-modules; UpdatePropertyDefinitions: isEditable"), [#2148](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2148 "ChangeSelectionOfElements: report elements Archicad did not select"), [#1855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1855 "CreateTexts / ModifyTexts: optional width turns word wrap on"), [#1671](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1671 "Drawing anchor placement, offset, and pen table control"), [#1431](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1431 "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"), [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#463](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/463 "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters")
 - ✅ `ACAPI::MEP::ElementBase::Exists` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
 - ✅ `ACAPI::MEP::ElementBase::GetAnchorPoint` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetBaseRotation` <sub>AC30</sub>
@@ -2141,7 +2141,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ReferenceSetBase::GetSize` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::IsEditable` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::IsReferenceIdDefined` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Add` <sub>AC28–30</sub> — [#1855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1855 "CreateTexts / ModifyTexts: optional width turns word wrap on"), [#1671](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1671 "Drawing anchor placement, offset, and pen table control"), [#1431](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1431 "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
+- ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Add` <sub>AC28–30</sub> — [#2148](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2148 "ChangeSelectionOfElements: report elements Archicad did not select"), [#1855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1855 "CreateTexts / ModifyTexts: optional width turns word wrap on"), [#1671](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1671 "Drawing anchor placement, offset, and pen table control"), [#1431](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1431 "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Delete` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::SetName` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modify` <sub>AC28–30</sub>
@@ -2310,7 +2310,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::SystemGroup::GetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::GetSystemIDs` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::IsEditable` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::SystemGroup::Modifier::Add` <sub>AC29–30</sub> — [#1855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1855 "CreateTexts / ModifyTexts: optional width turns word wrap on"), [#1671](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1671 "Drawing anchor placement, offset, and pen table control"), [#1431](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1431 "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
+- ✅ `ACAPI::MEP::SystemGroup::Modifier::Add` <sub>AC29–30</sub> — [#2148](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2148 "ChangeSelectionOfElements: report elements Archicad did not select"), [#1855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1855 "CreateTexts / ModifyTexts: optional width turns word wrap on"), [#1671](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1671 "Drawing anchor placement, offset, and pen table control"), [#1431](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1431 "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
 - ✅ `ACAPI::MEP::SystemGroup::Modifier::Remove` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::Modifier::SetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::Modify` <sub>AC29–30</sub>

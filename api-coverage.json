@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-06 14:49 UTC",
+ "generatedAt": "2026-11-06 15:11 UTC",
  "versions": [
   25,
   26,
@@ -7841,6 +7841,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2148,
+     "title": "ChangeSelectionOfElements: report elements Archicad did not select"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -8952,12 +8956,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2136,
-     "title": "CreateSolidElementLinks: say why a link could not be created"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9279,12 +9278,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2143,
-     "title": "ReindexAttributes: move zone categories too"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17549,7 +17543,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2148,
+     "title": "ChangeSelectionOfElements: report elements Archicad did not select"
+    }
+   ],
    "issues": []
   },
   {
@@ -17595,7 +17594,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2148,
+     "title": "ChangeSelectionOfElements: report elements Archicad did not select"
+    }
+   ],
    "issues": [
     {
      "number": 314,
@@ -31200,6 +31204,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2148,
+     "title": "ChangeSelectionOfElements: report elements Archicad did not select"
+    },
+    {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
     },
@@ -37732,6 +37740,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2149,
+     "title": "GetHotlinks: no endless walk on self-modules; UpdatePropertyDefinitions: isEditable"
+    },
+    {
+     "number": 2148,
+     "title": "ChangeSelectionOfElements: report elements Archicad did not select"
+    },
     {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
@@ -44511,6 +44527,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2148,
+     "title": "ChangeSelectionOfElements: report elements Archicad did not select"
+    },
+    {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
     },
@@ -47757,6 +47777,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2148,
+     "title": "ChangeSelectionOfElements: report elements Archicad did not select"
+    },
     {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
