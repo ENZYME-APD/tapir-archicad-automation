@@ -29,8 +29,8 @@ def Main ():
     versionPattern = r'[0-9]+\.[0-9]+\.[0-9]+'
     
     # When adding or removing a file here, also update the pathspec
-    # exclusion list in .github/workflows/monthly_release.yml (the plan
-    # step's commit count), so version-bump-only months are not mistaken
+    # exclusion list in .github/workflows/weekly_release.yml (the plan
+    # step's commit count), so version-bump-only weeks are not mistaken
     # for releasable changes.
     replaceRules = [
         {

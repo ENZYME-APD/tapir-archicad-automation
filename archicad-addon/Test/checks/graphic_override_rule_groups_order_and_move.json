@@ -1,0 +1,391 @@
+{
+  "title": "Graphic override rule groups: create, order, rename; rules: order, move, find by name, delete",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "create two groups",
+      "command": "CreateGraphicOverrideRuleGroups",
+      "creates": false,
+      "params": { "ruleGroupNames": ["TapirCheck group A", "TapirCheck group B"] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[1].success", "eq": true }
+      ]
+    },
+    {
+      "id": "create a group that exists",
+      "command": "CreateGraphicOverrideRuleGroups",
+      "creates": false,
+      "params": { "ruleGroupNames": ["TapirCheck group A"] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "name already used" }
+      ]
+    },
+    {
+      "id": "groups A, B first",
+      "command": "SetGraphicOverrideRuleGroupOrder",
+      "creates": false,
+      "params": { "ruleGroupNames": ["TapirCheck group A", "TapirCheck group B"] },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read A, B",
+      "command": "GetGraphicOverrideRuleGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "graphicOverrideRuleGroups[0].name", "eq": "TapirCheck group A" },
+        { "path": "graphicOverrideRuleGroups[1].name", "eq": "TapirCheck group B" },
+        { "path": "graphicOverrideRuleGroups[0].graphicOverrideRuleIds", "len": 0, "name": "empty group listed" }
+      ]
+    },
+    {
+      "id": "B first, the others follow",
+      "command": "SetGraphicOverrideRuleGroupOrder",
+      "creates": false,
+      "params": { "ruleGroupNames": ["TapirCheck group B"] },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read B, A",
+      "command": "GetGraphicOverrideRuleGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "graphicOverrideRuleGroups[0].name", "eq": "TapirCheck group B" },
+        { "path": "graphicOverrideRuleGroups[1].name", "eq": "TapirCheck group A", "name": "unlisted group kept its place after the listed one" }
+      ]
+    },
+    {
+      "id": "order with an unknown group",
+      "command": "SetGraphicOverrideRuleGroupOrder",
+      "creates": false,
+      "params": { "ruleGroupNames": ["TapirCheck no such group"] },
+      "expect": [
+        { "path": "success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "three rules in A",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          { "name": "TapirCheck order rule 1", "ruleGroupName": "TapirCheck group A", "criterion": { "elementType": "Wall" }, "style": { "lineMarkerTextPen": 11 } },
+          { "name": "TapirCheck order rule 2", "ruleGroupName": "TapirCheck group A", "criterion": { "elementType": "Wall" }, "style": { "lineMarkerTextPen": 12 } },
+          { "name": "TapirCheck order rule 3", "ruleGroupName": "TapirCheck group A", "criterion": { "elementType": "Wall" }, "style": { "lineMarkerTextPen": 13 } }
+        ]
+      },
+      "save": {
+        "r1": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
+        "r2": "graphicOverrideRuleIds[1].graphicOverrideRuleId.guid",
+        "r3": "graphicOverrideRuleIds[2].graphicOverrideRuleId.guid"
+      }
+    },
+    {
+      "id": "find rule 2 by name",
+      "command": "GetGraphicOverrideRulesByName",
+      "creates": false,
+      "params": { "graphicOverrideRules": [{ "name": "TapirCheck order rule 2" }, { "name": "TapirCheck order rule 3", "ruleGroupName": "TapirCheck group A" }] },
+      "expect": [
+        { "path": "graphicOverrideRules[0].name", "eq": "TapirCheck order rule 2" },
+        { "path": "graphicOverrideRules[0].ruleGroupName", "eq": "TapirCheck group A" },
+        { "path": "graphicOverrideRules[0].style.lineMarkerTextPen", "eq": 12 },
+        { "path": "graphicOverrideRules[1].ruleGroupName", "eq": "TapirCheck group A", "name": "found in the given group" },
+        { "path": "graphicOverrideRules[1].style.lineMarkerTextPen", "eq": 13 }
+      ]
+    },
+    {
+      "id": "find by name: wrong group, no such rule",
+      "command": "GetGraphicOverrideRulesByName",
+      "creates": false,
+      "params": { "graphicOverrideRules": [{ "name": "TapirCheck order rule 2", "ruleGroupName": "TapirCheck group B" }, { "name": "TapirCheck no such rule" }] },
+      "expect": [
+        { "path": "graphicOverrideRules[0].error.code", "exists": true, "name": "not in that group" },
+        { "path": "graphicOverrideRules[1].error.code", "exists": true, "name": "no such rule" }
+      ]
+    },
+    {
+      "id": "all rules",
+      "command": "GetGraphicOverrideRules",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "graphicOverrideRules[0].graphicOverrideRuleId.guid", "exists": true, "name": "the project has rules" },
+        { "path": "graphicOverrideRules[0].name", "exists": true },
+        { "path": "graphicOverrideRules[0].style", "exists": true }
+      ]
+    },
+    {
+      "id": "order of A: 3, 1, then 2",
+      "command": "SetGraphicOverrideRuleOrder",
+      "creates": false,
+      "params": {
+        "graphicOverrideRuleGroups": [
+          { "name": "TapirCheck group A", "graphicOverrideRuleIds": [{ "graphicOverrideRuleId": { "guid": "${r3}" } }, { "graphicOverrideRuleId": { "guid": "${r1}" } }] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the order of A",
+      "command": "GetGraphicOverrideRuleGroups",
+      "creates": false,
+      "params": {},
+      "save": {
+        "orderFirst": "graphicOverrideRuleGroups[1].graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
+        "orderLast": "graphicOverrideRuleGroups[1].graphicOverrideRuleIds[2].graphicOverrideRuleId.guid"
+      },
+      "expect": [
+        { "path": "graphicOverrideRuleGroups[1].name", "eq": "TapirCheck group A" },
+        { "path": "graphicOverrideRuleGroups[1].graphicOverrideRuleIds", "len": 3 }
+      ]
+    },
+    {
+      "id": "name the first and the last rule of A",
+      "command": "ModifyGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          { "graphicOverrideRuleId": { "guid": "${orderFirst}" }, "name": "TapirCheck probe order first" },
+          { "graphicOverrideRuleId": { "guid": "${orderLast}" }, "name": "TapirCheck probe order last" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[1].success", "eq": true }
+      ]
+    },
+    {
+      "id": "first is rule 3, last is rule 2",
+      "command": "GetGraphicOverrideRulesByName",
+      "creates": false,
+      "params": { "graphicOverrideRules": [{ "name": "TapirCheck probe order first" }, { "name": "TapirCheck probe order last" }] },
+      "expect": [
+        { "path": "graphicOverrideRules[0].style.lineMarkerTextPen", "eq": 13, "name": "first rule of A is rule 3 (pen 13)" },
+        { "path": "graphicOverrideRules[1].style.lineMarkerTextPen", "eq": 12, "name": "last rule of A is rule 2 (pen 12)" }
+      ]
+    },
+    {
+      "id": "order with a rule of another group",
+      "command": "SetGraphicOverrideRuleOrder",
+      "creates": false,
+      "params": {
+        "graphicOverrideRuleGroups": [
+          { "name": "TapirCheck group B", "graphicOverrideRuleIds": [{ "graphicOverrideRuleId": { "guid": "${r1}" } }] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "move rule 2 to B",
+      "command": "MoveGraphicOverrideRules",
+      "creates": false,
+      "params": { "graphicOverrideRules": [{ "graphicOverrideRuleId": { "guid": "${r2}" }, "ruleGroupName": "TapirCheck group B" }] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "B has one rule, A two",
+      "command": "GetGraphicOverrideRuleGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "graphicOverrideRuleGroups[0].name", "eq": "TapirCheck group B" },
+        { "path": "graphicOverrideRuleGroups[0].graphicOverrideRuleIds", "len": 1 },
+        { "path": "graphicOverrideRuleGroups[1].graphicOverrideRuleIds", "len": 2 }
+      ]
+    },
+    {
+      "id": "rule 2 is in B",
+      "command": "SetGraphicOverrideRuleOrder",
+      "creates": false,
+      "params": {
+        "graphicOverrideRuleGroups": [
+          { "name": "TapirCheck group B", "graphicOverrideRuleIds": [{ "graphicOverrideRuleId": { "guid": "${r2}" } }] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "accepted as a rule of B" }
+      ]
+    },
+    {
+      "id": "move rule 1 to B, before rule 2",
+      "command": "MoveGraphicOverrideRules",
+      "creates": false,
+      "params": { "graphicOverrideRules": [{ "graphicOverrideRuleId": { "guid": "${r1}" }, "ruleGroupName": "TapirCheck group B", "beforeGraphicOverrideRuleId": { "guid": "${r2}" } }] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read B after the move",
+      "command": "GetGraphicOverrideRuleGroups",
+      "creates": false,
+      "params": {},
+      "save": {
+        "bFirst": "graphicOverrideRuleGroups[0].graphicOverrideRuleIds[0].graphicOverrideRuleId.guid"
+      },
+      "expect": [
+        { "path": "graphicOverrideRuleGroups[0].graphicOverrideRuleIds", "len": 2 },
+        { "path": "graphicOverrideRuleGroups[1].graphicOverrideRuleIds", "len": 1 }
+      ]
+    },
+    {
+      "id": "name the first rule of B",
+      "command": "ModifyGraphicOverrideRules",
+      "creates": false,
+      "params": { "graphicOverrideRules": [{ "graphicOverrideRuleId": { "guid": "${bFirst}" }, "name": "TapirCheck probe moved first" }] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "first rule of B is rule 1",
+      "command": "GetGraphicOverrideRulesByName",
+      "creates": false,
+      "params": { "graphicOverrideRules": [{ "name": "TapirCheck probe moved first" }] },
+      "expect": [
+        { "path": "graphicOverrideRules[0].style.lineMarkerTextPen", "eq": 11, "name": "rule 1 (pen 11) put before rule 2" },
+        { "path": "graphicOverrideRules[0].ruleGroupName", "eq": "TapirCheck group B" }
+      ]
+    },
+    {
+      "id": "move rule 1 to the end of its own group",
+      "command": "MoveGraphicOverrideRules",
+      "creates": false,
+      "params": { "graphicOverrideRules": [{ "graphicOverrideRuleId": { "guid": "${r1}" }, "ruleGroupName": "TapirCheck group B" }] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read B after the move in place",
+      "command": "GetGraphicOverrideRuleGroups",
+      "creates": false,
+      "params": {},
+      "save": {
+        "bLast": "graphicOverrideRuleGroups[0].graphicOverrideRuleIds[1].graphicOverrideRuleId.guid"
+      },
+      "expect": [
+        { "path": "graphicOverrideRuleGroups[0].graphicOverrideRuleIds", "len": 2 }
+      ]
+    },
+    {
+      "id": "name the last rule of B",
+      "command": "ModifyGraphicOverrideRules",
+      "creates": false,
+      "params": { "graphicOverrideRules": [{ "graphicOverrideRuleId": { "guid": "${bLast}" }, "name": "TapirCheck probe moved last" }] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "last rule of B is rule 1",
+      "command": "GetGraphicOverrideRulesByName",
+      "creates": false,
+      "params": { "graphicOverrideRules": [{ "name": "TapirCheck probe moved last" }] },
+      "expect": [
+        { "path": "graphicOverrideRules[0].style.lineMarkerTextPen", "eq": 11, "name": "rule 1 (pen 11) is now last" }
+      ]
+    },
+    {
+      "id": "move before a rule of another group",
+      "command": "MoveGraphicOverrideRules",
+      "creates": false,
+      "params": { "graphicOverrideRules": [{ "graphicOverrideRuleId": { "guid": "${r3}" }, "ruleGroupName": "TapirCheck group B", "beforeGraphicOverrideRuleId": { "guid": "${r3}" } }] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "rename A",
+      "command": "RenameGraphicOverrideRuleGroups",
+      "creates": false,
+      "params": { "ruleGroups": [{ "name": "TapirCheck group A", "newName": "TapirCheck group A renamed" }] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "rename B to a used name",
+      "command": "RenameGraphicOverrideRuleGroups",
+      "creates": false,
+      "params": { "ruleGroups": [{ "name": "TapirCheck group B", "newName": "TapirCheck group A renamed" }] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "name already used" }
+      ]
+    },
+    {
+      "id": "read the names",
+      "command": "GetGraphicOverrideRuleGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "graphicOverrideRuleGroups[0].name", "eq": "TapirCheck group B", "name": "B kept its name" },
+        { "path": "graphicOverrideRuleGroups[1].name", "eq": "TapirCheck group A renamed" },
+        { "path": "graphicOverrideRuleGroups[1].graphicOverrideRuleIds", "len": 1, "name": "renamed group kept its rule" }
+      ]
+    },
+    {
+      "id": "rule 3 is in the renamed group",
+      "command": "SetGraphicOverrideRuleOrder",
+      "creates": false,
+      "params": {
+        "graphicOverrideRuleGroups": [
+          { "name": "TapirCheck group A renamed", "graphicOverrideRuleIds": [{ "graphicOverrideRuleId": { "guid": "${r3}" } }] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "delete rule 3",
+      "command": "DeleteGraphicOverrideRules",
+      "creates": false,
+      "params": { "graphicOverrideRuleIds": [{ "graphicOverrideRuleId": { "guid": "${r3}" } }] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "renamed group is empty",
+      "command": "GetGraphicOverrideRuleGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "graphicOverrideRuleGroups[1].name", "eq": "TapirCheck group A renamed" },
+        { "path": "graphicOverrideRuleGroups[1].graphicOverrideRuleIds", "len": 0 }
+      ]
+    },
+    {
+      "id": "delete rule 3 again",
+      "command": "DeleteGraphicOverrideRules",
+      "creates": false,
+      "params": { "graphicOverrideRuleIds": [{ "graphicOverrideRuleId": { "guid": "${r3}" } }] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "already gone" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteGraphicOverrideRuleGroups",
+      "params": {
+        "ruleGroupNames": ["TapirCheck group A", "TapirCheck group A renamed", "TapirCheck group B"],
+        "deleteRules": true
+      }
+    }
+  ]
+}

@@ -1,0 +1,118 @@
+{
+  "title": "Revisions: the revision reads answer in an empty project, per-entity reads answer one item per input, and ModifyRevisionIssues fails for a revision issue that does not exist",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "revision issues",
+      "command": "GetRevisionIssues",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "revisionIssues", "exists": true, "name": "list of revision issues" },
+        { "path": "error", "exists": false, "name": "no error" }
+      ]
+    },
+    {
+      "id": "[modify a revision issue that does not exist]",
+      "command": "ModifyRevisionIssues",
+      "creates": false,
+      "params": {
+        "revisionIssues": [
+          {
+            "revisionIssueId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "id": "TAPIR-CHECK",
+            "description": "Tapir check revision issue"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per revision issue" },
+        { "path": "executionResults[0].success", "eq": false, "name": "failed" },
+        { "path": "executionResults[0].error.message", "exists": true, "name": "with an error message" }
+      ]
+    },
+    {
+      "id": "revision changes",
+      "command": "GetRevisionChanges",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "revisionChanges", "exists": true, "name": "list of changes" },
+        { "path": "error", "exists": false, "name": "no error" }
+      ]
+    },
+    {
+      "id": "change custom scheme",
+      "command": "GetRevisionChangeCustomScheme",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "customScheme", "exists": true, "name": "list of custom fields" },
+        { "path": "error", "exists": false, "name": "no error" }
+      ]
+    },
+    {
+      "id": "document revisions",
+      "command": "GetDocumentRevisions",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "documentRevisions", "exists": true, "name": "list of document revisions" },
+        { "path": "error", "exists": false, "name": "no error" }
+      ]
+    },
+    {
+      "id": "changes of no layouts",
+      "command": "GetCurrentRevisionChangesOfLayouts",
+      "creates": false,
+      "params": {
+        "layoutDatabaseIds": []
+      },
+      "expect": [
+        { "path": "currentRevisionChangesOfLayouts", "len": 0, "name": "empty input, empty answer" }
+      ]
+    },
+    {
+      "id": "[changes of a layout that does not exist]",
+      "command": "GetCurrentRevisionChangesOfLayouts",
+      "creates": false,
+      "params": {
+        "layoutDatabaseIds": [
+          { "databaseId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "currentRevisionChangesOfLayouts", "len": 1, "name": "one item per layout" },
+        { "path": "currentRevisionChangesOfLayouts[0].error", "exists": true, "name": "error item for the missing layout" }
+      ]
+    },
+    {
+      "id": "wall without changes",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 703, "y": 700 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 }
+        ]
+      },
+      "save": {
+        "w1": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "[changes of the wall, of an element that does not exist]",
+      "command": "GetRevisionChangesOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${w1}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "revisionChangesOfElements", "len": 2, "name": "one item per element" },
+        { "path": "revisionChangesOfElements[0].revisionChanges", "len": 0, "name": "the new wall has no changes" },
+        { "path": "revisionChangesOfElements[1].error", "exists": true, "name": "error item for the missing element" }
+      ]
+    }
+  ]
+}

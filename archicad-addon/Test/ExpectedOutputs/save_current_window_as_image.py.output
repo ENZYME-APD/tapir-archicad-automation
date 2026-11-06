@@ -1,0 +1,35 @@
+Command: SaveCurrentWindowAsImage
+Parameters:
+{
+    "imageFilePath": "<PATH>tapir_example.png"
+}
+Response:
+{
+    "imageFilePath": "<PATH>tapir_example.png",
+    "zoom": {
+        "xMin": -6.561246782,
+        "yMin": -2.229590565,
+        "xMax": 13.251828249,
+        "yMax": 6.750747981
+    },
+    "rotation": 0
+}
+Command: SaveCurrentWindowAsImage
+Parameters:
+{
+    "imageFilePath": "<PATH>tapir_example.jpg",
+    "format": "jpg",
+    "colorDepth": "256Grays",
+    "entireDrawing": true
+}
+Response:
+{
+    "imageFilePath": "<PATH>tapir_example.jpg",
+    "zoom": {
+        "xMin": -6.561246782,
+        "yMin": -2.229590565,
+        "xMax": 13.251828249,
+        "yMax": 6.750747981
+    },
+    "rotation": 0
+}

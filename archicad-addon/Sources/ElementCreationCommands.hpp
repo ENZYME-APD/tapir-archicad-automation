@@ -6,8 +6,32 @@
 // textContent/paragraphs handles and updates the API_TextType fields (nLine, useEolPos,
 // nonBreaking, width, height) for the given content.
 void SetTextContentAndParagraphs (API_ElementMemo& memo, API_TextType& textData, const GS::UniString& text);
+// The memo mask for writing the content built by SetTextContentAndParagraphs/ApplyTextContent
+// with ACAPI_Element_Change. Before Archicad 28 the content is UTF-16 with character offsets
+// (charCode CC_UniCode), which the *Uni masks declare. With the plain masks every content or
+// height change of a text with two or more characters failed on Archicad 26 (#759) while a
+// one-character text and ACAPI_Element_Create, which takes no memo mask and goes by the
+// element's charCode, worked: that is the pattern of ACAPI_Element_Change taking the handle as
+// an 8-bit string, which ends at the first character's high zero byte, so only a one-character
+// text has paragraph/run ranges that fit. From Archicad 28 the content is a GS::UniString and
+// the plain masks are the only ones.
+#ifdef ServerMainVers_2800
+constexpr UInt64 TextContentMemoMask = APIMemoMask_TextContent | APIMemoMask_Paragraph;
+#else
+constexpr UInt64 TextContentMemoMask = APIMemoMask_TextContentUni | APIMemoMask_ParagraphUni;
+#endif
 const char* JustificationToString (API_JustID just);
+// Shared with GetDetailsOfElementsCommand (ElementCommands.cpp): the origin a level dimension
+// measures from, as the "DimensionOrigin" schema names it.
+const char* DimensionOriginToString (API_DimOriginID origin);
+bool ParseDimensionOriginString (const GS::UniString& origin, API_DimOriginID& result);
 API_JustID ParseJustificationString (const GS::UniString& justification);
+
+// Shared by CreateCurtainWallsCommand and ModifyCurtainWallsCommand (ExtendedElementCommands.cpp):
+// rewrite a column/row pattern (API_CWSegmentPatternData) from a CurtainWallPattern object, and the
+// pattern cells of a memo from CurtainWallPatternCell objects. Both return the reason on invalid input.
+GS::Optional<GS::UniString> ApplyCurtainWallPattern (const GS::ObjectState& patternOS, const char* fieldName, API_CWSegmentPatternData& pattern);
+GS::Optional<GS::UniString> ApplyCurtainWallPatternCells (const GS::Array<GS::ObjectState>& cells, const API_Element& element, API_ElementMemo& memo, bool patternChanged);
 
 class CreateElementsCommandBase : public CommandBase
 {
@@ -18,11 +42,18 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 protected:
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const = 0;
+    // Called right after ACAPI_Element_Create with the element as SetTypeSpecificParameters
+    // prepared it, for what the create itself does not keep. An error deletes the new element.
+    virtual GSErrCode AfterCreate (const API_Element& /*requestedElement*/, const API_Guid& /*newElementGuid*/) const { return NoError; }
 protected:
     GS::String     commandName;
     API_ElemTypeID elemTypeID;
     GS::String     arrayFieldName;
 };
+
+// Optional "layerIndex" of the Create* commands: puts the new element on that layer instead of the layer
+// of the favorite or of the tool defaults. Returns an error response for a missing or locked layer.
+GS::Optional<GS::ObjectState> ApplyLayerIndexFromParameters (const GS::ObjectState& parameters, API_Element& element);
 
 class CreateColumnsCommand : public CreateElementsCommandBase
 {
@@ -44,9 +75,16 @@ class CreateZonesCommand : public CreateElementsCommandBase
 {
 public:
     CreateZonesCommand ();
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
 };
+
+// The contour line and cover fill of a zone on the floor plan (contourLine, coverFill), shared by
+// GetDetailsOfElements, SetDetailsOfElements and CreateZones. Apply only sets the given fields and,
+// with a mask, marks them in it; it returns an error message for an unknown attribute id.
+void AddZoneContourAndCoverFill (const API_ZoneType& zone, GS::ObjectState& details);
+GS::Optional<GS::UniString> ApplyZoneContourAndCoverFill (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask);
 
 class CreatePolylinesCommand : public CreateElementsCommandBase
 {
@@ -128,18 +166,55 @@ public:
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
 };
 
+class CreateCurtainWallsCommand : public CreateElementsCommandBase
+{
+public:
+    CreateCurtainWallsCommand ();
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
+class CreateRailingsCommand : public CreateElementsCommandBase
+{
+public:
+    CreateRailingsCommand ();
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
+// Railings along a 3D reference polyline with arc segments. Derived from CreateRailingsCommand for its
+// Execute, which creates each railing with its home story made active.
+class CreateRailingsFromPolylineCommand : public CreateRailingsCommand
+{
+public:
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
 class CreateLabelsCommand : public CreateElementsCommandBase
 {
 public:
     CreateLabelsCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+    virtual GSErrCode AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid) const override;
 };
 
 class CreateTextsCommand : public CreateElementsCommandBase
 {
 public:
     CreateTextsCommand ();
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+    virtual GSErrCode AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid) const override;
+};
+
+class CreateLevelDimensionsCommand : public CreateElementsCommandBase
+{
+public:
+    CreateLevelDimensionsCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
 };
@@ -184,12 +259,52 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class ChangeTextContentCommand : public CommandBase
+{
+public:
+    ChangeTextContentCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ModifyZonesCommand : public CommandBase
+{
+public:
+    ModifyZonesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// Shared with SetDetailsOfElementsCommand (ElementCommands.cpp): applies the ZoneSettings
+// fields of the common schema (name, number, category, stamp and the levels) to the zone
+// and marks the changed fields in the mask. Returns an error response for an invalid field.
+GS::Optional<GS::ObjectState> ApplyZoneSettings (const GS::ObjectState& details, API_Element& element, API_Element& mask);
+
+// Called after the ACAPI_Element_Change of ApplyZoneSettings' fields: writes topOffset again
+// when Archicad replaced it while linking the top of the zone to a story in the same change.
+GSErrCode ReapplyZoneTopOffset (const GS::ObjectState& details, const API_Guid& zoneGuid);
+
+class MeasureTextsCommand : public CommandBase
+{
+public:
+    MeasureTextsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 // Shared helpers for Text/Label style, content and leader-line fields - declared here so
 // GetDetailsOfElementsCommand (ElementCommands.cpp) can read them back via AddXDetails.
 namespace TextLabelDetails {
 
 void AddTextStyleDetails (GS::ObjectState& os, const API_TextType& text, bool includeReadOnly);
-void ApplyTextStyleSettableDetails (const GS::ObjectState& details, API_TextType& text, API_Element* mask, bool isLabelUnion);
+// Returns an error response for a fontName no loaded font has.
+GS::Optional<GS::ObjectState> ApplyTextStyleSettableDetails (const GS::ObjectState& details, API_TextType& text, API_Element* mask, bool isLabelUnion);
 
 // Reads memo.textContent and every paragraph's runs back into "text" (flat concatenation),
 // "paragraphCount" and, when the content has paragraphs, "runs" (array of TextRunDetails).
@@ -208,12 +323,19 @@ GS::Optional<GS::ObjectState> ReadContentForStyleOnlyModify (const API_Guid& ele
 bool StyleNeedsContentRebuild (const GS::ObjectState& style);
 // Builds memo.textContent/paragraphs from either a "runs" array or a plain "text" string.
 GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextType& textData, const GS::ObjectState& parameters);
+// Writes widthFactor and charSpaceFactor of a Text or text-class Label again, without a memo, when
+// they differ from the given values. Reported on Archicad 29 (#1585): a create or change that
+// carries the content memo leaves both factors at 1, whatever the element struct holds, while a
+// change of the two fields alone without a memo keeps them. So every write of the content is
+// followed by this. Does nothing for other elements.
+GSErrCode KeepTextFactors (const API_Guid& elemGuid, double widthFactor, double charSpaceFactor);
 
 void AddLabelLeaderLineDetails (GS::ObjectState& os, const API_LabelType& label);
 // Returns an error response for an attribute reference that cannot be resolved.
 GS::Optional<GS::ObjectState> ApplyLabelLeaderLineSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask);
 
 void AddLabelSymbolStyleDetails (GS::ObjectState& os, const API_LabelType& label);
-void ApplyLabelSymbolStyleSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask);
+// Returns an error response for a fontName no loaded font has.
+GS::Optional<GS::ObjectState> ApplyLabelSymbolStyleSettableDetails (const GS::ObjectState& details, API_LabelType& label, API_Element* mask);
 
 }

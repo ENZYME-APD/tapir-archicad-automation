@@ -1,0 +1,134 @@
+{
+  "title": "ChangeWindow activates a story by index (#748)",
+  "minTapir": "1.7.0",
+  "steps": [
+    {
+      "id": "two stories",
+      "command": "SetStories",
+      "creates": false,
+      "params": {
+        "stories": [
+          {
+            "index": 0,
+            "name": "S0",
+            "level": 0.0,
+            "dispOnSections": true
+          },
+          {
+            "index": 1,
+            "name": "S1",
+            "level": 3.0,
+            "dispOnSections": true
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "two stories: read back",
+      "command": "GetStories",
+      "creates": false,
+      "expect": [
+        {
+          "path": "stories[0].level",
+          "approx": 0.0,
+          "name": "story 0 level"
+        },
+        {
+          "path": "stories[1].level",
+          "approx": 3.0,
+          "name": "story 1 level"
+        }
+      ]
+    },
+    {
+      "id": "activate story 1",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 1
+      },
+      "expect": [
+        {
+          "path": "success",
+          "eq": true,
+          "name": "accepted"
+        }
+      ]
+    },
+    {
+      "id": "active story is 1",
+      "command": "GetStories",
+      "creates": false,
+      "expect": [
+        {
+          "path": "actStory",
+          "eq": 1,
+          "name": "actStory == 1"
+        }
+      ]
+    },
+    {
+      "id": "activate story 0",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      },
+      "expect": [
+        {
+          "path": "success",
+          "eq": true,
+          "name": "accepted"
+        }
+      ]
+    },
+    {
+      "id": "active story is 0",
+      "command": "GetStories",
+      "creates": false,
+      "expect": [
+        {
+          "path": "actStory",
+          "eq": 0,
+          "name": "actStory == 0"
+        }
+      ]
+    },
+    {
+      "id": "activate story 7",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 7
+      },
+      "expect": [
+        {
+          "path": "success",
+          "eq": false,
+          "name": "rejected"
+        }
+      ]
+    },
+    {
+      "id": "active story is 0",
+      "command": "GetStories",
+      "creates": false,
+      "expect": [
+        {
+          "path": "actStory",
+          "eq": 0,
+          "name": "actStory == 0"
+        }
+      ]
+    }
+  ]
+}

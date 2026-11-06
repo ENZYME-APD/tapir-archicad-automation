@@ -26,6 +26,17 @@ namespace TapirGrasshopperPlugin.Types.Commands
             "elementsToExport",
             NullValueHandling = NullValueHandling.Ignore)]
         public string ElementsToExport;
+
+        [JsonProperty(
+            "storyIndex",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public int? StoryIndex;
+
+        // Only set when false; true is the command's default.
+        [JsonProperty(
+            "overwrite",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public bool? Overwrite;
     }
 
     public enum IFCElementsToExport

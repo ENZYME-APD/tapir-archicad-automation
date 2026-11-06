@@ -1,0 +1,166 @@
+{
+  "tool": "LevelDimension",
+  "elementType": "LevelDimension",
+  "archicadVersion": 29,
+  "commands": {
+    "get": "GetDetailsOfElements",
+    "getSchema": "LevelDimensionDetails",
+    "create": "CreateLevelDimensionsCommand"
+  },
+  "plainKeys": [
+    "favoriteName",
+    "id",
+    "layerIndex"
+  ],
+  "sources": {
+    "help": [
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-42.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-25.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-28.htm"
+    ],
+    "devkit": "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/tag/29.3000"
+  },
+  "fields": [
+    {
+      "get": "position",
+      "set": "position",
+      "apiMember": "API_LevelDimensionType::loc",
+      "apiDescription": "Location of the marker.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "floorIndex",
+      "set": "floorIndex",
+      "getFrom": "element",
+      "apiMember": "API_Elem_Head::floorInd",
+      "apiDescription": "The element belongs to this floor.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "ownerElementId",
+      "set": "parentElementId",
+      "apiMember": "API_LevelDimensionType::parentGuid",
+      "apiDescription": "Unique ID of referred element if parentType is not API_ZombieElemID.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "ownerElementType",
+      "set": null,
+      "apiMember": "API_LevelDimensionType::parentType",
+      "apiDescription": "Refers to this element (see API_ElemType); refers to floor if API_ZombieElemID.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "level",
+      "set": "level",
+      "apiMember": "API_LevelDimensionType::level",
+      "apiDescription": "Level of the parent/floor, or static.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "staticLevel",
+      "set": null,
+      "apiMember": "API_LevelDimensionType::staticLevel",
+      "apiDescription": "Static level dimension.",
+      "label": "Static",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-42.htm (heading \"Place static dimension\"; text \"go to Level Dimension Settings and check the Static box\"; screenshot LevelDimType.png \"Static\")",
+      "group": "Dimension Type",
+      "subgroup": null
+    },
+    {
+      "get": "dimForm",
+      "set": "dimForm",
+      "apiMember": "API_LevelDimensionType::dimForm",
+      "apiDescription": "Format [0..9]:",
+      "label": "Marker Type",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-42.htm (text \"In the Dimension Type panel: Choose marker type, size, rotation, and pen\"; screenshot LevelDimType.png: marker type pop-up)",
+      "group": "Dimension Type",
+      "subgroup": null
+    },
+    {
+      "get": "markerSize",
+      "set": "markerSize",
+      "apiMember": "API_LevelDimensionType::markerSize",
+      "apiDescription": "marker size in mms",
+      "label": "Marker Size",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-42.htm (screenshot LevelDimType.png \"Marker Size:\")",
+      "group": "Dimension Type",
+      "subgroup": null
+    },
+    {
+      "get": "angle",
+      "set": "angle",
+      "apiMember": "API_LevelDimensionType::angle",
+      "apiDescription": "Angle of the level dimension marker, in radians.",
+      "label": "Marker Rotation",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-42.htm (screenshot LevelDimType.png \"Marker Rotation:\")",
+      "group": "Dimension Type",
+      "subgroup": null
+    },
+    {
+      "get": "pen",
+      "set": "pen",
+      "apiMember": "API_LevelDimensionType::pen",
+      "apiDescription": "Pen attribute index of the dimension.",
+      "label": "Marker Pen",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/070_Documentation/070_Documentation-42.htm (screenshot LevelDimType.png \"Marker Pen:\")",
+      "group": "Dimension Type",
+      "subgroup": null
+    },
+    {
+      "get": "origin",
+      "set": "origin",
+      "apiMember": "API_LevelDimensionType::origin",
+      "apiDescription": "Origin of dimensioning (see API_DimOriginID).",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Content",
+      "subgroup": null
+    },
+    {
+      "get": "textHeight",
+      "set": "textHeight",
+      "apiMember": "API_NoteType::noteSize",
+      "apiDescription": "The character height in mm.",
+      "label": "Font Size",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-28.htm (Text Style panel, available in Level Dimension; heading \"Font and Font Size\"; text \"Enter the font height, in mm\")",
+      "group": "Text Style",
+      "subgroup": null
+    },
+    {
+      "get": "textPen",
+      "set": "textPen",
+      "apiMember": "API_NoteType::notePen",
+      "apiDescription": "Pen attribute index.",
+      "label": "Text Pencolor",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/150_UserInterfaceToolSettings/150_UserInterfaceToolSettings-28.htm (Text Style panel, available in Level Dimension; heading \"Text Pencolor\")",
+      "group": "Text Style",
+      "subgroup": null
+    },
+    {
+      "get": "needPlus",
+      "set": "needPlus",
+      "apiMember": "API_LevelDimensionType::needPlus",
+      "apiDescription": "Show plus sign for positive numbers.",
+      "label": null,
+      "labelSource": null,
+      "group": "Text Style",
+      "subgroup": null
+    }
+  ]
+}

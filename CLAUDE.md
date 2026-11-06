@@ -20,8 +20,18 @@ It consists of two main components:
 
 The Add-On uses the **Archicad API (DevKit)**. The API interface headers live under
 [archicad-addon/Build/DevKits/](archicad-addon/Build/DevKits/) — e.g.
-`archicad-addon/Build/DevKits/AC29/Support` for Archicad 29, with corresponding
-folders (`AC25`–`AC28`) for older versions.
+`archicad-addon/Build/DevKits/AC29/Support` for Archicad 29, with one folder per
+supported version.
+
+**Supported Archicad versions:** [archicad-addon/devkits.json](archicad-addon/devkits.json)
+is the one list of them, each with its DevKit release. The build checks, the release,
+the weekly release's asset count, the API coverage, the bots' DevKit download,
+`build_all_win.bat` and the docs generator all read it through
+[tools/devkits.py](tools/devkits.py). A new Archicad version needs no person:
+`.github/workflows/archicad_devkit_update.yml` adds it there when Graphisoft publishes
+its DevKit, and the bot pipeline builds, fixes and merges it (see CI). Never change a
+listed version's release on a whim: add-ons built with a later DevKit build may need a
+later Archicad update.
 
 The Add-On code is based on Tibor Lorantfy's original
 [archicad-additional-json-commands](https://github.com/tlorantfy/archicad-additional-json-commands).
@@ -29,27 +39,51 @@ The Add-On code is based on Tibor Lorantfy's original
 The current version is defined in
 [archicad-addon/Sources/AddOnVersion.hpp](archicad-addon/Sources/AddOnVersion.hpp)
 and [tools/package_info.json](tools/package_info.json) — keep these in sync.
-It is bumped automatically after each release by the monthly release
+It is bumped automatically after each release by the weekly release
 workflow, so it is not repeated here.
 
 ## Repository layout
 
 ```
 archicad-addon/          C++ Archicad Add-On
+  devkits.json           The supported Archicad versions and their DevKit releases
   Sources/               Command implementations (*.cpp/*.hpp), one file per command group
   Build/                 CMake build output + DevKits/ (downloaded Archicad API SDKs)
-  Tools/                 Build/packaging scripts (CMake helpers, resource compiler, signing)
-  Examples/              Python usage examples (one .py per feature) + aclib/ helper
-  Test/                  test_examples.py runs Examples against TestProject.pla
+  Tools/                 Build/packaging scripts (CMake helpers, resource compiler, signing),
+                         legacy auto-update script (update_addon_and_restart_archicad.py)
+  Examples/              One example per command: <GroupFolder>/<CommandName>.py (+ an aclib.py
+                         shim per folder) and the aclib/ helper; shown in the command docs
+  Workflows/             Scripts combining several commands into a task or tool
+  Test/                  test_examples.py runs Scripts/ (regression tests, goldens in
+                         ExpectedOutputs/) and smoke-tests Examples against TestProject.pla;
+                         Scripts/manual/ are tests run by hand
   Installer/             Cross-platform end-user installer (tapir_installer.py, PyInstaller-packaged in CI)
   README.md
 grasshopper-plugin/      C# Grasshopper plugin (.NET, produces .gha), packaged via Yak
-  TapirGrasshopperPlugin/  Components/, Types/, Helps/, Resources/
+  TapirGrasshopperPlugin/  Components/, Types/, Helps/, Resources/,
+                         ToolSettings/ (API field -> Archicad GUI label tables per tool)
 builtin-scripts/         Bundled automation scripts
+marketplace/             Shared scripts, one <slug>/ folder each (format in its README.md)
 branding/                Logos, diagrams
-docs/                    Generated docs (archicad-addon command reference)
+docs/                    Generated docs (archicad-addon command reference),
+                         api-coverage/ page of the Archicad API coverage checklist,
+                         gh-coverage/ page of the Grasshopper coverage checklist,
+                         community/ and about/ pages (growth chart, momentum, origin story),
+                         the copies for AI assistants (llms.txt, llms-full.txt, commands.json,
+                         commands.md, <page>/index.md, sitemap.xml, robots.txt; generated,
+                         never hand-edited); .nojekyll, so Pages serves the files as they are
 tools/                   Version bump scripts (update_version.py), package_info.json,
-                         Add-On docs generator (generate_addon_docs.py)
+                         Add-On docs generator (generate_addon_docs.py),
+                         command scaffolder (new_command.py),
+                         one-example-per-command checker (check_examples.py),
+                         Grasshopper GUI label table checker (check_tool_settings.py),
+                         API coverage generator (generate_api_coverage.py,
+                         fetch_api_coverage_github_data.py, api_coverage_rules.json),
+                         Grasshopper coverage generator (generate_gh_coverage.py,
+                         gh_coverage_rules.json),
+                         Archicad version list reader and updater (devkits.py),
+                         Community page data (generate_community_data.py),
+                         site copies for AI assistants (generate_llm_files.py)
   discord-issue-bot/     Discord -> GitHub issue bot (run by .github/workflows/discord_issue_bot.yml)
 sandbox/                 Experiments / scratch
 .github/workflows/       CI: build checks + release pipelines for both components
@@ -78,19 +112,56 @@ sandbox/                 Experiments / scratch
   [Sources/SchemaDefinitions.cpp](archicad-addon/Sources/SchemaDefinitions.cpp).
 - **UI:** the Add-On adds a menu + palette ([TapirPalette](archicad-addon/Sources/TapirPalette.cpp)),
   an About dialog, and an auto-update/version check ([VersionChecker](archicad-addon/Sources/VersionChecker.cpp)).
+- **Auto-update:** the update is done by the Tapir Installer (see Installation). The
+  Add-On downloads the installer of the latest release and starts it in update mode
+  (`--addOnFile <own add-on> --versions <AC version> --archicadPort <port> --archicadPid <pid>`);
+  the installer quits Archicad, replaces the add-on and starts Archicad again.
+  Already released Add-Ons instead download
+  [Tools/update_addon_and_restart_archicad.py](archicad-addon/Tools/update_addon_and_restart_archicad.py)
+  from `main` and run it with uv (`--port`, `--downloadUrl`, `--addOnLocation`), so
+  never move or rename that script, keep it standard-library only and keep its options.
+  It hands off to the installer of the release it updates to when that installer has
+  update mode. It detects update mode from `archicad-addon/Installer/tapir_installer.py`
+  at the release tag on raw.githubusercontent.com (the release workflow builds the
+  installer from the tagged commit), by the quoted `'--addOnFile'` option in the
+  installer's argument parser. So neither the `'--addOnFile'` option name nor that
+  file's path may change without updating the script on `main`. It updates
+  the add-on itself (download and file signature check first, write check, quit,
+  replace, restart) for releases without update mode, when that check cannot be made,
+  on platforms without an installer, when the installer cannot be downloaded or
+  started, and when the administrator prompt was declined but the add-on is writable
+  without it. It is not a development tool. The script and the installer's update
+  mode run one update per Archicad by locking the first byte of `TapirUpdate_<port>.lock`
+  in the temp folder, so keep that name in both. After that byte both the script and
+  the installer's update mode write `quitting` while they wait for Archicad to quit
+  and `updating` otherwise; a second update, by either of them, tells the user to
+  quit Archicad only when it reads exactly `quitting`, because quitting while the
+  first update still downloads makes it fail. Keep the offset, the states and the
+  texts the same in both (test_update_mode.py checks they match).
 
 ### Adding or changing a command
+
+[tools/new_command.py](tools/new_command.py) writes the repetitive part of steps 1–4 for new
+commands from a short spec (format in its docstring): the class, schemas, an `Execute` skeleton,
+the registration and a starter example. The Archicad API calls in `Execute` and any
+`Test/ExpectedOutputs/` are still written by hand.
 
 1. Add/modify the command class in the appropriate `Sources/*Commands.{cpp,hpp}`
    (or create a new group file and include it in `AddOnMain.cpp`).
 2. Implement input/response schemas; reuse `SchemaDefinitions` and `CommandBase` helpers.
 3. Register it in `AddOnMain.cpp` `Initialize()` with the version it is introduced in
    and a clear description.
-4. Add a Python example under [archicad-addon/Examples/](archicad-addon/Examples/) and,
-   if it should be tested, expected output under `Test/ExpectedOutputs/`.
+4. Add its example as `archicad-addon/Examples/<GroupFolder>/<CommandName>.py`: a module
+   docstring (shown as the example's description in the docs' *Example* popdown, which loads the
+   file from `main`) and a short script calling the command through `aclib`; the convention and
+   the `<GroupFolder>` rule (group name without "Commands" and parentheses, PascalCase, e.g.
+   `CustomData`, `MEP`) are in [archicad-addon/Examples/README.md](archicad-addon/Examples/README.md),
+   and `python tools/check_examples.py` checks them. A script that tests behaviour goes to
+   `archicad-addon/Test/Scripts/` (with its golden under `Test/ExpectedOutputs/` if
+   `test_examples.py` should compare it), a multi-command task to `archicad-addon/Workflows/`.
 5. Docs at <https://enzyme-apd.github.io/...> are generated from the registered
    descriptions and schemas by `python tools/generate_addon_docs.py` (no Archicad
-   needed; same output as the `GenerateDocumentation` developer command). The monthly
+   needed; same output as the `GenerateDocumentation` developer command). The weekly
    release regenerates them automatically; run it yourself to update them earlier.
 6. Bump the version consistently (see Versioning below) when releasing.
 
@@ -100,7 +171,7 @@ Requires **CMake ≥ 3.17**, **Python** (for DevKit download + resource compilat
 and Visual Studio (Windows) / Xcode (macOS). The Archicad API DevKits are downloaded
 automatically by the build scripts.
 
-Windows, all supported versions (downloads DevKits, then builds AC25–AC29):
+Windows, all supported versions (downloads DevKits, then builds every version in `devkits.json`):
 
 ```bat
 cd archicad-addon\Tools
@@ -119,16 +190,14 @@ cmake --build Build/AC29 --config RelWithDebInfo
 Notes:
 - `AC_VERSION` selects the target Archicad major version; `AC_API_DEVKIT_DIR` must
   point at the matching DevKit's `Support` folder.
-- Toolset: `v142` for AC25–AC28, `v143` for AC29 (see `build_all_win.bat`).
+- Toolset: `v142` before AC29, `v143` from AC29 (see `build_all_win.bat`).
 - Build config produces `TapirAddOn_AC<version>_<Win|Mac>` (`.apx` on Windows,
   `.bundle`/`.zip` on macOS).
-- To iterate against a running Archicad, see
-  [archicad-addon/Tools/update_addon_and_restart_archicad.py](archicad-addon/Tools/update_addon_and_restart_archicad.py).
 
 ## Testing the Add-On
 
-Tests are Python-based and run the example scripts against a running Archicad with
-the built Add-On loaded, comparing to golden outputs:
+Tests are Python-based and run scripts against a running Archicad with the built Add-On
+loaded, comparing to golden outputs:
 
 ```bash
 cd archicad-addon/Test
@@ -136,10 +205,20 @@ python test_examples.py
 ```
 
 - Requires the official `archicad` Python package (`ACConnection`) and a running
-  Archicad instance; `test_examples.py` opens `TestProject.pla`, runs each script in
-  [Examples/](archicad-addon/Examples/), and diffs against `ExpectedOutputs/`.
-- Example scripts talk to the Add-On via `ExecuteAddOnCommand(AddOnCommandId('TapirCommand', <CommandName>), params)`.
-- `aclib/` under `Examples/` is a small shared helper used by the example scripts.
+  Archicad instance; `test_examples.py` reopens `TestProject.pla` before each script, runs
+  every script in [Test/Scripts/](archicad-addon/Test/Scripts/) (diffed against
+  `ExpectedOutputs/<name>.py.output`) and every example in [Examples/](archicad-addon/Examples/)
+  as a smoke test (`ExpectedOutputs/Examples/<GroupFolder>/<name>.py.output`, recorded on the first
+  run; `EXAMPLES_NOT_SMOKE_TESTED` lists the examples that cannot run unattended). Names given on
+  the command line run only those; `record_expected_output.py <name>.py` records one golden.
+  `Test/Scripts/manual/` is not run.
+- The scripts use `aclib/` under `Examples/` (`aclib.RunTapirCommand`); `Workflows/`,
+  `Test/Scripts/` and each `Examples/<GroupFolder>/` have an `aclib.py` shim that loads it.
+- Pull requests and local builds are tested on real Archicad with
+  [tools/community-test-runner/](tools/community-test-runner/) (JSON checks in
+  `archicad-addon/Test/checks/`). Use its `--brief` output (`prs`, `test … --brief --no-post`,
+  `trial … --brief`, `check --brief`) rather than reading reports or its source; its skill is
+  `tools/community-test-runner/claude-skill/tapir-pr-test/SKILL.md`.
 
 ## Grasshopper plugin
 
@@ -154,6 +233,78 @@ python test_examples.py
   [grasshopper-plugin/YakPackage/](grasshopper-plugin/YakPackage/) and
   `create_package_win.bat`.
 
+### Naming from the Archicad GUI
+
+Every Grasshopper component uses the names a user sees in Archicad, not the API names.
+- An input, output or JSON key that stands for a setting of an Archicad tool is named after
+  the English label of that setting's control in the tool's settings dialog, e.g. the wall's
+  `begThickness` gets the label of its thickness control. This applies to new and changed inputs
+  and outputs; existing ones are renamed when their tool component (below) replaces them.
+- The labels, with the dialog panel (Group) and the panel's subheading (Subgroup), are kept per
+  tool in [grasshopper-plugin/TapirGrasshopperPlugin/ToolSettings/](grasshopper-plugin/TapirGrasshopperPlugin/ToolSettings/)
+  (`<Tool>.json`, e.g. `Wall.json`), checked by `python tools/check_tool_settings.py`. Take the
+  labels from there; code only uses that copy.
+- Never invent a label. Add a label to the table only when it is found verbatim on Graphisoft's help
+  page for that settings dialog (help.graphisoft.com, the Archicad version the table names: its text
+  or its dialog screenshots) or in a DevKit comment that names the control, and name the page and
+  screenshot in `labelSource`; otherwise leave it `null`, and the API name is used. Capitalization
+  follows the dialog (Title Case).
+- Labels are unique per tool, case-insensitively, because the JSON is translated back to API
+  names by label. A field belongs to exactly one Group.
+
+### Archicad tool components (target architecture)
+
+Elements are handled by **one component per Archicad tool** (Walls, Slabs, Columns, …) that
+mirrors the tool's settings dialog. It is introduced tool by tool, starting with Walls (prototype:
+`Components/DesignToolsComponents/`, `ElementToolComponent` with `WallsComponent` and its `Walls_API`
+twin); new work on an element tool follows these rules:
+- **Name and place:** the plural tool name ("Walls"), in the group Graphisoft puts the tool in:
+  `GroupNames.DesignTools` ("Design Tools"); `DocumentTools` and `ViewpointTools` are added with
+  their first component.
+- **Built from the table:** a tool component derives from `ElementToolComponent`, which builds its
+  JSON inputs and outputs from `ToolSettings/<Tool>.json` (embedded in the plugin); the subclass
+  only names the tool, its Create/Modify commands with the keys each accepts, its geometry
+  inputs and its dialog panels (`JsonGroups`). Saved definitions find parameters by position, so
+  the JSON parameters come last and `JsonGroups` is append-only: never reorder or remove a panel.
+  Execute checks the element type first (the Modify commands do not), and `PrepareSettings` drops
+  values the commands cannot write, so a JSON read by Refresh can always be fed back.
+- **Three buttons, one set of JSON objects:** *Refresh* reads (`GetDetailsOfElements`), *Execute*
+  writes, *Create* makes new elements (the tool's `Create<Type>` command, starting from the tool
+  defaults or the `FavoriteName` input). A tool component may remember the elements its *Create*
+  made (saved with the .gh file; Walls does, `CanUpdateCreatedElements`): the next *Create* then
+  modifies them instead of making new ones, and reports one that was deleted as an error rather
+  than recreating it (#521). Writing and creating only happen on a button press; the
+  component ignores `AutoExecute`, only *Refresh* may run automatically. Clear the request flags
+  inside `SolveInstance`, where they are used, not after `ExpireSolution (true)`.
+- **One JSON input and output per dialog panel:** the Group name without spaces + `_JSON`
+  (`GeometryAndPositioning_JSON`, `FloorPlanAndSection_JSON`, `Model_JSON`,
+  `ClassificationAndProperties_JSON`), keys are the GUI labels from the table. Only the keys given are
+  written (partial updates), arrays are replaced, not merged. With N elements each JSON input holds
+  0 (unchanged), 1 (all) or N items; anything else is an error.
+- **Plain inputs/outputs** for what is not on a dialog panel: `ElementGuid`, `ElementID`,
+  `LayerIndex`, `DrawOrder`; and **every input that defines the geometry** (drawn in Archicad), e.g.
+  `StartPoint`/`EndPoint` for walls, which override the JSON on *Create*.
+- **Execute and Create accept the same keys:** on the add-on side they share one apply-function
+  (walls: `ApplyWallDetails`, used by `CreateWalls` and `ModifyWalls`; `SetDetailsOfElements`'s
+  wall case only takes coordinates, height, offset and the thicknesses of trapezoid walls).
+- **Delete is never part of a tool component**; it stays in the separate `DeleteElements`
+  component.
+- A `<Tool>_API` twin with the raw API names may exist for testing.
+- The old per-command components stay until the tool component reaches parity, then get
+  `Exposure` `GH_Exposure.hidden` for one release and are removed in the next. Keep a component's
+  GUID when moving it. Archicad attributes (building materials, surfaces, composites, …) will follow
+  the same pattern later.
+
+## Script marketplace
+
+Scripts shared by users live in [marketplace/](marketplace/), one `<slug>/` folder each
+(`listing.json`, the script, `README.md`, optional `screenshots/`). They are never added to
+`builtin-scripts/`. [marketplace/README.md](marketplace/README.md) is the format (with
+[listing.schema.json](marketplace/listing.schema.json)), the `# /// tapir` header and its
+`changes` key, and the rules for adapting a shared script for public use. An issue labelled
+`script-share` becomes one pull request adding its folder, adapted by those rules, keeping what
+the script does, listing every change in plain words and asking the author to confirm it.
+
 ## Versioning
 
 Version lives in multiple places that must stay in sync:
@@ -163,34 +314,205 @@ Version lives in multiple places that must stay in sync:
 
 Use the helper to bump: [tools/update_version.py](tools/update_version.py)
 (or `tools/update_version.bat`). Commands also carry the version they were introduced
-in, as the second argument to `RegisterCommand<>` in `AddOnMain.cpp`.
+in, as the second argument to `RegisterCommand<>` in `AddOnMain.cpp`: use the version
+`main` currently carries (in `tools/package_info.json`).
+
+`main` always carries the next patch version (1.6.1 after 1.6.0). The weekly release
+ships it as a patch release, except that the first release of a calendar month is a
+minor release (1.6.1 ships as 1.7.0), and a release after a merged PR labeled
+`major-release` is a major one (1.6.1 ships as 2.0.0). For those two the release
+workflow rewrites the version files and the commands registered with the skipped
+version, so new commands keep using the version `main` carries. Label a PR
+`major-release` only for a significant change, not for a new command or
+Grasshopper component.
 
 ## CI
 
 GitHub Actions in [.github/workflows/](.github/workflows/):
 - `archicad_addon_build_check.yml`, `grasshopper_plugin_build_check.yml`,
-  `installer_build_check.yml` — PR build checks for each component.
+  `installer_build_check.yml` — PR build checks for each component, also run
+  on pushes to `main` and by `workflow_dispatch` (which the bot PR steward
+  uses); a newer push to a pull request cancels its superseded runs. The add-on
+  check also runs `tools/check_examples.py` (one example per command). The installer
+  check also runs `Installer/test_update_mode.py` and syntax-checks the legacy
+  auto-update script.
+  A pull request (or the steward's dispatch on a branch) whose changed files are
+  all in the skip list of [.github/actions/build-gate](.github/actions/build-gate/action.yml)
+  — `docs/**`, `archicad-addon/Test/**`, `archicad-addon/Examples/**`,
+  `archicad-addon/Workflows/**`, `builtin-scripts/**`, `marketplace/**`,
+  `branding/**`, `**/*.md` — skips the add-on and installer builds: a cheap
+  `changes` job gates `build_win`, `build_mac` and `build_installer` by `if:`, so
+  their checks still appear as skipped, which the steward, auto-merge and required
+  checks count as passing (not `paths-ignore`, whose missing checks would hang
+  them). `build_win` still runs when `archicad-addon/Test/checks/` changed, for the
+  community test runner; pushes to `main` and the release workflows always build.
 - `archicad_addon.yml`, `grasshopper_plugin.yml` — release/publish pipelines.
   `archicad_addon.yml` also builds the Tapir Installer executables
-  (`TapirInstaller_Win.exe`, `TapirInstaller_Mac.zip`); the release asset count
-  is mirrored in `EXPECTED_ASSETS` in `monthly_release.yml`.
-- `monthly_release.yml` — tags and releases `main` monthly; first regenerates
-  `docs/archicad-addon` with `tools/generate_addon_docs.py` and pushes it to `main`
-  when it changed (never hand-edit those docs).
+  (`TapirInstaller_Win.exe`, `TapirInstaller_Mac.zip`), and attaches them a second time
+  under versioned names (`TapirInstaller_Win_<version>.exe`, `TapirInstaller_Mac_<version>.zip`,
+  #1646); `weekly_release.yml` expects two assets per version in `devkits.json` plus these
+  four installer files (`EXPECTED_ASSETS`). The add-on carries its version as a resource
+  (Windows VERSIONINFO written by `Tools/CompileResources.py`, macOS
+  `CFBundleShortVersionString`), which the installer shows. The Mac installer is
+  universal2 (Intel and Apple silicon): both workflows build it with the
+  python.org Python pinned in their `env` (keep the two the same) and check it
+  with `lipo`. The Windows installer is code signed by SignPath (certificate by
+  SignPath Foundation): on a release tag `build_installer_win` waits for a manual
+  approval in SignPath, then `release_installer_win` attaches the signed file to
+  the draft (split so SignPath never holds a write token); the weekly release
+  waits for both. A failed or unapproved signing never blocks a release: the
+  unsigned installer is attached instead, and the release notes say so (the
+  SignPath footer only appears on signed releases). SignPath requires the exe's ProductName `Tapir` and
+  ProductVersion = the release version, which `Installer/write_version_file.py`
+  writes; the installer build tools are pinned in
+  `Installer/requirements-build.txt`, used by both workflows. The README's
+  "Code signing policy" section is required by the SignPath Foundation.
+- `weekly_release.yml` — tags and releases `main` every Monday when it changed
+  (see Versioning for which version it ships); first regenerates
+  `docs/archicad-addon` with `tools/generate_addon_docs.py`, then the site's copies
+  for AI assistants with `tools/generate_llm_files.py` (`llms.txt`, `llms-full.txt`,
+  `commands.json`/`.md` with every command's schemas, Grasshopper components and
+  example, each page as `index.md`, `sitemap.xml`, `robots.txt`; a failure there only
+  warns), and pushes them to `main` when they changed (never hand-edit those docs).
+  Run both scripts yourself to update them earlier; `--check` reports stale files.
 - `claude_issue_triage.yml` — the issue bot. Every newly opened issue (`fix` job) and
   every new human comment on an issue (`reply` job), from anyone, runs Claude with
-  write access: it answers, closes verified already-fixed issues, or opens a **draft**
-  PR on a `claude/issue-<n>-…` branch with `Fixes #<n>`. No label is needed;
-  applying `claude-fix` re-runs `fix` on an existing issue. Its header documents the
-  security bounds and the repository rulesets they rely on.
+  write access: it answers, closes verified already-fixed issues, or opens a
+  ready-for-review PR on a `claude/issue-<n>-…` branch with `Fixes #<n>`, and asks
+  the issue's author (tagged) to verify it in Archicad. An issue too large for
+  one PR gets a split plan (`<!-- claude-split-plan: parts=N -->`, at most six
+  parts) and one PR per part, opened one run at a time (`next-part` job) on
+  `claude/issue-<n>-part<k>-…` branches with `Part <k> of <N> of #<n>`. No label
+  is needed; applying `claude-fix` re-runs `fix` on an existing issue, and a
+  `workflow_dispatch` with an `issue_number` runs it on that issue. Its header
+  documents the security bounds and the repository rulesets they rely on.
 - `claude_pr_review.yml` — the PR review bot. Reviews on open/push and re-reviews on
   any human PR comment, without re-posting open findings, and resolves the threads it
-  opened once the change or the discussion settles them.
+  opened once the change or the discussion settles them. On the issue bot's PRs it
+  also records its verdict as the `claude-review` commit status (set by a job
+  without a model, from a nonce-tagged marker in the review).
+- The Claude jobs of `claude_issue_triage.yml` (`fix`, `reply`),
+  `claude_bot_pr_steward.yml` (`fix`) and `claude_pr_review.yml` get the DevKit
+  headers of every version in `devkits.json`, and the C/C++ sources of the newest
+  DevKit's Examples, in `archicad-addon/Build/DevKits/` before Claude starts, from
+  the cached [.github/actions/download-devkits](.github/actions/download-devkits/action.yml)
+  (which `api_coverage.yml` uses too).
+  The steward and the review load that action from a checkout of the workflow's own
+  commit, never from a pull request's branch; they read the pull request's
+  `devkits.json` (data only), so a PR adding a version has its headers.
+- `archicad_devkit_update.yml` — daily: when Graphisoft has published the DevKit of
+  an Archicad version newer than the newest in `devkits.json` (its first public
+  build, x.3000 or later, with Windows and macOS zips), `tools/devkits.py update` adds
+  it there and to the README's download table, and this opens a bot PR on a
+  `claude/devkit-<version>-<release>` branch and starts the steward. The steward
+  builds it and fixes what the new DevKit breaks, and `claude_auto_merge.yml`
+  merges it like any bot PR. `devkits.json` is a release critical path, so
+  auto-merge lets a bot PR through with it only when the file is `main`'s with new
+  versions appended (ascending, each `NN.NNNN` of its own version, nothing else
+  changed) and the branch is named after the newest one. `DEVKIT_UPDATE=false`
+  turns it off.
+- `claude_bot_pr_steward.yml` — drives the issue bot's PRs to mergeable without a
+  maintainer (their `GITHUB_TOKEN` pushes start no runs): an hourly sweep, also
+  started by the issue bot and the review, dispatches the build checks and the
+  review on each new head, links the built add-on in a comment asking the
+  issue's author to test it in Archicad, and starts a `fix` run on a failed build,
+  a blocking review or a conflict with `main`, at most
+  `BOT_PR_MAX_FIX_ROUNDS` (default 6) times, on at most `BOT_PR_SWEEP_BATCH`
+  (default 15) PRs per sweep. Then
+  it labels the PR `needs-maintainer` and stops; removing the label hands the PR
+  back with its fix round and review counts reset. `BOT_PR_STEWARD=false` turns it
+  off; `needs-maintainer`, `do-not-merge` or draft takes a PR out of its hands.
+  `main` is merged in by a step without a model and pushed with a GitHub App
+  installation token (secrets `TAPIR_BOT_APP_ID`, `TAPIR_BOT_APP_PRIVATE_KEY`;
+  App permissions Contents and Workflows read and write, installed on this
+  repository), because `GITHUB_TOKEN` may not push main's workflow changes: on
+  conflicts the model only resolves them in the working tree; the `push-merge`
+  job, on a fresh runner that never ran the model, redoes the merge in a new
+  clone, takes only the conflicted files from the model (an artifact), refuses
+  leftover conflict markers, and commits and pushes with git hooks off.
+  Conflicts under `.github/`, `tools/`, `archicad-addon/Tools/` or
+  `archicad-addon/Installer/` never go to the model. The App token exists only
+  in that job, never on the model's runner. The App's push starts the build checks
+  itself, so the sweep counts runs queued on a head as started, and the review
+  skips a bot's push to a bot PR (the steward dispatches it). Without the
+  secrets, a merge that brings workflow changes is handed over at once
+  ("Update branch"). A fix run that pushes nothing ends its comment with
+  `<!-- steward-fix-outcome: <outcome> <nonce> -->`: `transient-ci` re-runs the
+  failed build jobs and `review-disputed` starts a fresh review (each at most
+  twice per PR), `waits-for:#N` parks the PR without a label (commit status
+  `steward-fix` pending) until PR #N is merged; `merge-blocked`, `stuck` or no
+  marker hands it over at once.
+- Model tiers of these three Claude workflows, from repository variables
+  (aliases, so each tier follows new models): `CLAUDE_LIGHT_MODEL` (default
+  `sonnet`) for issue replies and PR re-reviews, `CLAUDE_MODEL` (default `opus`)
+  for issue fixes, first reviews and steward fix rounds, and
+  `CLAUDE_ESCALATION_MODEL` (default `best`) only for the last steward fix round
+  and one retry of an issue fix that did work but left no comment or PR.
+- The subscription's usage limit (#977): at most `CLAUDE_MAX_RUNS` (default 8)
+  Claude runs of these workflows call the model at a time, oldest first; a run
+  the API refuses on its first turn fails in its "Stop on a refused run" step
+  with the error in its job summary; the hourly `retry` job of
+  `claude_issue_triage.yml` starts refused issue fixes again (`CLAUDE_RETRY_BATCH`
+  per hour, `CLAUDE_RETRY=false` turns it off), and the steward neither counts
+  failed review or fix runs as rounds nor starts one within 50 minutes of a
+  failure, nor a review within 50 minutes of one that recorded no verdict on
+  the same head (`BOT_PR_MAX_EMPTY_REVIEWS`, default 8, such reviews hand the
+  PR over). A review posts its summary from `.review-context/summary.md`, and
+  a step after it posts that file when the review's own `gh pr comment` did
+  not, so a refused command no longer loses the verdict.
 - `claude_auto_merge.yml` — merges green, non-draft PRs by write-access human
-  authors that touch no release-critical path (never the bots' own PRs).
+  authors that touch no release-critical path. It also merges the issue bot's
+  PRs (`claude/` branches) with no human interaction once every build check is
+  green and `claude-review` has been a success for `BOT_AUTO_MERGE_DELAY_HOURS`
+  (default 72), with no open thread by a person, no changes requested and no
+  `do-not-merge`/`needs-maintainer` label; `BOT_AUTO_MERGE=false` turns that off.
+  This is a deliberate maintainer decision to minimize human maintenance.
+- `delete_merged_branches.yml` — deletes the head branch of every merged pull
+  request of this repository, however it was merged, when its tip is still the
+  merged head and no open pull request uses it; run by hand (dry run by default)
+  it sweeps the leftovers. `KEEP` in it lists the branches without a pull
+  request that must stay (`api-coverage`, `site-data`, image branches).
 - `discord_issue_bot.yml` — files GitHub issues from bug reports and feature
-  requests in the project's Discord channels (see
-  [tools/discord-issue-bot/README.md](tools/discord-issue-bot/README.md)).
+  requests in the project's Discord channels, then dispatches
+  `claude_issue_triage.yml` for each (issues created with `GITHUB_TOKEN` trigger
+  no workflow on their own; see
+  [tools/discord-issue-bot/README.md](tools/discord-issue-bot/README.md)). It is
+  scheduled at :13 and :43, off the full and half hour that GitHub drops most.
+- `api_coverage.yml` — keeps the Archicad API coverage checklist live: on a push
+  to `main`, a release, issue events, hourly (which picks up pull request changes)
+  and by hand, it runs
+  `tools/generate_api_coverage.py` over the DevKits in `devkits.json` (C functions with
+  their older names and AC25/26 command ids, and the C++ `ACAPI::`/`IFCAPI::` API)
+  and marks each item used on `main`, merged but not released, in an open PR,
+  claimed by an open issue (the "Archicad API request" issue form), open, skipped
+  or not applicable. It publishes `api-coverage.json`/`.md` to the `api-coverage`
+  branch (never to `main`), read by `docs/api-coverage/index.html`, with the
+  README's badge (`api-coverage-badge.json`, a shields.io endpoint) and summary
+  image (`api-coverage.svg`, `api-coverage-dark.svg`), so the README never needs
+  an edit when the coverage changes; it also writes the
+  summary into the issue numbered in the `API_COVERAGE_ISSUE` repository variable
+  when set; `API_COVERAGE=false` turns it off. It never runs on pull request
+  events (its check would only keep pull requests from showing green), and it
+  must never check out or run pull request code. Maintainers mark items skipped,
+  with a reason, in the `skip` section of `tools/api_coverage_rules.json`; the
+  `notApplicable` section lists what cannot be a JSON command. The same run
+  writes the Grasshopper coverage (`tools/generate_gh_coverage.py`): which Tapir
+  commands a Grasshopper component calls (sent with `ToAddOn`; a same-named
+  official command sent with `ToArchicad` does not count) and whether the
+  components name every parameter of the command's input schema, cover the
+  rest through a JSON input, or miss some. It publishes `gh-coverage.*` to the
+  same branch, read by `docs/gh-coverage/index.html`; commands that need no
+  component go in `tools/gh_coverage_rules.json`.
+- `site_data.yml` — daily and by hand: `tools/generate_community_data.py` counts,
+  per month, the commits of `main`, the issues opened and pull requests merged, and
+  the Discord messages and members of the project's server (only counts, never the
+  text of a message), plus the totals and top contributors, and publishes
+  `community.json` to the `site-data` branch (never to `main`), read by
+  `docs/community/community.js` (the Momentum figures and the growth chart). The
+  Discord bot token is `DISCORD_STATS_TOKEN`, else `DISCORD_BOT_TOKEN`; members per
+  month need the bot's Server Members Intent, and without a token only the public
+  invite's member count is read. It never runs on pull request events and never
+  checks out pull request code; `SITE_DATA=false` turns it off.
 
 ## Installation (end users)
 
@@ -199,6 +521,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   [Releases](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest);
   it detects the installed Archicad versions and installs the matching Add-On
   into their `Add-Ons` folders (source: [archicad-addon/Installer/](archicad-addon/Installer/)).
+  The Add-On's auto-update runs the same installer in update mode (`--addOnFile`),
+  which replaces exactly the running add-on.
 - **Add-On (manual):** download the matching `TapirAddOn_AC<version>_<Win|Mac>` file from
   [Releases](https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest),
   then in Archicad: *Options > Add-On Manager > Edit List of Available Add-Ons > Add*,
@@ -220,6 +544,12 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
 ## Documentation & links
 
 - Add-On JSON command reference: <https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon>
+- Archicad API coverage checklist: <https://enzyme-apd.github.io/tapir-archicad-automation/api-coverage/>
+  (data on the `api-coverage` branch, generated by `.github/workflows/api_coverage.yml`)
+- Grasshopper coverage of the Tapir commands: <https://enzyme-apd.github.io/tapir-archicad-automation/gh-coverage/>
+  (same branch and workflow)
+- For AI assistants: <https://archicad-api.com/llms.txt> (the index), `llms-full.txt`
+  (everything in one file) and `commands.json` (every command, machine-readable)
 - Developer docs (wiki): <https://github.com/ENZYME-APD/tapir-archicad-automation/wiki>
 - Add-On development guide: <https://github.com/ENZYME-APD/tapir-archicad-automation/wiki/Archicad-Add-On-Development>
 - Roadmap: <https://github.com/orgs/ENZYME-APD/projects/4/views/1>

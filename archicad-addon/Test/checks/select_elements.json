@@ -1,0 +1,143 @@
+{
+  "title": "ChangeSelectionOfElements adds and removes elements, GetSelectedElements lists them and DeselectAll clears the selection",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "id": "start without a selection",
+      "command": "DeselectAll",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "two walls",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 800, "y": 800 }, "endCoordinate": { "x": 804, "y": 800 }, "floorIndex": 0, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 },
+          { "begCoordinate": { "x": 800, "y": 810 }, "endCoordinate": { "x": 804, "y": 810 }, "floorIndex": 0, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid", "w2": "elements[1].elementId.guid" }
+    },
+    {
+      "id": "nothing selected yet",
+      "command": "GetSelectedElements",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "elements", "len": 0, "name": "creating does not select" }
+      ]
+    },
+    {
+      "id": "select both walls",
+      "command": "ChangeSelectionOfElements",
+      "creates": false,
+      "params": {
+        "addElementsToSelection": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ]
+      },
+      "expect": [
+        { "path": "executionResultsOfAddToSelection", "len": 2, "name": "one result per element" },
+        { "path": "executionResultsOfAddToSelection[0].success", "eq": true },
+        { "path": "executionResultsOfAddToSelection[1].success", "eq": true },
+        { "path": "executionResultsOfRemoveFromSelection", "len": 0, "name": "nothing to remove" }
+      ]
+    },
+    {
+      "id": "both selected",
+      "command": "GetSelectedElements",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "elements", "len": 2 }
+      ]
+    },
+    {
+      "id": "deselect the second wall",
+      "command": "ChangeSelectionOfElements",
+      "creates": false,
+      "params": {
+        "removeElementsFromSelection": [ { "elementId": { "guid": "${w2}" } } ]
+      },
+      "expect": [
+        { "path": "executionResultsOfRemoveFromSelection", "len": 1 },
+        { "path": "executionResultsOfRemoveFromSelection[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "one selected",
+      "command": "GetSelectedElements",
+      "creates": false,
+      "params": {},
+      "save": { "selected": "elements" },
+      "expect": [
+        { "path": "elements", "len": 1 }
+      ]
+    },
+    {
+      "id": "the selected one is the first wall",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": "${selected}",
+        "fields": [ "type", "details" ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Wall" },
+        { "path": "detailsOfElements[0].details.begCoordinate.y", "approx": 800.0, "name": "the wall on y = 800, not the deselected one" }
+      ]
+    },
+    {
+      "id": "select a nonexistent guid",
+      "command": "ChangeSelectionOfElements",
+      "creates": false,
+      "params": {
+        "addElementsToSelection": [ { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } ]
+      },
+      "expect": [
+        { "path": "executionResultsOfAddToSelection[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "still one selected",
+      "command": "GetSelectedElements",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "elements", "len": 1, "name": "the refused guid did not change the selection" }
+      ]
+    },
+    {
+      "id": "deselect all",
+      "command": "DeselectAll",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "nothing selected",
+      "command": "GetSelectedElements",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "elements", "len": 0 }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeselectAll",
+      "params": {}
+    }
+  ]
+}

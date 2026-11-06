@@ -30,6 +30,18 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;
 
+        private static readonly List<Field> TrailingFieldDefinitions = new List<Field>
+        {
+            new Field("Widths", "width", FieldKind.Number, "Cross section width of the beam (applied to all segments)."),
+            new Field("Heights", "height", FieldKind.Number, "Cross section height of the beam (applied to all segments)."),
+            new Field("AnchorPoints", "anchorPoint", FieldKind.Text, "Anchor point: TopLeft, TopCenter, TopRight, MiddleLeft, Center, MiddleRight, BottomLeft, BottomCenter or BottomRight."),
+            new Field("CircleBased", "circleBased", FieldKind.Boolean, "True for a round beam cross section, false for rectangular (applied to all segments)."),
+            new Field("BuildingMaterialGuids", "buildingMaterialId", FieldKind.AttributeGuid, "Building material attribute of the round or rectangular cross section (applied to all segments)."),
+            new Field("ProfileGuids", "profileId", FieldKind.AttributeGuid, "Profile attribute; switches the cross section to this custom profile (applied to all segments).")
+        };
+
+        protected override IReadOnlyList<Field> TrailingFields => TrailingFieldDefinitions;
+
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.ModifyBeams;
 

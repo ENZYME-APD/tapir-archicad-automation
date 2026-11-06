@@ -64,6 +64,22 @@ namespace TapirGrasshopperPlugin.Types.Properties
         [JsonProperty("propertyGroupId")]
         public PropertyGroupGuidObject PropertyGroupId;
 
+        // StaticBuiltIn, DynamicBuiltIn or Custom.
+        [JsonProperty("propertyType")]
+        public string PropertyType;
+
+        [JsonProperty("propertyCollectionType")]
+        public string PropertyCollectionType;
+
+        [JsonProperty("propertyValueType")]
+        public string PropertyValueType;
+
+        [JsonProperty("propertyMeasureType")]
+        public string PropertyMeasureType;
+
+        [JsonProperty("propertyIsEditable")]
+        public bool? PropertyIsEditable;
+
         [JsonProperty("propertyDescription")]
         public string PropertyDescription;
 
@@ -81,6 +97,13 @@ namespace TapirGrasshopperPlugin.Types.Properties
 
         [JsonProperty("possibleEnumValues")]
         public List<PossibleEnumValueItem> PossibleEnumValues;
+
+        [JsonProperty("isExpressionBased")]
+        public bool IsExpressionBased;
+
+        // Only for expression-based properties.
+        [JsonProperty("expressions")]
+        public List<string> Expressions;
     }
 
     public class EnumValueGuidObject : GuidObject<EnumValueGuidObject>
@@ -142,6 +165,10 @@ namespace TapirGrasshopperPlugin.Types.Properties
             DefaultValueHandling = DefaultValueHandling.Populate)]
         [DefaultValue(null)]
         public PropertyValue PropertyValue;
+
+        // Only returned when includeAvailability is true.
+        [JsonProperty("isAvailable")]
+        public bool? IsAvailable;
     }
 
     public class PropertyValues

@@ -1,4 +1,6 @@
 ﻿using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,6 +32,16 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
             InTexts(
                 nameof(Favorites),
                 "A list of favorite names.");
+
+            inManager.AddTextParameter(
+                "Folders",
+                "Folders",
+                "Folder hierarchy in the Favorites palette to place each new favorite under, " +
+                "outermost folder first (one branch per favorite, or 1 branch to use the same folder for all). " +
+                "Optional; by default the favorites are placed at the root.",
+                GH_ParamAccess.tree);
+
+            SetOptionality(2);
         }
 
         protected override void AddOutputs()
@@ -62,11 +74,39 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                 return;
             }
 
+            da.TryGetTree(
+                2,
+                out GH_Structure<GH_String> folders);
+            var folderBranchCount = folders?.Branches.Count ?? 0;
+            if (folderBranchCount > 1 &&
+                folderBranchCount != favorites.Count)
+            {
+                this.AddError(
+                    "The number of branches in the input Folders must be 0, 1 or equal to the size of the input Favorites.");
+                return;
+            }
+
+            var input = new FavoritesFromElementsObject(
+                elements.GuidWrappers,
+                favorites);
+            if (folderBranchCount > 0)
+            {
+                for (var i = 0; i < input.FavoritesFromElements.Count; i++)
+                {
+                    var folder = folders.Branches[folderBranchCount == 1 ? 0 : i]
+                        .Where(x => x != null && !string.IsNullOrEmpty(x.Value))
+                        .Select(x => x.Value)
+                        .ToList();
+                    if (folder.Count > 0)
+                    {
+                        input.FavoritesFromElements[i].Folder = folder;
+                    }
+                }
+            }
+
             if (!TryGetConvertedCadValues(
                     CommandName,
-                    new FavoritesFromElementsObject(
-                        elements.GuidWrappers,
-                        favorites),
+                    input,
                     ToAddOn,
                     ExecutionResultsResponse.Deserialize,
                     out ExecutionResultsResponse response))

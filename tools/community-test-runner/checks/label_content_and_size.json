@@ -1,0 +1,36 @@
+{
+  "title": "Text label content and size (#759)",
+  "minTapir": "1.7.0",
+  "steps": [
+    {
+      "id": "create",
+      "command": "CreateLabels",
+      "params": {"labelsData": [{"labelClass": "Text", "text": "Hello Tapir", "begCoordinate": {"x": 820, "y": 820}}]},
+      "save": {"l": "elements[0].elementId.guid"}
+    },
+    {
+      "id": "read",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {"elements": [{"elementId": {"guid": "${l}"}}]},
+      "expect": [{"path": "detailsOfElements[0].details.text", "eq": "Hello Tapir", "name": "whole text arrives"}]
+    },
+    {
+      "id": "modify",
+      "command": "ModifyLabels",
+      "creates": false,
+      "params": {"labelsWithDetails": [{"elementId": {"guid": "${l}"}, "text": "Changed label", "style": {"height": 4.0}}]},
+      "expect": [{"path": "executionResults[0].success", "eq": true}]
+    },
+    {
+      "id": "read again",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {"elements": [{"elementId": {"guid": "${l}"}}]},
+      "expect": [
+        {"path": "detailsOfElements[0].details.text", "eq": "Changed label", "name": "content changed"},
+        {"path": "detailsOfElements[0].details.style.height", "approx": 4.0, "name": "size changed"}
+      ]
+    }
+  ]
+}

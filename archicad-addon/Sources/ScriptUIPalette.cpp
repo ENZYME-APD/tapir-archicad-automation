@@ -51,6 +51,25 @@ static void TAPIR_Browser_SetZoomEnabled (DG::Browser& browser, bool enabled)
 #endif
 #endif
 
+// Inserts script right before "</body>" (found case-insensitively); falls back to appending at the
+// end when absent/malformed.
+static GS::UniString InjectScriptBeforeBodyEnd (const GS::UniString& htmlContent, const GS::UniString& script)
+{
+#ifdef ServerMainVers_3000
+    const GS::UniString lowerContent = htmlContent.GetLowerCased ();
+#else
+    const GS::UniString lowerContent = htmlContent.ToLowerCase ();
+#endif
+    if (!lowerContent.Contains (GS::UniString ("</body>"))) {
+        return htmlContent + script;
+    }
+
+    const UIndex insertAt = lowerContent.FindFirst (GS::UniString ("</body>"));
+    GS::UniString result = htmlContent;
+    result.Insert (insertAt, script);
+    return result;
+}
+
 // Archicad's own browser.onContentHeightChanged event does not fire on dynamic DOM changes (only
 // ever observed at initial page load, undocumented) so autoHeight instead injects a small
 // ResizeObserver that reports content size changes through the same JS bridge scripts already use
@@ -87,20 +106,30 @@ static GS::UniString InjectAutoHeightScript (const GS::UniString& htmlContent)
         "setTimeout (doReport, 100);"
         "})();</script>";
 
-    // Find "</body>" case-insensitively; fall back to appending at the end when absent/malformed.
-#ifdef ServerMainVers_3000
-    const GS::UniString lowerContent = htmlContent.GetLowerCased ();
-#else
-    const GS::UniString lowerContent = htmlContent.ToLowerCase ();
-#endif
-    if (!lowerContent.Contains (GS::UniString ("</body>"))) {
-        return htmlContent + observerScript;
-    }
+    return InjectScriptBeforeBodyEnd (htmlContent, observerScript);
+}
 
-    const UIndex insertAt = lowerContent.FindFirst (GS::UniString ("</body>"));
-    GS::UniString result = htmlContent;
-    result.Insert (insertAt, observerScript);
-    return result;
+// DG::Browser::DisableNavigation (true) blocks every navigation, including the LoadHTML that
+// follows it: with navigationDisabled the palette showed up blank and the page's scripts never ran
+// (issue #768). Rather than depending on a DG::Browser load-finished event, the page is loaded with
+// navigation enabled and this injected script reports back through the same JS bridge SubmitResult
+// uses once the page has finished loading; the bridge then disables navigation. The
+// ACAPI object is not always registered by the time the first scripts run (the autoHeight script
+// above checks for it as well), hence the short polling.
+static GS::UniString InjectPageLoadedScript (const GS::UniString& htmlContent)
+{
+    static const GS::UniString pageLoadedScript =
+        "<script>(function () {"
+        "var attempts = 0;"
+        "function notify() {"
+        "  if (window.ACAPI && ACAPI.NotifyPageLoaded) { ACAPI.NotifyPageLoaded (); }"
+        "  else if (++attempts < 500) { setTimeout (notify, 20); }"
+        "}"
+        "if (document.readyState === 'complete') { notify (); }"
+        "else { window.addEventListener ('load', notify); }"
+        "})();</script>";
+
+    return InjectScriptBeforeBodyEnd (htmlContent, pageLoadedScript);
 }
 
 ScriptUIPalette::ScriptUIPalette ()
@@ -147,13 +176,18 @@ void ScriptUIPalette::Hide ()
 
 void ScriptUIPalette::ShowWithHTML (const GS::UniString& htmlContent, const ScriptUIOptions& options)
 {
+    SetGrowType (options.resizable ? DG::Dialog::HVGrow : DG::Dialog::NoGrow);
+    // The GDLG size (600x450) is only meant as the starting size, but DG also keeps it as the
+    // minimum client size: without this, a smaller width/height and autoHeight on a short page are
+    // silently clamped to 600x450. Setting the minimum in the constructor (before
+    // BeginEventProcessing) had no effect, so it is set here on every show.
+    SetMinClientSize (160, 60);
     if (options.width > 0 && options.height > 0) {
         SetClientSize (options.width, options.height);
     }
     if (!options.title.IsEmpty ()) {
         SetTitle (options.title);
     }
-    SetGrowType (options.resizable ? DG::Dialog::HVGrow : DG::Dialog::NoGrow);
 
     TAPIR_Browser_SetZoomEnabled (browser, options.zoomEnabled);
     if (options.hasZoomLevel) {
@@ -161,18 +195,28 @@ void ScriptUIPalette::ShowWithHTML (const GS::UniString& htmlContent, const Scri
     }
     browser.SetScrollBarVisibility (options.scrollBarsVisible);
     TAPIR_Browser_SetContextMenuEnabled (browser, options.contextMenuEnabled);
-    browser.DisableNavigation (options.navigationDisabled);
+    // Navigation must be enabled while the page loads, otherwise LoadHTML itself is blocked (see
+    // InjectPageLoadedScript); a previous navigationDisabled page may have left it disabled.
+    browser.DisableNavigation (false);
     TAPIR_Browser_SetAllowSelfSignedCertificates (browser, options.allowSelfSignedCertificates);
     if (options.clearCookies) {
         browser.DeleteAllCookies ();
     }
 
     autoHeightEnabled = options.autoHeight;
+    navigationDisableRequested = options.navigationDisabled;
 
     hasPendingResult = false;
     pendingResult = GS::EmptyUniString;
 
-    browser.LoadHTML (options.autoHeight ? InjectAutoHeightScript (htmlContent) : htmlContent);
+    GS::UniString content = htmlContent;
+    if (options.autoHeight) {
+        content = InjectAutoHeightScript (content);
+    }
+    if (options.navigationDisabled) {
+        content = InjectPageLoadedScript (content);
+    }
+    browser.LoadHTML (content);
     Show ();
 }
 
@@ -185,6 +229,11 @@ bool ScriptUIPalette::ConsumeResult (GS::UniString* outResult)
     hasPendingResult = false;
     pendingResult = GS::EmptyUniString;
     return true;
+}
+
+bool ScriptUIPalette::IsOpen ()
+{
+    return IsVisible () || hiddenByForcedHideBegin;
 }
 
 void ScriptUIPalette::PanelCloseRequested (const DG::PanelCloseRequestEvent&, bool* accepted)
@@ -237,6 +286,16 @@ void ScriptUIPalette::RegisterACAPIJavaScriptObject ()
         return GS::Ref<JS::Base> (new JS::Value (true));
     }));
 
+    jsACAPI->AddItem (new JS::Function ("NotifyPageLoaded", [] (GS::Ref<JS::Base>) {
+        if (ScriptUIPalette::HasInstance ()) {
+            ScriptUIPalette& palette = ScriptUIPalette::Instance ();
+            if (palette.navigationDisableRequested) {
+                palette.browser.DisableNavigation (true);
+            }
+        }
+        return GS::Ref<JS::Base> (new JS::Value (true));
+    }));
+
     browser.RegisterAsynchJSObject (jsACAPI);
 }
 
@@ -244,6 +303,12 @@ GSErrCode ScriptUIPalette::PaletteControlCallBack (Int32, API_PaletteMessageID m
 {
     switch (messageID) {
         case APIPalMsg_OpenPalette:
+            // Archicad restores the palette when it was open at the last quit, but the page and the
+            // script that showed it are gone by then: only reopen a page shown in this session, so
+            // Archicad does not start with an empty palette. The instance only exists once
+            // ShowWithHTML ran.
+            if (!HasInstance ())
+                break;
             Instance ().Show ();
             break;
 

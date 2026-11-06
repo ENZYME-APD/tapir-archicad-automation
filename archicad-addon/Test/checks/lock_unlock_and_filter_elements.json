@@ -1,0 +1,204 @@
+{
+  "title": "LockElements makes a wall uneditable and UnlockElements editable again, as FilterElements and MoveElements see it; FilterElements filters by type and story",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "id": "two walls",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 800, "y": 800 }, "endCoordinate": { "x": 804, "y": 800 }, "floorIndex": 0, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 },
+          { "begCoordinate": { "x": 800, "y": 810 }, "endCoordinate": { "x": 804, "y": 810 }, "floorIndex": 0, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid", "w2": "elements[1].elementId.guid" }
+    },
+    {
+      "id": "slab",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          { "level": 0, "floorIndex": 0, "polygonCoordinates": [ { "x": 820, "y": 800 }, { "x": 824, "y": 800 }, { "x": 824, "y": 804 }, { "x": 820, "y": 804 } ] }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "walls among [wall, wall, slab]",
+      "command": "FilterElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } }, { "elementId": { "guid": "${s1}" } } ],
+        "elementTypes": [ "Wall" ]
+      },
+      "expect": [
+        { "path": "elements", "len": 2, "name": "the two walls" }
+      ]
+    },
+    {
+      "id": "home story 1 among [wall, wall, slab]",
+      "command": "FilterElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } }, { "elementId": { "guid": "${s1}" } } ],
+        "floorIndices": [ 1 ]
+      },
+      "expect": [
+        { "path": "elements", "len": 0, "name": "none, all are on story 0" }
+      ]
+    },
+    {
+      "id": "slabs on story 0 among [wall, wall, slab]",
+      "command": "FilterElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } }, { "elementId": { "guid": "${s1}" } } ],
+        "elementTypes": [ "Slab" ],
+        "floorIndices": [ 0 ]
+      },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "the slab" }
+      ]
+    },
+    {
+      "id": "editable before the lock",
+      "command": "FilterElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ],
+        "filters": [ "IsEditable" ]
+      },
+      "expect": [
+        { "path": "elements", "len": 2, "name": "both walls editable" }
+      ]
+    },
+    {
+      "id": "no criterion at all",
+      "command": "FilterElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${w1}" } } ]
+      },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "refused" }
+      ]
+    },
+    {
+      "id": "lock the first wall",
+      "command": "LockElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } } ] },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "editable after the lock",
+      "command": "FilterElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ],
+        "filters": [ "IsEditable" ]
+      },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "only the unlocked wall" }
+      ]
+    },
+    {
+      "id": "[move the locked wall, move the unlocked wall]",
+      "command": "MoveElements",
+      "creates": false,
+      "params": {
+        "elementsWithMoveVectors": [
+          { "elementId": { "guid": "${w1}" }, "moveVector": { "x": 0.0, "y": 1.0, "z": 0.0 } },
+          { "elementId": { "guid": "${w2}" }, "moveVector": { "x": 0.0, "y": 1.0, "z": 0.0 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "locked wall not moved" },
+        { "path": "executionResults[1].success", "eq": true, "name": "unlocked wall moved" }
+      ]
+    },
+    {
+      "id": "nonexistent guid",
+      "command": "LockElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } ] },
+      "expect": [
+        { "path": "success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "unlock the first wall",
+      "command": "UnlockElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } } ] },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "editable after the unlock",
+      "command": "FilterElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ],
+        "filters": [ "IsEditable" ]
+      },
+      "expect": [
+        { "path": "elements", "len": 2, "name": "both walls editable again" }
+      ]
+    },
+    {
+      "id": "move the unlocked wall",
+      "command": "MoveElements",
+      "creates": false,
+      "params": {
+        "elementsWithMoveVectors": [
+          { "elementId": { "guid": "${w1}" }, "moveVector": { "x": 0.0, "y": 1.0, "z": 0.0 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "moved" }
+      ]
+    },
+    {
+      "id": "read the walls back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ],
+        "fields": [ "details" ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.begCoordinate.y", "approx": 801.0, "name": "first wall moved once, after the unlock" },
+        { "path": "detailsOfElements[1].details.begCoordinate.y", "approx": 811.0, "name": "second wall moved once" }
+      ]
+    },
+    {
+      "id": "nonexistent guid",
+      "command": "UnlockElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } ] },
+      "expect": [
+        { "path": "success", "eq": false, "name": "refused" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "UnlockElements",
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ] }
+    },
+    {
+      "command": "DeleteElements",
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ] }
+    }
+  ]
+}

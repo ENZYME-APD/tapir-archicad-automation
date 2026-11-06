@@ -77,6 +77,20 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             OutTexts(
                 "ErrorMessages",
                 "Error message for each queried element (empty when successful).");
+
+            OutIntegerTree(
+                "SegmentReferenceIds",
+                "Cross section reference id of each routing segment in its preference table " +
+                "(meaningful for circular cross sections; one branch per element).");
+
+            OutTextTree(
+                "SegmentPreferenceTableGuids",
+                "Identifier of the preference table each routing segment uses " +
+                "(see GetMEPPreferenceTables; one branch per element).");
+
+            OutIntegers(
+                "FloorIndices",
+                "Home story index of each routing element.");
         }
 
         private static ElementGuidWrapper ElementIdOf(
@@ -130,6 +144,9 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             var nodeGuids = new DataTree<object>();
             var nodePositions = new DataTree<object>();
             var errors = new List<string>();
+            var segmentReferenceIds = new DataTree<object>();
+            var segmentPreferenceTables = new DataTree<object>();
+            var floorIndices = new List<object>();
 
             var items = response["routingElements"] as JArray ?? new JArray();
             for (var i = 0; i < items.Count; i++)
@@ -143,17 +160,21 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                 segmentShapes.EnsurePath(path);
                 nodeGuids.EnsurePath(path);
                 nodePositions.EnsurePath(path);
+                segmentReferenceIds.EnsurePath(path);
+                segmentPreferenceTables.EnsurePath(path);
 
                 if (item?["error"] != null)
                 {
                     errors.Add(item["error"]?["message"]?.ToString() ?? "");
                     domains.Add(null);
                     mepSystemGuids.Add(null);
+                    floorIndices.Add(null);
                     continue;
                 }
 
                 errors.Add("");
                 domains.Add(item["domain"]?.ToString());
+                floorIndices.Add(item["floorIndex"]?.Value<int>());
                 var mepSystemGuid = item["mepSystemId"]?["guid"]?.ToString();
                 mepSystemGuids.Add(
                     mepSystemGuid == null
@@ -179,6 +200,8 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
                         segmentWidths.Add(segment["crossSectionWidth"]?.Value<double>(), path);
                         segmentHeights.Add(segment["crossSectionHeight"]?.Value<double>(), path);
                         segmentShapes.Add(segment["crossSectionShape"]?.ToString(), path);
+                        segmentReferenceIds.Add(segment["crossSectionReferenceId"]?.Value<int>(), path);
+                        segmentPreferenceTables.Add(segment["preferenceTableId"]?.ToString(), path);
                     }
                 }
 
@@ -202,6 +225,9 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             da.SetDataTree(7, nodeGuids);
             da.SetDataTree(8, nodePositions);
             da.SetDataList(9, errors);
+            da.SetDataTree(10, segmentReferenceIds);
+            da.SetDataTree(11, segmentPreferenceTables);
+            da.SetDataList(12, floorIndices);
         }
 
         protected override System.Drawing.Bitmap Icon =>

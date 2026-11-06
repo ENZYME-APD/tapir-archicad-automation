@@ -6,6 +6,7 @@ using Newtonsoft.Json.Linq;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Attributes;
 using TapirGrasshopperPlugin.Types.Element;
@@ -21,9 +22,10 @@ namespace TapirGrasshopperPlugin.Components
     // JSON input. The identifiers of the created elements are returned in the
     // ElementGuids output.
     //
-    // Every optional input can be hidden and shown again from the component's
+    // The optional inputs can be hidden and shown again from the component's
     // context menu (see ToggleableInputsComponentBase), so the inputs are
-    // addressed by name instead of by a fixed index.
+    // addressed by name instead of by a fixed index. A hidden input is read
+    // as an unconnected one.
     //
     // The configuration is provided through overridable members instead of
     // constructor parameters on purpose: GH_Component's constructor calls
@@ -54,7 +56,20 @@ namespace TapirGrasshopperPlugin.Components
             OutlineCurve,
             // One branch of closed curves per element, written as the element's
             // holes - each hole an object of polygonCoordinates and polygonArcs.
-            HoleCurvesTree
+            HoleCurvesTree,
+            // A color, written as a ColorRGB object (red, green and blue
+            // between 0.0 and 1.0).
+            Color,
+            // The AdditionalSettings JSON input, for components that did not
+            // have it at its usual place (after the typed fields) when they
+            // were released. Only supported in TrailingFields; its JsonKey is
+            // unused.
+            AdditionalSettings,
+            // One branch of numbers / integers per element (or a single branch
+            // for all), written as a JSON array. Unlike the point trees they
+            // can follow the first field. A null item is written as null.
+            NumbersTree,
+            IntegersTree
         }
 
         protected sealed class Field
@@ -93,8 +108,9 @@ namespace TapirGrasshopperPlugin.Components
 
         // The typed fields of the command. The first field must be required;
         // it defines the number of created elements (its list length, or its
-        // branch count for tree kinds). Tree kinds are only supported as the
-        // first field.
+        // branch count for tree kinds). The point tree kinds are only
+        // supported as the first field. A JsonKey with dots (e.g.
+        // "primaryPattern.sizes") writes into nested objects of the item.
         protected abstract IReadOnlyList<Field> Fields { get; }
 
         private static readonly IReadOnlyList<Field> NoFields = new List<Field>();
@@ -102,19 +118,28 @@ namespace TapirGrasshopperPlugin.Components
         // Optional typed fields added after the component was released. Their
         // inputs come after every other input (AdditionalSettings and the
         // metadata toggles), so the inputs of saved definitions, which
-        // Grasshopper binds by index, keep their places. Tree kinds are not
-        // supported here.
+        // Grasshopper binds by index, keep their places (the hidden inputs
+        // are saved too, see ToggleableInputsComponentBase). New ones are always
+        // appended at the end. Tree kinds are not supported here.
         protected virtual IReadOnlyList<Field> TrailingFields => NoFields;
-
-        // Override with false when the typed inputs cover the command's
-        // complete item schema.
-        protected virtual bool HasAdditionalSettingsInput => true;
-
-        protected const string AdditionalSettingsInputName = "AdditionalSettings";
 
         private const string AdditionalSettingsDescription =
             "One JSON object per element with further optional settings matching the " +
             "command's documented item schema. Input only 1 to use the same settings for all. Optional.";
+
+        // The AdditionalSettings input as a trailing field, for a component
+        // without HasAdditionalSettingsInput whose command gained fields that
+        // have no typed input.
+        protected static Field TrailingAdditionalSettingsField =>
+            new Field(
+                "AdditionalSettings",
+                null,
+                FieldKind.AdditionalSettings,
+                AdditionalSettingsDescription);
+
+        // Override with false when the typed inputs cover the command's
+        // complete item schema.
+        protected virtual bool HasAdditionalSettingsInput => true;
 
         // Override with false when the command does not create new elements
         // the Tapir GH metadata could be embedded into (e.g. it modifies
@@ -132,6 +157,11 @@ namespace TapirGrasshopperPlugin.Components
         {
         }
 
+        // The inputs in their registration order: the fields, the
+        // AdditionalSettings input, the metadata toggles, the trailing fields.
+        // Saved definitions bind the inputs by this order (see
+        // ToggleableInputsComponentBase), so it must never change; new inputs
+        // are appended.
         protected override IReadOnlyList<InputDescriptor> InputDescriptors
         {
             get
@@ -152,7 +182,7 @@ namespace TapirGrasshopperPlugin.Components
                     descriptors.Add(
                         new InputDescriptor(
                             field.InputName,
-                            () => CreateFieldParam(field, description),
+                            () => CreateFieldParam(field, description, !field.Required),
                             !field.Required));
                 }
 
@@ -160,10 +190,10 @@ namespace TapirGrasshopperPlugin.Components
                 {
                     descriptors.Add(
                         new InputDescriptor(
-                            AdditionalSettingsInputName,
+                            "AdditionalSettings",
                             () => NewInputParam(
                                 new Param_String(),
-                                AdditionalSettingsInputName,
+                                "AdditionalSettings",
                                 AdditionalSettingsDescription,
                                 "textList",
                                 GH_ParamAccess.list,
@@ -191,13 +221,11 @@ namespace TapirGrasshopperPlugin.Components
                             true));
                 }
 
-                // The trailing fields come after every other input, so the
-                // inputs of saved definitions, which Grasshopper binds by
-                // index, keep their places.
                 foreach (var field in TrailingFields)
                 {
-                    var description = field.Description +
-                                      " Input only 1 to use the same value for all elements. Optional.";
+                    var description = field.Kind == FieldKind.AdditionalSettings
+                        ? field.Description
+                        : field.Description + " Input only 1 to use the same value for all elements. Optional.";
                     descriptors.Add(
                         new InputDescriptor(
                             field.InputName,
@@ -210,15 +238,14 @@ namespace TapirGrasshopperPlugin.Components
         }
 
         // Creates the parameter of a field input the same way the InX helpers
-        // of Component would. The line and the tree inputs were registered
-        // through the parameter manager directly, without a type name in front
-        // of their description, so they are created without one here too.
+        // of Component (and the inManager calls for the kinds without one)
+        // registered it. The kinds registered through inManager directly have
+        // no type name in front of their description.
         private static IGH_Param CreateFieldParam(
             Field field,
             string description,
-            bool forceOptional = false)
+            bool optional)
         {
-            var optional = forceOptional || !field.Required;
             switch (field.Kind)
             {
                 case FieldKind.Number:
@@ -231,8 +258,12 @@ namespace TapirGrasshopperPlugin.Components
                     return NewInputParam(
                         new Param_Boolean(), field.InputName, description, "booleanList", GH_ParamAccess.list, optional);
                 case FieldKind.Text:
+                case FieldKind.AdditionalSettings:
                     return NewInputParam(
                         new Param_String(), field.InputName, description, "textList", GH_ParamAccess.list, optional);
+                case FieldKind.Color:
+                    return NewInputParam(
+                        new Param_Colour(), field.InputName, description, "colorList", GH_ParamAccess.list, optional);
                 case FieldKind.Point2D:
                 case FieldKind.Point3D:
                     return NewInputParam(
@@ -254,10 +285,16 @@ namespace TapirGrasshopperPlugin.Components
                 case FieldKind.HoleCurvesTree:
                     return NewInputParam(
                         new Param_Curve(), field.InputName, description, null, GH_ParamAccess.tree, optional);
+                case FieldKind.NumbersTree:
+                    return NewInputParam(
+                        new Param_Number(), field.InputName, description, null, GH_ParamAccess.tree, optional);
+                case FieldKind.IntegersTree:
+                    return NewInputParam(
+                        new Param_Integer(), field.InputName, description, null, GH_ParamAccess.tree, optional);
+                default:
+                    throw new NotSupportedException(
+                        $"The field kind {field.Kind} of the input {field.InputName} has no parameter.");
             }
-
-            throw new NotSupportedException(
-                $"Unhandled field kind: {field.Kind}.");
         }
 
         // Creates a boolean item input with a default value the same way the
@@ -280,12 +317,12 @@ namespace TapirGrasshopperPlugin.Components
 
             foreach (var field in Fields)
             {
-                AttachValueList(field.InputName);
+                AttachValueList(field);
             }
 
             foreach (var field in TrailingFields)
             {
-                AttachValueList(field.InputName);
+                AttachValueList(field);
             }
         }
 
@@ -293,34 +330,30 @@ namespace TapirGrasshopperPlugin.Components
             string name,
             int index)
         {
-            AttachValueList(name);
+            foreach (var field in Fields.Concat(TrailingFields))
+            {
+                if (field.InputName == name)
+                {
+                    AttachValueList(field);
+                    return;
+                }
+            }
         }
 
+        // Attaches the field's value list to its input when the input is
+        // visible and not connected yet.
         private void AttachValueList(
-            string inputName)
+            Field field)
         {
-            var index = IndexOfInput(inputName);
-            if (index < 0)
+            if (field.ValueList == null)
             {
                 return;
             }
 
-            foreach (var field in Fields)
+            var index = IndexOfInput(field.InputName);
+            if (index >= 0)
             {
-                if (field.InputName == inputName)
-                {
-                    field.ValueList?.Invoke ().AddAsSource(this, index);
-                    return;
-                }
-            }
-
-            foreach (var field in TrailingFields)
-            {
-                if (field.InputName == inputName)
-                {
-                    field.ValueList?.Invoke ().AddAsSource(this, index);
-                    return;
-                }
+                field.ValueList().AddAsSource(this, index);
             }
         }
 
@@ -403,7 +436,8 @@ namespace TapirGrasshopperPlugin.Components
         // segment from beg to end. A Rhino arc whose plane normal points up (+Z) in
         // the world XY plane turns counter clockwise, which bulges to the left, so
         // its angle is negated.
-        private static bool TryConvertCurveToPolygon(
+        // Also used by ModifyDetailMarkersComponent for its clip polygons.
+        internal static bool TryConvertCurveToPolygon(
             Curve curve,
             out JArray coordinates,
             out JArray arcs,
@@ -639,6 +673,42 @@ namespace TapirGrasshopperPlugin.Components
                         }
                         break;
                     }
+                case FieldKind.NumbersTree:
+                    {
+                        tokens = new List<JToken>();
+                        if (!da.TryGetTree(inputIndex, out GH_Structure<GH_Number> numberTree))
+                        {
+                            break;
+                        }
+                        foreach (var branch in numberTree.Branches)
+                        {
+                            var array = new JArray();
+                            foreach (var number in branch)
+                            {
+                                array.Add(number == null ? JValue.CreateNull() : new JValue(number.Value));
+                            }
+                            tokens.Add(array);
+                        }
+                        break;
+                    }
+                case FieldKind.IntegersTree:
+                    {
+                        tokens = new List<JToken>();
+                        if (!da.TryGetTree(inputIndex, out GH_Structure<GH_Integer> integerTree))
+                        {
+                            break;
+                        }
+                        foreach (var branch in integerTree.Branches)
+                        {
+                            var array = new JArray();
+                            foreach (var integer in branch)
+                            {
+                                array.Add(integer == null ? JValue.CreateNull() : new JValue(integer.Value));
+                            }
+                            tokens.Add(array);
+                        }
+                        break;
+                    }
                 case FieldKind.Number:
                     {
                         var values = new List<double>();
@@ -710,6 +780,19 @@ namespace TapirGrasshopperPlugin.Components
                         tokens = ConvertValues(values, ConvertGuidWrapper<AttributeGuidObject>);
                         break;
                     }
+                case FieldKind.Color:
+                    {
+                        var values = new List<System.Drawing.Color>();
+                        da.GetDataList(inputIndex, values);
+                        tokens = ConvertValues(values, v =>
+                            (JToken)new JObject
+                            {
+                                ["red"] = v.R / 255.0,
+                                ["green"] = v.G / 255.0,
+                                ["blue"] = v.B / 255.0
+                            });
+                        break;
+                    }
                 default:
                     this.AddError(
                         $"Tree inputs are only supported as the first input ({field.InputName}).");
@@ -741,8 +824,41 @@ namespace TapirGrasshopperPlugin.Components
             }
             else
             {
-                item[field.JsonKey] = token;
+                // A dotted key ("style.fontName") goes into a nested object
+                // of the item, created when missing.
+                var path = field.JsonKey.Split('.');
+                var container = item;
+                for (var i = 0; i < path.Length - 1; i++)
+                {
+                    if (!(container[path[i]] is JObject child))
+                    {
+                        child = new JObject();
+                        container[path[i]] = child;
+                    }
+                    container = child;
+                }
+                container[path[path.Length - 1]] = token;
             }
+        }
+
+        // Called for each item once the typed inputs are written into it and
+        // before AdditionalSettings is merged, so a derived component can
+        // reshape what the declarative fields cannot express (e.g. turn
+        // parallel input lists into an array of objects). Returns an error
+        // message, or null when the item is fine.
+        protected virtual string CompleteItem(
+            JObject item)
+        {
+            return null;
+        }
+
+        // Called with the response of a command that succeeded, before the
+        // created elements are stamped and the outputs are set, so a derived
+        // component can report what the response carries besides the created
+        // elements (e.g. warnings).
+        protected virtual void OnResponse(
+            JObject response)
+        {
         }
 
         protected override void Solve(
@@ -811,23 +927,29 @@ namespace TapirGrasshopperPlugin.Components
                 }
             }
 
+            // Either the AdditionalSettings input of HasAdditionalSettingsInput
+            // or the TrailingAdditionalSettingsField; -1 when it is hidden.
+            var additionalSettingsInputIndex = IndexOfInput("AdditionalSettings");
             var typedInputs = new List<Field>();
             for (var fieldIndex = 1; fieldIndex < fields.Count; fieldIndex++)
             {
                 typedInputs.Add(fields[fieldIndex]);
             }
-            typedInputs.AddRange(TrailingFields);
+            foreach (var trailingField in TrailingFields)
+            {
+                if (trailingField.Kind != FieldKind.AdditionalSettings)
+                {
+                    typedInputs.Add(trailingField);
+                }
+            }
 
             foreach (var field in typedInputs)
             {
                 var inputIndex = IndexOfInput(field.InputName);
-                if (inputIndex < 0)
-                {
-                    // The input is hidden, so it carries no value at all.
-                    continue;
-                }
-
-                if (!TryReadTokens(da, inputIndex, field, out List<JToken> tokens))
+                // A hidden input is read as an unconnected one.
+                var tokens = new List<JToken>();
+                if (inputIndex >= 0 &&
+                    !TryReadTokens(da, inputIndex, field, out tokens))
                 {
                     return;
                 }
@@ -859,11 +981,20 @@ namespace TapirGrasshopperPlugin.Components
                 }
             }
 
-            var additionalSettings = new List<string>();
-            var additionalSettingsIndex = IndexOfInput(AdditionalSettingsInputName);
-            if (additionalSettingsIndex >= 0)
+            foreach (var item in items)
             {
-                da.GetDataList(additionalSettingsIndex, additionalSettings);
+                var error = CompleteItem(item);
+                if (error != null)
+                {
+                    this.AddError(error);
+                    return;
+                }
+            }
+
+            var additionalSettings = new List<string>();
+            if (additionalSettingsInputIndex >= 0)
+            {
+                da.GetDataList(additionalSettingsInputIndex, additionalSettings);
             }
             if (additionalSettings.Count > 0)
             {
@@ -907,7 +1038,7 @@ namespace TapirGrasshopperPlugin.Components
             var replaceExisting = false;
             if (SupportsElementMetadata)
             {
-                // A hidden toggle falls back to its default value.
+                // A hidden toggle has its default value.
                 var embedMetadataIndex = IndexOfInput(ElementMetadata.EmbedMetadataInputName);
                 var replaceExistingIndex = IndexOfInput(ElementMetadata.ReplaceExistingInputName);
                 embedMetadata = embedMetadataIndex < 0 || da.GetOptional(embedMetadataIndex, true);
@@ -932,6 +1063,8 @@ namespace TapirGrasshopperPlugin.Components
             {
                 return;
             }
+
+            OnResponse(response);
 
             if (embedMetadata)
             {

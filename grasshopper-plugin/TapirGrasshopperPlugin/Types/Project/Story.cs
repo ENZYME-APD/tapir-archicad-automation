@@ -17,6 +17,18 @@ namespace TapirGrasshopperPlugin.Types.Project
 
         [JsonProperty("dispOnSections")]
         public bool DispOnSections;
+
+        // Optional in SetStories, always present in the GetStories response.
+        [JsonProperty(
+            "index",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public int? Index;
+
+        // Only in the GetStories response, from Archicad 28.
+        [JsonProperty(
+            "ifcId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string IfcId;
     }
 
     public class StoriesData

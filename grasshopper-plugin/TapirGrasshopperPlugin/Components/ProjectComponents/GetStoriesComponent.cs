@@ -25,6 +25,15 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             OutNumbers("StoryElevations");
             OutNumbers("StoryHeights");
             OutBooleans("ShowOnSections");
+
+            OutIntegers(
+                "StoryIndices",
+                "Index of each story (0 is the ground floor, basements are negative).");
+
+            OutTexts(
+                "IfcIds",
+                "IFC GlobalId of each story, i.e. of the IfcBuildingStorey it is exported as. " +
+                "Available from Archicad 28.");
         }
 
         protected override void Solve(
@@ -86,6 +95,14 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             da.SetDataList(
                 3,
                 showOnSections);
+
+            da.SetDataList(
+                4,
+                response.Stories.Select(x => x.Index));
+
+            da.SetDataList(
+                5,
+                response.Stories.Select(x => x.IfcId));
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en" data-copy="Copy" data-copied="Copied">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Archicad API coverage - Tapir documentation</title>
+<meta name="description" content="Which parts of the Archicad API the Tapir add-on uses, kept up to date from every issue, pull request and push.">
+<!-- link-preview: the preview of a link to this page shared on Discord, WhatsApp and the like -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tapir">
+<meta property="og:title" content="Archicad API coverage - Tapir documentation">
+<meta property="og:description" content="Which parts of the Archicad API the Tapir add-on uses, kept up to date from every issue, pull request and push.">
+<meta property="og:url" content="https://archicad-api.com/api-coverage/">
+<meta name="twitter:card" content="summary">
+<!-- site-assets -->
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#2D3A30" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#2D3A30">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
+<script>try { var l = /[?&]lang=([A-Za-z]{2})(?:[&#]|$)/.exec (location.search); l = l ? l[1].toLowerCase () : localStorage.getItem ('tapir-lang') || (navigator.language || '').slice (0, 2).toLowerCase (); if (l && l !== 'en') { document.documentElement.setAttribute ('data-i18n-loading', ''); setTimeout (function () { document.documentElement.removeAttribute ('data-i18n-loading'); }, 2000); } } catch (e) {}</script>
+<script src="../assets/site.js" defer></script>
+<link rel="stylesheet" href="../assets/motion.css"><script src="../assets/motion.js" defer></script>
+<script>try { if ((!sessionStorage.getItem ('tapir-splash') || /[?&]splash/.test (location.search)) && !/nomotion/.test (location.search + location.hash) && 'IntersectionObserver' in window && !matchMedia ('(prefers-reduced-motion: reduce)').matches) { var h = document.documentElement; h.classList.add ('m-splash'); var f = function () { h.classList.add ('m-font'); }; setTimeout (f, 2500); if (document.fonts && document.fonts.load) document.fonts.load ('900 56px Fraunces').then (f, f); else f (); } } catch (e) {}</script>
+<!-- /site-assets -->
+<link rel="stylesheet" href="../assets/coverage.css">
+</head>
+<body>
+<!-- site-header -->
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+    <div class="wrap nav">
+        <a class="brand" href="../"><img src="../assets/tapir_mark_cream.svg" alt="" width="30" height="30">Tapir</a>
+        <nav class="site-nav" aria-label="Site"><ul>
+            <li><a href="../start/">Get started</a></li>
+            <li><a href="../docs/" aria-current="true">Docs</a></li>
+            <li><a href="../scripts/">Scripts</a></li>
+            <li><a href="../scripts/share/">Share</a></li>
+            <li><a href="../community/">Community</a></li>
+            <li><a href="../about/">About</a></li>
+        </ul></nav>
+        <div class="right">
+            <button class="toggle" id="theme-toggle" type="button" data-dark="Dark" data-light="Light" hidden><span class="toggle-word">Dark</span><span class="visually-hidden"> mode</span></button>
+            <a class="btn btn-primary btn-sm" href="../start/#install">Download</a>
+        </div>
+    </div>
+</header>
+<!-- /site-header -->
+<div class="page-head">
+    <div class="wrap">
+        <p class="crumb"><a href="../">Tapir</a> / <a href="../docs/">Docs</a> / API coverage</p>
+        <h1>Archicad API <em>coverage.</em></h1>
+        <p>What Tapir covers of Graphisoft's Archicad API, item by item.</p>
+    </div>
+</div>
+<div class="layout">
+<nav class="sidebar" id="sidebar" aria-label="Sections"></nav>
+<main id="main">
+<p class="muted">Which parts of the Archicad API (<span id="archicad-range">every supported Archicad version</span>: C functions with their older names and command ids, and the C++ API) the <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> uses, updated within minutes of every issue and push to main, and within the hour of every pull request. See also the <a href="../archicad-addon/">command reference</a>.</p>
+
+<section aria-labelledby="overview-title" id="overview">
+    <div class="sec-head ref">
+        <h2 id="overview-title">Overview</h2>
+    </div>
+    <div class="hero">
+        <div>
+            <div class="hero-number" id="hero-percent">…</div>
+            <div class="hero-caption" id="hero-caption">Loading the checklist…</div>
+        </div>
+        <div class="tiles" id="tiles"></div>
+    </div>
+    <div class="bar large" id="overall-bar" role="img"></div>
+    <div class="legend" id="legend"></div>
+
+    <h3 class="ref-sub" id="by-part">By part of the API</h3>
+    <div class="scroll"><table id="parts"></table></div>
+
+    <h3 class="ref-sub" id="by-group">By group</h3>
+    <div class="table-actions">
+        <span class="muted">Sort by</span>
+        <div class="options" id="group-sort" role="group" aria-label="Sort groups by">
+            <button type="button" class="option" data-sort="open" aria-pressed="true">most open items</button>
+            <button type="button" class="option" data-sort="coverage" aria-pressed="false">lowest coverage</button>
+            <button type="button" class="option" data-sort="name" aria-pressed="false">name</button>
+        </div>
+        <span class="muted">Select a group to list its items below.</span>
+    </div>
+    <div class="scroll"><table id="groups"></table></div>
+    <div class="table-actions"><button type="button" class="linkbutton" id="groups-more" hidden></button></div>
+</section>
+
+<div class="sec-head ref">
+    <h2 id="checklist">Checklist</h2>
+</div>
+<div class="toolbar" id="toolbar">
+    <button type="button" class="sections-button" id="sections-button" aria-controls="sidebar">☰ Sections</button>
+    <input type="search" id="search" placeholder="Search, e.g. Category or MEP::Pipe" aria-label="Search the checklist">
+    <div class="chips" id="statuses" role="group" aria-label="Statuses to show"></div>
+    <span class="filter-status" id="filter-status" aria-live="polite"></span>
+</div>
+<div id="list"></div>
+</main>
+</div>
+<!-- site-footer -->
+<footer class="site-footer">
+    <div class="wrap">
+        <div class="tblock">
+            <div>
+                <span class="lab">Project</span>
+                <span class="proj">Tapir</span>
+                <p class="note">Open-source automation for Archicad. 100% free and open source (MIT). Maintained by Enzyme APD and the community.</p>
+                <p class="note">Contact: <span class="nowrap">contact@enzyme-apd.com</span></p>
+            </div>
+            <div>
+                <span class="lab">Product</span>
+                <ul>
+                    <li><a href="../start/">Get started</a></li>
+                    <li><a href="../scripts/">Scripts</a></li>
+                    <li><a href="../scripts/share/">Share a script</a></li>
+                    <li><a href="../grasshopper/">Grasshopper</a></li>
+                    <li><a href="../ai/">Tapir and AI</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Docs</span>
+                <ul>
+                    <li><a href="../docs/">All docs</a></li>
+                    <li><a href="../archicad-addon/">Commands</a></li>
+                    <li><a href="../api-coverage/">API coverage</a></li>
+                    <li><a href="../gh-coverage/">Grasshopper coverage</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Community</span>
+                <ul>
+                    <li><a href="https://discord.gg/NAnSennmpY">Discord</a></li>
+                    <li><a href="https://github.com/ENZYME-APD/tapir-archicad-automation">GitHub</a></li>
+                    <li><a href="../tutorials/">Tutorials</a></li>
+                    <li><a href="../community/#bots">How fixes happen</a></li>
+                    <li><a href="../roadmap/">Roadmap</a></li>
+                    <li><a href="../about/">About Tapir</a></li>
+                </ul>
+            </div>
+            <div>
+                <div class="rev" data-live="release" hidden>
+                    <span class="lab">Revision</span>
+                    <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest" data-live-value="release"></a>
+                </div>
+                <span class="lab">Licence</span>
+                <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/LICENSE">MIT</a>
+            </div>
+        </div>
+        <p class="fine">Not affiliated with Graphisoft. Archicad is a trademark of Graphisoft SE.</p>
+    </div>
+</footer>
+<!-- /site-footer -->
+<script>
+const DATA_URL = new URLSearchParams (location.search).get ('data') ||
+    'https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/api-coverage.json';
+const REPO = 'https://github.com/ENZYME-APD/tapir-archicad-automation';
+// status (as in the data), short name on its pill, label, swatch and bar class, counted as applicable.
+// The same set as on ../gh-coverage/ (coverage.css draws the swatches).
+const STATUSES = [
+    ['done', 'Used', 'used on main', 'done', true], ['merged', 'Merged', 'merged, not yet released', 'merged', true],
+    ['in progress', 'In PR', 'in an open pull request', 'progress', true], ['claimed', 'Claimed', 'claimed by an open issue', 'claimed', true],
+    ['open', 'Open', 'open', 'open', true], ['skipped', 'Skipped', 'skipped by a maintainer', 'skipped', false],
+    ['not applicable', 'N/A', 'not applicable', 'na', false],
+];
+const STATUS = Object.fromEntries (STATUSES.map (s => [s[0], s]));
+const PARTS = [['c', 'C functions', ''], ['old', 'Archicad 25/26 only', 'older C functions and command ids'], ['cpp', 'C++ API', 'ACAPI:: and IFCAPI::']];
+const GROUPS_SHOWN = 12;
+let data = null;
+let groupFilter = '';
+let partFilter = '';
+let versionFilter = 0;
+let groupSort = 'open';
+let showAllGroups = false;
+
+function el (tag, attrs = {}, ...children) {
+    const node = document.createElement (tag);
+    for (const [k, v] of Object.entries (attrs)) {
+        if (k === 'text') node.textContent = v; else if (k === 'class') node.className = v; else node.setAttribute (k, v);
+    }
+    for (const child of children) node.append (child);
+    return node;
+}
+
+function swatch (cls) {
+    return el ('span', { class: 'swatch ' + cls, 'aria-hidden': 'true' });
+}
+
+function statusPill (status) {
+    const [, short, label, cls] = STATUS[status] || [status, status, status, 'open'];
+    return el ('span', { class: 'pill status', title: label }, swatch (cls), short);
+}
+
+function part (item) {
+    if (item.kind.startsWith ('C++')) return 'cpp';
+    if (item.kind === 'C function') return 'c';
+    return 'old';
+}
+
+function tally (items) {
+    const counts = Object.fromEntries (STATUSES.map (s => [s[0], 0]));
+    for (const item of items) counts[item.status] = (counts[item.status] || 0) + 1;
+    counts.applicable = items.length - counts['not applicable'] - counts.skipped;
+    counts.used = counts.done + counts.merged;
+    counts.percent = counts.applicable ? Math.floor (100 * counts.used / counts.applicable) : 0;
+    return counts;
+}
+
+function bar (counts, large) {
+    const node = el ('div', { class: 'bar' + (large ? ' large' : ''), role: 'img' });
+    const parts = STATUSES.filter (s => s[4] && counts[s[0]]);
+    node.setAttribute ('aria-label', parts.map (s => `${counts[s[0]]} ${s[2]}`).join (', '));
+    for (const [status, , label, cls] of parts) {
+        const segment = el ('span', { class: cls, title: `${counts[status]} ${label} (${Math.round (100 * counts[status] / counts.applicable)} %)` });
+        if (cls !== 'open') segment.style.width = (100 * counts[status] / counts.applicable) + '%';
+        node.append (segment);
+    }
+    return node;
+}
+
+function usedCell (counts) {
+    return el ('td', { class: 'num' }, `${counts.percent} %`, el ('span', { class: 'sub', text: `${counts.used} of ${counts.applicable}` }));
+}
+
+function plural (count, word) {
+    return `${count.toLocaleString ()} ${word}${count === 1 ? '' : 's'}`;
+}
+
+// The issue a "claim" link opens. Its body is written here in the layout of the
+// "Archicad API request" form rather than through the form itself: the GitHub
+// mobile app ignores issue forms (the issue then had a title and no body), and
+// the form cannot carry the declaration the issue bot needs, having no DevKit.
+function claimBody (item) {
+    const v = item.versions;
+    const versions = 'Archicad ' + v[0] + (v.length > 1 ? '–' + v[v.length - 1] : '');
+    const declaration = [`// ${item.header || 'DevKit'} (${versions})`];
+    if (item.brief) declaration.push ('// ' + item.brief);
+    if (item.olderNames.length) declaration.push ('// Older names: ' + item.olderNames.join (', '));
+    if (item.declaration) declaration.push (item.declaration);
+    return [
+        '### API functions', '', item.id, '',
+        '### What should Tapir let you do?', '',
+        `Expose \`${item.id}\` (${item.kind}, ${item.group}) through a Tapir JSON command, in the command group it belongs to: ` +
+            'a new option of an existing command where one fits, otherwise a new command. Its parameters become the command\'s ' +
+            'input and its result the response.', '',
+        '<!-- Add what you would use it for, and anything the command should do around it. -->', '',
+        '### Declarations from the DevKit (optional)', '', '```cpp', ...declaration, '```', '',
+        '### Archicad versions you need it in', '', v.join (', '),
+    ].join ('\n');
+}
+
+function claimLink (item) {
+    const params = new URLSearchParams ({ title: 'Expose ' + item.id, body: claimBody (item) });
+    return el ('a', { href: REPO + '/issues/new?' + params, text: 'claim', title: 'Open an "Archicad API request" issue for this item' });
+}
+
+function renderOverview () {
+    const counts = tally (data.items);
+    document.getElementById ('hero-percent').textContent = counts.percent + ' %';
+    document.getElementById ('hero-caption').replaceChildren (
+        `of the ${counts.applicable.toLocaleString ()} applicable items are used (${counts.used.toLocaleString ()}). `,
+        `${(counts['not applicable'] + counts.skipped).toLocaleString ()} more are not applicable or skipped. Updated ${data.generatedAt}.`);
+    const tiles = document.getElementById ('tiles');
+    tiles.replaceChildren (...STATUSES.filter (s => s[4]).map (([status, , label, cls]) => {
+        const tile = el ('button', { type: 'button', class: 'tile', 'data-status': status, 'aria-pressed': 'false', title: 'Show only: ' + label },
+            el ('span', { class: 'value' }, swatch (cls), counts[status].toLocaleString ()), el ('span', { class: 'label', text: label }));
+        tile.addEventListener ('click', () => soloStatus (status));
+        return tile;
+    }));
+    const overall = bar (counts, true);
+    overall.id = 'overall-bar';
+    document.getElementById ('overall-bar').replaceWith (overall);
+    document.getElementById ('legend').replaceChildren (...STATUSES.map (([status, , label]) =>
+        el ('span', {}, statusPill (status), label)));
+
+    const parts = document.getElementById ('parts');
+    parts.replaceChildren (el ('thead', {}, el ('tr', {}, el ('th', { text: 'Part' }), el ('th', { class: 'num', text: 'Used' }),
+        el ('th', { text: 'Progress' }), el ('th', { class: 'num', text: 'Open' }))));
+    const body = el ('tbody');
+    for (const [key, name, note] of PARTS) {
+        const c = tally (data.items.filter (i => part (i) === key));
+        const button = el ('button', { type: 'button', class: 'linkbutton', text: name });
+        button.addEventListener ('click', () => { setPart (key); groupFilter = ''; render (); scrollToList (); });
+        const nameCell = el ('td', {}, button);
+        if (note) nameCell.append (el ('span', { class: 'sub', text: note }));
+        body.append (el ('tr', {}, nameCell, usedCell (c), el ('td', { class: 'barcell' }, bar (c)), el ('td', { class: 'num', text: String (c.open) })));
+    }
+    parts.append (body);
+    renderGroupTable ();
+}
+
+function groupStats () {
+    const groups = new Map ();
+    for (const item of data.items) {
+        if (!groups.has (item.group)) groups.set (item.group, []);
+        groups.get (item.group).push (item);
+    }
+    return [...groups.entries ()].map (([name, items]) => ({ name, counts: tally (items) })).filter (g => g.counts.applicable > 0);
+}
+
+function renderGroupTable () {
+    const groups = groupStats ();
+    const sorters = {
+        open: (a, b) => b.counts.open - a.counts.open || a.name.localeCompare (b.name),
+        coverage: (a, b) => a.counts.percent - b.counts.percent || b.counts.applicable - a.counts.applicable,
+        name: (a, b) => a.name.localeCompare (b.name),
+    };
+    groups.sort (sorters[groupSort]);
+    const shown = showAllGroups ? groups : groups.slice (0, GROUPS_SHOWN);
+    const table = document.getElementById ('groups');
+    table.replaceChildren (el ('thead', {}, el ('tr', {}, el ('th', { text: 'Group' }), el ('th', { class: 'num', text: 'Used' }),
+        el ('th', { text: 'Progress' }), el ('th', { class: 'num', text: 'Open' }))));
+    const body = el ('tbody');
+    for (const group of shown) {
+        const button = el ('button', { type: 'button', class: 'linkbutton', text: group.name });
+        button.addEventListener ('click', () => showGroup (group.name));
+        body.append (el ('tr', {}, el ('td', {}, button), usedCell (group.counts),
+            el ('td', { class: 'barcell' }, bar (group.counts)), el ('td', { class: 'num', text: String (group.counts.open) })));
+    }
+    table.append (body);
+    const more = document.getElementById ('groups-more');
+    more.hidden = groups.length <= GROUPS_SHOWN;
+    more.textContent = showAllGroups ? `Show the first ${GROUPS_SHOWN} groups` : `Show all ${groups.length} groups`;
+}
+
+function scrollToList () {
+    document.getElementById ('toolbar').scrollIntoView ({ block: 'start' });
+}
+
+function showGroup (name) {
+    groupFilter = name;
+    document.getElementById ('search').value = '';
+    setPart ('');
+    render ();
+    scrollToList ();
+}
+
+function soloStatus (status) {
+    const boxes = [...document.querySelectorAll ('#statuses .chip')];
+    const alreadySolo = boxes.every (b => (b.dataset.status === status) === (b.getAttribute ('aria-pressed') === 'true'));
+    for (const box of boxes) {
+        // Clicking the tile of the only shown status shows the default set again.
+        const on = alreadySolo ? box.dataset.status !== 'not applicable' : box.dataset.status === status;
+        box.setAttribute ('aria-pressed', String (on));
+    }
+    render ();
+    scrollToList ();
+}
+
+function itemRow (item) {
+    const li = el ('li', {}, statusPill (item.status), ' ', el ('code', { text: item.id }));
+    if (item.versions.length !== data.versions.length) {
+        const v = item.versions;
+        li.append (' ', el ('span', { class: 'tag', text: 'AC' + v[0] + (v.length > 1 ? '–' + v[v.length - 1] : '') }));
+    }
+    if (item.brief) li.append (' – ' + item.brief);
+    if (item.olderNames.length) li.append (' ', el ('span', { class: 'tag', text: '(was ' + item.olderNames.join (', ') + ')' }));
+    for (const pr of item.pullRequests) li.append (' ', el ('a', { href: `${REPO}/pull/${pr.number}`, title: pr.title, text: '#' + pr.number }));
+    for (const issue of item.issues) li.append (' ', el ('a', { href: `${REPO}/issues/${issue.number}`, title: issue.title, text: '#' + issue.number }));
+    if (item.reason) li.append (' ', el ('em', { class: 'muted', text: '(' + item.reason + ')' }));
+    if (item.status === 'open') li.append (' · ', claimLink (item));
+    return li;
+}
+
+function render () {
+    const query = document.getElementById ('search').value.trim ().toLowerCase ();
+    const wantedPart = partFilter;
+    const version = versionFilter;
+    const wanted = new Set ([...document.querySelectorAll ('#statuses .chip[aria-pressed="true"]')].map (b => b.dataset.status));
+    for (const tile of document.querySelectorAll ('.tile')) {
+        tile.setAttribute ('aria-pressed', String (wanted.size === 1 && wanted.has (tile.dataset.status)));
+    }
+    const groups = new Map ();
+    let total = 0;
+    for (const item of data.items) {
+        if (!wanted.has (item.status)) continue;
+        if (groupFilter && item.group !== groupFilter) continue;
+        if (wantedPart && part (item) !== wantedPart) continue;
+        if (version && !item.versions.includes (version)) continue;
+        if (query && !(item.id.toLowerCase ().includes (query) || item.brief.toLowerCase ().includes (query) ||
+            item.olderNames.some (n => n.toLowerCase ().includes (query)))) continue;
+        if (!groups.has (item.group)) groups.set (item.group, []);
+        groups.get (item.group).push (item);
+        total++;
+    }
+    const status = document.getElementById ('filter-status');
+    status.replaceChildren (`${plural (total, 'item')} in ${plural (groups.size, 'group')}`);
+    if (groupFilter) {
+        const clear = el ('button', { type: 'button', text: `Group: ${groupFilter} ✕`, title: 'Show all groups' });
+        clear.addEventListener ('click', () => { groupFilter = ''; render (); });
+        status.append (clear);
+    }
+    for (const link of document.querySelectorAll ('#sidebar-groups .sidebar-link')) {
+        if (link.dataset.group === groupFilter) link.setAttribute ('aria-current', 'true'); else link.removeAttribute ('aria-current');
+    }
+
+    const list = document.getElementById ('list');
+    if (!groups.size) { list.replaceChildren (el ('p', { class: 'muted', text: 'Nothing matches.' })); return; }
+    const sorted = [...groups.entries ()].sort ((a, b) => b[1].length - a[1].length || a[0].localeCompare (b[0]));
+    const all = new Map (groupStats ().map (g => [g.name, g.counts]));
+    list.replaceChildren (...sorted.map (([group, items]) => {
+        const counts = all.get (group) || tally (items);
+        const summary = el ('summary', {}, el ('span', { class: 'name', text: group }),
+            el ('span', { class: 'counts', text: `${items.length} shown · ${counts.percent} % used` }));
+        if (counts.applicable) summary.append (bar (counts));
+        const details = el ('details', { class: 'group' }, summary);
+        // Items are rendered when a group is opened; some groups have a thousand.
+        let filled = false;
+        const fill = () => { if (!filled) { filled = true; details.append (el ('ul', { class: 'items' }, ...items.map (itemRow))); } };
+        details.addEventListener ('toggle', () => { if (details.open) fill (); });
+        if (query || groupFilter || sorted.length <= 3) { fill (); details.open = true; }
+        return details;
+    }));
+}
+
+function options (container, values, current, onSelect) {
+    // A row of toggle buttons where exactly one is pressed.
+    container.replaceChildren (...values.map (([value, label, title]) => {
+        const button = el ('button', { type: 'button', class: 'option', 'data-value': String (value), 'aria-pressed': String (value === current), text: label });
+        if (title) button.title = title;
+        button.addEventListener ('click', () => {
+            for (const other of container.children) other.setAttribute ('aria-pressed', String (other === button));
+            onSelect (value);
+        });
+        return button;
+    }));
+}
+
+function setPart (key) {
+    partFilter = key;
+    for (const button of document.querySelectorAll ('#sidebar-parts .option')) {
+        button.setAttribute ('aria-pressed', String (button.dataset.value === key));
+    }
+}
+
+function renderSidebar () {
+    const sidebar = document.getElementById ('sidebar');
+    const sections = el ('ul');
+    for (const [id, label] of [['overview', 'Overview'], ['by-part', 'By part of the API'], ['by-group', 'By group'], ['checklist', 'Checklist']]) {
+        sections.append (el ('li', {}, el ('a', { class: 'sidebar-link', href: '#' + id, text: label })));
+    }
+    const parts = el ('div', { class: 'options', id: 'sidebar-parts', role: 'group', 'aria-label': 'Part of the API' });
+    options (parts, [['', 'All'], ['c', 'C'], ['old', 'AC25/26 only'], ['cpp', 'C++']], partFilter, key => { setPart (key); render (); });
+    const versions = el ('div', { class: 'options', role: 'group', 'aria-label': 'Archicad version' });
+    options (versions, [[0, 'Any']].concat (data.versions.map (v => [v, String (v), 'Items in Archicad ' + v])), versionFilter, v => { versionFilter = v; render (); });
+    const groups = el ('ul', { id: 'sidebar-groups' });
+    for (const group of groupStats ().sort ((a, b) => a.name.localeCompare (b.name))) {
+        const link = el ('button', { type: 'button', class: 'sidebar-link', 'data-group': group.name, title: `${group.counts.open} open of ${group.counts.applicable}` },
+            el ('span', { text: group.name }), el ('span', { class: 'count', text: String (group.counts.open) }));
+        link.addEventListener ('click', () => showGroup (group.name));
+        groups.append (el ('li', {}, link));
+    }
+    sidebar.replaceChildren (el ('div', { class: 'sidebar-title', text: 'Sections' }), sections,
+        el ('div', { class: 'sidebar-title', text: 'Part of the API' }), parts,
+        el ('div', { class: 'sidebar-title', text: 'Archicad version' }), versions,
+        el ('div', { class: 'sidebar-title', text: 'Groups · open items' }), groups);
+    // Close the drawer after choosing a section or group on narrow screens.
+    sidebar.addEventListener ('click', event => {
+        if (event.target.closest ('a, #sidebar-groups button')) document.body.classList.remove ('sidebar-open');
+    });
+}
+
+function updateToolbarHeight () {
+    document.documentElement.style.setProperty ('--toolbar-height', document.getElementById ('toolbar').offsetHeight + 'px');
+}
+
+async function main () {
+    const statuses = document.getElementById ('statuses');
+    for (const [value, , label, cls] of STATUSES) {
+        const chip = el ('button', { type: 'button', class: 'chip', 'data-status': value, 'aria-pressed': String (value !== 'not applicable'), title: label, 'aria-label': label },
+            swatch (cls), el ('span', { class: 'chip-label', text: label }));
+        chip.addEventListener ('click', () => { chip.setAttribute ('aria-pressed', String (chip.getAttribute ('aria-pressed') !== 'true')); render (); });
+        statuses.append (chip);
+    }
+    for (const url of [DATA_URL, 'api-coverage.json']) {
+        try {
+            const response = await fetch (url, { cache: 'no-cache' });
+            if (response.ok) { data = await response.json (); break; }
+        } catch (error) { /* try the next source */ }
+    }
+    if (!data) {
+        document.getElementById ('hero-caption').textContent = 'The checklist could not be loaded. Reload the page in a minute.';
+        return;
+    }
+    // The versions come from the DevKits the checklist was generated from.
+    const v = data.versions;
+    if (v.length) document.getElementById ('archicad-range').textContent = 'Archicad ' + v[0] + (v.length > 1 ? '–' + v[v.length - 1] : '');
+    document.getElementById ('search').addEventListener ('input', render);
+    for (const button of document.querySelectorAll ('#group-sort .option')) {
+        button.addEventListener ('click', () => {
+            groupSort = button.dataset.sort;
+            for (const other of document.querySelectorAll ('#group-sort .option')) other.setAttribute ('aria-pressed', String (other === button));
+            renderGroupTable ();
+        });
+    }
+    document.getElementById ('sections-button').addEventListener ('click', () => document.body.classList.toggle ('sidebar-open'));
+    document.addEventListener ('keydown', event => { if (event.key === 'Escape') document.body.classList.remove ('sidebar-open'); });
+    document.addEventListener ('click', event => {
+        if (!event.target.closest ('#sidebar, #sections-button')) document.body.classList.remove ('sidebar-open');
+    });
+    renderSidebar ();
+    document.getElementById ('groups-more').addEventListener ('click', () => { showAllGroups = !showAllGroups; renderGroupTable (); });
+    renderOverview ();
+    render ();
+    updateToolbarHeight ();
+    window.addEventListener ('resize', updateToolbarHeight);
+}
+main ();
+</script>
+</body>
+</html>

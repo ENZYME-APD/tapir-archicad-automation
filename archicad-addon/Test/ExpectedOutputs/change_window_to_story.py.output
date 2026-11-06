@@ -1,0 +1,22 @@
+Command: ChangeWindow
+Parameters:
+{
+    "windowType": "FloorPlan",
+    "storyIndex": 2
+}
+Response:
+{
+    "success": true
+}
+Active story after ChangeWindow: 2
+Command: ChangeWindow
+Parameters:
+{
+    "windowType": "FloorPlan",
+    "storyIndex": 0
+}
+Response:
+{
+    "success": true
+}
+Active story after switching back: 0

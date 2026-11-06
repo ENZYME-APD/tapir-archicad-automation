@@ -10,7 +10,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public CreateTextsComponent()
             : base(
                 "CreateTexts",
-                "Create Text elements based on the given parameters.",
+                "Create Text elements based on the given parameters. " +
+                "Multi-run content and the further style settings (effects, frame, anchor, etc.) can be " +
+                "given through the AdditionalSettings input (runs, style); runs take precedence over Texts.",
                 GroupNames.ElementCreation)
         {
         }
@@ -32,6 +34,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         };
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;
+
+        private static readonly List<Field> TrailingFieldDefinitions = new List<Field>
+        {
+            new Field("FontNames", "style.fontName", FieldKind.Text, "Font of the text, by name (e.g. Arial), as the Font attributes carry it. An element whose font name no loaded font has fails."),
+            TrailingAdditionalSettingsField
+        };
+
+        protected override IReadOnlyList<Field> TrailingFields => TrailingFieldDefinitions;
 
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.CreateTexts;

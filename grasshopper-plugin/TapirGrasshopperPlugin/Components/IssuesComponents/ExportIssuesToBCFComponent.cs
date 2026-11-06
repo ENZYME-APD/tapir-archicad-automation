@@ -1,4 +1,5 @@
 using Grasshopper.Kernel;
+using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Issues;
@@ -37,11 +38,19 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 "Align BCF views by Archicad Survey Point or Archicad Project Origin.",
                 true);
 
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "Overwrite",
+                "false refuses to export when a file already exists at ExportedFilePath, and writes " +
+                "nothing. Default is true.",
+                true);
+
             SetOptionality(
                 new[]
                 {
                     2,
-                    3
+                    3,
+                    4
                 });
         }
 
@@ -70,15 +79,27 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 3,
                 true);
 
-            SetCadValues(
-                CommandName,
+            var parameters = JObject.FromObject(
                 new
                 {
                     issues = issues.Issues,
                     exportPath,
                     useExternalId,
                     alignBySurveyPoint
-                },
+                });
+
+            // Only sent when it differs from the command's default.
+            bool overwrite = da.GetOptional(
+                4,
+                true);
+            if (!overwrite)
+            {
+                parameters["overwrite"] = false;
+            }
+
+            SetCadValues(
+                CommandName,
+                parameters,
                 ToAddOn);
         }
 

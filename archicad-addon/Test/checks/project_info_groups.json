@@ -1,0 +1,406 @@
+{
+  "title": "Project Info groups and their fields: create, move, rename and delete read back in GetProjectInfoGroups",
+  "minTapir": "1.8.1",
+  "minArchicad": "30",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "groups of the project",
+      "command": "GetProjectInfoGroups",
+      "creates": false,
+      "params": {},
+      "save": {
+        "first": "projectInfoGroups[0].projectInfoGroupId.guid"
+      },
+      "expect": [
+        { "path": "projectInfoGroups[0].name", "exists": true, "name": "first group has a name" },
+        { "path": "projectInfoGroups[0].fields[0].projectInfoFieldId.guid", "exists": true, "name": "first group has fields" }
+      ]
+    },
+    {
+      "id": "create groups A and B",
+      "command": "CreateProjectInfoGroups",
+      "creates": false,
+      "params": {
+        "projectInfoGroups": [
+          { "name": "Tapir check group A" },
+          { "name": "Tapir check group B" }
+        ]
+      },
+      "save": {
+        "groupA": "projectInfoGroupIdsOrErrors[0].projectInfoGroupId.guid",
+        "groupB": "projectInfoGroupIdsOrErrors[1].projectInfoGroupId.guid"
+      },
+      "expect": [
+        { "path": "projectInfoGroupIdsOrErrors", "len": 2, "name": "one result per group" }
+      ]
+    },
+    {
+      "id": "[create a group with a used name]",
+      "command": "CreateProjectInfoGroups",
+      "creates": false,
+      "params": {
+        "projectInfoGroups": [
+          { "name": "Tapir check group A" }
+        ]
+      },
+      "expect": [
+        { "path": "projectInfoGroupIdsOrErrors", "len": 1, "name": "one result per group" },
+        { "path": "projectInfoGroupIdsOrErrors[0].error.code", "exists": true, "name": "failed" }
+      ]
+    },
+    {
+      "id": "move A before the first group",
+      "command": "MoveProjectInfoGroups",
+      "creates": false,
+      "params": {
+        "projectInfoGroups": [
+          { "projectInfoGroupId": { "guid": "${groupA}" }, "beforeProjectInfoGroupId": { "guid": "${first}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "moved" }
+      ]
+    },
+    {
+      "id": "read A first",
+      "command": "GetProjectInfoGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "projectInfoGroups[0].name", "eq": "Tapir check group A", "name": "A is first" },
+        { "path": "projectInfoGroups[0].fields", "len": 0, "name": "A has no fields" }
+      ]
+    },
+    {
+      "id": "move B before A",
+      "command": "MoveProjectInfoGroups",
+      "creates": false,
+      "params": {
+        "projectInfoGroups": [
+          { "projectInfoGroupId": { "guid": "${groupB}" }, "beforeProjectInfoGroupId": { "guid": "${groupA}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "moved" }
+      ]
+    },
+    {
+      "id": "read B, A",
+      "command": "GetProjectInfoGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "projectInfoGroups[0].name", "eq": "Tapir check group B", "name": "B is first" },
+        { "path": "projectInfoGroups[1].name", "eq": "Tapir check group A", "name": "A is second" }
+      ]
+    },
+    {
+      "id": "create fields 1 and 2 in A",
+      "command": "CreateProjectInfoFields",
+      "creates": false,
+      "params": {
+        "projectInfoFields": [
+          { "projectInfoName": "Tapir check field 1", "projectInfoValue": "Tapir check value 1", "projectInfoGroupId": { "guid": "${groupA}" } },
+          { "projectInfoName": "Tapir check field 2", "projectInfoGroupId": { "guid": "${groupA}" } }
+        ]
+      },
+      "save": {
+        "field1": "fields[0].projectInfoFieldId.guid",
+        "field2": "fields[1].projectInfoFieldId.guid"
+      },
+      "expect": [
+        { "path": "fields", "len": 2, "name": "one result per field" },
+        { "path": "fields[0].projectInfoId", "exists": true, "name": "autotext key of field 1" },
+        { "path": "fields[0].projectInfoValue", "eq": "Tapir check value 1", "name": "value of field 1 answered" }
+      ]
+    },
+    {
+      "id": "read fields 1, 2 in A",
+      "command": "GetProjectInfoGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "projectInfoGroups[0].fields", "len": 0, "name": "B has no fields" },
+        { "path": "projectInfoGroups[1].fields", "len": 2, "name": "A has two fields" },
+        { "path": "projectInfoGroups[1].fields[0].name", "eq": "Tapir check field 1", "name": "field 1 first" },
+        { "path": "projectInfoGroups[1].fields[0].value", "eq": "Tapir check value 1", "name": "value of field 1" },
+        { "path": "projectInfoGroups[1].fields[0].projectInfoId", "exists": true, "name": "autotext key of field 1" },
+        { "path": "projectInfoGroups[1].fields[1].name", "eq": "Tapir check field 2", "name": "field 2 second" },
+        { "path": "projectInfoGroups[1].fields[1].value", "eq": "", "name": "field 2 empty" }
+      ]
+    },
+    {
+      "id": "move field 2 before field 1",
+      "command": "MoveProjectInfoFields",
+      "creates": false,
+      "params": {
+        "projectInfoFields": [
+          { "projectInfoFieldId": { "guid": "${field2}" }, "projectInfoGroupId": { "guid": "${groupA}" }, "beforeProjectInfoFieldId": { "guid": "${field1}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "moved" }
+      ]
+    },
+    {
+      "id": "read fields 2, 1 in A",
+      "command": "GetProjectInfoGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "projectInfoGroups[1].fields[0].name", "eq": "Tapir check field 2", "name": "field 2 first" },
+        { "path": "projectInfoGroups[1].fields[1].name", "eq": "Tapir check field 1", "name": "field 1 second" }
+      ]
+    },
+    {
+      "id": "move field 2 to the end of B",
+      "command": "MoveProjectInfoFields",
+      "creates": false,
+      "params": {
+        "projectInfoFields": [
+          { "projectInfoFieldId": { "guid": "${field2}" }, "projectInfoGroupId": { "guid": "${groupB}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "moved" }
+      ]
+    },
+    {
+      "id": "read field 2 in B, field 1 in A",
+      "command": "GetProjectInfoGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "projectInfoGroups[0].fields", "len": 1, "name": "B has one field" },
+        { "path": "projectInfoGroups[0].fields[0].name", "eq": "Tapir check field 2", "name": "field 2 in B" },
+        { "path": "projectInfoGroups[1].fields", "len": 1, "name": "A has one field" },
+        { "path": "projectInfoGroups[1].fields[0].name", "eq": "Tapir check field 1", "name": "field 1 in A" }
+      ]
+    },
+    {
+      "id": "[move a field that does not exist]",
+      "command": "MoveProjectInfoFields",
+      "creates": false,
+      "params": {
+        "projectInfoFields": [
+          { "projectInfoFieldId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "projectInfoGroupId": { "guid": "${groupA}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per field" },
+        { "path": "executionResults[0].success", "eq": false, "name": "failed" }
+      ]
+    },
+    {
+      "id": "rename field 1",
+      "command": "RenameProjectInfoFields",
+      "creates": false,
+      "params": {
+        "projectInfoFields": [
+          { "projectInfoFieldId": { "guid": "${field1}" }, "name": "Tapir check field 1 renamed" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "renamed" }
+      ]
+    },
+    {
+      "id": "read the new name of field 1",
+      "command": "GetProjectInfoGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "projectInfoGroups[1].fields[0].name", "eq": "Tapir check field 1 renamed", "name": "new name" },
+        { "path": "projectInfoGroups[1].fields[0].value", "eq": "Tapir check value 1", "name": "value kept" }
+      ]
+    },
+    {
+      "id": "[rename a field that does not exist]",
+      "command": "RenameProjectInfoFields",
+      "creates": false,
+      "params": {
+        "projectInfoFields": [
+          { "projectInfoFieldId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "name": "Tapir check field X" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per field" },
+        { "path": "executionResults[0].success", "eq": false, "name": "failed" }
+      ]
+    },
+    {
+      "id": "delete field 2 by its id",
+      "command": "DeleteProjectInfoFields",
+      "creates": false,
+      "params": {
+        "projectInfoFieldIds": [
+          { "projectInfoFieldId": { "guid": "${field2}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per field" },
+        { "path": "executionResults[0].success", "eq": true, "name": "deleted" }
+      ]
+    },
+    {
+      "id": "read B without field 2",
+      "command": "GetProjectInfoGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "projectInfoGroups[0].fields", "len": 0, "name": "B has no fields" },
+        { "path": "projectInfoGroups[1].fields", "len": 1, "name": "A keeps field 1" }
+      ]
+    },
+    {
+      "id": "[delete the deleted field 2 again]",
+      "command": "DeleteProjectInfoFields",
+      "creates": false,
+      "params": {
+        "projectInfoFieldIds": [
+          { "projectInfoFieldId": { "guid": "${field2}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "failed: the field is gone" }
+      ]
+    },
+    {
+      "id": "rename A",
+      "command": "RenameProjectInfoGroups",
+      "creates": false,
+      "params": {
+        "projectInfoGroups": [
+          { "projectInfoGroupId": { "guid": "${groupA}" }, "name": "Tapir check group A renamed" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "renamed" }
+      ]
+    },
+    {
+      "id": "read the new name of A",
+      "command": "GetProjectInfoGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "projectInfoGroups[1].name", "eq": "Tapir check group A renamed", "name": "new name" },
+        { "path": "projectInfoGroups[1].fields", "len": 1, "name": "fields kept" }
+      ]
+    },
+    {
+      "id": "[rename a group that does not exist]",
+      "command": "RenameProjectInfoGroups",
+      "creates": false,
+      "params": {
+        "projectInfoGroups": [
+          { "projectInfoGroupId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "name": "Tapir check group X" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per group" },
+        { "path": "executionResults[0].success", "eq": false, "name": "failed" }
+      ]
+    },
+    {
+      "id": "move B to the end",
+      "command": "MoveProjectInfoGroups",
+      "creates": false,
+      "params": {
+        "projectInfoGroups": [
+          { "projectInfoGroupId": { "guid": "${groupB}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "moved" }
+      ]
+    },
+    {
+      "id": "read A first, B gone from the front",
+      "command": "GetProjectInfoGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "projectInfoGroups[0].name", "eq": "Tapir check group A renamed", "name": "A is first" },
+        { "path": "projectInfoGroups[1].name", "ne": "Tapir check group B", "name": "B is not second" }
+      ]
+    },
+    {
+      "id": "[move a group that does not exist]",
+      "command": "MoveProjectInfoGroups",
+      "creates": false,
+      "params": {
+        "projectInfoGroups": [
+          { "projectInfoGroupId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per group" },
+        { "path": "executionResults[0].success", "eq": false, "name": "failed" }
+      ]
+    },
+    {
+      "id": "delete A with its custom field",
+      "command": "DeleteProjectInfoGroups",
+      "creates": false,
+      "params": {
+        "projectInfoGroups": [
+          { "projectInfoGroupId": { "guid": "${groupA}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per group" },
+        { "path": "executionResults[0].success", "eq": true, "name": "deleted" }
+      ]
+    },
+    {
+      "id": "read A gone",
+      "command": "GetProjectInfoGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "projectInfoGroups[0].name", "ne": "Tapir check group A renamed", "name": "A is no longer first" }
+      ]
+    },
+    {
+      "id": "[delete the deleted group A again]",
+      "command": "DeleteProjectInfoGroups",
+      "creates": false,
+      "params": {
+        "projectInfoGroups": [
+          { "projectInfoGroupId": { "guid": "${groupA}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "failed: the group is gone" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteProjectInfoFields",
+      "params": {
+        "projectInfoFieldIds": [ { "projectInfoFieldId": { "guid": "${field1}" } } ]
+      }
+    },
+    {
+      "command": "DeleteProjectInfoFields",
+      "params": {
+        "projectInfoFieldIds": [ { "projectInfoFieldId": { "guid": "${field2}" } } ]
+      }
+    },
+    {
+      "command": "DeleteProjectInfoGroups",
+      "params": {
+        "projectInfoGroups": [ { "projectInfoGroupId": { "guid": "${groupA}" } } ]
+      }
+    },
+    {
+      "command": "DeleteProjectInfoGroups",
+      "params": {
+        "projectInfoGroups": [ { "projectInfoGroupId": { "guid": "${groupB}" } } ]
+      }
+    }
+  ]
+}

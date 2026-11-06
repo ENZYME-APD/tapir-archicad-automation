@@ -35,6 +35,15 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             OutText(nameof(GeoReferencingParameters.XAxisAbscissa));
             OutText(nameof(GeoReferencingParameters.XAxisOrdinate));
             OutText(nameof(GeoReferencingParameters.Scale));
+            OutText(nameof(SurveyPointPositionInProject.PositionInProjectX));
+            OutText(nameof(SurveyPointPositionInProject.PositionInProjectY));
+            OutText(nameof(SurveyPointPositionInProject.PositionInProjectZ));
+            OutBoolean(
+                nameof(SurveyPoint.IsVisible),
+                "Whether the survey point is shown in the project.");
+            OutBoolean(
+                nameof(SurveyPoint.IsLocked),
+                "Whether the survey point is locked, so it cannot be moved. Empty before Archicad 26.");
         }
 
         protected override void Solve(
@@ -98,6 +107,30 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             da.SetData(
                 15,
                 response.Survey.GeoReferencingParams.Scale);
+            if (response.Survey.PositionInProject != null)
+            {
+                da.SetData(
+                    16,
+                    response.Survey.PositionInProject.PositionInProjectX);
+                da.SetData(
+                    17,
+                    response.Survey.PositionInProject.PositionInProjectY);
+                da.SetData(
+                    18,
+                    response.Survey.PositionInProject.PositionInProjectZ);
+            }
+            if (response.Survey.IsVisible.HasValue)
+            {
+                da.SetData(
+                    19,
+                    response.Survey.IsVisible.Value);
+            }
+            if (response.Survey.IsLocked.HasValue)
+            {
+                da.SetData(
+                    20,
+                    response.Survey.IsLocked.Value);
+            }
         }
 
         protected override System.Drawing.Bitmap Icon =>

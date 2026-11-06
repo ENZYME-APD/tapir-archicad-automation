@@ -1,10 +1,38 @@
 name: Archicad Add-On Build Check
 
-on: [push, pull_request]
+# Pull requests that only change files in the skip list of
+# .github/actions/build-gate - docs/**, archicad-addon/Test/**,
+# archicad-addon/Examples/**, archicad-addon/Workflows/**, builtin-scripts/**,
+# marketplace/**, branding/**, **/*.md - build nothing: the `changes` job
+# finds that out and build_win and build_mac are skipped by their `if:`, so
+# their checks still appear, as skipped, which the bot PR steward, auto-merge
+# and GitHub's required checks all count as passing. build_win still runs
+# when a check under archicad-addon/Test/checks/ changed (the community test
+# runner tests it with this build). generate_docs and devkits always run, and
+# pushes to main always build. Not paths-ignore: that would skip the whole
+# workflow, and the checks the steward and auto-merge wait for would never
+# appear.
+on:
+  # Pushes to main only: a pull request's branch is built by its
+  # pull_request run, and building it on push as well doubled every run.
+  push:
+    branches: [main]
+  pull_request:
+  # Started by claude_bot_pr_steward.yml for the pull requests the issue bot
+  # opens: their pushes are made with GITHUB_TOKEN, which starts no push or
+  # pull_request run, but a workflow_dispatch it sends does run, on the bot's
+  # branch, and its checks show on the pull request.
+  workflow_dispatch:
+
+# A newer push to the same pull request or branch supersedes a run still
+# queued or building; main keeps every run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
   generate_docs:
-    # The monthly release regenerates docs/archicad-addon with this script;
+    # The weekly release regenerates docs/archicad-addon with this script;
     # running it here reports schema code it cannot evaluate on the PR that
     # adds it instead of at release time.
     runs-on: ubuntu-latest
@@ -13,22 +41,52 @@ jobs:
       uses: actions/checkout@v4
     - name: Generate the docs
       run: python3 tools/generate_addon_docs.py
+    # One example per command, at archicad-addon/Examples/<Group>/<CommandName>.py;
+    # the docs show it in the command's Example popdown.
+    - name: Check the examples
+      run: python3 tools/check_examples.py
+
+  # Whether this change needs the builds below (see the top of this file).
+  # If it fails, they build (`changes` outputs nothing, which is not 'false').
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.gate.outputs.build }}
+      win-build: ${{ steps.gate.outputs.win-build }}
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        filter: blob:none
+        sparse-checkout: .github/actions
+    - name: Decide whether to build
+      id: gate
+      uses: ./.github/actions/build-gate
+
+  # The Archicad versions to build, from archicad-addon/devkits.json (the one
+  # list of supported versions; tools/devkits.py validates it).
+  devkits:
+    runs-on: ubuntu-latest
+    outputs:
+      win: ${{ steps.list.outputs.win }}
+      mac: ${{ steps.list.outputs.mac }}
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+    - name: Read the DevKit list
+      id: list
+      run: |
+        echo "win=$(python3 tools/devkits.py matrix WIN)" >> "$GITHUB_OUTPUT"
+        echo "mac=$(python3 tools/devkits.py matrix MAC)" >> "$GITHUB_OUTPUT"
 
   build_win:
+    needs: [devkits, changes]
+    if: ${{ !cancelled() && needs.devkits.result == 'success' && needs.changes.outputs.win-build != 'false' }}
     strategy:
       fail-fast: false
       matrix:
-        params:
-          - acVersion: 25
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/25.3002/API.Development.Kit.WIN.25.3002.zip
-          - acVersion: 26
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/26.3000/API.Development.Kit.WIN.26.3000.zip
-          - acVersion: 27
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/27.3001/API.Development.Kit.WIN.27.3001.zip
-          - acVersion: 28
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/28.3001/API.Development.Kit.WIN.28.3001.zip
-          - acVersion: 29
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/29.3000/API.Development.Kit.WIN.29.3000.zip
+        params: ${{ fromJSON(needs.devkits.outputs.win) }}
     runs-on: [ windows-2022 ]
     steps:
     - name: Checkout Repo
@@ -52,20 +110,12 @@ jobs:
         path: archicad-addon/Build/RelWithDebInfo/TapirAddOn_AC${{ matrix.params.acVersion }}_Win.apx
 
   build_mac:
+    needs: [devkits, changes]
+    if: ${{ !cancelled() && needs.devkits.result == 'success' && needs.changes.outputs.build != 'false' }}
     strategy:
       fail-fast: false
       matrix:
-        params:
-          - acVersion: 25
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/25.3002/API.Development.Kit.MAC.25.3002.zip
-          - acVersion: 26
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/26.3000/API.Development.Kit.MAC.26.3000.zip
-          - acVersion: 27
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/27.3001/API.Development.Kit.MAC.27.3001.zip
-          - acVersion: 28
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/28.3001/API.Development.Kit.MAC.28.3001.zip
-          - acVersion: 29
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/29.3000/API.Development.Kit.MAC.29.3000.zip
+        params: ${{ fromJSON(needs.devkits.outputs.mac) }}
     runs-on: ${{ matrix.params.acVersion < 26 && 'macos-15-intel' || 'macos-latest' }}
     steps:
     - name: Checkout repo

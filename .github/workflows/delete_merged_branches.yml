@@ -1,0 +1,117 @@
+name: Delete Merged Branches
+
+# Deletes the head branch of a merged pull request, whatever merged it.
+# claude_auto_merge.yml already merges with --delete-branch, but pull requests
+# merged on the web page or through the API keep their branch, and the
+# repository setting "Automatically delete head branches" is off.
+#
+# A branch is deleted only when all of these hold:
+#   - it is a branch of this repository (a fork's branch is not ours to delete);
+#   - its tip is still the merged pull request's head commit, so nothing pushed
+#     after the merge is lost;
+#   - no open pull request uses it as its head or its base;
+#   - it is not main or one of the KEEP branches below (data and image branches
+#     that have no pull request of their own).
+#
+# On a merge it handles that pull request's branch. Run by hand
+# (workflow_dispatch) it sweeps every branch of the repository with the same
+# rules, for the branches left over from earlier merges; dry_run lists them
+# without deleting.
+#
+# Security: the job runs no model and never checks out code; it only reads
+# pull request metadata and deletes refs through the API.
+
+on:
+  pull_request:
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Only list the branches that would be deleted"
+        type: boolean
+        default: true
+
+permissions:
+  contents: write        # to delete the branch refs
+  pull-requests: read
+
+env:
+  # Branches without a pull request that must stay: the API coverage data, the
+  # Community page's data and the images linked from pull request descriptions.
+  KEEP: >-
+    main
+    api-coverage
+    site-data
+    gh-pages
+    claude/pr-1773-screenshots
+    claude/gh-component-icons-sheets
+
+jobs:
+  delete:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.merged == true &&
+       github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # One group per pull request (and one for the sweep): a shared group would
+    # keep only one pending run and cancel the others, so a branch of a pull
+    # request merged during a burst would be skipped. The deletes are
+    # idempotent, so runs side by side are safe.
+    concurrency:
+      group: delete-merged-branches-${{ github.event.pull_request.number || 'sweep' }}
+      cancel-in-progress: false
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      REPO: ${{ github.repository }}
+      EVENT: ${{ github.event_name }}
+      PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+      PR_SHA: ${{ github.event.pull_request.head.sha }}
+      DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || 'false' }}
+    steps:
+      - name: Delete the branches of merged pull requests
+        run: |
+          set -euo pipefail
+
+          # Every pull request of this repository, open and merged, with its
+          # head and base branch: one list, read once.
+          prs=$(gh api --paginate "repos/$REPO/pulls?state=all&per_page=100" \
+            --jq '.[] | {state, merged: (.merged_at != null), head: .head.ref, sha: .head.sha,
+                         base: .base.ref, own: (.head.repo.full_name == "'"$REPO"'")}' | jq -s .)
+
+          # Deletes one branch when the rules in the header allow it.
+          consider() {
+            local branch=$1 tip=$2
+            for keep in $KEEP; do
+              if [ "$branch" = "$keep" ]; then echo "keep $branch: protected"; return; fi
+            done
+            if jq -e --arg b "$branch" 'any(.[]; .state == "open" and ((.own and .head == $b) or .base == $b))' <<<"$prs" >/dev/null; then
+              echo "keep $branch: an open pull request uses it"; return
+            fi
+            if ! jq -e --arg b "$branch" --arg t "$tip" 'any(.[]; .merged and .own and .head == $b and .sha == $t)' <<<"$prs" >/dev/null; then
+              echo "keep $branch: no merged pull request has its tip $tip as head"; return
+            fi
+            if [ "$DRY_RUN" = "true" ]; then
+              echo "would delete $branch"; return
+            fi
+            # A ruleset may protect some branches from deletion: report it and go on.
+            if gh api -X DELETE "repos/$REPO/git/refs/heads/$branch" >/dev/null 2>&1; then
+              echo "deleted $branch"
+            else
+              echo "::warning::could not delete $branch"
+            fi
+          }
+
+          if [ "$EVENT" = "pull_request" ]; then
+            tip=$(gh api "repos/$REPO/git/ref/heads/$PR_BRANCH" --jq '.object.sha' 2>/dev/null || true)
+            if [ -z "$tip" ]; then
+              echo "$PR_BRANCH is already gone."
+              exit 0
+            fi
+            consider "$PR_BRANCH" "$tip"
+          else
+            gh api --paginate "repos/$REPO/branches?per_page=100" --jq '.[] | "\(.name) \(.commit.sha)"' |
+              while read -r branch tip; do
+                consider "$branch" "$tip"
+              done
+          fi

@@ -1,0 +1,247 @@
+{
+  "title": "Classification systems and items: GetAllClassificationSystems, GetClassificationItemParents, UpdateClassificationItems, UpdateClassificationSystems and DeleteClassificationItems",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "create a system",
+      "command": "CreateClassificationSystems",
+      "creates": false,
+      "params": {
+        "classificationSystemsWithItems": [
+          {
+            "classificationSystem": { "name": "Tapir check items system", "description": "Before", "source": "Tapir", "version": "1", "date": "2026-01-01" },
+            "classificationItems": []
+          }
+        ]
+      },
+      "save": { "sys": "classificationSystemIds[0].classificationSystemId.guid" },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "system created" }
+      ]
+    },
+    {
+      "id": "create T1 with child T1.1, and T2",
+      "command": "CreateClassificationItems",
+      "creates": false,
+      "params": {
+        "newClassificationItems": [
+          {
+            "classificationSystemId": { "guid": "${sys}" },
+            "classificationItemDetails": {
+              "id": "T1", "name": "Tapir check item T1", "description": "",
+              "children": [ { "id": "T1.1", "name": "Tapir check item T1.1", "description": "" } ]
+            }
+          },
+          {
+            "classificationSystemId": { "guid": "${sys}" },
+            "classificationItemDetails": { "id": "T2", "name": "Tapir check item T2", "description": "Before" }
+          }
+        ]
+      },
+      "save": {
+        "t1": "classificationItemIds[0].classificationItemId.guid",
+        "t2": "classificationItemIds[1].classificationItemId.guid"
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "T1 and its child created" },
+        { "path": "executionResults[1].success", "eq": true, "name": "T2 created" }
+      ]
+    },
+    {
+      "id": "read the tree of the system",
+      "command": "API.GetAllClassificationsInSystem",
+      "creates": false,
+      "params": { "classificationSystemId": { "guid": "${sys}" } },
+      "save": { "t11": "classificationItems[0].classificationItem.children[0].classificationItem.classificationItemId.guid" },
+      "expect": [
+        { "path": "classificationItems", "len": 2, "name": "two top level items" },
+        { "path": "classificationItems[0].classificationItem.id", "eq": "T1", "name": "T1 first" },
+        { "path": "classificationItems[1].classificationItem.id", "eq": "T2", "name": "T2 second" }
+      ]
+    },
+    {
+      "id": "GetAllClassificationSystems",
+      "command": "GetAllClassificationSystems",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "classificationSystems[0].classificationSystemId.guid", "exists": true, "name": "a system has its guid" },
+        { "path": "classificationSystems[0].name", "exists": true, "name": "a system has its name" },
+        { "path": "classificationSystems[0].description", "exists": true, "name": "a system has its description" },
+        { "path": "classificationSystems[0].source", "exists": true, "name": "a system has its source" },
+        { "path": "classificationSystems[0].version", "exists": true, "name": "a system has its version" },
+        { "path": "classificationSystems[0].date", "exists": true, "name": "a system has its date" }
+      ]
+    },
+    {
+      "id": "GetClassificationItemParents [T1, T1.1, bogus]",
+      "command": "GetClassificationItemParents",
+      "creates": false,
+      "params": {
+        "classificationItemIds": [
+          { "classificationItemId": { "guid": "${t1}" } },
+          { "classificationItemId": { "guid": "${t11}" } },
+          { "classificationItemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "save": {
+        "systemOfT1": "classificationItemParents[0].classificationSystemId.guid",
+        "parentOfT11": "classificationItemParents[1].parentClassificationItemId.guid"
+      },
+      "expect": [
+        { "path": "classificationItemParents", "len": 3, "name": "one entry per item" },
+        { "path": "classificationItemParents[0].parentClassificationItemId", "exists": false, "name": "top level T1 has no parent" },
+        { "path": "classificationItemParents[1].classificationSystemId.guid", "exists": true, "name": "T1.1 has its system" },
+        { "path": "classificationItemParents[2].error", "exists": true, "name": "bogus item: error" }
+      ]
+    },
+    {
+      "id": "the parent of T1.1 is T1",
+      "command": "API.GetDetailsOfClassificationItems",
+      "creates": false,
+      "params": { "classificationItemIds": [ { "classificationItemId": { "guid": "${parentOfT11}" } } ] },
+      "expect": [
+        { "path": "classificationItems[0].classificationItem.id", "eq": "T1", "name": "parent is T1" }
+      ]
+    },
+    {
+      "id": "the system of T1 is the new system",
+      "command": "API.GetAllClassificationsInSystem",
+      "creates": false,
+      "params": { "classificationSystemId": { "guid": "${systemOfT1}" } },
+      "expect": [
+        { "path": "classificationItems", "len": 2, "name": "the system has T1 and T2" },
+        { "path": "classificationItems[0].classificationItem.id", "eq": "T1", "name": "with T1" }
+      ]
+    },
+    {
+      "id": "UpdateClassificationItems [T1 all fields, T2 name only, bogus]",
+      "command": "UpdateClassificationItems",
+      "creates": false,
+      "params": {
+        "classificationItems": [
+          { "classificationItemId": { "guid": "${t1}" }, "id": "T1-new", "name": "Tapir check item T1 renamed", "description": "After" },
+          { "classificationItemId": { "guid": "${t2}" }, "name": "Tapir check item T2 renamed" },
+          { "classificationItemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "name": "Tapir check bogus item" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "T1: success" },
+        { "path": "executionResults[1].success", "eq": true, "name": "T2: success" },
+        { "path": "executionResults[2].success", "eq": false, "name": "bogus item: failed" }
+      ]
+    },
+    {
+      "id": "read T1 and T2 back",
+      "command": "API.GetDetailsOfClassificationItems",
+      "creates": false,
+      "params": {
+        "classificationItemIds": [
+          { "classificationItemId": { "guid": "${t1}" } },
+          { "classificationItemId": { "guid": "${t2}" } }
+        ]
+      },
+      "expect": [
+        { "path": "classificationItems[0].classificationItem.id", "eq": "T1-new", "name": "T1 has the new id" },
+        { "path": "classificationItems[0].classificationItem.name", "eq": "Tapir check item T1 renamed", "name": "T1 has the new name" },
+        { "path": "classificationItems[0].classificationItem.description", "eq": "After", "name": "T1 has the new description" },
+        { "path": "classificationItems[1].classificationItem.id", "eq": "T2", "name": "T2 keeps its id" },
+        { "path": "classificationItems[1].classificationItem.name", "eq": "Tapir check item T2 renamed", "name": "T2 has the new name" },
+        { "path": "classificationItems[1].classificationItem.description", "eq": "Before", "name": "T2 keeps its description" }
+      ]
+    },
+    {
+      "id": "UpdateClassificationSystems [rename the system, bogus]",
+      "command": "UpdateClassificationSystems",
+      "creates": false,
+      "params": {
+        "classificationSystems": [
+          { "classificationSystemId": { "guid": "${sys}" }, "name": "Tapir check items system renamed", "description": "After" },
+          { "classificationSystemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "name": "Tapir check bogus system" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per system" },
+        { "path": "executionResults[0].success", "eq": true, "name": "rename: success" },
+        { "path": "executionResults[1].success", "eq": false, "name": "bogus system: failed" }
+      ]
+    },
+    {
+      "id": "the new name is taken now",
+      "command": "CreateClassificationSystems",
+      "creates": false,
+      "params": {
+        "classificationSystemsWithItems": [
+          {
+            "classificationSystem": { "name": "Tapir check items system renamed", "description": "", "source": "", "version": "1", "date": "2026-01-01" },
+            "classificationItems": []
+          }
+        ]
+      },
+      "save": { "sameNewName": "classificationSystemIds[0]" },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "a second system with the new name and version is refused" }
+      ]
+    },
+    {
+      "id": "the old name is free now",
+      "command": "CreateClassificationSystems",
+      "creates": false,
+      "params": {
+        "classificationSystemsWithItems": [
+          {
+            "classificationSystem": { "name": "Tapir check items system", "description": "", "source": "", "version": "1", "date": "2026-01-01" },
+            "classificationItems": []
+          }
+        ]
+      },
+      "save": { "sameOldName": "classificationSystemIds[0]" },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "a system with the old name and version can be created" }
+      ]
+    },
+    {
+      "id": "DeleteClassificationItems [T2, bogus]",
+      "command": "DeleteClassificationItems",
+      "creates": false,
+      "params": {
+        "classificationItemIds": [
+          { "classificationItemId": { "guid": "${t2}" } },
+          { "classificationItemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "T2: success" },
+        { "path": "executionResults[1].success", "eq": false, "name": "bogus item: failed" }
+      ]
+    },
+    {
+      "id": "only T1 is left",
+      "command": "API.GetAllClassificationsInSystem",
+      "creates": false,
+      "params": { "classificationSystemId": { "guid": "${sys}" } },
+      "expect": [
+        { "path": "classificationItems", "len": 1, "name": "one top level item" },
+        { "path": "classificationItems[0].classificationItem.id", "eq": "T1-new", "name": "it is T1" },
+        { "path": "classificationItems[0].classificationItem.children", "len": 1, "name": "with its child" }
+      ]
+    },
+    {
+      "id": "the deleted T2 has no parent entry",
+      "command": "GetClassificationItemParents",
+      "creates": false,
+      "params": { "classificationItemIds": [ { "classificationItemId": { "guid": "${t2}" } } ] },
+      "expect": [
+        { "path": "classificationItemParents[0].error", "exists": true, "name": "deleted item: error" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteClassificationSystems", "params": { "classificationSystemIds": [ { "classificationSystemId": { "guid": "${sys}" } } ] } },
+    { "command": "DeleteClassificationSystems", "params": { "classificationSystemIds": [ "${sameNewName}" ] } },
+    { "command": "DeleteClassificationSystems", "params": { "classificationSystemIds": [ "${sameOldName}" ] } }
+  ]
+}

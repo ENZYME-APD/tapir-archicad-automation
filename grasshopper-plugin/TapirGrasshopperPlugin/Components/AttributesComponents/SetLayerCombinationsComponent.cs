@@ -50,6 +50,12 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             InIntegerTree(
                 "IntersectionGroups",
                 "Intersection groups of the layers in the combinations.");
+
+            InTexts(
+                "Indices",
+                "Index of the existing layer combination to overwrite for each item. Optional.");
+
+            SetOptionality(7);
         }
 
         protected override void AddOutputs()
@@ -139,6 +145,18 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 return;
             }
 
+            da.TryGetList(
+                7,
+                out List<string> indices);
+
+            if (indices.Count > 0 &&
+                indices.Count != names.Count)
+            {
+                this.AddError(
+                    "The size of the input Indices must be 0 or equal to the size of the input Names.");
+                return;
+            }
+
             var layerCombinationDataArray = new LayerCombinationDataArrayObject
             {
                 LayerCombinationDataArray =
@@ -215,10 +233,22 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 index++;
             }
 
+            var parameters = Newtonsoft.Json.Linq.JObject.FromObject(
+                layerCombinationDataArray);
+
+            if (indices.Count > 0 &&
+                parameters["layerCombinationDataArray"] is
+                    Newtonsoft.Json.Linq.JArray dataItems)
+            {
+                for (var i = 0; i < dataItems.Count; i++)
+                {
+                    dataItems[i]["index"] = indices[i];
+                }
+            }
+
             if (!TryGetCadResponse(
                     CommandName,
-                    Newtonsoft.Json.Linq.JObject.FromObject(
-                        layerCombinationDataArray),
+                    parameters,
                     ToAddOn,
                     out var response))
             {

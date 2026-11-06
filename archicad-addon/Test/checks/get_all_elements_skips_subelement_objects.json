@@ -1,0 +1,140 @@
+{
+  "title": "GetAllElements and GetElementsByType leave out zone stamps unless IncludeSubElemObjects is given",
+  "minTapir": "1.7.3",
+  "steps": [
+    {
+      "id": "template elevation markers",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": {
+        "elementType": "Elevation"
+      },
+      "save": {
+        "elevations": "elements"
+      }
+    },
+    {
+      "id": "remove them, they are listed on every story",
+      "command": "DeleteElements",
+      "creates": false,
+      "params": {
+        "elements": "${elevations}"
+      }
+    },
+    {
+      "id": "activate story 1",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 1
+      },
+      "expect": [
+        {
+          "path": "success",
+          "eq": true,
+          "name": "accepted"
+        }
+      ]
+    },
+    {
+      "id": "zone on story 1",
+      "command": "CreateZones",
+      "params": {
+        "zonesData": [
+          {
+            "name": "TapirCheck zone",
+            "numberStr": "99",
+            "floorIndex": 1,
+            "geometry": {
+              "polygonCoordinates": [
+                { "x": 0.0, "y": 0.0 },
+                { "x": 4.0, "y": 0.0 },
+                { "x": 4.0, "y": 3.0 },
+                { "x": 0.0, "y": 3.0 }
+              ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "zone created"
+        }
+      ]
+    },
+    {
+      "id": "all elements on story 1",
+      "command": "GetAllElements",
+      "creates": false,
+      "params": {
+        "filters": [ "OnActualFloor" ]
+      },
+      "expect": [
+        {
+          "path": "elements",
+          "len": 1,
+          "name": "only the zone, not its stamp"
+        }
+      ]
+    },
+    {
+      "id": "all elements on story 1 with sub-element objects",
+      "command": "GetAllElements",
+      "creates": false,
+      "params": {
+        "filters": [ "OnActualFloor", "IncludeSubElemObjects" ]
+      },
+      "expect": [
+        {
+          "path": "elements",
+          "len": 2,
+          "name": "the zone and its stamp"
+        }
+      ]
+    },
+    {
+      "id": "objects on story 1",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": {
+        "elementType": "Object",
+        "filters": [ "OnActualFloor" ]
+      },
+      "expect": [
+        {
+          "path": "elements",
+          "len": 0,
+          "name": "the stamp is not an object of its own"
+        }
+      ]
+    },
+    {
+      "id": "objects on story 1 with sub-element objects",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": {
+        "elementType": "Object",
+        "filters": [ "OnActualFloor", "IncludeSubElemObjects" ]
+      },
+      "expect": [
+        {
+          "path": "elements",
+          "len": 1,
+          "name": "the stamp on request"
+        }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "ChangeWindow",
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      }
+    }
+  ]
+}

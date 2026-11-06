@@ -30,6 +30,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;
 
+        private static readonly List<Field> TrailingFieldDefinitions = new List<Field>
+        {
+            new Field("ReferencePlaneLocations", "referencePlaneLocation", FieldKind.Text, "Reference plane location: Top, CoreTop, CoreBottom or Bottom.")
+        };
+
+        protected override IReadOnlyList<Field> TrailingFields => TrailingFieldDefinitions;
+
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.ModifySlabs;
 

@@ -78,6 +78,18 @@ namespace TapirGrasshopperPlugin.Types.Project
         public double? Elevation;
     }
 
+    public class SurveyPointPositionInProject
+    {
+        [JsonProperty("x")]
+        public double PositionInProjectX;
+
+        [JsonProperty("y")]
+        public double PositionInProjectY;
+
+        [JsonProperty("z")]
+        public double PositionInProjectZ;
+    }
+
     public class GeoReferencingParameters
     {
         [JsonProperty("crsName", NullValueHandling = NullValueHandling.Ignore)]
@@ -113,8 +125,18 @@ namespace TapirGrasshopperPlugin.Types.Project
         [JsonProperty("position")]
         public SurveyPointPosition Position;
 
+        [JsonProperty("positionInProject", NullValueHandling = NullValueHandling.Ignore)]
+        public SurveyPointPositionInProject PositionInProject;
+
         [JsonProperty("geoReferencingParameters")]
         public GeoReferencingParameters GeoReferencingParams;
+
+        [JsonProperty("isVisible", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? IsVisible;
+
+        // Available from Archicad 26; older versions leave it out of GetGeoLocation.
+        [JsonProperty("isLocked", NullValueHandling = NullValueHandling.Ignore)]
+        public bool? IsLocked;
     }
 
     public class ProjectLocation

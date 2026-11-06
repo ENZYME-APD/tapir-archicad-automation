@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Attributes;
 using TapirGrasshopperPlugin.Types.Element;
@@ -21,7 +22,8 @@ namespace TapirGrasshopperPlugin.Components
     //
     // Every input except ElementGuids can be hidden and shown again from the
     // component's context menu (see ToggleableInputsComponentBase), so the
-    // inputs are addressed by name instead of by a fixed index.
+    // inputs are addressed by name instead of by a fixed index. A hidden
+    // input is read as an unconnected one.
     //
     // The configuration is provided through overridable members instead of
     // constructor parameters on purpose: GH_Component's constructor calls
@@ -79,12 +81,16 @@ namespace TapirGrasshopperPlugin.Components
         // The typed detail fields of the command.
         protected abstract IReadOnlyList<Field> Fields { get; }
 
-        protected const string ElementGuidsInputName = "ElementGuids";
-        protected const string AdditionalSettingsInputName = "AdditionalSettings";
+        private static readonly IReadOnlyList<Field> NoFields = new List<Field>();
 
-        private const string AdditionalSettingsDescription =
-            "One JSON object per element with further optional settings matching the " +
-            "command's documented item schema. Input only 1 to use the same settings for all. Optional.";
+        // Typed fields added after the component was released. Their inputs
+        // come after the AdditionalSettings input, so the inputs of saved
+        // definitions, which Grasshopper binds by index, keep their places
+        // (the hidden inputs are saved too, see ToggleableInputsComponentBase).
+        // New ones are always appended at the end. No value list is attached
+        // to them: an attached list sends its value, so it would change the
+        // elements of a definition that left the new input unconnected.
+        protected virtual IReadOnlyList<Field> TrailingFields => NoFields;
 
         protected ModifyElementsComponentBase(
             string name,
@@ -97,6 +103,10 @@ namespace TapirGrasshopperPlugin.Components
         {
         }
 
+        // The inputs in their registration order: ElementGuids, the fields,
+        // AdditionalSettings, the trailing fields. Saved definitions bind the
+        // inputs by this order (see ToggleableInputsComponentBase), so it must
+        // never change; new inputs are appended.
         protected override IReadOnlyList<InputDescriptor> InputDescriptors
         {
             get
@@ -104,10 +114,10 @@ namespace TapirGrasshopperPlugin.Components
                 var descriptors = new List<InputDescriptor>
                 {
                     new InputDescriptor(
-                        ElementGuidsInputName,
+                        "ElementGuids",
                         () => NewInputParam(
                             new Param_GenericObject(),
-                            ElementGuidsInputName,
+                            "ElementGuids",
                             "Identifiers of the elements to modify.",
                             "genericList",
                             GH_ParamAccess.list,
@@ -117,37 +127,46 @@ namespace TapirGrasshopperPlugin.Components
 
                 foreach (var field in Fields)
                 {
-                    var description = field.Description +
-                        " Input only 1 to use the same value for all elements. Optional.";
                     descriptors.Add(
                         new InputDescriptor(
                             field.InputName,
-                            () => CreateFieldParam(field, description),
+                            () => CreateFieldParam(field),
                             true));
                 }
 
                 descriptors.Add(
                     new InputDescriptor(
-                        AdditionalSettingsInputName,
+                        "AdditionalSettings",
                         () => NewInputParam(
                             new Param_String(),
-                            AdditionalSettingsInputName,
-                            AdditionalSettingsDescription,
+                            "AdditionalSettings",
+                            "One JSON object per element with further optional settings matching the " +
+                            "command's documented item schema. Input only 1 to use the same settings for all. Optional.",
                             "textList",
                             GH_ParamAccess.list,
                             true),
                         true));
+
+                foreach (var field in TrailingFields)
+                {
+                    descriptors.Add(
+                        new InputDescriptor(
+                            field.InputName,
+                            () => CreateFieldParam(field),
+                            true));
+                }
 
                 return descriptors;
             }
         }
 
         // Creates the parameter of a field input the same way the InX helpers
-        // of Component would.
+        // of Component registered it.
         private static IGH_Param CreateFieldParam(
-            Field field,
-            string description)
+            Field field)
         {
+            var description = field.Description +
+                " Input only 1 to use the same value for all elements. Optional.";
             switch (field.Kind)
             {
                 case FieldKind.Number:
@@ -169,10 +188,10 @@ namespace TapirGrasshopperPlugin.Components
                 case FieldKind.AttributeGuid:
                     return NewInputParam(
                         new Param_GenericObject(), field.InputName, description, "genericList", GH_ParamAccess.list, true);
+                default:
+                    throw new NotSupportedException(
+                        $"The field kind {field.Kind} of the input {field.InputName} has no parameter.");
             }
-
-            throw new NotSupportedException(
-                $"Unhandled field kind: {field.Kind}.");
         }
 
         public override void AddedToDocument(
@@ -182,7 +201,7 @@ namespace TapirGrasshopperPlugin.Components
 
             foreach (var field in Fields)
             {
-                AttachValueList(field.InputName);
+                AttachValueList(field);
             }
         }
 
@@ -190,25 +209,32 @@ namespace TapirGrasshopperPlugin.Components
             string name,
             int index)
         {
-            AttachValueList(name);
+            // Only the fields get value lists; the trailing fields never do
+            // (see TrailingFields).
+            foreach (var field in Fields)
+            {
+                if (field.InputName == name)
+                {
+                    AttachValueList(field);
+                    return;
+                }
+            }
         }
 
+        // Attaches the field's value list to its input when the input is
+        // visible and not connected yet.
         private void AttachValueList(
-            string inputName)
+            Field field)
         {
-            var index = IndexOfInput(inputName);
-            if (index < 0)
+            if (field.ValueList == null)
             {
                 return;
             }
 
-            foreach (var field in Fields)
+            var index = IndexOfInput(field.InputName);
+            if (index >= 0)
             {
-                if (field.InputName == inputName)
-                {
-                    field.ValueList?.Invoke ().AddAsSource(this, index);
-                    return;
-                }
+                field.ValueList().AddAsSource(this, index);
             }
         }
 
@@ -277,12 +303,47 @@ namespace TapirGrasshopperPlugin.Components
             container[path[path.Length - 1]] = token;
         }
 
+        private bool TryApplyField(
+            IGH_DataAccess da,
+            int inputIndex,
+            Field field,
+            IReadOnlyList<JObject> targets)
+        {
+            switch (field.Kind)
+            {
+                case FieldKind.Number:
+                    return TryApply<double>(da, inputIndex, field, targets, v => v);
+                case FieldKind.Integer:
+                    return TryApply<int>(da, inputIndex, field, targets, v => v);
+                case FieldKind.Boolean:
+                    return TryApply<bool>(da, inputIndex, field, targets, v => v);
+                case FieldKind.Text:
+                    return TryApply<string>(da, inputIndex, field, targets, v => v);
+                case FieldKind.Point2D:
+                    return TryApply<Point3d>(da, inputIndex, field, targets, v =>
+                        new JObject { ["x"] = v.X, ["y"] = v.Y });
+                case FieldKind.Point3D:
+                    return TryApply<Point3d>(da, inputIndex, field, targets, v =>
+                        new JObject { ["x"] = v.X, ["y"] = v.Y, ["z"] = v.Z });
+                case FieldKind.AttributeGuid:
+                    return TryApply<GH_ObjectWrapper>(da, inputIndex, field, targets, v =>
+                    {
+                        var id = GuidObject<AttributeGuidObject>.CreateFromWrapper(v);
+                        return id == null
+                            ? null
+                            : new JObject { ["guid"] = id.Guid };
+                    });
+                default:
+                    return true;
+            }
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
             // ElementGuids is required, so its input is never hidden.
             if (!da.TryCreateFromList(
-                    IndexOfInput(ElementGuidsInputName),
+                    IndexOfInput("ElementGuids"),
                     out ElementsObject elements))
             {
                 return;
@@ -309,61 +370,23 @@ namespace TapirGrasshopperPlugin.Components
                 items.Add(item);
             }
 
-            for (var fieldIndex = 0; fieldIndex < fields.Count; fieldIndex++)
+            foreach (var field in fields.Concat(TrailingFields))
             {
-                var field = fields[fieldIndex];
                 var inputIndex = IndexOfInput(field.InputName);
                 if (inputIndex < 0)
                 {
-                    // The input is hidden, so it carries no value at all.
+                    // A hidden input is read as an unconnected one.
                     continue;
                 }
 
-                bool ok;
-                switch (field.Kind)
-                {
-                    case FieldKind.Number:
-                        ok = TryApply<double>(da, inputIndex, field, targets, v => v);
-                        break;
-                    case FieldKind.Integer:
-                        ok = TryApply<int>(da, inputIndex, field, targets, v => v);
-                        break;
-                    case FieldKind.Boolean:
-                        ok = TryApply<bool>(da, inputIndex, field, targets, v => v);
-                        break;
-                    case FieldKind.Text:
-                        ok = TryApply<string>(da, inputIndex, field, targets, v => v);
-                        break;
-                    case FieldKind.Point2D:
-                        ok = TryApply<Point3d>(da, inputIndex, field, targets, v =>
-                            new JObject { ["x"] = v.X, ["y"] = v.Y });
-                        break;
-                    case FieldKind.Point3D:
-                        ok = TryApply<Point3d>(da, inputIndex, field, targets, v =>
-                            new JObject { ["x"] = v.X, ["y"] = v.Y, ["z"] = v.Z });
-                        break;
-                    case FieldKind.AttributeGuid:
-                        ok = TryApply<GH_ObjectWrapper>(da, inputIndex, field, targets, v =>
-                        {
-                            var id = GuidObject<AttributeGuidObject>.CreateFromWrapper(v);
-                            return id == null
-                                ? null
-                                : new JObject { ["guid"] = id.Guid };
-                        });
-                        break;
-                    default:
-                        ok = true;
-                        break;
-                }
-
-                if (!ok)
+                if (!TryApplyField(da, inputIndex, field, targets))
                 {
                     return;
                 }
             }
 
             var additionalSettings = new List<string>();
-            var additionalSettingsIndex = IndexOfInput(AdditionalSettingsInputName);
+            var additionalSettingsIndex = IndexOfInput("AdditionalSettings");
             if (additionalSettingsIndex >= 0)
             {
                 da.GetDataList(additionalSettingsIndex, additionalSettings);

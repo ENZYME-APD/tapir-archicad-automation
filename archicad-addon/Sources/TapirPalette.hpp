@@ -7,8 +7,12 @@
 #include "Process.hpp"
 #include "Config.hpp"
 #include "UvManager.hpp"
+#include "ScriptInfo.hpp"
 
+#include <atomic>
+#include <mutex>
 #include <utility>
+#include <vector>
 
 class TapirPalette final : public DG::Palette,
     public DG::PanelObserver,
@@ -26,6 +30,7 @@ public:
     void Hide ();
 
     bool UpdateAddOn ();
+    void SetRunButtonIcon ();   // also called once the VersionChecker's lookup completes
 
     static constexpr short ScriptShortcutSlotCount = 6;
     void RunShortcutSlot (short slotIndex);   // 0-based, 0..ScriptShortcutSlotCount-1
@@ -39,6 +44,10 @@ public:
 
     static GSErrCode RegisterPaletteControlCallBack ();
 
+    // Called from FreeData: kills a script that is still running and waits for its output reader thread, so that
+    // the thread does not outlive the add-on (Archicad crashed on quit while a palette script was running).
+    static void StopRunningScriptOnQuit ();
+
 private:
     struct PopUpItemData : public GS::Object
     {
@@ -47,6 +56,8 @@ private:
         const Config::Repository* repo = nullptr;
         GS::UniString sourceName;        // shown after the file name for scripts from a configured local folder; empty for repository and user-added scripts
         GS::UniString baseDisplayText;   // label as computed by AddScriptToPopUp, before any shortcut-slot suffix
+        GS::UniString uvProjectPath;     // the folder of the uv project (uvProject in the config) the script runs in; empty: run it with --script
+        ScriptInfo info;                 // the script's docstring summary and `# /// tapir` header, read by AddScriptToPopUp
 
         explicit PopUpItemData (
             const IO::Location& _fileLocation,
@@ -64,6 +75,8 @@ private:
     DG::IconButton manageShortcutsButton;
 
     GS::Process process;
+    GS::UniString runningCommand;   // the command process was started with, to find the process among the child processes of Archicad
+    GS::Array<GS::UInt64> childProcessIdsBeforeStart;   // the child processes of Archicad that ran before process was started, so are not it
     GS::ThreadedExecutor executor;
     bool hasCustomScript = false;
     bool hasAddedScript = false;
@@ -73,6 +86,7 @@ private:
 
     void SetMenuItemCheckedState (bool);
     void ExecuteScript (const PopUpItemData& popUpItemData);
+    void KillRunningProcess ();   // ends the running process together with the processes it started
     bool AddScriptToPopUp (GS::Ref<PopUpItemData> popUpData, short index = DG::PopUp::TopItem);
     void AddScriptsFromRepositories ();
     void AddScriptsFromLocalFolders ();
@@ -86,7 +100,6 @@ private:
     void DeleteScriptFromPopUp ();
     bool IsSelectedScriptFromGitHub () const;
     void SetDeleteScriptButtonStatus ();
-    void SetRunButtonIcon ();
     void RefreshScriptListShortcutLabels ();   // appends "  [Shortcut N]" to scripts assigned to a slot
     void ApplyShortcutMenuItemText (short slotIndex);   // pushes scriptShortcutLabels[slotIndex] to the real Archicad menu item
     void ApplyAllShortcutMenuItemTexts ();
@@ -102,11 +115,25 @@ private:
     virtual void PanelOpened (const DG::PanelOpenEvent& ev) override;
     virtual void ButtonClicked (const DG::ButtonClickEvent& ev) override;
     virtual void PopUpChanged (const DG::PopUpChangeEvent& ev) override;
+    // Overrides the ItemObserver function of both the button and the pop-up observer bases.
+    virtual void ItemToolTipRequested (const DG::ItemHelpEvent& ev, GS::UniString* toolTipText) override;
+
+    static GS::UniString GetScriptDescription (const ScriptInfo& info);   // the summary and the badge, one per line
 
     static GSErrCode PaletteControlCallBack (Int32 paletteId, API_PaletteMessageID messageID, GS::IntPtr param);
 
     static const GS::Guid        paletteGuid;
     static GS::Ref<TapirPalette> instance;
+    static std::atomic<bool>     quitting;   // set by StopRunningScriptOnQuit; the output reader then stops at once
+
+    // The output reader's tasks posted to the message loop. A task still queued when the add-on is unloaded must
+    // not be destroyed afterwards (its destructor is in this add-on), so the palette keeps a reference to each one
+    // until it has run (StopRunningScriptOnQuit).
+    static std::mutex                    postedTasksMutex;
+    static std::vector<GS::RunnableTask> postedTasks;    // posted, not run yet
+    static std::vector<GS::RunnableTask> finishedTasks;  // run; released on the next post, not inside their own Run
+    static void KeepPostedTask (const GS::RunnableTask& task);
+    static void ForgetPostedTask (const GS::Runnable* task);
 
     TapirPalette ();
 };

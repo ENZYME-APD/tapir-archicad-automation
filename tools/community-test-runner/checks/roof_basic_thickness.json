@@ -1,0 +1,122 @@
+{
+  "title": "Roof thickness with a Basic structure",
+  "minTapir": "1.6.0",
+  "steps": [
+    {
+      "id": "single-plane",
+      "command": "CreateRoofs",
+      "params": {
+        "roofsData": [
+          {
+            "level": 3.0,
+            "thickness": 0.25,
+            "polygonCoordinates": [
+              {
+                "x": 900,
+                "y": 900
+              },
+              {
+                "x": 910,
+                "y": 900
+              },
+              {
+                "x": 910,
+                "y": 908
+              },
+              {
+                "x": 900,
+                "y": 908
+              }
+            ],
+            "structureType": "Basic",
+            "pivotLine": {
+              "begCoordinate": {
+                "x": 900,
+                "y": 900
+              },
+              "endCoordinate": {
+                "x": 910,
+                "y": 900
+              }
+            },
+            "angle": 0.5
+          }
+        ]
+      },
+      "save": {
+        "r1": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "multi-plane",
+      "command": "CreateRoofs",
+      "params": {
+        "roofsData": [
+          {
+            "level": 3.0,
+            "thickness": 0.4,
+            "polygonCoordinates": [
+              {
+                "x": 920,
+                "y": 900
+              },
+              {
+                "x": 930,
+                "y": 900
+              },
+              {
+                "x": 930,
+                "y": 908
+              },
+              {
+                "x": 920,
+                "y": 908
+              }
+            ],
+            "structureType": "Basic",
+            "levels": [
+              {
+                "levelHeight": 0.0,
+                "levelAngle": 0.5
+              }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "r2": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "read",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${r1}"
+            }
+          },
+          {
+            "elementId": {
+              "guid": "${r2}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "detailsOfElements[0].details.thickness",
+          "approx": 0.25,
+          "name": "single-plane thickness"
+        },
+        {
+          "path": "detailsOfElements[1].details.thickness",
+          "approx": 0.4,
+          "name": "multi-plane thickness"
+        }
+      ]
+    }
+  ]
+}

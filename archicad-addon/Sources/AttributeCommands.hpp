@@ -12,6 +12,36 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetAttributeIndexesCommand : public CommandBase
+{
+public:
+    GetAttributeIndexesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetAttributesFromProjectCommand : public CommandBase
+{
+public:
+    GetAttributesFromProjectCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ImportAttributesFromProjectCommand : public CommandBase
+{
+public:
+    ImportAttributesFromProjectCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class GetBuildingMaterialPhysicalPropertiesCommand : public CommandBase
 {
 public:
@@ -26,6 +56,25 @@ class GetLayerCombinationsCommand : public CommandBase
 {
 public:
     GetLayerCombinationsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetCurrentLayerCombinationCommand : public CommandBase
+{
+public:
+    GetCurrentLayerCombinationCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ActivateLayerCombinationCommand : public CommandBase
+{
+public:
+    ActivateLayerCombinationCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
@@ -78,6 +127,40 @@ class GetPenTablesCommand : public CommandBase
 {
 public:
     GetPenTablesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetCurrentPenTableCommand : public CommandBase
+{
+public:
+    GetCurrentPenTableCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// Reads the pens in effect with ACAPI_Attribute_GetPen, which takes the AC27+ API_Pen.
+// Before AC27 it returns an error.
+class GetPensCommand : public CommandBase
+{
+public:
+    GetPensCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// The writing twin of GetPens: changes the pens in effect with ACAPI_Attribute_ModifyPen (AC27+).
+// Before AC27 it returns an error.
+class SetPensCommand : public CommandBase
+{
+public:
+    SetPensCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
@@ -144,6 +227,48 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+// Attribute folders (API_AttributeFolder with ACAPI_Attribute_GetFolder / CreateFolder / DeleteFolder) exist from
+// AC26; on older versions Execute () returns an APIERR_NOTSUPPORTED error.
+class CreateAttributeFoldersCommand : public CommandBase
+{
+public:
+    CreateAttributeFoldersCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class DeleteAttributeFoldersCommand : public CommandBase
+{
+public:
+    DeleteAttributeFoldersCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class RenameAttributeFoldersCommand : public CommandBase
+{
+public:
+    RenameAttributeFoldersCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class MoveAttributesAndFoldersCommand : public CommandBase
+{
+public:
+    MoveAttributesAndFoldersCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class CreateAttributesCommandBase : public CommandBase
 {
 public:
@@ -152,7 +277,9 @@ public:
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 protected:
-    virtual void SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const = 0;
+    // Fills the type specific fields of the attribute (and its definition handles) from the request. Returns an
+    // error response to report for this item instead of creating/modifying it, or no value to go ahead.
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const = 0;
 protected:
     GS::String     commandName;
     API_AttrTypeID attrTypeID;
@@ -164,7 +291,7 @@ class CreateBuildingMaterialsCommand : public CreateAttributesCommandBase
 public:
     CreateBuildingMaterialsCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual void SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const override;
 };
 
 class CreateLayersCommand : public CreateAttributesCommandBase
@@ -172,7 +299,7 @@ class CreateLayersCommand : public CreateAttributesCommandBase
 public:
     CreateLayersCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual void SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const override;
 };
 
 class CreateLayerCombinationsCommand : public CreateAttributesCommandBase
@@ -180,7 +307,7 @@ class CreateLayerCombinationsCommand : public CreateAttributesCommandBase
 public:
     CreateLayerCombinationsCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual void SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const override;
 };
 
 class CreateLinesCommand : public CreateAttributesCommandBase
@@ -188,7 +315,7 @@ class CreateLinesCommand : public CreateAttributesCommandBase
 public:
     CreateLinesCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual void SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const override;
 };
 
 class CreateFillsCommand : public CommandBase
@@ -206,7 +333,7 @@ class CreateZoneCategoriesCommand : public CreateAttributesCommandBase
 public:
     CreateZoneCategoriesCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual void SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const override;
 };
 
 class CreateMEPSystemsCommand : public CreateAttributesCommandBase
@@ -214,7 +341,7 @@ class CreateMEPSystemsCommand : public CreateAttributesCommandBase
 public:
     CreateMEPSystemsCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual void SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const override;
 };
 
 class CreateSurfacesCommand : public CreateAttributesCommandBase
@@ -222,7 +349,7 @@ class CreateSurfacesCommand : public CreateAttributesCommandBase
 public:
     CreateSurfacesCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
-    virtual void SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (const GS::ObjectState& parameters, API_Attribute& attribute, API_AttributeDef& attributeDef) const override;
 };
 
 // Before AC27, API_Pen was named API_PenType with a different shape (index nested in an API_Attr_Head, char
@@ -232,6 +359,19 @@ class CreatePenTablesCommand : public CommandBase
 {
 public:
     CreatePenTablesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// Changes single pens of the Pen Table in effect for the model views or the layouts, keeping every other pen
+// as it is. The pens of a Pen Table are written as a whole (see CreatePenTablesCommand), so the current pens
+// are read, the given ones are patched and the table is written back once.
+class ModifyPensCommand : public CommandBase
+{
+public:
+    ModifyPensCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
@@ -252,6 +392,114 @@ class CreateCompositesCommand : public CommandBase
 {
 public:
     CreateCompositesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// ConsolidateLines and ConsolidateFills: one class per menu command, like the CreateAttributesCommandBase
+// family, differing only in the name, the JSON query and the menu command the error names.
+class ConsolidationCommandBase : public CommandBase
+{
+public:
+    ConsolidationCommandBase (const GS::String& commandName, const GS::UniString& query, const GS::UniString& menuCommandName);
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+
+private:
+    GS::String commandName;
+    GS::UniString query;
+    GS::UniString menuCommandName;
+};
+
+class ConsolidateLinesCommand : public ConsolidationCommandBase
+{
+public:
+    ConsolidateLinesCommand ();
+};
+
+class ConsolidateFillsCommand : public ConsolidationCommandBase
+{
+public:
+    ConsolidateFillsCommand ();
+};
+
+class GetUsedAttributesCommand : public CommandBase
+{
+public:
+    GetUsedAttributesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetFontsByNameCommand : public CommandBase
+{
+public:
+    GetFontsByNameCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// Key-value pairs in the user data of attributes, in the layout of UserDataPairs.hpp.
+class GetUserDataOfAttributesCommand : public CommandBase
+{
+public:
+    GetUserDataOfAttributesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class SetUserDataOfAttributesCommand : public CommandBase
+{
+public:
+    SetUserDataOfAttributesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class DeleteUserDataOfAttributesCommand : public CommandBase
+{
+public:
+    DeleteUserDataOfAttributesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ReindexLayersCommand : public CommandBase
+{
+public:
+    ReindexLayersCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ReindexAttributesCommand : public CommandBase
+{
+public:
+    ReindexAttributesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class DeleteAndReplaceAttributesCommand : public CommandBase
+{
+public:
+    DeleteAndReplaceAttributesCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;

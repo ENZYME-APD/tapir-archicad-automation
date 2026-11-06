@@ -1,0 +1,119 @@
+{
+  "title": "Text content and size (#735)",
+  "minTapir": "1.7.0",
+  "steps": [
+    {
+      "id": "create",
+      "command": "CreateTexts",
+      "params": {
+        "textsData": [
+          {
+            "coordinate": {
+              "x": 800,
+              "y": 800,
+              "z": 0
+            },
+            "text": "Hello Tapir",
+            "height": 3.0
+          }
+        ]
+      },
+      "save": {
+        "t": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "read",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${t}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "detailsOfElements[0].details.text",
+          "eq": "Hello Tapir",
+          "name": "whole text arrives"
+        }
+      ]
+    },
+    {
+      "id": "resize",
+      "command": "SetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithDetails": [
+          {
+            "elementId": {
+              "guid": "${t}"
+            },
+            "details": {
+              "typeSpecificDetails": {
+                "height": 7.5
+              }
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "rewrite",
+      "command": "ModifyTexts",
+      "creates": false,
+      "params": {
+        "textsWithDetails": [
+          {
+            "elementId": {
+              "guid": "${t}"
+            },
+            "text": "Changed text"
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "read again",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": {
+              "guid": "${t}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "detailsOfElements[0].details.height",
+          "approx": 7.5,
+          "name": "size changed"
+        },
+        {
+          "path": "detailsOfElements[0].details.text",
+          "eq": "Changed text",
+          "name": "content changed"
+        }
+      ]
+    }
+  ]
+}
