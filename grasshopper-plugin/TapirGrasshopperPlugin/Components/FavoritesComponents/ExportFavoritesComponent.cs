@@ -38,11 +38,20 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                 "to its own file in the folder) or legacyPRF (a Favorites file of earlier Archicad versions). " +
                 "xml and legacyPRF require Archicad 29 or newer.");
 
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "Overwrite",
+                "false refuses to export when a file already exists at Path, and writes nothing. Only " +
+                "for an export to a single file (prefs format with a .prefs path, or legacyPRF format); " +
+                "with an export to a folder it is an error. Default is true.",
+                true);
+
             SetOptionality(
                 new[]
                 {
                     1,
-                    2
+                    2,
+                    3
                 });
         }
 
@@ -81,6 +90,11 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                 !string.IsNullOrEmpty(format))
             {
                 input.Format = format;
+            }
+
+            if (!da.GetOptional(3, true))
+            {
+                input.Overwrite = false;
             }
 
             // The command answers with an ExecutionResult: the export fails as a
