@@ -1,0 +1,236 @@
+{
+  "title": "ModifyWindows and ModifyDoors change what they are sent, and refuse bad input without changing anything",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "host wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": { "x": 920.0, "y": 920.0 },
+            "endCoordinate": { "x": 928.0, "y": 920.0 },
+            "zCoordinate": 0.0,
+            "height": 3.0,
+            "thickness": 0.3
+          }
+        ]
+      },
+      "save": {
+        "wall": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "window",
+      "command": "CreateWindows",
+      "params": {
+        "windowsData": [
+          {
+            "ownerWallId": { "guid": "${wall}" },
+            "centerOffset": 1.5,
+            "sillHeight": 0.9,
+            "width": 1.0,
+            "height": 1.2,
+            "reflected": false,
+            "displayOption": "Standard",
+            "pen": 3
+          }
+        ]
+      },
+      "save": {
+        "window": "elements[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "window created" }
+      ]
+    },
+    {
+      "id": "door",
+      "command": "CreateDoors",
+      "params": {
+        "doorsData": [
+          {
+            "ownerWallId": { "guid": "${wall}" },
+            "centerOffset": 5.5,
+            "sillHeight": 0.0,
+            "width": 0.9,
+            "height": 2.1,
+            "reflected": false,
+            "displayOption": "Standard",
+            "pen": 3
+          }
+        ]
+      },
+      "save": {
+        "door": "elements[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "door created" }
+      ]
+    },
+    {
+      "id": "read as created",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${window}" } },
+          { "elementId": { "guid": "${door}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Window", "name": "first is the window" },
+        { "path": "detailsOfElements[0].details.width", "approx": 1.0, "name": "window width as created" },
+        { "path": "detailsOfElements[0].details.centerOffset", "approx": 1.5, "name": "window center offset as created" },
+        { "path": "detailsOfElements[1].type", "eq": "Door", "name": "second is the door" },
+        { "path": "detailsOfElements[1].details.width", "approx": 0.9, "name": "door width as created" },
+        { "path": "detailsOfElements[1].details.reflected", "eq": false, "name": "door not mirrored as created" }
+      ]
+    },
+    {
+      "id": "modify window",
+      "command": "ModifyWindows",
+      "creates": false,
+      "params": {
+        "windowsWithDetails": [
+          {
+            "elementId": { "guid": "${window}" },
+            "width": 1.4,
+            "height": 1.5,
+            "sillHeight": 0.6,
+            "centerOffset": 2.5,
+            "reflected": true,
+            "displayOption": "OutLinesOnly",
+            "pen": 7
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result" },
+        { "path": "executionResults[0].success", "eq": true, "name": "window modified" }
+      ]
+    },
+    {
+      "id": "modify door",
+      "command": "ModifyDoors",
+      "creates": false,
+      "params": {
+        "doorsWithDetails": [
+          {
+            "elementId": { "guid": "${door}" },
+            "width": 1.0,
+            "height": 2.2,
+            "centerOffset": 6.0,
+            "reflected": true,
+            "displayOption": "OutLinesOnly",
+            "pen": 7
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result" },
+        { "path": "executionResults[0].success", "eq": true, "name": "door modified" }
+      ]
+    },
+    {
+      "id": "read back the changes",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${window}" } },
+          { "elementId": { "guid": "${door}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.width", "approx": 1.4, "name": "window width changed" },
+        { "path": "detailsOfElements[0].details.height", "approx": 1.5, "name": "window height changed" },
+        { "path": "detailsOfElements[0].details.sillHeight", "approx": 0.6, "name": "window sill height changed" },
+        { "path": "detailsOfElements[0].details.centerOffset", "approx": 2.5, "name": "window moved along the wall" },
+        { "path": "detailsOfElements[0].details.reflected", "eq": true, "name": "window mirrored" },
+        { "path": "detailsOfElements[0].details.displayOption", "eq": "OutLinesOnly", "name": "window display option changed" },
+        { "path": "detailsOfElements[0].details.pen", "eq": 7, "name": "window pen changed" },
+        { "path": "detailsOfElements[1].details.width", "approx": 1.0, "name": "door width changed" },
+        { "path": "detailsOfElements[1].details.height", "approx": 2.2, "name": "door height changed" },
+        { "path": "detailsOfElements[1].details.sillHeight", "approx": 0.0, "name": "door sill height not sent, kept" },
+        { "path": "detailsOfElements[1].details.centerOffset", "approx": 6.0, "name": "door moved along the wall" },
+        { "path": "detailsOfElements[1].details.reflected", "eq": true, "name": "door mirrored" },
+        { "path": "detailsOfElements[1].details.displayOption", "eq": "OutLinesOnly", "name": "door display option changed" },
+        { "path": "detailsOfElements[1].details.pen", "eq": 7, "name": "door pen changed" }
+      ]
+    },
+    {
+      "id": "bad window input",
+      "command": "ModifyWindows",
+      "creates": false,
+      "params": {
+        "windowsWithDetails": [
+          {
+            "elementId": { "guid": "${window}" },
+            "width": 2.0,
+            "lineTypeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }
+          },
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "width": 2.0
+          },
+          {
+            "elementId": { "guid": "${window}" }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": false, "name": "nonexistent line type refused" },
+        { "path": "executionResults[0].error.message", "exists": true, "name": "line type error has a message" },
+        { "path": "executionResults[1].success", "eq": false, "name": "nonexistent window refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "item without fields refused" }
+      ]
+    },
+    {
+      "id": "bad door input",
+      "command": "ModifyDoors",
+      "creates": false,
+      "params": {
+        "doorsWithDetails": [
+          {
+            "elementId": { "guid": "${door}" },
+            "width": 2.0,
+            "sectionFillId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }
+          },
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "width": 2.0
+          },
+          {
+            "elementId": { "guid": "${door}" }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": false, "name": "nonexistent fill refused" },
+        { "path": "executionResults[0].error.message", "exists": true, "name": "fill error has a message" },
+        { "path": "executionResults[1].success", "eq": false, "name": "nonexistent door refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "item without fields refused" }
+      ]
+    },
+    {
+      "id": "bad input changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${window}" } },
+          { "elementId": { "guid": "${door}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.width", "approx": 1.4, "name": "window width unchanged" },
+        { "path": "detailsOfElements[0].details.centerOffset", "approx": 2.5, "name": "window position unchanged" },
+        { "path": "detailsOfElements[1].details.width", "approx": 1.0, "name": "door width unchanged" },
+        { "path": "detailsOfElements[1].details.centerOffset", "approx": 6.0, "name": "door position unchanged" }
+      ]
+    }
+  ]
+}

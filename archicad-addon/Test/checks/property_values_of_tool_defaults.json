@@ -1,0 +1,262 @@
+{
+  "title": "GetPropertyValuesOfElementDefaults, SetPropertyValuesOfElementDefaults and GetPropertiesOfToolDefaults read and write a custom property of the Wall tool default",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "classification system with one item",
+      "command": "CreateClassificationSystems",
+      "creates": false,
+      "params": {
+        "classificationSystemsWithItems": [
+          {
+            "classificationSystem": { "name": "Tapir check tool defaults system", "description": "", "source": "", "version": "1", "date": "2026-01-01" },
+            "classificationItems": [
+              { "id": "TD1", "name": "Tapir check tool defaults item", "description": "" }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "system": "classificationSystemIds[0].classificationSystemId.guid"
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "system created" }
+      ]
+    },
+    {
+      "id": "item of the system",
+      "command": "API.GetAllClassificationsInSystem",
+      "creates": false,
+      "params": {
+        "classificationSystemId": { "guid": "${system}" }
+      },
+      "save": {
+        "item": "classificationItems[0].classificationItem.classificationItemId.guid"
+      }
+    },
+    {
+      "id": "property group",
+      "command": "CreatePropertyGroups",
+      "creates": false,
+      "params": {
+        "propertyGroups": [
+          { "propertyGroup": { "name": "Tapir check tool defaults group" } }
+        ]
+      },
+      "save": {
+        "group": "propertyGroupIds[0].propertyGroupId.guid"
+      }
+    },
+    {
+      "id": "text property, available only for the item",
+      "command": "CreatePropertyDefinitions",
+      "creates": false,
+      "params": {
+        "propertyDefinitions": [
+          {
+            "propertyDefinition": {
+              "name": "Tapir check tool defaults text",
+              "description": "Created by a Tapir check",
+              "type": "string",
+              "isEditable": true,
+              "defaultValue": { "basicDefaultValue": { "type": "string", "status": "normal", "value": "TapirCheck default" } },
+              "availability": [ { "classificationItemId": { "guid": "${item}" } } ],
+              "group": { "propertyGroupId": { "guid": "${group}" } }
+            }
+          }
+        ]
+      },
+      "save": {
+        "property": "propertyIds[0].propertyId.guid"
+      }
+    },
+    {
+      "id": "[property] on the unclassified Wall default",
+      "command": "GetPropertyValuesOfElementDefaults",
+      "creates": false,
+      "params": {
+        "elementType": "Wall",
+        "properties": [ { "propertyId": { "guid": "${property}" } } ]
+      },
+      "expect": [
+        { "path": "propertyValues", "len": 1, "name": "one item per property" },
+        { "path": "propertyValues[0].error", "exists": true, "name": "not available: error item" },
+        { "path": "propertyValues[0].propertyValue", "exists": false, "name": "not available: no value" }
+      ]
+    },
+    {
+      "id": "classify the Wall default with the item",
+      "command": "SetClassificationsOfElementDefaults",
+      "creates": false,
+      "params": {
+        "elementDefaultClassifications": [
+          {
+            "elementType": "Wall",
+            "classificationId": { "classificationSystemId": { "guid": "${system}" }, "classificationItemId": { "guid": "${item}" } }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "Wall default classified" }
+      ]
+    },
+    {
+      "id": "[property, bogus property] on the classified Wall default",
+      "command": "GetPropertyValuesOfElementDefaults",
+      "creates": false,
+      "params": {
+        "elementType": "Wall",
+        "properties": [
+          { "propertyId": { "guid": "${property}" } },
+          { "propertyId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "propertyValues", "len": 2, "name": "one item per property, in order" },
+        { "path": "propertyValues[0].propertyValue.value", "eq": "TapirCheck default", "name": "default value of the property" },
+        { "path": "propertyValues[1].error", "exists": true, "name": "nonexistent property: error item" }
+      ]
+    },
+    {
+      "id": "custom properties of the Wall and Slab defaults, with values",
+      "command": "GetPropertiesOfToolDefaults",
+      "creates": false,
+      "params": {
+        "elementTypes": [ "Wall", "Slab" ],
+        "filter": "UserDefined",
+        "includeValues": true
+      },
+      "expect": [
+        { "path": "propertiesOfToolDefaults", "len": 2, "name": "one item per element type" },
+        { "path": "propertiesOfToolDefaults[0].properties[0].propertyId.guid", "exists": true, "name": "the Wall default has a custom property (at least ours)" },
+        { "path": "propertiesOfToolDefaults[0].properties[0].propertyName", "exists": true, "name": "with its name" },
+        { "path": "propertiesOfToolDefaults[0].properties[0].propertyGroupId.guid", "exists": true, "name": "and its group" },
+        { "path": "propertiesOfToolDefaults[1].properties", "exists": true, "name": "the Slab default has a property list" }
+      ]
+    },
+    {
+      "id": "all properties of the Wall default, without values",
+      "command": "GetPropertiesOfToolDefaults",
+      "creates": false,
+      "params": {
+        "elementTypes": [ "Wall" ],
+        "filter": "All",
+        "includeValues": false
+      },
+      "expect": [
+        { "path": "propertiesOfToolDefaults", "len": 1, "name": "one item per element type" },
+        { "path": "propertiesOfToolDefaults[0].properties[0].propertyId.guid", "exists": true, "name": "the Wall default has properties" },
+        { "path": "propertiesOfToolDefaults[0].properties[0].propertyValue", "exists": false, "name": "no value without includeValues" },
+        { "path": "propertiesOfToolDefaults[0].properties[0].error", "exists": false, "name": "no error without includeValues" }
+      ]
+    },
+    {
+      "id": "set the property of the Wall default",
+      "command": "SetPropertyValuesOfElementDefaults",
+      "creates": false,
+      "params": {
+        "elementDefaultPropertyValues": [
+          { "elementType": "Wall", "propertyId": { "guid": "${property}" }, "propertyValue": { "value": "TapirCheck tool default" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per value" },
+        { "path": "executionResults[0].success", "eq": true, "name": "value set" }
+      ]
+    },
+    {
+      "id": "read the new value of the Wall default",
+      "command": "GetPropertyValuesOfElementDefaults",
+      "creates": false,
+      "params": {
+        "elementType": "Wall",
+        "properties": [ { "propertyId": { "guid": "${property}" } } ]
+      },
+      "expect": [
+        { "path": "propertyValues[0].propertyValue.value", "eq": "TapirCheck tool default", "name": "the default holds the new value" }
+      ]
+    },
+    {
+      "id": "a wall placed now",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 700, "y": 710 }, "endCoordinate": { "x": 703, "y": 710 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 }
+        ]
+      },
+      "save": {
+        "wall": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "the new wall got the value of the default",
+      "command": "GetPropertyValuesOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${wall}" } } ],
+        "properties": [ { "propertyId": { "guid": "${property}" } } ]
+      },
+      "expect": [
+        { "path": "propertyValuesForElements[0].propertyValues[0].propertyValue.value", "eq": "TapirCheck tool default", "name": "new wall has the default's value" }
+      ]
+    },
+    {
+      "id": "[bogus property] on the Wall default",
+      "command": "SetPropertyValuesOfElementDefaults",
+      "creates": false,
+      "params": {
+        "elementDefaultPropertyValues": [
+          { "elementType": "Wall", "propertyId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "propertyValue": { "value": "TapirCheck bogus" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per value" },
+        { "path": "executionResults[0].success", "eq": false, "name": "nonexistent property: failed" }
+      ]
+    },
+    {
+      "id": "the Wall default kept its value",
+      "command": "GetPropertyValuesOfElementDefaults",
+      "creates": false,
+      "params": {
+        "elementType": "Wall",
+        "properties": [ { "propertyId": { "guid": "${property}" } } ]
+      },
+      "expect": [
+        { "path": "propertyValues[0].propertyValue.value", "eq": "TapirCheck tool default", "name": "value unchanged" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "id": "unclassify the Wall default in the system",
+      "command": "SetClassificationsOfElementDefaults",
+      "params": {
+        "elementDefaultClassifications": [
+          { "elementType": "Wall", "classificationId": { "classificationSystemId": { "guid": "${system}" } } }
+        ]
+      }
+    },
+    {
+      "id": "remove the property",
+      "command": "DeletePropertyDefinitions",
+      "params": {
+        "propertyIds": [ { "propertyId": { "guid": "${property}" } } ]
+      }
+    },
+    {
+      "id": "remove the group",
+      "command": "DeletePropertyGroups",
+      "params": {
+        "propertyGroupIds": [ { "propertyGroupId": { "guid": "${group}" } } ]
+      }
+    },
+    {
+      "id": "remove the system",
+      "command": "DeleteClassificationSystems",
+      "params": {
+        "classificationSystemIds": [ { "classificationSystemId": { "guid": "${system}" } } ]
+      }
+    }
+  ]
+}

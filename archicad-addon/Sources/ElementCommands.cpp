@@ -2076,6 +2076,23 @@ static const API_CWFrameType* FindNextFrameOfPanel (std::vector<const API_CWFram
 
 using CWSegmentGridCellID = std::pair<UInt32, API_GridElemID>;
 
+// The reference line of a curtain wall: memo.coords from index 1, one vertex more than the
+// segments, as CreateCurtainWalls and ModifyCurtainWalls write it.
+static void AddCurtainWallReferenceLine (const API_Element& elem, GS::ObjectState& typeSpecificDetails)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    const auto& referenceLine = typeSpecificDetails.AddList<GS::ObjectState> ("referenceLine");
+    if (ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_Polygon) != NoError || memo.coords == nullptr) {
+        return;
+    }
+    const Int32 nCoords = BMGetHandleSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (API_Coord) - 1;
+    const Int32 nVertices = std::min<Int32> (nCoords, static_cast<Int32> (elem.curtainWall.nSegments) + 1);
+    for (Int32 i = 1; i <= nVertices; ++i) {
+        referenceLine (Create2DCoordinateObjectState ((*memo.coords)[i]));
+    }
+}
+
 // The reference line of a railing (memo.coords from index 1, one vertex per node) and the height of
 // each generated segment, which can differ from defSegment.height once a segment was edited.
 static void AddRailingReferenceLineAndSegments (const API_Element& elem, GS::ObjectState& typeSpecificDetails)
@@ -2742,6 +2759,10 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 if (ACAPI_CurtainWall_GetCWHeight (&elem.header.guid, &actualHeight) == NoError) {
                     typeSpecificDetails.Add ("actualHeight", actualHeight);
                 }
+                // planeOffset is the offset of the bottom from the home story, as
+                // CreateCurtainWalls and ModifyCurtainWalls write it from zCoordinate.
+                typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, elem.curtainWall.planeOffset, stories));
+                AddCurtainWallReferenceLine (elem, typeSpecificDetails);
                 typeSpecificDetails.Add ("angle", elem.curtainWall.angle);
                 typeSpecificDetails.Add ("flipped", elem.curtainWall.flipped);
                 typeSpecificDetails.Add ("displayOption", ElemDisplayOptionToString (elem.curtainWall.displayOption));

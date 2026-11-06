@@ -1,0 +1,192 @@
+{
+  "title": "GetGDLParametersOfElements reads and SetGDLParametersOfElements writes the GDL parameters of an object, by name and by index, and refuses bad input without changing anything",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "an Object of the loaded library",
+      "command": "GetAvailableLibraryParts",
+      "creates": false,
+      "params": { "filterByTypeId": "Object" },
+      "save": { "objectParent": "libraryParts[0].guid" }
+    },
+    {
+      "id": "own object library part",
+      "command": "CreateLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          {
+            "name": "Tapir Check GDL Parameters 1928",
+            "parentId": "${objectParent}",
+            "type": "Object",
+            "path": "TapirCheckGDLParameters/Tapir Check GDL Parameters 1928.gsm",
+            "a": 1.0,
+            "b": 0.5,
+            "script2D": "RECT2 0, 0, A, B",
+            "script3D": "BLOCK A, B, 0.5"
+          }
+        ],
+        "overwriteExisting": true
+      },
+      "expect": [
+        { "path": "libraryParts", "len": 1, "name": "one answer" },
+        { "path": "libraryParts[0].path", "exists": true, "name": "library part created" }
+      ]
+    },
+    {
+      "id": "place object",
+      "command": "CreateObjects",
+      "params": {
+        "objectsData": [
+          {
+            "libraryPartName": "Tapir Check GDL Parameters 1928",
+            "coordinates": { "x": 960.0, "y": 960.0, "z": 0.0 },
+            "dimensions": { "x": 1.2, "y": 0.6, "z": 0.5 },
+            "useFixSize": false,
+            "angle": 0.0,
+            "reflected": false
+          }
+        ]
+      },
+      "save": { "object": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "object placed" }
+      ]
+    },
+    {
+      "id": "read as placed",
+      "command": "GetGDLParametersOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${object}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "save": { "bIndex": "gdlParametersOfElements[0].parameters[1].index" },
+      "expect": [
+        { "path": "gdlParametersOfElements", "len": 2, "name": "one answer per element" },
+        { "path": "gdlParametersOfElements[0].parameters[0].name", "eq": "A", "name": "first parameter is A" },
+        { "path": "gdlParametersOfElements[0].parameters[0].type", "eq": "Length", "name": "A is a Length" },
+        { "path": "gdlParametersOfElements[0].parameters[0].value", "approx": 1.2, "name": "A is the placed width" },
+        { "path": "gdlParametersOfElements[0].parameters[1].name", "eq": "B", "name": "second parameter is B" },
+        { "path": "gdlParametersOfElements[0].parameters[1].type", "eq": "Length", "name": "B is a Length" },
+        { "path": "gdlParametersOfElements[0].parameters[1].value", "approx": 0.6, "name": "B is the placed depth" },
+        { "path": "gdlParametersOfElements[1].error.message", "exists": true, "name": "nonexistent element answers an error" },
+        { "path": "gdlParametersOfElements[1].parameters", "exists": false, "name": "nonexistent element has no parameters" }
+      ]
+    },
+    {
+      "id": "set A by name and B by index",
+      "command": "SetGDLParametersOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithGDLParameters": [
+          {
+            "elementId": { "guid": "${object}" },
+            "gdlParameters": [
+              { "name": "A", "value": 1.5 },
+              { "index": "${bIndex}", "value": 0.9 }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result" },
+        { "path": "executionResults[0].success", "eq": true, "name": "parameters set" }
+      ]
+    },
+    {
+      "id": "read back the parameters",
+      "command": "GetGDLParametersOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${object}" } } ] },
+      "expect": [
+        { "path": "gdlParametersOfElements[0].parameters[0].name", "eq": "A", "name": "first parameter is A" },
+        { "path": "gdlParametersOfElements[0].parameters[0].value", "approx": 1.5, "name": "A changed by name" },
+        { "path": "gdlParametersOfElements[0].parameters[1].name", "eq": "B", "name": "second parameter is B" },
+        { "path": "gdlParametersOfElements[0].parameters[1].value", "approx": 0.9, "name": "B changed by index" }
+      ]
+    },
+    {
+      "id": "the object has the new size",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${object}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Object", "name": "an Object" },
+        { "path": "detailsOfElements[0].details.dimensions.x", "approx": 1.5, "name": "width follows A" },
+        { "path": "detailsOfElements[0].details.dimensions.y", "approx": 0.9, "name": "depth follows B" }
+      ]
+    },
+    {
+      "id": "bad parameter input",
+      "command": "SetGDLParametersOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithGDLParameters": [
+          {
+            "elementId": { "guid": "${object}" },
+            "gdlParameters": [
+              { "name": "A", "value": 2.0 },
+              { "name": "tapirCheckNoSuchParameter1928", "value": 1.0 }
+            ]
+          },
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "gdlParameters": [ { "name": "A", "value": 2.0 } ]
+          },
+          {
+            "elementId": { "guid": "${object}" },
+            "gdlParameters": [ { "name": "A", "value": "wide" } ]
+          },
+          {
+            "elementId": { "guid": "${object}" },
+            "gdlParameters": [ { "name": "B", "value": [2.0, 2.0] } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 4, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": false, "name": "nonexistent parameter refused" },
+        { "path": "executionResults[0].error.message", "contains": "tapirCheckNoSuchParameter1928", "name": "the error names the parameter" },
+        { "path": "executionResults[1].success", "eq": false, "name": "nonexistent element refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "a string for a Length refused" },
+        { "path": "executionResults[2].error.message", "exists": true, "name": "the wrong type error has a message" },
+        { "path": "executionResults[3].success", "eq": false, "name": "a list for a simple parameter refused" },
+        { "path": "executionResults[3].error.message", "exists": true, "name": "the list error has a message" }
+      ]
+    },
+    {
+      "id": "bad input changed nothing",
+      "command": "GetGDLParametersOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${object}" } } ] },
+      "expect": [
+        { "path": "gdlParametersOfElements[0].parameters[0].value", "approx": 1.5, "name": "A unchanged, also by the item whose second parameter was bad" },
+        { "path": "gdlParametersOfElements[0].parameters[1].value", "approx": 0.9, "name": "B unchanged" }
+      ]
+    },
+    {
+      "id": "size unchanged",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${object}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.dimensions.x", "approx": 1.5, "name": "width unchanged" },
+        { "path": "detailsOfElements[0].details.dimensions.y", "approx": 0.9, "name": "depth unchanged" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteEmbeddedLibraryItems",
+      "params": {
+        "embeddedLibraryItems": [
+          { "path": "TapirCheckGDLParameters" }
+        ]
+      }
+    }
+  ]
+}

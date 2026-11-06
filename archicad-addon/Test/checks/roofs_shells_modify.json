@@ -1,0 +1,435 @@
+{
+  "title": "ModifyRoofs and ModifyShells write what they are given, keep the rest and refuse a bad element",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [ "Roof", "Shell" ],
+  "steps": [
+    {
+      "id": "two building materials of the check",
+      "command": "CreateBuildingMaterials",
+      "creates": false,
+      "params": {
+        "buildingMaterialDataArray": [
+          { "name": "TapirCheck roof shell material A" },
+          { "name": "TapirCheck roof shell material B" }
+        ]
+      },
+      "save": {
+        "bmA": "attributeIds[0].attributeId.guid",
+        "bmB": "attributeIds[1].attributeId.guid"
+      },
+      "expect": [
+        { "path": "attributeIds[0].attributeId.guid", "exists": true, "name": "material A created" },
+        { "path": "attributeIds[1].attributeId.guid", "exists": true, "name": "material B created" }
+      ]
+    },
+    {
+      "id": "a line type for the composite's separators",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Line" },
+      "save": { "lineType": "attributes[0].attributeId.guid" }
+    },
+    {
+      "id": "a composite for roofs and shells",
+      "command": "CreateComposites",
+      "creates": false,
+      "params": {
+        "compositeDataArray": [
+          {
+            "name": "TapirCheck roof shell composite",
+            "useWith": [ "Roof", "Shell" ],
+            "skins": [
+              { "type": "Core", "buildingMaterialId": { "attributeId": { "guid": "${bmA}" } }, "framePen": 1, "thickness": 0.25 }
+            ],
+            "separators": [
+              { "lineTypeId": { "attributeId": { "guid": "${lineType}" } }, "linePen": 1 },
+              { "lineTypeId": { "attributeId": { "guid": "${lineType}" } }, "linePen": 1 }
+            ]
+          }
+        ]
+      },
+      "save": { "comp": "attributeIds[0].attributeId.guid" },
+      "expect": [
+        { "path": "attributeIds[0].attributeId.guid", "exists": true, "name": "composite created" }
+      ]
+    },
+    {
+      "id": "single-plane and multi-plane roof with explicit settings",
+      "command": "CreateRoofs",
+      "params": {
+        "roofsData": [
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "structureType": "Basic",
+            "buildingMaterialId": { "guid": "${bmA}" },
+            "thickness": 0.2,
+            "polygonCoordinates": [
+              { "x": 800.0, "y": 800.0 },
+              { "x": 806.0, "y": 800.0 },
+              { "x": 806.0, "y": 804.0 },
+              { "x": 800.0, "y": 804.0 }
+            ],
+            "pivotLine": {
+              "begCoordinate": { "x": 800.0, "y": 800.0 },
+              "endCoordinate": { "x": 806.0, "y": 800.0 }
+            },
+            "angle": 0.5
+          },
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "structureType": "Basic",
+            "buildingMaterialId": { "guid": "${bmA}" },
+            "thickness": 0.2,
+            "polygonCoordinates": [
+              { "x": 820.0, "y": 800.0 },
+              { "x": 828.0, "y": 800.0 },
+              { "x": 828.0, "y": 806.0 },
+              { "x": 820.0, "y": 806.0 }
+            ],
+            "eavesOverhang": 0.3,
+            "levels": [ { "levelHeight": 10.0, "levelAngle": 0.5 } ]
+          }
+        ]
+      },
+      "save": {
+        "r1": "elements[0].elementId.guid",
+        "r2": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "single-plane roof created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "multi-plane roof created" }
+      ]
+    },
+    {
+      "id": "read the new roofs",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r1}" } }, { "elementId": { "guid": "${r2}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.roofClass", "eq": "SinglePlane" },
+        { "path": "detailsOfElements[0].details.polygonOutline", "len": 5, "name": "plane roof: four corners and the closing point" },
+        { "path": "detailsOfElements[1].details.roofClass", "eq": "MultiPlane" },
+        { "path": "detailsOfElements[1].details.levels", "len": 1 },
+        { "path": "detailsOfElements[1].details.pivotEdges", "len": 4, "name": "one pivot edge per side" },
+        { "path": "detailsOfElements[1].details.pivotEdges[1].levels[0].angleType", "eq": "Sloped" }
+      ]
+    },
+    {
+      "id": "modify both roofs; a nonexistent roof and fields of the other roof class",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": {
+        "roofsWithDetails": [
+          {
+            "elementId": { "guid": "${r1}" },
+            "level": 0.6,
+            "thickness": 0.3,
+            "buildingMaterialId": { "guid": "${bmB}" },
+            "angle": 0.6,
+            "pivotLine": {
+              "begCoordinate": { "x": 800.0, "y": 800.5 },
+              "endCoordinate": { "x": 806.0, "y": 800.5 }
+            }
+          },
+          {
+            "elementId": { "guid": "${r2}" },
+            "level": 0.4,
+            "thickness": 0.35,
+            "eavesOverhang": 0.45,
+            "levels": [
+              { "levelHeight": 1.0, "levelAngle": 0.7 },
+              { "levelHeight": 10.0, "levelAngle": 0.3 }
+            ]
+          },
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "thickness": 0.3
+          },
+          {
+            "elementId": { "guid": "${r1}" },
+            "levels": [ { "levelHeight": 10.0, "levelAngle": 0.2 } ]
+          },
+          {
+            "elementId": { "guid": "${r2}" },
+            "angle": 0.2
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 5, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "single-plane roof modified" },
+        { "path": "executionResults[1].success", "eq": true, "name": "multi-plane roof modified" },
+        { "path": "executionResults[2].success", "eq": false, "name": "nonexistent roof refused" },
+        { "path": "executionResults[3].success", "eq": false, "name": "levels on a single-plane roof refused" },
+        { "path": "executionResults[4].success", "eq": false, "name": "angle on a multi-plane roof refused" }
+      ]
+    },
+    {
+      "id": "read the modified roofs",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r1}" } }, { "elementId": { "guid": "${r2}" } } ] },
+      "save": { "r1Material": "detailsOfElements[0].details.buildingMaterialId.guid" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.zCoordinate", "approx": 0.6 },
+        { "path": "detailsOfElements[0].details.thickness", "approx": 0.3 },
+        { "path": "detailsOfElements[0].details.structureType", "eq": "Basic", "name": "plane roof stays Basic" },
+        { "path": "detailsOfElements[0].details.angle", "approx": 0.6 },
+        { "path": "detailsOfElements[0].details.pivotLine.begin.x", "approx": 800.0 },
+        { "path": "detailsOfElements[0].details.pivotLine.begin.y", "approx": 800.5 },
+        { "path": "detailsOfElements[0].details.pivotLine.end.x", "approx": 806.0 },
+        { "path": "detailsOfElements[0].details.pivotLine.end.y", "approx": 800.5 },
+        { "path": "detailsOfElements[0].details.roofClass", "eq": "SinglePlane", "name": "still single-plane" },
+        { "path": "detailsOfElements[0].details.polygonOutline", "len": 5, "name": "plane roof outline kept" },
+        { "path": "detailsOfElements[0].details.polygonOutline[2].x", "approx": 806.0, "name": "plane roof corner kept (x)" },
+        { "path": "detailsOfElements[0].details.polygonOutline[2].y", "approx": 804.0, "name": "plane roof corner kept (y)" },
+        { "path": "detailsOfElements[1].details.zCoordinate", "approx": 0.4 },
+        { "path": "detailsOfElements[1].details.thickness", "approx": 0.35 },
+        { "path": "detailsOfElements[1].details.eavesOverhang", "approx": 0.45 },
+        { "path": "detailsOfElements[1].details.levels", "len": 2 },
+        { "path": "detailsOfElements[1].details.levels[0].height", "approx": 1.0 },
+        { "path": "detailsOfElements[1].details.levels[0].angle", "approx": 0.7 },
+        { "path": "detailsOfElements[1].details.levels[1].height", "approx": 10.0 },
+        { "path": "detailsOfElements[1].details.levels[1].angle", "approx": 0.3 },
+        { "path": "detailsOfElements[1].details.roofClass", "eq": "MultiPlane", "name": "still multi-plane" },
+        { "path": "detailsOfElements[1].details.structureType", "eq": "Basic", "name": "multi-plane roof structure kept" },
+        { "path": "detailsOfElements[1].details.pivotPolygonOutline", "len": 5, "name": "pivot polygon kept" },
+        { "path": "detailsOfElements[1].details.pivotPolygonOutline[2].x", "approx": 828.0, "name": "pivot polygon corner kept (x)" },
+        { "path": "detailsOfElements[1].details.pivotPolygonOutline[2].y", "approx": 806.0, "name": "pivot polygon corner kept (y)" }
+      ]
+    },
+    {
+      "id": "the plane roof has material B",
+      "command": "GetBuildingMaterials",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${r1Material}" } } ], "fields": [ "id" ] },
+      "expect": [
+        { "path": "buildingMaterials[0].name", "eq": "TapirCheck roof shell material B" }
+      ]
+    },
+    {
+      "id": "plane roof outline, multi-plane roof edges and composite; a wrong edge count",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": {
+        "roofsWithDetails": [
+          {
+            "elementId": { "guid": "${r1}" },
+            "polygonOutline": [
+              { "x": 800.0, "y": 800.0 },
+              { "x": 807.0, "y": 800.0 },
+              { "x": 807.0, "y": 804.0 },
+              { "x": 803.5, "y": 806.0 },
+              { "x": 800.0, "y": 804.0 }
+            ]
+          },
+          {
+            "elementId": { "guid": "${r2}" },
+            "pivotEdges": [
+              { "levels": [ { "angleType": "Gable" } ] },
+              { "levels": [ { "angle": 0.9, "eavesOverhang": 0.6 } ] },
+              {},
+              {}
+            ]
+          },
+          {
+            "elementId": { "guid": "${r2}" },
+            "structureType": "Composite",
+            "compositeId": { "guid": "${comp}" }
+          },
+          {
+            "elementId": { "guid": "${r2}" },
+            "pivotEdges": [
+              {},
+              { "levels": [ { "angleType": "Gable" } ] },
+              {}
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 4, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "plane roof outline changed" },
+        { "path": "executionResults[1].success", "eq": true, "name": "pivot edges changed" },
+        { "path": "executionResults[2].success", "eq": true, "name": "composite set" },
+        { "path": "executionResults[3].success", "eq": false, "name": "pivotEdges with the wrong edge count refused" }
+      ]
+    },
+    {
+      "id": "read the roofs again",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r1}" } }, { "elementId": { "guid": "${r2}" } } ] },
+      "save": { "r2Composite": "detailsOfElements[1].details.compositeId.guid" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.polygonOutline", "len": 6, "name": "five corners and the closing point" },
+        { "path": "detailsOfElements[0].details.polygonOutline[3].x", "approx": 803.5, "name": "new corner (x)" },
+        { "path": "detailsOfElements[0].details.polygonOutline[3].y", "approx": 806.0, "name": "new corner (y)" },
+        { "path": "detailsOfElements[0].details.holes", "len": 0, "name": "no holes" },
+        { "path": "detailsOfElements[0].details.angle", "approx": 0.6, "name": "angle kept" },
+        { "path": "detailsOfElements[0].details.thickness", "approx": 0.3, "name": "thickness kept" },
+        { "path": "detailsOfElements[0].details.zCoordinate", "approx": 0.6, "name": "level kept" },
+        { "path": "detailsOfElements[1].details.pivotEdges", "len": 4, "name": "still four pivot edges" },
+        { "path": "detailsOfElements[1].details.pivotEdges[0].levels[0].angleType", "eq": "Gable" },
+        { "path": "detailsOfElements[1].details.pivotEdges[1].levels[0].angle", "approx": 0.9 },
+        { "path": "detailsOfElements[1].details.pivotEdges[1].levels[0].eavesOverhang", "approx": 0.6 },
+        { "path": "detailsOfElements[1].details.pivotEdges[1].levels[0].angleType", "eq": "Sloped", "name": "refused edge item changed nothing" },
+        { "path": "detailsOfElements[1].details.pivotEdges[2].levels[0].angleType", "eq": "Sloped", "name": "edge without levels kept" },
+        { "path": "detailsOfElements[1].details.structureType", "eq": "Composite" },
+        { "path": "detailsOfElements[1].details.levels", "len": 2, "name": "roof levels kept" },
+        { "path": "detailsOfElements[1].details.zCoordinate", "approx": 0.4, "name": "multi-plane level kept" }
+      ]
+    },
+    {
+      "id": "the multi-plane roof has the check's composite",
+      "command": "GetComposites",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${r2Composite}" } } ], "fields": [ "useWith" ] },
+      "expect": [
+        { "path": "composites[0].name", "eq": "TapirCheck roof shell composite" }
+      ]
+    },
+    {
+      "id": "basic extruded shell of material A",
+      "command": "CreateShells",
+      "params": {
+        "shellsData": [
+          {
+            "shellClass": "Extruded",
+            "floorIndex": 0,
+            "thickness": 0.2,
+            "structureType": "Basic",
+            "buildingMaterialId": { "guid": "${bmA}" },
+            "basePlane": { "origin": { "x": 850.0, "y": 800.0, "z": 0.0 } },
+            "profile": {
+              "coordinates": [ { "x": -3.0, "y": 0.0 }, { "x": 3.0, "y": 0.0 } ],
+              "arcs": [ { "begIndex": 0, "endIndex": 1, "arcAngle": -1.5707963267948966 } ]
+            },
+            "extrusionVector": { "x": 0.0, "y": 8.0, "z": 0.0 }
+          }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "shell created" }
+      ]
+    },
+    {
+      "id": "material B for the shell; a nonexistent shell, a roof and an empty item",
+      "command": "ModifyShells",
+      "creates": false,
+      "params": {
+        "shellsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "buildingMaterialId": { "guid": "${bmB}" }
+          },
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "buildingMaterialId": { "guid": "${bmB}" }
+          },
+          {
+            "elementId": { "guid": "${r1}" },
+            "buildingMaterialId": { "guid": "${bmA}" }
+          },
+          {
+            "elementId": { "guid": "${s1}" }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 4, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "shell modified" },
+        { "path": "executionResults[1].success", "eq": false, "name": "nonexistent shell refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "a roof is refused" },
+        { "path": "executionResults[3].success", "eq": false, "name": "item without fields refused" }
+      ]
+    },
+    {
+      "id": "read the shell, and the roof sent to ModifyShells",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } }, { "elementId": { "guid": "${r1}" } } ] },
+      "save": {
+        "s1Material": "detailsOfElements[0].details.buildingMaterialId.guid",
+        "r1MaterialAfter": "detailsOfElements[1].details.buildingMaterialId.guid"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.structureType", "eq": "Basic" },
+        { "path": "detailsOfElements[0].details.thickness", "approx": 0.2, "name": "thickness kept" },
+        { "path": "detailsOfElements[0].details.shellClass", "eq": "Extruded", "name": "shell class kept" },
+        { "path": "detailsOfElements[1].details.roofClass", "eq": "SinglePlane", "name": "roof still a single-plane roof" }
+      ]
+    },
+    {
+      "id": "the shell has material B, the roof still has material B",
+      "command": "GetBuildingMaterials",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${s1Material}" } },
+          { "attributeId": { "guid": "${r1MaterialAfter}" } }
+        ],
+        "fields": [ "id" ]
+      },
+      "expect": [
+        { "path": "buildingMaterials[0].name", "eq": "TapirCheck roof shell material B", "name": "shell material" },
+        { "path": "buildingMaterials[1].name", "eq": "TapirCheck roof shell material B", "name": "roof unchanged by ModifyShells" }
+      ]
+    },
+    {
+      "id": "the composite for the shell",
+      "command": "ModifyShells",
+      "creates": false,
+      "params": {
+        "shellsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "structureType": "Composite",
+            "compositeId": { "guid": "${comp}" }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "shell made composite" }
+      ]
+    },
+    {
+      "id": "read the composite shell",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "save": { "s1Composite": "detailsOfElements[0].details.compositeId.guid" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.structureType", "eq": "Composite" },
+        { "path": "detailsOfElements[0].details.shellClass", "eq": "Extruded", "name": "shell class kept" }
+      ]
+    },
+    {
+      "id": "the shell has the check's composite",
+      "command": "GetComposites",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${s1Composite}" } } ], "fields": [ "useWith" ] },
+      "expect": [
+        { "path": "composites[0].name", "eq": "TapirCheck roof shell composite" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "Composite", "attributeId": { "attributeId": { "guid": "${comp}" } } } ] }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": {
+        "attributesToDelete": [
+          { "attributeType": "BuildingMaterial", "attributeId": { "attributeId": { "guid": "${bmA}" } } },
+          { "attributeType": "BuildingMaterial", "attributeId": { "attributeId": { "guid": "${bmB}" } } }
+        ]
+      }
+    }
+  ]
+}

@@ -27,7 +27,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         {
             InText(
                 "ImageFilePath",
-                "Absolute path of the image file to write. An existing file is overwritten.");
+                "Absolute path of the image file to write. An existing file is overwritten unless Overwrite is false.");
 
             InText(
                 "Format",
@@ -72,7 +72,13 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                     .WithTypeName("integerItem"),
                 GH_ParamAccess.item);
 
-            SetOptionality(new[] { 1, 2, 3, 4, 5 });
+            InBoolean(
+                "Overwrite",
+                "false refuses to render when a file already exists at ImageFilePath, and writes nothing. " +
+                "Default is true.",
+                true);
+
+            SetOptionality(new[] { 1, 2, 3, 4, 5, 6 });
         }
 
         protected override void AddOutputs()
@@ -133,6 +139,12 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                     out int resolution))
             {
                 parameters["resolution"] = resolution;
+            }
+
+            // Only sent when it differs from the command's default.
+            if (!da.GetOptional(6, true))
+            {
+                parameters["overwrite"] = false;
             }
 
             if (!TryGetConvertedCadValues(

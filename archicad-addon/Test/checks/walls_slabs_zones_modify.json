@@ -1,0 +1,256 @@
+{
+  "title": "ModifyWalls, ModifySlabs and ModifyZones write what they are given, keep the rest and refuse a bad element",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "basic wall with explicit settings",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": { "x": 700.0, "y": 700.0 },
+            "endCoordinate": { "x": 706.0, "y": 700.0 },
+            "floorIndex": 0,
+            "zCoordinate": 0.0,
+            "height": 2.7,
+            "structureType": "Basic",
+            "thickness": 0.2,
+            "referenceLineLocation": "Outside",
+            "offset": 0.0,
+            "flipped": false
+          }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "wall created" }
+      ]
+    },
+    {
+      "id": "modify the wall, and a nonexistent one",
+      "command": "ModifyWalls",
+      "creates": false,
+      "params": {
+        "wallsWithDetails": [
+          {
+            "elementId": { "guid": "${w1}" },
+            "endCoordinate": { "x": 708.0, "y": 701.0 },
+            "height": 3.1,
+            "thickness": 0.3,
+            "bottomOffset": 0.15,
+            "offset": 0.05,
+            "flipped": true
+          },
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "height": 3.1
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "wall modified" },
+        { "path": "executionResults[1].success", "eq": false, "name": "nonexistent wall refused" }
+      ]
+    },
+    {
+      "id": "read the modified wall",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 708.0 },
+        { "path": "detailsOfElements[0].details.endCoordinate.y", "approx": 701.0 },
+        { "path": "detailsOfElements[0].details.height", "approx": 3.1 },
+        { "path": "detailsOfElements[0].details.relativeTopStory", "eq": 0, "name": "explicit height unlinks the top" },
+        { "path": "detailsOfElements[0].details.begThickness", "approx": 0.3 },
+        { "path": "detailsOfElements[0].details.bottomOffset", "approx": 0.15 },
+        { "path": "detailsOfElements[0].details.offset", "approx": 0.05 },
+        { "path": "detailsOfElements[0].details.flipped", "eq": true },
+        { "path": "detailsOfElements[0].details.begCoordinate.x", "approx": 700.0, "name": "start kept" },
+        { "path": "detailsOfElements[0].details.begCoordinate.y", "approx": 700.0, "name": "start kept (y)" },
+        { "path": "detailsOfElements[0].details.structureType", "eq": "Basic", "name": "structure kept" },
+        { "path": "detailsOfElements[0].details.referenceLineLocation", "eq": "Outside", "name": "reference line kept" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "home story kept" }
+      ]
+    },
+    {
+      "id": "basic slab with explicit settings",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "structureType": "Basic",
+            "thickness": 0.25,
+            "referencePlaneLocation": "Top",
+            "polygonCoordinates": [
+              { "x": 720.0, "y": 700.0 },
+              { "x": 724.0, "y": 700.0 },
+              { "x": 724.0, "y": 704.0 },
+              { "x": 720.0, "y": 704.0 }
+            ]
+          }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "slab created" }
+      ]
+    },
+    {
+      "id": "read the new slab",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.thickness", "approx": 0.25 },
+        { "path": "detailsOfElements[0].details.polygonOutline", "len": 5, "name": "four corners and the closing point" }
+      ]
+    },
+    {
+      "id": "modify the slab, and a nonexistent one",
+      "command": "ModifySlabs",
+      "creates": false,
+      "params": {
+        "slabsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "zCoordinate": 0.4,
+            "floorIndex": 0,
+            "thickness": 0.35,
+            "referencePlaneLocation": "Bottom",
+            "polygonOutline": [
+              { "x": 720.0, "y": 700.0 },
+              { "x": 725.0, "y": 700.0 },
+              { "x": 725.0, "y": 703.0 },
+              { "x": 722.5, "y": 705.0 },
+              { "x": 720.0, "y": 703.0 }
+            ]
+          },
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "thickness": 0.35
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "slab modified" },
+        { "path": "executionResults[1].success", "eq": false, "name": "nonexistent slab refused" }
+      ]
+    },
+    {
+      "id": "read the modified slab",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "home story kept" },
+        { "path": "detailsOfElements[0].details.zCoordinate", "approx": 0.4 },
+        { "path": "detailsOfElements[0].details.thickness", "approx": 0.35 },
+        { "path": "detailsOfElements[0].details.referencePlaneLocation", "eq": "Bottom" },
+        { "path": "detailsOfElements[0].details.structureType", "eq": "Basic", "name": "structure kept" },
+        { "path": "detailsOfElements[0].details.polygonOutline", "len": 6, "name": "five corners and the closing point" },
+        { "path": "detailsOfElements[0].details.holes", "len": 0, "name": "no holes" }
+      ]
+    },
+    {
+      "id": "manual zone with explicit levels",
+      "command": "CreateZones",
+      "params": {
+        "zonesData": [
+          {
+            "name": "TapirCheck zone",
+            "numberStr": "1",
+            "floorIndex": 0,
+            "stampPosition": { "x": 741.0, "y": 701.0 },
+            "stampAngle": 0.0,
+            "fixedStampAngle": false,
+            "height": 2.5,
+            "bottomOffset": 0.0,
+            "floorThickness": 0.0,
+            "geometry": {
+              "polygonCoordinates": [
+                { "x": 740.0, "y": 700.0 },
+                { "x": 744.0, "y": 700.0 },
+                { "x": 744.0, "y": 703.0 },
+                { "x": 740.0, "y": 703.0 }
+              ]
+            }
+          }
+        ]
+      },
+      "save": { "z1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "zone created" }
+      ]
+    },
+    {
+      "id": "modify the zone, a wall and a nonexistent zone",
+      "command": "ModifyZones",
+      "creates": false,
+      "params": {
+        "zonesWithDetails": [
+          {
+            "elementId": { "guid": "${z1}" },
+            "name": "TapirCheck zone B",
+            "numberStr": "2",
+            "stampPosition": { "x": 742.0, "y": 702.0 },
+            "stampAngle": 0.3,
+            "fixedStampAngle": true,
+            "height": 3.2,
+            "bottomOffset": 0.1,
+            "floorThickness": 0.05
+          },
+          {
+            "elementId": { "guid": "${w1}" },
+            "height": 3.2
+          },
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "height": 3.2
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "zone modified" },
+        { "path": "executionResults[1].success", "eq": false, "name": "a wall is refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "nonexistent zone refused" }
+      ]
+    },
+    {
+      "id": "read the modified zone",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${z1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.name", "eq": "TapirCheck zone B" },
+        { "path": "detailsOfElements[0].details.numberStr", "eq": "2" },
+        { "path": "detailsOfElements[0].details.stampPosition.x", "approx": 742.0 },
+        { "path": "detailsOfElements[0].details.stampPosition.y", "approx": 702.0 },
+        { "path": "detailsOfElements[0].details.stampAngle", "approx": 0.3 },
+        { "path": "detailsOfElements[0].details.fixedStampAngle", "eq": true },
+        { "path": "detailsOfElements[0].details.height", "approx": 3.2 },
+        { "path": "detailsOfElements[0].details.relativeTopStory", "eq": 0, "name": "explicit height unlinks the top" },
+        { "path": "detailsOfElements[0].details.bottomOffset", "approx": 0.1 },
+        { "path": "detailsOfElements[0].details.floorThickness", "approx": 0.05 },
+        { "path": "detailsOfElements[0].details.isManual", "eq": true, "name": "still a manual zone" },
+        { "path": "detailsOfElements[0].details.polygonOutline", "len": 5, "name": "polygon kept" },
+        { "path": "detailsOfElements[0].details.polygonOutline[2].x", "approx": 744.0, "name": "polygon corner kept (x)" },
+        { "path": "detailsOfElements[0].details.polygonOutline[2].y", "approx": 703.0, "name": "polygon corner kept (y)" }
+      ]
+    },
+    {
+      "id": "the wall sent to ModifyZones is unchanged",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.height", "approx": 3.1 }
+      ]
+    }
+  ]
+}
