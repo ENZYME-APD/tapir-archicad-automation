@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-06 12:21 UTC",
+ "generatedAt": "2026-11-06 13:31 UTC",
  "counts": {
   "done": 568,
   "merged": 178,
@@ -2715,6 +2715,10 @@
      "path": "Components/ElementsComponents/GetDetailsOfElementsComponent.cs"
     },
     {
+     "name": "HotspotsComponent",
+     "path": "Components/DocumentToolsComponents/HotspotsComponent.cs"
+    },
+    {
      "name": "LabelsComponent",
      "path": "Components/DocumentToolsComponents/LabelsComponent.cs"
     },
@@ -2795,10 +2799,6 @@
    "pullRequests": [],
    "issues": [
     {
-     "number": 1979,
-     "title": "Grasshopper: Hotspots tool component"
-    },
-    {
      "number": 1791,
      "title": "Grasshopper: Doors and Windows tool components, with their floor plan parameters"
     }
@@ -2843,6 +2843,10 @@
     {
      "name": "FillsComponent",
      "path": "Components/DocumentToolsComponents/FillsComponent.cs"
+    },
+    {
+     "name": "HotspotsComponent",
+     "path": "Components/DocumentToolsComponents/HotspotsComponent.cs"
     },
     {
      "name": "LabelsComponent",
@@ -5958,6 +5962,10 @@
     {
      "name": "CreateHotspotsComponent",
      "path": "Components/ElementsComponents/CreateHotspotsComponent.cs"
+    },
+    {
+     "name": "HotspotsComponent",
+     "path": "Components/DocumentToolsComponents/HotspotsComponent.cs"
     }
    ],
    "parameters": "json",
@@ -5967,26 +5975,16 @@
     "hotspotsData.favoriteName",
     "hotspotsData.floorInd",
     "hotspotsData.height",
+    "hotspotsData.id",
     "hotspotsData.layerIndex",
     "hotspotsData.penIndex",
     "hotspotsData.position"
    ],
    "missingParameters": [
-    "databaseId",
-    "hotspotsData.id"
+    "databaseId"
    ],
-   "pullRequests": [
-    {
-     "number": 2042,
-     "title": "Grasshopper: Hotspots tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1979,
-     "title": "Grasshopper: Hotspots tool component"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreateHatches",
@@ -8569,6 +8567,10 @@
     {
      "name": "FillsComponent",
      "path": "Components/DocumentToolsComponents/FillsComponent.cs"
+    },
+    {
+     "name": "HotspotsComponent",
+     "path": "Components/DocumentToolsComponents/HotspotsComponent.cs"
     },
     {
      "name": "LabelsComponent",
