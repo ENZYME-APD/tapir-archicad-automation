@@ -1326,7 +1326,7 @@ ENZYME-APD runs the project and publishes Tapir under the MIT licence. Everyone 
 - [Ádám Barancsuk @brncsk](https://github.com/brncsk)
 - [@agmurf](https://github.com/agmurf)
 - [Agnes Gaschitz @Gaschitz](https://github.com/Gaschitz)
-- [Aitor Lezeta @leceta](https://github.com/leceta)
+- [Aitor Leceta @leceta](https://github.com/leceta)
 - akunia
 - [@alesdev88](https://github.com/alesdev88)
 - [@Archigame](https://github.com/Archigame)
