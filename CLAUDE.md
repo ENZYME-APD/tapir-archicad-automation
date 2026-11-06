@@ -185,6 +185,10 @@ Notes:
 - `AC_VERSION` selects the target Archicad major version; `AC_API_DEVKIT_DIR` must
   point at the matching DevKit's `Support` folder.
 - Toolset: `v142` before AC29, `v143` from AC29 (see `build_all_win.bat`).
+- The Analytical Model API and the MEP API are delay-loaded on Windows and weakly linked on macOS
+  (`Tools/CMakeCommon.cmake`), so Tapir loads in an Archicad without them (#1688). Every call site checks
+  `IsAnalyticalModelAPIAvailable ()` / `IsMEPAPIAvailable ()` ([Sources/OptionalAPIs.hpp](archicad-addon/Sources/OptionalAPIs.hpp))
+  first, and their exported variables (element type IDs) are read through its accessors, as data cannot be delay-loaded.
 - Build config produces `TapirAddOn_AC<version>_<Win|Mac>` (`.apx` on Windows,
   `.bundle`/`.zip` on macOS).
 

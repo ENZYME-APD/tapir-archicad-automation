@@ -1,4 +1,5 @@
 #include "MEPCommands.hpp"
+#include "OptionalAPIs.hpp"
 #include <cmath>
 #include <functional>
 #include <limits>
@@ -1620,6 +1621,9 @@ GS::Optional<GS::UniString> GetMEPElementsCommand::GetRawResponseSchema () const
 GS::ObjectState GetMEPElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::UniString> elementTypes;
     parameters.Get ("elementTypes", elementTypes);
     GS::Array<GS::UniString> domains;
@@ -1629,7 +1633,7 @@ GS::ObjectState GetMEPElementsCommand::Execute (const GS::ObjectState& parameter
     ACAPI_Element_GetElemList (API_ExternalElemID, &elemList);
 #ifdef ServerMainVers_3000
     // Electrical elements are only listed when asked for by their classID.
-    for (const API_Guid& classId : { ElectricalPanelID, ElectricalDeviceID }) {
+    for (const API_Guid& classId : { GetMEPElectricalPanelID (), GetMEPElectricalDeviceID () }) {
         GS::Array<API_Guid> electricalElemList;
         ACAPI_Element_GetElemList (API_ElemType (classId), &electricalElemList);
         for (const API_Guid& elemGuid : electricalElemList) {
@@ -1737,6 +1741,9 @@ GS::Optional<GS::UniString> GetMEPRoutingElementsCommand::GetRawResponseSchema (
 GS::ObjectState GetMEPRoutingElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> elements;
     if (!parameters.Get ("elements", elements)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'elements' parameter.");
@@ -1922,6 +1929,9 @@ GS::Optional<GS::UniString> GetMEPPortsCommand::GetRawResponseSchema () const
 GS::ObjectState GetMEPPortsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> elements;
     if (!parameters.Get ("elements", elements)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'elements' parameter.");
@@ -2110,6 +2120,9 @@ GS::Optional<GS::UniString> GetMEPElementDetailsCommand::GetRawResponseSchema ()
 GS::ObjectState GetMEPElementDetailsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> elements;
     if (!parameters.Get ("elements", elements)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'elements' parameter.");
@@ -2337,6 +2350,9 @@ GS::Optional<GS::UniString> GetMEPDistributionSystemsCommand::GetRawResponseSche
 GS::ObjectState GetMEPDistributionSystemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     bool includeTree = false;
     parameters.Get ("includeTree", includeTree);
 
@@ -2533,6 +2549,9 @@ GS::Optional<GS::UniString> CreateMEPRoutingElementsCommand::GetRawResponseSchem
 GS::ObjectState CreateMEPRoutingElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> routingElementsData;
     if (!parameters.Get ("routingElementsData", routingElementsData)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'routingElementsData' parameter.");
@@ -2869,6 +2888,9 @@ GS::Optional<GS::UniString> CreateMEPElementsCommand::GetRawResponseSchema () co
 GS::ObjectState CreateMEPElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> elementsData;
     if (!parameters.Get ("elementsData", elementsData)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'elementsData' parameter.");
@@ -3089,6 +3111,9 @@ GS::Optional<GS::UniString> ModifyMEPRoutingElementsCommand::GetRawResponseSchem
 GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> routingElementsData;
     if (!parameters.Get ("routingElementsData", routingElementsData)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'routingElementsData' parameter.");
@@ -3420,6 +3445,9 @@ GS::Optional<GS::UniString> ModifyMEPPortsCommand::GetRawResponseSchema () const
 GS::ObjectState ModifyMEPPortsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> portsData;
     if (!parameters.Get ("portsData", portsData)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'portsData' parameter.");
@@ -3646,6 +3674,9 @@ GS::Optional<GS::UniString> ConnectMEPElementsCommand::GetRawResponseSchema () c
 GS::ObjectState ConnectMEPElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> connectionsData;
     if (!parameters.Get ("connectionsData", connectionsData)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'connectionsData' parameter.");
@@ -3839,6 +3870,9 @@ GS::Optional<GS::UniString> CheckMEPPortConnectabilityCommand::GetRawResponseSch
 GS::ObjectState CheckMEPPortConnectabilityCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2700
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> portPairs;
     if (!parameters.Get ("portPairs", portPairs)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'portPairs' parameter.");
@@ -4278,6 +4312,9 @@ static void AddPreferenceTables (GS::ObjectState& response, const char* listName
 
 GS::ObjectState GetMEPPreferenceTablesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::UniString domainStr;
     parameters.Get ("domain", domainStr);
     const std::optional<Domain> domain = DomainFromString (domainStr);
@@ -5135,6 +5172,9 @@ static GS::ObjectState DeleteAngles (AngleSetResultT angleSet, const GS::Array<d
 
 GS::ObjectState ModifyMEPPreferenceTablesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::UniString domainStr;
     parameters.Get ("domain", domainStr);
     const std::optional<Domain> domain = DomainFromString (domainStr);
@@ -5366,10 +5406,13 @@ GS::Optional<GS::UniString> GetElectricalPanelsCommand::GetRawResponseSchema () 
 GS::ObjectState GetElectricalPanelsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::ObjectState response;
     const auto& electricalPanels = response.AddList<GS::ObjectState> ("electricalPanels");
 
-    for (const API_Guid& elemGuid : GetRequestedOrAllElements (parameters, "elements", ElectricalPanelID)) {
+    for (const API_Guid& elemGuid : GetRequestedOrAllElements (parameters, "elements", GetMEPElectricalPanelID ())) {
         ACAPI::Result<ElectricalPanel> panel = ElectricalPanel::Get (Adapter::UniqueID (elemGuid));
         if (panel.IsErr ()) {
             electricalPanels (CreateErrorResponse (panel.UnwrapErr ().kind, "Failed to get the electrical panel."));
@@ -5460,6 +5503,9 @@ GS::Optional<GS::UniString> GetElectricalCircuitsCommand::GetRawResponseSchema (
 GS::ObjectState GetElectricalCircuitsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> elements;
     const bool hasElements = parameters.Get ("elements", elements);
     GS::Array<GS::ObjectState> panels;
@@ -5471,7 +5517,7 @@ GS::ObjectState GetElectricalCircuitsCommand::Execute (const GS::ObjectState& pa
             panelGuids.Push (GetGuidFromElementsArrayItem (panel));
         }
     } else if (!hasElements) {
-        panelGuids = CollectElementsOfClass (ElectricalPanelID);
+        panelGuids = CollectElementsOfClass (GetMEPElectricalPanelID ());
     }
 
     GS::ObjectState response;
@@ -5548,10 +5594,13 @@ GS::Optional<GS::UniString> GetElectricalDevicesCommand::GetRawResponseSchema ()
 GS::ObjectState GetElectricalDevicesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::ObjectState response;
     const auto& electricalDevices = response.AddList<GS::ObjectState> ("electricalDevices");
 
-    for (const API_Guid& elemGuid : GetRequestedOrAllElements (parameters, "elements", ElectricalDeviceID)) {
+    for (const API_Guid& elemGuid : GetRequestedOrAllElements (parameters, "elements", GetMEPElectricalDeviceID ())) {
         ACAPI::Result<ElectricalDevice> device = ElectricalDevice::Get (Adapter::UniqueID (elemGuid));
         if (device.IsErr ()) {
             electricalDevices (CreateErrorResponse (device.UnwrapErr ().kind, "Failed to get the electrical device."));
@@ -5658,6 +5707,9 @@ GS::Optional<GS::UniString> GetElectricalProjectSettingsCommand::GetRawResponseS
 GS::ObjectState GetElectricalProjectSettingsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     ACAPI::Result<ElectricalProjectSettings> settings = GetElectricalProjectSettings (ACAPI_GetToken ());
     if (settings.IsErr ()) {
         return CreateErrorResponse (settings.UnwrapErr ().kind, "Failed to get the electrical project settings.");
@@ -5984,6 +6036,9 @@ GS::Optional<GS::UniString> CreateElectricalPanelsCommand::GetRawResponseSchema 
 GS::ObjectState CreateElectricalPanelsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> electricalPanelsData;
     if (!parameters.Get ("electricalPanelsData", electricalPanelsData)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'electricalPanelsData' parameter.");
@@ -6162,6 +6217,9 @@ GS::Optional<GS::UniString> CreateElectricalDevicesCommand::GetRawResponseSchema
 GS::ObjectState CreateElectricalDevicesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> electricalDevicesData;
     if (!parameters.Get ("electricalDevicesData", electricalDevicesData)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'electricalDevicesData' parameter.");
@@ -6350,6 +6408,9 @@ GS::Optional<GS::UniString> ModifyElectricalPanelsCommand::GetRawResponseSchema 
 GS::ObjectState ModifyElectricalPanelsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     return ModifyElectricalElements<ElectricalPanel> (parameters, "electricalPanelsData", "electrical panel", "Modify Electrical Panel",
         [](const GS::ObjectState&) -> std::optional<GS::UniString> {
             return std::nullopt;
@@ -6487,6 +6548,9 @@ static std::optional<ACAPI::Error> ModifyElectricalCircuit (ElectricalCircuit& c
 GS::ObjectState CreateElectricalCircuitsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> electricalCircuitsData;
     if (!parameters.Get ("electricalCircuitsData", electricalCircuitsData)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'electricalCircuitsData' parameter.");
@@ -6596,6 +6660,9 @@ GS::Optional<GS::UniString> DeleteElectricalCircuitsCommand::GetRawResponseSchem
 GS::ObjectState DeleteElectricalCircuitsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> electricalCircuits;
     if (!parameters.Get ("electricalCircuits", electricalCircuits)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'electricalCircuits' parameter.");
@@ -6719,6 +6786,9 @@ GS::Optional<GS::UniString> ModifyElectricalCircuitsCommand::GetRawResponseSchem
 GS::ObjectState ModifyElectricalCircuitsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> electricalCircuitsData;
     if (!parameters.Get ("electricalCircuitsData", electricalCircuitsData)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'electricalCircuitsData' parameter.");
@@ -6854,6 +6924,9 @@ GS::Optional<GS::UniString> ModifyElectricalDevicesCommand::GetRawResponseSchema
 GS::ObjectState ModifyElectricalDevicesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     return ModifyElectricalElements<ElectricalDevice> (parameters, "electricalDevicesData", "electrical device", "Modify Electrical Device",
         [](const GS::ObjectState& deviceData) -> std::optional<GS::UniString> {
             GS::UniString loadClassificationName;
@@ -6946,6 +7019,9 @@ GS::Optional<GS::UniString> ConnectToElectricalCircuitsCommand::GetRawResponseSc
 GS::ObjectState ConnectToElectricalCircuitsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> connectionsData;
     if (!parameters.Get ("connectionsData", connectionsData)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'connectionsData' parameter.");
@@ -7090,6 +7166,9 @@ GS::Optional<GS::UniString> ModifyElectricalProjectSettingsCommand::GetRawRespon
 GS::ObjectState ModifyElectricalProjectSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     ACAPI::Result<ElectricalProjectSettings> settings = GetElectricalProjectSettings (ACAPI_GetToken ());
     if (settings.IsErr ()) {
         return CreateFailedExecutionResult (settings.UnwrapErr ().kind, "Failed to get the electrical project settings.");
@@ -7326,6 +7405,9 @@ GS::Optional<GS::UniString> GetMEPSystemGroupsCommand::GetRawResponseSchema () c
 GS::ObjectState GetMEPSystemGroupsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2900
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     ACAPI::Result<std::vector<ACAPI::MEP::UniqueID>> groupIds = GetSystemGroupIDs ();
     if (groupIds.IsErr ()) {
         return CreateErrorResponse (groupIds.UnwrapErr ().kind, "Failed to get the system groups.");
@@ -7416,6 +7498,9 @@ GS::Optional<GS::UniString> CreateMEPSystemGroupsCommand::GetRawResponseSchema (
 GS::ObjectState CreateMEPSystemGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2900
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> systemGroupsData;
     if (!parameters.Get ("systemGroupsData", systemGroupsData)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'systemGroupsData' parameter.");
@@ -7529,6 +7614,9 @@ GS::Optional<GS::UniString> CreateMEPPhysicalSystemsCommand::GetRawResponseSchem
 GS::ObjectState CreateMEPPhysicalSystemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2900
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> physicalSystemsData;
     if (!parameters.Get ("physicalSystemsData", physicalSystemsData)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'physicalSystemsData' parameter.");
@@ -7683,6 +7771,9 @@ GS::Optional<GS::UniString> ModifyMEPSystemGroupsCommand::GetRawResponseSchema (
 GS::ObjectState ModifyMEPSystemGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2900
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> systemGroupsData;
     if (!parameters.Get ("systemGroupsData", systemGroupsData)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'systemGroupsData' parameter.");
@@ -7795,6 +7886,9 @@ GS::Optional<GS::UniString> ModifyMEPPhysicalSystemsCommand::GetRawResponseSchem
 GS::ObjectState ModifyMEPPhysicalSystemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2900
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> physicalSystemsData;
     if (!parameters.Get ("physicalSystemsData", physicalSystemsData)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'physicalSystemsData' parameter.");
@@ -7920,6 +8014,9 @@ GS::Optional<GS::UniString> DeleteMEPPhysicalSystemsCommand::GetRawResponseSchem
 GS::ObjectState DeleteMEPPhysicalSystemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2900
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> physicalSystems;
     if (!parameters.Get ("physicalSystems", physicalSystems)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'physicalSystems' parameter.");
@@ -8310,6 +8407,9 @@ GS::Optional<GS::UniString> GetMEPToolDefaultsCommand::GetRawResponseSchema () c
 GS::ObjectState GetMEPToolDefaultsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::UniString> domainNames;
     if (!parameters.Get ("domains", domainNames)) {
         domainNames.Push ("Ventilation");
@@ -8435,6 +8535,9 @@ GS::Optional<GS::UniString> TransferMEPSettingsCommand::GetRawResponseSchema () 
 GS::ObjectState TransferMEPSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     const GS::ObjectState* sourceElementId = parameters.Get ("sourceElementId");
     if (sourceElementId == nullptr) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'sourceElementId' parameter.");
@@ -8554,6 +8657,9 @@ GS::Optional<GS::UniString> GetMEPPhysicalSystemsOfElementsCommand::GetRawRespon
 GS::ObjectState GetMEPPhysicalSystemsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2900
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> elements;
     if (!parameters.Get ("elements", elements)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'elements' parameter.");
@@ -8751,6 +8857,9 @@ GS::Optional<GS::UniString> CreateMEPFlexibleSegmentsCommand::GetRawResponseSche
 GS::ObjectState CreateMEPFlexibleSegmentsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> flexibleSegmentsData;
     if (!parameters.Get ("flexibleSegmentsData", flexibleSegmentsData)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'flexibleSegmentsData' parameter.");
@@ -9025,6 +9134,9 @@ static GS::ObjectState CreateMEPTakeOff (const GS::ObjectState& takeOffData)
 GS::ObjectState CreateMEPTakeOffsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> takeOffsData;
     if (!parameters.Get ("takeOffsData", takeOffsData)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'takeOffsData' parameter.");
@@ -9347,6 +9459,9 @@ GS::Optional<GS::UniString> ModifyMEPElementsCommand::GetRawResponseSchema () co
 GS::ObjectState ModifyMEPElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2700
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> elements;
     if (!parameters.Get ("elements", elements)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'elements' parameter.");

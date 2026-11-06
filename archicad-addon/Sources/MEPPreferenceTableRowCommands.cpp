@@ -1,4 +1,5 @@
 #include "MEPPreferenceTableRowCommands.hpp"
+#include "OptionalAPIs.hpp"
 
 #ifdef ServerMainVers_2800
 #include "ACAPI/Result.hpp"
@@ -1135,6 +1136,9 @@ GS::Optional<GS::UniString> GetMEPPreferenceTableRowsCommand::GetRawResponseSche
 #ifdef ServerMainVers_2800
 GS::ObjectState GetMEPPreferenceTableRowsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> keys;
     parameters.Get ("keys", keys);
 
@@ -1168,6 +1172,9 @@ GS::ObjectState GetMEPPreferenceTableRowsCommand::Execute (const GS::ObjectState
 #elif defined (ServerMainVers_2700)
 GS::ObjectState GetMEPPreferenceTableRowsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> keys;
     parameters.Get ("keys", keys);
 
@@ -1286,6 +1293,9 @@ GS::Optional<GS::UniString> SetMEPPreferenceTableRowsCommand::GetRawResponseSche
 #ifdef ServerMainVers_2800
 GS::ObjectState SetMEPPreferenceTableRowsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> rowsData;
     parameters.Get ("rows", rowsData);
 
@@ -1322,6 +1332,9 @@ GS::ObjectState SetMEPPreferenceTableRowsCommand::Execute (const GS::ObjectState
 #elif defined (ServerMainVers_2700)
 GS::ObjectState SetMEPPreferenceTableRowsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> rowsData;
     parameters.Get ("rows", rowsData);
 
@@ -1428,6 +1441,9 @@ GS::Optional<GS::UniString> AddMEPPreferenceTableRowsCommand::GetRawResponseSche
 #ifdef ServerMainVers_2800
 GS::ObjectState AddMEPPreferenceTableRowsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> rowsData;
     parameters.Get ("rows", rowsData);
 
@@ -1474,6 +1490,9 @@ GS::ObjectState AddMEPPreferenceTableRowsCommand::Execute (const GS::ObjectState
 #elif defined (ServerMainVers_2700)
 GS::ObjectState AddMEPPreferenceTableRowsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> rowsData;
     parameters.Get ("rows", rowsData);
 
@@ -1553,6 +1572,9 @@ GS::Optional<GS::UniString> DeleteMEPPreferenceTableRowsCommand::GetRawResponseS
 #ifdef ServerMainVers_2800
 GS::ObjectState DeleteMEPPreferenceTableRowsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> keys;
     parameters.Get ("keys", keys);
 
@@ -1593,6 +1615,9 @@ GS::ObjectState DeleteMEPPreferenceTableRowsCommand::Execute (const GS::ObjectSt
 #elif defined (ServerMainVers_2700)
 GS::ObjectState DeleteMEPPreferenceTableRowsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> keys;
     parameters.Get ("keys", keys);
 
@@ -1754,6 +1779,9 @@ GS::Optional<GS::UniString> GetMEPPreferenceTableContainersCommand::GetRawRespon
 #if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
 GS::ObjectState GetMEPPreferenceTableContainersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::UniString> domains;
     if (!parameters.Get ("domains", domains)) {
         domains.Push ("Piping");
@@ -1881,6 +1909,9 @@ GS::Optional<GS::UniString> CreateMEPPreferenceTablesCommand::GetRawResponseSche
 #if defined (ServerMainVers_2700) && !defined (ServerMainVers_2800)
 GS::ObjectState CreateMEPPreferenceTablesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::UniString domain;
     parameters.Get ("domain", domain);
     GS::Array<GS::ObjectState> tablesData;
