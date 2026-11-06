@@ -1,0 +1,335 @@
+{
+  "title": "SetOpeningDefault changes the Opening tool defaults GetOpeningDefault reads, PlaceOpenings places openings with their own settings or the defaults and leaves the defaults unchanged, and both refuse a bad input without changing anything",
+  "minTapir": "1.8.1",
+  "minArchicad": "29",
+  "requiresEmpty": ["Wall", "Opening"],
+  "steps": [
+    {
+      "id": "remember the defaults",
+      "command": "GetOpeningDefault",
+      "creates": false,
+      "params": {},
+      "save": {
+        "anchor0": "extrusionParameters.anchor",
+        "mode0": "floorPlanParameters.floorPlanDisplayMode",
+        "axis0": "floorPlanParameters.showReferenceAxis",
+        "axisPen0": "floorPlanParameters.referenceAxisPen",
+        "overhang0": "floorPlanParameters.referenceAxisOverhang"
+      },
+      "expect": [
+        {
+          "path": "extrusionParameters.shapeType",
+          "exists": true,
+          "name": "has extrusion parameters"
+        },
+        {
+          "path": "floorPlanParameters.floorPlanDisplayMode",
+          "exists": true,
+          "name": "has floor plan parameters"
+        }
+      ]
+    },
+    {
+      "id": "change the defaults",
+      "command": "SetOpeningDefault",
+      "creates": false,
+      "params": {
+        "extrusionParameters": {
+          "anchor": "BottomRight"
+        },
+        "floorPlanParameters": {
+          "floorPlanDisplayMode": "Projected",
+          "showReferenceAxis": true,
+          "referenceAxisPen": 7,
+          "referenceAxisOverhang": 0.37
+        }
+      },
+      "expect": [
+        {
+          "path": "elementType",
+          "eq": "Opening"
+        },
+        {
+          "path": "error",
+          "exists": false,
+          "name": "no error"
+        }
+      ]
+    },
+    {
+      "id": "read the changed defaults",
+      "command": "GetOpeningDefault",
+      "creates": false,
+      "params": {},
+      "expect": [
+        {
+          "path": "extrusionParameters.anchor",
+          "eq": "BottomRight"
+        },
+        {
+          "path": "floorPlanParameters.floorPlanDisplayMode",
+          "eq": "Projected"
+        },
+        {
+          "path": "floorPlanParameters.showReferenceAxis",
+          "eq": true
+        },
+        {
+          "path": "floorPlanParameters.referenceAxisPen",
+          "eq": 7
+        },
+        {
+          "path": "floorPlanParameters.referenceAxisOverhang",
+          "approx": 0.37
+        }
+      ]
+    },
+    {
+      "id": "bad cover fill",
+      "command": "SetOpeningDefault",
+      "creates": false,
+      "params": {
+        "floorPlanParameters": {
+          "referenceAxisOverhang": 0.99,
+          "coverFillId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }
+        }
+      },
+      "expect": [
+        {
+          "path": "error",
+          "exists": true,
+          "name": "nonexistent fill refused"
+        }
+      ]
+    },
+    {
+      "id": "defaults kept",
+      "command": "GetOpeningDefault",
+      "creates": false,
+      "params": {},
+      "expect": [
+        {
+          "path": "floorPlanParameters.referenceAxisOverhang",
+          "approx": 0.37,
+          "name": "overhang of the refused call not applied"
+        },
+        {
+          "path": "extrusionParameters.anchor",
+          "eq": "BottomRight"
+        }
+      ]
+    },
+    {
+      "id": "host wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": { "x": 0.0, "y": -30.0 },
+            "endCoordinate": { "x": 6.0, "y": -30.0 },
+            "zCoordinate": 0.0,
+            "height": 3.0,
+            "thickness": 0.3
+          }
+        ]
+      },
+      "save": {
+        "wall": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "[own settings, defaults]",
+      "command": "PlaceOpenings",
+      "params": {
+        "openingsData": [
+          {
+            "parentElementId": { "guid": "${wall}" },
+            "point": { "x": 1.5, "y": -30.0, "z": 1.2 },
+            "extrusionParameters": {
+              "shapeType": "Rectangular",
+              "linkedStatus": "NotLinked",
+              "width": 0.9,
+              "height": 0.5,
+              "anchor": "TopLeft"
+            }
+          },
+          {
+            "parentElementId": { "guid": "${wall}" },
+            "point": { "x": 4.5, "y": -30.0, "z": 1.2 }
+          }
+        ]
+      },
+      "save": {
+        "own": "elements[0].elementId.guid",
+        "plain": "elements[1].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements",
+          "len": 2,
+          "name": "one result per opening"
+        },
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "opening with own settings placed"
+        },
+        {
+          "path": "elements[1].elementId.guid",
+          "exists": true,
+          "name": "opening with the defaults placed"
+        }
+      ]
+    },
+    {
+      "id": "read the placed openings",
+      "command": "GetOpeningDetails",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${own}" } },
+          { "elementId": { "guid": "${plain}" } }
+        ]
+      },
+      "expect": [
+        {
+          "path": "openings[0].exists",
+          "eq": true
+        },
+        {
+          "path": "openings[0].parentElementId.guid",
+          "exists": true,
+          "name": "own: placed in the wall"
+        },
+        {
+          "path": "openings[0].cutElements",
+          "len": 1,
+          "name": "own: cuts the wall"
+        },
+        {
+          "path": "openings[0].extrusionParameters.shapeType",
+          "eq": "Rectangular"
+        },
+        {
+          "path": "openings[0].extrusionParameters.width",
+          "approx": 0.9,
+          "name": "own: given width"
+        },
+        {
+          "path": "openings[0].extrusionParameters.height",
+          "approx": 0.5,
+          "name": "own: given height"
+        },
+        {
+          "path": "openings[0].extrusionParameters.anchor",
+          "eq": "TopLeft",
+          "name": "own: given anchor"
+        },
+        {
+          "path": "openings[1].exists",
+          "eq": true
+        },
+        {
+          "path": "openings[1].parentElementId.guid",
+          "exists": true,
+          "name": "defaults: placed in the wall"
+        },
+        {
+          "path": "openings[1].cutElements",
+          "len": 1,
+          "name": "defaults: cuts the wall"
+        },
+        {
+          "path": "openings[1].extrusionParameters.anchor",
+          "eq": "BottomRight",
+          "name": "defaults: anchor of the defaults, not of the first opening"
+        }
+      ]
+    },
+    {
+      "id": "defaults unchanged by PlaceOpenings",
+      "command": "GetOpeningDefault",
+      "creates": false,
+      "params": {},
+      "expect": [
+        {
+          "path": "extrusionParameters.anchor",
+          "eq": "BottomRight",
+          "name": "anchor of the first opening not made the default"
+        },
+        {
+          "path": "floorPlanParameters.referenceAxisOverhang",
+          "approx": 0.37
+        }
+      ]
+    },
+    {
+      "id": "[nonexistent parent, bad surface]",
+      "command": "PlaceOpenings",
+      "params": {
+        "openingsData": [
+          {
+            "parentElementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "point": { "x": 3.0, "y": -30.0, "z": 1.2 }
+          },
+          {
+            "parentElementId": { "guid": "${wall}" },
+            "point": { "x": 3.0, "y": -30.0, "z": 1.2 },
+            "extrusionParameters": {
+              "isExtrusionSurfaceOverridden": true,
+              "extrusionSurfaceId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "elements",
+          "len": 2,
+          "name": "one result per opening"
+        },
+        {
+          "path": "elements[0].error",
+          "exists": true,
+          "name": "nonexistent parent refused"
+        },
+        {
+          "path": "elements[1].error",
+          "exists": true,
+          "name": "nonexistent surface refused"
+        }
+      ]
+    },
+    {
+      "id": "still two openings",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": {
+        "elementType": "Opening"
+      },
+      "expect": [
+        {
+          "path": "elements",
+          "len": 2,
+          "name": "no opening made by the refused places"
+        }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "SetOpeningDefault",
+      "params": {
+        "extrusionParameters": {
+          "anchor": "${anchor0}"
+        },
+        "floorPlanParameters": {
+          "floorPlanDisplayMode": "${mode0}",
+          "showReferenceAxis": "${axis0}",
+          "referenceAxisPen": "${axisPen0}",
+          "referenceAxisOverhang": "${overhang0}"
+        }
+      }
+    }
+  ]
+}
