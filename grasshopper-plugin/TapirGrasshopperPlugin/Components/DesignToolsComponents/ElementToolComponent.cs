@@ -100,6 +100,12 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         // does, in its typeSpecificDetails; Execute writes them there.
         protected virtual ISet<string> TypeSpecificDetailsKeys { get; } = new HashSet<string>();
 
+        // A key of TypeSpecificDetailsKeys only this tool's settings have. The
+        // typeSpecificDetails of SetDetailsOfElements is a oneOf, and e.g.
+        // a pen alone fits the settings of several element types, so the
+        // element's current value of this key is sent along.
+        protected virtual string DetailsTypeKey => null;
+
         // The inputs that define the geometry, drawn in Archicad (e.g. a
         // wall's start and end point). Only Create uses them.
         protected abstract int GeometryInputCount { get; }
@@ -622,6 +628,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 AddWriteItems(inputs, i, guids[i], settings, null, createOnly, modifyItems, detailItems);
             }
 
+            AddDetailsTypeKey(targets, detailItems, errors);
             SendModify(modifyItems, errors);
             SendDetails(targets, detailItems, errors);
             SetElementIds(targets, inputs.ElementIds, errors);
@@ -659,6 +666,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         {
             var modify = new JObject();
             var details = new JObject();
+            var typeSpecific = new JObject();
             foreach (var setting in settings)
             {
                 // The home story goes with the Modify command when it takes
@@ -674,11 +682,6 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 }
                 else if (TypeSpecificDetailsKeys.Contains(setting.Key))
                 {
-                    if (!(details["typeSpecificDetails"] is JObject typeSpecific))
-                    {
-                        typeSpecific = new JObject();
-                        details["typeSpecificDetails"] = typeSpecific;
-                    }
                     typeSpecific[setting.Key] = setting.Value;
                 }
                 else
@@ -697,11 +700,19 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                     {
                         modify[property.Name] = property.Value;
                     }
+                    else if (TypeSpecificDetailsKeys.Contains(property.Name))
+                    {
+                        typeSpecific[property.Name] = property.Value;
+                    }
                     else
                     {
                         createOnly.Add(KeyOf(property.Name));
                     }
                 }
+            }
+            if (typeSpecific.Count > 0)
+            {
+                details["typeSpecificDetails"] = typeSpecific;
             }
             AddPlainDetails(inputs, i, details);
 
@@ -876,6 +887,7 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                     detailItems.Add(new KeyValuePair<int, JObject>(i, details));
                 }
             }
+            AddDetailsTypeKey(guids, detailItems, errors);
             SendModify(modifyItems, errors);
             SendDetails(guids, detailItems, errors);
             SetElementIds(guids, inputs.ElementIds, errors);
@@ -1089,6 +1101,52 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             {
                 AddExecutionResults(response, items.Select(p => p.Key).ToList(), errors);
             }
+        }
+
+        // Adds the element's current value of DetailsTypeKey to each
+        // typeSpecificDetails that lacks it, so it fits exactly one settings
+        // type; an element whose value cannot be read keeps its other details.
+        private void AddDetailsTypeKey(
+            List<string> guids,
+            List<KeyValuePair<int, JObject>> items,
+            List<string> errors)
+        {
+            if (DetailsTypeKey == null)
+            {
+                return;
+            }
+
+            var missing = items
+                .Where(p => p.Value["typeSpecificDetails"] is JObject t && t[DetailsTypeKey] == null)
+                .ToList();
+            if (missing.Count == 0)
+            {
+                return;
+            }
+
+            var current = guids.Select(_ => (string) null).ToList();
+            foreach (var p in missing)
+            {
+                current[p.Key] = guids[p.Key];
+            }
+            var readErrors = guids.Select(_ => "").ToList();
+            var entries = ReadDetails(current, readErrors);
+            foreach (var p in missing)
+            {
+                var value = (entries[p.Key]?["details"] as JObject)?[DetailsTypeKey];
+                if (value == null || value.Type == JTokenType.Null)
+                {
+                    p.Value.Remove("typeSpecificDetails");
+                    AddMessage(
+                        errors,
+                        p.Key,
+                        ("Its current settings could not be read, so the JSON settings were not written. " +
+                         readErrors[p.Key]).TrimEnd());
+                    continue;
+                }
+                ((JObject) p.Value["typeSpecificDetails"])[DetailsTypeKey] = value.DeepClone();
+            }
+            items.RemoveAll(p => p.Value.Count == 0);
         }
 
         // { elementId, settings... } as the Modify command takes it: as is,

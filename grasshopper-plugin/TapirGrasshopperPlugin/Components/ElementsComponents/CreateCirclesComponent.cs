@@ -1,3 +1,4 @@
+using Grasshopper.Kernel;
 using System;
 using System.Collections.Generic;
 
@@ -10,10 +11,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public CreateCirclesComponent()
             : base(
                 "CreateCircles",
-                "Create 2D Circle elements based on the given parameters.",
+                "Obsolete, use Circles instead. Create 2D Circle elements based on the given parameters.",
                 GroupNames.ElementCreation)
         {
         }
+
+        // Replaced by the Circles tool component (DocumentToolsComponents),
+        // which covers all of these inputs; kept hidden for one release so
+        // saved definitions keep working, then removed.
+        public override GH_Exposure Exposure => GH_Exposure.hidden;
 
         protected override string ArrayKey => "circlesData";
 
