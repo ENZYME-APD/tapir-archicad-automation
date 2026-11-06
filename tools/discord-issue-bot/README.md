@@ -5,9 +5,11 @@ report** or a **feature request**, files each one as a GitHub issue in this
 repository, and replies to the Discord message with the number and link of
 the created issue.
 
-It runs as a scheduled GitHub Actions workflow
+It runs as a GitHub Actions workflow
 ([`.github/workflows/discord_issue_bot.yml`](../../.github/workflows/discord_issue_bot.yml)),
-so no server hosting is needed. Every run:
+so no server hosting is needed. It is scheduled at :13 and :43 of every hour;
+GitHub skips some scheduled runs when it is busy, which delays an issue but loses
+nothing, because each run scans the last day. Every run:
 
 1. Fetches the recent messages (default: last 24 hours) of each configured
    channel over the Discord REST API.
