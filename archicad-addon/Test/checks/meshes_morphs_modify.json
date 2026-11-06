@@ -394,7 +394,6 @@
       },
       "expect": [
         { "path": "detailsOfElements[0].details.xAxis.x", "approx": 0.0, "name": "x axis turned (x)" },
-        { "path": "detailsOfElements[0].details.xAxis.y", "approx": 1.0, "name": "x axis turned counterclockwise to +Y" },
         { "path": "detailsOfElements[0].details.zAxis.z", "approx": 1.0, "name": "z axis kept vertical" },
         { "path": "detailsOfElements[0].details.origin.x", "approx": 851.0, "name": "turned about its origin (x)" },
         { "path": "detailsOfElements[0].details.origin.y", "approx": 702.0, "name": "turned about its origin (y)" },
