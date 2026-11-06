@@ -4,14 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Community - Tapir</title>
-<meta name="description" content="Where the Tapir community meets: Discord, GitHub issues, video tutorials and how to contribute.">
+<meta name="description" content="Where the Tapir community meets: Discord, how the bots turn a report into a fix, how to report a bug and how to test a fix in Archicad.">
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap">
 <link rel="stylesheet" href="../assets/site.css">
+<link rel="stylesheet" href="community.css">
 <script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
 <script src="../assets/site.js" defer></script>
+<script src="community.js" defer></script>
 </head>
 <body>
 <header class="site-header">
@@ -49,11 +51,15 @@
 <main>
     <section>
         <span class="eyebrow">Community</span>
-        <h1>The Tapir community</h1>
+        <h1>Ask. Report. Test.</h1>
         <p class="lead">
-            Tapir is built in the open by architects and developers. Ask a question, share a script,
-            report a problem or help build the next command.
+            Architects, developers and the maintainers in one place. A bug or an idea becomes a fix,
+            and someone with your Archicad version tests it before it ships.
         </p>
+        <div class="actions">
+            <a class="button" href="https://discord.gg/NAnSennmpY">Join Discord</a>
+            <a class="button button-secondary" href="#report">Report a bug</a>
+        </div>
     </section>
 
     <section aria-labelledby="where">
@@ -61,28 +67,182 @@
         <div class="cards">
             <a class="card" href="https://discord.gg/NAnSennmpY">
                 <h3>Discord</h3>
-                <p>Ask questions, show what you made and talk with the people who build Tapir.</p>
+                <p>Ask anything, show what you made and talk with the people who build Tapir.</p>
                 <span class="card-link">Join Discord &rarr;</span>
             </a>
-            <a class="card" href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">
-                <h3>Report a problem</h3>
-                <p>Open an issue on GitHub. Say which Archicad version you use and what you expected to happen.</p>
-                <span class="card-link">Open an issue &rarr;</span>
-            </a>
-            <a class="card" href="https://youtube.com/playlist?list=PLGc943dgyfjjqzeFglpYLIPrcn_HFicDn">
+            <a class="card" href="../tutorials/">
                 <h3>Video tutorials</h3>
-                <p>Installing Tapir and using it, step by step, on YouTube.</p>
+                <p>A video series from the first command to full workflows.</p>
                 <span class="card-link">Watch the tutorials &rarr;</span>
             </a>
+            <a class="card" href="../ai/">
+                <h3>Tapir and AI</h3>
+                <p>Let Claude and other assistants read and change a project through Tapir.</p>
+                <span class="card-link">Use Tapir from AI tools &rarr;</span>
+            </a>
             <a class="card" href="https://github.com/ENZYME-APD/tapir-archicad-automation">
-                <h3>Contribute</h3>
-                <p>The add-on, the Grasshopper plugin and this site are open source on GitHub.</p>
+                <h3>GitHub</h3>
+                <p>The add-on, the Grasshopper plugin and this site are open source, under the MIT licence.</p>
                 <span class="card-link">See the code &rarr;</span>
             </a>
         </div>
     </section>
 
-    <section>
+    <section aria-labelledby="report">
+        <h2 id="report">How to report a bug</h2>
+        <p>
+            Post it in Discord or open an issue on GitHub. Both reach the same place: a bot files
+            bug reports and feature requests from Discord as GitHub issues and replies with the link.
+            A GitHub account is not needed to report on Discord.
+        </p>
+        <p>A report that can be fixed in one go says:</p>
+        <ul class="community-list">
+            <li>your Archicad version and build, and its language (for example 29.0.0 (3100) INT);</li>
+            <li>your Tapir version (the <em>About Tapir</em> dialog shows it);</li>
+            <li>what you did: the script or Grasshopper definition, or the command and the JSON you sent;</li>
+            <li>what you expected and what happened instead, with the error message;</li>
+            <li>whether the project is a Teamwork project, and which libraries are loaded, when it matters.</li>
+        </ul>
+        <div class="callout">
+            <p>
+                <span class="callout-label"><span aria-hidden="true">&#9888;</span> Note</span>
+                Issues and Discord channels are public. Leave out client names, project names and file paths
+                you don't want to share.
+            </p>
+        </div>
+        <div class="actions">
+            <a class="button" href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new">Open an issue on GitHub</a>
+            <a class="button button-secondary" href="https://discord.gg/NAnSennmpY">Post on Discord</a>
+        </div>
+    </section>
+
+    <section aria-labelledby="bots">
+        <h2 id="bots">From report to release: how the bots work</h2>
+        <p>
+            Most fixes are written by bots and checked by people. The maintainers set the rules and can
+            stop any change; you decide whether a fix works in your Archicad.
+        </p>
+        <ol class="steps">
+            <li>
+                <h3 class="step-title">The report becomes an issue</h3>
+                <p>
+                    Every half hour the Discord bot reads the project's channels. A message that reads like a
+                    bug report or a feature request becomes a GitHub issue, labelled <code>bug</code> or
+                    <code>enhancement</code>, and the bot replies in Discord with its link. Chat and questions
+                    stay on Discord.
+                </p>
+            </li>
+            <li>
+                <h3 class="step-title">The issue bot answers</h3>
+                <p>
+                    Every new issue is read by the issue bot. It answers a question, closes an issue that is
+                    already fixed, asks for what it is missing (your Archicad version, the JSON you sent), or
+                    writes the fix and opens a pull request. A large request is split into parts, one pull
+                    request each.
+                </p>
+            </li>
+            <li>
+                <h3 class="step-title">It is built and reviewed</h3>
+                <p>
+                    The add-on is built for every supported Archicad version, on Windows and macOS, and a review
+                    bot reads the change. When a build fails or the review finds a problem, the bot fixes it.
+                    After a few rounds without success it hands the pull request to a maintainer.
+                </p>
+            </li>
+            <li>
+                <h3 class="step-title">You test it</h3>
+                <p>
+                    Once the builds pass, a comment on the pull request links the built add-on and asks the
+                    person who reported the issue to try it. <a href="#test">How to test a fix</a> is below.
+                    A problem you report there is fixed before the pull request is merged.
+                </p>
+            </li>
+            <li>
+                <h3 class="step-title">It is merged and released</h3>
+                <p>
+                    When every build is green and the review finds nothing blocking, the pull request is merged
+                    three days later, unless a maintainer stops it. Every Monday the changes since the last
+                    release ship as a new <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases">release</a>,
+                    and the add-on offers to update itself.
+                </p>
+            </li>
+        </ol>
+    </section>
+
+    <section aria-labelledby="test">
+        <h2 id="test">How to test a fix</h2>
+        <p>
+            A fix is only known to work once someone has run it in Archicad. The bots can build Tapir but
+            cannot run Archicad, so your test is what matters most.
+        </p>
+        <ol class="community-list">
+            <li>Open the pull request linked from your issue. A comment on it lists the downloads, one per Archicad version and platform. Downloading needs a GitHub login.</li>
+            <li>Unzip the download for your Archicad version. On macOS it holds another zip with the <code>.bundle</code>.</li>
+            <li>In Archicad, open <em>Options &gt; Add-On Manager &gt; Edit List of Available Add-Ons</em>, remove or disable the installed Tapir, then <em>Add</em> the <code>.apx</code> (Windows) or <code>.bundle</code> (macOS) and click OK.</li>
+            <li>Do what went wrong before, in a copy of your project.</li>
+            <li>Say on the pull request whether it works and fixes your case. Afterwards, put your installed Tapir back the same way.</li>
+        </ol>
+        <p>
+            Testing often? The <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/tools/community-test-runner/GUIDE.md">community test runner</a>
+            tests open pull requests on your own Archicad while it is closed, leaves your Tapir in place and posts
+            the result on the pull request. It runs on Windows and needs Python and a GitHub account.
+        </p>
+    </section>
+
+    <section aria-labelledby="activity" id="activity-section" hidden
+             data-chart-label="{series} per month, {first} to {last}. The table below lists every number."
+             data-months="Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec">
+        <h2 id="activity">Activity</h2>
+        <p>Counts per month, each on its own scale. Only numbers are collected, never the text of a message.</p>
+        <div class="activity-charts">
+            <figure class="activity" data-series="issuesOpened" hidden>
+                <figcaption>Issues opened</figcaption>
+                <div class="activity-chart"></div>
+            </figure>
+            <figure class="activity" data-series="pullRequestsMerged" hidden>
+                <figcaption>Pull requests merged</figcaption>
+                <div class="activity-chart"></div>
+            </figure>
+            <figure class="activity" data-series="discordMessages" hidden>
+                <figcaption>Discord messages</figcaption>
+                <div class="activity-chart"></div>
+            </figure>
+        </div>
+        <details class="activity-details">
+            <summary>Show the numbers as a table</summary>
+            <div class="activity-table-wrap">
+                <table class="activity-table" id="activity-table">
+                    <thead><tr><th scope="col">Month</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </details>
+    </section>
+
+    <section aria-labelledby="contribute">
+        <h2 id="contribute">Help build it</h2>
+        <div class="cards">
+            <a class="card" href="../scripts/share/">
+                <h3>Share a script</h3>
+                <p>Made a script your office uses? Share it, and any office can install it from the palette.</p>
+                <span class="card-link">How to share &rarr;</span>
+            </a>
+            <a class="card" href="../roadmap/">
+                <h3>Ask for a feature</h3>
+                <p>How features are requested, and what is being asked for now.</p>
+                <span class="card-link">See the roadmap &rarr;</span>
+            </a>
+            <a class="card" href="https://github.com/ENZYME-APD/tapir-archicad-automation/wiki/Archicad-Add-On-Development">
+                <h3>Write a command</h3>
+                <p>The add-on is C++ on the Archicad API. The development guide shows how to add a command.</p>
+                <span class="card-link">Read the guide &rarr;</span>
+            </a>
+        </div>
+    </section>
+
+    <section aria-labelledby="community-next-step">
+        <h2 id="community-next-step">Next step</h2>
+        <p>Say hello on Discord, and tell us what you automate in Archicad.</p>
         <div class="actions">
             <a class="button" href="https://discord.gg/NAnSennmpY">Join Discord</a>
         </div>
