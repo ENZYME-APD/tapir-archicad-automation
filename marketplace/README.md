@@ -95,13 +95,15 @@ Example:
 
 The script starts with two comment blocks. The first is the standard
 [inline script metadata](https://packaging.python.org/en/latest/specifications/inline-script-metadata/)
-that `uv` reads; the second is Tapir's own, which `uv` ignores:
+that `uv` reads; the second is Tapir's own, which `uv` ignores. Leave an empty line
+between them: without it `uv` reads both blocks as one and refuses to run the script.
 
 ```python
 # /// script
 # requires-python = ">=3.11"
 # dependencies = []
 # ///
+
 # /// tapir
 # category = "element-data-properties"
 # archicad-versions = [28, 29, 30]
@@ -118,7 +120,7 @@ that `uv` reads; the second is Tapir's own, which `uv` ignores:
   - `model`: elements, properties, attributes, views or anything else in the
     project. Shown as **Changes the model**.
   - `files`: it only writes files (exports, reports, logs). Shown as
-    **Read only**, with the files it writes named in its README.
+    **Writes files**, with the files it writes named in its README.
   - `read-only`: it changes nothing and writes nothing. Shown as **Read only**.
 
   When in doubt, `model`.
