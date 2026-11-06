@@ -14,6 +14,9 @@
    the fonts, this file, site.js and two inline scripts: the stored theme, and data-i18n-loading
    while a translation loads (see site.js). On phones site.js turns the header's nav, language menu
    and toggle into a menu (.has-menu, below).
+   Right after the site.js line it links <root>/assets/motion.css and <root>/assets/motion.js and
+   repeats the inline splash script, which sets html.m-splash on the first page of a visit (see
+   motion.css).
 
    Light is the default. Dark applies under prefers-color-scheme: dark, unless the header's toggle
    chose a theme: it sets data-theme="light" or "dark" on <html> (remembered in localStorage).
