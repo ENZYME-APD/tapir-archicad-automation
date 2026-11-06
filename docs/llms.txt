@@ -33,8 +33,8 @@ plugin send the same JSON. Every command, with its parameters and an example, is
 - [docs](https://archicad-api.com/index.md): 
 - [start](https://archicad-api.com/start/index.md): 
 - [docs](https://archicad-api.com/docs/index.md): 
-- [Scripts](https://archicad-api.com/scripts/index.md): Scripts shared by architects for the Tapir palette in Archicad, each one reviewed and adapted to work in any office before it is listed.
-- [Share a script](https://archicad-api.com/scripts/share/index.md): Share an Archicad script you wrote: send it on Discord or as a pull request, and it is checked, adapted to work in any office and listed with your name.
+- [scripts](https://archicad-api.com/scripts/index.md): 
+- [share](https://archicad-api.com/scripts/share/index.md): 
 - [Grasshopper](https://archicad-api.com/grasshopper/index.md): Read, change and create Archicad elements from Grasshopper with the Tapir plugin: what the components do, the tool components, installing the tapir package and a first definition.
 - [Tapir and AI](https://archicad-api.com/ai/index.md): Use Tapir from Claude and other AI tools: Tapir MCP servers, a prompt to start with, and how to let an AI write a script that sends Tapir commands.
 - [tutorials](https://archicad-api.com/tutorials/index.md): 

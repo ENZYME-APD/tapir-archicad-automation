@@ -7,8 +7,17 @@
 
     <title>Tapir commands - Tapir documentation</title>
     <meta name="description" content="Every JSON command of the Tapir add-on for Archicad, with its parameters, its response and an example.">
+    <!-- link-preview: the preview of a link to this page shared on Discord, WhatsApp and the like -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Tapir">
+    <meta property="og:title" content="Tapir commands - Tapir documentation">
+    <meta property="og:description" content="Every JSON command of the Tapir add-on for Archicad, with its parameters, its response and an example.">
+    <meta property="og:url" content="https://archicad-api.com/archicad-addon/">
+    <meta name="twitter:card" content="summary">
     <!-- site-assets -->
     <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+    <meta name="theme-color" content="#2D3A30" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#2D3A30">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
@@ -16,6 +25,8 @@
     <script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
     <script>try { var l = /[?&]lang=([A-Za-z]{2})(?:[&#]|$)/.exec (location.search); l = l ? l[1].toLowerCase () : localStorage.getItem ('tapir-lang') || (navigator.language || '').slice (0, 2).toLowerCase (); if (l && l !== 'en') { document.documentElement.setAttribute ('data-i18n-loading', ''); setTimeout (function () { document.documentElement.removeAttribute ('data-i18n-loading'); }, 2000); } } catch (e) {}</script>
     <script src="../assets/site.js" defer></script>
+    <link rel="stylesheet" href="../assets/motion.css"><script src="../assets/motion.js" defer></script>
+    <script>try { if ((!sessionStorage.getItem ('tapir-splash') || /[?&]splash/.test (location.search)) && !/nomotion/.test (location.search + location.hash) && 'IntersectionObserver' in window && !matchMedia ('(prefers-reduced-motion: reduce)').matches) { var h = document.documentElement; h.classList.add ('m-splash'); var f = function () { h.classList.add ('m-font'); }; setTimeout (f, 2500); if (document.fonts && document.fonts.load) document.fonts.load ('900 56px Fraunces').then (f, f); else f (); } } catch (e) {}</script>
     <!-- /site-assets -->
 
     <link rel="stylesheet" type="text/css" href="highlight-js/styles/github.min.css">
@@ -71,7 +82,9 @@
                 New to Tapir? <a href="../start/">Get started</a> shows how to install it and run a first script.
             </p>
 
-            <h2 id="calling-a-command">Calling a command</h2>
+            <div class="sec-head ref">
+                <h2 id="calling-a-command">Calling a <em>command.</em></h2>
+            </div>
             <p>
                 Archicad answers JSON commands on <code>http://127.0.0.1:19723</code> while a project is open (the next
                 Archicads opened use 19724, 19725 and so on). A Tapir command is sent through Archicad's
@@ -127,6 +140,10 @@ print(response)</code></pre>
         <noscript>
             <div class="callout"><p><span class="callout-label"><span aria-hidden="true">&#9432;</span> Note</span> The list of commands is built by JavaScript. Turn JavaScript on to see it.</p></div>
         </noscript>
+
+        <div class="sec-head ref">
+            <h2 id="all-commands">All <em>commands.</em></h2>
+        </div>
 
         <div id="commands">
             <script type="text/javascript">

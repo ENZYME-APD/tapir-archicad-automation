@@ -12,6 +12,7 @@
     'Light': 'ライト',
     'mode': 'モード',
     'Language': '言語',
+    'Menu': 'メニュー',
     'Download': 'ダウンロード',
     'Copy': 'コピー',
     'Copied': 'コピーしました',
