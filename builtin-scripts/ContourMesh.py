@@ -149,7 +149,8 @@ def parse_dxf(path):
                     cur_closed = (int(val) & 1) != 0
                 except ValueError:
                     pass
-            elif code == '42':
+            elif code == '38':
+                # LWPOLYLINE elevation (whole-polyline Z fallback)
                 try:
                     cur_elev = float(val)
                 except ValueError:
@@ -166,7 +167,8 @@ def parse_dxf(path):
                         cur_pts[-1] = (x, float(val), z)
                 except ValueError:
                     pass
-            elif code == '30':
+            elif code == '23':
+                # 3D LWPOLYLINE stores per-point Z in code 23 (not 30)
                 try:
                     if cur_pts:
                         x, y, z = cur_pts[-1]
