@@ -4307,6 +4307,25 @@ GS::Optional<GS::UniString> ChangeSelectionOfElementsCommand::GetRawResponseSche
 // call. That call reports a single error code, so when it fails the elements are tried
 // one by one, which says which of them Archicad refused and keeps the per-element
 // results of the response meaningful.
+// The guids of the selected elements, each also as its owner (GetSelectedElements reports
+// section elements as their owner, so a guid given in either form is found).
+static GS::HashSet<API_Guid> GetSelectedGuids ()
+{
+    GS::HashSet<API_Guid> guids;
+    API_SelectionInfo selectionInfo = {};
+    GS::Array<API_Neig> selectedNeigs;
+    const GSErrCode err = ACAPI_Selection_Get (&selectionInfo, &selectedNeigs, false);
+    BMKillHandle (reinterpret_cast<GSHandle*> (&selectionInfo.marquee.coords));
+    if (err != NoError) {
+        return guids;
+    }
+    for (const API_Neig& neig : selectedNeigs) {
+        guids.Add (neig.guid);
+        guids.Add (GetParentElemOfSectElem (neig.guid));
+    }
+    return guids;
+}
+
 static GS::Array<GS::ObjectState> ChangeSelectionOfElements (const GS::Array<GS::ObjectState>& elements, bool add)
 {
     const char* const failure = add ? "Failed to add to selection" : "Failed to remove from selection";
@@ -4319,26 +4338,43 @@ static GS::Array<GS::ObjectState> ChangeSelectionOfElements (const GS::Array<GS:
         }
     }
 
-    GS::Array<GS::ObjectState> results;
+    GS::Array<GSErrCode> errors;
     const GSErrCode err = neigs.IsEmpty () ? NoError : ACAPI_Selection_Select (neigs, add);
-    if (err == NoError) {
-        for (const GS::ObjectState& element : elements) {
-            results.Push (element.Get ("elementId") == nullptr
-                              ? CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing")
-                              : CreateSuccessfulExecutionResult ());
-        }
-        return results;
-    }
-
     for (const GS::ObjectState& element : elements) {
         const GS::ObjectState* elementId = element.Get ("elementId");
         if (elementId == nullptr) {
-            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
-            continue;
+            errors.Push (APIERR_BADPARS);
+        } else if (err == NoError) {
+            errors.Push (NoError);
+        } else {
+            errors.Push (ACAPI_Selection_Select ({ API_Neig (GetGuidFromObjectState (*elementId)) }, add));
         }
-        const GSErrCode single = ACAPI_Selection_Select ({ API_Neig (GetGuidFromObjectState (*elementId)) }, add);
-        results.Push (single == NoError ? CreateSuccessfulExecutionResult ()
-                                        : CreateFailedExecutionResult (single, failure));
+    }
+
+    // ACAPI_Selection_Select answers NoError also for an element it leaves out: one on a hidden
+    // layer, or one the current window does not show (a 2D element while the 3D window is
+    // active). The selection is read back, so such an element is reported instead of a success.
+    const GS::HashSet<API_Guid> selected = GetSelectedGuids ();
+    GS::Array<GS::ObjectState> results;
+    for (UIndex i = 0; i < elements.GetSize (); ++i) {
+        const GS::ObjectState* elementId = elements[i].Get ("elementId");
+        if (elementId == nullptr) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+        } else if (errors[i] != NoError) {
+            results.Push (CreateFailedExecutionResult (errors[i], failure));
+        } else if (selected.Contains (GetGuidFromObjectState (*elementId)) != add) {
+            API_Elem_Head header = {};
+            header.guid = GetGuidFromObjectState (*elementId);
+            if (ACAPI_Element_GetHeader (&header) != NoError) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADID, "The element does not exist."));
+            } else {
+                results.Push (CreateFailedExecutionResult (APIERR_GENERAL, add
+                    ? "Archicad did not select the element: it is on a hidden layer, or the current window does not show it (for example a 2D element in the 3D window)."
+                    : "Archicad did not remove the element from the selection."));
+            }
+        } else {
+            results.Push (CreateSuccessfulExecutionResult ());
+        }
     }
     return results;
 }
