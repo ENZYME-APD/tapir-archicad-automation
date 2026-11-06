@@ -4851,6 +4851,7 @@ void SetTextContentAndParagraphs (API_ElementMemo& memo, API_TextType& textData,
     textData.width = 0;
     textData.height = 0;
     textData.nonBreaking = true;
+    textData.multiStyle = true; // see ApplyTextContent
     textData.useEolPos = true;
 }
 
@@ -5302,6 +5303,11 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
     textData.width = 0;
     textData.height = 0;
     textData.nonBreaking = true;
+    // Archicad reads the runs of memo.paragraphs, and the eolPos array, only for a multistyle text
+    // (APIdefs_Elements.h: useEolPos is "only available for multistyle text"; the DevKit's Element_Test
+    // example sets multiStyle with useEolPos). Without it ACAPI_Element_Create made one run in the
+    // element-level style, so the bold, italic, pen or size of a run was lost.
+    textData.multiStyle = true;
     textData.useEolPos = true;
 
     return {};
