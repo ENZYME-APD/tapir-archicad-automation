@@ -15,15 +15,13 @@ The mesh is placed at its raw DXF coordinates by default; you can relocate it
 to the project origin (0, 0, 0) or to a specific coordinate, override the unit
 system the DXF coordinates are in (the header's $INSUNITS is often wrong), and
 set the height of the skirt below the base level.
-
-Copyright (c) 2026 Paul K. All rights reserved.
 """
 
 import os
 import tkinter as tk
 from tkinter import filedialog, ttk
 
-from utilities.archicad import run_tapir
+from utilities.archicad import run_tapir, item_errors
 from utilities.ui import ScriptWindow, require_archicad
 
 SCRIPT_NAME = "ContourMesh"
@@ -92,43 +90,112 @@ def parse_dxf(path):
     cur_pts = []
     cur_closed = False
     cur_elev = 0.0
+    in_polyline = False  # True while inside a POLYLINE entity (reading VERTEX points)
     def flush():
-        nonlocal cur_pts, cur_closed, cur_elev
+        nonlocal cur_pts, cur_closed, cur_elev, in_polyline
         if len(cur_pts) >= 3:
             # Apply elevation to all points if they're all at z=0
             if all(abs(p[2]) < 1e-10 for p in cur_pts) and abs(cur_elev) > 1e-10:
                 cur_pts = [(p[0], p[1], cur_elev) for p in cur_pts]
-            rings.append(cur_pts[:])
+            rings.append((cur_pts[:], cur_closed))
         cur_pts = []
         cur_closed = False
         cur_elev = 0.0
+        in_polyline = False
     for idx, (code, val) in enumerate(pairs):
         if code == '0':
             flush()
             etype = val.strip()
-            cur_entity = etype if etype in ('LWPOLYLINE', 'POLYLINE') else None
-            continue
-        if cur_entity is None:
-            continue
-        if cur_entity == 'LWPOLYLINE':
+            if etype == 'POLYLINE':
+                in_polyline = True
+            cur_entity = etype
+        elif in_polyline:
+            # Inside a POLYLINE entity: read its own codes or VERTEX points
+            if cur_entity == 'VERTEX':
+                if code == '10':
+                    try:
+                        cur_pts.append((float(val), 0.0, 0.0))
+                    except ValueError:
+                        pass
+                elif code == '20':
+                    try:
+                        if cur_pts:
+                            x, y, z = cur_pts[-1]
+                            cur_pts[-1] = (x, float(val), z)
+                    except ValueError:
+                        pass
+                elif code == '30':
+                    try:
+                        if cur_pts:
+                            x, y, z = cur_pts[-1]
+                            cur_pts[-1] = (x, y, float(val))
+                    except ValueError:
+                        pass
+            else:
+                # POLYLINE's own codes
+                if code == '70':
+                    try:
+                        cur_closed = (int(val) & 1) != 0
+                    except ValueError:
+                        pass
+                elif code == '30':
+                    try:
+                        cur_elev = float(val)
+                    except ValueError:
+                        pass
+        elif cur_entity == 'LWPOLYLINE':
             if code == '70':
-                try: cur_closed = (int(val.strip()) & 1) == 1
-                except: pass
-            elif code == '38':
-                try: cur_elev = float(val.strip())
-                except: pass
+                try:
+                    cur_closed = (int(val) & 1) != 0
+                except ValueError:
+                    pass
+            elif code == '42':
+                try:
+                    cur_elev = float(val)
+                except ValueError:
+                    pass
             elif code == '10':
-                x = float(val.strip())
-                y = 0.0; z = 0.0
-                if idx+1 < len(pairs) and pairs[idx+1][0] == '20':
-                    y = float(pairs[idx+1][1].strip())
-                if idx+2 < len(pairs) and pairs[idx+2][0] == '23':
-                    z = float(pairs[idx+2][1].strip())
-                elif idx+1 < len(pairs) and pairs[idx+1][0] == '23':
-                    z = float(pairs[idx+1][1].strip())
-                cur_pts.append((x, y, z))
+                try:
+                    cur_pts.append((float(val), 0.0, 0.0))
+                except ValueError:
+                    pass
+            elif code == '20':
+                try:
+                    if cur_pts:
+                        x, y, z = cur_pts[-1]
+                        cur_pts[-1] = (x, float(val), z)
+                except ValueError:
+                    pass
+            elif code == '30':
+                try:
+                    if cur_pts:
+                        x, y, z = cur_pts[-1]
+                        cur_pts[-1] = (x, y, float(val))
+                except ValueError:
+                    pass
+        elif cur_entity == 'LINE':
+            if code == '10':
+                try:
+                    cur_pts.append((float(val), 0.0, 0.0))
+                except ValueError:
+                    pass
+            elif code == '20':
+                try:
+                    if cur_pts:
+                        x, y, z = cur_pts[-1]
+                        cur_pts[-1] = (x, float(val), z)
+                except ValueError:
+                    pass
+            elif code == '30':
+                try:
+                    if cur_pts:
+                        x, y, z = cur_pts[-1]
+                        cur_pts[-1] = (x, y, float(val))
+                except ValueError:
+                    pass
     flush()
     return rings
+
 def read_dxf_units(path):
     """Read the $INSUNITS value from a DXF file's header.
 
@@ -182,46 +249,47 @@ UNIT_NAMES_REV = {0: "unspecified (assumed meters)", 1: "inches", 2: "feet",
                   7: "decimeters", 8: "decameters", 9: "hectometers", 10: "kilometers"}
 
 
-def _nearest_z_tree(rings):
-    """Build a KD-tree over all contour points for fast nearest-Z lookup.
+def _nearest_z(point, all_pts):
+    """Find the Z of the nearest contour point to (x, y).
 
-    Returns (tree, z_array) where tree.query([x,y]) gives the index of the
-    nearest contour point and z_array[idx] is its elevation. Used to assign a
-    plausible Z to the convex-hull outer boundary so the terrain base follows
-    the ground instead of sitting flat at Z=0.
+    Plain-Python linear scan: the hull has a small number of vertices, so a
+    scan over all contour points is cheap and avoids a numpy/scipy dependency.
     """
-    try:
-        import numpy as np
-        from scipy.spatial import cKDTree
-        pts = np.array([[p[0], p[1]] for r in rings for p in r], dtype=float)
-        zs = np.array([p[2] for r in rings for p in r], dtype=float)
-        return cKDTree(pts), zs
-    except Exception:
-        return None, None
+    if not all_pts:
+        return 0.0
+    best = None
+    best_d2 = float('inf')
+    for p in all_pts:
+        dx = p[0] - point[0]
+        dy = p[1] - point[1]
+        d2 = dx * dx + dy * dy
+        if d2 < best_d2:
+            best_d2 = d2
+            best = p
+    return best[2] if best is not None else 0.0
 
 
-def _hull_outer_with_z(rings, tree, zs, scale, offset_x, offset_y, offset_z):
+def _hull_outer_with_z(rings, scale, offset_x, offset_y, offset_z):
     """Convex-hull outer boundary with Z interpolated from the nearest contour.
 
     The convex hull of all points is always a simple (non-self-intersecting)
     polygon, which is the one hard requirement Tapir imposes on the outer ring.
     Each hull vertex is given the Z of the nearest contour point so the base
     of the terrain tracks the ground surface.
+
+    rings is a list of (pts, closed) tuples.
     """
-    hull = convex_hull([(p[0], p[1]) for r in rings for p in r])
+    all_pts = [p for pts, _closed in rings for p in pts]
+    hull = convex_hull([(p[0], p[1]) for p in all_pts])
     outer = []
     for hx, hy in hull:
-        z = 0.0
-        if tree is not None:
-            try:
-                _, idx = tree.query([hx, hy])
-                z = float(zs[idx])
-            except Exception:
-                z = 0.0
+        z = _nearest_z((hx, hy), all_pts)
         outer.append({"x": hx*scale + offset_x, "y": hy*scale + offset_y, "z": z*scale + offset_z})
     return outer
 def rings_to_tapir_mesh(rings, offset_x=0.0, offset_y=0.0, offset_z=0.0, scale=1.0, min_area=1.0, skirt_height=DEFAULT_SKIRT):
     """Build a SINGLE triangulated terrain mesh from contour rings.
+
+    rings is a list of (pts, closed) tuples from parse_dxf.
 
     Approach (verified against ArchiCAD 30 / Tapir source):
       * outer boundary  = convex hull of all points, Z interpolated to the
@@ -244,18 +312,34 @@ def rings_to_tapir_mesh(rings, offset_x=0.0, offset_y=0.0, offset_z=0.0, scale=1
     """
     if not rings:
         raise ValueError("No rings")
-    rings = [dedup_ring(r) for r in rings]
-    # Filter degenerate rings. min_area is in SQUARE METERS, so compare the
+    # Dedup and filter. min_area is in SQUARE METERS, so compare the
     # ring's area against min_area/scale^2 in raw DXF units. This keeps the
     # filter consistent regardless of the unit system (a 1 m^2 ring is a
     # 1 m^2 ring whether the DXF is in meters, inches, or feet).
+    # Apply the area filter only to closed rings; for open contours, filter
+    # on length instead so that nearly-straight edge contours are not dropped.
     min_area_raw = min_area / (scale * scale) if scale else min_area
-    rings = [r for r in rings if len(r) >= 3 and ring_area(r) >= min_area_raw]
-    if not rings:
+    filtered = []
+    for pts, closed in rings:
+        pts = dedup_ring(pts)
+        if len(pts) < 3:
+            continue
+        if closed:
+            if ring_area(pts) < min_area_raw:
+                continue
+        else:
+            # Open contour: filter by length (drop tiny fragments)
+            length = sum(
+                ((pts[i+1][0]-pts[i][0])**2 + (pts[i+1][1]-pts[i][1])**2) ** 0.5
+                for i in range(len(pts)-1)
+            )
+            if length < min_area_raw:
+                continue
+        filtered.append((pts, closed))
+    if not filtered:
         raise ValueError("All rings degenerate after dedup")
 
-    tree, zs = _nearest_z_tree(rings)
-    outer = _hull_outer_with_z(rings, tree, zs, scale, offset_x, offset_y, offset_z)
+    outer = _hull_outer_with_z(filtered, scale, offset_x, offset_y, offset_z)
     if len(outer) < 3:
         raise ValueError(f"Convex hull has {len(outer)} pts")
 
@@ -267,7 +351,7 @@ def rings_to_tapir_mesh(rings, offset_x=0.0, offset_y=0.0, offset_z=0.0, scale=1
     # read via Get3DCoordinateFromObjectState, so the subline's Z values create
     # real 3D relief (the contour ridge lines). Passing bare arrays makes Tapir
     # ignore the sublines entirely (nSubLines stays 0).
-    sublines = [{"coordinates": [pt(p) for p in r]} for r in rings]
+    sublines = [{"coordinates": [pt(p) for p in pts]} for pts, _closed in filtered]
     mesh = {"polygonCoordinates": outer}
     if sublines:
         mesh["sublines"] = sublines
@@ -287,12 +371,13 @@ def rings_to_tapir_mesh(rings, offset_x=0.0, offset_y=0.0, offset_z=0.0, scale=1
     skirt_m = max(0.0, float(skirt_height))
     if skirt_m > 0:
         # Find the lowest point Z (in meters, after scaling).
-        min_z_m = min(p[2] for r in rings for p in r) * scale + offset_z
+        min_z_m = min(p[2] for pts, _c in filtered for p in pts) * scale + offset_z
         # If the lowest point is below zero, add its depth to the skirt height.
         below_zero_depth = max(0.0, -min_z_m)
         mesh["skirtType"] = "SolidBodyWithSkirt"
         mesh["skirtLevel"] = skirt_m + below_zero_depth
     return mesh
+
 class ContourMesh:
     """ The Archicad side: pick a DXF, choose the options, create the mesh. """
 
@@ -385,8 +470,27 @@ class ContourMesh:
         skirt = self._parse_skirt()
 
         with self.window.busy("Reading and building the mesh..."):
-            rings = parse_dxf(dxf_path)
-            rings = [r for r in (dedup_ring(r) for r in rings) if len(r) >= 3]
+            raw_rings = parse_dxf(dxf_path)
+            # Dedup and filter: apply area filter only to closed rings;
+            # for open rings, filter on length instead.
+            rings = []
+            for pts, closed in raw_rings:
+                pts = dedup_ring(pts)
+                if len(pts) < 3:
+                    continue
+                if closed:
+                    # Closed ring: filter by area (drop tiny slivers)
+                    if ring_area(pts) < 1.0:
+                        continue
+                else:
+                    # Open contour: filter by length (drop tiny fragments)
+                    length = sum(
+                        ((pts[i+1][0]-pts[i][0])**2 + (pts[i+1][1]-pts[i][1])**2) ** 0.5
+                        for i in range(len(pts)-1)
+                    )
+                    if length < 1.0:
+                        continue
+                rings.append((pts, closed))
             if not rings:
                 self.window.set_status("No valid contour rings found in the DXF.", "error")
                 return
@@ -412,7 +516,9 @@ class ContourMesh:
             elif origin:
                 cx = min_x * scale
                 cy = min_y * scale
-                cz = 0.0
+                # Offset Z so the lowest point sits at the target (0,0,0)
+                min_z = min(p[2] for p in all_pts)
+                cz = -min_z * scale
             else:
                 cx = cy = cz = 0.0
 
@@ -423,11 +529,16 @@ class ContourMesh:
             self.window.set_status(f"Building mesh: {n_outer} outer pts, {n_sub} ridge lines. "
                                    f"Creating in ArchiCAD...", "info")
 
-            run_tapir("CreateMeshes", {"meshesData": [mesh_data]})
-
-            self.window.set_status(
-                f"Created a terrain mesh with {n_sub} contour ridge lines. "
-                f"Press F (Zoom Full Drawing) to see it.", "ok")
+            response = run_tapir("CreateMeshes", {"meshesData": [mesh_data]})
+            errors = item_errors(response.get("elements", []))
+            if errors:
+                self.window.set_status(
+                    f"CreateMeshes reported {len(errors)} error(s). First: {errors[0]}",
+                    "error")
+            else:
+                self.window.set_status(
+                    f"Created a terrain mesh with {n_sub} contour ridge lines. "
+                    f"Press F (Zoom Full Drawing) to see it.", "ok")
 
 
 if __name__ == "__main__":
