@@ -158,7 +158,7 @@ bool ParseTomlString (const std::string& value, std::string& result)
     return true;
 }
 
-// A TOML array of non-negative integers on one line, e.g. [28, 29, 30], optionally followed by a comment.
+// A TOML array of non-negative integers, e.g. [28, 29, 30], optionally followed by a comment.
 bool ParseTomlIntegerArray (const std::string& value, GS::Array<Int32>& result)
 {
     if (value.empty () || value[0] != '[') {
@@ -229,8 +229,8 @@ bool ParseHeader (const std::vector<std::string>& lines, ScriptInfo& info)
             return false;
         }
 
-        for (const std::string& rawLine : content) {
-            const std::string line = Trim (rawLine);
+        for (size_t k = 0; k < content.size (); ++k) {
+            const std::string line = Trim (content[k]);
             if (line.empty () || line[0] == '#') {
                 continue;
             }
@@ -247,7 +247,13 @@ bool ParseHeader (const std::vector<std::string>& lines, ScriptInfo& info)
                     info.category = ToUniString (Trim (text));
                 }
             } else if (key == "archicad-versions") {
-                ParseTomlIntegerArray (value, info.archicadVersions);
+                // TOML lets an array span lines. Its items are integers here, so a '#' always starts a comment, and
+                // the lines it spans have no '='.
+                std::string array = value.substr (0, value.find ('#'));
+                for (size_t next = k + 1; array.find (']') == std::string::npos && next < content.size () && content[next].find ('=') == std::string::npos; ++next) {
+                    array += ' ' + content[next].substr (0, content[next].find ('#'));
+                }
+                ParseTomlIntegerArray (Trim (array), info.archicadVersions);
             } else if (key == "min-tapir-version") {
                 if (ParseTomlString (value, text)) {
                     info.minTapirVersion = ToUniString (Trim (text));
@@ -264,8 +270,9 @@ bool ParseHeader (const std::vector<std::string>& lines, ScriptInfo& info)
     return false;
 }
 
-// The module docstring: the first statement of the file when it is a triple-quoted string (comments, blank lines
-// and the metadata blocks before it are skipped).
+// The module docstring: the first statement of the file when it is a string (comments, blank lines and the metadata
+// blocks before it are skipped). In a string without the r prefix a backslash at the end of a line joins the next
+// line, and \\, \" and \' are unescaped; an escaped quote never ends the string.
 bool FindDocstring (const std::vector<std::string>& lines, std::string& docstring)
 {
     std::string rest;
@@ -283,25 +290,49 @@ bool FindDocstring (const std::vector<std::string>& lines, std::string& docstrin
     }
 
     size_t q = 0;
+    bool isRaw = false;
     while (q < rest.size () && q < 2 && (rest[q] == 'r' || rest[q] == 'R' || rest[q] == 'u' || rest[q] == 'U')) {
+        isRaw = isRaw || rest[q] == 'r' || rest[q] == 'R';
         ++q;
     }
-    if (rest.compare (q, 3, "\"\"\"") != 0 && rest.compare (q, 3, "'''") != 0) {
+    if (q >= rest.size () || (rest[q] != '"' && rest[q] != '\'')) {
         return false;
     }
-    const std::string delimiter = rest.substr (q, 3);
+    const bool isTripleQuoted = rest.compare (q, 3, std::string (3, rest[q])) == 0;
+    const std::string delimiter = isTripleQuoted ? rest.substr (q, 3) : rest.substr (q, 1);
 
-    std::string text = rest.substr (q + 3);
-    for (size_t j = i + 1; j < lines.size (); ++j) {
-        text += '\n';
-        text += lines[j];
+    std::string out;
+    std::string line = rest.substr (q + delimiter.size ());
+    for (size_t j = i; ; ) {
+        bool joinsNextLine = false;
+        for (size_t k = 0; k < line.size (); ++k) {
+            if (line.compare (k, delimiter.size (), delimiter) == 0) {
+                docstring = out;
+                return true;
+            }
+            if (line[k] != '\\') {
+                out += line[k];
+            } else if (k + 1 >= line.size ()) {
+                joinsNextLine = true;
+                if (isRaw) {
+                    out += '\\';
+                }
+            } else {
+                const char next = line[++k];
+                if (isRaw || (next != '\\' && next != '"' && next != '\'')) {
+                    out += '\\';
+                }
+                out += next;
+            }
+        }
+        if (++j >= lines.size () || (!isTripleQuoted && !joinsNextLine)) {
+            return false;   // the string does not end
+        }
+        if (!joinsNextLine || isRaw) {
+            out += '\n';
+        }
+        line = lines[j];
     }
-    const size_t end = text.find (delimiter);
-    if (end == std::string::npos) {
-        return false;
-    }
-    docstring = text.substr (0, end);
-    return true;
 }
 
 void ParseDocstring (const std::string& docstring, ScriptInfo& info)
