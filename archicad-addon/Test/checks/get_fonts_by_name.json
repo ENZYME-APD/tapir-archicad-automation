@@ -1,0 +1,22 @@
+{
+  "title": "GetFontsByName finds a loaded font and answers an error item for a name no font has",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "[Arial, missing font]",
+      "command": "GetFontsByName",
+      "creates": false,
+      "params": {
+        "fontNames": [ "Arial", "Tapir Check No Such Font" ]
+      },
+      "expect": [
+        { "path": "fonts", "len": 2, "name": "one item per name" },
+        { "path": "fonts[0].fontName", "eq": "Arial", "name": "Arial found" },
+        { "path": "fonts[0].fontIndex", "gt": 0, "name": "with its index" },
+        { "path": "fonts[1].error", "exists": true, "name": "missing font: error item" },
+        { "path": "fonts[1].fontIndex", "exists": false, "name": "missing font: no index" }
+      ]
+    }
+  ]
+}

@@ -330,6 +330,16 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   check also runs `tools/check_examples.py` (one example per command). The installer
   check also runs `Installer/test_update_mode.py` and syntax-checks the legacy
   auto-update script.
+  A pull request (or the steward's dispatch on a branch) whose changed files are
+  all in the skip list of [.github/actions/build-gate](.github/actions/build-gate/action.yml)
+  — `docs/**`, `archicad-addon/Test/**`, `archicad-addon/Examples/**`,
+  `archicad-addon/Workflows/**`, `builtin-scripts/**`, `marketplace/**`,
+  `branding/**`, `**/*.md` — skips the add-on and installer builds: a cheap
+  `changes` job gates `build_win`, `build_mac` and `build_installer` by `if:`, so
+  their checks still appear as skipped, which the steward, auto-merge and required
+  checks count as passing (not `paths-ignore`, whose missing checks would hang
+  them). `build_win` still runs when `archicad-addon/Test/checks/` changed, for the
+  community test runner; pushes to `main` and the release workflows always build.
 - `archicad_addon.yml`, `grasshopper_plugin.yml` — release/publish pipelines.
   `archicad_addon.yml` also builds the Tapir Installer executables
   (`TapirInstaller_Win.exe`, `TapirInstaller_Mac.zip`), and attaches them a second time

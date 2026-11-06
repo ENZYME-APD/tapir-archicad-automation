@@ -1,0 +1,336 @@
+{
+  "title": "CreateOpenings cuts the wall it is given, GetOpeningDetails reads it and SetOpeningDetails changes its shape, size, anchor and position, and refuses a bad surface without changing anything",
+  "minTapir": "1.8.1",
+  "minArchicad": "29",
+  "requiresEmpty": ["Wall", "Opening"],
+  "steps": [
+    {
+      "id": "host wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": { "x": 0.0, "y": -20.0 },
+            "endCoordinate": { "x": 6.0, "y": -20.0 },
+            "zCoordinate": 0.0,
+            "height": 3.0,
+            "thickness": 0.3
+          }
+        ]
+      },
+      "save": {
+        "wall": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "opening",
+      "command": "CreateOpenings",
+      "params": {
+        "openingsData": [
+          {
+            "ownerElementId": { "guid": "${wall}" },
+            "basePoint": { "x": 2.0, "y": -20.0, "z": 1.0 },
+            "width": 0.8,
+            "height": 0.6
+          }
+        ]
+      },
+      "save": {
+        "opening": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "opening created"
+        }
+      ]
+    },
+    {
+      "id": "read the new opening",
+      "command": "GetOpeningDetails",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${opening}" } } ]
+      },
+      "expect": [
+        {
+          "path": "openings[0].exists",
+          "eq": true
+        },
+        {
+          "path": "openings[0].parentElementId.guid",
+          "exists": true,
+          "name": "has a parent element"
+        },
+        {
+          "path": "openings[0].cutElements",
+          "len": 1,
+          "name": "cuts one element, the wall"
+        },
+        {
+          "path": "openings[0].geometry.polygon",
+          "len": 4,
+          "name": "rectangle of four corners"
+        }
+      ]
+    },
+    {
+      "id": "rectangular, horizontal",
+      "command": "SetOpeningDetails",
+      "creates": false,
+      "params": {
+        "openingsWithDetails": [
+          {
+            "elementId": { "guid": "${opening}" },
+            "extrusionParameters": {
+              "constraint": "ForcedHorizontal",
+              "limitType": "Infinite",
+              "shapeType": "Rectangular",
+              "isExtrusionSurfaceOverridden": false
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "size and anchor",
+      "command": "SetOpeningDetails",
+      "creates": false,
+      "params": {
+        "openingsWithDetails": [
+          {
+            "elementId": { "guid": "${opening}" },
+            "extrusionParameters": {
+              "linkedStatus": "NotLinked",
+              "width": 1.1,
+              "height": 0.7,
+              "anchor": "BottomLeft",
+              "anchorAltitude": 0.9
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "read the changes",
+      "command": "GetOpeningDetails",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${opening}" } } ]
+      },
+      "save": {
+        "x1": "openings[0].geometry.anchorPoint.x",
+        "y1": "openings[0].geometry.anchorPoint.y",
+        "z1": "openings[0].geometry.anchorPoint.z"
+      },
+      "expect": [
+        {
+          "path": "openings[0].extrusionParameters.constraint",
+          "eq": "ForcedHorizontal"
+        },
+        {
+          "path": "openings[0].extrusionParameters.limitType",
+          "eq": "Infinite"
+        },
+        {
+          "path": "openings[0].extrusionParameters.shapeType",
+          "eq": "Rectangular"
+        },
+        {
+          "path": "openings[0].extrusionParameters.linkedStatus",
+          "eq": "NotLinked"
+        },
+        {
+          "path": "openings[0].extrusionParameters.width",
+          "approx": 1.1,
+          "name": "new width"
+        },
+        {
+          "path": "openings[0].extrusionParameters.height",
+          "approx": 0.7,
+          "name": "new height"
+        },
+        {
+          "path": "openings[0].extrusionParameters.anchor",
+          "eq": "BottomLeft"
+        },
+        {
+          "path": "openings[0].extrusionParameters.anchorAltitude",
+          "approx": 0.9,
+          "name": "new anchor altitude"
+        },
+        {
+          "path": "openings[0].cutElements",
+          "len": 1,
+          "name": "still cuts the wall"
+        }
+      ]
+    },
+    {
+      "id": "move 0.5 along X",
+      "command": "SetOpeningDetails",
+      "creates": false,
+      "params": {
+        "openingsWithDetails": [
+          {
+            "elementId": { "guid": "${opening}" },
+            "transformation": [1, 0, 0, 0.5,
+                               0, 1, 0, 0,
+                               0, 0, 1, 0]
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "read the move",
+      "command": "GetOpeningDetails",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${opening}" } } ]
+      },
+      "save": {
+        "x2": "openings[0].geometry.anchorPoint.x",
+        "y2": "openings[0].geometry.anchorPoint.y",
+        "z2": "openings[0].geometry.anchorPoint.z"
+      },
+      "expect": [
+        {
+          "expr": "${x2} - ${x1}",
+          "approx": 0.5,
+          "name": "moved 0.5 along X"
+        },
+        {
+          "expr": "${y2} - ${y1}",
+          "approx": 0.0,
+          "name": "Y unchanged"
+        },
+        {
+          "expr": "${z2} - ${z1}",
+          "approx": 0.0,
+          "name": "Z unchanged"
+        },
+        {
+          "path": "openings[0].extrusionParameters.width",
+          "approx": 1.1,
+          "name": "width unchanged by the move"
+        }
+      ]
+    },
+    {
+      "id": "[bogus opening, bad surface]",
+      "command": "SetOpeningDetails",
+      "creates": false,
+      "params": {
+        "openingsWithDetails": [
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "extrusionParameters": { "width": 1.5 }
+          },
+          {
+            "elementId": { "guid": "${opening}" },
+            "extrusionParameters": {
+              "width": 1.5,
+              "isExtrusionSurfaceOverridden": true,
+              "extrusionSurfaceId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": false,
+          "name": "nonexistent opening refused"
+        },
+        {
+          "path": "executionResults[1].success",
+          "eq": false,
+          "name": "nonexistent surface refused"
+        }
+      ]
+    },
+    {
+      "id": "nothing changed",
+      "command": "GetOpeningDetails",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${opening}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        {
+          "path": "openings[0].extrusionParameters.width",
+          "approx": 1.1,
+          "name": "width kept"
+        },
+        {
+          "path": "openings[0].extrusionParameters.isExtrusionSurfaceOverridden",
+          "eq": false,
+          "name": "surface not overridden"
+        },
+        {
+          "path": "openings[1].error",
+          "exists": true,
+          "name": "nonexistent opening read as an error"
+        }
+      ]
+    },
+    {
+      "id": "opening in a nonexistent element",
+      "command": "CreateOpenings",
+      "params": {
+        "openingsData": [
+          {
+            "ownerElementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "basePoint": { "x": 4.0, "y": -20.0, "z": 1.0 },
+            "width": 0.8,
+            "height": 0.6
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "elements[0].error",
+          "exists": true,
+          "name": "refused"
+        }
+      ]
+    },
+    {
+      "id": "still one opening",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": {
+        "elementType": "Opening"
+      },
+      "expect": [
+        {
+          "path": "elements",
+          "len": 1,
+          "name": "no opening made by the refused create"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,169 @@
+{
+  "title": "SetAnalyticalVisibilitySettings changes only the given fields, GetAnalyticalVisibilitySettings reads them back, and an unknown mode is refused",
+  "minTapir": "1.8.1",
+  "minArchicad": "26",
+  "steps": [
+    {
+      "id": "settings before",
+      "command": "GetAnalyticalVisibilitySettings",
+      "creates": false,
+      "params": {},
+      "save": {
+        "visibilityMode0": "visibilitySettings.visibilityMode",
+        "nodes0": "visibilitySettings.areNodesVisible",
+        "releases0": "visibilitySettings.areReleasesVisible",
+        "lcs0": "visibilitySettings.areLocalCoordSystemsVisible",
+        "loads0": "visibilitySettings.loadVisibilityMode"
+      },
+      "expect": [
+        { "path": "visibilitySettings.isAnalyticalModelVisible", "exists": true },
+        { "path": "visibilitySettings.areMembersTransparent", "exists": true },
+        { "path": "visibilitySettings.areSymbolsTransparent", "exists": true },
+        { "path": "visibilitySettings.areCrossSectionsVisible", "exists": true },
+        { "path": "visibilitySettings.areCoordinationProfilesVisible", "exists": true }
+      ]
+    },
+    {
+      "id": "nodes on, releases off, loads hidden",
+      "command": "SetAnalyticalVisibilitySettings",
+      "creates": false,
+      "params": {
+        "visibilitySettings": {
+          "areNodesVisible": true,
+          "areReleasesVisible": false,
+          "loadVisibilityMode": "HideAll"
+        }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read them",
+      "command": "GetAnalyticalVisibilitySettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "visibilitySettings.areNodesVisible", "eq": true },
+        { "path": "visibilitySettings.areReleasesVisible", "eq": false },
+        { "path": "visibilitySettings.loadVisibilityMode", "eq": "HideAll" }
+      ]
+    },
+    {
+      "id": "only nodes off",
+      "command": "SetAnalyticalVisibilitySettings",
+      "creates": false,
+      "params": {
+        "visibilitySettings": {
+          "areNodesVisible": false
+        }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "nodes off, the others kept",
+      "command": "GetAnalyticalVisibilitySettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "visibilitySettings.areNodesVisible", "eq": false },
+        { "path": "visibilitySettings.areReleasesVisible", "eq": false, "name": "releases kept" },
+        { "path": "visibilitySettings.loadVisibilityMode", "eq": "HideAll", "name": "load mode kept" }
+      ]
+    },
+    {
+      "id": "releases and local coordinate systems on, all loads, within the entire model",
+      "command": "SetAnalyticalVisibilitySettings",
+      "creates": false,
+      "params": {
+        "visibilitySettings": {
+          "visibilityMode": "AnalyticalModelWithinEntireModel",
+          "areReleasesVisible": true,
+          "areLocalCoordSystemsVisible": true,
+          "loadVisibilityMode": "ShowAll"
+        }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read them again",
+      "command": "GetAnalyticalVisibilitySettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "visibilitySettings.visibilityMode", "eq": "AnalyticalModelWithinEntireModel" },
+        { "path": "visibilitySettings.areReleasesVisible", "eq": true },
+        { "path": "visibilitySettings.areLocalCoordSystemsVisible", "eq": true },
+        { "path": "visibilitySettings.loadVisibilityMode", "eq": "ShowAll" },
+        { "path": "visibilitySettings.areNodesVisible", "eq": false, "name": "nodes kept" }
+      ]
+    },
+    {
+      "id": "only the analytical model",
+      "command": "SetAnalyticalVisibilitySettings",
+      "creates": false,
+      "params": {
+        "visibilitySettings": {
+          "visibilityMode": "AnalyticalModelOnly"
+        }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "mode changed, the others kept",
+      "command": "GetAnalyticalVisibilitySettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "visibilitySettings.visibilityMode", "eq": "AnalyticalModelOnly" },
+        { "path": "visibilitySettings.areReleasesVisible", "eq": true, "name": "releases kept" },
+        { "path": "visibilitySettings.loadVisibilityMode", "eq": "ShowAll", "name": "load mode kept" }
+      ]
+    },
+    {
+      "id": "unknown visibility mode",
+      "command": "SetAnalyticalVisibilitySettings",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "visibilitySettings": {
+          "visibilityMode": "Sometimes",
+          "areNodesVisible": true
+        }
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the schema" }
+      ]
+    },
+    {
+      "id": "nothing changed by the refused call",
+      "command": "GetAnalyticalVisibilitySettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "visibilitySettings.areNodesVisible", "eq": false, "name": "nodes still off" },
+        { "path": "visibilitySettings.visibilityMode", "eq": "AnalyticalModelOnly" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "SetAnalyticalVisibilitySettings",
+      "params": {
+        "visibilitySettings": {
+          "visibilityMode": "${visibilityMode0}",
+          "areNodesVisible": "${nodes0}",
+          "areReleasesVisible": "${releases0}",
+          "areLocalCoordSystemsVisible": "${lcs0}",
+          "loadVisibilityMode": "${loads0}"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,258 @@
+{
+  "title": "Finding and inspecting library parts with the Library Manager: FindLibraryParts, GetLibraryPartDetails and GetLibraryPartFileInfo on a parent and a child part of the embedded library",
+  "minTapir": "1.8.1",
+  "minArchicad": "28",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "parent part under the General GDL Object (by main GUID)",
+      "command": "CreateLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          {
+            "name": "TapirCheckLibFind Parent",
+            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "path": "TapirCheckLibFind/TapirCheckLibFind Parent.gsm",
+            "a": 1.0,
+            "b": 1.0,
+            "script3D": "BLOCK A, B, 1"
+          }
+        ],
+        "overwriteExisting": true
+      },
+      "save": {
+        "parentUnId": "libraryParts[0].unId"
+      },
+      "expect": [
+        { "path": "libraryParts[0].error", "exists": false, "name": "parent created" }
+      ]
+    },
+    {
+      "id": "child part under the parent, with a 3D script only",
+      "command": "CreateLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          {
+            "name": "TapirCheckLibFind Child",
+            "parentId": "${parentUnId}",
+            "path": "TapirCheckLibFind/TapirCheckLibFind Child.gsm",
+            "a": 1.0,
+            "b": 1.0,
+            "script3D": "BLOCK A, B, 0.5"
+          }
+        ],
+        "overwriteExisting": true
+      },
+      "save": {
+        "childIndex": "libraryParts[0].index"
+      },
+      "expect": [
+        { "path": "libraryParts[0].error", "exists": false, "name": "child created" }
+      ]
+    },
+    {
+      "id": "every part whose name contains the text, in other case",
+      "command": "FindLibraryParts",
+      "creates": false,
+      "params": {
+        "kind": "All",
+        "nameContains": "tapirchecklibfind"
+      },
+      "expect": [
+        { "path": "libraryParts", "len": 2, "name": "parent and child, ignoring case" },
+        { "path": "libraryParts[0].name", "contains": "TapirCheckLibFind", "name": "with their name" },
+        { "path": "libraryParts[0].path", "contains": "TapirCheckLibFind", "name": "their path" },
+        { "path": "libraryParts[0].index", "exists": true, "name": "and their index" }
+      ]
+    },
+    {
+      "id": "GDL objects whose name contains the text",
+      "command": "FindLibraryParts",
+      "creates": false,
+      "params": {
+        "kind": "Object",
+        "nameContains": "TapirCheckLibFind"
+      },
+      "expect": [
+        { "path": "libraryParts", "len": 2, "name": "both are GDL objects" }
+      ]
+    },
+    {
+      "id": "images whose name contains the text",
+      "command": "FindLibraryParts",
+      "creates": false,
+      "params": {
+        "kind": "Image",
+        "nameContains": "TapirCheckLibFind"
+      },
+      "expect": [
+        { "path": "libraryParts", "len": 0, "name": "neither is an image" }
+      ]
+    },
+    {
+      "id": "first match only",
+      "command": "FindLibraryParts",
+      "creates": false,
+      "params": {
+        "nameContains": "TapirCheckLibFind",
+        "firstOnly": true
+      },
+      "expect": [
+        { "path": "libraryParts", "len": 1 }
+      ]
+    },
+    {
+      "id": "a text no part contains",
+      "command": "FindLibraryParts",
+      "creates": false,
+      "params": {
+        "nameContains": "TapirCheckLibFind NoSuchPart"
+      },
+      "expect": [
+        { "path": "libraryParts", "len": 0 }
+      ]
+    },
+    {
+      "id": "[child by name, child by index, missing name] in the subtype of the parent",
+      "command": "GetLibraryPartDetails",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "TapirCheckLibFind Child.gsm" },
+          { "index": "${childIndex}" },
+          { "name": "TapirCheckLibFind NoSuchPart.gsm" }
+        ],
+        "subTypeOf": "TapirCheckLibFind Parent.gsm",
+        "includeScripts": true
+      },
+      "save": {
+        "childPath": "libraryParts[0].path",
+        "detailsIndex": "libraryParts[0].index",
+        "detailsSubTypeGuid": "libraryParts[0].gsmObject.subTypeGuid"
+      },
+      "expect": [
+        { "path": "libraryParts", "len": 3, "name": "one item per input" },
+        { "path": "libraryParts[0].name", "contains": "TapirCheckLibFind Child", "name": "by name: the child" },
+        { "path": "libraryParts[0].path", "contains": "TapirCheckLibFind Child.gsm", "name": "by name: its file" },
+        { "expr": "${detailsIndex} - ${childIndex}", "eq": 0, "name": "by name: the index CreateLibraryParts reported" },
+        { "path": "libraryParts[0].library", "exists": true, "name": "by name: its library" },
+        { "path": "libraryParts[0].libraryTreePath.lastPart", "exists": true, "name": "by name: its library tree path" },
+        { "path": "libraryParts[0].gsmObject.guid", "exists": true, "name": "by name: its GUID" },
+        { "path": "libraryParts[0].gsmObject.isInSubTypeOf", "eq": true, "name": "by name: in the subtype of the parent" },
+        { "path": "libraryParts[0].gsmObject.contents.interfaceScript", "eq": false, "name": "by name: no interface script" },
+        { "path": "libraryParts[0].gsmObject.scripts", "exists": true, "name": "by name: scripts asked for" },
+        { "path": "libraryParts[1].name", "contains": "TapirCheckLibFind Child", "name": "by index: the child" },
+        { "path": "libraryParts[1].gsmObject.isInSubTypeOf", "eq": true, "name": "by index: in the subtype of the parent" },
+        { "path": "libraryParts[2].error", "exists": true, "name": "missing name: an error item" }
+      ]
+    },
+    {
+      "id": "the guids GetLibraryPartDetails reports",
+      "command": "IsLibraryPartSubtypeOf",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "index": "${childIndex}" }
+        ],
+        "ancestor": { "unId": "{${detailsSubTypeGuid}}-{00000000-0000-0000-0000-000000000000}" },
+        "matchAncestorByMainId": true
+      },
+      "expect": [
+        { "path": "results[0].isSubtypeOf", "eq": true, "name": "subTypeGuid is the main GUID of an ancestor of the child" }
+      ]
+    },
+    {
+      "id": "the parent is not in the subtype of the child",
+      "command": "GetLibraryPartDetails",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "TapirCheckLibFind Parent.gsm" }
+        ],
+        "subTypeOf": "TapirCheckLibFind Child.gsm"
+      },
+      "expect": [
+        { "path": "libraryParts[0].gsmObject.isInSubTypeOf", "eq": false },
+        { "path": "libraryParts[0].gsmObject.scripts", "exists": false, "name": "no scripts unless asked for" }
+      ]
+    },
+    {
+      "id": "subTypeOf a part that is not loaded",
+      "command": "GetLibraryPartDetails",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "TapirCheckLibFind Child.gsm" }
+        ],
+        "subTypeOf": "TapirCheckLibFind NoSuchPart.gsm"
+      },
+      "expect": [
+        { "path": "error", "exists": true, "name": "an error, no details" }
+      ]
+    },
+    {
+      "id": "[child file, missing file] read without loading",
+      "command": "GetLibraryPartFileInfo",
+      "creates": false,
+      "params": {
+        "files": [
+          "${childPath}",
+          "${childPath}.missing"
+        ],
+        "scripts": [ "master", "2d", "3d" ]
+      },
+      "expect": [
+        { "path": "files", "len": 2, "name": "one item per input" },
+        { "path": "files[0].unID", "exists": true, "name": "child: its unique ID" },
+        { "path": "files[0].subTypeUnID", "exists": true, "name": "child: the unique ID of its subtype" },
+        { "path": "files[0].scripts.3d.present", "eq": true, "name": "child: has the 3D script" },
+        { "path": "files[0].scripts.3d.script", "contains": "BLOCK A, B, 0.5", "name": "child: the 3D script it was created with" },
+        { "path": "files[0].scripts.master.present", "eq": true, "name": "child: has the (empty) master script" },
+        { "path": "files[0].scripts.2d.present", "eq": false, "name": "child: has no 2D script" },
+        { "path": "files[0].scripts.2d.script", "exists": false, "name": "child: so no 2D script text" },
+        { "path": "files[0].scripts.parameter", "exists": false, "name": "child: only the scripts asked for" },
+        { "path": "files[1].error", "exists": true, "name": "missing file: an error item" }
+      ]
+    },
+    {
+      "id": "the unique IDs GetLibraryPartFileInfo reports",
+      "command": "GetLibraryPartFileInfo",
+      "creates": false,
+      "params": {
+        "files": [ "${childPath}" ],
+        "scripts": [ "3d" ]
+      },
+      "save": {
+        "fileUnId": "files[0].unID",
+        "fileSubTypeUnId": "files[0].subTypeUnID"
+      }
+    },
+    {
+      "id": "unique ID of the file is the child's",
+      "command": "IsLibraryPartSubtypeOf",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "unId": "${fileUnId}" }
+        ],
+        "ancestor": { "unId": "${fileSubTypeUnId}" }
+      },
+      "expect": [
+        { "path": "results[0].error", "exists": false, "name": "the file's unique ID is a loaded part" },
+        { "path": "results[0].isSubtypeOf", "eq": true, "name": "and the subtype's unique ID is its ancestor" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteEmbeddedLibraryItems",
+      "params": {
+        "embeddedLibraryItems": [
+          { "path": "TapirCheckLibFind" }
+        ]
+      }
+    }
+  ]
+}

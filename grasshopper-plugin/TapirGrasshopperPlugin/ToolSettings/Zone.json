@@ -5,10 +5,14 @@
   "commands": {
     "get": "GetDetailsOfElements",
     "getSchema": "ZoneDetails",
-    "create": "CreateZonesCommand"
+    "create": "CreateZonesCommand",
+    "modify": "ModifyZonesCommand"
   },
   "plainKeys": [
-    "favoriteName"
+    "allowOverlap",
+    "elementId",
+    "favoriteName",
+    "id"
   ],
   "sources": {
     "help": [
@@ -69,6 +73,56 @@
       "subgroup": null
     },
     {
+      "get": "height",
+      "set": "height",
+      "apiMember": "API_ZoneType::roomHeight",
+      "apiDescription": "Height of the room.",
+      "label": null,
+      "labelSource": null,
+      "group": "Name and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "bottomOffset",
+      "set": "bottomOffset",
+      "apiMember": "API_ZoneType::roomBaseLev",
+      "apiDescription": "Base level of the room, measured from the floor level.",
+      "label": null,
+      "labelSource": null,
+      "group": "Name and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "relativeTopStory",
+      "set": "relativeTopStory",
+      "apiMember": "API_ZoneType::relativeTopStory",
+      "apiDescription": "The top linked story (relative to home story). Negative values are invalid. 0 = not top linked.",
+      "label": null,
+      "labelSource": null,
+      "group": "Name and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "topOffset",
+      "set": "topOffset",
+      "apiMember": "API_ZoneType::roomTopOffset",
+      "apiDescription": "The offset from top floor if zone is top linked.",
+      "label": null,
+      "labelSource": null,
+      "group": "Name and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "floorThickness",
+      "set": "floorThickness",
+      "apiMember": "API_ZoneType::roomFlThick",
+      "apiDescription": "Sub-floor thickness of the room.",
+      "label": null,
+      "labelSource": null,
+      "group": "Name and Positioning",
+      "subgroup": null
+    },
+    {
       "get": "isManual",
       "set": null,
       "apiMember": "API_ZoneType::manual",
@@ -83,6 +137,16 @@
       "set": "geometry",
       "apiMember": null,
       "apiDescription": "Automatic zone: the reference point (API_ZoneType::refPos) to find the zone around; manual zone: the polygon (API_ZoneType::poly with the memo coordinates).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "referencePosition",
+      "set": null,
+      "apiMember": "API_ZoneType::refPos",
+      "apiDescription": "Reference point to find zone if it was not created manually.",
       "label": null,
       "labelSource": null,
       "group": null,
@@ -119,6 +183,26 @@
       "subgroup": null
     },
     {
+      "get": "contourLine",
+      "set": "contourLine",
+      "apiMember": "API_ZoneType::useContourLine, floorContLPen, floorContLType",
+      "apiDescription": "Draw contour line? Pen attribute index of zone's contour. Line type attribute index of zone's contour.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan",
+      "subgroup": null
+    },
+    {
+      "get": "coverFill",
+      "set": "coverFill",
+      "apiMember": "API_ZoneType::useFloorFill, floorFillInd, floorFillPen, floorFillBGPen",
+      "apiDescription": "Use cover fill? Fill attribute index of the zone's cover fill. Pen attribute index of zone's cover fill. Background pen attribute index of the zone's cover fill.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan",
+      "subgroup": null
+    },
+    {
       "get": "stampPosition",
       "set": "stampPosition",
       "apiMember": "API_ZoneType::pos",
@@ -145,7 +229,7 @@
       "apiDescription": "The stampAngle will not change when the element is rotated and this flag is true.",
       "label": null,
       "labelSource": null,
-      "group": null,
+      "group": "Zone Stamp",
       "subgroup": null
     }
   ]

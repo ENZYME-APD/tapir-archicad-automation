@@ -2897,6 +2897,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             } break;
 
             case API_MeshID: {
+                // MeshDetails documents the home story here too (the Meshes tool component reads it).
+                typeSpecificDetails.Add ("floorIndex", elem.header.floorInd);
                 typeSpecificDetails.Add ("level", elem.mesh.level);
                 if (elem.mesh.skirt == 3) {
                     typeSpecificDetails.Add ("skirtType", "SurfaceOnlyWithoutSkirt");
