@@ -63,7 +63,7 @@ on:
         options: [auto, patch, minor, major]
         default: auto
       skip_docs_update:
-        description: Release without regenerating docs/archicad-addon (only when the generator fails)
+        description: Release without regenerating docs/archicad-addon and the LLM files (only when generate_addon_docs.py fails)
         type: boolean
         default: false
       allow_early_release:
