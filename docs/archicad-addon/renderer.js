@@ -214,7 +214,15 @@ function RenderCommandContent(parentElement, groupName, command, schemaDefinitio
     let commandContent = CreateElement(parentElement, 'div', 'command_content', null);
     CreateElement(commandContent, 'div', 'command_description', command.description);
     if (!gGroupsWithoutExamples.includes(groupName)) {
-        RenderExample(commandContent, ExamplePath(groupName, command.name));
+        let examplePath = ExamplePath(groupName, command.name);
+        // A plain link to the file, which works even when the example cannot be fetched.
+        let exampleFile = CreateTextElement(commandContent, 'div', 'command_example_file', 'Example file: ');
+        let exampleLink = CreateTextElement(exampleFile, 'a', null,
+            'archicad-addon/Examples/' + ExampleFolder(groupName) + '/' + command.name + '.py');
+        exampleLink.href = gExampleViewBaseUrl + examplePath;
+        exampleLink.target = '_blank';
+        exampleLink.rel = 'noopener';
+        RenderExample(commandContent, examplePath);
     }
     try {
         CreateSchemaElement(commandContent, 'Input parameters', command.inputScheme, schemaDefinitions);
