@@ -1,14 +1,15 @@
 {
- "generatedAt": "2026-11-06 08:12 UTC",
+ "generatedAt": "2026-11-06 09:12 UTC",
  "counts": {
   "done": 568,
-  "in progress": 27,
-  "merged": 148,
+  "merged": 166,
+  "in progress": 9,
   "skipped": 1,
+  "open": 3,
   "not applicable": 1
  },
  "parameters": {
-  "all": 670,
+  "all": 688,
   "partial": 12,
   "json": 34
  },
@@ -38,19 +39,19 @@
    "group": "Application Commands",
    "version": "1.8.1",
    "brief": "Retrieves every command of the Tapir Add-On with its command group, the Tapir version it was introduced in and its description, so a script can check that a command exists before calling it.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetCommandsComponent",
+     "path": "Components/GeneralComponents/GetCommandsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2100,
-     "title": "Grasshopper: components for the library, attribute and auto-text commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1132,19 +1133,19 @@
    "group": "Project Commands",
    "version": "1.8.1",
    "brief": "Retrieves every autotext key Archicad knows (not only the property-based ones returned by GetAutoTextKeys) with its current value, resolved without an element context.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetAllAutoTextKeysComponent",
+     "path": "Components/ProjectComponents/GetAllAutoTextKeysComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2100,
-     "title": "Grasshopper: components for the library, attribute and auto-text commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1152,19 +1153,22 @@
    "group": "Project Commands",
    "version": "1.8.1",
    "brief": "Resolves one or more autotexts (e.g. '<LAYOUTID>') to their values, optionally in the context of an element, so a key can be tested before it is written into a Text or Label.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2100,
-     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+     "name": "InterpretAutoTextsComponent",
+     "path": "Components/ProjectComponents/InterpretAutoTextsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "autoTexts",
+    "elementId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8328,6 +8332,36 @@
    "issues": []
   },
   {
+   "id": "GetFavoriteContents",
+   "group": "Favorites Commands",
+   "version": "1.8.1",
+   "brief": "Returns the Favorites of a folder of the Favorites palette and of its subfolders (every Favorite when no folder is given), each with its folder path, classifications, element category values and property values, read through the Favorite manager. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "DeleteFavoritesWithManager",
+   "group": "Favorites Commands",
+   "version": "1.8.1",
+   "brief": "Deletes the given Favorites through the Favorite manager, each found by name, optionally only in the given folder. One execution result for each. Available from Archicad 29.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "MoveFavorites",
    "group": "Favorites Commands",
    "version": "1.8.0",
@@ -9621,19 +9655,21 @@
    "group": "Attribute Commands",
    "version": "1.8.1",
    "brief": "Reports for each given attribute type how many attributes there are, the first valid and the highest index in use, and the free indexes between them (for example those of deleted attributes). Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2100,
-     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+     "name": "GetAttributeIndexesComponent",
+     "path": "Components/AttributesComponents/GetAttributeIndexesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "attributeTypes"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9920,19 +9956,25 @@
    "group": "Attribute Commands",
    "version": "1.8.1",
    "brief": "Deletes fills, line types, surfaces or building materials and replaces each by another attribute of the same type wherever it was used, like Delete and Replace in the Attribute Manager. Every reference is rewritten to the replacement, the way ReindexAttributes rewrites them: the fields of the elements in the floor plan and in every view and layout, the parameters of library part based elements, their memo data, the tool defaults, the Favorites, the other attributes that refer to it (composites, building materials, surfaces, profiles, MEP systems) and the graphic override rules. Elements on a hidden or locked layer are changed too: their layers are shown and unlocked for the change and put back afterwards (in the current window). If an element cannot be changed (it is locked itself, or not reserved in Teamwork), everything is put back and that attribute is not deleted. Elements from hotlinked modules cannot be changed and are listed. Indices typed into GDL scripts are not found, and the frame and panel classes of curtain wall Favorites and of the Curtain Wall tool default keep the deleted attribute (named in the warnings). If a tool default, Favorite, attribute or rule cannot be rewritten to the replacement, it keeps a copy of the deleted attribute with its name and a new attribute id, named in the warnings. dryRun lists every reference without changing anything. The whole call is one undo step. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 5,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2100,
-     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+     "name": "DeleteAndReplaceAttributesComponent",
+     "path": "Components/AttributesComponents/DeleteAndReplaceAttributesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 5,
+   "coveredParameters": [
+    "attributeType",
+    "attributes",
+    "attributes.attributeId",
+    "attributes.replacementAttributeId",
+    "dryRun"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11804,19 +11846,23 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Lists the sections of library parts given by index: their four-character type code, sub-identifier, size and whether they are text (scripts, comments) or binary (previews).",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2100,
-     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+     "name": "GetLibraryPartSectionsComponent",
+     "path": "Components/LibraryComponents/GetLibraryPartSectionsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "libraryParts",
+    "libraryParts.index",
+    "libraryParts.password"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11824,19 +11870,24 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Reads the text of a text section (a script or the comment) of a library part given by index, without opening it in the GDL editor. Takes the password of a protected library part.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 4,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2100,
-     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+     "name": "GetLibraryPartSectionComponent",
+     "path": "Components/LibraryComponents/GetLibraryPartSectionComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "index",
+    "password",
+    "sectionType",
+    "subIdent"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11844,19 +11895,23 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Gets the library of each given library part (by file name or guid): display name, location, embedded/built-in/package/local/missing flags and the Library Manager tree path. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2100,
-     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+     "name": "GetLibrariesOfLibPartsComponent",
+     "path": "Components/LibraryComponents/GetLibrariesOfLibPartsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "libraryParts",
+    "libraryParts.guid",
+    "libraryParts.name"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11864,19 +11919,21 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Returns the type details of the given library parts (ACAPI_LibraryPart_GetDetails): full unique ID and its direct parent's, type, the detail flags of objects, lamps, labels and zones, the frame and orientation settings of doors and windows, and the element type and variation of the tool that places the library part. For their path, library, GUID, license and scripts see GetLibraryPartDetails.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2100,
-     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+     "name": "GetLibraryPartTypeDetailsComponent",
+     "path": "Components/LibraryComponents/GetLibraryPartTypeDetailsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "libraryParts"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11884,39 +11941,46 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Checks for each of the given library parts whether the given ancestor is anywhere up its subtype hierarchy (e.g. whether a part is a kind of furniture), independent of its name. A library part is not a subtype of itself. With matchAncestorByMainId any revision of the ancestor matches.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2100,
-     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+     "name": "IsLibraryPartSubtypeOfComponent",
+     "path": "Components/LibraryComponents/IsLibraryPartSubtypeOfComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "ancestor",
+    "libraryParts",
+    "matchAncestorByMainId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
    "id": "GetGDLParametersOfLibraryParts",
    "group": "Library Commands",
    "version": "1.8.1",
-   "brief": "Gets the default GDL parameters (name, display name, type, array dimensions, value, flags) of the given library parts by name, read from the library part without placing it or changing any defaults. The output is in the format of GetGDLParametersOfElements, without isLocked and possibleValues, which need a placed element.",
-   "status": "in progress",
+   "brief": "Gets the default GDL parameters (name, display name, type, array dimensions, value, flags) of the given library parts by name, read from the library part without placing it or changing any defaults. The output is in the format of GetGDLParametersOfElements, without isLocked and possibleValues, which need a placed element. To read a part by its file name, as SetLibraryPartParameters writes it, use GetLibraryPartParameterValues.",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2100,
-     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+     "name": "GetGDLParametersOfLibraryPartsComponent",
+     "path": "Components/LibraryComponents/GetGDLParametersOfLibraryPartsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "libraryParts",
+    "libraryParts.libraryPartName"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12358,23 +12422,44 @@
    "issues": []
   },
   {
+   "id": "GetLibraryPartParameterValues",
+   "group": "Library Commands",
+   "version": "1.8.1",
+   "brief": "Returns the parameters of loaded library parts, given by their file name as GetAvailableLibraryParts returns it, with their default values and descriptions, in the format of GetGDLParametersOfElements: the read counterpart of SetLibraryPartParameters. Unlike GetGDLParametersOfLibraryParts, which finds a part by its name and also returns the index, flags and value descriptions of each parameter, it reads through the Library Manager. Available from Archicad 28.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "UpdateLibraryPartSections",
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Replaces the text of existing sections (scripts, comment, keywords, copyright) of a loaded library part, found by its name. Each section is read back after the update, and the output has one execution result per section.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 5,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2100,
-     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+     "name": "UpdateLibraryPartSectionsComponent",
+     "path": "Components/LibraryComponents/UpdateLibraryPartSectionsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 5,
+   "coveredParameters": [
+    "name",
+    "sections",
+    "sections.subIdent",
+    "sections.text",
+    "sections.type"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12382,19 +12467,23 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Gets the lines, arcs and polygons (with their holes, and whether they are fills) of the 2D symbol of a loaded library part, drawn with its default parameters or with the parameters of a placed instance.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2100,
-     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+     "name": "GetLibraryPart2DPrimitivesComponent",
+     "path": "Components/LibraryComponents/GetLibraryPart2DPrimitivesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "elementId",
+    "gdlContext",
+    "name"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12402,19 +12491,25 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Sets the preview picture and the GDL pictures of a loaded library part from base64 encoded PNGs, and from Archicad 29 also their dark user interface variants. All pictures are set in one step; an invalid picture changes nothing. A library part that is not editable is refused and left unchanged. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 5,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2100,
-     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+     "name": "SetLibraryPartPictureImagesComponent",
+     "path": "Components/LibraryComponents/SetLibraryPartPictureImagesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 5,
+   "coveredParameters": [
+    "darkGdlPictures",
+    "darkPreviewPicture",
+    "gdlPictures",
+    "name",
+    "previewPicture"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12422,19 +12517,28 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Sets the parameter values, and optionally the parameter descriptions, of loaded library parts, in the format of SetGDLParametersOfElements. Only the given parameters are changed; with merge, the changed list is merged into the parameters of the part instead of replacing them. A library part that is not editable, or with an invalid value given, is left unchanged. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 8,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2100,
-     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+     "name": "SetLibraryPartParametersComponent",
+     "path": "Components/LibraryComponents/SetLibraryPartParametersComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 8,
+   "coveredParameters": [
+    "libraryParts",
+    "libraryParts.descriptions",
+    "libraryParts.merge",
+    "libraryParts.name",
+    "libraryParts.parameters",
+    "libraryParts.parameters.index1",
+    "libraryParts.parameters.index2",
+    "libraryParts.parameters.value"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12468,19 +12572,23 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Reads library part files (.gsm) without loading them into the libraries of the project: the unique ID of the part, the unique ID of its subtype and its master, parameter, 2D, 3D and properties scripts. Password protected parts need their password. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2100,
-     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+     "name": "GetLibraryPartFileInfoComponent",
+     "path": "Components/LibraryComponents/GetLibraryPartFileInfoComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "files",
+    "password",
+    "scripts"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12488,19 +12596,26 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Copies loaded library parts, given by name or by an element placed from them, under a new file name into a folder, by default the embedded library. The copy gets a new unique ID unless the main GUID is kept. An existing file is never overwritten. The libraries are reloaded once afterwards, so the copies can be found by name. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 6,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2100,
-     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+     "name": "CopyLibraryPartsComponent",
+     "path": "Components/LibraryComponents/CopyLibraryPartsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 6,
+   "coveredParameters": [
+    "libraryParts",
+    "libraryParts.elementId",
+    "libraryParts.keepMainGuid",
+    "libraryParts.libraryPartName",
+    "libraryParts.newName",
+    "libraryParts.targetFolder"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12575,19 +12690,22 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Finds the loaded library parts derived from an ancestor library part (by its unique ID) whose name matches a pattern with * wildcards. Archicad returns at most 50 of them.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2100,
-     "title": "Grasshopper: components for the library, attribute and auto-text commands"
+     "name": "SearchLibraryPartsComponent",
+     "path": "Components/LibraryComponents/SearchLibraryPartsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "ancestorUnId",
+    "pattern"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {

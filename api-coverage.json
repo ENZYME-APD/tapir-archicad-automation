@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-06 08:12 UTC",
+ "generatedAt": "2026-11-06 09:12 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,7 @@
   "not applicable": 670,
   "done": 1860,
   "skipped": 30,
-  "merged": 317,
-  "in progress": 2
+  "merged": 319
  },
  "items": [
   {
@@ -4032,10 +4031,6 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
-    {
      "number": 1470,
      "title": "Report failed creation transactions instead of returning element results"
     },
@@ -7419,12 +7414,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16743,12 +16733,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25598,10 +25583,6 @@
      "title": "Grasshopper: Roofs tool component (Design Tools)"
     },
     {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -26921,12 +26902,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26943,12 +26919,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27072,10 +27043,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -27152,12 +27119,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27196,12 +27158,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27218,12 +27175,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27241,10 +27193,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -27281,14 +27229,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27305,12 +27248,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27344,12 +27282,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27415,14 +27348,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27507,12 +27435,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27687,12 +27610,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28657,12 +28575,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -28698,12 +28611,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -29903,12 +29811,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -29944,12 +29847,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30037,12 +29935,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30401,12 +30294,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30478,12 +30366,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31358,10 +31241,6 @@
     {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
-    },
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
     {
      "number": 1431,
@@ -37899,10 +37778,6 @@
     {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
-    },
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
     {
      "number": 1431,
@@ -44691,10 +44566,6 @@
      "title": "Drawing anchor placement, offset, and pen table control"
     },
     {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
-    {
      "number": 1431,
      "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
     },
@@ -47948,10 +47819,6 @@
     {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
-    },
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
     },
     {
      "number": 1431,
@@ -55493,10 +55360,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1537,
-     "title": "[5/5] Favorites through the Favorite manager, and library part parameter values"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
