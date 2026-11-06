@@ -180,6 +180,87 @@ public:
     virtual API_AngleTypeID GetAngleType () const { return API_AngleTypeID::DecimalDegree; }
 };
 
+// ACAPI_Property_SetPropertyValueFromString reads only '.' as the decimal separator and
+// stops without an error at the first character it does not expect. "11,5" became 11, and
+// "1.234,500", the way GetPropertyValuesOfElements shows 1234.5 in a German Archicad,
+// became 1.234. The number at the start of the text is rewritten to that form first:
+// - when both '.' and ',' appear, the last one is the decimal separator
+// - a separator that appears more than once groups the thousands
+// - a single separator is the decimal separator
+// - spaces and apostrophes between digits are dropped
+// Anything after the number, such as a unit, is kept. Text that does not start with a
+// number, or mixes the separators in another way, is passed on unchanged.
+static GS::UniString NormalizeRealNumberText (const GS::UniString& text)
+{
+    using Char = GS::UniChar::Layout;
+    const auto isDigit = [] (Char c) { return c >= '0' && c <= '9'; };
+    const auto isGroupSpace = [] (Char c) { return c == ' ' || c == '\'' || c == 0x00A0 || c == 0x202F; };
+
+    const USize length = text.GetLength ();
+    UIndex numberStart = 0;
+    while (numberStart < length && (static_cast<Char> (text[numberStart]) == ' ' || static_cast<Char> (text[numberStart]) == '\t')) {
+        ++numberStart;
+    }
+    if (numberStart < length && (static_cast<Char> (text[numberStart]) == '-' || static_cast<Char> (text[numberStart]) == '+')) {
+        ++numberStart;
+    }
+    if (numberStart >= length || !isDigit (text[numberStart])) {
+        return text;
+    }
+
+    UIndex numberEnd = numberStart;
+    USize dots = 0, commas = 0;
+    UIndex lastDot = 0, lastComma = 0;
+    while (numberEnd < length) {
+        const Char c = text[numberEnd];
+        if (c == '.') {
+            ++dots;
+            lastDot = numberEnd;
+        } else if (c == ',') {
+            ++commas;
+            lastComma = numberEnd;
+        } else if (!isDigit (c) && !(isGroupSpace (c) && numberEnd + 1 < length && isDigit (text[numberEnd - 1]) && isDigit (text[numberEnd + 1]))) {
+            break;
+        }
+        ++numberEnd;
+    }
+
+    Char decimal = 0;
+    if (dots > 0 && commas > 0) {
+        decimal = lastComma > lastDot ? ',' : '.';
+        if ((decimal == ',' && commas > 1) || (decimal == '.' && dots > 1)) {
+            return text;
+        }
+    } else if (commas == 1) {
+        decimal = ',';
+    } else if (dots == 1) {
+        decimal = '.';
+    }
+
+    GS::UniString result;
+    result.Append (text, 0, numberStart);
+    for (UIndex i = numberStart; i < numberEnd; ++i) {
+        const Char c = text[i];
+        if (isDigit (c)) {
+            result.Append (GS::UniChar (c));
+        } else if (c == decimal) {
+            result.Append (GS::UniChar (static_cast<Char> ('.')));
+        }
+    }
+    result.Append (text, numberEnd, length - numberEnd);
+    return result;
+}
+
+static GSErrCode SetPropertyValueFromText (const GS::UniString& text, const API_PropertyConversionUtilsInterface& conversionUtils, API_Property* property)
+{
+    if (property != nullptr &&
+        property->definition.collectionType == API_PropertySingleCollectionType &&
+        property->definition.valueType == API_PropertyRealValueType) {
+        return ACAPI_Property_SetPropertyValueFromString (NormalizeRealNumberText (text), conversionUtils, property);
+    }
+    return ACAPI_Property_SetPropertyValueFromString (text, conversionUtils, property);
+}
+
 constexpr uint32_t PackTypes (API_PropertyCollectionType colType, API_VariantType valType)
 {
     return (static_cast<uint32_t> (colType) << 16) | static_cast<uint32_t> (valType);
@@ -1151,7 +1232,7 @@ GS::Optional<GS::UniString> SetPropertyValuesOfElementsCommand::GetInputParamete
         "properties": {
             "elementPropertyValues": {
                 "$ref": "#/ElementPropertyValues",
-                "description": "Unitless real and integer lists accept semicolon-separated numbers; an empty string sets an empty list. Invalid items reject the entire property write."
+                "description": "A single real value accepts '.' or ',' as the decimal separator, so the value strings GetPropertyValuesOfElements returns can be written back: when both appear the last one is the decimal separator, a separator that appears more than once groups thousands, and a single separator is the decimal one. Unitless real and integer lists accept semicolon-separated numbers; an empty string sets an empty list. Invalid items reject the entire property write."
             }
         },
         "additionalProperties": false,
@@ -1303,7 +1384,7 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
                 } else if (isNumericList) {
                     err = SetNumericListPropertyValueFromString (propertyValuesForElements[guidPair], propertyValue);
                 } else {
-                    err = ACAPI_Property_SetPropertyValueFromString (propertyValuesForElements[guidPair], conversionUtils, &propertyValue);
+                    err = SetPropertyValueFromText (propertyValuesForElements[guidPair], conversionUtils, &propertyValue);
                 }
 
                 if (err != NoError) {
@@ -1542,7 +1623,7 @@ GS::ObjectState SetPropertyValuesOfElementDefaultsCommand::Execute (const GS::Ob
             }
 
             API_Property& property = propertyValues[0];
-            err = ACAPI_Property_SetPropertyValueFromString (propertyValueDisplayString, conversionUtils, &property);
+            err = SetPropertyValueFromText (propertyValueDisplayString, conversionUtils, &property);
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to set property value for the element defaults"));
                 continue;
@@ -1896,7 +1977,7 @@ GS::ObjectState SetPropertyValuesOfAttributesCommand::Execute (const GS::ObjectS
                 }
 
                 GS::ObjectState& result = results[resultIndices[guidPair]];
-                GSErrCode err = ACAPI_Property_SetPropertyValueFromString (propertyValuesForAttributes[guidPair], conversionUtils, &propertyValue);
+                GSErrCode err = SetPropertyValueFromText (propertyValuesForAttributes[guidPair], conversionUtils, &propertyValue);
                 if (err != NoError) {
                     result = CreateFailedExecutionResult (err, "Failed to set property value for attribute");
                     continue;
@@ -2115,7 +2196,7 @@ GS::ObjectState SetBuiltInPropertyValuesOfAttributesCommand::Execute (const GS::
                     continue;
                 }
 
-                const GSErrCode err = ACAPI_Property_SetPropertyValueFromString (valueToSet.value, conversionUtils, &propertyValue);
+                const GSErrCode err = SetPropertyValueFromText (valueToSet.value, conversionUtils, &propertyValue);
                 if (err != NoError) {
                     result = CreateFailedExecutionResult (err, "Failed to convert the property value");
                     continue;
@@ -2238,7 +2319,7 @@ GS::ObjectState SetPropertyValueOfAttributesCommand::Execute (const GS::ObjectSt
     property.value.variantStatus = API_VariantStatusNormal;
 
     PropertyConversionUtils conversionUtils;
-    err = ACAPI_Property_SetPropertyValueFromString (propertyValueDisplayString, conversionUtils, &property);
+    err = SetPropertyValueFromText (propertyValueDisplayString, conversionUtils, &property);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "the value cannot be converted to the type of the property");
     }
@@ -3978,7 +4059,7 @@ GS::ObjectState ModifyPropertyValueOfElementsCommand::Execute (const GS::ObjectS
     property.value.variantStatus = API_VariantStatusNormal;
 
     PropertyConversionUtils conversionUtils;
-    err = ACAPI_Property_SetPropertyValueFromString (propertyValueDisplayString, conversionUtils, &property);
+    err = SetPropertyValueFromText (propertyValueDisplayString, conversionUtils, &property);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "the value cannot be converted to the type of the property");
     }
@@ -4227,7 +4308,7 @@ GS::ObjectState CheckPropertyValuesCommand::Execute (const GS::ObjectState& para
         property.status = API_Property_HasValue;
         property.value.variantStatus = API_VariantStatusNormal;
 
-        err = ACAPI_Property_SetPropertyValueFromString (propertyValueDisplayString, conversionUtils, &property);
+        err = SetPropertyValueFromText (propertyValueDisplayString, conversionUtils, &property);
         if (err != NoError) {
             GS::ObjectState result = CreateErrorResponse (err, "the value cannot be converted to the type of the property");
             result.Add ("isValid", false);
