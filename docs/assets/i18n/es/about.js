@@ -78,7 +78,7 @@
     'Training and services': 'Formación y servicios',
     'Training sessions, implementation workshops and custom development for offices moving to computational BIM workflows with Tapir.':
         'Sesiones de formación, talleres de implantación y desarrollo a medida para estudios que pasan a flujos de trabajo BIM computacionales con Tapir.',
-    'Talk to us: <strong class="nowrap">contact@enzyme-apd.com</strong>': 'Escríbenos: <strong class="nowrap">contact@enzyme-apd.com</strong>',
+    'Talk to us: <strong class="nowrap">tapir@weareenzyme.com</strong>': 'Escríbenos: <strong class="nowrap">tapir@weareenzyme.com</strong>',
     'Free code signing provided by SignPath.io, certificate by SignPath Foundation. Archicad is a trademark of Graphisoft SE; Tapir is not made by Graphisoft.':
         'Firma de código gratuita proporcionada por SignPath.io, certificado de SignPath Foundation. Archicad es una marca de Graphisoft SE; Tapir no está hecho por Graphisoft.'
 });

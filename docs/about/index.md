@@ -99,6 +99,6 @@ Your office
 
 Training sessions, implementation workshops and custom development for offices moving to computational BIM workflows with Tapir.
 
-Talk to us: **contact@enzyme-apd.com**
+Talk to us: **tapir@weareenzyme.com**
 
 Free code signing provided by SignPath.io, certificate by SignPath Foundation. Archicad is a trademark of Graphisoft SE; Tapir is not made by Graphisoft.
