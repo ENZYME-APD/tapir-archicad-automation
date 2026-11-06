@@ -13,17 +13,26 @@ namespace TapirGrasshopperPlugin.Components.LibraryComponents
         public SetGDLDateComponent()
             : base(
                 "SetGDLDate",
-                "Sets the date GDL scripts see, in the integer format GetGDLDate returns. Useful to test " +
-                "date-dependent library parts; set the value read with GetGDLDate back to restore it.",
+                "Sets the date GDL scripts see: year, month, day, hour, minute and second, as GetGDLDate " +
+                "returns them. Useful to test date-dependent library parts; set the date read with GetGDLDate " +
+                "back to restore it.",
                 GroupNames.Library)
         {
         }
 
+        private static readonly string[] DateComponents =
+        {
+            "Year", "Month", "Day", "Hour", "Minute", "Second"
+        };
+
         protected override void AddInputs()
         {
-            InInteger(
-                "Date",
-                "The date GDL scripts should see, in the integer format GetGDLDate returns.");
+            foreach (var name in DateComponents)
+            {
+                InInteger(
+                    name,
+                    $"The {name.ToLowerInvariant()} of the date GDL scripts should see.");
+            }
         }
 
         protected override void AddOutputs()
@@ -36,9 +45,15 @@ namespace TapirGrasshopperPlugin.Components.LibraryComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryGet(0, out int date))
+            var date = new JObject();
+            for (int i = 0; i < DateComponents.Length; i++)
             {
-                return;
+                if (!da.TryGet(i, out int value))
+                {
+                    return;
+                }
+
+                date[DateComponents[i].ToLowerInvariant()] = value;
             }
 
             if (!TryGetConvertedCadValues(

@@ -1,0 +1,200 @@
+{
+  "title": "CopyLibraryParts copies a library part into the embedded library and SetLibraryPartPictureImages sets the pictures of the copy (#1950)",
+  "minTapir": "1.8.1",
+  "minArchicad": "28",
+  "requiresEmpty": [ "Circle" ],
+  "steps": [
+    {
+      "id": "circle for the symbol",
+      "command": "CreateCircles",
+      "params": {
+        "circlesData": [
+          { "origin": { "x": 0.5, "y": 0.5 }, "radius": 0.3 }
+        ]
+      },
+      "save": { "circle": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "library part to copy",
+      "command": "CreateLibraryPartFromElements",
+      "creates": false,
+      "params": {
+        "name": "TapirCheck Original 1950",
+        "elements": [ { "elementId": { "guid": "${circle}" } } ],
+        "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+        "folder": "TapirCheck1950Copy",
+        "overwrite": true,
+        "scripts": { "3D": "BLOCK A, B, 0.5" }
+      },
+      "save": { "originalFile": "fileName" },
+      "expect": [
+        { "path": "error", "exists": false, "name": "created" }
+      ]
+    },
+    {
+      "id": "copy into the embedded library",
+      "command": "CopyLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "libraryPartName": "${originalFile}", "newName": "TapirCheck Copy 1950.gsm" }
+        ]
+      },
+      "expect": [
+        { "path": "libraryParts", "len": 1 },
+        { "path": "libraryParts[0].error", "exists": false, "name": "copied" },
+        { "path": "libraryParts[0].libraryPartName", "eq": "TapirCheck Copy 1950.gsm" },
+        { "path": "libraryParts[0].path", "contains": "TapirCheck Copy 1950.gsm" },
+        { "path": "libraryParts[0].unID", "contains": "}-{", "name": "unique ID of the copy" },
+        { "path": "librariesReloaded", "eq": true }
+      ]
+    },
+    {
+      "id": "the copy is loaded and has the symbol",
+      "command": "GetLibraryPart2DPrimitives",
+      "creates": false,
+      "params": {
+        "name": "TapirCheck Copy 1950.gsm"
+      },
+      "expect": [
+        { "path": "primitives", "len": 1 },
+        { "path": "primitives[0].type", "eq": "Arc" },
+        { "path": "primitives[0].radius", "approx": 0.3, "tol": 0.001 }
+      ]
+    },
+    {
+      "id": "the copy runs the original's 3D script",
+      "command": "InterpretGDLScript3D",
+      "creates": false,
+      "params": {
+        "libraryPartName": "TapirCheck Copy 1950.gsm"
+      },
+      "expect": [
+        { "path": "success", "eq": true },
+        { "path": "boundingBox3D.zMax", "approx": 0.5, "tol": 0.001 }
+      ]
+    },
+    {
+      "id": "[same name again, name with a folder, missing part, missing target folder]",
+      "command": "CopyLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "libraryPartName": "${originalFile}", "newName": "TapirCheck Copy 1950.gsm" },
+          { "libraryPartName": "${originalFile}", "newName": "TapirCheckSub/TapirCheck Copy 1950 b.gsm" },
+          { "libraryPartName": "TapirCheck No Such Part 1950.gsm", "newName": "TapirCheck Copy 1950 c.gsm" },
+          { "libraryPartName": "${originalFile}", "newName": "TapirCheck Copy 1950 d.gsm", "targetFolder": "TapirCheck relative folder that does not exist 1950" }
+        ]
+      },
+      "expect": [
+        { "path": "libraryParts", "len": 4, "name": "one result per item" },
+        { "path": "libraryParts[0].error.code", "exists": true, "name": "an existing file is never overwritten" },
+        { "path": "libraryParts[1].error.code", "exists": true, "name": "newName with a folder refused" },
+        { "path": "libraryParts[2].error.code", "exists": true, "name": "missing part refused" },
+        { "path": "libraryParts[3].error.code", "exists": true, "name": "missing target folder refused" },
+        { "path": "librariesReloaded", "eq": false, "name": "nothing copied, no reload" }
+      ]
+    },
+    {
+      "id": "nothing copied by the refused items",
+      "command": "GetLibraryPart2DPrimitives",
+      "creates": false,
+      "params": {
+        "name": "TapirCheck Copy 1950 c.gsm"
+      },
+      "expect": [
+        { "path": "error.code", "exists": true }
+      ]
+    },
+    {
+      "id": "pictures of the copy",
+      "command": "SetLibraryPartPictureImages",
+      "creates": false,
+      "params": {
+        "name": "TapirCheck Copy 1950.gsm",
+        "previewPicture": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+        "gdlPictures": [
+          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+        ]
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the pictures back",
+      "command": "GetLibraryPartPictures",
+      "creates": false,
+      "params": {
+        "name": "TapirCheck Copy 1950.gsm"
+      },
+      "expect": [
+        { "path": "previewPicture", "exists": true, "name": "preview picture set" },
+        { "path": "gdlPictures", "len": 2, "name": "two GDL pictures" }
+      ]
+    },
+    {
+      "id": "an invalid preview picture with one GDL picture",
+      "command": "SetLibraryPartPictureImages",
+      "creates": false,
+      "params": {
+        "name": "TapirCheck Copy 1950.gsm",
+        "previewPicture": "bm90IGEgcG5n",
+        "gdlPictures": [
+          "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+        ]
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "invalid picture refused" },
+        { "path": "error.code", "exists": true }
+      ]
+    },
+    {
+      "id": "the invalid call changed nothing",
+      "command": "GetLibraryPartPictures",
+      "creates": false,
+      "params": {
+        "name": "TapirCheck Copy 1950.gsm"
+      },
+      "expect": [
+        { "path": "previewPicture", "exists": true },
+        { "path": "gdlPictures", "len": 2, "name": "still two GDL pictures" }
+      ]
+    },
+    {
+      "id": "pictures of a missing part",
+      "command": "SetLibraryPartPictureImages",
+      "creates": false,
+      "params": {
+        "name": "TapirCheck No Such Part 1950.gsm",
+        "previewPicture": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg=="
+      },
+      "expect": [
+        { "path": "success", "eq": false }
+      ]
+    },
+    {
+      "id": "no picture given",
+      "command": "SetLibraryPartPictureImages",
+      "creates": false,
+      "params": {
+        "name": "TapirCheck Copy 1950.gsm"
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "nothing to change refused" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteEmbeddedLibraryItems",
+      "params": {
+        "embeddedLibraryItems": [
+          { "path": "TapirCheck Copy 1950.gsm" },
+          { "path": "TapirCheck1950Copy" }
+        ]
+      }
+    }
+  ]
+}
