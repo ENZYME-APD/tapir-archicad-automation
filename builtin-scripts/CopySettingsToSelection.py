@@ -24,13 +24,17 @@ from utilities.ui import ScriptWindow, make_tree, require_archicad
 SCRIPT_NAME = "Copy Settings to Selection"
 PREVIEW_LINES = 15
 
-# Fields of the targets that ApplyFavoritesToElements copies back after applying the Favorite
-# (a field the target's type does not have is ignored by the command).
+# Fields of the targets that ApplyFavoritesToElements copies back after applying the Favorite,
+# and the element types each group is sent for (None: every type). 'height' is a field of both
+# openings and Walls/Columns, so each group is only sent for its own types.
 KEEP_ID = ["id"]
 KEEP_LAYER = ["layerIndex"]
-KEEP_HEIGHT_AND_TOP = ["height", "topOffset", "relativeTopStory"]  # Walls and Columns
-KEEP_OPENING_SIZE = ["width", "height", "sillHeight"]  # Windows, Doors (width and height of Skylights)
-KEEP_REFERENCE_LINE = ["referenceLineLocation"]  # Walls
+KEEP_HEIGHT_AND_TOP = ["height", "topOffset", "relativeTopStory"]
+KEEP_OPENING_SIZE = ["width", "height", "sillHeight"]  # a Skylight has no sillHeight: ignored
+KEEP_REFERENCE_LINE = ["referenceLineLocation"]
+HEIGHT_AND_TOP_TYPES = {"Wall", "Column"}
+OPENING_TYPES = {"Window", "Door", "Skylight"}
+REFERENCE_LINE_TYPES = {"Wall"}
 
 
 class CopySettingsToSelection:
@@ -104,13 +108,14 @@ class CopySettingsToSelection:
         self.tree.container.grid(row=3, column=0, sticky="nsew")
 
     def _keep_fields(self) -> list[str]:
+        element_type = self.source["type"] if self.source else None
         fields = []
-        for variable, names in [(self.keep_id, KEEP_ID),
-                                (self.keep_layer, KEEP_LAYER),
-                                (self.keep_height_and_top, KEEP_HEIGHT_AND_TOP),
-                                (self.keep_opening_size, KEEP_OPENING_SIZE),
-                                (self.keep_reference_line, KEEP_REFERENCE_LINE)]:
-            if variable.get():
+        for variable, names, types in [(self.keep_id, KEEP_ID, None),
+                                       (self.keep_layer, KEEP_LAYER, None),
+                                       (self.keep_height_and_top, KEEP_HEIGHT_AND_TOP, HEIGHT_AND_TOP_TYPES),
+                                       (self.keep_opening_size, KEEP_OPENING_SIZE, OPENING_TYPES),
+                                       (self.keep_reference_line, KEEP_REFERENCE_LINE, REFERENCE_LINE_TYPES)]:
+            if variable.get() and (types is None or element_type in types):
                 fields += [name for name in names if name not in fields]
         return fields
 
@@ -171,7 +176,7 @@ class CopySettingsToSelection:
         self.count_label.configure(text=str(count) if self.source else "–")
         self.summary_label.configure(text=f"selected element{'s' if count != 1 else ''} will change")
         if self.skipped and self.source:
-            self.detail_label.configure(text=f"{len(self.skipped)} skipped, not of the source's type ({self.source['type']})")
+            self.detail_label.configure(text=f"{len(self.skipped)} skipped: not of the source's type ({self.source['type']}) or not readable")
         else:
             self.detail_label.configure(text="")
         self.apply_button.state(["!disabled"] if self.source and count else ["disabled"])
@@ -189,7 +194,7 @@ class CopySettingsToSelection:
         if len(self.targets) > PREVIEW_LINES:
             lines.append(f"  ... and {len(self.targets) - PREVIEW_LINES} more")
         if self.skipped:
-            lines += ["", f"{len(self.skipped)} selected element(s) are skipped (different type)."]
+            lines += ["", f"{len(self.skipped)} selected element(s) are skipped (different type or could not be read)."]
         keep = self._keep_fields()
         lines += ["", "Kept: " + (", ".join(keep) if keep else "nothing")]
         return self.window.ask_ok_cancel(SCRIPT_NAME, "\n".join(lines))
