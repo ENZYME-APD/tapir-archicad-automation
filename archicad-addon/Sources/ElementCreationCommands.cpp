@@ -3968,7 +3968,15 @@ GS::ObjectState CreateRailingsCommand::Execute (const GS::ObjectState& parameter
     itemStories.reserve (railingsData.GetSize ());
     for (const GS::ObjectState& data : railingsData) {
         short story = originalActStory;
-        data.Get ("floorIndex", story);
+        // Without floorIndex, a railing made from templateElementId goes to the template's home story.
+        const GS::ObjectState* templateId = data.Get ("templateElementId");
+        if (!data.Get ("floorIndex", story) && templateId != nullptr) {
+            API_Elem_Head templateHead = {};
+            templateHead.guid = GetGuidFromObjectState (*templateId);
+            if (ACAPI_Element_GetHeader (&templateHead) == NoError) {
+                story = templateHead.floorInd;
+            }
+        }
         itemStories.push_back (story);
         if (std::find (storiesInOrder.begin (), storiesInOrder.end (), story) == storiesInOrder.end ()) {
             storiesInOrder.push_back (story);
@@ -4058,6 +4066,10 @@ GS::Optional<GS::UniString> CreateRailingsCommand::GetInputParametersSchema () c
                         "type": "string",
                         "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
                     },
+                    "templateElementId": {
+                        "$ref": "#/ElementId",
+                        "description": "Optional existing Railing whose settings the new railing takes instead of the tool defaults (or the favorite): its node and segment settings, from which the posts, rails, handrails, toprails, panels and balusters are generated, its story visibility, pens, bottom offset, layer and home story. floorIndex, bottomOffset and height given here override them. The reference line of a railing cannot be changed through the Archicad API, so a railing is given a new reference line by creating it again with itself as templateElementId and deleting the old one."
+                    },
                     "coordinates": {
                         "type": "array",
                         "description": "The 2D coordinates of the reference line of the railing on the floor plan. Each pair of consecutive coordinates becomes one straight segment.",
@@ -4105,6 +4117,66 @@ GS::Optional<GS::ObjectState> CreateRailingsCommand::SetTypeSpecificParameters (
         if (IsSame2DCoordinate (coordinates[i - 1], coordinates[i])) {
             return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Zero-length segment: coordinates[%u] and coordinates[%u] are identical.", i - 1, i));
         }
+    }
+
+    // templateElementId: the settings of an existing railing replace the tool defaults. Part of them is held by
+    // API_RailingType (defNode, defSegment, the pens, the story visibility), but Archicad generates the posts,
+    // rails, handrails, toprails, panels and balusters from the subelement defaults in the memo as well, so copying
+    // the element alone gave a railing in between the template and the tool defaults (confirmed live). The template
+    // is therefore made the Railing tool default for a moment, as picking up its parameters does in Archicad, the
+    // defaults are read back as the new element, and the previous tool defaults are put back.
+    const GS::ObjectState* templateId = parameters.Get ("templateElementId");
+    if (templateId != nullptr) {
+        API_Element templ = {};
+        templ.header.guid = GetGuidFromObjectState (*templateId);
+        if (ACAPI_Element_Get (&templ) != NoError) {
+            return CreateErrorResponse (APIERR_BADID, "templateElementId: the element was not found.");
+        }
+        if (GetElemTypeId (templ.header) != API_RailingID) {
+            return CreateErrorResponse (APIERR_BADPARS, "templateElementId: the element is not a Railing.");
+        }
+        API_ElementMemo templMemo = {};
+        const GS::OnExit templMemoGuard ([&templMemo] () { ACAPI_DisposeElemMemoHdls (&templMemo); });
+        GSErrCode err = ACAPI_Element_GetMemo (templ.header.guid, &templMemo);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "templateElementId: the settings of the railing could not be read.");
+        }
+
+        API_Element previousDefaults = {};
+        API_ElementMemo previousDefaultsMemo = {};
+        const GS::OnExit previousDefaultsGuard ([&previousDefaultsMemo] () { ACAPI_DisposeElemMemoHdls (&previousDefaultsMemo); });
+#ifdef ServerMainVers_2600
+        previousDefaults.header.type = API_RailingID;
+#else
+        previousDefaults.header.typeID = API_RailingID;
+#endif
+        err = ACAPI_Element_GetDefaults (&previousDefaults, &previousDefaultsMemo);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to read the Railing tool defaults.");
+        }
+
+        API_Element fullMask;
+        ACAPI_ELEMENT_MASK_SETFULL (fullMask);
+        err = ACAPI_Element_ChangeDefaults (&templ, &templMemo, &fullMask);
+        if (err == NoError) {
+            ACAPI_DisposeElemMemoHdls (&memo);
+            memo = {};
+            const API_Elem_Head head = element.header;
+            element = {};
+            element.header = head;
+            err = ACAPI_Element_GetDefaults (&element, &memo);
+        }
+        ACAPI_Element_ChangeDefaults (&previousDefaults, &previousDefaultsMemo, &fullMask);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "templateElementId: the settings of the railing could not be taken over.");
+        }
+
+        // The new railing keeps the story link of the tool defaults (the template's would place it relative to the
+        // story it was created from), and takes the template's layer, bottom offset and home story.
+        element.railing.linkToSettings = previousDefaults.railing.linkToSettings;
+        element.railing.bottomOffset = templ.railing.bottomOffset;
+        element.header.layer = templ.header.layer;
+        element.header.floorInd = templ.header.floorInd;
     }
 
     short floorIndex = 0;
