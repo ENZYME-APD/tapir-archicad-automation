@@ -109,6 +109,8 @@ class SheetIndex:
             for layout, database in zip(chunk, databases):
                 if "databaseId" in database:
                     layout["databaseId"] = database["databaseId"]
+                else:
+                    self.warnings.append(f"{layout['number']} {layout['name']}: no database, so no revision")
 
     def _read_revisions(self, layouts: list[dict]) -> None:
         """ The current revision of a layout is its Actual (not yet issued) revision, or the
@@ -124,26 +126,26 @@ class SheetIndex:
             if guid and (guid not in current or current[guid].get("status") != "Actual"):
                 current[guid] = revision
 
-        with_database = [layout for layout in layouts if "databaseId" in layout]
-        for layout in with_database:
-            revision = current.get(layout["databaseId"]["guid"])
+        # The changes are those of the revision shown, so their descriptions are looked up by ID
+        descriptions: dict[str, str] = {}
+        if any(revision.get("changes") for revision in current.values()):
+            try:
+                for change in run_tapir("GetRevisionChanges").get("revisionChanges", []):
+                    descriptions[change.get("id", "")] = change.get("description", "")
+            except ArchicadError as e:
+                self.warnings.append(f"No descriptions of the revision changes: {e}")
+
+        for layout in layouts:
+            if "databaseId" not in layout:
+                continue
+            revision = current.get(layout["databaseId"].get("guid"))
             if revision:
                 layout["revision"] = revision.get("finalId") or revision.get("id", "")
                 layout["status"] = revision.get("status", "")
-
-        for chunk in batched(with_database):
-            try:
-                results = run_tapir("GetCurrentRevisionChangesOfLayouts", {
-                    "layoutDatabaseIds": [{"databaseId": layout["databaseId"]} for layout in chunk]
-                }).get("currentRevisionChangesOfLayouts", [])
-            except ArchicadError as e:
-                self.warnings.append(f"No revision changes: {e}")
-                return
-            for layout, result in zip(chunk, results):
-                changes = result.get("revisionChanges", []) if isinstance(result, dict) else []
+                change_ids = [change.get("id", "") for change in revision.get("changes", [])]
                 layout["changes"] = "; ".join(
-                    " ".join(part for part in (change.get("id", ""), change.get("description", "")) if part)
-                    for change in changes)
+                    " ".join(part for part in (change_id, descriptions.get(change_id, "")) if part)
+                    for change_id in change_ids if change_id)
 
     def rows(self) -> list[list[str]]:
         return [[layout.get(key, "") for key, *_ in COLUMNS] for layout in self.layouts]
