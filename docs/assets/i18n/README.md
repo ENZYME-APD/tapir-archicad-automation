@@ -35,6 +35,9 @@ Each file pushes one object of English → translation:
 - A script that writes text uses `TapirI18n.t ('English text')`, one that adds marked HTML calls
   `TapirI18n.apply (element)`, and one that runs before the translation is applied waits with
   `TapirI18n.ready (callback)`.
+- The translation of the page does not reach into a `<template>`: a script that copies one marks its
+  texts as usual and translates them first with `TapirI18n.apply (template.content)`, as
+  `scripts/scripts.js` does.
 
 A text a dictionary lacks stays English, so a page can be translated piece by piece. Command names,
 JSON keys, code and Archicad's own terms stay as Archicad shows them in English.
