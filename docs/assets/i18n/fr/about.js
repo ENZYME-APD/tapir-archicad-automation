@@ -47,8 +47,8 @@
     'The people <em>behind it.</em>': 'Les personnes <em>derrière.</em>',
     'ENZYME-APD runs the project and publishes Tapir under the MIT licence. Everyone below has written code for it, or tested it and given the feedback it is built on, in alphabetical order.':
         'ENZYME-APD dirige le projet et publie Tapir sous licence MIT. Toutes les personnes ci-dessous ont écrit du code pour lui, ou l\'ont testé et ont donné les retours sur lesquels il repose, par ordre alphabétique.',
-    'Many more report bugs, test fixes in their own Archicad and share scripts; bots draft fixes, and people test and approve them. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/graphs/contributors">All contributors on GitHub →</a>':
-        'Bien d\'autres signalent des bugs, testent des correctifs dans leur propre Archicad et partagent des scripts ; des bots rédigent des correctifs, que des personnes testent et approuvent. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/graphs/contributors">Tous les contributeurs sur GitHub →</a>',
+    'Many more report bugs, test fixes in their own Archicad and share scripts; bots draft fixes, and people test and approve them. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/graphs/contributors">All contributors on GitHub</a>':
+        'Bien d\'autres signalent des bugs, testent des correctifs dans leur propre Archicad et partagent des scripts ; des bots rédigent des correctifs, que des personnes testent et approuvent. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/graphs/contributors">Tous les contributeurs sur GitHub</a>',
 
     // Principles
     'Principles': 'Principes',

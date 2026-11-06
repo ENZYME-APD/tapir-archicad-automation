@@ -74,11 +74,11 @@
     'Next step': '次のステップ',
     'Install Tapir': 'Tapir をインストールする',
     'Install Tapir, then give your AI tool the prompt above.': 'Tapir をインストールして、上のプロンプトを AI ツールに渡しましょう。',
-    'Get started →': 'はじめる →',
+    'Get started': 'はじめる',
     'The command reference': 'コマンドリファレンス',
     'The list to give the AI: every command with its schema.': 'AI に渡す一覧。すべてのコマンドとそのスキーマ。',
-    'Open the reference →': 'リファレンスを開く →',
+    'Open the reference': 'リファレンスを開く',
     'Show what you built': '作ったものを見せる',
     'Ask about MCP servers and share your prompts.': 'MCP サーバーについて質問したり、プロンプトを共有したりしましょう。',
-    'Join Discord →': 'Discord に参加する →'
+    'Join Discord': 'Discord に参加する'
 });

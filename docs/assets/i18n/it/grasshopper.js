@@ -80,13 +80,13 @@
     'Install the Add-On': 'Installa l\'Add-On',
     'Install Tapir and the <span class="mono">tapir</span> package, then try the wall above.':
         'Installa Tapir e il pacchetto <span class="mono">tapir</span>, poi prova il muro qui sopra.',
-    'Get started →': 'Inizia →',
+    'Get started': 'Inizia',
     'Coverage': 'Copertura',
     'Which commands have a component, and which inputs each still lacks.':
         'Quali comandi hanno un componente, e quali ingressi mancano ancora a ciascuno.',
-    'See the coverage →': 'Vedi la copertura →',
+    'See the coverage': 'Vedi la copertura',
     'Videos': 'Video',
     'Watch it work': 'Guardalo all\'opera',
     'The Archicad and Grasshopper tutorials.': 'I tutorial su Archicad e Grasshopper.',
-    'Watch the tutorials →': 'Guarda i tutorial →'
+    'Watch the tutorials': 'Guarda i tutorial'
 });

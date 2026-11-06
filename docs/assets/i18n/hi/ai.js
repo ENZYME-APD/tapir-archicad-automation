@@ -76,12 +76,12 @@
     'Install Tapir': 'Tapir इंस्टॉल करें',
     'Install Tapir, then give your AI tool the prompt above.':
         'Tapir इंस्टॉल करें, फिर अपने AI tool को ऊपर वाला prompt दें।',
-    'Get started →': 'शुरू करें →',
+    'Get started': 'शुरू करें',
     'The command reference': 'कमांड संदर्भ',
     'The list to give the AI: every command with its schema.':
         'AI को देने वाली सूची: हर कमांड, उसके schema के साथ।',
-    'Open the reference →': 'संदर्भ खोलें →',
+    'Open the reference': 'संदर्भ खोलें',
     'Show what you built': 'जो बनाया, वह दिखाएँ',
     'Ask about MCP servers and share your prompts.': 'MCP servers के बारे में पूछें और अपने prompts शेयर करें।',
-    'Join Discord →': 'Discord से जुड़ें →'
+    'Join Discord': 'Discord से जुड़ें'
 });

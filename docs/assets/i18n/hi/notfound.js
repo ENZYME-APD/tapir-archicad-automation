@@ -10,16 +10,16 @@
     'Sections': 'भाग',
     'Install Tapir': 'Tapir इंस्टॉल करें',
     'Install Tapir and run your first script.': 'Tapir इंस्टॉल करें और अपनी पहली script चलाएँ।',
-    'Get started →': 'शुरू करें →',
+    'Get started': 'शुरू करें',
     'The reference': 'संदर्भ',
     'Every Tapir command, with its parameters and an example.':
         'हर Tapir कमांड, उसके parameters और एक उदाहरण के साथ।',
-    'Open the docs →': 'दस्तावेज़ खोलें →',
+    'Open the docs': 'दस्तावेज़ खोलें',
     'The script schedule': 'Scripts की सूची',
     'Ready-made scripts shared by the community.': 'समुदाय की शेयर की हुई तैयार scripts।',
-    'Browse scripts →': 'Scripts देखें →',
+    'Browse scripts': 'Scripts देखें',
     'Ask, report, test': 'पूछें, रिपोर्ट करें, टेस्ट करें',
     'Discord, bug reports and how to help.': 'Discord, bug रिपोर्टें और मदद करने के तरीके।',
-    'Join in →': 'जुड़ें →',
+    'Join in': 'जुड़ें',
     'Go to the home page': 'होम पेज पर जाएँ'
 });

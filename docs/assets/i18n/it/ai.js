@@ -74,11 +74,11 @@
     'Next step': 'Passo successivo',
     'Install Tapir': 'Installa Tapir',
     'Install Tapir, then give your AI tool the prompt above.': 'Installa Tapir, poi dai al tuo strumento di IA il prompt qui sopra.',
-    'Get started →': 'Inizia →',
+    'Get started': 'Inizia',
     'The command reference': 'Il riferimento dei comandi',
     'The list to give the AI: every command with its schema.': 'L\'elenco da dare all\'IA: ogni comando con il suo schema.',
-    'Open the reference →': 'Apri il riferimento →',
+    'Open the reference': 'Apri il riferimento',
     'Show what you built': 'Mostra cosa hai creato',
     'Ask about MCP servers and share your prompts.': 'Fai domande sui server MCP e condividi i tuoi prompt.',
-    'Join Discord →': 'Unisciti a Discord →'
+    'Join Discord': 'Unisciti a Discord'
 });

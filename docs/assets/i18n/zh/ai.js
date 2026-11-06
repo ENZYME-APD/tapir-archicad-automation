@@ -74,11 +74,11 @@
     'Next step': '下一步',
     'Install Tapir': '安装 Tapir',
     'Install Tapir, then give your AI tool the prompt above.': '安装 Tapir，然后把上面的提示词交给您的 AI 工具。',
-    'Get started →': '快速开始 →',
+    'Get started': '快速开始',
     'The command reference': '命令参考',
     'The list to give the AI: every command with its schema.': '要交给 AI 的列表：每个命令及其模式。',
-    'Open the reference →': '打开参考 →',
+    'Open the reference': '打开参考',
     'Show what you built': '展示您的作品',
     'Ask about MCP servers and share your prompts.': '询问 MCP 服务器相关问题，分享您的提示词。',
-    'Join Discord →': '加入 Discord →'
+    'Join Discord': '加入 Discord'
 });

@@ -47,8 +47,8 @@
     'The people <em>behind it.</em>': 'Tapir を<em>支える人々。</em>',
     'ENZYME-APD runs the project and publishes Tapir under the MIT licence. Everyone below has written code for it, or tested it and given the feedback it is built on, in alphabetical order.':
         'ENZYME-APD がプロジェクトを運営し、Tapir を MIT ライセンスで公開しています。以下の皆さんは、コードを書いたり、テストして Tapir の土台となるフィードバックをくれたりした方々です（アルファベット順）。',
-    'Many more report bugs, test fixes in their own Archicad and share scripts; bots draft fixes, and people test and approve them. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/graphs/contributors">All contributors on GitHub →</a>':
-        'ほかにも多くの人がバグを報告し、自分の Archicad で修正をテストし、スクリプトを共有しています。ボットが修正案を作り、人がそれをテストして承認します。<a href="https://github.com/ENZYME-APD/tapir-archicad-automation/graphs/contributors">GitHub のすべてのコントリビューター →</a>',
+    'Many more report bugs, test fixes in their own Archicad and share scripts; bots draft fixes, and people test and approve them. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/graphs/contributors">All contributors on GitHub</a>':
+        'ほかにも多くの人がバグを報告し、自分の Archicad で修正をテストし、スクリプトを共有しています。ボットが修正案を作り、人がそれをテストして承認します。<a href="https://github.com/ENZYME-APD/tapir-archicad-automation/graphs/contributors">GitHub のすべてのコントリビューター</a>',
 
     // Principles
     'Principles': '原則',

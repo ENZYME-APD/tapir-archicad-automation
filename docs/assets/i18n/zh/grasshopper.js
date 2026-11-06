@@ -80,13 +80,13 @@
     'Install the Add-On': '安装 Add-On',
     'Install Tapir and the <span class="mono">tapir</span> package, then try the wall above.':
         '安装 Tapir 和 <span class="mono">tapir</span> 包，然后试试上面的墙。',
-    'Get started →': '快速开始 →',
+    'Get started': '快速开始',
     'Coverage': '覆盖率',
     'Which commands have a component, and which inputs each still lacks.':
         '哪些命令有组件，以及每个组件还缺少哪些输入。',
-    'See the coverage →': '查看覆盖率 →',
+    'See the coverage': '查看覆盖率',
     'Videos': '视频',
     'Watch it work': '看看实际效果',
     'The Archicad and Grasshopper tutorials.': 'Archicad 和 Grasshopper 教程。',
-    'Watch the tutorials →': '观看教程 →'
+    'Watch the tutorials': '观看教程'
 });

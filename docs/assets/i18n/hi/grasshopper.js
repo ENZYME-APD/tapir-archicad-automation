@@ -84,13 +84,13 @@
     'Install the Add-On': 'Add-On इंस्टॉल करें',
     'Install Tapir and the <span class="mono">tapir</span> package, then try the wall above.':
         'Tapir और <span class="mono">tapir</span> package इंस्टॉल करें, फिर ऊपर वाली wall आज़माएँ।',
-    'Get started →': 'शुरू करें →',
+    'Get started': 'शुरू करें',
     'Coverage': 'कवरेज',
     'Which commands have a component, and which inputs each still lacks.':
         'किन कमांड का component है, और हर एक में अभी कौन-से inputs बाक़ी हैं।',
-    'See the coverage →': 'कवरेज देखें →',
+    'See the coverage': 'कवरेज देखें',
     'Videos': 'वीडियो',
     'Watch it work': 'इसे काम करते देखें',
     'The Archicad and Grasshopper tutorials.': 'Archicad और Grasshopper के ट्यूटोरियल।',
-    'Watch the tutorials →': 'ट्यूटोरियल देखें →'
+    'Watch the tutorials': 'ट्यूटोरियल देखें'
 });

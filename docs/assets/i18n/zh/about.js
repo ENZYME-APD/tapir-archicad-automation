@@ -47,8 +47,8 @@
     'The people <em>behind it.</em>': '背后的<em>人们。</em>',
     'ENZYME-APD runs the project and publishes Tapir under the MIT licence. Everyone below has written code for it, or tested it and given the feedback it is built on, in alphabetical order.':
         'ENZYME-APD 负责运营该项目，并以 MIT 许可证发布 Tapir。以下每个人都为它编写过代码，或测试过它并提供了它赖以构建的反馈，按字母顺序排列。',
-    'Many more report bugs, test fixes in their own Archicad and share scripts; bots draft fixes, and people test and approve them. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/graphs/contributors">All contributors on GitHub →</a>':
-        '还有更多人报告问题、在自己的 Archicad 中测试修复并分享脚本；机器人起草修复，再由人来测试和批准。<a href="https://github.com/ENZYME-APD/tapir-archicad-automation/graphs/contributors">GitHub 上的全部贡献者 →</a>',
+    'Many more report bugs, test fixes in their own Archicad and share scripts; bots draft fixes, and people test and approve them. <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/graphs/contributors">All contributors on GitHub</a>':
+        '还有更多人报告问题、在自己的 Archicad 中测试修复并分享脚本；机器人起草修复，再由人来测试和批准。<a href="https://github.com/ENZYME-APD/tapir-archicad-automation/graphs/contributors">GitHub 上的全部贡献者</a>',
 
     // Principles
     'Principles': '原则',
