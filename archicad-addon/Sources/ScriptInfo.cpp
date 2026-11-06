@@ -1,5 +1,6 @@
 #include "ScriptInfo.hpp"
 #include "File.hpp"
+#include "MigrationHelper.hpp"
 
 #include <vector>
 
