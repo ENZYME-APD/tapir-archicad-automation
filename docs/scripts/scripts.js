@@ -16,8 +16,8 @@
 
    A script's README, screenshots and code are read at the commit its newest version names. Anything
    that is missing or does not look right is left out rather than shown wrong; when the catalogue
-   cannot be read, the page keeps saying the scripts are opening soon. Every text shown is in the
-   page's HTML. */
+   cannot be read or lists no script, the page keeps showing the built-in scripts and saying the
+   scripts are opening soon; the schedule replaces both. Every text shown is in the page's HTML. */
 (function () {
     'use strict';
 
@@ -306,6 +306,7 @@
         byId ('script-filters').addEventListener ('submit', function (event) { event.preventDefault (); });
 
         update ();
+        byId ('builtin-scripts').hidden = true;
         byId ('scripts-opening').hidden = true;
         byId ('scripts-browser').hidden = false;
     }
