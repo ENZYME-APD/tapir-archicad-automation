@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-06 10:13 UTC",
+ "generatedAt": "2026-11-06 10:46 UTC",
  "versions": [
   25,
   26,
@@ -25561,10 +25561,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2029,
-     "title": "Grasshopper: Roofs tool component (Design Tools)"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -37741,10 +37737,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2029,
-     "title": "Grasshopper: Roofs tool component (Design Tools)"
-    },
     {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"

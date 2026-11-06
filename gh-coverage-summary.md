@@ -1,6 +1,6 @@
-**743 of 746** applicable Tapir commands have a Grasshopper component (99 %): ✅ 568 done, 🔀 175 merged, 🚧 3 in progress, ⛔ 1 skipped, ➖ 1 not applicable.
+**746 of 746** applicable Tapir commands have a Grasshopper component (100 %): ✅ 568 done, 🔀 178 merged, ⛔ 1 skipped, ➖ 1 not applicable.
 
-Parameters of the 743 used commands: 🟢 710 every parameter has an input, 🟡 32 the rest through a JSON input, 🟠 1 some parameters missing.
+Parameters of the 746 used commands: 🟢 713 every parameter has an input, 🟡 32 the rest through a JSON input, 🟠 1 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -9,12 +9,12 @@ Parameters of the 743 used commands: 🟢 710 every parameter has an input, 🟡
 | Custom Data Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Element Commands | 100 % | 163 | 130 | 33 |  |  |  | 1 |  | 144 | 19 |  |
 | Element grouping Commands | 100 % | 15 | 11 | 4 |  |  |  |  |  | 15 |  |  |
-| Favorites Commands | 92 % | 26 | 18 | 6 | 2 |  |  |  |  | 24 |  |  |
+| Favorites Commands | 100 % | 26 | 18 | 8 |  |  |  |  |  | 26 |  |  |
 | Property Commands | 100 % | 30 | 21 | 9 |  |  |  |  |  | 30 |  |  |
 | Classification Commands | 100 % | 19 | 17 | 2 |  |  |  |  |  | 19 |  |  |
 | Attribute Commands | 100 % | 64 | 55 | 9 |  |  |  |  |  | 55 | 9 |  |
 | IFC Commands | 100 % | 15 | 13 | 2 |  |  |  |  |  | 15 |  |  |
-| Library Commands | 98 % | 50 | 18 | 31 | 1 |  |  |  |  | 48 |  | 1 |
+| Library Commands | 100 % | 50 | 18 | 32 |  |  |  |  |  | 49 |  | 1 |
 | Teamwork Commands | 100 % | 18 | 15 | 3 |  |  |  |  |  | 18 |  |  |
 | Navigator Commands | 100 % | 80 | 61 | 19 |  |  |  |  |  | 77 | 3 |  |
 | Graphic Override Commands | 100 % | 4 | 4 |  |  |  |  |  |  | 4 |  |  |
@@ -30,4 +30,4 @@ Parameters of the 743 used commands: 🟢 710 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-06 10:13 UTC.
+Updated 2026-11-06 10:46 UTC.

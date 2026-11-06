@@ -1,14 +1,13 @@
 {
- "generatedAt": "2026-11-06 10:13 UTC",
+ "generatedAt": "2026-11-06 10:46 UTC",
  "counts": {
   "done": 568,
-  "merged": 175,
+  "merged": 178,
   "skipped": 1,
-  "in progress": 3,
   "not applicable": 1
  },
  "parameters": {
-  "all": 710,
+  "all": 713,
   "json": 32,
   "partial": 1
  },
@@ -2753,6 +2752,10 @@
      "path": "Components/DesignToolsComponents/RailingsComponent.cs"
     },
     {
+     "name": "RoofsComponent",
+     "path": "Components/DesignToolsComponents/RoofsComponent.cs"
+    },
+    {
      "name": "SlabsComponent",
      "path": "Components/DesignToolsComponents/SlabsComponent.cs"
     },
@@ -2795,10 +2798,6 @@
     {
      "number": 1977,
      "title": "Grasshopper: Splines tool component"
-    },
-    {
-     "number": 1964,
-     "title": "Grasshopper: Roofs tool component"
     },
     {
      "number": 1791,
@@ -2881,6 +2880,10 @@
     {
      "name": "RailingsComponent",
      "path": "Components/DesignToolsComponents/RailingsComponent.cs"
+    },
+    {
+     "name": "RoofsComponent",
+     "path": "Components/DesignToolsComponents/RoofsComponent.cs"
     },
     {
      "name": "SetDetailsOfTextsComponent",
@@ -5408,6 +5411,10 @@
     {
      "name": "CreateRoofsComponent",
      "path": "Components/ElementsComponents/CreateRoofsComponent.cs"
+    },
+    {
+     "name": "RoofsComponent",
+     "path": "Components/DesignToolsComponents/RoofsComponent.cs"
     }
    ],
    "parameters": "all",
@@ -5429,18 +5436,8 @@
     "roofsData.thickness"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2029,
-     "title": "Grasshopper: Roofs tool component (Design Tools)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1964,
-     "title": "Grasshopper: Roofs tool component"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreateShells",
@@ -6841,10 +6838,14 @@
     {
      "name": "ModifyRoofsComponent",
      "path": "Components/ElementsComponents/ModifyRoofsComponent.cs"
+    },
+    {
+     "name": "RoofsComponent",
+     "path": "Components/DesignToolsComponents/RoofsComponent.cs"
     }
    ],
    "parameters": "json",
-   "parameterCount": 20,
+   "parameterCount": 21,
    "coveredParameters": [
     "roofsWithDetails",
     "roofsWithDetails.angle",
@@ -6852,9 +6853,11 @@
     "roofsWithDetails.compositeId",
     "roofsWithDetails.eavesOverhang",
     "roofsWithDetails.elementId",
+    "roofsWithDetails.floorIndex",
     "roofsWithDetails.holes",
     "roofsWithDetails.level",
     "roofsWithDetails.levels",
+    "roofsWithDetails.pivotEdges",
     "roofsWithDetails.pivotLine",
     "roofsWithDetails.pivotLine.begCoordinate",
     "roofsWithDetails.pivotLine.begin",
@@ -6866,21 +6869,10 @@
     "roofsWithDetails.thickness"
    ],
    "missingParameters": [
-    "roofsWithDetails.pivotEdges",
     "roofsWithDetails.pivotEdges.levels.angleType"
    ],
-   "pullRequests": [
-    {
-     "number": 2029,
-     "title": "Grasshopper: Roofs tool component (Design Tools)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1964,
-     "title": "Grasshopper: Roofs tool component"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ModifyShells",
@@ -8386,19 +8378,21 @@
    "group": "Favorites Commands",
    "version": "1.8.1",
    "brief": "Returns the Favorites of a folder of the Favorites palette and of its subfolders (every Favorite when no folder is given), each with its folder path, classifications, element category values and property values, read through the Favorite manager. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2114,
-     "title": "Grasshopper: components for GetFavoriteContents, DeleteFavoritesWithManager and GetLibraryPartParameterValues"
+     "name": "GetFavoriteContentsComponent",
+     "path": "Components/FavoritesComponents/GetFavoriteContentsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "folderPath"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8406,19 +8400,23 @@
    "group": "Favorites Commands",
    "version": "1.8.1",
    "brief": "Deletes the given Favorites through the Favorite manager, each found by name, optionally only in the given folder. One execution result for each. Available from Archicad 29.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2114,
-     "title": "Grasshopper: components for GetFavoriteContents, DeleteFavoritesWithManager and GetLibraryPartParameterValues"
+     "name": "DeleteFavoritesWithManagerComponent",
+     "path": "Components/FavoritesComponents/DeleteFavoritesWithManagerComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "favorites",
+    "favorites.folderPath",
+    "favorites.name"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8610,6 +8608,10 @@
     {
      "name": "RailingsComponent",
      "path": "Components/DesignToolsComponents/RailingsComponent.cs"
+    },
+    {
+     "name": "RoofsComponent",
+     "path": "Components/DesignToolsComponents/RoofsComponent.cs"
     },
     {
      "name": "SetPropertyValuesOfElementsComponent",
@@ -12515,19 +12517,22 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Returns the parameters of loaded library parts, given by their file name as GetAvailableLibraryParts returns it, with their default values and descriptions, in the format of GetGDLParametersOfElements: the read counterpart of SetLibraryPartParameters. Unlike GetGDLParametersOfLibraryParts, which finds a part by its name and also returns the index, flags and value descriptions of each parameter, it reads through the Library Manager. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2114,
-     "title": "Grasshopper: components for GetFavoriteContents, DeleteFavoritesWithManager and GetLibraryPartParameterValues"
+     "name": "GetLibraryPartParameterValuesComponent",
+     "path": "Components/LibraryComponents/GetLibraryPartParameterValuesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "libraryParts",
+    "libraryParts.name"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
