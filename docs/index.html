@@ -1,39 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-copy="Copy" data-copied="Copied">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Tapir documentation</title>
 <meta name="description" content="Documentation of Tapir, the open-source automation toolkit for Archicad: installation, getting started, the command reference and the coverage pages.">
-<link rel="icon" href="assets/tapir_logo_black.svg" type="image/svg+xml" media="(prefers-color-scheme: light)">
-<link rel="icon" href="assets/tapir_logo_white.svg" type="image/svg+xml" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap">
 <link rel="stylesheet" href="assets/site.css">
+<script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
+<script src="assets/site.js" defer></script>
 </head>
 <body>
 <header class="site-header">
     <div class="site-header-inner">
         <a class="site-brand" href="./">
-            <picture>
-                <source srcset="assets/tapir_logo_black.svg" media="(prefers-color-scheme: light)">
-                <img src="assets/tapir_logo_white.svg" alt="" width="30" height="30">
-            </picture>
-            <span>Tapir <span class="brand-sub">docs</span></span>
+            <img src="assets/tapir_mark_cream.svg" alt="" width="28" height="28">
+            <span class="wordmark">Tapir</span>
         </a>
         <nav class="site-nav" aria-label="Site">
             <ul>
-                <li><a href="./" aria-current="page">Docs home</a></li>
                 <li><a href="start/">Get started</a></li>
-                <li><a href="archicad-addon/">Commands</a></li>
-                <li><a href="api-coverage/">API coverage</a></li>
-                <li><a href="gh-coverage/">Grasshopper coverage</a></li>
-                <li><a class="external" href="https://tapir-marketplace.vercel.app/">Marketplace</a></li>
-                <li><a class="external" href="https://www.archicad-api.com/">Website</a></li>
+                <li>
+                    <details class="nav-menu">
+                        <summary>Docs</summary>
+                        <ul>
+                            <li><a href="archicad-addon/">Commands</a></li>
+                            <li><a href="api-coverage/">API coverage</a></li>
+                            <li><a href="gh-coverage/">Grasshopper coverage</a></li>
+                        </ul>
+                    </details>
+                </li>
+                <li><a href="scripts/">Scripts</a></li>
+                <li><a href="community/">Community</a></li>
             </ul>
         </nav>
-        <a class="button" href="https://discord.gg/NAnSennmpY">Join Discord</a>
+        <button type="button" class="theme-toggle" id="theme-toggle" aria-pressed="false" hidden>
+            <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+            <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+            <span class="visually-hidden">Dark mode</span>
+        </button>
+        <a class="button" href="start/#install">Download</a>
     </div>
 </header>
 
@@ -45,7 +54,6 @@
             Tapir is an open-source Archicad add-on that adds hundreds of JSON commands to Archicad's API,
             with a palette to run Python scripts and a Grasshopper plugin built on them.
         </p>
-        <p>The story, tutorials and use cases are on the website, <a href="https://www.archicad-api.com/">archicad-api.com</a>.</p>
 
         <div class="stats" aria-label="Tapir in numbers">
             <div class="stat" id="stat-commands" hidden>
@@ -101,10 +109,10 @@
                 <p>Which Tapir commands the Grasshopper plugin's components call, and the parameters they miss.</p>
                 <span class="card-link">See the coverage &rarr;</span>
             </a>
-            <a class="card" href="https://tapir-marketplace.vercel.app/">
-                <h3>Marketplace</h3>
+            <a class="card" href="scripts/">
+                <h3>Scripts</h3>
                 <p>Ready-made Tapir scripts shared by the community, to run from the Tapir palette.</p>
-                <span class="card-link">Open the marketplace &rarr;</span>
+                <span class="card-link">Find scripts &rarr;</span>
             </a>
         </div>
     </section>
@@ -112,10 +120,20 @@
 
 <footer class="site-footer">
     <div class="site-footer-inner">
-        <span>Tapir is open source, by <a href="https://github.com/ENZYME-APD">ENZYME-APD</a>.</span>
-        <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">GitHub repository</a>
-        <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues">Report an issue</a>
-        <a href="https://www.archicad-api.com/">archicad-api.com</a>
+        <a class="site-brand" href="./">
+            <img src="assets/tapir_mark_cream.svg" alt="" width="28" height="28">
+            <span class="wordmark">Tapir</span>
+        </a>
+        <p>Open-source automation for Archicad, by <a href="https://github.com/ENZYME-APD">ENZYME-APD</a>.</p>
+        <ul class="footer-links">
+            <li><a href="start/">Get started</a></li>
+            <li><a href="archicad-addon/">Commands</a></li>
+            <li><a href="scripts/">Scripts</a></li>
+            <li><a href="community/">Community</a></li>
+            <li><a href="https://discord.gg/NAnSennmpY">Discord</a></li>
+            <li><a href="https://github.com/ENZYME-APD/tapir-archicad-automation">GitHub</a></li>
+            <li><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues">Report an issue</a></li>
+        </ul>
     </div>
 </footer>
 

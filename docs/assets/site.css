@@ -1,54 +1,118 @@
-/* The shared look of Tapir's documentation site, matching https://www.archicad-api.com/:
-   Plus Jakarta Sans and JetBrains Mono, a dark navy background with lighter bordered cards and
-   a blue accent. A light palette under prefers-color-scheme: light keeps the same accent and
-   passes WCAG AA. Every page links it as <root>/assets/site.css and repeats the same header. */
+/* The shared look of Tapir's site: an architect's material board. Warm cream paper, charcoal ink,
+   moss and ochre accents; Fraunces for headings, Inter for text, JetBrains Mono for code.
+   Every page links it as <root>/assets/site.css, together with <root>/assets/site.js, and repeats the
+   same header and footer.
+
+   Light is the default. Dark applies under prefers-color-scheme: dark, unless the header's toggle
+   chose a theme: it sets data-theme="light" or "dark" on <html> (remembered in localStorage).
+   A page's own colours for dark mode use the same two selectors as below:
+       :root[data-theme="dark"] { ... }
+       @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { ... } }
+
+   Brand colours: Deep Charcoal #1C1E1F, Natural Cream #F4F1EA, Paper #FFFFFF, Jungle Moss #2D3A30,
+   Earthy Ochre #BD8D53 (text on it is always charcoal), Deep Ochre #8A6235 (links on light),
+   River Slate #707C80 (icons and dividers only, never text), Deep Slate #5F6A6E (subtext on light),
+   Light Ochre #D4A876 (links in dark mode). Every text pair passes WCAG AA. */
 
 :root {
-    --bg: #0a0f1a;
-    --bg-raised: #111827;
-    --card: #131b2c;
-    --card-hover: #18233a;
-    --border: #1f2a40;
-    --border-strong: #2d3b57;
-    --text: #f8fafc;
-    --text-secondary: #cbd5e1;
-    --text-muted: #94a3b8;
-    --accent: #3b82f6;
-    --accent-2: #60a5fa;
-    --accent-3: #93c5fd;
-    --link: #60a5fa;
-    --link-hover: #93c5fd;
-    --eyebrow: #60a5fa;
-    --button-bg: #2563eb;
-    --button-bg-hover: #1d4ed8;
-    --button-text: #ffffff;
-    --code-bg: #0d1424;
-    --header-bg: rgba(10, 15, 26, 0.92);
-    --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --charcoal: #1C1E1F;
+    --cream: #F4F1EA;
+    --paper: #FFFFFF;
+    --moss: #2D3A30;
+    --moss-deep: #243028;
+    --ochre: #BD8D53;
+    --ochre-deep: #8A6235;
+    --ochre-light: #D4A876;
+    --slate: #707C80;
+    --slate-deep: #5F6A6E;
+
+    --bg: var(--cream);
+    --bg-raised: var(--paper);
+    --card: var(--paper);
+    --card-hover: #FAF8F3;
+    --border: rgba(112, 124, 128, 0.25);
+    --border-strong: rgba(112, 124, 128, 0.55);
+    --text: var(--charcoal);
+    --text-secondary: #33373A;
+    --text-muted: var(--slate-deep);
+    --accent: var(--ochre-deep);
+    --link: var(--ochre-deep);
+    --link-hover: #6B4B27;
+    --eyebrow: var(--ochre-deep);
+    --focus: var(--ochre-deep);
+    --button-bg: var(--ochre);
+    --button-bg-hover: #CA9C66;
+    --button-text: var(--charcoal);
+    --secondary-fg: var(--moss);
+    --secondary-hover-bg: rgba(45, 58, 48, 0.08);
+    --badge-bg: rgba(189, 141, 83, 0.22);
+    --badge-text: var(--charcoal);
+    --code-bg: rgba(112, 124, 128, 0.12);
+    --pre-bg: var(--charcoal);
+    --pre-text: var(--cream);
+    --pre-border: var(--charcoal);
+    --header-bg: var(--moss);
+    --header-text: var(--cream);
+
+    --font-heading: "Fraunces", Georgia, "Times New Roman", serif;
+    --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
     --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    --radius: 14px;
+    --radius: 12px;
     --radius-small: 8px;
     --content-width: 1100px;
+    --text-width: 72ch;
+    color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+    --bg: var(--charcoal);
+    --bg-raised: #262A2B;
+    --card: #262A2B;
+    --card-hover: #2E3334;
+    --border: rgba(151, 162, 166, 0.25);
+    --border-strong: rgba(151, 162, 166, 0.5);
+    --text: var(--cream);
+    --text-secondary: #E4E0D7;
+    --text-muted: #97A2A6;
+    --accent: var(--ochre-light);
+    --link: var(--ochre-light);
+    --link-hover: #E6C79E;
+    --eyebrow: var(--ochre-light);
+    --focus: var(--ochre-light);
+    --secondary-fg: var(--cream);
+    --secondary-hover-bg: rgba(244, 241, 234, 0.08);
+    --badge-bg: rgba(212, 168, 118, 0.2);
+    --badge-text: var(--cream);
+    --code-bg: rgba(151, 162, 166, 0.16);
+    --pre-bg: #141617;
+    --pre-border: rgba(151, 162, 166, 0.25);
     color-scheme: dark;
 }
 
-@media (prefers-color-scheme: light) {
-    :root {
-        --bg: #f8fafc;
-        --bg-raised: #ffffff;
-        --card: #ffffff;
-        --card-hover: #f1f5f9;
-        --border: #e2e8f0;
-        --border-strong: #cbd5e1;
-        --text: #0f172a;
-        --text-secondary: #334155;
-        --text-muted: #475569;
-        --link: #1d4ed8;
-        --link-hover: #1e40af;
-        --eyebrow: #1d4ed8;
-        --code-bg: #f1f5f9;
-        --header-bg: rgba(255, 255, 255, 0.94);
-        color-scheme: light;
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --bg: var(--charcoal);
+        --bg-raised: #262A2B;
+        --card: #262A2B;
+        --card-hover: #2E3334;
+        --border: rgba(151, 162, 166, 0.25);
+        --border-strong: rgba(151, 162, 166, 0.5);
+        --text: var(--cream);
+        --text-secondary: #E4E0D7;
+        --text-muted: #97A2A6;
+        --accent: var(--ochre-light);
+        --link: var(--ochre-light);
+        --link-hover: #E6C79E;
+        --eyebrow: var(--ochre-light);
+        --focus: var(--ochre-light);
+        --secondary-fg: var(--cream);
+        --secondary-hover-bg: rgba(244, 241, 234, 0.08);
+        --badge-bg: rgba(212, 168, 118, 0.2);
+        --badge-text: var(--cream);
+        --code-bg: rgba(151, 162, 166, 0.16);
+        --pre-bg: #141617;
+        --pre-border: rgba(151, 162, 166, 0.25);
+        color-scheme: dark;
     }
 }
 
@@ -60,50 +124,95 @@ body {
     margin: 0;
     background: var(--bg);
     color: var(--text);
-    font: 400 16px/1.65 var(--font-sans);
+    font: 400 16px/1.6 var(--font-sans);
 }
 
 h1, h2, h3, h4 {
-    font-family: var(--font-sans);
+    font-family: var(--font-heading);
+    font-weight: 600;
     color: var(--text);
-    line-height: 1.25;
-    letter-spacing: -0.01em;
+    line-height: 1.2;
+    letter-spacing: -0.005em;
 }
-h1 { font-size: clamp(30px, 5vw, 44px); font-weight: 800; margin: 0 0 12px; }
-h2 { font-size: clamp(22px, 3.2vw, 28px); font-weight: 700; margin: 0 0 12px; }
-h3 { font-size: 18px; font-weight: 700; margin: 0 0 6px; }
-p { margin: 0 0 14px; color: var(--text-secondary); }
+h1 { font-size: 40px; font-weight: 700; margin: 0 0 12px; }
+h2 { font-size: 28px; margin: 0 0 12px; }
+h3 { font-size: 21px; margin: 0 0 6px; }
+h4 { font-size: 17px; margin: 0 0 6px; }
+p { margin: 0 0 14px; color: var(--text-secondary); max-width: var(--text-width); }
 
 a { color: var(--link); text-underline-offset: 2px; }
 a:hover { color: var(--link-hover); }
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 4px; }
 
 code, pre, kbd { font-family: var(--font-mono); }
-code { font-size: 0.88em; background: var(--code-bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.1em 0.35em; }
+code { font-size: 0.88em; background: var(--code-bg); border-radius: 5px; padding: 0.1em 0.35em; }
 pre {
     margin: 0 0 16px;
     padding: 14px 16px;
     overflow-x: auto;
-    background: var(--code-bg);
-    border: 1px solid var(--border);
+    background: var(--pre-bg);
+    border: 1px solid var(--pre-border);
     border-radius: var(--radius-small);
     font-size: 13.5px;
     line-height: 1.55;
-    color: var(--text);
+    color: var(--pre-text);
 }
-pre code { background: none; border: 0; padding: 0; font-size: inherit; }
+pre code { background: none; border: 0; padding: 0; font-size: inherit; color: inherit; }
+
+/* A code block with the copy button site.js adds. */
+.code-block { position: relative; }
+.code-block pre { padding-right: 72px; }
+.copy-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    padding: 3px 10px;
+    border: 1px solid rgba(244, 241, 234, 0.35);
+    border-radius: 6px;
+    background: rgba(28, 30, 31, 0.85);
+    color: var(--cream);
+    font: 500 12.5px/1.4 var(--font-sans);
+    cursor: pointer;
+}
+.copy-button:hover { border-color: var(--ochre-light); }
+.copy-button:focus-visible { outline-color: var(--ochre-light); }
 
 .muted { color: var(--text-muted); }
+.visually-hidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}
 
-/* Header: the logo, the site's pages and the Discord button. Wraps on narrow screens. */
+/* The wordmark: the tapir mark and "Tapir" in Fraunces. The mark is single colour,
+   cream on moss in the header and footer. */
+.site-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--header-text);
+    text-decoration: none;
+    white-space: nowrap;
+}
+.site-brand:hover { color: var(--header-text); }
+.site-brand img { width: 28px; height: 28px; display: block; }
+.wordmark { font-family: var(--font-heading); font-weight: 700; font-size: 22px; line-height: 1; letter-spacing: -0.01em; }
+
+/* Header: the wordmark, the site's sections, the dark mode toggle and the Download button.
+   Moss in both themes; it wraps on narrow screens. */
 .site-header {
     position: sticky;
     top: 0;
     z-index: 50;
     background: var(--header-bg);
-    border-bottom: 1px solid var(--border);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
+    color: var(--header-text);
+    --focus: var(--ochre-light);
 }
 .site-header-inner {
     max-width: var(--content-width);
@@ -112,23 +221,10 @@ pre code { background: none; border: 0; padding: 0; font-size: inherit; }
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px 20px;
+    gap: 8px 16px;
 }
-.site-brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--text);
-    text-decoration: none;
-    font-weight: 800;
-    font-size: 17px;
-    white-space: nowrap;
-}
-.site-brand:hover { color: var(--text); }
-.site-brand img { width: 30px; height: 30px; display: block; }
-.site-brand .brand-sub { color: var(--text-muted); font-weight: 600; }
 .site-nav { flex: 1 1 auto; min-width: 0; }
-.site-nav ul {
+.site-nav > ul {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -137,39 +233,104 @@ pre code { background: none; border: 0; padding: 0; font-size: inherit; }
     align-items: center;
     gap: 2px 4px;
 }
-.site-nav a {
+.site-nav a,
+.nav-menu > summary {
     display: inline-block;
     padding: 6px 10px;
-    border-radius: 8px;
-    color: var(--text-secondary);
+    border-radius: 6px;
+    color: var(--header-text);
     text-decoration: none;
-    font-size: 14.5px;
-    font-weight: 600;
+    font-size: 15px;
+    font-weight: 500;
     white-space: nowrap;
 }
-.site-nav a:hover { color: var(--text); background: var(--card-hover); }
-.site-nav a[aria-current="page"] { color: var(--text); background: var(--card); box-shadow: inset 0 0 0 1px var(--border-strong); }
-.site-nav .external::after { content: " \2197"; color: var(--text-muted); font-size: 0.85em; }
+.site-nav a:hover,
+.nav-menu > summary:hover { color: var(--header-text); background: rgba(244, 241, 234, 0.12); }
+.site-nav a[aria-current="page"],
+.nav-menu.current > summary { box-shadow: inset 0 -2px 0 var(--ochre-light); border-radius: 6px 6px 0 0; }
 
-/* Buttons */
+/* The Docs menu: a <details>, so it opens without JavaScript; site.js closes it on a click outside
+   and on Escape. */
+.nav-menu { position: relative; }
+.nav-menu > summary { cursor: pointer; list-style: none; }
+.nav-menu > summary::-webkit-details-marker { display: none; }
+.nav-menu > summary::after {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-left: 8px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: translateY(-3px) rotate(45deg);
+}
+.nav-menu[open] > summary::after { transform: translateY(1px) rotate(-135deg); }
+.nav-menu > ul {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    z-index: 60;
+    min-width: 230px;
+    list-style: none;
+    margin: 0;
+    padding: 6px;
+    background: var(--moss-deep);
+    border: 1px solid rgba(244, 241, 234, 0.18);
+    border-radius: var(--radius-small);
+}
+.nav-menu > ul a { display: block; }
+.nav-menu > ul a[aria-current="page"] { box-shadow: inset 2px 0 0 var(--ochre-light); border-radius: 0 6px 6px 0; }
+
+.theme-toggle {
+    display: inline-grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid rgba(244, 241, 234, 0.35);
+    border-radius: var(--radius-small);
+    background: transparent;
+    color: var(--header-text);
+    cursor: pointer;
+}
+.theme-toggle:hover { background: rgba(244, 241, 234, 0.12); }
+.theme-toggle svg { width: 18px; height: 18px; display: block; }
+/* A moon offers dark mode, a sun offers light mode. */
+.theme-toggle .icon-sun { display: none; }
+.theme-toggle[aria-pressed="true"] .icon-sun { display: block; }
+.theme-toggle[aria-pressed="true"] .icon-moon { display: none; }
+
+/* Buttons: primary ochre with charcoal text, secondary moss outline. */
 .button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     padding: 9px 16px;
-    border-radius: 10px;
-    border: 1px solid transparent;
+    border-radius: var(--radius-small);
+    border: 1px solid var(--button-bg);
     background: var(--button-bg);
     color: var(--button-text);
-    font: 700 14.5px/1.2 var(--font-sans);
+    font: 600 15px/1.2 var(--font-sans);
     text-decoration: none;
     white-space: nowrap;
-    transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
 }
-.button:hover { background: var(--button-bg-hover); color: var(--button-text); }
-.button-secondary { background: var(--card); color: var(--text); border-color: var(--border-strong); }
-.button-secondary:hover { background: var(--card-hover); color: var(--text); border-color: var(--accent); }
+.button:hover { background: var(--button-bg-hover); border-color: var(--button-bg-hover); color: var(--button-text); }
+.button-secondary { background: transparent; color: var(--secondary-fg); border-color: var(--secondary-fg); }
+.button-secondary:hover { background: var(--secondary-hover-bg); color: var(--secondary-fg); border-color: var(--secondary-fg); }
+
+/* Badges: an ochre tint with charcoal text. */
+.badge {
+    display: inline-block;
+    padding: 2px 9px;
+    border-radius: 999px;
+    background: var(--badge-bg);
+    color: var(--badge-text);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.5;
+}
 
 /* Page content */
 main {
@@ -184,25 +345,25 @@ section { margin: 0 0 48px; }
     display: block;
     margin: 0 0 8px;
     color: var(--eyebrow);
-    font-size: 12.5px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
 }
-.lead { font-size: 18px; color: var(--text-secondary); max-width: 720px; }
-.gradient-text {
-    background: linear-gradient(90deg, var(--accent) 0%, var(--accent-2) 50%, var(--accent-3) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-}
-@media (prefers-color-scheme: light) {
-    /* The light gradient's lighter stops would fail AA on white. */
-    .gradient-text { background: none; color: var(--link); }
-}
+.lead { font-size: 18px; color: var(--text-secondary); max-width: 60ch; }
+.gradient-text { color: var(--link); }
 .actions { display: flex; flex-wrap: wrap; gap: 10px; margin: 18px 0 0; }
 
-/* Cards */
+/* A full-width moss band for a feature, with cream text. */
+.band {
+    background: var(--moss);
+    color: var(--cream);
+    --focus: var(--ochre-light);
+}
+.band h1, .band h2, .band h3, .band p { color: var(--cream); }
+.band a:not(.button) { color: var(--ochre-light); }
+
+/* Cards: paper on cream, a 1px River Slate border at 25%, no shadows. */
 .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
 .card {
     display: block;
@@ -212,17 +373,17 @@ section { margin: 0 0 48px; }
     border-radius: var(--radius);
     color: var(--text);
     text-decoration: none;
-    transition: border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
+    transition: border-color 0.15s ease, background-color 0.15s ease;
 }
-a.card:hover { border-color: var(--accent); background: var(--card-hover); color: var(--text); transform: translateY(-2px); }
+a.card:hover { border-color: var(--border-strong); background: var(--card-hover); color: var(--text); }
 .card h3 { color: var(--text); }
 .card p { margin: 0; color: var(--text-muted); font-size: 15px; }
-.card .card-link { display: inline-block; margin-top: 10px; color: var(--link); font-weight: 700; font-size: 14.5px; }
+.card .card-link { display: inline-block; margin-top: 10px; color: var(--link); font-weight: 600; font-size: 15px; }
 
 /* Live numbers: each one is in the HTML hidden and only shown once it was read. */
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-top: 28px; }
 .stat { padding: 16px 20px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); }
-.stat-number { display: block; font-size: 34px; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--text); }
+.stat-number { display: block; font-family: var(--font-heading); font-size: 34px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; color: var(--text); }
 .stat-label { display: block; margin-top: 4px; color: var(--text-muted); font-size: 14px; }
 .stat-label a { color: inherit; }
 [hidden] { display: none !important; }
@@ -250,46 +411,63 @@ a.card:hover { border-color: var(--accent); background: var(--card-hover); color
     border-radius: 50%;
     background: var(--button-bg);
     color: var(--button-text);
-    font-weight: 800;
+    font-family: var(--font-heading);
+    font-weight: 700;
 }
 .steps > li h2 { font-size: 21px; scroll-margin-top: 90px; }
-.steps ul, .steps ol { color: var(--text-secondary); padding-left: 22px; margin: 0 0 14px; }
+.steps ul, .steps ol { color: var(--text-secondary); padding-left: 22px; margin: 0 0 14px; max-width: var(--text-width); }
 .steps li li { margin: 0 0 6px; }
+
+/* Callouts carry an icon and a word (callout-label), never colour alone. */
 .callout {
     margin: 0 0 16px;
     padding: 12px 16px;
-    border: 1px solid var(--border-strong);
-    border-left: 3px solid var(--accent);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--ochre);
     border-radius: var(--radius-small);
-    background: var(--bg-raised);
+    background: var(--card);
     color: var(--text-secondary);
 }
 .callout p:last-child { margin-bottom: 0; }
+.callout-label { font-weight: 600; color: var(--text); margin-right: 4px; }
 
-/* Footer */
-.site-footer { border-top: 1px solid var(--border); }
+/* Footer: moss, like the header. */
+.site-footer {
+    background: var(--moss);
+    color: var(--cream);
+    --focus: var(--ochre-light);
+}
 .site-footer-inner {
     max-width: var(--content-width);
     margin: 0 auto;
-    padding: 20px max(16px, env(safe-area-inset-right, 0px)) 28px max(16px, env(safe-area-inset-left, 0px));
+    padding: 28px max(16px, env(safe-area-inset-right, 0px)) 32px max(16px, env(safe-area-inset-left, 0px));
     display: flex;
     flex-wrap: wrap;
-    gap: 8px 20px;
-    color: var(--text-muted);
-    font-size: 14px;
+    align-items: center;
+    gap: 12px 28px;
+    font-size: 14.5px;
 }
-.site-footer a { color: var(--text-muted); }
-.site-footer a:hover { color: var(--text); }
+.site-footer p { margin: 0; color: var(--cream); }
+.site-footer a { color: var(--cream); }
+.site-footer a:hover { color: var(--ochre-light); }
+.footer-links { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 18px; }
 
 @media (max-width: 640px) {
+    h1 { font-size: 32px; }
+    h2 { font-size: 24px; }
+    h3 { font-size: 19px; }
+    h4 { font-size: 17px; }
     main { padding-top: 28px; }
-    /* The logo and the Discord button share the first line, the pages wrap below them. */
-    .site-nav { flex-basis: 100%; order: 2; }
-    .site-nav a { padding: 4px 8px; font-size: 14px; }
-    .site-header .button { margin-left: auto; padding: 7px 12px; }
+    /* The wordmark, the toggle and the Download button share the first line, the sections wrap below. */
     .site-header { position: static; }
+    .site-brand { margin-right: auto; }
+    .site-nav { flex-basis: 100%; order: 2; }
+    .site-nav a, .nav-menu > summary { padding: 5px 8px; font-size: 14.5px; }
+    .site-header .button { padding: 7px 12px; }
+    .nav-menu > ul { min-width: 200px; }
     .steps > li { padding: 64px 16px 4px 16px; }
     .steps > li::before { left: 16px; top: 18px; }
+    .steps > li h2 { font-size: 19px; }
     .lead { font-size: 17px; }
 }
 
@@ -299,5 +477,4 @@ a.card:hover { border-color: var(--accent); background: var(--card-hover); color
         animation: none !important;
         scroll-behavior: auto !important;
     }
-    a.card:hover { transform: none; }
 }
