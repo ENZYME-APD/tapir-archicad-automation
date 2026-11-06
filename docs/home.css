@@ -1,291 +1,65 @@
-/* The home page (/): an architect's drawing set. The hero is a floor plan on moss drafting paper,
-   sections are separated by dimension lines, and the cards are drawn with ink lines.
-   Uses the tokens of assets/site.css, so it follows the light and dark themes. The floor plan and
-   the code panel keep their own colours in both themes. */
-
-main.home {
-    max-width: none;
-    padding: 0;
-}
-.home .wrap {
-    max-width: var(--content-width);
-    margin: 0 auto;
-    padding-left: max(16px, env(safe-area-inset-left, 0px));
-    padding-right: max(16px, env(safe-area-inset-right, 0px));
-}
-.home h1 em, .home h2 em { font-style: italic; font-weight: 600; }
-.home section { margin: 0; }
-.home [id] { scroll-margin-top: 80px; }
+/* The home page (/): the hero (a floor plan on moss drafting paper), the command ticker and the
+   code sample next to its text. Everything else is in assets/site.css. The floor plan keeps its own
+   colours in both themes: it is a sheet of paper. */
 
 /* ---------- hero ---------- */
 .hero {
     background-color: var(--moss);
     background-image:
-        linear-gradient(rgba(244, 241, 234, 0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(244, 241, 234, 0.06) 1px, transparent 1px),
-        linear-gradient(rgba(244, 241, 234, 0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(244, 241, 234, 0.025) 1px, transparent 1px);
+        linear-gradient(rgba(244, 241, 234, .06) 1px, transparent 1px), linear-gradient(90deg, rgba(244, 241, 234, .06) 1px, transparent 1px),
+        linear-gradient(rgba(244, 241, 234, .025) 1px, transparent 1px), linear-gradient(90deg, rgba(244, 241, 234, .025) 1px, transparent 1px);
     background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
     color: var(--cream);
+    position: relative;
+    overflow: hidden;
     --focus: var(--ochre-light);
-    overflow: hidden;
 }
-.hero-grid {
-    display: grid;
-    grid-template-columns: 1fr 1.05fr;
-    gap: 48px;
-    align-items: center;
-    padding-top: 64px;
-    padding-bottom: 64px;
-}
-.hero-grid > * { min-width: 0; }
-.hero .eyebrow { color: var(--ochre-light); }
-.hero h1 {
-    margin: 12px 0 0;
-    color: var(--cream);
-    font-size: clamp(44px, 7vw, 84px);
-    line-height: 0.98;
-    letter-spacing: -0.02em;
-}
-.hero h1 em { color: var(--ochre-light); }
-.hero-lead {
-    margin: 20px 0 0;
-    max-width: 34em;
-    color: rgba(244, 241, 234, 0.86);
-    font-size: clamp(17px, 1.6vw, 19px);
-}
-.hero-lead + .hero-lead { margin-top: 10px; }
-.hero .actions { margin-top: 28px; }
-.hero .button { padding: 13px 20px; }
-.button .os {
-    font: 600 11px var(--font-mono);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    opacity: 0.8;
-}
-/* A secondary button on moss: a cream outline. */
-.button-on-moss { background: transparent; color: var(--cream); border-color: rgba(244, 241, 234, 0.6); }
-.button-on-moss:hover { background: rgba(244, 241, 234, 0.1); color: var(--ochre-light); border-color: var(--ochre-light); }
-.hero-meta {
-    margin: 16px 0 0;
-    color: rgba(244, 241, 234, 0.75);
-    font: 500 12.5px/1.6 var(--font-mono);
-    letter-spacing: 0.02em;
-}
-.hero-meta a { color: var(--ochre-light); }
+.hero .wrap { display: grid; grid-template-columns: 1fr 1.05fr; gap: 48px; align-items: center; padding-block: 72px 64px }
+.hero .wrap > * { min-width: 0 }
+.hero .tagline { color: var(--ochre-light) }
+.hero h1 { margin-top: 18px; font-size: clamp(52px, 8.4vw, 112px); font-weight: 900; line-height: .92; letter-spacing: -.025em }
+.hero h1 em { color: var(--ochre-light); font-weight: 500 }
+.hero .lead { font-size: clamp(17px, 1.6vw, 20px); color: rgba(244, 241, 234, .86); margin-top: 24px; max-width: 30em }
+.hero .ctas { margin-top: 32px }
+.hero .meta { margin-top: 18px; font: 500 12.5px/1.7 var(--mono); color: rgba(244, 241, 234, .72); letter-spacing: .04em; text-transform: uppercase }
+.hero .meta a { color: var(--ochre-light) }
+.hero .meta .sep { padding-inline: 6px }
 
-/* The floor plan: a sheet of paper, the same in both themes. */
-.plan-card {
-    margin: 0;
-    background: #F4F1EA;
-    color: #1C1E1F;
-    border-radius: 6px;
-    box-shadow: 14px 14px 0 rgba(0, 0, 0, 0.22);
-    min-width: 0;
-    --focus: #8A6235;
-}
-.plan-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
-    border-bottom: 1px solid rgba(28, 30, 31, 0.15);
-    font: 500 11.5px var(--font-mono);
-}
-.plan-head .dots { display: flex; gap: 6px; }
-.plan-head .dots i { width: 9px; height: 9px; border-radius: 50%; background: rgba(28, 30, 31, 0.18); }
-.plan-card svg { display: block; width: 100%; height: auto; }
-.plan-tabs { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 14px 0; }
-.plan-tabs button {
-    padding: 6px 12px;
-    border: 1px solid rgba(28, 30, 31, 0.25);
-    border-radius: 999px;
-    background: #FFFFFF;
-    color: #1C1E1F;
-    font: 600 13px var(--font-sans);
-    cursor: pointer;
-}
-.plan-tabs button:hover { border-color: #1C1E1F; }
-.plan-tabs button[aria-pressed="true"] { background: #1C1E1F; color: #F4F1EA; border-color: #1C1E1F; }
-.plan-status {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px 12px;
-    border-top: 1px solid rgba(28, 30, 31, 0.12);
-    color: #5F6A6E;
-    font: 500 12px/1.4 var(--font-mono);
-}
-.plan-status b { color: #1C1E1F; }
-.pulse { flex: none; width: 8px; height: 8px; border-radius: 50%; background: #BD8D53; }
-.plan-status.running .pulse { animation: home-pulse 1s ease-in-out infinite; }
-@keyframes home-pulse { 50% { opacity: 0.25; } }
-.zone { transition: fill 0.5s ease; }
-.tagnum { transition: opacity 0.3s ease; }
-.tagnum.hidden-tag { opacity: 0; }
+/* ---------- the floor plan ---------- */
+.plan-card { margin: 0; background: #F4F1EA; color: #1C1E1F; border-radius: 6px; box-shadow: 14px 14px 0 rgba(0, 0, 0, .22); position: relative; min-width: 0; --focus: #8A6235 }
+.plan-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid rgba(28, 30, 31, .15); font: 500 11.5px var(--mono) }
+.plan-head .dots { display: flex; gap: 6px } .plan-head .dots i { width: 9px; height: 9px; border-radius: 50%; background: rgba(28, 30, 31, .18) }
+.plan-card svg { display: block; width: 100%; height: auto }
+.plan-tabs { display: flex; gap: 6px; padding: 10px 14px 0; flex-wrap: wrap }
+.plan-tabs button { font: 600 12.5px var(--body); border: 1px solid rgba(28, 30, 31, .25); background: #FFFFFF; color: #1C1E1F; border-radius: 999px; padding: 6px 12px; cursor: pointer }
+.plan-tabs button:hover { border-color: #1C1E1F }
+.plan-tabs button[aria-pressed="true"] { background: #1C1E1F; color: #F4F1EA; border-color: #1C1E1F }
+.plan-status { display: flex; align-items: center; gap: 10px; padding: 10px 14px 12px; font: 500 12px/1.4 var(--mono); color: #5F6A6E; border-top: 1px solid rgba(28, 30, 31, .12) }
+.plan-status b { color: #1C1E1F }
+.pulse { width: 8px; height: 8px; border-radius: 50%; background: #BD8D53; flex: none }
+.plan-status.running .pulse { animation: home-pulse 1s ease-in-out infinite }
+@keyframes home-pulse { 50% { opacity: .25 } }
+.zone { transition: fill .5s ease }
+.tagnum { opacity: 1; transition: opacity .3s ease }
+.tagnum.hidden-tag { opacity: 0 }
 
-/* ---------- ticker ---------- */
-.ticker {
-    overflow: hidden;
-    background: var(--charcoal);
-    color: var(--cream);
-    border-block: 1px solid rgba(244, 241, 234, 0.08);
-}
-.ticker-track {
-    display: flex;
-    gap: 40px;
-    width: max-content;
-    padding: 14px 16px;
-    font: 500 13.5px var(--font-mono);
-    white-space: nowrap;
-}
-.ticker-track.moving { animation: home-slide 60s linear infinite; }
-.ticker-track span::before { content: "TapirCommand."; color: var(--ochre-light); }
-@keyframes home-slide { to { transform: translateX(-50%); } }
-
-/* ---------- dimension lines between the sections ---------- */
-.dim {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding-top: 48px;
-    color: var(--text-muted);
-    font: 500 12px var(--font-mono);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-}
-.dim::before, .dim::after { content: ""; flex: 1; height: 1px; background: var(--text-muted); opacity: 0.6; }
-.dim i { width: 1px; height: 14px; background: var(--text-muted); opacity: 0.6; }
-
-.home-section { padding-top: 36px; }
-.sec-head {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 12px 40px;
-    align-items: end;
-    margin-bottom: 32px;
-}
-.sec-head h2, .try h2, .learn h2 { margin: 0; font-size: clamp(30px, 4.4vw, 48px); line-height: 1.05; }
-.sec-head p { margin: 0; color: var(--text-muted); font-size: 17px; max-width: 34em; }
-
-/* ---------- figures ---------- */
-.figures-section { padding-top: 24px; }
-.figures {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-    border: 1.5px solid var(--text);
-    background: var(--card);
-    overflow: hidden;
-}
-.figure {
-    display: grid;
-    gap: 8px;
-    padding: 24px;
-    border-right: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
-    margin: 0 -1px -1px 0;
-}
-.figure strong {
-    font: 700 clamp(40px, 4.6vw, 56px)/0.95 var(--font-heading);
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.02em;
-    color: var(--text);
-}
-.figure span { color: var(--text-muted); font: 500 12.5px var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; }
-.figure span a { color: inherit; }
-.figure span a:hover { color: var(--link); }
-
-/* ---------- ways in, use cases and teasers: cards drawn with ink lines ---------- */
-.ways, .uses { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-.uses { list-style: none; margin: 0; padding: 0; }
-.way, .use, .teaser {
-    display: grid;
-    gap: 12px;
-    align-content: start;
-    min-width: 0;
-    padding: 24px;
-    background: var(--card);
-    border: 1.5px solid var(--text);
-    border-radius: 4px;
-    color: var(--text);
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-.way:hover, .teaser:hover { transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--ochre); }
-.way h3, .use h3, .teaser h3 { margin: 0; }
-.way p, .use p, .teaser p { margin: 0; color: var(--text-muted); }
-.way svg { width: 44px; height: 44px; color: var(--text); }
-.who { color: var(--eyebrow); font: 600 11.5px var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; }
-.way > a, .use > a { font-weight: 600; text-decoration: none; }
-.way > a::after, .use > a::after { content: " \2192"; }
-.use .badge { justify-self: start; }
-.use-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
-.use-meta code { font-size: 12.5px; overflow-wrap: anywhere; }
-.effect {
-    display: inline-block;
-    padding: 1px 9px;
-    border: 1px solid var(--border-strong);
-    border-radius: 999px;
-    color: var(--text);
-    font-size: 12.5px;
-    font-weight: 600;
-}
-
-.teasers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-.teaser { text-decoration: none; }
-.teaser:hover { color: var(--text); }
-.teaser .eyebrow { margin: 0; }
-.teaser .go { color: var(--link); font-weight: 600; }
+/* ---------- ticker: decoration only, still under reduced motion ---------- */
+.ticker { background: var(--charcoal); color: var(--cream); overflow: hidden; border-block: 1px solid rgba(244, 241, 234, .08) }
+.ticker-track { display: flex; gap: 40px; padding: 14px 16px; width: max-content; font: 500 13.5px var(--mono); white-space: nowrap }
+.ticker-track.moving { animation: home-slide 60s linear infinite }
+.ticker-track span::before { content: "TapirCommand."; color: var(--ochre-light) }
+@keyframes home-slide { to { transform: translateX(-50%) } }
 
 /* ---------- the code sample ---------- */
-.try { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 40px; align-items: start; }
-.try > * { min-width: 0; }
-.try h2 { margin-bottom: 16px; }
-.term {
-    background: #1C1E1F;
-    color: #F4F1EA;
-    border: 1px solid var(--pre-border);
-    border-radius: 6px;
-    overflow: hidden;
-    box-shadow: 12px 12px 0 var(--moss);
-}
-.term-bar {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-    padding: 10px 14px;
-    border-bottom: 1px solid rgba(244, 241, 234, 0.1);
-    color: #97A2A6;
-    font: 500 11.5px var(--font-mono);
-}
-.term pre { margin: 0; border: 0; border-radius: 0; background: transparent; font-size: 12.5px; line-height: 1.65; }
-.term .k { color: #D4A876; }
-.term .s { color: #B9C7B4; }
-
-/* ---------- tutorials and Discord ---------- */
-.home .learn { margin-top: 72px; padding: 56px 0 64px; }
-.learn-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 32px 48px; align-items: start; }
-.learn .eyebrow { color: var(--ochre-light); }
-.learn h2 em { color: var(--ochre-light); }
-.learn-grid p { color: rgba(244, 241, 234, 0.86); }
-.learn-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-.teaser-dark { background: var(--charcoal); border-color: rgba(244, 241, 234, 0.25); color: var(--cream); }
-.teaser-dark:hover { color: var(--cream); }
-.teaser-dark h3 { color: var(--cream); }
-.band .teaser-dark p { color: #B7BFC2; }
-.teaser-dark .eyebrow, .teaser-dark .go { color: var(--ochre-light); }
-.learn-next { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 10px; margin: 0; }
+.try { display: grid; grid-template-columns: .8fr 1.2fr; gap: 40px; align-items: start }
+.try > * { min-width: 0 }
+.try .prose h2 { font-size: clamp(32px, 4.6vw, 56px) }
+.try .term pre { font-size: 12.5px }
 
 @media (max-width: 900px) {
-    .hero-grid, .try, .learn-grid { grid-template-columns: 1fr; }
-    .ways, .uses, .teasers { grid-template-columns: 1fr; }
-    .sec-head { grid-template-columns: 1fr; }
+    .hero .wrap, .try { grid-template-columns: 1fr }
 }
 @media (max-width: 640px) {
-    .hero-grid { padding-top: 40px; padding-bottom: 48px; gap: 36px; }
-    .plan-card { box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.22); }
-    .figures { grid-template-columns: 1fr 1fr; }
-    .figure { padding: 18px 16px; }
-    .learn-cards { grid-template-columns: 1fr; }
-    .term { box-shadow: 6px 6px 0 var(--moss); }
+    .hero .wrap { padding-block: 40px 48px; gap: 36px }
+    .plan-card { box-shadow: 8px 8px 0 rgba(0, 0, 0, .22) }
 }

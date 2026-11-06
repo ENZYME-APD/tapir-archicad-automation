@@ -1,14 +1,9 @@
-/* The home page (/): the live figures, the floor-plan demo and the command ticker.
-   The page is complete without it. Every figure is hidden in the HTML and only shown once it was
-   read, so the page never shows a wrong number; none of them uses GitHub's API. Every text it shows
-   is in the page's HTML. Under prefers-reduced-motion the demo shows each result at once and the
-   ticker stands still. */
+/* The home page (/): the floor-plan demo and the command ticker. The live figures are read by
+   assets/site.js. The page is complete without it: without JavaScript the plan shows the numbered
+   doors and the tabs stay hidden. Every text it shows is in the page's HTML. Under
+   prefers-reduced-motion the demo shows each result at once and the ticker stands still. */
 (function () {
     'use strict';
-
-    var REPO = 'ENZYME-APD/tapir-archicad-automation';
-    var RAW_BASE = 'https://raw.githubusercontent.com/' + REPO + '/';
-    var SLUG_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
     function byId (id) {
         return document.getElementById (id);
@@ -16,99 +11,6 @@
 
     function reducedMotion () {
         return !!(window.matchMedia && window.matchMedia ('(prefers-reduced-motion: reduce)').matches);
-    }
-
-    // ---- Live figures ----
-
-    function show (id, number, label) {
-        byId (id + '-number').textContent = number;
-        if (label) {
-            byId (id + '-label').textContent = label;
-        }
-        byId (id).hidden = false;
-    }
-
-    function fetchJson (url) {
-        return fetch (url, { cache: 'no-cache' }).then (function (response) {
-            if (!response.ok) {
-                throw new Error (String (response.status));
-            }
-            return response.json ();
-        });
-    }
-
-    function loadFigures () {
-        // Commands: counted from the command reference's own data, published with this site.
-        var script = document.createElement ('script');
-        script.src = 'archicad-addon/command_definitions.js';
-        script.async = true;
-        script.onload = function () {
-            try {
-                var groups = window.gCommands;
-                if (!Array.isArray (groups)) {
-                    return;
-                }
-                var count = 0;
-                for (var i = 0; i < groups.length; i++) {
-                    if (!groups[i] || !Array.isArray (groups[i].commands)) {
-                        return;
-                    }
-                    count += groups[i].commands.length;
-                }
-                if (count > 0) {
-                    show ('stat-commands', count.toLocaleString ('en-US'));
-                }
-            } catch (e) {}
-        };
-        document.body.appendChild (script);
-
-        if (!window.fetch) {
-            return;
-        }
-
-        // Supported Archicad versions: the list the builds and the release use.
-        fetchJson (RAW_BASE + 'main/archicad-addon/devkits.json').then (function (data) {
-            var versions = (data && Array.isArray (data.devkits) ? data.devkits : []).map (function (devkit) {
-                return devkit ? devkit.archicad : null;
-            }).filter (function (version) {
-                return Number.isInteger (version);
-            });
-            if (versions.length === 0) {
-                return;
-            }
-            versions.sort (function (a, b) { return a - b; });
-            var range = String (versions[0]) + (versions.length > 1 ? '–' + versions[versions.length - 1] : '');
-            show ('stat-versions', String (versions.length), 'Supported Archicad versions (' + range + ')');
-            byId ('hero-versions-range').textContent = range;
-            byId ('hero-versions').hidden = false;
-        }).catch (function () {});
-
-        // Archicad API coverage: the badge the coverage workflow publishes, e.g. "99 % (2177/2179)".
-        fetchJson (RAW_BASE + 'api-coverage/api-coverage-badge.json').then (function (data) {
-            var match = data && typeof data.message === 'string' ? /^\s*(\d+(?:\.\d+)?)\s*%/.exec (data.message) : null;
-            if (match) {
-                show ('stat-coverage', match[1] + '%');
-            }
-        }).catch (function () {});
-
-        // Marketplace scripts: the distinct slugs in the catalogue on the site-data branch. Left out
-        // until the catalogue exists and lists at least one script.
-        fetchJson (RAW_BASE + 'site-data/catalogue.json').then (function (catalogue) {
-            if (!catalogue || catalogue.version !== 1 || !Array.isArray (catalogue.scripts)) {
-                return;
-            }
-            var seen = {};
-            var count = 0;
-            catalogue.scripts.forEach (function (entry) {
-                if (entry && typeof entry.slug === 'string' && SLUG_PATTERN.test (entry.slug) && !seen[entry.slug]) {
-                    seen[entry.slug] = true;
-                    count++;
-                }
-            });
-            if (count > 0) {
-                show ('stat-scripts', count.toLocaleString ('en-US'));
-            }
-        }).catch (function () {});
     }
 
     // ---- The floor-plan demo ----
@@ -224,7 +126,6 @@
     }
 
     function init () {
-        loadFigures ();
         setUpPlan ();
         setUpTicker ();
     }
