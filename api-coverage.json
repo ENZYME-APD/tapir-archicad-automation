@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-06 05:12 UTC",
+ "generatedAt": "2026-11-06 05:54 UTC",
  "versions": [
   25,
   26,
@@ -2914,10 +2914,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2074,
-     "title": "ImportAttributesFromProject: import Composite, Profile and LayerCombination (#1615)"
-    },
-    {
      "number": 1395,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
     }
@@ -2961,18 +2957,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2074,
-     "title": "ImportAttributesFromProject: import Composite, Profile and LayerCombination (#1615)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1615,
-     "title": "Import attributes from another project file (append / overwrite like the Attribute Manager) and export them to a file"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Attribute_GetClassificationInSystem",
@@ -5746,12 +5732,7 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "memory management",
-   "pullRequests": [
-    {
-     "number": 2074,
-     "title": "ImportAttributesFromProject: import Composite, Profile and LayerCombination (#1615)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25603,10 +25584,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2074,
-     "title": "ImportAttributesFromProject: import Composite, Profile and LayerCombination (#1615)"
-    },
-    {
      "number": 2029,
      "title": "Grasshopper: Roofs tool component (Design Tools)"
     },
@@ -31356,10 +31333,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2074,
-     "title": "ImportAttributesFromProject: import Composite, Profile and LayerCombination (#1615)"
-    },
     {
      "number": 2038,
      "title": "Grasshopper: CurtainWalls tool component"
@@ -37909,10 +37882,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2074,
-     "title": "ImportAttributesFromProject: import Composite, Profile and LayerCombination (#1615)"
-    },
     {
      "number": 2029,
      "title": "Grasshopper: Roofs tool component (Design Tools)"
@@ -44700,10 +44669,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2074,
-     "title": "ImportAttributesFromProject: import Composite, Profile and LayerCombination (#1615)"
-    },
-    {
      "number": 2038,
      "title": "Grasshopper: CurtainWalls tool component"
     },
@@ -47966,10 +47931,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2074,
-     "title": "ImportAttributesFromProject: import Composite, Profile and LayerCombination (#1615)"
-    },
     {
      "number": 2038,
      "title": "Grasshopper: CurtainWalls tool component"

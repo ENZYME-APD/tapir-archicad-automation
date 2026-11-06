@@ -34,7 +34,7 @@ Parameters of the 716 used commands: 🟢 656 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-06 05:12 UTC.
+Updated 2026-11-06 05:54 UTC.
 
 | | Status |
 |---|---|
@@ -435,7 +435,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ⬜ `GetAttributeIndexes`
 - ✅ `GetAttributesFromProject` 🟢 2/2 parameters – `GetAttributesFromProjectComponent`
 - ✅ `DeleteAttributes` 🟠 3/4 parameters – `DeleteAttributesComponent`<br><sub>no input: `dryRun`</sub>
-- 🔀 `ImportAttributesFromProject` 🟢 5/5 parameters – `ImportAttributesFromProjectComponent`
+- 🔀 `ImportAttributesFromProject` 🟢 6/6 parameters – `ImportAttributesFromProjectComponent`
 - ✅ `GetUsedAttributes` 🟢 0/0 parameters – `GetUsedAttributesComponent`
 - ✅ `ConsolidateLines` 🟢 0/0 parameters – `ConsolidateLinesComponent`
 - ✅ `ConsolidateFills` 🟢 0/0 parameters – `ConsolidateFillsComponent`

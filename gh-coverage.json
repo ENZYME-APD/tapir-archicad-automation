@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-06 05:12 UTC",
+ "generatedAt": "2026-11-06 05:54 UTC",
  "counts": {
   "done": 568,
   "open": 27,
@@ -9659,7 +9659,7 @@
    "id": "ImportAttributesFromProject",
    "group": "Attribute Commands",
    "version": "1.8.1",
-   "brief": "Imports Line, Fill, ZoneCategory, PenTable and OperationProfile attributes from another project or template file into the open project, with their complete definition (symbol and percent fills included), like Append or Overwrite by name in Archicad's Attribute Manager. A new attribute gets a new guid: Archicad does not hand out the guids stored in the source file. An attribute whose name already exists is skipped, or overwritten in place with overwriteExisting. dryRun reports what would happen without changing anything. The names are the legacy 8-bit names of the source file. Available from Archicad 27.",
+   "brief": "Imports Line, Fill, ZoneCategory, PenTable, OperationProfile, Composite, Profile and LayerCombination attributes from another project or template file into the open project, with their complete definition (symbol and percent fills included), like Append or Overwrite by name in Archicad's Attribute Manager. The lines and fills a composite or profile uses are matched by name; its building materials and surfaces, and the layers of a layer combination, keep their index only with referencesByIndex, since Archicad does not read these types from a closed file. An attribute with a reference that cannot be mapped is not imported. A new attribute gets a new guid: Archicad does not hand out the guids stored in the source file. An attribute whose name already exists is skipped, or overwritten in place with overwriteExisting. dryRun reports what would happen without changing anything. The names are the legacy 8-bit names of the source file. Available from Archicad 27.",
    "status": "merged",
    "reason": "",
    "components": [
@@ -9669,13 +9669,14 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 5,
+   "parameterCount": 6,
    "coveredParameters": [
     "attributeNames",
     "attributeTypes",
     "dryRun",
     "overwriteExisting",
-    "projectFilePath"
+    "projectFilePath",
+    "referencesByIndex"
    ],
    "missingParameters": [],
    "pullRequests": [],
