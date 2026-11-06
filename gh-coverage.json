@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-06 09:45 UTC",
+ "generatedAt": "2026-11-06 10:13 UTC",
  "counts": {
   "done": 568,
   "merged": 175,
@@ -8,8 +8,9 @@
   "not applicable": 1
  },
  "parameters": {
-  "all": 709,
-  "json": 34
+  "all": 710,
+  "json": 32,
+  "partial": 1
  },
  "items": [
   {
@@ -2652,8 +2653,16 @@
      "path": "Components/DesignToolsComponents/BeamsComponent.cs"
     },
     {
+     "name": "CirclesComponent",
+     "path": "Components/DocumentToolsComponents/CirclesComponent.cs"
+    },
+    {
      "name": "ColumnsComponent",
      "path": "Components/DesignToolsComponents/ColumnsComponent.cs"
+    },
+    {
+     "name": "CurtainWallsComponent",
+     "path": "Components/DesignToolsComponents/CurtainWallsComponent.cs"
     },
     {
      "name": "DoorsComponent",
@@ -2788,14 +2797,6 @@
      "title": "Grasshopper: Splines tool component"
     },
     {
-     "number": 1975,
-     "title": "Grasshopper: Circles tool component"
-    },
-    {
-     "number": 1970,
-     "title": "Grasshopper: CurtainWalls tool component"
-    },
-    {
      "number": 1964,
      "title": "Grasshopper: Roofs tool component"
     },
@@ -2822,8 +2823,16 @@
      "path": "Components/DesignToolsComponents/BeamsComponent.cs"
     },
     {
+     "name": "CirclesComponent",
+     "path": "Components/DocumentToolsComponents/CirclesComponent.cs"
+    },
+    {
      "name": "ColumnsComponent",
      "path": "Components/DesignToolsComponents/ColumnsComponent.cs"
+    },
+    {
+     "name": "CurtainWallsComponent",
+     "path": "Components/DesignToolsComponents/CurtainWallsComponent.cs"
     },
     {
      "name": "DoorsComponent",
@@ -5571,9 +5580,13 @@
     {
      "name": "CreateCurtainWallsComponent",
      "path": "Components/ElementsComponents/CreateCurtainWallsComponent.cs"
+    },
+    {
+     "name": "CurtainWallsComponent",
+     "path": "Components/DesignToolsComponents/CurtainWallsComponent.cs"
     }
    ],
-   "parameters": "json",
+   "parameters": "all",
    "parameterCount": 10,
    "coveredParameters": [
     "curtainWallsData",
@@ -5582,25 +5595,14 @@
     "curtainWallsData.favoriteName",
     "curtainWallsData.floorIndex",
     "curtainWallsData.height",
+    "curtainWallsData.id",
     "curtainWallsData.primaryPattern",
     "curtainWallsData.secondaryPattern",
     "curtainWallsData.zCoordinate"
    ],
-   "missingParameters": [
-    "curtainWallsData.id"
-   ],
-   "pullRequests": [
-    {
-     "number": 2038,
-     "title": "Grasshopper: CurtainWalls tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1970,
-     "title": "Grasshopper: CurtainWalls tool component"
-    }
-   ]
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreateAssociativeDimensions",
@@ -5917,6 +5919,10 @@
    "reason": "",
    "components": [
     {
+     "name": "CirclesComponent",
+     "path": "Components/DocumentToolsComponents/CirclesComponent.cs"
+    },
+    {
      "name": "CreateCirclesComponent",
      "path": "Components/ElementsComponents/CreateCirclesComponent.cs"
     }
@@ -5927,6 +5933,7 @@
     "circlesData",
     "circlesData.favoriteName",
     "circlesData.floorInd",
+    "circlesData.id",
     "circlesData.layerIndex",
     "circlesData.linePenIndex",
     "circlesData.lineTypeId",
@@ -5935,21 +5942,10 @@
     "circlesData.roomSeparator"
    ],
    "missingParameters": [
-    "circlesData.id",
     "databaseId"
    ],
-   "pullRequests": [
-    {
-     "number": 2039,
-     "title": "Grasshopper: Circles tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1975,
-     "title": "Grasshopper: Circles tool component"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "CreateHotspots",
@@ -7139,37 +7135,30 @@
    "reason": "",
    "components": [
     {
+     "name": "CurtainWallsComponent",
+     "path": "Components/DesignToolsComponents/CurtainWallsComponent.cs"
+    },
+    {
      "name": "ModifyCurtainWallsComponent",
      "path": "Components/ElementsComponents/ModifyCurtainWallsComponent.cs"
     }
    ],
-   "parameters": "json",
+   "parameters": "all",
    "parameterCount": 9,
    "coveredParameters": [
     "curtainWallsWithDetails",
+    "curtainWallsWithDetails.cells",
     "curtainWallsWithDetails.coordinates",
     "curtainWallsWithDetails.elementId",
     "curtainWallsWithDetails.floorIndex",
     "curtainWallsWithDetails.height",
+    "curtainWallsWithDetails.primaryPattern",
+    "curtainWallsWithDetails.secondaryPattern",
     "curtainWallsWithDetails.zCoordinate"
    ],
-   "missingParameters": [
-    "curtainWallsWithDetails.cells",
-    "curtainWallsWithDetails.primaryPattern",
-    "curtainWallsWithDetails.secondaryPattern"
-   ],
-   "pullRequests": [
-    {
-     "number": 2038,
-     "title": "Grasshopper: CurtainWalls tool component"
-    }
-   ],
-   "issues": [
-    {
-     "number": 1970,
-     "title": "Grasshopper: CurtainWalls tool component"
-    }
-   ]
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ModifyCurtainWallFrames",
@@ -8559,8 +8548,16 @@
      "path": "Components/DesignToolsComponents/BeamsComponent.cs"
     },
     {
+     "name": "CirclesComponent",
+     "path": "Components/DocumentToolsComponents/CirclesComponent.cs"
+    },
+    {
      "name": "ColumnsComponent",
      "path": "Components/DesignToolsComponents/ColumnsComponent.cs"
+    },
+    {
+     "name": "CurtainWallsComponent",
+     "path": "Components/DesignToolsComponents/CurtainWallsComponent.cs"
     },
     {
      "name": "DoorsComponent",
@@ -12238,7 +12235,7 @@
    "id": "GetGDLDate",
    "group": "Library Commands",
    "version": "1.8.1",
-   "brief": "Gets the date GDL scripts see, as the integer value the Archicad API returns.",
+   "brief": "Gets the date GDL scripts see: year, month, day, hour, minute and second.",
    "status": "merged",
    "reason": "",
    "components": [
@@ -12258,7 +12255,7 @@
    "id": "SetGDLDate",
    "group": "Library Commands",
    "version": "1.8.1",
-   "brief": "Sets the date GDL scripts see, in the integer format GetGDLDate returns. Useful to test date-dependent library parts; set the value read with GetGDLDate back to restore it.",
+   "brief": "Sets the date GDL scripts see: year, month, day, hour, minute and second, as GetGDLDate returns them. Useful to test date-dependent library parts; set the value read with GetGDLDate back to restore it.",
    "status": "merged",
    "reason": "",
    "components": [
@@ -12267,12 +12264,19 @@
      "path": "Components/LibraryComponents/SetGDLDateComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 1,
+   "parameters": "partial",
+   "parameterCount": 7,
    "coveredParameters": [
     "date"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "date.day",
+    "date.hour",
+    "date.minute",
+    "date.month",
+    "date.second",
+    "date.year"
+   ],
    "pullRequests": [],
    "issues": []
   },

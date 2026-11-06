@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-06 09:45 UTC",
+ "generatedAt": "2026-11-06 10:13 UTC",
  "versions": [
   25,
   26,
@@ -5792,10 +5792,6 @@
    "reason": "memory management",
    "pullRequests": [
     {
-     "number": 2038,
-     "title": "Grasshopper: CurtainWalls tool component"
-    },
-    {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
     },
@@ -7018,7 +7014,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2115,
+     "title": "Texts and labels: set multiStyle so the style of each run is kept"
+    }
+   ],
    "issues": [
     {
      "number": 1914,
@@ -7892,10 +7893,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2038,
-     "title": "Grasshopper: CurtainWalls tool component"
-    },
-    {
      "number": 463,
      "title": "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"
     }
@@ -8707,12 +8704,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 1956,
-     "title": "Add JSON checks for the classification commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11333,12 +11325,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2022,
-     "title": "Add JSON checks: copying library parts and GDL helpers"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11522,12 +11509,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2022,
-     "title": "Add JSON checks: copying library parts and GDL helpers"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31227,14 +31209,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2038,
-     "title": "Grasshopper: CurtainWalls tool component"
-    },
-    {
-     "number": 2022,
-     "title": "Add JSON checks: copying library parts and GDL helpers"
-    },
-    {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
     },
@@ -44550,14 +44524,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2038,
-     "title": "Grasshopper: CurtainWalls tool component"
-    },
-    {
-     "number": 2022,
-     "title": "Add JSON checks: copying library parts and GDL helpers"
-    },
-    {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
     },
@@ -47804,14 +47770,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2038,
-     "title": "Grasshopper: CurtainWalls tool component"
-    },
-    {
-     "number": 2022,
-     "title": "Add JSON checks: copying library parts and GDL helpers"
-    },
     {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"

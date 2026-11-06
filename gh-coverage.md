@@ -4,21 +4,21 @@ Every JSON command of the Tapir Add-On, whether a Grasshopper component calls it
 
 **743 of 746** applicable Tapir commands have a Grasshopper component (99 %): ✅ 568 done, 🔀 175 merged, 🚧 3 in progress, ⛔ 1 skipped, ➖ 1 not applicable.
 
-Parameters of the 743 used commands: 🟢 709 every parameter has an input, 🟡 34 the rest through a JSON input, 🟠 0 some parameters missing.
+Parameters of the 743 used commands: 🟢 710 every parameter has an input, 🟡 32 the rest through a JSON input, 🟠 1 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Application Commands | 100 % | 35 | 25 | 10 |  |  |  |  |  | 35 |  |  |
 | Project Commands | 100 % | 65 | 50 | 15 |  |  |  |  |  | 65 |  |  |
 | Custom Data Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
-| Element Commands | 100 % | 163 | 130 | 33 |  |  |  | 1 |  | 142 | 21 |  |
+| Element Commands | 100 % | 163 | 130 | 33 |  |  |  | 1 |  | 144 | 19 |  |
 | Element grouping Commands | 100 % | 15 | 11 | 4 |  |  |  |  |  | 15 |  |  |
 | Favorites Commands | 92 % | 26 | 18 | 6 | 2 |  |  |  |  | 24 |  |  |
 | Property Commands | 100 % | 30 | 21 | 9 |  |  |  |  |  | 30 |  |  |
 | Classification Commands | 100 % | 19 | 17 | 2 |  |  |  |  |  | 19 |  |  |
 | Attribute Commands | 100 % | 64 | 55 | 9 |  |  |  |  |  | 55 | 9 |  |
 | IFC Commands | 100 % | 15 | 13 | 2 |  |  |  |  |  | 15 |  |  |
-| Library Commands | 98 % | 50 | 18 | 31 | 1 |  |  |  |  | 49 |  |  |
+| Library Commands | 98 % | 50 | 18 | 31 | 1 |  |  |  |  | 48 |  | 1 |
 | Teamwork Commands | 100 % | 18 | 15 | 3 |  |  |  |  |  | 18 |  |  |
 | Navigator Commands | 100 % | 80 | 61 | 19 |  |  |  |  |  | 77 | 3 |  |
 | Graphic Override Commands | 100 % | 4 | 4 |  |  |  |  |  |  | 4 |  |  |
@@ -34,7 +34,7 @@ Parameters of the 743 used commands: 🟢 709 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-06 09:45 UTC.
+Updated 2026-11-06 10:13 UTC.
 
 | | Status |
 |---|---|
@@ -177,8 +177,8 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `GetMarquee` 🟢 0/0 parameters – `GetMarqueeComponent`
 - ✅ `SetMarquee` 🟢 4/4 parameters – `SetMarqueeComponent`
 - ✅ `FilterElements` 🟢 7/7 parameters – `FilterElementsComponent`
-- ✅ `GetDetailsOfElements` 🟡 2/3 parameters – `ArcsComponent`, `BeamsComponent`, `ColumnsComponent`, `DoorsComponent`, `DrawingsComponent`, `FillsComponent`, `GetDetailsOfBeamsComponent`, `GetDetailsOfColumnsComponent`, `GetDetailsOfElementsComponent`, `GetDetailsOfLabelsComponent`, `GetDetailsOfPolylinesComponent`, `GetDetailsOfRoofsComponent`, `GetDetailsOfSlabsComponent`, `GetDetailsOfTextsComponent`, `GetDetailsOfWallsComponent`, `GetDetailsOfZonesComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `SlabsComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent` — [#1979](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1979 "Grasshopper: Hotspots tool component"), [#1977](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1977 "Grasshopper: Splines tool component"), [#1975](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1975 "Grasshopper: Circles tool component"), [#1970](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1970 "Grasshopper: CurtainWalls tool component"), [#1964](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1964 "Grasshopper: Roofs tool component"), [#1791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1791 "Grasshopper: Doors and Windows tool components, with their floor plan parameters")<br><sub>no input: `additionalFields`</sub>
-- ✅ `SetDetailsOfElements` 🟢 8/8 parameters – `ArcsComponent`, `BeamsComponent`, `ColumnsComponent`, `DoorsComponent`, `DrawingsComponent`, `FillsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `SetDetailsOfTextsComponent`, `SetDetailsOfWallsComponent`, `SlabsComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent`
+- ✅ `GetDetailsOfElements` 🟡 2/3 parameters – `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `FillsComponent`, `GetDetailsOfBeamsComponent`, `GetDetailsOfColumnsComponent`, `GetDetailsOfElementsComponent`, `GetDetailsOfLabelsComponent`, `GetDetailsOfPolylinesComponent`, `GetDetailsOfRoofsComponent`, `GetDetailsOfSlabsComponent`, `GetDetailsOfTextsComponent`, `GetDetailsOfWallsComponent`, `GetDetailsOfZonesComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `SlabsComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent` — [#1979](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1979 "Grasshopper: Hotspots tool component"), [#1977](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1977 "Grasshopper: Splines tool component"), [#1964](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1964 "Grasshopper: Roofs tool component"), [#1791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1791 "Grasshopper: Doors and Windows tool components, with their floor plan parameters")<br><sub>no input: `additionalFields`</sub>
+- ✅ `SetDetailsOfElements` 🟢 8/8 parameters – `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `FillsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `SetDetailsOfTextsComponent`, `SetDetailsOfWallsComponent`, `SlabsComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent`
 - 🔀 `SetElementInfoStrings` 🟢 3/3 parameters – `SetElementInfoStringsComponent`
 - ✅ `GetElementCategories` 🟢 0/0 parameters – `GetElementCategoriesComponent`
 - ✅ `GetCategoryValuesOfElements` 🟢 2/2 parameters – `GetCategoryValuesOfElementsComponent`
@@ -275,7 +275,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ⛔ `CreateSkylights` *(Grasshopper component deferred to a follow-up; this PR adds the Add-On command and Python example)*
 - ✅ `CreateRailings` 🟢 7/7 parameters – `RailingsComponent`
 - 🔀 `CreateRailingsFromPolyline` 🟡 6/7 parameters – `CreateRailingsFromPolylineComponent`<br><sub>no input: `railingsData.polylineArcs`</sub>
-- ✅ `CreateCurtainWalls` 🟡 9/10 parameters – `CreateCurtainWallsComponent` — [#2038](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2038 "Grasshopper: CurtainWalls tool component"), [#1970](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1970 "Grasshopper: CurtainWalls tool component")<br><sub>no input: `curtainWallsData.id`</sub>
+- ✅ `CreateCurtainWalls` 🟢 10/10 parameters – `CreateCurtainWallsComponent`, `CurtainWallsComponent`
 - ✅ `CreateAssociativeDimensions` 🟡 4/11 parameters – `CreateAssociativeDimensionsComponent`<br><sub>no input: `dimensionsData.appearance`, `dimensionsData.elevationOrigin`, `dimensionsData.favoriteName`, `dimensionsData.floorIndex`, `dimensionsData.textFrame`, `dimensionsData.textHeight`, `dimensionsData.textPen`</sub>
 - ✅ `CreateAssociativeDimensionsOnSection` 🟡 5/16 parameters – `CreateAssociativeDimensionsOnSectionComponent`<br><sub>no input: `dimensionsData.appearance`, `dimensionsData.beginPlane`, `dimensionsData.elevationOrigin`, `dimensionsData.favoriteName`, `dimensionsData.placeOnTop`, `dimensionsData.sectionElementIds`, `dimensionsData.skinBorderIndices`, `dimensionsData.textFrame`, `dimensionsData.textHeight`, `dimensionsData.textPen`, `dimensionsData.totalSizePlane`</sub>
 - ✅ `CreateWallThicknessDimensions` 🟡 4/10 parameters – `CreateWallThicknessDimensionsComponent`<br><sub>no input: `dimensionsData.appearance`, `dimensionsData.elevationOrigin`, `dimensionsData.favoriteName`, `dimensionsData.textFrame`, `dimensionsData.textHeight`, `dimensionsData.textPen`</sub>
@@ -285,7 +285,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `CreatePolylines` 🟡 11/12 parameters – `CreatePolylinesComponent`, `PolylinesComponent`<br><sub>no input: `databaseId`</sub>
 - ✅ `CreateLineElements` 🟡 10/11 parameters – `CreateLineElementsComponent`, `LinesComponent`<br><sub>no input: `databaseId`</sub>
 - ✅ `CreateArcs` 🟡 12/13 parameters – `ArcsComponent`, `CreateArcsComponent`<br><sub>no input: `databaseId`</sub>
-- ✅ `CreateCircles` 🟡 9/11 parameters – `CreateCirclesComponent` — [#2039](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2039 "Grasshopper: Circles tool component"), [#1975](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1975 "Grasshopper: Circles tool component")<br><sub>no input: `circlesData.id`, `databaseId`</sub>
+- ✅ `CreateCircles` 🟡 10/11 parameters – `CirclesComponent`, `CreateCirclesComponent`<br><sub>no input: `databaseId`</sub>
 - ✅ `CreateHotspots` 🟡 7/9 parameters – `CreateHotspotsComponent` — [#2042](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2042 "Grasshopper: Hotspots tool component"), [#1979](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1979 "Grasshopper: Hotspots tool component")<br><sub>no input: `databaseId`, `hotspotsData.id`</sub>
 - ✅ `CreateHatches` 🟡 17/18 parameters – `CreateHatchesComponent`, `FillsComponent`<br><sub>no input: `databaseId`</sub>
 - ✅ `CreateSplines` 🟡 9/11 parameters – `CreateSplinesComponent` — [#2040](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2040 "Grasshopper: Splines tool component"), [#1977](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1977 "Grasshopper: Splines tool component")<br><sub>no input: `databaseId`, `splinesData.id`</sub>
@@ -314,7 +314,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `ModifyLamps` 🟢 26/26 parameters – `LampsComponent`, `ModifyLampsComponent`
 - ✅ `ModifyTexts` 🟢 7/7 parameters – `ModifyTextsComponent`, `TextsComponent`
 - ✅ `ModifyLabels` 🟢 7/7 parameters – `LabelsComponent`, `ModifyLabelsComponent`
-- ✅ `ModifyCurtainWalls` 🟡 6/9 parameters – `ModifyCurtainWallsComponent` — [#2038](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2038 "Grasshopper: CurtainWalls tool component"), [#1970](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1970 "Grasshopper: CurtainWalls tool component")<br><sub>no input: `curtainWallsWithDetails.cells`, `curtainWallsWithDetails.primaryPattern`, `curtainWallsWithDetails.secondaryPattern`</sub>
+- ✅ `ModifyCurtainWalls` 🟢 9/9 parameters – `CurtainWallsComponent`, `ModifyCurtainWallsComponent`
 - 🔀 `ModifyCurtainWallFrames` 🟢 9/9 parameters – `ModifyCurtainWallFramesComponent`
 - 🔀 `ModifyStairs` 🟡 15/27 parameters – `ModifyStairsComponent`<br><sub>no input: `stairsWithDetails.risers`, `stairsWithDetails.risers.crossSection`, `stairsWithDetails.structures`, `stairsWithDetails.structures.bottomType`, `stairsWithDetails.structures.horizontalThickness`, `stairsWithDetails.structures.side`, `stairsWithDetails.treads`, `stairsWithDetails.treads.nosingSlant`, `stairsWithDetails.treads.nosingType`, `stairsWithDetails.treads.nosingValue`, `stairsWithDetails.treads.role`, `stairsWithDetails.treads.visible`</sub>
 - ✅ `ChangeTextContent` 🟢 5/5 parameters – `ChangeTextContentComponent`
@@ -380,7 +380,7 @@ A parameter counts as covered when the component's code names it (a static check
 
 - ✅ `GetAllProperties` 🟢 3/3 parameters – `ElementMetadata`, `FindPropertyByGuidComponent`, `FindPropertyByName`, `GetAllPropertiesComponent`
 - ✅ `GetPropertyValuesOfElements` 🟢 4/4 parameters – `ElementMetadata`, `GetPropertyValuesOfElementsComponent`
-- ✅ `SetPropertyValuesOfElements` 🟢 1/1 parameters – `ArcsComponent`, `BeamsComponent`, `ColumnsComponent`, `DoorsComponent`, `DrawingsComponent`, `ElementMetadata`, `FillsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `SetPropertyValuesOfElementsComponent`, `SlabsComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent`
+- ✅ `SetPropertyValuesOfElements` 🟢 1/1 parameters – `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `ElementMetadata`, `FillsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `SetPropertyValuesOfElementsComponent`, `SlabsComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent`
 - 🔀 `GetComponentsOfElements` 🟢 1/1 parameters – `GetComponentsOfElementsComponent`
 - 🔀 `GetPropertyDefinitionsOfElementComponents` 🟢 2/2 parameters – `GetPropertyDefinitionsOfElementComponentsComponent`
 - 🔀 `GetPropertyValuesOfElementComponents` 🟢 2/2 parameters – `GetPropertyValuesOfElementComponentsComponent`
@@ -542,7 +542,7 @@ A parameter counts as covered when the component's code names it (a static check
 - 🔀 `GetLibraryPartOriginalLocations` 🟢 2/2 parameters – `GetLibraryPartOriginalLocationsComponent`
 - ✅ `IsUsableGDLString` 🟢 1/1 parameters – `IsUsableGDLStringComponent`
 - 🔀 `GetGDLDate` 🟢 0/0 parameters – `GetGDLDateComponent`
-- 🔀 `SetGDLDate` 🟢 1/1 parameters – `SetGDLDateComponent`
+- 🔀 `SetGDLDate` 🟠 1/7 parameters – `SetGDLDateComponent`<br><sub>no input: `date.day`, `date.hour`, `date.minute`, `date.month`, `date.second`, `date.year`</sub>
 - 🔀 `CheckLibraries` 🟢 0/0 parameters – `CheckLibrariesComponent`
 - 🔀 `ResetLibraries` 🟢 0/0 parameters – `ResetLibrariesComponent`
 - ✅ `SetLibraryPartScripts` 🟢 12/12 parameters – `SetLibraryPartScriptsComponent`
