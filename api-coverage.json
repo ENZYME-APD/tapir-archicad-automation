@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-06 14:08 UTC",
+ "generatedAt": "2026-11-06 14:26 UTC",
  "versions": [
   25,
   26,
@@ -8952,7 +8952,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2136,
+     "title": "CreateSolidElementLinks: say why a link could not be created"
+    }
+   ],
    "issues": []
   },
   {

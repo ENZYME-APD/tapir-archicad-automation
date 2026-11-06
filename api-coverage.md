@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 61 | 53 | 8 |  |  |  | 8 | 70 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1423 | 1207 | 216 |  |  |  | 12 | 392 |
 
-Archicad 25–30 DevKits; updated 2026-11-06 14:08 UTC.
+Archicad 25–30 DevKits; updated 2026-11-06 14:26 UTC.
 
 | | Status |
 |---|---|
@@ -221,7 +221,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_SetProperty` – Sets the specified property for the given values on an element.
 - 🔀 `ACAPI_Element_SetPropertyOfDefaultElem` – Sets the specified property to the given value on an element default.
 - ✅ `ACAPI_Element_SetUserData` – Attaches the user data to an element or an element default.
-- ✅ `ACAPI_Element_SolidLink_Create` – Defines a new Solid Operation Link.
+- ✅ `ACAPI_Element_SolidLink_Create` – Defines a new Solid Operation Link. — [#2136](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2136 "CreateSolidElementLinks: say why a link could not be created")
 - ✅ `ACAPI_Element_SolidLink_GetFlags` – Retrieves the flag of a Solid Operation Link.
 - ✅ `ACAPI_Element_SolidLink_GetOperation` – Retrieves the operation code of a Solid Operation Link.
 - ✅ `ACAPI_Element_SolidLink_GetOperators` – Retrieves the operator elements linked to a target element.
