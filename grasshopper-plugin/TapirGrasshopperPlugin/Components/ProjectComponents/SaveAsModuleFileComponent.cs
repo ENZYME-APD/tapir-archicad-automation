@@ -29,13 +29,20 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         {
             InText(
                 "ModuleFilePath",
-                "Absolute path of the .mod file to write. An existing file is overwritten.");
+                "Absolute path of the .mod file to write. An existing file is overwritten unless Overwrite is false.");
 
             InGenerics(
                 "ElementGuids",
                 "Identifiers of the elements that go into the module. Optional.");
 
-            SetOptionality(new[] { 1 });
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "Overwrite",
+                "false refuses to save when a file already exists at ModuleFilePath, and writes nothing. " +
+                "Default is true.",
+                true);
+
+            SetOptionality(new[] { 1, 2 });
         }
 
         protected override void AddOutputs()
@@ -79,6 +86,12 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                     });
                 }
                 parameters["elements"] = elements;
+            }
+
+            // Only sent when it differs from the command's default.
+            if (!da.GetOptional(2, true))
+            {
+                parameters["overwrite"] = false;
             }
 
             if (!TryGetConvertedCadValues(

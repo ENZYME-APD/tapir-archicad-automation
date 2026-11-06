@@ -5,9 +5,11 @@
   "commands": {
     "get": "GetDetailsOfElements",
     "getSchema": "RailingDetails",
-    "create": "CreateRailingsCommand"
+    "create": "CreateRailingsCommand",
+    "modify": "ModifyRailingsCommand"
   },
   "plainKeys": [
+    "elementId",
     "favoriteName",
     "id"
   ],

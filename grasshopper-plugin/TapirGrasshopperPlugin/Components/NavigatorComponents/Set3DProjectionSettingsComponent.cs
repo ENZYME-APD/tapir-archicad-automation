@@ -11,6 +11,21 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
     {
         public override string CommandName => "Set3DProjectionSettings";
 
+        // The keys of ProjectionSunSettings (CommonSchemaDefinitions.json).
+        private static readonly string[] SunKeys =
+        {
+            "sunPositionOption",
+            "sunAzimuth",
+            "sunAltitude",
+            "year",
+            "month",
+            "day",
+            "hour",
+            "minute",
+            "second",
+            "summerTime"
+        };
+
         public Set3DProjectionSettingsComponent()
             : base(
                 "Set3DProjectionSettings",
@@ -18,8 +33,8 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "every perspective parameter is required: read a known good set with " +
                 "Get3DProjectionSettings and pass it back, with the values to change replaced. For an " +
                 "axonometry give AxonometryProjectionType, AxonometryAzimuth and/or TransformationMatrix " +
-                "instead (and no perspective parameter); only the given values change. The 3D window " +
-                "shows the change after a rebuild (RebuildView).",
+                "instead (and no perspective parameter); only the given values change. Sun_JSON changes " +
+                "the sun position of either. The 3D window shows the change after a rebuild (RebuildView).",
                 GroupNames.Navigator)
         {
         }
@@ -76,6 +91,16 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
             // The perspective inputs are only required for a perspective.
             SetOptionality(new[] { 0, 1, 2, 3, 4, 5, 6, 9 });
+
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            NavigatorComponentHelp.AddOptionalText(
+                this,
+                "Sun_JSON",
+                "The sun position of the perspective or of the axonometry, as a JSON object with the keys " +
+                "Get3DProjectionSettings returns in its sun: sunPositionOption (Angles or DateAndTime), " +
+                "sunAzimuth, sunAltitude, year, month, day, hour, minute, second and summerTime. Only the " +
+                "given values change; without it the current sun is kept. It goes with the perspective " +
+                "inputs or the axonometry inputs, not on its own. Optional.");
         }
 
         private void InPointItem(
@@ -110,6 +135,20 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
+            // An unconnected Sun_JSON leaves sunText null, which parses to no key.
+            string sunText = null;
+            da.GetData(10, ref sunText);
+
+            if (!NavigatorComponentHelp.TryParseObject(
+                    this,
+                    "Sun_JSON",
+                    sunText,
+                    SunKeys,
+                    out JObject sun))
+            {
+                return;
+            }
+
             var axonometry = new JObject();
             NavigatorComponentHelp.CopyOptional<string>(da, 7, axonometry, "projectionType");
             NavigatorComponentHelp.CopyOptional<double>(da, 8, axonometry, "azimuth");
@@ -144,6 +183,11 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                     return;
                 }
 
+                if (sun.Count > 0)
+                {
+                    axonometry["sun"] = sun;
+                }
+
                 SendProjection(
                     da,
                     new JObject { ["axonometry"] = axonometry });
@@ -164,18 +208,24 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 return;
             }
 
+            var perspective = new JObject
+            {
+                ["cameraPosition"] = ToCoordinate3D(cameraPosition),
+                ["targetPosition"] = ToCoordinate3D(targetPosition),
+                ["distance"] = distance,
+                ["azimuth"] = azimuth,
+                ["viewCone"] = viewCone,
+                ["rollAngle"] = rollAngle,
+                ["isTwoPointPersp"] = isTwoPointPersp
+            };
+            if (sun.Count > 0)
+            {
+                perspective["sun"] = sun;
+            }
+
             var parameters = new JObject
             {
-                ["perspective"] = new JObject
-                {
-                    ["cameraPosition"] = ToCoordinate3D(cameraPosition),
-                    ["targetPosition"] = ToCoordinate3D(targetPosition),
-                    ["distance"] = distance,
-                    ["azimuth"] = azimuth,
-                    ["viewCone"] = viewCone,
-                    ["rollAngle"] = rollAngle,
-                    ["isTwoPointPersp"] = isTwoPointPersp
-                }
+                ["perspective"] = perspective
             };
 
             SendProjection(

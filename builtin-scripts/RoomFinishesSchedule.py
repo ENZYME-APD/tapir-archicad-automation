@@ -3,6 +3,10 @@
 # dependencies = []
 # ///
 
+# /// tapir
+# changes = "files"
+# ///
+
 '''
 Room Finishes Schedule
 
@@ -11,13 +15,15 @@ selected zones), one row per zone and finish, and saves the table as CSV or
 Excel. It reads only; nothing in the project is changed.
 
 - Floor and ceiling: the zone's net area as Archicad calculates it.
-- Walls: the length of the walls around the zone (Archicad's zone quantity)
-  times the zone's height, less the doors and windows that open into the zone
-  (width x height of each). The wall area is split by the surface the boundary
-  walls show: a wall whose two sides have the same surface override, or whose
-  model shows a single surface, gives that surface. When the sides differ, the
-  surfaces are listed with "(side not reported)", because Archicad does not
-  report which side faces the zone.
+- Walls: Archicad's walls surface of the zone, which uses the real height of
+  each wall and leaves out the doors, windows and covered parts. It is split by
+  the surface the boundary walls show, in proportion to the length of each
+  wall around the zone times the zone's height, less the doors and windows that
+  open into the zone (width x height of each); these are the Length, Height and
+  Openings columns. A wall whose two sides have the same surface override, or
+  whose model shows a single surface on its faces, gives that surface. When the
+  sides differ, the surfaces are listed with "(side not reported)", because
+  Archicad does not report which side faces the zone.
 
 Needs Archicad 26 or later (zone and opening relations) and Tapir 1.7.3 or
 later (GetQuantitiesOfElements, GetSurfaceQuantitiesOfElements).
@@ -35,6 +41,9 @@ from utilities.ui import ScriptWindow, make_tree, require_archicad
 SCRIPT_NAME = "Room Finishes Schedule"
 QUANTITY_BATCH = 200
 NOT_REPORTED = "(not reported)"
+# GetSurfaceQuantitiesOfElements also reports the top and the ends of a wall. A surface with less than
+# this share of the wall's exposed area is taken to be one of those, not a face.
+MIN_SURFACE_SHARE = 0.15
 HEADERS = ["Story", "Zone number", "Zone name", "Finish", "Surface",
            "Length (m)", "Height (m)", "Openings (m²)", "Area (m²)"]
 
@@ -66,8 +75,9 @@ class RoomFinishesSchedule:
     def __init__(self):
         self.window = ScriptWindow(
             SCRIPT_NAME,
-            "Floor, wall and ceiling finish areas per zone. Wall areas are the walls around the zone "
-            "times its height, less its doors and windows, grouped by the surface of the boundary walls.",
+            "Floor, wall and ceiling finish areas per zone. The wall area is Archicad's walls surface of the "
+            "zone (real wall heights, without doors, windows and covered parts), split by the surface of the "
+            "boundary walls.",
             min_width=820, min_height=480)
         self.rows: list[list] = []
         self._build_body()
@@ -175,10 +185,23 @@ class RoomFinishesSchedule:
                     for other, length in lengths.items():
                         openings[other] += area * length / walls_length
 
+            # Archicad's walls surface uses the real height of each wall and leaves out the doors, windows
+            # and covered parts, so it is the wall area; length x height less openings only splits it.
+            # Add-ons that do not report it get length x height less openings.
+            walls_surface = q.get("wallsSurface")
+            if not lengths and walls_surface:
+                lengths[NOT_REPORTED] = 0.0
+            shares = {label: max(0.0, lengths[label] * height - openings[label]) for label in lengths}
+            shares_total = sum(shares.values())
             for label in sorted(lengths, key=lambda s: (s == NOT_REPORTED, s.lower())):
-                gross = lengths[label] * height
+                if walls_surface is None:
+                    area = shares[label]
+                elif shares_total > 0:
+                    area = walls_surface * shares[label] / shares_total
+                else:
+                    area = walls_surface / len(lengths)
                 rows.append([floor_index, *head, "Wall", label, round(lengths[label], 2), round(height, 2),
-                             round(openings[label], 2), round(max(0.0, gross - openings[label]), 2)])
+                             round(openings[label], 2), round(area, 2)])
 
             rows.append([floor_index, *head, "Ceiling", "", "", "", "", round(floor_area, 2)])
 
@@ -229,8 +252,13 @@ class RoomFinishesSchedule:
             if reference and opposite:
                 labels[wall] = name(reference) if reference == opposite else several({reference, opposite})
                 continue
-            shown = {guid_of(s.get("surfaceId")) for s in surface.get("surfaces", []) if s.get("surfaceId")}
-            shown.discard(None)
+            exposed: dict[str, float] = defaultdict(float)
+            for s in surface.get("surfaces", []):
+                guid = guid_of(s.get("surfaceId"))
+                if guid:
+                    exposed[guid] += s.get("exposedArea", 0.0)
+            total = sum(exposed.values())
+            shown = {guid for guid, area in exposed.items() if total <= 0 or area >= MIN_SURFACE_SHARE * total}
             if len(shown) == 1:
                 labels[wall] = name(next(iter(shown)))
             elif shown:

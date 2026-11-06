@@ -3,6 +3,10 @@
 # dependencies = []
 # ///
 
+# /// tapir
+# changes = "files"
+# ///
+
 """
 Property Value Exporter
 

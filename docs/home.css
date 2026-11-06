@@ -1,0 +1,65 @@
+/* The home page (/): the hero (a floor plan on moss drafting paper), the command ticker and the
+   code sample next to its text. Everything else is in assets/site.css. The floor plan keeps its own
+   colours in both themes: it is a sheet of paper. */
+
+/* ---------- hero ---------- */
+.hero {
+    background-color: var(--moss);
+    background-image:
+        linear-gradient(rgba(244, 241, 234, .06) 1px, transparent 1px), linear-gradient(90deg, rgba(244, 241, 234, .06) 1px, transparent 1px),
+        linear-gradient(rgba(244, 241, 234, .025) 1px, transparent 1px), linear-gradient(90deg, rgba(244, 241, 234, .025) 1px, transparent 1px);
+    background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+    color: var(--cream);
+    position: relative;
+    overflow: hidden;
+    --focus: var(--ochre-light);
+}
+.hero .wrap { display: grid; grid-template-columns: 1fr 1.05fr; gap: 48px; align-items: center; padding-block: 72px 64px }
+.hero .wrap > * { min-width: 0 }
+.hero .tagline { color: var(--ochre-light) }
+.hero h1 { margin-top: 18px; font-size: clamp(52px, 8.4vw, 112px); font-weight: 900; line-height: .92; letter-spacing: -.025em }
+.hero h1 em { color: var(--ochre-light); font-weight: 500 }
+.hero .lead { font-size: clamp(17px, 1.6vw, 20px); color: rgba(244, 241, 234, .86); margin-top: 24px; max-width: 30em }
+.hero .ctas { margin-top: 32px }
+.hero .meta { margin-top: 18px; font: 500 12.5px/1.7 var(--mono); color: rgba(244, 241, 234, .72); letter-spacing: .04em; text-transform: uppercase }
+.hero .meta a { color: var(--ochre-light) }
+.hero .meta .sep { padding-inline: 6px }
+
+/* ---------- the floor plan ---------- */
+.plan-card { margin: 0; background: #F4F1EA; color: #1C1E1F; border-radius: 6px; box-shadow: 14px 14px 0 rgba(0, 0, 0, .22); position: relative; min-width: 0; --focus: #8A6235 }
+.plan-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid rgba(28, 30, 31, .15); font: 500 11.5px var(--mono) }
+.plan-head .dots { display: flex; gap: 6px } .plan-head .dots i { width: 9px; height: 9px; border-radius: 50%; background: rgba(28, 30, 31, .18) }
+.plan-card svg { display: block; width: 100%; height: auto }
+.plan-tabs { display: flex; gap: 6px; padding: 10px 14px 0; flex-wrap: wrap }
+.plan-tabs button { font: 600 12.5px var(--body); border: 1px solid rgba(28, 30, 31, .25); background: #FFFFFF; color: #1C1E1F; border-radius: 999px; padding: 6px 12px; cursor: pointer }
+.plan-tabs button:hover { border-color: #1C1E1F }
+.plan-tabs button[aria-pressed="true"] { background: #1C1E1F; color: #F4F1EA; border-color: #1C1E1F }
+.plan-status { display: flex; align-items: center; gap: 10px; padding: 10px 14px 12px; font: 500 12px/1.4 var(--mono); color: #5F6A6E; border-top: 1px solid rgba(28, 30, 31, .12) }
+.plan-status b { color: #1C1E1F }
+.pulse { width: 8px; height: 8px; border-radius: 50%; background: #BD8D53; flex: none }
+.plan-status.running .pulse { animation: home-pulse 1s ease-in-out infinite }
+@keyframes home-pulse { 50% { opacity: .25 } }
+.zone { transition: fill .5s ease }
+.tagnum { opacity: 1; transition: opacity .3s ease }
+.tagnum.hidden-tag { opacity: 0 }
+
+/* ---------- ticker: decoration only, still under reduced motion ---------- */
+.ticker { background: var(--charcoal); color: var(--cream); overflow: hidden; border-block: 1px solid rgba(244, 241, 234, .08) }
+.ticker-track { display: flex; gap: 40px; padding: 14px 16px; width: max-content; font: 500 13.5px var(--mono); white-space: nowrap }
+.ticker-track.moving { animation: home-slide 60s linear infinite }
+.ticker-track span::before { content: "TapirCommand."; color: var(--ochre-light) }
+@keyframes home-slide { to { transform: translateX(-50%) } }
+
+/* ---------- the code sample ---------- */
+.try { display: grid; grid-template-columns: .8fr 1.2fr; gap: 40px; align-items: start }
+.try > * { min-width: 0 }
+.try .prose h2 { font-size: clamp(32px, 4.6vw, 56px) }
+.try .term pre { font-size: 12.5px }
+
+@media (max-width: 900px) {
+    .hero .wrap, .try { grid-template-columns: 1fr }
+}
+@media (max-width: 640px) {
+    .hero .wrap { padding-block: 40px 48px; gap: 36px }
+    .plan-card { box-shadow: 8px 8px 0 rgba(0, 0, 0, .22) }
+}

@@ -1,0 +1,243 @@
+{
+  "title": "ModifyPens and SetPens change single pens, read back with GetPenTables and GetPens",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "the current Pen Table",
+      "command": "GetCurrentPenTable",
+      "creates": false,
+      "params": {},
+      "save": {"cur": "attributeId.guid"},
+      "expect": [
+        {"path": "isPenTableAttribute", "eq": true, "name": "the current pens are a Pen Table attribute"},
+        {"path": "attributeId.guid", "exists": true},
+        {"path": "penCount", "eq": 255}
+      ]
+    },
+    {
+      "id": "its pens 7 and 9 before",
+      "command": "GetPenTables",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${cur}"}}], "fields": ["pens", "isActiveForModel"]},
+      "save": {
+        "o7Width": "penTables[0].pens[6].width",
+        "o7Color": "penTables[0].pens[6].color",
+        "o7Desc": "penTables[0].pens[6].description",
+        "o9Width": "penTables[0].pens[8].width",
+        "o9Red": "penTables[0].pens[8].color.red"
+      },
+      "expect": [
+        {"path": "penTables", "len": 1},
+        {"path": "penTables[0].error", "exists": false, "name": "no error"},
+        {"path": "penTables[0].isActiveForModel", "eq": true, "name": "the current Pen Table is the one ModifyPens changes by default"},
+        {"path": "penTables[0].pens", "len": 255},
+        {"path": "penTables[0].pens[6].index", "eq": 7}
+      ]
+    },
+    {
+      "id": "pens 8 and 9 in effect before",
+      "command": "GetPens",
+      "creates": false,
+      "params": {"indices": [8, 9]},
+      "save": {
+        "o8Width": "pens[0].width",
+        "o8Color": "pens[0].color",
+        "o8Desc": "pens[0].description",
+        "e9Width": "pens[1].width",
+        "e9Red": "pens[1].color.red"
+      },
+      "expect": [
+        {"path": "pens", "len": 2},
+        {"path": "pens[0].error", "exists": false, "name": "no error"},
+        {"path": "pens[0].index", "eq": 8, "name": "in the order of the given indices"},
+        {"path": "pens[1].index", "eq": 9}
+      ]
+    },
+    {
+      "id": "ModifyPens: every field of pen 7",
+      "command": "ModifyPens",
+      "creates": false,
+      "params": {
+        "target": "model",
+        "pens": [
+          {"index": 7, "color": {"red": 0.2, "green": 0.4, "blue": 0.6}, "width": 0.37, "description": "TapirCheck ModifyPens 1924"}
+        ]
+      },
+      "expect": [
+        {"path": "executionResults", "len": 1},
+        {"path": "executionResults[0].success", "eq": true}
+      ]
+    },
+    {
+      "id": "read back pen 7 in the Pen Table",
+      "command": "GetPenTables",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${cur}"}}], "fields": ["pens"]},
+      "save": {"n9Width": "penTables[0].pens[8].width", "n9Red": "penTables[0].pens[8].color.red"},
+      "expect": [
+        {"path": "penTables[0].pens[6].color.red", "approx": 0.2, "tol": 0.001, "name": "pen 7 color"},
+        {"path": "penTables[0].pens[6].color.green", "approx": 0.4, "tol": 0.001},
+        {"path": "penTables[0].pens[6].color.blue", "approx": 0.6, "tol": 0.001},
+        {"path": "penTables[0].pens[6].width", "approx": 0.37, "tol": 0.0001, "name": "pen 7 width"},
+        {"path": "penTables[0].pens[6].description", "eq": "TapirCheck ModifyPens 1924", "name": "pen 7 description"}
+      ]
+    },
+    {
+      "id": "an unlisted pen is kept by ModifyPens",
+      "command": "GetCurrentPenTable",
+      "creates": false,
+      "params": {},
+      "expect": [
+        {"expr": "${n9Width} - ${o9Width}", "approx": 0, "tol": 0.0001, "name": "pen 9 width kept"},
+        {"expr": "${n9Red} - ${o9Red}", "approx": 0, "tol": 0.001, "name": "pen 9 red kept"}
+      ]
+    },
+    {
+      "id": "ModifyPens: only the width of pen 7",
+      "command": "ModifyPens",
+      "creates": false,
+      "params": {"pens": [{"index": 7, "width": 0.18}]},
+      "expect": [
+        {"path": "executionResults", "len": 1},
+        {"path": "executionResults[0].success", "eq": true}
+      ]
+    },
+    {
+      "id": "read back: only the width changed",
+      "command": "GetPenTables",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${cur}"}}], "fields": ["pens"]},
+      "expect": [
+        {"path": "penTables[0].pens[6].width", "approx": 0.18, "tol": 0.0001, "name": "pen 7 width replaced"},
+        {"path": "penTables[0].pens[6].color.red", "approx": 0.2, "tol": 0.001, "name": "pen 7 color kept"},
+        {"path": "penTables[0].pens[6].color.blue", "approx": 0.6, "tol": 0.001},
+        {"path": "penTables[0].pens[6].description", "eq": "TapirCheck ModifyPens 1924", "name": "pen 7 description kept"}
+      ]
+    },
+    {
+      "id": "ModifyPens bad input: pen index 0",
+      "command": "ModifyPens",
+      "creates": false,
+      "params": {"pens": [{"index": 0, "width": 0.9}]},
+      "expect": [
+        {"path": "executionResults", "len": 1},
+        {"path": "executionResults[0].success", "eq": false, "name": "failed"},
+        {"path": "executionResults[0].error", "exists": true}
+      ]
+    },
+    {
+      "id": "the bad ModifyPens changed nothing",
+      "command": "GetPenTables",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${cur}"}}], "fields": ["pens"]},
+      "expect": [
+        {"path": "penTables[0].pens[6].width", "approx": 0.18, "tol": 0.0001, "name": "pen 7 width unchanged"}
+      ]
+    },
+    {
+      "id": "SetPens: every field of pen 8",
+      "command": "SetPens",
+      "creates": false,
+      "params": {
+        "pens": [
+          {"index": 8, "color": {"red": 0.7, "green": 0.3, "blue": 0.1}, "width": 0.53, "description": "TapirCheck SetPens 1924"}
+        ]
+      },
+      "expect": [
+        {"path": "executionResults", "len": 1},
+        {"path": "executionResults[0].success", "eq": true}
+      ]
+    },
+    {
+      "id": "read back pens 8 and 9 in effect",
+      "command": "GetPens",
+      "creates": false,
+      "params": {"indices": [8, 9]},
+      "save": {"s9Width": "pens[1].width", "s9Red": "pens[1].color.red"},
+      "expect": [
+        {"path": "pens", "len": 2},
+        {"path": "pens[0].index", "eq": 8},
+        {"path": "pens[0].color.red", "approx": 0.7, "tol": 0.001, "name": "pen 8 color"},
+        {"path": "pens[0].color.green", "approx": 0.3, "tol": 0.001},
+        {"path": "pens[0].color.blue", "approx": 0.1, "tol": 0.001},
+        {"path": "pens[0].width", "approx": 0.53, "tol": 0.0001, "name": "pen 8 width"},
+        {"path": "pens[0].description", "eq": "TapirCheck SetPens 1924", "name": "pen 8 description"}
+      ]
+    },
+    {
+      "id": "an unlisted pen is kept by SetPens",
+      "command": "GetCurrentPenTable",
+      "creates": false,
+      "params": {},
+      "expect": [
+        {"expr": "${s9Width} - ${e9Width}", "approx": 0, "tol": 0.0001, "name": "pen 9 width kept"},
+        {"expr": "${s9Red} - ${e9Red}", "approx": 0, "tol": 0.001, "name": "pen 9 red kept"}
+      ]
+    },
+    {
+      "id": "SetPens: only the description of pen 8",
+      "command": "SetPens",
+      "creates": false,
+      "params": {"pens": [{"index": 8, "description": "TapirCheck SetPens 1924 b"}]},
+      "expect": [
+        {"path": "executionResults", "len": 1},
+        {"path": "executionResults[0].success", "eq": true}
+      ]
+    },
+    {
+      "id": "read back: only the description changed",
+      "command": "GetPens",
+      "creates": false,
+      "params": {"indices": [8]},
+      "expect": [
+        {"path": "pens[0].description", "eq": "TapirCheck SetPens 1924 b", "name": "pen 8 description replaced"},
+        {"path": "pens[0].width", "approx": 0.53, "tol": 0.0001, "name": "pen 8 width kept"},
+        {"path": "pens[0].color.red", "approx": 0.7, "tol": 0.001, "name": "pen 8 color kept"},
+        {"path": "pens[0].color.blue", "approx": 0.1, "tol": 0.001}
+      ]
+    },
+    {
+      "id": "SetPens bad input: a negative width",
+      "command": "SetPens",
+      "creates": false,
+      "params": {"pens": [{"index": 8, "width": -1.0, "description": "BAD"}]},
+      "expect": [
+        {"path": "executionResults", "len": 1},
+        {"path": "executionResults[0].success", "eq": false, "name": "failed"},
+        {"path": "executionResults[0].error", "exists": true}
+      ]
+    },
+    {
+      "id": "the bad SetPens changed nothing",
+      "command": "GetPens",
+      "creates": false,
+      "params": {"indices": [8]},
+      "expect": [
+        {"path": "pens[0].width", "approx": 0.53, "tol": 0.0001, "name": "pen 8 width unchanged"},
+        {"path": "pens[0].description", "eq": "TapirCheck SetPens 1924 b", "name": "pen 8 description unchanged"}
+      ]
+    },
+    {
+      "id": "GetPens with pen index 0",
+      "command": "GetPens",
+      "creates": false,
+      "params": {"indices": [0]},
+      "expect": [
+        {"path": "pens", "len": 1},
+        {"path": "pens[0].error", "exists": true, "name": "failed"}
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "ModifyPens",
+      "params": {"pens": [{"index": 7, "color": "${o7Color}", "width": "${o7Width}", "description": "${o7Desc}"}]}
+    },
+    {
+      "command": "SetPens",
+      "params": {"pens": [{"index": 8, "color": "${o8Color}", "width": "${o8Width}", "description": "${o8Desc}"}]}
+    }
+  ]
+}

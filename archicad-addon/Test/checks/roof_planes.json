@@ -1,0 +1,71 @@
+{
+  "title": "GetRoofPlanes returns a single-plane roof as its only plane and a hip roof as its four planes",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "single-plane roof (15 degrees) and multi-plane hip roof (30 degrees)",
+      "command": "CreateRoofs",
+      "params": {
+        "roofsData": [
+          {
+            "level": 3.0, "floorIndex": 0, "thickness": 0.2, "structureType": "Basic",
+            "polygonCoordinates": [ { "x": 740, "y": 700 }, { "x": 746, "y": 700 }, { "x": 746, "y": 704 }, { "x": 740, "y": 704 } ],
+            "pivotLine": { "begCoordinate": { "x": 740, "y": 700 }, "endCoordinate": { "x": 746, "y": 700 } },
+            "angle": 0.2617994
+          },
+          {
+            "level": 3.0, "floorIndex": 0, "thickness": 0.2, "structureType": "Basic", "eavesOverhang": 0.0,
+            "levels": [ { "levelHeight": 10.0, "levelAngle": 0.5235988 } ],
+            "polygonCoordinates": [ { "x": 750, "y": 700 }, { "x": 758, "y": 700 }, { "x": 758, "y": 706 }, { "x": 750, "y": 706 } ]
+          }
+        ]
+      },
+      "save": { "r1": "elements[0].elementId.guid", "r2": "elements[1].elementId.guid" }
+    },
+    {
+      "id": "slab",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          { "level": 0, "floorIndex": 0, "thickness": 0.3, "structureType": "Basic",
+            "polygonCoordinates": [ { "x": 710, "y": 700 }, { "x": 714, "y": 700 }, { "x": 714, "y": 704 }, { "x": 710, "y": 704 } ] }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "planes [single-plane roof, hip roof, slab, bogus]",
+      "command": "GetRoofPlanes",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${r1}" } },
+          { "elementId": { "guid": "${r2}" } },
+          { "elementId": { "guid": "${s1}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "roofPlanesOfElements", "len": 4, "name": "one item per element" },
+        { "path": "roofPlanesOfElements[0].planes", "len": 1, "name": "single-plane roof: one plane" },
+        { "path": "roofPlanesOfElements[0].planes[0].partId", "exists": false, "name": "single-plane roof: no part identifier" },
+        { "path": "roofPlanesOfElements[0].planes[0].details.roofClass", "eq": "SinglePlane", "name": "single-plane roof: plane is single-plane" },
+        { "path": "roofPlanesOfElements[0].planes[0].details.angle", "approx": 0.2617994, "tol": 0.0001, "name": "single-plane roof: the slope sent" },
+        { "path": "roofPlanesOfElements[0].planes[0].details.thickness", "approx": 0.2, "name": "single-plane roof: the thickness sent" },
+        { "path": "roofPlanesOfElements[0].planes[0].details.pivotLine.begin.x", "approx": 740, "name": "single-plane roof: pivot line begin x" },
+        { "path": "roofPlanesOfElements[0].planes[0].details.pivotLine.end.x", "approx": 746, "name": "single-plane roof: pivot line end x" },
+        { "path": "roofPlanesOfElements[0].planes[0].details.pivotLine.begin.y", "approx": 700, "name": "single-plane roof: pivot line y" },
+        { "path": "roofPlanesOfElements[1].planes", "len": 4, "name": "hip roof: four planes" },
+        { "path": "roofPlanesOfElements[1].planes[0].partId.main", "exists": true, "name": "hip roof: plane has its part identifier" },
+        { "path": "roofPlanesOfElements[1].planes[0].details.roofClass", "eq": "SinglePlane", "name": "hip roof: each plane is single-plane" },
+        { "path": "roofPlanesOfElements[1].planes[0].details.angle", "approx": 0.5235988, "tol": 0.0001, "name": "hip roof: 1st plane has the level's slope" },
+        { "path": "roofPlanesOfElements[1].planes[1].details.angle", "approx": 0.5235988, "tol": 0.0001, "name": "hip roof: 2nd plane has the level's slope" },
+        { "path": "roofPlanesOfElements[1].planes[2].details.angle", "approx": 0.5235988, "tol": 0.0001, "name": "hip roof: 3rd plane has the level's slope" },
+        { "path": "roofPlanesOfElements[1].planes[3].details.angle", "approx": 0.5235988, "tol": 0.0001, "name": "hip roof: 4th plane has the level's slope" },
+        { "path": "roofPlanesOfElements[1].planes[0].details.thickness", "approx": 0.2, "name": "hip roof: plane has the roof's thickness" },
+        { "path": "roofPlanesOfElements[2].error", "exists": true, "name": "slab: not a roof, an error item" },
+        { "path": "roofPlanesOfElements[3].error", "exists": true, "name": "unknown element is an error item" }
+      ]
+    }
+  ]
+}

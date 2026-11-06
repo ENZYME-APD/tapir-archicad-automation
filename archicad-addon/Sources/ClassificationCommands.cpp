@@ -93,9 +93,11 @@ GS::ObjectState GetClassificationsOfElementsCommand::Execute (const GS::ObjectSt
                 continue;
             }
 
-            classificationIds (GS::ObjectState (
-                "classificationSystemId", GS::ObjectState ("guid", APIGuidToString (systemGuid)),
-                "classificationItemId", GS::ObjectState ("guid", APIGuidToString (item.guid))));
+            GS::ObjectState classificationId ("classificationSystemId", GS::ObjectState ("guid", APIGuidToString (systemGuid)));
+            if (item.guid != APINULLGuid) {
+                classificationId.Add ("classificationItemId", GS::ObjectState ("guid", APIGuidToString (item.guid)));
+            }
+            classificationIds (classificationId);
         }
 
         elementClassifications (elementClassification);
@@ -302,10 +304,12 @@ GS::ObjectState SetClassificationsOfElementsCommand::Execute (const GS::ObjectSt
                     continue;
                 }
 
-                err = ACAPI_Element_RemoveClassificationItem (elemGuid, item.guid);
-                if (err != NoError) {
-                    executionResults (CreateFailedExecutionResult (err, "Failed to remove classification item for element"));
-                    continue;
+                if (item.guid != APINULLGuid) {
+                    err = ACAPI_Element_RemoveClassificationItem (elemGuid, item.guid);
+                    if (err != NoError) {
+                        executionResults (CreateFailedExecutionResult (err, "Failed to remove classification item for element"));
+                        continue;
+                    }
                 }
             }
 
