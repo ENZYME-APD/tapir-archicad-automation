@@ -71,10 +71,17 @@ class Change:
 
 # ---- reading the table ----
 
+SPACED_DECIMAL_COMMA = re.compile(r"^\S.*\s[-+]?\d+,\d+$")
+
+
 def _delimiter(lines: list[str]) -> str | None:
-    for candidate in ("\t", ";", ","):
+    for candidate in ("\t", ";"):
         if any(candidate in line for line in lines):
             return candidate
+    # "First floor 3,2" on every row with a comma: those are decimal commas, not columns
+    comma_lines = [line.strip() for line in lines if "," in line]
+    if comma_lines and not all(SPACED_DECIMAL_COMMA.match(line) for line in comma_lines):
+        return ","
     return None
 
 
@@ -221,6 +228,12 @@ def read_stories() -> list[Story]:
     response = run_tapir("GetStories")
     return [Story(s["index"], s.get("name", ""), s["level"], s.get("height"), s.get("dispOnSections", True))
             for s in sorted(response.get("stories", []), key=lambda s: s["index"])]
+
+
+def floor_plan_is_current() -> bool:
+    """ GetAllElements lists only the current window's database: the model elements on the
+    stories are only seen when the Floor Plan is in front. """
+    return run_tapir("GetCurrentWindowType").get("currentWindowType") == "FloorPlan"
 
 
 def count_elements_on_stories(indices: list[int]) -> dict[int, int]:
@@ -400,6 +413,14 @@ class StorySetupWindow:
         changes = compare(self.current, self.new)
         deleted = [c.index for c in changes if "deleted" in c.kinds]
         if deleted:
+            with self.window.busy("Checking the current window..."):
+                on_floor_plan = floor_plan_is_current()
+            if not on_floor_plan:
+                self._show(self.current, changes)
+                self.window.set_status("Refused: the table would delete story(s), and whether they have elements on "
+                                       "them can only be checked with the Floor Plan in front. Switch to the Floor "
+                                       "Plan window, then press Compare again.", "error")
+                return
             with self.window.busy(f"Checking {len(deleted)} story(s) to delete for elements..."):
                 counts = count_elements_on_stories(deleted)
             for change in changes:
