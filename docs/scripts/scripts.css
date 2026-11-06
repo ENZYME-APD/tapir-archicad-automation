@@ -1,89 +1,31 @@
-/* The Tapir Marketplace pages (/scripts/ and /scripts/share/), on top of ../assets/site.css. */
+/* The scripts pages (/scripts/, one script at /scripts/?s=<slug>, and /scripts/share/), on top of
+   ../assets/site.css, which has the schedule, the pills, the chips and the .detail/.spec layout. */
 
-/* Search and filters */
-.script-filters {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-end;
-    gap: 12px 16px;
-    margin: 0 0 20px;
-}
-.script-filter { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.script-filter-search { flex: 1 1 260px; }
-.script-filter label { font-size: 14px; font-weight: 600; color: var(--text); }
-.script-filter input,
-.script-filter select {
-    width: 100%;
-    min-height: 40px;
-    padding: 7px 10px;
-    border: 1px solid var(--border-strong);
-    border-radius: var(--radius-small);
-    background: var(--card);
-    color: var(--text);
-    font: 400 15px/1.4 var(--font-sans);
-}
-.script-filter input:focus-visible,
-.script-filter select:focus-visible { outline: 2px solid var(--focus); outline-offset: 1px; }
-.script-count { margin: 0 0 14px; color: var(--text-muted); font-size: 14.5px; }
-
-/* Cards */
-.script-cards { list-style: none; margin: 0; padding: 0; }
-.script-card { position: relative; display: flex; flex-direction: column; gap: 8px; }
-.script-card h3 { margin: 0; font-size: 19px; }
-.script-card h3 a { color: var(--text); text-decoration: none; }
-/* The name's link covers the whole card. */
-.script-card h3 a::after { content: ""; position: absolute; inset: 0; border-radius: var(--radius); }
-.script-card:hover { border-color: var(--border-strong); background: var(--card-hover); }
-.script-card:focus-within { outline: 2px solid var(--focus); outline-offset: 2px; }
-.script-card h3 a:focus-visible { outline: none; }
-.script-card .script-meta { font-size: 14px; }
-.script-badges { display: flex; flex-wrap: wrap; gap: 6px; margin: auto 0 0; padding: 0; list-style: none; }
-.script-badges .badge { font-size: 12.5px; }
-/* "Read only" is an outline badge, "Changes the model" the filled ochre one. */
-.badge-outline { background: transparent; border: 1px solid var(--border-strong); padding: 1px 8px; color: var(--text); }
+/* The schedule's filters */
+.script-search { flex: 1 1 320px; max-width: 520px; padding: 9px 16px; font-size: 14.5px }
+.script-search:hover { background: transparent }
+#version-chips { margin-top: -4px }
+.script-count { margin: 4px 0 14px; color: var(--muted); font-size: 14.5px }
+.schedule .cell-script { min-width: 240px }
 
 /* One script */
-.back-link { display: inline-block; margin: 0 0 18px; font-weight: 600; }
-.script-facts {
-    display: grid;
-    grid-template-columns: max-content 1fr;
-    gap: 6px 18px;
-    margin: 18px 0 0;
-    padding: 16px 20px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-}
-.script-facts dt { font-weight: 600; color: var(--text); }
-.script-facts dd { margin: 0; color: var(--text-secondary); min-width: 0; overflow-wrap: anywhere; }
-.script-facts code { font-size: 12.5px; }
-.script-section { margin: 36px 0 0; }
-
-.readme { max-width: var(--text-width); }
-.readme h3 { margin-top: 22px; }
-.readme h4, .readme h5 { margin-top: 18px; font-size: 17px; }
-.readme ul, .readme ol { color: var(--text-secondary); padding-left: 22px; margin: 0 0 14px; }
-.readme li { margin: 0 0 4px; }
-.readme img { max-width: 100%; height: auto; }
-
-.screenshots { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
-.screenshots a { display: block; border: 1px solid var(--border); border-radius: var(--radius-small); overflow: hidden; background: var(--card); }
-.screenshots img { display: block; width: 100%; height: auto; }
-
-.script-versions { list-style: none; margin: 0; padding: 0; }
-.script-versions li { margin: 0 0 12px; padding: 0 0 12px; border-bottom: 1px solid var(--border); }
-.script-versions li:last-child { border-bottom: 0; }
-.script-versions .version-head { margin: 0 0 4px; color: var(--text); font-weight: 600; }
-.script-versions p { margin: 0; }
-
-.script-code pre { max-height: 560px; }
-
-/* /scripts/share/ */
-.share-ways { margin-top: 18px; }
-.check-list { color: var(--text-secondary); padding-left: 22px; max-width: var(--text-width); }
-.check-list li { margin: 0 0 6px; }
-
-@media (max-width: 640px) {
-    .script-facts { grid-template-columns: 1fr; gap: 2px; }
-    .script-facts dd { margin-bottom: 8px; }
-}
+.detail h2 { font-size: 34px; margin-bottom: 12px }
+.script-section + .script-section { margin-top: 12px }
+.readme { max-width: 46em; display: grid; gap: 12px }
+.readme p, .readme li { color: var(--muted) }
+.readme h3 { margin-top: 12px }
+.readme h4, .readme h5, .readme h6 { margin-top: 8px; font-size: 17px }
+.readme ul, .readme ol { padding-left: 22px; margin: 0; display: grid; gap: 4px }
+.readme img { max-width: 100%; height: auto }
+.screenshots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px }
+.screenshots a { display: block; border: 1.5px solid var(--fg); border-radius: 4px; overflow: hidden; background: var(--surface) }
+.screenshots img { display: block; width: 100%; height: auto }
+.shot a { display: block }
+.script-versions { list-style: none; margin: 0; padding: 0; border: 1.5px solid var(--fg); background: var(--surface) }
+.script-versions li { padding: 14px 16px; border-bottom: 1px solid var(--line) }
+.script-versions li:last-child { border-bottom: 0 }
+.script-versions .version-head { font: 700 17px/1.3 var(--display) }
+.script-versions .version-changelog { margin-top: 4px; color: var(--muted) }
+.script-section .term pre { max-height: 560px }
+.spec .install ol { font-size: 14px }
+.spec .install #detail-report { font-weight: 700 }

@@ -4,278 +4,309 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Scripts - Tapir</title>
-<meta name="description" content="The Tapir Marketplace: ready-made scripts shared by the community, to run from the Tapir palette in Archicad.">
+<meta name="description" content="Scripts shared by architects for the Tapir palette in Archicad, each one reviewed and adapted to work in any office before it is listed.">
+<!-- site-assets -->
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;600&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
 <link rel="stylesheet" href="../assets/site.css">
-<link rel="stylesheet" href="scripts.css">
 <script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
 <script src="../assets/site.js" defer></script>
+<!-- /site-assets -->
+<link rel="stylesheet" href="scripts.css">
 <script src="scripts.js" defer></script>
 </head>
 <body>
+<!-- site-header -->
+<a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header">
-    <div class="site-header-inner">
-        <a class="site-brand" href="../">
-            <img src="../assets/tapir_mark_cream.svg" alt="" width="28" height="28">
-            <span class="wordmark">Tapir</span>
-        </a>
-        <nav class="site-nav" aria-label="Site">
-            <ul>
-                <li><a href="../start/">Get started</a></li>
-                <li>
-                    <details class="nav-menu">
-                        <summary>Docs</summary>
-                        <ul>
-                            <li><a href="../archicad-addon/">Commands</a></li>
-                            <li><a href="../api-coverage/">API coverage</a></li>
-                            <li><a href="../gh-coverage/">Grasshopper coverage</a></li>
-                        </ul>
-                    </details>
-                </li>
-                <li><a href="./" aria-current="page">Scripts</a></li>
-                <li><a href="../community/">Community</a></li>
-            </ul>
-        </nav>
-        <button type="button" class="theme-toggle" id="theme-toggle" aria-pressed="false" hidden>
-            <svg class="icon-moon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-            <svg class="icon-sun" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-            <span class="visually-hidden">Dark mode</span>
-        </button>
-        <a class="button" href="../start/#install">Download</a>
+    <div class="wrap nav">
+        <a class="brand" href="../"><img src="../assets/tapir_mark_cream.svg" alt="" width="30" height="30">Tapir</a>
+        <nav class="site-nav" aria-label="Site"><ul>
+            <li><a href="../start/">Get started</a></li>
+            <li><a href="../docs/">Docs</a></li>
+            <li><a href="../scripts/" aria-current="page">Scripts</a></li>
+            <li><a href="../scripts/share/">Share</a></li>
+            <li><a href="../community/">Community</a></li>
+            <li><a href="../about/">About</a></li>
+        </ul></nav>
+        <div class="right">
+            <button class="toggle" id="theme-toggle" type="button" data-dark="Dark" data-light="Light" hidden><span class="toggle-word">Dark</span><span class="visually-hidden"> mode</span></button>
+            <a class="btn btn-primary btn-sm" href="../start/#install">Download</a>
+        </div>
     </div>
 </header>
+<!-- /site-header -->
 
-<!--
-    One page for the whole Marketplace: the list, and one script at ?s=<slug>. scripts.js reads
-    catalogue.json from the site-data branch and fills in the parts below that are hidden; every
-    text it shows is in this HTML (the <template>s and data-* attributes), so the page can be
-    translated. Without JavaScript, or until the catalogue exists, the page says the Marketplace is
-    opening and points to sharing a script.
--->
-<main id="scripts-main">
+<main id="main">
     <div id="scripts-list-view">
-        <section>
-            <span class="eyebrow">Scripts</span>
-            <h1>Tapir Marketplace</h1>
-            <p class="lead">
-                Ready-made scripts shared by architects, to run from the Tapir palette in Archicad.
-                Each one is reviewed before it is listed, and every one is free and open source.
-            </p>
-
-            <div class="callout" id="scripts-opening">
-                <p>
-                    <span class="callout-label"><span aria-hidden="true">&#9432;</span> Opening soon</span>
-                    The Marketplace is moving to this page, and its list appears here as soon as the first scripts are in.
-                    Until then, the scripts shared so far are on the
-                    <a href="https://tapir-marketplace.vercel.app/">current marketplace</a>, and you can
-                    <a href="share/">share your own</a>.
-                </p>
+        <div class="page-head">
+            <div class="wrap">
+                <p class="crumb"><a href="../">Tapir</a> / Scripts</p>
+                <h1>The script <em>schedule.</em></h1>
+                <p>Scripts shared by architects. Each one is checked for safety and adapted to work in any office and any Archicad language before it is listed.</p>
             </div>
+        </div>
+
+        <div class="wrap page-body">
+            <p class="callout" id="scripts-opening">
+                <strong class="callout-label"><span aria-hidden="true">&#9432;</span> Opening soon</strong>
+                The scripts move to this page, and the list appears here as soon as the first ones are in.
+                Until then, the scripts shared so far are on the <a href="https://tapir-marketplace.vercel.app/">current marketplace</a>,
+                and you can <a href="share/">share your own</a>.
+            </p>
             <noscript>
-                <div class="callout">
-                    <p>
-                        <span class="callout-label"><span aria-hidden="true">&#9432;</span> Note</span>
-                        The list of scripts needs JavaScript. The scripts are also in the
-                        <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/tree/main/marketplace">marketplace folder on GitHub</a>.
-                    </p>
-                </div>
+                <p class="callout">
+                    <strong class="callout-label"><span aria-hidden="true">&#9432;</span> Note</strong>
+                    The list of scripts needs JavaScript. The scripts are also in the
+                    <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/tree/main/marketplace">marketplace folder on GitHub</a>.
+                </p>
             </noscript>
-        </section>
 
-        <section id="scripts-browser" aria-labelledby="browse-scripts" hidden>
-            <h2 id="browse-scripts" class="visually-hidden">Browse scripts</h2>
-            <form class="script-filters" role="search" id="script-filters">
-                <div class="script-filter script-filter-search">
-                    <label for="script-search">Search</label>
-                    <input type="search" id="script-search" placeholder="Name, task or author" autocomplete="off">
+            <section id="scripts-browser" aria-labelledby="browse-scripts" hidden>
+                <h2 id="browse-scripts" class="visually-hidden">Browse scripts</h2>
+                <form class="filters" role="search" id="script-filters">
+                    <label class="visually-hidden" for="script-search">Search scripts</label>
+                    <input class="chip script-search" type="search" id="script-search" placeholder="Search: name, task or author" autocomplete="off">
+                </form>
+                <div class="filters" role="group" aria-label="Category" id="category-chips" data-all="All"></div>
+                <div class="filters" role="group" aria-label="Archicad version" id="version-chips" data-all="Any Archicad" data-option="Archicad {version}"></div>
+                <p class="script-count" id="script-count" aria-live="polite"
+                   data-one="1 script" data-many="{count} scripts" data-none="No script matches. Try fewer words or another filter."></p>
+                <div class="schedule-wrap">
+                    <table class="schedule">
+                        <caption>Marketplace · sorted by category</caption>
+                        <thead><tr><th scope="col">ID</th><th scope="col">Script</th><th scope="col">Category</th><th scope="col">Effect</th><th scope="col">Archicad</th><th scope="col">Author</th></tr></thead>
+                        <tbody id="script-rows"></tbody>
+                    </table>
                 </div>
-                <div class="script-filter">
-                    <label for="script-category">Category</label>
-                    <select id="script-category">
-                        <option value="">All categories</option>
-                        <option value="documentation-layouts">Documentation and layouts</option>
-                        <option value="element-data-properties">Element data and properties</option>
-                        <option value="modeling-geometry">Modeling and geometry</option>
-                        <option value="zones-areas">Zones and areas</option>
-                        <option value="import-export">Import and export</option>
-                        <option value="quality-assurance">Quality assurance</option>
-                        <option value="quantities-scheduling">Quantities and scheduling</option>
-                        <option value="libraries-objects">Libraries and objects</option>
-                        <option value="navigator-views">Navigator and views</option>
-                        <option value="classification-attributes">Classifications and attributes</option>
-                        <option value="batch-automation">Batch automation</option>
-                        <option value="utilities">Utilities</option>
-                    </select>
-                </div>
-                <div class="script-filter">
-                    <label for="script-archicad">Archicad version</label>
-                    <select id="script-archicad" data-option="Archicad {version}">
-                        <option value="">All versions</option>
-                    </select>
-                </div>
-            </form>
-            <p class="script-count" id="script-count" aria-live="polite"
-               data-one="1 script" data-many="{count} scripts" data-none="No script matches. Try fewer words or another filter."></p>
-            <ul class="cards script-cards" id="script-cards"></ul>
-        </section>
+            </section>
 
-        <section aria-labelledby="install-a-script">
-            <h2 id="install-a-script">Install a script</h2>
-            <p>
-                Open a script here and follow its <em>Install it from the palette</em> steps. In short: download it into a
-                folder and add that folder to the Tapir palette. <a href="../start/#marketplace">Get started</a> shows how,
-                step by step.
-            </p>
-        </section>
+            <!-- The categories, in the schedule's order, with the code its IDs start with
+                 (the same keys as marketplace/README.md). -->
+            <ul id="script-categories" hidden>
+                <li data-value="quality-assurance" data-code="QA">Quality assurance</li>
+                <li data-value="quantities-scheduling" data-code="QS">Quantities and scheduling</li>
+                <li data-value="documentation-layouts" data-code="DL">Documentation and layouts</li>
+                <li data-value="zones-areas" data-code="ZA">Zones and areas</li>
+                <li data-value="element-data-properties" data-code="EP">Element data and properties</li>
+                <li data-value="modeling-geometry" data-code="MG">Modeling and geometry</li>
+                <li data-value="classification-attributes" data-code="CA">Classifications and attributes</li>
+                <li data-value="navigator-views" data-code="NV">Navigator and views</li>
+                <li data-value="libraries-objects" data-code="LO">Libraries and objects</li>
+                <li data-value="import-export" data-code="IE">Import and export</li>
+                <li data-value="batch-automation" data-code="BA">Batch automation</li>
+                <li data-value="utilities" data-code="UT">Utilities</li>
+            </ul>
 
-        <section aria-labelledby="share-a-script">
-            <h2 id="share-a-script">Share a script</h2>
-            <p>
-                Wrote a script that saves you time? Share it, and we help you make it ready for other offices.
-                No GitHub account needed.
-            </p>
-            <div class="actions">
-                <a class="button" href="share/">How to share a script</a>
-                <a class="button button-secondary" href="https://discord.gg/NAnSennmpY">Join Discord</a>
-            </div>
-        </section>
+            <div class="dim" aria-hidden="true"><i></i><span>Install and share</span><i></i></div>
+            <section>
+                <div class="two">
+                    <article class="way">
+                        <span class="who">Install</span>
+                        <h3 id="install-a-script">Install a script</h3>
+                        <p>
+                            Open a script here and follow its <em>Install in Tapir</em> steps. In short: download it into a folder
+                            and add that folder to the Tapir palette. The website is for browsing; scripts run in Archicad.
+                        </p>
+                        <a href="../start/#marketplace">Step by step in Get started</a>
+                    </article>
+                    <article class="teaser dark">
+                        <span class="tagline">Share</span>
+                        <h3 id="share-a-script">Share a script</h3>
+                        <p>Wrote a script that saves you time? Share it, and we help you make it ready for other offices. No GitHub account needed.</p>
+                        <div class="ctas">
+                            <a class="btn btn-primary btn-sm" href="share/">How to share a script</a>
+                            <a class="btn btn-ghost btn-sm" href="https://discord.gg/NAnSennmpY">Join Discord</a>
+                        </div>
+                    </article>
+                </div>
+            </section>
+        </div>
     </div>
 
     <div id="script-not-found" hidden>
-        <a class="back-link" href="./">&larr; All scripts</a>
-        <h1>Script not found</h1>
-        <div class="callout">
-            <p>
-                <span class="callout-label"><span aria-hidden="true">&#9432;</span> Not found</span>
-                There is no script with this name in the Marketplace, or the list could not be read just now.
+        <div class="page-head">
+            <div class="wrap">
+                <p class="crumb"><a href="../">Tapir</a> / <a href="./">Scripts</a> / Not found</p>
+                <h1>Script not <em>found.</em></h1>
+                <p>There is no script with this name on the list, or the list could not be read just now.</p>
+            </div>
+        </div>
+        <div class="wrap page-body">
+            <p class="callout">
+                <strong class="callout-label"><span aria-hidden="true">&#9432;</span> Not found</strong>
                 Try again later, or see <a href="./">all scripts</a>.
             </p>
         </div>
     </div>
 
-    <article id="script-detail" class="narrow" hidden>
-        <a class="back-link" href="./">&larr; All scripts</a>
-        <span class="eyebrow" id="detail-category"></span>
-        <h1 id="detail-name"></h1>
-        <p class="lead" id="detail-summary"></p>
-        <ul class="script-badges" id="detail-badges"></ul>
-
-        <dl class="script-facts">
-            <dt>Author</dt>
-            <dd id="detail-author"></dd>
-            <dt>Version</dt>
-            <dd id="detail-version"></dd>
-            <dt>Archicad</dt>
-            <dd id="detail-archicad"></dd>
-            <dt>Tapir Add-On</dt>
-            <dd><span id="detail-tapir"></span> or later</dd>
-            <dt>Licence</dt>
-            <dd id="detail-license"></dd>
-            <dt class="detail-sha" hidden>SHA-256</dt>
-            <dd class="detail-sha" hidden><code id="detail-sha"></code></dd>
-        </dl>
-
-        <div class="actions">
-            <a class="button" id="detail-download" hidden>Download the script</a>
-            <a class="button button-secondary" id="detail-source" hidden>View on GitHub</a>
-            <a class="button button-secondary" id="detail-report"
-               data-title="Marketplace script &quot;{name}&quot; ({slug} {version}): "
-               data-body="**Script:** {name} ({slug}), version {version}&#10;**Archicad version and build:** &#10;**Tapir Add-On version:** &#10;&#10;**What happened:**&#10;&#10;**What you expected:**&#10;">Report a problem</a>
+    <article id="script-detail" hidden>
+        <div class="page-head">
+            <div class="wrap">
+                <p class="crumb"><a href="../">Tapir</a> / <a href="./">Scripts</a> / <span id="detail-crumb"></span></p>
+                <h1 id="detail-name"></h1>
+                <p id="detail-summary"></p>
+            </div>
         </div>
+        <div class="wrap page-body">
+            <div class="detail">
+                <div>
+                    <div class="shot" id="detail-shot" data-alt="Screenshot {number} of {name}" hidden></div>
+                    <section class="script-section" id="detail-readme-section" aria-labelledby="about-script" hidden>
+                        <h2 id="about-script">What it does</h2>
+                        <div class="readme" id="detail-readme"></div>
+                    </section>
+                    <section class="script-section" id="detail-screenshots-section" aria-labelledby="script-screenshots" hidden>
+                        <h2 id="script-screenshots">More screenshots</h2>
+                        <div class="screenshots" id="detail-screenshots"></div>
+                    </section>
+                    <section class="script-section" aria-labelledby="script-versions">
+                        <h2 id="script-versions">Versions</h2>
+                        <ol class="script-versions" id="detail-versions"></ol>
+                    </section>
+                    <section class="script-section" id="detail-code-section" aria-labelledby="script-code" hidden>
+                        <h2 id="script-code">Code</h2>
+                        <div class="term">
+                            <div class="bar"><span id="detail-entry"></span><span>Python</span></div>
+                            <pre><code id="detail-code" class="language-python"></code></pre>
+                        </div>
+                    </section>
+                </div>
 
-        <section class="script-section" aria-labelledby="install-from-palette">
-            <h2 id="install-from-palette">Install it from the palette</h2>
-            <ol class="check-list">
-                <li>Check that Archicad and the Tapir Add-On are new enough: see <em>Archicad</em> and <em>Tapir Add-On</em> above.</li>
-                <li>
-                    In the Tapir palette, open the Marketplace, find <strong class="detail-name-ref"></strong> and install it.
-                    It then shows in the palette's script list.
-                </li>
-                <li>
-                    If your palette has no Marketplace yet: download the script with the button above into a folder of
-                    yours, and add that folder to the palette, as <a href="../start/#marketplace">Get started</a> shows.
-                </li>
-                <li>Open the project, select what the script's description asks for, and run it from the palette.</li>
-            </ol>
-            <p class="muted" id="detail-changes-model" hidden>
-                This script changes the model: read what it changes under <em>About this script</em> before you run it.
-            </p>
-            <p class="muted" id="detail-changes-read-only" hidden>
-                This script changes nothing in the model.
-            </p>
-        </section>
+                <aside class="spec" aria-label="About this script">
+                    <dl>
+                        <dt>Version</dt><dd id="detail-version"></dd>
+                        <dt>Archicad</dt><dd id="detail-archicad"></dd>
+                        <dt>Tapir</dt><dd><span id="detail-tapir"></span> or later</dd>
+                        <dt>Effect</dt><dd id="detail-effect"></dd>
+                        <dt>Category</dt><dd id="detail-category"></dd>
+                        <dt>Author</dt><dd id="detail-author"></dd>
+                        <dt>Licence</dt><dd id="detail-license"></dd>
+                        <dt class="detail-sha" hidden>SHA-256</dt><dd class="detail-sha" hidden><code id="detail-sha"></code></dd>
+                    </dl>
+                    <div class="install" id="install-from-palette">
+                        <strong>Install in Tapir</strong>
+                        <ol class="bullets">
+                            <li>Check that Archicad and Tapir are new enough: see <em>Archicad</em> and <em>Tapir</em> above.</li>
+                            <li>When your Tapir palette lists scripts to install, find <strong class="detail-name-ref"></strong> there and install it.</li>
+                            <li>Until then, download the script into a folder and add that folder to the palette, as <a href="../start/#marketplace">Get started</a> shows.</li>
+                            <li>Open the project, select what the script asks for, and run it from the palette.</li>
+                        </ol>
+                        <p id="detail-changes-model" hidden>This script changes the model: read what it changes under <em>What it does</em> before you run it, and try it on a copy first.</p>
+                        <p id="detail-changes-files" hidden>This script writes files, for example a report or an export, and changes nothing in the model.</p>
+                        <p id="detail-changes-read-only" hidden>This script only reads: it changes nothing in the model and writes no files.</p>
+                        <div class="ctas">
+                            <a class="btn btn-primary btn-sm" id="detail-download" hidden>Download the script</a>
+                            <a class="btn btn-line btn-sm" id="detail-source" hidden>View on GitHub</a>
+                        </div>
+                        <a id="detail-report"
+                           data-title="Marketplace script &quot;{name}&quot; ({slug} {version}): "
+                           data-body="**Script:** {name} ({slug}), version {version}&#10;**Archicad version and build:** &#10;**Tapir Add-On version:** &#10;&#10;**What happened:**&#10;&#10;**What you expected:**&#10;">Report a problem</a>
+                    </div>
+                </aside>
+            </div>
 
-        <section class="script-section" id="detail-readme-section" aria-labelledby="about-script" hidden>
-            <h2 id="about-script">About this script</h2>
-            <div class="readme" id="detail-readme"></div>
-        </section>
-
-        <section class="script-section" id="detail-screenshots-section" aria-labelledby="script-screenshots" hidden>
-            <h2 id="script-screenshots">Screenshots</h2>
-            <div class="screenshots" id="detail-screenshots" data-alt="Screenshot {number} of {name}"></div>
-        </section>
-
-        <section class="script-section" aria-labelledby="script-versions">
-            <h2 id="script-versions">Versions</h2>
-            <ol class="script-versions" id="detail-versions"></ol>
-        </section>
-
-        <section class="script-section script-code" id="detail-code-section" aria-labelledby="script-code" hidden>
-            <h2 id="script-code">Code</h2>
-            <pre><code id="detail-code" class="language-python"></code></pre>
-        </section>
-
-        <section class="script-section" aria-labelledby="next-step">
-            <h2 id="next-step">Next step</h2>
-            <p>Made a script of your own? <a href="share/">Share it</a> for other offices.</p>
-        </section>
+            <div class="dim" aria-hidden="true"><i></i><span>Next step</span><i></i></div>
+            <section>
+                <div class="teasers">
+                    <a class="teaser" href="./">
+                        <span class="tagline">Scripts</span>
+                        <h3>All scripts</h3>
+                        <p>Back to the schedule of every script.</p>
+                        <span class="go">Browse scripts &rarr;</span>
+                    </a>
+                    <a class="teaser dark" href="share/">
+                        <span class="tagline">Share</span>
+                        <h3>Made one of your own?</h3>
+                        <p>Share it, and any office can install it from the palette.</p>
+                        <span class="go">How sharing works &rarr;</span>
+                    </a>
+                </div>
+            </section>
+        </div>
     </article>
 
-    <template id="script-card-template">
-        <li class="card script-card">
-            <h3><a class="script-name" href="./"></a></h3>
-            <p class="script-summary"></p>
-            <p class="script-meta muted">By <span class="script-author"></span> · Archicad <span class="script-archicad"></span></p>
-            <ul class="script-badges"></ul>
-        </li>
+    <template id="script-row-template">
+        <tr>
+            <td class="id" data-label="ID"></td>
+            <td class="cell-script"><a class="nm" href="./"></a><div class="ds"></div></td>
+            <td class="cell-category" data-label="Category"></td>
+            <td class="cell-effect" data-label="Effect"></td>
+            <td class="cell-archicad" data-label="Archicad"></td>
+            <td class="cell-author" data-label="Author"></td>
+        </tr>
     </template>
 
-    <template id="script-badge-templates">
-        <li><span class="badge" data-badge="model">Changes the model</span></li>
-        <li><span class="badge badge-outline" data-badge="read-only">Read only</span></li>
-        <li><span class="badge badge-outline" data-badge="category"></span></li>
-        <li><span class="badge badge-outline" data-badge="version">Version {version}</span></li>
+    <template id="script-effect-templates">
+        <span class="pill chg" data-effect="model">Changes the model</span>
+        <span class="pill" data-effect="files">Writes files</span>
+        <span class="pill ro" data-effect="read-only">Read only</span>
+        <span class="muted" data-effect="unknown">Not stated</span>
     </template>
 
     <template id="script-version-template">
         <li>
             <p class="version-head">Version <span class="version-number"></span></p>
-            <p class="muted">Archicad <span class="version-archicad"></span> · Tapir Add-On <span class="version-tapir"></span> or later</p>
+            <p class="muted">Archicad <span class="version-archicad"></span> · Tapir <span class="version-tapir"></span> or later</p>
             <p class="version-changelog"></p>
         </li>
     </template>
 </main>
 
+<!-- site-footer -->
 <footer class="site-footer">
-    <div class="site-footer-inner">
-        <a class="site-brand" href="../">
-            <img src="../assets/tapir_mark_cream.svg" alt="" width="28" height="28">
-            <span class="wordmark">Tapir</span>
-        </a>
-        <p>Open-source automation for Archicad, by <a href="https://github.com/ENZYME-APD">ENZYME-APD</a>.</p>
-        <ul class="footer-links">
-            <li><a href="../start/">Get started</a></li>
-            <li><a href="../archicad-addon/">Commands</a></li>
-            <li><a href="./">Scripts</a></li>
-            <li><a href="../community/">Community</a></li>
-            <li><a href="https://discord.gg/NAnSennmpY">Discord</a></li>
-            <li><a href="https://github.com/ENZYME-APD/tapir-archicad-automation">GitHub</a></li>
-            <li><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues">Report an issue</a></li>
-        </ul>
+    <div class="wrap">
+        <div class="tblock">
+            <div>
+                <span class="lab">Project</span>
+                <span class="proj">Tapir</span>
+                <p class="note">Open-source automation for Archicad. 100% free and open source (MIT). Maintained by Enzyme APD and the community.</p>
+                <p class="note">Contact: <span class="nowrap">contact@enzyme-apd.com</span></p>
+            </div>
+            <div>
+                <span class="lab">Product</span>
+                <ul>
+                    <li><a href="../start/">Get started</a></li>
+                    <li><a href="../scripts/">Scripts</a></li>
+                    <li><a href="../scripts/share/">Share a script</a></li>
+                    <li><a href="../grasshopper/">Grasshopper</a></li>
+                    <li><a href="../ai/">Tapir and AI</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Docs</span>
+                <ul>
+                    <li><a href="../docs/">All docs</a></li>
+                    <li><a href="../archicad-addon/">Commands</a></li>
+                    <li><a href="../api-coverage/">API coverage</a></li>
+                    <li><a href="../gh-coverage/">Grasshopper coverage</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Community</span>
+                <ul>
+                    <li><a href="https://discord.gg/NAnSennmpY">Discord</a></li>
+                    <li><a href="https://github.com/ENZYME-APD/tapir-archicad-automation">GitHub</a></li>
+                    <li><a href="../tutorials/">Tutorials</a></li>
+                    <li><a href="../community/#bots">How fixes happen</a></li>
+                    <li><a href="../roadmap/">Roadmap</a></li>
+                    <li><a href="../about/">About Tapir</a></li>
+                </ul>
+            </div>
+            <div>
+                <div class="rev" data-live="release" hidden>
+                    <span class="lab">Revision</span>
+                    <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest" data-live-value="release"></a>
+                </div>
+                <span class="lab">Licence</span>
+                <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/LICENSE">MIT</a>
+            </div>
+        </div>
+        <p class="fine">Not affiliated with Graphisoft. Archicad is a trademark of Graphisoft SE.</p>
     </div>
 </footer>
+<!-- /site-footer -->
 </body>
 </html>

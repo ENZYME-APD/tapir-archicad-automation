@@ -1,17 +1,22 @@
-/* The Tapir Marketplace (/scripts/): the list of scripts with search and filters, and one script at
+/* The scripts (/scripts/): the schedule of scripts with search and filters, and one script at
    ?s=<slug>. It reads catalogue.json from the site-data branch on raw.githubusercontent.com (never
    GitHub's API):
        {"version": 1, "scripts": [{slug, name, summary, category, tags, author, license, entry,
                                    versions: [{version, archicadVersions, minTapirVersion, changelog,
                                                commit, url, sha256}, ...]}, ...]}
-   The listing fields are those of marketplace/<slug>/listing.json (see marketplace/README.md).
+   The listing fields are those of marketplace/<slug>/listing.json (see marketplace/README.md), where
+   versions are listed newest first. The page does not rely on that order: it sorts the versions by
+   their number (x.y.z), and the highest one is the script's current version.
    Optional fields it also shows when present: "changes" ("model", "read-only" or "files", from the
    script's # /// tapir header, on the script or on its newest version) and "screenshots" (file
    names in the script's screenshots/ folder).
 
+   A script's ID in the schedule is its category's code (data-code in the page's category list) and
+   its place in that category, by name: QA-01, QA-02, ...
+
    A script's README, screenshots and code are read at the commit its newest version names. Anything
    that is missing or does not look right is left out rather than shown wrong; when the catalogue
-   cannot be read, the page keeps saying the Marketplace is opening. Every text shown is in the
+   cannot be read, the page keeps saying the scripts are opening soon. Every text shown is in the
    page's HTML. */
 (function () {
     'use strict';
@@ -28,6 +33,7 @@
     var VERSION_PATTERN = /^[0-9]+\.[0-9]+\.[0-9]+$/;
     var GITHUB_LOGIN_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/;
     var SCREENSHOT_PATTERN = /^(?:screenshots\/)?([A-Za-z0-9_][A-Za-z0-9_.-]*\.(?:png|jpe?g))$/i;
+    var CHANGES = ['model', 'files', 'read-only'];
     var MAX_SCREENSHOTS = 5;
 
     function byId (id) {
@@ -58,6 +64,32 @@
         });
     }
 
+    // "1.10.0" after "1.9.2": the parts compare as numbers.
+    function compareVersions (a, b) {
+        var partsA = a.split ('.').map (Number);
+        var partsB = b.split ('.').map (Number);
+        for (var i = 0; i < 3; i++) {
+            if (partsA[i] !== partsB[i]) {
+                return partsA[i] - partsB[i];
+            }
+        }
+        return 0;
+    }
+
+    // [27, 28, 29, 30] -> "27–30", [25, 27, 28] -> "25, 27–28"
+    function versionRanges (versions) {
+        var ranges = [];
+        versions.forEach (function (v) {
+            var last = ranges[ranges.length - 1];
+            if (last && v === last[1] + 1) {
+                last[1] = v;
+            } else {
+                ranges.push ([v, v]);
+            }
+        });
+        return ranges.map (function (r) { return r[0] === r[1] ? String (r[0]) : r[0] + '–' + r[1]; }).join (', ');
+    }
+
     // ---- The catalogue, checked field by field ----
 
     function cleanVersion (version) {
@@ -82,11 +114,11 @@
         };
     }
 
-    function cleanScript (script, categoryNames) {
+    function cleanScript (script, categories) {
         if (!script || !matches (SLUG_PATTERN, script.slug) || !isString (script.name) || !isString (script.summary)) {
             return null;
         }
-        if (!Object.prototype.hasOwnProperty.call (categoryNames, script.category)) {
+        if (!Object.prototype.hasOwnProperty.call (categories, script.category)) {
             return null;
         }
         if (!script.author || !isString (script.author.name) || !isString (script.license) || !matches (ENTRY_PATTERN, script.entry)) {
@@ -96,9 +128,16 @@
         if (versions.length === 0 || versions.indexOf (null) !== -1) {
             return null;
         }
+        // Newest first, whatever order the catalogue has; a version number listed twice is an error.
+        versions.sort (function (a, b) { return compareVersions (b.version, a.version); });
+        for (var v = 1; v < versions.length; v++) {
+            if (compareVersions (versions[v - 1].version, versions[v].version) === 0) {
+                return null;
+            }
+        }
         var newest = versions[0];
-        var changes = [script.changes, newest.changes].filter (function (value) {
-            return value === 'model' || value === 'read-only' || value === 'files';
+        var changes = [newest.changes, script.changes].filter (function (value) {
+            return CHANGES.indexOf (value) !== -1;
         })[0] || null;
         var screenshots = [];
         if (Array.isArray (script.screenshots)) {
@@ -128,67 +167,67 @@
         };
     }
 
-    function categoryNamesFromPage () {
-        var names = {};
-        var options = byId ('script-category').options;
-        for (var i = 0; i < options.length; i++) {
-            if (options[i].value) {
-                names[options[i].value] = options[i].textContent;
-            }
+    // The categories from the page: {key: {name, code, order}}.
+    function categoriesFromPage () {
+        var categories = {};
+        var items = byId ('script-categories').querySelectorAll ('li[data-value]');
+        for (var i = 0; i < items.length; i++) {
+            categories[items[i].getAttribute ('data-value')] = {
+                name: items[i].textContent.trim (),
+                code: items[i].getAttribute ('data-code') || '',
+                order: i
+            };
         }
-        return names;
+        return categories;
     }
 
     // ---- Shared bits ----
 
-    function badgeTemplate (kind) {
-        var template = byId ('script-badge-templates');
-        var badge = template.content.querySelector ('[data-badge="' + kind + '"]');
-        return badge ? badge.parentNode.cloneNode (true) : null;
+    function effectPill (changes) {
+        var templates = byId ('script-effect-templates').content;
+        var pill = templates.querySelector ('[data-effect="' + (changes || 'unknown') + '"]');
+        return pill ? pill.cloneNode (true) : document.createTextNode ('');
     }
 
-    function addBadges (list, script, categoryNames, withVersion) {
-        var kinds = [];
-        if (script.changes === 'model') {
-            kinds.push ('model');
-        } else if (script.changes) {
-            kinds.push ('read-only');
-        }
-        kinds.push ('category');
-        if (withVersion) {
-            kinds.push ('version');
-        }
-        kinds.forEach (function (kind) {
-            var item = badgeTemplate (kind);
-            if (!item) {
-                return;
-            }
-            var badge = item.querySelector ('[data-badge]');
-            if (kind === 'category') {
-                badge.textContent = categoryNames[script.category];
-            } else if (kind === 'version') {
-                badge.textContent = format (badge.textContent, { version: script.newest.version });
-            }
-            list.appendChild (item);
+    // ---- The schedule ----
+
+    function makeChips (container, options, selected, onChange) {
+        var buttons = [];
+        options.forEach (function (option) {
+            var button = document.createElement ('button');
+            button.type = 'button';
+            button.className = 'chip';
+            button.textContent = option.label;
+            button.setAttribute ('aria-pressed', String (option.value === selected));
+            button.addEventListener ('click', function () {
+                buttons.forEach (function (other) {
+                    other.setAttribute ('aria-pressed', String (other === button));
+                });
+                onChange (option.value);
+            });
+            buttons.push (button);
+            container.appendChild (button);
         });
     }
 
-    function versionList (versions) {
-        return versions.join (', ');
-    }
-
-    // ---- The list ----
-
-    function showList (scripts, categoryNames) {
-        var browser = byId ('scripts-browser');
-        var cards = byId ('script-cards');
+    function showList (scripts, categories) {
         var search = byId ('script-search');
-        var category = byId ('script-category');
-        var archicad = byId ('script-archicad');
+        var rowsBody = byId ('script-rows');
         var count = byId ('script-count');
-        var template = byId ('script-card-template');
+        var template = byId ('script-row-template');
+        var categoryChips = byId ('category-chips');
+        var versionChips = byId ('version-chips');
 
-        scripts.sort (function (a, b) { return a.name.localeCompare (b.name, 'en'); });
+        // By category (the page's order), then by name; the ID numbers the scripts of each category.
+        scripts.sort (function (a, b) {
+            return categories[a.category].order - categories[b.category].order || a.name.localeCompare (b.name, 'en');
+        });
+        var perCategory = {};
+        scripts.forEach (function (script) {
+            perCategory[script.category] = (perCategory[script.category] || 0) + 1;
+            var number = perCategory[script.category];
+            script.id = categories[script.category].code + '-' + (number < 10 ? '0' : '') + number;
+        });
 
         // Only the categories and Archicad versions that have a script are offered.
         var usedCategories = {};
@@ -197,53 +236,50 @@
             usedCategories[script.category] = true;
             script.newest.archicadVersions.forEach (function (v) { usedVersions[v] = true; });
         });
-        for (var i = category.options.length - 1; i > 0; i--) {
-            if (!usedCategories[category.options[i].value]) {
-                category.remove (i);
-            }
-        }
-        Object.keys (usedVersions).map (Number).sort (function (a, b) { return b - a; }).forEach (function (v) {
-            var option = document.createElement ('option');
-            option.value = String (v);
-            option.textContent = format (archicad.getAttribute ('data-option'), { version: v });
-            archicad.appendChild (option);
-        });
 
-        var items = scripts.map (function (script) {
-            var item = template.content.firstElementChild.cloneNode (true);
-            var link = item.querySelector ('.script-name');
+        var rows = scripts.map (function (script) {
+            var row = template.content.firstElementChild.cloneNode (true);
+            row.querySelector ('.id').textContent = script.id;
+            var link = row.querySelector ('.nm');
             link.textContent = script.name;
             link.href = '?s=' + encodeURIComponent (script.slug);
-            item.querySelector ('.script-summary').textContent = script.summary;
-            item.querySelector ('.script-author').textContent = script.author.name;
-            item.querySelector ('.script-archicad').textContent = versionList (script.newest.archicadVersions);
-            addBadges (item.querySelector ('.script-badges'), script, categoryNames, false);
-            var haystack = [script.name, script.summary, script.author.name, categoryNames[script.category]].concat (script.tags).join (' ').toLowerCase ();
-            return { script: script, element: item, haystack: haystack };
+            row.querySelector ('.ds').textContent = script.summary;
+            row.querySelector ('.cell-category').appendChild (document.createTextNode (categories[script.category].name));
+            row.querySelector ('.cell-effect').appendChild (effectPill (script.changes));
+            row.querySelector ('.cell-archicad').appendChild (document.createTextNode (versionRanges (script.newest.archicadVersions)));
+            row.querySelector ('.cell-author').appendChild (document.createTextNode (script.author.name));
+            var haystack = [script.name, script.summary, script.author.name, script.id, categories[script.category].name].concat (script.tags).join (' ').toLowerCase ();
+            return { script: script, element: row, haystack: haystack };
         });
 
         // The filters are kept in the address (q, category, archicad), so a filtered list can be shared.
         var params = new URLSearchParams (window.location.search);
+        var wantedCategory = params.get ('category') && usedCategories[params.get ('category')] ? params.get ('category') : '';
+        var wantedVersion = params.get ('archicad') && usedVersions[params.get ('archicad')] ? Number (params.get ('archicad')) : null;
         search.value = params.get ('q') || '';
-        if (params.get ('category') && usedCategories[params.get ('category')]) {
-            category.value = params.get ('category');
-        }
-        if (params.get ('archicad') && usedVersions[params.get ('archicad')]) {
-            archicad.value = params.get ('archicad');
+
+        makeChips (categoryChips, [{ value: '', label: categoryChips.getAttribute ('data-all') }].concat (
+            Object.keys (categories).filter (function (key) { return usedCategories[key]; }).map (function (key) {
+                return { value: key, label: categories[key].name };
+            })), wantedCategory, function (value) { wantedCategory = value; update (); });
+        var versions = Object.keys (usedVersions).map (Number).sort (function (a, b) { return b - a; });
+        makeChips (versionChips, [{ value: null, label: versionChips.getAttribute ('data-all') }].concat (
+            versions.map (function (v) { return { value: v, label: format (versionChips.getAttribute ('data-option'), { version: v }) }; })),
+            wantedVersion, function (value) { wantedVersion = value; update (); });
+        if (versions.length < 2) {
+            versionChips.hidden = true;
         }
 
         function update () {
             var words = search.value.toLowerCase ().split (/\s+/).filter (Boolean);
-            var wantedCategory = category.value;
-            var wantedVersion = archicad.value ? Number (archicad.value) : null;
             var shown = 0;
-            cards.textContent = '';
-            items.forEach (function (item) {
-                var matches = words.every (function (word) { return item.haystack.indexOf (word) !== -1; }) &&
+            rowsBody.textContent = '';
+            rows.forEach (function (item) {
+                var ok = words.every (function (word) { return item.haystack.indexOf (word) !== -1; }) &&
                     (!wantedCategory || item.script.category === wantedCategory) &&
                     (wantedVersion === null || item.script.newest.archicadVersions.indexOf (wantedVersion) !== -1);
-                if (matches) {
-                    cards.appendChild (item.element);
+                if (ok) {
+                    rowsBody.appendChild (item.element);
                     shown++;
                 }
             });
@@ -267,13 +303,11 @@
         }
 
         search.addEventListener ('input', update);
-        category.addEventListener ('change', update);
-        archicad.addEventListener ('change', update);
         byId ('script-filters').addEventListener ('submit', function (event) { event.preventDefault (); });
 
         update ();
         byId ('scripts-opening').hidden = true;
-        browser.hidden = false;
+        byId ('scripts-browser').hidden = false;
     }
 
     // ---- A README, as a small and safe subset of Markdown, built as DOM nodes (never innerHTML) ----
@@ -445,15 +479,25 @@
         return hex;
     }
 
-    function showScript (script, categoryNames) {
+    function showScript (script, categories) {
         var newest = script.newest;
         document.title = script.name + ' - ' + document.title;
 
-        byId ('detail-category').textContent = categoryNames[script.category];
-        byId ('detail-name').textContent = script.name;
+        // The name in the page head, with its last word in italics.
+        var title = byId ('detail-name');
+        var words = script.name.trim ().split (/\s+/);
+        var last = words.pop ();
+        if (words.length) {
+            title.appendChild (document.createTextNode (words.join (' ') + ' '));
+        }
+        var em = document.createElement ('em');
+        em.textContent = last;
+        title.appendChild (em);
+        byId ('detail-crumb').textContent = script.name;
         byId ('detail-summary').textContent = script.summary;
-        addBadges (byId ('detail-badges'), script, categoryNames, true);
 
+        byId ('detail-category').textContent = categories[script.category].name;
+        byId ('detail-effect').appendChild (effectPill (script.changes));
         var author = byId ('detail-author');
         if (script.author.github) {
             var authorLink = document.createElement ('a');
@@ -464,17 +508,16 @@
             author.textContent = script.author.name;
         }
         byId ('detail-version').textContent = newest.version;
-        byId ('detail-archicad').textContent = versionList (newest.archicadVersions);
+        byId ('detail-archicad').textContent = versionRanges (newest.archicadVersions);
         byId ('detail-tapir').textContent = newest.minTapirVersion;
         byId ('detail-license').textContent = script.license;
         var nameRefs = document.querySelectorAll ('.detail-name-ref');
         for (var n = 0; n < nameRefs.length; n++) {
             nameRefs[n].textContent = script.name;
         }
-        if (script.changes === 'model') {
-            byId ('detail-changes-model').hidden = false;
-        } else if (script.changes) {
-            byId ('detail-changes-read-only').hidden = false;
+        // One sentence on what running it does: "files" is not "read only".
+        if (script.changes) {
+            byId ('detail-changes-' + script.changes).hidden = false;
         }
 
         var report = byId ('detail-report');
@@ -486,7 +529,7 @@
         script.versions.forEach (function (version) {
             var item = versionTemplate.content.firstElementChild.cloneNode (true);
             item.querySelector ('.version-number').textContent = version.version;
-            item.querySelector ('.version-archicad').textContent = versionList (version.archicadVersions);
+            item.querySelector ('.version-archicad').textContent = versionRanges (version.archicadVersions);
             item.querySelector ('.version-tapir').textContent = version.minTapirVersion;
             item.querySelector ('.version-changelog').textContent = version.changelog;
             byId ('detail-versions').appendChild (item);
@@ -511,28 +554,37 @@
             return response.text ();
         }).then (function (markdown) {
             var readme = byId ('detail-readme');
+            // The README's own title is the script's name, which the page head already shows.
+            markdown = markdown.replace (/^\uFEFF?\s*#\s[^\n]*\n/, '');
             renderMarkdown (readme, markdown, { raw: rawFolder, page: pageFolder });
             if (readme.firstChild) {
                 byId ('detail-readme-section').hidden = false;
             }
         }).catch (function () {});
 
-        if (script.screenshots.length) {
-            var gallery = byId ('detail-screenshots');
-            script.screenshots.forEach (function (file, index) {
-                var url = rawFolder + 'screenshots/' + encodeURIComponent (file);
-                var link = document.createElement ('a');
-                link.href = url;
-                var image = document.createElement ('img');
-                image.src = url;
-                image.alt = format (gallery.getAttribute ('data-alt'), { number: index + 1, name: script.name });
-                image.loading = 'lazy';
-                image.addEventListener ('error', function () { link.remove (); });
-                link.appendChild (image);
-                gallery.appendChild (link);
+        // The first screenshot is the page's picture; the others follow the README.
+        var shot = byId ('detail-shot');
+        var gallery = byId ('detail-screenshots');
+        script.screenshots.forEach (function (file, index) {
+            var url = rawFolder + 'screenshots/' + encodeURIComponent (file);
+            var link = document.createElement ('a');
+            link.href = url;
+            var image = document.createElement ('img');
+            image.src = url;
+            image.alt = format (shot.getAttribute ('data-alt'), { number: index + 1, name: script.name });
+            image.loading = index === 0 ? 'eager' : 'lazy';
+            image.addEventListener ('error', function () {
+                var holder = link.parentNode;
+                link.remove ();
+                if (holder && !holder.firstChild) {
+                    (holder === shot ? shot : byId ('detail-screenshots-section')).hidden = true;
+                }
             });
-            byId ('detail-screenshots-section').hidden = false;
-        }
+            link.appendChild (image);
+            (index === 0 ? shot : gallery).appendChild (link);
+        });
+        shot.hidden = !shot.firstChild;
+        byId ('detail-screenshots-section').hidden = !gallery.firstChild;
 
         // The code is shown, and offered for download, only when it matches the catalogue's SHA-256
         // (when the catalogue has one and the browser can check it).
@@ -554,6 +606,7 @@
                 }
                 var text = new TextDecoder ('utf-8').decode (buffer);
                 byId ('detail-code').textContent = text;
+                byId ('detail-entry').textContent = script.entry;
                 byId ('detail-code-section').hidden = false;
                 var download = byId ('detail-download');
                 download.href = URL.createObjectURL (new Blob ([buffer], { type: 'text/x-python' }));
@@ -573,7 +626,7 @@
             return;
         }
         var wanted = new URLSearchParams (window.location.search).get ('s');
-        var categoryNames = categoryNamesFromPage ();
+        var categories = categoriesFromPage ();
         fetchResponse (CATALOGUE_URL).then (function (response) {
             return response.json ();
         }).then (function (catalogue) {
@@ -581,7 +634,7 @@
             var seen = {};
             if (catalogue && catalogue.version === 1 && Array.isArray (catalogue.scripts)) {
                 catalogue.scripts.forEach (function (entry) {
-                    var script = cleanScript (entry, categoryNames);
+                    var script = cleanScript (entry, categories);
                     if (script && !seen[script.slug]) {
                         seen[script.slug] = true;
                         scripts.push (script);
@@ -591,12 +644,12 @@
             if (wanted !== null) {
                 var found = scripts.filter (function (script) { return script.slug === wanted; })[0];
                 if (found) {
-                    showScript (found, categoryNames);
+                    showScript (found, categories);
                 } else {
                     showNotFound ();
                 }
             } else if (scripts.length) {
-                showList (scripts, categoryNames);
+                showList (scripts, categories);
             }
         }).catch (function () {
             if (wanted !== null) {
