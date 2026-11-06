@@ -471,26 +471,9 @@ class ContourMesh:
 
         with self.window.busy("Reading and building the mesh..."):
             raw_rings = parse_dxf(dxf_path)
-            # Dedup and filter: apply area filter only to closed rings;
-            # for open rings, filter on length instead.
-            rings = []
-            for pts, closed in raw_rings:
-                pts = dedup_ring(pts)
-                if len(pts) < 3:
-                    continue
-                if closed:
-                    # Closed ring: filter by area (drop tiny slivers)
-                    if ring_area(pts) < 1.0:
-                        continue
-                else:
-                    # Open contour: filter by length (drop tiny fragments)
-                    length = sum(
-                        ((pts[i+1][0]-pts[i][0])**2 + (pts[i+1][1]-pts[i][1])**2) ** 0.5
-                        for i in range(len(pts)-1)
-                    )
-                    if length < 1.0:
-                        continue
-                rings.append((pts, closed))
+            # Dedup only - rings_to_tapir_mesh handles the area/length filtering
+            # with the correct unit conversion (min_area / scale^2).
+            rings = [(dedup_ring(pts), closed) for pts, closed in raw_rings if len(dedup_ring(pts)) >= 3]
             if not rings:
                 self.window.set_status("No valid contour rings found in the DXF.", "error")
                 return
