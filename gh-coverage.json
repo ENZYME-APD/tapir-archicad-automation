@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-06 19:38 UTC",
+ "generatedAt": "2026-11-06 19:57 UTC",
  "counts": {
   "done": 568,
   "merged": 178,
@@ -7,8 +7,8 @@
   "not applicable": 1
  },
  "parameters": {
-  "all": 714,
-  "json": 32
+  "all": 713,
+  "json": 33
  },
  "items": [
   {
@@ -5520,7 +5520,7 @@
    "id": "CreateRailings",
    "group": "Element Commands",
    "version": "1.8.0",
-   "brief": "Creates Railing elements along a reference polyline. Posts, rails, handrails, toprails, panels and balusters come from the favorite or from the Railing tool defaults; Archicad generates one node per vertex and one segment per pair of consecutive vertices.",
+   "brief": "Creates Railing elements along a reference polyline. Posts, rails, handrails, toprails, panels and balusters come from the favorite, from an existing railing (templateElementId) or from the Railing tool defaults; Archicad generates one node per vertex and one segment per pair of consecutive vertices.",
    "status": "done",
    "reason": "",
    "components": [
@@ -5529,8 +5529,8 @@
      "path": "Components/DesignToolsComponents/RailingsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 7,
+   "parameters": "json",
+   "parameterCount": 8,
    "coveredParameters": [
     "railingsData",
     "railingsData.bottomOffset",
@@ -5540,7 +5540,9 @@
     "railingsData.height",
     "railingsData.id"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "railingsData.templateElementId"
+   ],
    "pullRequests": [],
    "issues": []
   },

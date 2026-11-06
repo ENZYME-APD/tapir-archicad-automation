@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-06 19:38 UTC",
+ "generatedAt": "2026-11-06 19:57 UTC",
  "versions": [
   25,
   26,
@@ -5792,10 +5792,6 @@
    "reason": "memory management",
    "pullRequests": [
     {
-     "number": 2152,
-     "title": "CreateRailings: templateElementId takes the settings of an existing railing"
-    },
-    {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
     },
@@ -6828,12 +6824,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2152,
-     "title": "CreateRailings: templateElementId takes the settings of an existing railing"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1914,
@@ -7303,10 +7294,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2152,
-     "title": "CreateRailings: templateElementId takes the settings of an existing railing"
-    },
-    {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
     },
@@ -7551,12 +7538,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2152,
-     "title": "CreateRailings: templateElementId takes the settings of an existing railing"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1914,
@@ -7859,10 +7841,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2152,
-     "title": "CreateRailings: templateElementId takes the settings of an existing railing"
-    },
-    {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
     },
@@ -7913,10 +7891,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2152,
-     "title": "CreateRailings: templateElementId takes the settings of an existing railing"
-    },
     {
      "number": 463,
      "title": "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"
@@ -37766,10 +37740,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2152,
-     "title": "CreateRailings: templateElementId takes the settings of an existing railing"
-    },
     {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
