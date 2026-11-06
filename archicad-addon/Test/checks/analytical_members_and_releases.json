@@ -1,0 +1,294 @@
+{
+  "title": "Analytical members: GetAnalyticalMembers lists load-bearing beams and a column, GetAnalyticalMemberDetails, GetAnalyticalMemberPartGeometries and GetLCSOfAnalyticalMembers read their axes, SetAnalyticalReleases replaces a release and refuses a non-member",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "requiresEmpty": [ "Wall", "Slab", "Roof", "Shell", "Beam", "Column" ],
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      }
+    },
+    {
+      "id": "two beams along x",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 600.0, "y": 600.0 },
+            "endCoordinate": { "x": 606.0, "y": 600.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "anchorPoint": "Center",
+            "circleBased": false,
+            "isWidthAndHeightLinked": false,
+            "width": 0.2,
+            "height": 0.4
+          },
+          {
+            "begCoordinate": { "x": 600.0, "y": 604.0 },
+            "endCoordinate": { "x": 606.0, "y": 604.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "anchorPoint": "Center",
+            "circleBased": false,
+            "isWidthAndHeightLinked": false,
+            "width": 0.2,
+            "height": 0.4
+          }
+        ]
+      },
+      "save": {
+        "b1": "elements[0].elementId.guid",
+        "b2": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "first beam created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "second beam created" }
+      ]
+    },
+    {
+      "id": "column apart from the beams",
+      "command": "CreateColumns",
+      "params": {
+        "columnsData": [
+          {
+            "coordinates": { "x": 610.0, "y": 600.0, "z": 0.0 },
+            "floorIndex": 0,
+            "height": 3.0,
+            "coreAnchor": "Center",
+            "circleBased": false,
+            "isWidthAndHeightLinked": false,
+            "width": 0.3,
+            "depth": 0.3,
+            "axisRotationAngle": 0.0
+          }
+        ]
+      },
+      "save": {
+        "c1": "elements[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "column created" }
+      ]
+    },
+    {
+      "id": "make them load-bearing",
+      "command": "SetCategoryValuesOfElements",
+      "creates": false,
+      "params": {
+        "elementCategoryValues": [
+          { "elementId": { "guid": "${b1}" }, "type": "StructuralFunction", "categoryValueId": { "guid": "C852BD7D-1198-2802-7E37-E4925B997B8B" } },
+          { "elementId": { "guid": "${b2}" }, "type": "StructuralFunction", "categoryValueId": { "guid": "C852BD7D-1198-2802-7E37-E4925B997B8B" } },
+          { "elementId": { "guid": "${c1}" }, "type": "StructuralFunction", "categoryValueId": { "guid": "C852BD7D-1198-2802-7E37-E4925B997B8B" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "first beam load-bearing" },
+        { "path": "executionResults[1].success", "eq": true, "name": "second beam load-bearing" },
+        { "path": "executionResults[2].success", "eq": true, "name": "column load-bearing" }
+      ]
+    },
+    {
+      "id": "update the analytical model",
+      "command": "UpdateAnalyticalModel",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "list the members",
+      "command": "GetAnalyticalMembers",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "curveMembers", "len": 3, "name": "two beams and a column" },
+        { "path": "surfaceMembers", "len": 0, "name": "no surface member" }
+      ]
+    },
+    {
+      "id": "member details",
+      "command": "GetAnalyticalMemberDetails",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${b1}" } },
+          { "elementId": { "guid": "${c1}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "analyticalMembers[0].curveMember.analyticalMemberType", "eq": "Beam" },
+        { "path": "analyticalMembers[0].curveMember.curve.type", "eq": "Line" },
+        { "path": "analyticalMembers[0].curveMember.curve.begNode.coord.x", "approx": 600.0, "tol": 0.01 },
+        { "path": "analyticalMembers[0].curveMember.curve.begNode.coord.y", "approx": 600.0, "tol": 0.01 },
+        { "path": "analyticalMembers[0].curveMember.curve.endNode.coord.x", "approx": 606.0, "tol": 0.01 },
+        { "path": "analyticalMembers[0].curveMember.curve.endNode.coord.y", "approx": 600.0, "tol": 0.01 },
+        { "path": "analyticalMembers[0].connections", "exists": true },
+        { "path": "analyticalMembers[1].curveMember.analyticalMemberType", "eq": "Column" },
+        { "path": "analyticalMembers[1].curveMember.curve.begNode.coord.x", "approx": 610.0, "tol": 0.01, "name": "column axis x" },
+        { "path": "analyticalMembers[1].curveMember.curve.endNode.coord.y", "approx": 600.0, "tol": 0.01, "name": "column axis y" },
+        { "path": "analyticalMembers[2].error.code", "exists": true, "name": "nonexistent element refused" }
+      ]
+    },
+    {
+      "id": "part geometries",
+      "command": "GetAnalyticalMemberPartGeometries",
+      "creates": false,
+      "params": {
+        "memberPartRefs": [
+          { "elemGuid": { "guid": "${b1}" }, "partRefType": "BegVertex" },
+          { "elemGuid": { "guid": "${b1}" }, "partRefType": "EndVertex" },
+          { "elemGuid": { "guid": "${b1}" }, "partRefType": "Edge" },
+          { "elemGuid": { "guid": "${b1}" }, "partRefType": "Surface" }
+        ]
+      },
+      "expect": [
+        { "path": "geometries[0].node.coord.x", "approx": 600.0, "tol": 0.01, "name": "start node" },
+        { "path": "geometries[1].node.coord.x", "approx": 606.0, "tol": 0.01, "name": "end node" },
+        { "path": "geometries[2].curve.type", "eq": "Line" },
+        { "path": "geometries[2].curve.begNode.coord.x", "approx": 600.0, "tol": 0.01 },
+        { "path": "geometries[2].curve.endNode.coord.x", "approx": 606.0, "tol": 0.01 },
+        { "path": "geometries[3].error.code", "exists": true, "name": "a surface has no node or curve" }
+      ]
+    },
+    {
+      "id": "local coordinate system of the beam axis",
+      "command": "GetLCSOfAnalyticalMembers",
+      "creates": false,
+      "params": {
+        "memberParts": [
+          { "memberPartRef": { "elemGuid": { "guid": "${b1}" }, "partRefType": "Edge" } },
+          { "memberPartRef": { "elemGuid": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "partRefType": "Edge" } }
+        ]
+      },
+      "expect": [
+        { "path": "localCoordinateSystems[0].localCoordinateSystem.xVector.x", "approx": 1.0, "tol": 0.001, "name": "x axis along the beam" },
+        { "path": "localCoordinateSystems[0].localCoordinateSystem.xVector.z", "approx": 0.0, "tol": 0.001, "name": "x axis horizontal" },
+        { "path": "localCoordinateSystems[0].localCoordinateSystem.yVector.x", "approx": 0.0, "tol": 0.001, "name": "y axis across the beam" },
+        { "path": "localCoordinateSystems[1].error.code", "exists": true, "name": "nonexistent member refused" }
+      ]
+    },
+    {
+      "id": "release before",
+      "command": "GetAnalyticalReleases",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${b1}" } } ]
+      },
+      "save": {
+        "releaseGuid": "releases[0].release.guid"
+      },
+      "expect": [
+        { "path": "releases[0].release.releaseDescriptions", "exists": true }
+      ]
+    },
+    {
+      "id": "hinge at the end of the beam",
+      "command": "SetAnalyticalReleases",
+      "creates": false,
+      "params": {
+        "releases": [
+          {
+            "elementId": { "guid": "${b1}" },
+            "release": {
+              "guid": "${releaseGuid}",
+              "releaseDescriptions": [
+                {
+                  "ux": "Rigid", "uy": "Rigid", "uz": "Rigid", "fix": "Rigid", "fiy": "Free",
+                  "fiz": "Custom", "stiffnessFiz": 500.0,
+                  "amPartRef": { "elemGuid": { "guid": "${b1}" }, "partRefType": "EndVertex" }
+                }
+              ]
+            }
+          },
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "release": {
+              "guid": "${releaseGuid}",
+              "releaseDescriptions": []
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[1].success", "eq": false, "name": "nonexistent element refused" }
+      ]
+    },
+    {
+      "id": "update after the release",
+      "command": "UpdateAnalyticalModel",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the hinge",
+      "command": "GetAnalyticalReleases",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${b1}" } } ]
+      },
+      "expect": [
+        { "path": "releases[0].release.releaseDescriptions", "len": 1 },
+        { "path": "releases[0].release.releaseDescriptions[0].fiy", "eq": "Free" },
+        { "path": "releases[0].release.releaseDescriptions[0].fiz", "eq": "Custom" },
+        { "path": "releases[0].release.releaseDescriptions[0].stiffnessFiz", "approx": 500.0, "tol": 0.01 },
+        { "path": "releases[0].release.releaseDescriptions[0].fix", "eq": "Rigid" },
+        { "path": "releases[0].release.releaseDescriptions[0].amPartRef.partRefType", "eq": "EndVertex" }
+      ]
+    },
+    {
+      "id": "replace with no release",
+      "command": "SetAnalyticalReleases",
+      "creates": false,
+      "params": {
+        "releases": [
+          {
+            "elementId": { "guid": "${b1}" },
+            "release": {
+              "guid": "${releaseGuid}",
+              "releaseDescriptions": []
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "update after removing it",
+      "command": "UpdateAnalyticalModel",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "the hinge is gone",
+      "command": "GetAnalyticalReleases",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${b1}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "releases[0].release.releaseDescriptions", "len": 0, "name": "replaced as a whole" },
+        { "path": "releases[1].error.code", "exists": true, "name": "nonexistent element refused" }
+      ]
+    }
+  ]
+}

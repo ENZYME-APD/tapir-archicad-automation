@@ -1,0 +1,274 @@
+{
+  "title": "Keynote folders and items: create, read back, modify, label and delete (#1938)",
+  "minTapir": "1.8.1",
+  "minArchicad": "28",
+  "steps": [
+    {
+      "id": "keynote tree before",
+      "command": "GetKeynoteTree",
+      "creates": false,
+      "params": {},
+      "stopOnFail": true,
+      "expect": [
+        { "path": "foldersInRoot", "len": 0, "name": "precondition: the template has no keynote folders" },
+        { "path": "itemsInRoot", "len": 0, "name": "precondition: the template has no keynote items" }
+      ]
+    },
+    {
+      "id": "[folder in the root]",
+      "command": "CreateKeynoteFolders",
+      "creates": false,
+      "params": {
+        "foldersData": [
+          { "key": "TAPIR-CHK-F", "title": "Tapir check folder" }
+        ]
+      },
+      "save": { "f1": "keynoteFolderIdsOrErrors[0].keynoteFolderId.guid" },
+      "expect": [
+        { "path": "keynoteFolderIdsOrErrors", "len": 1, "name": "one id per folder" },
+        { "path": "keynoteFolderIdsOrErrors[0].keynoteFolderId.guid", "exists": true, "name": "id of the new folder" }
+      ]
+    },
+    {
+      "id": "[subfolder, folder in a missing parent]",
+      "command": "CreateKeynoteFolders",
+      "creates": false,
+      "params": {
+        "foldersData": [
+          { "parentFolderId": { "guid": "${f1}" }, "key": "TAPIR-CHK-F.1", "title": "Tapir check subfolder" },
+          { "parentFolderId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "key": "TAPIR-CHK-X", "title": "Tapir check orphan" }
+        ]
+      },
+      "save": { "f2": "keynoteFolderIdsOrErrors[0].keynoteFolderId.guid" },
+      "expect": [
+        { "path": "keynoteFolderIdsOrErrors", "len": 2, "name": "one result per folder" },
+        { "path": "keynoteFolderIdsOrErrors[0].keynoteFolderId.guid", "exists": true, "name": "id of the subfolder" },
+        { "path": "keynoteFolderIdsOrErrors[1].error", "exists": true, "name": "missing parent: error" }
+      ]
+    },
+    {
+      "id": "[item in the folder, item in the subfolder, item in a missing parent]",
+      "command": "CreateKeynoteItems",
+      "creates": false,
+      "params": {
+        "itemsData": [
+          { "parentFolderId": { "guid": "${f1}" }, "key": "TAPIR-CHK-01", "title": "Tapir check item 1", "description": "Tapir check description 1", "reference": "REF-1" },
+          { "parentFolderId": { "guid": "${f2}" }, "key": "TAPIR-CHK-02", "title": "Tapir check item 2" },
+          { "parentFolderId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "key": "TAPIR-CHK-99", "title": "Tapir check orphan item" }
+        ]
+      },
+      "save": {
+        "i1": "keynoteItemIdsOrErrors[0].keynoteItemId.guid",
+        "i2": "keynoteItemIdsOrErrors[1].keynoteItemId.guid"
+      },
+      "expect": [
+        { "path": "keynoteItemIdsOrErrors", "len": 3, "name": "one result per item" },
+        { "path": "keynoteItemIdsOrErrors[0].keynoteItemId.guid", "exists": true, "name": "id of item 1" },
+        { "path": "keynoteItemIdsOrErrors[1].keynoteItemId.guid", "exists": true, "name": "id of item 2" },
+        { "path": "keynoteItemIdsOrErrors[2].error", "exists": true, "name": "missing parent: error" }
+      ]
+    },
+    {
+      "id": "read the new tree",
+      "command": "GetKeynoteTree",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "foldersInRoot", "len": 1, "name": "one folder in the root" },
+        { "path": "itemsInRoot", "len": 0, "name": "no item in the root" },
+        { "path": "foldersInRoot[0].key", "eq": "TAPIR-CHK-F" },
+        { "path": "foldersInRoot[0].title", "eq": "Tapir check folder" },
+        { "path": "foldersInRoot[0].items", "len": 1, "name": "item 1 in the folder" },
+        { "path": "foldersInRoot[0].items[0].key", "eq": "TAPIR-CHK-01" },
+        { "path": "foldersInRoot[0].items[0].title", "eq": "Tapir check item 1" },
+        { "path": "foldersInRoot[0].items[0].description", "eq": "Tapir check description 1" },
+        { "path": "foldersInRoot[0].items[0].reference", "eq": "REF-1" },
+        { "path": "foldersInRoot[0].subFolders", "len": 1, "name": "the subfolder, not the orphan" },
+        { "path": "foldersInRoot[0].subFolders[0].key", "eq": "TAPIR-CHK-F.1" },
+        { "path": "foldersInRoot[0].subFolders[0].title", "eq": "Tapir check subfolder" },
+        { "path": "foldersInRoot[0].subFolders[0].items", "len": 1, "name": "item 2 in the subfolder" },
+        { "path": "foldersInRoot[0].subFolders[0].items[0].key", "eq": "TAPIR-CHK-02" },
+        { "path": "foldersInRoot[0].subFolders[0].items[0].title", "eq": "Tapir check item 2" }
+      ]
+    },
+    {
+      "id": "[autotexts of item 1, of a missing item]",
+      "command": "GetKeynoteAutoTexts",
+      "creates": false,
+      "params": {
+        "keynoteItems": [
+          { "keynoteItemId": { "guid": "${i1}" } },
+          { "keynoteItemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "autoTexts", "len": 2, "name": "one result per item" },
+        { "path": "autoTexts[0].keyToken", "ne": "", "name": "key token of item 1" },
+        { "path": "autoTexts[0].titleToken", "ne": "", "name": "title token of item 1" },
+        { "path": "autoTexts[0].descriptionToken", "ne": "", "name": "description token of item 1" },
+        { "path": "autoTexts[0].referenceToken", "ne": "", "name": "reference token of item 1" },
+        { "path": "autoTexts[1].error", "exists": true, "name": "missing item: error" }
+      ]
+    },
+    {
+      "id": "[folder title and reference, subfolder key, missing folder]",
+      "command": "ModifyKeynoteFolders",
+      "creates": false,
+      "params": {
+        "foldersData": [
+          { "keynoteFolderId": { "guid": "${f1}" }, "title": "Tapir check folder changed", "reference": "REF-F" },
+          { "keynoteFolderId": { "guid": "${f2}" }, "key": "TAPIR-CHK-F.2" },
+          { "keynoteFolderId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "title": "Tapir check nothing" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per folder" },
+        { "path": "executionResults[0].success", "eq": true, "name": "folder: success" },
+        { "path": "executionResults[1].success", "eq": true, "name": "subfolder: success" },
+        { "path": "executionResults[2].success", "eq": false, "name": "missing folder: failed" }
+      ]
+    },
+    {
+      "id": "[item 1 title and description, item 2 key and reference, missing item]",
+      "command": "ModifyKeynoteItems",
+      "creates": false,
+      "params": {
+        "itemsData": [
+          { "keynoteItemId": { "guid": "${i1}" }, "title": "Tapir check item 1 changed", "description": "Tapir check description 1 changed" },
+          { "keynoteItemId": { "guid": "${i2}" }, "key": "TAPIR-CHK-03", "reference": "REF-2" },
+          { "keynoteItemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "title": "Tapir check nothing" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "item 1: success" },
+        { "path": "executionResults[1].success", "eq": true, "name": "item 2: success" },
+        { "path": "executionResults[2].success", "eq": false, "name": "missing item: failed" }
+      ]
+    },
+    {
+      "id": "read the modified tree",
+      "command": "GetKeynoteTree",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "foldersInRoot[0].key", "eq": "TAPIR-CHK-F", "name": "folder key kept" },
+        { "path": "foldersInRoot[0].title", "eq": "Tapir check folder changed", "name": "folder title changed" },
+        { "path": "foldersInRoot[0].reference", "eq": "REF-F", "name": "folder reference changed" },
+        { "path": "foldersInRoot[0].subFolders[0].key", "eq": "TAPIR-CHK-F.2", "name": "subfolder key changed" },
+        { "path": "foldersInRoot[0].subFolders[0].title", "eq": "Tapir check subfolder", "name": "subfolder title kept" },
+        { "path": "foldersInRoot[0].items[0].key", "eq": "TAPIR-CHK-01", "name": "item 1 key kept" },
+        { "path": "foldersInRoot[0].items[0].title", "eq": "Tapir check item 1 changed", "name": "item 1 title changed" },
+        { "path": "foldersInRoot[0].items[0].description", "eq": "Tapir check description 1 changed", "name": "item 1 description changed" },
+        { "path": "foldersInRoot[0].items[0].reference", "eq": "REF-1", "name": "item 1 reference kept" },
+        { "path": "foldersInRoot[0].subFolders[0].items[0].key", "eq": "TAPIR-CHK-03", "name": "item 2 key changed" },
+        { "path": "foldersInRoot[0].subFolders[0].items[0].title", "eq": "Tapir check item 2", "name": "item 2 title kept" },
+        { "path": "foldersInRoot[0].subFolders[0].items[0].reference", "eq": "REF-2", "name": "item 2 reference changed" }
+      ]
+    },
+    {
+      "id": "[label of item 1]",
+      "command": "CreateKeynoteLabels",
+      "params": {
+        "labelsData": [
+          { "keynoteItemId": { "guid": "${i1}" }, "position": { "x": 2.5, "y": 1.5 }, "contentFields": [ "Key", "Title" ] }
+        ]
+      },
+      "save": { "label": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "one result per label" },
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "id of the new label" }
+      ]
+    },
+    {
+      "id": "read the label",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${label}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Label" },
+        { "path": "detailsOfElements[0].details.labelClass", "eq": "Text", "name": "a text label" },
+        { "path": "detailsOfElements[0].details.begCoordinate.x", "approx": 2.5, "name": "placed at the position x" },
+        { "path": "detailsOfElements[0].details.begCoordinate.y", "approx": 1.5, "name": "placed at the position y" },
+        { "path": "detailsOfElements[0].details.text", "ne": "", "name": "has the autotext content" }
+      ]
+    },
+    {
+      "id": "[label of a missing item]",
+      "command": "CreateKeynoteLabels",
+      "creates": false,
+      "params": {
+        "labelsData": [
+          { "keynoteItemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "position": { "x": 6.0, "y": 1.5 } }
+        ]
+      },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "one result per label" },
+        { "path": "elements[0].error", "exists": true, "name": "missing item: error" }
+      ]
+    },
+    {
+      "id": "[item 2, missing item]",
+      "command": "DeleteKeynoteItems",
+      "creates": false,
+      "params": {
+        "keynoteItemIds": [
+          { "keynoteItemId": { "guid": "${i2}" } },
+          { "keynoteItemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "item 2: success" },
+        { "path": "executionResults[1].success", "eq": false, "name": "missing item: failed" }
+      ]
+    },
+    {
+      "id": "read the tree after deleting item 2",
+      "command": "GetKeynoteTree",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "foldersInRoot[0].subFolders[0].items", "len": 0, "name": "item 2 gone" },
+        { "path": "foldersInRoot[0].items", "len": 1, "name": "item 1 kept" }
+      ]
+    },
+    {
+      "id": "[subfolder, missing folder]",
+      "command": "DeleteKeynoteFolders",
+      "creates": false,
+      "params": {
+        "keynoteFolderIds": [
+          { "keynoteFolderId": { "guid": "${f2}" } },
+          { "keynoteFolderId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per folder" },
+        { "path": "executionResults[0].success", "eq": true, "name": "subfolder: success" },
+        { "path": "executionResults[1].success", "eq": false, "name": "missing folder: failed" }
+      ]
+    },
+    {
+      "id": "read the tree after deleting the subfolder",
+      "command": "GetKeynoteTree",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "foldersInRoot", "len": 1, "name": "the folder kept" },
+        { "path": "foldersInRoot[0].subFolders", "len": 0, "name": "the subfolder gone" },
+        { "path": "foldersInRoot[0].items", "len": 1, "name": "item 1 kept" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteKeynoteFolders",
+      "params": {
+        "keynoteFolderIds": [ { "keynoteFolderId": { "guid": "${f1}" } } ]
+      }
+    }
+  ]
+}

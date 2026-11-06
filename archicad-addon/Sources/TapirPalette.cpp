@@ -52,6 +52,11 @@ std::vector<GS::RunnableTask> TapirPalette::finishedTasks;
 // Run button and the shortcut slots must not start a script that the installer would then interrupt.
 static bool isUpdatingAddOn = false;
 
+// True while the palette is hidden by Archicad (APIPalMsg_HidePalette_Begin, e.g. on a tab switch or Hide All Palettes)
+// and was visible before. Only then does APIPalMsg_HidePalette_End show it again: a palette the user closed stays
+// closed (#1915). Showing or hiding it any other way clears it.
+static bool isHiddenByArchicad = false;
+
 // The script repositories are read from GitHub while Archicad starts, on the main thread. Without a timeout
 // a connection that GitHub accepts but never answers kept Archicad from starting or opening a project (#798).
 static constexpr int RepositoryRequestTimeoutMs = 15 * 1000;
@@ -534,12 +539,14 @@ void TapirPalette::ForgetPostedTask (const GS::Runnable* task)
 
 void TapirPalette::Show ()
 {
+    isHiddenByArchicad = false;
     DG::Palette::Show ();
     SetMenuItemCheckedState (true);
 }
 
 void TapirPalette::Hide ()
 {
+    isHiddenByArchicad = false;
     DG::Palette::Hide ();
     SetMenuItemCheckedState (false);
 }
@@ -1003,13 +1010,16 @@ GSErrCode TapirPalette::PaletteControlCallBack (Int32, API_PaletteMessageID mess
             break;
 
         case APIPalMsg_HidePalette_Begin:
-            if (HasInstance () && Instance ().IsVisible ())
+            if (HasInstance () && Instance ().IsVisible ()) {
                 Instance ().Hide ();
+                isHiddenByArchicad = true;
+            }
             break;
 
         case APIPalMsg_HidePalette_End:
-            if (HasInstance () && !Instance ().IsVisible ())
+            if (isHiddenByArchicad && HasInstance () && !Instance ().IsVisible ())
                 Instance ().Show ();
+            isHiddenByArchicad = false;
             break;
 
         case APIPalMsg_IsPaletteVisible:

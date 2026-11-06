@@ -1,0 +1,247 @@
+{
+  "title": "CreateMEPElements places terminals that GetMEPElements, GetMEPElementDetails and GetMEPPorts read back; ModifyMEPElements moves one, ModifyMEPPorts changes a flow direction, CheckMEPPortConnectability refuses ports of two domains",
+  "minTapir": "1.8.1",
+  "minArchicad": "28",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      }
+    },
+    {
+      "id": "two terminals",
+      "command": "CreateMEPElements",
+      "params": {
+        "elementsData": [
+          {
+            "type": "Terminal",
+            "domain": "Ventilation",
+            "position": { "x": 10.0, "y": -20.0, "z": 2.0 },
+            "orientationDirection": { "x": 1.0, "y": 0.0, "z": 0.0 },
+            "orientationRotation": { "x": 0.0, "y": 1.0, "z": 0.0 }
+          },
+          {
+            "type": "Terminal",
+            "domain": "Piping",
+            "position": { "x": 14.0, "y": -20.0, "z": 2.0 },
+            "orientationDirection": { "x": 1.0, "y": 0.0, "z": 0.0 },
+            "orientationRotation": { "x": 0.0, "y": 1.0, "z": 0.0 }
+          }
+        ]
+      },
+      "save": {
+        "vterm": "elements[0].elementId.guid",
+        "pterm": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "ventilation terminal created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "piping terminal created" }
+      ]
+    },
+    {
+      "id": "terminal on a story that does not exist",
+      "command": "CreateMEPElements",
+      "creates": false,
+      "params": {
+        "elementsData": [
+          {
+            "type": "Terminal",
+            "domain": "Ventilation",
+            "position": { "x": 10.0, "y": -24.0, "z": 2.0 },
+            "floorIndex": 99
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "refused" },
+        { "path": "elements[0].elementId", "exists": false, "name": "nothing placed" }
+      ]
+    },
+    {
+      "id": "list the terminals",
+      "command": "GetMEPElements",
+      "creates": false,
+      "params": {
+        "elementTypes": [ "Terminal" ]
+      },
+      "expect": [
+        { "path": "elements", "len": 2, "name": "both terminals listed, not the refused one" }
+      ]
+    },
+    {
+      "id": "list the piping terminals",
+      "command": "GetMEPElements",
+      "creates": false,
+      "params": {
+        "elementTypes": [ "Terminal" ],
+        "domains": [ "Piping" ]
+      },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "domain filter" },
+        { "path": "elements[0].type", "eq": "Terminal" },
+        { "path": "elements[0].domain", "eq": "Piping" }
+      ]
+    },
+    {
+      "id": "details",
+      "command": "GetMEPElementDetails",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${vterm}" } },
+          { "elementId": { "guid": "${pterm}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "elementDetails[0].type", "eq": "Terminal" },
+        { "path": "elementDetails[0].domain", "eq": "Ventilation" },
+        { "path": "elementDetails[1].type", "eq": "Terminal" },
+        { "path": "elementDetails[1].domain", "eq": "Piping" },
+        { "path": "elementDetails[2].error.code", "exists": true, "name": "unknown guid gives an error item" }
+      ]
+    },
+    {
+      "id": "ports",
+      "command": "GetMEPPorts",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${vterm}" } },
+          { "elementId": { "guid": "${pterm}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "save": {
+        "vport": "elementPorts[0].ports[0].portId",
+        "vportX": "elementPorts[0].ports[0].position.x",
+        "vportY": "elementPorts[0].ports[0].position.y",
+        "vportZ": "elementPorts[0].ports[0].position.z",
+        "pport": "elementPorts[1].ports[0].portId"
+      },
+      "expect": [
+        { "path": "elementPorts[0].ports[0].domain", "eq": "Ventilation" },
+        { "path": "elementPorts[1].ports[0].domain", "eq": "Piping" },
+        { "path": "elementPorts[2].error.code", "exists": true, "name": "unknown guid gives an error item" }
+      ]
+    },
+    {
+      "id": "connectability",
+      "command": "CheckMEPPortConnectability",
+      "creates": false,
+      "params": {
+        "portPairs": [
+          { "portId": "${vport}", "otherPortId": "${pport}" },
+          { "portId": "${vport}", "otherPortId": "00000000-0000-0000-0000-00000000BEEF" }
+        ]
+      },
+      "expect": [
+        { "path": "results[0].isConnectable", "eq": false, "name": "a ventilation port does not connect to a piping port" },
+        { "path": "results[1].error.code", "exists": true, "name": "unknown port gives an error item" }
+      ]
+    },
+    {
+      "id": "move the ventilation terminal",
+      "command": "ModifyMEPElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${vterm}" }, "anchorPoint": { "x": 11.0, "y": -19.0, "z": 2.5 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the moved port",
+      "command": "GetMEPPorts",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${vterm}" } } ]
+      },
+      "save": {
+        "vportX2": "elementPorts[0].ports[0].position.x",
+        "vportY2": "elementPorts[0].ports[0].position.y",
+        "vportZ2": "elementPorts[0].ports[0].position.z"
+      },
+      "expect": [
+        { "expr": "${vportX2} - ${vportX}", "approx": 1.0, "name": "port moved 1 m in x" },
+        { "expr": "${vportY2} - ${vportY}", "approx": 1.0, "name": "port moved 1 m in y" },
+        { "expr": "${vportZ2} - ${vportZ}", "approx": 0.5, "name": "port moved 0.5 m in z" }
+      ]
+    },
+    {
+      "id": "flexible segment width on a terminal",
+      "command": "ModifyMEPElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${pterm}" }, "width": 0.3 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "flow in",
+      "command": "ModifyMEPPorts",
+      "creates": false,
+      "params": {
+        "portsData": [ { "portId": "${vport}", "flowDirection": "FlowIn" } ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read flow in",
+      "command": "GetMEPPorts",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${vterm}" } } ]
+      },
+      "expect": [
+        { "path": "elementPorts[0].ports[0].flowDirection", "eq": "FlowIn" }
+      ]
+    },
+    {
+      "id": "flow out",
+      "command": "ModifyMEPPorts",
+      "creates": false,
+      "params": {
+        "portsData": [ { "portId": "${vport}", "flowDirection": "FlowOut" } ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read flow out",
+      "command": "GetMEPPorts",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${vterm}" } } ]
+      },
+      "expect": [
+        { "path": "elementPorts[0].ports[0].flowDirection", "eq": "FlowOut" }
+      ]
+    },
+    {
+      "id": "outer diameter of a ventilation port",
+      "command": "ModifyMEPPorts",
+      "creates": false,
+      "params": {
+        "portsData": [ { "portId": "${vport}", "outerDiameter": 0.1 } ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" }
+      ]
+    }
+  ]
+}

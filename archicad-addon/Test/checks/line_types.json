@@ -1,0 +1,134 @@
+{
+  "title": "Line types: CreateLines and GetLines",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "create a dashed and a solid line type",
+      "command": "CreateLines",
+      "creates": false,
+      "params": {
+        "lineDataArray": [
+          {
+            "name": "Tapir check line dashed",
+            "scaleWithPlan": false,
+            "defineScale": 1.0,
+            "lineType": "Dashed",
+            "period": 4.0,
+            "dashItems": [ { "dash": 2.0, "gap": 1.0 }, { "dash": 0.5, "gap": 0.5 } ]
+          },
+          {
+            "name": "Tapir check line solid",
+            "scaleWithPlan": true,
+            "defineScale": 100.0,
+            "lineType": "Solid"
+          }
+        ],
+        "overwriteExisting": false
+      },
+      "save": {
+        "lineDashed": "attributeIds[0].attributeId.guid",
+        "lineSolid": "attributeIds[1].attributeId.guid"
+      },
+      "expect": [
+        { "path": "attributeIds", "len": 2, "name": "one id per line type" }
+      ]
+    },
+    {
+      "id": "read both line types",
+      "command": "GetLines",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${lineDashed}" } },
+          { "attributeId": { "guid": "${lineSolid}" } },
+          { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "lines", "len": 3, "name": "one item per id" },
+        { "path": "lines[0].name", "eq": "Tapir check line dashed", "name": "dashed: name" },
+        { "path": "lines[0].lineType", "eq": "Dashed", "name": "dashed: type" },
+        { "path": "lines[0].scaleWithPlan", "eq": false, "name": "dashed: fixed scale" },
+        { "path": "lines[0].period", "approx": 4.0, "name": "dashed: period" },
+        { "path": "lines[0].dashItems", "len": 2, "name": "dashed: two dash items" },
+        { "path": "lines[0].dashItems[0].dash", "approx": 2.0, "name": "dashed: first dash" },
+        { "path": "lines[0].dashItems[0].gap", "approx": 1.0, "name": "dashed: first gap" },
+        { "path": "lines[0].dashItems[1].dash", "approx": 0.5, "name": "dashed: second dash" },
+        { "path": "lines[0].dashItems[1].gap", "approx": 0.5, "name": "dashed: second gap" },
+        { "path": "lines[1].name", "eq": "Tapir check line solid", "name": "solid: name" },
+        { "path": "lines[1].lineType", "eq": "Solid", "name": "solid: type" },
+        { "path": "lines[1].scaleWithPlan", "eq": true, "name": "solid: scales with the plan" },
+        { "path": "lines[1].defineScale", "approx": 100.0, "name": "solid: define scale" },
+        { "path": "lines[2].error", "exists": true, "name": "unknown guid: error item" }
+      ]
+    },
+    {
+      "id": "read only the requested fields",
+      "command": "GetLines",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${lineDashed}" } } ],
+        "fields": [ "lineType" ]
+      },
+      "expect": [
+        { "path": "lines[0].lineType", "eq": "Dashed", "name": "requested field" },
+        { "path": "lines[0].dashItems", "exists": false, "name": "dashItems left out" },
+        { "path": "lines[0].period", "exists": false, "name": "period left out" }
+      ]
+    },
+    {
+      "id": "[line type with an existing name, no overwrite]",
+      "command": "CreateLines",
+      "creates": false,
+      "params": {
+        "lineDataArray": [
+          { "name": "Tapir check line solid", "lineType": "Solid" }
+        ],
+        "overwriteExisting": false
+      },
+      "expect": [
+        { "path": "attributeIds[0].error", "exists": true, "name": "rejected" },
+        { "path": "attributeIds[0].attributeId", "exists": false, "name": "no id" }
+      ]
+    },
+    {
+      "id": "overwrite the dashed line by attributeId: rename only",
+      "command": "CreateLines",
+      "creates": false,
+      "params": {
+        "lineDataArray": [
+          { "attributeId": { "guid": "${lineDashed}" }, "name": "Tapir check line dashed renamed" }
+        ],
+        "overwriteExisting": true
+      },
+      "expect": [
+        { "path": "attributeIds[0].attributeId.guid", "exists": true, "name": "id of the overwritten line type" }
+      ]
+    },
+    {
+      "id": "renamed line type keeps its dashes",
+      "command": "GetLines",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${lineDashed}" } } ]
+      },
+      "expect": [
+        { "path": "lines[0].name", "eq": "Tapir check line dashed renamed", "name": "renamed" },
+        { "path": "lines[0].lineType", "eq": "Dashed", "name": "still dashed" },
+        { "path": "lines[0].dashItems", "len": 2, "name": "still two dash items" },
+        { "path": "lines[0].dashItems[0].dash", "approx": 2.0, "name": "first dash kept" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "Line", "attributeId": { "attributeId": { "guid": "${lineDashed}" } } } ] }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "Line", "attributeId": { "attributeId": { "guid": "${lineSolid}" } } } ] }
+    }
+  ]
+}
