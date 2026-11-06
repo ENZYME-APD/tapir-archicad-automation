@@ -122,8 +122,8 @@
     'Next step': '下一步',
     'All scripts': '全部脚本',
     'Back to the schedule of every script.': '返回所有脚本的清单。',
-    'Browse scripts →': '浏览脚本 →',
+    'Browse scripts': '浏览脚本',
     'Made one of your own?': '自己写了一个？',
     'Share it, and any office can install it from the palette.': '分享出来，任何事务所都能从面板安装它。',
-    'How sharing works →': '分享的流程 →'
+    'How sharing works': '分享的流程'
 });

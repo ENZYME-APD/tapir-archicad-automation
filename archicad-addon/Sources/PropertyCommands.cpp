@@ -3624,6 +3624,9 @@ GS::ObjectState UpdatePropertyDefinitionsCommand::Execute (const GS::ObjectState
 
             item.Get ("name", definition.name);
             item.Get ("description", definition.description);
+            // Whether users may edit the value of the property on elements (Property Manager:
+            // "Editable"). Left as it is when not given.
+            item.Get ("isEditable", definition.canValueBeEditable);
             const GS::ObjectState* groupId = item.Get ("groupId");
             if (groupId != nullptr) {
                 definition.groupGuid = GetGuidFromObjectState (*groupId);

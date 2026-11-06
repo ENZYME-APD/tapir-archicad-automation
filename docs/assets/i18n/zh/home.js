@@ -22,9 +22,8 @@
     'running…': '运行中…',
     'Ground Floor · 1:100': '首层 · 1:100',
     'Try a built-in script': '试用内置脚本',
-    'Number doors': '为门编号',
-    'Colour by area': '按面积着色',
-    'Health check': '项目检查',
+    'Script': '脚本',
+    'Run': '运行',
     '6 doors numbered D01–D06': '6 扇门已编号 D01–D06',
     '6 zones coloured by area': '6 个区域已按面积着色',
     '3 problems found': '发现 3 个问题',
@@ -142,7 +141,7 @@
         '打开项目后，Archicad 在 <code>http://127.0.0.1:19723</code> 上响应 JSON 命令。Tapir 的命令通过 Archicad 的 <code>API.ExecuteAddOnCommand</code> 执行。将下面的代码保存为 <code>walls.py</code>，用任意 Python 3 运行即可。',
     'With several Archicads open, the next ones answer on 19724, 19725 and so on.':
         '如果打开了多个 Archicad，其余的依次在 19724、19725 等端口响应。',
-    'Your first Python script, step by step →': '一步步编写你的第一个 Python 脚本 →',
+    'Your first Python script, step by step': '一步步编写你的第一个 Python 脚本',
 
     // More
     'More': '更多',
@@ -152,12 +151,12 @@
     'The reference': '参考文档',
     'Every command with its schema and an example, the Grasshopper guide, and what Tapir covers of the Archicad API.':
         '每条命令的 schema 和示例、Grasshopper 指南，以及 Tapir 对 Archicad API 的覆盖情况。',
-    'Open the docs →': '打开文档 →',
+    'Open the docs': '打开文档',
     'Send yours in': '提交你的脚本',
     'Post a script on Discord or as a pull request. It is checked, adapted for any office and listed with your name. No GitHub account needed.':
         '在 Discord 上发布脚本或提交 pull request。它会经过检查、调整为适用于任何事务所，并以你的名字列出。无需 GitHub 账号。',
-    'How sharing works →': '分享流程 →',
+    'How sharing works': '分享流程',
     'Ask, report, test': '提问、报告、测试',
     'Discord, the video series, and how a bug report becomes a fix.': 'Discord、视频系列，以及错误报告如何变成修复。',
-    'Join in →': '加入我们 →'
+    'Join in': '加入我们'
 });
