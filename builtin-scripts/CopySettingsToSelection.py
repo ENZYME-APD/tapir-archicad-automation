@@ -3,15 +3,20 @@
 # dependencies = []
 # ///
 
+# /// tapir
+# changes = "model"
+# ///
+
 '''
 Copy Settings to Selection
-for tapir
 
 Copies the settings of one element to the selected elements of the same type,
 without their geometry: the eyedropper and syringe for many elements at once.
 The source's settings are saved as a temporary Favorite, applied to the
 selected elements with ApplyFavoritesToElements, and the Favorite is deleted
 again.
+
+for tapir
 '''
 
 import uuid
