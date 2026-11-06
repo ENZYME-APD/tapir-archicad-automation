@@ -1,17 +1,15 @@
 {
- "generatedAt": "2026-11-06 09:12 UTC",
+ "generatedAt": "2026-11-06 09:29 UTC",
  "counts": {
   "done": 568,
-  "merged": 166,
-  "in progress": 9,
+  "merged": 175,
   "skipped": 1,
   "open": 3,
   "not applicable": 1
  },
  "parameters": {
-  "all": 688,
-  "partial": 12,
-  "json": 34
+  "all": 707,
+  "json": 36
  },
  "items": [
   {
@@ -1543,14 +1541,13 @@
      "path": "Components/ProjectComponents/SaveProjectComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
+    "overwrite",
     "projectPath"
    ],
-   "missingParameters": [
-    "overwrite"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -1567,15 +1564,14 @@
      "path": "Components/ProjectComponents/SaveAsModuleFileComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 3,
    "coveredParameters": [
     "elements",
-    "moduleFilePath"
-   ],
-   "missingParameters": [
+    "moduleFilePath",
     "overwrite"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -1592,18 +1588,17 @@
      "path": "Components/ProjectComponents/SaveProjectAsArchiveComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 6,
    "coveredParameters": [
     "archiveFilePath",
     "includeBackgroundPicture",
     "includeLibraryParts",
     "includeProperties",
-    "includeTextures"
-   ],
-   "missingParameters": [
+    "includeTextures",
     "overwrite"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -1662,19 +1657,18 @@
      "path": "Components/ProjectComponents/PhotoRenderComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 7,
    "coveredParameters": [
     "format",
     "height",
     "imageFilePath",
+    "overwrite",
     "resolution",
     "sceneName",
     "width"
    ],
-   "missingParameters": [
-    "overwrite"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -1691,18 +1685,17 @@
      "path": "Components/ProjectComponents/SaveCurrentWindowAsImageComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 6,
    "coveredParameters": [
     "colorDepth",
     "dithered",
     "entireDrawing",
     "format",
-    "imageFilePath"
-   ],
-   "missingParameters": [
+    "imageFilePath",
     "overwrite"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -4227,14 +4220,13 @@
      "path": "Components/ElementMetadata.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
+    "dryRun",
     "elements"
    ],
-   "missingParameters": [
-    "dryRun"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -5449,19 +5441,54 @@
    "group": "Element Commands",
    "version": "1.8.1",
    "brief": "Creates extruded, revolved and ruled Shell elements from profile polylines, with thickness, structure, an optional clipping contour and holes.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 33,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2101,
-     "title": "Grasshopper: components for the new element and property commands, and the overwrite/dryRun inputs"
+     "name": "CreateShellsComponent",
+     "path": "Components/ElementsComponents/CreateShellsComponent.cs"
     }
    ],
+   "parameters": "json",
+   "parameterCount": 33,
+   "coveredParameters": [
+    "shellsData",
+    "shellsData.buildingMaterialId",
+    "shellsData.compositeId",
+    "shellsData.extrusionVector",
+    "shellsData.floorIndex",
+    "shellsData.holes",
+    "shellsData.isFlipped",
+    "shellsData.profile",
+    "shellsData.revolutionAngle",
+    "shellsData.shellClass",
+    "shellsData.slantAngle",
+    "shellsData.structureType",
+    "shellsData.thickness"
+   ],
+   "missingParameters": [
+    "shellsData.axis",
+    "shellsData.basePlane",
+    "shellsData.begPlaneTilt",
+    "shellsData.begShapeEdgeTrim",
+    "shellsData.begSideEdgeTrim",
+    "shellsData.beginAngle",
+    "shellsData.contour",
+    "shellsData.distortionAngle",
+    "shellsData.endPlaneTilt",
+    "shellsData.endShapeEdgeTrim",
+    "shellsData.endSideEdgeTrim",
+    "shellsData.extrusionStart",
+    "shellsData.favoriteName",
+    "shellsData.id",
+    "shellsData.morphingRule",
+    "shellsData.profilePlane",
+    "shellsData.secondProfile",
+    "shellsData.secondProfilePlane",
+    "shellsData.segmentsByCircle",
+    "shellsData.shapePlaneTilt"
+   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6928,19 +6955,25 @@
    "group": "Element Commands",
    "version": "1.8.1",
    "brief": "Modifies Railing elements in place: the height of their segments, the bottom offset and the home story. The reference line, the nodes and segments, and the posts, rails and panels stay as they are. Each railing is read back after the change, and a value Archicad did not apply gets a failed execution result.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 5,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2101,
-     "title": "Grasshopper: components for the new element and property commands, and the overwrite/dryRun inputs"
+     "name": "RailingsComponent",
+     "path": "Components/DesignToolsComponents/RailingsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 5,
+   "coveredParameters": [
+    "railingsWithDetails",
+    "railingsWithDetails.bottomOffset",
+    "railingsWithDetails.elementId",
+    "railingsWithDetails.floorIndex",
+    "railingsWithDetails.height"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7153,19 +7186,29 @@
    "group": "Element Commands",
    "version": "1.8.1",
    "brief": "EXPERIMENTAL. Modifies single Curtain Wall Frames by their GUID: the frame contour (a1, a2, b1, b2), the frame class and the frame type. ACAPI_Element_Change does not take a frame on its own, so the change is written through the memo of the owner curtain wall, and read back to check that Archicad applied it.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 9,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2101,
-     "title": "Grasshopper: components for the new element and property commands, and the overwrite/dryRun inputs"
+     "name": "ModifyCurtainWallFramesComponent",
+     "path": "Components/ElementsComponents/ModifyCurtainWallFramesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 9,
+   "coveredParameters": [
+    "framesWithDetails",
+    "framesWithDetails.classIndex",
+    "framesWithDetails.frameContour",
+    "framesWithDetails.frameContour.a1",
+    "framesWithDetails.frameContour.a2",
+    "framesWithDetails.frameContour.b1",
+    "framesWithDetails.frameContour.b2",
+    "framesWithDetails.frameId",
+    "framesWithDetails.type"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7173,19 +7216,48 @@
    "group": "Element Commands",
    "version": "1.8.1",
    "brief": "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the finish visibility, and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness). Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 27,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2101,
-     "title": "Grasshopper: components for the new element and property commands, and the overwrite/dryRun inputs"
+     "name": "ModifyStairsComponent",
+     "path": "Components/ElementsComponents/ModifyStairsComponent.cs"
     }
    ],
+   "parameters": "json",
+   "parameterCount": 27,
+   "coveredParameters": [
+    "stairsWithDetails",
+    "stairsWithDetails.elementId",
+    "stairsWithDetails.finishVisible",
+    "stairsWithDetails.flightWidth",
+    "stairsWithDetails.riserHeight",
+    "stairsWithDetails.risers.angle",
+    "stairsWithDetails.risers.position",
+    "stairsWithDetails.stepNum",
+    "stairsWithDetails.structures.structureType",
+    "stairsWithDetails.totalHeight",
+    "stairsWithDetails.totalHeightLocked",
+    "stairsWithDetails.treadDepth",
+    "stairsWithDetails.treadDepthLocked",
+    "stairsWithDetails.treads.offset",
+    "stairsWithDetails.treads.thickness"
+   ],
+   "missingParameters": [
+    "stairsWithDetails.risers",
+    "stairsWithDetails.risers.crossSection",
+    "stairsWithDetails.structures",
+    "stairsWithDetails.structures.bottomType",
+    "stairsWithDetails.structures.horizontalThickness",
+    "stairsWithDetails.structures.side",
+    "stairsWithDetails.treads",
+    "stairsWithDetails.treads.nosingSlant",
+    "stairsWithDetails.treads.nosingType",
+    "stairsWithDetails.treads.nosingValue",
+    "stairsWithDetails.treads.role",
+    "stairsWithDetails.treads.visible"
+   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7342,19 +7414,19 @@
    "group": "Element Commands",
    "version": "1.8.1",
    "brief": "Returns the 3D extent (xMin, yMin, zMin, xMax, yMax, zMax) of the current database, the region Archicad's Fit in Window would show.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetModelExtentComponent",
+     "path": "Components/ElementsComponents/GetModelExtentComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2101,
-     "title": "Grasshopper: components for the new element and property commands, and the overwrite/dryRun inputs"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7994,16 +8066,15 @@
      "path": "Components/FavoritesComponents/ExportFavoritesComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 4,
    "coveredParameters": [
     "format",
     "names",
+    "overwrite",
     "path"
    ],
-   "missingParameters": [
-    "overwrite"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -8582,19 +8653,21 @@
    "group": "Property Commands",
    "version": "1.8.1",
    "brief": "Returns the components of the elements: the building material skins of composite walls, slabs, roofs and shells, and the parts of complex profile walls, beams and columns. The components have their own property values (building material, thickness, area, volume and the properties of the building material); read them with GetPropertyValuesOfElementComponents.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2101,
-     "title": "Grasshopper: components for the new element and property commands, and the overwrite/dryRun inputs"
+     "name": "GetComponentsOfElementsComponent",
+     "path": "Components/PropertiesComponents/GetComponentsOfElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8602,19 +8675,22 @@
    "group": "Property Commands",
    "version": "1.8.1",
    "brief": "Returns the property definitions available on the given element components, optionally filtered to user defined or built-in ones.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2101,
-     "title": "Grasshopper: components for the new element and property commands, and the overwrite/dryRun inputs"
+     "name": "GetPropertyDefinitionsOfElementComponentsComponent",
+     "path": "Components/PropertiesComponents/GetPropertyDefinitionsOfElementComponentsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "elementComponents",
+    "filter"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8622,19 +8698,22 @@
    "group": "Property Commands",
    "version": "1.8.1",
    "brief": "Returns the property values of the given element components for the given properties, in the shape of GetPropertyValuesOfElements. Use GetComponentsOfElements to list the components of an element.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2101,
-     "title": "Grasshopper: components for the new element and property commands, and the overwrite/dryRun inputs"
+     "name": "GetPropertyValuesOfElementComponentsComponent",
+     "path": "Components/PropertiesComponents/GetPropertyValuesOfElementComponentsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "elementComponents",
+    "properties"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9088,19 +9167,23 @@
    "group": "Property Commands",
    "version": "1.8.1",
    "brief": "Checks whether the given values are acceptable for the given property definitions, without changing anything.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2101,
-     "title": "Grasshopper: components for the new element and property commands, and the overwrite/dryRun inputs"
+     "name": "CheckPropertyValuesComponent",
+     "path": "Components/PropertiesComponents/CheckPropertyValuesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "propertyValues",
+    "propertyValues.propertyId",
+    "propertyValues.propertyValue"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9708,16 +9791,15 @@
      "path": "Components/AttributesComponents/DeleteAttributesComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 4,
    "coveredParameters": [
     "attributesToDelete",
     "attributesToDelete.attributeId",
-    "attributesToDelete.attributeType"
-   ],
-   "missingParameters": [
+    "attributesToDelete.attributeType",
     "dryRun"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -11264,19 +11346,18 @@
      "path": "Components/IFCComponents/IFCFileOperationComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 7,
    "coveredParameters": [
     "elementsToExport",
     "fileType",
     "ifcFilePath",
     "method",
+    "overwrite",
     "storyIndex",
     "translatorName"
    ],
-   "missingParameters": [
-    "overwrite"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -14326,18 +14407,17 @@
      "path": "Components/NavigatorComponents/Set3DProjectionSettingsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 6,
    "coveredParameters": [
     "axonometry",
     "axonometry.azimuth",
     "axonometry.projectionType",
+    "axonometry.sun",
     "axonometry.transformationMatrix",
     "perspective"
    ],
-   "missingParameters": [
-    "axonometry.sun"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -15023,14 +15103,13 @@
      "path": "Components/NavigatorComponents/DeleteNavigatorItemsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
+    "dryRun",
     "navigatorItemIds"
    ],
-   "missingParameters": [
-    "dryRun"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -15545,17 +15624,16 @@
      "path": "Components/IssuesComponents/ExportIssuesToBCFComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 5,
    "coveredParameters": [
     "alignBySurveyPoint",
     "exportPath",
     "issues",
+    "overwrite",
     "useExternalId"
    ],
-   "missingParameters": [
-    "overwrite"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
