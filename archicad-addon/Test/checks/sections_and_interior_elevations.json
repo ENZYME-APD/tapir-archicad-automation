@@ -1,0 +1,234 @@
+{
+  "title": "CreateSections, ModifySections and CreateInteriorElevations: geometry, name and ID read back, bad input refused",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [ "Wall", "Slab", "Stair", "Roof", "Zone", "CutPlane", "InteriorElevation" ],
+  "steps": [
+    {
+      "id": "floor plan, story 0",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "section along +x, depth 3",
+      "command": "CreateSections",
+      "params": {
+        "sectionsData": [
+          {
+            "startCoordinate": { "x": 800.0, "y": 800.0 },
+            "endCoordinate": { "x": 806.0, "y": 800.0 },
+            "depth": 3.0,
+            "name": "TapirCheck Section A",
+            "id": "TC-A",
+            "floorIndex": 0
+          }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "section created" }
+      ]
+    },
+    {
+      "id": "read the section back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "CutPlane" },
+        { "path": "detailsOfElements[0].details.name", "eq": "TapirCheck Section A" },
+        { "path": "detailsOfElements[0].details.idStr", "eq": "TC-A" },
+        { "path": "detailsOfElements[0].details.startCoordinate.x", "approx": 800.0 },
+        { "path": "detailsOfElements[0].details.startCoordinate.y", "approx": 800.0 },
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 806.0 },
+        { "path": "detailsOfElements[0].details.endCoordinate.y", "approx": 800.0 },
+        { "path": "detailsOfElements[0].details.depth", "approx": 3.0, "name": "depth line 3 m away" },
+        { "path": "detailsOfElements[0].details.viewDirection.y", "approx": 1.0, "name": "looks to the left of start to end" }
+      ]
+    },
+    {
+      "id": "its viewpoint is listed",
+      "command": "GetDatabases",
+      "creates": false,
+      "params": { "types": [ "Section" ] },
+      "expect": [
+        { "path": "databases", "len": 1 },
+        { "path": "databases[0].type", "eq": "Section" },
+        { "path": "databases[0].databaseId.guid", "exists": true },
+        { "path": "databases[0].name", "eq": "TapirCheck Section A" },
+        { "path": "databases[0].referenceId", "eq": "TC-A" }
+      ]
+    },
+    {
+      "id": "bad input: start and end the same",
+      "command": "CreateSections",
+      "params": {
+        "sectionsData": [
+          {
+            "startCoordinate": { "x": 810.0, "y": 800.0 },
+            "endCoordinate": { "x": 810.0, "y": 800.0 },
+            "name": "TapirCheck Section bad"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "refused" }
+      ]
+    },
+    {
+      "id": "still one section",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "CutPlane" },
+      "expect": [
+        { "path": "elements", "len": 1 }
+      ]
+    },
+    {
+      "id": "rename and re-ID the section",
+      "command": "ModifySections",
+      "creates": false,
+      "params": {
+        "sectionsWithDetails": [
+          { "elementId": { "guid": "${s1}" }, "name": "TapirCheck Section B", "id": "TC-B" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the new name and ID",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.name", "eq": "TapirCheck Section B" },
+        { "path": "detailsOfElements[0].details.idStr", "eq": "TC-B" },
+        { "path": "detailsOfElements[0].details.startCoordinate.x", "approx": 800.0, "name": "geometry kept" }
+      ]
+    },
+    {
+      "id": "the viewpoint follows",
+      "command": "GetDatabases",
+      "creates": false,
+      "params": { "types": [ "Section" ] },
+      "expect": [
+        { "path": "databases[0].name", "eq": "TapirCheck Section B" },
+        { "path": "databases[0].referenceId", "eq": "TC-B" }
+      ]
+    },
+    {
+      "id": "only the ID",
+      "command": "ModifySections",
+      "creates": false,
+      "params": {
+        "sectionsWithDetails": [
+          { "elementId": { "guid": "${s1}" }, "id": "TC-C" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "ID changed, name kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.idStr", "eq": "TC-C" },
+        { "path": "detailsOfElements[0].details.name", "eq": "TapirCheck Section B", "name": "name kept" }
+      ]
+    },
+    {
+      "id": "interior elevation of two segments",
+      "command": "CreateInteriorElevations",
+      "params": {
+        "interiorElevationsData": [
+          {
+            "nodeCoordinates": [ { "x": 850.0, "y": 850.0 }, { "x": 856.0, "y": 850.0 }, { "x": 856.0, "y": 854.0 } ],
+            "depth": 2.0,
+            "name": "TapirCheck IE",
+            "id": "TC-IE",
+            "floorIndex": 0
+          }
+        ]
+      },
+      "save": { "ie1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "interior elevation created" }
+      ]
+    },
+    {
+      "id": "one interior elevation element",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "InteriorElevation" },
+      "expect": [
+        { "path": "elements", "len": 1 }
+      ]
+    },
+    {
+      "id": "one viewpoint per segment",
+      "command": "GetDatabases",
+      "creates": false,
+      "params": { "types": [ "InteriorElevation" ] },
+      "expect": [
+        { "path": "databases", "len": 2 },
+        { "path": "databases[0].name", "contains": "TapirCheck IE", "name": "segment named after it" },
+        { "path": "databases[1].name", "contains": "TapirCheck IE", "name": "segment named after it" }
+      ]
+    },
+    {
+      "id": "bad input: two consecutive points the same",
+      "command": "CreateInteriorElevations",
+      "params": {
+        "interiorElevationsData": [
+          {
+            "nodeCoordinates": [ { "x": 870.0, "y": 850.0 }, { "x": 870.0, "y": 850.0 }, { "x": 876.0, "y": 850.0 } ],
+            "name": "TapirCheck IE bad"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "refused" }
+      ]
+    },
+    {
+      "id": "still one interior elevation",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "InteriorElevation" },
+      "expect": [
+        { "path": "elements", "len": 1 }
+      ]
+    },
+    {
+      "id": "bad input: ModifySections on an interior elevation",
+      "command": "ModifySections",
+      "creates": false,
+      "params": {
+        "sectionsWithDetails": [
+          { "elementId": { "guid": "${ie1}" }, "name": "TapirCheck not a section" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "the section is unchanged",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.name", "eq": "TapirCheck Section B" },
+        { "path": "detailsOfElements[0].details.idStr", "eq": "TC-C" }
+      ]
+    }
+  ]
+}

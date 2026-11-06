@@ -1,0 +1,265 @@
+{
+  "title": "GetPropertyValuesOfElements, SetPropertyValuesOfElements and ModifyPropertyValueOfElements read and write a custom property of walls",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "classification system",
+      "command": "CreateClassificationSystems",
+      "creates": false,
+      "params": {
+        "classificationSystemsWithItems": [
+          {
+            "classificationSystem": { "name": "TapirCheck element values system", "description": "", "source": "", "version": "1", "date": "2026-01-01" },
+            "classificationItems": []
+          }
+        ]
+      },
+      "save": { "system": "classificationSystemIds[0].classificationSystemId.guid" }
+    },
+    {
+      "id": "classification item",
+      "command": "CreateClassificationItems",
+      "creates": false,
+      "params": {
+        "newClassificationItems": [
+          {
+            "classificationSystemId": { "guid": "${system}" },
+            "classificationItemDetails": { "id": "TC1", "name": "TapirCheck element values item", "description": "" }
+          }
+        ]
+      },
+      "save": { "item": "classificationItemIds[0].classificationItemId.guid" }
+    },
+    {
+      "id": "property group",
+      "command": "CreatePropertyGroups",
+      "creates": false,
+      "params": {
+        "propertyGroups": [ { "propertyGroup": { "name": "TapirCheck element values group", "description": "" } } ]
+      },
+      "save": { "group": "propertyGroupIds[0].propertyGroupId.guid" }
+    },
+    {
+      "id": "text property available for the item",
+      "command": "CreatePropertyDefinitions",
+      "creates": false,
+      "params": {
+        "propertyDefinitions": [
+          {
+            "propertyDefinition": {
+              "name": "TapirCheck element text",
+              "description": "",
+              "type": "string",
+              "isEditable": true,
+              "defaultValue": { "basicDefaultValue": { "type": "string", "status": "normal", "value": "TapirCheck default" } },
+              "availability": [ { "classificationItemId": { "guid": "${item}" } } ],
+              "group": { "propertyGroupId": { "guid": "${group}" } }
+            }
+          }
+        ]
+      },
+      "save": { "prop": "propertyIds[0].propertyId.guid" }
+    },
+    {
+      "id": "three walls",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 703, "y": 700 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 },
+          { "begCoordinate": { "x": 700, "y": 702 }, "endCoordinate": { "x": 703, "y": 702 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 },
+          { "begCoordinate": { "x": 700, "y": 704 }, "endCoordinate": { "x": 703, "y": 704 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid", "w2": "elements[1].elementId.guid", "w3": "elements[2].elementId.guid" }
+    },
+    {
+      "id": "classify walls 1 and 2, wall 3 keeps no property",
+      "command": "API.SetClassificationsOfElements",
+      "creates": false,
+      "params": {
+        "elementClassifications": [
+          { "elementId": { "guid": "${w1}" }, "classificationId": { "classificationSystemId": { "guid": "${system}" }, "classificationItemId": { "guid": "${item}" } } },
+          { "elementId": { "guid": "${w2}" }, "classificationId": { "classificationSystemId": { "guid": "${system}" }, "classificationItemId": { "guid": "${item}" } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "wall 1 classified" },
+        { "path": "executionResults[1].success", "eq": true, "name": "wall 2 classified" }
+      ]
+    },
+    {
+      "id": "read the default values",
+      "command": "GetPropertyValuesOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${w1}" } },
+          { "elementId": { "guid": "${w2}" } },
+          { "elementId": { "guid": "${w3}" } }
+        ],
+        "properties": [ { "propertyId": { "guid": "${prop}" } } ],
+        "includeAvailability": true
+      },
+      "expect": [
+        { "path": "propertyValuesForElements", "len": 3, "name": "one list per element" },
+        { "path": "propertyValuesForElements[0].propertyValues", "len": 1, "name": "one value per property" },
+        { "path": "propertyValuesForElements[0].propertyValues[0].propertyValue.value", "eq": "TapirCheck default", "name": "wall 1 has the default" },
+        { "path": "propertyValuesForElements[0].propertyValues[0].isAvailable", "eq": true, "name": "available for wall 1" },
+        { "path": "propertyValuesForElements[1].propertyValues[0].propertyValue.value", "eq": "TapirCheck default", "name": "wall 2 has the default" },
+        { "path": "propertyValuesForElements[2].propertyValues[0].error", "exists": true, "name": "wall 3: error, not available" },
+        { "path": "propertyValuesForElements[2].propertyValues[0].isAvailable", "eq": false, "name": "not available for wall 3" }
+      ]
+    },
+    {
+      "id": "[bogus element]",
+      "command": "GetPropertyValuesOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } ],
+        "properties": [ { "propertyId": { "guid": "${prop}" } } ]
+      },
+      "expect": [
+        { "path": "propertyValuesForElements", "len": 1, "name": "one item for the element" },
+        { "path": "propertyValuesForElements[0].error", "exists": true, "name": "error, not a crash" }
+      ]
+    },
+    {
+      "id": "set walls 1 and 2 to different values",
+      "command": "SetPropertyValuesOfElements",
+      "creates": false,
+      "params": {
+        "elementPropertyValues": [
+          { "elementId": { "guid": "${w1}" }, "propertyId": { "guid": "${prop}" }, "propertyValue": { "value": "TapirCheck A" } },
+          { "elementId": { "guid": "${w2}" }, "propertyId": { "guid": "${prop}" }, "propertyValue": { "value": "TapirCheck B" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per value" },
+        { "path": "executionResults[0].success", "eq": true, "name": "wall 1 set" },
+        { "path": "executionResults[1].success", "eq": true, "name": "wall 2 set" }
+      ]
+    },
+    {
+      "id": "read the values set",
+      "command": "GetPropertyValuesOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ],
+        "properties": [ { "propertyId": { "guid": "${prop}" } } ]
+      },
+      "expect": [
+        { "path": "propertyValuesForElements[0].propertyValues[0].propertyValue.value", "eq": "TapirCheck A", "name": "wall 1 changed" },
+        { "path": "propertyValuesForElements[1].propertyValues[0].propertyValue.value", "eq": "TapirCheck B", "name": "wall 2 changed" }
+      ]
+    },
+    {
+      "id": "reset wall 1 to the default",
+      "command": "SetPropertyValuesOfElements",
+      "creates": false,
+      "params": {
+        "elementPropertyValues": [
+          { "elementId": { "guid": "${w1}" }, "propertyId": { "guid": "${prop}" }, "valueStatus": "Default" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read wall 1 back at the default",
+      "command": "GetPropertyValuesOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ],
+        "properties": [ { "propertyId": { "guid": "${prop}" } } ]
+      },
+      "expect": [
+        { "path": "propertyValuesForElements[0].propertyValues[0].propertyValue.value", "eq": "TapirCheck default", "name": "wall 1 back at the default" },
+        { "path": "propertyValuesForElements[1].propertyValues[0].propertyValue.value", "eq": "TapirCheck B", "name": "wall 2 kept" }
+      ]
+    },
+    {
+      "id": "[bogus element]",
+      "command": "SetPropertyValuesOfElements",
+      "creates": false,
+      "params": {
+        "elementPropertyValues": [
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "propertyId": { "guid": "${prop}" }, "propertyValue": { "value": "TapirCheck X" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result" },
+        { "path": "executionResults[0].success", "eq": false, "name": "failed" }
+      ]
+    },
+    {
+      "id": "one value on walls 1 and 2",
+      "command": "ModifyPropertyValueOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ],
+        "propertyId": { "guid": "${prop}" },
+        "propertyValue": { "value": "TapirCheck C" }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the modified values",
+      "command": "GetPropertyValuesOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ],
+        "properties": [ { "propertyId": { "guid": "${prop}" } } ]
+      },
+      "expect": [
+        { "path": "propertyValuesForElements[0].propertyValues[0].propertyValue.value", "eq": "TapirCheck C", "name": "wall 1 modified" },
+        { "path": "propertyValuesForElements[1].propertyValues[0].propertyValue.value", "eq": "TapirCheck C", "name": "wall 2 modified" }
+      ]
+    },
+    {
+      "id": "[bogus property]",
+      "command": "ModifyPropertyValueOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${w1}" } } ],
+        "propertyId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+        "propertyValue": { "value": "TapirCheck X" }
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "failed" }
+      ]
+    },
+    {
+      "id": "[wall 1 and wall 3, which lacks the property]",
+      "command": "ModifyPropertyValueOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w3}" } } ],
+        "propertyId": { "guid": "${prop}" },
+        "propertyValue": { "value": "TapirCheck D" }
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "failed, not available for wall 3" }
+      ]
+    },
+    {
+      "id": "no wall changed by the failed modify",
+      "command": "GetPropertyValuesOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${w1}" } } ],
+        "properties": [ { "propertyId": { "guid": "${prop}" } } ]
+      },
+      "expect": [
+        { "path": "propertyValuesForElements[0].propertyValues[0].propertyValue.value", "eq": "TapirCheck C", "name": "wall 1 kept its value" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeletePropertyDefinitions", "params": { "propertyIds": [ { "propertyId": { "guid": "${prop}" } } ] } },
+    { "command": "DeletePropertyGroups", "params": { "propertyGroupIds": [ { "propertyGroupId": { "guid": "${group}" } } ] } },
+    { "command": "DeleteClassificationSystems", "params": { "classificationSystemIds": [ { "classificationSystemId": { "guid": "${system}" } } ] } }
+  ]
+}

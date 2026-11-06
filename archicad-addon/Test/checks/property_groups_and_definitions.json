@@ -1,0 +1,359 @@
+{
+  "title": "Property groups and definitions: create, read back with GetAllProperties, update and delete",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "[group A, group B]",
+      "command": "CreatePropertyGroups",
+      "creates": false,
+      "params": {
+        "propertyGroups": [
+          { "propertyGroup": { "name": "Tapir check group A", "description": "first group" } },
+          { "propertyGroup": { "name": "Tapir check group B", "description": "" } }
+        ]
+      },
+      "save": {
+        "groupA": "propertyGroupIds[0].propertyGroupId.guid",
+        "groupB": "propertyGroupIds[1].propertyGroupId.guid"
+      },
+      "expect": [
+        { "path": "propertyGroupIds", "len": 2, "name": "one item per group" },
+        { "path": "propertyGroupIds[0].propertyGroupId.guid", "exists": true, "name": "id of group A" },
+        { "path": "propertyGroupIds[1].propertyGroupId.guid", "exists": true, "name": "id of group B" }
+      ]
+    },
+    {
+      "id": "[string in A by id, single enum in B by name, expression in A, group that does not exist]",
+      "command": "CreatePropertyDefinitions",
+      "creates": false,
+      "params": {
+        "propertyDefinitions": [
+          {
+            "propertyDefinition": {
+              "name": "Tapir check string", "description": "string property", "type": "string",
+              "isEditable": true, "availability": [],
+              "group": { "propertyGroupId": { "guid": "${groupA}" } },
+              "defaultValue": { "basicDefaultValue": { "type": "string", "status": "normal", "value": "abc" } }
+            }
+          },
+          {
+            "propertyDefinition": {
+              "name": "Tapir check enum", "description": "enum property", "type": "singleEnum",
+              "isEditable": true, "availability": [],
+              "group": { "name": "Tapir check group B" },
+              "possibleEnumValues": [
+                { "enumValue": { "displayValue": "Red", "nonLocalizedValue": "red" } },
+                { "enumValue": { "displayValue": "Green" } },
+                { "enumValue": { "displayValue": "Blue" } }
+              ],
+              "defaultValue": { "basicDefaultValue": { "type": "singleEnum", "status": "normal",
+                                                       "value": { "type": "displayValue", "displayValue": "Green" } } }
+            }
+          },
+          {
+            "propertyDefinition": {
+              "name": "Tapir check expression", "description": "expression property", "type": "string",
+              "isEditable": true, "availability": [],
+              "group": { "propertyGroupId": { "guid": "${groupA}" } },
+              "defaultValue": { "expressions": [ "\"a\"" ] }
+            }
+          },
+          {
+            "propertyDefinition": {
+              "name": "Tapir check orphan", "description": "", "type": "string",
+              "isEditable": true, "availability": [],
+              "group": { "name": "Tapir check group that does not exist" }
+            }
+          }
+        ]
+      },
+      "save": {
+        "propString": "propertyIds[0].propertyId.guid",
+        "propEnum": "propertyIds[1].propertyId.guid",
+        "propExpr": "propertyIds[2].propertyId.guid"
+      },
+      "expect": [
+        { "path": "propertyIds", "len": 4, "name": "one item per definition" },
+        { "path": "propertyIds[0].propertyId.guid", "exists": true, "name": "id of the string property" },
+        { "path": "propertyIds[1].propertyId.guid", "exists": true, "name": "id of the enum property" },
+        { "path": "propertyIds[2].propertyId.guid", "exists": true, "name": "id of the expression property" },
+        { "path": "propertyIds[3].error", "exists": true, "name": "missing group: error item" }
+      ]
+    },
+    {
+      "id": "read the string property back",
+      "command": "GetAllProperties",
+      "creates": false,
+      "params": { "properties": [ { "propertyId": { "guid": "${propString}" } } ] },
+      "expect": [
+        { "path": "properties", "len": 1, "name": "only the requested property" },
+        { "path": "properties[0].propertyType", "eq": "Custom" },
+        { "path": "properties[0].propertyName", "eq": "Tapir check string" },
+        { "path": "properties[0].propertyDescription", "eq": "string property" },
+        { "path": "properties[0].propertyGroupName", "eq": "Tapir check group A" },
+        { "path": "properties[0].propertyCollectionType", "eq": "Single" },
+        { "path": "properties[0].propertyValueType", "eq": "String" },
+        { "path": "properties[0].propertyIsEditable", "eq": true },
+        { "path": "properties[0].isExpressionBased", "eq": false },
+        { "path": "properties[0].defaultValueDisplay", "eq": "abc" },
+        { "path": "properties[0].availability", "len": 0, "name": "availability list (includeAvailability defaults to true)" }
+      ]
+    },
+    {
+      "id": "read the enum property back",
+      "command": "GetAllProperties",
+      "creates": false,
+      "params": { "properties": [ { "propertyId": { "guid": "${propEnum}" } } ] },
+      "save": {
+        "enumRed": "properties[0].possibleEnumValues[0].enumValue.guid",
+        "enumBlue": "properties[0].possibleEnumValues[2].enumValue.guid"
+      },
+      "expect": [
+        { "path": "properties", "len": 1, "name": "only the requested property" },
+        { "path": "properties[0].propertyGroupName", "eq": "Tapir check group B", "name": "group found by name" },
+        { "path": "properties[0].propertyCollectionType", "eq": "SingleChoiceEnumeration" },
+        { "path": "properties[0].possibleEnumValues", "len": 3 },
+        { "path": "properties[0].possibleEnumValues[0].enumValue.displayValue", "eq": "Red" },
+        { "path": "properties[0].possibleEnumValues[0].enumValue.nonLocalizedValue", "eq": "red" },
+        { "path": "properties[0].possibleEnumValues[1].enumValue.displayValue", "eq": "Green" },
+        { "path": "properties[0].possibleEnumValues[2].enumValue.displayValue", "eq": "Blue" },
+        { "path": "properties[0].defaultValueDisplay", "eq": "Green" },
+        { "path": "properties[0].defaultEnumValueIds", "len": 1 }
+      ]
+    },
+    {
+      "id": "read the expression property back",
+      "command": "GetAllProperties",
+      "creates": false,
+      "params": { "properties": [ { "propertyId": { "guid": "${propExpr}" } } ] },
+      "expect": [
+        { "path": "properties", "len": 1, "name": "only the requested property" },
+        { "path": "properties[0].isExpressionBased", "eq": true },
+        { "path": "properties[0].expressions", "len": 1 },
+        { "path": "properties[0].expressions[0]", "eq": "\"a\"" }
+      ]
+    },
+    {
+      "id": "[string property, guid not in the project] without availability",
+      "command": "GetAllProperties",
+      "creates": false,
+      "params": {
+        "properties": [
+          { "propertyId": { "guid": "${propString}" } },
+          { "propertyId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ],
+        "includeAvailability": false
+      },
+      "expect": [
+        { "path": "properties", "len": 1, "name": "unknown guid left out" },
+        { "path": "properties[0].propertyName", "eq": "Tapir check string" },
+        { "path": "properties[0].availability", "exists": false, "name": "no availability list" }
+      ]
+    },
+    {
+      "id": "string property filtered to built-in types",
+      "command": "GetAllProperties",
+      "creates": false,
+      "params": {
+        "properties": [ { "propertyId": { "guid": "${propString}" } } ],
+        "propertyTypes": [ "StaticBuiltIn", "DynamicBuiltIn" ]
+      },
+      "expect": [
+        { "path": "properties", "len": 0, "name": "a custom property is not built-in" }
+      ]
+    },
+    {
+      "id": "[rename group A, group that does not exist]",
+      "command": "UpdatePropertyGroups",
+      "creates": false,
+      "params": {
+        "propertyGroups": [
+          { "propertyGroupId": { "guid": "${groupA}" }, "name": "Tapir check group A2", "description": "changed" },
+          { "propertyGroupId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "name": "Tapir check nothing" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per group" },
+        { "path": "executionResults[0].success", "eq": true, "name": "group A renamed" },
+        { "path": "executionResults[1].success", "eq": false, "name": "unknown group: failed" }
+      ]
+    },
+    {
+      "id": "the string property is in the renamed group",
+      "command": "GetAllProperties",
+      "creates": false,
+      "params": { "properties": [ { "propertyId": { "guid": "${propString}" } } ], "includeAvailability": false },
+      "expect": [
+        { "path": "properties[0].propertyGroupName", "eq": "Tapir check group A2" }
+      ]
+    },
+    {
+      "id": "[string: name, description, group, default; enum: rename, remove, add, reorder; expression; expressions on a basic property]",
+      "command": "UpdatePropertyDefinitions",
+      "creates": false,
+      "params": {
+        "propertyDefinitions": [
+          {
+            "propertyId": { "guid": "${propString}" },
+            "name": "Tapir check string 2",
+            "description": "changed",
+            "groupId": { "guid": "${groupB}" },
+            "defaultValue": { "basicDefaultValue": { "type": "string", "status": "normal", "value": "xyz" } }
+          },
+          {
+            "propertyId": { "guid": "${propEnum}" },
+            "renameEnumValues": [ { "enumValueId": { "guid": "${enumRed}" }, "displayValue": "Crimson" } ],
+            "removeEnumValues": [ { "enumValueId": { "guid": "${enumBlue}" } } ],
+            "possibleEnumValues": [ { "enumValue": { "displayValue": "Yellow" } } ],
+            "enumOrder": [ "Yellow", "Green", "Crimson" ]
+          },
+          {
+            "propertyId": { "guid": "${propExpr}" },
+            "expressions": [ "\"b\"" ]
+          },
+          {
+            "propertyId": { "guid": "${propString}" },
+            "expressions": [ "\"c\"" ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 4, "name": "one result per definition" },
+        { "path": "executionResults[0].success", "eq": true, "name": "string property updated" },
+        { "path": "executionResults[1].success", "eq": true, "name": "enum options updated" },
+        { "path": "executionResults[2].success", "eq": true, "name": "expression updated" },
+        { "path": "executionResults[3].success", "eq": false, "name": "expressions on a basic property: failed" }
+      ]
+    },
+    {
+      "id": "read the updated string property back",
+      "command": "GetAllProperties",
+      "creates": false,
+      "params": { "properties": [ { "propertyId": { "guid": "${propString}" } } ] },
+      "expect": [
+        { "path": "properties", "len": 1, "name": "same guid after the update" },
+        { "path": "properties[0].propertyName", "eq": "Tapir check string 2" },
+        { "path": "properties[0].propertyDescription", "eq": "changed" },
+        { "path": "properties[0].propertyGroupName", "eq": "Tapir check group B", "name": "moved to group B" },
+        { "path": "properties[0].isExpressionBased", "eq": false, "name": "still a basic property" },
+        { "path": "properties[0].defaultValueDisplay", "eq": "xyz" }
+      ]
+    },
+    {
+      "id": "read the updated enum property back",
+      "command": "GetAllProperties",
+      "creates": false,
+      "params": { "properties": [ { "propertyId": { "guid": "${propEnum}" } } ] },
+      "expect": [
+        { "path": "properties[0].possibleEnumValues", "len": 3, "name": "Blue removed, Yellow added" },
+        { "path": "properties[0].possibleEnumValues[0].enumValue.displayValue", "eq": "Yellow" },
+        { "path": "properties[0].possibleEnumValues[1].enumValue.displayValue", "eq": "Green" },
+        { "path": "properties[0].possibleEnumValues[2].enumValue.displayValue", "eq": "Crimson", "name": "Red renamed" },
+        { "path": "properties[0].possibleEnumValues[2].enumValue.nonLocalizedValue", "eq": "red", "name": "rename keeps the nonlocalized value" },
+        { "path": "properties[0].defaultValueDisplay", "eq": "Green", "name": "default unchanged" }
+      ]
+    },
+    {
+      "id": "read the updated expression property back",
+      "command": "GetAllProperties",
+      "creates": false,
+      "params": { "properties": [ { "propertyId": { "guid": "${propExpr}" } } ] },
+      "expect": [
+        { "path": "properties[0].isExpressionBased", "eq": true },
+        { "path": "properties[0].expressions", "len": 1 },
+        { "path": "properties[0].expressions[0]", "eq": "\"b\"" }
+      ]
+    },
+    {
+      "id": "[string, enum, expression, guid not in the project]",
+      "command": "DeletePropertyDefinitions",
+      "creates": false,
+      "params": {
+        "propertyIds": [
+          { "propertyId": { "guid": "${propString}" } },
+          { "propertyId": { "guid": "${propEnum}" } },
+          { "propertyId": { "guid": "${propExpr}" } },
+          { "propertyId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 4, "name": "one result per property" },
+        { "path": "executionResults[0].success", "eq": true, "name": "string property deleted" },
+        { "path": "executionResults[1].success", "eq": true, "name": "enum property deleted" },
+        { "path": "executionResults[2].success", "eq": true, "name": "expression property deleted" },
+        { "path": "executionResults[3].success", "eq": false, "name": "unknown property: failed" }
+      ]
+    },
+    {
+      "id": "the deleted properties are gone",
+      "command": "GetAllProperties",
+      "creates": false,
+      "params": {
+        "properties": [
+          { "propertyId": { "guid": "${propString}" } },
+          { "propertyId": { "guid": "${propEnum}" } },
+          { "propertyId": { "guid": "${propExpr}" } }
+        ]
+      },
+      "expect": [
+        { "path": "properties", "len": 0 }
+      ]
+    },
+    {
+      "id": "[group A, group B, group that does not exist]",
+      "command": "DeletePropertyGroups",
+      "creates": false,
+      "params": {
+        "propertyGroupIds": [
+          { "propertyGroupId": { "guid": "${groupA}" } },
+          { "propertyGroupId": { "guid": "${groupB}" } },
+          { "propertyGroupId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per group" },
+        { "path": "executionResults[0].success", "eq": true, "name": "group A deleted" },
+        { "path": "executionResults[1].success", "eq": true, "name": "group B deleted" },
+        { "path": "executionResults[2].success", "eq": false, "name": "unknown group: failed" }
+      ]
+    },
+    {
+      "id": "the deleted groups are gone",
+      "command": "UpdatePropertyGroups",
+      "creates": false,
+      "params": {
+        "propertyGroups": [
+          { "propertyGroupId": { "guid": "${groupA}" }, "description": "gone" },
+          { "propertyGroupId": { "guid": "${groupB}" }, "description": "gone" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "group A not found" },
+        { "path": "executionResults[1].success", "eq": false, "name": "group B not found" }
+      ]
+    },
+    {
+      "id": "[group with an empty name] (last: its error item is not in the response schema)",
+      "command": "CreatePropertyGroups",
+      "creates": false,
+      "params": {
+        "propertyGroups": [
+          { "propertyGroup": { "name": "" } }
+        ]
+      },
+      "expect": [
+        { "path": "propertyGroupIds", "len": 1, "name": "one item per group" },
+        { "path": "propertyGroupIds[0].error", "exists": true, "name": "empty name: error item" },
+        { "path": "propertyGroupIds[0].propertyGroupId", "exists": false, "name": "empty name: no id" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeletePropertyDefinitions", "params": { "propertyIds": [ { "propertyId": { "guid": "${propString}" } } ] } },
+    { "command": "DeletePropertyDefinitions", "params": { "propertyIds": [ { "propertyId": { "guid": "${propEnum}" } } ] } },
+    { "command": "DeletePropertyDefinitions", "params": { "propertyIds": [ { "propertyId": { "guid": "${propExpr}" } } ] } },
+    { "command": "DeletePropertyGroups", "params": { "propertyGroupIds": [ { "propertyGroupId": { "guid": "${groupA}" } } ] } },
+    { "command": "DeletePropertyGroups", "params": { "propertyGroupIds": [ { "propertyGroupId": { "guid": "${groupB}" } } ] } }
+  ]
+}

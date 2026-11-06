@@ -15,7 +15,8 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "SetViewOptions",
                 "Switches the current plan window to a model view option combination by index, and/or changes the " +
                 "given model view options and on-screen view options. The fields are named as in the outputs of " +
-                "GetViewOptions; the fields not given keep their current value.",
+                "GetViewOptions; the fields not given keep their current value. With an index, the model view " +
+                "options stored in the combination apply; without one, the window uses Custom model view options.",
                 GroupNames.Navigator)
         {
         }
@@ -25,8 +26,10 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             NavigatorComponentHelp.AddOptionalInteger(
                 this,
                 "ModelViewOptionIndex",
-                "Switches the window to the model view option combination with this index (in the order of " +
-                "GetModelViewOptions, starting from 1). Optional.");
+                "Switches the window to the model view option combination with this index, as FindModelViewOption " +
+                "returns it. Archicad then applies the model view options stored in the combination, not the ones " +
+                "in ModelViewOptions_JSON. Find the index by name right before switching: Archicad may renumber the " +
+                "combinations when the view options of a window change. Optional.");
 
             NavigatorComponentHelp.AddOptionalText(
                 this,

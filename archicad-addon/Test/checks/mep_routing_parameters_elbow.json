@@ -1,0 +1,120 @@
+{
+  "title": "SetMEPRoutingParameters changes the elbow radius factor of a route and of a node, read back by GetMEPRoutingParameters, and refuses node parameters on a route",
+  "minTapir": "1.8.1",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      }
+    },
+    {
+      "id": "pipe with one elbow",
+      "command": "CreateMEPRoutingElements",
+      "params": {
+        "routingElementsData": [
+          {
+            "domain": "Piping",
+            "nodeCoordinates": [
+              { "x": 0.0, "y": -60.0, "z": 3.0 },
+              { "x": 4.0, "y": -60.0, "z": 3.0 },
+              { "x": 4.0, "y": -57.0, "z": 3.0 }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "pipe": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "its elbow node",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${pipe}" } } ]
+      },
+      "save": {
+        "node": "routingElements[0].nodes[1].elementId.guid"
+      }
+    },
+    {
+      "id": "route elbow radius factor",
+      "command": "SetMEPRoutingParameters",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": { "guid": "${pipe}" },
+            "routingNodeParameters": { "elbow": { "factorRadius": 2.0 } }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "node elbow radius factor",
+      "command": "SetMEPRoutingParameters",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": { "guid": "${node}" },
+            "elbowParameters": { "factorRadius": 1.5 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read both",
+      "command": "GetMEPRoutingParameters",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${pipe}" } },
+          { "elementId": { "guid": "${node}" } }
+        ]
+      },
+      "expect": [
+        { "path": "routingParameters[0].routingNodeParameters.elbow.factorRadius", "approx": 2.0, "name": "route default" },
+        { "path": "routingParameters[1].elbowParameters.factorRadius", "approx": 1.5, "name": "node" }
+      ]
+    },
+    {
+      "id": "elbow parameters on a route",
+      "command": "SetMEPRoutingParameters",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": { "guid": "${pipe}" },
+            "elbowParameters": { "factorRadius": 3.0 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused, it needs a routing node" }
+      ]
+    },
+    {
+      "id": "route unchanged",
+      "command": "GetMEPRoutingParameters",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${pipe}" } } ]
+      },
+      "expect": [
+        { "path": "routingParameters[0].routingNodeParameters.elbow.factorRadius", "approx": 2.0, "name": "nothing was changed" }
+      ]
+    }
+  ]
+}

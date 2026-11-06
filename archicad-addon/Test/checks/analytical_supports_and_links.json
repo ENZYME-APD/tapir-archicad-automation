@@ -1,0 +1,301 @@
+{
+  "title": "CreateAnalyticalSupports and CreateAnalyticalLinks make supports and links on two beams that GetAnalyticalSupports and GetAnalyticalLinks read back, ConvertAnalyticalLinksToNonShortest fixes a shortest link's end, and each refuses a bad element",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "requiresEmpty": [ "Wall", "Slab", "Roof", "Shell", "Beam", "Column" ],
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      }
+    },
+    {
+      "id": "two parallel beams 2 m apart",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 640.0, "y": 600.0 },
+            "endCoordinate": { "x": 646.0, "y": 600.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "anchorPoint": "Center",
+            "circleBased": false,
+            "isWidthAndHeightLinked": false,
+            "width": 0.2,
+            "height": 0.4
+          },
+          {
+            "begCoordinate": { "x": 640.0, "y": 602.0 },
+            "endCoordinate": { "x": 646.0, "y": 602.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "anchorPoint": "Center",
+            "circleBased": false,
+            "isWidthAndHeightLinked": false,
+            "width": 0.2,
+            "height": 0.4
+          }
+        ]
+      },
+      "save": {
+        "b1": "elements[0].elementId.guid",
+        "b2": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "first beam created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "second beam created" }
+      ]
+    },
+    {
+      "id": "make them load-bearing",
+      "command": "SetCategoryValuesOfElements",
+      "creates": false,
+      "params": {
+        "elementCategoryValues": [
+          { "elementId": { "guid": "${b1}" }, "type": "StructuralFunction", "categoryValueId": { "guid": "C852BD7D-1198-2802-7E37-E4925B997B8B" } },
+          { "elementId": { "guid": "${b2}" }, "type": "StructuralFunction", "categoryValueId": { "guid": "C852BD7D-1198-2802-7E37-E4925B997B8B" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[1].success", "eq": true }
+      ]
+    },
+    {
+      "id": "update the analytical model",
+      "command": "UpdateAnalyticalModel",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "both beams are curve members",
+      "command": "GetAnalyticalMembers",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "curveMembers", "len": 2 }
+      ]
+    },
+    {
+      "id": "point support at the start of the first beam, line support along the second, one on a nonexistent member",
+      "command": "CreateAnalyticalSupports",
+      "params": {
+        "supports": [
+          {
+            "supportSettings": {
+              "supportType": "SimplePoint",
+              "supportValues": {
+                "xType": "Rigid", "yType": "Rigid", "zType": "Rigid",
+                "rxType": "Free", "ryType": "Custom", "ryValue": 1500.0, "rzType": "Free"
+              },
+              "coordinateSystem": "Global"
+            },
+            "supportedMemberPartRef": { "elemGuid": { "guid": "${b1}" }, "partRefType": "BegVertex" }
+          },
+          {
+            "supportSettings": {
+              "supportType": "SingleLine",
+              "supportValues": {
+                "xType": "Free", "yType": "Rigid", "zType": "Rigid",
+                "rxType": "Free", "ryType": "Free", "rzType": "Free"
+              },
+              "coordinateSystem": "Local"
+            },
+            "supportedMemberPartRef": { "elemGuid": { "guid": "${b2}" }, "partRefType": "Edge" }
+          },
+          {
+            "supportSettings": {
+              "supportType": "SimplePoint",
+              "supportValues": {
+                "xType": "Rigid", "yType": "Rigid", "zType": "Rigid",
+                "rxType": "Rigid", "ryType": "Rigid", "rzType": "Rigid"
+              },
+              "coordinateSystem": "Global"
+            },
+            "supportedMemberPartRef": { "elemGuid": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "partRefType": "BegVertex" }
+          }
+        ]
+      },
+      "save": {
+        "s1": "elements[0].elementId.guid",
+        "s2": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "point support created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "line support created" },
+        { "path": "elements[2].error.code", "exists": true, "name": "support on a nonexistent member refused" }
+      ]
+    },
+    {
+      "id": "spring link end to start, rigid shortest link from the first beam's end to the second beam's axis, one from a nonexistent member",
+      "command": "CreateAnalyticalLinks",
+      "params": {
+        "links": [
+          {
+            "linkSettings": {
+              "geometry": "Link1D",
+              "type": "Spring",
+              "rigidSettings": { "startConnectionType": "RigidConnection", "endConnectionType": "RigidConnection" },
+              "springSettings": {
+                "direction": "Global",
+                "translation": { "kxType": "Custom", "kxValue": 2000.0, "kyType": "Rigid", "kzType": "Rigid" },
+                "rotation": { "kxxType": "Rigid", "kyyType": "Rigid", "kzzType": "Free" }
+              }
+            },
+            "startElementPartRef": { "elemGuid": { "guid": "${b1}" }, "partRefType": "EndVertex" },
+            "endElementPartRef": { "elemGuid": { "guid": "${b2}" }, "partRefType": "BegVertex" }
+          },
+          {
+            "linkSettings": {
+              "geometry": "Link1D",
+              "type": "Rigid",
+              "rigidSettings": { "startConnectionType": "RigidConnection", "endConnectionType": "HingeConnection" },
+              "springSettings": {
+                "direction": "Global",
+                "translation": { "kxType": "Rigid", "kyType": "Rigid", "kzType": "Rigid" },
+                "rotation": { "kxxType": "Rigid", "kyyType": "Rigid", "kzzType": "Rigid" }
+              }
+            },
+            "startElementPartRef": { "elemGuid": { "guid": "${b1}" }, "partRefType": "EndVertex" },
+            "endElementPartRef": { "elemGuid": { "guid": "${b2}" }, "partRefType": "Edge" }
+          },
+          {
+            "linkSettings": {
+              "geometry": "Link1D",
+              "type": "Rigid",
+              "rigidSettings": { "startConnectionType": "RigidConnection", "endConnectionType": "RigidConnection" },
+              "springSettings": {
+                "direction": "Global",
+                "translation": { "kxType": "Rigid", "kyType": "Rigid", "kzType": "Rigid" },
+                "rotation": { "kxxType": "Rigid", "kyyType": "Rigid", "kzzType": "Rigid" }
+              }
+            },
+            "startElementPartRef": { "elemGuid": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "partRefType": "EndVertex" },
+            "endElementPartRef": { "elemGuid": { "guid": "${b2}" }, "partRefType": "BegVertex" }
+          }
+        ]
+      },
+      "save": {
+        "l1": "elements[0].elementId.guid",
+        "l2": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "spring link created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "shortest link created" },
+        { "path": "elements[2].error.code", "exists": true, "name": "link from a nonexistent member refused" }
+      ]
+    },
+    {
+      "id": "update after creating them",
+      "command": "UpdateAnalyticalModel",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the supports",
+      "command": "GetAnalyticalSupports",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${s1}" } },
+          { "elementId": { "guid": "${s2}" } },
+          { "elementId": { "guid": "${b1}" } }
+        ]
+      },
+      "expect": [
+        { "path": "supports[0].support.supportSettings.supportType", "eq": "SimplePoint" },
+        { "path": "supports[0].support.supportSettings.supportValues.ryType", "eq": "Custom" },
+        { "path": "supports[0].support.supportSettings.supportValues.ryValue", "approx": 1500.0, "tol": 0.01 },
+        { "path": "supports[0].support.supportSettings.supportValues.rxType", "eq": "Free" },
+        { "path": "supports[0].support.supportSettings.coordinateSystem", "eq": "Global" },
+        { "path": "supports[0].support.supportedMemberPartRef.partRefType", "eq": "BegVertex" },
+        { "path": "supports[0].geometry.coordinates[0].x", "approx": 640.0, "tol": 0.01, "name": "point support at the beam's start x" },
+        { "path": "supports[0].geometry.coordinates[0].y", "approx": 600.0, "tol": 0.01, "name": "point support at the beam's start y" },
+        { "path": "supports[1].support.supportSettings.supportType", "eq": "SingleLine" },
+        { "path": "supports[1].support.supportSettings.supportValues.xType", "eq": "Free" },
+        { "path": "supports[1].support.supportSettings.coordinateSystem", "eq": "Local" },
+        { "path": "supports[1].support.supportedMemberPartRef.partRefType", "eq": "Edge" },
+        { "path": "supports[2].error.code", "exists": true, "name": "a beam is no support" }
+      ]
+    },
+    {
+      "id": "read the links",
+      "command": "GetAnalyticalLinks",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${l1}" } },
+          { "elementId": { "guid": "${l2}" } },
+          { "elementId": { "guid": "${b1}" } }
+        ]
+      },
+      "expect": [
+        { "path": "links[0].link.linkSettings.type", "eq": "Spring" },
+        { "path": "links[0].link.linkSettings.springSettings.translation.kxType", "eq": "Custom" },
+        { "path": "links[0].link.linkSettings.springSettings.translation.kxValue", "approx": 2000.0, "tol": 0.01 },
+        { "path": "links[0].link.linkSettings.springSettings.rotation.kzzType", "eq": "Free" },
+        { "path": "links[0].link.startElementPartRef.partRefType", "eq": "EndVertex" },
+        { "path": "links[0].link.endElementPartRef.partRefType", "eq": "BegVertex" },
+        { "path": "links[1].link.linkSettings.type", "eq": "Rigid" },
+        { "path": "links[1].link.linkSettings.rigidSettings.endConnectionType", "eq": "HingeConnection" },
+        { "path": "links[1].link.endElementPartRef.partRefType", "eq": "Edge" },
+        { "path": "links[1].geometry.coordinates", "len": 2, "name": "shortest link has two ends" },
+        { "path": "links[1].geometry.coordinates[1].x", "approx": 646.0, "tol": 0.01, "name": "shortest link ends square to the axis" },
+        { "path": "links[1].geometry.coordinates[1].y", "approx": 602.0, "tol": 0.01, "name": "shortest link ends on the second beam" },
+        { "path": "links[2].error.code", "exists": true, "name": "a beam is no link" }
+      ]
+    },
+    {
+      "id": "convert the shortest link, and a beam",
+      "command": "ConvertAnalyticalLinksToNonShortest",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${l2}" } },
+          { "elementId": { "guid": "${b1}" } }
+        ]
+      },
+      "expect": [
+        { "path": "links[0].link.endElementPartRef.partRefType", "eq": "CustomVertex", "name": "end fixed to a coordinate" },
+        { "path": "links[0].link.endElementPartRef.customVertexData.customVertexCoord.x", "approx": 646.0, "tol": 0.01 },
+        { "path": "links[0].link.endElementPartRef.customVertexData.customVertexCoord.y", "approx": 602.0, "tol": 0.01 },
+        { "path": "links[0].link.startElementPartRef.partRefType", "eq": "EndVertex", "name": "start unchanged" },
+        { "path": "links[1].error.code", "exists": true, "name": "a beam is refused" }
+      ]
+    },
+    {
+      "id": "update after the conversion",
+      "command": "UpdateAnalyticalModel",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the converted link",
+      "command": "GetAnalyticalLinks",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${l2}" } } ]
+      },
+      "expect": [
+        { "path": "links[0].link.endElementPartRef.partRefType", "eq": "CustomVertex", "name": "conversion stored in the link" },
+        { "path": "links[0].link.linkSettings.rigidSettings.endConnectionType", "eq": "HingeConnection", "name": "settings kept" },
+        { "path": "links[0].geometry.coordinates[1].x", "approx": 646.0, "tol": 0.01, "name": "end stays where it was x" },
+        { "path": "links[0].geometry.coordinates[1].y", "approx": 602.0, "tol": 0.01, "name": "end stays where it was y" }
+      ]
+    }
+  ]
+}
