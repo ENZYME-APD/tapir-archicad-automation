@@ -1,0 +1,519 @@
+{
+  "title": "Electrical panels, circuits and devices: create, modify, connect, read back and delete circuits, each write command refusing one bad input",
+  "minTapir": "1.8.1",
+  "minArchicad": "30",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      }
+    },
+    {
+      "id": "wiring types and a load classification to use",
+      "command": "ModifyElectricalProjectSettings",
+      "creates": false,
+      "params": {
+        "wiringTypesToAdd": [
+          { "name": "Tapir check wire 1.5", "crossSectionalArea": 1.5 },
+          { "name": "Tapir check wire 6", "crossSectionalArea": 6 }
+        ],
+        "loadClassificationsToAdd": [ { "name": "Tapir check lighting", "demandFactor": 0.9 } ]
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "two panels",
+      "command": "CreateElectricalPanels",
+      "params": {
+        "electricalPanelsData": [
+          {
+            "position": { "x": 0.0, "y": 0.0, "z": 1.0 },
+            "panelName": "Tapir check P1",
+            "circuitNamePrefix": "TC1-"
+          },
+          {
+            "position": { "x": 3.0, "y": 0.0, "z": 1.0 },
+            "panelName": "Tapir check P2",
+            "circuitNamePrefix": "TC2-"
+          }
+        ]
+      },
+      "save": {
+        "p1": "elements[0].elementId.guid",
+        "p2": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements", "len": 2, "name": "one item per panel" }
+      ]
+    },
+    {
+      "id": "[panel with a library part that does not exist]",
+      "command": "CreateElectricalPanels",
+      "params": {
+        "electricalPanelsData": [
+          {
+            "position": { "x": 6.0, "y": 0.0, "z": 1.0 },
+            "libraryPartId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error", "exists": true, "name": "refused" },
+        { "path": "elements[0].elementId", "exists": false, "name": "no panel placed" }
+      ]
+    },
+    {
+      "id": "read the panels",
+      "command": "GetElectricalPanels",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${p1}" } }, { "elementId": { "guid": "${p2}" } } ]
+      },
+      "expect": [
+        { "path": "electricalPanels", "len": 2, "name": "one item per panel" },
+        { "path": "electricalPanels[0].panelName", "eq": "Tapir check P1", "name": "P1 name" },
+        { "path": "electricalPanels[0].circuitNamePrefix", "eq": "TC1-", "name": "P1 circuit name prefix" },
+        { "path": "electricalPanels[0].anchorPoint.x", "approx": 0.0, "name": "P1 x" },
+        { "path": "electricalPanels[0].anchorPoint.y", "approx": 0.0, "name": "P1 y" },
+        { "path": "electricalPanels[1].panelName", "eq": "Tapir check P2", "name": "P2 name" },
+        { "path": "electricalPanels[1].circuitNamePrefix", "eq": "TC2-", "name": "P2 circuit name prefix" },
+        { "path": "electricalPanels[1].anchorPoint.x", "approx": 3.0, "name": "P2 x" },
+        { "path": "electricalPanels[1].parentCircuitId", "exists": false, "name": "P2 not a sub-panel yet" }
+      ]
+    },
+    {
+      "id": "[rename and move P1, and a panel that does not exist]",
+      "command": "ModifyElectricalPanels",
+      "creates": false,
+      "params": {
+        "electricalPanelsData": [
+          {
+            "elementId": { "guid": "${p1}" },
+            "panelName": "Tapir check P1 renamed",
+            "circuitNamePrefix": "TCR-",
+            "anchorPoint": { "x": 1.0, "y": 2.0, "z": 1.0 }
+          },
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "panelName": "Tapir check nothing"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "P1 modified" },
+        { "path": "executionResults[1].success", "eq": false, "name": "missing panel refused" }
+      ]
+    },
+    {
+      "id": "read P1 again",
+      "command": "GetElectricalPanels",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${p1}" } } ]
+      },
+      "expect": [
+        { "path": "electricalPanels[0].panelName", "eq": "Tapir check P1 renamed", "name": "renamed" },
+        { "path": "electricalPanels[0].circuitNamePrefix", "eq": "TCR-", "name": "new circuit name prefix" },
+        { "path": "electricalPanels[0].anchorPoint.x", "approx": 1.0, "name": "moved in x" },
+        { "path": "electricalPanels[0].anchorPoint.y", "approx": 2.0, "name": "moved in y" }
+      ]
+    },
+    {
+      "id": "[two circuits on P1, one on a panel that does not exist]",
+      "command": "CreateElectricalCircuits",
+      "creates": false,
+      "params": {
+        "electricalCircuitsData": [
+          {
+            "electricalPanelId": { "guid": "${p1}" },
+            "description": "Tapir check lighting",
+            "voltage": 230,
+            "wiringTypeName": "Tapir check wire 1.5",
+            "isPhaseAUsed": true,
+            "isPhaseBUsed": false,
+            "isPhaseCUsed": false
+          },
+          {
+            "electricalPanelId": { "guid": "${p1}" },
+            "description": "Tapir check spare"
+          },
+          {
+            "electricalPanelId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "description": "Tapir check nowhere"
+          }
+        ]
+      },
+      "save": {
+        "c1": "elements[0].elementId.guid",
+        "c2": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements", "len": 3, "name": "one item per circuit" },
+        { "path": "elements[2].error", "exists": true, "name": "missing panel refused" }
+      ]
+    },
+    {
+      "id": "read the new circuits",
+      "command": "GetElectricalCircuits",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${c1}" } }, { "elementId": { "guid": "${c2}" } } ]
+      },
+      "save": {
+        "c1Owner": "electricalCircuits[0].ownerPanelId.guid",
+        "c2Owner": "electricalCircuits[1].ownerPanelId.guid"
+      },
+      "expect": [
+        { "path": "electricalCircuits", "len": 2, "name": "one item per circuit" },
+        { "path": "electricalCircuits[0].description", "eq": "Tapir check lighting", "name": "description" },
+        { "path": "electricalCircuits[0].voltage", "approx": 230, "name": "voltage" },
+        { "path": "electricalCircuits[0].wiringTypeName", "eq": "Tapir check wire 1.5", "name": "wiring type" },
+        { "path": "electricalCircuits[0].isPhaseAUsed", "eq": true, "name": "phase A used" },
+        { "path": "electricalCircuits[0].isPhaseBUsed", "eq": false, "name": "phase B not used" },
+        { "path": "electricalCircuits[0].isPhaseCUsed", "eq": false, "name": "phase C not used" },
+        { "path": "electricalCircuits[0].name", "contains": "TCR-", "name": "named with the circuit name prefix of P1" },
+        { "path": "electricalCircuits[0].childDevices", "len": 0, "name": "no devices yet" },
+        { "path": "electricalCircuits[0].childPanels", "len": 0, "name": "no sub-panels yet" },
+        { "path": "electricalCircuits[1].description", "eq": "Tapir check spare", "name": "second description" }
+      ]
+    },
+    {
+      "id": "both circuits belong to P1",
+      "command": "GetElectricalPanels",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${c1Owner}" } }, { "elementId": { "guid": "${c2Owner}" } } ]
+      },
+      "expect": [
+        { "path": "electricalPanels[0].panelName", "eq": "Tapir check P1 renamed", "name": "owner of the lighting circuit" },
+        { "path": "electricalPanels[1].panelName", "eq": "Tapir check P1 renamed", "name": "owner of the spare circuit" }
+      ]
+    },
+    {
+      "id": "devices: a light on the lighting circuit, an unconnected socket",
+      "command": "CreateElectricalDevices",
+      "params": {
+        "electricalDevicesData": [
+          {
+            "position": { "x": 1.0, "y": 3.0, "z": 2.5 },
+            "apparentPower": 60,
+            "loadClassificationName": "Tapir check lighting",
+            "circuitId": { "guid": "${c1}" }
+          },
+          {
+            "position": { "x": 4.0, "y": 3.0, "z": 0.3 },
+            "apparentPower": 2000,
+            "loadClassificationName": ""
+          }
+        ]
+      },
+      "save": {
+        "d1": "elements[0].elementId.guid",
+        "d2": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements", "len": 2, "name": "one item per device" }
+      ]
+    },
+    {
+      "id": "[device with a load classification that does not exist]",
+      "command": "CreateElectricalDevices",
+      "params": {
+        "electricalDevicesData": [
+          {
+            "position": { "x": 7.0, "y": 3.0, "z": 0.3 },
+            "loadClassificationName": "Tapir check undefined load"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error", "exists": true, "name": "refused" },
+        { "path": "elements[0].elementId", "exists": false, "name": "no device placed" }
+      ]
+    },
+    {
+      "id": "read the devices",
+      "command": "GetElectricalDevices",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${d1}" } }, { "elementId": { "guid": "${d2}" } } ]
+      },
+      "save": {
+        "d1Circuit": "electricalDevices[0].parentCircuitId.guid"
+      },
+      "expect": [
+        { "path": "electricalDevices", "len": 2, "name": "one item per device" },
+        { "path": "electricalDevices[0].apparentPower", "approx": 60, "name": "light power" },
+        { "path": "electricalDevices[0].loadClassificationName", "eq": "Tapir check lighting", "name": "light load classification" },
+        { "path": "electricalDevices[0].anchorPoint.x", "approx": 1.0, "name": "light x" },
+        { "path": "electricalDevices[0].anchorPoint.y", "approx": 3.0, "name": "light y" },
+        { "path": "electricalDevices[1].apparentPower", "approx": 2000, "name": "socket power" },
+        { "path": "electricalDevices[1].loadClassificationName", "eq": "", "name": "socket without load classification" },
+        { "path": "electricalDevices[1].parentCircuitId", "exists": false, "name": "socket not connected" }
+      ]
+    },
+    {
+      "id": "the light is on the lighting circuit, which lists it",
+      "command": "GetElectricalCircuits",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${d1Circuit}" } } ]
+      },
+      "save": {
+        "c1Device": "electricalCircuits[0].childDevices[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "electricalCircuits[0].description", "eq": "Tapir check lighting", "name": "parent circuit of the light" },
+        { "path": "electricalCircuits[0].childDevices", "len": 1, "name": "one device on it" }
+      ]
+    },
+    {
+      "id": "the device listed by the lighting circuit is the light",
+      "command": "GetElectricalDevices",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${c1Device}" } } ]
+      },
+      "expect": [
+        { "path": "electricalDevices[0].apparentPower", "approx": 60, "name": "the 60 VA light" }
+      ]
+    },
+    {
+      "id": "[change and move the socket, and an undefined load classification on the light]",
+      "command": "ModifyElectricalDevices",
+      "creates": false,
+      "params": {
+        "electricalDevicesData": [
+          {
+            "elementId": { "guid": "${d2}" },
+            "apparentPower": 1500,
+            "loadClassificationName": "Tapir check lighting",
+            "anchorPoint": { "x": 5.0, "y": 4.0, "z": 0.3 }
+          },
+          {
+            "elementId": { "guid": "${d1}" },
+            "apparentPower": 75,
+            "loadClassificationName": "Tapir check undefined load"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "socket modified" },
+        { "path": "executionResults[1].success", "eq": false, "name": "undefined load classification refused" }
+      ]
+    },
+    {
+      "id": "read the devices again",
+      "command": "GetElectricalDevices",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${d2}" } }, { "elementId": { "guid": "${d1}" } } ]
+      },
+      "expect": [
+        { "path": "electricalDevices[0].apparentPower", "approx": 1500, "name": "socket power changed" },
+        { "path": "electricalDevices[0].loadClassificationName", "eq": "Tapir check lighting", "name": "socket load classification set" },
+        { "path": "electricalDevices[0].anchorPoint.x", "approx": 5.0, "name": "socket moved in x" },
+        { "path": "electricalDevices[0].anchorPoint.y", "approx": 4.0, "name": "socket moved in y" },
+        { "path": "electricalDevices[1].apparentPower", "approx": 60, "name": "refused item: light power unchanged" },
+        { "path": "electricalDevices[1].loadClassificationName", "eq": "Tapir check lighting", "name": "refused item: light load classification unchanged" }
+      ]
+    },
+    {
+      "id": "[socket to the spare circuit, P2 as sub-panel, and a circuit that does not exist]",
+      "command": "ConnectToElectricalCircuits",
+      "creates": false,
+      "params": {
+        "connectionsData": [
+          { "elementId": { "guid": "${d2}" }, "circuitId": { "guid": "${c2}" } },
+          { "elementId": { "guid": "${p2}" }, "circuitId": { "guid": "${c1}" } },
+          { "elementId": { "guid": "${d1}" }, "circuitId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "socket connected" },
+        { "path": "executionResults[1].success", "eq": true, "name": "P2 connected" },
+        { "path": "executionResults[2].success", "eq": false, "name": "missing circuit refused" }
+      ]
+    },
+    {
+      "id": "read the connections from the circuits",
+      "command": "GetElectricalCircuits",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${c2}" } }, { "elementId": { "guid": "${c1}" } } ]
+      },
+      "save": {
+        "c2Device": "electricalCircuits[0].childDevices[0].elementId.guid",
+        "c1Panel": "electricalCircuits[1].childPanels[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "electricalCircuits[0].childDevices", "len": 1, "name": "spare circuit has one device" },
+        { "path": "electricalCircuits[1].childPanels", "len": 1, "name": "lighting circuit has one sub-panel" },
+        { "path": "electricalCircuits[1].childDevices", "len": 1, "name": "refused item: the light is still on the lighting circuit" }
+      ]
+    },
+    {
+      "id": "the spare circuit's device is the socket",
+      "command": "GetElectricalDevices",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${c2Device}" } } ]
+      },
+      "expect": [
+        { "path": "electricalDevices[0].apparentPower", "approx": 1500, "name": "the 1500 VA socket" }
+      ]
+    },
+    {
+      "id": "the lighting circuit's sub-panel is P2",
+      "command": "GetElectricalPanels",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${c1Panel}" } }, { "elementId": { "guid": "${p2}" } } ]
+      },
+      "save": {
+        "p2Circuit": "electricalPanels[1].parentCircuitId.guid"
+      },
+      "expect": [
+        { "path": "electricalPanels[0].panelName", "eq": "Tapir check P2", "name": "sub-panel is P2" }
+      ]
+    },
+    {
+      "id": "read the connections from the devices",
+      "command": "GetElectricalDevices",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${d2}" } }, { "elementId": { "guid": "${d1}" } } ]
+      },
+      "save": {
+        "d2Circuit": "electricalDevices[0].parentCircuitId.guid",
+        "d1CircuitAfter": "electricalDevices[1].parentCircuitId.guid"
+      }
+    },
+    {
+      "id": "the parent circuits of the socket, the light and P2",
+      "command": "GetElectricalCircuits",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${d2Circuit}" } },
+          { "elementId": { "guid": "${d1CircuitAfter}" } },
+          { "elementId": { "guid": "${p2Circuit}" } }
+        ]
+      },
+      "expect": [
+        { "path": "electricalCircuits[0].description", "eq": "Tapir check spare", "name": "socket on the spare circuit" },
+        { "path": "electricalCircuits[1].description", "eq": "Tapir check lighting", "name": "refused item: light still on the lighting circuit" },
+        { "path": "electricalCircuits[2].description", "eq": "Tapir check lighting", "name": "P2 fed by the lighting circuit" }
+      ]
+    },
+    {
+      "id": "[change the spare circuit, and an undefined wiring type on the lighting circuit]",
+      "command": "ModifyElectricalCircuits",
+      "creates": false,
+      "params": {
+        "electricalCircuitsData": [
+          {
+            "elementId": { "guid": "${c2}" },
+            "description": "Tapir check sockets",
+            "voltage": 400,
+            "wiringTypeName": "Tapir check wire 6",
+            "isPhaseAUsed": true,
+            "isPhaseBUsed": true,
+            "isPhaseCUsed": true
+          },
+          {
+            "elementId": { "guid": "${c1}" },
+            "description": "Tapir check not set",
+            "wiringTypeName": "Tapir check undefined wire"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "spare circuit modified" },
+        { "path": "executionResults[1].success", "eq": false, "name": "undefined wiring type refused" }
+      ]
+    },
+    {
+      "id": "read the circuits again",
+      "command": "GetElectricalCircuits",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${c2}" } }, { "elementId": { "guid": "${c1}" } } ]
+      },
+      "expect": [
+        { "path": "electricalCircuits[0].description", "eq": "Tapir check sockets", "name": "description changed" },
+        { "path": "electricalCircuits[0].voltage", "approx": 400, "name": "voltage changed" },
+        { "path": "electricalCircuits[0].wiringTypeName", "eq": "Tapir check wire 6", "name": "wiring type changed" },
+        { "path": "electricalCircuits[0].isPhaseAUsed", "eq": true, "name": "phase A used" },
+        { "path": "electricalCircuits[0].isPhaseBUsed", "eq": true, "name": "phase B used" },
+        { "path": "electricalCircuits[0].isPhaseCUsed", "eq": true, "name": "phase C used" },
+        { "path": "electricalCircuits[1].description", "eq": "Tapir check lighting", "name": "refused item: description unchanged" },
+        { "path": "electricalCircuits[1].wiringTypeName", "eq": "Tapir check wire 1.5", "name": "refused item: wiring type unchanged" }
+      ]
+    },
+    {
+      "id": "[delete the spare circuit, and a circuit that does not exist]",
+      "command": "DeleteElectricalCircuits",
+      "creates": false,
+      "params": {
+        "electricalCircuits": [
+          { "elementId": { "guid": "${c2}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "spare circuit deleted" },
+        { "path": "executionResults[1].success", "eq": false, "name": "missing circuit refused" }
+      ]
+    },
+    {
+      "id": "the deleted circuit is gone",
+      "command": "GetElectricalCircuits",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${c2}" } }, { "elementId": { "guid": "${c1}" } } ]
+      },
+      "expect": [
+        { "path": "electricalCircuits[0].error", "exists": true, "name": "spare circuit not found" },
+        { "path": "electricalCircuits[1].description", "eq": "Tapir check lighting", "name": "lighting circuit kept" }
+      ]
+    },
+    {
+      "id": "its device is disconnected",
+      "command": "GetElectricalDevices",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${d2}" } } ]
+      },
+      "expect": [
+        { "path": "electricalDevices[0].apparentPower", "approx": 1500, "name": "socket kept" },
+        { "path": "electricalDevices[0].parentCircuitId", "exists": false, "name": "socket not connected" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "ModifyElectricalProjectSettings",
+      "params": {
+        "wiringTypesToRemove": [ "Tapir check wire 1.5", "Tapir check wire 6" ]
+      }
+    },
+    {
+      "command": "ModifyElectricalProjectSettings",
+      "params": {
+        "loadClassificationsToRemove": [ "Tapir check lighting" ]
+      }
+    }
+  ]
+}
