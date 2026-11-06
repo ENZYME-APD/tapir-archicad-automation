@@ -36,11 +36,12 @@ permissions:
   pull-requests: read
 
 env:
-  # Branches without a pull request that must stay: the API coverage data and
-  # the images linked from pull request descriptions.
+  # Branches without a pull request that must stay: the API coverage data, the
+  # Community page's data and the images linked from pull request descriptions.
   KEEP: >-
     main
     api-coverage
+    site-data
     gh-pages
     claude/pr-1773-screenshots
     claude/gh-component-icons-sheets

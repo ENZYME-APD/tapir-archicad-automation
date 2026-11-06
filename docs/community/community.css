@@ -14,25 +14,42 @@
 .contributor-list .name { font-weight: 600 }
 .contributor-list .commits { margin-left: auto; color: var(--muted); font: 500 12.5px var(--mono); white-space: nowrap }
 
-/* The activity charts: one per series, bars drawn by community.js as inline SVG. The bars are
-   marks, never text; every number is also in the table below them. */
+/* The growth chart, drawn by community.js as inline SVG: commits, issues and pull requests, and
+   Discord messages stacked per month (moss, ochre, light moss: dark to light, so they differ in
+   lightness as well as hue), and the Discord members as a line on the right scale. Every number
+   is also in the table below it. */
 .activity-card { border: 1.5px solid var(--fg); background: var(--surface); padding: 20px 24px }
-.activity-charts { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin: 0 0 16px }
-.activity { --bar: var(--moss); margin: 0 }
-:root[data-theme="dark"] .activity { --bar: var(--ochre-light) }
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .activity { --bar: var(--ochre-light) }
+.growth {
+    --layer-commits: var(--moss); --layer-github: var(--ochre); --layer-discord: #B9C9BC;
+    --members: var(--ochre-text); margin: 0 0 16px
 }
-.activity figcaption { margin: 0 0 8px; font: 700 11.5px var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted) }
+:root[data-theme="dark"] .growth { --layer-commits: #C7D6CA; --layer-github: var(--ochre); --layer-discord: #4A6152; --members: var(--cream) }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .growth { --layer-commits: #C7D6CA; --layer-github: var(--ochre); --layer-discord: #4A6152; --members: var(--cream) }
+}
+.growth-legend { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 20px; font: 700 11.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
+.growth-legend li { display: inline-flex; align-items: center; gap: 8px }
+.growth-legend .swatch { width: 12px; height: 12px; border: 1px solid var(--border-strong) }
+.growth-legend .swatch-line { height: 0; width: 18px; border: 0; border-top: 3px solid var(--members) }
+.swatch.layer-commits, .activity-chart .layer-commits { background: var(--layer-commits); fill: var(--layer-commits) }
+.swatch.layer-github, .activity-chart .layer-github { background: var(--layer-github); fill: var(--layer-github) }
+.swatch.layer-discordMessages, .activity-chart .layer-discordMessages { background: var(--layer-discord); fill: var(--layer-discord) }
+.growth figcaption { margin-top: 8px; font-size: 13px; color: var(--muted) }
 .activity-chart svg { display: block; width: 100%; height: auto }
-.activity-chart .bar { fill: var(--bar) }
+.activity-chart .layer { stroke: var(--surface); stroke-width: .75 }
 .activity-chart .axis { stroke: var(--border-strong); stroke-width: 1 }
+.activity-chart .grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 4 }
+.activity-chart .tick { stroke: var(--border-strong) }
+.activity-chart .line { fill: none; stroke: var(--members); stroke-width: 2.5; stroke-linejoin: round }
+.activity-chart .line-halo { fill: none; stroke: var(--surface); stroke-width: 6; stroke-linejoin: round }
+.activity-chart .line-dot { fill: var(--members); stroke: var(--surface); stroke-width: 2 }
 .activity-chart text { fill: var(--muted); font: 400 11px var(--body); font-variant-numeric: tabular-nums }
-.activity-chart .value { fill: var(--fg); font-weight: 600 }
+.activity-chart .line-scale { fill: var(--members); font-weight: 600 }
 
 .activity-details > summary { cursor: pointer; color: var(--link); font-weight: 600 }
 .activity-table-wrap { overflow-x: auto; margin-top: 10px }
 .activity-table { border-collapse: collapse; font-size: 14.5px; font-variant-numeric: tabular-nums }
+.activity-table [hidden] { display: none }
 .activity-table th, .activity-table td { padding: 6px 14px; border-bottom: 1px solid var(--line); text-align: right }
 .activity-table th:first-child, .activity-table td:first-child { text-align: left }
 .activity-table th { font-weight: 600 }
