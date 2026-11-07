@@ -76,6 +76,9 @@ UPDATE_CANCELLED_TEXT = ('The update was cancelled. Archicad was not closed by t
 UPDATE_RUNNING_TEXT = 'Tapir is being updated already. Wait for that update to finish: it closes Archicad itself and starts it again.'
 UPDATE_WAITING_FOR_QUIT_TEXT = ('Tapir is being updated already, and that update waits for Archicad to quit. '
     'Quit Archicad to finish it; Archicad is then started again.')
+WAITING_CANCELLED_TEXT = 'The update was cancelled. Tapir is not updated; start the update again from Archicad.'
+WAITING_REPLACE_FAILED_TEXT = ('Tapir was not updated: {0} Archicad was not started again. '
+    'The next Archicad start offers the update again.')
 # What the update that holds the lock does, written after the first byte of
 # the lock file, which is the locked one (on Windows, no other file handle
 # can read a locked byte, not even one of the same process), as the legacy
@@ -589,12 +592,19 @@ def GetTargetInstallations (args):
 
 class AddOnUpdateTarget:
     # The add-on that update mode replaces, and the Archicad that runs it.
-    def __init__ (self, version, addOnFilePath, archicadPort = None, archicadPid = None, restartArchicad = True):
+    def __init__ (self, version, addOnFilePath, archicadPort = None, archicadPid = None, restartArchicad = True,
+            waitForArchicadExit = False, pendingMarkerPath = None):
         self.version = version
         self.addOnFilePath = addOnFilePath
         self.archicadPort = archicadPort
         self.archicadPid = archicadPid
         self.restartArchicad = restartArchicad
+        # Waiting mode: Archicad keeps running, the add-on is replaced once
+        # the process archicadPid has exited, and Archicad is not started
+        # again. pendingMarkerPath is the marker file the Add-On wrote for
+        # the pending update; it is deleted when the update ended.
+        self.waitForArchicadExit = waitForArchicadExit
+        self.pendingMarkerPath = pendingMarkerPath
         # Once Archicad quit, the port and the process id no longer belong to
         # the Archicad to quit (a restarted one has a new process id), so the
         # update cannot be repeated with this target.
@@ -604,7 +614,8 @@ class AddOnUpdateTarget:
 def IsUpdateMode (args):
     # The Archicad options alone also mean update mode, so that update mode
     # reports them as an error instead of an install silently ignoring them.
-    return args.addOnFilePath is not None or args.archicadPort is not None or args.archicadPid is not None
+    return (args.addOnFilePath is not None or args.archicadPort is not None or args.archicadPid is not None
+        or args.waitForArchicadExit or args.pendingMarkerPath is not None)
 
 
 def FindAddOnOnMappedDriveWin (addOnFilePath):
@@ -636,7 +647,11 @@ def GetUpdateTarget (args):
     requestedVersions = GetRequestedVersions (args)
     if requestedVersions is None or len (requestedVersions) != 1:
         raise InstallerError ('--addOnFile requires --versions with exactly one Archicad version.')
-    if args.archicadPid is not None and args.archicadPort is None:
+    if args.waitForArchicadExit and args.archicadPid is None:
+        raise InstallerError ('--waitForArchicadExit requires --archicadPid.')
+    if args.pendingMarkerPath is not None and not args.waitForArchicadExit:
+        raise InstallerError ('--pendingMarker requires --waitForArchicadExit.')
+    if args.archicadPid is not None and args.archicadPort is None and not args.waitForArchicadExit:
         raise InstallerError ('--archicadPid requires --archicadPort.')
     if args.archicadPort is not None and not 0 < args.archicadPort < 65536:
         raise InstallerError ('Invalid --archicadPort value: {0}'.format (args.archicadPort))
@@ -658,7 +673,8 @@ def GetUpdateTarget (args):
             raise InstallerError ('Not an add-on bundle: {0}'.format (addOnFilePath))
     elif os.path.isdir (addOnFilePath) or not addOnFilePath.lower ().endswith ('.apx'):
         raise InstallerError ('Not an add-on file (.apx): {0}'.format (addOnFilePath))
-    return AddOnUpdateTarget (requestedVersions[0], addOnFilePath, args.archicadPort, args.archicadPid, not args.noRestart)
+    return AddOnUpdateTarget (requestedVersions[0], addOnFilePath, args.archicadPort, args.archicadPid, not args.noRestart,
+        args.waitForArchicadExit, args.pendingMarkerPath)
 
 
 def GetUpdateLockFilePath (archicadPort):
@@ -717,7 +733,7 @@ def LockUpdateLockFile (lockFile):
 
 
 @contextlib.contextmanager
-def UpdateLock (updateTarget, dryRun):
+def UpdateLock (updateTarget, dryRun, isForReplacement = False):
     # One update per Archicad: the Add-On starts a new update also while one
     # runs, and both would quit Archicad, replace the add-on and start
     # Archicad again. Held from before Archicad is contacted until it was
@@ -726,7 +742,9 @@ def UpdateLock (updateTarget, dryRun):
     # unlocked. A dry run touches nothing, so it takes no lock. Yields the
     # function that tells other updates whether this one waits for Archicad
     # to quit (see QuitArchicadAndWait); without the lock it does nothing.
-    if dryRun or updateTarget.archicadPort is None:
+    # The waiting mode takes the lock only for the replacement (UpdateAddOn),
+    # not while it waits for Archicad to close.
+    if dryRun or updateTarget.archicadPort is None or (updateTarget.waitForArchicadExit and not isForReplacement):
         yield lambda isWaiting : None
         return
     try:
@@ -1102,10 +1120,14 @@ def ReplaceAddOnMac (extractedBundlePath, targetPath):
     return None
 
 
-def ReplaceAddOnWin (newFilePath, targetPath):
+def ReplaceAddOnWin (newFilePath, targetPath, retryTimeoutSeconds = None):
     # Archicad releases the lock on the loaded add-on only once its process
-    # has fully exited, which can be well after its port closed.
-    deadline = time.monotonic () + REPLACE_RETRY_TIMEOUT_SECONDS
+    # has fully exited, which can be well after its port closed. The waiting
+    # mode passes 0: the process has exited already, so a locked file means
+    # another Archicad runs, and the replacement is given up at once.
+    if retryTimeoutSeconds is None:
+        retryTimeoutSeconds = REPLACE_RETRY_TIMEOUT_SECONDS
+    deadline = time.monotonic () + retryTimeoutSeconds
     while True:
         try:
             os.replace (newFilePath, targetPath)
@@ -1118,12 +1140,27 @@ def ReplaceAddOnWin (newFilePath, targetPath):
             time.sleep (1.0)
 
 
-def ReplaceAddOn (preparedPath, targetPath):
+def ReplaceAddOn (preparedPath, targetPath, retryTimeoutSeconds = None):
     # Returns a warning text, or None.
     if IsUsingMacOS ():
         return ReplaceAddOnMac (preparedPath, targetPath)
-    ReplaceAddOnWin (preparedPath, targetPath)
+    ReplaceAddOnWin (preparedPath, targetPath, retryTimeoutSeconds)
     return None
+
+
+def WaitForArchicadExit (updateTarget, cancelEvent = None):
+    # Waiting mode: returns once the Archicad process has exited (at once if
+    # it is gone already), however it exited. Waits without a deadline, as
+    # Archicad may run for days; raises UpdateCancelledError when cancelEvent
+    # is set (the GUI's Cancel button).
+    while not WaitForProcessToExit (updateTarget.archicadPid, ARCHICAD_POLL_INTERVAL_SECONDS):
+        if cancelEvent is not None and cancelEvent.is_set ():
+            raise UpdateCancelledError (WAITING_CANCELLED_TEXT)
+
+
+def RemovePendingMarker (updateTarget):
+    if updateTarget.pendingMarkerPath is not None:
+        RemovePathQuietly (updateTarget.pendingMarkerPath)
 
 
 def GetReleaseName (releaseInfo):
@@ -1157,7 +1194,8 @@ def UpdateAddOn (updateTarget, releaseInfo, dryRun, statusCallback = None, progr
             updateTarget.version, releaseInfo.get ('tag_name', '?')))
     targetPath = updateTarget.addOnFilePath
     archicadPort = updateTarget.archicadPort
-    restartArchicad = archicadPort is not None and updateTarget.restartArchicad
+    isWaitingMode = updateTarget.waitForArchicadExit
+    restartArchicad = archicadPort is not None and updateTarget.restartArchicad and not isWaitingMode
     workFolderPath = tempfile.mkdtemp (prefix = 'TapirInstaller_')
     try:
         # Archicad is only quit once the download succeeded.
@@ -1167,6 +1205,11 @@ def UpdateAddOn (updateTarget, releaseInfo, dryRun, statusCallback = None, progr
             raise
         except Exception as e:
             raise InstallerError ('Failed to download {0}: {1}'.format (asset['name'], e))
+        if isWaitingMode:
+            if dryRun:
+                return 'Would wait for the Archicad process {0} to exit, then replace {1} with {2}'.format (
+                    updateTarget.archicadPid, targetPath, asset['name'])
+            return UpdateAddOnWhenArchicadExits (updateTarget, releaseInfo, downloadedFilePath, workFolderPath, ReportStatus, cancelEvent)
         if dryRun:
             steps = ['replace {0} with {1}'.format (targetPath, asset['name'])]
             if archicadPort is not None:
@@ -1221,6 +1264,38 @@ def UpdateAddOn (updateTarget, releaseInfo, dryRun, statusCallback = None, progr
         return resultText
     finally:
         shutil.rmtree (workFolderPath, ignore_errors = True)
+        # However the waiting update ended, nothing is pending any more.
+        if isWaitingMode:
+            RemovePendingMarker (updateTarget)
+
+
+def UpdateAddOnWhenArchicadExits (updateTarget, releaseInfo, downloadedFilePath, workFolderPath, reportStatus, cancelEvent):
+    # Waiting mode of UpdateAddOn, after the download. Archicad is neither
+    # asked to quit nor started again. The replacement is tried once, right
+    # after the process exited (no retries): if the add-on file is still
+    # locked, another Archicad runs it, and the update is given up.
+    targetPath = updateTarget.addOnFilePath
+    try:
+        preparedPath = PrepareAddOnUpdate (downloadedFilePath, targetPath, workFolderPath)
+        reportStatus ('Waiting for Archicad to close...')
+        WaitForArchicadExit (updateTarget, cancelEvent)
+        reportStatus ('Installing...')
+        try:
+            # One update per Archicad, held only while the add-on is replaced.
+            with UpdateLock (updateTarget, False, isForReplacement = True):
+                replaceWarningText = ReplaceAddOn (preparedPath, targetPath, 0)
+        except UpdateRunningError as e:
+            raise InstallerError (WAITING_REPLACE_FAILED_TEXT.format (str (e)))
+        except InstallerError as e:
+            raise InstallerError (WAITING_REPLACE_FAILED_TEXT.format (str (e)))
+        except Exception as e:
+            raise InstallerError (WAITING_REPLACE_FAILED_TEXT.format ('Failed to replace {0}: {1}'.format (targetPath, e)))
+    finally:
+        RemoveNewAddOnCopy (targetPath)
+    resultText = 'Tapir was updated to {0}. Archicad was not started again.'.format (GetReleaseName (releaseInfo))
+    if replaceWarningText is not None:
+        raise InstallerWarning (resultText + ' ' + replaceWarningText)
+    return resultText
 
 
 def RunConsoleUpdate (args):
@@ -2021,6 +2096,8 @@ def Main ():
     parser.add_argument ('--addOnFile', dest = 'addOnFilePath', type = str, default = None, help = 'update mode: replace this Tapir Add-On (.apx file or .bundle folder) with the latest release (requires --versions with one version)')
     parser.add_argument ('--archicadPort', dest = 'archicadPort', type = int, default = None, help = 'update mode: quit the Archicad listening on this port before replacing the add-on, and start it again afterwards')
     parser.add_argument ('--archicadPid', dest = 'archicadPid', type = int, default = None, help = 'update mode: also wait for this Archicad process to exit (requires --archicadPort)')
+    parser.add_argument ('--waitForArchicadExit', dest = 'waitForArchicadExit', action = 'store_true', help = 'update mode: do not quit Archicad; replace the add-on once the --archicadPid process has exited, and do not start Archicad again')
+    parser.add_argument ('--pendingMarker', dest = 'pendingMarkerPath', type = str, default = None, help = 'update mode: the marker file of the pending update (with --waitForArchicadExit); deleted when the update ended')
     parser.add_argument ('--noRestart', dest = 'noRestart', action = 'store_true', help = 'update mode: do not start Archicad again after the update (for testing)')
     # Unknown options are ignored, so that a newer Add-On can pass new options
     # to an older installer: the windowed executable would exit silently.
