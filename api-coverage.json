@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 23:05 UTC",
+ "generatedAt": "2026-11-07 23:31 UTC",
  "versions": [
   25,
   26,
@@ -13,8 +13,8 @@
   "done": 1908,
   "skipped": 29,
   "merged": 324,
-  "claimed": 16,
-  "in progress": 32
+  "claimed": 13,
+  "in progress": 35
  },
  "items": [
   {
@@ -5774,6 +5774,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2294,
+     "title": "[5/6] Add ShowIFCExportSettings command"
+    },
+    {
+     "number": 2291,
+     "title": "[4/6] Add PickLibraryFolder: Archicad's library folder dialog"
+    },
+    {
      "number": 2287,
      "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
     },
@@ -6905,6 +6913,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2293,
+     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
+    },
+    {
      "number": 2289,
      "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
     },
@@ -7857,6 +7869,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2293,
+     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
+    },
     {
      "number": 2255,
      "title": "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"
@@ -11428,7 +11444,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2294,
+     "title": "[5/6] Add ShowIFCExportSettings command"
+    }
+   ],
    "issues": []
   },
   {
@@ -11467,9 +11488,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2294,
+     "title": "[5/6] Add ShowIFCExportSettings command"
+    }
+   ],
    "issues": [
     {
      "number": 2269,
@@ -11813,9 +11839,14 @@
    "olderNames": [
     "APIEnv_NewLibDialID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2291,
+     "title": "[4/6] Add PickLibraryFolder: Archicad's library folder dialog"
+    }
+   ],
    "issues": [
     {
      "number": 2269,
@@ -14330,7 +14361,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2294,
+     "title": "[5/6] Add ShowIFCExportSettings command"
+    }
+   ],
    "issues": []
   },
   {
@@ -14825,6 +14861,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2293,
+     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
+    },
+    {
      "number": 2289,
      "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
     },
@@ -14889,6 +14929,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2293,
+     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
+    },
+    {
      "number": 2289,
      "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
     },
@@ -14937,6 +14981,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2293,
+     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
+    },
     {
      "number": 2289,
      "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
@@ -15027,7 +15075,12 @@
    ],
    "status": "not applicable",
    "reason": "event handlers, not commands",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2293,
+     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
+    }
+   ],
    "issues": []
   },
   {
@@ -15048,9 +15101,14 @@
    "olderNames": [
     "ACAPI_Notify_GetTranParams"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2293,
+     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
+    }
+   ],
    "issues": [
     {
      "number": 2267,
@@ -15102,6 +15160,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2293,
+     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
+    },
+    {
      "number": 2289,
      "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
     }
@@ -15133,6 +15195,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2293,
+     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
+    },
     {
      "number": 2289,
      "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
@@ -18166,6 +18232,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2293,
+     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
+    },
+    {
      "number": 2289,
      "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
     },
@@ -18316,6 +18386,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2293,
+     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
+    },
     {
      "number": 2289,
      "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
@@ -18792,6 +18866,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2294,
+     "title": "[5/6] Add ShowIFCExportSettings command"
+    },
+    {
+     "number": 2291,
+     "title": "[4/6] Add PickLibraryFolder: Archicad's library folder dialog"
+    },
+    {
      "number": 2287,
      "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
     },
@@ -19030,6 +19112,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2295,
+     "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
+    },
+    {
      "number": 2286,
      "title": "[3/5] Constraint option on the Get...FromUser commands"
     },
@@ -19090,6 +19176,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2295,
+     "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
+    },
+    {
      "number": 2276,
      "title": "[1/5] GetArcFromUser command"
     }
@@ -19146,6 +19236,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2295,
+     "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
+    },
+    {
      "number": 2276,
      "title": "[1/5] GetArcFromUser command"
     }
@@ -19178,6 +19272,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2295,
+     "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
+    },
     {
      "number": 2276,
      "title": "[1/5] GetArcFromUser command"
@@ -19240,6 +19338,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2295,
+     "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
+    },
+    {
      "number": 2286,
      "title": "[3/5] Constraint option on the Get...FromUser commands"
     },
@@ -19299,6 +19401,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2295,
+     "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
+    },
+    {
      "number": 2286,
      "title": "[3/5] Constraint option on the Get...FromUser commands"
     },
@@ -19336,6 +19442,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2295,
+     "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
+    },
+    {
      "number": 2286,
      "title": "[3/5] Constraint option on the Get...FromUser commands"
     }
@@ -19368,6 +19478,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2295,
+     "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
+    },
     {
      "number": 2286,
      "title": "[3/5] Constraint option on the Get...FromUser commands"
@@ -19423,6 +19537,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2295,
+     "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
+    },
     {
      "number": 2286,
      "title": "[3/5] Constraint option on the Get...FromUser commands"
@@ -20616,6 +20734,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2295,
+     "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
+    },
+    {
      "number": 2276,
      "title": "[1/5] GetArcFromUser command"
     }
@@ -21631,6 +21753,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2294,
+     "title": "[5/6] Add ShowIFCExportSettings command"
+    },
+    {
+     "number": 2291,
+     "title": "[4/6] Add PickLibraryFolder: Archicad's library folder dialog"
+    },
+    {
      "number": 2290,
      "title": "[4/5] Add GetMagicWandSettings command"
     },
@@ -22221,6 +22351,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2295,
+     "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
+    },
+    {
+     "number": 2294,
+     "title": "[5/6] Add ShowIFCExportSettings command"
+    },
+    {
+     "number": 2291,
+     "title": "[4/6] Add PickLibraryFolder: Archicad's library folder dialog"
+    },
     {
      "number": 2287,
      "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
@@ -30283,6 +30425,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2291,
+     "title": "[4/6] Add PickLibraryFolder: Archicad's library folder dialog"
+    },
+    {
      "number": 2287,
      "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
     },
@@ -38069,6 +38215,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2293,
+     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
+    },
+    {
      "number": 2289,
      "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
     },
@@ -43684,6 +43834,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2293,
+     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
+    },
     {
      "number": 2289,
      "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
