@@ -8,6 +8,7 @@
 #include "BiHashTable.hpp"
 #include "HashSet.hpp"
 
+#include <functional>
 #include <vector>
 #include <map>
 #include <mutex>
@@ -59,6 +60,31 @@ GS::ObjectState CreateSuccessfulExecutionResult ();
 // already exists at location (or that cannot be checked), returns the message to fail with, naming
 // the path; empty otherwise.
 GS::UniString GetOverwriteRefusal (const GS::ObjectState& parameters, const IO::Location& location);
+
+// The optional boolean "dryRun" input of the commands that delete or change (#2195), the #/DryRun
+// schema definition. A dry run makes every check of a real run and resolves the same targets, with
+// the same errors, but changes nothing in the project. A command reads the flag once with
+// IsDryRun, makes its checks, wraps the step that writes with CallUndoableCommandUnlessDryRun,
+// reports each target that passed the checks with CreateDryRunExecutionResult, and adds the
+// response's "dryRun" field with AddDryRunField.
+bool IsDryRun (const GS::ObjectState& parameters);
+// Runs write as one undoable command named undoString and returns its error; on a dry run it does
+// not run write at all (so no undo step is made either) and returns NoError.
+GSErrCode CallUndoableCommandUnlessDryRun (bool dryRun, const GS::UniString& undoString, const std::function<GSErrCode ()>& write);
+// Adds "dryRun": true to the response of a dry run (#/DryRunFlag); a real run's response is left as it is.
+void AddDryRunField (GS::ObjectState& response, bool dryRun);
+// The execution result of a dry run for a target that passed every check: {"success": true, <wouldKey>: true},
+// e.g. "wouldDelete" (#/WouldDeleteExecutionResult).
+GS::ObjectState CreateDryRunExecutionResult (const char* wouldKey);
+// For the commands whose checks and writes are interleaved target by target: runs body as one
+// undoable command named undoString; on a dry run it runs body directly, outside any undo scope, so
+// no undo step is made and a write body would still attempt is refused by Archicad. body reads the
+// same dryRun flag, makes every check of a real run and skips only its writes.
+GSErrCode CallUndoableCommandOrDryRun (bool dryRun, const GS::UniString& undoString, const std::function<GSErrCode ()>& body);
+// The execution result of a dry run for a target a real run would change: {"success": true,
+// "wouldChange": wouldChange} (#/WouldChangeExecutionResult), wouldChange holding the target's
+// "oldValue" and the "newValue" a real run would write, each left out when it is not cheap to tell.
+GS::ObjectState CreateWouldChangeExecutionResult (const GS::ObjectState& wouldChange);
 GS::UniString DescribeDefinitionChangeError (GSErrCode err);
 // Why Archicad refused to change an element the user could not edit in Archicad either, as the end
 // of a sentence ("its layer is hidden"); empty when the refusal has another cause. elemHead is the

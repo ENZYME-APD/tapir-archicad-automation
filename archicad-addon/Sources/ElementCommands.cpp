@@ -9525,8 +9525,7 @@ GS::Optional<GS::UniString> DeleteElementsCommand::GetInputParametersSchema () c
                 "description": "The elements to delete. The zones among them are deleted before all the others, so an automatic zone deleted together with its bounding elements is gone before its boundary is. Deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found around the clicked point' dialog, which blocks the command until someone clicks it in Archicad."
             },
             "dryRun": {
-                "type": "boolean",
-                "description": "If true, nothing is deleted and no undo step is created: each execution result says what the deletion would do for that element, from the checks made before deleting (the element does not exist, its layer is locked, it is not editable). Archicad can still refuse an element that passes them. Default is false."
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -9541,8 +9540,12 @@ GS::Optional<GS::UniString> DeleteElementsCommand::GetRawResponseSchema () const
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input element, in the order of the input. On a dry run an element that passes every check made before deleting (it exists, its layer is not locked, it is editable) gets wouldDelete; Archicad can still refuse an element that passes them."
             }
         },
         "additionalProperties": false,
@@ -9556,8 +9559,7 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
 {
     GS::Array<GS::ObjectState> elements;
     parameters.Get ("elements", elements);
-    bool dryRun = false;
-    parameters.Get ("dryRun", dryRun);
+    const bool dryRun = IsDryRun (parameters);
 
     const GS::Array<API_Guid> elemGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
 
@@ -9598,8 +9600,8 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
     }
 
     GSErrCode deleteErr = NoError;
-    if (!dryRun && (!zoneGuids.IsEmpty () || !otherGuids.IsEmpty ())) {
-        ACAPI_CallUndoableCommand ("DeleteElementsCommand", [&]() {
+    if (!zoneGuids.IsEmpty () || !otherGuids.IsEmpty ()) {
+        CallUndoableCommandUnlessDryRun (dryRun, "DeleteElementsCommand", [&]() {
             if (!zoneGuids.IsEmpty ()) {
                 deleteErr = ACAPI_Element_Delete (zoneGuids);
             }
@@ -9614,9 +9616,12 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
         });
     }
 
-    changeReporter.Report ();
+    if (!dryRun) {
+        changeReporter.Report ();
+    }
 
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
     // ACAPI_Element_Delete reports NoError even when it skips elements it is
@@ -9647,7 +9652,7 @@ GS::ObjectState DeleteElementsCommand::Execute (const GS::ObjectState& parameter
         } else if (!ACAPI_Element_Filter (elemGuid, APIFilt_IsEditable)) {
             executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The element was not deleted, because it is not editable."));
         } else if (dryRun) {
-            executionResults (CreateSuccessfulExecutionResult ());
+            executionResults (CreateDryRunExecutionResult ("wouldDelete"));
         } else {
             executionResults (CreateFailedExecutionResult (deleteErr != NoError ? deleteErr : APIERR_GENERAL, "Failed to delete the element."));
         }

@@ -1233,6 +1233,9 @@ GS::Optional<GS::UniString> SetPropertyValuesOfElementsCommand::GetInputParamete
             "elementPropertyValues": {
                 "$ref": "#/ElementPropertyValues",
                 "description": "A single real value accepts '.' or ',' as the decimal separator, so the value strings GetPropertyValuesOfElements returns can be written back: when both appear the last one is the decimal separator, a separator that appears more than once groups thousands, and a single separator is the decimal one. Unitless real and integer lists accept semicolon-separated numbers; an empty string sets an empty list. Invalid items reject the entire property write."
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -1247,8 +1250,12 @@ GS::Optional<GS::UniString> SetPropertyValuesOfElementsCommand::GetRawResponseSc
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/ChangeExecutionResults",
+                "description": "One result for each item of elementPropertyValues, in the order of the input. On a dry run an item that passes every check made before writing (the property values of the element can be read, the value is editable for the element and converts to the property's type) gets wouldChange: oldValue is the element's value now as GetPropertyValuesOfElements gives it (left out when the property is not available or not evaluated for the element), newValue the value that would be written in the same format (left out for valueStatus Default). Archicad can still refuse a value that passes them."
             }
         },
         "additionalProperties": false,
@@ -1262,8 +1269,10 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
 {
     GS::Array<GS::ObjectState> elementPropertyValues;
     parameters.Get ("elementPropertyValues", elementPropertyValues);
+    const bool dryRun = IsDryRun (parameters);
 
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
     GS::Array<GS::ObjectState> results (elementPropertyValues.GetSize ());
@@ -1334,7 +1343,9 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
 #endif
     }
 
-    ACAPI_CallUndoableCommand ("SetPropertyValuesOfElementsCommand", [&]() -> GSErrCode {
+    // On a dry run the same checks and conversions are made, outside an undo scope, and each value
+    // that would be written is reported with the element's value now instead of being written.
+    CallUndoableCommandOrDryRun (dryRun, "SetPropertyValuesOfElementsCommand", [&]() -> GSErrCode {
         for (const auto& kv : propertiesForElements) {
 #ifdef ServerMainVers_2800
             const API_Guid& elemGuid = kv.key;
@@ -1370,6 +1381,15 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
                     continue;
                 }
 
+                // The element's value now, as GetPropertyValuesOfElements gives it, read before it is changed below.
+                GS::ObjectState wouldChange;
+                if (dryRun && propertyValue.status != API_Property_NotAvailable && propertyValue.status != API_Property_NotEvaluated) {
+                    GS::UniString oldValueString;
+                    if (GetPropertyValueString (propertyValue, oldValueString) == NoError) {
+                        wouldChange.Add ("oldValue", oldValueString);
+                    }
+                }
+
                 const bool isNumericList = definition.collectionType == API_PropertyListCollectionType &&
                     definition.measureType == API_PropertyDefaultMeasureType &&
                     (definition.valueType == API_PropertyRealValueType || definition.valueType == API_PropertyIntegerValueType);
@@ -1389,6 +1409,17 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
 
                 if (err != NoError) {
                     result = CreateFailedExecutionResult (err, "Failed to set property value for element");
+                    continue;
+                }
+
+                if (dryRun) {
+                    // A value set back to Default shows the default value or expression, which is
+                    // only evaluated once written, so its newValue is left out.
+                    GS::UniString newValueString;
+                    if (valueStatus != "Default" && GetPropertyValueString (propertyValue, newValueString) == NoError) {
+                        wouldChange.Add ("newValue", newValueString);
+                    }
+                    result = CreateWouldChangeExecutionResult (wouldChange);
                     continue;
                 }
 
@@ -1424,7 +1455,9 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
         return NoError;
     });
 
-    changeReporter.Report ();
+    if (!dryRun) {
+        changeReporter.Report ();
+    }
 
     for (const GS::ObjectState& result : results) {
         executionResults (result);

@@ -75,6 +75,16 @@ with urllib.request.urlopen(request, json.dumps(body).encode()) as response:
 
 Every Tapir command is called this way: change `commandName` and put the command's parameters in `addOnCommandParameters`. The [examples](archicad-addon/Examples/) use `aclib`, a small helper that does this for you.
 
+#### Preview a change with `dryRun`
+
+The commands that delete or change can be asked what they would do first. With `"dryRun": true` among its parameters such a command makes all the checks of a real run, with the same errors, but changes nothing in the project and adds no undo step; its response is a real run's plus `"dryRun": true`, and says for each target what would happen (`"wouldDelete": true` for an element `DeleteElements` would delete; for the bulk setters `SetPropertyValuesOfElements`, `SetClassificationsOfElements`, `SetCategoryValuesOfElements` and `SetGDLParametersOfElements`, `"wouldChange"` with the target's `oldValue` and the `newValue` a real run would write). Without `dryRun`, or with `false`, the command works as before. The [command reference](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon) says which commands take it.
+
+```python
+preview = aclib.RunTapirCommand('DeleteElements', {'elements': elements, 'dryRun': True})
+if all(result['success'] for result in preview['executionResults']):
+    aclib.RunTapirCommand('DeleteElements', {'elements': elements})
+```
+
 ### Use the Tapir palette in Archicad
 
 The Add-On adds a **Tapir** menu to Archicad; open the palette with **Tapir > Tapir Palette**.

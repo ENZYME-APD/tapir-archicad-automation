@@ -3616,6 +3616,109 @@
             "$ref": "#/ExecutionResult"
         }
     },
+    "DryRun": {
+        "type": "boolean",
+        "description": "If true, the command makes all the checks of a real run and resolves the same targets, with the same errors, but changes nothing in the project and creates no undo step. The response is that of a real run with \"dryRun\": true added, and says for each target what the real run would do. Default is false."
+    },
+    "DryRunFlag": {
+        "type": "boolean",
+        "description": "Present, and true, only in the response of a dry run (the dryRun input was true): nothing was changed in the project.",
+        "enum": [ true ]
+    },
+    "WouldDeleteExecutionResult": {
+        "type": "object",
+        "description": "The result of a dry run for a target that passed every check: a real run would delete it.",
+        "properties": {
+            "success": {
+                "type": "boolean",
+                "enum": [ true ]
+            },
+            "wouldDelete": {
+                "type": "boolean",
+                "enum": [ true ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "success",
+            "wouldDelete"
+        ]
+    },
+    "DeletionExecutionResult": {
+        "type": "object",
+        "description": "The result of a deletion for one target. On a dry run a target that passed every check gets wouldDelete instead of being deleted.",
+        "oneOf": [
+            {
+                "$ref": "#/SuccessfulExecutionResult"
+            },
+            {
+                "$ref": "#/WouldDeleteExecutionResult"
+            },
+            {
+                "$ref": "#/FailedExecutionResult"
+            }
+        ]
+    },
+    "DeletionExecutionResults": {
+        "type": "array",
+        "description": "A list of deletion results.",
+        "items": {
+            "$ref": "#/DeletionExecutionResult"
+        }
+    },
+    "WouldChange": {
+        "type": "object",
+        "description": "What a real run would change on a target. Each command says what its oldValue and newValue are; either is left out when it cannot be told cheaply.",
+        "properties": {
+            "oldValue": {
+                "description": "The target's value now, before the change."
+            },
+            "newValue": {
+                "description": "The value a real run would write."
+            }
+        },
+        "additionalProperties": false
+    },
+    "WouldChangeExecutionResult": {
+        "type": "object",
+        "description": "The result of a dry run for a target that passed every check: a real run would change it as wouldChange says.",
+        "properties": {
+            "success": {
+                "type": "boolean",
+                "enum": [ true ]
+            },
+            "wouldChange": {
+                "$ref": "#/WouldChange"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "success",
+            "wouldChange"
+        ]
+    },
+    "ChangeExecutionResult": {
+        "type": "object",
+        "description": "The result of a change for one target. On a dry run a target that passed every check gets wouldChange instead of being changed.",
+        "oneOf": [
+            {
+                "$ref": "#/SuccessfulExecutionResult"
+            },
+            {
+                "$ref": "#/WouldChangeExecutionResult"
+            },
+            {
+                "$ref": "#/FailedExecutionResult"
+            }
+        ]
+    },
+    "ChangeExecutionResults": {
+        "type": "array",
+        "description": "A list of change results.",
+        "items": {
+            "$ref": "#/ChangeExecutionResult"
+        }
+    },
     "ElementCategoryType": {
         "type": "string",
         "description": "The type of an element category. The names of the categories and of their values are localized, so scripts should select a category by this type and a value by its categoryValueId, never by name. BRI is available only in the German localized version of Archicad.",
