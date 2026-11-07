@@ -20,7 +20,7 @@
     'Started as R&amp;D at Enzyme, an architecture practice, then opened to everyone, in the spirit of ifc.js: practitioners shouldn\'t wait for a vendor to support their workflow.':
         'यह एक architecture practice, Enzyme में R&amp;D के रूप में शुरू हुआ, फिर ifc.js की भावना से सबके लिए खोल दिया गया: practitioners को अपने workflow के समर्थन के लिए किसी vendor का इंतज़ार नहीं करना चाहिए।',
     'Revisions · Tapir': 'संशोधन · Tapir',
-    'Rev': 'Rev',
+    'Rev': 'संशो.',
     'Date': 'तारीख़',
     'Description': 'विवरण',
     'By': 'द्वारा',
@@ -34,7 +34,7 @@
         'Discord server खुलता है, जहाँ architects और developers बताते हैं कि उन्हें क्या चाहिए और दिखाते हैं कि उन्होंने क्या बनाया।',
     'The first members': 'पहले सदस्य',
     'July 2024': 'जुलाई 2024',
-    'The template': 'Template',
+    'The template': 'टेम्पलेट',
     'Tibor Lorántfy, whose archicad-additional-json-commands the add-on is built on, joins the project. Almost any function of the Archicad API can now become a JSON command.':
         'Tibor Lorántfy, जिनके archicad-additional-json-commands पर यह add-on बना है, प्रोजेक्ट से जुड़ते हैं। अब Archicad API का लगभग हर function एक JSON कमांड बन सकता है।',
     'Built by its community': 'अपने समुदाय द्वारा बनाया गया',
@@ -72,7 +72,7 @@
     'Small contributions from many users make a big difference: regular small pledges can fund maintainers who update Tapir for each new Archicad version.':
         'कई users के छोटे योगदान बड़ा फ़र्क़ लाते हैं: नियमित छोटे pledges उन maintainers का ख़र्च उठा सकते हैं जो हर नए Archicad संस्करण के लिए Tapir को अपडेट करते हैं।',
     'Practices and firms': 'Practices और firms',
-    'Corporate sponsoring': 'Corporate sponsorship',
+    'Corporate sponsoring': 'कंपनियों की स्पॉन्सरशिप',
     'Offices and engineering firms that use Tapir in their own R&amp;D sponsor the commands their projects need, and those commands then serve everyone.':
         'जो offices और engineering firms अपने R&amp;D में Tapir इस्तेमाल करती हैं, वे अपने projects के लिए ज़रूरी कमांड sponsor करती हैं, और फिर वे कमांड सबके काम आते हैं।',
     'Your office': 'आपका office',
