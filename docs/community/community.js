@@ -23,15 +23,19 @@
    only differ in case or accents are one person, and so are the names in ALIASES. The five with
    the most commits are shown.
    When the file cannot be read, or a part of it does not look right, that part stays hidden: a
-   number that can't be read is left out, not shown wrong. Every text shown is in the page's HTML. */
+   number that can't be read is left out, not shown wrong. Every text shown is in the page's HTML
+   (data-change, data-commits, data-chart-label, data-months and data-month-label among them), and
+   assets/site.js translates it (assets/i18n/<language>/community.js), so this starts once the page
+   is translated (TapirI18n.ready) and then reads the page's language and those texts. */
 (function () {
     'use strict';
 
     var COMMUNITY_URL = 'https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/site-data/community.json';
     var MONTH_PATTERN = /^([0-9]{4})-(0[1-9]|1[0-2])$/;
     var SVG_NS = 'http://www.w3.org/2000/svg';
-    // Numbers are written the way the page's language writes them (1,234 in English, 1 234 in French).
-    var LOCALE = document.documentElement.lang || 'en';
+    // Numbers are written the way the page's language writes them (1,234 in English, 1 234 in French);
+    // read in start (), once the translation has set <html lang>.
+    var LOCALE = 'en';
 
     // Names one person committed under, by their key (see personKey), and the name to show.
     var ALIASES = { 'tlorantfy': 'Tibor Lorántfy' };
@@ -42,7 +46,9 @@
         return;
     }
     var table = document.getElementById ('activity-table');
-    var monthNames = (section.getAttribute ('data-months') || '').split (/\s+/);
+    // The month names and how a month and its year are written ("{month} {year}"), read in start ().
+    var monthNames = [];
+    var monthLabelPattern = '{month} {year}';
     var phone = window.matchMedia ('(max-width: 640px)');
     var allMonths = null;
 
@@ -68,7 +74,7 @@
     }
 
     function monthLabel (month) {
-        return monthName (month) + ' ' + MONTH_PATTERN.exec (month)[1];
+        return format (monthLabelPattern, { month: monthName (month), year: MONTH_PATTERN.exec (month)[1] });
     }
 
     // The months of the file, oldest first, or null when they don't look right.
@@ -423,26 +429,38 @@
         momentum.hidden = shown === 0 && people.length === 0;
     }
 
-    fetch (COMMUNITY_URL, { cache: 'no-cache' }).then (function (response) {
-        if (!response.ok) {
-            throw new Error (String (response.status));
-        }
-        return response.json ();
-    }).then (function (data) {
-        try {
-            renderMomentum (data);
-        } catch (e) {
+    function start () {
+        LOCALE = document.documentElement.lang || 'en';
+        monthNames = (section.getAttribute ('data-months') || '').split (/\s+/);
+        monthLabelPattern = section.getAttribute ('data-month-label') || monthLabelPattern;
+        fetch (COMMUNITY_URL, { cache: 'no-cache' }).then (function (response) {
+            if (!response.ok) {
+                throw new Error (String (response.status));
+            }
+            return response.json ();
+        }).then (function (data) {
+            try {
+                renderMomentum (data);
+            } catch (e) {
+                momentum.hidden = true;
+            }
+            allMonths = readMonths (data);
+            render ();
+            if (phone.addEventListener) {
+                phone.addEventListener ('change', render);
+            } else if (phone.addListener) {
+                phone.addListener (render);
+            }
+        }).catch (function () {
+            section.hidden = true;
             momentum.hidden = true;
-        }
-        allMonths = readMonths (data);
-        render ();
-        if (phone.addEventListener) {
-            phone.addEventListener ('change', render);
-        } else if (phone.addListener) {
-            phone.addListener (render);
-        }
-    }).catch (function () {
-        section.hidden = true;
-        momentum.hidden = true;
-    });
+        });
+    }
+
+    // The labels and the language are read from the page, so it starts once it is translated.
+    if (window.TapirI18n && typeof window.TapirI18n.ready === 'function') {
+        window.TapirI18n.ready (start);
+    } else {
+        start ();
+    }
 }) ();
