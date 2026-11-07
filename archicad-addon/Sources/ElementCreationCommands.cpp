@@ -6208,6 +6208,136 @@ bool ParseDimensionOriginString (const GS::UniString& origin, API_DimOriginID& r
     return true;
 }
 
+// The settings of a Level Dimension that CreateLevelDimensions and ModifyLevelDimensions both take,
+// written by ApplyLevelDimensionSettings (#2220).
+static const char* LevelDimensionSettingsSchemaProperties = R"(
+                    "pen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Pen index of the marker. Optional parameter."
+                    },
+                    "textHeight": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "description": "Height of the dimension text in millimeters (paper size), applied to both texts of the marker. Optional parameter."
+                    },
+                    "textPen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Pen index of the dimension text, applied to both texts of the marker. Optional parameter."
+                    },
+                    "dimForm": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 19,
+                        "description": "Marker type of the Level Dimension tool, 0-19 as Archicad stores it (read it back with GetDetailsOfElements from an existing level dimension or one placed with a favorite). Optional parameter."
+                    },
+                    "needPlus": {
+                        "type": "boolean",
+                        "description": "Show a plus sign for positive values. Optional parameter."
+                    },
+                    "markerSize": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "description": "Size of the marker in millimeters (paper size). Optional parameter."
+                    },
+                    "angle": {
+                        "type": "number",
+                        "description": "Rotation angle of the marker in radians. Optional parameter."
+                    },
+                    "origin": {
+                        "$ref": "#/DimensionOrigin",
+                        "description": "The origin the level is measured from. Optional parameter."
+                    })";
+
+GS::Optional<GS::ObjectState> ApplyLevelDimensionSettings (const GS::ObjectState& parameters, API_Element& element, API_Element* mask)
+{
+    Int32 pen = 0;
+    if (parameters.Get ("pen", pen)) {
+        if (pen < 1 || pen > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'pen' must be between 1 and 255");
+        }
+        element.levelDimension.pen = static_cast<short> (pen);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, pen);
+        }
+    }
+
+    double textHeight = 0.0;
+    if (parameters.Get ("textHeight", textHeight)) {
+        if (textHeight <= 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textHeight' must be greater than 0");
+        }
+        element.levelDimension.note1.noteSize = textHeight;
+        element.levelDimension.note2.noteSize = textHeight;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note1.noteSize);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note2.noteSize);
+        }
+    }
+
+    Int32 textPen = 0;
+    if (parameters.Get ("textPen", textPen)) {
+        if (textPen < 1 || textPen > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textPen' must be between 1 and 255");
+        }
+        element.levelDimension.note1.notePen = static_cast<short> (textPen);
+        element.levelDimension.note2.notePen = static_cast<short> (textPen);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note1.notePen);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note2.notePen);
+        }
+    }
+
+    Int32 dimForm = 0;
+    if (parameters.Get ("dimForm", dimForm)) {
+        // Archicad 29 knows the marker types 0-19 and silently replaces any other value by 0.
+        if (dimForm < 0 || dimForm > 19) {
+            return CreateErrorResponse (APIERR_BADPARS, "'dimForm' must be between 0 and 19");
+        }
+        element.levelDimension.dimForm = static_cast<short> (dimForm);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, dimForm);
+        }
+    }
+
+    if (parameters.Get ("needPlus", element.levelDimension.needPlus) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, needPlus);
+    }
+
+    double markerSize = 0.0;
+    if (parameters.Get ("markerSize", markerSize)) {
+        if (markerSize <= 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "'markerSize' must be greater than 0");
+        }
+        element.levelDimension.markerSize = markerSize;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, markerSize);
+        }
+    }
+
+    if (parameters.Get ("angle", element.levelDimension.angle) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, angle);
+    }
+
+    GS::UniString originStr;
+    if (parameters.Get ("origin", originStr)) {
+        // The schema can't reject an unknown value behind "$ref": "#/DimensionOrigin".
+        API_DimOriginID origin = APIDimOrigin_ProjectZero;
+        if (!ParseDimensionOriginString (originStr, origin)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'origin' value: " + originStr);
+        }
+        element.levelDimension.origin = origin;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, origin);
+        }
+    }
+
+    return {};
+}
+
 CreateLevelDimensionsCommand::CreateLevelDimensionsCommand () :
     CreateElementsCommandBase ("CreateLevelDimensions", API_LevelDimensionID, "levelDimensionsData")
 {
@@ -6215,7 +6345,7 @@ CreateLevelDimensionsCommand::CreateLevelDimensionsCommand () :
 
 GS::Optional<GS::UniString> CreateLevelDimensionsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
     "type": "object",
     "properties": {
         "levelDimensionsData": {
@@ -6252,41 +6382,7 @@ GS::Optional<GS::UniString> CreateLevelDimensionsCommand::GetInputParametersSche
                     "layerIndex": {
                         "type": "integer",
                         "description": "Layer attribute index to place the dimension on. Optional parameter, by default the layer of the favorite or the Level Dimension tool default is used."
-                    },
-                    "pen": {
-                        "type": "integer",
-                        "description": "Pen index of the marker. Optional parameter."
-                    },
-                    "textHeight": {
-                        "type": "number",
-                        "description": "Height of the dimension text in millimeters (paper size). Optional parameter."
-                    },
-                    "textPen": {
-                        "type": "integer",
-                        "description": "Pen index of the dimension text. Optional parameter."
-                    },
-                    "dimForm": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 19,
-                        "description": "Marker type of the Level Dimension tool, 0-19 as Archicad stores it (read it back with GetDetailsOfElements from an existing level dimension or one placed with a favorite). Optional parameter."
-                    },
-                    "needPlus": {
-                        "type": "boolean",
-                        "description": "Show a plus sign for positive values. Optional parameter."
-                    },
-                    "markerSize": {
-                        "type": "number",
-                        "description": "Size of the marker in millimeters (paper size). Optional parameter."
-                    },
-                    "angle": {
-                        "type": "number",
-                        "description": "Rotation angle of the marker in radians. Optional parameter."
-                    },
-                    "origin": {
-                        "$ref": "#/DimensionOrigin",
-                        "description": "The origin the level is measured from. Optional parameter."
-                    }
+                    },)") + LevelDimensionSettingsSchemaProperties + R"(
                 },
                 "additionalProperties": false,
                 "required": [
@@ -6349,51 +6445,168 @@ GS::Optional<GS::ObjectState> CreateLevelDimensionsCommand::SetTypeSpecificParam
         element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
     }
 
-    Int32 pen = 0;
-    if (parameters.Get ("pen", pen) && pen > 0) {
-        element.levelDimension.pen = static_cast<short> (pen);
-    }
+    return ApplyLevelDimensionSettings (parameters, element, nullptr);
+}
 
-    double textHeight = 0.0;
-    if (parameters.Get ("textHeight", textHeight) && textHeight > 0.0) {
-        element.levelDimension.note1.noteSize = textHeight;
-        element.levelDimension.note2.noteSize = textHeight;
-    }
+ModifyLevelDimensionsCommand::ModifyLevelDimensionsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
 
-    Int32 textPen = 0;
-    if (parameters.Get ("textPen", textPen) && textPen > 0) {
-        element.levelDimension.note1.notePen = static_cast<short> (textPen);
-        element.levelDimension.note2.notePen = static_cast<short> (textPen);
-    }
+GS::String ModifyLevelDimensionsCommand::GetName () const
+{
+    return "ModifyLevelDimensions";
+}
 
-    Int32 dimForm = 0;
-    if (parameters.Get ("dimForm", dimForm)) {
-        // Archicad 29 knows the marker types 0-19 and silently replaces any other value by 0.
-        if (dimForm < 0 || dimForm > 19) {
-            return CreateErrorResponse (APIERR_BADPARS, "'dimForm' must be between 0 and 19");
+GS::Optional<GS::UniString> ModifyLevelDimensionsCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+    "type": "object",
+    "properties": {
+        "levelDimensionsWithDetails": {
+            "type": "array",
+            "description": "The Level Dimensions to change, each with the settings to change. Only the given settings are changed.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "elementId": {
+                        "$ref": "#/ElementId"
+                    },
+                    "position": {
+                        "$ref": "#/Coordinate2D",
+                        "description": "The new location of the marker on the floor plan. An associative level dimension then shows the height of its element at the new position. Optional parameter."
+                    },)") + LevelDimensionSettingsSchemaProperties + R"(
+                },
+                "additionalProperties": false,
+                "required": [
+                    "elementId"
+                ]
+            }
         }
-        element.levelDimension.dimForm = static_cast<short> (dimForm);
-    }
+    },
+    "additionalProperties": false,
+    "required": [
+        "levelDimensionsWithDetails"
+    ]
+})";
+}
 
-    parameters.Get ("needPlus", element.levelDimension.needPlus);
+GS::Optional<GS::UniString> ModifyLevelDimensionsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
 
-    double markerSize = 0.0;
-    if (parameters.Get ("markerSize", markerSize) && markerSize > 0.0) {
-        element.levelDimension.markerSize = markerSize;
-    }
+// The settings go through ApplyLevelDimensionSettings, as in CreateLevelDimensions; the position
+// through loc, which ACAPI_Element_Change accepts for level dimensions (as the DevKit's Element_Test
+// does in Do_LevelDimension_Edit). The parent element, the static level and the texts' content are
+// not changed. The element is read back, so a value Archicad did not take is reported as a failure.
+GS::ObjectState ModifyLevelDimensionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> itemsWithDetails;
+    parameters.Get ("levelDimensionsWithDetails", itemsWithDetails);
 
-    parameters.Get ("angle", element.levelDimension.angle);
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
-    GS::UniString originStr;
-    if (parameters.Get ("origin", originStr)) {
-        API_DimOriginID origin = APIDimOrigin_ProjectZero;
-        if (!ParseDimensionOriginString (originStr, origin)) {
-            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'origin' value: " + originStr);
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (itemsWithDetails);
+
+    ACAPI_CallUndoableCommand ("ModifyLevelDimensions", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : itemsWithDetails) {
+            const GS::ObjectState* elementId = item.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
+                continue;
+            }
+            if (GetElemTypeId (element.header) != API_LevelDimensionID) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Element is not a Level Dimension."));
+                continue;
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+
+            const GS::ObjectState* positionOS = item.Get ("position");
+            if (positionOS != nullptr) {
+                element.levelDimension.loc = Get2DCoordinateFromObjectState (*positionOS);
+                ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, loc);
+            }
+
+            auto settingsError = ApplyLevelDimensionSettings (item, element, &mask);
+            if (settingsError.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (settingsError.Get ()));
+                continue;
+            }
+            if (item.GetFieldCount () <= 1) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "No level dimension settings to modify."));
+                continue;
+            }
+
+            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to modify the level dimension."));
+                continue;
+            }
+
+            // Read back, so a value Archicad did not take is reported instead of a success.
+            API_Element changed = {};
+            changed.header.guid = element.header.guid;
+            err = ACAPI_Element_Get (&changed);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to read the level dimension back after the change."));
+                continue;
+            }
+            const double tolerance = 1e-6;
+            GS::UniString notApplied;
+            if (positionOS != nullptr &&
+                (std::abs (changed.levelDimension.loc.x - element.levelDimension.loc.x) > tolerance ||
+                 std::abs (changed.levelDimension.loc.y - element.levelDimension.loc.y) > tolerance)) {
+                notApplied += " position";
+            }
+            if (item.Contains ("pen") && changed.levelDimension.pen != element.levelDimension.pen) {
+                notApplied += " pen";
+            }
+            if (item.Contains ("dimForm") && changed.levelDimension.dimForm != element.levelDimension.dimForm) {
+                notApplied += " dimForm";
+            }
+            if (item.Contains ("textPen") && changed.levelDimension.note1.notePen != element.levelDimension.note1.notePen) {
+                notApplied += " textPen";
+            }
+            if (item.Contains ("textHeight") && std::abs (changed.levelDimension.note1.noteSize - element.levelDimension.note1.noteSize) > tolerance) {
+                notApplied += " textHeight";
+            }
+            if (item.Contains ("markerSize") && std::abs (changed.levelDimension.markerSize - element.levelDimension.markerSize) > tolerance) {
+                notApplied += " markerSize";
+            }
+            if (item.Contains ("origin") && changed.levelDimension.origin != element.levelDimension.origin) {
+                notApplied += " origin";
+            }
+            if (!notApplied.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply:" + notApplied + "."));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
         }
-        element.levelDimension.origin = origin;
-    }
+        return NoError;
+    });
 
-    return {};
+    return response;
 }
 
 MeasureTextsCommand::MeasureTextsCommand () :
