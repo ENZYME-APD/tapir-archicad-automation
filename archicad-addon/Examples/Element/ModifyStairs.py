@@ -1,7 +1,7 @@
-"""Creates a straight stair, then changes its width, its tread thickness and its structure with ModifyStairs.
+"""Creates a straight stair, then changes its width, its walking line, its tread thickness and its structure with ModifyStairs.
 
-Makes the flights monolithic with a smooth underside, reads the stair back with GetDetailsOfElements,
-then deletes the stair it created.
+Makes the flights monolithic with a smooth underside and numbers the steps on the risers, reads the
+stair back with GetDetailsOfElements, then deletes the stair it created.
 """
 import aclib
 
@@ -15,6 +15,8 @@ stairs = aclib.RunTapirCommand ('CreateStairs', {'stairsData': [{
 aclib.PrintJson (aclib.RunTapirCommand ('ModifyStairs', {'stairsWithDetails': [{
     'elementId': stairs[0]['elementId'],
     'flightWidth': 1.4,
+    'walkingLinePosition': 'Center',
+    'numberingType': 'Risers',
     'treads': [{'role': 'Run', 'visible': True, 'thickness': 0.04}],
     'structures': [{'role': 'Run', 'side': 'UnderSide', 'visible': True, 'structureType': 'Monolith', 'bottomType': 'Smooth', 'thickness': 0.18}]
 }]}))

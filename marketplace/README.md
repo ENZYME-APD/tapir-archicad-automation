@@ -1,6 +1,7 @@
 # Tapir script marketplace
 
-Scripts shared by Tapir users, reviewed like any other code in this repository.
+Scripts shared by Tapir users, and scripts requested in issues, reviewed like any
+other code in this repository.
 Everything here is free and open source.
 
 Marketplace scripts are not built-in scripts: they are never copied to
@@ -137,13 +138,46 @@ Plain words, for architects:
 3. Its settings, with their defaults.
 4. What it changes (or that it changes nothing), and which files it writes, where.
 5. Its limits: element types, Archicad versions, Teamwork, units.
-6. `Original by <author>`, and who adapted it if someone did.
+6. `Original by <author>`, and who adapted it if someone did; for a script
+   requested in an issue, `Requested by @<login> in #<issue number>`.
 
 ### Screenshots
 
 Up to 5 PNG or JPG files in `screenshots/`, at most 1 MB each, of the script
 running in Archicad. Crop them to the script's window and the model it acts on;
 no client names, project names or people in them.
+
+## A script requested in an issue
+
+A new script that someone asks for in an issue, and that the issue bot or a
+contributor writes for them, goes here too, as `marketplace/<slug>/` in the
+format above. It goes to [`builtin-scripts/`](../builtin-scripts/) only when a
+maintainer asks for that in the issue, because every built-in script is in
+every Tapir user's palette.
+
+- The listing's `author` is `{ "name": "Tapir" }`: the project wrote it.
+- Its README credits the request instead of an original author:
+  `Requested by @<login> in #<issue number>`.
+- Everything else (headers, README, the rules below) is as for a shared
+  script; there is no author to ask, so the person who asked for it is asked
+  to try it.
+
+## The helpers `utilities` and `aclib`
+
+A marketplace script may import the helpers of the built-in scripts,
+[`builtin-scripts/utilities/`](../builtin-scripts/utilities/) and
+[`builtin-scripts/aclib/`](../builtin-scripts/aclib/), like a built-in script
+does. Its folder holds no copies of them; they are imported from the folder the
+script runs in, so:
+
+- Installed by hand (see
+  [Using a marketplace script in the palette](../builtin-scripts/README.md#using-a-marketplace-script-in-the-palette)),
+  copy `utilities/` and `aclib/` from `builtin-scripts/` next to the script.
+- The palette's marketplace window, when it installs a script that imports
+  them, puts copies of both folders, from `main`, next to it.
+
+So changes to `utilities` and `aclib` stay backward compatible: a function or
+argument a script uses is never removed or changed in meaning.
 
 ## Adapting a shared script for public use
 
