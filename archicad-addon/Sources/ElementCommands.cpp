@@ -7370,6 +7370,236 @@ GS::ObjectState MirrorElementsCommand::Execute (const GS::ObjectState& parameter
         });
 }
 
+static const char* CopiesResponseSchema = R"({
+    "type": "object",
+    "properties": {
+        "copies": {
+            "type": "array",
+            "description": "One item for each given element, in the same order.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "elements": {
+                        "$ref": "#/Elements",
+                        "description": "The new elements made from this element, the first copy first. When the element is in a group and Suspend Groups is off, Archicad copies the whole group, and the copies of the other members are listed too."
+                    },
+                    "error": {
+                        "$ref": "#/Error",
+                        "description": "Why the element, or some of its copies, could not be made. The copies made before the error are still listed in elements."
+                    }
+                },
+                "additionalProperties": false,
+                "required": ["elements"]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": ["copies"]
+})";
+
+// Sets editPars to make copy number copyIndex (1-based) of an element.
+using SetCopyEditPars = std::function<void (Int32 copyIndex, API_EditPars& editPars)>;
+
+// The shared body of CopyElements and RotateCopyElements (#2187). Every copy is made from the
+// original element with ACAPI_Element_Edit without delete (the drag or rotate a copy of
+// Archicad's Edit menu), which keeps every setting of the element without per-type code and
+// returns the guid of the new element in the neig. Copy n is moved by n times the offset (or
+// rotated by n times the angle), so count copies make a linear (or circular) array. When
+// Archicad makes no copy (it keeps the guid of the original in the neig, e.g. for a part of a
+// curtain wall, stair or railing), the element gets an error naming its type, and the other
+// elements are still copied. All copies are one undo step.
+static GS::ObjectState CopyElementsByEdit (const GS::ObjectState& parameters, const char* undoStepName, const SetCopyEditPars& setEditPars)
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    Int32 count = 1;
+    parameters.Get ("count", count);
+
+    if (count < 1) {
+        return CreateErrorResponse (APIERR_BADPARS, "count must be at least 1.");
+    }
+
+    GS::Array<GS::ObjectState> copies;
+
+    ACAPI_CallUndoableCommand (undoStepName, [&]() -> GSErrCode {
+        for (const GS::ObjectState& element : elements) {
+            GS::Array<API_Guid> newGuids;
+            GS::Optional<GS::ObjectState> error;
+
+            const GS::ObjectState* elementId = element.Get ("elementId");
+            const API_Guid elemGuid = elementId != nullptr ? GetGuidFromObjectState (*elementId) : APINULLGuid;
+
+            API_Elem_Head elemHead = {};
+            if (elemGuid == APINULLGuid || !LoadElementHeaderByGuid (elemGuid, elemHead)) {
+                error = CreateErrorResponse (APIERR_BADID, "Element does not exist.");
+            } else {
+                // The edit reports NoError for an element it may not edit and makes no copy.
+                const GS::Optional<GS::ObjectState> notEditableResult = GetFailedExecutionResultIfNotEditable (elemGuid, "copied");
+                if (notEditableResult.HasValue ()) {
+                    error = GS::ObjectState ("error", *notEditableResult->Get ("error"));
+                }
+            }
+
+            for (Int32 copyIndex = 1; !error.HasValue () && copyIndex <= count; ++copyIndex) {
+                GS::Array<API_Neig> elementsToEdit = { API_Neig (elemGuid) };
+                API_EditPars editPars = {};
+                setEditPars (copyIndex, editPars);
+                editPars.withDelete = false;
+
+                const GSErrCode err = ACAPI_Element_Edit (&elementsToEdit, editPars);
+                if (err != NoError) {
+                    error = CreateErrorResponse (err, GS::UniString::Printf ("Failed to make copy %d of %d.", copyIndex, count));
+                    break;
+                }
+
+                bool copied = false;
+                for (const API_Neig& neig : elementsToEdit) {
+                    if (neig.guid != APINULLGuid && neig.guid != elemGuid) {
+                        newGuids.Push (neig.guid);
+                        copied = true;
+                    }
+                }
+                if (!copied) {
+                    error = CreateErrorResponse (APIERR_NOTSUPPORTED,
+                        "Archicad made no copy of this element of type " + GetElementTypeNonLocalizedName (GetElemTypeId (elemHead)) + ".");
+                }
+            }
+
+            GS::ObjectState copy;
+            const auto& newElements = copy.AddList<GS::ObjectState> ("elements");
+            for (const API_Guid& newGuid : newGuids) {
+                newElements (CreateElementIdObjectState (newGuid));
+            }
+            if (error.HasValue ()) {
+                copy.Add ("error", *error->Get ("error"));
+            }
+            copies.Push (copy);
+        }
+
+        return NoError;
+    });
+
+    GS::ObjectState response;
+    const auto& copiesList = response.AddList<GS::ObjectState> ("copies");
+    for (const GS::ObjectState& copy : copies) {
+        copiesList (copy);
+    }
+
+    return response;
+}
+
+CopyElementsCommand::CopyElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String CopyElementsCommand::GetName () const
+{
+    return "CopyElements";
+}
+
+GS::Optional<GS::UniString> CopyElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The elements to copy."
+            },
+            "offset": {
+                "$ref": "#/Coordinate3D",
+                "description": "The vector in meters the first copy is moved by from its element."
+            },
+            "count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000,
+                "description": "Optional number of copies of each element. Copy n is moved by n times the offset, so more than one makes a linear array. By default it's 1."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements", "offset"]
+    })";
+}
+
+GS::Optional<GS::UniString> CopyElementsCommand::GetRawResponseSchema () const
+{
+    return GS::UniString (CopiesResponseSchema);
+}
+
+GS::ObjectState CopyElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    const API_Coord3D offset = Get3DCoordinateFromObjectState (*parameters.Get ("offset"));
+    return CopyElementsByEdit (parameters, "Copy Elements",
+        [&offset] (Int32 copyIndex, API_EditPars& editPars) {
+            editPars.typeID = APIEdit_Drag;
+            editPars.endC = API_Coord3D { offset.x * copyIndex, offset.y * copyIndex, offset.z * copyIndex };
+        });
+}
+
+RotateCopyElementsCommand::RotateCopyElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RotateCopyElementsCommand::GetName () const
+{
+    return "RotateCopyElements";
+}
+
+GS::Optional<GS::UniString> RotateCopyElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The elements to copy."
+            },
+            "center": {
+                "$ref": "#/Coordinate2D",
+                "description": "The center of the rotation on the floor plan."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The angle in radians the first copy is rotated by from its element, counterclockwise."
+            },
+            "count": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 1000,
+                "description": "Optional number of copies of each element. Copy n is rotated by n times the angle, so more than one makes a circular array. By default it's 1."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements", "center", "angle"]
+    })";
+}
+
+GS::Optional<GS::UniString> RotateCopyElementsCommand::GetRawResponseSchema () const
+{
+    return GS::UniString (CopiesResponseSchema);
+}
+
+GS::ObjectState RotateCopyElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    const API_Coord center = Get2DCoordinateFromObjectState (*parameters.Get ("center"));
+    double angle = 0.0;
+    parameters.Get ("angle", angle);
+    return CopyElementsByEdit (parameters, "Rotate Copy Elements",
+        [&center, angle] (Int32 copyIndex, API_EditPars& editPars) {
+            // The rotation is given like the two clicks of Edit > Rotate: the arc from begC to
+            // endC around origC, as in RotateElements.
+            const double copyAngle = angle * copyIndex;
+            editPars.typeID = APIEdit_Rotate;
+            editPars.origC = center;
+            editPars.begC = API_Coord3D { center.x + 1.0, center.y, 0.0 };
+            editPars.endC = API_Coord3D { center.x + std::cos (copyAngle), center.y + std::sin (copyAngle), 0.0 };
+        });
+}
+
 FilterElementsCommand::FilterElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
