@@ -83,8 +83,15 @@
     'Discord messages': 'Messaggi su Discord',
     'Discord members <span class="change"></span>': 'Membri di Discord <span class="change"></span>',
     'People taking part, last 12 months': 'Persone che partecipano, ultimi 12 mesi',
-    'Top code contributors': 'Principali contributori al codice',
+    'Top contributors': 'Principali contributori',
+    'Counted: commits (co-authors included), issues they reported that a merged fix closed, and pull requests they tested in Archicad (passed or failed).':
+        'Si contano i commit (coautori inclusi), le issue segnalate che una correzione unita ha chiuso e le pull request provate in Archicad (riuscite o no).',
+    '{count} commit': '{count} commit',
     '{count} commits': '{count} commit',
+    '{count} report': '{count} segnalazione',
+    '{count} reports': '{count} segnalazioni',
+    '{count} test': '{count} test',
+    '{count} tests': '{count} test',
 
     // Growth
     'Commits, issues and pull requests, and Discord messages per month, stacked, with the number of Discord members as a line, {first} to {last}. The table below lists every number.':

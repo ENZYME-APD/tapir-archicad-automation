@@ -153,8 +153,13 @@
                     <div data-total="participants" hidden><strong></strong><span data-i18n>People taking part, last 12 months</span></div>
                 </div>
                 <div class="contributors" id="top-contributors" hidden>
-                    <h3 data-i18n>Top code contributors</h3>
-                    <ol class="contributor-list" data-commits="{count} commits" data-i18n-attrs="data-commits"></ol>
+                    <h3 data-i18n>Top contributors</h3>
+                    <p class="contributors-note" data-i18n>Counted: commits (co-authors included), issues they reported that a merged fix closed, and pull requests they tested in Archicad (passed or failed).</p>
+                    <ol class="contributor-list"
+                        data-commit="{count} commit" data-commits="{count} commits"
+                        data-report="{count} report" data-reports="{count} reports"
+                        data-test="{count} test" data-tests="{count} tests"
+                        data-i18n-attrs="data-commit data-commits data-report data-reports data-test data-tests"></ol>
                 </div>
             </section>
         </div>

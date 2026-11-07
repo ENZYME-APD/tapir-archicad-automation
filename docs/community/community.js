@@ -1,4 +1,4 @@
-/* The Community page (/community/): the Momentum figures, the top code contributors and the
+/* The Community page (/community/): the Momentum figures, the top contributors and the
    growth chart. It reads community.json from the site-data branch on raw.githubusercontent.com
    (never GitHub's API), written daily by tools/generate_community_data.py
    (.github/workflows/site_data.yml). Only counts, never the text of a message:
@@ -7,7 +7,8 @@
                     "discordMessages": 512, "discordMembers": 637}, ...],
         "totals": {"commits": 4321, "discordMessages": 12345, "discordMembers": 678,
                    "discordMembersChange": {"diff": 23, "days": 30}, "participants": 234},
-        "topContributors": [{"name": "Jane Doe", "commits": 120}, ...]}
+        "topContributors": [{"name": "Jane Doe", "login": "janedoe", "commits": 120, "reports": 6,
+                             "tests": 3}, ...]}
    Every key but "version" is optional, and so is every key inside "totals".
    months: the months follow one another without gaps, oldest first, from the first month of the
    project; the current, unfinished month is left out, or its values read as a drop. The chart
@@ -18,15 +19,22 @@
    totals: each figure is shown only when it is a whole number of at least 0. discordMembersChange
    is the change in members between the two member counts compared, "days" apart ("+23 in 30
    days"); it is left out unless both are whole numbers and days is at least 1.
-   topContributors: commits per person. Bots are left out (Claude, claude[bot], github-actions[bot]
-   and any name ending in [bot]), and a person listed under two names is counted once: names that
-   only differ in case or accents are one person, and so are the names in ALIASES. The five with
-   the most commits are shown.
+   topContributors: per person, "commits" (co-authored commits included), "reports" (issues they
+   opened that a merged fix closed) and "tests" (pull requests they tested in Archicad, passed or
+   failed), and "login", their GitHub login, which links the name to their GitHub profile. Every
+   one of these is optional: an older file has only "name" and "commits", and then only the
+   commits are shown. A count that is not a whole number of at least 0 counts as 0, and an entry
+   without any count is left out. Bots are left out (Claude, claude[bot], github-actions[bot] and
+   any name or login ending in [bot]), and a person listed under two names is counted once: names
+   that only differ in case or accents are one person, and so are the names in ALIASES. The five
+   with the most commits, reports and tests together are shown, each with the counts above 0 as
+   separate numbers ("44 commits · 11 reports · 24 tests"), never their sum.
    When the file cannot be read, or a part of it does not look right, that part stays hidden: a
    number that can't be read is left out, not shown wrong. Every text shown is in the page's HTML
-   (data-change, data-commits, data-chart-label, data-months and data-month-label among them), and
-   assets/site.js translates it (assets/i18n/<language>/community.js), so this starts once the page
-   is translated (TapirI18n.ready) and then reads the page's language and those texts. */
+   (data-change, data-commit(s), data-report(s), data-test(s), data-chart-label, data-months and
+   data-month-label among them), and assets/site.js translates it
+   (assets/i18n/<language>/community.js), so this starts once the page is translated
+   (TapirI18n.ready) and then reads the page's language and those texts. */
 (function () {
     'use strict';
 
@@ -349,6 +357,15 @@
         return key === 'claude' || /\[bot\]$/.test (key);
     }
 
+    // What a contributor is counted for, in the order they are shown.
+    var CONTRIBUTIONS = ['commits', 'reports', 'tests'];
+    // A GitHub login: letters, digits and single hyphens, at most 39 characters.
+    var LOGIN_PATTERN = /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/;
+
+    function total (person) {
+        return person.commits + person.reports + person.tests;
+    }
+
     function topContributors (list) {
         if (!Array.isArray (list)) {
             return [];
@@ -359,28 +376,51 @@
         });
         var people = {};
         list.forEach (function (entry) {
-            if (!entry || typeof entry.name !== 'string' || !entry.name.trim () || !isCount (entry.commits) || isBot (entry.name)) {
+            if (!entry || typeof entry.name !== 'string' || !entry.name.trim () || isBot (entry.name)) {
                 return;
             }
+            if (!CONTRIBUTIONS.some (function (kind) { return isCount (entry[kind]); })) {
+                return;
+            }
+            if (typeof entry.login === 'string' && isBot (entry.login)) {
+                return;
+            }
+            var login = typeof entry.login === 'string' && LOGIN_PATTERN.test (entry.login) ? entry.login : null;
             var alias = aliasOf[personKey (entry.name)];
             var name = alias || entry.name.trim ();
             var key = personKey (name);
-            var person = people[key] || (people[key] = { name: name, commits: 0, shownBy: -1 });
-            person.commits += entry.commits;
-            // An alias's name wins; otherwise the spelling with the most commits.
+            var person = people[key] || (people[key] = { name: name, login: null, commits: 0, reports: 0, tests: 0, shownBy: -1 });
+            var counts = {};
+            CONTRIBUTIONS.forEach (function (kind) {
+                counts[kind] = isCount (entry[kind]) ? entry[kind] : 0;
+                person[kind] += counts[kind];
+            });
+            var weight = counts.commits + counts.reports + counts.tests;
+            // An alias's name wins; otherwise the spelling with the most contributions. The login
+            // goes with the name shown, else it is the first one found.
             if (alias) {
                 person.name = alias;
                 person.shownBy = Infinity;
-            } else if (entry.commits > person.shownBy) {
+                person.login = person.login || login;
+            } else if (weight > person.shownBy) {
                 person.name = name;
-                person.shownBy = entry.commits;
+                person.shownBy = weight;
+                person.login = login || person.login;
+            } else {
+                person.login = person.login || login;
             }
         });
         return Object.keys (people).map (function (key) { return people[key]; }).filter (function (person) {
-            return person.commits > 0;
+            return total (person) > 0;
         }).sort (function (a, b) {
-            return b.commits - a.commits || a.name.localeCompare (b.name, LOCALE);
+            return total (b) - total (a) || a.name.localeCompare (b.name, LOCALE);
         }).slice (0, 5);
+    }
+
+    // "44 commits", "1 report": the page's text for one count, in the singular for 1.
+    function countText (list, kind, count) {
+        var attribute = count === 1 ? 'data-' + kind.replace (/s$/, '') : 'data-' + kind;
+        return format (list.getAttribute (attribute) || list.getAttribute ('data-' + kind), { count: count.toLocaleString (LOCALE) });
     }
 
     function renderMomentum (data) {
@@ -414,14 +454,25 @@
         list.textContent = '';
         people.forEach (function (person) {
             var item = document.createElement ('li');
-            var name = document.createElement ('span');
+            var name = document.createElement (person.login ? 'a' : 'span');
             name.className = 'name';
             name.textContent = person.name;
-            var commits = document.createElement ('span');
-            commits.className = 'commits';
-            commits.textContent = format (list.getAttribute ('data-commits'), { count: person.commits.toLocaleString (LOCALE) });
+            if (person.login) {
+                name.href = 'https://github.com/' + person.login;
+            }
+            // Each count above 0 on its own, never their sum.
+            var counts = document.createElement ('span');
+            counts.className = 'counts';
+            CONTRIBUTIONS.filter (function (kind) { return person[kind] > 0; }).forEach (function (kind, index) {
+                if (index > 0) {
+                    counts.appendChild (document.createTextNode (' · '));
+                }
+                var count = document.createElement ('span');
+                count.textContent = countText (list, kind, person[kind]);
+                counts.appendChild (count);
+            });
             item.appendChild (name);
-            item.appendChild (commits);
+            item.appendChild (counts);
             list.appendChild (item);
         });
         box.hidden = people.length === 0;
