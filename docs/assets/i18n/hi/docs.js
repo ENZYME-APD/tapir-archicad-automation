@@ -23,7 +23,7 @@
     'Every function of Graphisoft\'s Archicad API and whether Tapir uses it, is working on it, or skipped it, updated every hour.':
         'Graphisoft के Archicad API का हर function, और Tapir उसे इस्तेमाल करता है, उस पर काम चल रहा है, या उसे छोड़ दिया गया है, हर घंटे अपडेट होता है।',
     'See the coverage': 'कवरेज देखें',
-    'Components': 'Components',
+    'Components': 'कंपोनेंट्स',
     'Which Tapir commands have a Grasshopper component, and which inputs each component still lacks.':
         'किन Tapir कमांड का Grasshopper component है, और हर component में अभी कौन-से inputs बाक़ी हैं।',
 
@@ -35,11 +35,11 @@
     'Grasshopper, Python scripts and AI tools send JSON over HTTP to the Tapir Add-On, which calls Archicad\'s C++ API on the BIM model.':
         'Grasshopper, Python scripts और AI tools, HTTP पर Tapir Add-On को JSON भेजते हैं, जो BIM मॉडल पर Archicad का C++ API बुलाता है।',
     '<strong>Grasshopper</strong><span>The tapir components</span>': '<strong>Grasshopper</strong><span>tapir components</span>',
-    '<strong>Python scripts</strong><span>The palette, or your own</span>': '<strong>Python scripts</strong><span>Palette की, या आपकी अपनी</span>',
-    '<strong>AI and MCP</strong><span>Assistants and MCP servers</span>': '<strong>AI और MCP</strong><span>Assistants और MCP servers</span>',
+    '<strong>Python scripts</strong><span>The palette, or your own</span>': '<strong>Python की scripts</strong><span>Palette की, या आपकी अपनी</span>',
+    '<strong>AI and MCP</strong><span>Assistants and MCP servers</span>': '<strong>AI और MCP</strong><span>AI सहायक और MCP सर्वर</span>',
     '↓ JSON over HTTP ↓': '↓ HTTP पर JSON ↓',
     '<strong>Tapir Add-On</strong><span>A stateless JSON layer: one command per request</span>':
-        '<strong>Tapir Add-On</strong><span>एक stateless JSON layer: हर request पर एक कमांड</span>',
+        '<strong>Tapir का Add-On</strong><span>एक stateless JSON layer: हर request पर एक कमांड</span>',
     '<strong>Archicad</strong><span>The BIM model and its C++ API</span>': '<strong>Archicad</strong><span>BIM मॉडल और उसका C++ API</span>',
 
     // Anatomy of a call
@@ -54,7 +54,7 @@
         'Tapir इंस्टॉल करें, palette से एक script चलाएँ और अपनी पहली Python script लिखें।',
     'Get started': 'शुरू करें',
     'AI': 'AI',
-    'MCP servers and scripts an AI assistant writes for you.': 'MCP servers, और वे scripts जो एक AI assistant आपके लिए लिखता है।',
+    'MCP servers and scripts an AI assistant writes for you.': 'MCP सर्वर, और वे scripts जो एक AI assistant आपके लिए लिखता है।',
     'Use Tapir with AI': 'AI के साथ Tapir इस्तेमाल करें',
     'Learn by watching': 'देखकर सीखें',
     'Six videos, from installing Tapir to whole workflows.': 'छह वीडियो, Tapir इंस्टॉल करने से लेकर पूरे workflows तक।',
