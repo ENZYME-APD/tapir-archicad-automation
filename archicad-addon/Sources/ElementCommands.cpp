@@ -3644,12 +3644,6 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                             elem.zone.refPos = Get2DCoordinateFromObjectState (*referencePosition);
                             ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, refPos);
                         }
-                        const GS::Optional<GS::UniString> contourAndFillError = ApplyZoneContourAndCoverFill (*typeSpecificDetails, elem.zone, &mask);
-                        if (contourAndFillError.HasValue ()) {
-                            ACAPI_DisposeElemMemoHdls (&clipMemo);
-                            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, *contourAndFillError));
-                            continue;
-                        }
                     } break;
                     case API_LineID: {
                         const GS::ObjectState* begCoordinate = typeSpecificDetails->Get ("begCoordinate");
