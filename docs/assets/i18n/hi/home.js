@@ -14,7 +14,7 @@
     'Download <span class="os">WINDOWS</span>': 'डाउनलोड <span class="os">WINDOWS</span>',
     'Download <span class="os">MACOS</span>': 'डाउनलोड <span class="os">MACOS</span>',
     '100% free': '100% मुफ़्त',
-    'Open source (MIT)': 'Open source (MIT)',
+    'Open source (MIT)': 'ओपन सोर्स (MIT)',
     'Watch the tutorials': 'ट्यूटोरियल देखें',
     'All downloads': 'सभी डाउनलोड',
 
@@ -38,6 +38,12 @@
     'Store · 14 m²': 'स्टोर · 14 m²',
     'Kitchen · 28 m²': 'रसोई · 28 m²',
     'Corridor': 'गलियारा',
+    'Studio': 'स्टूडियो',
+    'Office': 'ऑफ़िस',
+    'Meeting': 'मीटिंग',
+    'WC': 'WC',
+    'Store': 'स्टोर',
+    'Kitchen': 'रसोई',
     'Zone number used twice': 'Zone नंबर दोहराया',
     'Door without an ID': 'ID बिना दरवाज़ा',
     'Unclassified object': 'अवर्गीकृत object',
@@ -67,7 +73,7 @@
     'Browse scripts': 'Scripts देखें',
     'For computational designers': 'Computational designers के लिए',
     'The <span class="mono">tapir</span> package in Rhino\'s Package Manager. Walls, doors, windows and more as components that read and change the model, with the names of Archicad\'s settings dialogs.':
-        'Rhino के Package Manager में <span class="mono">tapir</span> package। Walls, doors, windows और बहुत कुछ, ऐसे components के रूप में जो मॉडल को पढ़ते और बदलते हैं, Archicad के settings dialogs वाले नामों के साथ।',
+        'Rhino के Package Manager में <span class="mono">tapir</span> पैकेज। Walls, doors, windows और बहुत कुछ, ऐसे components के रूप में जो मॉडल को पढ़ते और बदलते हैं, Archicad के settings dialogs वाले नामों के साथ।',
     'Grasshopper guide': 'Grasshopper गाइड',
     'For developers': 'डेवलपर्स के लिए',
     'Python and the JSON API': 'Python और JSON API',
@@ -80,8 +86,8 @@
     'Six jobs it <em>already does.</em>': 'छह काम जो यह <em>पहले से करता है।</em>',
     'Five built-in scripts of the Tapir palette and one workflow script, each a short Python file you can read and change.':
         'Tapir palette की पाँच built-in scripts और एक workflow script, हर एक छोटी-सी Python फ़ाइल जिसे आप पढ़ और बदल सकते हैं।',
-    'Built-in script': 'Built-in script',
-    'Workflow': 'Workflow',
+    'Built-in script': 'बिल्ट-इन script',
+    'Workflow': 'वर्कफ़्लो',
     'Changes the model': 'मॉडल बदलती है',
     'Read only': 'सिर्फ़ पढ़ती है',
     'Writes files': 'फ़ाइलें लिखती है',
@@ -115,8 +121,8 @@
     'Create walls, slabs and beams from Python, with the settings you choose.': 'Python से walls, slabs और beams बनाएँ, आपकी चुनी हुई settings के साथ।',
     'Quantity take-offs': 'Quantity take-off',
     'Material and element quantities for reports, straight from the model.': 'Reports के लिए material और element की quantities, सीधे मॉडल से।',
-    'AI assistants (MCP)': 'AI assistants (MCP)',
-    'Let an AI assistant read and change your model through a Tapir MCP server.': 'एक Tapir MCP server के ज़रिए AI assistant को आपका मॉडल पढ़ने और बदलने दें।',
+    'AI assistants (MCP)': 'AI सहायक (MCP)',
+    'Let an AI assistant read and change your model through a Tapir MCP server.': 'एक Tapir MCP सर्वर के ज़रिए AI सहायक को आपका मॉडल पढ़ने और बदलने दें।',
     'BCF issue tracking': 'BCF से issue tracking',
     'Create and track issues and exchange them as BCF files from Python.': 'Python से issues बनाएँ, ट्रैक करें और उन्हें BCF फ़ाइलों के रूप में साझा करें।',
     'Classification mapping': 'Classification की मैपिंग',
@@ -136,7 +142,7 @@
 
     // Your first script
     'Your first script': 'आपकी पहली script',
-    'One file, <em>no packages.</em>': 'एक फ़ाइल, <em>कोई package नहीं।</em>',
+    'One file, <em>no packages.</em>': 'एक फ़ाइल, <em>कोई पैकेज नहीं।</em>',
     'With a project open, Archicad answers JSON commands on <code>http://127.0.0.1:19723</code>. Tapir\'s commands go through Archicad\'s <code>API.ExecuteAddOnCommand</code>. Save this as <code>walls.py</code> and run it with any Python 3.':
         'प्रोजेक्ट खुला होने पर Archicad <code>http://127.0.0.1:19723</code> पर JSON कमांड का जवाब देता है। Tapir के कमांड Archicad के <code>API.ExecuteAddOnCommand</code> से होकर जाते हैं। इसे <code>walls.py</code> नाम से सेव करें और किसी भी Python 3 से चलाएँ।',
     'With several Archicads open, the next ones answer on 19724, 19725 and so on.':

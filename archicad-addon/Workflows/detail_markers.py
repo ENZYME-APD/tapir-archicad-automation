@@ -28,7 +28,8 @@ worksheets = aclib.RunTapirCommand ('CreateWorksheetMarkers', {
 
 markers = details + worksheets
 
-# ModifyDetailMarkers changes the name, the ID and the clip polygon of existing markers.
+# ModifyDetailMarkers changes the name, the ID and the clip polygon of existing markers (and their
+# pens, line type and marker angle: penIndex, lineTypeIndex, markerPenIndex, angle, isHorizontalMarker).
 aclib.RunTapirCommand ('ModifyDetailMarkers', {
     'detailMarkersWithDetails': [
         {'elementId': details[0]['elementId'], 'id': 'D2', 'clipPolygon': Rectangle (0.0, 1.0)},

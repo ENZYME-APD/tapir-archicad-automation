@@ -1328,6 +1328,9 @@ GS::Optional<GS::UniString> RemoveIFCPropertiesOfElementsCommand::GetInputParame
                 "items": {
                     "$ref": "#/ElementIFCPropertyRemoval"
                 }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -1342,8 +1345,12 @@ GS::Optional<GS::UniString> RemoveIFCPropertiesOfElementsCommand::GetRawResponse
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input item, in the order of the input. On a dry run an element that has the local IFC property gets wouldDelete."
             }
         },
         "additionalProperties": false,
@@ -1362,8 +1369,10 @@ GS::ObjectState RemoveIFCPropertiesOfElementsCommand::Execute (const GS::ObjectS
 #else
     GS::Array<GS::ObjectState> elementIFCProperties;
     parameters.Get ("elementIFCProperties", elementIFCProperties);
+    const bool dryRun = IsDryRun (parameters);
 
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
     struct RemovableIFCProperty {
@@ -1423,6 +1432,16 @@ GS::ObjectState RemoveIFCPropertiesOfElementsCommand::Execute (const GS::ObjectS
 
         propertiesToRemove.Push ({ elemGuid, *propertyToRemove, results.GetSize () });
         results.PushNew ();
+    }
+
+    if (dryRun) {
+        for (const RemovableIFCProperty& propertyToRemove : propertiesToRemove) {
+            results[propertyToRemove.resultIndex] = CreateDryRunExecutionResult ("wouldDelete");
+        }
+        for (const GS::ObjectState& result : results) {
+            executionResults (result);
+        }
+        return response;
     }
 
     ElementChangeReporter changeReporter;
@@ -1934,6 +1953,9 @@ GS::Optional<GS::UniString> RemoveIFCClassificationReferencesOfElementsCommand::
                         "referencedSource"
                     ]
                 }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -1948,8 +1970,12 @@ GS::Optional<GS::UniString> RemoveIFCClassificationReferencesOfElementsCommand::
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input item, in the order of the input. On a dry run an element that has a stored IFC classification reference of the given classification (and identification, when given) gets wouldDelete."
             }
         },
         "additionalProperties": false,
@@ -1968,8 +1994,10 @@ GS::ObjectState RemoveIFCClassificationReferencesOfElementsCommand::Execute (con
 #else
     GS::Array<GS::ObjectState> elementIFCClassificationReferences;
     parameters.Get ("elementIFCClassificationReferences", elementIFCClassificationReferences);
+    const bool dryRun = IsDryRun (parameters);
 
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
     struct RemovableIFCClassificationReferences {
@@ -2027,6 +2055,16 @@ GS::ObjectState RemoveIFCClassificationReferencesOfElementsCommand::Execute (con
 
         referencesToRemove.Push ({ elemGuid, matchingReferences, results.GetSize () });
         results.PushNew ();
+    }
+
+    if (dryRun) {
+        for (const RemovableIFCClassificationReferences& referenceToRemove : referencesToRemove) {
+            results[referenceToRemove.resultIndex] = CreateDryRunExecutionResult ("wouldDelete");
+        }
+        for (const GS::ObjectState& result : results) {
+            executionResults (result);
+        }
+        return response;
     }
 
     ElementChangeReporter changeReporter;

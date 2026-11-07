@@ -1,6 +1,7 @@
-"""Creates a 6 m long beam at 3 m height with CreateBeams.
+"""Creates a 6 m long beam at 3 m height with its own cut fill pen with CreateBeams.
 
-With the TopCenter anchor the beam hangs below its reference line at zCoordinate.
+With the TopCenter anchor the beam hangs below its reference line at zCoordinate. CreateBeams takes the same
+cut fill pens (written from Archicad 27) and cover fill as ModifyBeams.
 """
 import aclib
 
@@ -11,5 +12,6 @@ aclib.PrintJson (aclib.RunTapirCommand ('CreateBeams', {'beamsData': [{
     'width': 0.3,
     'height': 0.5,
     'isWidthAndHeightLinked': False,
-    'anchorPoint': 'TopCenter'
+    'anchorPoint': 'TopCenter',
+    'cutFillPen': {'overridden': True, 'penIndex': 5}
 }]}))

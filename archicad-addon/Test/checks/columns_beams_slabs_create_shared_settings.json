@@ -1,0 +1,261 @@
+{
+  "title": "CreateColumns, CreateBeams and CreateSlabs take the surfaces, cut fill pens and cover fills that ModifyColumns, ModifyBeams and ModifySlabs write (#2220)",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "requiresEmpty": [ "Column", "Beam", "Slab" ],
+  "steps": [
+    {
+      "id": "a fill of the project",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Fill" },
+      "save": { "fill": "attributes[0].attributeId.guid" },
+      "expect": [
+        { "path": "attributes[0].attributeId.guid", "exists": true, "name": "the project has a fill" }
+      ]
+    },
+    {
+      "id": "a surface of the project",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Surface" },
+      "save": { "surface": "attributes[0].attributeId.guid" },
+      "expect": [
+        { "path": "attributes[0].attributeId.guid", "exists": true, "name": "the project has a surface" }
+      ]
+    },
+    {
+      "id": "column with cut fill pens and a cover fill",
+      "command": "CreateColumns",
+      "params": {
+        "columnsData": [
+          {
+            "coordinates": { "x": 700.0, "y": 700.0, "z": 0.0 },
+            "floorIndex": 0,
+            "height": 3.0,
+            "cutFillPen": { "overridden": true, "penIndex": 5 },
+            "cutFillBackgroundPen": { "overridden": true, "penIndex": 7 },
+            "coverFill": {
+              "use": true,
+              "useFromSurface": false,
+              "orientationComesFrom3D": false,
+              "fillId": { "attributeId": { "guid": "${fill}" } },
+              "foregroundPen": 3,
+              "backgroundPen": 9,
+              "transformationType": "Global",
+              "transformation": { "origin": { "x": 0.0, "y": 0.0 }, "xAxis": { "x": 1.0, "y": 0.0 }, "yAxis": { "x": 0.0, "y": 1.0 } }
+            }
+          }
+        ]
+      },
+      "save": { "c1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "column created" }
+      ]
+    },
+    {
+      "id": "read the new column",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${c1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.height", "approx": 3.0, "name": "height kept" },
+        { "path": "detailsOfElements[0].details.cutFillPen.overridden", "eq": true, "name": "cut fill pen overridden" },
+        { "path": "detailsOfElements[0].details.cutFillPen.penIndex", "eq": 5, "name": "cut fill pen" },
+        { "path": "detailsOfElements[0].details.cutFillBackgroundPen.overridden", "eq": true, "name": "cut fill background pen overridden" },
+        { "path": "detailsOfElements[0].details.cutFillBackgroundPen.penIndex", "eq": 7, "name": "cut fill background pen" },
+        { "path": "detailsOfElements[0].details.coverFill.use", "eq": true, "name": "cover fill shown" },
+        { "path": "detailsOfElements[0].details.coverFill.useFromSurface", "eq": false, "name": "cover fill not from the surface" },
+        { "path": "detailsOfElements[0].details.coverFill.fillId.attributeId.guid", "eq": "${fill}", "name": "cover fill" },
+        { "path": "detailsOfElements[0].details.coverFill.foregroundPen", "eq": 3, "name": "cover fill pen" },
+        { "path": "detailsOfElements[0].details.coverFill.backgroundPen", "eq": 9, "name": "cover fill background pen" }
+      ]
+    },
+    {
+      "id": "[column with a cover fill that does not exist]",
+      "command": "CreateColumns",
+      "params": {
+        "columnsData": [
+          {
+            "coordinates": { "x": 710.0, "y": 700.0, "z": 0.0 },
+            "floorIndex": 0,
+            "coverFill": {
+              "use": true,
+              "useFromSurface": false,
+              "orientationComesFrom3D": false,
+              "fillId": { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } },
+              "foregroundPen": 3,
+              "backgroundPen": 9,
+              "transformationType": "Global",
+              "transformation": { "origin": { "x": 0.0, "y": 0.0 }, "xAxis": { "x": 1.0, "y": 0.0 }, "yAxis": { "x": 0.0, "y": 1.0 } }
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "unknown fill refused" }
+      ]
+    },
+    {
+      "id": "only the valid column was created",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Column" },
+      "expect": [
+        { "path": "elements", "len": 1 }
+      ]
+    },
+    {
+      "id": "beam with cut fill pens and a cover fill",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          {
+            "begCoordinate": { "x": 700.0, "y": 720.0 },
+            "endCoordinate": { "x": 706.0, "y": 720.0 },
+            "zCoordinate": 3.0,
+            "floorIndex": 0,
+            "cutFillPen": { "overridden": true, "penIndex": 4 },
+            "cutFillBackgroundPen": { "overridden": true, "penIndex": 8 },
+            "coverFill": {
+              "use": true,
+              "useFromSurface": false,
+              "orientationComesFrom3D": false,
+              "fillId": { "attributeId": { "guid": "${fill}" } },
+              "foregroundPen": 2,
+              "backgroundPen": 6,
+              "transformationType": "Global",
+              "transformation": { "origin": { "x": 0.0, "y": 0.0 }, "xAxis": { "x": 1.0, "y": 0.0 }, "yAxis": { "x": 0.0, "y": 1.0 } }
+            }
+          }
+        ]
+      },
+      "save": { "b1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "beam created" }
+      ]
+    },
+    {
+      "id": "read the new beam",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 706.0, "name": "geometry kept" },
+        { "path": "detailsOfElements[0].details.cutFillPen.overridden", "eq": true, "name": "cut fill pen overridden" },
+        { "path": "detailsOfElements[0].details.cutFillPen.penIndex", "eq": 4, "name": "cut fill pen" },
+        { "path": "detailsOfElements[0].details.cutFillBackgroundPen.penIndex", "eq": 8, "name": "cut fill background pen" },
+        { "path": "detailsOfElements[0].details.coverFill.use", "eq": true, "name": "cover fill shown" },
+        { "path": "detailsOfElements[0].details.coverFill.fillId.attributeId.guid", "eq": "${fill}", "name": "cover fill" },
+        { "path": "detailsOfElements[0].details.coverFill.foregroundPen", "eq": 2, "name": "cover fill pen" },
+        { "path": "detailsOfElements[0].details.coverFill.backgroundPen", "eq": 6, "name": "cover fill background pen" }
+      ]
+    },
+    {
+      "id": "modify the beam's cut fill pen with the same key",
+      "command": "ModifyBeams",
+      "creates": false,
+      "params": {
+        "beamsWithDetails": [
+          { "elementId": { "guid": "${b1}" }, "cutFillPen": { "overridden": true, "penIndex": 11 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "beam modified" }
+      ]
+    },
+    {
+      "id": "read the modified beam",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.cutFillPen.penIndex", "eq": 11, "name": "cut fill pen changed" },
+        { "path": "detailsOfElements[0].details.cutFillBackgroundPen.penIndex", "eq": 8, "name": "cut fill background pen kept" },
+        { "path": "detailsOfElements[0].details.coverFill.foregroundPen", "eq": 2, "name": "cover fill pen kept" }
+      ]
+    },
+    {
+      "id": "slab with surfaces, cut fill pens and a floor fill",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "polygonCoordinates": [
+              { "x": 700.0, "y": 740.0 },
+              { "x": 704.0, "y": 740.0 },
+              { "x": 704.0, "y": 744.0 },
+              { "x": 700.0, "y": 744.0 }
+            ],
+            "topMaterial": { "overridden": true, "attributeId": { "guid": "${surface}" } },
+            "sideMaterial": { "overridden": true, "attributeId": { "guid": "${surface}" } },
+            "bottomMaterial": { "overridden": true, "attributeId": { "guid": "${surface}" } },
+            "cutFillPen": { "overridden": true, "penIndex": 5 },
+            "cutFillBackgroundPen": { "overridden": true, "penIndex": 7 },
+            "floorFill": {
+              "use": true,
+              "foregroundPen": 3,
+              "backgroundPen": 9,
+              "fillId": { "attributeId": { "guid": "${fill}" } }
+            }
+          }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "slab created" }
+      ]
+    },
+    {
+      "id": "read the new slab",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.polygonOutline[0].x", "approx": 700.0, "name": "outline kept" },
+        { "path": "detailsOfElements[0].details.topMaterial.overridden", "eq": true, "name": "top surface overridden" },
+        { "path": "detailsOfElements[0].details.topMaterial.attributeId.guid", "eq": "${surface}", "name": "top surface" },
+        { "path": "detailsOfElements[0].details.sideMaterial.attributeId.guid", "eq": "${surface}", "name": "side surface" },
+        { "path": "detailsOfElements[0].details.bottomMaterial.attributeId.guid", "eq": "${surface}", "name": "bottom surface" },
+        { "path": "detailsOfElements[0].details.cutFillPen.penIndex", "eq": 5, "name": "cut fill pen" },
+        { "path": "detailsOfElements[0].details.cutFillBackgroundPen.penIndex", "eq": 7, "name": "cut fill background pen" },
+        { "path": "detailsOfElements[0].details.floorFill.use", "eq": true, "name": "floor fill shown" },
+        { "path": "detailsOfElements[0].details.floorFill.foregroundPen", "eq": 3, "name": "floor fill pen" },
+        { "path": "detailsOfElements[0].details.floorFill.backgroundPen", "eq": 9, "name": "floor fill background pen" },
+        { "path": "detailsOfElements[0].details.floorFill.fillId.attributeId.guid", "eq": "${fill}", "name": "floor fill" }
+      ]
+    },
+    {
+      "id": "[slab with a surface that does not exist]",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "polygonCoordinates": [
+              { "x": 710.0, "y": 740.0 },
+              { "x": 714.0, "y": 740.0 },
+              { "x": 714.0, "y": 744.0 }
+            ],
+            "topMaterial": { "overridden": true, "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "unknown surface refused" }
+      ]
+    },
+    {
+      "id": "only the valid slab was created",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Slab" },
+      "expect": [
+        { "path": "elements", "len": 1 }
+      ]
+    }
+  ]
+}
