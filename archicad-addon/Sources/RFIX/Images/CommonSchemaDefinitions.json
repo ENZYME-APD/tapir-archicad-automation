@@ -15334,7 +15334,7 @@
     },
     "TextStyleDetails": {
         "type": "object",
-        "description": "Full readable style state of a Text or text-class Label: every field of TextStyleSettableDetails plus the read-only ones (lineCount, boxWidth, boxHeight).",
+        "description": "Full readable style state of a Text or text-class Label: every field of TextStyleSettableDetails plus the read-only ones (lineCount, boxWidth, boxHeight, and nonBreaking for a standalone Text).",
         "properties": {
             "penIndex": { "type": "integer", "description": "Pen attribute index." },
             "fontIndex": { "type": "integer", "description": "Font attribute index." },
@@ -15366,8 +15366,9 @@
             "textFrameFixedWidth": { "type": "number", "description": "Frame width in mm, when textFrameSizeFixed is true. Between 1 and 1000. Available from Archicad 28; earlier versions ignore it and read it back as 0." },
             "textFrameFixedHeight": { "type": "number", "description": "Frame height in mm, when textFrameSizeFixed is true (ignored for Circle, which uses fixedWidth as diameter). Between 1 and 1000. Available from Archicad 28; earlier versions ignore it and read it back as 0." },
             "lineCount": { "type": "integer", "description": "Read-only: number of text lines (API_TextType::nLine)." },
-            "boxWidth": { "type": "number", "description": "Read-only: horizontal size of the text box in mm, auto-computed by Archicad." },
-            "boxHeight": { "type": "number", "description": "Read-only: vertical size of the text box in mm, auto-computed by Archicad." }
+            "boxWidth": { "type": "number", "description": "Read-only here: horizontal size of the text box in mm. For a Text with word wrap on (nonBreaking false) the wrap width, as CreateTexts and ModifyTexts set it with width; otherwise auto-computed by Archicad from the content." },
+            "boxHeight": { "type": "number", "description": "Read-only: vertical size of the text box in mm, auto-computed by Archicad." },
+            "nonBreaking": { "type": "boolean", "description": "Read-only here, standalone Texts only: true when word wrap is off ('Wrap Text' turned off), so the text box grows with the content; false when the text wraps within boxWidth. CreateTexts and ModifyTexts set it to false with their width." }
         },
         "additionalProperties": false
     },
