@@ -7370,6 +7370,199 @@ GS::ObjectState MirrorElementsCommand::Execute (const GS::ObjectState& parameter
         });
 }
 
+ScaleElementsCommand::ScaleElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ScaleElementsCommand::GetName () const
+{
+    return "ScaleElements";
+}
+
+GS::Optional<GS::UniString> ScaleElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The elements to scale: Wall, Column, Beam, Slab, Roof, Mesh, Zone, Line, PolyLine, Arc, Circle, Spline, Hatch or Hotspot, in the current database."
+            },
+            "center": {
+                "$ref": "#/Coordinate2D",
+                "description": "The fixed point of the scaling on the floor plan; every point of the elements moves away from it (factor > 1) or towards it (factor < 1)."
+            },
+            "factor": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "description": "The scale factor, greater than 0: 2 doubles the distances from the center, 0.5 halves them."
+            },
+            "factorY": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "description": "Optional scale factor in Y. Archicad's Resize scales X and Y by one ratio, so it must be the same as factor (or left out); a different value is refused."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "center",
+            "factor"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ScaleElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+// The types ScaleElements resizes (#2188): elements whose plan geometry is made of points that
+// the Resize edit scales around its center. Library parts (Object, Lamp, doors, windows, ...)
+// keep their size in parameters that the Resize dialog's options decide about, and those options
+// cannot be set through the API; Stair, Railing and CurtainWall are built by rules from their
+// settings, Shell and Morph are 3D bodies, Text keeps its font size, and subelements, dimensions
+// and labels follow what they belong to. So these are refused rather than scaled unpredictably.
+static bool IsScalableType (API_ElemTypeID typeId)
+{
+    switch (typeId) {
+        case API_WallID:
+        case API_ColumnID:
+        case API_BeamID:
+        case API_SlabID:
+        case API_RoofID:
+        case API_MeshID:
+        case API_ZoneID:
+        case API_LineID:
+        case API_PolyLineID:
+        case API_ArcID:
+        case API_CircleID:
+        case API_SplineID:
+        case API_HatchID:
+        case API_HotspotID:
+            return true;
+        default:
+            return false;
+    }
+}
+
+GS::ObjectState ScaleElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    const GS::ObjectState* centerObject = parameters.Get ("center");
+    if (centerObject == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "center is missing.");
+    }
+    const API_Coord center = Get2DCoordinateFromObjectState (*centerObject);
+
+    double factor = 0.0;
+    if (!parameters.Get ("factor", factor) || factor <= 0.0) {
+        return CreateErrorResponse (APIERR_BADPARS, "factor must be a number greater than 0.");
+    }
+
+    double factorY = factor;
+    if (parameters.Contains ("factorY")) {
+        parameters.Get ("factorY", factorY);
+        if (factorY <= 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "factorY must be a number greater than 0.");
+        }
+        if (std::abs (factorY - factor) > 1e-9) {
+            return CreateErrorResponse (APIERR_BADPARS, "Archicad's Resize scales X and Y by one ratio, so factorY must be the same as factor. Scaling by different factors in X and Y is not supported.");
+        }
+    }
+
+    // Resize scales around origC by a ratio given as a reference vector (begC - origC) and its
+    // scaled image (endC - origC), the two clicks of the graphic Resize in Archicad. Both are on
+    // the diagonal, so the ratio of their lengths and the ratio of each of their components is
+    // factor; z stays 0, so nothing is elevated.
+    API_EditPars editPars = {};
+    editPars.typeID = APIEdit_Resize;
+    editPars.withDelete = true;
+    editPars.origC = center;
+    editPars.begC = API_Coord3D { center.x + 1.0, center.y + 1.0, 0.0 };
+    editPars.endC = API_Coord3D { center.x + factor, center.y + factor, 0.0 };
+
+    const bool isIdentity = std::abs (factor - 1.0) < 1e-9;
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ElementChangeReporter changeReporter;
+
+    ACAPI_CallUndoableCommand ("Scale Elements", [&]() -> GSErrCode {
+        GS::HashSet<API_Guid> seen;
+        for (const GS::ObjectState& element : elements) {
+            const GS::ObjectState* elementId = element.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+            if (seen.Contains (elemGuid)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "The element was not scaled again, because it is given more than once."));
+                continue;
+            }
+            seen.Add (elemGuid);
+
+            const GS::Optional<GS::ObjectState> notEditableResult = GetFailedExecutionResultIfNotEditable (elemGuid, "scaled");
+            if (notEditableResult.HasValue ()) {
+                executionResults (*notEditableResult);
+                continue;
+            }
+
+            API_Elem_Head elemHead = {};
+            if (!LoadElementHeaderByGuid (elemGuid, elemHead)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Element does not exist."));
+                continue;
+            }
+
+            const API_ElemTypeID typeId = GetElemTypeId (elemHead);
+            if (!IsScalableType (typeId)) {
+                executionResults (CreateFailedExecutionResult (APIERR_NOTSUPPORTED,
+                    GS::UniString::Printf ("The element was not scaled, because elements of type %T are not supported.", GetElementTypeNonLocalizedName (typeId).ToPrintf ())));
+                continue;
+            }
+
+            if (isIdentity) {
+                executionResults (CreateSuccessfulExecutionResult ());
+                continue;
+            }
+
+            changeReporter.Add (elemGuid);
+            GS::Array<API_Neig> elementsToEdit = { API_Neig (elemGuid) };
+            const GSErrCode err = ACAPI_Element_Edit (&elementsToEdit, editPars);
+            if (err != NoError) {
+                const GS::UniString errorMsg = GS::UniString::Printf ("Failed to scale element with guid %T!", APIGuidToString (elemGuid).ToPrintf ());
+                executionResults (CreateFailedExecutionResult (err, errorMsg));
+            } else {
+                changeReporter.MarkChanged (elemGuid);
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
+        }
+
+        return NoError;
+    });
+
+    changeReporter.Report ();
+
+    return response;
+}
+
 FilterElementsCommand::FilterElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
