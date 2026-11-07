@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 61 | 53 | 8 |  |  |  | 8 | 70 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1423 | 1207 | 216 |  |  |  | 12 | 392 |
 
-Archicad 25–30 DevKits; updated 2026-11-07 21:01 UTC.
+Archicad 25–30 DevKits; updated 2026-11-07 21:44 UTC.
 
 | | Status |
 |---|---|
@@ -129,7 +129,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `ACAPI_Element_CatchNewElement` – Register or unregister your add-on to be notified if the given type of element is created. <sub>(was `ACAPI_Notify_CatchNewElement`)</sub> — [#1825](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1825 "Element notifications: changes and deletions made by Tapir commands are not reported") *(event handlers, not commands)*
 - ✅ `ACAPI_Element_Change` — [#2226](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2226 "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"), [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#371](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/371 "Lessons learned building a Tapir-based automation toolkit (AC29)")
 - ✅ `ACAPI_Element_ChangeContent` – Change the content of a text or a textual label element. <sub>(was `APIAny_ChangeContentID`)</sub>
-- ✅ `ACAPI_Element_ChangeDefaults` – Changes the default parameters of an element. — [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
+- ✅ `ACAPI_Element_ChangeDefaults` – Changes the default parameters of an element. — [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
 - ✅ `ACAPI_Element_ChangeDefaultsExt` – Changes the default parameters of the Window, Door, Section, Elevation, Interior Elevation, ChangeMarker, Detail, Worksheet, or Stair default element and its marker(s). This function also allows you to change the default settings of the Curtain Wall and its subelem.
 - ✅ `ACAPI_Element_ChangeElementInfoString` – Changes the compound info string of the given element. <sub>(was `APIDb_ChangeElementInfoStringID`)</sub> — [#371](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/371 "Lessons learned building a Tapir-based automation toolkit (AC29)")
 - ✅ `ACAPI_Element_ChangeExt` – Modifies a Window, Door, Section, Elevation, Interior Elevation, ChangeMarker, Detail, Worksheet, Stair or External element in the current database. — [#1377](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1377 "Place Detail and Worksheet markers, and change their settings")
@@ -159,11 +159,11 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🔀 `ACAPI_Element_GetComponents` – Retrieves the components of an element.
 - ⛔ `ACAPI_Element_GetComponents_Obsolete` – Returns the components of the element. *(obsolete; replaced by ACAPI_Element_GetComponents (#1019))*
 - 🔀 `ACAPI_Element_GetCompoundInfoString` – Returns the compound info string of the given element. <sub>(was `APIDb_GetCompoundInfoStringID`)</sub>
-- ✅ `ACAPI_Element_GetDefaults` – Retrieves the actual default settings for the element of type. — [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
+- ✅ `ACAPI_Element_GetDefaults` – Retrieves the actual default settings for the element of type. — [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
 - ✅ `ACAPI_Element_GetDefaultsExt` – Retrieves the actual default settings for the Window, Door, Section, Elevation, Interior Elevation, ChangeMarker, Detail, Worksheet, or Stair element with its marker(s). You are also able to obtain the Curtain Wall and its sub-element default settings via this function. — [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#1377](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1377 "Place Detail and Worksheet markers, and change their settings")
 - ✅ `ACAPI_Element_GetDescriptors` – Returns the descriptors of an element.
 - 🔀 `ACAPI_Element_GetElemCreatorToolUnId` – Returns the unique ID of the creator tool of the specified object. <sub>(was `APIAny_GetElemCreatorToolUnIdID`)</sub>
-- ✅ `ACAPI_Element_GetElemList` – Returns an array of guids of the elements of the given type. — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI_Element_GetElemList` – Returns an array of guids of the elements of the given type. — [#2255](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2255 "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
 - ✅ `ACAPI_Element_GetElemTypeName` – Returns the localized name of the built-in element types. <sub>(was `ACAPI_Goodies_GetElemTypeName`, `APIAny_GetElemTypeNameID`)</sub>
 - ✅ `ACAPI_Element_GetElementFromAnywhere` – Returns the element referred by guid irrespectively of the current database. <sub>(was `APIDb_GetElementFromAnywhereID`)</sub>
 - 🔀 `ACAPI_Element_GetElementInfoString` – Returns the compound info string of the given element. <sub>(was `APIDb_GetElementInfoStringID`)</sub>
@@ -206,7 +206,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_IsPropertyDefinitionVisibleDefault` – Tells whether a property definition is visible for an element default.
 - ✅ `ACAPI_Element_Merge_Elements` – Merge elements given in the array.
 - ✅ `ACAPI_Element_Merge_GetMergedElements` – Get the merged elements of the given element in the array.
-- ✅ `ACAPI_Element_Merge_Remove` – Remove the merge connection from the given elements.
+- ✅ `ACAPI_Element_Merge_Remove` – Remove the merge connection from the given elements. — [#2255](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2255 "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients")
 - ➖ `ACAPI_Element_NeigIDToElemType` – Returns the element type assigned to a neig. <sub>(was `ACAPI_Goodies_NeigIDToElemType`, `APIAny_NeigIDToElemTypeID`)</sub> *(neig ids, an internal of interactive input and selection)*
 - ✅ `ACAPI_Element_NeigToCoord` – Returns the coordinate of a neig. <sub>(was `APIAny_NeigToCoordID`)</sub>
 - ✅ `ACAPI_Element_RefreshElement` – Rebuilds (refreshes) a library part instance. <sub>(was `APIDb_RefreshElementID`)</sub>
@@ -327,7 +327,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Attribute_DeleteFolder` <sub>AC26–30</sub> – Deletes an attribute folder and all the folders and attributes it contains.
 - ✅ `ACAPI_Attribute_DeleteMore` – Deletes more attributes of the same type.
 - 🔀 `ACAPI_Attribute_EnumerateAttributesByType` <sub>AC27–30</sub> – Iterates the instances of a given attribute type in the database.
-- ✅ `ACAPI_Attribute_Get` – Retrieves an attribute from the database. — [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex")
+- ✅ `ACAPI_Attribute_Get` – Retrieves an attribute from the database. — [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"), [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex")
 - ✅ `ACAPI_Attribute_GetAttributesByType` <sub>AC27–30</sub> – Returns the instances of a given attribute type in the database.
 - ✅ `ACAPI_Attribute_GetAttributesFromProject` – Loads the given attributes from a project file.
 - ✅ `ACAPI_Attribute_GetClassificationInSystem` – Retrieves a classification of an attribute in a given classification system.
@@ -336,7 +336,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Attribute_GetCurrPenSet` – Get current pen set index. <sub>(was `APIEnv_GetCurrPenSetID`)</sub>
 - ➖ `ACAPI_Attribute_GetCurrentAttributeSetReader` <sub>AC26–30</sub> – Returns an attribute reader for the currently used attribute set. *(a C++ attribute reader the add-on passes to its own 3D model export (EXPGetModel); what it reads (surfaces, pens, fills, line types, building materials) the attribute commands already return, and its texture data holds only the image name)*
 - ✅ `ACAPI_Attribute_GetDef` – Retrieves extended information for an attribute.
-- ✅ `ACAPI_Attribute_GetDefExt` – Retrieves extended information for an attribute.
+- ✅ `ACAPI_Attribute_GetDefExt` – Retrieves extended information for an attribute. — [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes")
 - 🔀 `ACAPI_Attribute_GetFirstValidAttribute` <sub>AC27–30</sub> – Returns the first valid attribute index.
 - ✅ `ACAPI_Attribute_GetFolder` <sub>AC26–30</sub> – Retrieves an existing attribute folder by its path or guid.
 - 🔀 `ACAPI_Attribute_GetFolderContent` <sub>AC26–30</sub> – Returns all folders and attributes of an attribute type.
@@ -351,14 +351,14 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Attribute_IsPropertyDefinitionAvailable` – Tells whether a property definition is available for an attribute.
 - ✅ `ACAPI_Attribute_IsPropertyDefinitionValueEditable` – Tells whether a property definition is editable for an attribute.
 - ✅ `ACAPI_Attribute_IsPropertyDefinitionVisible` – Tells whether a property definition is visible for an attribute.
-- ✅ `ACAPI_Attribute_Modify` – Modifies an attribute.
-- ✅ `ACAPI_Attribute_ModifyExt` – Modifies an attribute.
+- ✅ `ACAPI_Attribute_Modify` – Modifies an attribute. — [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes")
+- ✅ `ACAPI_Attribute_ModifyExt` – Modifies an attribute. — [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes")
 - 🔀 `ACAPI_Attribute_ModifyPen` <sub>AC27–30</sub> – Modify a pen by index in the active pen table.
 - 🔀 `ACAPI_Attribute_ModifyPropertyValue` <sub>AC27–30</sub> – Sets the value of a property for multiple attributes. If the property is not available for at least one of the given attribute then returns with an error without changing any property value.
 - ✅ `ACAPI_Attribute_Move` <sub>AC26–30</sub> – Moves attributes and attribute folders.
 - ✅ `ACAPI_Attribute_RemoveClassificationItem` – Removes a classification from an attribute.
 - ✅ `ACAPI_Attribute_RenameFolder` <sub>AC26–30</sub> – Deletes an attribute folder and all the folders and attributes it contains.
-- ✅ `ACAPI_Attribute_Search` – Searches for an attribute by name.
+- ✅ `ACAPI_Attribute_Search` – Searches for an attribute by name. — [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes")
 - ✅ `ACAPI_Attribute_SetProperties` – Sets the specified built-in properties for the given values on an attribute.
 - ✅ `ACAPI_Attribute_SetProperty` – Sets the property value of the property definition.
 - ✅ `ACAPI_Attribute_AddProperty` <sub>AC27</sub> – Makes a property definition available for all of given attributes (it is created if it does not exist).
@@ -437,7 +437,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_LibraryPart_GetMarkerParent` – Returns the parent ID of the marker, in the parentUnID member of the libPart structure. <sub>(was `ACAPI_Goodies_GetMarkerParent`, `APIAny_GetMarkerParentID`)</sub>
 - ✅ `ACAPI_LibraryPart_GetNum` <sub>AC27–30</sub> – Returns the number of registered library parts.
 - ✅ `ACAPI_LibraryPart_GetParamValues` – Returns the possible values defined for a Library Part parameter. <sub>(was `APIAny_GetParamValuesID`)</sub>
-- ✅ `ACAPI_LibraryPart_GetParams` – Returns the default parameters of a registered Library Part. <sub>(was `ACAPI_LibPart_GetParams`)</sub> — [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex")
+- ✅ `ACAPI_LibraryPart_GetParams` – Returns the default parameters of a registered Library Part. <sub>(was `ACAPI_LibPart_GetParams`)</sub> — [#2251](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2251 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex (supersedes #1395)"), [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex")
 - 🔀 `ACAPI_LibraryPart_GetSect_2DDrawHdl` – Returns the 2D binary (drawing) section data created from API elements. <sub>(was `ACAPI_LibPart_GetSect_2DDrawHdl`)</sub>
 - ✅ `ACAPI_LibraryPart_GetSect_ParamDef` – Prepares the parameter section data to save into a Library Part. <sub>(was `ACAPI_LibPart_GetSect_ParamDef`)</sub>
 - 🔀 `ACAPI_LibraryPart_GetSection` – Returns an existing section of a registered Library Part. <sub>(was `ACAPI_LibPart_GetSection`)</sub>
@@ -507,10 +507,10 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 - ➖ `ACAPI_ActivatePropertyObjectHandler` – Activates or deactivates an add-on's property handler. *(event handlers, not commands)*
 - ➖ `ACAPI_CallCommand` – Performs an operation without opening an undoable session. *(add-on infrastructure)*
-- ➖ `ACAPI_CallUndoableCommand` – Performs an undoable operation. — [#2226](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2226 "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"), [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#2206](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2206 "[3/3] Add ScaleElements command"), [#1470](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1470 "Report failed creation transactions instead of returning element results"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#2218](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2218 "Docs: a page of what the Archicad API cannot do, with the workaround and the DevKit evidence"), [#1820](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1820 "Run several commands as one undo step") *(add-on infrastructure)*
-- ➖ `ACAPI_DisposeAddParHdl` – Frees the memory occupied by a handle to an array of @ref API_AddParType. — [#2226](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2226 "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"), [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex") *(memory management)*
+- ➖ `ACAPI_CallUndoableCommand` – Performs an undoable operation. — [#2226](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2226 "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"), [#2206](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2206 "[3/3] Add ScaleElements command"), [#1470](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1470 "Report failed creation transactions instead of returning element results"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#2218](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2218 "Docs: a page of what the Archicad API cannot do, with the workaround and the DevKit evidence"), [#1820](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1820 "Run several commands as one undo step") *(add-on infrastructure)*
+- ➖ `ACAPI_DisposeAddParHdl` – Frees the memory occupied by a handle to an array of @ref API_AddParType. — [#2251](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2251 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex (supersedes #1395)"), [#2226](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2226 "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"), [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex") *(memory management)*
 - ➖ `ACAPI_DisposeAttrDefsHdls` – Frees the memory occupied by all of the attribute definition handles. *(memory management)*
-- ➖ `ACAPI_DisposeAttrDefsHdlsExt` – Frees the memory occupied by all of the attribute definition handles. *(memory management)*
+- ➖ `ACAPI_DisposeAttrDefsHdlsExt` – Frees the memory occupied by all of the attribute definition handles. — [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes") *(memory management)*
 - ➖ `ACAPI_DisposeBeamRelationHdls` – Frees the memory occupied by all allocated beam relation handles. *(memory management)*
 - ➖ `ACAPI_DisposeBeamSegmentRelationHdls` – Frees the memory occupied by all the allocated beam segment relation handles. *(memory management)*
 - ➖ `ACAPI_DisposeElemMemoHdls` – Frees the memory occupied by all of the allocated memo handles. — [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes") *(memory management)*
@@ -522,7 +522,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `ACAPI_GetExtensionInstance` – Returns the HINSTANCE of the add-on's DLL. *(add-on infrastructure)*
 - ➖ `ACAPI_GetMainWindow` – Returns the application's main window where the add-on works. *(user interface)*
 - ➖ `ACAPI_GetOwnLocation` – Returns the location of the add-on in the file system. — [#2185](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2185 "[2/2] Add-On: Update when Archicad closes choice, pending marker and README (#2182)") *(add-on infrastructure)*
-- ➖ `ACAPI_GetOwnResModule` – Returns the add-on's resource module identifier for loading resources. — [#2215](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2215 "Palette: enforce min-tapir-version and archicad-versions before running a script"), [#2185](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2185 "[2/2] Add-On: Update when Archicad closes choice, pending marker and README (#2182)") *(add-on infrastructure)*
+- ➖ `ACAPI_GetOwnResModule` – Returns the add-on's resource module identifier for loading resources. — [#2185](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2185 "[2/2] Add-On: Update when Archicad closes choice, pending marker and README (#2182)") *(add-on infrastructure)*
 - ➖ `ACAPI_GetPreferences` – Returns the stored preferences of the add-on. *(add-on preferences)*
 - ✅ `ACAPI_GetReleaseNumber`
 - ➖ `ACAPI_GetToken` <sub>AC26–30</sub> – Returns the token associated with the AddOn. *(add-on infrastructure)*
@@ -537,7 +537,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `ACAPI_WriteReport` – Writes a report string into the Report Window or into a custom alert window. *(report window of the add-on)*
 - ✅ `ACAPI_Automate` <sub>AC25–26</sub>
 - ✅ `ACAPI_Database` <sub>AC25–26</sub> — [#371](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/371 "Lessons learned building a Tapir-based automation toolkit (AC29)")
-- ✅ `ACAPI_Environment` <sub>AC25–26</sub>
+- ✅ `ACAPI_Environment` <sub>AC25–26</sub> — [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes")
 - ✅ `ACAPI_Goodies` <sub>AC25–26</sub>
 - ✅ `ACAPI_Interface` <sub>AC25–26</sub>
 - ✅ `ACAPI_Navigator` <sub>AC25–26</sub>
@@ -989,7 +989,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Grouping_ChangeSuspendGroup` <sub>AC27–30</sub> – Set 'Suspend Groups' in Archicad. <sub>(was `APIEnv_ChangeSuspendGroupID`)</sub>
 - ✅ `ACAPI_Grouping_CreateGroup` <sub>AC27–30</sub> – Create an element group.
 - ✅ `ACAPI_Grouping_GetAllGroupedElems` – Returns all elements of the given group. <sub>(was `ACAPI_ElementGroup_GetAllGroupedElems`)</sub>
-- ✅ `ACAPI_Grouping_GetConnectedElements` – Returns a list of elements connected to the given element. <sub>(was `ACAPI_Element_GetConnectedElements`)</sub> — [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines")
+- ✅ `ACAPI_Grouping_GetConnectedElements` – Returns a list of elements connected to the given element. <sub>(was `ACAPI_Element_GetConnectedElements`)</sub>
 - ✅ `ACAPI_Grouping_GetGroup` – Returns the group unique ID of the given element. <sub>(was `ACAPI_ElementGroup_GetGroup`)</sub>
 - ✅ `ACAPI_Grouping_GetGroupedElems` – Returns the immediate elements of the given group. <sub>(was `ACAPI_ElementGroup_GetGroupedElems`)</sub>
 - ✅ `ACAPI_Grouping_GetMainGroupGuid` – Returns the top level group of a nested group element. <sub>(was `APIAny_GetMainGroupGuidID`)</sub>
@@ -1337,7 +1337,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 ## Toolbox
 
 - ➖ `ACAPI_Toolbox_GetToolBoxInfo` – Returns information on the current state of the toolbox. <sub>(was `APIEnv_GetToolBoxInfoID`)</sub> *(user interface)*
-- ➖ `ACAPI_Toolbox_GetToolBoxMode` – Returns the actual toolbox mode. <sub>(was `APIEnv_GetToolBoxModeID`)</sub> *(user interface)*
+- ➖ `ACAPI_Toolbox_GetToolBoxMode` – Returns the actual toolbox mode. <sub>(was `APIEnv_GetToolBoxModeID`)</sub> — [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes") *(user interface)*
 - ➖ `ACAPI_Toolbox_SetToolBoxMode` – Sets the actual toolbox mode. <sub>(was `APIEnv_SetToolBoxModeID`)</sub> *(user interface)*
 
 ## UserData
@@ -1392,7 +1392,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::AngleSetBase::GetSize` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::IsAngleDefined` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::IsEditable` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::AngleSetBase::Modifier::Add` <sub>AC29–30</sub> — [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#2206](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2206 "[3/3] Add ScaleElements command"), [#2148](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2148 "ChangeSelectionOfElements: report elements Archicad did not select"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
+- ✅ `ACAPI::MEP::AngleSetBase::Modifier::Add` <sub>AC29–30</sub> — [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"), [#2255](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2255 "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"), [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#2206](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2206 "[3/3] Add ScaleElements command"), [#2148](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2148 "ChangeSelectionOfElements: report elements Archicad did not select"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
 - ✅ `ACAPI::MEP::AngleSetBase::Modifier::Delete` <sub>AC29–30</sub> — [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines")
 - ✅ `ACAPI::MEP::AngleSetBase::Modifier::SetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::Modify` <sub>AC29–30</sub>
@@ -1764,7 +1764,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::RemoveWiringType` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::SetVoltage` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modify` <sub>AC30</sub>
-- ✅ `ACAPI::MEP::Element::Get` <sub>AC27–30</sub> — [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#2206](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2206 "[3/3] Add ScaleElements command"), [#2148](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2148 "ChangeSelectionOfElements: report elements Archicad did not select"), [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
+- ✅ `ACAPI::MEP::Element::Get` <sub>AC27–30</sub> — [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"), [#2257](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2257 "Columns and Beams: Create updates the elements the component created before"), [#2251](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2251 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex (supersedes #1395)"), [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#2206](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2206 "[3/3] Add ScaleElements command"), [#2148](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2148 "ChangeSelectionOfElements: report elements Archicad did not select"), [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
 - ✅ `ACAPI::MEP::ElementBase::Exists` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetAnchorPoint` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetBaseRotation` <sub>AC30</sub>
@@ -2082,7 +2082,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::PipingPortDefault::Modifier::SetFlowDirection` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::PipingPortDefault::Modifier::SetWallThickness` <sub>AC28–30</sub>
 - 🔀 `ACAPI::MEP::PipingPortDefault::Modify` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::Port::Get` <sub>AC27–30</sub>
+- ✅ `ACAPI::MEP::Port::Get` <sub>AC27–30</sub> — [#2255](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2255 "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients")
 - ✅ `ACAPI::MEP::PortBase::Exists` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetConnectedMEPElementId` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetConnectedPortId` <sub>AC27–30</sub>
@@ -2090,7 +2090,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::PortBase::GetDomain` <sub>AC27–30</sub>
 - 🔀 `ACAPI::MEP::PortBase::GetElemId` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetHeight` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::PortBase::GetMEPElementId` <sub>AC27–30</sub>
+- ✅ `ACAPI::MEP::PortBase::GetMEPElementId` <sub>AC27–30</sub> — [#2255](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2255 "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients")
 - ✅ `ACAPI::MEP::PortBase::GetMEPSystem` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetName` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetOrientation` <sub>AC27–30</sub>
@@ -2141,7 +2141,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ReferenceSetBase::GetSize` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::IsEditable` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::IsReferenceIdDefined` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Add` <sub>AC28–30</sub> — [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#2206](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2206 "[3/3] Add ScaleElements command"), [#2148](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2148 "ChangeSelectionOfElements: report elements Archicad did not select"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
+- ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Add` <sub>AC28–30</sub> — [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"), [#2255](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2255 "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"), [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#2206](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2206 "[3/3] Add ScaleElements command"), [#2148](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2148 "ChangeSelectionOfElements: report elements Archicad did not select"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Delete` <sub>AC28–30</sub> — [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines")
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::SetName` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modify` <sub>AC28–30</sub>
@@ -2310,7 +2310,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::SystemGroup::GetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::GetSystemIDs` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::IsEditable` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::SystemGroup::Modifier::Add` <sub>AC29–30</sub> — [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#2206](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2206 "[3/3] Add ScaleElements command"), [#2148](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2148 "ChangeSelectionOfElements: report elements Archicad did not select"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
+- ✅ `ACAPI::MEP::SystemGroup::Modifier::Add` <sub>AC29–30</sub> — [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"), [#2255](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2255 "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"), [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#2206](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2206 "[3/3] Add ScaleElements command"), [#2148](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2148 "ChangeSelectionOfElements: report elements Archicad did not select"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
 - ✅ `ACAPI::MEP::SystemGroup::Modifier::Remove` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::Modifier::SetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::Modify` <sub>AC29–30</sub>
@@ -2446,7 +2446,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::Element::ModifiableOpeningGeometry::SetPolygon` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::ModifiableOpeningGeometry::Transform` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::Opening::Exists` <sub>AC29–30</sub>
-- ✅ `ACAPI::Element::Opening::Get` <sub>AC29–30</sub> — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
+- ✅ `ACAPI::Element::Opening::Get` <sub>AC29–30</sub> — [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"), [#2257](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2257 "Columns and Beams: Create updates the elements the component created before"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
 - ✅ `ACAPI::Element::Opening::GetConnectedOpenings` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::Opening::GetCutElements` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::Opening::GetExtrusionParameters` <sub>AC29–30</sub>
@@ -2529,7 +2529,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::Favorite::Favorite::GetElementType` <sub>AC29–30</sub>
 - 🔀 `ACAPI::Favorite::Favorite::GetMemo` <sub>AC29–30</sub>
 - 🔀 `ACAPI::Favorite::Favorite::GetMemoMarker` <sub>AC29–30</sub>
-- ✅ `ACAPI::Favorite::Favorite::GetName` <sub>AC29–30</sub> — [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#2206](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2206 "[3/3] Add ScaleElements command"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI::Favorite::Favorite::GetName` <sub>AC29–30</sub> — [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"), [#2206](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2206 "[3/3] Add ScaleElements command"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
 - 🔀 `ACAPI::Favorite::Favorite::GetOldElementDefault` <sub>AC29–30</sub>
 - ✅ `ACAPI::Favorite::Favorite::GetParentFolder` <sub>AC29–30</sub>
 - ⛔ `ACAPI::Favorite::Favorite::GetPreviewImage` <sub>AC29–30</sub> *(GetFavoritePreviewImage stays on the C API on purpose (8dbbe7b9))*
@@ -2663,7 +2663,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🔀 `ACAPI::Library::Library::GetDisplayName` <sub>AC29–30</sub>
 - 🔀 `ACAPI::Library::Library::GetLocalizedName` <sub>AC29–30</sub>
 - ✅ `ACAPI::Library::Library::GetLocation` <sub>AC28–30</sub>
-- ✅ `ACAPI::Library::Library::GetName` <sub>AC28–30</sub>
+- ✅ `ACAPI::Library::Library::GetName` <sub>AC28–30</sub> — [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes")
 - ✅ `ACAPI::Library::Library::GetPackageDependencies` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::Library::GetPackageID` <sub>AC28–30</sub>
 - ✅ `ACAPI::Library::Library::GetPackageMainVersion` <sub>AC28–30</sub>
@@ -3008,7 +3008,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🔀 `IFCAPI::Assignments::GetChildObjectTable` <sub>AC28–30</sub>
 - 🔀 `IFCAPI::Assignments::GetParentObjectTable` <sub>AC28–30</sub>
 - 🔀 `IFCAPI::Assignments::GetRootGroups` <sub>AC28–30</sub>
-- ✅ `IFCAPI::Attribute::GetName` <sub>AC28–30</sub> — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
+- ✅ `IFCAPI::Attribute::GetName` <sub>AC28–30</sub> — [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
 - ✅ `IFCAPI::Attribute::GetValue` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Attribute::GetValueType` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Classification::GetDescription` <sub>AC28–30</sub>

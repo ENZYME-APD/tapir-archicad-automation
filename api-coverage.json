@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 21:01 UTC",
+ "generatedAt": "2026-11-07 21:44 UTC",
  "versions": [
   25,
   26,
@@ -2903,6 +2903,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2258,
+     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
+    },
+    {
      "number": 1395,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
     }
@@ -3089,7 +3093,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2258,
+     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
+    }
+   ],
    "issues": []
   },
   {
@@ -3396,7 +3405,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2258,
+     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
+    }
+   ],
    "issues": []
   },
   {
@@ -3417,7 +3431,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2258,
+     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
+    }
+   ],
    "issues": []
   },
   {
@@ -3537,7 +3556,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2258,
+     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
+    }
+   ],
    "issues": []
   },
   {
@@ -4023,10 +4047,6 @@
     {
      "number": 2226,
      "title": "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"
-    },
-    {
-     "number": 2212,
-     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
     },
     {
      "number": 2206,
@@ -5675,6 +5695,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 2251,
+     "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex (supersedes #1395)"
+    },
+    {
      "number": 2226,
      "title": "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"
     },
@@ -5724,7 +5748,12 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "memory management",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2258,
+     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
+    }
+   ],
    "issues": []
   },
   {
@@ -6817,7 +6846,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2258,
+     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
+    }
+   ],
    "issues": [
     {
      "number": 1914,
@@ -7531,7 +7565,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2258,
+     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
+    }
+   ],
    "issues": [
     {
      "number": 1914,
@@ -7633,6 +7672,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2255,
+     "title": "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -8587,7 +8630,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2255,
+     "title": "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"
+    }
+   ],
    "issues": []
   },
   {
@@ -9789,10 +9837,6 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
-     "number": 2215,
-     "title": "Palette: enforce min-tapir-version and archicad-versions before running a script"
-    },
-    {
      "number": 2185,
      "title": "[2/2] Add-On: \"Update when Archicad closes\" choice, pending marker and README (#2182)"
     }
@@ -10442,12 +10486,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2212,
-     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12229,6 +12268,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2251,
+     "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex (supersedes #1395)"
+    },
     {
      "number": 1395,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
@@ -18359,7 +18402,12 @@
    ],
    "status": "not applicable",
    "reason": "user interface",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2258,
+     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
+    }
+   ],
    "issues": []
   },
   {
@@ -21024,7 +21072,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2258,
+     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
+    }
+   ],
    "issues": []
   },
   {
@@ -25272,6 +25325,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2258,
+     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
+    },
+    {
+     "number": 2257,
+     "title": "Columns and Beams: Create updates the elements the component created before"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -26703,8 +26764,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2212,
-     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
+     "number": 2258,
+     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
     },
     {
      "number": 2206,
@@ -29588,7 +29649,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2258,
+     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
+    }
+   ],
    "issues": []
   },
   {
@@ -30874,6 +30940,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2258,
+     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
+    },
+    {
+     "number": 2255,
+     "title": "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"
+    },
     {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
@@ -37338,6 +37412,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2258,
+     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
+    },
+    {
+     "number": 2257,
+     "title": "Columns and Beams: Create updates the elements the component created before"
+    },
+    {
+     "number": 2251,
+     "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex (supersedes #1395)"
+    },
+    {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
     },
@@ -42924,7 +43010,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2255,
+     "title": "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"
+    }
+   ],
    "issues": []
   },
   {
@@ -43070,7 +43161,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2255,
+     "title": "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"
+    }
+   ],
    "issues": []
   },
   {
@@ -43981,6 +44077,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2258,
+     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
+    },
+    {
+     "number": 2255,
+     "title": "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"
+    },
     {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
@@ -47093,6 +47197,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2258,
+     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
+    },
+    {
+     "number": 2255,
+     "title": "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"
+    },
     {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
@@ -53595,6 +53707,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2258,
+     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
