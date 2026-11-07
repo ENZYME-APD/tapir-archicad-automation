@@ -6242,5 +6242,21 @@ namespace TapirGrasshopperPlugin.Properties
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
+
+        internal static System.Drawing.Bitmap GetUnusedAttributes
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetUnusedAttributes", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetUnusedLibraryParts
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetUnusedLibraryParts", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
     }
 }

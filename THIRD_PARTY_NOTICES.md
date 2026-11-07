@@ -9,7 +9,7 @@ are Archicad user interface icons taken from Graphisoft's Archicad 29 help
 the attribute managers, the Library Manager, the tool settings dialogs, the zoom
 controls, palettes and organizers. Where the component has an action, a small
 Tapir badge is added in the corner (create, modify, delete, details, replace,
-property); the others show the icon alone.
+property, unused); the others show the icon alone.
 
 These icons are © Graphisoft SE, and Tapir uses them with Graphisoft's
 permission. They are **not** covered by this repository's MIT license: do not
@@ -54,15 +54,16 @@ in `IconSource/`.
 `GetPropertyValuesOfElementComponents`, `GetPublisherSets`,
 `GetRevisionChanges`, `GetRevisionChangesOfElements`, `GetRoofPlanes`,
 `GetSchedules`, `GetSkylightHolePolygons`, `GetSolidElementLinks`,
-`GetSurfaces`, `GetSuspendGroupsMode`, `GetZoneCategories`,
-`ImportIssuesFromBCF`, `InterpretAutoTexts`, `LabelDetails`, `LabelElements`,
-`LayerCombinations`, `Layers`, `LockElements`, `ModifyAssociativeDimensions`,
-`ModifyBeams`, `ModifyColumns`, `ModifyCurtainWallFrames`, `ModifyDoors`,
-`ModifyLabels`, `ModifyLamps`, `ModifyMeshes`, `ModifyMorphs`, `ModifyObjects`,
-`ModifyRoofs`, `ModifyShells`, `ModifySkylights`, `ModifySlabs`, `ModifyStairs`,
-`ModifyTexts`, `ModifyWalls`, `ModifyWindows`, `ModifyZones`, `MoveElements`,
-`PolylineDetails`, `ProjectInfo`, `PublisherSetNames`, `PublishPublisherSet`,
-`ReleaseElements`, `RemoveSolidElementLinks`, `RenameDesignOptionCombinations`,
+`GetSurfaces`, `GetSuspendGroupsMode`, `GetUnusedAttributes`,
+`GetZoneCategories`, `ImportIssuesFromBCF`, `InterpretAutoTexts`,
+`LabelDetails`, `LabelElements`, `LayerCombinations`, `Layers`, `LockElements`,
+`ModifyAssociativeDimensions`, `ModifyBeams`, `ModifyColumns`,
+`ModifyCurtainWallFrames`, `ModifyDoors`, `ModifyLabels`, `ModifyLamps`,
+`ModifyMeshes`, `ModifyMorphs`, `ModifyObjects`, `ModifyRoofs`, `ModifyShells`,
+`ModifySkylights`, `ModifySlabs`, `ModifyStairs`, `ModifyTexts`, `ModifyWalls`,
+`ModifyWindows`, `ModifyZones`, `MoveElements`, `PolylineDetails`,
+`ProjectInfo`, `PublisherSetNames`, `PublishPublisherSet`, `ReleaseElements`,
+`RemoveSolidElementLinks`, `RenameDesignOptionCombinations`,
 `RenameFavoriteFolder`, `RenameFavorites`, `ReserveElements`, `RoofDetails`,
 `RotateCopyElements`, `RotateElements`, `RunActionCenterChecks`,
 `Set3DDocumentSettings`, `Set3DFilterAndCutSettings`,
