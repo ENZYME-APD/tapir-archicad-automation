@@ -390,7 +390,7 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
         "required": [
             "columnsData"
         ]
-    })");
+    })";
 }
 
 GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
@@ -585,7 +585,7 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
     "required": [
         "slabsData"
     ]
-})");
+})";
 }
 
 GS::Array<API_PolyArc> GetPolyArcs (const GS::Array<GS::ObjectState>& arcs, Int32 iStart)

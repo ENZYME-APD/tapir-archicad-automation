@@ -4543,7 +4543,7 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
         },
         "additionalProperties": false,
         "required": ["beamsData"]
-    })");
+    })";
 }
 
 GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
@@ -9107,7 +9107,7 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
         },
         "additionalProperties": false,
         "required": ["beamsWithDetails"]
-    })");
+    })";
 }
 
 GS::Optional<GS::UniString> ModifyBeamsCommand::GetRawResponseSchema () const
@@ -9268,7 +9268,7 @@ GS::Optional<GS::UniString> ModifySlabsCommand::GetInputParametersSchema () cons
         },
         "additionalProperties": false,
         "required": ["slabsWithDetails"]
-    })");
+    })";
 }
 
 GS::Optional<GS::UniString> ModifySlabsCommand::GetRawResponseSchema () const
@@ -11013,7 +11013,7 @@ GS::Optional<GS::UniString> ModifyColumnsCommand::GetInputParametersSchema () co
         },
         "additionalProperties": false,
         "required": ["columnsWithDetails"]
-    })");
+    })";
 }
 
 GS::Optional<GS::UniString> ModifyColumnsCommand::GetRawResponseSchema () const
