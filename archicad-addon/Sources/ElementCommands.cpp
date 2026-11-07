@@ -8721,6 +8721,141 @@ GS::ObjectState AlignElementsCommand::Execute (const GS::ObjectState& parameters
     return MoveArrangedElements (items, "Align Elements");
 }
 
+DistributeElementsCommand::DistributeElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String DistributeElementsCommand::GetName () const
+{
+    return "DistributeElements";
+}
+
+GS::Optional<GS::UniString> DistributeElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "At least 3 elements to distribute: Wall, Column, Beam, Slab, Roof, Shell, Morph, Mesh, Zone, Object, Lamp, Stair, Railing, CurtainWall, Line, PolyLine, Arc, Circle, Spline, Hatch, Text or Hotspot, in the current database. Their order does not matter: they are distributed in the order of the middles of their plan bounding boxes along the direction."
+            },
+            "direction": {
+                "type": "string",
+                "enum": ["horizontal", "vertical"],
+                "description": "horizontal distributes the elements along X, vertical along Y. They are not moved in the other direction."
+            },
+            "mode": {
+                "type": "string",
+                "enum": ["centers", "gaps"],
+                "description": "centers makes the distances between the middles of the plan bounding boxes equal, gaps makes the empty space between neighbouring bounding boxes equal (the gap is negative, so the boxes overlap, when the elements are wider together than the space between the two outermost elements)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "direction",
+            "mode"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DistributeElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DistributeElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+    if (elements.GetSize () < 3) {
+        return CreateErrorResponse (APIERR_BADPARS, "At least 3 elements are needed to distribute them.");
+    }
+
+    GS::UniString direction;
+    parameters.Get ("direction", direction);
+    if (direction != "horizontal" && direction != "vertical") {
+        return CreateErrorResponse (APIERR_BADPARS, "direction must be horizontal or vertical.");
+    }
+    const bool alongX = (direction == "horizontal");
+
+    GS::UniString mode;
+    parameters.Get ("mode", mode);
+    if (mode != "centers" && mode != "gaps") {
+        return CreateErrorResponse (APIERR_BADPARS, "mode must be centers or gaps.");
+    }
+
+    const auto minOf = [alongX] (const API_Box3D& box) -> double {
+        return alongX ? box.xMin : box.yMin;
+    };
+    const auto maxOf = [alongX] (const API_Box3D& box) -> double {
+        return alongX ? box.xMax : box.yMax;
+    };
+    const auto centerOf = [&] (const API_Box3D& box) -> double {
+        return (minOf (box) + maxOf (box)) / 2.0;
+    };
+
+    GS::Array<ElementToArrange> items = GetElementsToArrange (elements, "distributed");
+
+    // The elements that can be moved, ordered by the middles of their boxes along the direction
+    // (equal middles keep the input order). The first and the last stay where they are.
+    std::vector<UIndex> order;
+    for (UIndex i = 0; i < items.GetSize (); ++i) {
+        if (!items[i].failedResult.HasValue ()) {
+            order.push_back (i);
+        }
+    }
+    std::stable_sort (order.begin (), order.end (), [&] (UIndex a, UIndex b) {
+        return centerOf (items[a].bounds) < centerOf (items[b].bounds);
+    });
+
+    // With fewer than 3 movable elements there is nothing between the outermost ones to move.
+    const size_t count = order.size ();
+    if (count >= 3) {
+        const ElementToArrange& first = items[order.front ()];
+        const ElementToArrange& last = items[order.back ()];
+        const double steps = static_cast<double> (count - 1);
+
+        if (mode == "centers") {
+            const double firstCenter = centerOf (first.bounds);
+            const double step = (centerOf (last.bounds) - firstCenter) / steps;
+            for (size_t k = 1; k + 1 < count; ++k) {
+                ElementToArrange& item = items[order[k]];
+                const double move = firstCenter + step * static_cast<double> (k) - centerOf (item.bounds);
+                (alongX ? item.moveVector.x : item.moveVector.y) = move;
+            }
+        } else {
+            double innerSizes = 0.0;
+            for (size_t k = 1; k + 1 < count; ++k) {
+                const API_Box3D& box = items[order[k]].bounds;
+                innerSizes += maxOf (box) - minOf (box);
+            }
+            const double gap = (minOf (last.bounds) - maxOf (first.bounds) - innerSizes) / steps;
+            double nextMin = maxOf (first.bounds) + gap;
+            for (size_t k = 1; k + 1 < count; ++k) {
+                ElementToArrange& item = items[order[k]];
+                const double move = nextMin - minOf (item.bounds);
+                (alongX ? item.moveVector.x : item.moveVector.y) = move;
+                nextMin += maxOf (item.bounds) - minOf (item.bounds) + gap;
+            }
+        }
+    }
+
+    return MoveArrangedElements (items, "Distribute Elements");
+}
+
 GetLibPartTransformationsCommand::GetLibPartTransformationsCommand () :
     CommandBase (CommonSchema::Used)
 {
