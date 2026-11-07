@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 08:44 UTC",
+ "generatedAt": "2026-11-07 09:17 UTC",
  "versions": [
   25,
   26,
@@ -2830,7 +2830,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    }
+   ],
    "issues": []
   },
   {
@@ -2935,7 +2940,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    }
+   ],
    "issues": []
   },
   {
@@ -3037,7 +3051,16 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    }
+   ],
    "issues": []
   },
   {
@@ -4031,6 +4054,38 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 2207,
+     "title": "[2/6] Dry run for the element delete and remove commands"
+    },
+    {
+     "number": 2206,
+     "title": "[3/3] Add ScaleElements command"
+    },
+    {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2204,
+     "title": "[1/6] Shared dryRun for changing commands: base and DeleteElements"
+    },
+    {
+     "number": 2202,
+     "title": "[2/3] Add DistributeElements"
+    },
+    {
+     "number": 2200,
+     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
+    },
+    {
+     "number": 2199,
+     "title": "[1/3] Add AlignElements command"
+    },
+    {
+     "number": 2197,
+     "title": "Add CopyElements and RotateCopyElements (linear and circular arrays of copies)"
+    },
+    {
      "number": 1470,
      "title": "Report failed creation transactions instead of returning element results"
     },
@@ -4044,10 +4099,6 @@
     }
    ],
    "issues": [
-    {
-     "number": 2186,
-     "title": "New command: run several commands as one undo step"
-    },
     {
      "number": 1820,
      "title": "Run several commands as one undo step"
@@ -4781,6 +4832,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    },
+    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -4899,7 +4958,16 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    }
+   ],
    "issues": []
   },
   {
@@ -5801,6 +5869,18 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    },
+    {
+     "number": 2200,
+     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
+    },
+    {
      "number": 1671,
      "title": "Drawing anchor placement, offset, and pen table control"
     },
@@ -6516,7 +6596,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2207,
+     "title": "[2/6] Dry run for the element delete and remove commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -6537,7 +6622,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2207,
+     "title": "[2/6] Dry run for the element delete and remove commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -6649,7 +6739,16 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2202,
+     "title": "[2/3] Add DistributeElements"
+    },
+    {
+     "number": 2199,
+     "title": "[1/3] Add AlignElements command"
+    }
+   ],
    "issues": [
     {
      "number": 2188,
@@ -6773,6 +6872,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2200,
+     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
+    },
     {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
@@ -7114,7 +7217,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2200,
+     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
+    }
+   ],
    "issues": []
   },
   {
@@ -7200,7 +7308,20 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2206,
+     "title": "[3/3] Add ScaleElements command"
+    },
+    {
+     "number": 2200,
+     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
+    },
+    {
+     "number": 2197,
+     "title": "Add CopyElements and RotateCopyElements (linear and circular arrays of copies)"
+    }
+   ],
    "issues": []
   },
   {
@@ -7311,6 +7432,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    },
+    {
+     "number": 2200,
+     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
+    },
+    {
+     "number": 2198,
+     "title": "Add GetCameras: list the camera sets and their cameras"
+    },
     {
      "number": 1855,
      "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
@@ -7556,7 +7693,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    }
+   ],
    "issues": [
     {
      "number": 1914,
@@ -7658,6 +7804,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    },
+    {
+     "number": 2198,
+     "title": "Add GetCameras: list the camera sets and their cameras"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -7859,6 +8017,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    },
+    {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
     },
@@ -7909,6 +8075,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2200,
+     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
+    },
     {
      "number": 463,
      "title": "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"
@@ -9231,7 +9401,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2207,
+     "title": "[2/6] Dry run for the element delete and remove commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9252,7 +9427,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2207,
+     "title": "[2/6] Dry run for the element delete and remove commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -9382,6 +9562,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -9407,6 +9595,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -10499,7 +10695,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2200,
+     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
+    }
+   ],
    "issues": []
   },
   {
@@ -13260,7 +13461,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2207,
+     "title": "[2/6] Dry run for the element delete and remove commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -14259,7 +14465,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2196,
+     "title": "Add GetSchedules: list the Interactive Schedules (rows and export not in the API)"
+    }
+   ],
    "issues": []
   },
   {
@@ -14282,7 +14493,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2196,
+     "title": "Add GetSchedules: list the Interactive Schedules (rows and export not in the API)"
+    }
+   ],
    "issues": []
   },
   {
@@ -14328,7 +14544,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2196,
+     "title": "Add GetSchedules: list the Interactive Schedules (rows and export not in the API)"
+    }
+   ],
    "issues": []
   },
   {
@@ -17591,6 +17812,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2207,
+     "title": "[2/6] Dry run for the element delete and remove commands"
+    },
     {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
@@ -25612,6 +25837,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2207,
+     "title": "[2/6] Dry run for the element delete and remove commands"
+    },
+    {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2204,
+     "title": "[1/6] Shared dryRun for changing commands: base and DeleteElements"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -26286,7 +26527,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    }
+   ],
    "issues": []
   },
   {
@@ -26320,7 +26570,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    }
+   ],
    "issues": []
   },
   {
@@ -26439,7 +26698,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    }
+   ],
    "issues": []
   },
   {
@@ -26473,7 +26741,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    }
+   ],
    "issues": []
   },
   {
@@ -26507,7 +26784,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    }
+   ],
    "issues": []
   },
   {
@@ -27071,6 +27357,34 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2206,
+     "title": "[3/3] Add ScaleElements command"
+    },
+    {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2202,
+     "title": "[2/3] Add DistributeElements"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    },
+    {
+     "number": 2200,
+     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
+    },
+    {
+     "number": 2199,
+     "title": "[1/3] Add AlignElements command"
+    },
+    {
+     "number": 2197,
+     "title": "Add CopyElements and RotateCopyElements (linear and circular arrays of copies)"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -29964,7 +30278,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    }
+   ],
    "issues": []
   },
   {
@@ -31255,6 +31578,34 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2206,
+     "title": "[3/3] Add ScaleElements command"
+    },
+    {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2202,
+     "title": "[2/3] Add DistributeElements"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    },
+    {
+     "number": 2200,
+     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
+    },
+    {
+     "number": 2199,
+     "title": "[1/3] Add AlignElements command"
+    },
+    {
+     "number": 2197,
+     "title": "Add CopyElements and RotateCopyElements (linear and circular arrays of copies)"
+    },
     {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
@@ -37792,6 +38143,34 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2206,
+     "title": "[3/3] Add ScaleElements command"
+    },
+    {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2202,
+     "title": "[2/3] Add DistributeElements"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    },
+    {
+     "number": 2200,
+     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
+    },
+    {
+     "number": 2199,
+     "title": "[1/3] Add AlignElements command"
+    },
+    {
+     "number": 2197,
+     "title": "Add CopyElements and RotateCopyElements (linear and circular arrays of copies)"
+    },
     {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
@@ -44575,6 +44954,34 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2206,
+     "title": "[3/3] Add ScaleElements command"
+    },
+    {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2202,
+     "title": "[2/3] Add DistributeElements"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    },
+    {
+     "number": 2200,
+     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
+    },
+    {
+     "number": 2199,
+     "title": "[1/3] Add AlignElements command"
+    },
+    {
+     "number": 2197,
+     "title": "Add CopyElements and RotateCopyElements (linear and circular arrays of copies)"
+    },
+    {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
     },
@@ -47825,6 +48232,34 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2206,
+     "title": "[3/3] Add ScaleElements command"
+    },
+    {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2202,
+     "title": "[2/3] Add DistributeElements"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    },
+    {
+     "number": 2200,
+     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
+    },
+    {
+     "number": 2199,
+     "title": "[1/3] Add AlignElements command"
+    },
+    {
+     "number": 2197,
+     "title": "Add CopyElements and RotateCopyElements (linear and circular arrays of copies)"
+    },
     {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
@@ -54351,6 +54786,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2205,
+     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
+    },
+    {
+     "number": 2201,
+     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
+    },
+    {
+     "number": 2196,
+     "title": "Add GetSchedules: list the Interactive Schedules (rows and export not in the API)"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"

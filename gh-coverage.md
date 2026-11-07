@@ -34,7 +34,7 @@ Parameters of the 746 used commands: 🟢 713 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-07 08:44 UTC.
+Updated 2026-11-07 09:17 UTC.
 
 | | Status |
 |---|---|
@@ -53,7 +53,7 @@ A parameter counts as covered when the component's code names it (a static check
 
 ## Application Commands
 
-- ✅ `GetAddOnVersion` 🟢 0/0 parameters – `GetAddOnVersionComponent`
+- ✅ `GetAddOnVersion` 🟢 0/0 parameters – `GetAddOnVersionComponent` — [#2210](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2210 "New command GetTapirCommands: let a script ask the installed Tapir which commands it has")
 - 🔀 `GetCommands` 🟢 0/0 parameters – `GetCommandsComponent`
 - ✅ `GetArchicadLocation` 🟢 0/0 parameters – `GetArchicadLocationComponent`
 - ✅ `GetArchicadReleaseInfo` 🟢 0/0 parameters – `GetArchicadReleaseInfoComponent`
@@ -872,4 +872,4 @@ A parameter counts as covered when the component's code names it (a static check
 
 ## Developer Commands
 
-- ➖ `GenerateDocumentation` *(developer command that writes the Add-On's documentation files)*
+- ➖ `GenerateDocumentation` — [#2210](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2210 "New command GetTapirCommands: let a script ask the installed Tapir which commands it has") *(developer command that writes the Add-On's documentation files)*

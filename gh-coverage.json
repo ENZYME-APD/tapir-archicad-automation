@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 08:44 UTC",
+ "generatedAt": "2026-11-07 09:17 UTC",
  "counts": {
   "done": 568,
   "merged": 178,
@@ -29,7 +29,12 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2210,
+     "title": "New command GetTapirCommands: let a script ask the installed Tapir which commands it has"
+    }
+   ]
   },
   {
    "id": "GetCommands",
@@ -19427,7 +19432,12 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2210,
+     "title": "New command GetTapirCommands: let a script ask the installed Tapir which commands it has"
+    }
+   ]
   }
  ]
 }
