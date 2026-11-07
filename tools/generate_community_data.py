@@ -16,6 +16,9 @@ Sources, each optional: a series that cannot be read is left out of every month,
 hides it instead of drawing it wrong.
   - commits per month and per author: `git log` of the checkout (needs the full history),
     without merge commits and without bots (Claude, github-actions and names ending in [bot]).
+    A person who committed under several names or addresses counts once, under the name of most
+    of their commits: names that differ only in case, accents, punctuation or word order, and
+    names with a shared address (a GitHub no-reply address by its account) are one person.
   - issues opened and pull requests merged per month: the GitHub REST API (GITHUB_TOKEN).
   - Discord messages per month (people, not bots): the history of every text and announcement
     channel the bot can read, and of the threads in them and in forum channels. Discord members
@@ -45,6 +48,7 @@ import re
 import subprocess
 import sys
 import time
+import unicodedata
 import urllib.error
 import urllib.request
 
@@ -88,16 +92,74 @@ def request_json (url, headers, retries=5):
 
 # ---- git ----
 
+# A GitHub no-reply address, old (login@...) or new (id+login@...): the same account either way.
+NOREPLY_EMAIL = re.compile (r'^(?:\d+\+)?([^@]+)@users\.noreply\.github\.com$', re.I)
+# Addresses that many people share, so they never tie two names together.
+SHARED_EMAILS = {'', 'none', 'noreply@github.com', 'you@example.com', 'root@localhost'}
+
+
+def email_key (email):
+    """The account an author address stands for, or None for an address many people share."""
+    email = email.strip ().lower ()
+    if email in SHARED_EMAILS or '@' not in email:
+        return None
+    noreply = NOREPLY_EMAIL.match (email)
+    return 'github:' + noreply.group (1) if noreply else 'email:' + email
+
+
+def name_key (name):
+    """A name with case, accents, punctuation and word order left out: "Barancsuk Ádám" is "Ádám Barancsuk"."""
+    plain = ''.join (c for c in unicodedata.normalize ('NFKD', name.casefold ()) if not unicodedata.combining (c))
+    words = re.findall (r'[a-z0-9]+', plain)
+    return 'name:' + ' '.join (sorted (words)) if words else None
+
+
+def group_authors (authors):
+    """{(name, email): display name}: one name for every name and address that belong to one person.
+
+    authors is (date, name, email) per commit. Two commits are by one person when they share an
+    address (a GitHub no-reply address counts by its account) or a name, the same up to case,
+    accents, punctuation and word order. The person is shown under the name they made most
+    commits with, the newer one on a tie. .mailmap still wins: git log has applied it already."""
+    parent = {}
+
+    def find (key):
+        parent.setdefault (key, key)
+        while parent[key] != key:
+            parent[key] = parent[parent[key]]
+            key = parent[key]
+        return key
+
+    for _, name, email in authors:
+        keys = [key for key in (name_key (name), email_key (email)) if key]
+        for key in keys[1:]:
+            parent[find (key)] = find (keys[0])
+
+    counts = collections.defaultdict (collections.Counter)
+    newest = {}
+    for date, name, email in authors:
+        group = find (name_key (name) or email_key (email) or 'raw:' + name)
+        counts[group][name] += 1
+        newest[(group, name)] = max (date, newest.get ((group, name), ''))
+    shown = {group: max (names, key=lambda name: (names[name], newest[(group, name)])) for group, names in counts.items ()}
+    return {(name, email): shown[find (name_key (name) or email_key (email) or 'raw:' + name)] for _, name, email in authors}
+
+
 def read_commits ():
-    """(date, author) of every commit of the checkout by a person: merges and bots are left out."""
-    output = subprocess.run (['git', 'log', '--no-merges', '--format=%aI%x09%aN'], capture_output=True, text=True, check=True).stdout
-    commits = []
+    """(date, author) of every commit of the checkout by a person: merges and bots are left out.
+
+    Each person is counted once, under one name, whatever names and addresses their commits
+    carry (see group_authors), so nobody needs a .mailmap line to be counted as one contributor."""
+    output = subprocess.run (['git', 'log', '--no-merges', '--format=%aI%x09%aN%x09%aE'], capture_output=True, text=True, check=True).stdout
+    authors = []
     for line in output.splitlines ():
-        date, _, author = line.partition ('\t')
-        author = author.strip ()
-        if date and author and not BOT_NAME.search (author):
-            commits.append ((date, author))
-    return commits
+        date, _, rest = line.partition ('\t')
+        name, _, email = rest.partition ('\t')
+        name = name.strip ()
+        if date and name and not BOT_NAME.search (name):
+            authors.append ((date, name, email.strip ()))
+    shown = group_authors (authors)
+    return [(date, shown[(name, email)]) for date, name, email in authors]
 
 
 # ---- GitHub ----
