@@ -248,6 +248,10 @@ GSErrCode Initialize (void)
             applicationCommands, "1.8.0",
             "Waits for the user to input a line in the active Archicad window and returns start and end coordinates."
         );
+        err |= RegisterCommand<GetArcFromUserCommand> (
+            applicationCommands, "1.8.1",
+            "Asks the designer to draw an arc in the current window - its center, its start point (which sets the radius) and its end point - with a rubber-band circle shown while drawing, and returns its center, radius, start and end angles, the angle it turns through, its direction and its start and end points. Archicad waits for the clicks or for Escape, and every other JSON command queues behind this one until then; cancelling returns cancelled."
+        );
         err |= RegisterCommand<GetPolygonFromUserCommand> (
             applicationCommands, "1.8.0",
             "Waits for the user to input a polygon in the active Archicad window and returns its points and arcs."

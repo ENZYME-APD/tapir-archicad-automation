@@ -769,6 +769,18 @@ inline GSErrCode ACAPI_UserInput_DrawRubberLine (API_RubberLineType* rubberLine)
     return ACAPI_Interface (APIIo_DrawRubberLineID, rubberLine);
 }
 
+// APIIo_GetArcID         par1: API_GetArcType*     par2: [RubberLineInfoProc*]
+// APIIo_DrawRubberArcID  par1: API_RubberArcType*
+inline GSErrCode ACAPI_UserInput_GetArc (API_GetArcType* arcInfo, RubberLineInfoProc* rubberLineInfoProc = nullptr)
+{
+    return ACAPI_Interface (APIIo_GetArcID, arcInfo, (void*) rubberLineInfoProc);
+}
+
+inline GSErrCode ACAPI_UserInput_DrawRubberArc (API_RubberArcType* rubberArc)
+{
+    return ACAPI_Interface (APIIo_DrawRubberArcID, rubberArc);
+}
+
 inline GSErrCode ACAPI_Selection_GetSelectedElement (const API_Neig* apiNeig, API_Guid* apiGuid)
 {
     return ACAPI_Goodies (APIAny_GetSelectedElementID, (void*) apiNeig, apiGuid);
