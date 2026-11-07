@@ -66,7 +66,9 @@ GS::Optional<GS::UniString> GetProjectInfoCommand::GetRawResponseSchema () const
 }
 
 // A Teamwork location reads as teamwork://<user>:<token>@<server>/<project>. The user name and
-// the BIMcloud login token must not leave the add-on, so the user info part of the authority is removed.
+// the BIMcloud login token must not leave the add-on, so the user info is removed: everything up to
+// the last '@' before the first '/' after an '@'. So a user name with '@' (an e-mail address) and a
+// token with an unencoded '/' are removed as a whole; a location without '@' is returned as it is.
 static GS::UniString RemoveUserInfoFromUrl (const GS::UniString& url)
 {
     const UIndex schemeEnd = url.FindFirst (GS::UniString ("://"));
@@ -75,18 +77,19 @@ static GS::UniString RemoveUserInfoFromUrl (const GS::UniString& url)
     }
 
     const UIndex authorityStart = schemeEnd + 3;
-    UIndex authorityEnd = url.FindFirst (GS::UniChar ('/'), authorityStart);
-    if (authorityEnd == MaxUIndex) {
-        authorityEnd = url.GetLength ();
-    }
-
-    const GS::UniString authority (url.GetSubstring (authorityStart, authorityEnd - authorityStart));
-    const UIndex userInfoEnd = authority.FindLast (GS::UniChar ('@'));
-    if (userInfoEnd == MaxUIndex) {
+    const UIndex firstAt = url.FindFirst (GS::UniChar ('@'), authorityStart);
+    if (firstAt == MaxUIndex) {
         return url;
     }
 
-    const UIndex hostStart = authorityStart + userInfoEnd + 1;
+    UIndex pathStart = url.FindFirst (GS::UniChar ('/'), firstAt);
+    if (pathStart == MaxUIndex) {
+        pathStart = url.GetLength ();
+    }
+
+    // Holds firstAt, so it has an '@'.
+    const GS::UniString userInfoAndHost (url.GetSubstring (authorityStart, pathStart - authorityStart));
+    const UIndex hostStart = authorityStart + userInfoAndHost.FindLast (GS::UniChar ('@')) + 1;
     return GS::UniString (url.GetSubstring (0, authorityStart)) + GS::UniString (url.GetSubstring (hostStart, url.GetLength () - hostStart));
 }
 
