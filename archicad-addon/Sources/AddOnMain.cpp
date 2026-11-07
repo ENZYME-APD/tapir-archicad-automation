@@ -913,6 +913,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.2",
             "Moves elements with a given vector. An element that cannot be edited (its layer is hidden or locked, it is locked, or it is not available in teamwork) gets a failed execution result naming the reason instead of being skipped silently."
         );
+        err |= RegisterCommand<SplitElementsCommand> (
+            elementCommands, "1.8.1",
+            "Splits each given element in two along a line (the infinite line through its begin and end point, like Archicad's Split command). The original element keeps the part from its begin point to the line, a copy of it (Drag a Copy, so it keeps the layer, classifications, properties and every other setting) gets the rest; both are returned. Supports straight walls without doors, windows or openings, straight unslanted single segment beams without holes or openings, and lines (their arrows stay at the original ends). An element the line does not cross is reported as notCut, an unsupported one as an error naming its type. One undo step."
+        );
         err |= RegisterCommand<CopyElementsToDatabaseCommand> (
             elementCommands, "1.8.1",
             "Copies 2D elements (lines, polylines, arcs, circles, splines, hotspots, texts, hatches, independent labels) from one database into another, e.g. from a worksheet into another worksheet, a detail or a layout, optionally moved by an offset. Returns the new elements in the order of the given ones."
