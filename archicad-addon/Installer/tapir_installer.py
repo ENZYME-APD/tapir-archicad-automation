@@ -1188,16 +1188,19 @@ def UpdateAddOn (updateTarget, releaseInfo, dryRun, statusCallback = None, progr
         if waitingCallback is not None:
             waitingCallback (isWaiting)
 
-    asset = FindAssetForVersion (releaseInfo, updateTarget.version)
-    if asset is None:
-        raise InstallerError ('No Tapir Add-On is available for Archicad {0} in release {1}.'.format (
-            updateTarget.version, releaseInfo.get ('tag_name', '?')))
     targetPath = updateTarget.addOnFilePath
     archicadPort = updateTarget.archicadPort
     isWaitingMode = updateTarget.waitForArchicadExit
     restartArchicad = archicadPort is not None and updateTarget.restartArchicad and not isWaitingMode
+    # However a waiting update ends, nothing is pending any more afterwards;
+    # a dry run touches nothing, so it leaves the marker alone.
+    removesPendingMarker = isWaitingMode and not dryRun
     workFolderPath = tempfile.mkdtemp (prefix = 'TapirInstaller_')
     try:
+        asset = FindAssetForVersion (releaseInfo, updateTarget.version)
+        if asset is None:
+            raise InstallerError ('No Tapir Add-On is available for Archicad {0} in release {1}.'.format (
+                updateTarget.version, releaseInfo.get ('tag_name', '?')))
         # Archicad is only quit once the download succeeded.
         try:
             downloadedFilePath = DownloadAsset (asset, workFolderPath, progressCallback)
@@ -1264,8 +1267,7 @@ def UpdateAddOn (updateTarget, releaseInfo, dryRun, statusCallback = None, progr
         return resultText
     finally:
         shutil.rmtree (workFolderPath, ignore_errors = True)
-        # However the waiting update ended, nothing is pending any more.
-        if isWaitingMode:
+        if removesPendingMarker:
             RemovePendingMarker (updateTarget)
 
 

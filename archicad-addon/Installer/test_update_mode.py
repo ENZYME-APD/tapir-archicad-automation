@@ -814,6 +814,23 @@ class WaitingModeTests (UpdateModeTestBase):
         self.assertTrue (resultText.startswith ('Would wait for the Archicad process'))
         self.AssertAddOnIsOld ()
 
+    def testDryRunKeepsMarker (self):
+        process = self.StartProcess (60)
+        markerPath = self.CreateMarker ()
+        resultText = tapir_installer.UpdateAddOn (self.CreateWaitingTarget (process.pid, markerPath), self.releaseInfo, True)
+        self.assertTrue (resultText.startswith ('Would wait for the Archicad process'))
+        self.assertTrue (os.path.exists (markerPath))
+        self.AssertAddOnIsOld ()
+
+    def testDryRunWithoutAssetKeepsMarker (self):
+        process = self.StartProcess (60)
+        markerPath = self.CreateMarker ()
+        self.releaseInfo['assets'] = []
+        with self.assertRaises (tapir_installer.InstallerError):
+            tapir_installer.UpdateAddOn (self.CreateWaitingTarget (process.pid, markerPath), self.releaseInfo, True)
+        self.assertTrue (os.path.exists (markerPath))
+        self.AssertAddOnIsOld ()
+
 
 @unittest.skipIf (IS_MAC, 'tests the Windows add-on file logic')
 class AddOnFileTests (UpdateModeTestBase):

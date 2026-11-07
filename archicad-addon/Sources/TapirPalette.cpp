@@ -462,13 +462,18 @@ TapirPalette::TapirPalette ()
     , addScriptButton (GetReference (), 5)
     , delScriptButton (GetReference (), 6)
     , manageShortcutsButton (GetReference (), 7)
+    , installedVersionText (GetReference (), 8)
+    , checkForUpdatesButton (GetReference (), 9)
 {
     Attach (*this);
     AttachToAllItems (*this);
 
     LoadScriptsToPopUp ();
 
+    installedVersionText.SetText (GS::UniString::Printf (
+        RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_INSTALLED_VERSION_TEXT, ACAPI_GetOwnResModule ()), ADDON_VERSION));
     SetRunButtonIcon ();
+    SetUpdateButtonText ();
 
     BeginEventProcessing ();
 }
@@ -652,6 +657,8 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
         DeleteScriptFromPopUp ();
     } else if (ev.GetSource () == &manageShortcutsButton) {
         OpenShortcutsDialog ();
+    } else if (ev.GetSource () == &checkForUpdatesButton) {
+        CheckForUpdates ();
     }
 }
 
@@ -1826,6 +1833,74 @@ void TapirPalette::SetRunButtonIcon ()
         resId = ID_RUNWITHUPDATE_BUTTON_ICON;
     }
     runScriptButton.SetIcon (DG::Icon (ACAPI_GetOwnResModule (), resId));
+}
+
+void TapirPalette::SetUpdateButtonText ()
+{
+    if (VersionChecker::IsUsingLatestVersion ()) {
+        checkForUpdatesButton.SetText (RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_CHECK_BUTTON_TEXT, ACAPI_GetOwnResModule ()));
+    } else {
+        checkForUpdatesButton.SetText (GS::UniString::Printf (
+            RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_UPDATE_BUTTON_TEXT, ACAPI_GetOwnResModule ()),
+            VersionChecker::LatestVersion ().ToPrintf ()));
+    }
+}
+
+void TapirPalette::ApplyUpdateMenuItemState ()
+{
+    API_MenuItemRef itemRef = {};
+    itemRef.menuResID = ID_ADDON_MENU_FOR_UPDATE;
+    itemRef.itemIndex = ID_ADDON_MENU_UPDATE;
+
+    // The text from the resource ("Check for Updates...") stays until a newer version is found.
+    if (!VersionChecker::IsUsingLatestVersion ()) {
+        GS::UniString label = GS::UniString::Printf (
+            RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_UPDATE_MENU_TEXT, ACAPI_GetOwnResModule ()),
+            VersionChecker::LatestVersion ().ToPrintf ());
+        ACAPI_MenuItem_SetMenuItemText (&itemRef, nullptr, &label);
+    }
+
+    // Nothing disables this item on purpose: make sure it never shows greyed out.
+    // (Before Archicad 27 these calls are macros that end with a semicolon, so their result is not used.)
+    GSFlags itemFlags = {};
+    ACAPI_MenuItem_GetMenuItemFlags (&itemRef, &itemFlags);
+    if ((itemFlags & API_MenuItemDisabled) != 0) {
+        itemFlags &= ~API_MenuItemDisabled;
+        ACAPI_MenuItem_SetMenuItemFlags (&itemRef, &itemFlags);
+    }
+}
+
+void TapirPalette::CheckForUpdates ()
+{
+    GS::UniString pendingVersion;
+    if (GetPendingAddOnUpdate (pendingVersion)) {
+        // An update waits for Archicad to close: no second download
+        DGAlert (DG_INFORMATION,
+            RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_NEWVERSION_ALERT_TITLE, ACAPI_GetOwnResModule ()),
+            GS::UniString::Printf (RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_PENDING_TEXT, ACAPI_GetOwnResModule ()),
+                pendingVersion.ToPrintf ()),
+            GS::UniString::Printf ("You are using Tapir %s.", ADDON_VERSION),
+            "OK");
+    } else if (!VersionChecker::IsCheckCompleted ()) {
+        DGAlert (DG_INFORMATION, "Tapir Update",
+            "Tapir is still checking GitHub for the latest release.",
+            "Please try again in a moment.",
+            "OK");
+    } else if (!VersionChecker::IsUsingLatestVersion ()) {
+        UpdateAddOn ();
+    } else if (VersionChecker::IsNewerVersionWithoutAddOn ()) {
+        DGAlert (DG_INFORMATION, "Tapir Update",
+            GS::UniString::Printf ("Tapir %T is available, but not yet for Archicad %d.",
+                VersionChecker::LatestVersion ().ToPrintf (), static_cast<int> (VersionChecker::ArchicadMainVersion ())),
+            GS::UniString::Printf ("You are using Tapir %s.", ADDON_VERSION),
+            "OK");
+    } else {
+        DGAlert (DG_INFORMATION,
+            RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_TITLE, ACAPI_GetOwnResModule ()),
+            GS::UniString::Printf (RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_TEXT, ACAPI_GetOwnResModule ()), ADDON_VERSION),
+            GS::EmptyUniString,
+            RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_BUTTON, ACAPI_GetOwnResModule ()));
+    }
 }
 
 #if defined (WINDOWS)

@@ -49,15 +49,6 @@ Once you downloaded the Add-On files you have to install it in Archicad. Follow 
 4. Browse the downloaded Add-On file.
 5. Click "OK" in the Add-On Manager.
 
-### Update the Add-On
-
-When a new Tapir release is out, the Add-On offers the update (*Tapir > Check for Updates...*, or before a palette script runs when `askUpdatingAddOnBeforeEachExecution` is on in `Documents/Tapir/config.json`). Archicad loads Add-Ons only when it starts and cannot reload one while it runs, so the new Add-On needs a restart either way. You choose when:
-
-- **Update when Archicad closes** (the default): the Tapir Installer is downloaded now and waits, and Archicad keeps running, so your work is not interrupted. When you close Archicad, the installer replaces the Add-On; Archicad is not started again, and the next start loads the new version. Until then the palette's Run button tooltip says that the update is ready, and the update is not offered again. If another Archicad still uses the same Add-On file when this one closes (Windows), the update is given up and offered again at the next start. On Windows, an Add-On in a folder that only an administrator can change asks for administrator rights when you choose the update, not when Archicad closes.
-- **Update and Restart Archicad**: the installer quits Archicad, replaces the Add-On and starts Archicad again.
-
-Scripts, including the marketplace scripts, are not part of the Add-On and need no restart.
-
 ### Install the Grasshopper plugin
 
 You can install the plugin from the Rhino Package Manager. The package is called "tapir".
@@ -84,6 +75,16 @@ with urllib.request.urlopen(request, json.dumps(body).encode()) as response:
 
 Every Tapir command is called this way: change `commandName` and put the command's parameters in `addOnCommandParameters`. The [examples](archicad-addon/Examples/) use `aclib`, a small helper that does this for you.
 
+#### Preview a change with `dryRun`
+
+The commands that delete or change can be asked what they would do first. With `"dryRun": true` among its parameters such a command makes all the checks of a real run, with the same errors, but changes nothing in the project and adds no undo step; its response is a real run's plus `"dryRun": true`, and says for each target what would happen (`"wouldDelete": true` for an element `DeleteElements` would delete). Without `dryRun`, or with `false`, the command works as before. The [command reference](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon) says which commands take it.
+
+```python
+preview = aclib.RunTapirCommand('DeleteElements', {'elements': elements, 'dryRun': True})
+if all(result['success'] for result in preview['executionResults']):
+    aclib.RunTapirCommand('DeleteElements', {'elements': elements})
+```
+
 ### Use the Tapir palette in Archicad
 
 The Add-On adds a **Tapir** menu to Archicad; open the palette with **Tapir > Tapir Palette**.
@@ -91,6 +92,15 @@ The Add-On adds a **Tapir** menu to Archicad; open the palette with **Tapir > Ta
 - The palette lists the scripts of [builtin-scripts/](builtin-scripts/), which it reads from this repository on GitHub when Archicad starts, the scripts of the GitHub repositories and folders named in its configuration file (`Documents/Tapir/config.json`), and the scripts you add with its *Add* button.
 - Choose a script and run it. Python scripts run with [uv](https://docs.astral.sh/uv/), which takes care of Python and of the packages the script needs; if uv is missing, the palette offers to install it. The script is told the port of the Archicad it was started from, so it works on that Archicad, and its output is shown in the palette. A running script can be stopped.
 - *Tapir > Manage Script Shortcuts...* puts up to six scripts on the menu commands *Tapir > Run Script Shortcut 1* to *6*, which you can give keyboard shortcuts in Archicad's Work Environment.
+
+### Update the Add-On
+
+- **From Archicad:** *Tapir > Check for Updates...*, or the *Check for Updates* button at the right end of the Tapir palette, next to the installed version (or before a palette script runs when `askUpdatingAddOnBeforeEachExecution` is on in `Documents/Tapir/config.json`). When a newer release exists for your Archicad version, the menu command reads *Update Tapir to &lt;version&gt;...* and the button *Update to &lt;version&gt;*. Archicad loads Add-Ons only when it starts and cannot reload one while it runs, so the new Add-On needs a restart either way. You choose when:
+  - **Update when Archicad closes** (the default): the Tapir Installer is downloaded now and waits, and Archicad keeps running, so your work is not interrupted. When you close Archicad, the installer replaces the Add-On; Archicad is not started again, and the next start loads the new version. Until then the palette's Run button tooltip says that the update is ready, and the menu command and the button tell so instead of offering the update again. If another Archicad still uses the same Add-On file when this one closes (Windows), the update is given up and offered again at the next start. On Windows, an Add-On in a folder that only an administrator can change asks for administrator rights when you choose the update, not when Archicad closes.
+  - **Update and Restart Archicad**: the Tapir Installer quits Archicad, replaces the Add-On and starts Archicad again.
+
+  Scripts, including the marketplace scripts, are not part of the Add-On and need no restart.
+- **Without that menu command or button:** older Tapir releases have neither. Download and run the [Tapir Installer](#easy-installation-recommended) with Archicad closed: it replaces the Add-On in every Archicad version you select. Later updates can then be made from Archicad.
 
 ## What you can do
 
