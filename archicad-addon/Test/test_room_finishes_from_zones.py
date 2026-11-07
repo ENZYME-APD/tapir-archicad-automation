@@ -29,7 +29,7 @@ def _load_script():
 
     archicad.ArchicadError = ArchicadError
     for name in ("batched", "get_details_of_elements", "get_elements", "get_story_names", "item_errors",
-                 "run_tapir", "select_elements"):
+                 "run_command", "run_tapir", "select_elements"):
         setattr(archicad, name, _unused)
     for name in ("ScriptWindow", "make_tree", "require_archicad"):
         setattr(ui, name, _unused)
@@ -422,6 +422,211 @@ class WallSummaryTests(unittest.TestCase):
         row = rf.story_summary([zone])[0]
         self.assertEqual((row["floor"], row["ceiling"], row["wall"]), (1, 0, 2))
         self.assertAlmostEqual(row["wallLength"], 7.0)
+
+
+def _rectangle_pieces():
+    return rf.finish_pieces(rf.read_contour(_coords(RECTANGLE), None), [], _wall_segments(RECTANGLE))
+
+
+def _piece_on(pieces, y=None, x=None):
+    """ The piece along the line y = value (or x = value). """
+    for piece in pieces:
+        if y is not None and abs(piece["beg"][1] - y) < 1e-9 and abs(piece["end"][1] - y) < 1e-9:
+            return piece
+        if x is not None and abs(piece["beg"][0] - x) < 1e-9 and abs(piece["end"][0] - x) < 1e-9:
+            return piece
+    raise AssertionError("no such piece")
+
+
+# The rectangular room has a 0.2 m wall behind each edge, its reference line on the outer face.
+# A door 0.9 wide and 2.1 high in the bottom wall (y = -0.2 .. 0), its centre at x = 1.0; a window
+# 1.2 wide, 0.9 above the floor and 1.2 high in the top wall (y = 3.0 .. 3.2), its centre at x = 2.5.
+DOOR = {"guid": "D1", "kind": "Door", "label": "Door D-01", "maxDistance": 0.2,
+        "points": rf.door_window_points((-0.2, -0.2), (4.2, -0.2), 1.2, 0.9), "bottom": 0.0, "top": 2.1}
+WINDOW = {"guid": "W1", "kind": "Window", "label": "Window W-01", "maxDistance": 0.2,
+          "points": rf.door_window_points((4.2, 3.2), (-0.2, 3.2), 1.7, 1.2), "bottom": 0.9, "top": 2.1}
+
+
+class DoorWindowTests(unittest.TestCase):
+    def test_door_window_points(self):
+        a, b = rf.door_window_points((0.0, 0.0), (4.0, 0.0), 1.0, 0.8)
+        self.assertAlmostEqual(a[0], 0.6)
+        self.assertAlmostEqual(b[0], 1.4)
+        self.assertEqual(rf.door_window_points((1.0, 1.0), (1.0, 1.0), 0.5, 0.8), [])
+
+    def test_door_gets_an_opening_from_the_floor(self):
+        piece = _piece_on(_rectangle_pieces(), y=0.0)
+        cut = rf.opening_cut(piece, DOOR, 0.0, 2.6)
+        self.assertIsNotNone(cut)
+        self.assertAlmostEqual(cut["to"] - cut["from"], 0.9)
+        self.assertAlmostEqual(cut["bottom"], 0.0)
+        self.assertAlmostEqual(cut["top"], 2.1)
+        # The middle of the cut is at x = 1.0 on the room edge.
+        start, (ux, uy), _ = rf.piece_frame(piece)
+        middle = (cut["from"] + cut["to"]) / 2
+        self.assertAlmostEqual(start[0] + ux * middle, 1.0)
+
+    def test_door_on_a_raised_floor_still_reaches_the_finish_bottom(self):
+        piece = _piece_on(_rectangle_pieces(), y=0.0)
+        cut = rf.opening_cut(piece, {**DOOR, "bottom": 0.1, "top": 2.2}, 0.0, 2.6)
+        self.assertAlmostEqual(cut["bottom"], 0.0)
+
+    def test_window_keeps_its_sill(self):
+        piece = _piece_on(_rectangle_pieces(), y=3.0)
+        cut = rf.opening_cut(piece, WINDOW, 0.0, 2.6)
+        self.assertAlmostEqual(cut["to"] - cut["from"], 1.2)
+        self.assertAlmostEqual(cut["bottom"], 0.9)
+        self.assertAlmostEqual(cut["top"], 2.1)
+
+    def test_margin_for_the_frame(self):
+        piece = _piece_on(_rectangle_pieces(), y=3.0)
+        cut = rf.opening_cut(piece, WINDOW, 0.0, 2.6, margin=0.05)
+        self.assertAlmostEqual(cut["to"] - cut["from"], 1.3)
+        self.assertAlmostEqual(cut["bottom"], 0.85)
+        self.assertAlmostEqual(cut["top"], 2.15)
+        door = rf.opening_cut(_piece_on(_rectangle_pieces(), y=0.0), DOOR, 0.0, 2.6, margin=0.05)
+        self.assertAlmostEqual(door["bottom"], 0.0)
+        self.assertAlmostEqual(door["top"], 2.15)
+
+    def test_opening_never_reaches_above_the_finish(self):
+        piece = _piece_on(_rectangle_pieces(), y=0.0)
+        cut = rf.opening_cut(piece, {**DOOR, "top": 3.0}, 0.0, 2.6)
+        self.assertAlmostEqual(cut["top"], 2.6)
+
+    def test_only_the_pieces_in_front_of_them(self):
+        cuts = rf.zone_cuts(_rectangle_pieces(), [DOOR, WINDOW], 0.0, 2.6)
+        self.assertEqual(sorted(c["guid"] for c in cuts), ["D1", "W1"])
+        pieces = _rectangle_pieces()
+        self.assertIsNone(rf.opening_cut(_piece_on(pieces, y=3.0), DOOR, 0.0, 2.6))
+        self.assertIsNone(rf.opening_cut(_piece_on(pieces, x=0.0), DOOR, 0.0, 2.6))
+        self.assertIsNone(rf.opening_cut(_piece_on(pieces, x=4.0), WINDOW, 0.0, 2.6))
+
+    def test_door_in_a_wall_at_the_corner_gets_no_opening_with_a_margin(self):
+        # A door whose sides are both at the same place along the bottom piece runs across it, not
+        # along it (as a door in a wall meeting it at a corner would), so the margin alone gives it
+        # no width there.
+        door = {**DOOR, "points": [(1.0, -0.05), (1.0, -0.15)]}
+        self.assertIsNone(rf.opening_cut(_piece_on(_rectangle_pieces(), y=0.0), door, 0.0, 2.6, margin=0.05))
+
+    def test_door_of_another_room_behind_a_thicker_wall_is_left_out(self):
+        # The same door, but 0.5 m behind the room edge, in a wall only 0.2 m thick.
+        far = {**DOOR, "points": [(x, y - 0.3) for x, y in DOOR["points"]]}
+        self.assertIsNone(rf.opening_cut(_piece_on(_rectangle_pieces(), y=0.0), far, 0.0, 2.6))
+
+    def test_door_on_another_story_is_left_out(self):
+        piece = _piece_on(_rectangle_pieces(), y=0.0)
+        self.assertIsNone(rf.opening_cut(piece, {**DOOR, "bottom": 3.0, "top": 5.1}, 0.0, 2.6))
+
+    def test_virtual_boundary_gets_no_opening(self):
+        # A door in the edge from (4, 0) to (4, 3), which opens to the next zone: no finish, no opening.
+        pieces = rf.finish_pieces(rf.read_contour(_coords(RECTANGLE), None), [], _wall_segments(RECTANGLE, skip={1}))
+        door = {**DOOR, "points": rf.door_window_points((4.1, 0.0), (4.1, 3.0), 1.5, 0.9)}
+        self.assertEqual(rf.zone_cuts(pieces, [door], 0.0, 2.6), [])
+
+    def test_opening_element_polygon(self):
+        geometry = {"anchorPoint": {"x": 2.0, "y": -0.2, "z": 1.0}, "xAxis": {"x": 1.0, "y": 0.0, "z": 0.0},
+                    "yAxis": {"x": 0.0, "y": 0.0, "z": 1.0}, "extrusionDirection": {"x": 0.0, "y": 1.0, "z": 0.0},
+                    "polygon": [{"x": -0.3, "y": 0.0}, {"x": 0.3, "y": 0.0}, {"x": 0.3, "y": 0.5},
+                                {"x": -0.3, "y": 0.5}]}
+        points = rf.opening_world_points(geometry)
+        self.assertEqual(len(points), 4)
+        self.assertAlmostEqual(min(p[2] for p in points), 1.0)
+        self.assertAlmostEqual(max(p[2] for p in points), 1.5)
+        element = {"guid": "O1", "kind": "Opening", "label": "Opening", "maxDistance": 0.2,
+                   "points": [(p[0], p[1]) for p in points], "bottom": 1.0, "top": 1.5}
+        cut = rf.opening_cut(_piece_on(_rectangle_pieces(), y=0.0), element, 0.0, 2.6)
+        self.assertAlmostEqual(cut["to"] - cut["from"], 0.6)
+        self.assertAlmostEqual(cut["bottom"], 1.0)
+
+
+class FinishAreaTests(unittest.TestCase):
+    def test_area_with_a_door_and_a_window_deducted(self):
+        pieces = _rectangle_pieces()
+        cuts = rf.zone_cuts(pieces, [DOOR, WINDOW], 0.0, 2.6)
+        self.assertAlmostEqual(rf.wall_finish_area(pieces, [], 2.6), 14.0 * 2.6)
+        self.assertAlmostEqual(rf.wall_finish_area(pieces, cuts, 2.6), 14.0 * 2.6 - 0.9 * 2.1 - 1.2 * 1.2)
+
+    def test_overlapping_openings_count_once(self):
+        self.assertAlmostEqual(rf.rectangles_area([(0.0, 1.0, 0.0, 1.0), (0.5, 1.5, 0.0, 1.0)]), 1.5)
+        self.assertAlmostEqual(rf.rectangles_area([(0.0, 1.0, 0.0, 1.0), (0.2, 0.4, 0.2, 0.4)]), 1.0)
+        self.assertAlmostEqual(rf.rectangles_area([]), 0.0)
+
+    def test_summary_counts_the_kept_clear_elements(self):
+        pieces = _rectangle_pieces()
+        zone = _zone(planned=("wall",))
+        zone["wallPieces"] = pieces
+        zone["roomHeight"] = 2.6
+        zone["cuts"] = rf.zone_cuts(pieces, [DOOR, WINDOW], 0.0, 2.6)
+        row = rf.story_summary([zone])[0]
+        self.assertEqual(row["keptClear"], 2)
+        self.assertAlmostEqual(row["wallArea"], 14.0 * 2.6 - 0.9 * 2.1 - 1.2 * 1.2)
+
+
+class OpeningPlacementTests(unittest.TestCase):
+    def _door_cut(self):
+        piece = _piece_on(_rectangle_pieces(), y=0.0)
+        return piece, rf.opening_cut(piece, DOOR, 0.0, 2.6)
+
+    def test_placed_on_the_room_face_of_the_finish(self):
+        piece, cut = self._door_cut()
+        point = rf.opening_point(piece, cut, 0.015)
+        self.assertAlmostEqual(point["x"], 1.0)
+        self.assertAlmostEqual(point["y"], 0.015)
+        self.assertAlmostEqual(point["z"], 0.0)
+
+    def test_opening_data_is_a_finite_cut_through_the_finish_only(self):
+        piece, cut = self._door_cut()
+        item = rf.opening_data({"elementId": {"guid": "F1"}}, piece, cut, 0.015)
+        self.assertEqual(item["parentElementId"], {"guid": "F1"})
+        parameters = item["extrusionParameters"]
+        self.assertEqual((parameters["limitType"], parameters["anchor"], parameters["linkedStatus"]),
+                         ("Finite", "BottomCenter", "NotLinked"))
+        self.assertAlmostEqual(parameters["width"], 0.9)
+        self.assertAlmostEqual(parameters["height"], 2.1)
+        self.assertAlmostEqual(parameters["finiteBodyLength"], 0.015 + 2 * rf.OPENING_EXTRA_DEPTH)
+
+    def _details(self, anchor, direction, start, cut_guids):
+        return {"geometry": {"anchorPoint": {"x": anchor[0], "y": anchor[1], "z": anchor[2]},
+                             "extrusionDirection": {"x": direction[0], "y": direction[1], "z": direction[2]},
+                             "xAxis": {"x": 1.0, "y": 0.0, "z": 0.0}, "yAxis": {"x": 0.0, "y": 0.0, "z": 1.0}},
+                "extrusionParameters": {"extrusionStartOffset": start},
+                "cutElements": [{"elementId": {"guid": g}} for g in cut_guids]}
+
+    def test_correct_opening_needs_no_change(self):
+        piece, cut = self._door_cut()
+        point = rf.opening_point(piece, cut, 0.015)
+        # The wall is at y < 0, so the extrusion goes towards -y.
+        details = self._details((point["x"], point["y"], point["z"]), (0.0, -1.0, 0.0),
+                                -rf.OPENING_EXTRA_DEPTH, ["F1"])
+        self.assertEqual(rf.opening_correction(details, "F1", piece, point, 0.015), ({}, None))
+
+    def test_moved_reversed_and_cutting_the_structure(self):
+        piece, cut = self._door_cut()
+        point = rf.opening_point(piece, cut, 0.015)
+        details = self._details((point["x"] + 0.1, point["y"], point["z"] + 0.9), (0.0, 1.0, 0.0),
+                                -rf.OPENING_EXTRA_DEPTH, ["F1", "STRUCTURAL", "SLAB"])
+        change, warning = rf.opening_correction(details, "F1", piece, point, 0.015)
+        self.assertIsNone(warning)
+        self.assertAlmostEqual(change["transformation"][3], -0.1)
+        self.assertAlmostEqual(change["transformation"][11], -0.9)
+        self.assertAlmostEqual(change["extrusionParameters"]["extrusionStartOffset"],
+                               -(0.015 + rf.OPENING_EXTRA_DEPTH))
+        self.assertEqual(change["removeCutElements"], [{"elementId": {"guid": "STRUCTURAL"}},
+                                                       {"elementId": {"guid": "SLAB"}}])
+        self.assertNotIn("addCutElements", change)
+
+    def test_finish_added_when_it_is_not_cut(self):
+        piece, cut = self._door_cut()
+        point = rf.opening_point(piece, cut, 0.015)
+        details = self._details((point["x"], point["y"], point["z"]), (0.0, -1.0, 0.0), -rf.OPENING_EXTRA_DEPTH, [])
+        change, _ = rf.opening_correction(details, "F1", piece, point, 0.015)
+        self.assertEqual(change, {"addCutElements": [{"elementId": {"guid": "F1"}}]})
+
+    def test_not_square_is_reported(self):
+        piece, cut = self._door_cut()
+        point = rf.opening_point(piece, cut, 0.015)
+        details = self._details((point["x"], point["y"], point["z"]), (0.0, 0.0, 1.0), -rf.OPENING_EXTRA_DEPTH, ["F1"])
+        self.assertIsNotNone(rf.opening_correction(details, "F1", piece, point, 0.015)[1])
 
 
 class ParseTests(unittest.TestCase):
