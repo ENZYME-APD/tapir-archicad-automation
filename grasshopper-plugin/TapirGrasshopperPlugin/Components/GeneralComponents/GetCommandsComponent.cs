@@ -20,6 +20,15 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
         {
         }
 
+        protected override void AddInputs()
+        {
+            InText(
+                "Group",
+                "Lists only the commands of this command group, e.g. \"Application Commands\". Optional; default: every command.");
+
+            SetOptionality(0);
+        }
+
         protected override void AddOutputs()
         {
             OutTexts(
@@ -37,14 +46,31 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
             OutTexts(
                 "Descriptions",
                 "The description of each command, as in the command reference.");
+
+            OutText(
+                "AddOnVersion",
+                "The version of the installed Tapir Add-On.");
         }
 
         protected override void Solve(
             IGH_DataAccess da)
         {
+            var parameters = new JObject
+            {
+                ["includeDescriptions"] = true
+            };
+
+            if (da.TryGet(
+                    0,
+                    out string group) &&
+                !string.IsNullOrEmpty(group))
+            {
+                parameters["group"] = group;
+            }
+
             if (!TryGetCadResponse(
                     CommandName,
-                    new JObject(),
+                    parameters,
                     ToAddOn,
                     out JObject response))
             {
@@ -68,6 +94,7 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
             da.SetDataList(1, groups);
             da.SetDataList(2, versions);
             da.SetDataList(3, descriptions);
+            da.SetData(4, response["version"]?.ToString());
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -226,7 +226,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetCommandsCommand> (
             applicationCommands, "1.8.1",
-            "Retrieves every command of the Tapir Add-On with its command group, the Tapir version it was introduced in and its description, so a script can check that a command exists before calling it."
+            "Retrieves the version of the installed Tapir Add-On and every command of it with its command group and the Tapir version it was introduced in, so a script can check that a command exists before calling it. Optionally lists only one command group and returns the descriptions of the commands."
         );
         err |= RegisterCommand<GetArchicadLocationCommand> (
             applicationCommands, "0.1.0",
