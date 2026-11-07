@@ -1,0 +1,814 @@
+{
+  "version": 1,
+  "scripts": [
+    {
+      "slug": "building-material-property-audit",
+      "name": "Building Material Property Audit",
+      "summary": "Lists a custom property of every Building Material so the empty values stand out, exports the list and fills in a value for the materials you choose.",
+      "category": "classification-attributes",
+      "tags": [
+        "building-materials",
+        "properties",
+        "attributes",
+        "audit",
+        "excel"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "BuildingMaterialPropertyAudit.py",
+      "changes": "model",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
+          "commit": "53c35b357860e25169b10ed10135ec4ab7190c73",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/53c35b357860e25169b10ed10135ec4ab7190c73/marketplace/building-material-property-audit/BuildingMaterialPropertyAudit.py",
+          "sha256": "be5b86d6c4d1f88083bc8ae332d9c98191bf3d9de2a88e834c94b38fb26bd856"
+        }
+      ]
+    },
+    {
+      "slug": "bulk-view-renamer",
+      "name": "Bulk View Renamer",
+      "summary": "Renames the views of the View Map, or of one folder, in one go: find and replace, prefix and suffix, or a pattern with a counter.",
+      "category": "navigator-views",
+      "tags": [
+        "views",
+        "view-map",
+        "renaming",
+        "navigator"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "BulkViewRenamer.py",
+      "changes": "model",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
+          "commit": "7254bb3f5a03319efaa1dffbb38fbcb7ebe0d773",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7254bb3f5a03319efaa1dffbb38fbcb7ebe0d773/marketplace/bulk-view-renamer/BulkViewRenamer.py",
+          "sha256": "f4b22e49db56d8819fbe3fcc8aa351982a4b868f31beb09856fea6dba11220d0"
+        }
+      ]
+    },
+    {
+      "slug": "classification-overview",
+      "name": "Classification Overview",
+      "summary": "Counts the elements classified with each item of a classification system, shows the unclassified ones, highlights or selects them and exports the counts.",
+      "category": "classification-attributes",
+      "tags": [
+        "classification",
+        "audit",
+        "selection",
+        "excel"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "ClassificationOverview.py",
+      "changes": "files",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
+          "commit": "53c35b357860e25169b10ed10135ec4ab7190c73",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/53c35b357860e25169b10ed10135ec4ab7190c73/marketplace/classification-overview/ClassificationOverview.py",
+          "sha256": "e24f5c29f4fe53616e69bdc13681e3eff3435bde479a6e064485cf3dddec952b"
+        }
+      ]
+    },
+    {
+      "slug": "contour-mesh",
+      "name": "ContourMesh",
+      "summary": "Creates one Archicad terrain mesh from a DXF file with 3D contour lines, with every contour as a ridge line of the mesh.",
+      "category": "modeling-geometry",
+      "tags": [
+        "terrain",
+        "mesh",
+        "dxf",
+        "contours"
+      ],
+      "author": {
+        "name": "Paul K",
+        "github": "ArchPrime"
+      },
+      "license": "MIT",
+      "entry": "contour_mesh.py",
+      "changes": "model",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            30
+          ],
+          "minTapirVersion": "1.5.0",
+          "changelog": "First version.",
+          "commit": "91d07197bd5f04de3f7096d05eeb0b38066818ef",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/91d07197bd5f04de3f7096d05eeb0b38066818ef/marketplace/contour-mesh/contour_mesh.py",
+          "sha256": "659a9d81af1f37ac7db9d6f67122c35bed514ce2785a3a8adc751adf42d15068"
+        }
+      ]
+    },
+    {
+      "slug": "copy-settings-to-selection",
+      "name": "Copy Settings to Selection",
+      "summary": "Copies the settings of one element to the selected elements of the same type, keeping their geometry, ID and the sizes you choose.",
+      "category": "element-data-properties",
+      "tags": [
+        "settings",
+        "favorites",
+        "eyedropper",
+        "selection"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "CopySettingsToSelection.py",
+      "changes": "model",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
+          "commit": "7254bb3f5a03319efaa1dffbb38fbcb7ebe0d773",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7254bb3f5a03319efaa1dffbb38fbcb7ebe0d773/marketplace/copy-settings-to-selection/CopySettingsToSelection.py",
+          "sha256": "c6b55bd66429a7a558307623864035c00a3f95cb9e3da5445a59a16ed56532a8"
+        }
+      ]
+    },
+    {
+      "slug": "distribution-board-schedule",
+      "name": "Distribution Board Schedule",
+      "summary": "Lists the circuits of every distribution board with their loads and phase balance, flags overloads, and saves the schedule as CSV or Excel.",
+      "category": "quantities-scheduling",
+      "tags": [
+        "electrical",
+        "mep",
+        "circuits",
+        "loads",
+        "schedule",
+        "export"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "DistributionBoardSchedule.py",
+      "changes": "files",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
+          "commit": "7c52a5572ebfd780389890238227cd99c04b812c",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7c52a5572ebfd780389890238227cd99c04b812c/marketplace/distribution-board-schedule/DistributionBoardSchedule.py",
+          "sha256": "179b3b22df0c78dd321fbef8e7631a0796930f90e3debee4000ca0f76c20d764"
+        }
+      ]
+    },
+    {
+      "slug": "door-window-numbering-by-zone",
+      "name": "Door and Window Numbering by Zone",
+      "summary": "Gives every door and window an Element ID built from the zone it opens into, such as 1.04-D1, numbered clockwise within each zone.",
+      "category": "element-data-properties",
+      "tags": [
+        "doors",
+        "windows",
+        "zones",
+        "numbering",
+        "element-id"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "DoorWindowNumberingByZone.py",
+      "changes": "model",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
+          "commit": "53c35b357860e25169b10ed10135ec4ab7190c73",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/53c35b357860e25169b10ed10135ec4ab7190c73/marketplace/door-window-numbering-by-zone/DoorWindowNumberingByZone.py",
+          "sha256": "91ee830fc203a2fd3371413e25b00e63907d6bc3611715d69cf5a8502027a7e6"
+        }
+      ]
+    },
+    {
+      "slug": "drawing-status-report",
+      "name": "Drawing Status Report",
+      "summary": "Lists every drawing on the layouts with its Drawing Manager status, source and path, exports the list and updates the drawings you choose.",
+      "category": "documentation-layouts",
+      "tags": [
+        "drawings",
+        "layouts",
+        "drawing-manager",
+        "excel"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "DrawingStatusReport.py",
+      "changes": "model",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
+          "commit": "53c35b357860e25169b10ed10135ec4ab7190c73",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/53c35b357860e25169b10ed10135ec4ab7190c73/marketplace/drawing-status-report/DrawingStatusReport.py",
+          "sha256": "73e42f65d084c86c38d85e014591ffef64183be318133bc307907a4937a72dc4"
+        }
+      ]
+    },
+    {
+      "slug": "electrical-plumbing-check",
+      "name": "Electrical and Plumbing Check",
+      "summary": "Lists electrical symbols with an empty circuit, board or number, devices not on a circuit, empty circuits and sanitary objects outside every zone.",
+      "category": "quality-assurance",
+      "tags": [
+        "electrical",
+        "plumbing",
+        "circuits",
+        "symbols",
+        "zones",
+        "check"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "ElectricalPlumbingCheck.py",
+      "changes": "read-only",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
+          "commit": "4152bff61ed5223f8ce68577ebdb763e5325171b",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/4152bff61ed5223f8ce68577ebdb763e5325171b/marketplace/electrical-plumbing-check/ElectricalPlumbingCheck.py",
+          "sha256": "a815d98b75a6f3fd1055202c519ebe222dfbbffc637a6bc537445ff716111487"
+        }
+      ]
+    },
+    {
+      "slug": "material-take-off",
+      "name": "Material Take-Off",
+      "summary": "Totals the volume and projected area of every building material of walls, columns, beams, slabs, roofs and shells, per story, for Excel or CSV.",
+      "category": "quantities-scheduling",
+      "tags": [
+        "building-materials",
+        "quantities",
+        "volume",
+        "take-off",
+        "export"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "MaterialTakeOff.py",
+      "changes": "files",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
+          "commit": "262460913fbedd34d8f67a6383ff6ac1e33a5884",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/262460913fbedd34d8f67a6383ff6ac1e33a5884/marketplace/material-take-off/MaterialTakeOff.py",
+          "sha256": "d9af986db576de67d99eafdd0aabc2f3eb7c88ba520e068d7547a318f41641e1"
+        }
+      ]
+    },
+    {
+      "slug": "missing-library-parts",
+      "name": "Missing Library Parts",
+      "summary": "Lists the library parts placed objects, lamps, windows and doors use but the loaded libraries lack, and replaces them with loaded ones.",
+      "category": "libraries-objects",
+      "tags": [
+        "library-parts",
+        "missing",
+        "objects",
+        "doors",
+        "windows",
+        "migration"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "MissingLibraryParts.py",
+      "changes": "model",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
+          "commit": "262460913fbedd34d8f67a6383ff6ac1e33a5884",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/262460913fbedd34d8f67a6383ff6ac1e33a5884/marketplace/missing-library-parts/MissingLibraryParts.py",
+          "sha256": "39fb5b4034f4cc4cbbdf4b652b2e3ca31ef3ae87170d741dcfcc506713d49ea5"
+        }
+      ]
+    },
+    {
+      "slug": "object-counter",
+      "name": "Object Counter",
+      "summary": "Counts placed objects, lamps, doors, windows and electrical devices by library part, per story and zone, and saves the table as CSV or Excel.",
+      "category": "quantities-scheduling",
+      "tags": [
+        "objects",
+        "lamps",
+        "doors",
+        "windows",
+        "electrical",
+        "zones",
+        "count",
+        "export"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "ObjectCounter.py",
+      "changes": "files",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
+          "commit": "7c52a5572ebfd780389890238227cd99c04b812c",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7c52a5572ebfd780389890238227cd99c04b812c/marketplace/object-counter/ObjectCounter.py",
+          "sha256": "37c718f5c2f74c7d5be7bc5e693a893e9825f06bece0b76a646efec468ebfa49"
+        }
+      ]
+    },
+    {
+      "slug": "place-symbols-in-rooms",
+      "name": "Place Symbols in Rooms",
+      "summary": "Places an object or lamp in the chosen zones, along the boundary (sockets) or in a grid (lights), with a preview before anything is placed.",
+      "category": "modeling-geometry",
+      "tags": [
+        "zones",
+        "objects",
+        "lamps",
+        "electrical",
+        "placement",
+        "grid"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "PlaceSymbolsInRooms.py",
+      "changes": "model",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.1",
+          "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
+          "commit": "7c52a5572ebfd780389890238227cd99c04b812c",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7c52a5572ebfd780389890238227cd99c04b812c/marketplace/place-symbols-in-rooms/PlaceSymbolsInRooms.py",
+          "sha256": "1d1c593fb4c42fab77769dd0325b0b7c45e11db7a94d78cb3b2ac37d252e07b8"
+        }
+      ]
+    },
+    {
+      "slug": "property-value-exporter",
+      "name": "Property Value Exporter",
+      "summary": "Writes the values of the properties you choose into an Excel or CSV file, one row per element, with its Element ID, type and story.",
+      "category": "import-export",
+      "tags": [
+        "properties",
+        "excel",
+        "csv",
+        "export"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "PropertyValueExporter.py",
+      "changes": "files",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
+          "commit": "7254bb3f5a03319efaa1dffbb38fbcb7ebe0d773",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7254bb3f5a03319efaa1dffbb38fbcb7ebe0d773/marketplace/property-value-exporter/PropertyValueExporter.py",
+          "sha256": "e2d28f13db4cf1a5ad212f16424fc7ae03f4b794fa589f59264d032dd9170778"
+        }
+      ]
+    },
+    {
+      "slug": "property-value-importer",
+      "name": "Property Value Importer",
+      "summary": "Reads a CSV or Excel file from the Property Value Exporter and writes its values into the elements' properties, after a preview.",
+      "category": "import-export",
+      "tags": [
+        "properties",
+        "excel",
+        "csv",
+        "import"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "PropertyValueImporter.py",
+      "changes": "model",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version.",
+          "commit": "c5194a815f45b4a913d260f2da332f62d1e48685",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/c5194a815f45b4a913d260f2da332f62d1e48685/marketplace/property-value-importer/PropertyValueImporter.py",
+          "sha256": "c6ff5aaf15a9934d41a164fffc4b360d7df5362aea6626485c8784b9058057d5"
+        }
+      ]
+    },
+    {
+      "slug": "room-finishes-schedule",
+      "name": "Room Finishes Schedule",
+      "summary": "Lists the floor, wall and ceiling finish areas of every zone, the walls split by surface, and saves the table as CSV or Excel.",
+      "category": "quantities-scheduling",
+      "tags": [
+        "zones",
+        "finishes",
+        "surfaces",
+        "areas",
+        "schedule",
+        "export"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "RoomFinishesSchedule.py",
+      "changes": "files",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
+          "commit": "262460913fbedd34d8f67a6383ff6ac1e33a5884",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/262460913fbedd34d8f67a6383ff6ac1e33a5884/marketplace/room-finishes-schedule/RoomFinishesSchedule.py",
+          "sha256": "eab8e22e2500066370c540d6b9237d3669ceff5026d3a2aad073bbb3d2c64f74"
+        }
+      ]
+    },
+    {
+      "slug": "run-lengths",
+      "name": "Run Lengths",
+      "summary": "Totals the lengths of MEP pipe, duct and cable runs and of the 2D lines drawn for them, side by side, and saves the table as CSV or Excel.",
+      "category": "quantities-scheduling",
+      "tags": [
+        "mep",
+        "pipes",
+        "ducts",
+        "cables",
+        "lines",
+        "lengths",
+        "export"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "RunLengths.py",
+      "changes": "files",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
+          "commit": "7c52a5572ebfd780389890238227cd99c04b812c",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7c52a5572ebfd780389890238227cd99c04b812c/marketplace/run-lengths/RunLengths.py",
+          "sha256": "d3206b916fff8f2d7715ee4d9e74ec719a7972340940d9dc6b61f1ae364d0c63"
+        }
+      ]
+    },
+    {
+      "slug": "sheet-index-export",
+      "name": "Sheet Index Export",
+      "summary": "Lists every layout of the Layout Book with its subset, number, name, paper size and current revision, and saves it as Excel or CSV.",
+      "category": "documentation-layouts",
+      "tags": [
+        "layouts",
+        "sheet-index",
+        "revisions",
+        "excel"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "SheetIndexExport.py",
+      "changes": "files",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
+          "commit": "7254bb3f5a03319efaa1dffbb38fbcb7ebe0d773",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7254bb3f5a03319efaa1dffbb38fbcb7ebe0d773/marketplace/sheet-index-export/SheetIndexExport.py",
+          "sha256": "aded883a79a77fb740100d121d46f1fdb259d924f8ce8dc664655f7333894856"
+        }
+      ]
+    },
+    {
+      "slug": "story-setup",
+      "name": "Story Setup",
+      "summary": "Sets up the stories of the project from a pasted table or a CSV file, shows what changes first, and refuses to delete a story with elements on it.",
+      "category": "utilities",
+      "tags": [
+        "stories",
+        "levels",
+        "csv",
+        "excel",
+        "setup"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "StorySetup.py",
+      "changes": "model",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
+          "commit": "262460913fbedd34d8f67a6383ff6ac1e33a5884",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/262460913fbedd34d8f67a6383ff6ac1e33a5884/marketplace/story-setup/StorySetup.py",
+          "sha256": "adb64da536891b6d5f2b24eafa7656ff21b7a5389b4e0ee5011ed2c99e7dbaab"
+        }
+      ]
+    },
+    {
+      "slug": "text-find-replace",
+      "name": "Find and Replace in Texts",
+      "summary": "Finds a word in the Texts and text Labels and replaces it in the matches you check, keeping the styles and autotexts of the rest of the text.",
+      "category": "documentation-layouts",
+      "tags": [
+        "texts",
+        "labels",
+        "find-replace",
+        "annotation"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "TextFindReplace.py",
+      "changes": "model",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
+          "commit": "53c35b357860e25169b10ed10135ec4ab7190c73",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/53c35b357860e25169b10ed10135ec4ab7190c73/marketplace/text-find-replace/TextFindReplace.py",
+          "sha256": "6b064247d3b51c613f398100fb8ffef60a3d7a4224a20d70d4b6554c8187d566"
+        }
+      ]
+    },
+    {
+      "slug": "wall-clearance",
+      "name": "Wall Clearance",
+      "summary": "Finds doors, windows and objects too close to a wall, column or curtain wall and moves them just enough to keep the margin.",
+      "category": "quality-assurance",
+      "tags": [
+        "doors",
+        "windows",
+        "objects",
+        "walls",
+        "clearance",
+        "check"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "WallClearance.py",
+      "changes": "model",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.1",
+          "changelog": "First version in the marketplace, the same as the built-in script of the same name, with doors and windows measured by their opening in the wall.",
+          "commit": "4152bff61ed5223f8ce68577ebdb763e5325171b",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/4152bff61ed5223f8ce68577ebdb763e5325171b/marketplace/wall-clearance/WallClearance.py",
+          "sha256": "b50ac0699ae14ba3aae5b5eeed362acf2cfd89c5ea30a91e3089dbfe54896e48"
+        }
+      ]
+    },
+    {
+      "slug": "zone-area-check",
+      "name": "Zone Area Check",
+      "summary": "Compares the area of every zone with a target area property within a tolerance, and highlights the zones over, under and on target.",
+      "category": "zones-areas",
+      "tags": [
+        "zones",
+        "areas",
+        "check",
+        "highlight"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "ZoneAreaCheck.py",
+      "changes": "files",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
+          "commit": "7254bb3f5a03319efaa1dffbb38fbcb7ebe0d773",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7254bb3f5a03319efaa1dffbb38fbcb7ebe0d773/marketplace/zone-area-check/ZoneAreaCheck.py",
+          "sha256": "8f0bba3365688af844e2ee6e62e6e0d3dae2c451d8d78e1c68dea10ce402c3e4"
+        }
+      ]
+    }
+  ]
+}
