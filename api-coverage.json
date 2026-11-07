@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 22:25 UTC",
+ "generatedAt": "2026-11-07 22:45 UTC",
  "versions": [
   25,
   26,
@@ -13,8 +13,8 @@
   "done": 1908,
   "skipped": 29,
   "merged": 324,
-  "claimed": 37,
-  "in progress": 11
+  "claimed": 26,
+  "in progress": 22
  },
  "items": [
   {
@@ -2910,6 +2910,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2282,
+     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2278,
+     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
+    },
+    {
      "number": 2263,
      "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
     },
@@ -3126,6 +3134,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2282,
+     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2278,
+     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
+    },
     {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
@@ -3439,6 +3455,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2282,
+     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2278,
+     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
+    },
+    {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
     }
@@ -3464,6 +3488,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2282,
+     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2278,
+     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
+    },
     {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
@@ -3589,6 +3621,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2282,
+     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2278,
+     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
+    },
     {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
@@ -5523,9 +5563,14 @@
    "olderNames": [
     "APIIo_ObjectSettingsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2281,
+     "title": "[2/6] Add PickLibraryPart: Archicad's Object Settings dialog as a library part picker"
+    }
+   ],
    "issues": [
     {
      "number": 2269,
@@ -5709,9 +5754,18 @@
    "olderNames": [
     "APIIo_SettingsDialogID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2281,
+     "title": "[2/6] Add PickLibraryPart: Archicad's Object Settings dialog as a library part picker"
+    },
+    {
+     "number": 2277,
+     "title": "[1/6] Add OpenSettingsDialog command"
+    }
+   ],
    "issues": [
     {
      "number": 2269,
@@ -5785,6 +5839,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2281,
+     "title": "[2/6] Add PickLibraryPart: Archicad's Object Settings dialog as a library part picker"
+    },
+    {
      "number": 2251,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex (supersedes #1395)"
     },
@@ -5835,6 +5893,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2282,
+     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2278,
+     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
+    },
     {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
@@ -6931,6 +6997,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2282,
+     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2278,
+     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
+    },
+    {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
     }
@@ -7644,6 +7718,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2282,
+     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2278,
+     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
+    },
     {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
@@ -14714,9 +14796,14 @@
    "olderNames": [
     "ACAPI_Notify_CatchLockableReservationChange"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2284,
+     "title": "[3/6] Notification clients: Teamwork lockable object set reservation changes"
+    }
+   ],
    "issues": [
     {
      "number": 2267,
@@ -14769,6 +14856,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2284,
+     "title": "[3/6] Notification clients: Teamwork lockable object set reservation changes"
+    },
+    {
+     "number": 2279,
+     "title": "[2/6] Notification clients: Project Navigator item events (notifyOnViewEvents)"
+    },
+    {
      "number": 2274,
      "title": "[1/6] Notify clients of tool changes (notifyOnToolChange)"
     }
@@ -14798,9 +14893,18 @@
    "olderNames": [
     "ACAPI_Notify_CatchViewEvent"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2284,
+     "title": "[3/6] Notification clients: Teamwork lockable object set reservation changes"
+    },
+    {
+     "number": 2279,
+     "title": "[2/6] Notification clients: Project Navigator item events (notifyOnViewEvents)"
+    }
+   ],
    "issues": [
     {
      "number": 2267,
@@ -17996,7 +18100,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2284,
+     "title": "[3/6] Notification clients: Teamwork lockable object set reservation changes"
+    }
+   ],
    "issues": []
   },
   {
@@ -18134,7 +18243,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2284,
+     "title": "[3/6] Notification clients: Teamwork lockable object set reservation changes"
+    }
+   ],
    "issues": []
   },
   {
@@ -18557,9 +18671,18 @@
    "olderNames": [
     "APIEnv_GetToolBoxInfoID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2282,
+     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2278,
+     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
+    }
+   ],
    "issues": [
     {
      "number": 2266,
@@ -18588,6 +18711,22 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2282,
+     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2281,
+     "title": "[2/6] Add PickLibraryPart: Archicad's Object Settings dialog as a library part picker"
+    },
+    {
+     "number": 2278,
+     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2277,
+     "title": "[1/6] Add OpenSettingsDialog command"
+    },
     {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
@@ -18618,9 +18757,18 @@
    "olderNames": [
     "APIEnv_SetToolBoxModeID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2282,
+     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2278,
+     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
+    }
+   ],
    "issues": [
     {
      "number": 2266,
@@ -18794,9 +18942,14 @@
    "olderNames": [
     "APIIo_ClearNeigFilterID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2280,
+     "title": "[2/5] Snap filter option on the Get...FromUser commands"
+    }
+   ],
    "issues": [
     {
      "number": 2268,
@@ -18845,9 +18998,14 @@
    "olderNames": [
     "APIIo_DrawRubberArcID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2276,
+     "title": "[1/5] GetArcFromUser command"
+    }
+   ],
    "issues": [
     {
      "number": 2268,
@@ -18896,9 +19054,14 @@
    "olderNames": [
     "APIIo_GetArcID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2276,
+     "title": "[1/5] GetArcFromUser command"
+    }
+   ],
    "issues": [
     {
      "number": 2268,
@@ -18926,7 +19089,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2276,
+     "title": "[1/5] GetArcFromUser command"
+    }
+   ],
    "issues": []
   },
   {
@@ -18977,7 +19145,16 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2280,
+     "title": "[2/5] Snap filter option on the Get...FromUser commands"
+    },
+    {
+     "number": 2276,
+     "title": "[1/5] GetArcFromUser command"
+    }
+   ],
    "issues": []
   },
   {
@@ -19021,9 +19198,14 @@
    "olderNames": [
     "APIIo_InitNeigFilterID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2280,
+     "title": "[2/5] Snap filter option on the Get...FromUser commands"
+    }
+   ],
    "issues": [
     {
      "number": 2268,
@@ -19127,9 +19309,14 @@
    "olderNames": [
     "APIIo_SetNeigFilterID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2280,
+     "title": "[2/5] Snap filter option on the Get...FromUser commands"
+    }
+   ],
    "issues": [
     {
      "number": 2268,
@@ -20312,7 +20499,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2276,
+     "title": "[1/5] GetArcFromUser command"
+    }
+   ],
    "issues": []
   },
   {
@@ -21324,6 +21516,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2282,
+     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2281,
+     "title": "[2/6] Add PickLibraryPart: Archicad's Object Settings dialog as a library part picker"
+    },
+    {
+     "number": 2278,
+     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2277,
+     "title": "[1/6] Add OpenSettingsDialog command"
+    },
+    {
      "number": 2273,
      "title": "Add GetArchicadLicenseInfo: Archicad license type and SSA level"
     },
@@ -21889,7 +22097,24 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2281,
+     "title": "[2/6] Add PickLibraryPart: Archicad's Object Settings dialog as a library part picker"
+    },
+    {
+     "number": 2280,
+     "title": "[2/5] Snap filter option on the Get...FromUser commands"
+    },
+    {
+     "number": 2277,
+     "title": "[1/6] Add OpenSettingsDialog command"
+    },
+    {
+     "number": 2276,
+     "title": "[1/5] GetArcFromUser command"
+    }
+   ],
    "issues": []
   },
   {
@@ -25589,6 +25814,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2282,
+     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2278,
+     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
+    },
+    {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
     },
@@ -27027,6 +27260,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2282,
+     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2278,
+     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
+    },
     {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
@@ -29915,6 +30156,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2282,
+     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2278,
+     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
+    },
+    {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
     }
@@ -30953,7 +31202,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2282,
+     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2278,
+     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
+    }
+   ],
    "issues": []
   },
   {
@@ -31204,6 +31462,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2282,
+     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2278,
+     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
+    },
     {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
@@ -37676,6 +37942,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2284,
+     "title": "[3/6] Notification clients: Teamwork lockable object set reservation changes"
+    },
+    {
+     "number": 2282,
+     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2278,
+     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
+    },
+    {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
     },
@@ -43276,6 +43554,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2284,
+     "title": "[3/6] Notification clients: Teamwork lockable object set reservation changes"
+    },
+    {
+     "number": 2279,
+     "title": "[2/6] Notification clients: Project Navigator item events (notifyOnViewEvents)"
+    },
+    {
      "number": 2274,
      "title": "[1/6] Notify clients of tool changes (notifyOnToolChange)"
     },
@@ -44345,6 +44631,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2282,
+     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2278,
+     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
+    },
     {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
@@ -47465,6 +47759,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2282,
+     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2278,
+     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
+    },
     {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
@@ -54095,6 +54397,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2282,
+     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
+    },
+    {
+     "number": 2278,
+     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
+    },
     {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
