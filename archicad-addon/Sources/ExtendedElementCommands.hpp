@@ -34,6 +34,18 @@ GS::Optional<GS::UniString> ApplySlabStructure (
     const GS::ObjectState& details,
     bool& changed);
 
+// The surface, cut fill and cover fill settings each Create and Modify pair shares (#2220): the
+// schema fragment ends the item schema of both commands, and the function writes the given keys
+// into the element and its mask (the Create commands discard the mask). Returns an error text,
+// before anything is written, when a given surface or fill attribute does not exist.
+extern const char* ColumnSurfaceAndFillSchemaProperties;
+extern const char* BeamSurfaceAndFillSchemaProperties;
+extern const char* SlabSurfaceAndFillSchemaProperties;
+
+GS::Optional<GS::UniString> ApplyColumnSurfaceAndFillSettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed);
+GS::Optional<GS::UniString> ApplyBeamSurfaceAndFillSettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed);
+GS::Optional<GS::UniString> ApplySlabSurfaceAndFillSettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed);
+
 // The extrusion body of an Opening element, in world coordinates: the outline lies in the plane through
 // anchorPoint spanned by xAxis and yAxis, as a box from profileXMin to profileXMax along xAxis and from
 // profileYMin to profileYMax along yAxis, and is extruded along extrusionDirection from extrusionStart to
@@ -324,6 +336,16 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class ModifySkylightsCommand : public CommandBase
+{
+public:
+    ModifySkylightsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class ModifyOpeningsCommand : public CommandBase
 {
 public:
@@ -363,6 +385,20 @@ public:
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
+
+class ModifyAssociativeDimensionsCommand : public CommandBase
+{
+public:
+    ModifyAssociativeDimensionsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// Adds the settings of a linear dimension (API_DimensionID) to the details GetDetailsOfElements
+// returns, with the keys ModifyAssociativeDimensions takes.
+void AddDimensionDetails (GS::ObjectState& details, const API_Element& element);
 
 class GetDimensionDataCommand : public CommandBase
 {
