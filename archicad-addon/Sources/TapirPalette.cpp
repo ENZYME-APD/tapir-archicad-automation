@@ -15,6 +15,7 @@
 #include "MessageLoopExecutor.hpp"
 #include "AddOnVersion.hpp"
 #include "MigrationHelper.hpp"
+#include "ScriptRequirements.hpp"
 
 #include <cstdlib>
 #include <cstring>
@@ -696,6 +697,35 @@ void TapirPalette::PopUpChanged (const DG::PopUpChangeEvent& ev)
     }
 }
 
+// min-tapir-version of the script's header against the installed Tapir (ScriptRequirements.hpp).
+static ScriptRequirements::MinTapirVersionResult CheckMinTapirVersion (const ScriptInfo& info)
+{
+    return ScriptRequirements::CheckMinTapirVersion (info.minTapirVersion.ToCStr (CC_UTF8).Get (), ADDON_VERSION);
+}
+
+// False only when the script's header lists Archicad versions and the running one is not among them.
+static bool IsRunningArchicadListed (const ScriptInfo& info)
+{
+    std::vector<int> versions;
+    for (UIndex i = 0; i < info.archicadVersions.GetSize (); ++i) {
+        versions.push_back (static_cast<int> (info.archicadVersions[i]));
+    }
+    return ScriptRequirements::IsArchicadVersionListed (versions, static_cast<int> (VersionChecker::ArchicadMainVersion ()));
+}
+
+// "28, 29, 30"
+static GS::UniString JoinArchicadVersions (const GS::Array<Int32>& versions)
+{
+    GS::UniString result;
+    for (UIndex i = 0; i < versions.GetSize (); ++i) {
+        if (i > 0) {
+            result += ", ";
+        }
+        result += GS::ValueToUniString (versions[i]);
+    }
+    return result;
+}
+
 GS::UniString TapirPalette::GetScriptDescription (const ScriptInfo& info)
 {
     GS::UniString badge;
@@ -707,13 +737,92 @@ GS::UniString TapirPalette::GetScriptDescription (const ScriptInfo& info)
         badge = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_BADGE_READ_ONLY, ACAPI_GetOwnResModule ());
     }
 
-    if (info.summary.IsEmpty ()) {
-        return badge;
+    GS::UniString description = info.summary;
+    const auto addLine = [&description] (const GS::UniString& line) {
+        if (line.IsEmpty ()) {
+            return;
+        }
+        if (!description.IsEmpty ()) {
+            description += "\n";
+        }
+        description += line;
+    };
+    addLine (badge);
+
+    // The requirements of the `# /// tapir` header, each with what the running Tapir or Archicad is when it does not
+    // satisfy it. A key that is absent or malformed shows nothing.
+    switch (CheckMinTapirVersion (info)) {
+        case ScriptRequirements::MinTapirVersionResult::Satisfied:
+            addLine (GS::UniString::Printf (RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_NEEDS_TAPIR, ACAPI_GetOwnResModule ()),
+                info.minTapirVersion.ToPrintf ()));
+            break;
+        case ScriptRequirements::MinTapirVersionResult::TooOld:
+            addLine (GS::UniString::Printf (RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_NEEDS_TAPIR_NOT_MET, ACAPI_GetOwnResModule ()),
+                info.minTapirVersion.ToPrintf (), ADDON_VERSION));
+            break;
+        default:
+            break;
     }
-    if (badge.IsEmpty ()) {
-        return info.summary;
+    if (!info.archicadVersions.IsEmpty ()) {
+        const GS::UniString versionList = JoinArchicadVersions (info.archicadVersions);
+        if (IsRunningArchicadListed (info)) {
+            addLine (GS::UniString::Printf (RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_TESTED_ON_AC, ACAPI_GetOwnResModule ()),
+                versionList.ToPrintf ()));
+        } else {
+            addLine (GS::UniString::Printf (RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_TESTED_ON_AC_NOT_MET, ACAPI_GetOwnResModule ()),
+                versionList.ToPrintf (), static_cast<int> (VersionChecker::ArchicadMainVersion ())));
+        }
     }
-    return info.summary + "\n" + badge;
+    return description;
+}
+
+// Runs before every script start (ExecuteScript), so the palette's Run button and the shortcut slots follow the same
+// rule. A script that needs a newer Tapir does not run; one not tested on this Archicad runs after a warning.
+bool TapirPalette::ConfirmScriptRequirements (const PopUpItemData& popUpItemData)
+{
+    const ScriptInfo& info = popUpItemData.info;
+
+    GS::UniString scriptName;
+    IO::Name name;
+    if (popUpItemData.fileLocation.GetLastLocalName (&name) == NoError) {
+        scriptName = name.ToString ();
+    }
+    const GS::UniString title = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_REQUIREMENT_TITLE, ACAPI_GetOwnResModule ());
+
+    switch (CheckMinTapirVersion (info)) {
+        case ScriptRequirements::MinTapirVersionResult::Malformed:
+            WriteReport (DG_WARNING, "%T: ignored min-tapir-version \"%T\", it is not a version like 1.8.1.",
+                scriptName.ToPrintf (), info.minTapirVersion.ToPrintf ());
+            break;
+        case ScriptRequirements::MinTapirVersionResult::TooOld:
+            {
+                const short response = DGAlert (DG_WARNING, title,
+                    GS::UniString::Printf (RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_TAPIR_TOO_OLD_TEXT, ACAPI_GetOwnResModule ()),
+                        scriptName.ToPrintf (), info.minTapirVersion.ToPrintf (), ADDON_VERSION),
+                    GS::EmptyUniString,
+                    RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_CHECK_FOR_UPDATES, ACAPI_GetOwnResModule ()),
+                    RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_CANCEL, ACAPI_GetOwnResModule ()));
+                if (response == DG_OK) {
+                    CheckForUpdates ();
+                }
+            }
+            return false;
+        default:
+            break;
+    }
+
+    if (!IsRunningArchicadListed (info)) {
+        const short response = DGAlert (DG_WARNING, title,
+            GS::UniString::Printf (RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_AC_NOT_LISTED_TEXT1, ACAPI_GetOwnResModule ()),
+                scriptName.ToPrintf (), JoinArchicadVersions (info.archicadVersions).ToPrintf (), static_cast<int> (VersionChecker::ArchicadMainVersion ())),
+            RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_AC_NOT_LISTED_TEXT2, ACAPI_GetOwnResModule ()),
+            RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_RUN_ANYWAY, ACAPI_GetOwnResModule ()),
+            RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_CANCEL, ACAPI_GetOwnResModule ()));
+        if (response != DG_OK) {
+            return false;
+        }
+    }
+    return true;
 }
 
 // The selected script's summary and badge, on the script list and on the Run button (while no script runs, when
@@ -1344,6 +1453,10 @@ void TapirPalette::KillRunningProcess ()
 
 void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
 {
+    if (!ConfirmScriptRequirements (popUpItemData)) {
+        return;
+    }
+
     GS::UniString filePath;
     popUpItemData.fileLocation.ToPath (&filePath);
 

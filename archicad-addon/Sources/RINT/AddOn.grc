@@ -63,6 +63,17 @@
 /* [  4] */ "Writes files"
 /* [  5] */ "Read only"
 /* [  6] */ "Run Script"
+/* [  7] */ "Needs Tapir %T or newer"
+/* [  8] */ "Needs Tapir %T or newer - you have Tapir %s"
+/* [  9] */ "Tested on Archicad %T"
+/* [ 10] */ "Tested on Archicad %T - this is Archicad %d"
+/* [ 11] */ "Tapir Script"
+/* [ 12] */ "%T needs Tapir %T or newer. You have Tapir %s."
+/* [ 13] */ "Check for Updates..."
+/* [ 14] */ "Cancel"
+/* [ 15] */ "%T was tested on Archicad %T. This is Archicad %d."
+/* [ 16] */ "It may not work as expected here."
+/* [ 17] */ "Run anyway"
 }
 
 'STR#' ID_AUTOUPDATE_STRINGS "Tapir Update Strings" {

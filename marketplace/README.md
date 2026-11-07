@@ -116,7 +116,10 @@ between them: without it `uv` reads both blocks as one and refuses to run the sc
 - `dependencies` lists every package from PyPI the script imports, so `uv`
   installs them. Standard library only is best.
 - `category`, `archicad-versions` and `min-tapir-version` are the same as in the
-  newest entry of `listing.json`.
+  newest entry of `listing.json`. The Tapir palette uses them before it runs the
+  script: it does not run a script whose `min-tapir-version` (written `N.N.N`) is
+  newer than the installed Tapir and offers the update instead, and it warns,
+  with **Run anyway**, when the running Archicad is not in `archicad-versions`.
 - `changes` says what running the script can change:
   - `model`: elements, properties, attributes, views or anything else in the
     project. Shown as **Changes the model**.
