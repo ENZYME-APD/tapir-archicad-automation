@@ -15,7 +15,7 @@ port = 19723 if 'port' not in args else args.port
 # with debug = True.
 printCommands = False
 
-def RunCommand (command, parameters = None, debug = False):
+def RunCommand (command, parameters = None, debug = False, printErrors = True):
     if parameters is None:
         parameters = {}
     if not isinstance(parameters, dict):
@@ -37,7 +37,7 @@ def RunCommand (command, parameters = None, debug = False):
     response_data = urllib.request.urlopen (connection_object, request_string)
     response_json = json.loads (response_data.read())
 
-    if 'error' in response_json:
+    if 'error' in response_json and printErrors:
         print ('Error:\n{}'.format (JsonDumpDictionary (response_json['error'])))
 
     if 'succeeded' not in response_json or 'result' not in response_json:
@@ -75,6 +75,40 @@ def RunTapirCommand (command, parameters = None, debug = None):
         print ('Error:\n{}'.format (JsonDumpDictionary (result['error'])))
 
     return result
+
+# The command names of the installed Tapir, read once by HasCommand: None before the first call,
+# False when the installed Tapir is too old to have GetCommands.
+_tapirCommandNames = None
+
+def _VersionTuple (version):
+    return tuple (int (part) for part in str (version).split ('.') if part.isdigit ())
+
+def HasCommand (name, introducedIn = None):
+    """True when the installed Tapir Add-On has the command name, else False.
+
+    Asks GetCommands once per process. A Tapir too old to have GetCommands is compared by its
+    version (GetAddOnVersion) with introducedIn, the Tapir version the command was introduced in
+    (as in the command reference); without introducedIn the answer is False with a message."""
+    global _tapirCommandNames
+    if _tapirCommandNames is None:
+        result = RunCommand ('API.ExecuteAddOnCommand', {
+            'addOnCommandId': {'commandNamespace': 'TapirCommand', 'commandName': 'GetCommands'},
+            'addOnCommandParameters': {}
+        }, printErrors = False)
+        response = result.get ('addOnCommandResponse') if isinstance (result, dict) else None
+        if isinstance (response, dict) and isinstance (response.get ('commands'), list):
+            _tapirCommandNames = {command['name'] for command in response['commands']}
+        else:
+            _tapirCommandNames = False
+    if _tapirCommandNames is not False:
+        return name in _tapirCommandNames
+
+    if introducedIn is not None:
+        versionResult = RunTapirCommand ('GetAddOnVersion')
+        if versionResult and 'version' in versionResult:
+            return _VersionTuple (versionResult['version']) >= _VersionTuple (introducedIn)
+    print ('The installed Tapir Add-On cannot list its commands, so {} is taken as missing. Update Tapir to the latest version.'.format (name))
+    return False
 
 def JsonDumpDictionary (d):
     return json.dumps (d, indent = 4)

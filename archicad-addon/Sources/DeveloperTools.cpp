@@ -1,6 +1,7 @@
 #include "DeveloperTools.hpp"
 
 #include "SchemaDefinitions.hpp"
+#include "AddOnVersion.hpp"
 
 #include "File.hpp"
 
@@ -153,11 +154,36 @@ GS::String GetCommandsCommand::GetName () const
     return "GetCommands";
 }
 
+GS::Optional<GS::UniString> GetCommandsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "group": {
+                "type": "string",
+                "description": "Lists only the commands of this command group, e.g. \"Application Commands\". All commands are listed when not given.",
+                "minLength": 1
+            },
+            "includeDescriptions": {
+                "type": "boolean",
+                "description": "Whether each command is returned with its description. Default is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
 GS::Optional<GS::UniString> GetCommandsCommand::GetRawResponseSchema () const
 {
     return R"({
         "type": "object",
         "properties": {
+            "version": {
+                "type": "string",
+                "description": "The version of the installed Tapir Add-On, in the form of \"1.1.1\".",
+                "minLength": 1
+            },
             "commands": {
                 "type": "array",
                 "description": "Every command of the Tapir Add-On, in the order of the command reference.",
@@ -181,37 +207,61 @@ GS::Optional<GS::UniString> GetCommandsCommand::GetRawResponseSchema () const
                         },
                         "description": {
                             "type": "string",
-                            "description": "The description of the command, as in the command reference."
+                            "description": "The description of the command, as in the command reference. Only returned when includeDescriptions is true."
                         }
                     },
                     "additionalProperties": false,
                     "required": [
                         "name",
                         "group",
-                        "version",
-                        "description"
+                        "version"
                     ]
                 }
             }
         },
         "additionalProperties": false,
         "required": [
+            "version",
             "commands"
         ]
     })";
 }
 
-GS::ObjectState GetCommandsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState GetCommandsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    GS::UniString groupFilter;
+    const bool filterByGroup = parameters.Get ("group", groupFilter);
+    bool includeDescriptions = false;
+    parameters.Get ("includeDescriptions", includeDescriptions);
+
+    if (filterByGroup) {
+        bool groupFound = false;
+        for (const CommandGroup& group : gCommandGroups) {
+            if (group.name == groupFilter) {
+                groupFound = true;
+                break;
+            }
+        }
+        if (!groupFound) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("There is no command group named \"%T\".", groupFilter.ToPrintf ()));
+        }
+    }
+
     GS::ObjectState response;
+    response.Add ("version", ADDON_VERSION);
     const auto& commands = response.AddList<GS::ObjectState> ("commands");
     for (const CommandGroup& group : gCommandGroups) {
+        if (filterByGroup && group.name != groupFilter) {
+            continue;
+        }
         for (const CommandInfo& command : group.commands) {
             GS::ObjectState commandInfo;
             commandInfo.Add ("name", command.name);
             commandInfo.Add ("group", group.name);
             commandInfo.Add ("version", command.version);
-            commandInfo.Add ("description", command.description);
+            if (includeDescriptions) {
+                commandInfo.Add ("description", command.description);
+            }
             commands (commandInfo);
         }
     }
