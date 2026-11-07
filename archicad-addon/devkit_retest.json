@@ -1,0 +1,80 @@
+{
+    "_comment": "The Archicad API items skipped in tools/api_coverage_rules.json because of Archicad itself (a bug, a crash or a missing capability), and how to retest each one when Graphisoft publishes a new DevKit. Every other skip is listed in otherSkips with its kind. Format and runbook: archicad-addon/DEVKIT_RETEST.md; check: python archicad-addon/Test/check_devkit_retest.py.",
+    "entries": [
+        {
+            "items": [
+                "ACAPI::MEP::PipeBranchPreferenceTable::Modifier::SetMainAxisDiameterByKey",
+                "ACAPI::MEP::PipeBranchPreferenceTable::Modifier::SetBranchAxisDiameterByKey",
+                "ACAPI::MEP::PipeBranchPreferenceTable::Modifier::SetBranchOffsetByKey",
+                "ACAPI::MEP::PipeBranchPreferenceTable::Modifier::SetConnectionLengthByKey",
+                "ACAPI::MEP::DuctBranchPreferenceTable::Modifier::SetMainAxisDiameterByKey",
+                "ACAPI::MEP::DuctBranchPreferenceTable::Modifier::SetBranchAxisDiameterByKey",
+                "ACAPI::MEP::DuctBranchPreferenceTable::Modifier::SetBranchOffsetByKey",
+                "ACAPI::MEP::DuctBranchPreferenceTable::Modifier::SetConnectionLengthByKey"
+            ],
+            "problem": "The ...ByKey setters of the pipe and duct branch preference tables ignore the key's branchAxisAngle and change the first row with the same main and branch axis reference ids.",
+            "since": 29,
+            "issue": 1740,
+            "howToRetest": [
+                "In archicad-addon/Sources/MEPPreferenceTableRowCommands.cpp, SetPreferenceTableRowValues, branch of IsBranchRowTable under ServerMainVers_2900: temporarily replace the index setters (SetMainAxisDiameter, SetBranchAxisDiameter, SetBranchOffset, SetConnectionLength with index) by the ...ByKey setters with tableKey, and build the add-on with the new DevKit.",
+                "In Archicad, find an editable pipe branch preference table (GetMEPPreferenceTables with domain Piping, its branchTables) with two rows that have the same mainAxisReferenceId and branchAxisReferenceId but a different branchAxisAngle; if there is none, add the second row with AddMEPPreferenceTableRows (same reference ids, another branchAxisAngle, in the units GetMEPPreferenceTables returns).",
+                "Call SetMEPPreferenceTableRows on that table with the key of the SECOND row (mainAxisReferenceId, branchAxisReferenceId and its branchAxisAngle) and new values for mainAxisDiameter, branchAxisDiameter, branchOffset and connectionLength.",
+                "Read both rows back with GetMEPPreferenceTableRows. It passes when only the second row has the new values and the first row is unchanged; it fails when the first row changed.",
+                "Repeat on a duct branch table (domain Ventilation). Revert the temporary code change afterwards."
+            ],
+            "unblocks": "SetMEPPreferenceTableRows and AddMEPPreferenceTableRows could set branch rows by key instead of searching the row index, and these eight items count as used in the API coverage.",
+            "stillBroken": []
+        },
+        {
+            "item": "ACAPI_Property_CheckPropertyExpressionString",
+            "problem": "Checking a property expression terminates Archicad on an unknown function name, reports stored (valid) expressions as invalid and incomplete ones as valid.",
+            "since": 29,
+            "issue": 1145,
+            "howToRetest": [
+                "Restore the CheckPropertyExpressions command removed in commit 8822f998 (added in a51466e5, PR #1146, part 1 of #1145): its class in archicad-addon/Sources/PropertyCommands.cpp/.hpp and its registration in AddOnMain.cpp, and build the add-on with the new DevKit.",
+                "Save the project first: the bug terminates Archicad.",
+                "Call CheckPropertyExpressions with an expression that uses an unknown function name (for example UNKNOWNFUNC(1)); it must return an error or invalid, not crash.",
+                "Call it with the expression string of an existing, working expression property (the 'expressions' of the property in GetAllProperties); it must report it valid.",
+                "Call it with an incomplete expression (for example 1 +); it must report it invalid.",
+                "It passes only when all three give the right answer without a crash."
+            ],
+            "unblocks": "A CheckPropertyExpressions command that validates an expression before CreatePropertyDefinitions or UpdatePropertyDefinitions stores it.",
+            "stillBroken": []
+        },
+        {
+            "item": "ACAPI::MEP::Bend::Modify",
+            "problem": "Bend::Modify does not compile against the Archicad 27 DevKit because Bend::Modifier does not derive from ACAPI::ModifierBase, which ExecuteUndoableScope requires; Archicad 28 has no Bend::Modifier and Archicad 29 replaced Bend with Elbow.",
+            "since": 27,
+            "issue": null,
+            "howToRetest": [
+                "Only a new Archicad 27 DevKit release can change this; with a DevKit of a later Archicad version there is nothing to retest, record nothing.",
+                "With a new Archicad 27 DevKit: open archicad-addon/Build/DevKits/AC27/Support/Modules/MEPAPI/ACAPI/MEPBend.hpp and check whether Bend::Modifier now derives from ACAPI::ModifierBase.",
+                "If it does, build the add-on for Archicad 27 with a call such as bend.Modify ([&] (ACAPI::MEP::Bend::Modifier& modifier) { modifier.SetFactorRadius (1.5); }, \"Modify bend\") on a bend found through RoutingNode::GetBendIds; it passes when it compiles and the bend's radius factor changes in Archicad 27."
+            ],
+            "unblocks": "Changing the radius factor of an existing elbow (bend) on Archicad 27.",
+            "stillBroken": []
+        }
+    ],
+    "otherSkips": {
+        "ACAPI_Override_GetOverrideRule": "obsolete",
+        "ACAPI_3D_GetNum": "obsolete",
+        "ACAPI_Element_ChangeMore": "duplicate",
+        "ACAPI::Favorite::FavoriteManager::RenameFavorite": "duplicate",
+        "ACAPI::Favorite::Favorite::GetPreviewImage": "duplicate",
+        "ACAPI_AddOnObject_CreateUniqueObject": "duplicate",
+        "ACAPI_AddOnObject_ExistsObject": "duplicate",
+        "ACAPI_Database_GetDatabasesForType": "duplicate",
+        "ACAPI_Database_GetDatabasesForTypes": "duplicate",
+        "ACAPI_LibraryPart_RegisterAll": "duplicate",
+        "APIDo_LoadLibrariesID": "duplicate",
+        "ACAPI_Element_GetPropertyValue": "duplicate",
+        "ACAPI_Body_AddPolyNormal": "duplicate",
+        "ACAPI_Element_GetComponents_Obsolete": "obsolete",
+        "ACAPI_AnalyticalModel_GetAnalyticalEdgeLoadGeometry": "obsolete",
+        "ACAPI_AnalyticalModel_GetAnalyticalSurfaceLoadGeometry": "obsolete",
+        "ACAPI_AnalyticalModel_GetCurveMemberProfileVectorImage": "obsolete",
+        "ACAPI::MEP::PhysicalSystem::Create": "duplicate",
+        "ACAPI_ElemComponent_GetPropertyValue": "obsolete",
+        "ACAPI_ElemComponent_GetPropertyValues": "obsolete"
+    }
+}
