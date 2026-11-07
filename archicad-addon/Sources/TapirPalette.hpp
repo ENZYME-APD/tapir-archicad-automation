@@ -31,6 +31,13 @@ public:
 
     bool UpdateAddOn ();
     void SetRunButtonIcon ();   // also called once the VersionChecker's lookup completes
+    // The "Check for Updates..." menu item and the palette's update button: updates when a newer version exists,
+    // otherwise tells why there is nothing to update to.
+    void CheckForUpdates ();
+    void SetUpdateButtonText ();   // also called once the VersionChecker's lookup completes
+    // Shows "Update Tapir to <version>..." on the update menu item when a newer version exists, and keeps the item
+    // enabled. Needs no palette, so it is static.
+    static void ApplyUpdateMenuItemState ();
 
     static constexpr short ScriptShortcutSlotCount = 6;
     void RunShortcutSlot (short slotIndex);   // 0-based, 0..ScriptShortcutSlotCount-1
@@ -73,6 +80,8 @@ private:
     DG::IconButton addScriptButton;
     DG::IconButton delScriptButton;
     DG::IconButton manageShortcutsButton;
+    DG::LeftText   installedVersionText;
+    DG::Button     checkForUpdatesButton;
 
     GS::Process process;
     GS::UniString runningCommand;   // the command process was started with, to find the process among the child processes of Archicad

@@ -108,57 +108,129 @@
                     <button type="button" class="plan-run" id="plan-run" title="Run Script"><svg viewBox="0 0 10 10" width="10" height="10" aria-hidden="true"><path d="M2 1 L9 5 L2 9 Z" fill="currentColor"/></svg><span data-i18n>Run</span></button>
                     <span class="plan-sheet" data-i18n>Ground Floor · 1:100</span>
                 </div>
-                <svg viewBox="0 0 560 340" role="img" aria-labelledby="plan-title">
+                <svg viewBox="0 0 560 350" role="img" aria-labelledby="plan-title">
                     <title id="plan-title" data-i18n>A floor plan of six rooms on which a script numbers the doors, colours the rooms by area or marks problems</title>
                     <defs>
-                        <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#1C1E1F" stroke-width="2.2"/></pattern>
+                        <!-- Archicad-like cut fills: a cross hatch for the core of the composite outer walls, a single hatch for the partitions. -->
+                        <pattern id="fill-core" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" fill="#FFFFFF"/><path d="M0 0 V5 M0 0 H5" stroke="#1C1E1F" stroke-width=".45"/></pattern>
+                        <pattern id="fill-brick" width="3.2" height="3.2" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="3.2" height="3.2" fill="#FFFFFF"/><path d="M0 0 V3.2" stroke="#1C1E1F" stroke-width=".5"/></pattern>
                     </defs>
-                    <g class="plan-rooms" font-family="Inter, sans-serif" font-size="11" fill="#5F6A6E">
-                        <rect class="zone" data-area="24" x="30" y="30" width="170" height="130" fill="#FFFFFF"/>
-                        <rect class="zone" data-area="18" x="200" y="30" width="130" height="130" fill="#FFFFFF"/>
-                        <rect class="zone" data-area="32" x="330" y="30" width="200" height="130" fill="#FFFFFF"/>
-                        <rect class="zone" data-area="9" x="30" y="190" width="110" height="120" fill="#FFFFFF"/>
-                        <rect class="zone" data-area="14" x="140" y="190" width="120" height="120" fill="#FFFFFF"/>
-                        <rect class="zone" data-area="28" x="260" y="190" width="270" height="120" fill="#FFFFFF"/>
-                        <rect x="30" y="160" width="500" height="30" fill="#FFFFFF"/>
-                        <text x="44" y="52" data-i18n>Studio · 24 m²</text><text x="214" y="52" data-i18n>Office · 18 m²</text><text x="344" y="52" data-i18n>Meeting · 32 m²</text>
-                        <text x="44" y="298" data-i18n>WC · 9 m²</text><text x="154" y="298" data-i18n>Store · 14 m²</text><text x="274" y="298" data-i18n>Kitchen · 28 m²</text>
-                        <text x="44" y="179" font-size="10" data-i18n>Corridor</text>
+                    <g class="plan-zones">
+                        <rect class="zone" data-area="33.00" x="35" y="50" width="165" height="125" fill="#FFFFFF"/>
+                        <rect class="zone" data-area="25.00" x="205" y="50" width="125" height="125" fill="#FFFFFF"/>
+                        <rect class="zone" data-area="38.00" x="335" y="50" width="190" height="125" fill="#FFFFFF"/>
+                        <rect class="zone" data-area="14.08" x="35" y="215" width="80" height="110" fill="#FFFFFF"/>
+                        <rect class="zone" data-area="19.36" x="120" y="215" width="110" height="110" fill="#FFFFFF"/>
+                        <rect class="zone" data-area="51.04" x="235" y="215" width="290" height="110" fill="#FFFFFF"/>
+                        <rect x="35" y="180" width="490" height="30" fill="#FFFFFF"/>
                     </g>
-                    <g fill="url(#hatch)" stroke="#1C1E1F" stroke-width="1.2">
-                        <rect x="22" y="22" width="516" height="8"/><rect x="22" y="310" width="516" height="8"/>
-                        <rect x="22" y="22" width="8" height="296"/><rect x="530" y="22" width="8" height="296"/>
-                        <rect x="196" y="30" width="6" height="130"/><rect x="326" y="30" width="6" height="130"/>
-                        <rect x="136" y="190" width="6" height="120"/><rect x="256" y="190" width="6" height="120"/>
+                    <g class="plan-objects" fill="none" stroke="#1C1E1F" stroke-width=".7">
+                        <rect x="44" y="60" width="54" height="24"/><rect x="62" y="86" width="16" height="11" rx="3"/>
+                        <rect x="44" y="112" width="54" height="24"/><rect x="62" y="138" width="16" height="11" rx="3"/>
+                        <rect x="212" y="60" width="50" height="26"/><rect x="229" y="88" width="16" height="11" rx="3"/>
+                        <rect x="395" y="78" width="96" height="42" rx="4"/>
+                        <rect x="402" y="66" width="14" height="10" rx="3"/><rect x="436" y="66" width="14" height="10" rx="3"/><rect x="470" y="66" width="14" height="10" rx="3"/>
+                        <rect x="402" y="122" width="14" height="10" rx="3"/><rect x="436" y="122" width="14" height="10" rx="3"/><rect x="470" y="122" width="14" height="10" rx="3"/>
+                        <rect x="37" y="250" width="9" height="20"/><ellipse cx="56" cy="260" rx="10" ry="7.5"/>
+                        <rect x="62" y="309" width="26" height="14"/><ellipse cx="75" cy="316" rx="8" ry="4.5"/>
+                        <rect x="122" y="246" width="10" height="77"/><rect x="134" y="313" width="70" height="10"/>
+                        <rect x="238" y="303" width="130" height="20"/><rect x="250" y="306" width="22" height="14" rx="2"/><circle cx="261" cy="313" r="1.6"/>
+                        <circle cx="300" cy="313" r="4"/><circle cx="312" cy="313" r="4"/><circle cx="300" cy="313" r="1.5"/><circle cx="312" cy="313" r="1.5"/>
+                        <circle cx="380" cy="268" r="15"/><rect x="373" y="241" width="14" height="10" rx="3"/><rect x="373" y="285" width="14" height="10" rx="3"/><rect x="353" y="261" width="10" height="14" rx="3"/><rect x="397" y="261" width="10" height="14" rx="3"/>
                     </g>
-                    <g stroke="#1C1E1F" stroke-width="1.2" fill="none">
-                        <line x1="30" y1="160" x2="100" y2="160"/><line x1="140" y1="160" x2="230" y2="160"/><line x1="270" y1="160" x2="390" y2="160"/><line x1="430" y1="160" x2="530" y2="160"/>
-                        <line x1="30" y1="190" x2="60" y2="190"/><line x1="100" y1="190" x2="170" y2="190"/><line x1="210" y1="190" x2="330" y2="190"/><line x1="370" y1="190" x2="530" y2="190"/>
-                        <path d="M100 160 A40 40 0 0 0 140 120" stroke-dasharray="2 2"/><path d="M230 160 A40 40 0 0 0 270 120" stroke-dasharray="2 2"/><path d="M390 160 A40 40 0 0 0 430 120" stroke-dasharray="2 2"/>
-                        <path d="M60 190 A40 40 0 0 1 100 230" stroke-dasharray="2 2"/><path d="M170 190 A40 40 0 0 1 210 230" stroke-dasharray="2 2"/><path d="M330 190 A40 40 0 0 1 370 230" stroke-dasharray="2 2"/>
-                    </g>
-                    <g id="plan-numbering">
-                        <polyline points="40,175 120,175 250,175 410,175 450,175" fill="none" stroke="#BD8D53" stroke-width="2" stroke-dasharray="6 4"/>
-                        <g font-family="JetBrains Mono, monospace" font-size="11" font-weight="600">
-                            <g class="tagnum"><rect x="104" y="138" width="34" height="18" rx="3" fill="#BD8D53"/><text x="121" y="151" fill="#1C1E1F" text-anchor="middle">D01</text></g>
-                            <g class="tagnum"><rect x="62" y="196" width="34" height="18" rx="3" fill="#BD8D53"/><text x="79" y="209" fill="#1C1E1F" text-anchor="middle">D02</text></g>
-                            <g class="tagnum"><rect x="234" y="138" width="34" height="18" rx="3" fill="#BD8D53"/><text x="251" y="151" fill="#1C1E1F" text-anchor="middle">D03</text></g>
-                            <g class="tagnum"><rect x="172" y="196" width="34" height="18" rx="3" fill="#BD8D53"/><text x="189" y="209" fill="#1C1E1F" text-anchor="middle">D04</text></g>
-                            <g class="tagnum"><rect x="332" y="196" width="34" height="18" rx="3" fill="#BD8D53"/><text x="349" y="209" fill="#1C1E1F" text-anchor="middle">D05</text></g>
-                            <g class="tagnum"><rect x="394" y="138" width="34" height="18" rx="3" fill="#BD8D53"/><text x="411" y="151" fill="#1C1E1F" text-anchor="middle">D06</text></g>
+                    <!-- Walls: the contours first, doubled and then covered by the fills, so junctions clean up as in Archicad. -->
+                    <g class="plan-walls">
+                        <g fill="none" stroke="#1C1E1F" stroke-width="2.6"><path d="M25 40H535V335H25Z M35 50V325H525V50Z"/><rect x="35" y="175" width="490" height="5"/><rect x="35" y="210" width="490" height="5"/><rect x="200" y="50" width="5" height="125"/><rect x="330" y="50" width="5" height="125"/><rect x="115" y="215" width="5" height="110"/><rect x="230" y="215" width="5" height="110"/></g>
+                        <path d="M25 40H535V335H25Z M35 50V325H525V50Z" fill="#FFFFFF" fill-rule="evenodd"/>
+                        <path d="M26.8 41.8H533.2V333.2H26.8Z M33.2 48.2V326.8H526.8V48.2Z" fill="url(#fill-core)" fill-rule="evenodd"/>
+                        <path d="M26.8 41.8H533.2V333.2H26.8Z M33.2 48.2V326.8H526.8V48.2Z" fill="none" stroke="#1C1E1F" stroke-width=".55"/>
+                        <g fill="url(#fill-brick)"><rect x="35" y="175" width="490" height="5"/><rect x="35" y="210" width="490" height="5"/><rect x="200" y="50" width="5" height="125"/><rect x="330" y="50" width="5" height="125"/><rect x="115" y="215" width="5" height="110"/><rect x="230" y="215" width="5" height="110"/></g>
+                        <g class="plan-windows">
+                            <rect x="60" y="38.6" width="70" height="12.8" fill="#FFFFFF"/>
+                            <g stroke="#1C1E1F" fill="none"><path d="M60 40V50M130 40V50" stroke-width="1.3"/><path d="M60 42.5H130M60 44.4H130M60 45.6H130M60 47.5H130" stroke-width=".5"/><path d="M57 38H133" stroke-width=".7"/></g>
+                            <rect x="235" y="38.6" width="60" height="12.8" fill="#FFFFFF"/>
+                            <g stroke="#1C1E1F" fill="none"><path d="M235 40V50M295 40V50" stroke-width="1.3"/><path d="M235 42.5H295M235 44.4H295M235 45.6H295M235 47.5H295" stroke-width=".5"/><path d="M232 38H298" stroke-width=".7"/></g>
+                            <rect x="390" y="38.6" width="80" height="12.8" fill="#FFFFFF"/>
+                            <g stroke="#1C1E1F" fill="none"><path d="M390 40V50M470 40V50" stroke-width="1.3"/><path d="M390 42.5H470M390 44.4H470M390 45.6H470M390 47.5H470" stroke-width=".5"/><path d="M387 38H473" stroke-width=".7"/></g>
+                            <rect x="55" y="323.6" width="40" height="12.8" fill="#FFFFFF"/>
+                            <g stroke="#1C1E1F" fill="none"><path d="M55 325V335M95 325V335" stroke-width="1.3"/><path d="M55 327.5H95M55 329.4H95M55 330.6H95M55 332.5H95" stroke-width=".5"/><path d="M52 337H98" stroke-width=".7"/></g>
+                            <rect x="150" y="323.6" width="50" height="12.8" fill="#FFFFFF"/>
+                            <g stroke="#1C1E1F" fill="none"><path d="M150 325V335M200 325V335" stroke-width="1.3"/><path d="M150 327.5H200M150 329.4H200M150 330.6H200M150 332.5H200" stroke-width=".5"/><path d="M147 337H203" stroke-width=".7"/></g>
+                            <rect x="310" y="323.6" width="140" height="12.8" fill="#FFFFFF"/>
+                            <g stroke="#1C1E1F" fill="none"><path d="M310 325V335M450 325V335" stroke-width="1.3"/><path d="M310 327.5H450M310 329.4H450M310 330.6H450M310 332.5H450" stroke-width=".5"/><path d="M307 337H453" stroke-width=".7"/></g>
+                            <rect x="523.6" y="85" width="12.8" height="55" fill="#FFFFFF"/>
+                            <g stroke="#1C1E1F" fill="none"><path d="M525 85H535M525 140H535" stroke-width="1.3"/><path d="M527.5 85V140M529.4 85V140M530.6 85V140M532.5 85V140" stroke-width=".5"/><path d="M537 82V143" stroke-width=".7"/></g>
+                            <rect x="523.6" y="250" width="12.8" height="50" fill="#FFFFFF"/>
+                            <g stroke="#1C1E1F" fill="none"><path d="M525 250H535M525 300H535" stroke-width="1.3"/><path d="M527.5 250V300M529.4 250V300M530.6 250V300M532.5 250V300" stroke-width=".5"/><path d="M537 247V303" stroke-width=".7"/></g>
+                            <rect x="23.6" y="85" width="12.8" height="50" fill="#FFFFFF"/>
+                            <g stroke="#1C1E1F" fill="none"><path d="M25 85H35M25 135H35" stroke-width="1.3"/><path d="M27.5 85V135M29.4 85V135M30.6 85V135M32.5 85V135" stroke-width=".5"/><path d="M23 82V138" stroke-width=".7"/></g>
+                        </g>
+                        <g class="plan-doors" stroke="#1C1E1F">
+                            <rect x="150" y="173.6" width="24" height="7.8" fill="#FFFFFF" stroke="none"/>
+                            <path d="M150 175V180M174 175V180" stroke-width="1.3" fill="none"/>
+                            <rect x="150" y="151" width="1.8" height="24" fill="#FFFFFF" stroke-width=".8"/>
+                            <path d="M174 175A24 24 0 0 0 150 151" fill="none" stroke-width=".5"/>
+                            <rect x="290" y="173.6" width="24" height="7.8" fill="#FFFFFF" stroke="none"/>
+                            <path d="M290 175V180M314 175V180" stroke-width="1.3" fill="none"/>
+                            <rect x="312.2" y="151" width="1.8" height="24" fill="#FFFFFF" stroke-width=".8"/>
+                            <path d="M290 175A24 24 0 0 1 314 151" fill="none" stroke-width=".5"/>
+                            <rect x="350" y="173.6" width="24" height="7.8" fill="#FFFFFF" stroke="none"/>
+                            <path d="M350 175V180M374 175V180" stroke-width="1.3" fill="none"/>
+                            <rect x="350" y="151" width="1.8" height="24" fill="#FFFFFF" stroke-width=".8"/>
+                            <path d="M374 175A24 24 0 0 0 350 151" fill="none" stroke-width=".5"/>
+                            <rect x="70" y="208.6" width="24" height="7.8" fill="#FFFFFF" stroke="none"/>
+                            <path d="M70 210V215M94 210V215" stroke-width="1.3" fill="none"/>
+                            <rect x="70" y="215" width="1.8" height="24" fill="#FFFFFF" stroke-width=".8"/>
+                            <path d="M94 215A24 24 0 0 1 70 239" fill="none" stroke-width=".5"/>
+                            <rect x="185" y="208.6" width="24" height="7.8" fill="#FFFFFF" stroke="none"/>
+                            <path d="M185 210V215M209 210V215" stroke-width="1.3" fill="none"/>
+                            <rect x="207.2" y="215" width="1.8" height="24" fill="#FFFFFF" stroke-width=".8"/>
+                            <path d="M185 215A24 24 0 0 0 209 239" fill="none" stroke-width=".5"/>
+                            <rect x="255" y="208.6" width="24" height="7.8" fill="#FFFFFF" stroke="none"/>
+                            <path d="M255 210V215M279 210V215" stroke-width="1.3" fill="none"/>
+                            <rect x="255" y="215" width="1.8" height="24" fill="#FFFFFF" stroke-width=".8"/>
+                            <path d="M279 215A24 24 0 0 1 255 239" fill="none" stroke-width=".5"/>
                         </g>
                     </g>
+                    <g class="plan-dims" font-family="Arial, Helvetica, sans-serif" font-size="9" fill="#1C1E1F">
+                        <g stroke="#1C1E1F" fill="none"><path d="M21 22H539" stroke-width=".6"/><path d="M25 16V37" stroke-width=".45"/><path d="M22 25L28 19" stroke-width="1.1"/><path d="M202.5 16V37" stroke-width=".45"/><path d="M199.5 25L205.5 19" stroke-width="1.1"/><path d="M332.5 16V37" stroke-width=".45"/><path d="M329.5 25L335.5 19" stroke-width="1.1"/><path d="M535 16V37" stroke-width=".45"/><path d="M532 25L538 19" stroke-width="1.1"/><path d="M548 36V339" stroke-width=".6"/><path d="M538 40H554" stroke-width=".45"/><path d="M545 43L551 37" stroke-width="1.1"/><path d="M538 177.5H554" stroke-width=".45"/><path d="M545 180.5L551 174.5" stroke-width="1.1"/><path d="M538 212.5H554" stroke-width=".45"/><path d="M545 215.5L551 209.5" stroke-width="1.1"/><path d="M538 335H554" stroke-width=".45"/><path d="M545 338L551 332" stroke-width="1.1"/></g>
+                        <text x="113.75" y="19" text-anchor="middle">7.10</text><text x="267.5" y="19" text-anchor="middle">5.20</text><text x="433.75" y="19" text-anchor="middle">8.10</text><text x="545" y="108.75" text-anchor="middle" transform="rotate(-90 545 108.75)">5.50</text><text x="545" y="195" text-anchor="middle" transform="rotate(-90 545 195)">1.40</text><text x="545" y="273.75" text-anchor="middle" transform="rotate(-90 545 273.75)">4.90</text>
+                    </g>
+                    <g class="plan-rooms" font-family="Arial, Helvetica, sans-serif" fill="#1C1E1F" text-anchor="middle">
+                        <g class="stamp"><text x="150" y="104" font-size="11" font-weight="700" data-i18n>Studio</text><text x="150" y="115" font-size="9">01</text><text x="150" y="126" font-size="9.5">33.00 m²</text></g>
+                        <g class="stamp"><text x="268" y="118" font-size="11" font-weight="700" data-i18n>Office</text><text x="268" y="129" font-size="9">02</text><text x="268" y="140" font-size="9.5">25.00 m²</text></g>
+                        <g class="stamp"><text x="470" y="146" font-size="11" font-weight="700" data-i18n>Meeting</text><text x="470" y="157" font-size="9">02</text><text x="470" y="168" font-size="9.5">38.00 m²</text></g>
+                        <g class="stamp"><text x="92" y="277" font-size="11" font-weight="700" data-i18n>WC</text><text x="92" y="288" font-size="9">05</text><text x="92" y="299" font-size="9.5">14.08 m²</text></g>
+                        <g class="stamp"><text x="176" y="272" font-size="11" font-weight="700" data-i18n>Store</text><text x="176" y="283" font-size="9">06</text><text x="176" y="294" font-size="9.5">19.36 m²</text></g>
+                        <g class="stamp"><text x="300" y="252" font-size="11" font-weight="700" data-i18n>Kitchen</text><text x="300" y="263" font-size="9">07</text><text x="300" y="274" font-size="9.5">51.04 m²</text></g>
+                        <g class="stamp"><text x="470" y="193" font-size="10" font-weight="700" data-i18n>Corridor</text><text x="470" y="204" font-size="8.5">04 · 23.52 m²</text></g>
+                    </g>
+                    <g id="plan-numbering">
+                        <polyline points="45,195 82,195 162,195 197,195 267,195 302,195 362,195 430,195" fill="none" stroke="#BD8D53" stroke-width="2" stroke-dasharray="6 4"/>
+                        <g font-family="JetBrains Mono, monospace" font-size="10.5" font-weight="600" text-anchor="middle">
+                            <g class="tagnum"><rect x="72" y="242" width="34" height="16" rx="3" fill="#BD8D53"/><text x="89" y="254" fill="#1C1E1F">D01</text></g>
+                            <g class="tagnum"><rect x="112" y="156" width="34" height="16" rx="3" fill="#BD8D53"/><text x="129" y="168" fill="#1C1E1F">D02</text></g>
+                            <g class="tagnum"><rect x="146" y="220" width="34" height="16" rx="3" fill="#BD8D53"/><text x="163" y="232" fill="#1C1E1F">D03</text></g>
+                            <g class="tagnum"><rect x="283" y="220" width="34" height="16" rx="3" fill="#BD8D53"/><text x="300" y="232" fill="#1C1E1F">D04</text></g>
+                            <g class="tagnum"><rect x="252" y="156" width="34" height="16" rx="3" fill="#BD8D53"/><text x="269" y="168" fill="#1C1E1F">D05</text></g>
+                            <g class="tagnum"><rect x="378" y="156" width="34" height="16" rx="3" fill="#BD8D53"/><text x="395" y="168" fill="#1C1E1F">D06</text></g>
+                        </g>
+                    </g>
+                    <!-- The check's markers. home.js sizes each label's box to its (translated) text and keeps it inside the plan. -->
                     <g id="plan-check" font-family="Inter, sans-serif" font-size="10.5" font-weight="600" style="display:none">
-                        <circle cx="265" cy="95" r="16" fill="rgba(189, 141, 83, .18)" stroke="#BD8D53" stroke-width="2.5"/><rect x="284" y="84" width="128" height="20" rx="3" fill="#1C1E1F"/><text x="292" y="98" fill="#F4F1EA" data-i18n>Zone number used twice</text>
-                        <circle cx="85" cy="250" r="16" fill="rgba(189, 141, 83, .18)" stroke="#BD8D53" stroke-width="2.5"/><rect x="104" y="240" width="108" height="20" rx="3" fill="#1C1E1F"/><text x="112" y="254" fill="#F4F1EA" data-i18n>Door without an ID</text>
-                        <circle cx="470" cy="260" r="16" fill="rgba(189, 141, 83, .18)" stroke="#BD8D53" stroke-width="2.5"/><rect x="352" y="282" width="134" height="20" rx="3" fill="#1C1E1F"/><text x="360" y="296" fill="#F4F1EA" data-i18n>Unclassified object</text>
+                        <rect x="459" y="148" width="22" height="13" rx="4" fill="rgba(189, 141, 83, .18)" stroke="#BD8D53" stroke-width="2.5"/>
+                        <g class="plan-label" data-x="455" data-y="154" data-side="left"><rect x="330" y="144" width="122" height="20" rx="3" fill="#1C1E1F"/><text x="338" y="158" fill="#F4F1EA" data-i18n>Zone number used twice</text></g>
+                        <circle cx="82" cy="212" r="14" fill="rgba(189, 141, 83, .18)" stroke="#BD8D53" stroke-width="2.5"/>
+                        <g class="plan-label" data-x="99" data-y="212" data-side="right"><rect x="103" y="202" width="108" height="20" rx="3" fill="#1C1E1F"/><text x="111" y="216" fill="#F4F1EA" data-i18n>Door without an ID</text></g>
+                        <circle cx="380" cy="268" r="25" fill="rgba(189, 141, 83, .18)" stroke="#BD8D53" stroke-width="2.5"/>
+                        <g class="plan-label" data-x="408" data-y="268" data-side="right"><rect x="412" y="258" width="110" height="20" rx="3" fill="#1C1E1F"/><text x="420" y="272" fill="#F4F1EA" data-i18n>Unclassified object</text></g>
                     </g>
                     <g id="plan-legend" font-family="Inter, sans-serif" font-size="10" fill="#1C1E1F" style="display:none">
-                        <rect x="390" y="232" width="128" height="66" rx="4" fill="#FFFFFF" stroke="#1C1E1F" stroke-width="1"/>
-                        <text x="400" y="248" font-weight="600" data-i18n>Zone area</text>
-                        <rect x="400" y="256" width="12" height="10" fill="#E3E9E1"/><text x="418" y="265" data-i18n>under 15 m²</text>
-                        <rect x="400" y="270" width="12" height="10" fill="#B9C7B4"/><text x="418" y="279" data-i18n>15 to 25 m²</text>
-                        <rect x="400" y="284" width="12" height="10" fill="#8FA58C"/><text x="418" y="293" data-i18n>over 25 m²</text>
+                        <rect x="410" y="226" width="108" height="66" rx="4" fill="#FFFFFF" stroke="#1C1E1F" stroke-width="1"/>
+                        <text x="420" y="242" font-weight="600" data-i18n>Zone area</text>
+                        <rect x="420" y="250" width="12" height="10" fill="#E3E9E1" stroke="#1C1E1F" stroke-width=".4"/><text x="438" y="259" data-i18n>under 15 m²</text>
+                        <rect x="420" y="264" width="12" height="10" fill="#B9C7B4" stroke="#1C1E1F" stroke-width=".4"/><text x="438" y="273" data-i18n>15 to 25 m²</text>
+                        <rect x="420" y="278" width="12" height="10" fill="#8FA58C" stroke="#1C1E1F" stroke-width=".4"/><text x="438" y="287" data-i18n>over 25 m²</text>
                     </g>
                 </svg>
                 <figcaption class="plan-status" id="plan-status" aria-live="polite"><span class="pulse" aria-hidden="true"></span><span id="plan-status-text" data-i18n><b>Automatic Numbering Based on Polyline</b> · 6 doors numbered D01–D06</span></figcaption>
@@ -382,7 +454,7 @@ print(len(walls), <span class="s">'walls'</span>)</code></pre>
                 <span class="lab">Project</span>
                 <span class="proj">Tapir</span>
                 <p class="note">Open-source automation for Archicad. 100% free and open source (MIT). Maintained by Enzyme APD and the community.</p>
-                <p class="note">Contact: <span class="nowrap">contact@enzyme-apd.com</span></p>
+                <p class="note">Contact: <span class="nowrap">tapir@weareenzyme.com</span></p>
             </div>
             <div>
                 <span class="lab">Product</span>
@@ -401,6 +473,7 @@ print(len(walls), <span class="s">'walls'</span>)</code></pre>
                     <li><a href="archicad-addon/">Commands</a></li>
                     <li><a href="api-coverage/">API coverage</a></li>
                     <li><a href="gh-coverage/">Grasshopper coverage</a></li>
+                    <li><a href="limits/">API limits</a></li>
                 </ul>
             </div>
             <div>
