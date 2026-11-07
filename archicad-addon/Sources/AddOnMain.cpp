@@ -2623,6 +2623,10 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.1.7",
             "Returns the full navigator item tree for the specified map. With includeChildCount true every item also reports the number of its direct children."
         );
+        err |= RegisterCommand<GetSchedulesCommand> (
+            navigatorCommands, "1.8.1",
+            "Returns the Interactive Schedules of the Project Map: navigator item id, name, ID and the folders they are in. Archicad's API does not give the rows of a schedule nor export it; to export one, put it in a publisher set with a spreadsheet format in Archicad and run PublishPublisherSet."
+        );
         err |= RegisterCommand<GetNavigatorParentItemsCommand> (
             navigatorCommands, "1.7.3",
             "Returns the parent of each given navigator item: the folder, subset or layout book item it is in. The root of a map has no parent and gets an error."
