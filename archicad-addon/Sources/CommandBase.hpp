@@ -299,12 +299,15 @@ GSErrCode ExecuteActionForEachDatabase (
 // in one undoable command named undoName, calls perItem with the guid under idFieldName of every
 // item of the list listFieldName of parameters. Returns {"executionResults": [...]}, one result per
 // item in input order: "<idFieldName> is missing" for an item without the id, else perItem's result.
+// On a dry run (dryRun, see IsDryRun) perItem is called outside any undoable command, so it must
+// only make its checks and answer CreateDryRunExecutionResult, and the response gets "dryRun": true.
 GS::ObjectState ExecuteForEachIdInList (
     const GS::ObjectState& parameters,
     const char* listFieldName,
     const char* idFieldName,
     const GS::UniString& undoName,
-    const std::function<GS::ObjectState (const API_Guid&)>& perItem);
+    const std::function<GS::ObjectState (const API_Guid&)>& perItem,
+    bool dryRun = false);
 
 // The Project Map item of an independent worksheet or detail database, found by its database;
 // NoValue for any other database type or when the Project Map has no such item.

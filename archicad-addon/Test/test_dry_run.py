@@ -30,7 +30,19 @@ import generate_addon_docs  # noqa: E402
 # The commands that use the shared dry run. Each later part of #2195 adds its commands here.
 DRY_RUN_COMMANDS = {
     'DeleteElements',
+    # Part 2: element deletes and removals
+    'DeleteSelectedElements',
+    'DeleteUserDataOfElements',
+    'DeleteElementSets',
+    'DeleteIssue',
+    'RemoveSolidElementLinks',
+    'RemoveElementTrims',
+    'RemoveIFCPropertiesOfElements',
+    'RemoveIFCClassificationReferencesOfElements',
 }
+
+# The commands of DRY_RUN_COMMANDS that answer one execution result per target in executionResults.
+PER_TARGET_DRY_RUN_COMMANDS = DRY_RUN_COMMANDS - {'DeleteSelectedElements', 'DeleteIssue'}
 
 # The commands that had a dryRun input of their own before #2195. The ones that delete or change
 # move onto the shared option (and into DRY_RUN_COMMANDS) in the later parts of #2195.
@@ -190,6 +202,36 @@ class DryRunTest (unittest.TestCase):
         self.assertFalse (self.validator.IsValid ({'dryRun': True, 'executionResults': [{'success': True, 'wouldDelete': False}]}, outputSchema))
         self.assertFalse (self.validator.IsValid ({'dryRun': True, 'executionResults': [{'success': False, 'wouldDelete': True}]}, outputSchema))
         self.assertFalse (self.validator.IsValid ({'dryRun': True}, outputSchema))
+
+    def test_per_target_responses (self):
+        failed = {'success': False, 'error': {'code': -2130313112, 'message': 'Failed.'}}
+        for name in sorted (PER_TARGET_DRY_RUN_COMMANDS):
+            with self.subTest (command=name):
+                outputSchema = self.commands[name]['output']
+                self.assertTrue (self.validator.IsValid ({'executionResults': [{'success': True}, failed]}, outputSchema))
+                self.assertTrue (self.validator.IsValid ({'dryRun': True, 'executionResults': [{'success': True, 'wouldDelete': True}, failed]}, outputSchema))
+                self.assertFalse (self.validator.IsValid ({'dryRun': False, 'executionResults': []}, outputSchema))
+                self.assertFalse (self.validator.IsValid ({'dryRun': True, 'executionResults': [{'success': False, 'wouldDelete': True}]}, outputSchema))
+
+    def test_single_result_responses (self):
+        failed = {'success': False, 'error': {'code': -2130313112, 'message': 'Failed.'}}
+        for name in ['DeleteIssue', 'DeleteSelectedElements']:
+            with self.subTest (command=name):
+                outputSchema = self.commands[name]['output']
+                self.assertTrue (self.validator.IsValid ({'success': True}, outputSchema))
+                self.assertTrue (self.validator.IsValid (failed, outputSchema))
+                self.assertTrue (self.validator.IsValid (dict (failed, dryRun=True), outputSchema))
+                self.assertFalse (self.validator.IsValid ({'dryRun': False, 'success': True}, outputSchema))
+                self.assertFalse (self.validator.IsValid ({'dryRun': True}, outputSchema))
+        self.assertTrue (self.validator.IsValid ({'dryRun': True, 'success': True, 'wouldDelete': True}, self.commands['DeleteIssue']['output']))
+        selected = {'dryRun': True, 'success': True, 'wouldDelete': True, 'elements': [{'elementId': {'guid': GUID}}]}
+        self.assertTrue (self.validator.IsValid (selected, self.commands['DeleteSelectedElements']['output']))
+        self.assertTrue (self.validator.IsValid ({'dryRun': True, 'success': True, 'wouldDelete': False, 'elements': []}, self.commands['DeleteSelectedElements']['output']))
+        # DeleteSelectedElements takes no input but dryRun.
+        inputSchema = self.commands['DeleteSelectedElements']['input']
+        self.assertTrue (self.validator.IsValid ({}, inputSchema))
+        self.assertTrue (self.validator.IsValid ({'dryRun': True}, inputSchema))
+        self.assertFalse (self.validator.IsValid ({'elements': []}, inputSchema))
 
 
 if __name__ == '__main__':
