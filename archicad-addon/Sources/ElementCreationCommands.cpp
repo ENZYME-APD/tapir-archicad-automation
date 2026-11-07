@@ -2642,7 +2642,8 @@ static GS::UniString BuildLibraryPartBasedSchema (const char* arrayFieldName,
                         },
                         "layerIndex": {
                             "type": "integer",
-                            "description": "Optional layer attribute index to place the element on. Default: the layer of the favorite or the tool default. An index that is no layer fails the item."
+                            "minimum": 1,
+                            "description": "Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults."
                         }
                     },
                     "additionalProperties": false,
@@ -3049,17 +3050,7 @@ static GS::Optional<GS::ObjectState> ApplyCreationOnlyFields (API_Element& eleme
         }
     }
 
-    Int32 layerIndex = 0;
-    if (parameters.Get ("layerIndex", layerIndex)) {
-        API_Attribute layer = {};
-        layer.header.typeID = API_LayerID;
-        layer.header.index = ACAPI_CreateAttributeIndex (layerIndex);
-        if (layerIndex <= 0 || ACAPI_Attribute_Get (&layer) != NoError) {
-            return CreateErrorResponse (APIERR_BADINDEX, GS::UniString::Printf ("layerIndex %d is no layer.", layerIndex));
-        }
-        element.header.layer = layer.header.index;
-    }
-    return {};
+    return ApplyLayerIndexFromParameters (parameters, element);
 }
 
 // The create path shared by CreateObjects and CreateLamps. The element and memo arrive as the tool
