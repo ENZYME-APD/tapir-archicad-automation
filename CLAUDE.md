@@ -500,7 +500,11 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   events (its check would only keep pull requests from showing green), and it
   must never check out or run pull request code. Maintainers mark items skipped,
   with a reason, in the `skip` section of `tools/api_coverage_rules.json`; the
-  `notApplicable` section lists what cannot be a JSON command. The same run
+  `notApplicable` section lists what cannot be a JSON command. Its groups and
+  patterns are broad, so the `applicable` section names, each with its verdict,
+  the items they would rule out that a script or a Grasshopper definition could
+  use (the audit in #2237); an item Tapir already calls counts as used whatever
+  a rule says. Check an item there before calling it not applicable. The same run
   writes the Grasshopper coverage (`tools/generate_gh_coverage.py`): which Tapir
   commands a Grasshopper component calls (sent with `ToAddOn`; a same-named
   official command sent with `ToArchicad` does not count) and whether the
