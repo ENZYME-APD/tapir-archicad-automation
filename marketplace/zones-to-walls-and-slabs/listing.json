@@ -1,0 +1,18 @@
+{
+    "slug": "zones-to-walls-and-slabs",
+    "name": "Zones to Walls and Slabs",
+    "summary": "Turns the selected zones into walls: one partition on each edge two zones share and an external wall outside the others, story by story.",
+    "category": "modeling-geometry",
+    "tags": ["zones", "walls", "massing", "early-design", "partitions"],
+    "author": { "name": "Tapir" },
+    "license": "MIT",
+    "entry": "ZonesToWallsAndSlabs.py",
+    "versions": [
+        {
+            "version": "0.1.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "First version: the walls. The slabs follow in the next version."
+        }
+    ]
+}
