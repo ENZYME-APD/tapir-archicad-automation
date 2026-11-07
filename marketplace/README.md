@@ -205,3 +205,10 @@ maintainer has looked at it.
 
 Either way the pull request is reviewed before it is merged, and the script is
 published under its licence (MIT unless you chose another).
+
+`python tools/check_marketplace.py` checks every folder against this page: the
+listing, the two headers, the README and that the folder holds nothing else.
+The add-on build check runs it on every pull request. Once a folder is on
+`main` and passes, `tools/generate_catalogue.py` adds it to the list the
+website's Scripts page shows (`catalogue.json` on the `site-data` branch,
+written by `.github/workflows/site_data.yml` within minutes of the merge).
