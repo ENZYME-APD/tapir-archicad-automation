@@ -416,6 +416,9 @@ GS::String GetLinkedPropertyObjectsOfElementsCommand::GetName () const
     return "GetLinkedPropertyObjectsOfElements";
 }
 
+// The element alternative of the oneOf is written out instead of a bare "$ref": "#/ElementIdArrayItem",
+// which was the only bare $ref alternative of an inline oneOf in an input schema and is suspected of
+// crashing Archicad 28's schema validation (#1911). It accepts the same objects.
 GS::Optional<GS::UniString> GetLinkedPropertyObjectsOfElementsCommand::GetInputParametersSchema () const
 {
     return R"({
@@ -427,7 +430,16 @@ GS::Optional<GS::UniString> GetLinkedPropertyObjectsOfElementsCommand::GetInputP
                 "items": {
                     "oneOf": [
                         {
-                            "$ref": "#/ElementIdArrayItem"
+                            "type": "object",
+                            "properties": {
+                                "elementId": {
+                                    "$ref": "#/ElementId"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementId"
+                            ]
                         },
                         {
                             "type": "object",
