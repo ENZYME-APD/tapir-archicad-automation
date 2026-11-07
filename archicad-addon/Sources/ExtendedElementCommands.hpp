@@ -355,6 +355,20 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class ModifyAssociativeDimensionsCommand : public CommandBase
+{
+public:
+    ModifyAssociativeDimensionsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// Adds the settings of a linear dimension (API_DimensionID) to the details GetDetailsOfElements
+// returns, with the keys ModifyAssociativeDimensions takes.
+void AddDimensionDetails (GS::ObjectState& details, const API_Element& element);
+
 class GetDimensionDataCommand : public CommandBase
 {
 public:

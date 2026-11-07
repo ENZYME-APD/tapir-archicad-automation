@@ -2612,6 +2612,12 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 break;
             }
 
+            case API_DimensionID:
+                // The settings ModifyAssociativeDimensions takes; the witness points are read
+                // with GetDimensionData.
+                AddDimensionDetails (typeSpecificDetails, elem);
+                break;
+
             case API_LevelDimensionID: {
                 // "level" is the value the dimension shows: the parent's height at "position"
                 // for an associative one, the floor level or the static value otherwise.
