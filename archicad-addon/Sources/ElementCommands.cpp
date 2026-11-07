@@ -4298,15 +4298,6 @@ GS::Optional<GS::UniString> ChangeSelectionOfElementsCommand::GetRawResponseSche
     })";
 }
 
-// Adds a list of elements to the selection, or removes it, and returns one execution
-// result per element of the list.
-//
-// ACAPI_Selection_Select takes an array, and one call per element costs a selection
-// transaction each: a list of some thousands then takes minutes, and a list of tens of
-// thousands does not finish inside any sensible timeout. So the whole list goes in one
-// call. That call reports a single error code, so when it fails the elements are tried
-// one by one, which says which of them Archicad refused and keeps the per-element
-// results of the response meaningful.
 // The guids of the selected elements, each also as its owner (GetSelectedElements reports
 // section elements as their owner, so a guid given in either form is found).
 static GS::HashSet<API_Guid> GetSelectedGuids ()
@@ -4326,6 +4317,15 @@ static GS::HashSet<API_Guid> GetSelectedGuids ()
     return guids;
 }
 
+// Adds a list of elements to the selection, or removes it, and returns one execution
+// result per element of the list.
+//
+// ACAPI_Selection_Select takes an array, and one call per element costs a selection
+// transaction each: a list of some thousands then takes minutes, and a list of tens of
+// thousands does not finish inside any sensible timeout. So the whole list goes in one
+// call. That call reports a single error code, so when it fails the elements are tried
+// one by one, which says which of them Archicad refused and keeps the per-element
+// results of the response meaningful.
 static GS::Array<GS::ObjectState> ChangeSelectionOfElements (const GS::Array<GS::ObjectState>& elements, bool add)
 {
     const char* const failure = add ? "Failed to add to selection" : "Failed to remove from selection";
@@ -4369,7 +4369,7 @@ static GS::Array<GS::ObjectState> ChangeSelectionOfElements (const GS::Array<GS:
                 results.Push (CreateFailedExecutionResult (APIERR_BADID, "The element does not exist."));
             } else {
                 results.Push (CreateFailedExecutionResult (APIERR_GENERAL, add
-                    ? "Archicad did not select the element: it is on a hidden layer, or the current window does not show it (for example a 2D element in the 3D window)."
+                    ? "Archicad did not select the element: it is on a hidden layer, hidden by the renovation filter, or the current window does not show it (for example a 2D element in the 3D window)."
                     : "Archicad did not remove the element from the selection."));
             }
         } else {
