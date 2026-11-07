@@ -9,7 +9,7 @@
 #include <vector>
 
 // ResolveNames (#2259) checks words taken from a user's question against the names in the open
-// project, so that a script or an AI assistant does not run a command with a guessed name. The
+// project (stories, attributes, element types, properties and classifications), so that a script or an AI assistant does not run a command with a guessed name. The
 // matching is lexical and deterministic: an exact match is "found"; otherwise the nearest names are
 // ranked by how they differ (case, accents, spacing and separators only; the same words; one name
 // containing the other; a few typed characters). It only reads the project.
@@ -28,7 +28,9 @@ enum class NameKind
     Fill,
     Line,
     ZoneCategory,
-    ElementType
+    ElementType,
+    Property,
+    Classification
 };
 
 struct NameKindInfo
@@ -50,7 +52,9 @@ const NameKindInfo NameKinds[] = {
     { NameKind::Fill,             "Fill",             API_FilltypeID },
     { NameKind::Line,             "Line",             API_LinetypeID },
     { NameKind::ZoneCategory,     "ZoneCategory",     API_ZoneCatID },
-    { NameKind::ElementType,      "ElementType",      API_ZombieAttrID }
+    { NameKind::ElementType,      "ElementType",      API_ZombieAttrID },
+    { NameKind::Property,         "Property",         API_ZombieAttrID },
+    { NameKind::Classification,   "Classification",   API_ZombieAttrID }
 };
 
 const double MinCloseMatchScore = 0.6;
@@ -78,6 +82,24 @@ struct Candidate
     GS::Optional<API_Guid>      attributeGuid;
     GS::Optional<Int32>         attributeIndex;
     GS::UniString               elementType;
+
+    // A property definition.
+    GS::Optional<API_Guid>      propertyGuid;
+    GS::Optional<API_Guid>      propertyGroupGuid;
+    GS::UniString               propertyGroupName;
+    const char*                 propertyType = nullptr;
+    const char*                 propertyCollectionType = nullptr;
+    const char*                 propertyValueType = nullptr;
+    const char*                 propertyMeasureType = nullptr;
+    bool                        propertyIsEditable = false;
+    bool                        hasPropertyAvailability = false;   // only custom properties have one
+    GS::Array<API_Guid>         propertyAvailability;
+
+    // A classification system, or an item of one (then classificationItemGuid is set).
+    GS::Optional<API_Guid>      classificationSystemGuid;
+    GS::UniString               classificationSystemName;
+    GS::Optional<API_Guid>      classificationItemGuid;
+    GS::UniString               classificationItemCode;
 };
 
 struct CloseMatch
@@ -409,12 +431,166 @@ GSErrCode LoadElementTypes (const NameKindInfo& kindInfo, std::vector<Candidate>
     return NoError;
 }
 
+GS::UniString JoinNames (const GS::UniString& first, const GS::UniString& second)
+{
+    GS::UniString joined (first);
+    joined += " ";
+    joined += second;
+    return joined;
+}
+
+const char* PropertyDefinitionTypeName (API_PropertyDefinitionType type)
+{
+    switch (type) {
+        case API_PropertyStaticBuiltInDefinitionType:  return "StaticBuiltIn";
+        case API_PropertyDynamicBuiltInDefinitionType: return "DynamicBuiltIn";
+        case API_PropertyCustomDefinitionType:         return "Custom";
+        default:                                       return nullptr;
+    }
+}
+
+const char* PropertyCollectionTypeName (API_PropertyCollectionType type)
+{
+    switch (type) {
+        case API_PropertySingleCollectionType:                      return "Single";
+        case API_PropertyListCollectionType:                        return "List";
+        case API_PropertySingleChoiceEnumerationCollectionType:     return "SingleChoiceEnumeration";
+        case API_PropertyMultipleChoiceEnumerationCollectionType:   return "MultipleChoiceEnumeration";
+        default:                                                    return "Undefined";
+    }
+}
+
+const char* PropertyValueTypeName (API_VariantType type)
+{
+    switch (type) {
+        case API_PropertyIntegerValueType:  return "Integer";
+        case API_PropertyRealValueType:     return "Real";
+        case API_PropertyStringValueType:   return "String";
+        case API_PropertyBooleanValueType:  return "Boolean";
+        case API_PropertyGuidValueType:     return "Guid";
+        default:                            return "Undefined";
+    }
+}
+
+// The measure types GetAllProperties names; the index reference types of some built-in properties
+// (newer Archicad versions) are left out of the result.
+const char* PropertyMeasureTypeName (API_PropertyMeasureType type)
+{
+    switch (type) {
+        case API_PropertyUndefinedMeasureType:  return "Undefined";
+        case API_PropertyDefaultMeasureType:    return "Default";
+        case API_PropertyLengthMeasureType:     return "Length";
+        case API_PropertyAreaMeasureType:       return "Area";
+        case API_PropertyVolumeMeasureType:     return "Volume";
+        case API_PropertyAngleMeasureType:      return "Angle";
+        default:                                return nullptr;
+    }
+}
+
+// Every property definition of the project, built-in and custom. Besides its name, a property is
+// matched by its group and name together ("Pset_DoorCommon FireRating"), so a phrase naming both
+// finds it.
+GSErrCode LoadProperties (const NameKindInfo& kindInfo, std::vector<Candidate>& candidates)
+{
+    GS::Array<API_PropertyGroup> groups;
+    const GSErrCode err = ACAPI_Property_GetPropertyGroups (groups);
+    if (err != NoError) {
+        return err;
+    }
+    for (const API_PropertyGroup& group : groups) {
+        GS::Array<API_PropertyDefinition> definitions;
+        if (ACAPI_Property_GetPropertyDefinitions (group.guid, definitions) != NoError) {
+            continue;
+        }
+        for (const API_PropertyDefinition& definition : definitions) {
+            if (definition.name.IsEmpty ()) {
+                continue;
+            }
+            Candidate candidate;
+            candidate.kindInfo = &kindInfo;
+            candidate.name = definition.name;
+            if (!group.name.IsEmpty ()) {
+                candidate.otherNames.Push (JoinNames (group.name, definition.name));
+            }
+            candidate.propertyGuid = definition.guid;
+            candidate.propertyGroupGuid = group.guid;
+            candidate.propertyGroupName = group.name;
+            candidate.propertyType = PropertyDefinitionTypeName (definition.definitionType);
+            candidate.propertyCollectionType = PropertyCollectionTypeName (definition.collectionType);
+            candidate.propertyValueType = PropertyValueTypeName (definition.valueType);
+            candidate.propertyMeasureType = PropertyMeasureTypeName (definition.measureType);
+            candidate.propertyIsEditable = definition.canValueBeEditable;
+            if (definition.definitionType == API_PropertyCustomDefinitionType) {
+                candidate.hasPropertyAvailability = true;
+                candidate.propertyAvailability = definition.availability;
+            }
+            AddCandidate (std::move (candidate), candidates);
+        }
+    }
+    return NoError;
+}
+
+void LoadClassificationItems (const NameKindInfo& kindInfo, const API_ClassificationSystem& system,
+    const GS::Array<API_ClassificationItem>& items, std::vector<Candidate>& candidates)
+{
+    for (const API_ClassificationItem& item : items) {
+        Candidate candidate;
+        candidate.kindInfo = &kindInfo;
+        candidate.name = item.name.IsEmpty () ? item.id : item.name;
+        if (!item.id.IsEmpty () && !item.name.IsEmpty ()) {
+            candidate.otherNames.Push (item.id);
+            candidate.otherNames.Push (JoinNames (item.id, item.name));
+        }
+        candidate.classificationSystemGuid = system.guid;
+        candidate.classificationSystemName = system.name;
+        candidate.classificationItemGuid = item.guid;
+        candidate.classificationItemCode = item.id;
+        AddCandidate (std::move (candidate), candidates);
+
+        GS::Array<API_ClassificationItem> children;
+        if (ACAPI_Classification_GetClassificationItemChildren (item.guid, children) == NoError) {
+            LoadClassificationItems (kindInfo, system, children, candidates);
+        }
+    }
+}
+
+// Every classification system (by its name, and by its name and version together, "Uniclass 2015")
+// and every item of each system, at every depth (by its name, by its ID such as "Ss_25_10" and by
+// both together).
+GSErrCode LoadClassifications (const NameKindInfo& kindInfo, std::vector<Candidate>& candidates)
+{
+    GS::Array<API_ClassificationSystem> systems;
+    const GSErrCode err = ACAPI_Classification_GetClassificationSystems (systems);
+    if (err != NoError) {
+        return err;
+    }
+    for (const API_ClassificationSystem& system : systems) {
+        Candidate candidate;
+        candidate.kindInfo = &kindInfo;
+        candidate.name = system.name;
+        if (!system.editionVersion.IsEmpty ()) {
+            candidate.otherNames.Push (JoinNames (system.name, system.editionVersion));
+        }
+        candidate.classificationSystemGuid = system.guid;
+        candidate.classificationSystemName = system.name;
+        AddCandidate (std::move (candidate), candidates);
+
+        GS::Array<API_ClassificationItem> roots;
+        if (ACAPI_Classification_GetClassificationSystemRootItems (system.guid, roots) == NoError) {
+            LoadClassificationItems (kindInfo, system, roots, candidates);
+        }
+    }
+    return NoError;
+}
+
 GSErrCode LoadCandidates (const NameKindInfo& kindInfo, std::vector<Candidate>& candidates)
 {
     switch (kindInfo.kind) {
-        case NameKind::Story:       return LoadStories (kindInfo, candidates);
-        case NameKind::ElementType: return LoadElementTypes (kindInfo, candidates);
-        default:                    return LoadAttributes (kindInfo, candidates);
+        case NameKind::Story:           return LoadStories (kindInfo, candidates);
+        case NameKind::ElementType:     return LoadElementTypes (kindInfo, candidates);
+        case NameKind::Property:        return LoadProperties (kindInfo, candidates);
+        case NameKind::Classification:  return LoadClassifications (kindInfo, candidates);
+        default:                        return LoadAttributes (kindInfo, candidates);
     }
 }
 
@@ -452,6 +628,34 @@ GS::ObjectState CreateMatchObjectState (const Candidate& candidate, const char* 
     }
     if (!candidate.elementType.IsEmpty ()) {
         matchOS.Add ("elementType", candidate.elementType);
+    }
+    if (candidate.propertyGuid.HasValue ()) {
+        matchOS.Add ("propertyId", CreateGuidObjectState (candidate.propertyGuid.Get ()));
+        matchOS.Add ("propertyGroupId", CreateGuidObjectState (candidate.propertyGroupGuid.Get ()));
+        matchOS.Add ("propertyGroupName", candidate.propertyGroupName);
+        if (candidate.propertyType != nullptr) {
+            matchOS.Add ("propertyType", candidate.propertyType);
+        }
+        matchOS.Add ("propertyCollectionType", candidate.propertyCollectionType);
+        matchOS.Add ("propertyValueType", candidate.propertyValueType);
+        if (candidate.propertyMeasureType != nullptr) {
+            matchOS.Add ("propertyMeasureType", candidate.propertyMeasureType);
+        }
+        matchOS.Add ("propertyIsEditable", candidate.propertyIsEditable);
+        if (candidate.hasPropertyAvailability) {
+            const auto& availabilityList = matchOS.AddList<GS::ObjectState> ("availability");
+            for (const API_Guid& itemGuid : candidate.propertyAvailability) {
+                availabilityList (CreateIdObjectState ("classificationItemId", itemGuid));
+            }
+        }
+    }
+    if (candidate.classificationSystemGuid.HasValue ()) {
+        matchOS.Add ("classificationSystemId", CreateGuidObjectState (candidate.classificationSystemGuid.Get ()));
+        matchOS.Add ("classificationSystemName", candidate.classificationSystemName);
+    }
+    if (candidate.classificationItemGuid.HasValue ()) {
+        matchOS.Add ("classificationItemId", CreateGuidObjectState (candidate.classificationItemGuid.Get ()));
+        matchOS.Add ("classificationItemCode", candidate.classificationItemCode);
     }
     return matchOS;
 }
