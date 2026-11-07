@@ -1225,6 +1225,12 @@ GS::Optional<GS::ObjectState> ApplyZoneSettings (const GS::ObjectState& details,
         ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, fixedAngle);
     }
 
+    // The same helper and key names as CreateZones.
+    const GS::Optional<GS::UniString> contourAndFillError = ApplyZoneContourAndCoverFill (details, element.zone, &mask);
+    if (contourAndFillError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, *contourAndFillError);
+    }
+
     return ApplyZoneLevels (details, element.zone, &mask);
 }
 
@@ -1619,7 +1625,9 @@ GS::Optional<GS::UniString> ModifyZonesCommand::GetInputParametersSchema () cons
                         "bottomOffset": { "type": "number", "description": "Base level of the zone relative to its home story level." },
                         "topOffset": { "type": "number", "description": "Offset of the top of the zone from the linked top story level. Only has an effect when relativeTopStory is non-zero." },
                         "relativeTopStory": { "type": "number", "description": "Non-zero links the top of the zone to another story, relative to its home story (1 is the story above), instead of an explicit height. Do not set together with height in the same call, see the note on height." },
-                        "floorThickness": { "type": "number", "minimum": 0.0, "description": "Thickness of the floor finish (subfloor thickness) of the zone." }
+                        "floorThickness": { "type": "number", "minimum": 0.0, "description": "Thickness of the floor finish (subfloor thickness) of the zone." },
+                        "contourLine": { "$ref": "#/ZoneContourLine", "description": "Contour line of the zone. Only the given fields are changed." },
+                        "coverFill": { "$ref": "#/ZoneCoverFill", "description": "Cover fill of the zone. Only the given fields are changed." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]

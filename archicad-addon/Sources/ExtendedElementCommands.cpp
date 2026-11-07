@@ -4144,6 +4144,25 @@ void AddMorphBodyFromMemo (const API_Element& elem, GS::ObjectState& typeSpecifi
     typeSpecificDetails.Add ("body", body);
 }
 
+// The wall settings that CreateWalls and ModifyWalls both take and both apply through
+// ApplyWallDetails, declared once so that the two schemas cannot drift apart. Each line
+// ends with a comma, so the fragment is followed by at least one more property.
+static const char* WallSharedSettingsSchemaProperties = R"(
+                        "slantAlpha": { "type": "number", "description": "Only has an effect when the wall's profileType is Slanted or Trapez." },
+                        "slantBeta": { "type": "number", "description": "Only has an effect when the wall's profileType is Slanted or Trapez." },
+                        "topOffset": { "type": "number", "description": "Only has an effect when relativeTopStory is non-zero." },
+                        "relativeTopStory": { "type": "number", "description": "Non-zero links the wall's top to another story instead of an explicit height - do not set together with 'height' for the same wall: whichever is applied last wins, and Archicad recomputes the actual height from the story elevations once relativeTopStory is non-zero." },
+                        "zoneRel": {
+                            "$ref": "#/WallZoneRelation"
+                        },
+                        "visibility": { "$ref": "#/StoryVisibility", "description": "Confirmed live on Archicad 29 (#852): a wall there knows only 'Home story only' and 'All relevant stories' (Wall Settings offers no Custom option), and Archicad silently drops every other combination written here although the command reports success - showAllAbove, showAllBelow, showRelAbove and showRelBelow (any value, 0 included) and showOnHome true -> false all read back unchanged. 'All relevant stories' is isAutoOnStoryVisibility true. 'Home story only' takes two calls: first isAutoOnStoryVisibility true (Archicad resets the custom fields to 0), then isAutoOnStoryVisibility false with visibility { showOnHome: true }. Archicad 30 adds a Custom option for walls; whether the other fields become writable there is untested." },
+                        "isAutoOnStoryVisibility": { "type": "boolean", "description": "When true (the default on a new wall), Archicad recomputes 'visibility' automatically from the wall's vertical extent and ignores any value set for it. Setting 'visibility' without also setting this field turns it off automatically. See the note on 'visibility' for which combinations a wall accepts." },
+                        "referenceMaterial": { "$ref": "#/OverriddenMaterial" },
+                        "oppositeMaterial": { "$ref": "#/OverriddenMaterial" },
+                        "sideMaterial": { "$ref": "#/OverriddenMaterial" },
+                        "cutFillPen": { "$ref": "#/OverriddenPen", "description": "Pen of the cut fill. Archicad 27 and later; ignored on older versions." },
+                        "cutFillBackgroundPen": { "$ref": "#/OverriddenPen", "description": "Background pen of the cut fill. Archicad 27 and later; ignored on older versions." },)";
+
 CreateWallsCommand::CreateWallsCommand () :
     CreateElementsCommandBase ("CreateWalls", API_WallID, "wallsData")
 {
@@ -4151,7 +4170,7 @@ CreateWallsCommand::CreateWallsCommand () :
 
 GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "wallsData": {
@@ -4191,7 +4210,7 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                         "flipped": {
                             "type": "boolean",
                             "description": "Optional. True mirrors the wall to its reference line (the side GetDetailsOfElements reports as flipped). When omitted, the favorite's or the Wall tool default's side is kept, which for a Profile wall mirrors its whole cross section."
-                        },
+                        },)") + WallSharedSettingsSchemaProperties + R"(
                         "structureType": {
                             "$ref": "#/WallStructureType",
                             "description": "Optional. When neither this nor one of the attribute ids below is given, the favorite's or the Wall tool default's structure is kept."
@@ -4269,7 +4288,7 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
         },
         "additionalProperties": false,
         "required": ["wallsData"]
-    })";
+    })");
 }
 
 GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo&, const Stories& stories, const GS::ObjectState& parameters) const
@@ -8792,7 +8811,7 @@ GS::String ModifyWallsCommand::GetName () const
 
 GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "wallsWithDetails": {
@@ -8823,21 +8842,7 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                             "$ref": "#/WallReferenceLineLocation"
                         },
                         "flipped": { "type": "boolean", "description": "True mirrors the wall to its reference line (the side GetDetailsOfElements reports as flipped)." },
-                        "profileType": { "$ref": "#/WallModificationProfileType", "description": "slantAlpha/slantBeta only have an effect once this is set to Slanted." },
-                        "slantAlpha": { "type": "number", "description": "Only has an effect once profileType is set to Slanted or Trapez." },
-                        "slantBeta": { "type": "number", "description": "Only has an effect once profileType is set to Slanted or Trapez." },
-                        "topOffset": { "type": "number", "description": "Only has an effect when relativeTopStory is non-zero." },
-                        "relativeTopStory": { "type": "number", "description": "Non-zero links the wall's top to another story instead of an explicit height - do not set together with 'height' in the same call, see the note on 'height' above." },
-                        "zoneRel": {
-                            "$ref": "#/WallZoneRelation"
-                        },
-                        "visibility": { "$ref": "#/StoryVisibility", "description": "Confirmed live on Archicad 29 (#852): a wall there knows only 'Home story only' and 'All relevant stories' (Wall Settings offers no Custom option), and Archicad silently drops every other combination written here although the command reports success - showAllAbove, showAllBelow, showRelAbove and showRelBelow (any value, 0 included) and showOnHome true -> false all read back unchanged. 'All relevant stories' is isAutoOnStoryVisibility true. 'Home story only' takes two calls: first isAutoOnStoryVisibility true (Archicad resets the custom fields to 0), then isAutoOnStoryVisibility false with visibility { showOnHome: true }. Archicad 30 adds a Custom option for walls; whether the other fields become writable there is untested." },
-                        "isAutoOnStoryVisibility": { "type": "boolean", "description": "When true (the default on a new wall), Archicad recomputes 'visibility' automatically from the wall's vertical extent and ignores any value set for it. Setting 'visibility' without also setting this field turns it off automatically. See the note on 'visibility' for which combinations a wall accepts." },
-                        "referenceMaterial": { "$ref": "#/OverriddenMaterial" },
-                        "oppositeMaterial": { "$ref": "#/OverriddenMaterial" },
-                        "sideMaterial": { "$ref": "#/OverriddenMaterial" },
-                        "cutFillPen": { "$ref": "#/OverriddenPen" },
-                        "cutFillBackgroundPen": { "$ref": "#/OverriddenPen" },
+                        "profileType": { "$ref": "#/WallModificationProfileType", "description": "slantAlpha/slantBeta only have an effect once this is set to Slanted." },)") + WallSharedSettingsSchemaProperties + R"(
                         "contourPen": {
                             "type": "integer",
                             "minimum": 1,
@@ -8907,7 +8912,7 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
         },
         "additionalProperties": false,
         "required": ["wallsWithDetails"]
-    })";
+    })");
 }
 
 GS::Optional<GS::UniString> ModifyWallsCommand::GetRawResponseSchema () const
