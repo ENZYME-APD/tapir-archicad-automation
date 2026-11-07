@@ -304,6 +304,10 @@ Scripts shared by users live in [marketplace/](marketplace/), one `<slug>/` fold
 `changes` key, and the rules for adapting a shared script for public use. An issue labelled
 `script-share` becomes one pull request adding its folder, adapted by those rules, keeping what
 the script does, listing every change in plain words and asking the author to confirm it.
+A new script *requested* in an issue also goes to `marketplace/<slug>/` (listing `author` `Tapir`,
+README "Requested by @<login> in #<n>"); `builtin-scripts/` gets a new script only when a maintainer
+asks for it in the issue. A marketplace script may import `utilities`/`aclib` of `builtin-scripts/`,
+which are copied next to it when it is installed, so keep those helpers backward compatible.
 
 ## Versioning
 
