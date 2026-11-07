@@ -33,9 +33,16 @@ part of the story below is covered and a cantilever is covered by its own
 story's slab. The story above the highest zones gets the roof slab. Gaps between
 zones narrower than the gap tolerance are closed.
 
-Preview lists, per story, how many zones were read and how many walls and slabs
-will be made, and draws them; Create makes the walls in one Undo step and the
-slabs in another, after a confirmation.
+A terrace is the part of a story's slab over a setback: the part of the zones on
+the story below that no zone on the story covers. Its edges along a zone of the
+story already have that zone's external wall; every other edge gets a
+balustrade, made with the Railing tool or as a low wall, centred over the
+external wall of the story below.
+
+Preview lists, per story, how many zones were read and how many walls, slabs,
+terraces and how much balustrade will be made, and draws them; Create makes the
+walls in one Undo step, the slabs in another and the balustrades in a third,
+after a confirmation.
 
 The geometry functions below do not talk to Archicad, so they are tested
 without it (archicad-addon/Test/test_zones_to_walls_and_slabs.py).
@@ -50,12 +57,18 @@ COLLINEAR_TOLERANCE = 0.005
 DEFAULT_PARTITION_THICKNESS = "0.10"
 DEFAULT_EXTERNAL_THICKNESS = "0.30"
 DEFAULT_SLAB_THICKNESS = "0.25"
+DEFAULT_BALUSTRADE_THICKNESS = "0.20"
+DEFAULT_BALUSTRADE_HEIGHT = "1.10"
 NO_LAYER = "(the Wall tool's default layer)"
 NO_SLAB_LAYER = "(the Slab tool's default layer)"
 NO_FAVORITE = "(no favorite: the layer and thickness above)"
+NO_BALUSTRADE_FAVORITE = "(no favorite: the settings above)"
 PARTITION = "partition"
 EXTERNAL = "external"
 SLAB = "slab"
+BALUSTRADE = "balustrade"
+RAILING_TOOL = "Railing"
+WALL_TOOL = "Wall"
 DIMMED_COLOR = [200, 200, 200, 160]
 ZONE_COLOR = [27, 127, 59, 255]
 CREATED_COLOR = [0, 130, 200, 255]
@@ -426,6 +439,17 @@ def _simplify_ring(ring: list[Point]) -> list[Point]:
 def union_of(regions: list[list[dict]]) -> list[dict]:
     """ The union of the regions, as polygons with counterclockwise outlines and clockwise holes;
     areas narrower than about PROBE are lost. """
+    return _boolean(regions, lambda p: any(point_in_region(p, region) for region in regions))
+
+
+def difference_of(region: list[dict], minus: list[dict]) -> list[dict]:
+    """ The part of region outside minus, as union_of gives it. """
+    return _boolean([region, minus], lambda p: point_in_region(p, region) and not point_in_region(p, minus))
+
+
+def _boolean(regions: list[list[dict]], inside) -> list[dict]:
+    """ The polygons bounded by the edges of the regions where inside(point) is true on one side and
+    false on the other, the result on the left of each ring. """
     edges = []
     for region in regions:
         for ring in _rings_of(region):
@@ -467,9 +491,6 @@ def union_of(regions: list[list[dict]]) -> list[dict]:
         for k1, k2 in zip(keys, keys[1:]):
             if k1 != k2:
                 pieces.setdefault(frozenset((k1, k2)), (k1, k2))
-
-    def inside(p: Point) -> bool:
-        return any(point_in_region(p, region) for region in regions)
 
     directed = []
     for k1, k2 in pieces.values():
@@ -558,12 +579,17 @@ def story_footprint(zones: list[dict], tolerance: float) -> list[dict]:
     return union_of([region + gap_strips(zones, tolerance)])
 
 
+def footprints_of(zones_by_floor: dict[int, list[dict]], tolerance: float) -> dict[int, list[dict]]:
+    """ The footprint of each floor index that has zones. """
+    return {floor: story_footprint(zones, tolerance) for floor, zones in zones_by_floor.items() if zones}
+
+
 def plan_slabs(zones_by_floor: dict[int, list[dict]], tolerance: float) -> dict[int, list[dict]]:
     """ The slab polygons per floor index: the slab of story N is the union of the zones on N and of
     the zones on N - 1 (a setback's exposed part of the story below is covered by N's slab, a
     cantilever by its own story's slab), from the lowest story with zones to the story above the
     highest one (its roof). """
-    footprints = {floor: story_footprint(zones, tolerance) for floor, zones in zones_by_floor.items() if zones}
+    footprints = footprints_of(zones_by_floor, tolerance)
     slabs = {}
     if not footprints:
         return slabs
@@ -588,6 +614,157 @@ def slab_placement(floor_index: int, story_levels: dict[int, float],
         if height is not None:
             return below, story_levels[below] + height
     return None
+
+
+# ---- terraces and balustrades (no Archicad) ----
+#
+# The terrace of story N is the part of the footprint of N - 1 that the footprint of N does not cover.
+# An edge of a terrace along a zone of N already has that zone's external wall; every other edge is
+# exposed and gets a balustrade, centred over the external wall of the story below.
+
+def _mean_width(polygon: dict) -> float:
+    """ About the width of a long, narrow polygon: twice its area over its perimeter. """
+    rings = [polygon["outline"]] + list(polygon.get("holes") or [])
+    perimeter = sum(_distance(p, q) for ring in rings for p, q in zip(ring, ring[1:] + ring[:1]))
+    return 2 * polygon_area(polygon) / perimeter if perimeter > EPSILON else 0.0
+
+
+def _ring_pieces(ring: list[Point], cover: list[dict], cover_points: list[Point]) -> list[tuple[Point, Point, bool]]:
+    """ The edges of a ring that has its region on the left, cut where a corner of cover lies on
+    them: [(start, end, exposed)], exposed when cover is not on the outer side of the piece. """
+    pieces = []
+    for k in range(len(ring)):
+        a, b = ring[k], ring[(k + 1) % len(ring)]
+        length = _distance(a, b)
+        if length <= EPSILON:
+            continue
+        u = _unit(a, b)
+        n = (u[1], -u[0])  # outwards
+        cuts = {0.0, length}
+        for p in cover_points:
+            s = _dot(_sub(p, a), u)
+            if EPSILON < s < length - EPSILON and abs(_dot(_sub(p, a), n)) <= PROBE / 10:
+                cuts.add(s)
+        cuts = sorted(cuts)
+        for lo, hi in zip(cuts, cuts[1:]):
+            probe = _along(a, u, (lo + hi) / 2, n, min(PROBE, (hi - lo) / 4))
+            pieces.append((_along(a, u, lo, n, 0.0), _along(a, u, hi, n, 0.0), not point_in_region(probe, cover)))
+    return pieces
+
+
+def _straighten(points: list[Point]) -> list[Point]:
+    """ An open polyline without repeated points and without the points in the middle of a straight run. """
+    result: list[Point] = []
+    for p in points:
+        if result and _same(result[-1], p):
+            continue
+        if len(result) >= 2:
+            a, b = result[-2], result[-1]
+            ap = _distance(a, p)
+            if ap > EPSILON and abs(_cross(_sub(p, a), _sub(b, a))) / ap <= SNAP and _dot(_sub(b, a), _sub(p, b)) > 0:
+                result[-1] = p
+                continue
+        result.append(p)
+    return result
+
+
+def _exposed_runs(pieces: list[tuple[Point, Point, bool]]) -> list[tuple[list[Point], bool, tuple | None, tuple | None]]:
+    """ The runs of exposed pieces of a ring: [(points, closed, the covered piece before the run, the
+    covered piece after it)]; a ring exposed all round is one closed run. """
+    if not pieces or not any(exposed for _, _, exposed in pieces):
+        return []
+    if all(exposed for _, _, exposed in pieces):
+        return [(_simplify_ring([a for a, _, _ in pieces]), True, None, None)]
+    start = next(k for k in range(len(pieces)) if pieces[k][2] and not pieces[k - 1][2])
+    pieces = pieces[start:] + pieces[:start]  # starts with a run, ends with a covered piece
+    runs = []
+    current = None
+    for k, (a, b, exposed) in enumerate(pieces):
+        if exposed:
+            if current is None:
+                current = [[a], pieces[k - 1][:2]]
+            current[0].append(b)
+        elif current is not None:
+            runs.append((_straighten(current[0]), False, current[1], (a, b)))
+            current = None
+    return runs
+
+
+def _offset_polyline(points: list[Point], closed: bool, h: float, before: tuple | None, after: tuple | None,
+                     face: float) -> list[Point]:
+    """ The polyline moved h to the right (outwards), its corners mitred. An open one starts and ends on
+    the outer face of the wall standing on the covered piece before and after it: the wall face moved
+    face to the left of that piece. """
+    count = len(points) if closed else len(points) - 1
+    lines = []
+    for k in range(count):
+        a, b = points[k], points[(k + 1) % len(points)]
+        u = _unit(a, b)
+        lines.append((_along(a, u, 0, (u[1], -u[0]), h), u))
+
+    def meet(first: tuple, second: tuple, fallback: Point) -> Point:
+        crossing = _line_intersection(first[0], first[1], second[0], second[1])
+        return crossing if crossing is not None else fallback
+
+    if closed:
+        return [meet(lines[k - 1], lines[k], lines[k][0]) for k in range(count)]
+    result = [lines[0][0]] + [meet(lines[k - 1], lines[k], lines[k][0]) for k in range(1, count)]
+    last, u = lines[-1]
+    length = _distance(points[-2], points[-1])
+    result.append((last[0] + length * u[0], last[1] + length * u[1]))
+
+    def face_line(piece: tuple) -> tuple:
+        u = _unit(piece[0], piece[1])
+        return _along(piece[0], u, 0, (u[1], -u[0]), -face), u
+
+    if before is not None:
+        start = meet(face_line(before), lines[0], result[0])
+        if _dot(_sub(result[1], start), _sub(points[1], points[0])) > EPSILON:
+            result[0] = start
+    if after is not None:
+        end = meet(face_line(after), lines[-1], result[-1])
+        if _dot(_sub(end, result[-2]), _sub(points[-1], points[-2])) > EPSILON:
+            result[-1] = end
+    return result
+
+
+def polyline_length(points: list[Point], closed: bool) -> float:
+    pairs = zip(points, points[1:] + points[:1]) if closed else zip(points, points[1:])
+    return sum(_distance(p, q) for p, q in pairs)
+
+
+def plan_terraces(zones_by_floor: dict[int, list[dict]], tolerance: float,
+                  external_thickness: float) -> dict[int, dict]:
+    """ The terraces of each floor index and their balustrades: {floor: {"terraces": [polygon],
+    "balustrades": [{"points": [(x, y)], "closed": bool}]}}, only for the floors that have any.
+
+    The terrace of story N is the part of the zones on N - 1 that no zone on N covers (a setback).
+    A story without zones, such as the roof above the highest zones, has no terrace. Terraces narrower
+    than the tolerance are the misfit of zones that nearly line up and are left out.
+
+    A terrace edge along a zone of N has that zone's external wall; the other edges get a balustrade,
+    a polyline per run of them, centred over the external wall of the story below (external_thickness / 2
+    outside the edge) and ending at the outer face of the external walls of N. """
+    footprints = footprints_of(zones_by_floor, tolerance)
+    plans = {}
+    for floor in sorted(footprints):
+        below, here = footprints.get(floor - 1), footprints[floor]
+        if not below:
+            continue
+        terraces = [p for p in difference_of(below, here) if _mean_width(p) > max(tolerance, SNAP)]
+        if not terraces:
+            continue
+        cover_points = [p for ring in _rings_of(here) for p in ring]
+        balustrades = []
+        for polygon in terraces:
+            for ring in [polygon["outline"]] + list(polygon["holes"]):
+                for points, closed, before, after in _exposed_runs(_ring_pieces(ring, here, cover_points)):
+                    if len(points) < (3 if closed else 2):
+                        continue
+                    line = _offset_polyline(points, closed, external_thickness / 2, before, after, external_thickness)
+                    balustrades.append({"points": line, "closed": closed})
+        plans[floor] = {"terraces": terraces, "balustrades": balustrades}
+    return plans
 
 
 def read_ring(points: list[dict], arcs: list[dict] | None) -> tuple[list[Point], set[int]]:
@@ -622,11 +799,12 @@ def main() -> None:
             self.window = ScriptWindow(
                 SCRIPT_NAME,
                 "Makes walls and slabs from the selected zones: one partition on each edge two zones share, an "
-                "external wall outside every other edge, and a slab under each story's zones and the zones of "
-                "the story below. Select the zones (on one or several stories), press Preview, check the result, "
-                "then press Create.",
-                min_width=800, min_height=700)
+                "external wall outside every other edge, a slab under each story's zones and the zones of "
+                "the story below, and a balustrade around the terraces this leaves. Select the zones (on one or "
+                "several stories), press Preview, check the result, then press Create.",
+                min_width=880, min_height=800)
             self.layers: dict[str, int] = {}
+            self.favorites: dict[str, list[str]] = {}
             # the last preview: {"settings", "stories": [{"floorIndex", "name", "zones", "walls", "height",
             # "note", "slabs", "slabPlacement"}]}
             self.preview: dict | None = None
@@ -677,13 +855,43 @@ def main() -> None:
             self.slab_favorite_box.grid(row=4, column=1, sticky="w", padx=(6, 0), pady=(3, 0))
             self.slab_favorite_box.bind("<<ComboboxSelected>>", lambda _e: self._update_slab_fields())
 
-            ttk.Label(settings, text="Gap tolerance (m):").grid(row=5, column=0, sticky="w", pady=(6, 0))
+            self.make_balustrades = tk.BooleanVar(value=True)
+            ttk.Checkbutton(settings, text="Balustrades:", variable=self.make_balustrades,
+                            command=self._update_balustrade_fields).grid(row=5, column=0, sticky="w", pady=(6, 0))
+            self.layer_vars[BALUSTRADE] = tk.StringVar(value=NO_LAYER)
+            self.balustrade_layer_box = ttk.Combobox(settings, textvariable=self.layer_vars[BALUSTRADE],
+                                                     values=[NO_LAYER], state="readonly", width=36)
+            self.balustrade_layer_box.grid(row=5, column=1, sticky="w", padx=(6, 0), pady=(6, 0))
+            self.thickness_vars[BALUSTRADE] = tk.StringVar(value=DEFAULT_BALUSTRADE_THICKNESS)
+            self.balustrade_thickness_entry = ttk.Entry(settings, textvariable=self.thickness_vars[BALUSTRADE],
+                                                        width=8)
+            self.balustrade_thickness_entry.grid(row=5, column=2, sticky="w", padx=(6, 0), pady=(6, 0))
+            ttk.Label(settings, text="Balustrade tool, height (m):").grid(row=6, column=0, sticky="w", pady=(3, 0))
+            self.balustrade_tool = tk.StringVar(value=RAILING_TOOL)
+            self.balustrade_tool_box = ttk.Combobox(settings, textvariable=self.balustrade_tool,
+                                                    values=[RAILING_TOOL, WALL_TOOL], state="readonly", width=12)
+            self.balustrade_tool_box.grid(row=6, column=1, sticky="w", padx=(6, 0), pady=(3, 0))
+            self.balustrade_tool_box.bind("<<ComboboxSelected>>", lambda _e: self._balustrade_tool_changed())
+            self.balustrade_height = tk.StringVar(value=DEFAULT_BALUSTRADE_HEIGHT)
+            self.balustrade_height_entry = ttk.Entry(settings, textvariable=self.balustrade_height, width=8)
+            self.balustrade_height_entry.grid(row=6, column=2, sticky="w", padx=(6, 0), pady=(3, 0))
+            ttk.Label(settings, text="Balustrade favorite:").grid(row=7, column=0, sticky="w", pady=(3, 0))
+            self.balustrade_favorite = tk.StringVar(value=NO_BALUSTRADE_FAVORITE)
+            self.balustrade_favorite_box = ttk.Combobox(settings, textvariable=self.balustrade_favorite,
+                                                        values=[NO_BALUSTRADE_FAVORITE], state="readonly", width=36)
+            self.balustrade_favorite_box.grid(row=7, column=1, sticky="w", padx=(6, 0), pady=(3, 0))
+            self.balustrade_favorite_box.bind("<<ComboboxSelected>>", lambda _e: self._update_balustrade_fields())
+            ttk.Label(settings, text="On the terraces, along the edges no zone of the story stands on. A railing "
+                                     "takes its layer and thickness from the Railing tool or the favorite.",
+                      style="Muted.TLabel").grid(row=8, column=0, columnspan=3, sticky="w", pady=(2, 0))
+
+            ttk.Label(settings, text="Gap tolerance (m):").grid(row=9, column=0, sticky="w", pady=(6, 0))
             self.tolerance = tk.StringVar(value="")
-            ttk.Entry(settings, textvariable=self.tolerance, width=8).grid(row=5, column=2, sticky="w", padx=(6, 0),
+            ttk.Entry(settings, textvariable=self.tolerance, width=8).grid(row=9, column=2, sticky="w", padx=(6, 0),
                                                                            pady=(6, 0))
             ttk.Label(settings, text="Zone edges closer than this count as shared, and slabs close the gap. Empty: "
                                      "the partition thickness.",
-                      style="Muted.TLabel").grid(row=6, column=0, columnspan=3, sticky="w", pady=(2, 0))
+                      style="Muted.TLabel").grid(row=10, column=0, columnspan=3, sticky="w", pady=(2, 0))
 
             preview = ttk.Frame(body, padding=(0, 8, 0, 0))
             preview.grid(row=1, column=0, sticky="nsew")
@@ -696,7 +904,8 @@ def main() -> None:
                                                   ("partitions", "Partitions", 70, "e"),
                                                   ("external", "External walls", 90, "e"),
                                                   ("height", "Wall height", 80, "e"),
-                                                  ("slabs", "Slabs", 100, "e"), ("note", "Note", 160, "w")],
+                                                  ("slabs", "Slabs", 100, "e"), ("terraces", "Terraces", 100, "e"),
+                                                  ("balustrade", "Balustrade", 80, "e"), ("note", "Note", 160, "w")],
                                         height=8)
             self.story_tree.configure(selectmode="browse")
             self.story_tree.container.grid(row=1, column=0, sticky="nsew")
@@ -715,21 +924,48 @@ def main() -> None:
                 if label in self.layers:
                     label = f"{label} ({layer['index']})"
                 self.layers[label] = int(layer["index"])
-            for box in self.layer_boxes:
+            for box in self.layer_boxes + [self.balustrade_layer_box]:
                 box.configure(values=[NO_LAYER] + list(self.layers))
             self.slab_layer_box.configure(values=[NO_SLAB_LAYER] + list(self.layers))
-            try:
-                favorites = run_tapir("GetFavoritesByType", {"elementType": "Slab"}).get("favorites", [])
-            except ArchicadError as error:
-                print(f"The Slab favorites could not be read: {error}")
-                favorites = []
-            self.slab_favorite_box.configure(values=[NO_FAVORITE] + sorted(str(f) for f in favorites))
+            self.favorites = {}
+            for tool in ("Slab", RAILING_TOOL, WALL_TOOL):
+                try:
+                    favorites = run_tapir("GetFavoritesByType", {"elementType": tool}).get("favorites", [])
+                except ArchicadError as error:
+                    print(f"The {tool} favorites could not be read: {error}")
+                    favorites = []
+                self.favorites[tool] = sorted(str(f) for f in favorites)
+            self.slab_favorite_box.configure(values=[NO_FAVORITE] + self.favorites["Slab"])
             self._update_slab_fields()
+            self._balustrade_tool_changed()
             self.window.set_status("Select the zones in Archicad, then press Preview.")
 
         def _slab_favorite(self) -> str | None:
             name = self.slab_favorite.get()
             return None if name == NO_FAVORITE else name
+
+        def _balustrade_favorite(self) -> str | None:
+            name = self.balustrade_favorite.get()
+            return None if name == NO_BALUSTRADE_FAVORITE else name
+
+        def _balustrade_tool_changed(self) -> None:
+            """ The favorites of the chosen tool; a favorite of the other tool no longer applies. """
+            self.balustrade_favorite_box.configure(
+                values=[NO_BALUSTRADE_FAVORITE] + self.favorites.get(self.balustrade_tool.get(), []))
+            self.balustrade_favorite.set(NO_BALUSTRADE_FAVORITE)
+            self._update_balustrade_fields()
+
+        def _update_balustrade_fields(self) -> None:
+            """ The layer and thickness are for a wall without a favorite only (CreateRailings takes neither),
+            the height for either tool without a favorite. """
+            on = self.make_balustrades.get()
+            self.balustrade_tool_box.configure(state="readonly" if on else "disabled")
+            self.balustrade_favorite_box.configure(state="readonly" if on else "disabled")
+            own = on and self._balustrade_favorite() is None
+            wall = own and self.balustrade_tool.get() == WALL_TOOL
+            self.balustrade_layer_box.configure(state="readonly" if wall else "disabled")
+            self.balustrade_thickness_entry.configure(state="normal" if wall else "disabled")
+            self.balustrade_height_entry.configure(state="normal" if own else "disabled")
 
         def _update_slab_fields(self) -> None:
             """ The slab layer and thickness are used only without a favorite. """
@@ -757,6 +993,23 @@ def main() -> None:
                     self.window.set_status("The slab thickness must be a positive number of metres.", "warning")
                     return None
                 settings[SLAB] = value
+            settings["balustrades"] = self.make_balustrades.get()
+            settings["balustradeTool"] = self.balustrade_tool.get()
+            settings["balustradeFavorite"] = self._balustrade_favorite() if settings["balustrades"] else None
+            settings["balustradeHeight"] = settings[BALUSTRADE] = None
+            if settings["balustrades"] and settings["balustradeFavorite"] is None:
+                value = parse_length(self.balustrade_height.get())
+                if value is None or value <= EPSILON:
+                    self.window.set_status("The balustrade height must be a positive number of metres.", "warning")
+                    return None
+                settings["balustradeHeight"] = value
+                if settings["balustradeTool"] == WALL_TOOL:
+                    value = parse_length(self.thickness_vars[BALUSTRADE].get())
+                    if value is None or value <= EPSILON:
+                        self.window.set_status("The balustrade thickness must be a positive number of metres.",
+                                               "warning")
+                        return None
+                    settings[BALUSTRADE] = value
             text = self.tolerance.get().strip()
             tolerance = settings[PARTITION] if not text else parse_length(text)
             if tolerance is None or tolerance < 0:
@@ -801,6 +1054,7 @@ def main() -> None:
 
                 self.window.set_status("Working out the walls and slabs...")
                 slabs_by_floor = plan_slabs(zones_by_floor, settings["tolerance"]) if settings["slabs"] else {}
+                terraces_by_floor = plan_terraces(zones_by_floor, settings["tolerance"], settings[EXTERNAL])
                 story_rows = []
                 for floor in sorted(set(zones_by_floor) | set(slabs_by_floor)):
                     zones = zones_by_floor.get(floor, [])
@@ -828,8 +1082,14 @@ def main() -> None:
                         name = f"Roof of {names[floor - 1]}"
                     else:
                         name = str(floor)
+                    terraces = terraces_by_floor.get(floor, {})
+                    balustrades = terraces.get("balustrades", []) if settings["balustrades"] else []
+                    if balustrades and floor not in levels:
+                        notes.append("no level: no balustrade")
+                        balustrades = []
                     story_rows.append({"floorIndex": floor, "name": name, "zones": zones, "walls": walls,
                                        "height": height, "slabs": slabs, "slabPlacement": placement,
+                                       "terraces": terraces.get("terraces", []), "balustrades": balustrades,
                                        "note": "; ".join(notes)})
 
             self.preview = {"settings": settings, "stories": story_rows}
@@ -842,9 +1102,11 @@ def main() -> None:
             })
             walls = sum(len(s["walls"]) for s in story_rows)
             slabs = sum(len(s["slabs"]) for s in story_rows)
+            length = sum(polyline_length(b["points"], b["closed"]) for s in story_rows for b in s["balustrades"])
             warning = any(s["note"] for s in story_rows)
-            self.window.set_status(f"Preview: {walls} wall(s) and {slabs} slab(s) on {len(story_rows)} story(s). "
-                                   "Check them, then press Create.", "warning" if warning else "ok")
+            self.window.set_status(f"Preview: {walls} wall(s), {slabs} slab(s) and {length:.1f} m of balustrade on "
+                                   f"{len(story_rows)} story(s). Check them, then press Create.",
+                                   "warning" if warning else "ok")
             return True
 
         def _show_preview(self) -> None:
@@ -855,15 +1117,21 @@ def main() -> None:
                 height = f"{story['height']:.3f}" if story["height"] is not None else "-"
                 area = sum(polygon_area(p) for p in story["slabs"])
                 slabs = f"{len(story['slabs'])} ({area:.1f} m²)" if story["slabs"] else "-"
+                terrace_area = sum(polygon_area(p) for p in story["terraces"])
+                terraces = f"{len(story['terraces'])} ({terrace_area:.1f} m²)" if story["terraces"] else "-"
+                length = sum(polyline_length(b["points"], b["closed"]) for b in story["balustrades"])
+                balustrade = f"{length:.1f} m" if story["balustrades"] else "-"
                 self.story_tree.insert("", "end", iid=str(index), values=(
                     story["name"], len(story["zones"]), partitions, len(story["walls"]) - partitions, height,
-                    slabs, story["note"]))
+                    slabs, terraces, balustrade, story["note"]))
             zones = sum(len(s["zones"]) for s in rows)
             stories = sum(1 for s in rows if s["zones"])
             walls = sum(len(s["walls"]) for s in rows)
             slabs = sum(len(s["slabs"]) for s in rows)
+            terraces = sum(len(s["terraces"]) for s in rows)
             self.summary_label.configure(text=f"{zones} zone(s) on {stories} story(s): {walls} wall(s), {slabs} "
-                                              "slab(s). Select a story to see its walls and slabs (dashed).")
+                                              f"slab(s), {terraces} terrace(s). Select a story to see it: slabs "
+                                              "dashed, terraces tinted, balustrades as dotted lines.")
             if rows:
                 self.story_tree.selection_set("0")
             self._draw()
@@ -878,6 +1146,8 @@ def main() -> None:
             points = [p for outline in outlines for p in outline]
             for wall in story["walls"]:
                 points += [wall["start"], wall["end"]]
+            for balustrade in story["balustrades"]:
+                points += balustrade["points"]
             if not points:
                 return
             margin = max(self.preview["settings"][EXTERNAL], self.preview["settings"][PARTITION])
@@ -897,6 +1167,9 @@ def main() -> None:
                     if len(ring) > 2:
                         self.canvas.create_polygon(*[c for p in ring for c in to_canvas(p)], outline="#9bbf9b",
                                                    fill=fill)
+            for polygon in story["terraces"]:
+                for ring, fill in [(polygon["outline"], "#fbe7c6")] + [(h, "white") for h in polygon["holes"]]:
+                    self.canvas.create_polygon(*[c for p in ring for c in to_canvas(p)], outline="", fill=fill)
             for polygon in story["slabs"]:
                 for ring in [polygon["outline"]] + list(polygon["holes"]):
                     self.canvas.create_polygon(*[c for p in ring for c in to_canvas(p)], outline="#c06000",
@@ -910,6 +1183,10 @@ def main() -> None:
                 color = "#555555" if wall["kind"] == PARTITION else "#1f1f1f"
                 self.canvas.create_polygon(*[c for p in corners for c in to_canvas(p)], outline=color,
                                            fill="#b5b5b5" if wall["kind"] == PARTITION else "#6a6a6a")
+            for balustrade in story["balustrades"]:
+                line = balustrade["points"] + (balustrade["points"][:1] if balustrade["closed"] else [])
+                self.canvas.create_line(*[c for p in line for c in to_canvas(p)], fill="#b0006a", width=3,
+                                        dash=(2, 3))
 
         def create(self) -> None:
             settings = self._settings()
@@ -924,13 +1201,15 @@ def main() -> None:
                 self.window.set_status("These walls and slabs are already created. Press Preview to create them "
                                        "again.", "warning")
                 return
-            rows = [s for s in self.preview["stories"] if s["walls"] or s["slabs"]]
+            rows = [s for s in self.preview["stories"] if s["walls"] or s["slabs"] or s["balustrades"]]
             total = sum(len(s["walls"]) for s in rows)
             total_slabs = sum(len(s["slabs"]) for s in rows)
-            if not total and not total_slabs:
-                self.window.set_status("The preview has no walls or slabs to create.", "warning")
+            total_length = sum(polyline_length(b["points"], b["closed"]) for s in rows for b in s["balustrades"])
+            if not total and not total_slabs and not total_length:
+                self.window.set_status("The preview has no walls, slabs or balustrades to create.", "warning")
                 return
-            layer_of = {kind: self.layers.get(self.layer_vars[kind].get()) for kind in (PARTITION, EXTERNAL, SLAB)}
+            layer_of = {kind: self.layers.get(self.layer_vars[kind].get())
+                        for kind in (PARTITION, EXTERNAL, SLAB, BALUSTRADE)}
             lines = []
             for s in rows:
                 parts = []
@@ -939,6 +1218,9 @@ def main() -> None:
                                  f"{sum(1 for w in s['walls'] if w['kind'] == EXTERNAL)} external wall(s)")
                 if s["slabs"]:
                     parts.append(f"{len(s['slabs'])} slab(s), {sum(polygon_area(p) for p in s['slabs']):.1f} m²")
+                if s["balustrades"]:
+                    length = sum(polyline_length(b["points"], b["closed"]) for b in s["balustrades"])
+                    parts.append(f"{len(s['terraces'])} terrace(s), {length:.1f} m of balustrade")
                 lines.append(f"{s['name']}: " + "; ".join(parts))
             if settings["slabFavorite"] is not None:
                 slab_line = f"Slabs: the favorite {settings['slabFavorite']}"
@@ -946,11 +1228,21 @@ def main() -> None:
                 slab_line = f"Slabs: {settings[SLAB]:g} m on {self.layer_vars[SLAB].get()}"
             else:
                 slab_line = "Slabs: none"
-            message = (f"Create {total} wall(s) and {total_slabs} slab(s)?\n\n" + "\n".join(lines[:20])
-                       + ("\n..." if len(lines) > 20 else "")
+            tool = settings["balustradeTool"]
+            if not settings["balustrades"]:
+                balustrade_line = "Balustrades: none"
+            elif settings["balustradeFavorite"] is not None:
+                balustrade_line = f"Balustrades: {tool} favorite {settings['balustradeFavorite']}"
+            elif tool == WALL_TOOL:
+                balustrade_line = (f"Balustrades: walls {settings[BALUSTRADE]:g} m thick, "
+                                   f"{settings['balustradeHeight']:g} m high on {self.layer_vars[BALUSTRADE].get()}")
+            else:
+                balustrade_line = f"Balustrades: railings {settings['balustradeHeight']:g} m high"
+            message = (f"Create {total} wall(s), {total_slabs} slab(s) and {total_length:.1f} m of balustrade?\n\n"
+                       + "\n".join(lines[:20]) + ("\n..." if len(lines) > 20 else "")
                        + f"\n\nPartitions: {settings[PARTITION]:g} m on {self.layer_vars[PARTITION].get()}"
                        + f"\nExternal walls: {settings[EXTERNAL]:g} m on {self.layer_vars[EXTERNAL].get()}"
-                       + f"\n{slab_line}")
+                       + f"\n{slab_line}\n{balustrade_line}")
             if not self.window.ask_ok_cancel(SCRIPT_NAME, message):
                 return
 
@@ -998,6 +1290,45 @@ def main() -> None:
                     slab_items.append(item)
                     story_of_slab.append(story["name"])
 
+            # the balustrades stand on the terrace, at the story's level; with a favorite only their line
+            # and base come from here, the height and everything else from the favorite
+            balustrade_items, story_of_balustrade = [], []
+            for story in rows:
+                for balustrade in story["balustrades"]:
+                    points = balustrade["points"]
+                    if tool == RAILING_TOOL:
+                        line = points + (points[:1] if balustrade["closed"] else [])
+                        item = {"coordinates": [{"x": p[0], "y": p[1]} for p in line],
+                                "floorIndex": story["floorIndex"], "bottomOffset": 0.0}
+                        if settings["balustradeFavorite"] is not None:
+                            item["favoriteName"] = settings["balustradeFavorite"]
+                        else:
+                            item["height"] = settings["balustradeHeight"]
+                        balustrade_items.append(item)
+                        story_of_balustrade.append(story["name"])
+                        continue
+                    ends = list(zip(points, points[1:] + points[:1])) if balustrade["closed"] \
+                        else list(zip(points, points[1:]))
+                    for start, end in ends:
+                        item = {
+                            "begCoordinate": {"x": start[0], "y": start[1]},
+                            "endCoordinate": {"x": end[0], "y": end[1]},
+                            "floorIndex": story["floorIndex"],
+                            "zCoordinate": 0.0,
+                            "referenceLineLocation": "Center",
+                            "offset": 0.0,
+                        }
+                        if settings["balustradeFavorite"] is not None:
+                            item["favoriteName"] = settings["balustradeFavorite"]
+                        else:
+                            item["structureType"] = "Basic"
+                            item["thickness"] = settings[BALUSTRADE]
+                            item["height"] = settings["balustradeHeight"]
+                            if layer_of[BALUSTRADE] is not None:
+                                item["layerIndex"] = layer_of[BALUSTRADE]
+                        balustrade_items.append(item)
+                        story_of_balustrade.append(story["name"])
+
             def made(result: list, stories_of_items: list[str]) -> tuple[list[dict], dict[str, int]]:
                 elements, per_story = [], {}
                 for story_name, element in zip(stories_of_items, result):
@@ -1006,11 +1337,13 @@ def main() -> None:
                         per_story[story_name] = per_story.get(story_name, 0) + 1
                 return elements, per_story
 
-            # one call per element type, so the walls are one Undo step and the slabs another
+            # one call per kind, so the walls are one Undo step, the slabs another and the balustrades a third
             created, errors, reports = [], [], []
             for kind, command, key, element_items, stories_of_items in [
                     ("wall", "CreateWalls", "wallsData", items, story_of_item),
-                    ("slab", "CreateSlabs", "slabsData", slab_items, story_of_slab)]:
+                    ("slab", "CreateSlabs", "slabsData", slab_items, story_of_slab),
+                    ("balustrade", "CreateRailings" if tool == RAILING_TOOL else "CreateWalls",
+                     "railingsData" if tool == RAILING_TOOL else "wallsData", balustrade_items, story_of_balustrade)]:
                 if not element_items:
                     continue
                 call_error = f"{command} returned no elements."

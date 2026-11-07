@@ -4,8 +4,9 @@ For early design: draw the rooms as zones, select them and run the script, and i
 makes the walls around them and the slabs under and over them. An edge two zones
 share becomes one internal partition; every other edge gets an external wall,
 placed outside the zone so the room keeps its area. Each story gets a floor slab,
-and the story above the highest zones a roof slab. It works story by story, on as
-many stories as you select zones on.
+and the story above the highest zones a roof slab. Where a story is set back from
+the one below, the exposed part is a terrace, and its open edges get a balustrade.
+It works story by story, on as many stories as you select zones on.
 
 ## How to use it
 
@@ -13,16 +14,19 @@ many stories as you select zones on.
 2. Run the script from the Tapir palette.
 3. Pick the layer and the thickness of the internal partitions and of the
    external walls, the slabs' layer and thickness or a Slab favorite, and the
-   gap tolerance (below). Untick **Slabs** to make walls only.
+   gap tolerance (below). Untick **Slabs** to make walls only. Choose how the
+   balustrades are made (Railing or Wall, with a favorite of that tool or a
+   height), or untick **Balustrades**.
 4. Press **Preview**. The window lists, per story, how many zones it read, how
    many partitions and external walls it will make and how high they will be,
-   and how many slabs, with their area. It draws the walls and the slab outlines
-   (dashed) of the story you select in the list. The zones are highlighted in
-   Archicad.
+   how many slabs, with their area, the terraces, with their area, and the
+   length of balustrade. It draws the walls, the slab outlines (dashed), the
+   terraces (tinted) and the balustrades (dotted) of the story you select in the
+   list. The zones are highlighted in Archicad.
 5. Press **Create**. It asks before it creates anything, then makes all the
-   walls in one Undo step and all the slabs in another, and reports how many it
-   made on each story. The new elements are highlighted in blue; **Clear
-   highlight** removes the highlight.
+   walls in one Undo step, all the slabs in another and all the balustrades in a
+   third, and reports how many it made on each story. The new elements are
+   highlighted in blue; **Clear highlight** removes the highlight.
 
 ## Settings
 
@@ -36,6 +40,11 @@ many stories as you select zones on.
 | Slabs: layer | the Slab tool's default layer | The layer of the slabs, when no favorite is chosen. |
 | Slabs: thickness | 0.25 m | Their thickness, when no favorite is chosen (a Basic slab). |
 | Slab favorite | none | A Slab favorite of the project. Its settings (layer, structure, composite, thickness, surfaces) are used instead of the layer and thickness. |
+| Balustrades | on | Whether balustrades are made around the terraces. |
+| Balustrade tool | Railing | **Railing** makes one railing per run of open terrace edges (`CreateRailings`); **Wall** makes a low wall on each straight piece of it. |
+| Balustrade height | 1.10 m | Their height, when no favorite is chosen. |
+| Balustrades: layer, thickness | the Wall tool's default layer, 0.20 m | For the Wall tool without a favorite (a Basic wall). A railing takes its layer from the Railing tool defaults. |
+| Balustrade favorite | none | A favorite of the chosen tool. Its settings, its height included, are used; only the line and the base come from the script. |
 | Gap tolerance | empty: the partition thickness | Zone edges no farther apart than this count as shared, since zones rarely touch exactly, and the slab closes the gap between them. Collinear walls no farther apart than this are merged. |
 
 ## The rules
@@ -61,13 +70,25 @@ many stories as you select zones on.
 - The top of each slab is at its story's level (its reference plane is the top).
   Zones that touch, or are closer than the gap tolerance, give one slab; a
   courtyard between zones becomes a hole in the slab.
+- Terraces: the terrace of a story is the part of the zones on the story below
+  that no zone on the story covers (a setback). The roof above the highest
+  zones is not a terrace. A terrace narrower than the gap tolerance is the
+  misfit of zones that nearly line up, and is left out.
+- Balustrades: an edge of a terrace along a zone of the story already has that
+  zone's external wall, so it gets nothing more. Every other edge gets a
+  balustrade, standing at the story's level and centred over the external wall
+  of the story below. It ends at the outer face of the story's external walls,
+  so it runs into them neither in plan nor in 3D. A terrace open all round (an
+  upper story standing in the middle of the one below) gets one closed
+  balustrade.
 
 ## What it changes
 
-It creates walls and slabs. The walls are Basic walls (one building material,
-the Wall tool's default) with the reference line in the middle. Without a
-favorite the slabs are Basic slabs of the thickness given; everything else comes
-from the tools' defaults. It changes nothing that is already in the project:
+It creates walls, slabs and balustrades (railings or walls). The walls are Basic
+walls (one building material, the Wall tool's default) with the reference line in
+the middle. Without a favorite the slabs are Basic slabs of the thickness given;
+everything else comes from the tools' defaults. A railing's posts, rails and
+panels come from the Railing tool defaults or its favorite. It changes nothing that is already in the project:
 existing walls and slabs are not looked at, so running it twice makes them twice.
 It writes no files.
 
@@ -79,6 +100,11 @@ It writes no files.
   stand outside the zones.
 - Zones of two stories that nearly line up give a slab with a narrow step where
   they differ.
+- A terrace that is narrow in one place only (a zone drawn a few centimetres
+  short along part of an edge) keeps its narrow strip, and its balustrade runs
+  along it.
+- A balustrade wall made from a favorite keeps the favorite's thickness and is
+  centred on the same line, whatever that thickness is.
 - Doors and windows are not made.
 - Zones farther apart than the gap tolerance each get their own external wall,
   which may overlap the other's.
