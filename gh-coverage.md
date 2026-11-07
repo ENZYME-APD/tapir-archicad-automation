@@ -34,7 +34,7 @@ Parameters of the 746 used commands: 🟢 713 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-07 09:33 UTC.
+Updated 2026-11-07 09:47 UTC.
 
 | | Status |
 |---|---|
@@ -53,7 +53,7 @@ A parameter counts as covered when the component's code names it (a static check
 
 ## Application Commands
 
-- ✅ `GetAddOnVersion` 🟢 0/0 parameters – `GetAddOnVersionComponent` — [#2210](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2210 "New command GetTapirCommands: let a script ask the installed Tapir which commands it has")
+- ✅ `GetAddOnVersion` 🟢 0/0 parameters – `GetAddOnVersionComponent`
 - 🔀 `GetCommands` 🟢 0/0 parameters – `GetCommandsComponent`
 - ✅ `GetArchicadLocation` 🟢 0/0 parameters – `GetArchicadLocationComponent`
 - ✅ `GetArchicadReleaseInfo` 🟢 0/0 parameters – `GetArchicadReleaseInfoComponent`
@@ -126,7 +126,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `NewProject` 🟢 1/1 parameters – `NewProjectComponent`
 - ✅ `CloseProject` 🟢 0/0 parameters – `CloseProjectComponent`
 - ✅ `SaveProject` 🟢 2/2 parameters – `SaveProjectComponent`
-- ✅ `SaveAsModuleFile` 🟢 3/3 parameters – `SaveAsModuleFileComponent` — [#2194](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2194 "New commands: copy elements to the clipboard and paste, and move elements between open projects")
+- ✅ `SaveAsModuleFile` 🟢 3/3 parameters – `SaveAsModuleFileComponent` — [#2194](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2194 "Copy elements between open projects through a module file (the API has no clipboard)")
 - ✅ `SaveProjectAsArchive` 🟢 6/6 parameters – `SaveProjectAsArchiveComponent`
 - 🔀 `GetRenderingScenes` 🟢 0/0 parameters – `GetRenderingScenesComponent`
 - 🔀 `SetCurrentRenderingScene` 🟢 1/1 parameters – `SetCurrentRenderingSceneComponent`
@@ -198,7 +198,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `GetVisibleSkinStatus` 🟢 2/2 parameters – `GetVisibleSkinStatusComponent`
 - 🔀 `GetRoofPlanes` 🟢 1/1 parameters – `GetRoofPlanesComponent`
 - 🔀 `GetCurtainWallAbsoluteBottoms` 🟢 1/1 parameters – `GetCurtainWallAbsoluteBottomsComponent`
-- ✅ `GetQuantitiesOfElements` 🟢 3/3 parameters – `GetQuantitiesOfElementsComponent` — [#2193](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2193 "Long-running commands: progress reporting and cancel"), [#2189](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2189 "New commands: list, read and export Interactive Schedules")
+- ✅ `GetQuantitiesOfElements` 🟢 3/3 parameters – `GetQuantitiesOfElementsComponent` — [#2193](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2193 "Long-running commands: progress reporting and cancel"), [#2189](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2189 "New command GetSchedules: list the Interactive Schedules (rows and export are not possible in the API)")
 - ✅ `TriangulatePolygonsOfElements` 🟢 2/2 parameters – `TriangulatePolygonsOfElementsComponent`
 - 🔀 `GetTextureCoordinates` 🟢 1/1 parameters – `GetTextureCoordinatesComponent`
 - 🔀 `GetSurfaceTypesOfElements` 🟢 1/1 parameters – `GetSurfaceTypesOfElementsComponent`
@@ -230,7 +230,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `GetZoneLabelingSettings` 🟢 0/0 parameters – `GetZoneLabelingSettingsComponent`
 - ✅ `GetCollisions` 🟢 6/6 parameters – `GetCollisionsComponent`
 - ✅ `HighlightElements` 🟢 4/4 parameters – `HighlightElementsComponent`
-- ✅ `MoveElements` 🟢 7/7 parameters – `MoveElementsComponent` — [#2188](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2188 "New commands: scale, stretch, align and distribute elements"), [#2187](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2187 "New commands: copy elements, make an array of copies, offset copies")
+- ✅ `MoveElements` 🟢 7/7 parameters – `MoveElementsComponent` — [#2188](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2188 "New commands: align, distribute and scale elements"), [#2187](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2187 "New commands: copy elements, make an array of copies, offset copies")
 - 🔀 `CopyElementsToDatabase` 🟢 4/4 parameters – `CopyElementsToDatabaseComponent`
 - 🔀 `ElevateElements` 🟢 4/4 parameters – `ElevateElementsComponent`
 - ✅ `RotateElements` 🟢 7/7 parameters – `RotateElementsComponent` — [#2187](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2187 "New commands: copy elements, make an array of copies, offset copies")
@@ -858,11 +858,11 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `RemoveSolidElementLinks` 🟢 1/1 parameters – `RemoveSolidElementLinksComponent`
 - ✅ `GetSolidElementLinks` 🟢 1/1 parameters – `GetSolidElementLinksComponent`
 - ✅ `CreateSolidOperations` 🟢 4/4 parameters – `CreateSolidOperationsComponent`
-- ✅ `TrimElements` 🟢 3/3 parameters – `TrimElementsComponent` — [#2191](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2191 "New commands: split elements, explode into pieces, fillet and chamfer corners")
+- ✅ `TrimElements` 🟢 3/3 parameters – `TrimElementsComponent` — [#2191](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2191 "New command SplitElements: split elements along a line")
 - ✅ `RemoveElementTrims` 🟢 3/3 parameters – `RemoveElementTrimsComponent`
 - ✅ `GetElementTrims` 🟢 1/1 parameters – `GetElementTrimsComponent`
-- ✅ `MergeElements` 🟢 1/1 parameters – `MergeElementsComponent` — [#2191](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2191 "New commands: split elements, explode into pieces, fillet and chamfer corners")
-- ✅ `UnmergeElements` 🟢 3/3 parameters – `UnmergeElementsComponent` — [#2191](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2191 "New commands: split elements, explode into pieces, fillet and chamfer corners")
+- ✅ `MergeElements` 🟢 1/1 parameters – `MergeElementsComponent` — [#2191](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2191 "New command SplitElements: split elements along a line")
+- ✅ `UnmergeElements` 🟢 3/3 parameters – `UnmergeElementsComponent` — [#2191](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2191 "New command SplitElements: split elements along a line")
 - ✅ `GetMergedElements` 🟢 1/1 parameters – `GetMergedElementsComponent`
 
 ## Script UI Commands
@@ -872,4 +872,4 @@ A parameter counts as covered when the component's code names it (a static check
 
 ## Developer Commands
 
-- ➖ `GenerateDocumentation` — [#2210](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2210 "New command GetTapirCommands: let a script ask the installed Tapir which commands it has") *(developer command that writes the Add-On's documentation files)*
+- ➖ `GenerateDocumentation` *(developer command that writes the Add-On's documentation files)*

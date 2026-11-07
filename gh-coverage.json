@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 09:33 UTC",
+ "generatedAt": "2026-11-07 09:47 UTC",
  "counts": {
   "done": 568,
   "merged": 178,
@@ -29,12 +29,7 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2210,
-     "title": "New command GetTapirCommands: let a script ask the installed Tapir which commands it has"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetCommands",
@@ -1585,7 +1580,7 @@
    "issues": [
     {
      "number": 2194,
-     "title": "New commands: copy elements to the clipboard and paste, and move elements between open projects"
+     "title": "Copy elements between open projects through a module file (the API has no clipboard)"
     }
    ]
   },
@@ -3428,7 +3423,7 @@
     },
     {
      "number": 2189,
-     "title": "New commands: list, read and export Interactive Schedules"
+     "title": "New command GetSchedules: list the Interactive Schedules (rows and export are not possible in the API)"
     }
    ]
   },
@@ -4165,7 +4160,7 @@
    "issues": [
     {
      "number": 2188,
-     "title": "New commands: scale, stretch, align and distribute elements"
+     "title": "New commands: align, distribute and scale elements"
     },
     {
      "number": 2187,
@@ -19271,7 +19266,7 @@
    "issues": [
     {
      "number": 2191,
-     "title": "New commands: split elements, explode into pieces, fillet and chamfer corners"
+     "title": "New command SplitElements: split elements along a line"
     }
    ]
   },
@@ -19344,7 +19339,7 @@
    "issues": [
     {
      "number": 2191,
-     "title": "New commands: split elements, explode into pieces, fillet and chamfer corners"
+     "title": "New command SplitElements: split elements along a line"
     }
    ]
   },
@@ -19373,7 +19368,7 @@
    "issues": [
     {
      "number": 2191,
-     "title": "New commands: split elements, explode into pieces, fillet and chamfer corners"
+     "title": "New command SplitElements: split elements along a line"
     }
    ]
   },
@@ -19471,12 +19466,7 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2210,
-     "title": "New command GetTapirCommands: let a script ask the installed Tapir which commands it has"
-    }
-   ]
+   "issues": []
   }
  ]
 }

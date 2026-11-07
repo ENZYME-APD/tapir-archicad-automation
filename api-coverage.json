@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 09:33 UTC",
+ "generatedAt": "2026-11-07 09:47 UTC",
  "versions": [
   25,
   26,
@@ -4043,7 +4043,12 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "add-on infrastructure",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    }
+   ],
    "issues": []
   },
   {
@@ -4065,6 +4070,14 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    },
+    {
+     "number": 2221,
+     "title": "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"
+    },
     {
      "number": 2216,
      "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
@@ -4421,6 +4434,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    },
+    {
      "number": 2216,
      "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
     }
@@ -4509,6 +4526,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    },
     {
      "number": 2216,
      "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
@@ -5991,6 +6012,10 @@
    "reason": "memory management",
    "pullRequests": [
     {
+     "number": 2221,
+     "title": "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"
+    },
+    {
      "number": 2217,
      "title": "[4/5] GetProjectHealth: read-only project health summary"
     },
@@ -6728,6 +6753,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    },
+    {
      "number": 2216,
      "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
     },
@@ -6757,6 +6786,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    },
     {
      "number": 2216,
      "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
@@ -6890,7 +6923,7 @@
    "issues": [
     {
      "number": 2188,
-     "title": "New commands: scale, stretch, align and distribute elements"
+     "title": "New commands: align, distribute and scale elements"
     }
    ]
   },
@@ -7185,6 +7218,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2221,
+     "title": "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"
+    },
     {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
@@ -7587,6 +7624,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2221,
+     "title": "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"
+    },
     {
      "number": 2217,
      "title": "[4/5] GetProjectHealth: read-only project health summary"
@@ -8262,6 +8303,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2221,
+     "title": "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"
+    },
     {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
@@ -9594,6 +9639,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    },
+    {
      "number": 2216,
      "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
     },
@@ -9623,6 +9672,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    },
     {
      "number": 2216,
      "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
@@ -9717,7 +9770,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    }
+   ],
    "issues": []
   },
   {
@@ -9798,6 +9856,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    },
     {
      "number": 2217,
      "title": "[4/5] GetProjectHealth: read-only project health summary"
@@ -13711,6 +13773,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    },
+    {
      "number": 2216,
      "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
     },
@@ -15704,7 +15770,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2221,
+     "title": "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"
+    }
+   ],
    "issues": []
   },
   {
@@ -16138,7 +16209,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    }
+   ],
    "issues": []
   },
   {
@@ -16154,7 +16230,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    }
+   ],
    "issues": []
   },
   {
@@ -16170,7 +16251,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    }
+   ],
    "issues": []
   },
   {
@@ -16202,7 +16288,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    }
+   ],
    "issues": []
   },
   {
@@ -17008,12 +17099,7 @@
    "status": "skipped",
    "reason": "crashes Archicad 29 on an unknown function name and gives wrong results both ways; tested and removed from #1146 (8822f998)",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2219,
-     "title": "Skipped API items waiting on Archicad: keep a retest list and show it with every new DevKit"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Property_CreatePropertyDefinition",
@@ -17119,6 +17205,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    },
+    {
      "number": 2216,
      "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
     },
@@ -17197,6 +17287,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    },
     {
      "number": 2216,
      "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
@@ -18083,6 +18177,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    },
     {
      "number": 2216,
      "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
@@ -21847,7 +21945,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2221,
+     "title": "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"
+    }
+   ],
    "issues": [
     {
      "number": 1580,
@@ -26119,6 +26222,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    },
     {
      "number": 2217,
      "title": "[4/5] GetProjectHealth: read-only project health summary"
@@ -31915,6 +32022,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    },
+    {
      "number": 2217,
      "title": "[4/5] GetProjectHealth: read-only project health summary"
     },
@@ -32077,10 +32188,6 @@
    "reason": "does not compile against the Archicad 27 DevKit: Bend::Modifier does not derive from ACAPI::ModifierBase, which ExecuteUndoableScope requires (Archicad 27 only)",
    "pullRequests": [],
    "issues": [
-    {
-     "number": 2219,
-     "title": "Skipped API items waiting on Archicad: keep a retest list and show it with every new DevKit"
-    },
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
@@ -38514,6 +38621,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    },
+    {
+     "number": 2221,
+     "title": "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"
+    },
     {
      "number": 2217,
      "title": "[4/5] GetProjectHealth: read-only project health summary"
@@ -45343,6 +45458,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    },
+    {
      "number": 2217,
      "title": "[4/5] GetProjectHealth: read-only project health summary"
     },
@@ -48642,6 +48761,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2222,
+     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
+    },
     {
      "number": 2217,
      "title": "[4/5] GetProjectHealth: read-only project health summary"
