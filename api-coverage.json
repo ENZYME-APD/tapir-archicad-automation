@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 12:59 UTC",
+ "generatedAt": "2026-11-07 14:26 UTC",
  "versions": [
   25,
   26,
@@ -7361,6 +7361,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2236,
+     "title": "Columns, Beams and Slabs: Create takes the surfaces, cut fill pens and cover fill Modify writes (#2220 part 5)"
+    },
     {
      "number": 2227,
      "title": "[1/6] Stairs: CreateStairs and ModifyStairs share one set of settings"
@@ -26299,6 +26303,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2236,
+     "title": "Columns, Beams and Slabs: Create takes the surfaces, cut fill pens and cover fill Modify writes (#2220 part 5)"
+    },
+    {
      "number": 2232,
      "title": "Drawings and Detail/Worksheet markers: write the missing settings (#2230)"
     },
@@ -38729,6 +38737,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2236,
+     "title": "Columns, Beams and Slabs: Create takes the surfaces, cut fill pens and cover fill Modify writes (#2220 part 5)"
+    },
     {
      "number": 2232,
      "title": "Drawings and Detail/Worksheet markers: write the missing settings (#2230)"

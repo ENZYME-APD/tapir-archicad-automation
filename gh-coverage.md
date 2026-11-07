@@ -34,7 +34,7 @@ Parameters of the 746 used commands: 🟢 713 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-07 12:59 UTC.
+Updated 2026-11-07 14:26 UTC.
 
 | | Status |
 |---|---|
@@ -76,7 +76,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `RebuildCurrentDatabase` 🟢 0/0 parameters – `RebuildCurrentDatabaseComponent`
 - 🔀 `DeleteGhostRecords` 🟢 1/1 parameters – `DeleteGhostRecordsComponent`
 - ✅ `GetUserGSID` 🟢 0/0 parameters – `GetUserGSIDComponent`
-- ✅ `ShowAlert` 🟢 7/7 parameters – `ShowAlertComponent`
+- ✅ `ShowAlert` 🟢 7/7 parameters – `ShowAlertComponent` — [#2237](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2237 "audit what Tapir leaves out of the Archicad API")
 - ✅ `GetSpecialFolders` 🟢 1/1 parameters – `GetSpecialFoldersComponent`
 - ✅ `GetEditModeState` 🟢 0/0 parameters – `GetEditModeStateComponent`
 - 🔀 `GetArchicadVisibility` 🟢 0/0 parameters – `GetArchicadVisibilityComponent`
@@ -867,7 +867,7 @@ A parameter counts as covered when the component's code names it (a static check
 
 ## Script UI Commands
 
-- ✅ `ShowScriptUI` 🟢 13/13 parameters – `ShowScriptUIComponent` — [#2093](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2093 "New Tapir website at archicad-api.com: brand, home, script marketplace and community pages")
+- ✅ `ShowScriptUI` 🟢 13/13 parameters – `ShowScriptUIComponent` — [#2237](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2237 "audit what Tapir leaves out of the Archicad API"), [#2093](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2093 "New Tapir website at archicad-api.com: brand, home, script marketplace and community pages")
 - ✅ `GetScriptUIResult` 🟢 0/0 parameters – `GetScriptUIResultComponent`
 
 ## Developer Commands

@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 12:59 UTC",
+ "generatedAt": "2026-11-07 14:26 UTC",
  "counts": {
   "done": 568,
   "merged": 178,
@@ -532,7 +532,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2237,
+     "title": "audit what Tapir leaves out of the Archicad API"
+    }
+   ]
   },
   {
    "id": "GetSpecialFolders",
@@ -19427,6 +19432,10 @@
    "missingParameters": [],
    "pullRequests": [],
    "issues": [
+    {
+     "number": 2237,
+     "title": "audit what Tapir leaves out of the Archicad API"
+    },
     {
      "number": 2093,
      "title": "New Tapir website at archicad-api.com: brand, home, script marketplace and community pages"
