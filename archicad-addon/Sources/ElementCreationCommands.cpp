@@ -273,7 +273,7 @@ GS::Optional<GS::ObjectState> ApplyLayerIndexFromParameters (const GS::ObjectSta
 
 GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "columnsData": {
@@ -377,7 +377,7 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                         "floorIndex": {
                             "type": "integer",
                             "description": "Optional floor index. If omitted, derived from the coordinate's z value."
-                        }
+                        },)") + ColumnSurfaceAndFillSchemaProperties + R"(
                     },
                     "additionalProperties": false,
                     "required" : [
@@ -433,6 +433,16 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
     double slantDirectionAngle = 0.0;
     if (parameters.Get ("slantDirectionAngle", slantDirectionAngle)) {
         element.column.slantDirectionAngle = slantDirectionAngle;
+    }
+
+    // The cut fill pens and the cover fill, written as ModifyColumns writes them (#2220);
+    // ACAPI_Element_Create does not use the mask.
+    API_Element unusedMask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (unusedMask);
+    bool settingsChanged = false;
+    const GS::Optional<GS::UniString> settingsError = ApplyColumnSurfaceAndFillSettings (element, unusedMask, parameters, settingsChanged);
+    if (settingsError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, settingsError.Get ());
     }
 
     double width = 0.0;
@@ -492,7 +502,7 @@ CreateSlabsCommand::CreateSlabsCommand () :
 
 GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
     "type": "object",
     "properties": {
         "slabsData": {
@@ -561,7 +571,7 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                     "floorIndex": {
                         "type": "integer",
                         "description": "Optional floor index. If omitted, derived from level."
-                    }
+                    },)") + SlabSurfaceAndFillSchemaProperties + R"(
                 },
                 "additionalProperties": false,
                 "required" : [
@@ -675,6 +685,17 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
         } else if (referencePlaneLocation == "Bottom") {
             element.slab.referencePlaneLocation = APISlabRefPlane_Bottom;
         }
+    }
+
+    // The surfaces, cut fill pens and floor fill, written as ModifySlabs writes them (#2220);
+    // ACAPI_Element_Create does not use the mask. Before the polygon memo is built, because
+    // BuildSlabMemoFromGeometry gives every edge the slab's side surface.
+    API_Element unusedMask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (unusedMask);
+    bool settingsChanged = false;
+    const GS::Optional<GS::UniString> settingsError = ApplySlabSurfaceAndFillSettings (element, unusedMask, parameters, settingsChanged);
+    if (settingsError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, settingsError.Get ());
     }
 
     GS::Array<GS::ObjectState> polygonCoordinates;
