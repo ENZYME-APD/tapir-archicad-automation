@@ -68,6 +68,7 @@ branding/                Logos, diagrams
 docs/                    Generated docs (archicad-addon command reference),
                          api-coverage/ page of the Archicad API coverage checklist,
                          gh-coverage/ page of the Grasshopper coverage checklist,
+                         limits/ page of what the Archicad API cannot do (hand-written),
                          community/ and about/ pages (growth chart, momentum, origin story),
                          the copies for AI assistants (llms.txt, llms-full.txt, commands.json,
                          commands.md, <page>/index.md, sitemap.xml, robots.txt; generated,
@@ -304,6 +305,10 @@ Scripts shared by users live in [marketplace/](marketplace/), one `<slug>/` fold
 `changes` key, and the rules for adapting a shared script for public use. An issue labelled
 `script-share` becomes one pull request adding its folder, adapted by those rules, keeping what
 the script does, listing every change in plain words and asking the author to confirm it.
+A new script *requested* in an issue also goes to `marketplace/<slug>/` (listing `author` `Tapir`,
+README "Requested by @<login> in #<n>"); `builtin-scripts/` gets a new script only when a maintainer
+asks for it in the issue. A marketplace script may import `utilities`/`aclib` of `builtin-scripts/`,
+which are copied next to it when it is installed, so keep those helpers backward compatible.
 
 ## Versioning
 
@@ -540,6 +545,13 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   checks as done elsewhere.
 - Cross-platform: code must compile on both Windows and macOS; resources are compiled
   via `Tools/CompileResources.py`.
+- When a bot or a person finds that the DevKit has no function for something people ask
+  for, add a row to [docs/limits/index.html](docs/limits/index.html) ("What the Archicad API
+  can't do") in the same pull request: what people want, the status, what to do instead, the
+  evidence (headers, function names and the Archicad versions checked in
+  `archicad-addon/Build/DevKits/`) and the issue. Only rows checked in the headers. Never
+  hand-edit `index.md`, `llms.txt`, `llms-full.txt` or `sitemap.xml`; run
+  `python tools/generate_llm_files.py` to update them.
 
 ## Documentation & links
 

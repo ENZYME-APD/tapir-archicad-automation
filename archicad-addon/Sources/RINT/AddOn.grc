@@ -74,6 +74,10 @@
 /* [  6] */ "Tapir Update"
 /* [  7] */ "You are using the latest Tapir version %s."
 /* [  8] */ "OK"
+/* [  9] */ "Check for Updates"
+/* [ 10] */ "Update to %T"
+/* [ 11] */ "Update Tapir to %T..."
+/* [ 12] */ "Tapir %s"
 }
 
 'GDLG' ID_ABOUT_DIALOG Modal     40   40  200  237  "Tapir" {
@@ -90,7 +94,7 @@
 4    ""        VersionText
 }
 
-'GDLG' ID_PALETTE Palette | leftCaption | close   0   0  428  28  "Tapir Palette"  {
+'GDLG' ID_PALETTE Palette | leftCaption | close   0   0  648  28  "Tapir Palette"  {
 /* [  1] */ IconButton                 0   0  28  28    ID_TAPIR_LOGO_MINI noFrame
 /* [  2] */ PopupControl              28   3 260  22    80  3
 /* [  3] */ IconButton               288   0  28  28    ID_RUN_BUTTON_ICON noFrame
@@ -98,6 +102,8 @@
 /* [  5] */ IconButton               344   0  28  28    ID_ADDSCRIPT_BUTTON_ICON noFrame
 /* [  6] */ IconButton               372   0  28  28    ID_DELSCRIPT_BUTTON_ICON noFrame
 /* [  7] */ IconButton               400   0  28  28    ID_SHORTCUTS_BUTTON_ICON noFrame
+/* [  8] */ LeftText                 434   6  72  16    SmallPlain  vCenter  "Tapir"
+/* [  9] */ Button                   508   3 136  22    SmallPlain  "Check for Updates"
 }
 
 'DLGH' ID_PALETTE Tapir_Palette {
@@ -108,6 +114,8 @@
 5    "Add Script"          AddButton
 6    "Remove Script"       DelButton
 7    "Manage Shortcuts"    ManageShortcutsButton
+8    "Installed Tapir version"         InstalledVersionText
+9    "Check for Tapir updates"         CheckForUpdatesButton
 }
 
 'GDLG' ID_SCRIPTUI_PALETTE Palette | leftCaption | close | grow   0   0  600  450  "Tapir Script UI"  {

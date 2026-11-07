@@ -1,6 +1,9 @@
 """Raises the height of a wall by 0.5 m with SetDetailsOfElements, reads it back, then restores it.
 
-Needs at least one editable Wall.
+Needs at least one editable Wall. The keys of typeSpecificDetails depend on the element type, for
+example a Drawing takes {'penTableUsageMode': 'ModelPenTable', 'colorMode': 'Grayscale',
+'isTransparentBackground': True, 'anchorPoint': 'BottomLeft'}; the command's description lists them
+for every type. GetDetailsOfElements returns the same keys.
 """
 import aclib
 

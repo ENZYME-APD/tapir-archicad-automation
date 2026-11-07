@@ -192,6 +192,7 @@ main { display: block }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .teaser.dark { border-color: rgba(244, 241, 234, .35) } }
 div.teaser.dark .ctas { margin-top: 8px }
 .doc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px }
+.doc-grid > .wide { grid-column: 1 / -1 }
 .two { display: grid; grid-template-columns: 1fr 1fr; gap: 20px }
 .two > * { min-width: 0 }
 
@@ -221,6 +222,12 @@ table.schedule { width: 100%; border-collapse: collapse; font-size: 14.5px }
 .schedule .id { font: 700 13px var(--mono); color: var(--link); white-space: nowrap }
 .schedule .nm { font: 700 17px/1.2 var(--display) }
 .schedule .ds { color: var(--muted); font-size: 13.5px; margin-top: 2px }
+/* The API limits page (limits/): rows grouped by area, a long Evidence column of header and function names. */
+.schedule tr.area th { padding: 18px 16px 8px; font: 700 12px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--fg); background: var(--badge); border-bottom: 1px solid var(--line) }
+.schedule tbody tr.area:hover { background: none }
+.schedule.limits td:first-child { min-width: 11em; font-weight: 600 }
+.schedule.limits td.evidence { min-width: 16em; font-size: 13px; color: var(--muted); overflow-wrap: anywhere }
+.schedule.limits td.evidence code { overflow-wrap: anywhere }
 a.nm { color: var(--fg); text-decoration: none } a.nm:hover { color: var(--link); text-decoration: underline }
 .pill { display: inline-block; font: 600 11.5px/1.5 var(--body); border-radius: 999px; padding: 3px 10px; white-space: nowrap; background: var(--badge); color: var(--fg) }
 .pill.chg { background: var(--ochre); color: #1C1E1F }
@@ -422,6 +429,10 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
     .schedule tbody tr:last-child { border-bottom: 0 }
     .schedule td { padding: 0; border: 0; min-width: 0 }
     .schedule td.cell-script { grid-column: 1 / -1; order: -1 }
+    .schedule td.cell-wide { grid-column: 1 / -1 }
+    .schedule.limits td:first-child, .schedule.limits td.evidence { min-width: 0 }
+    .schedule tr.area { display: block; padding: 0 }
+    .schedule tr.area th { display: block; padding: 14px 16px 8px }
     .schedule td[data-label]::before { content: attr(data-label); display: block; font: 700 10.5px/1.6 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
 }
 @media (max-width: 400px) {

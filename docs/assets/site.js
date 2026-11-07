@@ -8,7 +8,8 @@
    marked data-i18n, and the attributes an element names in data-i18n-attrs="<attribute> ...", are
    looked up by their English text (whitespace collapsed) in that language's dictionaries, in
    assets/i18n/<language>/: common.js for what every page shares, plus one file per name in the
-   <html> element's data-i18n-pages="<name> ...". What a dictionary lacks stays English. The parts
+   <html> element's data-i18n-pages="<name> ...", which also sets the page's <html lang> unless the
+   element has data-i18n-partial (a page that stays mostly English). What a dictionary lacks stays English. The parts
    every page shares (SHARED_TEXT, SHARED_ATTRS) are translated without being marked. Do not nest
    data-i18n elements. The language is ?lang=<code> in the address, else the one chosen in the menu,
    else the browser's, else English; the head's inline script hides the page (data-i18n-loading)
@@ -726,8 +727,9 @@
             readDictionaries ();
             if (language.code !== 'en') {
                 applyTranslations (document);
-                // Only a page with its own dictionaries is in that language; the others stay English.
-                if (root.hasAttribute ('data-i18n-pages')) {
+                // Only a page with its own dictionaries is in that language; the others stay English, and
+                // so does a data-i18n-partial page, which translates only some of its parts.
+                if (root.hasAttribute ('data-i18n-pages') && !root.hasAttribute ('data-i18n-partial')) {
                     root.setAttribute ('lang', language.tag);
                 }
             }

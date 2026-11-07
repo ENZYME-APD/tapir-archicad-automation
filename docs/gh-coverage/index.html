@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" data-copy="Copy" data-copied="Copied">
+<html lang="en" data-copy="Copy" data-copied="Copied" data-i18n-pages="reference" data-i18n-partial>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Grasshopper coverage - Tapir documentation</title>
-<meta name="description" content="Which Tapir commands the components of the Tapir Grasshopper plugin call, and whether they cover the commands' parameters.">
+<title data-i18n>Grasshopper coverage - Tapir documentation</title>
+<meta name="description" data-i18n-attrs="content" content="Which Tapir commands the components of the Tapir Grasshopper plugin call, and whether they cover the commands' parameters.">
 <!-- link-preview: the preview of a link to this page shared on Discord, WhatsApp and the like -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Tapir">
@@ -51,19 +51,19 @@
 <!-- /site-header -->
 <div class="page-head">
     <div class="wrap">
-        <p class="crumb"><a href="../">Tapir</a> / <a href="../docs/">Docs</a> / Grasshopper coverage</p>
-        <h1>Grasshopper <em>coverage.</em></h1>
-        <p>Which Tapir commands the Grasshopper components call, and the parameters they still miss.</p>
+        <p class="crumb" data-i18n><a href="../">Tapir</a> / <a href="../docs/">Docs</a> / Grasshopper coverage</p>
+        <h1 data-i18n>Grasshopper <em>coverage.</em></h1>
+        <p data-i18n>Which Tapir commands the Grasshopper components call, and the parameters they still miss.</p>
     </div>
 </div>
 <div class="layout">
 <nav class="sidebar" id="sidebar" aria-label="Sections"></nav>
 <main id="main">
-<p class="muted">Which JSON commands of the <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> a component of the Tapir Grasshopper plugin calls, and whether its components cover the command's parameters, updated within minutes of every issue and push to main, and within the hour of every pull request. This is a static check of the plugin's code: it shows which parameters the components name, not that each one works. See also the <a href="../archicad-addon/">command reference</a> and the <a href="../api-coverage/">Archicad API coverage</a>.</p>
+<p class="muted" data-i18n>Which JSON commands of the <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> a component of the Tapir Grasshopper plugin calls, and whether its components cover the command's parameters, updated within minutes of every issue and push to main, and within the hour of every pull request. This is a static check of the plugin's code: it shows which parameters the components name, not that each one works. See also the <a href="../archicad-addon/">command reference</a> and the <a href="../api-coverage/">Archicad API coverage</a>.</p>
 
 <section aria-labelledby="overview-title" id="overview">
     <div class="sec-head ref">
-        <h2 id="overview-title">Overview</h2>
+        <h2 id="overview-title" data-i18n>Overview</h2>
     </div>
     <div class="hero">
         <div>
@@ -75,10 +75,10 @@
     <div class="bar large" id="overall-bar" role="img"></div>
     <div class="legend" id="legend"></div>
 
-    <h3 class="ref-sub" id="by-parameters">Parameters of the used commands</h3>
+    <h3 class="ref-sub" id="by-parameters" data-i18n>Parameters of the used commands</h3>
     <div class="scroll"><table id="parts"></table></div>
 
-    <h3 class="ref-sub" id="by-group">By group</h3>
+    <h3 class="ref-sub" id="by-group" data-i18n>By group</h3>
     <div class="table-actions">
         <span class="muted">Sort by</span>
         <div class="options" id="group-sort" role="group" aria-label="Sort groups by">
@@ -93,12 +93,15 @@
 </section>
 
 <div class="sec-head ref">
-    <h2 id="checklist">Checklist</h2>
+    <h2 id="checklist" data-i18n>Checklist</h2>
 </div>
 <div class="toolbar" id="toolbar">
     <button type="button" class="sections-button" id="sections-button" aria-controls="sidebar">☰ Sections</button>
     <input type="search" id="search" placeholder="Search, e.g. CreateWalls, Walls or floorIndex" aria-label="Search the checklist">
-    <div class="chips" id="statuses" role="group" aria-label="Statuses to show"></div>
+    <div class="chip-filter">
+        <span class="chips-title" id="statuses-title">Show items that are:</span>
+        <div class="chips" id="statuses" role="group" aria-labelledby="statuses-title"></div>
+    </div>
     <span class="filter-status" id="filter-status" aria-live="polite"></span>
 </div>
 <div id="list"></div>
@@ -112,7 +115,7 @@
                 <span class="lab">Project</span>
                 <span class="proj">Tapir</span>
                 <p class="note">Open-source automation for Archicad. 100% free and open source (MIT). Maintained by Enzyme APD and the community.</p>
-                <p class="note">Contact: <span class="nowrap">contact@enzyme-apd.com</span></p>
+                <p class="note">Contact: <span class="nowrap">tapir@weareenzyme.com</span></p>
             </div>
             <div>
                 <span class="lab">Product</span>
@@ -131,6 +134,7 @@
                     <li><a href="../archicad-addon/">Commands</a></li>
                     <li><a href="../api-coverage/">API coverage</a></li>
                     <li><a href="../gh-coverage/">Grasshopper coverage</a></li>
+                    <li><a href="../limits/">API limits</a></li>
                 </ul>
             </div>
             <div>
@@ -268,6 +272,9 @@ function renderOverview () {
     const overall = bar (counts, true);
     overall.id = 'overall-bar';
     document.getElementById ('overall-bar').replaceWith (overall);
+    for (const chip of document.querySelectorAll ('#statuses .chip')) {
+        chip.querySelector ('.chip-count').textContent = (counts[chip.dataset.status] || 0).toLocaleString ();
+    }
     document.getElementById ('legend').replaceChildren (...STATUSES.map (([status, , label]) =>
         el ('span', {}, statusPill (status), label)));
 
@@ -475,8 +482,9 @@ function updateToolbarHeight () {
 async function main () {
     const statuses = document.getElementById ('statuses');
     for (const [value, , label, cls] of STATUSES) {
-        const chip = el ('button', { type: 'button', class: 'chip', 'data-status': value, 'aria-pressed': String (value !== 'not applicable'), title: label, 'aria-label': label },
-            swatch (cls), el ('span', { class: 'chip-label', text: label }));
+        // The label shows at every width; renderOverview fills in the count.
+        const chip = el ('button', { type: 'button', class: 'chip', 'data-status': value, 'aria-pressed': String (value !== 'not applicable'), title: label },
+            swatch (cls), el ('span', { class: 'chip-label', text: label }), el ('span', { class: 'chip-count' }));
         chip.addEventListener ('click', () => { chip.setAttribute ('aria-pressed', String (chip.getAttribute ('aria-pressed') !== 'true')); render (); });
         statuses.append (chip);
     }
