@@ -6602,9 +6602,12 @@ GS::ObjectState ModifyLevelDimensionsCommand::Execute (const GS::ObjectState& pa
             }
 
             executionResults (CreateSuccessfulExecutionResult ());
+            changeReporter.MarkChanged (element.header.guid);
         }
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
