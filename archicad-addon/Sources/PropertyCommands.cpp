@@ -2805,6 +2805,9 @@ GS::Optional<GS::UniString> RemovePropertyFromAttributesCommand::GetInputParamet
             "attributeIds": {
                 "$ref": "#/AttributeIds",
                 "description": "The attributes (for example Building Materials) to make the property unavailable for."
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -2818,18 +2821,46 @@ GS::Optional<GS::UniString> RemovePropertyFromAttributesCommand::GetInputParamet
 GS::Optional<GS::UniString> RemovePropertyFromAttributesCommand::GetRawResponseSchema () const
 {
     return R"({
-        "$ref": "#/ExecutionResult"
+        "type": "object",
+        "description": "The result of the execution: success, with error when it failed. A dry run also answers dryRun, and wouldDelete when the property and every attribute exist.",
+        "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
+            "success": {
+                "type": "boolean"
+            },
+            "error": {
+                "$ref": "#/Error"
+            },
+            "wouldDelete": {
+                "type": "boolean",
+                "enum": [ true ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "success"
+        ]
     })";
 }
 
 GS::ObjectState RemovePropertyFromAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    const bool dryRun = IsDryRun (parameters);
 #ifndef ServerMainVers_2800
     GS::Array<API_Attr_Head> attrHeads;
     API_PropertyDefinition definition;
     GS::ObjectState failedResult;
     if (!GetPropertyOfAttributesParameters (parameters, attrHeads, definition, failedResult)) {
+        AddDryRunField (failedResult, dryRun);
         return failedResult;
+    }
+
+    if (dryRun) {
+        GS::ObjectState result = CreateDryRunExecutionResult ("wouldDelete");
+        AddDryRunField (result, true);
+        return result;
     }
 
     GSErrCode err = ACAPI_CallUndoableCommand ("RemovePropertyFromAttributesCommand", [&]() -> GSErrCode {
@@ -2844,8 +2875,9 @@ GS::ObjectState RemovePropertyFromAttributesCommand::Execute (const GS::ObjectSt
         ? CreateSuccessfulExecutionResult ()
         : CreateFailedExecutionResult (err, "Failed to remove the property from the given attributes.");
 #else
-    UNUSED_PARAMETER (parameters);
-    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command is available only in Archicad 25, 26 and 27. The Archicad API of later versions has no function to remove a property from attributes directly.");
+    GS::ObjectState result = CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command is available only in Archicad 25, 26 and 27. The Archicad API of later versions has no function to remove a property from attributes directly.");
+    AddDryRunField (result, dryRun);
+    return result;
 #endif
 }
 
@@ -2958,6 +2990,9 @@ GS::Optional<GS::UniString> DeletePropertyGroupsCommand::GetInputParametersSchem
                 "items": {
                     "$ref": "#/PropertyGroupIdArrayItem"
                 }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -2972,8 +3007,12 @@ GS::Optional<GS::UniString> DeletePropertyGroupsCommand::GetRawResponseSchema ()
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input property group, in the order of the input. On a dry run a property group that exists gets wouldDelete; Archicad can still refuse to delete one that exists (for example a built-in group)."
             }
         },
         "additionalProperties": false,
@@ -2985,13 +3024,23 @@ GS::Optional<GS::UniString> DeletePropertyGroupsCommand::GetRawResponseSchema ()
 
 GS::ObjectState DeletePropertyGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    return ExecuteForEachIdInList (parameters, "propertyGroupIds", "propertyGroupId", "DeletePropertyGroups", [] (const API_Guid& propertyGroupGuid) {
+    const bool dryRun = IsDryRun (parameters);
+    return ExecuteForEachIdInList (parameters, "propertyGroupIds", "propertyGroupId", "DeletePropertyGroups", [dryRun] (const API_Guid& propertyGroupGuid) {
+        if (dryRun) {
+            API_PropertyGroup group;
+            group.guid = propertyGroupGuid;
+            const GSErrCode getErr = ACAPI_Property_GetPropertyGroup (group);
+            if (getErr != NoError) {
+                return CreateFailedExecutionResult (getErr, "failed to delete property group");
+            }
+            return CreateDryRunExecutionResult ("wouldDelete");
+        }
         const GSErrCode err = ACAPI_Property_DeletePropertyGroup (propertyGroupGuid);
         if (err != NoError) {
             return CreateFailedExecutionResult (err, "failed to delete property group");
         }
         return CreateSuccessfulExecutionResult ();
-    });
+    }, dryRun);
 }
 
 // Fills definition.defaultValue from a PropertyDefaultValue object: {expressions: [...]}
@@ -3371,6 +3420,9 @@ GS::Optional<GS::UniString> DeletePropertyDefinitionsCommand::GetInputParameters
                 "items": {
                     "$ref": "#/PropertyIdArrayItem"
                 }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -3385,8 +3437,12 @@ GS::Optional<GS::UniString> DeletePropertyDefinitionsCommand::GetRawResponseSche
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input property, in the order of the input. On a dry run a property that exists gets wouldDelete; Archicad can still refuse to delete one that exists (for example a built-in property)."
             }
         },
         "additionalProperties": false,
@@ -3398,13 +3454,23 @@ GS::Optional<GS::UniString> DeletePropertyDefinitionsCommand::GetRawResponseSche
 
 GS::ObjectState DeletePropertyDefinitionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    return ExecuteForEachIdInList (parameters, "propertyIds", "propertyId", "DeletePropertyDefinitions", [] (const API_Guid& propertyGuid) {
+    const bool dryRun = IsDryRun (parameters);
+    return ExecuteForEachIdInList (parameters, "propertyIds", "propertyId", "DeletePropertyDefinitions", [dryRun] (const API_Guid& propertyGuid) {
+        if (dryRun) {
+            API_PropertyDefinition definition;
+            definition.guid = propertyGuid;
+            const GSErrCode getErr = ACAPI_Property_GetPropertyDefinition (definition);
+            if (getErr != NoError) {
+                return CreateFailedExecutionResult (getErr, "failed to delete property");
+            }
+            return CreateDryRunExecutionResult ("wouldDelete");
+        }
         const GSErrCode err = ACAPI_Property_DeletePropertyDefinition (propertyGuid);
         if (err != NoError) {
             return CreateFailedExecutionResult (err, "failed to delete property");
         }
         return CreateSuccessfulExecutionResult ();
-    });
+    }, dryRun);
 }
 
 static bool ApplyEnumEdits (const GS::ObjectState& item, API_PropertyDefinition& definition, GS::UniString& error)

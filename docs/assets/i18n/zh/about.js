@@ -78,7 +78,7 @@
     'Training and services': '培训与服务',
     'Training sessions, implementation workshops and custom development for offices moving to computational BIM workflows with Tapir.':
         '为借助 Tapir 转向计算化 BIM 工作流程的事务所提供培训课程、实施工作坊和定制开发。',
-    'Talk to us: <strong class="nowrap">contact@enzyme-apd.com</strong>': '联系我们：<strong class="nowrap">contact@enzyme-apd.com</strong>',
+    'Talk to us: <strong class="nowrap">tapir@weareenzyme.com</strong>': '联系我们：<strong class="nowrap">tapir@weareenzyme.com</strong>',
     'Free code signing provided by SignPath.io, certificate by SignPath Foundation. Archicad is a trademark of Graphisoft SE; Tapir is not made by Graphisoft.':
         '免费代码签名由 SignPath.io 提供，证书由 SignPath Foundation 颁发。Archicad 是 Graphisoft SE 的商标；Tapir 并非由 Graphisoft 开发。'
 });

@@ -1,6 +1,7 @@
-"""Creates a wall, then makes it longer, higher and thicker with ModifyWalls.
+"""Creates a wall, then makes it longer, higher and thicker with ModifyWalls, and stops it reducing zone areas.
 
-Only the given fields change. A new thickness only takes effect on a Basic wall.
+Only the given fields change. A new thickness only takes effect on a Basic wall. ModifyWalls takes
+the same wall settings as CreateWalls, plus geometryType, profileType and bottomOffset.
 """
 import aclib
 
@@ -15,6 +16,7 @@ aclib.PrintJson (aclib.RunTapirCommand ('ModifyWalls', {'wallsWithDetails': [{
     'endCoordinate': {'x': 6.0, 'y': 0.0},
     'height': 3.5,
     'structureType': 'Basic',
-    'thickness': 0.4
+    'thickness': 0.4,
+    'zoneRel': 'None'
 }]}))
 aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': [wall], 'fields': ['details']})

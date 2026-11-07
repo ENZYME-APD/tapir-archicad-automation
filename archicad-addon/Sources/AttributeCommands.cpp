@@ -4353,8 +4353,7 @@ GS::Optional<GS::UniString> DeleteAttributesCommand::GetInputParametersSchema ()
                 }
             },
             "dryRun": {
-                "type": "boolean",
-                "description": "If true, nothing is deleted: each execution result says what the deletion would do for that attribute, from the checks made before deleting (invalid attributeType, attribute not found). Archicad can still refuse to delete an attribute that passes them. Default is false."
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -4369,8 +4368,12 @@ GS::Optional<GS::UniString> DeleteAttributesCommand::GetRawResponseSchema () con
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input attribute, in the order of the input. On a dry run an attribute that passes the checks made before deleting (valid attributeType, attribute found) gets wouldDelete; Archicad can still refuse to delete an attribute that passes them."
             }
         },
         "additionalProperties": false,
@@ -4396,6 +4399,7 @@ GS::ObjectState DeleteAttributesCommand::Execute (const GS::ObjectState& paramet
 {
     GS::Array<GS::ObjectState> attributesToDelete;
     parameters.Get ("attributesToDelete", attributesToDelete);
+    const bool dryRun = IsDryRun (parameters);
 
     struct AttributeToDelete {
         API_AttrTypeID typeID = API_ZombieAttrID;
@@ -4421,7 +4425,7 @@ GS::ObjectState DeleteAttributesCommand::Execute (const GS::ObjectState& paramet
                 results.Push (CreateFailedExecutionResult (APIERR_BADID, "Attribute not found."));
             } else {
                 attribute.typeID = typeID;
-                results.Push (CreateSuccessfulExecutionResult ());
+                results.Push (dryRun ? CreateDryRunExecutionResult ("wouldDelete") : CreateSuccessfulExecutionResult ());
                 if (!typeIDs.Contains (typeID)) {
                     typeIDs.Push (typeID);
                 }
@@ -4430,10 +4434,9 @@ GS::ObjectState DeleteAttributesCommand::Execute (const GS::ObjectState& paramet
         resolved.Push (attribute);
     }
 
-    bool dryRun = false;
-    parameters.Get ("dryRun", dryRun);
     if (dryRun) {
         GS::ObjectState response;
+        AddDryRunField (response, true);
         const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
         for (const GS::ObjectState& result : results) {
             executionResults (result);
@@ -4667,6 +4670,9 @@ GS::Optional<GS::UniString> DeleteAttributeFoldersCommand::GetInputParametersSch
         "properties": {
             "attributeFolders": {
                 "$ref": "#/AttributeFolders"
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -4681,8 +4687,12 @@ GS::Optional<GS::UniString> DeleteAttributeFoldersCommand::GetRawResponseSchema 
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input folder, in the order of the input. On a dry run a folder that is not the root folder and exists gets wouldDelete; Archicad can still refuse to delete a folder that passes these checks."
             }
         },
         "additionalProperties": false,
@@ -4697,8 +4707,10 @@ GS::ObjectState DeleteAttributeFoldersCommand::Execute (const GS::ObjectState& p
 #ifdef ServerMainVers_2600
     GS::Array<GS::ObjectState> attributeFolders;
     parameters.Get ("attributeFolders", attributeFolders);
+    const bool dryRun = IsDryRun (parameters);
 
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
     for (const GS::ObjectState& item : attributeFolders) {
@@ -4716,6 +4728,11 @@ GS::ObjectState DeleteAttributeFoldersCommand::Execute (const GS::ObjectState& p
         if (!FindAttributeFolder (folder)) {
             executionResults (CreateFailedExecutionResult (APIERR_BADID,
                 GS::UniString::Printf ("Attribute folder '%T' not found.", requestedPath.ToPrintf ())));
+            continue;
+        }
+
+        if (dryRun) {
+            executionResults (CreateDryRunExecutionResult ("wouldDelete"));
             continue;
         }
 
@@ -8661,6 +8678,9 @@ GS::Optional<GS::UniString> DeleteUserDataOfAttributesCommand::GetInputParameter
         "properties": {
             "attributeIds": {
                 "$ref": "#/AttributeIds"
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -8675,9 +8695,12 @@ GS::Optional<GS::UniString> DeleteUserDataOfAttributesCommand::GetRawResponseSch
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults",
-                "description": "One result per attribute, in the input order."
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result per attribute, in the input order. On a dry run an attribute that exists gets wouldDelete."
             }
         },
         "additionalProperties": false,
@@ -8691,14 +8714,21 @@ GS::ObjectState DeleteUserDataOfAttributesCommand::Execute (const GS::ObjectStat
 {
     GS::Array<GS::ObjectState> attributeIds;
     parameters.Get ("attributeIds", attributeIds);
+    const bool dryRun = IsDryRun (parameters);
 
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
     for (const GS::ObjectState& attributeIdItem : attributeIds) {
         API_Attr_Head attrHead = {};
         if (!FindAttributeForUserData (attributeIdItem, attrHead)) {
             executionResults (CreateFailedExecutionResult (APIERR_BADID, "Attribute not found."));
+            continue;
+        }
+
+        if (dryRun) {
+            executionResults (CreateDryRunExecutionResult ("wouldDelete"));
             continue;
         }
 
@@ -9406,10 +9436,15 @@ namespace {
 // command's registration). The references are found and rewritten by the same code, once without writing
 // (the dry run and the count before the move) and once writing.
 
+//
+// GetUnusedAttributes runs the same code in collect mode: with used set, every index of the job's type that a
+// reference holds is added to used instead of being compared with from, and nothing is rewritten (each Rewrite
+// returns false), so the scan only lists the indices in use.
 struct ReindexJob {
     API_AttrTypeID     type;
     API_AttributeIndex from;
     API_AttributeIndex to;
+    std::set<Int32>*   used = nullptr;
 };
 
 API_AttrTypeID GetReindexableAttributeType (const GS::UniString& typeStr)
@@ -9424,6 +9459,10 @@ API_AttrTypeID GetReindexableAttributeType (const GS::UniString& typeStr)
 
 bool Rewrite (API_AttributeIndex& field, const ReindexJob& job)
 {
+    if (job.used != nullptr) {
+        job.used->insert (GetAttributeIndex (field));
+        return false;
+    }
     if (field != job.from) {
         return false;
     }
@@ -9440,6 +9479,10 @@ bool Rewrite (API_OverriddenAttribute& field, const ReindexJob& job)
 // The attribute index of the job is compared and written through its plain value.
 bool RewritePlain (Int32 plainIndex, const ReindexJob& job, Int32& newPlainIndex)
 {
+    if (job.used != nullptr) {
+        job.used->insert (plainIndex);
+        return false;
+    }
     if (plainIndex != GetAttributeIndex (job.from)) {
         return false;
     }
@@ -9806,6 +9849,18 @@ bool RewriteAddPars (API_AddParType** params, const ReindexJob& job)
         if (param.typeID != wantedType) {
             continue;
         }
+        if (job.used != nullptr) {
+            if (param.typeMod == API_ParSimple) {
+                job.used->insert (static_cast<Int32> (param.value.real));
+            } else if (param.value.array != nullptr) {
+                const double* values = reinterpret_cast<const double*> (*param.value.array);
+                const Int32 valueCount = param.dim1 * param.dim2;
+                for (Int32 v = 0; v < valueCount; ++v) {
+                    job.used->insert (static_cast<Int32> (values[v]));
+                }
+            }
+            continue;
+        }
         if (param.typeMod == API_ParSimple) {
             if (param.value.real == from) {
                 param.value.real = to;
@@ -9954,6 +10009,17 @@ bool RewriteMemo (const API_Element& element, API_ElementMemo& memo, const Reind
 template <typename FloorPlanParameters>
 bool DoesOpeningFloorPlanReferTo (const FloorPlanParameters& floorPlan, const ReindexJob& job)
 {
+    if (job.used != nullptr) {
+        if (job.type == API_LinetypeID) {
+            job.used->insert (GetAttributeIndex (floorPlan.GetCutSurfacesLineIndex ()));
+            job.used->insert (GetAttributeIndex (floorPlan.GetOutlinesUncutLineIndex ()));
+            job.used->insert (GetAttributeIndex (floorPlan.GetOutlinesOverheadLineIndex ()));
+            job.used->insert (GetAttributeIndex (floorPlan.GetReferenceAxisLineTypeIndex ()));
+        } else if (job.type == API_FilltypeID) {
+            job.used->insert (GetAttributeIndex (floorPlan.GetCoverFillsIndex ()));
+        }
+        return false;
+    }
     if (job.type == API_LinetypeID) {
         return floorPlan.GetCutSurfacesLineIndex () == job.from || floorPlan.GetOutlinesUncutLineIndex () == job.from ||
                floorPlan.GetOutlinesOverheadLineIndex () == job.from || floorPlan.GetReferenceAxisLineTypeIndex () == job.from;
@@ -11049,6 +11115,7 @@ GS::ObjectState DeleteAndReplaceAttribute (const GS::Array<API_DatabaseInfo>& da
     result.Add ("attributeId", CreateGuidObjectState (attributeGuid));
     result.Add ("replacementAttributeId", CreateGuidObjectState (replacementGuid));
     if (dryRun) {
+        result.Add ("wouldDelete", true);
         const ReindexJob job = { typeID, oldIndex, replacementIndex };
         AddReplacementScanToResult (result, ScanReferences (databases, job, false), true, typeName);
         return finish (result);
@@ -11196,8 +11263,7 @@ GS::Optional<GS::UniString> DeleteAndReplaceAttributesCommand::GetInputParameter
                 }
             },
             "dryRun": {
-                "type": "boolean",
-                "description": "Only list every reference to each attribute to delete (elements, tool defaults, Favorites, other attributes, graphic override rules, elements from hotlinked modules) without changing anything. The default is false."
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -11213,6 +11279,9 @@ GS::Optional<GS::UniString> DeleteAndReplaceAttributesCommand::GetRawResponseSch
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "attributes": {
                 "type": "array",
                 "description": "One item per requested attribute, in the same order.",
@@ -11228,6 +11297,11 @@ GS::Optional<GS::UniString> DeleteAndReplaceAttributesCommand::GetRawResponseSch
                                 "replacementAttributeId": {
                                     "$ref": "#/AttributeId",
                                     "description": "The attribute that took its place."
+                                },
+                                "wouldDelete": {
+                                    "type": "boolean",
+                                    "enum": [ true ],
+                                    "description": "Only on a dry run: the attribute and its replacement passed the checks, and a real run would delete the attribute and rewrite the references listed here to the replacement."
                                 },
                                 "elements": {
                                     "$ref": "#/Elements",
@@ -11334,8 +11408,7 @@ GS::ObjectState DeleteAndReplaceAttributesCommand::Execute (const GS::ObjectStat
     }
     GS::Array<GS::ObjectState> attributes;
     parameters.Get ("attributes", attributes);
-    bool dryRun = false;
-    parameters.Get ("dryRun", dryRun);
+    const bool dryRun = IsDryRun (parameters);
 
     API_DatabaseInfo startingDatabase = {};
     GSErrCode err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
@@ -11349,6 +11422,7 @@ GS::ObjectState DeleteAndReplaceAttributesCommand::Execute (const GS::ObjectStat
     }
 
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& results = response.AddList<GS::ObjectState> ("attributes");
     const auto replaceAll = [&] () -> GSErrCode {
         for (const GS::ObjectState& attribute : attributes) {
@@ -11366,5 +11440,413 @@ GS::ObjectState DeleteAndReplaceAttributesCommand::Execute (const GS::ObjectStat
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "DeleteAndReplaceAttributes requires Archicad 27 or newer.");
+#endif
+}
+
+#ifdef ServerMainVers_2700
+
+namespace {
+
+// GetUnusedAttributes: the attribute types it checks, with the type's name in the command's input and output, its
+// name in Archicad's usedAttributes report (as ParseUsedAttributesReport gives it) and its API type.
+struct UnusedAttributeType {
+    const char*    name;
+    const char*    usedReportName;
+    API_AttrTypeID typeID;
+};
+
+const UnusedAttributeType UnusedAttributeTypes[] = {
+    { "layer",            "Layer",            API_LayerID },
+    { "fill",             "Fill",             API_FilltypeID },
+    { "surface",          "Surface",          API_MaterialID },
+    { "buildingMaterial", "BuildingMaterial", API_BuildingMaterialID },
+    { "composite",        "Composite",        API_CompWallID },
+    { "profile",          "Profile",          API_ProfileID },
+    { "lineType",         "Line",             API_LinetypeID },
+    { "penTable",         "PenTable",         API_PenTableID },
+    { "zoneCategory",     "ZoneCategory",     API_ZoneCatID },
+};
+
+// The layers, composites, profiles and pen tables in use. The reference scanner of ReindexAttributes does not
+// handle these types, so they are collected here from the same places: the elements of every database, the tool
+// defaults and the Favorites, and for pen tables the current pen table.
+struct StructureUsage {
+    std::set<Int32> layers;
+    std::set<Int32> composites;
+    std::set<Int32> profiles;
+    std::set<Int32> penTables;
+};
+
+void AddModelStructure (API_ModelElemStructureType structureType, const API_AttributeIndex& composite, const API_AttributeIndex* profile, StructureUsage& usage)
+{
+    if (structureType == API_CompositeStructure) {
+        usage.composites.insert (GetAttributeIndex (composite));
+    } else if (structureType == API_ProfileStructure && profile != nullptr) {
+        usage.profiles.insert (GetAttributeIndex (*profile));
+    }
+}
+
+void AddSegmentProfile (const API_AssemblySegmentData& segment, StructureUsage& usage)
+{
+    if (segment.modelElemStructureType == API_ProfileStructure) {
+        usage.profiles.insert (GetAttributeIndex (segment.profileAttr));
+    }
+}
+
+// Whether a placed element of this type may refer to a composite, a profile or a pen table in its own fields.
+bool MayReferToStructure (API_ElemTypeID typeID)
+{
+    switch (typeID) {
+        case API_WallID:
+        case API_SlabID:
+        case API_RoofID:
+        case API_ShellID:
+        case API_ColumnSegmentID:
+        case API_BeamSegmentID:
+        case API_DrawingID:
+            return true;
+        default:
+            return false;
+    }
+}
+
+// The layer, composite, profile and pen table of an element, a tool default or a Favorite. A column's or beam's
+// segments are read from the memo when one is given; placed segments are visited as elements of their own.
+// A composite or profile counts only when the element's structure type uses it.
+void CollectStructureUsage (const API_Element& element, const API_ElementMemo* memo, StructureUsage& usage)
+{
+    usage.layers.insert (GetAttributeIndex (element.header.layer));
+    switch (GetElemTypeId (element.header)) {
+        case API_WallID:
+            AddModelStructure (element.wall.modelElemStructureType, element.wall.composite, &element.wall.profileAttr, usage);
+            break;
+        case API_SlabID:
+            AddModelStructure (element.slab.modelElemStructureType, element.slab.composite, nullptr, usage);
+            break;
+        case API_RoofID:
+            AddModelStructure (element.roof.shellBase.modelElemStructureType, element.roof.shellBase.composite, nullptr, usage);
+            break;
+        case API_ShellID:
+            AddModelStructure (element.shell.shellBase.modelElemStructureType, element.shell.shellBase.composite, nullptr, usage);
+            break;
+        case API_ColumnSegmentID:
+            AddSegmentProfile (element.columnSegment.assemblySegmentData, usage);
+            break;
+        case API_BeamSegmentID:
+            AddSegmentProfile (element.beamSegment.assemblySegmentData, usage);
+            break;
+        case API_ColumnID:
+            for (Int32 i = 0; memo != nullptr && memo->columnSegments != nullptr && i < static_cast<Int32> (element.column.nSegments); ++i) {
+                AddSegmentProfile (memo->columnSegments[i].assemblySegmentData, usage);
+            }
+            break;
+        case API_BeamID:
+            for (Int32 i = 0; memo != nullptr && memo->beamSegments != nullptr && i < static_cast<Int32> (element.beam.nSegments); ++i) {
+                AddSegmentProfile (memo->beamSegments[i].assemblySegmentData, usage);
+            }
+            break;
+        case API_DrawingID:
+            if (element.drawing.penTableUsageMode == APIPenTableUsageMode_UsePenTableIndex) {
+                usage.penTables.insert (GetAttributeIndex (element.drawing.penTableIndex));
+            }
+            break;
+        default:
+            break;
+    }
+}
+
+StructureUsage CollectStructureUsageInProject (const GS::Array<API_DatabaseInfo>& databases, GS::Array<GS::UniString>& warnings)
+{
+    StructureUsage usage;
+    for (const API_DatabaseInfo& database : databases) {
+        API_DatabaseInfo current = database;
+        if (ACAPI_Database_ChangeCurrentDatabase (&current) != NoError) {
+            warnings.Push ("A view or layout database could not be opened, so its elements were not checked.");
+            continue;
+        }
+        GS::Array<API_Guid> guids;
+        if (ACAPI_Element_GetElemList (API_ZombieElemID, &guids) != NoError) {
+            warnings.Push ("The elements of a view or layout database could not be listed.");
+            continue;
+        }
+        for (const API_Guid& guid : guids) {
+            API_Elem_Head head = {};
+            head.guid = guid;
+            if (ACAPI_Element_GetHeader (&head) != NoError || GetElemTypeId (head.type) == API_SectElemID) {
+                continue;
+            }
+            usage.layers.insert (GetAttributeIndex (head.layer));
+            if (!MayReferToStructure (GetElemTypeId (head.type))) {
+                continue;
+            }
+            API_Element element = {};
+            element.header.guid = guid;
+            if (ACAPI_Element_Get (&element) == NoError) {
+                CollectStructureUsage (element, nullptr, usage);
+            }
+        }
+    }
+
+    for (Int32 type = API_FirstElemType; type <= API_LastElemType; ++type) {
+        API_Element element = {};
+        API_ElementMemo memo = {};
+        element.header.type = static_cast<API_ElemTypeID> (type);
+        if (ACAPI_Element_GetDefaults (&element, &memo) == NoError) {
+            CollectStructureUsage (element, &memo, usage);
+        }
+        ACAPI_DisposeElemMemoHdls (&memo);
+    }
+
+    for (Int32 type = API_FirstElemType; type <= API_LastElemType; ++type) {
+        GS::Array<GS::UniString> names;
+        if (ACAPI_Favorite_GetNum (static_cast<API_ElemTypeID> (type), nullptr, nullptr, &names) != NoError) {
+            continue;
+        }
+        for (const GS::UniString& name : names) {
+            API_Favorite favorite (name);
+            favorite.memo.New ();
+            favorite.subElements.New ();
+            const GS::OnExit cleanup ([&favorite] () {
+                if (favorite.memo.HasValue ()) {
+                    ACAPI_DisposeElemMemoHdls (favorite.memo.GetPtr ());
+                }
+                if (favorite.subElements.HasValue ()) {
+                    for (API_SubElement& subElement : *favorite.subElements) {
+                        ACAPI_DisposeElemMemoHdls (&subElement.memo);
+                    }
+                }
+            });
+            if (ACAPI_Favorite_Get (&favorite) != NoError) {
+                continue;
+            }
+            CollectStructureUsage (favorite.element, favorite.memo.HasValue () ? favorite.memo.GetPtr () : nullptr, usage);
+            if (favorite.subElements.HasValue ()) {
+                for (const API_SubElement& subElement : *favorite.subElements) {
+                    CollectStructureUsage (subElement.subElem, &subElement.memo, usage);
+                }
+            }
+        }
+    }
+
+    API_AttributeIndex currentPenTable = APIInvalidAttributeIndex;
+    if (ACAPI_Attribute_GetCurrPenSet (&currentPenTable) == NoError) {
+        usage.penTables.insert (GetAttributeIndex (currentPenTable));
+    }
+    return usage;
+}
+
+// The indices in use of one attribute type: from the reference scanner of ReindexAttributes in collect mode
+// (fills, surfaces, building materials, line types, zone categories) or from the structure usage (the others).
+std::set<Int32> GetUsedAttributeIndices (const GS::Array<API_DatabaseInfo>& databases, API_AttrTypeID typeID, const StructureUsage& structureUsage, GS::Array<GS::UniString>& warnings)
+{
+    switch (typeID) {
+        case API_LayerID:     return structureUsage.layers;
+        case API_CompWallID:  return structureUsage.composites;
+        case API_ProfileID:   return structureUsage.profiles;
+        case API_PenTableID:  return structureUsage.penTables;
+        default:              break;
+    }
+    std::set<Int32> used;
+    const ReindexJob job = { typeID, APIInvalidAttributeIndex, APIInvalidAttributeIndex, &used };
+    const ReferenceScan scan = ScanReferences (databases, job, false);
+    for (const GS::UniString& warning : scan.warnings) {
+        if (!warnings.Contains (warning)) {
+            warnings.Push (warning);
+        }
+    }
+    return used;
+}
+
+bool NeedsStructureUsage (API_AttrTypeID typeID)
+{
+    return typeID == API_LayerID || typeID == API_CompWallID || typeID == API_ProfileID || typeID == API_PenTableID;
+}
+
+}
+
+#endif
+
+GetUnusedAttributesCommand::GetUnusedAttributesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetUnusedAttributesCommand::GetName () const
+{
+    return "GetUnusedAttributes";
+}
+
+GS::Optional<GS::UniString> GetUnusedAttributesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "types": {
+                "type": "array",
+                "description": "The attribute types to check. All of them when omitted.",
+                "items": {
+                    "type": "string",
+                    "enum": ["layer", "fill", "surface", "buildingMaterial", "composite", "profile", "lineType", "penTable", "zoneCategory"]
+                },
+                "minItems": 1
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> GetUnusedAttributesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributeTypes": {
+                "type": "array",
+                "description": "One item per checked attribute type, in the order layer, fill, surface, buildingMaterial, composite, profile, lineType, penTable, zoneCategory.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "enum": ["layer", "fill", "surface", "buildingMaterial", "composite", "profile", "lineType", "penTable", "zoneCategory"]
+                        },
+                        "unusedAttributes": {
+                            "type": "array",
+                            "description": "The attributes of this type that no reference found by the command points at.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "attributeId": {
+                                        "$ref": "#/AttributeId"
+                                    },
+                                    "index": {
+                                        "type": "integer"
+                                    },
+                                    "name": {
+                                        "type": "string"
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": ["attributeId", "index", "name"]
+                            }
+                        },
+                        "attributeCount": {
+                            "type": "integer",
+                            "description": "The number of attributes of this type in the project."
+                        },
+                        "usedCount": {
+                            "type": "integer",
+                            "description": "attributeCount minus the unused ones."
+                        },
+                        "archicadUsedCount": {
+                            "type": "integer",
+                            "description": "The number of attributes of this type in use as Archicad itself counts them, from the usedAttributes JSON query (see GetUsedAttributes). When it differs from usedCount, Archicad counts references this command does not see, or the other way round, so check the list before deleting. Missing when Archicad's report does not name the type."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["type", "unusedAttributes", "attributeCount", "usedCount"]
+                }
+            },
+            "archicadReport": {
+                "type": "string",
+                "description": "Archicad's usedAttributes report as it came, e.g. 'Layer: 16, LineType: 9, Fill: 17'. Missing when the query failed."
+            },
+            "warnings": {
+                "type": "array",
+                "description": "What could not be checked. Missing when everything was checked.",
+                "items": {
+                    "type": "string"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["attributeTypes"]
+    })";
+}
+
+GS::ObjectState GetUnusedAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2700
+    GS::Array<GS::UniString> requestedTypes;
+    const bool allTypes = !parameters.Contains ("types");
+    if (!allTypes) {
+        parameters.Get ("types", requestedTypes);
+    }
+
+    API_DatabaseInfo startingDatabase = {};
+    GSErrCode err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the current database.");
+    }
+    GS::Array<API_DatabaseInfo> databases;
+    err = GetElementDatabases (databases);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to list the views and layouts.");
+    }
+
+    GS::ObjectState response;
+    GS::UniString report;
+    GS::ObjectState archicadCounts;
+    if (RunJsonQuery ("usedAttributes", report) == NoError) {
+        response.Add ("archicadReport", report);
+        if (!ParseUsedAttributesReport (report, archicadCounts)) {
+            archicadCounts = GS::ObjectState ();
+        }
+    }
+
+    GS::Array<GS::UniString> warnings;
+    StructureUsage structureUsage;
+    bool structureUsageCollected = false;
+    const auto& attributeTypes = response.AddList<GS::ObjectState> ("attributeTypes");
+    for (const UnusedAttributeType& type : UnusedAttributeTypes) {
+        if (!allTypes && !requestedTypes.Contains (GS::UniString (type.name))) {
+            continue;
+        }
+        if (NeedsStructureUsage (type.typeID) && !structureUsageCollected) {
+            structureUsage = CollectStructureUsageInProject (databases, warnings);
+            structureUsageCollected = true;
+        }
+        const std::set<Int32> used = GetUsedAttributeIndices (databases, type.typeID, structureUsage, warnings);
+
+        GS::ObjectState typeResult;
+        typeResult.Add ("type", GS::UniString (type.name));
+        const auto& unusedAttributes = typeResult.AddList<GS::ObjectState> ("unusedAttributes");
+        Int32 attributeCount = 0;
+        Int32 unusedCount = 0;
+        GS::Array<API_Attribute> attributes;
+        if (ACAPI_Attribute_GetAttributesByType (type.typeID, attributes) == NoError) {
+            for (API_Attribute& attribute : attributes) {
+                ++attributeCount;
+                const Int32 index = GetAttributeIndex (attribute.header.index);
+                if (used.find (index) == used.end ()) {
+                    ++unusedCount;
+                    GS::ObjectState unused;
+                    unused.Add ("attributeId", CreateGuidObjectState (attribute.header.guid));
+                    unused.Add ("index", index);
+                    unused.Add ("name", GetAttributeName (attribute.header));
+                    unusedAttributes (unused);
+                }
+                DisposeAttribute (attribute);
+            }
+        } else {
+            warnings.Push (GS::UniString::Printf ("The attributes of type %s could not be listed.", type.name));
+        }
+        typeResult.Add ("attributeCount", attributeCount);
+        typeResult.Add ("usedCount", attributeCount - unusedCount);
+        Int32 archicadUsedCount = 0;
+        if (archicadCounts.Get (GS::String (type.usedReportName), archicadUsedCount)) {
+            typeResult.Add ("archicadUsedCount", archicadUsedCount);
+        }
+        attributeTypes (typeResult);
+    }
+
+    ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+    if (!warnings.IsEmpty ()) {
+        response.Add ("warnings", warnings);
+    }
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetUnusedAttributes requires Archicad 27 or newer.");
 #endif
 }

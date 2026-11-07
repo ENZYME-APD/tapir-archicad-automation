@@ -1,0 +1,233 @@
+{
+  "title": "ModifyAssociativeDimensions and ModifyLevelDimensions: the creation keys, every change read back, bad inputs refused",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "create a linear dimension with the shared settings",
+      "command": "CreateAssociativeDimensions",
+      "params": {
+        "dimensionsData": [
+          {
+            "referencePoint": { "x": 800.0, "y": 799.0 },
+            "direction": { "x": 1.0, "y": 0.0 },
+            "floorIndex": 0,
+            "witnessPoints": [
+              { "coordinate": { "x": 800.0, "y": 800.0 } },
+              { "coordinate": { "x": 803.0, "y": 800.0 } },
+              { "coordinate": { "x": 805.0, "y": 800.0 } }
+            ],
+            "linePen": 2,
+            "marker": { "type": "CrossLine", "pen": 2 },
+            "textHeight": 2.5,
+            "textPen": 2,
+            "textFrame": false
+          }
+        ]
+      },
+      "save": { "d": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "dimension created" }
+      ]
+    },
+    {
+      "id": "create a level dimension with a fixed level",
+      "command": "CreateLevelDimensions",
+      "params": {
+        "levelDimensionsData": [
+          { "position": { "x": 810.0, "y": 800.0 }, "level": 0.5, "floorIndex": 0, "pen": 2, "textHeight": 2.5, "textPen": 2, "markerSize": 3.0 }
+        ]
+      },
+      "save": { "l": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "level dimension created" }
+      ]
+    },
+    {
+      "id": "read both back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${d}" } },
+          { "elementId": { "guid": "${l}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Dimension", "name": "a linear dimension" },
+        { "path": "detailsOfElements[0].details.appearance", "eq": "Linear", "name": "linear by default" },
+        { "path": "detailsOfElements[0].details.witnessPointCount", "eq": 3, "name": "three witness points" },
+        { "path": "detailsOfElements[0].details.linePen", "eq": 2, "name": "line pen as created" },
+        { "path": "detailsOfElements[0].details.marker.type", "eq": "CrossLine", "name": "marker type as created" },
+        { "path": "detailsOfElements[0].details.marker.pen", "eq": 2, "name": "marker pen as created" },
+        { "path": "detailsOfElements[0].details.textHeight", "approx": 2.5, "name": "text height as created" },
+        { "path": "detailsOfElements[1].details.pen", "eq": 2, "name": "level dimension pen as created" },
+        { "path": "detailsOfElements[1].details.markerSize", "approx": 3.0, "name": "level dimension marker size as created" }
+      ]
+    },
+    {
+      "id": "ModifyAssociativeDimensions: pens, marker, texts and witness lines",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          {
+            "elementId": { "guid": "${d}" },
+            "linePen": 3,
+            "marker": { "type": "FullArrow30", "pen": 4 },
+            "textHeight": 3.5,
+            "textPen": 5,
+            "textFrame": true,
+            "defaultWitnessForm": "Fix",
+            "defaultWitnessVal": 0.5
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "settings change accepted" }
+      ]
+    },
+    {
+      "id": "dimension after the settings change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.linePen", "eq": 3, "name": "line pen changed" },
+        { "path": "detailsOfElements[0].details.marker.type", "eq": "FullArrow30", "name": "marker type changed" },
+        { "path": "detailsOfElements[0].details.marker.pen", "eq": 4, "name": "marker pen changed" },
+        { "path": "detailsOfElements[0].details.textHeight", "approx": 3.5, "name": "text height changed" },
+        { "path": "detailsOfElements[0].details.textPen", "eq": 5, "name": "text pen changed" },
+        { "path": "detailsOfElements[0].details.textFrame", "eq": true, "name": "text frame on" },
+        { "path": "detailsOfElements[0].details.defaultWitnessForm", "eq": "Fix", "name": "witness line form changed" },
+        { "path": "detailsOfElements[0].details.appearance", "eq": "Linear", "name": "appearance unchanged" },
+        { "path": "detailsOfElements[0].details.witnessPointCount", "eq": 3, "name": "witness points kept" },
+        { "path": "detailsOfElements[0].details.dimensionLinePosition.y", "approx": 799.0, "name": "dimension line kept" }
+      ]
+    },
+    {
+      "id": "witness points after the settings change",
+      "command": "GetDimensionData",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "dimensionsData[0].witnessPoints", "len": 3, "name": "three witness points" },
+        { "path": "dimensionsData[0].witnessPoints[0].textHeight", "approx": 3.5, "name": "first point got the text height" },
+        { "path": "dimensionsData[0].witnessPoints[2].textHeight", "approx": 3.5, "name": "last point got the text height" },
+        { "path": "dimensionsData[0].witnessPoints[1].textPen", "eq": 5, "name": "middle point got the text pen" },
+        { "path": "dimensionsData[0].witnessPoints[1].textFrame", "eq": true, "name": "middle point got the text frame" },
+        { "path": "dimensionsData[0].witnessPoints[0].witnessForm", "eq": "Fix", "name": "first point got the witness line form" },
+        { "path": "dimensionsData[0].witnessPoints[2].coordinate.x", "approx": 805.0, "name": "last point not moved" },
+        { "path": "dimensionsData[0].witnessPoints[2].dimensionValue", "approx": 2.0, "name": "measured value unchanged" }
+      ]
+    },
+    {
+      "id": "ModifyAssociativeDimensions: appearance only",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          { "elementId": { "guid": "${d}" }, "appearance": "Cumulative" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "appearance change accepted" }
+      ]
+    },
+    {
+      "id": "dimension after the appearance change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${d}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.appearance", "eq": "Cumulative", "name": "appearance changed" },
+        { "path": "detailsOfElements[0].details.linePen", "eq": 3, "name": "line pen unchanged" },
+        { "path": "detailsOfElements[0].details.textHeight", "approx": 3.5, "name": "text height unchanged" }
+      ]
+    },
+    {
+      "id": "ModifyLevelDimensions: position, pens, texts and marker",
+      "command": "ModifyLevelDimensions",
+      "creates": false,
+      "params": {
+        "levelDimensionsWithDetails": [
+          {
+            "elementId": { "guid": "${l}" },
+            "position": { "x": 811.0, "y": 801.0 },
+            "pen": 3,
+            "textHeight": 3.0,
+            "textPen": 4,
+            "markerSize": 4.0,
+            "needPlus": true
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "level dimension change accepted" }
+      ]
+    },
+    {
+      "id": "level dimension after the change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${l}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.position.x", "approx": 811.0, "name": "moved in x" },
+        { "path": "detailsOfElements[0].details.position.y", "approx": 801.0, "name": "moved in y" },
+        { "path": "detailsOfElements[0].details.pen", "eq": 3, "name": "pen changed" },
+        { "path": "detailsOfElements[0].details.textHeight", "approx": 3.0, "name": "text height changed" },
+        { "path": "detailsOfElements[0].details.textPen", "eq": 4, "name": "text pen changed" },
+        { "path": "detailsOfElements[0].details.markerSize", "approx": 4.0, "name": "marker size changed" },
+        { "path": "detailsOfElements[0].details.needPlus", "eq": true, "name": "plus sign on" }
+      ]
+    },
+    {
+      "id": "ModifyAssociativeDimensions: bad inputs",
+      "command": "ModifyAssociativeDimensions",
+      "creates": false,
+      "params": {
+        "dimensionsWithDetails": [
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "linePen": 1 },
+          { "elementId": { "guid": "${l}" }, "linePen": 1 },
+          { "elementId": { "guid": "${d}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "nonexistent guid refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "a level dimension refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "an item with no settings refused" }
+      ]
+    },
+    {
+      "id": "ModifyLevelDimensions: bad inputs",
+      "command": "ModifyLevelDimensions",
+      "creates": false,
+      "params": {
+        "levelDimensionsWithDetails": [
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "pen": 1 },
+          { "elementId": { "guid": "${d}" }, "pen": 1 },
+          { "elementId": { "guid": "${l}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "nonexistent guid refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "a linear dimension refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "an item with no settings refused" }
+      ]
+    },
+    {
+      "id": "the refused items changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${d}" } },
+          { "elementId": { "guid": "${l}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.linePen", "eq": 3, "name": "dimension line pen unchanged" },
+        { "path": "detailsOfElements[1].details.pen", "eq": 3, "name": "level dimension pen unchanged" }
+      ]
+    }
+  ]
+}

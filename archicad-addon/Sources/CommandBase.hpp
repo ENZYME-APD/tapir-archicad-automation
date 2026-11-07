@@ -221,6 +221,10 @@ API_NameTypeValues DrawingNameTypeFromString (const GS::UniString& str, API_Name
 // root cause not fully understood, kept as two separate translation units instead.
 void AddMorphBodyFromMemo (const API_Element& elem, GS::ObjectState& typeSpecificDetails);
 
+// The GetDetailsOfElements keys of a Skylight, the ones CreateSkylights and ModifySkylights write
+// (ApplySkylightDetails) - defined next to them in ExtendedElementCommands.cpp.
+void AddSkylightDetails (const API_Element& elem, GS::ObjectState& typeSpecificDetails);
+
 // Shared by Morph and Wall (Get and Modify/Create) - defined in ExtendedElementCommands.cpp.
 GS::UniString ElemDisplayOptionToString (API_ElemDisplayOptionsID displayOption);
 bool ElemDisplayOptionFromString (const GS::UniString& str, API_ElemDisplayOptionsID& out);
@@ -308,12 +312,15 @@ GSErrCode ExecuteActionForEachDatabase (
 // in one undoable command named undoName, calls perItem with the guid under idFieldName of every
 // item of the list listFieldName of parameters. Returns {"executionResults": [...]}, one result per
 // item in input order: "<idFieldName> is missing" for an item without the id, else perItem's result.
+// On a dry run (dryRun, see IsDryRun) perItem is called outside any undoable command, so it must
+// only make its checks and answer CreateDryRunExecutionResult, and the response gets "dryRun": true.
 GS::ObjectState ExecuteForEachIdInList (
     const GS::ObjectState& parameters,
     const char* listFieldName,
     const char* idFieldName,
     const GS::UniString& undoName,
-    const std::function<GS::ObjectState (const API_Guid&)>& perItem);
+    const std::function<GS::ObjectState (const API_Guid&)>& perItem,
+    bool dryRun = false);
 
 // The Project Map item of an independent worksheet or detail database, found by its database;
 // NoValue for any other database type or when the Project Map has no such item.

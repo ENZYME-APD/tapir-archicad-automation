@@ -4373,6 +4373,39 @@
         ],
         "description": "How the drawing's title ID is assigned (Identification tabpage of the Drawing Settings dialog)."
     },
+    "DrawingPenTableUsageMode": {
+        "type": "string",
+        "enum": [
+            "OwnPenTable",
+            "ModelPenTable",
+            "PenTableIndex"
+        ],
+        "description": "Which pen table the drawing uses (API_DrawingType::penTableUsageMode): its own, the one of the model, or the pen set given by penTableIndex."
+    },
+    "DrawingColorMode": {
+        "type": "string",
+        "enum": [
+            "OriginalColors",
+            "BlackAndWhite",
+            "Grayscale"
+        ],
+        "description": "How the drawing's pens are output (API_DrawingType::colorMode)."
+    },
+    "DrawingAnchorPoint": {
+        "type": "string",
+        "enum": [
+            "TopLeft",
+            "TopCenter",
+            "TopRight",
+            "MiddleLeft",
+            "Center",
+            "MiddleRight",
+            "BottomLeft",
+            "BottomCenter",
+            "BottomRight"
+        ],
+        "description": "The node of the drawing's bounding box the drawing is placed by (API_DrawingType::anchorPoint). Used only when useOwnOriginAsAnchor is false."
+    },
     "DrawingStatus": {
         "type": "string",
         "enum": [
@@ -9983,6 +10016,126 @@
             "revealDepthOffset"
         ]
     },
+    "SkylightDetails": {
+        "type": "object",
+        "description": "The details of a Skylight: the settings CreateSkylights and ModifySkylights write, plus the library part, the owner and anchorLevel, which are only read.",
+        "properties": {
+            "libPart": {
+                "$ref": "#/LibPartDetails"
+            },
+            "ownerElementId": {
+                "$ref": "#/ElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
+            "anchorPosition": {
+                "$ref": "#/Coordinate2D",
+                "description": "Global XY coordinates of the skylight's anchor point."
+            },
+            "anchorPoint": {
+                "type": "string",
+                "enum": ["BottomCenter", "BottomLeft", "BottomRight", "TopCenter", "TopLeft", "TopRight"],
+                "description": "Which point of the skylight anchorPosition places."
+            },
+            "fixMode": {
+                "type": "string",
+                "enum": ["Horizontal", "Vertical"],
+                "description": "What the skylight keeps when the angle or the height of its owner changes."
+            },
+            "anchorLevel": {
+                "type": "number",
+                "description": "The global Z coordinate of the anchor point. Only read; Archicad sets it from the owner."
+            },
+            "width": {
+                "type": "number"
+            },
+            "height": {
+                "type": "number"
+            },
+            "azimuthAngle": {
+                "type": "number",
+                "description": "Rotation angle in the horizontal plane, measured clockwise, in radians."
+            },
+            "elevationAngle": {
+                "type": "number",
+                "description": "Elevation angle of the owner's surface at the skylight, in radians."
+            },
+            "reflected": {
+                "type": "boolean"
+            },
+            "displayOption": {
+                "$ref": "#/DisplayOption"
+            },
+            "pen": {
+                "type": "integer",
+                "description": "Pen of the skylight's floor plan symbol; used unless useObjectPens is true."
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the skylight's floor plan symbol; used unless useObjectLineTypes is true."
+            },
+            "cutLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the cut lines of the skylight."
+            },
+            "sectionFillId": {
+                "$ref": "#/AttributeId",
+                "description": "Fill of the section of the skylight; used unless useObjectSectionAttributes is true."
+            },
+            "sectionFillPen": {
+                "type": "integer"
+            },
+            "sectionFillBackgroundPen": {
+                "type": "integer"
+            },
+            "sectionContourPen": {
+                "type": "integer"
+            },
+            "aboveViewLinePen": {
+                "type": "integer",
+                "description": "Pen of the overhead lines."
+            },
+            "aboveViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the overhead lines."
+            },
+            "belowViewLinePen": {
+                "type": "integer",
+                "description": "Pen of the uncut lines."
+            },
+            "belowViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the uncut lines."
+            },
+            "surfaceId": {
+                "$ref": "#/AttributeId",
+                "description": "Surface of the skylight; used unless useObjectMaterials is true."
+            },
+            "useObjectPens": {
+                "type": "boolean"
+            },
+            "useObjectLineTypes": {
+                "type": "boolean"
+            },
+            "useObjectMaterials": {
+                "type": "boolean"
+            },
+            "useObjectSectionAttributes": {
+                "type": "boolean"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libPart",
+            "anchorPosition",
+            "anchorLevel",
+            "width",
+            "height",
+            "azimuthAngle",
+            "elevationAngle"
+        ]
+    },
     "PolylineDetails": {
         "type": "object",
         "properties": {
@@ -11203,6 +11356,31 @@
                 "type": "number",
                 "description": "Border size of the drawing (API_DrawingType::borderSize), in meters."
             },
+            "penTableUsageMode": {
+                "$ref": "#/DrawingPenTableUsageMode"
+            },
+            "penTableIndex": {
+                "type": "integer",
+                "description": "Attribute index of the pen set the drawing uses when penTableUsageMode is PenTableIndex (API_DrawingType::penTableIndex)."
+            },
+            "colorMode": {
+                "$ref": "#/DrawingColorMode"
+            },
+            "isTransparentBackground": {
+                "type": "boolean",
+                "description": "Whether the drawing's background is transparent (API_DrawingType::isTransparentBk)."
+            },
+            "rasterizeDPI": {
+                "type": "number",
+                "description": "The resolution, in dots per inch, a PDF drawing is rasterized at (API_DrawingType::rasterizeDPI)."
+            },
+            "anchorPoint": {
+                "$ref": "#/DrawingAnchorPoint"
+            },
+            "useOwnOriginAsAnchor": {
+                "type": "boolean",
+                "description": "Whether the drawing is placed by its own origin instead of anchorPoint (API_DrawingType::useOwnOrigoAsAnchor)."
+            },
             "manualUpdate": {
                 "type": "boolean",
                 "description": "The Drawing Manager's Update Type: true for Manual, false for Automatic. Read-only."
@@ -11250,6 +11428,13 @@
             "borderLineTypeIndex",
             "borderPenIndex",
             "borderSize",
+            "penTableUsageMode",
+            "penTableIndex",
+            "colorMode",
+            "isTransparentBackground",
+            "rasterizeDPI",
+            "anchorPoint",
+            "useOwnOriginAsAnchor",
             "manualUpdate",
             "storedInProject",
             "titleLibraryPartIndex"
@@ -11397,6 +11582,90 @@
             "markerSize",
             "angle",
             "origin"
+        ]
+    },
+    "DimensionDetails": {
+        "type": "object",
+        "description": "The settings of a linear dimension (the Dimension tool), with the names ModifyAssociativeDimensions takes. The witness points are read with GetDimensionData.",
+        "properties": {
+            "appearance": {
+                "type": "string",
+                "enum": ["Linear", "Cumulative", "Baseline", "Elevation"],
+                "description": "The dimension type, as in the Dimension Settings."
+            },
+            "elevationOrigin": {
+                "$ref": "#/DimensionOrigin",
+                "description": "The level an Elevation dimension measures from (kept for the other types too)."
+            },
+            "dimensionLinePosition": {
+                "$ref": "#/Coordinate2D",
+                "description": "A point of the dimension line."
+            },
+            "direction": {
+                "$ref": "#/Coordinate2D",
+                "description": "The direction of the dimension line."
+            },
+            "witnessPointCount": {
+                "type": "integer",
+                "description": "The number of witness points."
+            },
+            "linePen": {
+                "type": "integer",
+                "description": "The pen of the dimension and witness lines."
+            },
+            "marker": {
+                "type": "object",
+                "description": "The marker at the witness points. Its size is not returned: the value the API reports did not match the marker size in the Dimension Settings for linear dimensions.",
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "description": "The marker type, named after API_MarkerID.",
+                        "enum": ["CrossLine", "EmptyCircle", "SlashLine60", "OpenArrow30", "ClosedArrow30", "FullArrow30", "SlashLine45", "CrossCircle", "OpenArrow90", "ClosedArrow90", "FullArrow90", "FullCircle", "PepitaCircle", "BandArrow", "OpenArrow60", "ClosedArrow60", "FullArrow60", "SlashLine75"]
+                    },
+                    "pen": {
+                        "type": "integer",
+                        "description": "The pen of the marker."
+                    }
+                },
+                "additionalProperties": false,
+                "required": ["type", "pen"]
+            },
+            "textHeight": {
+                "type": "number",
+                "description": "The text height of the dimension's settings in millimeters. Each witness point keeps its own (GetDimensionData)."
+            },
+            "textPen": {
+                "type": "integer",
+                "description": "The text pen of the dimension's settings. Each witness point keeps its own (GetDimensionData)."
+            },
+            "textFrame": {
+                "type": "boolean",
+                "description": "The text frame of the dimension's settings. Each witness point keeps its own (GetDimensionData)."
+            },
+            "defaultWitnessForm": {
+                "type": "string",
+                "description": "The witness line form of the dimension's settings; each witness point has its own witnessForm.",
+                "enum": ["None", "Small", "Large", "Fix", "Unknown"]
+            },
+            "defaultWitnessVal": {
+                "type": "number",
+                "description": "The value that goes with defaultWitnessForm, in meters. Each witness point has its own witnessVal."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "appearance",
+            "elevationOrigin",
+            "dimensionLinePosition",
+            "direction",
+            "witnessPointCount",
+            "linePen",
+            "marker",
+            "textHeight",
+            "textPen",
+            "textFrame",
+            "defaultWitnessForm",
+            "defaultWitnessVal"
         ]
     },
     "TextDetails": {
@@ -12063,6 +12332,9 @@
                 "$ref": "#/WindowDoorDetails"
             },
             {
+                "$ref": "#/SkylightDetails"
+            },
+            {
                 "$ref": "#/LibPartBasedElementDetails"
             },
             {
@@ -12106,6 +12378,9 @@
             },
             {
                 "$ref": "#/LevelDimensionDetails"
+            },
+            {
+                "$ref": "#/DimensionDetails"
             },
             {
                 "$ref": "#/StairDetails"
@@ -13555,6 +13830,33 @@
             "titleLibraryPartIndex": {
                 "type": "number",
                 "description": "Library part index of the drawing title (API_DrawingTitle::libInd). A negative/invalid index means no title object is instantiated; setting it to a valid index (e.g. copied from another drawing) makes Archicad create the title's own placed element."
+            },
+            "penTableUsageMode": {
+                "$ref": "#/DrawingPenTableUsageMode"
+            },
+            "penTableIndex": {
+                "type": "integer",
+                "minimum": 1,
+                "description": "Attribute index of the pen set the drawing uses (API_DrawingType::penTableIndex). Archicad uses it only when penTableUsageMode is PenTableIndex; give both to switch the drawing to a pen set."
+            },
+            "colorMode": {
+                "$ref": "#/DrawingColorMode"
+            },
+            "isTransparentBackground": {
+                "type": "boolean",
+                "description": "Whether the drawing's background is transparent (API_DrawingType::isTransparentBk)."
+            },
+            "rasterizeDPI": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "description": "The resolution, in dots per inch, a PDF drawing is rasterized at (API_DrawingType::rasterizeDPI)."
+            },
+            "anchorPoint": {
+                "$ref": "#/DrawingAnchorPoint"
+            },
+            "useOwnOriginAsAnchor": {
+                "type": "boolean",
+                "description": "Whether the drawing is placed by its own origin instead of anchorPoint (API_DrawingType::useOwnOrigoAsAnchor)."
             }
         },
         "additionalProperties": false

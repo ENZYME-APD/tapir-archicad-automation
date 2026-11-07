@@ -20,7 +20,7 @@
     'Selection methods': 'चुनने के तरीके',
     'Ways to target, select and filter elements with Python and Grasshopper.':
         'Python और Grasshopper से elements को target करने, चुनने और filter करने के तरीके।',
-    'Parametric BIM': 'Parametric BIM',
+    'Parametric BIM': 'पैरामीट्रिक BIM',
     'Column workflow': 'Columns के साथ काम',
     'Placing columns, setting their parameters and generating their geometry from Grasshopper.':
         'Grasshopper से columns रखना, उनके parameters सेट करना और उनकी geometry बनाना।',

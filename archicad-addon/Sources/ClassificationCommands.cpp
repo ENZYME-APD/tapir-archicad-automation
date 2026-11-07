@@ -1451,6 +1451,9 @@ GS::Optional<GS::UniString> DeleteClassificationSystemsCommand::GetInputParamete
         "properties": {
             "classificationSystemIds": {
                 "$ref": "#/ClassificationSystemIds"
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -1465,8 +1468,12 @@ GS::Optional<GS::UniString> DeleteClassificationSystemsCommand::GetRawResponseSc
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input classification system, in the order of the input. On a dry run a classification system that exists gets wouldDelete; Archicad can still refuse to delete one that exists."
             }
         },
         "additionalProperties": false,
@@ -1478,13 +1485,23 @@ GS::Optional<GS::UniString> DeleteClassificationSystemsCommand::GetRawResponseSc
 
 GS::ObjectState DeleteClassificationSystemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    return ExecuteForEachIdInList (parameters, "classificationSystemIds", "classificationSystemId", "DeleteClassificationSystemsCommand", [] (const API_Guid& systemGuid) {
+    const bool dryRun = IsDryRun (parameters);
+    return ExecuteForEachIdInList (parameters, "classificationSystemIds", "classificationSystemId", "DeleteClassificationSystemsCommand", [dryRun] (const API_Guid& systemGuid) {
+        if (dryRun) {
+            API_ClassificationSystem system;
+            system.guid = systemGuid;
+            const GSErrCode getErr = ACAPI_Classification_GetClassificationSystem (system);
+            if (getErr != NoError) {
+                return CreateFailedExecutionResult (getErr, "failed to delete classification system");
+            }
+            return CreateDryRunExecutionResult ("wouldDelete");
+        }
         const GSErrCode err = ACAPI_Classification_DeleteClassificationSystem (systemGuid);
         if (err != NoError) {
             return CreateFailedExecutionResult (err, "failed to delete classification system");
         }
         return CreateSuccessfulExecutionResult ();
-    });
+    }, dryRun);
 }
 
 DeleteClassificationItemsCommand::DeleteClassificationItemsCommand () :
@@ -1504,6 +1521,9 @@ GS::Optional<GS::UniString> DeleteClassificationItemsCommand::GetInputParameters
         "properties": {
             "classificationItemIds": {
                 "$ref": "#/ClassificationItemIds"
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -1518,8 +1538,12 @@ GS::Optional<GS::UniString> DeleteClassificationItemsCommand::GetRawResponseSche
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input classification item, in the order of the input. On a dry run a classification item that exists gets wouldDelete; Archicad can still refuse to delete one that exists."
             }
         },
         "additionalProperties": false,
@@ -1531,13 +1555,23 @@ GS::Optional<GS::UniString> DeleteClassificationItemsCommand::GetRawResponseSche
 
 GS::ObjectState DeleteClassificationItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    return ExecuteForEachIdInList (parameters, "classificationItemIds", "classificationItemId", "DeleteClassificationItemsCommand", [] (const API_Guid& itemGuid) {
+    const bool dryRun = IsDryRun (parameters);
+    return ExecuteForEachIdInList (parameters, "classificationItemIds", "classificationItemId", "DeleteClassificationItemsCommand", [dryRun] (const API_Guid& itemGuid) {
+        if (dryRun) {
+            API_ClassificationItem item;
+            item.guid = itemGuid;
+            const GSErrCode getErr = ACAPI_Classification_GetClassificationItem (item);
+            if (getErr != NoError) {
+                return CreateFailedExecutionResult (getErr, "failed to delete classification item");
+            }
+            return CreateDryRunExecutionResult ("wouldDelete");
+        }
         const GSErrCode err = ACAPI_Classification_DeleteClassificationItem (itemGuid);
         if (err != NoError) {
             return CreateFailedExecutionResult (err, "failed to delete classification item");
         }
         return CreateSuccessfulExecutionResult ();
-    });
+    }, dryRun);
 }
 
 UpdateClassificationSystemsCommand::UpdateClassificationSystemsCommand () :
