@@ -27,6 +27,11 @@
     'Which Tapir commands have a Grasshopper component, and which inputs each component still lacks.':
         'Quelles commandes Tapir ont un composant Grasshopper, et quelles entrées manquent encore à chaque composant.',
 
+    // The API limits teaser (its title is in common.js)
+    'What the Archicad API can\'t do, such as undo, the clipboard or the rows of a schedule, with what to do instead and the DevKit evidence.':
+        'Ce que l’API Archicad ne sait pas faire, comme annuler, le presse-papiers ou les lignes d’un tableau, avec ce qu’il faut faire à la place et la preuve dans le DevKit.',
+    'See the limits': 'Voir les limites',
+
     // How it works
     'How it works': 'Comment ça marche',
     'How it <em>works.</em>': 'Comment ça <em>marche.</em>',

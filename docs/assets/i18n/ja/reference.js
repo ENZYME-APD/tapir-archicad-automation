@@ -9,8 +9,8 @@
     'Tapir <em>commands.</em>': 'Tapir <em>コマンド。</em>',
     'The JSON commands the Tapir add-on registers in Archicad, in the <code>TapirCommand</code> namespace, next to Graphisoft\'s official commands. Each command shows its parameters, its response and an example.':
         'Tapir アドオンが Archicad に登録する JSON コマンドです。Graphisoft の公式コマンドと並んで、<code>TapirCommand</code> 名前空間にあります。各コマンドにパラメーター、レスポンス、例を示します。',
-    'New to Tapir? <a href="../start/">Get started</a> shows how to install it and run a first script.':
-        'Tapir は初めてですか？<a href="../start/">はじめる</a>で、インストールと最初のスクリプトの実行方法を説明しています。',
+    'New to Tapir? <a href="../start/">Get started</a> shows how to install it and run a first script. Looking for something no command does? <a href="../limits/">What the Archicad API can\'t do</a> lists what Graphisoft\'s API does not offer, with what to do instead.':
+        'Tapir は初めてですか？<a href="../start/">はじめる</a>で、インストールと最初のスクリプトの実行方法を説明しています。どのコマンドにもできないことを探していますか？<a href="../limits/">Archicad API にできないこと</a>に、Graphisoft の API が提供していないものと代わりにできることをまとめています。',
     'Calling a <em>command.</em>': 'コマンドの<em>呼び出し。</em>',
     'Archicad answers JSON commands on <code>http://127.0.0.1:19723</code> while a project is open (the next Archicads opened use 19724, 19725 and so on). A Tapir command is sent through Archicad\'s <code>API.ExecuteAddOnCommand</code> command.':
         'プロジェクトを開いている間、Archicad は <code>http://127.0.0.1:19723</code> で JSON コマンドに応答します（続けて開いた Archicad は 19724、19725 などを使います）。Tapir コマンドは Archicad の <code>API.ExecuteAddOnCommand</code> コマンドを通じて送ります。',

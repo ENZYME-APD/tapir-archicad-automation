@@ -9,8 +9,8 @@
     'Tapir <em>commands.</em>': 'Les commandes <em>Tapir.</em>',
     'The JSON commands the Tapir add-on registers in Archicad, in the <code>TapirCommand</code> namespace, next to Graphisoft\'s official commands. Each command shows its parameters, its response and an example.':
         'Les commandes JSON que l\'add-on Tapir enregistre dans Archicad, dans l\'espace de noms <code>TapirCommand</code>, à côté des commandes officielles de Graphisoft. Chaque commande montre ses paramètres, sa réponse et un exemple.',
-    'New to Tapir? <a href="../start/">Get started</a> shows how to install it and run a first script.':
-        'Vous découvrez Tapir ? <a href="../start/">Démarrer</a> montre comment l\'installer et lancer un premier script.',
+    'New to Tapir? <a href="../start/">Get started</a> shows how to install it and run a first script. Looking for something no command does? <a href="../limits/">What the Archicad API can\'t do</a> lists what Graphisoft\'s API does not offer, with what to do instead.':
+        'Vous découvrez Tapir ? <a href="../start/">Démarrer</a> montre comment l\'installer et lancer un premier script. Vous cherchez quelque chose qu’aucune commande ne fait ? <a href="../limits/">Ce que l’API Archicad ne sait pas faire</a> liste ce que l’API de Graphisoft n’offre pas, avec ce qu’il faut faire à la place.',
     'Calling a <em>command.</em>': 'Appeler une <em>commande.</em>',
     'Archicad answers JSON commands on <code>http://127.0.0.1:19723</code> while a project is open (the next Archicads opened use 19724, 19725 and so on). A Tapir command is sent through Archicad\'s <code>API.ExecuteAddOnCommand</code> command.':
         'Archicad répond aux commandes JSON sur <code>http://127.0.0.1:19723</code> tant qu\'un projet est ouvert (les Archicad ouverts ensuite utilisent 19724, 19725 et ainsi de suite). Une commande Tapir est envoyée par la commande <code>API.ExecuteAddOnCommand</code> d\'Archicad.',
