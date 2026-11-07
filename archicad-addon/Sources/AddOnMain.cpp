@@ -3429,6 +3429,10 @@ GSErrCode Initialize (void)
             scriptUICommands, "1.8.1",
             "Opens Archicad's settings dialog of the selected elements or the current tool (Archicad 28 and later), or the default settings dialog of the given element type, waits for the user and reports whether the dialog was closed with OK or Cancel."
         );
+        err |= RegisterCommand<ShowIFCExportSettingsCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens Archicad's IFC export settings dialog, where the user picks a view and an IFC export translator, waits for the user and returns the chosen view and translator, or cancelled. Available from Archicad 28."
+        );
         AddCommandGroup (scriptUICommands);
     }
 

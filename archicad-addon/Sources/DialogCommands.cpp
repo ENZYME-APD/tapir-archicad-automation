@@ -124,3 +124,115 @@ GS::ObjectState OpenSettingsDialogCommand::Execute (const GS::ObjectState& param
     }
     return GS::ObjectState ("cancelled", false);
 }
+
+ShowIFCExportSettingsCommand::ShowIFCExportSettingsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ShowIFCExportSettingsCommand::GetName () const
+{
+    return "ShowIFCExportSettings";
+}
+
+GS::Optional<GS::UniString> ShowIFCExportSettingsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "navigatorItemId": {
+                "$ref": "#/NavigatorItemId",
+                "description": "Optional: the view (an item of the View Map) the dialog starts with."
+            },
+            "translatorName": {
+                "type": "string",
+                "description": "Optional: the name of the IFC export translator the dialog starts with, as GetIFCExportTranslators lists them."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> ShowIFCExportSettingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "cancelled": {
+                "type": "boolean",
+                "description": "True when the user closed the dialog with Cancel; then no other field is given."
+            },
+            "navigatorItemId": {
+                "$ref": "#/NavigatorItemId",
+                "description": "The view the user chose."
+            },
+            "viewName": {
+                "type": "string",
+                "description": "The name of the chosen view, when Archicad finds it in the navigator."
+            },
+            "translatorName": {
+                "type": "string",
+                "description": "The name of the IFC export translator the user chose, as IFCFileOperation's translatorName takes it."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["cancelled"]
+    })";
+}
+
+GS::ObjectState ShowIFCExportSettingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    API_Guid viewGuid = APINULLGuid;
+    GS::ObjectState navigatorItemId;
+    if (parameters.Get ("navigatorItemId", navigatorItemId)) {
+        viewGuid = GetGuidFromObjectState (navigatorItemId);
+        API_NavigatorItem navItem = {};
+        if (viewGuid == APINULLGuid || ACAPI_Navigator_GetNavigatorItem (&viewGuid, &navItem) != NoError) {
+            return CreateErrorResponse (APIERR_BADPARS, "navigatorItemId is not a navigator item of the project.");
+        }
+    }
+
+    API_IFCTranslatorIdentifier translator;
+    GS::UniString translatorName;
+    if (parameters.Get ("translatorName", translatorName) && !translatorName.IsEmpty ()) {
+        GS::Array<API_IFCTranslatorIdentifier> translators;
+        const GSErrCode listErr = ACAPI_IFC_GetIFCExportTranslatorsList (translators);
+        if (listErr != NoError) {
+            return CreateErrorResponse (listErr, "Failed to list the IFC export translators of the project.");
+        }
+        bool found = false;
+        for (const API_IFCTranslatorIdentifier& candidate : translators) {
+            if (candidate.name == translatorName) {
+                translator = candidate;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            return CreateErrorResponse (APIERR_BADPARS, "No IFC export translator is named " + translatorName + "; GetIFCExportTranslators lists them.");
+        }
+    }
+
+    const GSErrCode err = ACAPI_IFC_InvokeIFCExportSettingsDlg (viewGuid, translator);
+    // The DevKit documents Cancel (GSRoot) as the answer to a cancelled dialog; APIERR_CANCEL is taken too.
+    if (err == Cancel || err == APIERR_CANCEL) {
+        return GS::ObjectState ("cancelled", true);
+    }
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to open the IFC export settings dialog.");
+    }
+
+    GS::ObjectState response ("cancelled", false);
+    response.Add ("navigatorItemId", CreateGuidObjectState (viewGuid));
+    API_NavigatorItem chosenView = {};
+    if (ACAPI_Navigator_GetNavigatorItem (&viewGuid, &chosenView) == NoError) {
+        response.Add ("viewName", GS::UniString (chosenView.uName));
+    }
+    response.Add ("translatorName", translator.name);
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "ShowIFCExportSettings requires Archicad 28 or newer.");
+#endif
+}

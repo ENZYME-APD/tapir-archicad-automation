@@ -32,6 +32,7 @@ EXAMPLES_NOT_SMOKE_TESTED = {
     # Wait for the user to click, draw or answer in Archicad.
     'GetPointFromUser', 'GetLineFromUser', 'GetPolygonFromUser', 'GetElementFromUser',
     'ShowAlert', 'ShowScriptUI', 'GetScriptUIResult', 'OpenSettingsDialog',
+    'ShowIFCExportSettings',
     # Open, close, create or write the project, or switch to another one.
     'OpenProject', 'CloseProject', 'NewProject', 'SaveProject', 'SaveProjectAsArchive',
     # Print, publish or render: send jobs to devices or run for minutes.
