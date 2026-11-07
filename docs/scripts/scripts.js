@@ -195,22 +195,39 @@
 
     // ---- The schedule ----
 
+    // Returns a function that presses the chip of a value (as when a filter is removed elsewhere).
     function makeChips (container, options, selected, onChange) {
         var buttons = [];
+        function select (value) {
+            buttons.forEach (function (button, index) {
+                button.setAttribute ('aria-pressed', String (options[index].value === value));
+            });
+        }
         options.forEach (function (option) {
             var button = document.createElement ('button');
             button.type = 'button';
             button.className = 'chip';
             button.textContent = option.label;
-            button.setAttribute ('aria-pressed', String (option.value === selected));
             button.addEventListener ('click', function () {
-                buttons.forEach (function (other) {
-                    other.setAttribute ('aria-pressed', String (other === button));
-                });
+                select (option.value);
                 onChange (option.value);
             });
             buttons.push (button);
             container.appendChild (button);
+        });
+        select (selected);
+        return select;
+    }
+
+    // Below 720 px wide (scripts.css) the chip groups are behind the Filters button, which opens and
+    // closes them; the page always opens with them closed, also from a shared link with filters.
+    function setUpFiltersToggle () {
+        var toggle = byId ('filters-toggle');
+        var panel = byId ('filters-panel');
+        toggle.addEventListener ('click', function () {
+            var open = toggle.getAttribute ('aria-expanded') !== 'true';
+            toggle.setAttribute ('aria-expanded', String (open));
+            panel.classList.toggle ('open', open);
         });
     }
 
@@ -262,19 +279,58 @@
         var wantedVersion = params.get ('archicad') && usedVersions[params.get ('archicad')] ? Number (params.get ('archicad')) : null;
         search.value = params.get ('q') || '';
 
-        makeChips (categoryChips, [{ value: '', label: categoryChips.getAttribute ('data-all') }].concat (
+        var selectCategory = makeChips (categoryChips, [{ value: '', label: categoryChips.getAttribute ('data-all') }].concat (
             Object.keys (categories).filter (function (key) { return usedCategories[key]; }).map (function (key) {
                 return { value: key, label: categories[key].name };
             })), wantedCategory, function (value) { wantedCategory = value; update (); });
         var versions = Object.keys (usedVersions).map (Number).sort (function (a, b) { return b - a; });
-        makeChips (versionChips, [{ value: null, label: versionChips.getAttribute ('data-all') }].concat (
-            versions.map (function (v) { return { value: v, label: format (versionChips.getAttribute ('data-option'), { version: v }) }; })),
+        var versionLabel = function (v) { return format (versionChips.getAttribute ('data-option'), { version: v }); };
+        var selectVersion = makeChips (versionChips, [{ value: null, label: versionChips.getAttribute ('data-all') }].concat (
+            versions.map (function (v) { return { value: v, label: versionLabel (v) }; })),
             wantedVersion, function (value) { wantedVersion = value; update (); });
         if (versions.length < 2) {
             versionChips.hidden = true;
         }
+        setUpFiltersToggle ();
+
+        // The applied filters, as chips with a × that removes them, and their number on the Filters
+        // button, so they stay visible while the chip groups are closed (shown below 720 px only).
+        var activeFilters = byId ('active-filters');
+        var filtersCount = byId ('filters-count');
+        function showActiveFilters () {
+            var active = [];
+            if (wantedCategory) {
+                active.push ({ label: categories[wantedCategory].name, remove: function () { wantedCategory = ''; selectCategory (''); } });
+            }
+            if (wantedVersion !== null) {
+                active.push ({ label: versionLabel (wantedVersion), remove: function () { wantedVersion = null; selectVersion (null); } });
+            }
+            activeFilters.textContent = '';
+            active.forEach (function (filter) {
+                var button = document.createElement ('button');
+                button.type = 'button';
+                button.className = 'chip active-filter';
+                button.setAttribute ('aria-label', format (activeFilters.getAttribute ('data-remove'), { name: filter.label }));
+                button.appendChild (document.createTextNode (filter.label));
+                var cross = document.createElement ('span');
+                cross.setAttribute ('aria-hidden', 'true');
+                cross.textContent = '×';
+                button.appendChild (cross);
+                button.addEventListener ('click', function () {
+                    filter.remove ();
+                    update ();
+                    // The removed chip is gone: keep the keyboard focus in the filters.
+                    var next = activeFilters.querySelector ('button') || byId ('filters-toggle');
+                    next.focus ();
+                });
+                activeFilters.appendChild (button);
+            });
+            activeFilters.hidden = active.length === 0;
+            filtersCount.textContent = active.length ? ' · ' + active.length : '';
+        }
 
         function update () {
+            showActiveFilters ();
             var words = search.value.toLowerCase ().split (/\s+/).filter (Boolean);
             var shown = 0;
             rowsBody.textContent = '';
