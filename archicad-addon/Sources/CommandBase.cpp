@@ -134,6 +134,21 @@ GS::ObjectState CreateDryRunExecutionResult (const char* wouldKey)
         wouldKey, true);
 }
 
+GSErrCode CallUndoableCommandOrDryRun (bool dryRun, const GS::UniString& undoString, const std::function<GSErrCode ()>& body)
+{
+    if (dryRun) {
+        return body ();
+    }
+    return ACAPI_CallUndoableCommand (undoString, body);
+}
+
+GS::ObjectState CreateWouldChangeExecutionResult (const GS::ObjectState& wouldChange)
+{
+    return GS::ObjectState (
+        "success", true,
+        "wouldChange", wouldChange);
+}
+
 GS::UniString GetOverwriteRefusal (const GS::ObjectState& parameters, const IO::Location& location)
 {
     bool overwrite = true;

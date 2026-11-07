@@ -76,6 +76,15 @@ void AddDryRunField (GS::ObjectState& response, bool dryRun);
 // The execution result of a dry run for a target that passed every check: {"success": true, <wouldKey>: true},
 // e.g. "wouldDelete" (#/WouldDeleteExecutionResult).
 GS::ObjectState CreateDryRunExecutionResult (const char* wouldKey);
+// For the commands whose checks and writes are interleaved target by target: runs body as one
+// undoable command named undoString; on a dry run it runs body directly, outside any undo scope, so
+// no undo step is made and a write body would still attempt is refused by Archicad. body reads the
+// same dryRun flag, makes every check of a real run and skips only its writes.
+GSErrCode CallUndoableCommandOrDryRun (bool dryRun, const GS::UniString& undoString, const std::function<GSErrCode ()>& body);
+// The execution result of a dry run for a target a real run would change: {"success": true,
+// "wouldChange": wouldChange} (#/WouldChangeExecutionResult), wouldChange holding the target's
+// "oldValue" and the "newValue" a real run would write, each left out when it is not cheap to tell.
+GS::ObjectState CreateWouldChangeExecutionResult (const GS::ObjectState& wouldChange);
 GS::UniString DescribeDefinitionChangeError (GSErrCode err);
 // Why Archicad refused to change an element the user could not edit in Archicad either, as the end
 // of a sentence ("its layer is hidden"); empty when the refusal has another cause. elemHead is the

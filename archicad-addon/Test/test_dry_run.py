@@ -2,7 +2,8 @@
 
 A command with the shared dry run takes the optional boolean input "dryRun" (#/DryRun in
 CommonSchemaDefinitions.json), and its response gets "dryRun": true (#/DryRunFlag) on a dry run,
-and, for each target that passed the checks, what a real run would do ("wouldDelete"). This test
+and, for each target that passed the checks, what a real run would do ("wouldDelete", or
+"wouldChange" with the old and new values for the bulk setters in WOULD_CHANGE_COMMANDS). This test
 reads the registered commands from the sources the way tools/generate_addon_docs.py does and checks:
 
   * the shared definitions exist and have the documented shape,
@@ -30,6 +31,18 @@ import generate_addon_docs  # noqa: E402
 # The commands that use the shared dry run. Each later part of #2195 adds its commands here.
 DRY_RUN_COMMANDS = {
     'DeleteElements',
+    'SetPropertyValuesOfElements',
+    'SetClassificationsOfElements',
+    'SetCategoryValuesOfElements',
+    'SetGDLParametersOfElements',
+}
+
+# The bulk setters (part 6 of #2195): their dry run gives wouldChange instead of wouldDelete.
+WOULD_CHANGE_COMMANDS = {
+    'SetPropertyValuesOfElements',
+    'SetClassificationsOfElements',
+    'SetCategoryValuesOfElements',
+    'SetGDLParametersOfElements',
 }
 
 # The commands that had a dryRun input of their own before #2195. The ones that delete or change
@@ -190,6 +203,69 @@ class DryRunTest (unittest.TestCase):
         self.assertFalse (self.validator.IsValid ({'dryRun': True, 'executionResults': [{'success': True, 'wouldDelete': False}]}, outputSchema))
         self.assertFalse (self.validator.IsValid ({'dryRun': True, 'executionResults': [{'success': False, 'wouldDelete': True}]}, outputSchema))
         self.assertFalse (self.validator.IsValid ({'dryRun': True}, outputSchema))
+
+    def test_would_change_definitions (self):
+        wouldChange = self.definitions['WouldChangeExecutionResult']
+        self.assertEqual (sorted (wouldChange['required']), ['success', 'wouldChange'])
+        self.assertIs (wouldChange['additionalProperties'], False)
+        self.assertEqual (sorted (self.definitions['WouldChange']['properties']), ['newValue', 'oldValue'])
+        self.assertEqual (self.definitions['ChangeExecutionResults']['items'], {'$ref': '#/ChangeExecutionResult'})
+
+    def test_would_change_commands_report_change_results (self):
+        for name in sorted (WOULD_CHANGE_COMMANDS):
+            with self.subTest (command=name):
+                outputSchema = self.commands[name]['output']
+                self.assertEqual (outputSchema['properties']['executionResults']['$ref'], '#/ChangeExecutionResults')
+                self.assertIn ('wouldChange', outputSchema['properties']['executionResults']['description'])
+                self.assertIn ('wouldChange', self.commands[name]['description'])
+
+    def test_would_change_responses (self):
+        failed = {'success': False, 'error': {'code': -2130313112, 'message': 'Failed to set property value for element'}}
+        examples = {
+            'SetPropertyValuesOfElements': {'oldValue': 'W-001', 'newValue': 'W-002'},
+            'SetClassificationsOfElements': {
+                'oldValue': {'classificationSystemId': {'guid': GUID}},
+                'newValue': {'classificationSystemId': {'guid': GUID}, 'classificationItemId': {'guid': GUID}},
+            },
+            'SetCategoryValuesOfElements': {
+                'oldValue': {'type': 'Position', 'categoryId': {'guid': GUID}},
+                'newValue': {'type': 'Position', 'categoryId': {'guid': GUID}, 'categoryValueId': {'guid': GUID}, 'name': 'Exterior'},
+            },
+            'SetGDLParametersOfElements': {
+                'oldValue': [{'name': 'A', 'index': 1, 'type': 'Length', 'value': 1.0}],
+                'newValue': [{'name': 'A', 'index': 1, 'type': 'Length', 'value': 1.2}],
+            },
+        }
+        for name, example in sorted (examples.items ()):
+            with self.subTest (command=name):
+                outputSchema = self.commands[name]['output']
+                realRun = {'executionResults': [{'success': True}, failed]}
+                dryRun = {'dryRun': True, 'executionResults': [{'success': True, 'wouldChange': example}, failed]}
+                partial = {'dryRun': True, 'executionResults': [{'success': True, 'wouldChange': {'oldValue': example['oldValue']}}]}
+                self.assertTrue (self.validator.IsValid (realRun, outputSchema))
+                self.assertTrue (self.validator.IsValid (dryRun, outputSchema))
+                self.assertTrue (self.validator.IsValid (partial, outputSchema))
+                # wouldChange has only oldValue and newValue, a failed target never has one, and a
+                # changed target is never also to be deleted.
+                self.assertFalse (self.validator.IsValid ({'dryRun': True, 'executionResults': [{'success': True, 'wouldChange': {'value': 1}}]}, outputSchema))
+                self.assertFalse (self.validator.IsValid ({'dryRun': True, 'executionResults': [{'success': False, 'wouldChange': example}]}, outputSchema))
+                self.assertFalse (self.validator.IsValid ({'dryRun': True, 'executionResults': [{'success': True, 'wouldDelete': True}]}, outputSchema))
+                self.assertFalse (self.validator.IsValid ({'dryRun': False, 'executionResults': []}, outputSchema))
+
+    def test_would_change_inputs (self):
+        elementId = {'guid': GUID}
+        inputs = {
+            'SetPropertyValuesOfElements': {'elementPropertyValues': [{'elementId': elementId, 'propertyId': {'guid': GUID}, 'propertyValue': {'value': 'x'}}]},
+            'SetClassificationsOfElements': {'elementClassifications': [{'elementId': elementId, 'classificationId': {'classificationSystemId': {'guid': GUID}}}]},
+            'SetCategoryValuesOfElements': {'elementCategoryValues': [{'elementId': elementId, 'type': 'Position', 'categoryValueId': {'guid': GUID}}]},
+            'SetGDLParametersOfElements': {'elementsWithGDLParameters': [{'elementId': elementId, 'gdlParameters': [{'name': 'A', 'value': 1.0}]}]},
+        }
+        for name, parameters in sorted (inputs.items ()):
+            with self.subTest (command=name):
+                inputSchema = self.commands[name]['input']
+                self.assertTrue (self.validator.IsValid (parameters, inputSchema))
+                self.assertTrue (self.validator.IsValid (dict (parameters, dryRun=True), inputSchema))
+                self.assertFalse (self.validator.IsValid (dict (parameters, dryRun='yes'), inputSchema))
 
 
 if __name__ == '__main__':
