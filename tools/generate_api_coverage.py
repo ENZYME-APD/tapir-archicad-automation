@@ -24,7 +24,7 @@ latest release), in progress (added by an open pull request), claimed (named
 by an open issue), open, not applicable or skipped (both with a reason).
 An item Tapir uses is done or merged even when a rule covers its group or a
 pattern. The rules file's `applicable` section names the items that stay
-applicable although their group or a pattern is not applicable or skipped.
+applicable whatever the `skip` and `notApplicable` sections say about them.
 A pull request adds a C++ member when its added lines call it in a file that
 uses its class, the file's lines on main included - the same test as on main.
 
@@ -492,8 +492,8 @@ def build (args):
         return found
 
     def rule_for (item_id, group):
-        # An item in the `applicable` section is judged one by one and is never
-        # ruled out by its group or a pattern of the other sections.
+        # An item in the `applicable` section is judged one by one: no other
+        # section rules it out, not by its group, a pattern or by naming it.
         data = rules.get ('applicable', {})
         if item_id in data.get ('items', {}) or any (re.search (p, item_id) for p in data.get ('patterns', {})):
             return None, None
