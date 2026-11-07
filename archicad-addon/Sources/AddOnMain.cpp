@@ -3429,6 +3429,22 @@ GSErrCode Initialize (void)
             scriptUICommands, "1.8.1",
             "Opens Archicad's settings dialog of the selected elements or the current tool (Archicad 28 and later), or the default settings dialog of the given element type, waits for the user and reports whether the dialog was closed with OK or Cancel."
         );
+        err |= RegisterCommand<PickLibraryPartFileCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens Archicad's Open Library Part dialog, waits for the user and returns the location of the chosen library part, or reports that the user cancelled."
+        );
+        err |= RegisterCommand<PickPictureFileCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens Archicad's Open Picture dialog (the one of the texture settings), waits for the user and returns the location of the chosen picture, or reports that the user cancelled. Archicad adds the chosen picture to the embedded library when it is not in it yet."
+        );
+        err |= RegisterCommand<PickZoneStampOrLabelFileCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens Archicad's dialog for opening a zone stamp or label library part, waits for the user and returns the location of the chosen file, or reports that the user cancelled."
+        );
+        err |= RegisterCommand<PickLibraryPartSaveLocationCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens Archicad's Save Library Part dialog (object, door or window), waits for the user and returns the location chosen to save the library part to, or reports that the user cancelled. Nothing is saved."
+        );
         AddCommandGroup (scriptUICommands);
     }
 
