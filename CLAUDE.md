@@ -411,6 +411,17 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   versions appended (ascending, each `NN.NNNN` of its own version, nothing else
   changed) and the branch is named after the newest one. `DEVKIT_UPDATE=false`
   turns it off.
+- [archicad-addon/devkit_retest.json](archicad-addon/devkit_retest.json) — the API
+  coverage skips that Archicad blocks (a bug, a crash, a DevKit that does not
+  compile), each with `howToRetest` steps; every other skip of
+  `tools/api_coverage_rules.json` is in its `otherSkips` as `duplicate` or
+  `obsolete`. Add or remove an entry whenever a skip is added or removed;
+  `python archicad-addon/Test/check_devkit_retest.py` checks it (by hand, no
+  Archicad). With each new DevKit a person runs the steps
+  ([archicad-addon/DEVKIT_RETEST.md](archicad-addon/DEVKIT_RETEST.md)): a pass
+  removes the skip in a human pull request, a fail adds the version to
+  `stillBroken`. The DevKit update pull request is to list the entries as a
+  checklist (wired in by a maintainer, not by the bots).
 - `claude_bot_pr_steward.yml` — drives the issue bot's PRs to mergeable without a
   maintainer (their `GITHUB_TOKEN` pushes start no runs): an hourly sweep, also
   started by the issue bot and the review, dispatches the build checks and the
