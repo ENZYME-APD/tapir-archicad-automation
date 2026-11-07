@@ -10111,6 +10111,40 @@ static GS::Array<Int32> GetContourPointCounts (const API_ElementMemo& memo)
     return counts;
 }
 
+GS::Optional<GS::UniString> ChangeSlabPolygonKeepingEdges (
+    const API_Element&                slab,
+    GS::Array<GS::ObjectState>&       polygonOutline,
+    const GS::Array<GS::ObjectState>& polygonArcs,
+    const GS::Array<GS::ObjectState>& holes,
+    GSErrCode&                        err)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit cleanup ([&memo] () {
+        ACAPI_DisposeElemMemoHdls (&memo);
+    });
+    err = ACAPI_Element_GetMemo (slab.header.guid, &memo);
+    if (err != NoError) {
+        return GS::UniString ("Failed to read the polygon of the slab.");
+    }
+
+    // Edited in place as ModifySlabs does it (see ApplySlabPolygonChange), then each new edge
+    // gets back the trim and side surface of the old edge it lies on, as ModifyRoofs does it.
+    // The edges along the split line get the defaults: vertical, with the slab's side surface.
+    const GS::Array<RoofPolygonEdge> oldEdges = GetRoofPolygonEdges (memo);
+    const GS::Optional<GS::UniString> error = ApplySlabPolygonChange (memo, slab.slab.sideMat, polygonOutline, polygonArcs, holes);
+    if (error.HasValue ()) {
+        err = APIERR_BADPARS;
+        return error;
+    }
+    RestoreRoofPolygonEdges (memo, oldEdges, false, false);
+
+    err = ACAPI_Element_ChangeMemo (slab.header.guid, APIMemoMask_Polygon | APIMemoMask_SideMaterials | APIMemoMask_EdgeTrims, &memo);
+    if (err != NoError) {
+        return GS::UniString ("Failed to change the polygon of the slab.");
+    }
+    return {};
+}
+
 ModifyRoofsCommand::ModifyRoofsCommand () :
     CommandBase (CommonSchema::Used)
 {
