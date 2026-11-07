@@ -2658,6 +2658,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
                 GS::ObjectState styleOS;
                 TextLabelDetails::AddTextStyleDetails (styleOS, elem.text, true);
+                // Whether boxWidth is the wrap width CreateTexts/ModifyTexts set with "width".
+                styleOS.Add ("nonBreaking", elem.text.nonBreaking);
                 typeSpecificDetails.Add ("style", styleOS);
                 if (TextLabelDetails::AddTextContent (typeSpecificDetails, elem.header.guid) != NoError) {
                     // The fields are required by the schema; an unreadable memo reads as empty content.
