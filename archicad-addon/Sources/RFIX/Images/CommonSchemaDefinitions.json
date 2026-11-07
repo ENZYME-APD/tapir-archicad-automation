@@ -3666,6 +3666,59 @@
             "$ref": "#/DeletionExecutionResult"
         }
     },
+    "WouldChange": {
+        "type": "object",
+        "description": "What a real run would change on a target. Each command says what its oldValue and newValue are; either is left out when it cannot be told cheaply.",
+        "properties": {
+            "oldValue": {
+                "description": "The target's value now, before the change."
+            },
+            "newValue": {
+                "description": "The value a real run would write."
+            }
+        },
+        "additionalProperties": false
+    },
+    "WouldChangeExecutionResult": {
+        "type": "object",
+        "description": "The result of a dry run for a target that passed every check: a real run would change it as wouldChange says.",
+        "properties": {
+            "success": {
+                "type": "boolean",
+                "enum": [ true ]
+            },
+            "wouldChange": {
+                "$ref": "#/WouldChange"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "success",
+            "wouldChange"
+        ]
+    },
+    "ChangeExecutionResult": {
+        "type": "object",
+        "description": "The result of a change for one target. On a dry run a target that passed every check gets wouldChange instead of being changed.",
+        "oneOf": [
+            {
+                "$ref": "#/SuccessfulExecutionResult"
+            },
+            {
+                "$ref": "#/WouldChangeExecutionResult"
+            },
+            {
+                "$ref": "#/FailedExecutionResult"
+            }
+        ]
+    },
+    "ChangeExecutionResults": {
+        "type": "array",
+        "description": "A list of change results.",
+        "items": {
+            "$ref": "#/ChangeExecutionResult"
+        }
+    },
     "ElementCategoryType": {
         "type": "string",
         "description": "The type of an element category. The names of the categories and of their values are localized, so scripts should select a category by this type and a value by its categoryValueId, never by name. BRI is available only in the German localized version of Archicad.",

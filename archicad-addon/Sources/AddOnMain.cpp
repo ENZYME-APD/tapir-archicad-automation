@@ -703,7 +703,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetCategoryValuesOfElementsCommand> (
             elementCommands, "1.7.3",
-            "Sets the category values (Structural Function, Position, Renovation Status ...) of the given elements, one element and one category per item, in a single undoable step. The value must belong to the given category, as GetElementCategories lists them; an element without that category gets a failed execution result. The names are localized: use the type and the categoryValueId in scripts."
+            "Sets the category values (Structural Function, Position, Renovation Status ...) of the given elements, one element and one category per item, in a single undoable step. The value must belong to the given category, as GetElementCategories lists them; an element without that category gets a failed execution result. The names are localized: use the type and the categoryValueId in scripts. With dryRun true nothing is changed and no undo step is created: the response has dryRun set to true, and each item that passes the checks made before writing gets wouldChange, with the element's value in the category now (oldValue) and the value a real run would set (newValue)."
         );
         err |= RegisterCommand<Get3DBoundingBoxesCommand> (
             elementCommands, "1.1.2",
@@ -955,7 +955,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetGDLParametersOfElementsCommand> (
             elementCommands, "1.5.7",
-            "Sets the given GDL parameters of the given elements. An element Archicad does not let the user edit (its layer locked, the element locked, or not reserved by the user in Teamwork) gets a failed execution result naming that reason, whatever the parameter. On a Curtain Wall Frame, A, B, ac_frameWidth and ac_frameDepth mirror the frame's contour, which Archicad derives from the frame's settings, so they are rejected instead of reporting a change that does not take effect; a frame without a library part (an invisible Boundary frame, for example) has no GDL parameters. The parameters are read back after the change, and a written parameter Archicad did not keep (e.g. one it sets from the element's own settings, like AC_TextSize_1 of a label) gives a failed execution result naming it."
+            "Sets the given GDL parameters of the given elements. An element Archicad does not let the user edit (its layer locked, the element locked, or not reserved by the user in Teamwork) gets a failed execution result naming that reason, whatever the parameter. On a Curtain Wall Frame, A, B, ac_frameWidth and ac_frameDepth mirror the frame's contour, which Archicad derives from the frame's settings, so they are rejected instead of reporting a change that does not take effect; a frame without a library part (an invisible Boundary frame, for example) has no GDL parameters. The parameters are read back after the change, and a written parameter Archicad did not keep (e.g. one it sets from the element's own settings, like AC_TextSize_1 of a label) gives a failed execution result naming it. With dryRun true no element is changed and no undo step is created: the parameters are written to the element's parameter list and its Parameter Script runs as in a real run, the response has dryRun set to true, and each element that passes the checks made before changing it gets wouldChange, listing the parameters a real run would change (the given ones and the ones the Parameter Script changes with them) with their old and new values."
         );
         err |= RegisterCommand<GetMarkerParametersOfElementsCommand> (
             elementCommands, "1.7.1",
@@ -1556,7 +1556,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetPropertyValuesOfElementsCommand> (
             propertyCommands, "1.0.6",
-            "Sets the property values of elements. It works for subelements of hierarchal elements also. With valueStatus an element's value can also be reset to the default value of the property (Default) or made undefined (UserUndefined, from 1.8.1)."
+            "Sets the property values of elements. It works for subelements of hierarchal elements also. With valueStatus an element's value can also be reset to the default value of the property (Default) or made undefined (UserUndefined, from 1.8.1). With dryRun true nothing is changed and no undo step is created: the response has dryRun set to true, and each item that passes the checks made before writing gets wouldChange, with the element's value now (oldValue) and the value a real run would write (newValue), both as GetPropertyValuesOfElements gives them."
         );
         err |= RegisterCommand<GetComponentsOfElementsCommand> (
             propertyCommands, "1.8.1",
@@ -1682,7 +1682,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetClassificationsOfElementsCommand> (
             classificationCommands, "1.0.7",
-            "Sets the classifications of elements. In order to set the classification of an element to unclassified, omit the classificationItemId field. It works for subelements of hierarchal elements also."
+            "Sets the classifications of elements. In order to set the classification of an element to unclassified, omit the classificationItemId field. It works for subelements of hierarchal elements also. With dryRun true nothing is changed and no undo step is created: the response has dryRun set to true, and each item that passes the checks made before writing gets wouldChange, with the element's classification in the system now (oldValue) and the one a real run would set (newValue)."
         );
         err |= RegisterCommand<GetClassificationsOfAttributesCommand> (
             classificationCommands, "1.8.0",
