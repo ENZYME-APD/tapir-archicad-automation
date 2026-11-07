@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 20:19 UTC",
+ "generatedAt": "2026-11-07 20:36 UTC",
  "versions": [
   25,
   26,
@@ -964,12 +964,7 @@
    "status": "skipped",
    "reason": "SetProjectData creates its objects in one batch with ACAPI_AddOnObject_CreateUniqueObjectMore; one by one would cost a Teamwork send/receive each",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_AddOnObject_CreateUniqueObjectMore",
@@ -1032,12 +1027,7 @@
    "status": "skipped",
    "reason": "project data is addressed by name, and the name lookups already report a missing object",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_AddOnObject_GetClientOnlyObjectGuidFromName",
@@ -4111,14 +4101,6 @@
     {
      "number": 1820,
      "title": "Run several commands as one undo step"
-    },
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
     }
    ]
   },
@@ -5034,12 +5016,7 @@
    "status": "skipped",
    "reason": "returns what the per-type ACAPI_Database_Get*Databases calls of GetDatabases already return",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_GetDatabasesForTypes",
@@ -5058,12 +5035,7 @@
    "status": "skipped",
    "reason": "returns what the per-type calls of GetDatabases already return, without each database's type, which the response needs",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_GetDetailDatabases",
@@ -5430,12 +5402,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_RebuildWindowValidator",
@@ -6239,12 +6206,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Drawing_ChangeDrawingScale",
@@ -7224,10 +7186,6 @@
     {
      "number": 1914,
      "title": "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"
-    },
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
     }
    ]
   },
@@ -7565,14 +7523,6 @@
     {
      "number": 1914,
      "title": "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"
-    },
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
     }
    ]
   },
@@ -7914,12 +7864,7 @@
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
    ],
-   "issues": [
-    {
-     "number": 1813,
-     "title": "Notification clients: selection, window and project events"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetElemTypeName",
@@ -7966,16 +7911,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_GetElementInfoString",
@@ -8189,10 +8125,6 @@
     {
      "number": 1914,
      "title": "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"
-    },
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
     }
    ]
   },
@@ -9106,16 +9038,7 @@
    "status": "not applicable",
    "reason": "takes the signature of a library part subtype the add-on registers itself; Tapir registers none",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_SetProperties",
@@ -9393,12 +9316,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_Trim_Elements",
@@ -11977,16 +11895,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryManagement_OverwriteLibPart",
@@ -12009,16 +11918,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryManagement_ResetLibraries",
@@ -12133,16 +12033,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_ChangeAParameter",
@@ -12276,16 +12167,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_EndSection",
@@ -12308,16 +12190,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_Get",
@@ -12694,16 +12567,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_GetSect_ParamDef",
@@ -12726,12 +12590,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_GetSection",
@@ -12842,16 +12701,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_OpenParameters",
@@ -12943,16 +12793,7 @@
    "status": "skipped",
    "reason": "ACAPI_LibraryPart_Save already registers the parts Tapir creates, and AddFilesToEmbeddedLibrary registers its files one by one",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_RegisterESYM",
@@ -13009,16 +12850,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_Search",
@@ -13037,12 +12869,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_SetDetails_ParamDef",
@@ -13065,16 +12892,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_SetUpSect_2DDrawHdl",
@@ -13097,16 +12915,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_ShapePrims",
@@ -13125,12 +12934,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_UpdateSection",
@@ -13153,12 +12957,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryPart_WriteSection",
@@ -13181,16 +12980,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Licensing_CatchLicenseBorrowStatusChange",
@@ -13844,16 +13634,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ModelAccess_GenerateModelWithSeparateComponents",
@@ -13894,12 +13675,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ModelAccess_GetBuildingMaterial",
@@ -13940,12 +13716,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ModelAccess_GetConnectionTable",
@@ -14005,16 +13776,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ModulData_Delete",
@@ -15065,12 +14827,7 @@
    "status": "not applicable",
    "reason": "event handlers, not commands",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1813,
-     "title": "Notification clients: selection, window and project events"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Notification_CatchElementReservationChange",
@@ -15139,12 +14896,7 @@
    "status": "not applicable",
    "reason": "event handlers, not commands",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1813,
-     "title": "Notification clients: selection, window and project events"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Notification_CatchToolChange",
@@ -16232,12 +15984,7 @@
    "status": "not applicable",
    "reason": "event handlers, not commands",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1813,
-     "title": "Notification clients: selection, window and project events"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ProjectOperation_Close",
@@ -18638,12 +18385,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Teamwork_IsServerLibPart",
@@ -18913,16 +18655,7 @@
    "status": "not applicable",
    "reason": "needs the ids of a Teamwork reserve interface the add-on registered for its own dialog (add-on infrastructure)",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Teamwork_UploadLibraries",
@@ -19454,12 +19187,7 @@
    "status": "not applicable",
    "reason": "interactive input from the user",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_UserInput_SetNeigFilter",
@@ -19804,16 +19532,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_Get3DCuttingPlanes",
@@ -20036,16 +19755,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_GetGhostStorySettings",
@@ -20617,12 +20327,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Window_DestroyWindowValidator",
@@ -20881,12 +20586,7 @@
    "status": "skipped",
    "reason": "Archicad 25/26 only, with no counterpart in Archicad 27-30, and a bare count without element context (#1067)",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_AddOnIntegration_InstallAttrManagerImportMethod",
@@ -21120,12 +20820,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_CuttingPlane_Is3DCutawayEnabled",
@@ -21207,10 +20902,6 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    },
     {
      "number": 371,
      "title": "Lessons learned building a Tapir-based automation toolkit (AC29)"
@@ -21696,16 +21387,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Goodies",
@@ -21727,16 +21409,7 @@
      "title": "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"
     }
    ],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_IFC_APIGuidToIFCGuid",
@@ -22277,16 +21950,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibPart_Create",
@@ -22405,12 +22069,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ListData_Get",
@@ -22546,12 +22205,7 @@
    "status": "skipped",
    "reason": "Archicad 25/26 name of ACAPI_GraphicalOverride_GetOverrideRuleById; the graphic override commands start at Archicad 27 on purpose (#873, #1059)",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Preferences_OldVersion",
@@ -23202,12 +22856,7 @@
    "status": "not applicable",
    "reason": "leftover command id; Get3DCutawayStatus reads the flag through ACAPI::CuttingPlane::AreCuttingPlanesVisible (Archicad 28+) and the C API (Archicad 25-27)",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "APIIo_HighlightElementsID",
@@ -23223,16 +22872,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1580,
-     "title": "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"
-    },
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "APIIo_Is3DCutawayEnabledID",
@@ -25999,10 +25639,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2226,
-     "title": "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"
-    },
-    {
      "number": 2222,
      "title": "[4/6] Shared dryRun: project, navigator and library deletes"
     },
@@ -27247,12 +26883,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::ElementBase::IsEditable",
@@ -27431,12 +27062,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetElementType",
@@ -27453,12 +27079,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetMemo",
@@ -27475,12 +27096,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetMemoMarker",
@@ -27497,12 +27113,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetName",
@@ -27595,12 +27206,7 @@
    "status": "skipped",
    "reason": "GetFavoritePreviewImage stays on the C API on purpose (8dbbe7b9)",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::Favorite::GetProperties",
@@ -27634,12 +27240,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::Favorite::IsValid",
@@ -28069,12 +27670,7 @@
    "status": "skipped",
    "reason": "RenameFavorites stays on the C API on purpose (8dbbe7b9)",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::Favorite::FavoriteManager::RenameFolder",
@@ -31630,12 +31226,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::AngleSetBase::GetAngle",
@@ -31858,12 +31449,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::Bend::Modify",
@@ -31879,12 +31465,7 @@
    "status": "skipped",
    "reason": "does not compile against the Archicad 27 DevKit: Bend::Modifier does not derive from ACAPI::ModifierBase, which ExecuteUndoableScope requires (Archicad 27 only)",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::BendUIManager::ApplyBendDefaultToToolUIData",
@@ -32085,12 +31666,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::Branch::Modifier::SetInsulationThickness",
@@ -32107,12 +31683,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::Branch::Modify",
@@ -32205,12 +31776,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::CableCarrierPortDefault::GetHeight",
@@ -32662,12 +32228,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::CreateBranchUIManager",
@@ -32740,12 +32301,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::CreateElbowUIManager",
@@ -32945,12 +32501,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::CreateRigidSegmentUIManager",
@@ -33024,12 +32575,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::CreateRoutingNodeUIManager",
@@ -33066,12 +32612,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::CreateRoutingSegmentUIManager",
@@ -33198,12 +32739,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::CreateTransitionUIManager",
@@ -33346,12 +32882,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::DistributionSystemsGraph::GetSystems",
@@ -36770,12 +36301,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::ElbowDefault::Modifier::SetPreferenceTable",
@@ -36795,12 +36321,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::ElbowDefault::Modify",
@@ -37975,12 +37496,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::ElectricalPanelDefault::GetCircuitIdStyle",
@@ -38204,12 +37720,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::ElectricalProjectSettings::Modifier::ClearWiringTypes",
@@ -38225,12 +37736,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::ElectricalProjectSettings::Modifier::RemoveLoadClassification",
@@ -38393,12 +37899,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::ElementBase::GetAnchorPoint",
@@ -38557,12 +38058,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::ElementBase::GetReflected",
@@ -38612,12 +38108,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::ElementDefault::GetCableCarrierPortDefaults",
@@ -38633,12 +38124,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::ElementDefault::GetDomain",
@@ -38763,12 +38249,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::ElementDefault::GetPipingPortDefaults",
@@ -38784,12 +38265,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::ElementDefault::GetPortCount",
@@ -38824,12 +38300,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::ElementDefault::GetReflected",
@@ -38861,12 +38332,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::ElementDefault::GetVentilationPortDefault",
@@ -38884,12 +38350,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::ElementDefault::GetVentilationPortDefaults",
@@ -38905,12 +38366,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::ElementDefault::Modifier::RemoveInsulation",
@@ -38929,12 +38385,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::ElementDefault::Modifier::SetBaseRotation",
@@ -38969,12 +38420,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::ElementDefault::Modifier::SetObjectId",
@@ -39396,12 +38842,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::FlexibleSegment::GetControlPoints",
@@ -39476,12 +38917,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::FlexibleSegment::GetWidth",
@@ -39538,12 +38974,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::FlexibleSegment::Modifier::SetHeight",
@@ -39580,12 +39011,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::FlexibleSegment::Modifier::SetWidth",
@@ -39718,12 +39144,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::FlexibleSegmentDefault::PlacePolyline",
@@ -39741,12 +39162,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::FlexibleSegmentUIManager::ApplyFlexibleSegmentDefaultToToolUIData",
@@ -39988,12 +39404,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::GetMEPModelCheckTypeId",
@@ -40655,12 +40066,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::ModifiableElementBase::Modifier::SetAnchorPoint",
@@ -40817,12 +40223,7 @@
    "status": "skipped",
    "reason": "has no id getter for the new system; CreateMEPPhysicalSystems uses SystemGroup::Modifier::Add, which returns the new id directly",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::PhysicalSystem::FindSystemIdsFromElementIds",
@@ -44061,12 +43462,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::PortBase::GetConnectedMEPElementId",
@@ -44155,12 +43551,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::PortBase::GetHeight",
@@ -44198,12 +43589,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::PortBase::GetMEPSystem",
@@ -44333,12 +43719,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::PortBase::IsConnected",
@@ -44354,12 +43735,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::PortBase::IsPhysicallyConnectable",
@@ -44377,12 +43753,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::PortBase::IsPhysicallyConnected",
@@ -45020,12 +44391,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::ReferenceSetBase::GetName",
@@ -45427,12 +44793,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RigidSegmentDefault::GetShape",
@@ -45449,12 +44810,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RigidSegmentDefault::GetWidth",
@@ -45471,12 +44827,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RigidSegmentUIManager::ApplyRigidSegmentDefaultToToolUIData",
@@ -45531,12 +44882,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingElement::GetBranchPreferenceTableId",
@@ -45736,12 +45082,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingElement::GetRoutingNodeIds",
@@ -45779,12 +45120,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingElement::GetRoutingSegmentIds",
@@ -45836,12 +45172,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingElement::Modifier::ConnectLogically",
@@ -45985,12 +45316,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingElement::Modifier::SetRoutingSegmentDefaultParameters",
@@ -46009,12 +45335,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingElement::Modifier::SetShowProjection",
@@ -46338,12 +45659,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingElementDefault::Modifier::SetRoutingSegmentDefault",
@@ -46472,12 +45788,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingNode::GetBendDefaultParameters",
@@ -46494,12 +45805,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingNode::GetBendIds",
@@ -46552,12 +45858,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingNode::GetElbowIds",
@@ -46669,12 +45970,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingNode::GetTransitionDefaultParameters",
@@ -46693,12 +45989,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingNode::GetTransitionIds",
@@ -46753,12 +46044,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingNode::Modifier::SetElbowDefaultParameters",
@@ -46775,12 +46061,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingNode::Modifier::SetPosition",
@@ -46837,12 +46118,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingNode::Modify",
@@ -46897,12 +46173,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingNodeDefault::GetDomain",
@@ -46993,12 +46264,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingNodeDefault::Modifier::SetElbowDefault",
@@ -47015,12 +46281,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingNodeDefault::Modifier::SetPreferredTransitionPlacement",
@@ -47058,12 +46319,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingNodeDefault::Modify",
@@ -47137,12 +46393,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingSegment::GetAnchor",
@@ -47402,12 +46653,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingSegment::GetRigidSegmentIds",
@@ -47445,12 +46691,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingSegment::GetWallThickness",
@@ -47690,12 +46931,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingSegment::Modifier::SetWallThickness",
@@ -47973,12 +47209,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingSegmentDefault::GetWallThickness",
@@ -48199,12 +47430,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::RoutingSegmentDefault::Modifier::SetWallThickness",
@@ -49228,12 +48454,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::MEP::TransitionDefault::Modify",
@@ -54894,12 +54115,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::Assignments::GetParentObjectTable",
@@ -54917,12 +54133,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::Assignments::GetRootGroups",
@@ -54940,12 +54151,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::Attribute::GetName",
@@ -55052,12 +54258,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::Classification::GetEditionDate",
@@ -55075,12 +54276,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::Classification::GetLocation",
@@ -55187,12 +54383,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::ClassificationReference::GetLocation",
@@ -55263,12 +54454,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::GetHookManager",
@@ -55304,12 +54490,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::GetPropertyBuilder",
@@ -55737,12 +54918,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::ObjectAccessor::CreateIfcBuildingStoreyObjectID",
@@ -55778,12 +54954,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::ObjectAccessor::CreateIfcSiteObjectID",
@@ -55801,12 +54972,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::ObjectAccessor::FindElementsByGlobalId",
@@ -55860,12 +55026,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::ObjectAccessor::GetExternalGlobalId",
@@ -55937,12 +55098,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::ObjectAccessor::GetTypeObjectIFCType",
@@ -55978,12 +55134,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::Property::GetName",
@@ -56405,12 +55556,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 1538,
-     "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "IFCAPI::PropertyEnumeratedValue::GetEnumerationValues",

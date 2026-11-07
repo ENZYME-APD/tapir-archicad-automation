@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 61 | 53 | 8 |  |  |  | 8 | 70 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1423 | 1207 | 216 |  |  |  | 12 | 392 |
 
-Archicad 25–30 DevKits; updated 2026-11-07 20:19 UTC.
+Archicad 25–30 DevKits; updated 2026-11-07 20:36 UTC.
 
 | | Status |
 |---|---|
@@ -137,7 +137,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ⛔ `ACAPI_Element_ChangeMore` – Modifies a number of elements in the current database. *(no speed gain over SetDetailsOfElements / the Modify* commands in the #1226 measurement, and one error code for the whole batch instead of per-element results)*
 - ✅ `ACAPI_Element_ChangeMorphEdgeType` <sub>AC29–30</sub> – Modifies a morph element's edge type in the current database.
 - ✅ `ACAPI_Element_ChangeParameters` – Changes the parameters of a number of elements. — [#1671](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1671 "Drawing anchor placement, offset, and pen table control"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
-- ✅ `ACAPI_Element_Create` — [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"), [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols")
+- ✅ `ACAPI_Element_Create` — [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
 - ✅ `ACAPI_Element_CreateExt` – Places a new Window, Door, Skylight, Section, Elevation, Interior Elevation, ChangeMarker, Detail, or Worksheet element with the specified marker into the current database. — [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#1377](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1377 "Place Detail and Worksheet markers, and change their settings")
 - 🔀 `ACAPI_Element_Decompose` – Enumerates the planes of a Multi-plane Roof.
 - ✅ `ACAPI_Element_Delete` – Deletes a number of elements. — [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#2200](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2200 "[1/5] SplitElements: split walls, beams and lines along a line")
@@ -149,7 +149,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_ElemHasVisibleSkin` – Returns if elem has visible skin depending on Partial Structure Display. <sub>(was `APIAny_ElemHasVisibleSkinID`)</sub>
 - ➖ `ACAPI_Element_ElemTypeToNeigID` <sub>AC26–30</sub> – Returns a neig for the given element type. <sub>(was `ACAPI_Goodies_ElemTypeToNeigID`)</sub> *(neig ids, an internal of interactive input and selection)*
 - ✅ `ACAPI_Element_Filter` – Tests an element by some given criteria.
-- ✅ `ACAPI_Element_Get` – Returns information on the main parameters of a given element. — [#2221](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2221 "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"), [#2217](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2217 "[4/5] GetProjectHealth: read-only project health summary"), [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#2205](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2205 "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"), [#2200](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2200 "[1/5] SplitElements: split walls, beams and lines along a line"), [#1855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1855 "CreateTexts / ModifyTexts: optional width turns word wrap on"), [#1671](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1671 "Drawing anchor placement, offset, and pen table control"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#463](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/463 "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"), [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI_Element_Get` – Returns information on the main parameters of a given element. — [#2221](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2221 "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"), [#2217](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2217 "[4/5] GetProjectHealth: read-only project health summary"), [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#2205](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2205 "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"), [#2200](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2200 "[1/5] SplitElements: split walls, beams and lines along a line"), [#1855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1855 "CreateTexts / ModifyTexts: optional width turns word wrap on"), [#1671](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1671 "Drawing anchor placement, offset, and pen table control"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#463](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/463 "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
 - ✅ `ACAPI_Element_GetActualOverrideStyle` – Get actual (merged) visual override style for an element.
 - ✅ `ACAPI_Element_GetClassificationInSystem` – Retrieves a classification of an elem in a given classification system. — [#2226](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2226 "[6/6] Dry run with wouldChange for the bulk element setters (#2195)")
 - ✅ `ACAPI_Element_GetClassificationInSystemDefault` – Retrieves a classification of a default elem in a given classification system.
@@ -163,9 +163,9 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_GetDefaultsExt` – Retrieves the actual default settings for the Window, Door, Section, Elevation, Interior Elevation, ChangeMarker, Detail, Worksheet, or Stair element with its marker(s). You are also able to obtain the Curtain Wall and its sub-element default settings via this function. — [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#1377](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1377 "Place Detail and Worksheet markers, and change their settings")
 - ✅ `ACAPI_Element_GetDescriptors` – Returns the descriptors of an element.
 - 🔀 `ACAPI_Element_GetElemCreatorToolUnId` – Returns the unique ID of the creator tool of the specified object. <sub>(was `APIAny_GetElemCreatorToolUnIdID`)</sub>
-- ✅ `ACAPI_Element_GetElemList` – Returns an array of guids of the elements of the given type. — [#2217](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2217 "[4/5] GetProjectHealth: read-only project health summary"), [#2205](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2205 "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#1813](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1813 "Notification clients: selection, window and project events")
+- ✅ `ACAPI_Element_GetElemList` – Returns an array of guids of the elements of the given type. — [#2217](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2217 "[4/5] GetProjectHealth: read-only project health summary"), [#2205](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2205 "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
 - ✅ `ACAPI_Element_GetElemTypeName` – Returns the localized name of the built-in element types. <sub>(was `ACAPI_Goodies_GetElemTypeName`, `APIAny_GetElemTypeNameID`)</sub>
-- ✅ `ACAPI_Element_GetElementFromAnywhere` – Returns the element referred by guid irrespectively of the current database. <sub>(was `APIDb_GetElementFromAnywhereID`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI_Element_GetElementFromAnywhere` – Returns the element referred by guid irrespectively of the current database. <sub>(was `APIDb_GetElementFromAnywhereID`)</sub>
 - 🔀 `ACAPI_Element_GetElementInfoString` – Returns the compound info string of the given element. <sub>(was `APIDb_GetElementInfoStringID`)</sub>
 - ✅ `ACAPI_Element_GetElementURLRef` – Retrieves the URL reference assigned to an element. <sub>(was `APIDb_GetElementURLRefID`)</sub>
 - ✅ `ACAPI_Element_GetElementsWithClassification` – Query elements with the given classification.
@@ -173,7 +173,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🔀 `ACAPI_Element_GetExtent3D` – Returns the model extent of the current database. <sub>(was `APIDb_GetExtent3DID`)</sub>
 - ✅ `ACAPI_Element_GetHeader` – Returns general information on the given element. — [#2217](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2217 "[4/5] GetProjectHealth: read-only project health summary"), [#2205](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2205 "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"), [#2148](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2148 "ChangeSelectionOfElements: report elements Archicad did not select"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
 - 🔀 `ACAPI_Element_GetHotspots` – Retrieves the hotspots of the given element.
-- ✅ `ACAPI_Element_GetMemo` — [#2221](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2221 "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"), [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#2200](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2200 "[1/5] SplitElements: split walls, beams and lines along a line"), [#463](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/463 "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"), [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols")
+- ✅ `ACAPI_Element_GetMemo` — [#2221](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2221 "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"), [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#2200](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2200 "[1/5] SplitElements: split walls, beams and lines along a line"), [#463](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/463 "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
 - ✅ `ACAPI_Element_GetMemo_ExternalHierarchical` <sub>AC27–30</sub> – @brief Retrieves all additional information of the sub-elements of an external hierarchical element.
 - ✅ `ACAPI_Element_GetMoreQuantities` – Returns information on the quantities parameters of multiple elements of the same type.
 - ✅ `ACAPI_Element_GetOpeningTransformation` – Returns the position and the normal vector of the given opening. <sub>(was `APIAny_GetOpeningTransformationID`)</sub>
@@ -215,7 +215,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_RoomReductions` – Returns reduction data assigned to a room in the current database. <sub>(was `APIDb_RoomReductionsID`)</sub>
 - ✅ `ACAPI_Element_SearchElementByCoord` – Searches for an element by coordinate. <sub>(was `APIAny_SearchElementByCoordID`)</sub>
 - ✅ `ACAPI_Element_SetElementURLRef` – Assigns a URL reference to an element. <sub>(was `APIDb_SetElementURLRefID`)</sub>
-- ➖ `ACAPI_Element_SetEmptyHoleUnId` – Sets the unique ID of the empty hole. <sub>(was `APIAny_SetEmptyHoleUnIdID`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)") *(takes the signature of a library part subtype the add-on registers itself; Tapir registers none)*
+- ➖ `ACAPI_Element_SetEmptyHoleUnId` – Sets the unique ID of the empty hole. <sub>(was `APIAny_SetEmptyHoleUnIdID`)</sub> *(takes the signature of a library part subtype the add-on registers itself; Tapir registers none)*
 - ✅ `ACAPI_Element_SetProperties` – Sets the specified properties for the given values on an element. — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
 - ✅ `ACAPI_Element_SetPropertiesOfDefaultElem` – Sets the specified properties for the given values on an element default.
 - ✅ `ACAPI_Element_SetProperty` – Sets the specified property for the given values on an element.
@@ -228,7 +228,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_SolidLink_GetTargets` – Retrieves the target elements linked to an operator element.
 - ✅ `ACAPI_Element_SolidLink_GetTime` – Retrieves the creation time of a Solid Operation Link.
 - ✅ `ACAPI_Element_SolidLink_Remove` – Discontinues a Solid Operation Link.
-- ✅ `ACAPI_Element_SolidOperation_Create` – Creates a new Solid Operation. — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI_Element_SolidOperation_Create` – Creates a new Solid Operation.
 - ✅ `ACAPI_Element_Trim_Elements` – Trim elements given in the array with Roof(s) and/or Shell(s) are contained in the array.
 - ✅ `ACAPI_Element_Trim_ElementsWith` – Trim elements given in the array with the given Roof or Shell with the type of trim.
 - ✅ `ACAPI_Element_Trim_GetTrimType` – Get the type of trimming connection between the given elements.
@@ -381,7 +381,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_View_CoordToPoint` – Converts a model coordinate to screen coordinate in the current database. <sub>(was `APIDb_CoordToPointID`)</sub>
 - ✅ `ACAPI_View_Create3DStyle` – Creates a new 3D style. <sub>(was `APIEnv_Create3DStyleID`)</sub>
 - ✅ `ACAPI_View_CreateGhostRecord` – Create a new Trace (ghost) database. <sub>(was `APIEnv_CreateGhostRecordID`)</sub>
-- ✅ `ACAPI_View_DeleteGhostRecord` – Deletes a Virtual Trace (ghost) record. <sub>(was `APIEnv_DeleteGhostRecordID`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI_View_DeleteGhostRecord` – Deletes a Virtual Trace (ghost) record. <sub>(was `APIEnv_DeleteGhostRecordID`)</sub>
 - ✅ `ACAPI_View_Get3DCuttingPlanes` – Retrieves the 3D cutting plane settings. <sub>(was `APIEnv_Get3DCuttingPlanesID`)</sub>
 - ✅ `ACAPI_View_Get3DImageSets` – Returns the 3D image item settings. <sub>(was `APIEnv_Get3DImageSetsID`)</sub>
 - ✅ `ACAPI_View_Get3DProjectionSets` – Returns information on the 3D projection settings. <sub>(was `APIEnv_Get3DProjectionSetsID`)</sub>
@@ -391,7 +391,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_View_GetCurrentImage` <sub>AC30</sub> – Gets an image of the current view (3D, or rendering).
 - ✅ `ACAPI_View_GetDocumentFrom3DDefaults` – Returns the 3D document setting default values. <sub>(was `APIEnv_GetDocumentFrom3DDefaultsID`)</sub>
 - 🔀 `ACAPI_View_GetDocumentFrom3DSettings` – Returns the 3D document settings of the specified database. <sub>(was `APIEnv_GetDocumentFrom3DSettingsID`)</sub>
-- ✅ `ACAPI_View_GetGhostRecord` – Retrieve a Trace record from the database. <sub>(was `APIEnv_GetGhostRecordID`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI_View_GetGhostRecord` – Retrieve a Trace record from the database. <sub>(was `APIEnv_GetGhostRecordID`)</sub>
 - ✅ `ACAPI_View_GetGhostStorySettings` – Retrieves the current ghost story settings. <sub>(was `APIEnv_GetGhostStorySettingsID`)</sub>
 - ✅ `ACAPI_View_GetShowHideState` – Returns the visibility of application. <sub>(was `APIEnv_GetShowHideStateID`)</sub>
 - ✅ `ACAPI_View_GetZoom` – Returns the actual zoom parameters of the current database. <sub>(was `APIDb_GetZoomID`)</sub>
@@ -415,14 +415,14 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## LibraryPart
 
-- ✅ `ACAPI_LibraryPart_AddSection` – Adds a new section to the Library Part under creation. <sub>(was `ACAPI_LibPart_AddSection`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI_LibraryPart_AddSection` – Adds a new section to the Library Part under creation. <sub>(was `ACAPI_LibPart_AddSection`)</sub>
 - ✅ `ACAPI_LibraryPart_ChangeAParameter` – Changes a value in an opened Library Part parameter list. <sub>(was `APIAny_ChangeAParameterID`)</sub>
 - 🔀 `ACAPI_LibraryPart_CheckLibPartSubtypeOf` – Checks whether a library part unique ID refers to a subtype of another. <sub>(was `APIAny_CheckLibPartSubtypeOfID`)</sub>
 - 🔀 `ACAPI_LibraryPart_CheckLibPartSubtypeOfbyMain` – Checks whether a library part unique ID refers to a subtype of another. <sub>(was `APIAny_CheckLibPartSubtypeOfbyMainID`)</sub>
 - ✅ `ACAPI_LibraryPart_CloseParameters` – Closes the Library Part parameter list opened for editing. <sub>(was `APIAny_CloseParametersID`)</sub>
 - 🔀 `ACAPI_LibraryPart_CompareLibPartUnIds` – Compares two library part unique IDs. <sub>(was `APIAny_CompareLibPartUnIdsID`)</sub>
-- ✅ `ACAPI_LibraryPart_Create` <sub>AC27–30</sub> – Starts to create a new Library Part from scratch. — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- 🔀 `ACAPI_LibraryPart_EndSection` – Closes the last opened section of the Library Part under creation. <sub>(was `ACAPI_LibPart_EndSection`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI_LibraryPart_Create` <sub>AC27–30</sub> – Starts to create a new Library Part from scratch.
+- 🔀 `ACAPI_LibraryPart_EndSection` – Closes the last opened section of the Library Part under creation. <sub>(was `ACAPI_LibPart_EndSection`)</sub>
 - ✅ `ACAPI_LibraryPart_Get` <sub>AC27–30</sub> – Returns the data for a registered library part. — [#2217](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2217 "[4/5] GetProjectHealth: read-only project health summary")
 - ✅ `ACAPI_LibraryPart_GetActParameters` – Returns the actual (edited) values of a Library Part parameter list opened to edit. <sub>(was `APIAny_GetActParametersID`)</sub> — [#2226](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2226 "[6/6] Dry run with wouldChange for the bulk element setters (#2195)")
 - ➖ `ACAPI_LibraryPart_GetBuiltInLibpartUnId` – Retrieves the GUID of a built-in library part. <sub>(was `APIAny_GetBuiltInLibpartUnIdID`)</sub> *(returns the id of a library part compiled into the calling add-on as a resource; Tapir has none)*
@@ -438,26 +438,26 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_LibraryPart_GetNum` <sub>AC27–30</sub> – Returns the number of registered library parts. — [#2217](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2217 "[4/5] GetProjectHealth: read-only project health summary")
 - ✅ `ACAPI_LibraryPart_GetParamValues` – Returns the possible values defined for a Library Part parameter. <sub>(was `APIAny_GetParamValuesID`)</sub>
 - ✅ `ACAPI_LibraryPart_GetParams` – Returns the default parameters of a registered Library Part. <sub>(was `ACAPI_LibPart_GetParams`)</sub> — [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex")
-- 🔀 `ACAPI_LibraryPart_GetSect_2DDrawHdl` – Returns the 2D binary (drawing) section data created from API elements. <sub>(was `ACAPI_LibPart_GetSect_2DDrawHdl`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- ✅ `ACAPI_LibraryPart_GetSect_ParamDef` – Prepares the parameter section data to save into a Library Part. <sub>(was `ACAPI_LibPart_GetSect_ParamDef`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols")
+- 🔀 `ACAPI_LibraryPart_GetSect_2DDrawHdl` – Returns the 2D binary (drawing) section data created from API elements. <sub>(was `ACAPI_LibPart_GetSect_2DDrawHdl`)</sub>
+- ✅ `ACAPI_LibraryPart_GetSect_ParamDef` – Prepares the parameter section data to save into a Library Part. <sub>(was `ACAPI_LibPart_GetSect_ParamDef`)</sub>
 - 🔀 `ACAPI_LibraryPart_GetSection` – Returns an existing section of a registered Library Part. <sub>(was `ACAPI_LibPart_GetSection`)</sub>
 - 🔀 `ACAPI_LibraryPart_GetSectionList` – Returns the list of sections contained by a registered Library. <sub>(was `ACAPI_LibPart_GetSectionList`)</sub>
 - 🔀 `ACAPI_LibraryPart_GetUnloadedLibpartName` – Retrieves the name of a Libpart, even if the library is unloaded. <sub>(was `APIAny_GetUnloadedLibpartNameID`)</sub>
 - ➖ `ACAPI_LibraryPart_InstallESYMHandler` <sub>AC27–30</sub> – Installs a callback for handling external symbols. *(event handlers, not commands)*
-- 🔀 `ACAPI_LibraryPart_NewSection` – Opens a new section to write into the Library Part under creation. <sub>(was `ACAPI_LibPart_NewSection`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI_LibraryPart_NewSection` – Opens a new section to write into the Library Part under creation. <sub>(was `ACAPI_LibPart_NewSection`)</sub>
 - ✅ `ACAPI_LibraryPart_OpenParameters` – Opens a Library Part parameter list for editing. <sub>(was `APIAny_OpenParametersID`)</sub>
 - 🔀 `ACAPI_LibraryPart_PatternSearch` – Searches for registered Library Parts in the loaded libraries. <sub>(was `ACAPI_LibPart_PatternSearch`)</sub>
 - ✅ `ACAPI_LibraryPart_Register` – Registers a Library Part. <sub>(was `ACAPI_LibPart_Register`)</sub>
-- ⛔ `ACAPI_LibraryPart_RegisterAll` – Registers an array of Library Parts. <sub>(was `ACAPI_LibPart_RegisterAll`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)") *(ACAPI_LibraryPart_Save already registers the parts Tapir creates, and AddFilesToEmbeddedLibrary registers its files one by one)*
+- ⛔ `ACAPI_LibraryPart_RegisterAll` – Registers an array of Library Parts. <sub>(was `ACAPI_LibPart_RegisterAll`)</sub> *(ACAPI_LibraryPart_Save already registers the parts Tapir creates, and AddFilesToEmbeddedLibrary registers its files one by one)*
 - ➖ `ACAPI_LibraryPart_RegisterESYM` <sub>AC27–30</sub> – Registers an external symbol type with Archicad. *(add-on registration at startup)*
 - ➖ `ACAPI_LibraryPart_RegisterSubtype` <sub>AC27–30</sub> – Registers a new library part subtype. *(add-on registration at startup)*
-- ✅ `ACAPI_LibraryPart_Save` <sub>AC27–30</sub> – Saves the Library Part that has been created and registers it. — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- ✅ `ACAPI_LibraryPart_Search` <sub>AC27–30</sub> – Searches for a registered Library Part in the loaded libraries. — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- 🔀 `ACAPI_LibraryPart_SetDetails_ParamDef` – Sets the detail parameters of a Library Part parameter section handle. <sub>(was `ACAPI_LibPart_SetDetails_ParamDef`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- 🔀 `ACAPI_LibraryPart_SetUpSect_2DDrawHdl` – Sets up an empty 2D binary (drawing) section to fill up from API elements. <sub>(was `ACAPI_LibPart_SetUpSect_2DDrawHdl`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- 🔀 `ACAPI_LibraryPart_ShapePrims` <sub>AC27–30</sub> – Virtually draws the shape of a registered Library Part. — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- 🔀 `ACAPI_LibraryPart_UpdateSection` – Updates a section of a registered Library Part. <sub>(was `ACAPI_LibPart_UpdateSection`)</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- 🔀 `ACAPI_LibraryPart_WriteSection` – Writes data into an opened section of the Library Part under creation. <sub>(was `ACAPI_LibPart_WriteSection`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI_LibraryPart_Save` <sub>AC27–30</sub> – Saves the Library Part that has been created and registers it.
+- ✅ `ACAPI_LibraryPart_Search` <sub>AC27–30</sub> – Searches for a registered Library Part in the loaded libraries.
+- 🔀 `ACAPI_LibraryPart_SetDetails_ParamDef` – Sets the detail parameters of a Library Part parameter section handle. <sub>(was `ACAPI_LibPart_SetDetails_ParamDef`)</sub>
+- 🔀 `ACAPI_LibraryPart_SetUpSect_2DDrawHdl` – Sets up an empty 2D binary (drawing) section to fill up from API elements. <sub>(was `ACAPI_LibPart_SetUpSect_2DDrawHdl`)</sub>
+- 🔀 `ACAPI_LibraryPart_ShapePrims` <sub>AC27–30</sub> – Virtually draws the shape of a registered Library Part.
+- 🔀 `ACAPI_LibraryPart_UpdateSection` – Updates a section of a registered Library Part. <sub>(was `ACAPI_LibPart_UpdateSection`)</sub>
+- 🔀 `ACAPI_LibraryPart_WriteSection` – Writes data into an opened section of the Library Part under creation. <sub>(was `ACAPI_LibPart_WriteSection`)</sub>
 
 ## Navigator
 
@@ -507,7 +507,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 - ➖ `ACAPI_ActivatePropertyObjectHandler` – Activates or deactivates an add-on's property handler. *(event handlers, not commands)*
 - ➖ `ACAPI_CallCommand` – Performs an operation without opening an undoable session. — [#2222](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2222 "[4/6] Shared dryRun: project, navigator and library deletes") *(add-on infrastructure)*
-- ➖ `ACAPI_CallUndoableCommand` – Performs an undoable operation. — [#2226](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2226 "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"), [#2222](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2222 "[4/6] Shared dryRun: project, navigator and library deletes"), [#2221](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2221 "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"), [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#2206](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2206 "[3/3] Add ScaleElements command"), [#2205](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2205 "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"), [#2200](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2200 "[1/5] SplitElements: split walls, beams and lines along a line"), [#1470](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1470 "Report failed creation transactions instead of returning element results"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#2218](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2218 "Docs: a page of what the Archicad API cannot do, with the workaround and the DevKit evidence"), [#1820](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1820 "Run several commands as one undo step"), [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)") *(add-on infrastructure)*
+- ➖ `ACAPI_CallUndoableCommand` – Performs an undoable operation. — [#2226](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2226 "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"), [#2222](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2222 "[4/6] Shared dryRun: project, navigator and library deletes"), [#2221](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2221 "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"), [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#2206](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2206 "[3/3] Add ScaleElements command"), [#2205](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2205 "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"), [#2200](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2200 "[1/5] SplitElements: split walls, beams and lines along a line"), [#1470](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1470 "Report failed creation transactions instead of returning element results"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#2218](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2218 "Docs: a page of what the Archicad API cannot do, with the workaround and the DevKit evidence"), [#1820](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1820 "Run several commands as one undo step") *(add-on infrastructure)*
 - ➖ `ACAPI_DisposeAddParHdl` – Frees the memory occupied by a handle to an array of @ref API_AddParType. — [#2226](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2226 "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"), [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex") *(memory management)*
 - ➖ `ACAPI_DisposeAttrDefsHdls` – Frees the memory occupied by all of the attribute definition handles. *(memory management)*
 - ➖ `ACAPI_DisposeAttrDefsHdlsExt` – Frees the memory occupied by all of the attribute definition handles. *(memory management)*
@@ -535,11 +535,11 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `ACAPI_UnregisterModelessWindow` – Ends the registration of an add-on's modeless palette with the API. *(user interface)*
 - ➖ `ACAPI_UnregisterTeamworkReserveInterface` – Unregisters a previously registered interface. *(event handlers, not commands)*
 - ➖ `ACAPI_WriteReport` – Writes a report string into the Report Window or into a custom alert window. *(report window of the add-on)*
-- ✅ `ACAPI_Automate` <sub>AC25–26</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- ✅ `ACAPI_Database` <sub>AC25–26</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"), [#371](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/371 "Lessons learned building a Tapir-based automation toolkit (AC29)")
-- ✅ `ACAPI_Environment` <sub>AC25–26</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- ✅ `ACAPI_Goodies` <sub>AC25–26</sub> — [#2221](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2221 "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"), [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- ✅ `ACAPI_Interface` <sub>AC25–26</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI_Automate` <sub>AC25–26</sub>
+- ✅ `ACAPI_Database` <sub>AC25–26</sub> — [#371](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/371 "Lessons learned building a Tapir-based automation toolkit (AC29)")
+- ✅ `ACAPI_Environment` <sub>AC25–26</sub>
+- ✅ `ACAPI_Goodies` <sub>AC25–26</sub> — [#2221](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2221 "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines")
+- ✅ `ACAPI_Interface` <sub>AC25–26</sub>
 - ✅ `ACAPI_Navigator` <sub>AC25–26</sub>
 
 ## AddOnIntegration
@@ -589,8 +589,8 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Database_GetContainingDatabase` – Obtains the unique ID of database contains the given element. <sub>(was `APIDb_GetContainingDatabaseID`)</sub>
 - ✅ `ACAPI_Database_GetCurrentDatabase` – Returns the identifier of the current (active) database. <sub>(was `APIDb_GetCurrentDatabaseID`)</sub> — [#2217](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2217 "[4/5] GetProjectHealth: read-only project health summary"), [#2205](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2205 "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)")
 - ➖ `ACAPI_Database_GetDBUnIdFromGuid` – Returns the old database identifiers from the database GUID. <sub>(was `APIDb_GetDBUnIdFromGuidID`)</sub> *(converts to the old userId/databaseId pair, which no JSON command or official command takes)*
-- ⛔ `ACAPI_Database_GetDatabasesForType` <sub>AC27–30</sub> – Helper function to collect all Archicad databases of the given type. — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)") *(returns what the per-type ACAPI_Database_Get*Databases calls of GetDatabases already return)*
-- ⛔ `ACAPI_Database_GetDatabasesForTypes` <sub>AC27–30</sub> – Helper function to collect all Archicad databases of the given types. — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)") *(returns what the per-type calls of GetDatabases already return, without each database's type, which the response needs)*
+- ⛔ `ACAPI_Database_GetDatabasesForType` <sub>AC27–30</sub> – Helper function to collect all Archicad databases of the given type. *(returns what the per-type ACAPI_Database_Get*Databases calls of GetDatabases already return)*
+- ⛔ `ACAPI_Database_GetDatabasesForTypes` <sub>AC27–30</sub> – Helper function to collect all Archicad databases of the given types. *(returns what the per-type calls of GetDatabases already return, without each database's type, which the response needs)*
 - ✅ `ACAPI_Database_GetDetailDatabases` – Returns the list of unique IDs of all detail databases. <sub>(was `APIDb_GetDetailDatabasesID`)</sub> — [#2217](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2217 "[4/5] GetProjectHealth: read-only project health summary")
 - ✅ `ACAPI_Database_GetDocumentFrom3DDatabases` – Returns the list of unique IDs of all document 3D databases. <sub>(was `APIDb_GetDocumentFrom3DDatabasesID`)</sub> — [#2217](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2217 "[4/5] GetProjectHealth: read-only project health summary")
 - ✅ `ACAPI_Database_GetElevationDatabases` – Returns all the elevation databases in the project. <sub>(was `APIDb_GetElevationDatabasesID`)</sub> — [#2217](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2217 "[4/5] GetProjectHealth: read-only project health summary")
@@ -604,7 +604,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Database_JsonQuery` – Helper function to call various functions inside Archicad. <sub>(was `APIDb_JsonQueryID`)</sub>
 - ✅ `ACAPI_Database_ModifyDatabase` – Modifies the parameters of an independent detail, worksheet, layout or master layout database. <sub>(was `APIDb_ModifyDatabaseID`)</sub> — [#2157](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2157 "Archicad 29 crashes during a read-only script after GetLayoutSettings in batches (Tapir 1.8.0)")
 - ✅ `ACAPI_Database_NewDatabase` – Creates a new independent detail, worksheet, layout or master layout database. <sub>(was `APIDb_NewDatabaseID`)</sub>
-- ✅ `ACAPI_Database_RebuildCurrentDatabase` – Rebuilds the current database, even it's associated window is in the background. <sub>(was `APIDb_RebuildCurrentDatabaseID`)</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI_Database_RebuildCurrentDatabase` – Rebuilds the current database, even it's associated window is in the background. <sub>(was `APIDb_RebuildCurrentDatabaseID`)</sub>
 - ➖ `ACAPI_Database_RebuildWindowValidator` – Sets the element and checksum list for an already added validator with given guid. <sub>(was `APIDb_RebuildWindowValidatorID`)</sub> *(validators of the add-on's own windows (add-on infrastructure))*
 - ✅ `ACAPI_Database_RedrawCurrentDatabase` – Redraws the current database, even it's associated window is in the background. <sub>(was `APIDb_RedrawCurrentDatabaseID`)</sub>
 - ➖ `ACAPI_Database_StartClippingSession` – Sets up a clipping session for newly created elements to be clipped. <sub>(was `APIDb_StartClippingSessionID`)</sub> *(clipping session for the add-on's own drawing primitive calls, no effect a JSON caller can see)*
@@ -651,7 +651,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Teamwork_HasConnection` – Tells whether the currently opened project is a Teamwork project. <sub>(was `ACAPI_TeamworkControl_HasConnection`)</sub>
 - 🔀 `ACAPI_Teamwork_HasCreateRight` – Checks whether the current Teamwork user has access right to create a certain type of object. <sub>(was `ACAPI_TeamworkControl_HasCreateRight`)</sub>
 - 🔀 `ACAPI_Teamwork_HasDeleteModifyRight` – Checks whether the current Teamwork user has access right to delete or modify a certain type of object. <sub>(was `ACAPI_TeamworkControl_HasDeleteModifyRight`)</sub>
-- 🔀 `ACAPI_Teamwork_IsOnline` – Tells whether the client is online connected to the BIM server. <sub>(was `ACAPI_TeamworkControl_IsOnline`)</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI_Teamwork_IsOnline` – Tells whether the client is online connected to the BIM server. <sub>(was `ACAPI_TeamworkControl_IsOnline`)</sub>
 - 🔀 `ACAPI_Teamwork_IsServerLibPart` – Tells whether the given location refers to a BIM Server Library Part. <sub>(was `ACAPI_TeamworkControl_IsServerLibPart`)</sub>
 - ✅ `ACAPI_Teamwork_ProjectSharing` – Returns the project sharing data in the case of a TeamWork project. <sub>(was `APIEnv_ProjectSharingID`)</sub>
 - ✅ `ACAPI_Teamwork_ReceiveChanges` – Receives changes from the BIMcloud server. <sub>(was `ACAPI_TeamworkControl_ReceiveChanges`)</sub>
@@ -663,7 +663,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Teamwork_ReserveHotlinkCacheManagement` – Reserves the Hotlink/XRef Management in Teamwork mode. <sub>(was `ACAPI_TeamworkControl_ReserveHotlinkCacheManagement`)</sub>
 - ✅ `ACAPI_Teamwork_ReserveLockable` – Reserves a lockable object set in Teamwork mode. <sub>(was `ACAPI_TeamworkControl_ReserveLockable`)</sub>
 - ✅ `ACAPI_Teamwork_SendChanges` – Sends changes to the BIMcloud server. <sub>(was `ACAPI_TeamworkControl_SendChanges`)</sub>
-- ➖ `ACAPI_Teamwork_SendReleaseCommentMail` – Sends the release comment mail. <sub>(was `ACAPI_TeamworkReserveInterface_SendReleaseCommentMail`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)") *(needs the ids of a Teamwork reserve interface the add-on registered for its own dialog (add-on infrastructure))*
+- ➖ `ACAPI_Teamwork_SendReleaseCommentMail` – Sends the release comment mail. <sub>(was `ACAPI_TeamworkReserveInterface_SendReleaseCommentMail`)</sub> *(needs the ids of a Teamwork reserve interface the add-on registered for its own dialog (add-on infrastructure))*
 - ✅ `ACAPI_Teamwork_UploadLibraries` <sub>AC29–30</sub> – Uploads the given libraries to the BIMcloud server.
 
 ## GraphicalOverride
@@ -723,10 +723,10 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 - ✅ `ACAPI_AddOnObject_CreateClientOnlyObject` – Creates an AddOnObject.
 - ✅ `ACAPI_AddOnObject_CreateObject` – Creates an AddOnObject.
-- ⛔ `ACAPI_AddOnObject_CreateUniqueObject` – Creates a Unique AddOnObject. — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)") *(SetProjectData creates its objects in one batch with ACAPI_AddOnObject_CreateUniqueObjectMore; one by one would cost a Teamwork send/receive each)*
+- ⛔ `ACAPI_AddOnObject_CreateUniqueObject` – Creates a Unique AddOnObject. *(SetProjectData creates its objects in one batch with ACAPI_AddOnObject_CreateUniqueObjectMore; one by one would cost a Teamwork send/receive each)*
 - ✅ `ACAPI_AddOnObject_CreateUniqueObjectMore` – Creates more Unique AddOnObjects.
 - ✅ `ACAPI_AddOnObject_DeleteObject` – Retrieves an attribute from the database.
-- ⛔ `ACAPI_AddOnObject_ExistsObject` – Determines if the project database contains the specified AddOnObject or not. — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)") *(project data is addressed by name, and the name lookups already report a missing object)*
+- ⛔ `ACAPI_AddOnObject_ExistsObject` – Determines if the project database contains the specified AddOnObject or not. *(project data is addressed by name, and the name lookups already report a missing object)*
 - ✅ `ACAPI_AddOnObject_GetClientOnlyObjectGuidFromName` – Returns the GUID of the specified object.
 - ✅ `ACAPI_AddOnObject_GetObjectContent` – Retrieves the content and the name of the specified AddOnObject from the project database.
 - ✅ `ACAPI_AddOnObject_GetObjectGuidFromName` – Returns the GUID of the specified object.
@@ -760,8 +760,8 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_LibraryManagement_GetLibraries` – Returns the list of loaded libraries. <sub>(was `APIEnv_GetLibrariesID`)</sub>
 - 🔀 `ACAPI_LibraryManagement_InterpretGDLScript3D` – Interprets a 3D GDL script with the same settings as GDL Editor. <sub>(was `APIAny_InterpretGDLScript3DID`)</sub>
 - ➖ `ACAPI_LibraryManagement_NewLibDial` – Instructs the user to select a new library folder in a dialog. <sub>(was `APIEnv_NewLibDialID`)</sub> *(user interface)*
-- ✅ `ACAPI_LibraryManagement_OpenLibraryPart` <sub>AC27–30</sub> – Opens the given library part in the Library Part Editor window. <sub>(was `APIDo_OpenLibraryPartID`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- 🔀 `ACAPI_LibraryManagement_OverwriteLibPart` – Sets the overwrite mode for the library part create function. <sub>(was `APIEnv_OverwriteLibPartID`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI_LibraryManagement_OpenLibraryPart` <sub>AC27–30</sub> – Opens the given library part in the Library Part Editor window. <sub>(was `APIDo_OpenLibraryPartID`)</sub>
+- 🔀 `ACAPI_LibraryManagement_OverwriteLibPart` – Sets the overwrite mode for the library part create function. <sub>(was `APIEnv_OverwriteLibPartID`)</sub>
 - ✅ `ACAPI_LibraryManagement_ResetLibraries` – Resets the loaded libraries. <sub>(was `APIEnv_ResetLibrariesID`)</sub>
 - ✅ `ACAPI_LibraryManagement_RunGDLParScript` – Run GDL parameter script. <sub>(was `APIAny_RunGDLParScriptID`)</sub>
 - ✅ `ACAPI_LibraryManagement_SetLibraries` – Changes the list of loaded libraries. <sub>(was `APIEnv_SetLibrariesID`)</sub>
@@ -792,7 +792,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 ## ProjectOperation
 
 - ➖ `ACAPI_ProjectOperation_AdditionalFileWasCreated` – Informs Archicad about the additional file created during exporting or publishing. Required for handling them with the target file. (E.g., uploading to BIMcloud together.) <sub>(was `ACAPI_Inform_AdditionalFileWasCreated`)</sub> *(tells Archicad about files an add-on writes while the project is saved (add-on infrastructure))*
-- ➖ `ACAPI_ProjectOperation_CatchProjectEvent` – Register or unregister your add-on to be notified of application and project events. <sub>(was `ACAPI_Notify_CatchProjectEvent`)</sub> — [#1813](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1813 "Notification clients: selection, window and project events") *(event handlers, not commands)*
+- ➖ `ACAPI_ProjectOperation_CatchProjectEvent` – Register or unregister your add-on to be notified of application and project events. <sub>(was `ACAPI_Notify_CatchProjectEvent`)</sub> *(event handlers, not commands)*
 - ✅ `ACAPI_ProjectOperation_Close` – Closes the current project window. <sub>(was `APIDo_CloseID`)</sub>
 - ✅ `ACAPI_ProjectOperation_GetMiscAppInfo` – Gets miscellaneous information about application. <sub>(was `APIEnv_GetMiscAppInfoID`)</sub>
 - ✅ `ACAPI_ProjectOperation_GetMiscPlotterInfo` – Gets miscellaneous information about plotter. <sub>(was `APIEnv_GetMiscPlotterInfoID`)</sub>
@@ -824,7 +824,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `ACAPI_UserInput_InitNeigFilter` – Initializes the neig filter for an input. <sub>(was `APIIo_InitNeigFilterID`)</sub> *(interactive input from the user)*
 - ➖ `ACAPI_UserInput_ResetConstraint` – Dissolve the drawing constraint. <sub>(was `APIIo_ResetConstraintID`)</sub> *(interactive input from the user)*
 - ➖ `ACAPI_UserInput_SetConstraint` – Set the drawing constraint for graphical user input. <sub>(was `APIIo_SetConstraintID`)</sub> *(interactive input from the user)*
-- ➖ `ACAPI_UserInput_SetElementHighlight` <sub>AC26–30</sub> – Highlight elements in the 2D (floor plan and section) and 3D window. <sub>(was `ACAPI_Interface_SetElementHighlight`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols") *(interactive input from the user)*
+- ➖ `ACAPI_UserInput_SetElementHighlight` <sub>AC26–30</sub> – Highlight elements in the 2D (floor plan and section) and 3D window. <sub>(was `ACAPI_Interface_SetElementHighlight`)</sub> *(interactive input from the user)*
 - ➖ `ACAPI_UserInput_SetNeigFilter` – Sets one of the neig types in the neig filter to be filtered. <sub>(was `APIIo_SetNeigFilterID`)</sub> *(interactive input from the user)*
 
 ## Hotlink
@@ -868,7 +868,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Window_ChangeGridSettings` – Changes the grid setting parameters of the current database. <sub>(was `APIDb_ChangeGridSettingsID`)</sub>
 - ✅ `ACAPI_Window_ChangeWindow` – Changes the current (active) window. <sub>(was `APIDo_ChangeWindowID`)</sub> — [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
 - ✅ `ACAPI_Window_Check` – Runs the selected checks of the Action Center. <sub>(was `ACAPI_ActionCenter_Check`)</sub>
-- ✅ `ACAPI_Window_CloseWindow` – Closes a window. <sub>(was `APIDb_CloseWindowID`)</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI_Window_CloseWindow` – Closes a window. <sub>(was `APIDb_CloseWindowID`)</sub>
 - ➖ `ACAPI_Window_DestroyWindowValidator` – Destroys an already registered validator for the given guid. <sub>(was `APIDb_DestroyWindowValidatorID`)</sub> *(validators of the add-on's own windows (add-on infrastructure))*
 - ✅ `ACAPI_Window_GetCurrentWindow` – Returns the identifier of the current (active) window. <sub>(was `APIDb_GetCurrentWindowID`)</sub>
 - ✅ `ACAPI_Window_GetDatabaseInfo` – Retrieves information of the given database. <sub>(was `APIDb_GetDatabaseInfoID`)</sub> — [#2217](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2217 "[4/5] GetProjectHealth: read-only project health summary"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#2157](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2157 "Archicad 29 crashes during a read-only script after GetLayoutSettings in batches (Tapir 1.8.0)")
@@ -881,10 +881,10 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## Notification
 
-- ➖ `ACAPI_Notification_CatchAttributeReplacement` <sub>AC26–30</sub> – Register or unregister your add-on to be notified if some attributes are deleted and replaced by other attributes. <sub>(was `ACAPI_Notify_CatchAttributeReplacement`)</sub> — [#1813](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1813 "Notification clients: selection, window and project events") *(event handlers, not commands)*
+- ➖ `ACAPI_Notification_CatchAttributeReplacement` <sub>AC26–30</sub> – Register or unregister your add-on to be notified if some attributes are deleted and replaced by other attributes. <sub>(was `ACAPI_Notify_CatchAttributeReplacement`)</sub> *(event handlers, not commands)*
 - ➖ `ACAPI_Notification_CatchElementReservationChange` – Sets notification handler for element reservation changes. <sub>(was `ACAPI_Notify_CatchElementReservationChange`)</sub> *(event handlers, not commands)*
 - ➖ `ACAPI_Notification_CatchLockableReservationChange` – Sets notification handler for reservation changes of lockable objects. <sub>(was `ACAPI_Notify_CatchLockableReservationChange`)</sub> *(event handlers, not commands)*
-- ➖ `ACAPI_Notification_CatchSelectionChange` – Turns the monitoring of selection changes on/off. <sub>(was `ACAPI_Notify_CatchSelectionChange`)</sub> — [#1813](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1813 "Notification clients: selection, window and project events") *(event handlers, not commands)*
+- ➖ `ACAPI_Notification_CatchSelectionChange` – Turns the monitoring of selection changes on/off. <sub>(was `ACAPI_Notify_CatchSelectionChange`)</sub> *(event handlers, not commands)*
 - ➖ `ACAPI_Notification_CatchToolChange` – Turns the monitoring of toolbox item changes on/off. <sub>(was `ACAPI_Notify_CatchToolChange`)</sub> *(event handlers, not commands)*
 - ➖ `ACAPI_Notification_CatchViewEvent` – Register or unregister your add-on to be notified of Project Navigator changes. <sub>(was `ACAPI_Notify_CatchViewEvent`)</sub> *(event handlers, not commands)*
 - ➖ `ACAPI_Notification_ClassificationVisibilityChanged` – Sends out an @c APINotify_ClassificationVisibilityChanged project event notification to the other add-ons to state that at least one classification's visibility has changed. <sub>(was `ACAPI_Notify_ClassificationVisibilityChanged`)</sub> *(event handlers, not commands)*
@@ -1103,14 +1103,14 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## ModelAccess
 
-- ✅ `ACAPI_ModelAccess_DecomposePgon` – Decomposes a polygon of the 3D model into convex polygons. <sub>(was `ACAPI_3D_DecomposePgon`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI_ModelAccess_DecomposePgon` – Decomposes a polygon of the 3D model into convex polygons. <sub>(was `ACAPI_3D_DecomposePgon`)</sub>
 - ✅ `ACAPI_ModelAccess_GenerateModelWithSeparateComponents` <sub>AC28–30</sub> – Generates a model with separate components of the given elements, and switches to that model for subsequent operations. The operation will not be executed if the active sight is the sight of 3D window.
-- ✅ `ACAPI_ModelAccess_Get3DInfo` – Retrieves information on the 3D data of an element. <sub>(was `ACAPI_Element_Get3DInfo`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols")
+- ✅ `ACAPI_ModelAccess_Get3DInfo` – Retrieves information on the 3D data of an element. <sub>(was `ACAPI_Element_Get3DInfo`)</sub>
 - ✅ `ACAPI_ModelAccess_GetBuildingMaterial` <sub>AC28–30</sub> – Returns the attribute index of the material of a specific body of an element.
-- ✅ `ACAPI_ModelAccess_GetComponent` – Retrieves a component from the 3D model of Archicad. <sub>(was `ACAPI_3D_GetComponent`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols")
+- ✅ `ACAPI_ModelAccess_GetComponent` – Retrieves a component from the 3D model of Archicad. <sub>(was `ACAPI_3D_GetComponent`)</sub>
 - ✅ `ACAPI_ModelAccess_GetConnectionTable` <sub>AC28–30</sub> – Returns a table of connected elements and the connecting polygons.
 - ✅ `ACAPI_ModelAccess_GetNum` <sub>AC27–30</sub> – Returns the number of existing 3D components.
-- ✅ `ACAPI_ModelAccess_GetTextureCoord` – Returns the texture coordinates of the given surface point. <sub>(was `APIAny_GetTextureCoordID`)</sub> — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI_ModelAccess_GetTextureCoord` – Returns the texture coordinates of the given surface point. <sub>(was `APIAny_GetTextureCoordID`)</sub>
 
 ## Body
 
@@ -1140,7 +1140,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_LibPart_GetNum` <sub>AC25–26</sub>
 - ✅ `ACAPI_LibPart_Save` <sub>AC25–26</sub>
 - ✅ `ACAPI_LibPart_Search` <sub>AC25–26</sub>
-- 🔀 `ACAPI_LibPart_ShapePrims` <sub>AC25–26</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI_LibPart_ShapePrims` <sub>AC25–26</sub>
 
 ## MenuItem
 
@@ -1290,7 +1290,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 - ✅ `ACAPI_DrawingPrimitive_DrawStoryControl` – Draws the primitives of the Story Level Control elements on the given Section/Elevation database. <sub>(was `APIDb_DrawStoryControlID`)</sub>
 - 🔀 `ACAPI_DrawingPrimitive_ShapePrims` <sub>AC27–30</sub> – Virtually draws the shape of an element.
-- ✅ `ACAPI_DrawingPrimitive_ShapePrimsExt` – Virtually draws the shape of an element. <sub>(was `ACAPI_Element_ShapePrimsExt`)</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI_DrawingPrimitive_ShapePrimsExt` – Virtually draws the shape of an element. <sub>(was `ACAPI_Element_ShapePrimsExt`)</sub>
 
 ## ElementGroup
 
@@ -1358,7 +1358,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## 3D
 
-- ⛔ `ACAPI_3D_GetNum` <sub>AC25–26</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)") *(Archicad 25/26 only, with no counterpart in Archicad 27-30, and a bare count without element context (#1067))*
+- ⛔ `ACAPI_3D_GetNum` <sub>AC25–26</sub> *(Archicad 25/26 only, with no counterpart in Archicad 27-30, and a bare count without element context (#1067))*
 
 ## AddOnIdentification
 
@@ -1366,7 +1366,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## Override
 
-- ⛔ `ACAPI_Override_GetOverrideRule` <sub>AC25–26</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)") *(Archicad 25/26 name of ACAPI_GraphicalOverride_GetOverrideRuleById; the graphic override commands start at Archicad 27 on purpose (#873, #1059))*
+- ⛔ `ACAPI_Override_GetOverrideRule` <sub>AC25–26</sub> *(Archicad 25/26 name of ACAPI_GraphicalOverride_GetOverrideRuleById; the graphic override commands start at Archicad 27 on purpose (#873, #1059))*
 
 ## ProjectSettings
 
@@ -1386,7 +1386,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::AccessoryDefault::Place` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::AccessoryUIManager::ApplyAccessoryDefaultToToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
 - ➖ `ACAPI::MEP::AccessoryUIManager::CreateAccessoryDefaultFromToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
-- ✅ `ACAPI::MEP::AngleSetBase::Exists` <sub>AC29–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::AngleSetBase::Exists` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::GetAngle` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::GetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::GetSize` <sub>AC29–30</sub>
@@ -1396,8 +1396,8 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::AngleSetBase::Modifier::Delete` <sub>AC29–30</sub> — [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines")
 - ✅ `ACAPI::MEP::AngleSetBase::Modifier::SetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::Modify` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::Bend::Modifier::SetFactorRadius` <sub>AC27</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- ⛔ `ACAPI::MEP::Bend::Modify` <sub>AC27</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)") *(does not compile against the Archicad 27 DevKit: Bend::Modifier does not derive from ACAPI::ModifierBase, which ExecuteUndoableScope requires (Archicad 27 only))*
+- ✅ `ACAPI::MEP::Bend::Modifier::SetFactorRadius` <sub>AC27</sub>
+- ⛔ `ACAPI::MEP::Bend::Modify` <sub>AC27</sub> *(does not compile against the Archicad 27 DevKit: Bend::Modifier does not derive from ACAPI::ModifierBase, which ExecuteUndoableScope requires (Archicad 27 only))*
 - ➖ `ACAPI::MEP::BendUIManager::ApplyBendDefaultToToolUIData` <sub>AC28</sub> *(tool settings dialog data (user interface))*
 - ➖ `ACAPI::MEP::BendUIManager::CreateBendDefaultFromToolUIData` <sub>AC28</sub> *(tool settings dialog data (user interface))*
 - ✅ `ACAPI::MEP::Branch::Get` <sub>AC27–30</sub>
@@ -1408,13 +1408,13 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::Branch::GetInsulationThickness` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::Branch::GetLength` <sub>AC27–30</sub>
 - 🔀 `ACAPI::MEP::Branch::Modifier::Inject` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::Branch::Modifier::RemoveInsulation` <sub>AC27–28</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- ✅ `ACAPI::MEP::Branch::Modifier::SetInsulationThickness` <sub>AC27–28</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::Branch::Modifier::RemoveInsulation` <sub>AC27–28</sub>
+- ✅ `ACAPI::MEP::Branch::Modifier::SetInsulationThickness` <sub>AC27–28</sub>
 - ✅ `ACAPI::MEP::Branch::Modify` <sub>AC27–30</sub>
 - 🔀 `ACAPI::MEP::Branch::PickUpDefault` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::BranchUIManager::ApplyBranchDefaultToToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
 - ➖ `ACAPI::MEP::BranchUIManager::CreateBranchDefaultFromToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
-- 🔀 `ACAPI::MEP::CableCarrierPort::Get` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::CableCarrierPort::Get` <sub>AC27–30</sub>
 - 🔀 `ACAPI::MEP::CableCarrierPortDefault::GetHeight` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::CableCarrierPortDefault::Modifier::SetHeight` <sub>AC28–30</sub>
 - 🔀 `ACAPI::MEP::CableCarrierPortDefault::Modify` <sub>AC28–30</sub>
@@ -1439,11 +1439,11 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🔀 `ACAPI::MEP::CollectAllMEPElements` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::CreateAccessoryDefault` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::CreateAccessoryUIManager` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
-- 🔀 `ACAPI::MEP::CreateBranchDefault` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::CreateBranchDefault` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::CreateBranchUIManager` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
 - ➖ `ACAPI::MEP::CreateCalculationInterface` <sub>AC28</sub> *(interfaces an add-on implements or registers, not commands)*
 - ✅ `ACAPI::MEP::CreateDistributionSystemsGraph` <sub>AC28–30</sub>
-- 🔀 `ACAPI::MEP::CreateElbowDefault` <sub>AC27–30</sub> <sub>(was `ACAPI::MEP::CreateBendDefault`)</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::CreateElbowDefault` <sub>AC27–30</sub> <sub>(was `ACAPI::MEP::CreateBendDefault`)</sub>
 - ➖ `ACAPI::MEP::CreateElbowUIManager` <sub>AC28–30</sub> <sub>(was `ACAPI::MEP::CreateBendUIManager`)</sub> *(tool settings dialog data (user interface))*
 - ✅ `ACAPI::MEP::CreateElectricalDeviceDefault` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::CreateElectricalPanelDefault` <sub>AC30</sub>
@@ -1454,20 +1454,20 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `ACAPI::MEP::CreateFittingUIManager` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
 - 🔀 `ACAPI::MEP::CreateFlexibleSegmentDefault` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::CreateFlexibleSegmentUIManager` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
-- 🔀 `ACAPI::MEP::CreateRigidSegmentDefault` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::CreateRigidSegmentDefault` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::CreateRigidSegmentUIManager` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
 - ✅ `ACAPI::MEP::CreateRoutingElementDefault` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::CreateRoutingElementUIManager` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
-- 🔀 `ACAPI::MEP::CreateRoutingNodeDefault` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::CreateRoutingNodeDefault` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::CreateRoutingNodeUIManager` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
-- 🔀 `ACAPI::MEP::CreateRoutingSegmentDefault` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::CreateRoutingSegmentDefault` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::CreateRoutingSegmentUIManager` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
 - ✅ `ACAPI::MEP::CreateSystemGroup` <sub>AC29–30</sub>
 - 🔀 `ACAPI::MEP::CreateTakeOffDefault` <sub>AC28–30</sub>
 - ➖ `ACAPI::MEP::CreateTakeOffUIManager` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
 - ✅ `ACAPI::MEP::CreateTerminalDefault` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::CreateTerminalUIManager` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
-- 🔀 `ACAPI::MEP::CreateTransitionDefault` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::CreateTransitionDefault` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::CreateTransitionUIManager` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
 - ✅ `ACAPI::MEP::DistributionSystem::GetElements` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::DistributionSystem::GetMEPDomain` <sub>AC28–30</sub>
@@ -1475,7 +1475,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::DistributionSystem::GetSystemCategory` <sub>AC28–30</sub>
 - 🔀 `ACAPI::MEP::DistributionSystem::TraverseTree` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::DistributionSystemsGraph::GetElements` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::DistributionSystemsGraph::GetPorts` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::DistributionSystemsGraph::GetPorts` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::DistributionSystemsGraph::GetSystems` <sub>AC28–30</sub>
 - 🔀 `ACAPI::MEP::DistributionSystemsGraph::TraverseTree` <sub>AC28–30</sub>
 - 🔀 `ACAPI::MEP::DistributionSystemsGraphTreeNode::GetConnectedPortFromPreviousElement` <sub>AC28–30</sub>
@@ -1670,8 +1670,8 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🔀 `ACAPI::MEP::Elbow::PickUpDefault` <sub>AC27–30</sub> <sub>(was `ACAPI::MEP::Bend::PickUpDefault`)</sub>
 - ✅ `ACAPI::MEP::ElbowDefault::GetFactorRadius` <sub>AC27–30</sub> <sub>(was `ACAPI::MEP::BendDefault::GetFactorRadius`)</sub>
 - ✅ `ACAPI::MEP::ElbowDefault::GetPreferenceTable` <sub>AC28–30</sub> <sub>(was `ACAPI::MEP::BendDefault::GetPreferenceTable`)</sub>
-- ✅ `ACAPI::MEP::ElbowDefault::Modifier::SetFactorRadius` <sub>AC27–30</sub> <sub>(was `ACAPI::MEP::BendDefault::Modifier::SetFactorRadius`)</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- ✅ `ACAPI::MEP::ElbowDefault::Modifier::SetPreferenceTable` <sub>AC28–30</sub> <sub>(was `ACAPI::MEP::BendDefault::Modifier::SetPreferenceTable`)</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::ElbowDefault::Modifier::SetFactorRadius` <sub>AC27–30</sub> <sub>(was `ACAPI::MEP::BendDefault::Modifier::SetFactorRadius`)</sub>
+- ✅ `ACAPI::MEP::ElbowDefault::Modifier::SetPreferenceTable` <sub>AC28–30</sub> <sub>(was `ACAPI::MEP::BendDefault::Modifier::SetPreferenceTable`)</sub>
 - ✅ `ACAPI::MEP::ElbowDefault::Modify` <sub>AC27–30</sub> <sub>(was `ACAPI::MEP::BendDefault::Modify`)</sub>
 - ➖ `ACAPI::MEP::ElbowUIManager::ApplyElbowDefaultToToolUIData` <sub>AC29–30</sub> *(tool settings dialog data (user interface))*
 - ➖ `ACAPI::MEP::ElbowUIManager::CreateElbowDefaultFromToolUIData` <sub>AC29–30</sub> *(tool settings dialog data (user interface))*
@@ -1744,7 +1744,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ElectricalPanel::Modifier::SetPanelName` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalPanel::Modify` <sub>AC30</sub>
 - 🔀 `ACAPI::MEP::ElectricalPanel::PickUpDefault` <sub>AC30</sub>
-- 🔀 `ACAPI::MEP::ElectricalPanelDefault::GetCircuitDefaultCount` <sub>AC30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::ElectricalPanelDefault::GetCircuitDefaultCount` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalPanelDefault::GetCircuitIdStyle` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalPanelDefault::GetCircuitNamePrefix` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalPanelDefault::GetPanelName` <sub>AC30</sub>
@@ -1758,14 +1758,14 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::IsEditable` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::AddLoadClassification` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::AddWiringType` <sub>AC30</sub>
-- ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::ClearLoadClassifications` <sub>AC30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::ClearWiringTypes` <sub>AC30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::ClearLoadClassifications` <sub>AC30</sub>
+- ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::ClearWiringTypes` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::RemoveLoadClassification` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::RemoveWiringType` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::SetVoltage` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modify` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::Element::Get` <sub>AC27–30</sub> — [#2222](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2222 "[4/6] Shared dryRun: project, navigator and library deletes"), [#2221](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2221 "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"), [#2217](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2217 "[4/5] GetProjectHealth: read-only project health summary"), [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#2206](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2206 "[3/3] Add ScaleElements command"), [#2205](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2205 "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"), [#2200](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2200 "[1/5] SplitElements: split walls, beams and lines along a line"), [#2148](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2148 "ChangeSelectionOfElements: report elements Archicad did not select"), [#1855](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1855 "CreateTexts / ModifyTexts: optional width turns word wrap on"), [#1671](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1671 "Drawing anchor placement, offset, and pen table control"), [#1431](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1431 "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"), [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#463](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/463 "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters")
-- ✅ `ACAPI::MEP::ElementBase::Exists` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::ElementBase::Exists` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetAnchorPoint` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetBaseRotation` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetDirectConnectedMEPElementIds` <sub>AC27–30</sub>
@@ -1774,28 +1774,28 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ElementBase::GetObjectYSize` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetOrientation` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetPortIDs` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::ElementBase::GetPorts` <sub>AC30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::ElementBase::GetPorts` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetReflected` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElementDefault::GetBaseRotation` <sub>AC30</sub>
-- 🔀 `ACAPI::MEP::ElementDefault::GetCableCarrierPortDefault` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- 🔀 `ACAPI::MEP::ElementDefault::GetCableCarrierPortDefaults` <sub>AC30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::ElementDefault::GetCableCarrierPortDefault` <sub>AC28–30</sub>
+- 🔀 `ACAPI::MEP::ElementDefault::GetCableCarrierPortDefaults` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElementDefault::GetDomain` <sub>AC27–30</sub>
 - 🔀 `ACAPI::MEP::ElementDefault::GetDomainOfPort` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ElementDefault::GetInsulationThickness` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementDefault::GetObjectId` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementDefault::GetObjectXSize` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElementDefault::GetObjectYSize` <sub>AC30</sub>
-- 🔀 `ACAPI::MEP::ElementDefault::GetPipingPortDefault` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- 🔀 `ACAPI::MEP::ElementDefault::GetPipingPortDefaults` <sub>AC30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::ElementDefault::GetPipingPortDefault` <sub>AC28–30</sub>
+- 🔀 `ACAPI::MEP::ElementDefault::GetPipingPortDefaults` <sub>AC30</sub>
 - 🔀 `ACAPI::MEP::ElementDefault::GetPortCount` <sub>AC27–30</sub>
-- 🔀 `ACAPI::MEP::ElementDefault::GetPortDefaults` <sub>AC30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::ElementDefault::GetPortDefaults` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElementDefault::GetReflected` <sub>AC30</sub>
-- 🔀 `ACAPI::MEP::ElementDefault::GetShapeOfPort` <sub>AC27</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- 🔀 `ACAPI::MEP::ElementDefault::GetVentilationPortDefault` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- 🔀 `ACAPI::MEP::ElementDefault::GetVentilationPortDefaults` <sub>AC30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- ✅ `ACAPI::MEP::ElementDefault::Modifier::RemoveInsulation` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::ElementDefault::GetShapeOfPort` <sub>AC27</sub>
+- 🔀 `ACAPI::MEP::ElementDefault::GetVentilationPortDefault` <sub>AC28–30</sub>
+- 🔀 `ACAPI::MEP::ElementDefault::GetVentilationPortDefaults` <sub>AC30</sub>
+- ✅ `ACAPI::MEP::ElementDefault::Modifier::RemoveInsulation` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementDefault::Modifier::SetBaseRotation` <sub>AC30</sub>
-- ✅ `ACAPI::MEP::ElementDefault::Modifier::SetInsulationThickness` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::ElementDefault::Modifier::SetInsulationThickness` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementDefault::Modifier::SetObjectId` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementDefault::Modifier::SetObjectXSize` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElementDefault::Modifier::SetObjectYSize` <sub>AC30</sub>
@@ -1818,24 +1818,24 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::FittingDefault::Place` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::FittingUIManager::ApplyFittingDefaultToToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
 - ➖ `ACAPI::MEP::FittingUIManager::CreateFittingDefaultFromToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
-- ✅ `ACAPI::MEP::FlexibleSegment::Get` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::FlexibleSegment::Get` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::FlexibleSegment::GetControlPoints` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::FlexibleSegment::GetDomain` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::FlexibleSegment::GetHeight` <sub>AC27–30</sub>
-- 🔀 `ACAPI::MEP::FlexibleSegment::GetPolyline` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::FlexibleSegment::GetPolyline` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::FlexibleSegment::GetWidth` <sub>AC27–30</sub>
 - 🔀 `ACAPI::MEP::FlexibleSegment::Modifier::Inject` <sub>AC27–30</sub>
-- 🔀 `ACAPI::MEP::FlexibleSegment::Modifier::SetControlPoints` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::FlexibleSegment::Modifier::SetControlPoints` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::FlexibleSegment::Modifier::SetHeight` <sub>AC27–30</sub>
-- 🔀 `ACAPI::MEP::FlexibleSegment::Modifier::SetPolyline` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::FlexibleSegment::Modifier::SetPolyline` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::FlexibleSegment::Modifier::SetWidth` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::FlexibleSegment::Modify` <sub>AC27–30</sub>
 - 🔀 `ACAPI::MEP::FlexibleSegment::PickUpDefault` <sub>AC27–30</sub>
 - 🔀 `ACAPI::MEP::FlexibleSegmentDefault::GetHeight` <sub>AC27–30</sub>
 - 🔀 `ACAPI::MEP::FlexibleSegmentDefault::GetShape` <sub>AC27–30</sub>
 - 🔀 `ACAPI::MEP::FlexibleSegmentDefault::GetWidth` <sub>AC27–30</sub>
-- 🔀 `ACAPI::MEP::FlexibleSegmentDefault::Place` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- 🔀 `ACAPI::MEP::FlexibleSegmentDefault::PlacePolyline` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::FlexibleSegmentDefault::Place` <sub>AC27–30</sub>
+- 🔀 `ACAPI::MEP::FlexibleSegmentDefault::PlacePolyline` <sub>AC28–30</sub>
 - ➖ `ACAPI::MEP::FlexibleSegmentUIManager::ApplyFlexibleSegmentDefaultToToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
 - ➖ `ACAPI::MEP::FlexibleSegmentUIManager::CreateFlexibleSegmentDefaultFromToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
 - ➖ `ACAPI::MEP::FromAttributeEnum` <sub>AC29–30</sub> *(C++ API infrastructure)*
@@ -1849,7 +1849,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::GetDuctSegmentPreferenceTableContainer` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::GetDuctTransitionPreferenceTableContainer` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::GetElectricalProjectSettings` <sub>AC30</sub>
-- ✅ `ACAPI::MEP::GetLocalizedElemTypeName` <sub>AC27–28</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::GetLocalizedElemTypeName` <sub>AC27–28</sub>
 - ➖ `ACAPI::MEP::GetMEPModelCheckTypeId` <sub>AC29–30</sub> *(registering add-on model checks, not commands)*
 - ✅ `ACAPI::MEP::GetPipeAngleSet` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::GetPipeBranchPreferenceTableContainer` <sub>AC28–30</sub>
@@ -1886,7 +1886,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::IsTerminal` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::IsTransition` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::IsVentilation` <sub>AC28–30</sub>
-- 🔀 `ACAPI::MEP::ModifiableElement::Get` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::ModifiableElement::Get` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ModifiableElementBase::Modifier::SetAnchorPoint` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ModifiableElementBase::Modifier::SetBaseRotation` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ModifiableElementBase::Modifier::SetObjectId` <sub>AC27–30</sub>
@@ -1895,7 +1895,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ModifiableElementBase::Modifier::SetOrientation` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ModifiableElementBase::Modifier::SetReflected` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ModifiableElementBase::Modify` <sub>AC27–30</sub>
-- ⛔ `ACAPI::MEP::PhysicalSystem::Create` <sub>AC29–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)") *(has no id getter for the new system; CreateMEPPhysicalSystems uses SystemGroup::Modifier::Add, which returns the new id directly)*
+- ⛔ `ACAPI::MEP::PhysicalSystem::Create` <sub>AC29–30</sub> *(has no id getter for the new system; CreateMEPPhysicalSystems uses SystemGroup::Modifier::Add, which returns the new id directly)*
 - 🔀 `ACAPI::MEP::PhysicalSystem::FindSystemIdsFromElementIds` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::PhysicalSystem::Get` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::PhysicalSystem::GetName` <sub>AC29–30</sub>
@@ -2083,23 +2083,23 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::PipingPortDefault::Modifier::SetWallThickness` <sub>AC28–30</sub>
 - 🔀 `ACAPI::MEP::PipingPortDefault::Modify` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::Port::Get` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::PortBase::Exists` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::PortBase::Exists` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetConnectedMEPElementId` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetConnectedPortId` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetConnectionStyle` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetDomain` <sub>AC27–30</sub>
-- 🔀 `ACAPI::MEP::PortBase::GetElemId` <sub>AC30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::PortBase::GetElemId` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetHeight` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::PortBase::GetMEPElementId` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::PortBase::GetMEPElementId` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetMEPSystem` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetName` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetOrientation` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetPosition` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetShape` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PortBase::GetWidth` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::PortBase::IsConnectable` <sub>AC27</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- 🔀 `ACAPI::MEP::PortBase::IsConnected` <sub>AC27</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- ✅ `ACAPI::MEP::PortBase::IsPhysicallyConnectable` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::PortBase::IsConnectable` <sub>AC27</sub>
+- 🔀 `ACAPI::MEP::PortBase::IsConnected` <sub>AC27</sub>
+- ✅ `ACAPI::MEP::PortBase::IsPhysicallyConnectable` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::PortBase::IsPhysicallyConnected` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::PortBase::Modifier::SetConnectionStyle` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::PortBase::Modifier::SetHeight` <sub>AC27–30</sub>
@@ -2135,7 +2135,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::PreferenceTableContainerBase::Modifier::AddNewTable` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::PreferenceTableContainerBase::Modifier::Delete` <sub>AC27–30</sub> — [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines")
 - ✅ `ACAPI::MEP::PreferenceTableContainerBase::Modify` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::ReferenceSetBase::Exists` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::ReferenceSetBase::Exists` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::GetName` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::GetReferenceId` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::GetSize` <sub>AC28–30</sub>
@@ -2154,12 +2154,12 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::RigidSegment::GetRoutingSegmentId` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RigidSegment::GetWidth` <sub>AC27–30</sub>
 - 🔀 `ACAPI::MEP::RigidSegment::PickUpDefault` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::RigidSegmentDefault::GetHeight` <sub>AC27–28</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- ✅ `ACAPI::MEP::RigidSegmentDefault::GetShape` <sub>AC27–28</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- ✅ `ACAPI::MEP::RigidSegmentDefault::GetWidth` <sub>AC27–28</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::RigidSegmentDefault::GetHeight` <sub>AC27–28</sub>
+- ✅ `ACAPI::MEP::RigidSegmentDefault::GetShape` <sub>AC27–28</sub>
+- ✅ `ACAPI::MEP::RigidSegmentDefault::GetWidth` <sub>AC27–28</sub>
 - ➖ `ACAPI::MEP::RigidSegmentUIManager::ApplyRigidSegmentDefaultToToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
 - ➖ `ACAPI::MEP::RigidSegmentUIManager::CreateRigidSegmentDefaultFromToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
-- ✅ `ACAPI::MEP::RoutingElement::Get` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::RoutingElement::Get` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingElement::GetBranchPreferenceTableId` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::RoutingElement::GetCutPlanePosition` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::RoutingElement::GetDomain` <sub>AC27–30</sub>
@@ -2170,12 +2170,12 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::RoutingElement::GetOffsetFromHomeStory` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingElement::GetOnStoryVisibility` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::RoutingElement::GetPolyLine` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::RoutingElement::GetRoutingNodeDefaultParameters` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::RoutingElement::GetRoutingNodeDefaultParameters` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingElement::GetRoutingNodeIds` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::RoutingElement::GetRoutingSegmentDefaultParameters` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::RoutingElement::GetRoutingSegmentDefaultParameters` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingElement::GetRoutingSegmentIds` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingElement::GetShowProjection` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::RoutingElement::Modifier::Connect` <sub>AC27</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::RoutingElement::Modifier::Connect` <sub>AC27</sub>
 - ✅ `ACAPI::MEP::RoutingElement::Modifier::ConnectLogically` <sub>AC28–30</sub>
 - 🔀 `ACAPI::MEP::RoutingElement::Modifier::Inject` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingElement::Modifier::SetBranchPreferenceTableId` <sub>AC28–30</sub>
@@ -2183,8 +2183,8 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::RoutingElement::Modifier::SetFloorPlanDisplayOption` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::RoutingElement::Modifier::SetMEPSystem` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingElement::Modifier::SetOnStoryVisibility` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::RoutingElement::Modifier::SetRoutingNodeDefaultParameters` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- ✅ `ACAPI::MEP::RoutingElement::Modifier::SetRoutingSegmentDefaultParameters` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::RoutingElement::Modifier::SetRoutingNodeDefaultParameters` <sub>AC27–30</sub>
+- ✅ `ACAPI::MEP::RoutingElement::Modifier::SetRoutingSegmentDefaultParameters` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingElement::Modifier::SetShowProjection` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::RoutingElement::Modify` <sub>AC27–30</sub>
 - 🔀 `ACAPI::MEP::RoutingElement::PickUpDefault` <sub>AC27–30</sub>
@@ -2202,47 +2202,47 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::RoutingElementDefault::Modifier::SetFloorPlanDisplayOption` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::RoutingElementDefault::Modifier::SetMEPSystem` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingElementDefault::Modifier::SetOnStoryVisibility` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::RoutingElementDefault::Modifier::SetRoutingNodeDefault` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::RoutingElementDefault::Modifier::SetRoutingNodeDefault` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingElementDefault::Modifier::SetRoutingSegmentDefault` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingElementDefault::Modifier::SetShowProjection` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::RoutingElementDefault::Modify` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingElementDefault::Place` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::RoutingElementUIManager::ApplyRoutingElementDefaultToToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
 - ➖ `ACAPI::MEP::RoutingElementUIManager::CreateRoutingElementDefaultFromToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
-- ✅ `ACAPI::MEP::RoutingNode::Get` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- 🔀 `ACAPI::MEP::RoutingNode::GetBendDefaultParameters` <sub>AC27–28</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::RoutingNode::Get` <sub>AC27–30</sub>
+- 🔀 `ACAPI::MEP::RoutingNode::GetBendDefaultParameters` <sub>AC27–28</sub>
 - ✅ `ACAPI::MEP::RoutingNode::GetBendIds` <sub>AC27–28</sub>
 - ✅ `ACAPI::MEP::RoutingNode::GetDomain` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::RoutingNode::GetElbowDefaultParameters` <sub>AC29–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::RoutingNode::GetElbowDefaultParameters` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::RoutingNode::GetElbowIds` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::RoutingNode::GetIncomingSegmentId` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingNode::GetOutgoingSegmentId` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingNode::GetPosition` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingNode::GetPreferredTransitionPlacement` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::RoutingNode::GetRoutingElementId` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- ✅ `ACAPI::MEP::RoutingNode::GetTransitionDefaultParameters` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::RoutingNode::GetRoutingElementId` <sub>AC27–30</sub>
+- ✅ `ACAPI::MEP::RoutingNode::GetTransitionDefaultParameters` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingNode::GetTransitionIds` <sub>AC27–30</sub>
 - 🔀 `ACAPI::MEP::RoutingNode::Modifier::Inject` <sub>AC27–30</sub>
-- 🔀 `ACAPI::MEP::RoutingNode::Modifier::SetBendDefaultParameters` <sub>AC27–28</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- ✅ `ACAPI::MEP::RoutingNode::Modifier::SetElbowDefaultParameters` <sub>AC29–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::RoutingNode::Modifier::SetBendDefaultParameters` <sub>AC27–28</sub>
+- ✅ `ACAPI::MEP::RoutingNode::Modifier::SetElbowDefaultParameters` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::RoutingNode::Modifier::SetPosition` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingNode::Modifier::SetPreferredTransitionPlacement` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::RoutingNode::Modifier::SetTransitionDefaultParameters` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::RoutingNode::Modifier::SetTransitionDefaultParameters` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingNode::Modify` <sub>AC27–30</sub>
 - 🔀 `ACAPI::MEP::RoutingNode::PickUpDefault` <sub>AC27–30</sub>
-- 🔀 `ACAPI::MEP::RoutingNodeDefault::GetBendDefault` <sub>AC27–28</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::RoutingNodeDefault::GetBendDefault` <sub>AC27–28</sub>
 - ✅ `ACAPI::MEP::RoutingNodeDefault::GetDomain` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingNodeDefault::GetElbowDefault` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::RoutingNodeDefault::GetPreferredTransitionPlacement` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingNodeDefault::GetTransitionDefault` <sub>AC27–30</sub>
-- 🔀 `ACAPI::MEP::RoutingNodeDefault::Modifier::SetBendDefault` <sub>AC27–28</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- ✅ `ACAPI::MEP::RoutingNodeDefault::Modifier::SetElbowDefault` <sub>AC29–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::RoutingNodeDefault::Modifier::SetBendDefault` <sub>AC27–28</sub>
+- ✅ `ACAPI::MEP::RoutingNodeDefault::Modifier::SetElbowDefault` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::RoutingNodeDefault::Modifier::SetPreferredTransitionPlacement` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::RoutingNodeDefault::Modifier::SetTransitionDefault` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::RoutingNodeDefault::Modifier::SetTransitionDefault` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingNodeDefault::Modify` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::RoutingNodeUIManager::ApplyRoutingNodeDefaultToToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
 - ➖ `ACAPI::MEP::RoutingNodeUIManager::CreateRoutingNodeDefaultFromToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
-- ✅ `ACAPI::MEP::RoutingSegment::Get` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::RoutingSegment::Get` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegment::GetAnchor` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegment::GetBeginNodeId` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegment::GetConnectionStyle` <sub>AC28–30</sub>
@@ -2256,9 +2256,9 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::RoutingSegment::GetPreferenceTableId` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegment::GetReferenceLineOffsetX` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegment::GetReferenceLineOffsetY` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::RoutingSegment::GetRigidSegmentDefaultParameters` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::RoutingSegment::GetRigidSegmentDefaultParameters` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegment::GetRigidSegmentIds` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::RoutingSegment::GetRoutingElementId` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::RoutingSegment::GetRoutingElementId` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegment::GetWallThickness` <sub>AC28–30</sub>
 - 🔀 `ACAPI::MEP::RoutingSegment::Modifier::Inject` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegment::Modifier::SetAnchor` <sub>AC28–30</sub>
@@ -2271,7 +2271,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::RoutingSegment::Modifier::SetPreferenceTableId` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegment::Modifier::SetReferenceLineOffsetX` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegment::Modifier::SetReferenceLineOffsetY` <sub>AC28–30</sub>
-- 🔀 `ACAPI::MEP::RoutingSegment::Modifier::SetRigidSegmentDefaultParameters` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::RoutingSegment::Modifier::SetRigidSegmentDefaultParameters` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegment::Modifier::SetWallThickness` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegment::Modify` <sub>AC27–30</sub>
 - 🔀 `ACAPI::MEP::RoutingSegment::PickUpDefault` <sub>AC27–30</sub>
@@ -2286,7 +2286,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::RoutingSegmentDefault::GetPreferenceTableId` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegmentDefault::GetReferenceLineOffsetX` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegmentDefault::GetReferenceLineOffsetY` <sub>AC28–30</sub>
-- 🔀 `ACAPI::MEP::RoutingSegmentDefault::GetRigidSegmentDefault` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::RoutingSegmentDefault::GetRigidSegmentDefault` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegmentDefault::GetWallThickness` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegmentDefault::Modifier::SetAnchor` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegmentDefault::Modifier::SetConnectionStyle` <sub>AC28–30</sub>
@@ -2298,7 +2298,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::RoutingSegmentDefault::Modifier::SetPreferenceTableId` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegmentDefault::Modifier::SetReferenceLineOffsetX` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegmentDefault::Modifier::SetReferenceLineOffsetY` <sub>AC28–30</sub>
-- 🔀 `ACAPI::MEP::RoutingSegmentDefault::Modifier::SetRigidSegmentDefault` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::MEP::RoutingSegmentDefault::Modifier::SetRigidSegmentDefault` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegmentDefault::Modifier::SetWallThickness` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::RoutingSegmentDefault::Modify` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::RoutingSegmentUIManager::ApplyRoutingSegmentDefaultToToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
@@ -2352,7 +2352,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::TransitionDefault::GetOffsetZ` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::TransitionDefault::GetPreferenceTable` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::TransitionDefault::Modifier::SetAngle` <sub>AC27–30</sub>
-- ✅ `ACAPI::MEP::TransitionDefault::Modifier::SetPreferenceTable` <sub>AC29–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `ACAPI::MEP::TransitionDefault::Modifier::SetPreferenceTable` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::TransitionDefault::Modify` <sub>AC27–30</sub>
 - ➖ `ACAPI::MEP::TransitionUIManager::ApplyTransitionDefaultToToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
 - ➖ `ACAPI::MEP::TransitionUIManager::CreateTransitionDefaultFromToolUIData` <sub>AC28–30</sub> *(tool settings dialog data (user interface))*
@@ -2446,7 +2446,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::Element::ModifiableOpeningGeometry::SetPolygon` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::ModifiableOpeningGeometry::Transform` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::Opening::Exists` <sub>AC29–30</sub>
-- ✅ `ACAPI::Element::Opening::Get` <sub>AC29–30</sub> — [#2226](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2226 "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"), [#2222](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2222 "[4/6] Shared dryRun: project, navigator and library deletes"), [#2217](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2217 "[4/5] GetProjectHealth: read-only project health summary"), [#2205](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2205 "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#463](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/463 "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters")
+- ✅ `ACAPI::Element::Opening::Get` <sub>AC29–30</sub> — [#2222](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2222 "[4/6] Shared dryRun: project, navigator and library deletes"), [#2217](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2217 "[4/5] GetProjectHealth: read-only project health summary"), [#2205](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2205 "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#463](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/463 "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters")
 - ✅ `ACAPI::Element::Opening::GetConnectedOpenings` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::Opening::GetCutElements` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::Opening::GetExtrusionParameters` <sub>AC29–30</sub>
@@ -2515,7 +2515,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::Element::OpeningGeometry::GetPolygon` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::OpeningGeometry::GetVectorX` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::OpeningGeometry::GetVectorY` <sub>AC29–30</sub>
-- 🔀 `ACAPI::ElementBase::GetElemId` <sub>AC27–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::ElementBase::GetElemId` <sub>AC27–30</sub>
 - ✅ `ACAPI::ElementBase::IsEditable` <sub>AC28–30</sub>
 - ✅ `ACAPI::ElementDefault::GetElemType` <sub>AC29–30</sub>
 - ✅ `ACAPI::ElementDefault::SetAsArchicadDefault` <sub>AC27–30</sub>
@@ -2525,16 +2525,16 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🔀 `ACAPI::Favorite::Favorite::GetClassifications` <sub>AC29–30</sub>
 - 🔀 `ACAPI::Favorite::Favorite::GetElemCategoryValues` <sub>AC29–30</sub>
 - ✅ `ACAPI::Favorite::Favorite::GetElementDefault` <sub>AC29–30</sub>
-- 🔀 `ACAPI::Favorite::Favorite::GetElementMarker` <sub>AC29–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- ✅ `ACAPI::Favorite::Favorite::GetElementType` <sub>AC29–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- 🔀 `ACAPI::Favorite::Favorite::GetMemo` <sub>AC29–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- 🔀 `ACAPI::Favorite::Favorite::GetMemoMarker` <sub>AC29–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::Favorite::Favorite::GetElementMarker` <sub>AC29–30</sub>
+- ✅ `ACAPI::Favorite::Favorite::GetElementType` <sub>AC29–30</sub>
+- 🔀 `ACAPI::Favorite::Favorite::GetMemo` <sub>AC29–30</sub>
+- 🔀 `ACAPI::Favorite::Favorite::GetMemoMarker` <sub>AC29–30</sub>
 - ✅ `ACAPI::Favorite::Favorite::GetName` <sub>AC29–30</sub> — [#2217](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2217 "[4/5] GetProjectHealth: read-only project health summary"), [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#2206](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2206 "[3/3] Add ScaleElements command"), [#2205](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2205 "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"), [#2200](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2200 "[1/5] SplitElements: split walls, beams and lines along a line"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
 - 🔀 `ACAPI::Favorite::Favorite::GetOldElementDefault` <sub>AC29–30</sub>
 - ✅ `ACAPI::Favorite::Favorite::GetParentFolder` <sub>AC29–30</sub>
-- ⛔ `ACAPI::Favorite::Favorite::GetPreviewImage` <sub>AC29–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)") *(GetFavoritePreviewImage stays on the C API on purpose (8dbbe7b9))*
+- ⛔ `ACAPI::Favorite::Favorite::GetPreviewImage` <sub>AC29–30</sub> *(GetFavoritePreviewImage stays on the C API on purpose (8dbbe7b9))*
 - 🔀 `ACAPI::Favorite::Favorite::GetProperties` <sub>AC29–30</sub>
-- 🔀 `ACAPI::Favorite::Favorite::GetSubElements` <sub>AC29–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `ACAPI::Favorite::Favorite::GetSubElements` <sub>AC29–30</sub>
 - ✅ `ACAPI::Favorite::Favorite::IsValid` <sub>AC29–30</sub>
 - ✅ `ACAPI::Favorite::FavoriteFolder::GetFavorites` <sub>AC29–30</sub>
 - ✅ `ACAPI::Favorite::FavoriteFolder::GetName` <sub>AC29–30</sub> — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
@@ -2559,7 +2559,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::Favorite::FavoriteManager::ImportFavoritesFromLegacyPRF` <sub>AC29–30</sub>
 - ✅ `ACAPI::Favorite::FavoriteManager::MoveFavorite` <sub>AC29–30</sub>
 - ✅ `ACAPI::Favorite::FavoriteManager::MoveFolder` <sub>AC29–30</sub>
-- ⛔ `ACAPI::Favorite::FavoriteManager::RenameFavorite` <sub>AC29–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)") *(RenameFavorites stays on the C API on purpose (8dbbe7b9))*
+- ⛔ `ACAPI::Favorite::FavoriteManager::RenameFavorite` <sub>AC29–30</sub> *(RenameFavorites stays on the C API on purpose (8dbbe7b9))*
 - ✅ `ACAPI::Favorite::FavoriteManager::RenameFolder` <sub>AC29–30</sub>
 - ✅ `ACAPI::Favorite::GetFavoriteManager` <sub>AC29–30</sub>
 - 🔀 `ACAPI::FindViewByGuid` <sub>AC27</sub>
@@ -3005,27 +3005,27 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## C++ IFCInOutAPI
 
-- 🔀 `IFCAPI::Assignments::GetChildObjectTable` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- 🔀 `IFCAPI::Assignments::GetParentObjectTable` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- 🔀 `IFCAPI::Assignments::GetRootGroups` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `IFCAPI::Assignments::GetChildObjectTable` <sub>AC28–30</sub>
+- 🔀 `IFCAPI::Assignments::GetParentObjectTable` <sub>AC28–30</sub>
+- 🔀 `IFCAPI::Assignments::GetRootGroups` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Attribute::GetName` <sub>AC28–30</sub> — [#2217](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2217 "[4/5] GetProjectHealth: read-only project health summary"), [#2205](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2205 "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
 - ✅ `IFCAPI::Attribute::GetValue` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Attribute::GetValueType` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Classification::GetDescription` <sub>AC28–30</sub>
-- ✅ `IFCAPI::Classification::GetEdition` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- 🔀 `IFCAPI::Classification::GetEditionDate` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `IFCAPI::Classification::GetEdition` <sub>AC28–30</sub>
+- 🔀 `IFCAPI::Classification::GetEditionDate` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Classification::GetLocation` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Classification::GetName` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Classification::GetSource` <sub>AC28–30</sub>
 - ✅ `IFCAPI::ClassificationReference::GetDescription` <sub>AC29–30</sub>
 - ✅ `IFCAPI::ClassificationReference::GetIdentification` <sub>AC28–30</sub>
-- 🔀 `IFCAPI::ClassificationReference::GetIfcRelAssociatesClassificationName` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `IFCAPI::ClassificationReference::GetIfcRelAssociatesClassificationName` <sub>AC28–30</sub>
 - ✅ `IFCAPI::ClassificationReference::GetLocation` <sub>AC28–30</sub>
 - ✅ `IFCAPI::ClassificationReference::GetName` <sub>AC28–30</sub>
 - ✅ `IFCAPI::ClassificationReference::GetReferencedSource` <sub>AC28–30</sub>
-- 🔀 `IFCAPI::ClassificationReference::GetSort` <sub>AC29–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `IFCAPI::ClassificationReference::GetSort` <sub>AC29–30</sub>
 - ➖ `IFCAPI::GetHookManager` <sub>AC28–30</sub> *(IFC export hooks, called by Archicad during the export)*
-- ✅ `IFCAPI::GetObjectAccessor` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ✅ `IFCAPI::GetObjectAccessor` <sub>AC28–30</sub>
 - ➖ `IFCAPI::GetPropertyBuilder` <sub>AC28–30</sub> *(IFC export hooks, called by Archicad during the export)*
 - ➖ `IFCAPI::HookAssignments::AssignObjects` <sub>AC28–30</sub> *(IFC export hooks, called by Archicad during the export)*
 - ➖ `IFCAPI::HookAssignments::CreateIfcGroup` <sub>AC28–30</sub> *(IFC export hooks, called by Archicad during the export)*
@@ -3049,19 +3049,19 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `IFCAPI::HookManager::UnregisterTypeObjectClassificationReferenceHook` <sub>AC28–30</sub> *(IFC export hooks, called by Archicad during the export)*
 - ➖ `IFCAPI::HookManager::UnregisterTypeObjectPropertyHook` <sub>AC28–30</sub> *(IFC export hooks, called by Archicad during the export)*
 - ✅ `IFCAPI::ObjectAccessor::CreateElementObjectID` <sub>AC28–30</sub>
-- 🔀 `IFCAPI::ObjectAccessor::CreateIfcBuildingObjectID` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `IFCAPI::ObjectAccessor::CreateIfcBuildingObjectID` <sub>AC28–30</sub>
 - ✅ `IFCAPI::ObjectAccessor::CreateIfcBuildingStoreyObjectID` <sub>AC28–30</sub>
-- 🔀 `IFCAPI::ObjectAccessor::CreateIfcProjectObjectID` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
-- 🔀 `IFCAPI::ObjectAccessor::CreateIfcSiteObjectID` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `IFCAPI::ObjectAccessor::CreateIfcProjectObjectID` <sub>AC28–30</sub>
+- 🔀 `IFCAPI::ObjectAccessor::CreateIfcSiteObjectID` <sub>AC28–30</sub>
 - ✅ `IFCAPI::ObjectAccessor::FindElementsByGlobalId` <sub>AC28–30</sub>
 - ✅ `IFCAPI::ObjectAccessor::GetAPIElementID` <sub>AC28–30</sub>
-- 🔀 `IFCAPI::ObjectAccessor::GetAssignments` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `IFCAPI::ObjectAccessor::GetAssignments` <sub>AC28–30</sub>
 - ✅ `IFCAPI::ObjectAccessor::GetExternalGlobalId` <sub>AC28–30</sub>
 - ✅ `IFCAPI::ObjectAccessor::GetGlobalId` <sub>AC28–30</sub>
 - ✅ `IFCAPI::ObjectAccessor::GetIFCType` <sub>AC28–30</sub>
-- 🔀 `IFCAPI::ObjectAccessor::GetStoryIndex` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `IFCAPI::ObjectAccessor::GetStoryIndex` <sub>AC28–30</sub>
 - ✅ `IFCAPI::ObjectAccessor::GetTypeObjectIFCType` <sub>AC28–30</sub>
-- 🔀 `IFCAPI::ObjectID::GenerateHashValue` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `IFCAPI::ObjectID::GenerateHashValue` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Property::GetName` <sub>AC28–30</sub> — [#2217](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2217 "[4/5] GetProjectHealth: read-only project health summary"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
 - ✅ `IFCAPI::Property::GetPropertySetName` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Property::GetTyped` <sub>AC28–30</sub>
@@ -3084,7 +3084,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `IFCAPI::PropertyBuilder::CreatePropertySingleValue` <sub>AC28–30</sub> *(IFC export hooks, called by Archicad during the export)*
 - ➖ `IFCAPI::PropertyBuilder::CreatePropertyTableValue` <sub>AC28–30</sub> *(IFC export hooks, called by Archicad during the export)*
 - ➖ `IFCAPI::PropertyBuilder::CreateValue` <sub>AC28–30</sub> *(IFC export hooks, called by Archicad during the export)*
-- 🔀 `IFCAPI::PropertyEnumeratedValue::GetEnumerationReference` <sub>AC28–30</sub> — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- 🔀 `IFCAPI::PropertyEnumeratedValue::GetEnumerationReference` <sub>AC28–30</sub>
 - ✅ `IFCAPI::PropertyEnumeratedValue::GetEnumerationValues` <sub>AC28–30</sub>
 - ✅ `IFCAPI::PropertyListValue::GetListValues` <sub>AC28–30</sub>
 - ✅ `IFCAPI::PropertySingleValue::GetNominalValue` <sub>AC28–30</sub>
@@ -3232,8 +3232,8 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## AC25/26 command ids (APIIo)
 
-- ➖ `APIIo_AreCuttingPlanesVisibleID` <sub>AC28–30</sub> – par1: bool* par2: --- — [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)") *(leftover command id; Get3DCutawayStatus reads the flag through ACAPI::CuttingPlane::AreCuttingPlanesVisible (Archicad 28+) and the C API (Archicad 25-27))*
-- ✅ `APIIo_HighlightElementsID` <sub>AC25</sub> – par1: const GS::HashTable<API_Guid, API_RGBAColor>* (elems) par2: bool* (wireframe3D) — [#1580](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1580 "Build what #1538 left out for lack of the DevKit: texture coordinates, convex polygons, IFC classification references, ghost records, library part 2D symbols"), [#1538](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1538 "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)")
+- ➖ `APIIo_AreCuttingPlanesVisibleID` <sub>AC28–30</sub> – par1: bool* par2: --- *(leftover command id; Get3DCutawayStatus reads the flag through ACAPI::CuttingPlane::AreCuttingPlanesVisible (Archicad 28+) and the C API (Archicad 25-27))*
+- ✅ `APIIo_HighlightElementsID` <sub>AC25</sub> – par1: const GS::HashTable<API_Guid, API_RGBAColor>* (elems) par2: bool* (wireframe3D)
 - ✅ `APIIo_Is3DCutawayEnabledID` – par1: bool* par2: ---
 - ✅ `APIIo_IsCuttingPlanesVisibleID` <sub>AC25–27</sub> – par1: bool* par2: ---
 - ➖ `APIIo_NewSettingsDialogID` <sub>AC28–30</sub> – par1: API_Guid* par2: [UShort*] (index of sub tool) *(user interface)*
