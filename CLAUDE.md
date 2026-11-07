@@ -516,7 +516,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   per month, the commits of `main`, the issues opened and pull requests merged, and
   the Discord messages and members of the project's server (only counts, never the
   text of a message), plus the totals and top contributors (commit authors and
-  the people in `Co-authored-by` trailers, bots and AI assistants left out), and publishes
+  the people in `Co-authored-by` trailers, bots and AI assistants left out, each
+  person once whatever names and addresses they used), and publishes
   `community.json` to the `site-data` branch (never to `main`), read by
   `docs/community/community.js` (the Momentum figures and the growth chart). The
   Discord bot token is `DISCORD_STATS_TOKEN`, else `DISCORD_BOT_TOKEN`; members per
