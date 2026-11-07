@@ -7,6 +7,7 @@
 #include "Folder.hpp"
 #include "Base64Converter.hpp"
 
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 
@@ -2335,6 +2336,238 @@ GS::ObjectState GetLineFromUserCommand::Execute (const GS::ObjectState& paramete
         "startPoint", Create3DCoordinateObjectState (lineInfo.startCoord),
         "endPoint", Create3DCoordinateObjectState (lineInfo.pos)
     );
+}
+
+// ---------------------------------------------------------------------------
+// GetArcFromUser
+// ---------------------------------------------------------------------------
+
+static constexpr double ArcInputTwoPi = 6.283185307179586;
+
+// The rubber callbacks are plain function pointers, so the arc input keeps its
+// center (and, once the start point is given, its radius) here. The input is modal
+// on Archicad's main thread, so only one arc input uses them at a time.
+static API_Coord3D arcInputCenter = {};
+static double arcInputRadius = 0.0;
+static bool arcInputRadiusFixed = false;
+
+static void RubberArcCallBack (const API_RubberLineInfo* info)
+{
+    // Draws the whole circle the arc lies on: while the start point is chosen its
+    // radius follows the cursor, while the end point is chosen it stays fixed.
+    double radius = arcInputRadius;
+    if (!arcInputRadiusFixed) {
+        radius = std::hypot (info->actCoord.x - arcInputCenter.x, info->actCoord.y - arcInputCenter.y);
+    }
+    if (radius < 1e-6) {
+        return;
+    }
+
+    API_RubberArcType rubberArc = {};
+    rubberArc.origC = arcInputCenter;
+    rubberArc.radii = false;
+    rubberArc.lineThick = APIRubberLine_Simple;
+    rubberArc.arcType = APIRubberArc_OrigoAngles;
+    rubberArc.arc2D.r = radius;
+    rubberArc.arc2D.angle = 0.0;
+    rubberArc.arc2D.ratio = 1.0;
+    rubberArc.arc2D.begAng = 0.0;
+    rubberArc.arc2D.endAng = ArcInputTwoPi;
+    ACAPI_UserInput_DrawRubberArc (&rubberArc);
+}
+
+GetArcFromUserCommand::GetArcFromUserCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetArcFromUserCommand::GetName () const
+{
+    return "GetArcFromUser";
+}
+
+GS::Optional<GS::UniString> GetArcFromUserCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "centerPrompt": {
+                "type": "string",
+                "description": "Prompt for clicking the center of the arc. Single-byte text: the control box takes a char field.",
+                "default": "Click the center of the arc"
+            },
+            "startPrompt": {
+                "type": "string",
+                "description": "Prompt for clicking the start point of the arc, which also sets its radius.",
+                "default": "Click the start point of the arc"
+            },
+            "endPrompt": {
+                "type": "string",
+                "description": "Prompt for clicking the end point of the arc. Archicad draws the arc while the cursor moves; the direction the cursor goes around the center decides whether the arc is clockwise.",
+                "default": "Click the end point of the arc"
+            },
+            "showRubberArcFeedback": {
+                "type": "boolean",
+                "description": "If true, also draws the whole circle of the arc while the start and end points are chosen: its radius follows the cursor until the start point is clicked. Drawn in 2D windows only; the 3D window shows Archicad's default feedback.",
+                "default": true
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> GetArcFromUserCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "cancelled": {
+                "type": "boolean",
+                "description": "True if the user cancelled the input (Escape); no other field is returned then."
+            },
+            "center": {
+                "$ref": "#/Coordinate3D",
+                "description": "The center of the arc."
+            },
+            "radius": {
+                "type": "number",
+                "description": "The radius of the arc: the distance of the start point from the center in the x-y plane."
+            },
+            "startAngle": {
+                "type": "number",
+                "description": "The direction of the start point from the center, in radians from the x axis, counterclockwise, between -pi and pi."
+            },
+            "endAngle": {
+                "type": "number",
+                "description": "The direction of the end point from the center, in radians from the x axis, counterclockwise, between -pi and pi."
+            },
+            "arcAngle": {
+                "type": "number",
+                "description": "The angle the arc turns through from its start to its end, in radians: positive (up to 2*pi) for a counterclockwise arc, negative (down to -2*pi) for a clockwise one."
+            },
+            "clockwise": {
+                "type": "boolean",
+                "description": "True if the arc was drawn clockwise from its start to its end."
+            },
+            "startPoint": {
+                "$ref": "#/Coordinate3D",
+                "description": "The start point of the arc, as clicked."
+            },
+            "endPoint": {
+                "$ref": "#/Coordinate3D",
+                "description": "The end point of the arc: the point of its circle in the direction of the third click (its z is the clicked z)."
+            }
+        },
+        "required": ["cancelled"]
+    })";
+}
+
+GS::ObjectState GetArcFromUserCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    // The usual Archicad arc input: a click for the center, a line from it to the
+    // start point (the radius), then the arc to its end point.
+    GS::UniString centerPromptStr = "Click the center of the arc";
+    parameters.Get ("centerPrompt", centerPromptStr);
+
+    GS::UniString startPromptStr = "Click the start point of the arc";
+    parameters.Get ("startPrompt", startPromptStr);
+
+    GS::UniString endPromptStr = "Click the end point of the arc";
+    parameters.Get ("endPrompt", endPromptStr);
+
+    bool showRubberArcFeedback = true;
+    parameters.Get ("showRubberArcFeedback", showRubberArcFeedback);
+
+    // The rubber arc is defined by angles, which the API documents for 2D only.
+    API_WindowInfo windowInfo = {};
+    if (ACAPI_Window_GetCurrentWindow (&windowInfo) != NoError || windowInfo.typeID == APIWind_3DModelID) {
+        showRubberArcFeedback = false;
+    }
+
+    API_GetPointType pointInfo = {};
+    CHTruncate (centerPromptStr.ToCStr ().Get (), pointInfo.prompt, sizeof (pointInfo.prompt));
+
+    GSErrCode err = ACAPI_UserInput_GetPoint (&pointInfo);
+    if (err == APIERR_CANCEL) {
+        return GS::ObjectState ("cancelled", true);
+    }
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve the center of the arc");
+    }
+
+    arcInputCenter = pointInfo.pos;
+    arcInputRadius = 0.0;
+    arcInputRadiusFixed = false;
+
+    API_GetLineType lineInfo = {};
+    lineInfo.startCoord = pointInfo.pos;
+    CHTruncate (startPromptStr.ToCStr ().Get (), lineInfo.prompt, sizeof (lineInfo.prompt));
+
+    err = showRubberArcFeedback
+        ? ACAPI_UserInput_GetLine (&lineInfo, RubberArcCallBack)
+        : ACAPI_UserInput_GetLine (&lineInfo);
+    if (err == APIERR_CANCEL) {
+        return GS::ObjectState ("cancelled", true);
+    }
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve the start point of the arc");
+    }
+
+    const API_Coord3D center = lineInfo.startCoord;
+    const double radius = std::hypot (lineInfo.pos.x - center.x, lineInfo.pos.y - center.y);
+    if (radius < 1e-6) {
+        return CreateErrorResponse (APIERR_BADPARS, "The start point of the arc is at its center: the radius is zero.");
+    }
+
+    arcInputCenter = center;
+    arcInputRadius = radius;
+    arcInputRadiusFixed = true;
+
+    API_GetArcType arcInfo = {};
+    arcInfo.origo = center;
+    arcInfo.startCoord = lineInfo.pos;
+    arcInfo.startCoordGiven = true;
+    CHTruncate (endPromptStr.ToCStr ().Get (), arcInfo.prompt, sizeof (arcInfo.prompt));
+
+    err = showRubberArcFeedback
+        ? ACAPI_UserInput_GetArc (&arcInfo, RubberArcCallBack)
+        : ACAPI_UserInput_GetArc (&arcInfo);
+    if (err == APIERR_CANCEL) {
+        return GS::ObjectState ("cancelled", true);
+    }
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve the end point of the arc");
+    }
+
+    const API_Coord3D startPoint = arcInfo.startCoord;
+    const double startAngle = std::atan2 (startPoint.y - center.y, startPoint.x - center.x);
+    const double endAngle = std::atan2 (arcInfo.pos.y - center.y, arcInfo.pos.x - center.x);
+    const bool clockwise = arcInfo.negArc;
+
+    double arcAngle = endAngle - startAngle;
+    if (clockwise) {
+        while (arcAngle >= 0.0) {
+            arcAngle -= ArcInputTwoPi;
+        }
+    } else {
+        while (arcAngle <= 0.0) {
+            arcAngle += ArcInputTwoPi;
+        }
+    }
+
+    API_Coord3D endPoint = arcInfo.pos;
+    endPoint.x = center.x + radius * std::cos (endAngle);
+    endPoint.y = center.y + radius * std::sin (endAngle);
+
+    GS::ObjectState response ("cancelled", false);
+    response.Add ("center", Create3DCoordinateObjectState (center));
+    response.Add ("radius", radius);
+    response.Add ("startAngle", startAngle);
+    response.Add ("endAngle", endAngle);
+    response.Add ("arcAngle", arcAngle);
+    response.Add ("clockwise", clockwise);
+    response.Add ("startPoint", Create3DCoordinateObjectState (startPoint));
+    response.Add ("endPoint", Create3DCoordinateObjectState (endPoint));
+    return response;
 }
 
 // ---------------------------------------------------------------------------
