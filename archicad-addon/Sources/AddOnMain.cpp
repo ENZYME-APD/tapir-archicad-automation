@@ -2126,6 +2126,10 @@ GSErrCode Initialize (void)
             libraryCommands, "1.8.1",
             "Gets the library part name of the given placed Object, Lamp, Window or Door elements, even if the library containing the part is not loaded. Use it to find the parts of elements that are shown as dots because their library part is missing."
         );
+        err |= RegisterCommand<GetUnusedLibraryPartsCommand> (
+            libraryCommands, "1.8.1",
+            "Lists the loaded library parts that no element of the project is placed from. Read only. The Archicad API does not tell which library parts are used, so every element of the floor plan and of every view and layout is checked: objects, lamps, doors, windows, skylights, zone stamps, symbol labels, drawing titles, curtain wall parts, and the markers of doors, windows, skylights, sections, elevations, details and worksheets. A library part used only in another way (called as a macro, linked as a property object, as an interior elevation marker, in stairs and railings, in the tool defaults or in Favorites) is listed as unused. Library parts that cannot be placed (e.g. macros) are only listed with includeNotPlaceable."
+        );
 
         err |= RegisterCommand<FindLibraryPartsCommand> (
             libraryCommands, "1.8.1",
