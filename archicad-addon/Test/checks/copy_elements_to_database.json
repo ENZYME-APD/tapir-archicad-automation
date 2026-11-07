@@ -1,0 +1,126 @@
+{
+  "title": "CopyElementsToDatabase copies a polyline from the floor plan into a worksheet, moved by the offset, and refuses an unknown element",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "id": "polyline on the floor plan",
+      "command": "CreatePolylines",
+      "params": {
+        "polylinesData": [
+          { "coordinates": [ { "x": 800.0, "y": 800.0 }, { "x": 803.0, "y": 803.0 }, { "x": 806.0, "y": 800.0 } ] }
+        ]
+      },
+      "save": { "polyline": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "target worksheet",
+      "command": "CreateWorksheets",
+      "creates": false,
+      "params": {
+        "worksheetsData": [
+          { "name": "Tapir check copy target", "referenceId": "TAPIR-CHK-COPY" }
+        ]
+      },
+      "save": {
+        "worksheetDb": "databases[0].databaseId.guid",
+        "worksheetItem": "databases[0].navigatorItemId.guid"
+      }
+    },
+    {
+      "id": "[polyline, nonexistent guid] into the worksheet, offset (1, 0)",
+      "command": "CopyElementsToDatabase",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${polyline}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ],
+        "targetDatabaseId": { "guid": "${worksheetDb}" },
+        "offset": { "x": 1.0, "y": 0.0 }
+      },
+      "save": { "copy": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements", "len": 2, "name": "one item per element" },
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "polyline copied" },
+        { "path": "elements[1].error", "exists": true, "name": "nonexistent guid refused" }
+      ]
+    },
+    {
+      "id": "where the copy and the original are",
+      "command": "GetContainingDatabases",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${copy}" } },
+          { "elementId": { "guid": "${polyline}" } }
+        ]
+      },
+      "expect": [
+        { "path": "databases[0].windowType", "eq": "Worksheet", "name": "copy is in a worksheet" },
+        { "path": "databases[0].name", "eq": "Tapir check copy target", "name": "in the target worksheet" },
+        { "path": "databases[1].windowType", "eq": "FloorPlan", "name": "original stays on the floor plan" }
+      ]
+    },
+    {
+      "id": "open the worksheet",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "databaseId": { "guid": "${worksheetDb}" } },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the copy",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${copy}" } } ],
+        "fields": [ "type", "details" ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "PolyLine", "name": "a polyline" },
+        { "path": "detailsOfElements[0].details.coordinates[0].x", "approx": 801.0, "name": "first point moved by the offset" },
+        { "path": "detailsOfElements[0].details.coordinates[0].y", "approx": 800.0 },
+        { "path": "detailsOfElements[0].details.coordinates[1].x", "approx": 804.0, "name": "second point moved by the offset" },
+        { "path": "detailsOfElements[0].details.coordinates[1].y", "approx": 803.0 },
+        { "path": "detailsOfElements[0].details.coordinates[2].x", "approx": 807.0, "name": "third point moved by the offset" }
+      ]
+    },
+    {
+      "id": "back to the floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "id": "read the original",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${polyline}" } } ],
+        "fields": [ "details" ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.coordinates[0].x", "approx": 800.0, "name": "original not moved" },
+        { "path": "detailsOfElements[0].details.coordinates[2].x", "approx": 806.0 }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "ChangeWindow",
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "command": "DeleteNavigatorItems",
+      "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${worksheetItem}" } } ] }
+    }
+  ]
+}

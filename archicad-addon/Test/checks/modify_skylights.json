@@ -1,0 +1,168 @@
+{
+  "title": "ModifySkylights changes a skylight's settings, CreateSkylights takes the same keys, GetDetailsOfElements reads them back",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "single-plane roof",
+      "command": "CreateRoofs",
+      "params": {
+        "roofsData": [
+          {
+            "level": 3.0,
+            "polygonCoordinates": [
+              { "x": 2000, "y": 1000 },
+              { "x": 2008, "y": 1000 },
+              { "x": 2008, "y": 1008 },
+              { "x": 2000, "y": 1008 }
+            ],
+            "pivotLine": {
+              "begCoordinate": { "x": 2000, "y": 1000 },
+              "endCoordinate": { "x": 2008, "y": 1000 }
+            },
+            "angle": 0.5
+          }
+        ]
+      },
+      "save": {
+        "roof": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "skylight created with settings ModifySkylights also takes",
+      "command": "CreateSkylights",
+      "params": {
+        "skylightsData": [
+          {
+            "ownerId": { "guid": "${roof}" },
+            "anchorPosition": { "x": 2004, "y": 1003 },
+            "width": 0.9,
+            "height": 1.1,
+            "pen": 5,
+            "displayOption": "CutAll"
+          }
+        ]
+      },
+      "save": {
+        "skylight": "elements[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "skylight created" }
+      ]
+    },
+    {
+      "id": "read the created skylight",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${skylight}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.width", "approx": 0.9, "tol": 1e-6, "name": "created width" },
+        { "path": "detailsOfElements[0].details.height", "approx": 1.1, "tol": 1e-6, "name": "created height" },
+        { "path": "detailsOfElements[0].details.pen", "eq": 5, "name": "created pen" },
+        { "path": "detailsOfElements[0].details.displayOption", "eq": "CutAll", "name": "created display option" },
+        { "path": "detailsOfElements[0].details.ownerElementType", "eq": "Roof", "name": "owner is the roof" },
+        { "path": "detailsOfElements[0].details.elevationAngle", "exists": true, "name": "elevation angle read" },
+        { "path": "detailsOfElements[0].details.anchorLevel", "exists": true, "name": "anchor level read" }
+      ]
+    },
+    {
+      "id": "modify the skylight",
+      "command": "ModifySkylights",
+      "creates": false,
+      "params": {
+        "skylightsWithDetails": [
+          {
+            "elementId": { "guid": "${skylight}" },
+            "width": 1.2,
+            "height": 1.4,
+            "azimuthAngle": 0.3,
+            "anchorPoint": "TopCenter",
+            "fixMode": "Vertical",
+            "reflected": true,
+            "displayOption": "OutLinesOnly",
+            "pen": 7,
+            "sectionFillPen": 3,
+            "useObjectPens": false
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result" },
+        { "path": "executionResults[0].success", "eq": true, "name": "skylight modified" }
+      ]
+    },
+    {
+      "id": "read back the changes",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${skylight}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.width", "approx": 1.2, "tol": 1e-6, "name": "width changed" },
+        { "path": "detailsOfElements[0].details.height", "approx": 1.4, "tol": 1e-6, "name": "height changed" },
+        { "path": "detailsOfElements[0].details.azimuthAngle", "approx": 0.3, "tol": 1e-6, "name": "azimuth changed" },
+        { "path": "detailsOfElements[0].details.anchorPoint", "eq": "TopCenter", "name": "anchor point changed" },
+        { "path": "detailsOfElements[0].details.fixMode", "eq": "Vertical", "name": "fix mode changed" },
+        { "path": "detailsOfElements[0].details.reflected", "eq": true, "name": "mirrored" },
+        { "path": "detailsOfElements[0].details.displayOption", "eq": "OutLinesOnly", "name": "display option changed" },
+        { "path": "detailsOfElements[0].details.pen", "eq": 7, "name": "pen changed" },
+        { "path": "detailsOfElements[0].details.sectionFillPen", "eq": 3, "name": "section fill pen changed" },
+        { "path": "detailsOfElements[0].details.useObjectPens", "eq": false, "name": "own pens used" }
+      ]
+    },
+    {
+      "id": "bad input",
+      "command": "ModifySkylights",
+      "creates": false,
+      "params": {
+        "skylightsWithDetails": [
+          {
+            "elementId": { "guid": "${skylight}" },
+            "width": 2.0,
+            "lineTypeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }
+          },
+          {
+            "elementId": { "guid": "${roof}" },
+            "width": 2.0
+          },
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "width": 2.0
+          },
+          {
+            "elementId": { "guid": "${skylight}" }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 4, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": false, "name": "nonexistent line type refused" },
+        { "path": "executionResults[0].error.message", "contains": "lineTypeId", "name": "line type error names the key" },
+        { "path": "executionResults[1].success", "eq": false, "name": "a roof refused" },
+        { "path": "executionResults[1].error.message", "contains": "not a Skylight", "name": "roof error says why" },
+        { "path": "executionResults[2].success", "eq": false, "name": "nonexistent element refused" },
+        { "path": "executionResults[3].success", "eq": false, "name": "item without settings refused" }
+      ]
+    },
+    {
+      "id": "the refused width was not written",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${skylight}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.width", "approx": 1.2, "tol": 1e-6, "name": "width kept" }
+      ]
+    }
+  ]
+}

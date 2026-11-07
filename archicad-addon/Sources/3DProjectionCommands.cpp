@@ -47,6 +47,100 @@ static bool GetAxonometryProjectionType (const GS::UniString& name, short& projM
     return false;
 }
 
+// The sun position of a projection (API_SunAngleSettings), by the names the commands use.
+static GS::ObjectState CreateSunObjectState (const API_SunAngleSettings& sunAngSets)
+{
+    return GS::ObjectState (
+        "sunPositionOption", GS::UniString (sunAngSets.sunPosOpt == API_SunPosition_GivenByDate ? "DateAndTime" : "Angles"),
+        "sunAzimuth", sunAngSets.sunAzimuth,
+        "sunAltitude", sunAngSets.sunAltitude,
+        "year", static_cast<Int32> (sunAngSets.year),
+        "month", static_cast<Int32> (sunAngSets.month),
+        "day", static_cast<Int32> (sunAngSets.day),
+        "hour", static_cast<Int32> (sunAngSets.hour),
+        "minute", static_cast<Int32> (sunAngSets.minute),
+        "second", static_cast<Int32> (sunAngSets.second),
+        "summerTime", sunAngSets.summerTime);
+}
+
+// Overwrites the fields of sunAngSets that sun carries and keeps the others. Returns
+// false, with the reason in error, when a value is invalid; sunAngSets may then be
+// partly changed, so check on a copy first when that matters.
+static bool ApplySunFromObjectState (const GS::ObjectState& sun, API_SunAngleSettings& sunAngSets, GS::UniString& error)
+{
+    if (sun.Contains ("sunPositionOption")) {
+        GS::UniString sunPositionOption;
+        sun.Get ("sunPositionOption", sunPositionOption);
+        if (sunPositionOption == "Angles") {
+            sunAngSets.sunPosOpt = API_SunPosition_GivenByAngles;
+        } else if (sunPositionOption == "DateAndTime") {
+            sunAngSets.sunPosOpt = API_SunPosition_GivenByDate;
+        } else {
+            error = "Invalid parameter: sun.sunPositionOption must be Angles or DateAndTime.";
+            return false;
+        }
+    }
+
+    const auto getAngle = [&] (const char* name, double& target) -> bool {
+        if (!sun.Contains (name)) {
+            return true;
+        }
+        if (!sun.Get (name, target)) {
+            error = GS::UniString::Printf ("Invalid parameter: sun.%s must be a number.", name);
+            return false;
+        }
+        return true;
+    };
+    // The date and time fields of API_SunAngleSettings are unsigned short. Year, month
+    // and day accept 0: a sun given only by angles may carry no date, and what
+    // Get3DProjectionSettings returns must be accepted back.
+    const auto getDateField = [&] (const char* name, Int32 minimum, Int32 maximum, unsigned short& target) -> bool {
+        if (!sun.Contains (name)) {
+            return true;
+        }
+        Int32 value = 0;
+        if (!sun.Get (name, value) || value < minimum || value > maximum) {
+            error = GS::UniString::Printf ("Invalid parameter: sun.%s must be an integer from %d to %d.", name, (int) minimum, (int) maximum);
+            return false;
+        }
+        target = static_cast<unsigned short> (value);
+        return true;
+    };
+
+    if (!getAngle ("sunAzimuth", sunAngSets.sunAzimuth) ||
+        !getAngle ("sunAltitude", sunAngSets.sunAltitude) ||
+        !getDateField ("year", 0, 9999, sunAngSets.year) ||
+        !getDateField ("month", 0, 12, sunAngSets.month) ||
+        !getDateField ("day", 0, 31, sunAngSets.day) ||
+        !getDateField ("hour", 0, 23, sunAngSets.hour) ||
+        !getDateField ("minute", 0, 59, sunAngSets.minute) ||
+        !getDateField ("second", 0, 59, sunAngSets.second)) {
+        return false;
+    }
+
+    if (sun.Contains ("summerTime") && !sun.Get ("summerTime", sunAngSets.summerTime)) {
+        error = "Invalid parameter: sun.summerTime must be a boolean.";
+        return false;
+    }
+    return true;
+}
+
+// A perspective (API_PerspPars) as the PerspectiveProjectionParameters schema describes it.
+// API_PerspPars keeps the X/Y of the camera and the target as 2D coordinates and their
+// heights in separate fields.
+static GS::ObjectState CreatePerspectiveObjectState (const API_PerspPars& persp)
+{
+    return GS::ObjectState (
+        "cameraPosition", Create3DCoordinateObjectState (API_Coord3D { persp.pos.x, persp.pos.y, persp.cameraZ }),
+        "targetPosition", Create3DCoordinateObjectState (API_Coord3D { persp.target.x, persp.target.y, persp.targetZ }),
+        "distance", persp.distance,
+        "azimuth", persp.azimuth,
+        "viewCone", persp.viewCone,
+        "rollAngle", persp.rollAngle,
+        "isTwoPointPersp", persp.isTwoPointPersp,
+        "sun", CreateSunObjectState (persp.sunAngSets));
+}
+
 Get3DProjectionSettingsCommand::Get3DProjectionSettingsCommand () :
     CommandBase (CommonSchema::Used)
 {}
@@ -96,13 +190,18 @@ GS::Optional<GS::UniString> Get3DProjectionSettingsCommand::GetRawResponseSchema
                     },
                     "minItems": 12,
                     "maxItems": 12
+                },
+                "sun": {
+                    "$ref": "#/ProjectionSunSettings",
+                    "description": "The sun position of the axonometry."
                 }
             },
             "additionalProperties": false,
             "required": [
                 "projectionType",
                 "azimuth",
-                "transformationMatrix"
+                "transformationMatrix",
+                "sun"
             ]
         }
     },
@@ -130,25 +229,178 @@ GS::ObjectState Get3DProjectionSettingsCommand::Execute (const GS::ObjectState& 
     }
 
     if (projectionInfo.isPersp) {
-        const API_PerspPars& persp = projectionInfo.u.persp;
-        response.Add ("perspective", GS::ObjectState (
-            "cameraPosition", Create3DCoordinateObjectState (API_Coord3D { persp.pos.x, persp.pos.y, persp.cameraZ }),
-            "targetPosition", Create3DCoordinateObjectState (API_Coord3D { persp.target.x, persp.target.y, persp.targetZ }),
-            "distance", persp.distance,
-            "azimuth", persp.azimuth,
-            "viewCone", persp.viewCone,
-            "rollAngle", persp.rollAngle,
-            "isTwoPointPersp", persp.isTwoPointPersp));
+        response.Add ("perspective", CreatePerspectiveObjectState (projectionInfo.u.persp));
     } else {
         const API_AxonoPars& axono = projectionInfo.u.axono;
         GS::ObjectState axonometric (
             "projectionType", GetAxonometryProjectionTypeName (axono.projMod),
-            "azimuth", axono.azimuth);
+            "azimuth", axono.azimuth,
+            "sun", CreateSunObjectState (axono.sunAngSets));
         const auto& transformationMatrix = axonometric.AddList<double> ("transformationMatrix");
         for (double value : axono.tranmat.tmx) {
             transformationMatrix (value);
         }
         response.Add ("axonometric", axonometric);
+    }
+
+    return response;
+}
+
+GetCamerasCommand::GetCamerasCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetCamerasCommand::GetName () const
+{
+    return "GetCameras";
+}
+
+GS::Optional<GS::UniString> GetCamerasCommand::GetRawResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "cameraSets": {
+            "type": "array",
+            "description": "The Camera Sets (camera paths) of the project, each with its cameras.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "cameraSetElementId": {
+                        "$ref": "#/ElementId"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the Camera Set, as the navigator shows it."
+                    },
+                    "isActive": {
+                        "type": "boolean",
+                        "description": "True for the active Camera Set."
+                    },
+                    "activeCameraElementId": {
+                        "$ref": "#/ElementId",
+                        "description": "The current camera of the set. Missing when the set has none."
+                    },
+                    "cameras": {
+                        "type": "array",
+                        "description": "The cameras of the set, in the order of the path.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "cameraElementId": {
+                                    "$ref": "#/ElementId"
+                                },
+                                "isActiveInPath": {
+                                    "type": "boolean",
+                                    "description": "True when the camera is active in the path of its Camera Set."
+                                },
+                                "perspective": {
+                                    "$ref": "#/PerspectiveProjectionParameters",
+                                    "description": "The perspective of the camera, in the shape Set3DProjectionSettings accepts as its perspective, so passing it there shows the camera's view in the 3D window."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "cameraElementId",
+                                "isActiveInPath",
+                                "perspective"
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "cameraSetElementId",
+                    "name",
+                    "isActive",
+                    "cameras"
+                ]
+            }
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "cameraSets"
+    ]
+})";
+}
+
+static GS::ObjectState CreateCameraObjectState (const API_CameraType& camera)
+{
+    return GS::ObjectState (
+        "cameraElementId", CreateElementIdObjectState (camera.head.guid),
+        "isActiveInPath", camera.perspCam.active,
+        "perspective", CreatePerspectiveObjectState (camera.perspCam.persp));
+}
+
+GS::ObjectState GetCamerasCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<API_Guid> cameraGuids;
+    GSErrCode err = ACAPI_Element_GetElemList (API_CameraID, &cameraGuids);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to list the cameras.");
+    }
+    GS::Array<API_Guid> cameraSetGuids;
+    err = ACAPI_Element_GetElemList (API_CamSetID, &cameraSetGuids);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to list the camera sets.");
+    }
+
+    // Every camera, read once; the sets then take theirs from here in path order.
+    GS::HashTable<API_Guid, API_CameraType> cameras;
+    GS::Array<API_Guid> cameraOrder;
+    for (const API_Guid& guid : cameraGuids) {
+        API_Element element {};
+        element.header.guid = guid;
+        if (ACAPI_Element_Get (&element) != NoError || GetElemTypeId (element.header) != API_CameraID) {
+            continue;
+        }
+        cameras.Add (guid, element.camera);
+        cameraOrder.Push (guid);
+    }
+
+    GS::HashSet<API_Guid> listedCameras;
+    GS::ObjectState response;
+    const auto& cameraSetsList = response.AddList<GS::ObjectState> ("cameraSets");
+    for (const API_Guid& setGuid : cameraSetGuids) {
+        API_Element element {};
+        element.header.guid = setGuid;
+        if (ACAPI_Element_Get (&element) != NoError || GetElemTypeId (element.header) != API_CamSetID) {
+            continue;
+        }
+        const API_CamSetType& camSet = element.camset;
+
+        GS::ObjectState cameraSet (
+            "cameraSetElementId", CreateElementIdObjectState (setGuid),
+            "name", GS::UniString (camSet.name),
+            "isActive", camSet.active);
+        if (camSet.actCam != APINULLGuid) {
+            cameraSet.Add ("activeCameraElementId", CreateElementIdObjectState (camSet.actCam));
+        }
+
+        const auto& setCamerasList = cameraSet.AddList<GS::ObjectState> ("cameras");
+        // The path: from the first camera along nextCam. A closed path leads back to the
+        // first camera, so a camera already listed ends the walk.
+        API_Guid cameraGuid = camSet.firstCam;
+        while (cameraGuid != APINULLGuid && !listedCameras.Contains (cameraGuid)) {
+            const API_CameraType* camera = cameras.GetPtr (cameraGuid);
+            if (camera == nullptr || camera->camSetGuid != setGuid) {
+                break;
+            }
+            setCamerasList (CreateCameraObjectState (*camera));
+            listedCameras.Add (cameraGuid);
+            cameraGuid = camera->perspCam.nextCam;
+        }
+        // Cameras of the set the walk did not reach, in the order Archicad lists them.
+        for (const API_Guid& guid : cameraOrder) {
+            const API_CameraType* camera = cameras.GetPtr (guid);
+            if (camera != nullptr && camera->camSetGuid == setGuid && !listedCameras.Contains (guid)) {
+                setCamerasList (CreateCameraObjectState (*camera));
+                listedCameras.Add (guid);
+            }
+        }
+
+        cameraSetsList (cameraSet);
     }
 
     return response;
@@ -173,7 +425,7 @@ GS::Optional<GS::UniString> Set3DProjectionSettingsCommand::GetInputParametersSc
         },
         "axonometry": {
             "type": "object",
-            "description": "Makes the projection axonometric. Only the given values change; the others are kept from the current axonometry, or from the last one when the projection is a perspective.",
+            "description": "Makes the projection axonometric. Only the given values change, in sun too; the others are kept from the current axonometry, or from the last one when the projection is a perspective.",
             "properties": {
                 "projectionType": {
                     "$ref": "#/AxonometryProjectionType"
@@ -190,6 +442,10 @@ GS::Optional<GS::UniString> Set3DProjectionSettingsCommand::GetInputParametersSc
                     },
                     "minItems": 12,
                     "maxItems": 12
+                },
+                "sun": {
+                    "$ref": "#/ProjectionSunSettings",
+                    "description": "The sun position of the axonometry. Only the values given change."
                 }
             },
             "additionalProperties": false,
@@ -255,6 +511,13 @@ static GS::ObjectState SetPerspective (const GS::ObjectState& perspective)
     API_PerspPars& persp = projectionInfo.u.persp;
     persp = API_PerspPars {};
     persp.sunAngSets = sunAngSets;
+    GS::ObjectState sun;
+    if (perspective.Get ("sun", sun)) {
+        GS::UniString error;
+        if (!ApplySunFromObjectState (sun, persp.sunAngSets, error)) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, error);
+        }
+    }
     // API_PerspPars keeps the X/Y of the camera and the target as 2D coordinates and
     // their heights in separate fields.
     const API_Coord3D camera = Get3DCoordinateFromObjectState (cameraPosition);
@@ -434,8 +697,19 @@ static GS::ObjectState SetAxonometry (const GS::ObjectState& axonometry)
         }
     }
 
-    if (!hasProjectionType && !hasAzimuth && !hasTransformationMatrix) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: give at least one of projectionType, azimuth and transformationMatrix in axonometry.");
+    GS::ObjectState sun;
+    const bool hasSun = axonometry.Get ("sun", sun);
+    if (hasSun) {
+        // Checked here, on a copy, so an invalid value changes nothing.
+        API_SunAngleSettings checkedSunAngSets {};
+        GS::UniString error;
+        if (!ApplySunFromObjectState (sun, checkedSunAngSets, error)) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, error);
+        }
+    }
+
+    if (!hasProjectionType && !hasAzimuth && !hasTransformationMatrix && !hasSun) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Invalid parameter: give at least one of projectionType, azimuth, transformationMatrix and sun in axonometry.");
     }
 
     const GSErrCode err = ACAPI_CallUndoableCommand ("Set3DProjectionSettingsCommand", [&]() -> GSErrCode {
@@ -469,6 +743,11 @@ static GS::ObjectState SetAxonometry (const GS::ObjectState& axonometry)
         if (hasTransformationMatrix) {
             axono.tranmat = tranmat;
             axono.invtranmat = invtranmat;
+        }
+        if (hasSun) {
+            // Checked above, so this cannot fail.
+            GS::UniString error;
+            ApplySunFromObjectState (sun, axono.sunAngSets, error);
         }
         return ACAPI_View_Change3DProjectionSets (&projectionInfo, nullptr);
     });

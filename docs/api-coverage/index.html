@@ -1,137 +1,70 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-copy="Copy" data-copied="Copied" data-i18n-pages="reference" data-i18n-partial>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tapir Archicad API Coverage</title>
-<style>
-:root {
-    /* An overview (headline, parts, groups) over a sticky filter bar and the
-       full checklist. Progress uses one blue ordinal ramp: used on main is the
-       strongest step, open is the neutral track. */
-    --bg: #fcfcfb; --fg: #1f2328; --muted: #59636e; --line: #d1d9e0; --panel: #f6f8fa; --link: #0969da;
-    --track: #e6e8eb; --done: #1c5cab; --merged: #3987e5; --progress: #86b6ef; --claimed: #86b6ef;
-}
-@media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-        --bg: #1a1a19; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --panel: #22262c; --link: #4493f8;
-        --track: #33373d; --done: #9ec5f4; --merged: #5598e7; --progress: #256abf; --claimed: #256abf; color-scheme: dark;
-    }
-}
-:root[data-theme="dark"] {
-    --bg: #1a1a19; --fg: #e6edf3; --muted: #9198a1; --line: #3d444d; --panel: #22262c; --link: #4493f8;
-    --track: #33373d; --done: #9ec5f4; --merged: #5598e7; --progress: #256abf; --claimed: #256abf; color-scheme: dark;
-}
-* { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
-body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
-main { max-width: 1100px; min-width: 0; margin: 0 auto; padding-block: 16px 48px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
-h1 { font-size: 26px; margin: 8px 0 4px; }
-h2 { font-size: 18px; margin: 28px 0 10px; }
-a { color: var(--link); }
-.muted { color: var(--muted); }
-p { margin: 0 0 8px; }
-code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; }
-:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
-button { font: inherit; color: inherit; cursor: pointer; }
-
-/* Sidebar: section links, filters and every group. A drawer on narrow screens. */
-.layout { display: grid; grid-template-columns: 230px minmax(0, 1100px); justify-content: center; }
-.sidebar { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding: 16px 8px 32px 16px; font-size: 14px; border-right: 1px solid var(--line); }
-.sidebar-title { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.05em; margin: 18px 0 6px; }
-.sidebar-title:first-child { margin-top: 0; }
-.sidebar ul { list-style: none; padding: 0; margin: 0; }
-.sidebar-link { display: flex; justify-content: space-between; gap: 8px; width: 100%; padding: 3px 8px; border: 0; border-radius: 6px; background: none; color: inherit; text-align: left; text-decoration: none; font: inherit; }
-.sidebar-link:hover { background: var(--panel); }
-.sidebar-link[aria-current] { background: var(--panel); font-weight: 600; box-shadow: inset 2px 0 0 var(--fg); }
-.sidebar-link .count { color: var(--muted); font-variant-numeric: tabular-nums; }
-.options { display: flex; flex-wrap: wrap; gap: 4px; }
-.option { font-size: 13px; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; }
-.option[aria-pressed="true"] { background: var(--panel); border-color: var(--link); color: var(--fg); }
-.sections-button { display: none; }
-
-/* Headline */
-.hero { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 16px 24px; align-items: center; margin-top: 16px; }
-.hero-number { font-size: 56px; line-height: 1; font-weight: 600; font-variant-numeric: tabular-nums; }
-.hero-caption { color: var(--muted); margin-top: 6px; }
-.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(112px, 1fr)); gap: 8px; }
-.tile { text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
-.tile:hover { border-color: var(--muted); }
-.tile[aria-pressed="true"] { border-color: var(--link); box-shadow: inset 0 0 0 1px var(--link); }
-.tile .value { display: block; font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.tile .label { display: block; font-size: 13px; color: var(--muted); }
-
-/* Stacked progress bars: 2px surface gaps between segments, rounded ends. */
-.bar { display: flex; gap: 2px; height: 10px; border-radius: 4px; overflow: hidden; background: var(--bg); min-width: 60px; }
-.bar.large { height: 16px; margin: 16px 0 8px; }
-.bar span { display: block; height: 100%; min-width: 2px; }
-.bar .done { background: var(--done); }
-.bar .merged { background: var(--merged); }
-.bar .progress { background: var(--progress); }
-.bar .claimed { background: repeating-linear-gradient(45deg, var(--claimed) 0 3px, var(--track) 3px 6px); }
-.bar .open { background: var(--track); flex-grow: 1; }
-.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--muted); }
-.legend .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
-.swatch.done { background: var(--done); } .swatch.merged { background: var(--merged); } .swatch.progress { background: var(--progress); }
-.swatch.claimed { background: repeating-linear-gradient(45deg, var(--claimed) 0 3px, var(--track) 3px 6px); } .swatch.open { background: var(--track); }
-
-/* Overview tables */
-.scroll { overflow-x: auto; }
-table { border-collapse: collapse; width: 100%; }
-th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
-th { font-weight: normal; font-size: 13px; color: var(--muted); }
-td.num, th.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
-td.barcell { width: 40%; min-width: 120px; }
-td .sub { display: block; font-size: 12px; color: var(--muted); }
-.linkbutton { background: none; border: 0; padding: 0; color: var(--link); text-align: left; text-decoration: underline; }
-.table-actions { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin: 8px 0; font-size: 14px; }
-
-/* Sticky filters */
-.toolbar { position: sticky; top: 0; z-index: 2; background: var(--bg); border-bottom: 1px solid var(--line); padding: 10px 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.toolbar input, .toolbar .chip, .toolbar .sections-button { font: inherit; font-size: 14px; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; }
-.toolbar input[type=search] { flex: 1 1 220px; min-width: 0; }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip[aria-pressed="true"] { background: var(--panel); border-color: var(--link); }
-.chip[aria-pressed="false"] { color: var(--muted); text-decoration: line-through; }
-.filter-status { font-size: 14px; color: var(--muted); }
-.filter-status button { margin-left: 6px; font-size: 13px; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 1px 8px; }
-
-/* Checklist */
-details.group { border-bottom: 1px solid var(--line); scroll-margin-top: calc(var(--toolbar-height, 60px) + 8px); }
-details.group > summary { cursor: pointer; padding: 8px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; }
-details.group > summary .name { font-weight: 600; }
-details.group > summary .counts { font-size: 13px; color: var(--muted); }
-details.group > summary .bar { flex: 1 1 160px; max-width: 320px; margin-left: auto; }
-ul.items { list-style: none; padding: 0 0 10px 0; margin: 0; }
-ul.items li { padding: 3px 0; overflow-wrap: anywhere; }
-.tag { font-size: 12px; color: var(--muted); }
-
-@media (max-width: 1100px) {
-    .layout { display: block; }
-    .sidebar { position: fixed; z-index: 3; top: 0; bottom: 0; left: 0; width: min(300px, 85vw); max-height: none; align-self: stretch;
-        background: var(--bg); box-shadow: 0 0 20px rgba(0, 0, 0, 0.3); transform: translateX(-105%); visibility: hidden; transition: transform 0.2s, visibility 0.2s; }
-    body.sidebar-open .sidebar { transform: none; visibility: visible; }
-    .sections-button { display: inline-block; }
-}
-@media (max-width: 640px) {
-    .hero { grid-template-columns: 1fr; }
-    .hero-number { font-size: 44px; }
-    td.barcell { width: 30%; min-width: 80px; }
-    /* Icons only, so the sticky bar stays short; the label is the button's name and tooltip. */
-    .chip-label { display: none; }
-    .chips { flex: 1 1 100%; }
-    details.group > summary .bar { flex-basis: 100%; max-width: none; margin-left: 0; }
-}
-</style>
+<title data-i18n>Archicad API coverage - Tapir documentation</title>
+<meta name="description" data-i18n-attrs="content" content="Which parts of the Archicad API the Tapir add-on uses, kept up to date from every issue, pull request and push.">
+<!-- link-preview: the preview of a link to this page shared on Discord, WhatsApp and the like -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tapir">
+<meta property="og:title" content="Archicad API coverage - Tapir documentation">
+<meta property="og:description" content="Which parts of the Archicad API the Tapir add-on uses, kept up to date from every issue, pull request and push.">
+<meta property="og:url" content="https://archicad-api.com/api-coverage/">
+<meta name="twitter:card" content="summary">
+<!-- site-assets -->
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#2D3A30" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#2D3A30">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
+<script>try { var l = /[?&]lang=([A-Za-z]{2})(?:[&#]|$)/.exec (location.search); l = l ? l[1].toLowerCase () : localStorage.getItem ('tapir-lang') || (navigator.language || '').slice (0, 2).toLowerCase (); if (l && l !== 'en') { document.documentElement.setAttribute ('data-i18n-loading', ''); setTimeout (function () { document.documentElement.removeAttribute ('data-i18n-loading'); }, 2000); } } catch (e) {}</script>
+<script src="../assets/site.js" defer></script>
+<link rel="stylesheet" href="../assets/motion.css"><script src="../assets/motion.js" defer></script>
+<script>try { if ((!sessionStorage.getItem ('tapir-splash') || /[?&]splash/.test (location.search)) && !/nomotion/.test (location.search + location.hash) && 'IntersectionObserver' in window && !matchMedia ('(prefers-reduced-motion: reduce)').matches) { var h = document.documentElement; h.classList.add ('m-splash'); var f = function () { h.classList.add ('m-font'); }; setTimeout (f, 2500); if (document.fonts && document.fonts.load) document.fonts.load ('900 56px Fraunces').then (f, f); else f (); } } catch (e) {}</script>
+<!-- /site-assets -->
+<link rel="stylesheet" href="../assets/coverage.css">
 </head>
 <body>
+<!-- site-header -->
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+    <div class="wrap nav">
+        <a class="brand" href="../"><img src="../assets/tapir_mark_cream.svg" alt="" width="30" height="30">Tapir</a>
+        <nav class="site-nav" aria-label="Site"><ul>
+            <li><a href="../start/">Get started</a></li>
+            <li><a href="../docs/" aria-current="true">Docs</a></li>
+            <li><a href="../scripts/">Scripts</a></li>
+            <li><a href="../scripts/share/">Share</a></li>
+            <li><a href="../community/">Community</a></li>
+            <li><a href="../about/">About</a></li>
+        </ul></nav>
+        <div class="right">
+            <button class="toggle" id="theme-toggle" type="button" data-dark="Dark" data-light="Light" hidden><span class="toggle-word">Dark</span><span class="visually-hidden"> mode</span></button>
+            <a class="btn btn-primary btn-sm" href="../start/#install">Download</a>
+        </div>
+    </div>
+</header>
+<!-- /site-header -->
+<div class="page-head">
+    <div class="wrap">
+        <p class="crumb" data-i18n><a href="../">Tapir</a> / <a href="../docs/">Docs</a> / API coverage</p>
+        <h1 data-i18n>Archicad API <em>coverage.</em></h1>
+        <p data-i18n>What Tapir covers of Graphisoft's Archicad API, item by item.</p>
+    </div>
+</div>
 <div class="layout">
 <nav class="sidebar" id="sidebar" aria-label="Sections"></nav>
-<main>
-<h1>Archicad API coverage</h1>
-<p class="muted">Which parts of the Archicad API (<span id="archicad-range">every supported Archicad version</span>: C functions with their older names and command ids, and the C++ API) the <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> uses, updated within minutes of every issue and push to main, and within the hour of every pull request. See also the <a href="../archicad-addon/">command reference</a>.</p>
+<main id="main">
+<p class="muted" data-i18n>Which parts of the Archicad API (<span id="archicad-range">every supported Archicad version</span>: C functions with their older names and command ids, and the C++ API) the <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> uses, updated within minutes of every issue and push to main, and within the hour of every pull request. See also the <a href="../archicad-addon/">command reference</a>.</p>
 
-<section aria-label="Overview" id="overview">
+<section aria-labelledby="overview-title" id="overview">
+    <div class="sec-head ref">
+        <h2 id="overview-title" data-i18n>Overview</h2>
+    </div>
     <div class="hero">
         <div>
             <div class="hero-number" id="hero-percent">…</div>
@@ -141,46 +74,106 @@ ul.items li { padding: 3px 0; overflow-wrap: anywhere; }
     </div>
     <div class="bar large" id="overall-bar" role="img"></div>
     <div class="legend" id="legend"></div>
+
+    <h3 class="ref-sub" id="by-part" data-i18n>By part of the API</h3>
+    <div class="scroll"><table id="parts"></table></div>
+
+    <h3 class="ref-sub" id="by-group" data-i18n>By group</h3>
+    <div class="table-actions">
+        <span class="muted">Sort by</span>
+        <div class="options" id="group-sort" role="group" aria-label="Sort groups by">
+            <button type="button" class="option" data-sort="open" aria-pressed="true">most open items</button>
+            <button type="button" class="option" data-sort="coverage" aria-pressed="false">lowest coverage</button>
+            <button type="button" class="option" data-sort="name" aria-pressed="false">name</button>
+        </div>
+        <span class="muted">Select a group to list its items below.</span>
+    </div>
+    <div class="scroll"><table id="groups"></table></div>
+    <div class="table-actions"><button type="button" class="linkbutton" id="groups-more" hidden></button></div>
 </section>
 
-<h2 id="by-part">By part of the API</h2>
-<div class="scroll"><table id="parts"></table></div>
-
-<h2 id="by-group">By group</h2>
-<div class="table-actions">
-    <span class="muted">Sort by</span>
-    <div class="options" id="group-sort" role="group" aria-label="Sort groups by">
-        <button type="button" class="option" data-sort="open" aria-pressed="true">most open items</button>
-        <button type="button" class="option" data-sort="coverage" aria-pressed="false">lowest coverage</button>
-        <button type="button" class="option" data-sort="name" aria-pressed="false">name</button>
-    </div>
-    <span class="muted">Select a group to list its items below.</span>
+<div class="sec-head ref">
+    <h2 id="checklist" data-i18n>Checklist</h2>
 </div>
-<div class="scroll"><table id="groups"></table></div>
-<div class="table-actions"><button type="button" class="linkbutton" id="groups-more" hidden></button></div>
-
-<h2 id="checklist">Checklist</h2>
 <div class="toolbar" id="toolbar">
     <button type="button" class="sections-button" id="sections-button" aria-controls="sidebar">☰ Sections</button>
     <input type="search" id="search" placeholder="Search, e.g. Category or MEP::Pipe" aria-label="Search the checklist">
-    <div class="chips" id="statuses" role="group" aria-label="Statuses to show"></div>
+    <div class="chip-filter">
+        <span class="chips-title" id="statuses-title">Show items that are:</span>
+        <div class="chips" id="statuses" role="group" aria-labelledby="statuses-title"></div>
+    </div>
     <span class="filter-status" id="filter-status" aria-live="polite"></span>
 </div>
 <div id="list"></div>
 </main>
 </div>
+<!-- site-footer -->
+<footer class="site-footer">
+    <div class="wrap">
+        <div class="tblock">
+            <div>
+                <span class="lab">Project</span>
+                <span class="proj">Tapir</span>
+                <p class="note">Open-source automation for Archicad. 100% free and open source (MIT). Maintained by Enzyme APD and the community.</p>
+                <p class="note">Contact: <span class="nowrap">tapir@weareenzyme.com</span></p>
+            </div>
+            <div>
+                <span class="lab">Product</span>
+                <ul>
+                    <li><a href="../start/">Get started</a></li>
+                    <li><a href="../scripts/">Scripts</a></li>
+                    <li><a href="../scripts/share/">Share a script</a></li>
+                    <li><a href="../grasshopper/">Grasshopper</a></li>
+                    <li><a href="../ai/">Tapir and AI</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Docs</span>
+                <ul>
+                    <li><a href="../docs/">All docs</a></li>
+                    <li><a href="../archicad-addon/">Commands</a></li>
+                    <li><a href="../api-coverage/">API coverage</a></li>
+                    <li><a href="../gh-coverage/">Grasshopper coverage</a></li>
+                    <li><a href="../limits/">API limits</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Community</span>
+                <ul>
+                    <li><a href="https://discord.gg/NAnSennmpY">Discord</a></li>
+                    <li><a href="https://github.com/ENZYME-APD/tapir-archicad-automation">GitHub</a></li>
+                    <li><a href="../tutorials/">Tutorials</a></li>
+                    <li><a href="../community/#bots">How fixes happen</a></li>
+                    <li><a href="../roadmap/">Roadmap</a></li>
+                    <li><a href="../about/">About Tapir</a></li>
+                </ul>
+            </div>
+            <div>
+                <div class="rev" data-live="release" hidden>
+                    <span class="lab">Revision</span>
+                    <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest" data-live-value="release"></a>
+                </div>
+                <span class="lab">Licence</span>
+                <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/LICENSE">MIT</a>
+            </div>
+        </div>
+        <p class="fine">Not affiliated with Graphisoft. Archicad is a trademark of Graphisoft SE.</p>
+    </div>
+</footer>
+<!-- /site-footer -->
 <script>
 const DATA_URL = new URLSearchParams (location.search).get ('data') ||
     'https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/api-coverage.json';
 const REPO = 'https://github.com/ENZYME-APD/tapir-archicad-automation';
-// status, mark, label, bar class (null: not counted as applicable)
+// status (as in the data), short name on its pill, label, swatch and bar class, counted as applicable.
+// The same set as on ../gh-coverage/ (coverage.css draws the swatches).
 const STATUSES = [
-    ['done', '✅', 'used on main', 'done'], ['merged', '🔀', 'merged, not yet released', 'merged'],
-    ['in progress', '🚧', 'in an open pull request', 'progress'], ['claimed', '🙋', 'claimed by an open issue', 'claimed'],
-    ['open', '⬜', 'open', 'open'], ['skipped', '⛔', 'skipped by a maintainer', null],
-    ['not applicable', '➖', 'not applicable', null],
+    ['done', 'Used', 'used on main', 'done', true], ['merged', 'Merged', 'merged, not yet released', 'merged', true],
+    ['in progress', 'In PR', 'in an open pull request', 'progress', true], ['claimed', 'Claimed', 'claimed by an open issue', 'claimed', true],
+    ['open', 'Open', 'open', 'open', true], ['skipped', 'Skipped', 'skipped by a maintainer', 'skipped', false],
+    ['not applicable', 'N/A', 'not applicable', 'na', false],
 ];
-const MARK = Object.fromEntries (STATUSES.map (s => [s[0], s[1]]));
+const STATUS = Object.fromEntries (STATUSES.map (s => [s[0], s]));
 const PARTS = [['c', 'C functions', ''], ['old', 'Archicad 25/26 only', 'older C functions and command ids'], ['cpp', 'C++ API', 'ACAPI:: and IFCAPI::']];
 const GROUPS_SHOWN = 12;
 let data = null;
@@ -197,6 +190,15 @@ function el (tag, attrs = {}, ...children) {
     }
     for (const child of children) node.append (child);
     return node;
+}
+
+function swatch (cls) {
+    return el ('span', { class: 'swatch ' + cls, 'aria-hidden': 'true' });
+}
+
+function statusPill (status) {
+    const [, short, label, cls] = STATUS[status] || [status, status, status, 'open'];
+    return el ('span', { class: 'pill status', title: label }, swatch (cls), short);
 }
 
 function part (item) {
@@ -216,10 +218,10 @@ function tally (items) {
 
 function bar (counts, large) {
     const node = el ('div', { class: 'bar' + (large ? ' large' : ''), role: 'img' });
-    const parts = STATUSES.filter (s => s[3] && counts[s[0]]);
+    const parts = STATUSES.filter (s => s[4] && counts[s[0]]);
     node.setAttribute ('aria-label', parts.map (s => `${counts[s[0]]} ${s[2]}`).join (', '));
-    for (const [status, mark, label, cls] of parts) {
-        const segment = el ('span', { class: cls, title: `${mark} ${counts[status]} ${label} (${Math.round (100 * counts[status] / counts.applicable)} %)` });
+    for (const [status, , label, cls] of parts) {
+        const segment = el ('span', { class: cls, title: `${counts[status]} ${label} (${Math.round (100 * counts[status] / counts.applicable)} %)` });
         if (cls !== 'open') segment.style.width = (100 * counts[status] / counts.applicable) + '%';
         node.append (segment);
     }
@@ -269,17 +271,20 @@ function renderOverview () {
         `of the ${counts.applicable.toLocaleString ()} applicable items are used (${counts.used.toLocaleString ()}). `,
         `${(counts['not applicable'] + counts.skipped).toLocaleString ()} more are not applicable or skipped. Updated ${data.generatedAt}.`);
     const tiles = document.getElementById ('tiles');
-    tiles.replaceChildren (...STATUSES.filter (s => s[3]).map (([status, mark, label]) => {
+    tiles.replaceChildren (...STATUSES.filter (s => s[4]).map (([status, , label, cls]) => {
         const tile = el ('button', { type: 'button', class: 'tile', 'data-status': status, 'aria-pressed': 'false', title: 'Show only: ' + label },
-            el ('span', { class: 'value', text: `${mark} ${counts[status].toLocaleString ()}` }), el ('span', { class: 'label', text: label }));
+            el ('span', { class: 'value' }, swatch (cls), counts[status].toLocaleString ()), el ('span', { class: 'label', text: label }));
         tile.addEventListener ('click', () => soloStatus (status));
         return tile;
     }));
     const overall = bar (counts, true);
     overall.id = 'overall-bar';
     document.getElementById ('overall-bar').replaceWith (overall);
-    document.getElementById ('legend').replaceChildren (...STATUSES.filter (s => s[3]).map (([status, , label, cls]) =>
-        el ('span', {}, el ('span', { class: 'swatch ' + cls }), label)));
+    for (const chip of document.querySelectorAll ('#statuses .chip')) {
+        chip.querySelector ('.chip-count').textContent = (counts[chip.dataset.status] || 0).toLocaleString ();
+    }
+    document.getElementById ('legend').replaceChildren (...STATUSES.map (([status, , label]) =>
+        el ('span', {}, statusPill (status), label)));
 
     const parts = document.getElementById ('parts');
     parts.replaceChildren (el ('thead', {}, el ('tr', {}, el ('th', { text: 'Part' }), el ('th', { class: 'num', text: 'Used' }),
@@ -356,7 +361,7 @@ function soloStatus (status) {
 }
 
 function itemRow (item) {
-    const li = el ('li', {}, MARK[item.status] + ' ', el ('code', { text: item.id }));
+    const li = el ('li', {}, statusPill (item.status), ' ', el ('code', { text: item.id }));
     if (item.versions.length !== data.versions.length) {
         const v = item.versions;
         li.append (' ', el ('span', { class: 'tag', text: 'AC' + v[0] + (v.length > 1 ? '–' + v[v.length - 1] : '') }));
@@ -472,11 +477,19 @@ function updateToolbarHeight () {
     document.documentElement.style.setProperty ('--toolbar-height', document.getElementById ('toolbar').offsetHeight + 'px');
 }
 
+// Runs callback once ../assets/site.js has translated the page (at once if it is not there).
+function afterTranslation (callback) {
+    if (window.TapirI18n) window.TapirI18n.ready (callback);
+    else if (document.readyState === 'loading') document.addEventListener ('DOMContentLoaded', () => afterTranslation (callback));
+    else callback ();
+}
+
 async function main () {
     const statuses = document.getElementById ('statuses');
-    for (const [value, mark, label] of STATUSES) {
-        const chip = el ('button', { type: 'button', class: 'chip', 'data-status': value, 'aria-pressed': String (value !== 'not applicable'), title: label, 'aria-label': label },
-            mark, el ('span', { class: 'chip-label', text: ' ' + label }));
+    for (const [value, , label, cls] of STATUSES) {
+        // The label shows at every width; renderOverview fills in the count.
+        const chip = el ('button', { type: 'button', class: 'chip', 'data-status': value, 'aria-pressed': String (value !== 'not applicable'), title: label },
+            swatch (cls), el ('span', { class: 'chip-label', text: label }), el ('span', { class: 'chip-count' }));
         chip.addEventListener ('click', () => { chip.setAttribute ('aria-pressed', String (chip.getAttribute ('aria-pressed') !== 'true')); render (); });
         statuses.append (chip);
     }
@@ -490,9 +503,12 @@ async function main () {
         document.getElementById ('hero-caption').textContent = 'The checklist could not be loaded. Reload the page in a minute.';
         return;
     }
-    // The versions come from the DevKits the checklist was generated from.
+    // The versions come from the DevKits the checklist was generated from. Filled in once the page is
+    // translated: the translation looks the intro up by its English HTML and replaces the span with it.
     const v = data.versions;
-    if (v.length) document.getElementById ('archicad-range').textContent = 'Archicad ' + v[0] + (v.length > 1 ? '–' + v[v.length - 1] : '');
+    if (v.length) afterTranslation (() => {
+        document.getElementById ('archicad-range').textContent = 'Archicad ' + v[0] + (v.length > 1 ? '–' + v[v.length - 1] : '');
+    });
     document.getElementById ('search').addEventListener ('input', render);
     for (const button of document.querySelectorAll ('#group-sort .option')) {
         button.addEventListener ('click', () => {

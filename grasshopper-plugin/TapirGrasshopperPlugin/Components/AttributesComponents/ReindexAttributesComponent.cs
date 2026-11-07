@@ -16,7 +16,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         public ReindexAttributesComponent()
             : base(
                 "ReindexAttributes",
-                "Moves fills, line types, surfaces and building materials to new indices, the way ReindexLayers " +
+                "Moves fills, line types, surfaces, building materials and zone categories to new indices, the way ReindexLayers " +
                 "moves layers. Each attribute is recreated at its new index with a new attribute id (its name, " +
                 "definition and folder are kept), every reference to the old index is rewritten (elements in every " +
                 "view and layout, library part parameters, memo data, tool defaults, Favorites, other attributes, " +
@@ -33,7 +33,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         {
             InText(
                 "AttributeType",
-                "The type of the attributes to move: Fill, Line, Surface or BuildingMaterial.");
+                "The type of the attributes to move: Fill, Line, Surface, BuildingMaterial or ZoneCategory.");
 
             InGenerics(
                 "AttributeGuids",
@@ -270,9 +270,8 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             da.SetDataList(13, errors);
         }
 
-        // Shares the icon of MoveAttributesAndFolders.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.MoveAttributesAndFolders;
+            Properties.Resources.ReindexAttributes;
 
         public override Guid ComponentGuid =>
             new Guid("431f0b14-681d-40a2-8775-035d6c31fc54");

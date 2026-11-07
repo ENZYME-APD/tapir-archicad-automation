@@ -125,31 +125,7 @@ GS::Optional<GS::UniString> GetProjectDataKeysCommand::GetRawResponseSchema () c
                 "type": "array",
                 "description": "The project data stored by Tapir in the project.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the project data."
-                        },
-                        "guid": {
-                            "type": "string",
-                            "description": "The identifier of the add-on object that stores the project data."
-                        },
-                        "clientOnly": {
-                            "type": "boolean",
-                            "description": "True when the project data is kept on this client only and is not shared in Teamwork."
-                        },
-                        "teamworkOwner": {
-                            "$ref": "#/User",
-                            "description": "The Teamwork user who has reserved the project data. Omitted when nobody has reserved it or the project is not a Teamwork project."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "guid",
-                        "clientOnly"
-                    ]
+                    "$ref": "#/ProjectDataKey"
                 }
             }
         },
@@ -214,8 +190,7 @@ GS::Optional<GS::UniString> GetProjectDataCommand::GetInputParametersSchema () c
                 "type": "array",
                 "description": "The names of the project data to get.",
                 "items": {
-                    "type": "string",
-                    "minLength": 1
+                    "$ref": "#/ProjectDataName"
                 }
             }
         },
@@ -238,22 +213,7 @@ GS::Optional<GS::UniString> GetProjectDataCommand::GetRawResponseSchema () const
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "name": {
-                                    "type": "string",
-                                    "description": "The name of the project data."
-                                },
-                                "content": {
-                                    "type": "string",
-                                    "description": "The content of the project data."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "name",
-                                "content"
-                            ]
+                            "$ref": "#/ProjectDataValue"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -320,31 +280,7 @@ GS::Optional<GS::UniString> SetProjectDataCommand::GetInputParametersSchema () c
                 "type": "array",
                 "description": "The project data to create or to overwrite. Prefix the names with the name of your tool (for example 'my-tool/settings') so different scripts do not overwrite each other's data.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the project data.",
-                            "minLength": 1
-                        },
-                        "content": {
-                            "type": "string",
-                            "description": "The content of the project data, for example a JSON string."
-                        },
-                        "clientOnly": {
-                            "type": "boolean",
-                            "description": "Creates the project data on this client only, it is not shared in Teamwork. Used only when the project data is created. The default is false."
-                        },
-                        "unique": {
-                            "type": "boolean",
-                            "description": "Creates the project data as a unique add-on object: in Teamwork only one can exist with its name, even when several users create it at the same time. Used only when the project data is created, and cannot be combined with clientOnly. The default is false."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "content"
-                    ]
+                    "$ref": "#/ProjectDataValueData"
                 }
             }
         },
@@ -515,8 +451,7 @@ GS::Optional<GS::UniString> DeleteProjectDataCommand::GetInputParametersSchema (
                 "type": "array",
                 "description": "The names of the project data to delete.",
                 "items": {
-                    "type": "string",
-                    "minLength": 1
+                    "$ref": "#/ProjectDataName"
                 }
             }
         },
@@ -604,8 +539,7 @@ GS::Optional<GS::UniString> ReserveProjectDataCommand::GetInputParametersSchema 
                 "type": "array",
                 "description": "The names of the project data to reserve.",
                 "items": {
-                    "type": "string",
-                    "minLength": 1
+                    "$ref": "#/ProjectDataName"
                 }
             }
         },
@@ -628,21 +562,7 @@ GS::Optional<GS::UniString> ReserveProjectDataCommand::GetRawResponseSchema () c
                 "type": "array",
                 "description": "The project data that could not be reserved because another user has reserved it.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the project data."
-                        },
-                        "user": {
-                            "$ref": "#/User"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "user"
-                    ]
+                    "$ref": "#/ProjectDataReservationConflict"
                 }
             }
         },
@@ -713,8 +633,7 @@ GS::Optional<GS::UniString> ReleaseProjectDataCommand::GetInputParametersSchema 
                 "type": "array",
                 "description": "The names of the project data to release.",
                 "items": {
-                    "type": "string",
-                    "minLength": 1
+                    "$ref": "#/ProjectDataName"
                 }
             }
         },
@@ -772,8 +691,7 @@ GS::Optional<GS::UniString> RequestProjectDataCommand::GetInputParametersSchema 
                 "type": "array",
                 "description": "The names of the project data to request from the users who have reserved them.",
                 "items": {
-                    "type": "string",
-                    "minLength": 1
+                    "$ref": "#/ProjectDataName"
                 }
             },
             "mailText": {
@@ -838,8 +756,7 @@ GS::Optional<GS::UniString> GrantProjectDataCommand::GetInputParametersSchema ()
                 "type": "array",
                 "description": "The names of the project data, reserved by the current user, to grant.",
                 "items": {
-                    "type": "string",
-                    "minLength": 1
+                    "$ref": "#/ProjectDataName"
                 }
             },
             "toUserId": {

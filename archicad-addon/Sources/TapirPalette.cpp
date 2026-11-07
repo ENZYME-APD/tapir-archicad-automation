@@ -52,6 +52,11 @@ std::vector<GS::RunnableTask> TapirPalette::finishedTasks;
 // Run button and the shortcut slots must not start a script that the installer would then interrupt.
 static bool isUpdatingAddOn = false;
 
+// True while the palette is hidden by Archicad (APIPalMsg_HidePalette_Begin, e.g. on a tab switch or Hide All Palettes)
+// and was visible before. Only then does APIPalMsg_HidePalette_End show it again: a palette the user closed stays
+// closed (#1915). Showing or hiding it any other way clears it.
+static bool isHiddenByArchicad = false;
+
 // The script repositories are read from GitHub while Archicad starts, on the main thread. Without a timeout
 // a connection that GitHub accepts but never answers kept Archicad from starting or opening a project (#798).
 static constexpr int RepositoryRequestTimeoutMs = 15 * 1000;
@@ -455,13 +460,18 @@ TapirPalette::TapirPalette ()
     , addScriptButton (GetReference (), 5)
     , delScriptButton (GetReference (), 6)
     , manageShortcutsButton (GetReference (), 7)
+    , installedVersionText (GetReference (), 8)
+    , checkForUpdatesButton (GetReference (), 9)
 {
     Attach (*this);
     AttachToAllItems (*this);
 
     LoadScriptsToPopUp ();
 
+    installedVersionText.SetText (GS::UniString::Printf (
+        RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_INSTALLED_VERSION_TEXT, ACAPI_GetOwnResModule ()), ADDON_VERSION));
     SetRunButtonIcon ();
+    SetUpdateButtonText ();
 
     BeginEventProcessing ();
 }
@@ -534,12 +544,14 @@ void TapirPalette::ForgetPostedTask (const GS::Runnable* task)
 
 void TapirPalette::Show ()
 {
+    isHiddenByArchicad = false;
     DG::Palette::Show ();
     SetMenuItemCheckedState (true);
 }
 
 void TapirPalette::Hide ()
 {
+    isHiddenByArchicad = false;
     DG::Palette::Hide ();
     SetMenuItemCheckedState (false);
 }
@@ -643,6 +655,8 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
         DeleteScriptFromPopUp ();
     } else if (ev.GetSource () == &manageShortcutsButton) {
         OpenShortcutsDialog ();
+    } else if (ev.GetSource () == &checkForUpdatesButton) {
+        CheckForUpdates ();
     }
 }
 
@@ -679,6 +693,56 @@ void TapirPalette::PopUpChanged (const DG::PopUpChangeEvent& ev)
 
         SaveScriptsToPreferences ();
         SetDeleteScriptButtonStatus ();
+    }
+}
+
+GS::UniString TapirPalette::GetScriptDescription (const ScriptInfo& info)
+{
+    GS::UniString badge;
+    if (info.ChangesModel ()) {
+        badge = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_BADGE_CHANGES_MODEL, ACAPI_GetOwnResModule ());
+    } else if (info.WritesFiles ()) {
+        badge = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_BADGE_WRITES_FILES, ACAPI_GetOwnResModule ());
+    } else if (info.IsReadOnly ()) {
+        badge = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_BADGE_READ_ONLY, ACAPI_GetOwnResModule ());
+    }
+
+    if (info.summary.IsEmpty ()) {
+        return badge;
+    }
+    if (badge.IsEmpty ()) {
+        return info.summary;
+    }
+    return info.summary + "\n" + badge;
+}
+
+// The selected script's summary and badge, on the script list and on the Run button (while no script runs, when
+// the button is Stop).
+void TapirPalette::ItemToolTipRequested (const DG::ItemHelpEvent& ev, GS::UniString* toolTipText)
+{
+    const bool isPopUp = ev.GetSource () == &scriptSelectionPopUp;
+    const bool isRunButton = ev.GetSource () == &runScriptButton;
+    if (toolTipText == nullptr || !(isPopUp || isRunButton) || (isRunButton && IsProcessRunning ())) {
+        return;
+    }
+
+    const short selectedItem = scriptSelectionPopUp.GetSelectedItem ();
+    if (selectedItem <= 0 || scriptSelectionPopUp.IsSeparator (selectedItem)) {
+        return;
+    }
+    GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (selectedItem));
+    if (popUpItemData == nullptr) {
+        return;
+    }
+
+    const GS::UniString description = GetScriptDescription (popUpItemData->info);
+    if (description.IsEmpty ()) {
+        return;
+    }
+    if (isRunButton) {
+        *toolTipText = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_RUN_SCRIPT, ACAPI_GetOwnResModule ()) + "\n" + description;
+    } else {
+        *toolTipText = description;
     }
 }
 
@@ -1003,13 +1067,16 @@ GSErrCode TapirPalette::PaletteControlCallBack (Int32, API_PaletteMessageID mess
             break;
 
         case APIPalMsg_HidePalette_Begin:
-            if (HasInstance () && Instance ().IsVisible ())
+            if (HasInstance () && Instance ().IsVisible ()) {
                 Instance ().Hide ();
+                isHiddenByArchicad = true;
+            }
             break;
 
         case APIPalMsg_HidePalette_End:
-            if (HasInstance () && !Instance ().IsVisible ())
+            if (isHiddenByArchicad && HasInstance () && !Instance ().IsVisible ())
                 Instance ().Show ();
+            isHiddenByArchicad = false;
             break;
 
         case APIPalMsg_IsPaletteVisible:
@@ -1402,7 +1469,14 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
             command = uvCommand;
             argv = {"run"};
             argv.Append (uvManager.GetPythonSelectionArgs ());
-            argv.Append ({"--script", filePath, "--port", GS::ValueToUniString (GetConnectionPort ())});
+            if (popUpItemData.uvProjectPath.IsEmpty ()) {
+                argv.Append ({"--script", filePath});
+            } else {
+                // uv ignores pyproject.toml with --script; --project runs the script in the configured project
+                // (a script with inline metadata still runs with its own dependencies).
+                argv.Append ({"--project", popUpItemData.uvProjectPath, filePath});
+            }
+            argv.Append ({"--port", GS::ValueToUniString (GetConnectionPort ())});
             if (popUpItemData.repo != nullptr && !popUpItemData.repo->token.IsEmpty ()) {
                 argv.Append ({"--token", popUpItemData.repo->token});
             }
@@ -1473,10 +1547,51 @@ bool TapirPalette::AddScriptToPopUp (GS::Ref<PopUpItemData> popUpData, short ind
     } else {
         popUpData->baseDisplayText = name.ToString ();
     }
+    popUpData->info = ReadScriptInfo (popUpData->fileLocation);
     scriptSelectionPopUp.SetItemText (index, popUpData->baseDisplayText);
     scriptSelectionPopUp.SetItemObjectData (index, popUpData);
 
     return true;
+}
+
+// The folder of the uv project configured as uvProject (a path relative to baseFolderLoc, with '/' or '\'
+// separators, "." for baseFolderLoc itself, optionally ending in pyproject.toml), or empty when none is
+// configured or the path leaves baseFolderLoc.
+static GS::UniString GetUvProjectPath (const IO::Location& baseFolderLoc, const GS::UniString& configuredUvProject)
+{
+    GS::UniString uvProject = configuredUvProject;
+    uvProject.Trim ();
+    if (uvProject.IsEmpty ()) {
+        return GS::EmptyUniString;
+    }
+
+    IO::Location projectLoc = baseFolderLoc;
+    GS::UniString lastName;
+    UIndex nameStart = 0;
+    for (UIndex i = 0; i <= uvProject.GetLength (); ++i) {
+        if (i < uvProject.GetLength () && uvProject[i] != '/' && uvProject[i] != '\\') {
+            continue;
+        }
+        GS::UniString name (uvProject.GetSubstring (nameStart, i - nameStart));
+        name.Trim ();
+        nameStart = i + 1;
+        if (name.IsEmpty () || name == ".") {
+            continue;
+        }
+        if (name == "..") {
+            ACAPI_WriteReport ("Tapir: uvProject must not leave the repository or folder, ignoring it: " + uvProject, false);
+            return GS::EmptyUniString;
+        }
+        projectLoc.AppendToLocal (IO::Name (name));
+        lastName = name;
+    }
+    if (lastName.Compare ("pyproject.toml", CaseInsensitive) == GS::UniString::Equal) {
+        projectLoc.DeleteLastLocalName ();
+    }
+
+    GS::UniString projectPath;
+    projectLoc.ToPath (&projectPath);
+    return projectPath;
 }
 
 void TapirPalette::AddScriptsFromRepositories ()
@@ -1496,6 +1611,11 @@ void TapirPalette::AddScriptsFromRepositories ()
         if (!repo.relativeLoc.IsEmpty ()) {
             repoFolderRelativeLoc.Append (IO::RelativeLocation (repo.relativeLoc));
         };
+        // Only the files below relativeLoc are downloaded (under their path in the repository), so the project is
+        // looked for below that folder.
+        IO::Location repoFolderLoc = tapirTempFolder;
+        repoFolderLoc.AppendToLocal (repoFolderRelativeLoc);
+        const GS::UniString uvProjectPath = GetUvProjectPath (repoFolderLoc, repo.uvProject);
         std::map<GS::UniString, GS::UniString> headers;
         if (!repo.token.IsEmpty ()) {
             headers.emplace ("Authorization", "Bearer " + repo.token);
@@ -1546,7 +1666,9 @@ void TapirPalette::AddScriptsFromRepositories ()
                 }
             }
             ACAPI_WriteReport ("Added to the popup: " + repoLoc, false);
-            AddScriptToPopUp (GS::NewRef<PopUpItemData> (fileLoc, kv.first, &repo), DG::PopUp::BottomItem);
+            GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (fileLoc, kv.first, &repo);
+            popUpItemData->uvProjectPath = uvProjectPath;
+            AddScriptToPopUp (popUpItemData, DG::PopUp::BottomItem);
         }
     }
 }
@@ -1593,6 +1715,8 @@ void TapirPalette::AddScriptsFromLocalFolders ()
             sourceName = folderLoc.GetLastLocalName (&folderName) == NoError ? folderName.ToString () : localFolder.path;
         }
 
+        const GS::UniString uvProjectPath = GetUvProjectPath (folderLoc, localFolder.uvProject);
+
         ACAPI_WriteReport ("Tapir is loading scripts from local folder: " + localFolder.path, false);
         std::map<GS::UniString, IO::Location> files;
         CollectFilesInFolder (folderLoc, GS::EmptyUniString, files);
@@ -1623,6 +1747,7 @@ void TapirPalette::AddScriptsFromLocalFolders ()
             ACAPI_WriteReport ("Added to the popup: " + kv.first + " (" + sourceName + ")", false);
             GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (kv.second);
             popUpItemData->sourceName = sourceName;
+            popUpItemData->uvProjectPath = uvProjectPath;
             AddScriptToPopUp (popUpItemData, DG::PopUp::BottomItem);
         }
     }
@@ -1690,6 +1815,65 @@ void TapirPalette::SetRunButtonIcon ()
         resId = ID_RUNWITHUPDATE_BUTTON_ICON;
     }
     runScriptButton.SetIcon (DG::Icon (ACAPI_GetOwnResModule (), resId));
+}
+
+void TapirPalette::SetUpdateButtonText ()
+{
+    if (VersionChecker::IsUsingLatestVersion ()) {
+        checkForUpdatesButton.SetText (RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_CHECK_BUTTON_TEXT, ACAPI_GetOwnResModule ()));
+    } else {
+        checkForUpdatesButton.SetText (GS::UniString::Printf (
+            RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_UPDATE_BUTTON_TEXT, ACAPI_GetOwnResModule ()),
+            VersionChecker::LatestVersion ().ToPrintf ()));
+    }
+}
+
+void TapirPalette::ApplyUpdateMenuItemState ()
+{
+    API_MenuItemRef itemRef = {};
+    itemRef.menuResID = ID_ADDON_MENU_FOR_UPDATE;
+    itemRef.itemIndex = ID_ADDON_MENU_UPDATE;
+
+    // The text from the resource ("Check for Updates...") stays until a newer version is found.
+    if (!VersionChecker::IsUsingLatestVersion ()) {
+        GS::UniString label = GS::UniString::Printf (
+            RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_UPDATE_MENU_TEXT, ACAPI_GetOwnResModule ()),
+            VersionChecker::LatestVersion ().ToPrintf ());
+        ACAPI_MenuItem_SetMenuItemText (&itemRef, nullptr, &label);
+    }
+
+    // Nothing disables this item on purpose: make sure it never shows greyed out.
+    // (Before Archicad 27 these calls are macros that end with a semicolon, so their result is not used.)
+    GSFlags itemFlags = {};
+    ACAPI_MenuItem_GetMenuItemFlags (&itemRef, &itemFlags);
+    if ((itemFlags & API_MenuItemDisabled) != 0) {
+        itemFlags &= ~API_MenuItemDisabled;
+        ACAPI_MenuItem_SetMenuItemFlags (&itemRef, &itemFlags);
+    }
+}
+
+void TapirPalette::CheckForUpdates ()
+{
+    if (!VersionChecker::IsCheckCompleted ()) {
+        DGAlert (DG_INFORMATION, "Tapir Update",
+            "Tapir is still checking GitHub for the latest release.",
+            "Please try again in a moment.",
+            "OK");
+    } else if (!VersionChecker::IsUsingLatestVersion ()) {
+        UpdateAddOn ();
+    } else if (VersionChecker::IsNewerVersionWithoutAddOn ()) {
+        DGAlert (DG_INFORMATION, "Tapir Update",
+            GS::UniString::Printf ("Tapir %T is available, but not yet for Archicad %d.",
+                VersionChecker::LatestVersion ().ToPrintf (), static_cast<int> (VersionChecker::ArchicadMainVersion ())),
+            GS::UniString::Printf ("You are using Tapir %s.", ADDON_VERSION),
+            "OK");
+    } else {
+        DGAlert (DG_INFORMATION,
+            RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_TITLE, ACAPI_GetOwnResModule ()),
+            GS::UniString::Printf (RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_TEXT, ACAPI_GetOwnResModule ()), ADDON_VERSION),
+            GS::EmptyUniString,
+            RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_BUTTON, ACAPI_GetOwnResModule ()));
+    }
 }
 
 #if defined (WINDOWS)

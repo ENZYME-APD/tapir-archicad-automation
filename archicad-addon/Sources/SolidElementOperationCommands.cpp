@@ -23,6 +23,30 @@ static GS::UniString OperationToString (API_SolidOperationID op)
     }
 }
 
+// The causes ACAPI_Element_SolidLink_Create documents for its error codes (ACAPinc.h). The code
+// alone was hard to read from the response, and the same message for every cause hid, for example,
+// that the two elements were already linked in this direction (APIERR_LINKEXIST).
+static GS::UniString SolidLinkCreateErrorMessage (GSErrCode err)
+{
+    const GS::UniString prefix = "Failed to create solid element link.";
+    switch (err) {
+        case APIERR_LINKEXIST:
+            return prefix + " The operator is already linked to this target; GetSolidElementLinks lists the existing links, RemoveSolidElementLinks removes one.";
+        case APIERR_BADINDEX:
+        case APIERR_BADID:
+            return prefix + " targetId or operatorId is not a valid element, or both are the same element.";
+        case APIERR_BADPARS:
+            return prefix + " Archicad does not accept this operation for a solid element link.";
+        case APIERR_REFUSEDPAR:
+            return prefix + " Hotlinked elements cannot be linked.";
+        case APIERR_BADDATABASE:
+        case APIERR_NOTMINE:
+            return prefix + " Archicad cannot change these elements in the current database, or a Teamwork element is not reserved.";
+        default:
+            return prefix;
+    }
+}
+
 static GSFlags FlagsFromObjectState (const GS::ObjectState& os)
 {
     GSFlags flags = 0;
@@ -146,7 +170,7 @@ GS::ObjectState CreateSolidElementLinksCommand::Execute (const GS::ObjectState& 
 
             const GSErrCode err = ACAPI_Element_SolidLink_Create (targetGuid, operatorGuid, operation, flags);
             if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (err, "Failed to create solid element link."));
+                executionResults (CreateFailedExecutionResult (err, SolidLinkCreateErrorMessage (err)));
             } else {
                 executionResults (CreateSuccessfulExecutionResult ());
             }
@@ -181,6 +205,9 @@ GS::Optional<GS::UniString> RemoveSolidElementLinksCommand::GetInputParametersSc
                 "items": {
                     "$ref": "#/SolidLinkReference"
                 }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -195,8 +222,12 @@ GS::Optional<GS::UniString> RemoveSolidElementLinksCommand::GetRawResponseSchema
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input link, in the order of the input. On a dry run a link that exists (the operator is linked to the target) gets wouldDelete."
             }
         },
         "additionalProperties": false,
@@ -210,8 +241,10 @@ GS::ObjectState RemoveSolidElementLinksCommand::Execute (const GS::ObjectState& 
 {
     GS::Array<GS::ObjectState> solidLinks;
     parameters.Get ("solidLinks", solidLinks);
+    const bool dryRun = IsDryRun (parameters);
 
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
     // Remove from the floor plan database whatever window is active (#1566); the previous
@@ -225,7 +258,7 @@ GS::ObjectState RemoveSolidElementLinksCommand::Execute (const GS::ObjectState& 
         }
     });
 
-    ACAPI_CallUndoableCommand ("RemoveSolidElementLinks", [&] () -> GSErrCode {
+    const auto removeLinks = [&] () -> GSErrCode {
         for (const GS::ObjectState& link : solidLinks) {
             GS::ObjectState targetIdOs, operatorIdOs;
             if (!link.Get ("targetId", targetIdOs) || !link.Get ("operatorId", operatorIdOs)) {
@@ -237,6 +270,13 @@ GS::ObjectState RemoveSolidElementLinksCommand::Execute (const GS::ObjectState& 
             const API_Guid operatorGuid = GetGuidFromObjectState (operatorIdOs);
 
             const bool existedBefore = SolidLinkExists (targetGuid, operatorGuid);
+            if (dryRun) {
+                executionResults (existedBefore
+                    ? CreateDryRunExecutionResult ("wouldDelete")
+                    : CreateFailedExecutionResult (APIERR_BADPARS, "Failed to remove solid element link: the operator is not linked to this target; GetSolidElementLinks lists the existing links."));
+                continue;
+            }
+
             const GSErrCode err = ACAPI_Element_SolidLink_Remove (targetGuid, operatorGuid);
             if (err != NoError && existedBefore && !SolidLinkExists (targetGuid, operatorGuid)) {
                 // The API reported an error but the link is gone: report what happened.
@@ -248,7 +288,13 @@ GS::ObjectState RemoveSolidElementLinksCommand::Execute (const GS::ObjectState& 
             }
         }
         return NoError;
-    });
+    };
+
+    if (dryRun) {
+        removeLinks ();
+    } else {
+        ACAPI_CallUndoableCommand ("RemoveSolidElementLinks", removeLinks);
+    }
 
     return response;
 }
@@ -655,6 +701,9 @@ GS::Optional<GS::UniString> RemoveElementTrimsCommand::GetInputParametersSchema 
                         "trimmingElementId"
                     ]
                 }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -669,8 +718,12 @@ GS::Optional<GS::UniString> RemoveElementTrimsCommand::GetRawResponseSchema () c
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input pair, in the order of the input. On a dry run a pair whose element is trimmed by the trimming element gets wouldDelete."
             }
         },
         "additionalProperties": false,
@@ -684,16 +737,33 @@ GS::ObjectState RemoveElementTrimsCommand::Execute (const GS::ObjectState& param
 {
     GS::Array<GS::ObjectState> pairs;
     parameters.Get ("elementPairs", pairs);
+    const bool dryRun = IsDryRun (parameters);
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("RemoveElementTrims", [&] () -> GSErrCode {
+    const auto removeTrims = [&] () -> GSErrCode {
         for (const GS::ObjectState& pair : pairs) {
             GS::ObjectState elementOs, trimmingOs;
             if (!pair.Get ("elementId", elementOs) || !pair.Get ("trimmingElementId", trimmingOs)) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId or trimmingElementId is missing."));
                 continue;
             }
-            const GSErrCode err = ACAPI_Element_Trim_Remove (GetGuidFromObjectState (elementOs), GetGuidFromObjectState (trimmingOs));
+            const API_Guid elementGuid = GetGuidFromObjectState (elementOs);
+            const API_Guid trimmingGuid = GetGuidFromObjectState (trimmingOs);
+            if (dryRun) {
+                // The trim a real run would remove is one GetElementTrims lists in trimmedBy.
+                GS::Array<API_Guid> trimming;
+                const GSErrCode err = ACAPI_Element_Trim_GetTrimmingElements (elementGuid, &trimming);
+                if (err != NoError) {
+                    executionResults (CreateFailedExecutionResult (err, "Failed to remove the trim."));
+                } else if (!trimming.Contains (trimmingGuid)) {
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Failed to remove the trim: the element is not trimmed by the trimming element."));
+                } else {
+                    executionResults (CreateDryRunExecutionResult ("wouldDelete"));
+                }
+                continue;
+            }
+            const GSErrCode err = ACAPI_Element_Trim_Remove (elementGuid, trimmingGuid);
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to remove the trim."));
             } else {
@@ -701,7 +771,12 @@ GS::ObjectState RemoveElementTrimsCommand::Execute (const GS::ObjectState& param
             }
         }
         return NoError;
-    });
+    };
+    if (dryRun) {
+        removeTrims ();
+        return response;
+    }
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("RemoveElementTrims", removeTrims);
     if (undoErr != NoError) {
         // The undo scope did not open, so no pair was tried: say so once per pair,
         // keeping one result per input as the schema promises.
@@ -872,6 +947,28 @@ GS::ObjectState MergeElementsCommand::Execute (const GS::ObjectState& parameters
     }
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to merge the elements: every element must be an existing construction element of the current database.");
+    }
+
+    // Archicad can return NoError without recording any merge (#1863), so read the
+    // merges back: success means at least two of the given elements are merged.
+    bool anyMerged = false;
+    for (const API_Guid& guid : guids) {
+        GS::Array<API_Guid> merged;
+        if (ACAPI_Element_Merge_GetMergedElements (guid, &merged) != NoError) {
+            continue;
+        }
+        for (const API_Guid& m : merged) {
+            if (m != guid && guids.Contains (m)) {
+                anyMerged = true;
+                break;
+            }
+        }
+        if (anyMerged) {
+            break;
+        }
+    }
+    if (!anyMerged) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad reported no error, but no merge was established between the given elements (GetMergedElements reads none). Archicad decides which elements and type combinations it merges.");
     }
     return CreateSuccessfulExecutionResult ();
 }

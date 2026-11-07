@@ -1,6 +1,6 @@
 """Sets the date GDL scripts see with SetGDLDate.
 
-Sets the value read with GetGDLDate, so the date stays unchanged; give another value in the same format to test
+Sets the value read with GetGDLDate, so the date stays unchanged; give another date (year, month, day, hour, minute and second) to test
 date-dependent library parts, then set the original back.
 """
 import aclib

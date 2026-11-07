@@ -11,16 +11,24 @@ namespace TapirGrasshopperPlugin.Components.LibraryComponents
         public GetGDLDateComponent()
             : base(
                 "GetGDLDate",
-                "Gets the date GDL scripts see, as the integer value the Archicad API returns.",
+                "Gets the date GDL scripts see: year, month, day, hour, minute and second.",
                 GroupNames.Library)
         {
         }
 
+        private static readonly string[] DateComponents =
+        {
+            "Year", "Month", "Day", "Hour", "Minute", "Second"
+        };
+
         protected override void AddOutputs()
         {
-            OutInteger(
-                "Date",
-                "The date GDL scripts see, as the integer value of the Archicad API. Pass it to SetGDLDate to restore it.");
+            foreach (var name in DateComponents)
+            {
+                OutInteger(
+                    name,
+                    $"The {name.ToLowerInvariant()} of the date GDL scripts see. Pass it to SetGDLDate to restore the date.");
+            }
         }
 
         protected override void Solve(
@@ -35,11 +43,16 @@ namespace TapirGrasshopperPlugin.Components.LibraryComponents
                 return;
             }
 
-            da.SetData(0, (int?)response["date"]);
+            for (int i = 0; i < DateComponents.Length; i++)
+            {
+                da.SetData(
+                    i,
+                    (int?)response["date"]?[DateComponents[i].ToLowerInvariant()]);
+            }
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.IsUsableGDLString;
+            Properties.Resources.GetGDLDate;
 
         public override Guid ComponentGuid =>
             new Guid("7dd8065d-0969-44d3-85c0-38ca1beaf7c7");

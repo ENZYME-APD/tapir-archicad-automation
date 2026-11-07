@@ -1,0 +1,167 @@
+{
+  "title": "GetMEPToolDefaults gives the requested domains in order; CreateMEPFlexibleSegments places a flexible segment through its control points and ModifyMEPElements changes them, both read back by GetMEPElementDetails",
+  "minTapir": "1.8.1",
+  "minArchicad": "28",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      }
+    },
+    {
+      "id": "tool defaults of two domains",
+      "command": "GetMEPToolDefaults",
+      "creates": false,
+      "params": {
+        "domains": [ "Piping", "Ventilation" ]
+      },
+      "expect": [
+        { "path": "toolDefaults", "len": 2 },
+        { "path": "toolDefaults[0].domain", "eq": "Piping", "name": "in the order requested" },
+        { "path": "toolDefaults[1].domain", "eq": "Ventilation", "name": "in the order requested" },
+        { "path": "toolDefaults[1].flexibleSegment.width", "gt": 0, "name": "ventilation flexible segment width" },
+        { "path": "toolDefaults[1].routingElement", "exists": true, "name": "routing tool settings" }
+      ]
+    },
+    {
+      "id": "flexible duct",
+      "command": "CreateMEPFlexibleSegments",
+      "params": {
+        "flexibleSegmentsData": [
+          {
+            "domain": "Ventilation",
+            "controlPoints": [
+              { "x": 20.0, "y": -20.0, "z": 3.0 },
+              { "x": 21.0, "y": -19.5, "z": 3.0 },
+              { "x": 22.0, "y": -20.0, "z": 3.0 }
+            ],
+            "startOrientation": {
+              "direction": { "x": 1.0, "y": 0.0, "z": 0.0 },
+              "rotation": { "x": 0.0, "y": 1.0, "z": 0.0 }
+            },
+            "endOrientation": {
+              "direction": { "x": 1.0, "y": 0.0, "z": 0.0 },
+              "rotation": { "x": 0.0, "y": 1.0, "z": 0.0 }
+            }
+          }
+        ]
+      },
+      "save": {
+        "flex": "elements[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "flexible segment created" }
+      ]
+    },
+    {
+      "id": "both control points and polyline",
+      "command": "CreateMEPFlexibleSegments",
+      "creates": false,
+      "params": {
+        "flexibleSegmentsData": [
+          {
+            "domain": "Piping",
+            "controlPoints": [
+              { "x": 20.0, "y": -24.0, "z": 3.0 },
+              { "x": 22.0, "y": -24.0, "z": 3.0 }
+            ],
+            "polyline": [
+              { "type": "Line", "begin": { "x": 20.0, "y": -24.0, "z": 3.0 }, "end": { "x": 22.0, "y": -24.0, "z": 3.0 } }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "refused" },
+        { "path": "elements[0].elementId", "exists": false, "name": "nothing placed" }
+      ]
+    },
+    {
+      "id": "read the flexible duct",
+      "command": "GetMEPElementDetails",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${flex}" } } ]
+      },
+      "expect": [
+        { "path": "elementDetails[0].type", "eq": "FlexibleSegment" },
+        { "path": "elementDetails[0].domain", "eq": "Ventilation" },
+        { "path": "elementDetails[0].controlPoints[0].x", "approx": 20.0, "name": "starts at the first control point" },
+        { "path": "elementDetails[0].controlPoints[0].y", "approx": -20.0 },
+        { "path": "elementDetails[0].controlPoints[2].x", "approx": 22.0, "name": "ends at the last control point" },
+        { "path": "elementDetails[0].controlPoints[2].z", "approx": 3.0 }
+      ]
+    },
+    {
+      "id": "new control points",
+      "command": "ModifyMEPElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": { "guid": "${flex}" },
+            "controlPoints": [
+              { "x": 20.0, "y": -20.0, "z": 3.0 },
+              { "x": 21.5, "y": -18.5, "z": 3.0 },
+              { "x": 23.0, "y": -20.0, "z": 3.0 }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the new control points",
+      "command": "GetMEPElementDetails",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${flex}" } } ]
+      },
+      "expect": [
+        { "path": "elementDetails[0].controlPoints", "len": 3 },
+        { "path": "elementDetails[0].controlPoints[1].x", "approx": 21.5, "name": "middle point moved" },
+        { "path": "elementDetails[0].controlPoints[1].y", "approx": -18.5, "name": "middle point moved" },
+        { "path": "elementDetails[0].controlPoints[2].x", "approx": 23.0, "name": "end moved" }
+      ]
+    },
+    {
+      "id": "control points and polyline",
+      "command": "ModifyMEPElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          {
+            "elementId": { "guid": "${flex}" },
+            "controlPoints": [
+              { "x": 20.0, "y": -20.0, "z": 3.0 },
+              { "x": 25.0, "y": -20.0, "z": 3.0 }
+            ],
+            "polyline": [
+              { "type": "Line", "begin": { "x": 20.0, "y": -20.0, "z": 3.0 }, "end": { "x": 25.0, "y": -20.0, "z": 3.0 } }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "control points and polyline together are refused" }
+      ]
+    },
+    {
+      "id": "unchanged after the refused change",
+      "command": "GetMEPElementDetails",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${flex}" } } ]
+      },
+      "expect": [
+        { "path": "elementDetails[0].controlPoints[2].x", "approx": 23.0, "name": "end not moved" }
+      ]
+    }
+  ]
+}

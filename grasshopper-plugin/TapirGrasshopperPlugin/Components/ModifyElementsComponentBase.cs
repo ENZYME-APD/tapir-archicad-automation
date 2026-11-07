@@ -1,9 +1,11 @@
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Parameters;
 using Grasshopper.Kernel.Types;
 using Newtonsoft.Json.Linq;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Attributes;
 using TapirGrasshopperPlugin.Types.Element;
@@ -18,13 +20,18 @@ namespace TapirGrasshopperPlugin.Components
     // element. The rarely used or deeply nested fields remain available
     // through the optional AdditionalSettings JSON input.
     //
+    // Every input except ElementGuids can be hidden and shown again from the
+    // component's context menu (see ToggleableInputsComponentBase), so the
+    // inputs are addressed by name instead of by a fixed index. A hidden
+    // input is read as an unconnected one.
+    //
     // The configuration is provided through overridable members instead of
     // constructor parameters on purpose: GH_Component's constructor calls
     // RegisterInputParams (and thus AddInputs) before the derived
     // constructor bodies run, so constructor-assigned fields would still be
     // null at that point. Overrides must not depend on instance state
     // (return constants or static data).
-    public abstract class ModifyElementsComponentBase : ArchicadExecutorComponent
+    public abstract class ModifyElementsComponentBase : ToggleableInputsComponentBase
     {
         protected enum FieldKind
         {
@@ -78,14 +85,12 @@ namespace TapirGrasshopperPlugin.Components
 
         // Typed fields added after the component was released. Their inputs
         // come after the AdditionalSettings input, so the inputs of saved
-        // definitions, which Grasshopper binds by index, keep their places.
+        // definitions, which Grasshopper binds by index, keep their places
+        // (the hidden inputs are saved too, see ToggleableInputsComponentBase).
         // New ones are always appended at the end. No value list is attached
         // to them: an attached list sends its value, so it would change the
         // elements of a definition that left the new input unconnected.
         protected virtual IReadOnlyList<Field> TrailingFields => NoFields;
-
-        // + 2: the ElementGuids and AdditionalSettings inputs.
-        private int FirstTrailingFieldInputIndex => Fields.Count + 2;
 
         protected ModifyElementsComponentBase(
             string name,
@@ -98,49 +103,66 @@ namespace TapirGrasshopperPlugin.Components
         {
         }
 
-        public override void AddedToDocument(
-            GH_Document document)
+        // The inputs in their registration order: ElementGuids, the fields,
+        // AdditionalSettings, the trailing fields. Saved definitions bind the
+        // inputs by this order (see ToggleableInputsComponentBase), so it must
+        // never change; new inputs are appended.
+        protected override IReadOnlyList<InputDescriptor> InputDescriptors
         {
-            base.AddedToDocument(document);
-
-            var fields = Fields;
-            for (var i = 0; i < fields.Count; i++)
+            get
             {
-                // + 1: the ElementGuids input comes before the field inputs.
-                fields[i].ValueList?.Invoke ().AddAsSource(this, i + 1);
+                var descriptors = new List<InputDescriptor>
+                {
+                    new InputDescriptor(
+                        "ElementGuids",
+                        () => NewInputParam(
+                            new Param_GenericObject(),
+                            "ElementGuids",
+                            "Identifiers of the elements to modify.",
+                            "genericList",
+                            GH_ParamAccess.list,
+                            false),
+                        false)
+                };
+
+                foreach (var field in Fields)
+                {
+                    descriptors.Add(
+                        new InputDescriptor(
+                            field.InputName,
+                            () => CreateFieldParam(field),
+                            true));
+                }
+
+                descriptors.Add(
+                    new InputDescriptor(
+                        "AdditionalSettings",
+                        () => NewInputParam(
+                            new Param_String(),
+                            "AdditionalSettings",
+                            "One JSON object per element with further optional settings matching the " +
+                            "command's documented item schema. Input only 1 to use the same settings for all. Optional.",
+                            "textList",
+                            GH_ParamAccess.list,
+                            true),
+                        true));
+
+                foreach (var field in TrailingFields)
+                {
+                    descriptors.Add(
+                        new InputDescriptor(
+                            field.InputName,
+                            () => CreateFieldParam(field),
+                            true));
+                }
+
+                return descriptors;
             }
         }
 
-        protected override void AddInputs()
-        {
-            InGenerics(
-                "ElementGuids",
-                "Identifiers of the elements to modify.");
-
-            var index = 1;
-            foreach (var field in Fields)
-            {
-                AddFieldInput(field);
-                SetOptionality(index);
-                index++;
-            }
-
-            InTexts(
-                "AdditionalSettings",
-                "One JSON object per element with further optional settings matching the " +
-                "command's documented item schema. Input only 1 to use the same settings for all. Optional.");
-            SetOptionality(index);
-            index++;
-
-            foreach (var field in TrailingFields)
-            {
-                AddFieldInput(field);
-                SetOptionality(index);
-                index++;
-            }
-        }
-
-        private void AddFieldInput(
+        // Creates the parameter of a field input the same way the InX helpers
+        // of Component registered it.
+        private static IGH_Param CreateFieldParam(
             Field field)
         {
             var description = field.Description +
@@ -148,24 +170,71 @@ namespace TapirGrasshopperPlugin.Components
             switch (field.Kind)
             {
                 case FieldKind.Number:
-                    InNumbers(field.InputName, description);
-                    break;
+                    return NewInputParam(
+                        new Param_Number(), field.InputName, description, "numberList", GH_ParamAccess.list, true);
                 case FieldKind.Integer:
-                    InIntegers(field.InputName, description);
-                    break;
+                    return NewInputParam(
+                        new Param_Integer(), field.InputName, description, "integerList", GH_ParamAccess.list, true);
                 case FieldKind.Boolean:
-                    InBooleans(field.InputName, description);
-                    break;
+                    return NewInputParam(
+                        new Param_Boolean(), field.InputName, description, "booleanList", GH_ParamAccess.list, true);
                 case FieldKind.Text:
-                    InTexts(field.InputName, description);
-                    break;
+                    return NewInputParam(
+                        new Param_String(), field.InputName, description, "textList", GH_ParamAccess.list, true);
                 case FieldKind.Point2D:
                 case FieldKind.Point3D:
-                    InPoints(field.InputName, description);
-                    break;
+                    return NewInputParam(
+                        new Param_Point(), field.InputName, description, "pointList", GH_ParamAccess.list, true);
                 case FieldKind.AttributeGuid:
-                    InGenerics(field.InputName, description);
-                    break;
+                    return NewInputParam(
+                        new Param_GenericObject(), field.InputName, description, "genericList", GH_ParamAccess.list, true);
+                default:
+                    throw new NotSupportedException(
+                        $"The field kind {field.Kind} of the input {field.InputName} has no parameter.");
+            }
+        }
+
+        public override void AddedToDocument(
+            GH_Document document)
+        {
+            base.AddedToDocument(document);
+
+            foreach (var field in Fields)
+            {
+                AttachValueList(field);
+            }
+        }
+
+        protected override void OnInputShown(
+            string name,
+            int index)
+        {
+            // Only the fields get value lists; the trailing fields never do
+            // (see TrailingFields).
+            foreach (var field in Fields)
+            {
+                if (field.InputName == name)
+                {
+                    AttachValueList(field);
+                    return;
+                }
+            }
+        }
+
+        // Attaches the field's value list to its input when the input is
+        // visible and not connected yet.
+        private void AttachValueList(
+            Field field)
+        {
+            if (field.ValueList == null)
+            {
+                return;
+            }
+
+            var index = IndexOfInput(field.InputName);
+            if (index >= 0)
+            {
+                field.ValueList().AddAsSource(this, index);
             }
         }
 
@@ -272,8 +341,9 @@ namespace TapirGrasshopperPlugin.Components
         protected override void Solve(
             IGH_DataAccess da)
         {
+            // ElementGuids is required, so its input is never hidden.
             if (!da.TryCreateFromList(
-                    0,
+                    IndexOfInput("ElementGuids"),
                     out ElementsObject elements))
             {
                 return;
@@ -300,21 +370,15 @@ namespace TapirGrasshopperPlugin.Components
                 items.Add(item);
             }
 
-            var typedInputs = new List<(Field Field, int InputIndex)>();
-            for (var fieldIndex = 0; fieldIndex < fields.Count; fieldIndex++)
+            foreach (var field in fields.Concat(TrailingFields))
             {
-                // + 1: the ElementGuids input comes before the field inputs.
-                typedInputs.Add((fields[fieldIndex], fieldIndex + 1));
-            }
-            var trailingFields = TrailingFields;
-            for (var trailingIndex = 0; trailingIndex < trailingFields.Count; trailingIndex++)
-            {
-                typedInputs.Add(
-                    (trailingFields[trailingIndex], FirstTrailingFieldInputIndex + trailingIndex));
-            }
+                var inputIndex = IndexOfInput(field.InputName);
+                if (inputIndex < 0)
+                {
+                    // A hidden input is read as an unconnected one.
+                    continue;
+                }
 
-            foreach (var (field, inputIndex) in typedInputs)
-            {
                 if (!TryApplyField(da, inputIndex, field, targets))
                 {
                     return;
@@ -322,7 +386,11 @@ namespace TapirGrasshopperPlugin.Components
             }
 
             var additionalSettings = new List<string>();
-            da.GetDataList(fields.Count + 1, additionalSettings);
+            var additionalSettingsIndex = IndexOfInput("AdditionalSettings");
+            if (additionalSettingsIndex >= 0)
+            {
+                da.GetDataList(additionalSettingsIndex, additionalSettings);
+            }
             if (additionalSettings.Count > 0)
             {
                 if (additionalSettings.Count != 1 &&

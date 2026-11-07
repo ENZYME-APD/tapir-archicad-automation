@@ -50,7 +50,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
 
         // Shares the icon of DeleteProjectData, the other text data saved in the project.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.DeleteProjectData;
+            Properties.Resources.DeleteModulData;
 
         public override Guid ComponentGuid =>
             new Guid("b9b61a15-5f78-4fe7-8bbd-1ce9a99193dd");

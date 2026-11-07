@@ -1,5 +1,6 @@
 #include "ElementCategoryCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "NotificationCommands.hpp"
 
 #include <map>
 
@@ -7,7 +8,7 @@
 // and of their values are localized, so the commands identify a category by its
 // API_ElemCategoryID, carried as one of the strings below (the ElementCategoryType schema),
 // and a value by its guid. The names are returned for display only.
-static const char* CategoryTypeToString (API_ElemCategoryID categoryID)
+const char* CategoryTypeToString (API_ElemCategoryID categoryID)
 {
     switch (categoryID) {
         case API_ElemCategory_StructuralFunction: return "StructuralFunction";
@@ -112,57 +113,7 @@ GS::Optional<GS::UniString> GetElementCategoriesCommand::GetRawResponseSchema ()
                 "type": "array",
                 "description": "The element categories of the project, each with its possible values.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "categoryId": {
-                            "$ref": "#/ElementCategoryId"
-                        },
-                        "type": {
-                            "$ref": "#/ElementCategoryType"
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The localized name of the category, for display only."
-                        },
-                        "values": {
-                            "type": "array",
-                            "description": "The possible values of the category.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "categoryValueId": {
-                                        "$ref": "#/ElementCategoryValueId"
-                                    },
-                                    "name": {
-                                        "type": "string",
-                                        "description": "The localized name of the value, for display only."
-                                    },
-                                    "isVisibleOnUI": {
-                                        "type": "boolean",
-                                        "description": "The value is offered in the settings dialogs of Archicad."
-                                    },
-                                    "usableAsCriteria": {
-                                        "type": "boolean",
-                                        "description": "The value can be used as a criterion, for example in Find & Select and in Graphic Override rules."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "categoryValueId",
-                                    "name",
-                                    "isVisibleOnUI",
-                                    "usableAsCriteria"
-                                ]
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "categoryId",
-                        "type",
-                        "name",
-                        "values"
-                    ]
+                    "$ref": "#/ElementCategoryDetails"
                 }
             }
         },
@@ -259,41 +210,7 @@ GS::Optional<GS::UniString> GetCategoryValuesOfElementsCommand::GetRawResponseSc
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "categoryValues": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "type": {
-                                                "$ref": "#/ElementCategoryType"
-                                            },
-                                            "categoryId": {
-                                                "$ref": "#/ElementCategoryId"
-                                            },
-                                            "categoryValueId": {
-                                                "$ref": "#/ElementCategoryValueId"
-                                            },
-                                            "name": {
-                                                "type": "string",
-                                                "description": "The localized name of the value, for display only."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "type",
-                                            "categoryId",
-                                            "categoryValueId",
-                                            "name"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "categoryValues"
-                            ]
+                            "$ref": "#/ElementCategoryValues"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -534,25 +451,7 @@ GS::Optional<GS::UniString> SetCategoryValuesOfElementsCommand::GetInputParamete
                 "type": "array",
                 "description": "The category values to set: one element and one category per item. The same element can appear in several items, one per category.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "type": {
-                            "$ref": "#/ElementCategoryType"
-                        },
-                        "categoryValueId": {
-                            "$ref": "#/ElementCategoryValueId",
-                            "description": "A value of the category given by type, as GetElementCategories lists them."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "type",
-                        "categoryValueId"
-                    ]
+                    "$ref": "#/ElementCategoryValueData"
                 }
             }
         },
@@ -597,6 +496,16 @@ GS::ObjectState SetCategoryValuesOfElementsCommand::Execute (const GS::ObjectSta
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    // A category value change may leave the element's modification stamp as it was, so the
+    // elements changed are marked for the notification clients.
+    ElementChangeReporter changeReporter;
+    for (const GS::ObjectState& item : elementCategoryValues) {
+        const GS::ObjectState* elementId = item.Get ("elementId");
+        if (elementId != nullptr) {
+            changeReporter.Add (GetGuidFromObjectState (*elementId));
+        }
+    }
 
     ACAPI_CallUndoableCommand ("SetCategoryValuesOfElements", [&] () -> GSErrCode {
         for (const GS::ObjectState& item : elementCategoryValues) {
@@ -664,11 +573,14 @@ GS::ObjectState SetCategoryValuesOfElementsCommand::Execute (const GS::ObjectSta
                 continue;
             }
 
+            changeReporter.MarkChanged (elemGuid);
             executionResults (CreateSuccessfulExecutionResult ());
         }
 
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }

@@ -1,0 +1,114 @@
+/* Motion prototype: the drawing set comes alive as you scroll. Everything here is gated by
+   html.motion (set by motion.js) and switched off by prefers-reduced-motion, so the page never
+   renders blank without JavaScript. */
+:root { --ease: cubic-bezier(.2, .8, .2, 1) }
+
+/* 1. Scroll reveal, staggered within a group */
+.motion .rv { opacity: 0; transform: translateY(22px); transition: opacity .7s var(--ease), transform .7s var(--ease); transition-delay: var(--d, 0s) }
+.motion .rv.in { opacity: 1; transform: none }
+/* cards keep their hover lift after revealing */
+.motion .rv.in.way, .motion .rv.in.teaser, .motion .rv.in.video { transition: opacity .7s var(--ease), transform .2s ease, box-shadow .2s ease }
+
+/* 2. Dimension lines draw outward from their label, then the ticks drop */
+.motion .dim::before, .motion .dim::after { transform: scaleX(0); transition: transform .9s var(--ease) }
+.motion .dim::before { transform-origin: right } .motion .dim::after { transform-origin: left }
+.motion .dim i { transform: scaleY(0); transition: transform .3s ease .7s }
+.motion .dim span { opacity: 0; transition: opacity .4s ease .15s }
+.motion .dim.in::before, .motion .dim.in::after { transform: scaleX(1) }
+.motion .dim.in i { transform: scaleY(1) } .motion .dim.in span { opacity: 1 }
+
+/* 3. Page head: the title rises in, an ochre pen line is plotted under it, the grid drifts */
+.motion .page-head h1, .motion .page-head p, .motion .page-head .crumb { animation: m-rise .8s var(--ease) both }
+.motion .page-head p { animation-delay: .12s } .motion .page-head .crumb { animation-delay: 0s }
+.motion .page-head h1 { animation-delay: .05s; position: relative; padding-bottom: 14px }
+.motion .page-head h1::after { content: ""; position: absolute; left: 0; bottom: 0; height: 3px; width: min(220px, 40%); background: var(--ochre-light); transform-origin: left; animation: m-plot 1.1s var(--ease) .45s both }
+.motion .page-head h1::before { content: ""; position: absolute; left: min(220px, 40%); bottom: -4px; width: 1px; height: 11px; background: var(--ochre-light); animation: m-fade .3s ease 1.4s both }
+.motion .page-head { animation: m-grid 60s linear infinite }
+@keyframes m-rise { from { opacity: 0; transform: translateY(18px) } }
+@keyframes m-plot { from { transform: scaleX(0) } }
+@keyframes m-fade { from { opacity: 0 } }
+@keyframes m-grid { to { background-position: 240px 240px } }
+
+/* 4. Cursor coordinates in the page head, like a CAD crosshair (mouse only) */
+.m-coords { position: absolute; pointer-events: none; font: 500 11px var(--mono); color: var(--ochre-light); opacity: 0; transition: opacity .2s; white-space: nowrap; transform: translate(14px, 14px); z-index: 2 }
+.m-cross-x, .m-cross-y { position: absolute; pointer-events: none; background: rgba(212, 168, 118, .28); opacity: 0; transition: opacity .2s; z-index: 1 }
+.m-cross-x { left: 0; right: 0; height: 1px } .m-cross-y { top: 0; bottom: 0; width: 1px }
+.page-head.m-hover .m-coords, .page-head.m-hover .m-cross-x, .page-head.m-hover .m-cross-y { opacity: 1 }
+
+/* 5. Figures count up (motion.js), and their number gets a short ochre underline */
+.motion .figures strong { display: inline-block }
+
+/* 6. Timeline: a moss line is drawn down the steps as you scroll */
+.motion .timeline { position: relative }
+.motion .timeline::before { content: ""; position: absolute; left: 23px; top: 70px; bottom: 20px; width: 2px; background: linear-gradient(var(--ochre), var(--ochre)) no-repeat; background-size: 2px var(--prog, 0%); opacity: .5 }
+.motion .timeline .n { transition: transform .6s var(--ease), color .4s } .motion .timeline > li.rv:not(.in) .n { transform: scale(.6) }
+
+/* 7. Terminal: the code is typed in line by line once it is on screen */
+.motion .term pre .ln { display: block; opacity: 0; transform: translateX(-6px); transition: opacity .25s, transform .25s }
+.motion .term pre .ln.on { opacity: 1; transform: none }
+.motion .term pre .caret { display: inline-block; width: 7px; height: 1.1em; background: var(--ochre-light); vertical-align: -.2em; animation: m-blink 1s steps(1) infinite }
+@keyframes m-blink { 50% { opacity: 0 } }
+.motion .term .bar::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #7FB77E; margin-right: 8px; vertical-align: 1px; animation: m-ping 2.4s infinite }
+@keyframes m-ping { 0% { box-shadow: 0 0 0 0 rgba(127, 183, 126, .6) } 80%, 100% { box-shadow: 0 0 0 7px transparent } }
+
+/* 8. Header: a shadow once the page scrolls */
+.site-header { transition: box-shadow .25s }
+.site-header.m-scrolled { box-shadow: 0 6px 18px -8px rgba(0, 0, 0, .45) }
+
+/* 9. Buttons and links: the arrow nudges, the primary button gets a sheen */
+.btn-primary { position: relative; overflow: hidden }
+.btn-primary::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, .45) 50%, transparent 70%); transform: translateX(-120%); transition: transform .7s var(--ease) }
+.btn-primary:hover::after { transform: translateX(120%) }
+.way > a::after, .way .go-links a::after, .teaser .go { display: inline-block; transition: transform .2s ease }
+.way > a:hover::after, .way .go-links a:hover::after { transform: translateX(4px) }
+.teaser:hover .go { transform: translateX(4px) }
+.video .play { transition: transform .25s var(--ease) } .video:hover .play { transform: scale(1.12) }
+
+/* 10. Stack diagram: the wires pulse from the clients down to Archicad */
+.motion .stack .wire { background: linear-gradient(90deg, transparent, var(--ochre), transparent) no-repeat; background-size: 30% 1px; background-position: -40% 100%; animation: m-wire 2.6s linear infinite; padding-bottom: 4px }
+@keyframes m-wire { to { background-position: 140% 100% } }
+
+@media (prefers-reduced-motion: reduce) {
+    .motion .rv, .motion .dim::before, .motion .dim::after, .motion .dim i, .motion .dim span, .motion .term pre .ln { opacity: 1 !important; transform: none !important }
+    .m-coords, .m-cross-x, .m-cross-y { display: none }
+}
+
+/* 11. Splash on the first page of a visit: the Tapir mark and name wait in the middle of a moss
+   screen, an ochre pen line plots under them while the page loads, then they fly into the header.
+   The inline script in <head> sets html.m-splash before the first paint; motion.js lifts it. The
+   splash is the header's brand at 7/3 of its size (24 px name, 30 px mark, 10 px gap). If the
+   script never runs, it fades out by itself after 5 s. */
+html.m-splash::before { content: ""; position: fixed; inset: 0; background: #2D3A30; z-index: 1000;
+    background-image: linear-gradient(rgba(244, 241, 234, .05) 1px, transparent 1px), linear-gradient(90deg, rgba(244, 241, 234, .05) 1px, transparent 1px);
+    background-size: 24px 24px; animation: m-splash-gone .4s ease 5s forwards }
+html.m-splash::after { content: "Tapir"; position: fixed; left: 50%; top: 50%; z-index: 1001; transform: translate(-50%, -50%);
+    font: 900 56px/1 "Fraunces", Georgia, serif; font-variation-settings: "opsz" 24; color: #F4F1EA; padding: .3em 0 .3em 1.667em; white-space: nowrap; box-sizing: content-box; width: 2.8122em; /* "Tapir" in Fraunces 900, opsz 24: the box, and so the mark, stays put while the font loads */
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cg fill='%23F4F1EA'%3E%3Ccircle cx='14.9' cy='14.9' r='1.1'/%3E%3Cpath d='M15.9,0C9,0,3,4.5,0.8,10.7c0.7,0,1.2-0.1,1.5-0.2c1.2-0.5,2.5-0.8,3.9-1c0.3-1,0.8-1.8,1.8-1.8   c1,0.1,1,0.7,0.7,1.6c7.4-0.2,16.3,3.2,19.6,10.6c0.2,0.5-0.9,0.8-1.4,1.2s-3.5-2.4-3.7-2.2c-0.2,0.3-7.2,3.5-13.7,3.7   C6.2,22.7,4.4,24,3,25.5c2.9,4,7.6,6.5,12.9,6.5c8.8,0,16-7.2,16-16C31.9,7.2,24.8,0,15.9,0z'/%3E%3C/g%3E%3C/svg%3E") no-repeat left center / 1.25em, linear-gradient(#D4A876, #D4A876) no-repeat left bottom / 0% 3px;
+    transition: color .35s ease;
+    animation: m-splash-in .5s cubic-bezier(.2, .8, .2, 1) both, m-splash-load 1.4s cubic-bezier(.6, 0, .2, 1) .3s infinite, m-splash-gone .4s ease 5s forwards }
+@keyframes m-splash-in { from { opacity: 0; transform: translate(-50%, -40%) } }
+@keyframes m-splash-load { 0% { background-size: 1.25em, 0% 3px; background-position: left center, left bottom } 50% { background-size: 1.25em, 100% 3px; background-position: left center, left bottom } 100% { background-size: 1.25em, 0% 3px; background-position: left center, right bottom } }
+@keyframes m-splash-gone { to { opacity: 0; visibility: hidden } }
+/* The lift: the splash itself flies; no copy of the header brand is swapped in. motion.js sets
+   --m-dx/--m-dy (from the middle of the screen to the middle of .site-header .brand) and adds
+   html.m-fly; the name and mark shrink to 24/56 onto the brand, the veil fades, then motion.js
+   removes the splash and the real brand, hidden until then, is in the same place. */
+html.m-splash .site-header .brand { visibility: hidden }
+/* If motion.js never lifts the splash, the brand comes back with the 5 s fallback above. */
+html.m-splash:not(.m-still) .site-header .brand { animation: m-brand-back 0s 5s forwards }
+@keyframes m-brand-back { to { visibility: visible } }
+/* m-still stops the waiting animations one frame before m-fly: removing an animation in the same
+   style change as the new transform cancels the transition, and the logo would jump. */
+html.m-splash.m-still::before, html.m-splash.m-still::after { animation: none }
+html.m-splash.m-fly::before { animation: none; opacity: 0; transition: opacity .5s ease .3s }
+html.m-splash.m-fly::after { animation: none; transform: translate(calc(-50% + var(--m-dx, 0px)), calc(-50% + var(--m-dy, 0px))) scale(.428571);
+    background-size: 1.25em, 0% 3px; transition: transform .85s cubic-bezier(.65, 0, .25, 1), background-size .3s ease }
+html.m-splash::after { will-change: transform }
+/* Fraunces changes its letter shapes with the size (optical size), so the splash draws the name with
+   the 24 px shapes of the header (opsz 24): scaled down, it lands exactly on the real brand.
+   The name waits for Fraunces so it never swaps font on screen (the mark is inlined above, so it
+   needs no download); the inline script sets html.m-font when the font is in, or after 2.5 s. */
+html.m-splash:not(.m-font)::after { color: transparent }
+/* While the splash is up, the page's own entrance waits so it plays as the splash lifts. */
+.m-hold .page-head h1, .m-hold .page-head p, .m-hold .page-head .crumb, .m-hold .page-head h1::after, .m-hold .page-head h1::before { animation-play-state: paused }
+html.m-splash.m-fade::after { opacity: 0; transition: opacity .4s ease }

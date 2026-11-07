@@ -1,0 +1,329 @@
+{
+  "title": "Layout Book drawings: CreateDrawings, GetDrawingContentBoxes, UpdateDrawings and ChangeDrawingLink place, read, update and relink a Drawing, and refuse bad input",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "Layout Book before",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": { "navigatorMapId": "LayoutBook" },
+      "save": {
+        "bookRoot": "navigatorItemTree.navigatorItemId.guid",
+        "bookFirst": "navigatorItemTree.children[0].navigatorItem.navigatorItemId.guid"
+      }
+    },
+    {
+      "id": "subset for the layout",
+      "command": "CreateLayoutSubset",
+      "creates": false,
+      "params": { "subsetsData": [ { "name": "Tapir check drawings" } ] },
+      "save": { "subset": "navigatorItems[0].navigatorItemId.guid" }
+    },
+    {
+      "id": "subset second in the Layout Book",
+      "command": "MoveNavigatorItem",
+      "creates": false,
+      "params": {
+        "navigatorItemIdToMove": { "guid": "${subset}" },
+        "parentNavigatorItemId": { "guid": "${bookRoot}" },
+        "previousNavigatorItemId": { "guid": "${bookFirst}" }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "two source worksheets",
+      "command": "CreateWorksheets",
+      "creates": false,
+      "params": {
+        "worksheetsData": [
+          { "name": "Tapir check source one", "referenceId": "TCS1" },
+          { "name": "Tapir check source two", "referenceId": "TCS2" }
+        ]
+      },
+      "save": {
+        "ws1Db": "databases[0].databaseId.guid",
+        "ws1": "databases[0].navigatorItemId.guid",
+        "ws2Db": "databases[1].databaseId.guid",
+        "ws2": "databases[1].navigatorItemId.guid"
+      }
+    },
+    {
+      "id": "content in worksheet one",
+      "command": "CreatePolylines",
+      "params": {
+        "databaseId": { "guid": "${ws1Db}" },
+        "polylinesData": [ { "coordinates": [ { "x": 0, "y": 0 }, { "x": 2, "y": 0 }, { "x": 2, "y": 1 } ] } ]
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "content in worksheet two",
+      "command": "CreatePolylines",
+      "params": {
+        "databaseId": { "guid": "${ws2Db}" },
+        "polylinesData": [ { "coordinates": [ { "x": 0, "y": 0 }, { "x": 4, "y": 0 }, { "x": 4, "y": 3 } ] } ]
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "layout in the subset",
+      "command": "CreateLayout",
+      "creates": false,
+      "params": {
+        "layoutsData": [
+          {
+            "layoutName": "Tapir check drawing layout",
+            "masterLayoutName": "Tapir check drawing master",
+            "parentNavigatorItemId": { "guid": "${subset}" },
+            "paperWidth": 420,
+            "paperHeight": 297
+          }
+        ]
+      },
+      "save": { "layoutDb": "databases[0].databaseId.guid" }
+    },
+    {
+      "id": "master of the layout",
+      "command": "GetLayoutSettings",
+      "creates": false,
+      "params": { "layoutDatabaseIds": [ { "databaseId": { "guid": "${layoutDb}" } } ] },
+      "save": { "master": "layoutSettings[0].masterNavigatorItemId.guid" }
+    },
+    {
+      "id": "Drawing of worksheet one on the layout",
+      "command": "CreateDrawings",
+      "params": {
+        "drawingsData": [
+          {
+            "navigatorItemId": { "guid": "${ws1}" },
+            "layoutDatabaseId": { "guid": "${layoutDb}" },
+            "position": { "x": 0.1, "y": 0.08 },
+            "nameType": "ViewOrSourceFileName",
+            "scale": 1,
+            "angle": 0
+          }
+        ]
+      },
+      "save": { "drawing1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements", "len": 1 },
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "[Drawing of a navigator item that does not exist]",
+      "command": "CreateDrawings",
+      "creates": false,
+      "params": {
+        "drawingsData": [
+          {
+            "navigatorItemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "layoutDatabaseId": { "guid": "${layoutDb}" },
+            "position": { "x": 0.1, "y": 0.1 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error", "exists": true, "name": "error" },
+        { "path": "elements[0].elementId", "exists": false, "name": "no Drawing" }
+      ]
+    },
+    {
+      "id": "the Drawing is on the layout",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": { "navigatorMapId": "LayoutBook" },
+      "save": { "layout": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.navigatorItemId.guid" },
+      "expect": [
+        { "path": "navigatorItemTree.children[1].navigatorItem.name", "contains": "Tapir check drawings", "name": "the moved subset" },
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.name", "contains": "Tapir check drawing layout" },
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.children", "len": 1, "name": "one Drawing on the layout" },
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.children[0].navigatorItem.type", "eq": "DrawingItem" },
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.children[0].navigatorItem.name", "contains": "Tapir check source one", "name": "named after worksheet one" }
+      ]
+    },
+    {
+      "id": "open the layout, whose elements GetDetailsOfElements reads in full",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "databaseId": { "guid": "${layoutDb}" } },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the Drawing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${drawing1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Drawing" },
+        { "path": "detailsOfElements[0].details.pos.x", "approx": 0.1, "tol": 0.0001, "name": "position x" },
+        { "path": "detailsOfElements[0].details.pos.y", "approx": 0.08, "tol": 0.0001, "name": "position y" },
+        { "path": "detailsOfElements[0].details.ratio", "approx": 1, "tol": 0.0001, "name": "scale" },
+        { "path": "detailsOfElements[0].details.nameType", "eq": "ViewOrSourceFileName" },
+        { "path": "detailsOfElements[0].details.isCutWithFrame", "eq": false, "name": "not clipped" }
+      ]
+    },
+    {
+      "id": "[content box of the Drawing, of an element that does not exist]",
+      "command": "GetDrawingContentBoxes",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${drawing1}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "save": {
+        "box1xMin": "contentBoxes[0].contentBox.xMin",
+        "box1xMax": "contentBoxes[0].contentBox.xMax",
+        "box1yMin": "contentBoxes[0].contentBox.yMin",
+        "box1yMax": "contentBoxes[0].contentBox.yMax"
+      },
+      "expect": [
+        { "path": "contentBoxes", "len": 2, "name": "one result per element" },
+        { "expr": "${box1xMax} - ${box1xMin}", "gt": 0, "name": "content has a width" },
+        { "expr": "${box1yMax} - ${box1yMin}", "gt": 0, "name": "content has a height" },
+        { "path": "contentBoxes[1].error", "exists": true, "name": "nonexistent element: error" }
+      ]
+    },
+    {
+      "id": "update the Drawing",
+      "command": "UpdateDrawings",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${drawing1}" } } ] },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "open the layout again",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "databaseId": { "guid": "${layoutDb}" } },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "the Drawing is up to date",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${drawing1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.status", "eq": "UpToDate" }
+      ]
+    },
+    {
+      "id": "[update an element that does not exist]",
+      "command": "UpdateDrawings",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } ] },
+      "expect": [
+        { "path": "success", "eq": false, "name": "failed" }
+      ]
+    },
+    {
+      "id": "relink the Drawing to worksheet two",
+      "command": "ChangeDrawingLink",
+      "params": {
+        "drawingsWithNewLinks": [
+          {
+            "elementId": { "guid": "${drawing1}" },
+            "navigatorItemId": { "guid": "${ws2}" },
+            "layoutDatabaseId": { "guid": "${layoutDb}" }
+          }
+        ]
+      },
+      "save": { "drawing2": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements", "len": 1 },
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "id of the new Drawing" }
+      ]
+    },
+    {
+      "id": "the layout shows worksheet two",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": { "navigatorMapId": "LayoutBook" },
+      "expect": [
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.children", "len": 1, "name": "still one Drawing on the layout" },
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.children[0].navigatorItem.name", "contains": "Tapir check source two", "name": "named after worksheet two" }
+      ]
+    },
+    {
+      "id": "open the layout after the relink",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "databaseId": { "guid": "${layoutDb}" } },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "[new Drawing, old Drawing]",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${drawing2}" } },
+          { "elementId": { "guid": "${drawing1}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Drawing" },
+        { "path": "detailsOfElements[0].details.pos.x", "approx": 0.1, "tol": 0.0001, "name": "position x kept" },
+        { "path": "detailsOfElements[0].details.pos.y", "approx": 0.08, "tol": 0.0001, "name": "position y kept" },
+        { "path": "detailsOfElements[0].details.ratio", "approx": 1, "tol": 0.0001, "name": "scale kept" },
+        { "path": "detailsOfElements[0].details.nameType", "eq": "ViewOrSourceFileName", "name": "name type kept" },
+        { "path": "detailsOfElements[1].error", "exists": true, "name": "old Drawing deleted" }
+      ]
+    },
+    {
+      "id": "content box of the relinked Drawing",
+      "command": "GetDrawingContentBoxes",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${drawing2}" } } ] },
+      "save": {
+        "box2xMin": "contentBoxes[0].contentBox.xMin",
+        "box2xMax": "contentBoxes[0].contentBox.xMax"
+      },
+      "expect": [
+        { "expr": "(${box2xMax} - ${box2xMin}) - (${box1xMax} - ${box1xMin})", "gt": 0, "name": "wider content of worksheet two" }
+      ]
+    },
+    {
+      "id": "[relink an element that does not exist]",
+      "command": "ChangeDrawingLink",
+      "creates": false,
+      "params": {
+        "drawingsWithNewLinks": [
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "navigatorItemId": { "guid": "${ws1}" },
+            "layoutDatabaseId": { "guid": "${layoutDb}" }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error", "exists": true, "name": "error" },
+        { "path": "elements[0].elementId", "exists": false, "name": "no Drawing" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "ChangeWindow", "params": { "windowType": "FloorPlan" } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${layout}" } } ] } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${master}" } } ] } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${ws1}" } } ] } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${ws2}" } } ] } }
+  ]
+}

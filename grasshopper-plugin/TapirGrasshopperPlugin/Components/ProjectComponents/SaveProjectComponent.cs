@@ -1,4 +1,5 @@
 ﻿using Grasshopper.Kernel;
+using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Generic;
@@ -12,13 +13,27 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         public SaveProjectComponent()
             : base(
                 "SaveProject",
-                "Saves the current project.",
+                "Saves the current project, in place or to ProjectPath.",
                 GroupNames.Project)
         {
         }
 
         protected override void AddInputs()
         {
+            InText(
+                "ProjectPath",
+                "Full path of a .pln file to save the project to, as File > Save As does: the open " +
+                "project then refers to that file. This saves an untitled project, or one opened from " +
+                "an older Archicad version. An existing file at the path is overwritten unless " +
+                "Overwrite is false. When it is not given, the project is saved in place. Optional.");
+
+            InBoolean(
+                "Overwrite",
+                "Only together with ProjectPath: false refuses to save when a file already exists at " +
+                "ProjectPath, and writes nothing. Default is true.",
+                true);
+
+            SetOptionality(new[] { 0, 1 });
         }
 
         protected override void AddOutputs()
@@ -31,9 +46,23 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         protected override void Solve(
             IGH_DataAccess da)
         {
+            var parameters = new JObject();
+
+            var projectPath = da.GetOptional<string>(0, null);
+            if (!string.IsNullOrWhiteSpace(projectPath))
+            {
+                parameters["projectPath"] = projectPath;
+            }
+
+            // Only sent when it differs from the command's default.
+            if (!da.GetOptional(1, true))
+            {
+                parameters["overwrite"] = false;
+            }
+
             if (!TryGetConvertedCadValues(
                     CommandName,
-                    null,
+                    parameters,
                     ToAddOn,
                     ExecutionResult.Deserialize,
                     out ExecutionResult response))

@@ -219,6 +219,21 @@ public:
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
 };
 
+// Shared by CreateLevelDimensionsCommand and ModifyLevelDimensionsCommand: applies the pen, texts,
+// marker and origin settings of parameters to element.levelDimension, and sets their bits in mask
+// when it is not nullptr. Returns the error response of an invalid value.
+GS::Optional<GS::ObjectState> ApplyLevelDimensionSettings (const GS::ObjectState& parameters, API_Element& element, API_Element* mask);
+
+class ModifyLevelDimensionsCommand : public CommandBase
+{
+public:
+    ModifyLevelDimensionsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class ModifyObjectsCommand : public CommandBase
 {
 public:
@@ -283,6 +298,10 @@ public:
 // fields of the common schema (name, number, category, stamp and the levels) to the zone
 // and marks the changed fields in the mask. Returns an error response for an invalid field.
 GS::Optional<GS::ObjectState> ApplyZoneSettings (const GS::ObjectState& details, API_Element& element, API_Element& mask);
+
+// Called after the ACAPI_Element_Change of ApplyZoneSettings' fields: writes topOffset again
+// when Archicad replaced it while linking the top of the zone to a story in the same change.
+GSErrCode ReapplyZoneTopOffset (const GS::ObjectState& details, const API_Guid& zoneGuid);
 
 class MeasureTextsCommand : public CommandBase
 {

@@ -1,0 +1,30 @@
+{
+  "title": "GetUsedAttributes reports the attributes in use, with the layer of a placed wall",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 704, "y": 700 }, "height": 2.5, "thickness": 0.2, "floorIndex": 0 }
+        ]
+      },
+      "save": { "wall": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "used attributes",
+      "command": "GetUsedAttributes",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "error", "exists": false, "name": "no error" },
+        { "path": "raw", "exists": true, "name": "the report as text" },
+        { "path": "raw", "ne": "", "name": "the report is not empty" },
+        { "path": "usedAttributes", "exists": true, "name": "the report was read" },
+        { "path": "usedAttributes.Layer", "gt": 0, "name": "a layer in use" }
+      ]
+    }
+  ]
+}

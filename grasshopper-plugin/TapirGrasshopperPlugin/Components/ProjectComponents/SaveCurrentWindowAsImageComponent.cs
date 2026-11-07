@@ -24,7 +24,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         {
             InText(
                 "ImageFilePath",
-                "Absolute path of the image file to write. An existing file is overwritten.");
+                "Absolute path of the image file to write. An existing file is overwritten unless Overwrite is false.");
 
             InText(
                 "Format",
@@ -49,7 +49,14 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 "current zoom, as the Entire Drawing option of the Save as picture dialog does.",
                 false);
 
-            SetOptionality(new[] { 1, 2 });
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "Overwrite",
+                "false refuses to save when a file already exists at ImageFilePath, and writes nothing. " +
+                "Default is true.",
+                true);
+
+            SetOptionality(new[] { 1, 2, 5 });
         }
 
         protected override void AddOutputs()
@@ -124,6 +131,12 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             if (!string.IsNullOrWhiteSpace(colorDepth))
             {
                 parameters["colorDepth"] = colorDepth.Trim();
+            }
+
+            // Only sent when it differs from the command's default.
+            if (!da.GetOptional(5, true))
+            {
+                parameters["overwrite"] = false;
             }
 
             if (!TryGetCadResponse(

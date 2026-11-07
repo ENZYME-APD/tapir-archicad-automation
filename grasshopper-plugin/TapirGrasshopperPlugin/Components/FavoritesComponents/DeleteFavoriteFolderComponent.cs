@@ -95,9 +95,8 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                 favoriteNames);
         }
 
-        // Shares the icon of DeleteFavorites.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.DeleteFavorites;
+            Properties.Resources.DeleteFavoriteFolder;
 
         public override Guid ComponentGuid =>
             new Guid("de9fd857-50c6-4bbd-956d-4a51734e1f9b");

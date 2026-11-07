@@ -1,0 +1,483 @@
+{
+  "title": "Property definitions and values of attributes: read, write, built-in values, add and remove (#1921)",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "Archicad version",
+      "command": "API.GetProductInfo",
+      "creates": false,
+      "save": { "acVersion": "version" }
+    },
+    {
+      "id": "classification system",
+      "command": "CreateClassificationSystems",
+      "creates": false,
+      "params": {
+        "classificationSystemsWithItems": [
+          {
+            "classificationSystem": { "name": "Tapir check attribute property system", "description": "", "source": "", "version": "1", "date": "2026-01-01" },
+            "classificationItems": []
+          }
+        ]
+      },
+      "save": { "system": "classificationSystemIds[0].classificationSystemId.guid" },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "system created" }
+      ]
+    },
+    {
+      "id": "[item with the property, item without it]",
+      "command": "CreateClassificationItems",
+      "creates": false,
+      "params": {
+        "newClassificationItems": [
+          {
+            "classificationSystemId": { "guid": "${system}" },
+            "classificationItemDetails": { "id": "P1", "name": "Tapir check item with the property", "description": "" }
+          },
+          {
+            "classificationSystemId": { "guid": "${system}" },
+            "classificationItemDetails": { "id": "P2", "name": "Tapir check item without the property", "description": "" }
+          }
+        ]
+      },
+      "save": {
+        "itemWith": "classificationItemIds[0].classificationItemId.guid",
+        "itemWithout": "classificationItemIds[1].classificationItemId.guid"
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "item with the property created" },
+        { "path": "executionResults[1].success", "eq": true, "name": "item without the property created" }
+      ]
+    },
+    {
+      "id": "property group",
+      "command": "CreatePropertyGroups",
+      "creates": false,
+      "params": {
+        "propertyGroups": [ { "propertyGroup": { "name": "Tapir check attribute property group", "description": "" } } ]
+      },
+      "save": { "group": "propertyGroupIds[0].propertyGroupId.guid" }
+    },
+    {
+      "id": "custom text property, only for the first item",
+      "command": "CreatePropertyDefinitions",
+      "creates": false,
+      "params": {
+        "propertyDefinitions": [
+          {
+            "propertyDefinition": {
+              "name": "Tapir check attribute text",
+              "description": "",
+              "type": "string",
+              "isEditable": true,
+              "defaultValue": { "basicDefaultValue": { "type": "string", "status": "normal", "value": "Tapir default" } },
+              "availability": [ { "classificationItemId": { "guid": "${itemWith}" } } ],
+              "group": { "propertyGroupId": { "guid": "${group}" } }
+            }
+          }
+        ]
+      },
+      "save": { "prop": "propertyIds[0].propertyId.guid" }
+    },
+    {
+      "id": "three building materials",
+      "command": "CreateBuildingMaterials",
+      "creates": false,
+      "params": {
+        "buildingMaterialDataArray": [
+          { "name": "Tapir check attribute properties 1", "id": "TAPCHK-1", "manufacturer": "Tapir", "description": "Tapir check description 1",
+            "connPriority": 50, "cutFillIndex": 1, "cutFillPen": 2, "cutFillBackgroundPen": 0, "cutSurfaceIndex": 1 },
+          { "name": "Tapir check attribute properties 2", "id": "TAPCHK-2", "manufacturer": "Tapir", "description": "Tapir check description 2",
+            "connPriority": 50, "cutFillIndex": 1, "cutFillPen": 2, "cutFillBackgroundPen": 0, "cutSurfaceIndex": 1 },
+          { "name": "Tapir check attribute properties 3", "id": "TAPCHK-3", "manufacturer": "Tapir", "description": "Tapir check description 3",
+            "connPriority": 50, "cutFillIndex": 1, "cutFillPen": 2, "cutFillBackgroundPen": 0, "cutSurfaceIndex": 1 }
+        ],
+        "overwriteExisting": false
+      },
+      "save": {
+        "bm1": "attributeIds[0].attributeId.guid",
+        "bm2": "attributeIds[1].attributeId.guid",
+        "bm3": "attributeIds[2].attributeId.guid"
+      }
+    },
+    {
+      "id": "classify: 1 and 2 with the property's item, 3 with the other item",
+      "command": "SetClassificationsOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeClassifications": [
+          { "attributeId": { "guid": "${bm1}" }, "classificationId": { "classificationSystemId": { "guid": "${system}" }, "classificationItemId": { "guid": "${itemWith}" } } },
+          { "attributeId": { "guid": "${bm2}" }, "classificationId": { "classificationSystemId": { "guid": "${system}" }, "classificationItemId": { "guid": "${itemWith}" } } },
+          { "attributeId": { "guid": "${bm3}" }, "classificationId": { "classificationSystemId": { "guid": "${system}" }, "classificationItemId": { "guid": "${itemWithout}" } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "material 1 classified" },
+        { "path": "executionResults[1].success", "eq": true, "name": "material 2 classified" },
+        { "path": "executionResults[2].success", "eq": true, "name": "material 3 classified" }
+      ]
+    },
+    {
+      "id": "custom definitions of [1, 3, nonexistent]",
+      "command": "GetPropertyDefinitionsOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${bm1}" } },
+          { "attributeId": { "guid": "${bm3}" } },
+          { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ],
+        "filter": "UserDefined"
+      },
+      "expect": [
+        { "path": "propertyDefinitionsOfAttributes", "len": 3, "name": "one item per attribute" },
+        { "path": "propertyDefinitionsOfAttributes[0].propertyIds", "len": 1, "name": "material 1 has the check's property" },
+        { "path": "propertyDefinitionsOfAttributes[1].propertyIds", "len": 0, "name": "material 3 has no custom property" },
+        { "path": "propertyDefinitionsOfAttributes[2].error", "exists": true, "name": "nonexistent attribute: error item" }
+      ]
+    },
+    {
+      "id": "built-in definitions of material 1",
+      "command": "GetPropertyDefinitionsOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${bm1}" } } ],
+        "filter": "FundamentalBuiltIn"
+      },
+      "expect": [
+        { "path": "propertyDefinitionsOfAttributes[0].propertyIds[0].propertyId.guid", "exists": true, "name": "material 1 has built-in properties" }
+      ]
+    },
+    {
+      "id": "values with status of [1, 3, nonexistent]",
+      "command": "GetPropertyValuesOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${bm1}" } },
+          { "attributeId": { "guid": "${bm3}" } },
+          { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ],
+        "properties": [ { "propertyId": { "guid": "${prop}" } } ],
+        "includeStatus": true
+      },
+      "expect": [
+        { "path": "propertyValuesForAttributes[0].propertyValues[0].isAvailable", "eq": true, "name": "material 1: available" },
+        { "path": "propertyValuesForAttributes[0].propertyValues[0].isEditable", "eq": true, "name": "material 1: editable" },
+        { "path": "propertyValuesForAttributes[0].propertyValues[0].propertyValue.value", "eq": "Tapir default", "name": "material 1: the default value" },
+        { "path": "propertyValuesForAttributes[1].propertyValues[0].isAvailable", "eq": false, "name": "material 3: not available" },
+        { "path": "propertyValuesForAttributes[1].propertyValues[0].propertyValue", "exists": false, "name": "material 3: no value" },
+        { "path": "propertyValuesForAttributes[2].error", "exists": true, "name": "nonexistent attribute: error item" }
+      ]
+    },
+    {
+      "id": "values of [1, 3] for [the property, a nonexistent property]",
+      "command": "GetPropertyValuesOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${bm1}" } },
+          { "attributeId": { "guid": "${bm3}" } }
+        ],
+        "properties": [
+          { "propertyId": { "guid": "${prop}" } },
+          { "propertyId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "propertyValuesForAttributes[0].propertyValues[0].propertyValue.value", "eq": "Tapir default", "name": "material 1: the default value" },
+        { "path": "propertyValuesForAttributes[0].propertyValues[1].error", "exists": true, "name": "material 1, nonexistent property: error item" },
+        { "path": "propertyValuesForAttributes[1].propertyValues[0].error", "exists": true, "name": "material 3, unavailable property: error item" }
+      ]
+    },
+    {
+      "id": "SetPropertyValuesOfAttributes [1, 2, 3 without the property, nonexistent]",
+      "command": "SetPropertyValuesOfAttributes",
+      "creates": false,
+      "params": {
+        "attributePropertyValues": [
+          { "attributeId": { "guid": "${bm1}" }, "propertyId": { "guid": "${prop}" }, "propertyValue": { "value": "Value of 1" } },
+          { "attributeId": { "guid": "${bm2}" }, "propertyId": { "guid": "${prop}" }, "propertyValue": { "value": "Value of 2" } },
+          { "attributeId": { "guid": "${bm3}" }, "propertyId": { "guid": "${prop}" }, "propertyValue": { "value": "Value of 3" } },
+          { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "propertyId": { "guid": "${prop}" }, "propertyValue": { "value": "Value of nothing" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 4, "name": "one result per value" },
+        { "path": "executionResults[0].success", "eq": true, "name": "material 1: success" },
+        { "path": "executionResults[1].success", "eq": true, "name": "material 2: success" },
+        { "path": "executionResults[2].success", "eq": false, "name": "material 3 without the property: failed" },
+        { "path": "executionResults[3].success", "eq": false, "name": "nonexistent attribute: failed" }
+      ]
+    },
+    {
+      "id": "read back [1, 2, 3]",
+      "command": "GetPropertyValuesOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${bm1}" } },
+          { "attributeId": { "guid": "${bm2}" } },
+          { "attributeId": { "guid": "${bm3}" } }
+        ],
+        "properties": [ { "propertyId": { "guid": "${prop}" } } ],
+        "includeStatus": true
+      },
+      "expect": [
+        { "path": "propertyValuesForAttributes[0].propertyValues[0].propertyValue.value", "eq": "Value of 1", "name": "material 1 has its value" },
+        { "path": "propertyValuesForAttributes[1].propertyValues[0].propertyValue.value", "eq": "Value of 2", "name": "material 2 has its value" },
+        { "path": "propertyValuesForAttributes[2].propertyValues[0].isAvailable", "eq": false, "name": "material 3 still without the property" },
+        { "path": "propertyValuesForAttributes[2].propertyValues[0].propertyValue", "exists": false, "name": "material 3 got no value" }
+      ]
+    },
+    {
+      "id": "SetPropertyValueOfAttributes on [1, 2]",
+      "command": "SetPropertyValueOfAttributes",
+      "creates": false,
+      "params": {
+        "propertyId": { "guid": "${prop}" },
+        "propertyValue": { "value": "Shared value" },
+        "attributeIds": [
+          { "attributeId": { "guid": "${bm1}" } },
+          { "attributeId": { "guid": "${bm2}" } }
+        ]
+      },
+      "expect": [
+        { "path": "success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "read back the shared value",
+      "command": "GetPropertyValuesOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${bm1}" } },
+          { "attributeId": { "guid": "${bm2}" } }
+        ],
+        "properties": [ { "propertyId": { "guid": "${prop}" } } ]
+      },
+      "expect": [
+        { "path": "propertyValuesForAttributes[0].propertyValues[0].propertyValue.value", "eq": "Shared value", "name": "material 1 has the shared value" },
+        { "path": "propertyValuesForAttributes[1].propertyValues[0].propertyValue.value", "eq": "Shared value", "name": "material 2 has the shared value" }
+      ]
+    },
+    {
+      "id": "SetPropertyValueOfAttributes on [1, 3 without the property]",
+      "command": "SetPropertyValueOfAttributes",
+      "creates": false,
+      "params": {
+        "propertyId": { "guid": "${prop}" },
+        "propertyValue": { "value": "Must not be written" },
+        "attributeIds": [
+          { "attributeId": { "guid": "${bm1}" } },
+          { "attributeId": { "guid": "${bm3}" } }
+        ]
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "failed" }
+      ]
+    },
+    {
+      "id": "SetPropertyValueOfAttributes on [1, nonexistent]",
+      "command": "SetPropertyValueOfAttributes",
+      "creates": false,
+      "params": {
+        "propertyId": { "guid": "${prop}" },
+        "propertyValue": { "value": "Must not be written" },
+        "attributeIds": [
+          { "attributeId": { "guid": "${bm1}" } },
+          { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "failed" }
+      ]
+    },
+    {
+      "id": "the failed calls changed nothing",
+      "command": "GetPropertyValuesOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${bm1}" } } ],
+        "properties": [ { "propertyId": { "guid": "${prop}" } } ]
+      },
+      "expect": [
+        { "path": "propertyValuesForAttributes[0].propertyValues[0].propertyValue.value", "eq": "Shared value", "name": "material 1 keeps the shared value" }
+      ]
+    },
+    {
+      "id": "AddPropertyToAttributes on [nonexistent]",
+      "command": "AddPropertyToAttributes",
+      "creates": false,
+      "params": {
+        "propertyId": { "guid": "${prop}" },
+        "attributeIds": [ { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } ]
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "failed" }
+      ]
+    },
+    {
+      "id": "AddPropertyToAttributes on [3]",
+      "command": "AddPropertyToAttributes",
+      "creates": false,
+      "params": {
+        "propertyId": { "guid": "${prop}" },
+        "attributeIds": [ { "attributeId": { "guid": "${bm3}" } } ]
+      },
+      "save": { "addSucceeded": "success" },
+      "expect": [
+        { "expr": "(${acVersion} - 27.5) * (2 * ${addSucceeded} - 1)", "lt": 0, "name": "succeeds in Archicad 25-27, fails from 28" }
+      ]
+    },
+    {
+      "id": "material 3 after AddPropertyToAttributes",
+      "command": "GetPropertyValuesOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${bm3}" } } ],
+        "properties": [ { "propertyId": { "guid": "${prop}" } } ],
+        "includeStatus": true
+      },
+      "save": { "availableAfterAdd": "propertyValuesForAttributes[0].propertyValues[0].isAvailable" },
+      "expect": [
+        { "expr": "(${acVersion} - 27.5) * (2 * ${availableAfterAdd} - 1)", "lt": 0, "name": "available in Archicad 25-27, unchanged from 28" }
+      ]
+    },
+    {
+      "id": "RemovePropertyFromAttributes on [3]",
+      "command": "RemovePropertyFromAttributes",
+      "creates": false,
+      "params": {
+        "propertyId": { "guid": "${prop}" },
+        "attributeIds": [ { "attributeId": { "guid": "${bm3}" } } ]
+      },
+      "save": { "removeSucceeded": "success" },
+      "expect": [
+        { "expr": "(${acVersion} - 27.5) * (2 * ${removeSucceeded} - 1)", "lt": 0, "name": "succeeds in Archicad 25-27, fails from 28" }
+      ]
+    },
+    {
+      "id": "RemovePropertyFromAttributes on [nonexistent]",
+      "command": "RemovePropertyFromAttributes",
+      "creates": false,
+      "params": {
+        "propertyId": { "guid": "${prop}" },
+        "attributeIds": [ { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } ]
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "failed" }
+      ]
+    },
+    {
+      "id": "[1, 3] after RemovePropertyFromAttributes",
+      "command": "GetPropertyValuesOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${bm1}" } },
+          { "attributeId": { "guid": "${bm3}" } }
+        ],
+        "properties": [ { "propertyId": { "guid": "${prop}" } } ],
+        "includeStatus": true
+      },
+      "expect": [
+        { "path": "propertyValuesForAttributes[0].propertyValues[0].isAvailable", "eq": true, "name": "material 1 keeps the property" },
+        { "path": "propertyValuesForAttributes[0].propertyValues[0].propertyValue.value", "eq": "Shared value", "name": "material 1 keeps its value" },
+        { "path": "propertyValuesForAttributes[1].propertyValues[0].isAvailable", "eq": false, "name": "material 3 without the property again" }
+      ]
+    },
+    {
+      "id": "built-in Description property",
+      "command": "API.GetPropertyIds",
+      "creates": false,
+      "params": {
+        "properties": [ { "type": "BuiltIn", "nonLocalizedName": "BuildingMaterialProperties_Building_Material_Description" } ]
+      },
+      "save": { "description": "properties[0].propertyId.guid" }
+    },
+    {
+      "id": "Description of material 1 as created",
+      "command": "GetPropertyValuesOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${bm1}" } } ],
+        "properties": [ { "propertyId": { "guid": "${description}" } } ]
+      },
+      "expect": [
+        { "path": "propertyValuesForAttributes[0].propertyValues[0].propertyValue.value", "eq": "Tapir check description 1", "name": "the description given to CreateBuildingMaterials" }
+      ]
+    },
+    {
+      "id": "SetBuiltInPropertyValuesOfAttributes [1: Description, 1: custom property, nonexistent: Description]",
+      "command": "SetBuiltInPropertyValuesOfAttributes",
+      "creates": false,
+      "params": {
+        "attributes": [
+          {
+            "attributeId": { "guid": "${bm1}" },
+            "properties": [
+              { "propertyId": { "guid": "${description}" }, "propertyValue": { "value": "Changed by the check" } },
+              { "propertyId": { "guid": "${prop}" }, "propertyValue": { "value": "Must not be written" } }
+            ]
+          },
+          {
+            "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "properties": [
+              { "propertyId": { "guid": "${description}" }, "propertyValue": { "value": "Must not be written" } }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per value" },
+        { "path": "executionResults[0].success", "eq": true, "name": "Description: success" },
+        { "path": "executionResults[1].success", "eq": false, "name": "custom property: refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "nonexistent attribute: failed" }
+      ]
+    },
+    {
+      "id": "read back material 1",
+      "command": "GetPropertyValuesOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${bm1}" } } ],
+        "properties": [
+          { "propertyId": { "guid": "${description}" } },
+          { "propertyId": { "guid": "${prop}" } }
+        ]
+      },
+      "expect": [
+        { "path": "propertyValuesForAttributes[0].propertyValues[0].propertyValue.value", "eq": "Changed by the check", "name": "the new description" },
+        { "path": "propertyValuesForAttributes[0].propertyValues[1].propertyValue.value", "eq": "Shared value", "name": "the custom property is unchanged" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": {
+        "attributesToDelete": [
+          { "attributeType": "BuildingMaterial", "attributeId": { "attributeId": { "guid": "${bm1}" } } },
+          { "attributeType": "BuildingMaterial", "attributeId": { "attributeId": { "guid": "${bm2}" } } },
+          { "attributeType": "BuildingMaterial", "attributeId": { "attributeId": { "guid": "${bm3}" } } }
+        ]
+      }
+    },
+    {
+      "command": "DeletePropertyDefinitions",
+      "params": { "propertyIds": [ { "propertyId": { "guid": "${prop}" } } ] }
+    },
+    {
+      "command": "DeletePropertyGroups",
+      "params": { "propertyGroupIds": [ { "propertyGroupId": { "guid": "${group}" } } ] }
+    },
+    {
+      "command": "DeleteClassificationSystems",
+      "params": { "classificationSystemIds": [ { "classificationSystemId": { "guid": "${system}" } } ] }
+    }
+  ]
+}

@@ -11,6 +11,7 @@
   "plainKeys": [
     "elementId",
     "favoriteName",
+    "id",
     "layerIndex"
   ],
   "sources": {
@@ -58,6 +59,16 @@
       "set": "text",
       "apiMember": "API_ElementMemo::textContent",
       "apiDescription": "Text content for textual elements.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "rawText",
+      "set": null,
+      "apiMember": "API_ElementMemo::textContent",
+      "apiDescription": "The text content read with the autotext flag off, so an autotext shows its key (output only).",
       "label": null,
       "labelSource": null,
       "group": null,

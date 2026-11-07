@@ -7,6 +7,7 @@
 #include "Process.hpp"
 #include "Config.hpp"
 #include "UvManager.hpp"
+#include "ScriptInfo.hpp"
 
 #include <atomic>
 #include <mutex>
@@ -30,6 +31,13 @@ public:
 
     bool UpdateAddOn ();
     void SetRunButtonIcon ();   // also called once the VersionChecker's lookup completes
+    // The "Check for Updates..." menu item and the palette's update button: updates when a newer version exists,
+    // otherwise tells why there is nothing to update to.
+    void CheckForUpdates ();
+    void SetUpdateButtonText ();   // also called once the VersionChecker's lookup completes
+    // Shows "Update Tapir to <version>..." on the update menu item when a newer version exists, and keeps the item
+    // enabled. Needs no palette, so it is static.
+    static void ApplyUpdateMenuItemState ();
 
     static constexpr short ScriptShortcutSlotCount = 6;
     void RunShortcutSlot (short slotIndex);   // 0-based, 0..ScriptShortcutSlotCount-1
@@ -55,6 +63,8 @@ private:
         const Config::Repository* repo = nullptr;
         GS::UniString sourceName;        // shown after the file name for scripts from a configured local folder; empty for repository and user-added scripts
         GS::UniString baseDisplayText;   // label as computed by AddScriptToPopUp, before any shortcut-slot suffix
+        GS::UniString uvProjectPath;     // the folder of the uv project (uvProject in the config) the script runs in; empty: run it with --script
+        ScriptInfo info;                 // the script's docstring summary and `# /// tapir` header, read by AddScriptToPopUp
 
         explicit PopUpItemData (
             const IO::Location& _fileLocation,
@@ -70,6 +80,8 @@ private:
     DG::IconButton addScriptButton;
     DG::IconButton delScriptButton;
     DG::IconButton manageShortcutsButton;
+    DG::LeftText   installedVersionText;
+    DG::Button     checkForUpdatesButton;
 
     GS::Process process;
     GS::UniString runningCommand;   // the command process was started with, to find the process among the child processes of Archicad
@@ -112,6 +124,10 @@ private:
     virtual void PanelOpened (const DG::PanelOpenEvent& ev) override;
     virtual void ButtonClicked (const DG::ButtonClickEvent& ev) override;
     virtual void PopUpChanged (const DG::PopUpChangeEvent& ev) override;
+    // Overrides the ItemObserver function of both the button and the pop-up observer bases.
+    virtual void ItemToolTipRequested (const DG::ItemHelpEvent& ev, GS::UniString* toolTipText) override;
+
+    static GS::UniString GetScriptDescription (const ScriptInfo& info);   // the summary and the badge, one per line
 
     static GSErrCode PaletteControlCallBack (Int32 paletteId, API_PaletteMessageID messageID, GS::IntPtr param);
 

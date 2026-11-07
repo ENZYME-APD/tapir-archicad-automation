@@ -330,7 +330,7 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.CreateMEPRoutingElements;
+            Properties.Resources.CreateMEPFlexibleSegments;
 
         public override Guid ComponentGuid =>
             new Guid("06756219-7e17-4c4f-b13e-7a5ff5e6d29c");

@@ -2,6 +2,9 @@
 
 Creates a column to trigger a notification, then removes the client again. Archicad posts each event
 as JSON to http://<host>:<port>/element_notification.
+
+Modifications are observed only for columns here (elementTypesToObserve): attaching an observer to
+every element blocks Archicad for minutes on a project with thousands of elements.
 """
 import aclib
 import json
@@ -28,6 +31,7 @@ aclib.PrintJson (aclib.RunTapirCommand ('SetElementNotificationClient', {
     'port': PORT,
     'notifyOnNewElement': True,
     'notifyOnModificationOfAnElement': True,
+    'elementTypesToObserve': ['Column'],
     'notifyOnReservationChanges': False
 }))
 

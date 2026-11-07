@@ -1,5 +1,6 @@
 #include "ClassificationCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "NotificationCommands.hpp"
 
 #ifdef ServerMainVers_2900
 #include <chrono>
@@ -92,9 +93,11 @@ GS::ObjectState GetClassificationsOfElementsCommand::Execute (const GS::ObjectSt
                 continue;
             }
 
-            classificationIds (GS::ObjectState (
-                "classificationSystemId", GS::ObjectState ("guid", APIGuidToString (systemGuid)),
-                "classificationItemId", GS::ObjectState ("guid", APIGuidToString (item.guid))));
+            GS::ObjectState classificationId ("classificationSystemId", GS::ObjectState ("guid", APIGuidToString (systemGuid)));
+            if (item.guid != APINULLGuid) {
+                classificationId.Add ("classificationItemId", GS::ObjectState ("guid", APIGuidToString (item.guid)));
+            }
+            classificationIds (classificationId);
         }
 
         elementClassifications (elementClassification);
@@ -250,6 +253,16 @@ GS::ObjectState SetClassificationsOfElementsCommand::Execute (const GS::ObjectSt
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    // A classification change may leave the element's modification stamp as it was, so the
+    // elements classified are marked changed for the notification clients.
+    ElementChangeReporter changeReporter;
+    for (const GS::ObjectState& elementClassification : elementClassifications) {
+        const GS::ObjectState* elementId = elementClassification.Get ("elementId");
+        if (elementId != nullptr) {
+            changeReporter.Add (GetGuidFromObjectState (*elementId));
+        }
+    }
+
     ACAPI_CallUndoableCommand ("SetClassificationsOfElementsCommand", [&] () -> GSErrCode {
         for (const GS::ObjectState& elementClassification : elementClassifications) {
             const GS::ObjectState* elementId = elementClassification.Get ("elementId");
@@ -291,18 +304,23 @@ GS::ObjectState SetClassificationsOfElementsCommand::Execute (const GS::ObjectSt
                     continue;
                 }
 
-                err = ACAPI_Element_RemoveClassificationItem (elemGuid, item.guid);
-                if (err != NoError) {
-                    executionResults (CreateFailedExecutionResult (err, "Failed to remove classification item for element"));
-                    continue;
+                if (item.guid != APINULLGuid) {
+                    err = ACAPI_Element_RemoveClassificationItem (elemGuid, item.guid);
+                    if (err != NoError) {
+                        executionResults (CreateFailedExecutionResult (err, "Failed to remove classification item for element"));
+                        continue;
+                    }
                 }
             }
 
+            changeReporter.MarkChanged (elemGuid);
             executionResults (CreateSuccessfulExecutionResult ());
         }
 
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
@@ -812,20 +830,7 @@ GS::Optional<GS::UniString> SetClassificationsOfElementDefaultsCommand::GetInput
                 "type": "array",
                 "description": "The classifications to set on the tool defaults (the settings new elements get).",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementType": {
-                            "$ref": "#/ElementType"
-                        },
-                        "classificationId": {
-                            "$ref": "#/ClassificationId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementType",
-                        "classificationId"
-                    ]
+                    "$ref": "#/ElementDefaultClassification"
                 }
             }
         },
@@ -1397,6 +1402,9 @@ GS::Optional<GS::UniString> DeleteClassificationSystemsCommand::GetInputParamete
         "properties": {
             "classificationSystemIds": {
                 "$ref": "#/ClassificationSystemIds"
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -1411,8 +1419,12 @@ GS::Optional<GS::UniString> DeleteClassificationSystemsCommand::GetRawResponseSc
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input classification system, in the order of the input. On a dry run a classification system that exists gets wouldDelete; Archicad can still refuse to delete one that exists."
             }
         },
         "additionalProperties": false,
@@ -1424,35 +1436,23 @@ GS::Optional<GS::UniString> DeleteClassificationSystemsCommand::GetRawResponseSc
 
 GS::ObjectState DeleteClassificationSystemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> classificationSystemIds;
-    parameters.Get ("classificationSystemIds", classificationSystemIds);
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
-    ACAPI_CallUndoableCommand ("DeleteClassificationSystemsCommand", [&]() -> GSErrCode {
-        for (const GS::ObjectState& classificationSystemId : classificationSystemIds) {
-            const GS::ObjectState* systemId = classificationSystemId.Get ("classificationSystemId");
-            if (systemId == nullptr) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "classificationSystemId is missing"));
-                continue;
+    const bool dryRun = IsDryRun (parameters);
+    return ExecuteForEachIdInList (parameters, "classificationSystemIds", "classificationSystemId", "DeleteClassificationSystemsCommand", [dryRun] (const API_Guid& systemGuid) {
+        if (dryRun) {
+            API_ClassificationSystem system;
+            system.guid = systemGuid;
+            const GSErrCode getErr = ACAPI_Classification_GetClassificationSystem (system);
+            if (getErr != NoError) {
+                return CreateFailedExecutionResult (getErr, "failed to delete classification system");
             }
-
-            const API_Guid systemGuid = GetGuidFromObjectState (*systemId);
-
-            GSErrCode err = ACAPI_Classification_DeleteClassificationSystem (systemGuid);
-            if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (err, "failed to delete classification system"));
-                continue;
-            }
-
-            executionResults (CreateSuccessfulExecutionResult ());
+            return CreateDryRunExecutionResult ("wouldDelete");
         }
-
-        return NoError;
-    });
-
-    return response;
+        const GSErrCode err = ACAPI_Classification_DeleteClassificationSystem (systemGuid);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "failed to delete classification system");
+        }
+        return CreateSuccessfulExecutionResult ();
+    }, dryRun);
 }
 
 DeleteClassificationItemsCommand::DeleteClassificationItemsCommand () :
@@ -1472,6 +1472,9 @@ GS::Optional<GS::UniString> DeleteClassificationItemsCommand::GetInputParameters
         "properties": {
             "classificationItemIds": {
                 "$ref": "#/ClassificationItemIds"
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -1486,8 +1489,12 @@ GS::Optional<GS::UniString> DeleteClassificationItemsCommand::GetRawResponseSche
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input classification item, in the order of the input. On a dry run a classification item that exists gets wouldDelete; Archicad can still refuse to delete one that exists."
             }
         },
         "additionalProperties": false,
@@ -1499,35 +1506,23 @@ GS::Optional<GS::UniString> DeleteClassificationItemsCommand::GetRawResponseSche
 
 GS::ObjectState DeleteClassificationItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> classificationItemIds;
-    parameters.Get ("classificationItemIds", classificationItemIds);
-
-    GS::ObjectState response;
-    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
-
-    ACAPI_CallUndoableCommand ("DeleteClassificationItemsCommand", [&]() -> GSErrCode {
-        for (const GS::ObjectState& classificationItemId : classificationItemIds) {
-            const GS::ObjectState* itemId = classificationItemId.Get ("classificationItemId");
-            if (itemId == nullptr) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "classificationItemId is missing"));
-                continue;
+    const bool dryRun = IsDryRun (parameters);
+    return ExecuteForEachIdInList (parameters, "classificationItemIds", "classificationItemId", "DeleteClassificationItemsCommand", [dryRun] (const API_Guid& itemGuid) {
+        if (dryRun) {
+            API_ClassificationItem item;
+            item.guid = itemGuid;
+            const GSErrCode getErr = ACAPI_Classification_GetClassificationItem (item);
+            if (getErr != NoError) {
+                return CreateFailedExecutionResult (getErr, "failed to delete classification item");
             }
-
-            const API_Guid itemGuid = GetGuidFromObjectState (*itemId);
-
-            GSErrCode err = ACAPI_Classification_DeleteClassificationItem (itemGuid);
-            if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (err, "failed to delete classification item"));
-                continue;
-            }
-
-            executionResults (CreateSuccessfulExecutionResult ());
+            return CreateDryRunExecutionResult ("wouldDelete");
         }
-
-        return NoError;
-    });
-
-    return response;
+        const GSErrCode err = ACAPI_Classification_DeleteClassificationItem (itemGuid);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "failed to delete classification item");
+        }
+        return CreateSuccessfulExecutionResult ();
+    }, dryRun);
 }
 
 UpdateClassificationSystemsCommand::UpdateClassificationSystemsCommand () :

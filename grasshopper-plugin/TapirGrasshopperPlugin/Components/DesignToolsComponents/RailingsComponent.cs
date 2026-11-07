@@ -10,10 +10,11 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
 {
     // The Railing tool: reads and creates railings with the settings of the
     // Railing Settings dialog, from ToolSettings/Railing.json. ReferenceLine
-    // defines a new railing (a polyline; only X and Y are used). There is no
-    // ModifyRailings command, so Execute only writes the Element ID, the layer
-    // and the draw order of existing railings; the other settings can only be
-    // given on Create.
+    // defines a new railing (a polyline; only X and Y are used). Execute writes
+    // the segment height, the bottom offset and the home story of existing
+    // railings with ModifyRailings, and their Element ID, layer and draw
+    // order; the reference line can only be given on Create, as ModifyRailings
+    // keeps it.
     public class RailingsComponent : ElementToolComponent
     {
         protected override string ToolName => "Railing";
@@ -22,8 +23,8 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
 
         protected override string CreateCommand => "CreateRailings";
         protected override string CreateArrayKey => "railingsData";
-        protected override string ModifyCommand => null;
-        protected override string ModifyArrayKey => null;
+        protected override string ModifyCommand => "ModifyRailings";
+        protected override string ModifyArrayKey => "railingsWithDetails";
 
         // The item properties of the CreateRailings input schema
         // (ElementCreationCommands.cpp).
@@ -32,26 +33,38 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             "bottomOffset", "coordinates", "favoriteName", "floorIndex", "height", "id"
         };
 
+        // The item properties of the ModifyRailings input schema
+        // (ExtendedElementCommands.cpp), without elementId and floorIndex:
+        // ElementToolComponent writes the home story of every tool with
+        // SetDetailsOfElements, which changes the same element header field.
+        private static readonly ISet<string> ModifyRailingsKeys = new HashSet<string>
+        {
+            "bottomOffset", "height"
+        };
+
         protected override ISet<string> CreateKeys => CreateRailingsKeys;
-        protected override ISet<string> ModifyKeys { get; } = new HashSet<string>();
+        protected override ISet<string> ModifyKeys => ModifyRailingsKeys;
 
         // The Railing Settings dialog's panels, in its order; append-only (see
         // ElementToolComponent.JsonGroups).
         protected override IReadOnlyList<string> JsonGroups { get; } = new[]
         {
             "Geometry and Positioning",
-            "Segment Settings"
+            "Segment Settings",
+            "Floor Plan and Section"
         };
 
         public RailingsComponent()
             : base(
                 "Railings",
-                "Reads (Refresh) and creates (Create) railings, with the settings of the Railing Settings dialog " +
-                "as one JSON object per dialog panel. A new railing starts from the Railing tool defaults, or " +
-                "from FavoriteName, and the given settings override them; Archicad generates one node per vertex " +
-                "and one segment per pair of consecutive vertices of the reference line, with the posts, rails, " +
-                "handrails, toprails, panels and balusters of the favorite or the defaults. Archicad has no " +
-                "command to modify railings, so Execute only writes ElementID, LayerIndex and DrawOrder.")
+                "Reads (Refresh), modifies (Execute) and creates (Create) railings, with the settings of the " +
+                "Railing Settings dialog as one JSON object per dialog panel. A new railing starts from the " +
+                "Railing tool defaults, or from FavoriteName, and the given settings override them; Archicad " +
+                "generates one node per vertex and one segment per pair of consecutive vertices of the reference " +
+                "line, with the posts, rails, handrails, toprails, panels and balusters of the favorite or the " +
+                "defaults. Execute changes the segment height, the offset from the home story and the home story " +
+                "of existing railings, and ElementID, LayerIndex and DrawOrder; their reference line, nodes, " +
+                "segments, posts, rails and panels stay as they are.")
         {
         }
 

@@ -49,11 +49,45 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
     const GS::UniString elemTypeName = GetElementTypeNonLocalizedName (elemTypeID);
     const Stories stories = GetStories ();
 
+    // Optional top-level "databaseId" of the 2D Create* commands (#1602): the elements are
+    // created in that database (a worksheet, a detail, a layout, ...) instead of the current
+    // one, and the current database is switched back afterwards, so the front window stays.
+    // Only the commands whose schema names it receive it. The switch happens inside the
+    // undoable command, as CopyElementsToDatabase does it.
+    const GS::ObjectState* databaseIdOs = parameters.Get ("databaseId");
+    API_DatabaseInfo startingDatabase = {};
+    if (databaseIdOs != nullptr) {
+        API_WindowInfo startingWindow = {};
+        const bool hasStartingWindow = ACAPI_Window_GetCurrentWindow (&startingWindow) == NoError;
+        if (OpenDatabaseIfNeverOpened (GetGuidFromObjectState (*databaseIdOs)) && hasStartingWindow) {
+            ACAPI_Database_ChangeCurrentDatabase (&startingWindow);
+            ACAPI_Window_ChangeWindow (&startingWindow);
+        }
+        const GSErrCode currentErr = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+        if (currentErr != NoError) {
+            return CreateErrorResponse (currentErr, "Failed to get the current database.");
+        }
+    }
+    GSErrCode databaseErr = NoError;
+
     API_NotifyElementType notification = {};
     notification.notifID = APINotifyElement_BeginEvents;
     AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
 
     ACAPI_CallUndoableCommand ("Create " + elemTypeName, [&] () -> GSErrCode {
+        if (databaseIdOs != nullptr) {
+            databaseErr = ChangeCurrentDatabaseTo (GetGuidFromObjectState (*databaseIdOs));
+            if (databaseErr != NoError) {
+                ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+                return NoError;
+            }
+        }
+        const GS::OnExit databaseGuard ([&] () {
+            if (databaseIdOs != nullptr) {
+                ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+            }
+        });
+
         API_Element element = {};
         API_ElementMemo memo = {};
         const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
@@ -207,6 +241,9 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
     notification.notifID = APINotifyElement_EndEvents;
     AddElementNotificationClientCommand::ElementEventHandlerProc (&notification);
 
+    if (databaseErr != NoError) {
+        return CreateErrorResponse (databaseErr, "Failed to switch to the database given by databaseId, so nothing was created. A worksheet or detail whose window was never opened can be opened once with ChangeWindow by its databaseId.");
+    }
     return response;
 }
 
@@ -236,7 +273,7 @@ GS::Optional<GS::ObjectState> ApplyLayerIndexFromParameters (const GS::ObjectSta
 
 GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "columnsData": {
@@ -340,7 +377,7 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                         "floorIndex": {
                             "type": "integer",
                             "description": "Optional floor index. If omitted, derived from the coordinate's z value."
-                        }
+                        },)") + ColumnSurfaceAndFillSchemaProperties + R"(
                     },
                     "additionalProperties": false,
                     "required" : [
@@ -396,6 +433,16 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
     double slantDirectionAngle = 0.0;
     if (parameters.Get ("slantDirectionAngle", slantDirectionAngle)) {
         element.column.slantDirectionAngle = slantDirectionAngle;
+    }
+
+    // The cut fill pens and the cover fill, written as ModifyColumns writes them (#2220);
+    // ACAPI_Element_Create does not use the mask.
+    API_Element unusedMask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (unusedMask);
+    bool settingsChanged = false;
+    const GS::Optional<GS::UniString> settingsError = ApplyColumnSurfaceAndFillSettings (element, unusedMask, parameters, settingsChanged);
+    if (settingsError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, settingsError.Get ());
     }
 
     double width = 0.0;
@@ -455,7 +502,7 @@ CreateSlabsCommand::CreateSlabsCommand () :
 
 GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
     "type": "object",
     "properties": {
         "slabsData": {
@@ -524,7 +571,7 @@ GS::Optional<GS::UniString> CreateSlabsCommand::GetInputParametersSchema () cons
                     "floorIndex": {
                         "type": "integer",
                         "description": "Optional floor index. If omitted, derived from level."
-                    }
+                    },)") + SlabSurfaceAndFillSchemaProperties + R"(
                 },
                 "additionalProperties": false,
                 "required" : [
@@ -638,6 +685,17 @@ GS::Optional<GS::ObjectState> CreateSlabsCommand::SetTypeSpecificParameters (API
         } else if (referencePlaneLocation == "Bottom") {
             element.slab.referencePlaneLocation = APISlabRefPlane_Bottom;
         }
+    }
+
+    // The surfaces, cut fill pens and floor fill, written as ModifySlabs writes them (#2220);
+    // ACAPI_Element_Create does not use the mask. Before the polygon memo is built, because
+    // BuildSlabMemoFromGeometry gives every edge the slab's side surface.
+    API_Element unusedMask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (unusedMask);
+    bool settingsChanged = false;
+    const GS::Optional<GS::UniString> settingsError = ApplySlabSurfaceAndFillSettings (element, unusedMask, parameters, settingsChanged);
+    if (settingsError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, settingsError.Get ());
     }
 
     GS::Array<GS::ObjectState> polygonCoordinates;
@@ -1063,7 +1121,8 @@ static GS::ObjectState CreateZoneOverlapErrorResponse (const ExistingZone& exist
 // SetDetailsOfElements. Same rule as for walls and columns: an explicit height unlinks
 // the top (relativeTopStory 0), and with a non-zero relativeTopStory Archicad computes
 // the height from the story levels and topOffset. When both are given, relativeTopStory
-// is applied last and wins.
+// is applied last and wins. A topOffset given together with a new top link is written
+// once more after the change, by ReapplyZoneTopOffset (#1869).
 static GS::Optional<GS::ObjectState> ApplyZoneLevels (const GS::ObjectState& details, API_ZoneType& zone, API_Element* mask)
 {
     double height = 0.0;
@@ -1117,6 +1176,35 @@ static GS::Optional<GS::ObjectState> ApplyZoneLevels (const GS::ObjectState& det
     return {};
 }
 
+// Reported live (#1869): when one ACAPI_Element_Change links the top of a zone with an
+// explicit height to a story (relativeTopStory 0 -> non-zero) and also sets roomTopOffset,
+// Archicad keeps the zone's top where it was and computes roomTopOffset from it, so the
+// given topOffset is lost. The same topOffset in a change of its own is applied, so it is
+// written again once the link is in place.
+GSErrCode ReapplyZoneTopOffset (const GS::ObjectState& details, const API_Guid& zoneGuid)
+{
+    double topOffset = 0.0;
+    if (!details.Contains ("relativeTopStory") || !details.Get ("topOffset", topOffset)) {
+        return NoError;
+    }
+
+    API_Element element = {};
+    element.header.guid = zoneGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+    if (element.zone.relativeTopStory == 0 || std::fabs (element.zone.roomTopOffset - topOffset) < 1e-9) {
+        return NoError;
+    }
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    element.zone.roomTopOffset = topOffset;
+    ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, roomTopOffset);
+    return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+}
+
 GS::Optional<GS::ObjectState> ApplyZoneSettings (const GS::ObjectState& details, API_Element& element, API_Element& mask)
 {
     if (details.Contains ("name")) {
@@ -1156,6 +1244,12 @@ GS::Optional<GS::ObjectState> ApplyZoneSettings (const GS::ObjectState& details,
     }
     if (details.Get ("fixedStampAngle", element.zone.fixedAngle)) {
         ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, fixedAngle);
+    }
+
+    // The same helper and key names as CreateZones.
+    const GS::Optional<GS::UniString> contourAndFillError = ApplyZoneContourAndCoverFill (details, element.zone, &mask);
+    if (contourAndFillError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, *contourAndFillError);
     }
 
     return ApplyZoneLevels (details, element.zone, &mask);
@@ -1552,7 +1646,9 @@ GS::Optional<GS::UniString> ModifyZonesCommand::GetInputParametersSchema () cons
                         "bottomOffset": { "type": "number", "description": "Base level of the zone relative to its home story level." },
                         "topOffset": { "type": "number", "description": "Offset of the top of the zone from the linked top story level. Only has an effect when relativeTopStory is non-zero." },
                         "relativeTopStory": { "type": "number", "description": "Non-zero links the top of the zone to another story, relative to its home story (1 is the story above), instead of an explicit height. Do not set together with height in the same call, see the note on height." },
-                        "floorThickness": { "type": "number", "minimum": 0.0, "description": "Thickness of the floor finish (subfloor thickness) of the zone." }
+                        "floorThickness": { "type": "number", "minimum": 0.0, "description": "Thickness of the floor finish (subfloor thickness) of the zone." },
+                        "contourLine": { "$ref": "#/ZoneContourLine", "description": "Contour line of the zone. Only the given fields are changed." },
+                        "coverFill": { "$ref": "#/ZoneCoverFill", "description": "Cover fill of the zone. Only the given fields are changed." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -1583,6 +1679,9 @@ GS::ObjectState ModifyZonesCommand::Execute (const GS::ObjectState& parameters, 
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (zonesWithDetails);
 
     ACAPI_CallUndoableCommand ("ModifyZones", [&] () -> GSErrCode {
         for (const GS::ObjectState& item : zonesWithDetails) {
@@ -1619,10 +1718,19 @@ GS::ObjectState ModifyZonesCommand::Execute (const GS::ObjectState& parameters, 
                 continue;
             }
 
+            err = ReapplyZoneTopOffset (item, element.header.guid);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "The zone was modified, but Archicad did not apply topOffset."));
+                continue;
+            }
+
+            changeReporter.MarkChanged (element.header.guid);
             executionResults (CreateSuccessfulExecutionResult ());
         }
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
@@ -1730,6 +1838,10 @@ GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () 
                     "coordinates"
                 ]
             }
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database to create the elements in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails."
         }
     },
     "additionalProperties": false,
@@ -1851,6 +1963,10 @@ GS::Optional<GS::UniString> CreateLineElementsCommand::GetInputParametersSchema 
                     "endCoordinate"
                 ]
             }
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database to create the elements in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails."
         }
     },
     "additionalProperties": false,
@@ -1938,6 +2054,10 @@ GS::Optional<GS::UniString> CreateArcsCommand::GetInputParametersSchema () const
                     "endAngle"
                 ]
             }
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database to create the elements in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails."
         }
     },
     "additionalProperties": false,
@@ -2017,6 +2137,10 @@ GS::Optional<GS::UniString> CreateCirclesCommand::GetInputParametersSchema () co
                     "radius"
                 ]
             }
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database to create the elements in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails."
         }
     },
     "additionalProperties": false,
@@ -2097,6 +2221,10 @@ GS::Optional<GS::UniString> CreateHotspotsCommand::GetInputParametersSchema () c
                     "position"
                 ]
             }
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database to create the elements in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails."
         }
     },
     "additionalProperties": false,
@@ -2220,6 +2348,10 @@ GS::Optional<GS::UniString> CreateHatchesCommand::GetInputParametersSchema () co
                     "coordinates"
                 ]
             }
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database to create the elements in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails."
         }
     },
     "additionalProperties": false,
@@ -2353,6 +2485,10 @@ GS::Optional<GS::UniString> CreateSplinesCommand::GetInputParametersSchema () co
                     "coordinates"
                 ]
             }
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database to create the elements in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails."
         }
     },
     "additionalProperties": false,
@@ -2958,6 +3094,9 @@ static GS::ObjectState ExecuteModifyObjectOrLamp (const GS::ObjectState& paramet
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (itemsWithDetails);
+
     ACAPI_CallUndoableCommand (undoableCommandName, [&] () -> GSErrCode {
         for (const GS::ObjectState& item : itemsWithDetails) {
             const GS::ObjectState* elementId = item.Get ("elementId");
@@ -2993,11 +3132,16 @@ static GS::ObjectState ExecuteModifyObjectOrLamp (const GS::ObjectState& paramet
             }
 
             err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AddPars, true);
+            if (err == NoError) {
+                changeReporter.MarkChanged (element.header.guid);
+            }
             executionResults (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify element."));
         }
 
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
@@ -3143,6 +3287,9 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
     const Stories stories = GetStories ();
 
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (itemsWithDetails);
+
     ACAPI_CallUndoableCommand ("ModifyTexts", [&] () -> GSErrCode {
         // Same autotext flag handling as CreateTexts (CreateElementsCommandBase::Execute): with the
         // flag on, a content starting with a Project Info autotext key followed by a line break
@@ -3259,10 +3406,15 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
             if (err == NoError && contentChanged) {
                 err = TextLabelDetails::KeepTextFactors (element.header.guid, widthFactor, charSpaceFactor);
             }
+            if (err == NoError) {
+                changeReporter.MarkChanged (element.header.guid);
+            }
             executionResults (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the Text."));
         }
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
@@ -3328,6 +3480,9 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (itemsWithDetails);
 
     ACAPI_CallUndoableCommand ("ModifyLabels", [&] () -> GSErrCode {
         // Same autotext flag handling as CreateLabels, see ModifyTexts.
@@ -3452,10 +3607,15 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
             if (err == NoError && contentChanged) {
                 err = TextLabelDetails::KeepTextFactors (element.header.guid, widthFactor, charSpaceFactor);
             }
+            if (err == NoError) {
+                changeReporter.MarkChanged (element.header.guid);
+            }
             executionResults (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the Label."));
         }
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
@@ -3531,6 +3691,9 @@ GS::ObjectState ChangeTextContentCommand::Execute (const GS::ObjectState& parame
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
     // ACAPI_Element_ChangeContent modifies the database, so it runs in an undo scope.
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (contentChanges);
+
     ACAPI_CallUndoableCommand ("ChangeTextContent", [&] () -> GSErrCode {
         for (const GS::ObjectState& change : contentChanges) {
             const GS::ObjectState* elementId = change.Get ("elementId");
@@ -3567,22 +3730,58 @@ GS::ObjectState ChangeTextContentCommand::Execute (const GS::ObjectState& parame
                 continue;
             }
 
+            // API_ContentPars has no count member: Archicad takes the number of pieces to change from the sizes
+            // of the from, range, content and separator blocks, which the DevKit marks as GSPtr (the struct's
+            // comments in the AC25 header), so they must be memory manager blocks from BMpAll. Stack and
+            // std::vector memory made Archicad refuse every change, even an insertion at 0 (#1860). separator
+            // holds the end (byte) position of each piece in the concatenated content; with one piece it is
+            // the content's length. The content is passed as UTF-8, terminated; that Archicad reads it as UTF-8
+            // and not in the system code page is unverified, so non-ASCII content must be checked in Archicad.
+            const auto contentCStr = content.ToCStr (CC_UTF8);
+            const Int32 contentLength = Strlen32 (contentCStr.Get ());
+            Int32* fromBlock = reinterpret_cast<Int32*> (BMpAll (sizeof (Int32)));
+            Int32* rangeBlock = reinterpret_cast<Int32*> (BMpAll (sizeof (Int32)));
+            Int32* separatorBlock = reinterpret_cast<Int32*> (BMpAll (sizeof (Int32)));
+            char* contentBlock = reinterpret_cast<char*> (BMpAll (contentLength + 1));
+            const GS::OnExit blocksGuard ([&] () {
+                for (GSPtr block : { reinterpret_cast<GSPtr> (fromBlock), reinterpret_cast<GSPtr> (rangeBlock), reinterpret_cast<GSPtr> (separatorBlock), reinterpret_cast<GSPtr> (contentBlock) }) {
+                    if (block != nullptr) {
+                        BMpFree (block);
+                    }
+                }
+            });
+            if (fromBlock == nullptr || rangeBlock == nullptr || separatorBlock == nullptr || contentBlock == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_MEMFULL, "Failed to allocate the content change."));
+                continue;
+            }
+            *fromBlock = from;
+            *rangeBlock = range;
+            *separatorBlock = contentLength;
+            std::copy (contentCStr.Get (), contentCStr.Get () + contentLength + 1, contentBlock);
+
             API_ContentPars contentPars = {};
             contentPars.head = element.header;
-            // from and range are in/out pointers, content a terminated C string (char*, as the builds show); all
-            // kept alive for the call. The content is passed as UTF-8; that Archicad reads it as UTF-8 and not in
-            // the system code page is unverified, so non-ASCII content must be checked in Archicad.
-            contentPars.from = &from;
-            contentPars.range = &range;
-            const auto contentCStr = content.ToCStr (CC_UTF8);
-            std::vector<char> contentChars (contentCStr.Get (), contentCStr.Get () + Strlen32 (contentCStr.Get ()) + 1);
-            contentPars.content = contentChars.data ();
+            contentPars.from = fromBlock;
+            contentPars.range = rangeBlock;
+            contentPars.content = contentBlock;
+            contentPars.separator = separatorBlock;
 
             err = ACAPI_Element_ChangeContent (&contentPars);
-            executionResults (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to change the content (a range over more than one paragraph or a from past the end of the content is refused)."));
+            if (err == NoError) {
+                changeReporter.MarkChanged (element.header.guid);
+                executionResults (CreateSuccessfulExecutionResult ());
+            } else if (err == APIERR_PAROVERLAP) {
+                executionResults (CreateFailedExecutionResult (err, "The range reaches over a line end into another paragraph."));
+            } else if (err == APIERR_PAROVERFLOW) {
+                executionResults (CreateFailedExecutionResult (err, "from is past the end of the content."));
+            } else {
+                executionResults (CreateFailedExecutionResult (err, "Failed to change the content."));
+            }
         }
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
@@ -3798,7 +3997,15 @@ GS::ObjectState CreateRailingsCommand::Execute (const GS::ObjectState& parameter
     itemStories.reserve (railingsData.GetSize ());
     for (const GS::ObjectState& data : railingsData) {
         short story = originalActStory;
-        data.Get ("floorIndex", story);
+        // Without floorIndex, a railing made from templateElementId goes to the template's home story.
+        const GS::ObjectState* templateId = data.Get ("templateElementId");
+        if (!data.Get ("floorIndex", story) && templateId != nullptr) {
+            API_Elem_Head templateHead = {};
+            templateHead.guid = GetGuidFromObjectState (*templateId);
+            if (ACAPI_Element_GetHeader (&templateHead) == NoError) {
+                story = templateHead.floorInd;
+            }
+        }
         itemStories.push_back (story);
         if (std::find (storiesInOrder.begin (), storiesInOrder.end (), story) == storiesInOrder.end ()) {
             storiesInOrder.push_back (story);
@@ -3888,6 +4095,10 @@ GS::Optional<GS::UniString> CreateRailingsCommand::GetInputParametersSchema () c
                         "type": "string",
                         "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
                     },
+                    "templateElementId": {
+                        "$ref": "#/ElementId",
+                        "description": "Optional existing Railing whose settings the new railing takes instead of the tool defaults (or the favorite): its node and segment settings, from which the posts, rails, handrails, toprails, panels and balusters are generated, its story visibility, pens, bottom offset, layer and home story. floorIndex, bottomOffset and height given here override them. The reference line of a railing cannot be changed through the Archicad API, so a railing is given a new reference line by creating it again with itself as templateElementId and deleting the old one."
+                    },
                     "coordinates": {
                         "type": "array",
                         "description": "The 2D coordinates of the reference line of the railing on the floor plan. Each pair of consecutive coordinates becomes one straight segment.",
@@ -3935,6 +4146,66 @@ GS::Optional<GS::ObjectState> CreateRailingsCommand::SetTypeSpecificParameters (
         if (IsSame2DCoordinate (coordinates[i - 1], coordinates[i])) {
             return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf ("Zero-length segment: coordinates[%u] and coordinates[%u] are identical.", i - 1, i));
         }
+    }
+
+    // templateElementId: the settings of an existing railing replace the tool defaults. Part of them is held by
+    // API_RailingType (defNode, defSegment, the pens, the story visibility), but Archicad generates the posts,
+    // rails, handrails, toprails, panels and balusters from the subelement defaults in the memo as well, so copying
+    // the element alone gave a railing in between the template and the tool defaults (confirmed live). The template
+    // is therefore made the Railing tool default for a moment, as picking up its parameters does in Archicad, the
+    // defaults are read back as the new element, and the previous tool defaults are put back.
+    const GS::ObjectState* templateId = parameters.Get ("templateElementId");
+    if (templateId != nullptr) {
+        API_Element templ = {};
+        templ.header.guid = GetGuidFromObjectState (*templateId);
+        if (ACAPI_Element_Get (&templ) != NoError) {
+            return CreateErrorResponse (APIERR_BADID, "templateElementId: the element was not found.");
+        }
+        if (GetElemTypeId (templ.header) != API_RailingID) {
+            return CreateErrorResponse (APIERR_BADPARS, "templateElementId: the element is not a Railing.");
+        }
+        API_ElementMemo templMemo = {};
+        const GS::OnExit templMemoGuard ([&templMemo] () { ACAPI_DisposeElemMemoHdls (&templMemo); });
+        GSErrCode err = ACAPI_Element_GetMemo (templ.header.guid, &templMemo);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "templateElementId: the settings of the railing could not be read.");
+        }
+
+        API_Element previousDefaults = {};
+        API_ElementMemo previousDefaultsMemo = {};
+        const GS::OnExit previousDefaultsGuard ([&previousDefaultsMemo] () { ACAPI_DisposeElemMemoHdls (&previousDefaultsMemo); });
+#ifdef ServerMainVers_2600
+        previousDefaults.header.type = API_RailingID;
+#else
+        previousDefaults.header.typeID = API_RailingID;
+#endif
+        err = ACAPI_Element_GetDefaults (&previousDefaults, &previousDefaultsMemo);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to read the Railing tool defaults.");
+        }
+
+        API_Element fullMask;
+        ACAPI_ELEMENT_MASK_SETFULL (fullMask);
+        err = ACAPI_Element_ChangeDefaults (&templ, &templMemo, &fullMask);
+        if (err == NoError) {
+            ACAPI_DisposeElemMemoHdls (&memo);
+            memo = {};
+            const API_Elem_Head head = element.header;
+            element = {};
+            element.header = head;
+            err = ACAPI_Element_GetDefaults (&element, &memo);
+        }
+        ACAPI_Element_ChangeDefaults (&previousDefaults, &previousDefaultsMemo, &fullMask);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "templateElementId: the settings of the railing could not be taken over.");
+        }
+
+        // The new railing keeps the story link of the tool defaults (the template's would place it relative to the
+        // story it was created from), and takes the template's layer, bottom offset and home story.
+        element.railing.linkToSettings = previousDefaults.railing.linkToSettings;
+        element.railing.bottomOffset = templ.railing.bottomOffset;
+        element.header.layer = templ.header.layer;
+        element.header.floorInd = templ.header.floorInd;
     }
 
     short floorIndex = 0;
@@ -4550,6 +4821,10 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                 "required": [
                 ]
             }
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database to create the elements in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails."
         }
     },
     "additionalProperties": false,
@@ -4677,6 +4952,7 @@ void SetTextContentAndParagraphs (API_ElementMemo& memo, API_TextType& textData,
     textData.width = 0;
     textData.height = 0;
     textData.nonBreaking = true;
+    textData.multiStyle = true; // see ApplyTextContent
     textData.useEolPos = true;
 }
 
@@ -5128,6 +5404,11 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
     textData.width = 0;
     textData.height = 0;
     textData.nonBreaking = true;
+    // Archicad reads the runs of memo.paragraphs, and the eolPos array, only for a multistyle text
+    // (APIdefs_Elements.h: useEolPos is "only available for multistyle text"; the DevKit's Element_Test
+    // example sets multiStyle with useEolPos). Without it ACAPI_Element_Create made one run in the
+    // element-level style, so the bold, italic, pen or size of a run was lost.
+    textData.multiStyle = true;
     textData.useEolPos = true;
 
     return {};
@@ -5857,6 +6138,10 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
                     { "required": ["runs"] }
                 ]
             }
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database to create the elements in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails."
         }
     },
     "additionalProperties": false,
@@ -5952,6 +6237,136 @@ bool ParseDimensionOriginString (const GS::UniString& origin, API_DimOriginID& r
     return true;
 }
 
+// The settings of a Level Dimension that CreateLevelDimensions and ModifyLevelDimensions both take,
+// written by ApplyLevelDimensionSettings (#2220).
+static const char* LevelDimensionSettingsSchemaProperties = R"(
+                    "pen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Pen index of the marker. Optional parameter."
+                    },
+                    "textHeight": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "description": "Height of the dimension text in millimeters (paper size), applied to both texts of the marker. Optional parameter."
+                    },
+                    "textPen": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 255,
+                        "description": "Pen index of the dimension text, applied to both texts of the marker. Optional parameter."
+                    },
+                    "dimForm": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 19,
+                        "description": "Marker type of the Level Dimension tool, 0-19 as Archicad stores it (read it back with GetDetailsOfElements from an existing level dimension or one placed with a favorite). Optional parameter."
+                    },
+                    "needPlus": {
+                        "type": "boolean",
+                        "description": "Show a plus sign for positive values. Optional parameter."
+                    },
+                    "markerSize": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "description": "Size of the marker in millimeters (paper size). Optional parameter."
+                    },
+                    "angle": {
+                        "type": "number",
+                        "description": "Rotation angle of the marker in radians. Optional parameter."
+                    },
+                    "origin": {
+                        "$ref": "#/DimensionOrigin",
+                        "description": "The origin the level is measured from. Optional parameter."
+                    })";
+
+GS::Optional<GS::ObjectState> ApplyLevelDimensionSettings (const GS::ObjectState& parameters, API_Element& element, API_Element* mask)
+{
+    Int32 pen = 0;
+    if (parameters.Get ("pen", pen)) {
+        if (pen < 1 || pen > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'pen' must be between 1 and 255");
+        }
+        element.levelDimension.pen = static_cast<short> (pen);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, pen);
+        }
+    }
+
+    double textHeight = 0.0;
+    if (parameters.Get ("textHeight", textHeight)) {
+        if (textHeight <= 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textHeight' must be greater than 0");
+        }
+        element.levelDimension.note1.noteSize = textHeight;
+        element.levelDimension.note2.noteSize = textHeight;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note1.noteSize);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note2.noteSize);
+        }
+    }
+
+    Int32 textPen = 0;
+    if (parameters.Get ("textPen", textPen)) {
+        if (textPen < 1 || textPen > 255) {
+            return CreateErrorResponse (APIERR_BADPARS, "'textPen' must be between 1 and 255");
+        }
+        element.levelDimension.note1.notePen = static_cast<short> (textPen);
+        element.levelDimension.note2.notePen = static_cast<short> (textPen);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note1.notePen);
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, note2.notePen);
+        }
+    }
+
+    Int32 dimForm = 0;
+    if (parameters.Get ("dimForm", dimForm)) {
+        // Archicad 29 knows the marker types 0-19 and silently replaces any other value by 0.
+        if (dimForm < 0 || dimForm > 19) {
+            return CreateErrorResponse (APIERR_BADPARS, "'dimForm' must be between 0 and 19");
+        }
+        element.levelDimension.dimForm = static_cast<short> (dimForm);
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, dimForm);
+        }
+    }
+
+    if (parameters.Get ("needPlus", element.levelDimension.needPlus) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, needPlus);
+    }
+
+    double markerSize = 0.0;
+    if (parameters.Get ("markerSize", markerSize)) {
+        if (markerSize <= 0.0) {
+            return CreateErrorResponse (APIERR_BADPARS, "'markerSize' must be greater than 0");
+        }
+        element.levelDimension.markerSize = markerSize;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, markerSize);
+        }
+    }
+
+    if (parameters.Get ("angle", element.levelDimension.angle) && mask != nullptr) {
+        ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, angle);
+    }
+
+    GS::UniString originStr;
+    if (parameters.Get ("origin", originStr)) {
+        // The schema can't reject an unknown value behind "$ref": "#/DimensionOrigin".
+        API_DimOriginID origin = APIDimOrigin_ProjectZero;
+        if (!ParseDimensionOriginString (originStr, origin)) {
+            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'origin' value: " + originStr);
+        }
+        element.levelDimension.origin = origin;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_LevelDimensionType, origin);
+        }
+    }
+
+    return {};
+}
+
 CreateLevelDimensionsCommand::CreateLevelDimensionsCommand () :
     CreateElementsCommandBase ("CreateLevelDimensions", API_LevelDimensionID, "levelDimensionsData")
 {
@@ -5959,7 +6374,7 @@ CreateLevelDimensionsCommand::CreateLevelDimensionsCommand () :
 
 GS::Optional<GS::UniString> CreateLevelDimensionsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
     "type": "object",
     "properties": {
         "levelDimensionsData": {
@@ -5996,41 +6411,7 @@ GS::Optional<GS::UniString> CreateLevelDimensionsCommand::GetInputParametersSche
                     "layerIndex": {
                         "type": "integer",
                         "description": "Layer attribute index to place the dimension on. Optional parameter, by default the layer of the favorite or the Level Dimension tool default is used."
-                    },
-                    "pen": {
-                        "type": "integer",
-                        "description": "Pen index of the marker. Optional parameter."
-                    },
-                    "textHeight": {
-                        "type": "number",
-                        "description": "Height of the dimension text in millimeters (paper size). Optional parameter."
-                    },
-                    "textPen": {
-                        "type": "integer",
-                        "description": "Pen index of the dimension text. Optional parameter."
-                    },
-                    "dimForm": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 19,
-                        "description": "Marker type of the Level Dimension tool, 0-19 as Archicad stores it (read it back with GetDetailsOfElements from an existing level dimension or one placed with a favorite). Optional parameter."
-                    },
-                    "needPlus": {
-                        "type": "boolean",
-                        "description": "Show a plus sign for positive values. Optional parameter."
-                    },
-                    "markerSize": {
-                        "type": "number",
-                        "description": "Size of the marker in millimeters (paper size). Optional parameter."
-                    },
-                    "angle": {
-                        "type": "number",
-                        "description": "Rotation angle of the marker in radians. Optional parameter."
-                    },
-                    "origin": {
-                        "$ref": "#/DimensionOrigin",
-                        "description": "The origin the level is measured from. Optional parameter."
-                    }
+                    },)") + LevelDimensionSettingsSchemaProperties + R"(
                 },
                 "additionalProperties": false,
                 "required": [
@@ -6093,51 +6474,171 @@ GS::Optional<GS::ObjectState> CreateLevelDimensionsCommand::SetTypeSpecificParam
         element.header.layer = ACAPI_CreateAttributeIndex (layerIndex);
     }
 
-    Int32 pen = 0;
-    if (parameters.Get ("pen", pen) && pen > 0) {
-        element.levelDimension.pen = static_cast<short> (pen);
-    }
+    return ApplyLevelDimensionSettings (parameters, element, nullptr);
+}
 
-    double textHeight = 0.0;
-    if (parameters.Get ("textHeight", textHeight) && textHeight > 0.0) {
-        element.levelDimension.note1.noteSize = textHeight;
-        element.levelDimension.note2.noteSize = textHeight;
-    }
+ModifyLevelDimensionsCommand::ModifyLevelDimensionsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
 
-    Int32 textPen = 0;
-    if (parameters.Get ("textPen", textPen) && textPen > 0) {
-        element.levelDimension.note1.notePen = static_cast<short> (textPen);
-        element.levelDimension.note2.notePen = static_cast<short> (textPen);
-    }
+GS::String ModifyLevelDimensionsCommand::GetName () const
+{
+    return "ModifyLevelDimensions";
+}
 
-    Int32 dimForm = 0;
-    if (parameters.Get ("dimForm", dimForm)) {
-        // Archicad 29 knows the marker types 0-19 and silently replaces any other value by 0.
-        if (dimForm < 0 || dimForm > 19) {
-            return CreateErrorResponse (APIERR_BADPARS, "'dimForm' must be between 0 and 19");
+GS::Optional<GS::UniString> ModifyLevelDimensionsCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+    "type": "object",
+    "properties": {
+        "levelDimensionsWithDetails": {
+            "type": "array",
+            "description": "The Level Dimensions to change, each with the settings to change. Only the given settings are changed.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "elementId": {
+                        "$ref": "#/ElementId"
+                    },
+                    "position": {
+                        "$ref": "#/Coordinate2D",
+                        "description": "The new location of the marker on the floor plan. An associative level dimension then shows the height of its element at the new position. Optional parameter."
+                    },)") + LevelDimensionSettingsSchemaProperties + R"(
+                },
+                "additionalProperties": false,
+                "required": [
+                    "elementId"
+                ]
+            }
         }
-        element.levelDimension.dimForm = static_cast<short> (dimForm);
-    }
+    },
+    "additionalProperties": false,
+    "required": [
+        "levelDimensionsWithDetails"
+    ]
+})";
+}
 
-    parameters.Get ("needPlus", element.levelDimension.needPlus);
+GS::Optional<GS::UniString> ModifyLevelDimensionsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": { "$ref": "#/ExecutionResults" }
+        },
+        "additionalProperties": false,
+        "required": ["executionResults"]
+    })";
+}
 
-    double markerSize = 0.0;
-    if (parameters.Get ("markerSize", markerSize) && markerSize > 0.0) {
-        element.levelDimension.markerSize = markerSize;
-    }
+// The settings go through ApplyLevelDimensionSettings, as in CreateLevelDimensions; the position
+// through loc, which ACAPI_Element_Change accepts for level dimensions (as the DevKit's Element_Test
+// does in Do_LevelDimension_Edit). The parent element, the static level and the texts' content are
+// not changed. The element is read back, so a value Archicad did not take is reported as a failure.
+GS::ObjectState ModifyLevelDimensionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> itemsWithDetails;
+    parameters.Get ("levelDimensionsWithDetails", itemsWithDetails);
 
-    parameters.Get ("angle", element.levelDimension.angle);
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
-    GS::UniString originStr;
-    if (parameters.Get ("origin", originStr)) {
-        API_DimOriginID origin = APIDimOrigin_ProjectZero;
-        if (!ParseDimensionOriginString (originStr, origin)) {
-            return CreateErrorResponse (APIERR_BADPARS, "Unknown 'origin' value: " + originStr);
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (itemsWithDetails);
+
+    ACAPI_CallUndoableCommand ("ModifyLevelDimensions", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : itemsWithDetails) {
+            const GS::ObjectState* elementId = item.Get ("elementId");
+            if (elementId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*elementId);
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to find the element"));
+                continue;
+            }
+            if (GetElemTypeId (element.header) != API_LevelDimensionID) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADID, "Element is not a Level Dimension."));
+                continue;
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+
+            const GS::ObjectState* positionOS = item.Get ("position");
+            if (positionOS != nullptr) {
+                element.levelDimension.loc = Get2DCoordinateFromObjectState (*positionOS);
+                ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, loc);
+            }
+
+            auto settingsError = ApplyLevelDimensionSettings (item, element, &mask);
+            if (settingsError.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (settingsError.Get ()));
+                continue;
+            }
+            if (item.GetFieldCount () <= 1) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "No level dimension settings to modify."));
+                continue;
+            }
+
+            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to modify the level dimension."));
+                continue;
+            }
+
+            // Read back, so a value Archicad did not take is reported instead of a success.
+            API_Element changed = {};
+            changed.header.guid = element.header.guid;
+            err = ACAPI_Element_Get (&changed);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to read the level dimension back after the change."));
+                continue;
+            }
+            const double tolerance = 1e-6;
+            GS::UniString notApplied;
+            if (positionOS != nullptr &&
+                (std::abs (changed.levelDimension.loc.x - element.levelDimension.loc.x) > tolerance ||
+                 std::abs (changed.levelDimension.loc.y - element.levelDimension.loc.y) > tolerance)) {
+                notApplied += " position";
+            }
+            if (item.Contains ("pen") && changed.levelDimension.pen != element.levelDimension.pen) {
+                notApplied += " pen";
+            }
+            if (item.Contains ("dimForm") && changed.levelDimension.dimForm != element.levelDimension.dimForm) {
+                notApplied += " dimForm";
+            }
+            if (item.Contains ("textPen") && changed.levelDimension.note1.notePen != element.levelDimension.note1.notePen) {
+                notApplied += " textPen";
+            }
+            if (item.Contains ("textHeight") && std::abs (changed.levelDimension.note1.noteSize - element.levelDimension.note1.noteSize) > tolerance) {
+                notApplied += " textHeight";
+            }
+            if (item.Contains ("markerSize") && std::abs (changed.levelDimension.markerSize - element.levelDimension.markerSize) > tolerance) {
+                notApplied += " markerSize";
+            }
+            if (item.Contains ("origin") && changed.levelDimension.origin != element.levelDimension.origin) {
+                notApplied += " origin";
+            }
+            if (!notApplied.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply:" + notApplied + "."));
+                continue;
+            }
+
+            executionResults (CreateSuccessfulExecutionResult ());
+            changeReporter.MarkChanged (element.header.guid);
         }
-        element.levelDimension.origin = origin;
-    }
+        return NoError;
+    });
 
-    return {};
+    changeReporter.Report ();
+
+    return response;
 }
 
 MeasureTextsCommand::MeasureTextsCommand () :
@@ -6163,7 +6664,7 @@ GS::Optional<GS::UniString> MeasureTextsCommand::GetInputParametersSchema () con
                     "properties": {
                         "text": { "type": "string", "description": "The text to measure. Newlines separate lines, each measured on its own; Windows-style CRLF (and bare CR) line endings are treated as LF." },
                         "fontIndex": { "type": "integer", "description": "The index of the font, as GetDetailsOfElements and GetFontsByName report it in fontIndex. One of fontName and fontIndex is required." },
-                        "fontName": { "type": "string", "description": "Name of the font as Archicad's font list carries it (GetDetailsOfElements reports it in fontName), which is not always the operating system's font name; GetFontsByName tells whether a name is found. Resolved to the font's index (exact match first, then case-insensitive); the text fails when no loaded font has the name. Takes precedence over fontIndex if both are given. One of fontName and fontIndex is required." },
+                        "fontName": { "type": "string", "description": "Name of the font as Archicad's font list carries it (GetDetailsOfElements reports it in fontName), which is not always the operating system's font name; GetFontsByName tells whether a name is found. Resolved to the font's index (exact match first, then case-insensitive, then Archicad's font search as GetFontsByName does, so a family name such as 'Arial' finds 'Arial Western'); the text fails when no loaded font has the name. Takes precedence over fontIndex if both are given. One of fontName and fontIndex is required." },
                         "height": { "type": "number", "description": "The character height in millimetres, as a Text's height." },
                         "bold": { "type": "boolean", "description": "Bold style. Optional, default false." },
                         "italic": { "type": "boolean", "description": "Italic style. Optional, default false." },
@@ -6197,19 +6698,7 @@ GS::Optional<GS::UniString> MeasureTextsCommand::GetRawResponseSchema () const
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "length": { "type": "number", "description": "The length of the longest line." },
-                                "longestLineIndex": { "type": "integer", "description": "The zero-based index of the longest line (the first of them on a tie)." },
-                                "lineLengths": {
-                                    "type": "array",
-                                    "description": "The length of every line, in order. An empty line is 0.",
-                                    "items": { "type": "number" }
-                                },
-                                "capitalSizeFactor": { "type": "number", "description": "The ratio of the font's capital size to its typographic size. Absent when Archicad does not return it for the font." }
-                            },
-                            "additionalProperties": false,
-                            "required": ["length", "longestLineIndex", "lineLengths"]
+                            "$ref": "#/TextMeasurement"
                         },
                         {
                             "$ref": "#/ErrorItem"

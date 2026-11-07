@@ -84,9 +84,8 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             da.SetDataList(1, errors);
         }
 
-        // Shares the icon of GetPropertyValues.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetPropertyValues;
+            Properties.Resources.GetPropertyExpressionReferences;
 
         public override Guid ComponentGuid =>
             new Guid("f930265b-9643-484f-ab99-abc16f489171");
