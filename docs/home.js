@@ -53,6 +53,25 @@
             timers.push (setTimeout (fn, ms));
         }
 
+        // Each label of the check gets a box as wide as its (translated) text, on the side of its
+        // marker that data-side names, kept inside the plan. Measured while the check is shown.
+        function fitLabels () {
+            Array.prototype.forEach.call (check.querySelectorAll ('.plan-label'), function (label) {
+                var box = label.querySelector ('rect');
+                var text = label.querySelector ('text');
+                if (!box || !text || !text.getComputedTextLength) {
+                    return;
+                }
+                var width = Math.ceil (text.getComputedTextLength ()) + 16;
+                var x = Number (label.getAttribute ('data-x'));
+                var left = label.getAttribute ('data-side') === 'left' ? x - width : x;
+                left = Math.max (4, Math.min (left, 556 - width));
+                box.setAttribute ('x', left);
+                box.setAttribute ('width', width);
+                text.setAttribute ('x', left + 8);
+            });
+        }
+
         function colourZones () {
             for (var i = 0; i < zones.length; i++) {
                 zones[i].setAttribute ('fill', heatColor (Number (zones[i].getAttribute ('data-area'))));
@@ -78,6 +97,9 @@
             numbering.style.display = kind === 'number' ? '' : 'none';
             check.style.display = kind === 'check' ? '' : 'none';
             legend.style.display = kind === 'heat' ? '' : 'none';
+            if (kind === 'check') {
+                fitLabels ();
+            }
 
             if (reducedMotion ()) {
                 if (kind === 'heat') {

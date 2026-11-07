@@ -1,6 +1,7 @@
-"""Renames and renumbers the first zone with ModifyZones, reads it back, then restores its name and number.
+"""Renames and renumbers the first zone and changes its contour line pen with ModifyZones, reads it back, then restores them.
 
-Needs at least one Zone. Only the given fields change; the polygon is kept.
+Needs at least one Zone. Only the given fields change; the polygon is kept. ModifyZones takes the
+same settings as CreateZones, contourLine and coverFill included.
 """
 import aclib
 
@@ -13,12 +14,14 @@ old = aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': zones, 'fields
 aclib.PrintJson (aclib.RunTapirCommand ('ModifyZones', {'zonesWithDetails': [{
     'elementId': zones[0]['elementId'],
     'name': 'Meeting Room',
-    'numberStr': 'M01'
+    'numberStr': 'M01',
+    'contourLine': {'pen': 5}
 }]}))
 aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': zones, 'fields': ['details']})
 
 aclib.PrintJson (aclib.RunTapirCommand ('ModifyZones', {'zonesWithDetails': [{
     'elementId': zones[0]['elementId'],
     'name': old['name'],
-    'numberStr': old['numberStr']
+    'numberStr': old['numberStr'],
+    'contourLine': {'pen': old['contourLine']['pen']}
 }]}))
