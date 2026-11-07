@@ -13,6 +13,8 @@
 #include "ApplicationCommands.hpp"
 #include "MigrationHelper.hpp"
 
+#include <cmath>
+
 static void CatchViewEvents (APIViewEventHandlerProc* handlerProc);
 
 static
@@ -133,7 +135,7 @@ GS::Optional<GS::UniString> AddElementNotificationClientCommand::GetInputParamet
             },
             "notifyOnModificationOfAnElement": {
                 "type": "boolean",
-                "description": "Notify on modification/deletion of an element. The observed elements are the ones ACAPI_Element_GetElemList returns, for API_ZombieElemID or, with elementTypesToObserve, for each of those types, when the first client asking for these notifications of them is registered, and every element of the observed types created after that. Archicad does not report the changes made by Tapir's own commands, so Tapir reports them itself for SetDetailsOfElements, SetPropertyValuesOfElements, MoveElements, RotateElements, MirrorElements (not for the copies they make, which are new elements), DeleteElements, DeleteSelectedElements, the Modify<Tool> commands (ModifyWalls, ModifyBeams, ModifySlabs, ModifyColumns, ModifyWindows, ModifyDoors, ModifyOpenings, ModifyMorphs, ModifyRoofs, ModifyShells, ModifyMeshes, ModifyObjects, ModifyLamps, ModifyTexts, ModifyLabels, ModifyCurtainWalls, ModifyCurtainWallFrames, ModifyZones, ModifySections, ModifyDetailMarkers, ModifyRailings, ModifyStairs), ChangeTextContent, SetGDLParametersOfElements, RunParameterScriptOfElements (only when the script changed the element), SetMarkerParametersOfElements, SetMarkerLibraryPartOfElements, ChangeLibraryPartOfElements, SetClassificationsOfElements, SetCategoryValuesOfElements, ModifyPropertyValueOfElements, SetElementInfoStrings, SetURLReferencesOfElements, SetIFCAttributesOfElements, SetIFCPropertiesOfElements, RemoveIFCPropertiesOfElements, SetIFCClassificationReferencesOfElements, RemoveIFCClassificationReferencesOfElements, LockElements, UnlockElements, SetOpeningDetails, SetOpeningFloorPlanParameters and SetOpeningSymbolParameters. Of the elements these commands change, only the given ones are reported: an element deleted together with its owner (a door or window of a deleted wall) is not. Optional parameter, by default true. Archicad attaches an observer to each element to observe (see elementTypesToObserve) when the first client asks for this, and detaches them when the last one stops, and it is blocked meanwhile: the time grows faster than the number of elements, from seconds for a few hundred elements to many minutes for a few thousand. Count the elements first (GetAllElements with IncludeSubElemObjects, or GetElementsByType) and limit the types on large projects."
+                "description": "Notify on modification/deletion of an element. The observed elements are the ones ACAPI_Element_GetElemList returns, for API_ZombieElemID or, with elementTypesToObserve, for each of those types, when the first client asking for these notifications of them is registered, and every element of the observed types created after that. Archicad does not report the changes made by Tapir's own commands, so Tapir reports them itself for SetDetailsOfElements, SetPropertyValuesOfElements, MoveElements, RotateElements, MirrorElements (not for the copies they make, which are new elements), DeleteElements, DeleteSelectedElements, the Modify<Tool> commands (ModifyWalls, ModifyBeams, ModifySlabs, ModifyColumns, ModifyWindows, ModifyDoors, ModifyOpenings, ModifyMorphs, ModifyRoofs, ModifyShells, ModifyMeshes, ModifyObjects, ModifyLamps, ModifyTexts, ModifyLabels, ModifyCurtainWalls, ModifyCurtainWallFrames, ModifyZones, ModifySections, ModifyDetailMarkers, ModifyRailings, ModifyStairs), ChangeTextContent, SetGDLParametersOfElements, RunParameterScriptOfElements (only when the script changed the element), SetMarkerParametersOfElements, SetMarkerLibraryPartOfElements, ChangeLibraryPartOfElements, SetClassificationsOfElements, SetCategoryValuesOfElements, ModifyPropertyValueOfElements, SetElementInfoStrings, SetURLReferencesOfElements, SetIFCAttributesOfElements, SetIFCPropertiesOfElements, RemoveIFCPropertiesOfElements, SetIFCClassificationReferencesOfElements, RemoveIFCClassificationReferencesOfElements, LockElements, UnlockElements, SetOpeningDetails, SetOpeningFloorPlanParameters and SetOpeningSymbolParameters. When the user moves, rotates, mirrors, elevates, resizes or stretches elements in Archicad, each of their changedElements items also has a transformation: {\"type\": ..., ...}, where type is \"Drag\" (with displacement: {\"x\", \"y\", \"z\"}), \"Elevate\" (with displacement, only z is not 0), \"Rotate\" (with origin: {\"x\", \"y\"} and angle, in radians, counterclockwise), \"Mirror\" (with origin, a point of the mirror axis, and axisDirection: {\"x\", \"y\"}, its unit vector), \"Resize\" (with origin and ratio), \"Stretch\", \"VerticalStretch\", \"PreservedHeightStretch\", \"PreservedDirectionStretch\" or \"General\"; the changes made by Tapir's own commands and by undo or redo have no transformation. Of the elements these commands change, only the given ones are reported: an element deleted together with its owner (a door or window of a deleted wall) is not. Optional parameter, by default true. Archicad attaches an observer to each element to observe (see elementTypesToObserve) when the first client asks for this, and detaches them when the last one stops, and it is blocked meanwhile: the time grows faster than the number of elements, from seconds for a few hundred elements to many minutes for a few thousand. Count the elements first (GetAllElements with IncludeSubElemObjects, or GetElementsByType) and limit the types on large projects."
             },
             "elementTypesToObserve": {
                 "type": "array",
@@ -1251,6 +1253,57 @@ AddElementNotificationClientCommand::SendMessageToNotificationClient (Client& cl
     client.Send (postRequest, &postBody);
 }
 
+static GS::ObjectState
+CreateTransformationObjectState (const API_ActTranPars& actTranPars)
+{
+    // Only the members every supported DevKit has (theOrigoZ and rotAxis are AC29+ only).
+    GS::ObjectState transformation;
+    switch (actTranPars.typeID) {
+        case APIEdit_Drag:
+            transformation.Add ("type", "Drag");
+            transformation.Add ("displacement", Create3DCoordinateObjectState (API_Coord3D { actTranPars.theDisp.x, actTranPars.theDisp.y, actTranPars.theDispZ }));
+            break;
+        case APIEdit_Elevate:
+            transformation.Add ("type", "Elevate");
+            transformation.Add ("displacement", Create3DCoordinateObjectState (API_Coord3D { 0.0, 0.0, actTranPars.theDispZ }));
+            break;
+        case APIEdit_Rotate:
+            transformation.Add ("type", "Rotate");
+            transformation.Add ("origin", Create2DCoordinateObjectState (actTranPars.theOrigo));
+            transformation.Add ("angle", std::atan2 (actTranPars.theSinA, actTranPars.theCosA));
+            break;
+        case APIEdit_Mirror:
+            transformation.Add ("type", "Mirror");
+            transformation.Add ("origin", Create2DCoordinateObjectState (actTranPars.theOrigo));
+            transformation.Add ("axisDirection", Create2DCoordinateObjectState (API_Coord { actTranPars.theAxeVect.x, actTranPars.theAxeVect.y }));
+            break;
+        case APIEdit_Resize:
+            transformation.Add ("type", "Resize");
+            transformation.Add ("origin", Create2DCoordinateObjectState (actTranPars.theOrigo));
+            transformation.Add ("ratio", actTranPars.theRatio);
+            break;
+        case APIEdit_Stretch:
+            transformation.Add ("type", "Stretch");
+            break;
+        case APIEdit_VertStretch:
+            transformation.Add ("type", "VerticalStretch");
+            break;
+        case APIEdit_PHeightStretch:
+            transformation.Add ("type", "PreservedHeightStretch");
+            break;
+        case APIEdit_PDirStretch:
+            transformation.Add ("type", "PreservedDirectionStretch");
+            break;
+        case APIEdit_General:
+            transformation.Add ("type", "General");
+            break;
+        default:
+            transformation.Add ("type", "Unknown");
+            break;
+    }
+    return transformation;
+}
+
 GSErrCode
 AddElementNotificationClientCommand::ElementEventHandlerProc (const API_NotifyElementType *elemType)
 {
@@ -1266,7 +1319,16 @@ AddElementNotificationClientCommand::ElementEventHandlerProc (const API_NotifyEl
         // that requests a property (REQUEST "Properties_Of_Parent" or
         // "Property_Value_Of_Parent") hits an ODB assertion at that point and takes
         // Archicad down (see issue #762).
-        const GS::ObjectState message = CreateElementEvent (elemType->elemHead);
+        GS::ObjectState message = CreateElementEvent (elemType->elemHead);
+        if (elemType->notifID == APINotifyElement_Edit) {
+            // The transformation of the user's edit operation (Drag, Rotate, Mirror, ...). It is
+            // valid between APINotifyElement_BeginEvents and APINotifyElement_EndEvents, and
+            // reading it builds no element, unlike ACAPI_Notification_GetParentElement above.
+            API_ActTranPars actTranPars = {};
+            if (ACAPI_Notification_GetTranParams (&actTranPars) == NoError) {
+                message.Add ("transformation", CreateTransformationObjectState (actTranPars));
+            }
+        }
 
         switch (elemType->notifID) {
             case APINotifyElement_New:
