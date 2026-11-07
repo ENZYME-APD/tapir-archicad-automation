@@ -216,6 +216,10 @@ GSErrCode Initialize (void)
             applicationCommands, "1.7.3",
             "Retrieves the main version, release version and build number of the running Archicad, with the caption of its window."
         );
+        err |= RegisterCommand<GetArchicadLicenseInfoCommand> (
+            applicationCommands, "1.8.1",
+            "Retrieves the license the running Archicad runs on: its type (Full, Education, Trial, Demo, Start or BIMcloud Team Client), the raw protection mode with its bits by name, and the highest Software Service Agreement (SSA) level of the license, so a script can warn before it uses a feature the license lacks. The SSA level is not available in Archicad 25."
+        );
         err |= RegisterCommand<GetPrinterInfoCommand> (
             applicationCommands, "1.7.3",
             "Retrieves Archicad's current print settings: the print area, grid, fixed text size and scale (the settings PrintView takes)."

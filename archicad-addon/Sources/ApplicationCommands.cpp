@@ -213,6 +213,176 @@ GS::ObjectState GetArchicadReleaseInfoCommand::Execute (const GS::ObjectState& /
     return response;
 }
 
+GetArchicadLicenseInfoCommand::GetArchicadLicenseInfoCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetArchicadLicenseInfoCommand::GetName () const
+{
+    return "GetArchicadLicenseInfo";
+}
+
+GS::Optional<GS::UniString> GetArchicadLicenseInfoCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "licenseType": {
+                "type": "string",
+                "enum": [
+                    "Full",
+                    "Education",
+                    "Trial",
+                    "Demo",
+                    "Start",
+                    "BIMcloudTeamClient"
+                ],
+                "description": "The kind of license Archicad runs on, read from protectionMode: Trial, Demo, Education (an education license with or without a key), BIMcloudTeamClient, Start (the Start edition), otherwise Full."
+            },
+            "protectionMode": {
+                "type": "integer",
+                "description": "The raw protection mode bit mask reported by Archicad (the APIPROT_*_MASK bits of the Archicad API)."
+            },
+            "licenseFlags": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "enum": [
+                        "Site",
+                        "NotForResale",
+                        "School",
+                        "PayPerUse",
+                        "Network",
+                        "Teamwork",
+                        "Education",
+                        "Start",
+                        "Solo",
+                        "LiveSubscription",
+                        "OEM",
+                        "SSA",
+                        "EducationWithoutKey",
+                        "Demo",
+                        "Trial",
+                        "BIMcloudTeamClient"
+                    ]
+                },
+                "description": "The bits set in protectionMode, by name: Site (more licenses), NotForResale, School, PayPerUse, Network (network licensing), Teamwork (Teamwork functionality is on), Education (education key), Start (Start edition), Solo (SOLO edition), LiveSubscription, OEM (Archicad 27 or later), SSA (SSA license, Archicad 25 only), and without a hardware or software key EducationWithoutKey, Demo, Trial and BIMcloudTeamClient."
+            },
+            "ssaLevel": {
+                "type": "string",
+                "enum": [
+                    "NoSSA",
+                    "SSA",
+                    "Forward"
+                ],
+                "description": "The highest Software Service Agreement (SSA) level the license has: NoSSA, SSA or Forward. A script needing a level checks that this is at least that level, in this order. Missing in Archicad 25, which cannot report it."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "licenseType",
+            "protectionMode",
+            "licenseFlags"
+        ]
+    })";
+}
+
+static UInt32 GetArchicadProtectionMode ()
+{
+#if defined (ServerMainVers_2700)
+    return ACAPI_Licensing_GetProtectionMode ();
+#elif defined (ServerMainVers_2600)
+    return ACAPI_Protection_GetProtectionMode ();
+#else
+    API_ProtectionInfo protectionInfo;
+    GS::UniString configurationNumber;
+    if (ACAPI_Environment (APIEnv_ProtectionDataID, &protectionInfo, &configurationNumber) != NoError) {
+        return 0;
+    }
+    return protectionInfo.protMode;
+#endif
+}
+
+#if defined (ServerMainVers_2600)
+static bool IsArchicadSSALevelAtLeast (API_SSALevel level)
+{
+#if defined (ServerMainVers_2700)
+    return ACAPI_Licensing_IsSSALevelAtLeast (level);
+#else
+    return ACAPI_Protection_IsSSALevelAtLeast (level);
+#endif
+}
+#endif
+
+GS::ObjectState GetArchicadLicenseInfoCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    const UInt32 protectionMode = GetArchicadProtectionMode ();
+
+    GS::UniString licenseType = "Full";
+    if ((protectionMode & APIPROT_TRIAL_MASK) != 0) {
+        licenseType = "Trial";
+    } else if ((protectionMode & APIPROT_DEMO_MASK) != 0) {
+        licenseType = "Demo";
+    } else if ((protectionMode & (APIPROT_EDU_MASK | APIPROT_PROTEDU_MASK)) != 0) {
+        licenseType = "Education";
+    } else if ((protectionMode & APIPROT_BTC_MASK) != 0) {
+        licenseType = "BIMcloudTeamClient";
+    } else if ((protectionMode & APIPROT_START_MASK) != 0) {
+        licenseType = "Start";
+    }
+
+    const struct {
+        UInt32      mask;
+        const char* name;
+    } flagNames[] = {
+        { APIPROT_SITE_MASK, "Site" },
+        { APIPROT_NFR_MASK, "NotForResale" },
+        { APIPROT_SCHOOL_MASK, "School" },
+        { APIPROT_PPU_MASK, "PayPerUse" },
+        { APIPROT_NET_MASK, "Network" },
+        { APIPROT_TW_MASK, "Teamwork" },
+        { APIPROT_PROTEDU_MASK, "Education" },
+        { APIPROT_START_MASK, "Start" },
+        { APIPROT_SOLO_MASK, "Solo" },
+        { APIPROT_LIVE_MASK, "LiveSubscription" },
+#ifdef APIPROT_OEM_MASK
+        { APIPROT_OEM_MASK, "OEM" },
+#endif
+#ifdef APIPROT_SSA_MASK
+        { APIPROT_SSA_MASK, "SSA" },
+#endif
+        { APIPROT_EDU_MASK, "EducationWithoutKey" },
+        { APIPROT_DEMO_MASK, "Demo" },
+        { APIPROT_TRIAL_MASK, "Trial" },
+        { APIPROT_BTC_MASK, "BIMcloudTeamClient" },
+    };
+
+    GS::Array<GS::UniString> licenseFlags;
+    for (const auto& flag : flagNames) {
+        if ((protectionMode & flag.mask) != 0) {
+            licenseFlags.Push (flag.name);
+        }
+    }
+
+    GS::ObjectState response;
+    response.Add ("licenseType", licenseType);
+    response.Add ("protectionMode", static_cast<Int64> (protectionMode));
+    response.Add ("licenseFlags", licenseFlags);
+
+#if defined (ServerMainVers_2600)
+    GS::UniString ssaLevel = "NoSSA";
+    if (IsArchicadSSALevelAtLeast (API_SSALevels::Forward)) {
+        ssaLevel = "Forward";
+    } else if (IsArchicadSSALevelAtLeast (API_SSALevels::SSA)) {
+        ssaLevel = "SSA";
+    }
+    response.Add ("ssaLevel", ssaLevel);
+#endif
+
+    return response;
+}
+
 GetPrinterInfoCommand::GetPrinterInfoCommand () :
     CommandBase (CommonSchema::Used)
 {
