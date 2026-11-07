@@ -21625,5 +21625,75 @@
             "accuracy",
             "decimals"
         ]
+    },
+    "NameKind": {
+        "type": "string",
+        "description": "The kind of an item of the project that ResolveNames looks a name up among: a story, an attribute of the given type, or an element type (matched by its API name and, from Archicad 27, by the name the Archicad interface shows).",
+        "enum": [
+            "Story",
+            "Layer",
+            "LayerCombination",
+            "BuildingMaterial",
+            "Composite",
+            "Profile",
+            "Surface",
+            "Fill",
+            "Line",
+            "ZoneCategory",
+            "ElementType"
+        ]
+    },
+    "NameMatch": {
+        "type": "object",
+        "description": "An item of the project that a name matches, as ResolveNames returns it.",
+        "properties": {
+            "kind": {
+                "$ref": "#/NameKind"
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the item in the project. For an element type, the name the Archicad interface shows (from Archicad 27; the API name before)."
+            },
+            "match": {
+                "type": "string",
+                "description": "How the name matches. exact: the same characters. normalized: the same except for case, accents, spacing and separators (FireRating, fire_rating, Fire Rating). words: every word of one is a word of the other, or at least half of their words are shared. contains: one contains the other. similar: a few characters differ.",
+                "enum": [
+                    "exact",
+                    "normalized",
+                    "words",
+                    "contains",
+                    "similar"
+                ]
+            },
+            "score": {
+                "type": "number",
+                "description": "How close the match is, from 0.6 to 1 (1 for exact and normalized matches)."
+            },
+            "storyIndex": {
+                "type": "integer",
+                "description": "The index of the story (the floor index the commands take). Only for a story."
+            },
+            "level": {
+                "type": "number",
+                "description": "The level of the story, in meters. Only for a story."
+            },
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            },
+            "attributeIndex": {
+                "type": "integer",
+                "description": "The index of the attribute. Only for an attribute."
+            },
+            "elementType": {
+                "$ref": "#/ElementType"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "kind",
+            "name",
+            "match",
+            "score"
+        ]
     }
 }

@@ -24,6 +24,7 @@
 #include "ApplicationCommands.hpp"
 #include "ScriptUICommands.hpp"
 #include "ProjectCommands.hpp"
+#include "NameResolutionCommands.hpp"
 #include "CustomDataCommands.hpp"
 #include "ElementCommands.hpp"
 #include "ElementChangeTrackingCommands.hpp"
@@ -606,6 +607,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<SetAutoIntersectCommand> (
             projectCommands, "1.8.0",
             "Turns Auto-Intersection on or off. It is a setting of the running Archicad, not of the project; remember to restore the previous state afterwards."
+        );
+        err |= RegisterCommand<ResolveNamesCommand> (
+            projectCommands, "1.8.1",
+            "Looks up words or phrases (for example from a user's question) among the names of the open project before they are passed to other commands: stories, layers, layer combinations, building materials, composites, profiles, surfaces, fills, lines, zone categories and element types (by API name and, from Archicad 27, by the name the Archicad interface shows). For each name it returns 'found' with the items named exactly so, 'closeMatches' with the nearest names, best first (ranked by differences in case, accents, spacing and separators, shared words, one name containing the other and a few differing characters), or 'notFound' when nothing in the project is close, meaning the project has no such item and it must not be guessed. Each match carries what the other commands take: the story index, the attribute id and index, or the elementType. Matching is lexical and deterministic. Read only."
         );
         AddCommandGroup (projectCommands);
     }
