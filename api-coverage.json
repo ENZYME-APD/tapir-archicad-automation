@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 09:17 UTC",
+ "generatedAt": "2026-11-07 09:33 UTC",
  "versions": [
   25,
   26,
@@ -2918,6 +2918,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
      "number": 1395,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
     }
@@ -2941,6 +2945,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
     {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
@@ -3052,6 +3060,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
     {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
@@ -4054,6 +4066,14 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
+     "number": 2216,
+     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
+    },
+    {
+     "number": 2212,
+     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
+    },
+    {
      "number": 2207,
      "title": "[2/6] Dry run for the element delete and remove commands"
     },
@@ -4099,6 +4119,10 @@
     }
    ],
    "issues": [
+    {
+     "number": 2218,
+     "title": "Docs: a page of what the Archicad API cannot do, with the workaround and the DevKit evidence"
+    },
     {
      "number": 1820,
      "title": "Run several commands as one undo step"
@@ -4395,7 +4419,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2216,
+     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
+    }
+   ],
    "issues": []
   },
   {
@@ -4479,7 +4508,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2216,
+     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
+    }
+   ],
    "issues": []
   },
   {
@@ -4832,6 +4866,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2211,
+     "title": "[3/5] Add GetUnusedLibraryParts"
+    },
+    {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
     },
@@ -4960,6 +5002,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2211,
+     "title": "[3/5] Add GetUnusedLibraryParts"
+    },
+    {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
     },
@@ -5061,7 +5111,16 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2211,
+     "title": "[3/5] Add GetUnusedLibraryParts"
+    }
+   ],
    "issues": []
   },
   {
@@ -5084,7 +5143,16 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2211,
+     "title": "[3/5] Add GetUnusedLibraryParts"
+    }
+   ],
    "issues": []
   },
   {
@@ -5107,7 +5175,16 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2211,
+     "title": "[3/5] Add GetUnusedLibraryParts"
+    }
+   ],
    "issues": []
   },
   {
@@ -5153,7 +5230,16 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2211,
+     "title": "[3/5] Add GetUnusedLibraryParts"
+    }
+   ],
    "issues": []
   },
   {
@@ -5176,7 +5262,16 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2211,
+     "title": "[3/5] Add GetUnusedLibraryParts"
+    }
+   ],
    "issues": []
   },
   {
@@ -5222,7 +5317,16 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2211,
+     "title": "[3/5] Add GetUnusedLibraryParts"
+    }
+   ],
    "issues": []
   },
   {
@@ -5245,7 +5349,16 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2211,
+     "title": "[3/5] Add GetUnusedLibraryParts"
+    }
+   ],
    "issues": []
   },
   {
@@ -5268,7 +5381,16 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2211,
+     "title": "[3/5] Add GetUnusedLibraryParts"
+    }
+   ],
    "issues": []
   },
   {
@@ -5868,6 +5990,14 @@
    "status": "not applicable",
    "reason": "memory management",
    "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2212,
+     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
+    },
     {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
@@ -6598,6 +6728,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2216,
+     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
+    },
+    {
      "number": 2207,
      "title": "[2/6] Dry run for the element delete and remove commands"
     }
@@ -6623,6 +6757,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2216,
+     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
+    },
     {
      "number": 2207,
      "title": "[2/6] Dry run for the element delete and remove commands"
@@ -6873,6 +7011,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2212,
+     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
+    },
+    {
      "number": 2200,
      "title": "[1/5] SplitElements: split walls, beams and lines along a line"
     },
@@ -7042,7 +7184,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2212,
+     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
+    }
+   ],
    "issues": []
   },
   {
@@ -7219,6 +7366,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2212,
+     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
+    },
+    {
      "number": 2200,
      "title": "[1/5] SplitElements: split walls, beams and lines along a line"
     }
@@ -7309,6 +7460,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2212,
+     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
+    },
     {
      "number": 2206,
      "title": "[3/3] Add ScaleElements command"
@@ -7432,6 +7587,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2212,
+     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
+    },
+    {
+     "number": 2211,
+     "title": "[3/5] Add GetUnusedLibraryParts"
+    },
     {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
@@ -7695,6 +7862,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
     },
@@ -7804,6 +7975,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2211,
+     "title": "[3/5] Add GetUnusedLibraryParts"
+    },
     {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
@@ -8017,6 +8196,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2211,
+     "title": "[3/5] Add GetUnusedLibraryParts"
+    },
+    {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
     },
@@ -8075,6 +8262,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2212,
+     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
+    },
     {
      "number": 2200,
      "title": "[1/5] SplitElements: split walls, beams and lines along a line"
@@ -9403,6 +9594,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2216,
+     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
+    },
+    {
      "number": 2207,
      "title": "[2/6] Dry run for the element delete and remove commands"
     }
@@ -9428,6 +9623,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2216,
+     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
+    },
     {
      "number": 2207,
      "title": "[2/6] Dry run for the element delete and remove commands"
@@ -9562,6 +9761,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
     },
@@ -9595,6 +9798,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
     {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
@@ -10041,6 +10248,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 2215,
+     "title": "Palette: enforce min-tapir-version and archicad-versions before running a script"
+    },
     {
      "number": 2185,
      "title": "[2/2] Add-On: \"Update when Archicad closes\" choice, pending marker and README (#2182)"
@@ -10697,6 +10908,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2212,
+     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
+    },
+    {
      "number": 2200,
      "title": "[1/5] SplitElements: split walls, beams and lines along a line"
     }
@@ -11241,7 +11456,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    }
+   ],
    "issues": []
   },
   {
@@ -11287,7 +11507,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    }
+   ],
    "issues": []
   },
   {
@@ -11355,7 +11580,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    }
+   ],
    "issues": []
   },
   {
@@ -12206,7 +12436,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2211,
+     "title": "[3/5] Add GetUnusedLibraryParts"
+    }
+   ],
    "issues": []
   },
   {
@@ -12475,7 +12714,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2211,
+     "title": "[3/5] Add GetUnusedLibraryParts"
+    }
+   ],
    "issues": []
   },
   {
@@ -13462,6 +13710,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2216,
+     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
+    },
     {
      "number": 2207,
      "title": "[2/6] Dry run for the element delete and remove commands"
@@ -16619,7 +16871,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    }
+   ],
    "issues": []
   },
   {
@@ -16751,7 +17008,12 @@
    "status": "skipped",
    "reason": "crashes Archicad 29 on an unknown function name and gives wrong results both ways; tested and removed from #1146 (8822f998)",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2219,
+     "title": "Skipped API items waiting on Archicad: keep a retest list and show it with every new DevKit"
+    }
+   ]
   },
   {
    "id": "ACAPI_Property_CreatePropertyDefinition",
@@ -16857,6 +17119,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2216,
+     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -16930,7 +17196,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2216,
+     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
+    }
+   ],
    "issues": []
   },
   {
@@ -17812,6 +18083,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2216,
+     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
+    },
     {
      "number": 2207,
      "title": "[2/6] Dry run for the element delete and remove commands"
@@ -20538,6 +20813,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2211,
+     "title": "[3/5] Add GetUnusedLibraryParts"
+    },
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
@@ -25837,6 +26120,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2216,
+     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
+    },
+    {
      "number": 2207,
      "title": "[2/6] Dry run for the element delete and remove commands"
     },
@@ -26529,6 +26820,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
     },
@@ -26571,6 +26866,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
     {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
@@ -26700,6 +26999,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
     },
@@ -26743,6 +27046,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
     },
@@ -26785,6 +27092,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
     {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
@@ -27357,6 +27668,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2212,
+     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
+    },
     {
      "number": 2206,
      "title": "[3/3] Add ScaleElements command"
@@ -30190,7 +30509,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2211,
+     "title": "[3/5] Add GetUnusedLibraryParts"
+    }
+   ],
    "issues": []
   },
   {
@@ -30279,6 +30607,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2211,
+     "title": "[3/5] Add GetUnusedLibraryParts"
+    },
     {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
@@ -31579,6 +31915,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2216,
+     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
+    },
+    {
+     "number": 2212,
+     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
+    },
+    {
+     "number": 2211,
+     "title": "[3/5] Add GetUnusedLibraryParts"
+    },
+    {
      "number": 2206,
      "title": "[3/3] Add ScaleElements command"
     },
@@ -31647,7 +31999,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2212,
+     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
+    }
+   ],
    "issues": []
   },
   {
@@ -31720,6 +32077,10 @@
    "reason": "does not compile against the Archicad 27 DevKit: Bend::Modifier does not derive from ACAPI::ModifierBase, which ExecuteUndoableScope requires (Archicad 27 only)",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 2219,
+     "title": "Skipped API items waiting on Archicad: keep a retest list and show it with every new DevKit"
+    },
     {
      "number": 1538,
      "title": "Finish the API coverage: the 116 open functions that can be JSON commands (MEP, IFC, Favorites, library part sections, project and window odds and ends)"
@@ -32316,7 +32677,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2212,
+     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
+    }
+   ],
    "issues": []
   },
   {
@@ -35691,7 +36057,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2212,
+     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
+    }
+   ],
    "issues": []
   },
   {
@@ -38143,6 +38514,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2212,
+     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
+    },
     {
      "number": 2206,
      "title": "[3/3] Add ScaleElements command"
@@ -44662,7 +45041,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2212,
+     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
+    }
+   ],
    "issues": []
   },
   {
@@ -44802,7 +45186,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2212,
+     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
+    }
+   ],
    "issues": []
   },
   {
@@ -44954,6 +45343,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2216,
+     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
+    },
+    {
+     "number": 2212,
+     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
+    },
+    {
+     "number": 2211,
+     "title": "[3/5] Add GetUnusedLibraryParts"
+    },
+    {
      "number": 2206,
      "title": "[3/3] Add ScaleElements command"
     },
@@ -45023,7 +45428,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2212,
+     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
+    }
+   ],
    "issues": []
   },
   {
@@ -48232,6 +48642,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2216,
+     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
+    },
+    {
+     "number": 2212,
+     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
+    },
+    {
+     "number": 2211,
+     "title": "[3/5] Add GetUnusedLibraryParts"
+    },
     {
      "number": 2206,
      "title": "[3/3] Add ScaleElements command"
@@ -54787,6 +55213,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
     },
@@ -55824,6 +56254,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2217,
+     "title": "[4/5] GetProjectHealth: read-only project health summary"
+    },
+    {
+     "number": 2211,
+     "title": "[3/5] Add GetUnusedLibraryParts"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"

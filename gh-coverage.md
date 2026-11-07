@@ -34,7 +34,7 @@ Parameters of the 746 used commands: 🟢 713 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-07 09:17 UTC.
+Updated 2026-11-07 09:33 UTC.
 
 | | Status |
 |---|---|
@@ -177,8 +177,8 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `GetMarquee` 🟢 0/0 parameters – `GetMarqueeComponent`
 - ✅ `SetMarquee` 🟢 4/4 parameters – `SetMarqueeComponent`
 - ✅ `FilterElements` 🟢 7/7 parameters – `FilterElementsComponent`
-- ✅ `GetDetailsOfElements` 🟡 2/3 parameters – `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `FillsComponent`, `GetDetailsOfBeamsComponent`, `GetDetailsOfColumnsComponent`, `GetDetailsOfElementsComponent`, `GetDetailsOfLabelsComponent`, `GetDetailsOfPolylinesComponent`, `GetDetailsOfRoofsComponent`, `GetDetailsOfSlabsComponent`, `GetDetailsOfTextsComponent`, `GetDetailsOfWallsComponent`, `GetDetailsOfZonesComponent`, `HotspotsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent` — [#1791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1791 "Grasshopper: Doors and Windows tool components, with their floor plan parameters")<br><sub>no input: `additionalFields`</sub>
-- ✅ `SetDetailsOfElements` 🟢 8/8 parameters – `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `FillsComponent`, `HotspotsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SetDetailsOfTextsComponent`, `SetDetailsOfWallsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent`
+- ✅ `GetDetailsOfElements` 🟡 2/3 parameters – `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `FillsComponent`, `GetDetailsOfBeamsComponent`, `GetDetailsOfColumnsComponent`, `GetDetailsOfElementsComponent`, `GetDetailsOfLabelsComponent`, `GetDetailsOfPolylinesComponent`, `GetDetailsOfRoofsComponent`, `GetDetailsOfSlabsComponent`, `GetDetailsOfTextsComponent`, `GetDetailsOfWallsComponent`, `GetDetailsOfZonesComponent`, `HotspotsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent` — [#2220](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2220 "Element settings coverage: audit which element types can be created, modified and read, then fill the Modify gaps"), [#1791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1791 "Grasshopper: Doors and Windows tool components, with their floor plan parameters")<br><sub>no input: `additionalFields`</sub>
+- ✅ `SetDetailsOfElements` 🟢 8/8 parameters – `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `FillsComponent`, `HotspotsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SetDetailsOfTextsComponent`, `SetDetailsOfWallsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent` — [#2220](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2220 "Element settings coverage: audit which element types can be created, modified and read, then fill the Modify gaps")
 - 🔀 `SetElementInfoStrings` 🟢 3/3 parameters – `SetElementInfoStringsComponent`
 - ✅ `GetElementCategories` 🟢 0/0 parameters – `GetElementCategoriesComponent`
 - ✅ `GetCategoryValuesOfElements` 🟢 2/2 parameters – `GetCategoryValuesOfElementsComponent`
@@ -252,9 +252,9 @@ A parameter counts as covered when the component's code names it (a static check
 - 🔀 `SetMarkerLibraryPartOfElements` 🟢 3/3 parameters – `SetMarkerLibraryPartOfElementsComponent`
 - ✅ `RunParameterScriptOfElements` 🟢 1/1 parameters – `RunParameterScriptOfElementsComponent`
 - ✅ `CreateColumns` 🟢 22/22 parameters – `ColumnsComponent`, `CreateColumnsComponent`
-- ✅ `CreateWalls` 🟢 33/33 parameters – `CreateWallsComponent`, `WallsApiComponent`, `WallsComponent`
+- ✅ `CreateWalls` 🟢 33/33 parameters – `CreateWallsComponent`, `WallsApiComponent`, `WallsComponent` — [#2220](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2220 "Element settings coverage: audit which element types can be created, modified and read, then fill the Modify gaps")
 - ✅ `CreateBeams` 🟢 21/21 parameters – `BeamsComponent`, `CreateBeamsComponent`
-- ✅ `CreateStairs` 🟡 11/20 parameters – `CreateStairsComponent`<br><sub>no input: `stairsData.baseLineEdges`, `stairsData.baseLineEdges.segmentType`, `stairsData.baseLineVertices`, `stairsData.baseLineVertices.minLandingEndEdgeOffset`, `stairsData.baseLineVertices.minLandingStartEdgeOffset`, `stairsData.baseLineVertices.turnType`, `stairsData.baselineOffset`, `stairsData.baselinePosition`, `stairsData.id`</sub>
+- ✅ `CreateStairs` 🟡 11/20 parameters – `CreateStairsComponent` — [#2220](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2220 "Element settings coverage: audit which element types can be created, modified and read, then fill the Modify gaps")<br><sub>no input: `stairsData.baseLineEdges`, `stairsData.baseLineEdges.segmentType`, `stairsData.baseLineVertices`, `stairsData.baseLineVertices.minLandingEndEdgeOffset`, `stairsData.baseLineVertices.minLandingStartEdgeOffset`, `stairsData.baseLineVertices.turnType`, `stairsData.baselineOffset`, `stairsData.baselinePosition`, `stairsData.id`</sub>
 - ✅ `SolveStairBaseline` 🟢 1/1 parameters – `SolveStairBaselineComponent`
 - ✅ `CreateSlabs` 🟢 14/14 parameters – `CreateSlabsComponent`, `SlabsComponent`
 - ✅ `CreateWindows` 🟢 28/28 parameters – `CreateWindowsComponent`, `WindowsComponent` — [#1791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1791 "Grasshopper: Doors and Windows tool components, with their floor plan parameters")
@@ -298,7 +298,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `CreateLabels` 🟡 14/15 parameters – `LabelElementsComponent`, `LabelsComponent`<br><sub>no input: `databaseId`</sub>
 - ✅ `CreateTexts` 🟡 13/14 parameters – `CreateTextsComponent`, `TextsComponent`<br><sub>no input: `databaseId`</sub>
 - ✅ `CreateLevelDimensions` 🟢 16/16 parameters – `LevelDimensionsComponent`
-- ✅ `ModifyWalls` 🟢 44/44 parameters – `ModifyWallsComponent`, `WallsApiComponent`, `WallsComponent`
+- ✅ `ModifyWalls` 🟢 44/44 parameters – `ModifyWallsComponent`, `WallsApiComponent`, `WallsComponent` — [#2220](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2220 "Element settings coverage: audit which element types can be created, modified and read, then fill the Modify gaps")
 - ✅ `ModifyBeams` 🟢 24/24 parameters – `BeamsComponent`, `ModifyBeamsComponent`
 - ✅ `ModifySlabs` 🟢 18/18 parameters – `ModifySlabsComponent`, `SlabsComponent`
 - ✅ `ModifyColumns` 🟢 26/26 parameters – `ColumnsComponent`, `ModifyColumnsComponent`
@@ -307,16 +307,16 @@ A parameter counts as covered when the component's code names it (a static check
 - 🔀 `ModifyOpenings` 🟢 5/5 parameters – `ModifyOpeningsComponent`
 - ✅ `ModifyMorphs` 🟢 37/37 parameters – `ModifyMorphsComponent`, `MorphsComponent`
 - ✅ `ModifyRoofs` 🟡 20/21 parameters – `ModifyRoofsComponent`, `RoofsComponent`<br><sub>no input: `roofsWithDetails.pivotEdges.levels.angleType`</sub>
-- 🔀 `ModifyShells` 🟢 5/5 parameters – `ModifyShellsComponent`
+- 🔀 `ModifyShells` 🟢 5/5 parameters – `ModifyShellsComponent` — [#2220](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2220 "Element settings coverage: audit which element types can be created, modified and read, then fill the Modify gaps")
 - ✅ `ModifyMeshes` 🟢 3/3 parameters – `MeshesComponent`, `ModifyMeshesComponent`
-- 🔀 `ModifyRailings` 🟢 5/5 parameters – `RailingsComponent`
+- 🔀 `ModifyRailings` 🟢 5/5 parameters – `RailingsComponent` — [#2220](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2220 "Element settings coverage: audit which element types can be created, modified and read, then fill the Modify gaps")
 - ✅ `ModifyObjects` 🟢 24/24 parameters – `ModifyObjectsComponent`, `ObjectsComponent`
 - ✅ `ModifyLamps` 🟢 26/26 parameters – `LampsComponent`, `ModifyLampsComponent`
 - ✅ `ModifyTexts` 🟢 7/7 parameters – `ModifyTextsComponent`, `TextsComponent`
 - ✅ `ModifyLabels` 🟢 7/7 parameters – `LabelsComponent`, `ModifyLabelsComponent`
 - ✅ `ModifyCurtainWalls` 🟢 9/9 parameters – `CurtainWallsComponent`, `ModifyCurtainWallsComponent`
 - 🔀 `ModifyCurtainWallFrames` 🟢 9/9 parameters – `ModifyCurtainWallFramesComponent`
-- 🔀 `ModifyStairs` 🟡 15/27 parameters – `ModifyStairsComponent`<br><sub>no input: `stairsWithDetails.risers`, `stairsWithDetails.risers.crossSection`, `stairsWithDetails.structures`, `stairsWithDetails.structures.bottomType`, `stairsWithDetails.structures.horizontalThickness`, `stairsWithDetails.structures.side`, `stairsWithDetails.treads`, `stairsWithDetails.treads.nosingSlant`, `stairsWithDetails.treads.nosingType`, `stairsWithDetails.treads.nosingValue`, `stairsWithDetails.treads.role`, `stairsWithDetails.treads.visible`</sub>
+- 🔀 `ModifyStairs` 🟡 15/27 parameters – `ModifyStairsComponent` — [#2220](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2220 "Element settings coverage: audit which element types can be created, modified and read, then fill the Modify gaps")<br><sub>no input: `stairsWithDetails.risers`, `stairsWithDetails.risers.crossSection`, `stairsWithDetails.structures`, `stairsWithDetails.structures.bottomType`, `stairsWithDetails.structures.horizontalThickness`, `stairsWithDetails.structures.side`, `stairsWithDetails.treads`, `stairsWithDetails.treads.nosingSlant`, `stairsWithDetails.treads.nosingType`, `stairsWithDetails.treads.nosingValue`, `stairsWithDetails.treads.role`, `stairsWithDetails.treads.visible`</sub>
 - ✅ `ChangeTextContent` 🟢 5/5 parameters – `ChangeTextContentComponent`
 - 🔀 `ModifyZones` 🟢 13/13 parameters – `ModifyZonesComponent`, `ZonesComponent`
 - ✅ `MeasureTexts` 🟢 10/10 parameters – `MeasureTextsComponent`

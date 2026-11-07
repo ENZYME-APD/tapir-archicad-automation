@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 09:17 UTC",
+ "generatedAt": "2026-11-07 09:33 UTC",
  "counts": {
   "done": 568,
   "merged": 178,
@@ -2819,6 +2819,10 @@
    "pullRequests": [],
    "issues": [
     {
+     "number": 2220,
+     "title": "Element settings coverage: audit which element types can be created, modified and read, then fill the Modify gaps"
+    },
+    {
      "number": 1791,
      "title": "Grasshopper: Doors and Windows tool components, with their floor plan parameters"
     }
@@ -2959,7 +2963,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2220,
+     "title": "Element settings coverage: audit which element types can be created, modified and read, then fill the Modify gaps"
+    }
+   ]
   },
   {
    "id": "SetElementInfoStrings",
@@ -4756,7 +4765,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2220,
+     "title": "Element settings coverage: audit which element types can be created, modified and read, then fill the Modify gaps"
+    }
+   ]
   },
   {
    "id": "CreateBeams",
@@ -4844,7 +4858,12 @@
     "stairsData.id"
    ],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2220,
+     "title": "Element settings coverage: audit which element types can be created, modified and read, then fill the Modify gaps"
+    }
+   ]
   },
   {
    "id": "SolveStairBaseline",
@@ -6527,7 +6546,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2220,
+     "title": "Element settings coverage: audit which element types can be created, modified and read, then fill the Modify gaps"
+    }
+   ]
   },
   {
    "id": "ModifyBeams",
@@ -6943,7 +6967,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2220,
+     "title": "Element settings coverage: audit which element types can be created, modified and read, then fill the Modify gaps"
+    }
+   ]
   },
   {
    "id": "ModifyMeshes",
@@ -6997,7 +7026,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2220,
+     "title": "Element settings coverage: audit which element types can be created, modified and read, then fill the Modify gaps"
+    }
+   ]
   },
   {
    "id": "ModifyObjects",
@@ -7274,7 +7308,12 @@
     "stairsWithDetails.treads.visible"
    ],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2220,
+     "title": "Element settings coverage: audit which element types can be created, modified and read, then fill the Modify gaps"
+    }
+   ]
   },
   {
    "id": "ChangeTextContent",
