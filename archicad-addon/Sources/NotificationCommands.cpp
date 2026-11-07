@@ -80,6 +80,7 @@ std::set<API_ElemTypeID> AddElementNotificationClientCommand::observedElementTyp
 bool AddElementNotificationClientCommand::hasClientToNotifyOnReservationChanges = false;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnSelectionChange = false;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnAttributeReplacement = false;
+bool AddElementNotificationClientCommand::hasClientToNotifyOnToolChange = false;
 std::unique_ptr<AddElementNotificationClientCommand::EventQueue> AddElementNotificationClientCommand::queuedEvents;
 GS::Thread AddElementNotificationClientCommand::messageSenderThread;
 
@@ -155,6 +156,10 @@ GS::Optional<GS::UniString> AddElementNotificationClientCommand::GetInputParamet
             "notifyOnAttributeReplacement": {
                 "type": "boolean",
                 "description": "Notify when attributes are deleted and replaced by other attributes of the same type (for example Delete and Replace in the Attribute Manager). The message is {\"replacedAttributes\": [{\"attributeType\": ..., \"oldIndex\": ..., \"newIndex\": ..., \"newAttributeId\": ...}, ...]}: attributeType is one of the type names of GetAttributesByType (\"Layer\", \"Line\", \"Fill\", \"Composite\", \"Surface\", \"LayerCombination\", \"ZoneCategory\", \"Profile\", \"PenTable\", \"MEPSystem\", \"OperationProfile\", \"BuildingMaterial\", or \"Unknown\"), oldIndex is the index of the replaced attribute and newIndex the index of the attribute that replaces it, newAttributeId is the attributeId of that attribute, missing when it cannot be found. Not available in Archicad 25: setting it to true there fails. Optional parameter, by default false."
+            },
+            "notifyOnToolChange": {
+                "type": "boolean",
+                "description": "Notify when the user switches to another tool in the Toolbox. The message is {\"toolChanged\": {\"elementType\": ...}}: elementType is the element type of the new tool, as in elementTypesToObserve (for example \"Wall\" or \"Column\"), \"None\" for the Arrow and the Marquee, and \"Unknown\" for a tool Tapir has no type name for. Optional parameter, by default false."
             }
         },
         "additionalProperties": false,
@@ -214,6 +219,9 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
     }
 #endif
 
+    bool notifyOnToolChange = false;
+    parameters.Get ("notifyOnToolChange", notifyOnToolChange);
+
     std::set<API_ElemTypeID> elementTypesToObserve;
     GS::Array<GS::UniString> elementTypeNames;
     if (parameters.Get ("elementTypesToObserve", elementTypeNames)) {
@@ -231,7 +239,7 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
 
     const GS::UniString connectionUrlStr = GS::UniString::Printf ("http://%T:%d/", host.ToPrintf (), port);
     const IO::URI::URI connectionUrl (connectionUrlStr);
-    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges, notifyOnSelectionChange, notifyOnWindowChange, notifyOnProjectEvents, notifyOnAttributeReplacement, elementTypesToObserve));
+    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges, notifyOnSelectionChange, notifyOnWindowChange, notifyOnProjectEvents, notifyOnAttributeReplacement, notifyOnToolChange, elementTypesToObserve));
     if (!result.second) {
         result.first->second.notifyOnNew = notifyOnNew;
         result.first->second.notifyOnModification = notifyOnModification;
@@ -240,6 +248,7 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
         result.first->second.notifyOnWindowChange = notifyOnWindowChange;
         result.first->second.notifyOnProjectEvents = notifyOnProjectEvents;
         result.first->second.notifyOnAttributeReplacement = notifyOnAttributeReplacement;
+        result.first->second.notifyOnToolChange = notifyOnToolChange;
         result.first->second.elementTypesToObserve = elementTypesToObserve;
         // A client registered again without these notifications may have been the
         // last one that wanted them; uninstall the handlers in that case, as
@@ -247,6 +256,7 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
         // below.
         UninstallSelectionChangeHandlerIfNotNeeded ();
         UninstallAttributeReplacementHandlerIfNotNeeded ();
+        UninstallToolChangeHandlerIfNotNeeded ();
     }
 
     if (notifyOnNew && !hasClientToNotifyOnNew) {
@@ -275,6 +285,11 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
         hasClientToNotifyOnAttributeReplacement = true;
     }
 #endif
+
+    if (notifyOnToolChange && !hasClientToNotifyOnToolChange) {
+        ACAPI_Notification_CatchToolChange (ToolChangeHandler);
+        hasClientToNotifyOnToolChange = true;
+    }
 
     ACAPI_Element_InstallElementObserver (ElementEventHandlerProc);
 
@@ -518,6 +533,52 @@ AddElementNotificationClientCommand::AttributeReplacementHandler (const API_Attr
 }
 
 #endif
+
+void
+AddElementNotificationClientCommand::UninstallToolChangeHandlerIfNotNeeded ()
+{
+    if (!hasClientToNotifyOnToolChange) {
+        return;
+    }
+
+    for (const auto& kv : clients) {
+        if (kv.second.notifyOnToolChange) {
+            return;
+        }
+    }
+
+    ACAPI_Notification_CatchToolChange (nullptr);
+    hasClientToNotifyOnToolChange = false;
+}
+
+GSErrCode
+AddElementNotificationClientCommand::ToolChangeHandler (const API_ToolBoxItem* newToolMode)
+{
+    if (newToolMode == nullptr) {
+        return NoError;
+    }
+
+#ifdef ServerMainVers_2600
+    const API_ElemTypeID typeID = newToolMode->type.typeID;
+#else
+    const API_ElemTypeID typeID = newToolMode->typeID;
+#endif
+    // The Arrow and the Marquee have no element type (as in the DevKit's Notification_Manager example).
+    const GS::UniString elementType = (typeID == API_ZombieElemID) ? GS::UniString ("None") : GetElementTypeNonLocalizedName (typeID);
+    const GS::ObjectState message ("toolChanged", GS::ObjectState ("elementType", elementType));
+
+    // Sent at once, like the selection: a tool change is not an element event.
+    for (auto& kv : clients) {
+        auto& client = kv.second;
+        if (!client.notifyOnToolChange) {
+            continue;
+        }
+
+        SendMessageToNotificationClient (client, message);
+    }
+
+    return NoError;
+}
 
 static GS::Optional<GS::UniString> ProjectEventToString (API_NotifyEventID notifID)
 {
@@ -940,6 +1001,7 @@ GS::ObjectState RemoveElementNotificationClientCommand::Execute (const GS::Objec
     AddElementNotificationClientCommand::UpdateElementObservers ();
     AddElementNotificationClientCommand::UninstallSelectionChangeHandlerIfNotNeeded ();
     AddElementNotificationClientCommand::UninstallAttributeReplacementHandlerIfNotNeeded ();
+    AddElementNotificationClientCommand::UninstallToolChangeHandlerIfNotNeeded ();
 
     return CreateSuccessfulExecutionResult ();
 }
