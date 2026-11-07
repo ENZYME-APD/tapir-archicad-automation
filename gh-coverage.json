@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 22:03 UTC",
+ "generatedAt": "2026-11-07 22:25 UTC",
  "counts": {
   "done": 568,
   "merged": 181,
@@ -178,7 +178,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2268,
+     "title": "User input: GetArcFromUser, snap filter and constraint options"
+    }
+   ]
   },
   {
    "id": "ModelToScreen",
@@ -271,7 +276,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2268,
+     "title": "User input: GetArcFromUser, snap filter and constraint options"
+    }
+   ]
   },
   {
    "id": "GetPolygonFromUser",
@@ -295,7 +305,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2268,
+     "title": "User input: GetArcFromUser, snap filter and constraint options"
+    }
+   ]
   },
   {
    "id": "ConvertImages",
@@ -7792,7 +7807,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2267,
+     "title": "Notification clients: tool change, view, reservation, tool default and AC26+ events"
+    }
+   ]
   },
   {
    "id": "RemoveElementNotificationClient",

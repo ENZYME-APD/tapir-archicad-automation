@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 22:03 UTC",
+ "generatedAt": "2026-11-07 22:25 UTC",
  "versions": [
   25,
   26,
@@ -9,10 +9,12 @@
   30
  ],
  "counts": {
-  "not applicable": 670,
-  "done": 1860,
-  "skipped": 30,
-  "merged": 319
+  "not applicable": 570,
+  "done": 1908,
+  "skipped": 29,
+  "merged": 324,
+  "claimed": 37,
+  "in progress": 11
  },
  "items": [
   {
@@ -77,8 +79,8 @@
    "olderNames": [
     "ACAPI_Command_Call"
    ],
-   "status": "not applicable",
-   "reason": "communication between add-ons",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -257,8 +259,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "communication between add-ons",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -2756,10 +2758,15 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2269,
+     "title": "Reusable Archicad dialogs: settings dialog, library part, file, IFC and attribute pickers"
+    }
+   ]
   },
   {
    "id": "ACAPI_Attribute_CreateExt",
@@ -4045,8 +4052,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "add-on infrastructure",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -4066,8 +4073,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "add-on infrastructure",
+   "status": "done",
+   "reason": "",
    "pullRequests": [
     {
      "number": 2206,
@@ -4591,8 +4598,8 @@
    "olderNames": [
     "APIAny_GetHttpConnectionPortID"
    ],
-   "status": "not applicable",
-   "reason": "add-on infrastructure",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -5183,7 +5190,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2275,
+     "title": "Add ShowNotificationBubble command (AC29+)"
+    }
+   ],
    "issues": []
   },
   {
@@ -5461,8 +5473,8 @@
    "olderNames": [
     "APIAny_ActivateSessionReportID"
    ],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -5483,10 +5495,15 @@
    "olderNames": [
     "ACAPI_Interface_CreateAttributePicker"
    ],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2269,
+     "title": "Reusable Archicad dialogs: settings dialog, library part, file, IFC and attribute pickers"
+    }
+   ]
   },
   {
    "id": "ACAPI_Dialog_ObjectSettings",
@@ -5506,10 +5523,15 @@
    "olderNames": [
     "APIIo_ObjectSettingsID"
    ],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2269,
+     "title": "Reusable Archicad dialogs: settings dialog, library part, file, IFC and attribute pickers"
+    }
+   ]
   },
   {
    "id": "ACAPI_Dialog_OpenLibPartFileDialog",
@@ -5529,10 +5551,15 @@
    "olderNames": [
     "APIIo_OpenLibPartFileDialogID"
    ],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2269,
+     "title": "Reusable Archicad dialogs: settings dialog, library part, file, IFC and attribute pickers"
+    }
+   ]
   },
   {
    "id": "ACAPI_Dialog_OpenOtherObjectDialog",
@@ -5552,10 +5579,15 @@
    "olderNames": [
     "APIIo_OpenOtherObjectDialogID"
    ],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2269,
+     "title": "Reusable Archicad dialogs: settings dialog, library part, file, IFC and attribute pickers"
+    }
+   ]
   },
   {
    "id": "ACAPI_Dialog_OpenPictureDialog",
@@ -5575,10 +5607,15 @@
    "olderNames": [
     "APIIo_OpenPictureDialogID"
    ],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2269,
+     "title": "Reusable Archicad dialogs: settings dialog, library part, file, IFC and attribute pickers"
+    }
+   ]
   },
   {
    "id": "ACAPI_Dialog_PetPalette",
@@ -5621,10 +5658,15 @@
    "olderNames": [
     "APIIo_SaveLibPartFileDialogID"
    ],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2269,
+     "title": "Reusable Archicad dialogs: settings dialog, library part, file, IFC and attribute pickers"
+    }
+   ]
   },
   {
    "id": "ACAPI_Dialog_SetUserControlCallback",
@@ -5667,10 +5709,15 @@
    "olderNames": [
     "APIIo_SettingsDialogID"
    ],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2269,
+     "title": "Reusable Archicad dialogs: settings dialog, library part, file, IFC and attribute pickers"
+    }
+   ]
   },
   {
    "id": "ACAPI_DifferenceGenerator_GenerateDifference",
@@ -5734,8 +5781,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "memory management",
+   "status": "done",
+   "reason": "",
    "pullRequests": [
     {
      "number": 2251,
@@ -5764,8 +5811,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "memory management",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -5785,8 +5832,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "memory management",
+   "status": "done",
+   "reason": "",
    "pullRequests": [
     {
      "number": 2258,
@@ -5811,8 +5858,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "memory management",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -5832,8 +5879,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "memory management",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -5853,8 +5900,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "memory management",
+   "status": "done",
+   "reason": "",
    "pullRequests": [
     {
      "number": 2212,
@@ -5887,8 +5934,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "memory management",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -5908,8 +5955,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "memory management",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -5929,8 +5976,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "memory management",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -5975,8 +6022,8 @@
    "olderNames": [
     "APIDb_DisposeCreationOrderTableID"
    ],
-   "status": "not applicable",
-   "reason": "memory management (#1159)",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -6021,8 +6068,8 @@
    "olderNames": [
     "APIDb_DrawOrderInitID"
    ],
-   "status": "not applicable",
-   "reason": "starts an internal draw order loop, only useful inside the command that walks it (#1074)",
+   "status": "merged",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -6044,8 +6091,8 @@
    "olderNames": [
     "APIDb_DrawOrderTermID"
    ],
-   "status": "not applicable",
-   "reason": "ends an internal draw order loop, only useful inside the command that walks it (#1073)",
+   "status": "merged",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -6067,8 +6114,8 @@
    "olderNames": [
     "APIDb_InitCreationOrderTableID"
    ],
-   "status": "not applicable",
-   "reason": "builds an internal table, only useful inside the command that reads it (#1072)",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -6768,10 +6815,15 @@
    "olderNames": [
     "ACAPI_Notify_CatchChangeDefaults"
    ],
-   "status": "not applicable",
-   "reason": "event handlers, not commands",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2267,
+     "title": "Notification clients: tool change, view, reservation, tool default and AC26+ events"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_CatchNewElement",
@@ -6791,8 +6843,8 @@
    "olderNames": [
     "ACAPI_Notify_CatchNewElement"
    ],
-   "status": "not applicable",
-   "reason": "event handlers, not commands",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": [
     {
@@ -9622,8 +9674,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "memory management",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -9846,8 +9898,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "add-on infrastructure",
+   "status": "done",
+   "reason": "",
    "pullRequests": [
     {
      "number": 2185,
@@ -9872,8 +9924,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "add-on infrastructure",
+   "status": "done",
+   "reason": "",
    "pullRequests": [
     {
      "number": 2185,
@@ -9898,8 +9950,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "add-on preferences",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -9939,8 +9991,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "add-on infrastructure",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -11308,10 +11360,15 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2269,
+     "title": "Reusable Archicad dialogs: settings dialog, library part, file, IFC and attribute pickers"
+    }
+   ]
   },
   {
    "id": "ACAPI_KeepInMemory",
@@ -11649,10 +11706,15 @@
    "olderNames": [
     "APIEnv_NewLibDialID"
    ],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2269,
+     "title": "Reusable Archicad dialogs: settings dialog, library part, file, IFC and attribute pickers"
+    }
+   ]
   },
   {
    "id": "ACAPI_LibraryManagement_OpenLibraryPart",
@@ -12899,10 +12961,20 @@
    "olderNames": [
     "ACAPI_Protection_GetProtectionMode"
    ],
-   "status": "not applicable",
-   "reason": "add-on licensing",
-   "pullRequests": [],
-   "issues": []
+   "status": "in progress",
+   "reason": "",
+   "pullRequests": [
+    {
+     "number": 2273,
+     "title": "Add GetArchicadLicenseInfo: Archicad license type and SSA level"
+    }
+   ],
+   "issues": [
+    {
+     "number": 2270,
+     "title": "Expose the Archicad license type and SSA level"
+    }
+   ]
   },
   {
    "id": "ACAPI_Licensing_GetSerialNumber",
@@ -12965,10 +13037,20 @@
    "olderNames": [
     "ACAPI_Protection_IsSSALevelAtLeast"
    ],
-   "status": "not applicable",
-   "reason": "add-on licensing",
-   "pullRequests": [],
-   "issues": []
+   "status": "in progress",
+   "reason": "",
+   "pullRequests": [
+    {
+     "number": 2273,
+     "title": "Add GetArchicadLicenseInfo: Archicad license type and SSA level"
+    }
+   ],
+   "issues": [
+    {
+     "number": 2270,
+     "title": "Expose the Archicad license type and SSA level"
+    }
+   ]
   },
   {
    "id": "ACAPI_Markup_AddComment",
@@ -13263,8 +13345,8 @@
    "olderNames": [
     "APIIo_GetMenuItemFlagsID"
    ],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -13305,8 +13387,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -13324,8 +13406,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -13347,8 +13429,8 @@
    "olderNames": [
     "APIIo_SetMenuItemFlagsID"
    ],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -13370,8 +13452,8 @@
    "olderNames": [
     "APIIo_SetMenuItemTextID"
    ],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -14586,8 +14668,8 @@
    "olderNames": [
     "ACAPI_Notify_CatchAttributeReplacement"
    ],
-   "status": "not applicable",
-   "reason": "event handlers, not commands",
+   "status": "merged",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -14609,8 +14691,8 @@
    "olderNames": [
     "ACAPI_Notify_CatchElementReservationChange"
    ],
-   "status": "not applicable",
-   "reason": "event handlers, not commands",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -14632,10 +14714,15 @@
    "olderNames": [
     "ACAPI_Notify_CatchLockableReservationChange"
    ],
-   "status": "not applicable",
-   "reason": "event handlers, not commands",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2267,
+     "title": "Notification clients: tool change, view, reservation, tool default and AC26+ events"
+    }
+   ]
   },
   {
    "id": "ACAPI_Notification_CatchSelectionChange",
@@ -14655,8 +14742,8 @@
    "olderNames": [
     "ACAPI_Notify_CatchSelectionChange"
    ],
-   "status": "not applicable",
-   "reason": "event handlers, not commands",
+   "status": "merged",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -14678,10 +14765,20 @@
    "olderNames": [
     "ACAPI_Notify_CatchToolChange"
    ],
-   "status": "not applicable",
-   "reason": "event handlers, not commands",
-   "pullRequests": [],
-   "issues": []
+   "status": "in progress",
+   "reason": "",
+   "pullRequests": [
+    {
+     "number": 2274,
+     "title": "[1/6] Notify clients of tool changes (notifyOnToolChange)"
+    }
+   ],
+   "issues": [
+    {
+     "number": 2267,
+     "title": "Notification clients: tool change, view, reservation, tool default and AC26+ events"
+    }
+   ]
   },
   {
    "id": "ACAPI_Notification_CatchViewEvent",
@@ -14701,10 +14798,15 @@
    "olderNames": [
     "ACAPI_Notify_CatchViewEvent"
    ],
-   "status": "not applicable",
-   "reason": "event handlers, not commands",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2267,
+     "title": "Notification clients: tool change, view, reservation, tool default and AC26+ events"
+    }
+   ]
   },
   {
    "id": "ACAPI_Notification_ClassificationVisibilityChanged",
@@ -14793,10 +14895,15 @@
    "olderNames": [
     "ACAPI_Notify_GetTranParams"
    ],
-   "status": "not applicable",
-   "reason": "event handlers, not commands",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2267,
+     "title": "Notification clients: tool change, view, reservation, tool default and AC26+ events"
+    }
+   ]
   },
   {
    "id": "ACAPI_Notification_PropertyVisibilityChanged",
@@ -14838,10 +14945,15 @@
    "olderNames": [
     "ACAPI_Notify_RegisterEventHandler"
    ],
-   "status": "not applicable",
-   "reason": "event handlers, not commands",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2267,
+     "title": "Notification clients: tool change, view, reservation, tool default and AC26+ events"
+    }
+   ]
   },
   {
    "id": "ACAPI_Notification_UnregisterEventHandler",
@@ -14860,10 +14972,15 @@
    "olderNames": [
     "ACAPI_Notify_UnregisterEventHandler"
    ],
-   "status": "not applicable",
-   "reason": "event handlers, not commands",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2267,
+     "title": "Notification clients: tool change, view, reservation, tool default and AC26+ events"
+    }
+   ]
   },
   {
    "id": "ACAPI_OldListing_Get",
@@ -15257,8 +15374,8 @@
    "olderNames": [
     "APIIo_CloseProcessWindowID"
    ],
-   "status": "not applicable",
-   "reason": "progress window of the add-on",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -15349,8 +15466,8 @@
    "olderNames": [
     "APIIo_InitProcessWindowID"
    ],
-   "status": "not applicable",
-   "reason": "progress window of the add-on",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -15372,8 +15489,8 @@
    "olderNames": [
     "APIIo_IsProcessCanceledID"
    ],
-   "status": "not applicable",
-   "reason": "progress window of the add-on",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -15418,8 +15535,8 @@
    "olderNames": [
     "APIIo_SetNextProcessPhaseID"
    ],
-   "status": "not applicable",
-   "reason": "progress window of the add-on",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -15464,8 +15581,8 @@
    "olderNames": [
     "APIIo_SetProcessValueID"
    ],
-   "status": "not applicable",
-   "reason": "progress window of the add-on",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -15718,8 +15835,8 @@
    "olderNames": [
     "ACAPI_Notify_CatchProjectEvent"
    ],
-   "status": "not applicable",
-   "reason": "event handlers, not commands",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -16827,8 +16944,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -17608,8 +17725,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "add-on preferences",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -18440,10 +18557,15 @@
    "olderNames": [
     "APIEnv_GetToolBoxInfoID"
    ],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2266,
+     "title": "Expose the Toolbox: GetActiveTool, SetActiveTool, GetToolboxItems"
+    }
+   ]
   },
   {
    "id": "ACAPI_Toolbox_GetToolBoxMode",
@@ -18463,15 +18585,20 @@
    "olderNames": [
     "APIEnv_GetToolBoxModeID"
    ],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "in progress",
+   "reason": "",
    "pullRequests": [
     {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 2266,
+     "title": "Expose the Toolbox: GetActiveTool, SetActiveTool, GetToolboxItems"
+    }
+   ]
   },
   {
    "id": "ACAPI_Toolbox_SetToolBoxMode",
@@ -18491,10 +18618,15 @@
    "olderNames": [
     "APIEnv_SetToolBoxModeID"
    ],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2266,
+     "title": "Expose the Toolbox: GetActiveTool, SetActiveTool, GetToolboxItems"
+    }
+   ]
   },
   {
    "id": "ACAPI_UnregisterModelessWindow",
@@ -18639,8 +18771,8 @@
    "olderNames": [
     "ACAPI_Interface_ClearElementHighlight"
    ],
-   "status": "not applicable",
-   "reason": "interactive input from the user",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -18662,10 +18794,15 @@
    "olderNames": [
     "APIIo_ClearNeigFilterID"
    ],
-   "status": "not applicable",
-   "reason": "interactive input from the user",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2268,
+     "title": "User input: GetArcFromUser, snap filter and constraint options"
+    }
+   ]
   },
   {
    "id": "ACAPI_UserInput_CompleteUserInput",
@@ -18708,10 +18845,15 @@
    "olderNames": [
     "APIIo_DrawRubberArcID"
    ],
-   "status": "not applicable",
-   "reason": "interactive input from the user",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2268,
+     "title": "User input: GetArcFromUser, snap filter and constraint options"
+    }
+   ]
   },
   {
    "id": "ACAPI_UserInput_DrawRubberLine",
@@ -18731,8 +18873,8 @@
    "olderNames": [
     "APIIo_DrawRubberLineID"
    ],
-   "status": "not applicable",
-   "reason": "interactive input from the user",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -18754,10 +18896,15 @@
    "olderNames": [
     "APIIo_GetArcID"
    ],
-   "status": "not applicable",
-   "reason": "interactive input from the user",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2268,
+     "title": "User input: GetArcFromUser, snap filter and constraint options"
+    }
+   ]
   },
   {
    "id": "ACAPI_UserInput_GetLine",
@@ -18777,8 +18924,8 @@
    "olderNames": [
     "APIIo_GetLineID"
    ],
-   "status": "not applicable",
-   "reason": "interactive input from the user",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -18800,10 +18947,15 @@
    "olderNames": [
     "APIEnv_GetMagicWandSetsID"
    ],
-   "status": "not applicable",
-   "reason": "interactive input from the user",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2268,
+     "title": "User input: GetArcFromUser, snap filter and constraint options"
+    }
+   ]
   },
   {
    "id": "ACAPI_UserInput_GetPoint",
@@ -18823,8 +18975,8 @@
    "olderNames": [
     "APIIo_GetPointID"
    ],
-   "status": "not applicable",
-   "reason": "interactive input from the user",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -18846,8 +18998,8 @@
    "olderNames": [
     "APIIo_GetPolyID"
    ],
-   "status": "not applicable",
-   "reason": "interactive input from the user",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -18869,10 +19021,15 @@
    "olderNames": [
     "APIIo_InitNeigFilterID"
    ],
-   "status": "not applicable",
-   "reason": "interactive input from the user",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2268,
+     "title": "User input: GetArcFromUser, snap filter and constraint options"
+    }
+   ]
   },
   {
    "id": "ACAPI_UserInput_ResetConstraint",
@@ -18892,10 +19049,15 @@
    "olderNames": [
     "APIIo_ResetConstraintID"
    ],
-   "status": "not applicable",
-   "reason": "interactive input from the user",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2268,
+     "title": "User input: GetArcFromUser, snap filter and constraint options"
+    }
+   ]
   },
   {
    "id": "ACAPI_UserInput_SetConstraint",
@@ -18915,10 +19077,15 @@
    "olderNames": [
     "APIIo_SetConstraintID"
    ],
-   "status": "not applicable",
-   "reason": "interactive input from the user",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2268,
+     "title": "User input: GetArcFromUser, snap filter and constraint options"
+    }
+   ]
   },
   {
    "id": "ACAPI_UserInput_SetElementHighlight",
@@ -18937,8 +19104,8 @@
    "olderNames": [
     "ACAPI_Interface_SetElementHighlight"
    ],
-   "status": "not applicable",
-   "reason": "interactive input from the user",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -18960,10 +19127,15 @@
    "olderNames": [
     "APIIo_SetNeigFilterID"
    ],
-   "status": "not applicable",
-   "reason": "interactive input from the user",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2268,
+     "title": "User input: GetArcFromUser, snap filter and constraint options"
+    }
+   ]
   },
   {
    "id": "ACAPI_View_Change3DCuttingPlanes",
@@ -19215,7 +19387,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2275,
+     "title": "Add ShowNotificationBubble command (AC29+)"
+    }
+   ],
    "issues": []
   },
   {
@@ -19576,7 +19753,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2275,
+     "title": "Add ShowNotificationBubble command (AC29+)"
+    }
+   ],
    "issues": []
   },
   {
@@ -19685,7 +19867,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2275,
+     "title": "Add ShowNotificationBubble command (AC29+)"
+    }
+   ],
    "issues": []
   },
   {
@@ -20315,8 +20502,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "report window of the add-on",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -21137,6 +21324,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2273,
+     "title": "Add GetArchicadLicenseInfo: Archicad license type and SSA level"
+    },
+    {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
     }
@@ -21274,8 +21465,8 @@
     26
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "event handlers and add-on registration (Archicad 25/26 names)",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -21443,8 +21634,8 @@
     26
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "event handlers and add-on registration (Archicad 25/26 names)",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -22151,8 +22342,8 @@
     26
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "event handlers and add-on registration (Archicad 25/26 names)",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -22549,8 +22740,8 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "add-on preferences",
+   "status": "done",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -22567,7 +22758,12 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "add-on licensing",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2273,
+     "title": "Add GetArchicadLicenseInfo: Archicad license type and SSA level"
+    }
+   ],
    "issues": []
   },
   {
@@ -22675,10 +22871,15 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2269,
+     "title": "Reusable Archicad dialogs: settings dialog, library part, file, IFC and attribute pickers"
+    }
+   ]
   },
   {
    "id": "APIIo_Set3DCutawayStatusID",
@@ -31117,8 +31318,8 @@
     27
    ],
    "olderNames": [],
-   "status": "skipped",
-   "reason": "does not compile against the Archicad 27 DevKit: Bend::Modifier does not derive from ACAPI::ModifierBase, which ExecuteUndoableScope requires (Archicad 27 only)",
+   "status": "merged",
+   "reason": "",
    "pullRequests": [],
    "issues": []
   },
@@ -43075,6 +43276,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2274,
+     "title": "[1/6] Notify clients of tool changes (notifyOnToolChange)"
+    },
+    {
      "number": 2255,
      "title": "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"
     }
@@ -53081,10 +53286,20 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
-   "pullRequests": [],
-   "issues": []
+   "status": "in progress",
+   "reason": "",
+   "pullRequests": [
+    {
+     "number": 2275,
+     "title": "Add ShowNotificationBubble command (AC29+)"
+    }
+   ],
+   "issues": [
+    {
+     "number": 2271,
+     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::GetIcon",
@@ -53098,10 +53313,15 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2271,
+     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::GetLargeIcon",
@@ -53115,10 +53335,15 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2271,
+     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::GetOffset",
@@ -53132,10 +53357,15 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2271,
+     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::GetRedrawCountLimit",
@@ -53149,10 +53379,15 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2271,
+     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::GetText",
@@ -53166,10 +53401,15 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2271,
+     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::GetTimeout",
@@ -53183,10 +53423,15 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2271,
+     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::SetDisabled",
@@ -53200,10 +53445,15 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2271,
+     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::SetIcon",
@@ -53217,10 +53467,20 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
-   "pullRequests": [],
-   "issues": []
+   "status": "in progress",
+   "reason": "",
+   "pullRequests": [
+    {
+     "number": 2275,
+     "title": "Add ShowNotificationBubble command (AC29+)"
+    }
+   ],
+   "issues": [
+    {
+     "number": 2271,
+     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::SetLargeIcon",
@@ -53234,10 +53494,15 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2271,
+     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::SetOffset",
@@ -53251,10 +53516,20 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
-   "pullRequests": [],
-   "issues": []
+   "status": "in progress",
+   "reason": "",
+   "pullRequests": [
+    {
+     "number": 2275,
+     "title": "Add ShowNotificationBubble command (AC29+)"
+    }
+   ],
+   "issues": [
+    {
+     "number": 2271,
+     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::SetRedrawCountLimit",
@@ -53268,10 +53543,15 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2271,
+     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::SetText",
@@ -53285,10 +53565,20 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
-   "pullRequests": [],
-   "issues": []
+   "status": "in progress",
+   "reason": "",
+   "pullRequests": [
+    {
+     "number": 2275,
+     "title": "Add ShowNotificationBubble command (AC29+)"
+    }
+   ],
+   "issues": [
+    {
+     "number": 2271,
+     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::SetTimeout",
@@ -53302,10 +53592,20 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
-   "pullRequests": [],
-   "issues": []
+   "status": "in progress",
+   "reason": "",
+   "pullRequests": [
+    {
+     "number": 2275,
+     "title": "Add ShowNotificationBubble command (AC29+)"
+    }
+   ],
+   "issues": [
+    {
+     "number": 2271,
+     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::Show",
@@ -53319,10 +53619,20 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
-   "pullRequests": [],
-   "issues": []
+   "status": "in progress",
+   "reason": "",
+   "pullRequests": [
+    {
+     "number": 2275,
+     "title": "Add ShowNotificationBubble command (AC29+)"
+    }
+   ],
+   "issues": [
+    {
+     "number": 2271,
+     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubbleManager::CreateNotificationBubble",
@@ -53336,10 +53646,20 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
-   "pullRequests": [],
-   "issues": []
+   "status": "in progress",
+   "reason": "",
+   "pullRequests": [
+    {
+     "number": 2275,
+     "title": "Add ShowNotificationBubble command (AC29+)"
+    }
+   ],
+   "issues": [
+    {
+     "number": 2271,
+     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubbleManager::RegisterNotificationBubble",
@@ -53353,10 +53673,15 @@
     30
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "user interface",
+   "status": "claimed",
+   "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2271,
+     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UniqueID::GetGuid",

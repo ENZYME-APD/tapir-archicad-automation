@@ -34,7 +34,7 @@ Parameters of the 749 used commands: 🟢 696 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-07 22:03 UTC.
+Updated 2026-11-07 22:25 UTC.
 
 | | Status |
 |---|---|
@@ -60,12 +60,12 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `GetPrinterInfo` 🟢 0/0 parameters – `GetPrinterInfoComponent`
 - ✅ `GetPrinterAndPlotterInfo` 🟢 0/0 parameters – `GetPrinterAndPlotterInfoComponent`
 - ✅ `QuitArchicad` 🟢 0/0 parameters – `QuitArchicadComponent`
-- ✅ `GetPointFromUser` 🟢 1/1 parameters – `GetPointFromUserComponent`
+- ✅ `GetPointFromUser` 🟢 1/1 parameters – `GetPointFromUserComponent` — [#2268](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2268 "User input: GetArcFromUser, snap filter and constraint options")
 - 🔀 `ModelToScreen` 🟢 1/1 parameters – `ModelToScreenComponent`
 - 🔀 `ScreenToModel` 🟢 3/3 parameters – `ScreenToModelComponent`
 - ✅ `GetElementFromUser` 🟢 2/2 parameters – `GetElementFromUserComponent`
-- ✅ `GetLineFromUser` 🟢 3/3 parameters – `GetLineFromUserComponent`
-- ✅ `GetPolygonFromUser` 🟢 3/3 parameters – `GetPolygonFromUserComponent`
+- ✅ `GetLineFromUser` 🟢 3/3 parameters – `GetLineFromUserComponent` — [#2268](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2268 "User input: GetArcFromUser, snap filter and constraint options")
+- ✅ `GetPolygonFromUser` 🟢 3/3 parameters – `GetPolygonFromUserComponent` — [#2268](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2268 "User input: GetArcFromUser, snap filter and constraint options")
 - 🔀 `ConvertImages` 🟢 4/4 parameters – `ConvertImagesComponent`
 - ✅ `GetCurrentWindowType` 🟢 0/0 parameters – `GetCurrentWindowTypeComponent`
 - ✅ `GetCurrentWindowDrawingScale` 🟢 0/0 parameters – `GetCurrentWindowDrawingScaleComponent`
@@ -331,7 +331,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `GetElementPreviewImage` 🟢 5/5 parameters – `GetElementPreviewImageComponent`
 - ✅ `GetRoomImage` 🟢 7/7 parameters – `GetRoomImageComponent`
 - 🔀 `GetModelExtent` 🟢 0/0 parameters – `GetModelExtentComponent` — [#2252](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2252 "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components")
-- ✅ `SetElementNotificationClient` 🟢 10/10 parameters – `SetElementNotificationClientComponent`
+- ✅ `SetElementNotificationClient` 🟢 10/10 parameters – `SetElementNotificationClientComponent` — [#2267](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2267 "Notification clients: tool change, view, reservation, tool default and AC26+ events")
 - ✅ `RemoveElementNotificationClient` 🟢 2/2 parameters – `RemoveElementNotificationClientComponent`
 - ✅ `RegularizePolygons` 🟢 2/2 parameters – `RegularizePolygonsComponent`
 - ✅ `RegularizePolylines` 🟢 2/2 parameters – `RegularizePolylinesComponent`
