@@ -98,7 +98,10 @@
 <div class="toolbar" id="toolbar">
     <button type="button" class="sections-button" id="sections-button" aria-controls="sidebar">☰ Sections</button>
     <input type="search" id="search" placeholder="Search, e.g. CreateWalls, Walls or floorIndex" aria-label="Search the checklist">
-    <div class="chips" id="statuses" role="group" aria-label="Statuses to show"></div>
+    <div class="chip-filter">
+        <span class="chips-title" id="statuses-title">Show items that are:</span>
+        <div class="chips" id="statuses" role="group" aria-labelledby="statuses-title"></div>
+    </div>
     <span class="filter-status" id="filter-status" aria-live="polite"></span>
 </div>
 <div id="list"></div>
@@ -268,6 +271,9 @@ function renderOverview () {
     const overall = bar (counts, true);
     overall.id = 'overall-bar';
     document.getElementById ('overall-bar').replaceWith (overall);
+    for (const chip of document.querySelectorAll ('#statuses .chip')) {
+        chip.querySelector ('.chip-count').textContent = (counts[chip.dataset.status] || 0).toLocaleString ();
+    }
     document.getElementById ('legend').replaceChildren (...STATUSES.map (([status, , label]) =>
         el ('span', {}, statusPill (status), label)));
 
@@ -475,8 +481,9 @@ function updateToolbarHeight () {
 async function main () {
     const statuses = document.getElementById ('statuses');
     for (const [value, , label, cls] of STATUSES) {
-        const chip = el ('button', { type: 'button', class: 'chip', 'data-status': value, 'aria-pressed': String (value !== 'not applicable'), title: label, 'aria-label': label },
-            swatch (cls), el ('span', { class: 'chip-label', text: label }));
+        // The label shows at every width; renderOverview fills in the count.
+        const chip = el ('button', { type: 'button', class: 'chip', 'data-status': value, 'aria-pressed': String (value !== 'not applicable'), title: label },
+            swatch (cls), el ('span', { class: 'chip-label', text: label }), el ('span', { class: 'chip-count' }));
         chip.addEventListener ('click', () => { chip.setAttribute ('aria-pressed', String (chip.getAttribute ('aria-pressed') !== 'true')); render (); });
         statuses.append (chip);
     }
