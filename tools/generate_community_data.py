@@ -16,6 +16,8 @@ Sources, each optional: a series that cannot be read is left out of every month,
 hides it instead of drawing it wrong.
   - commits per month and per author: `git log` of the checkout (needs the full history),
     without merge commits and without bots (Claude, github-actions and names ending in [bot]).
+    The top contributors and participants also count the people in a commit's Co-authored-by
+    trailers (bots and AI assistants left out), so the issue bot's commits credit the reporter.
   - issues opened and pull requests merged per month: the GitHub REST API (GITHUB_TOKEN).
   - Discord messages per month (people, not bots): the history of every text and announcement
     channel the bot can read, and of the threads in them and in forum channels. Discord members
@@ -88,16 +90,38 @@ def request_json (url, headers, retries=5):
 
 # ---- git ----
 
+# A co-author that is a bot or an AI assistant (Claude adds itself as a co-author), by name or address.
+BOT_COAUTHOR = re.compile (r'(\[bot\]|^claude\b|^github-actions\b|^dependabot|@anthropic\.com>?$)', re.I)
+
+
 def read_commits ():
-    """(date, author) of every commit of the checkout by a person: merges and bots are left out."""
-    output = subprocess.run (['git', 'log', '--no-merges', '--format=%aI%x09%aN'], capture_output=True, text=True, check=True).stdout
-    commits = []
-    for line in output.splitlines ():
-        date, _, author = line.partition ('\t')
+    """The commits of the checkout: (commits, credits).
+
+    commits is (date, author) of every commit by a person, merges and bots left out. credits is
+    (date, name) of everyone a commit credits: its author when a person, and each person in its
+    Co-authored-by trailers, so a commit the issue bot made for someone's issue credits the
+    person who reported it. The commit counts use commits; the contributors use credits."""
+    output = subprocess.run (['git', 'log', '--no-merges',
+                              '--format=%aI%x09%aN%x09%(trailers:key=Co-authored-by,valueonly,separator=%x1f)%x1e'],
+                             capture_output=True, text=True, check=True).stdout
+    commits, credits = [], []
+    for record in output.split ('\x1e'):
+        date, _, rest = record.strip ('\n').partition ('\t')
+        author, _, coauthors = rest.partition ('\t')
         author = author.strip ()
-        if date and author and not BOT_NAME.search (author):
+        if not date:
+            continue
+        names = []
+        if author and not BOT_NAME.search (author):
             commits.append ((date, author))
-    return commits
+            names.append (author)
+        for value in coauthors.split ('\x1f'):
+            value = value.strip ()
+            name = value.split ('<', 1)[0].strip ()
+            if name and not BOT_COAUTHOR.search (value) and name not in names:
+                names.append (name)
+        credits.extend ((date, name) for name in names)
+    return commits, credits
 
 
 # ---- GitHub ----
@@ -260,13 +284,14 @@ def main ():
     series = collections.defaultdict (collections.Counter)
     totals, people = {}, set ()
 
-    commits = read_commits ()
+    commits, credits = read_commits ()
     for date, author in commits:
         series['commits'][month_of (date)] += 1
+    for date, name in credits:
         if date >= year_ago:
-            people.add ('git:' + author.lower ())
+            people.add ('git:' + name.lower ())
     totals['commits'] = len (commits)
-    authors = collections.Counter (author for _, author in commits)
+    authors = collections.Counter (name for _, name in credits)
     top = [{'name': name, 'commits': count} for name, count in authors.most_common (40)]
 
     try:
