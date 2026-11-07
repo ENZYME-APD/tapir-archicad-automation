@@ -40,12 +40,23 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                 "Identification of the reference to remove; when nothing is connected every stored reference of the classification is removed. Optional (input only 1 to use the same value for all).");
 
             SetOptionality(2);
+
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "DryRun",
+                "If true, nothing is removed: ErrorMessages says what the removal would do for each element, " +
+                "from the check made before removing (the element has a stored reference of the " +
+                "classification, and of the identification when given). Default is false.",
+                false);
+
+            SetOptionality(3);
         }
 
         protected override void AddOutputs()
         {
             OutErrorMessages(
-                "Error message of each element (empty when it succeeded).");
+                "Error message of each element (empty when it succeeded, or with DryRun when the reference " +
+                "would be removed).");
         }
 
         protected override void Solve(
@@ -100,9 +111,17 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                 items.Add(item);
             }
 
+            var parameters = new JObject { ["elementIFCClassificationReferences"] = items };
+
+            // Only sent when it differs from the command's default.
+            if (da.GetOptional(3, false))
+            {
+                parameters["dryRun"] = true;
+            }
+
             SetCadValuesWithErrorMessages(
                 CommandName,
-                new JObject { ["elementIFCClassificationReferences"] = items },
+                parameters,
                 ToAddOn,
                 da);
         }

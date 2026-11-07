@@ -30,12 +30,23 @@ namespace TapirGrasshopperPlugin.Components.SolidOperationComponents
             InGenerics(
                 "TrimmingElementGuids",
                 "Identifiers of the roofs or shells trimming them, one per element.");
+
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "DryRun",
+                "If true, nothing is removed: ErrorMessages says what the removal would do for each pair, " +
+                "from the check made before removing (the element is trimmed by the trimming element). " +
+                "Default is false.",
+                false);
+
+            SetOptionality(2);
         }
 
         protected override void AddOutputs()
         {
             OutErrorMessages(
-                "Error message of each pair (empty when it succeeded).");
+                "Error message of each pair (empty when it succeeded, or with DryRun when the trim would be " +
+                "removed).");
         }
 
         protected override void Solve(
@@ -77,9 +88,17 @@ namespace TapirGrasshopperPlugin.Components.SolidOperationComponents
                 });
             }
 
+            var parameters = new JObject { ["elementPairs"] = pairs };
+
+            // Only sent when it differs from the command's default.
+            if (da.GetOptional(2, false))
+            {
+                parameters["dryRun"] = true;
+            }
+
             SetCadValuesWithErrorMessages(
                 CommandName,
-                new JObject { ["elementPairs"] = pairs },
+                parameters,
                 ToAddOn,
                 da);
         }
