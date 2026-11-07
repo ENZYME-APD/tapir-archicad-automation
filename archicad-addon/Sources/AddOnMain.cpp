@@ -246,7 +246,15 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetCurrentToolCommand> (
             applicationCommands, "1.8.1",
-            "Returns the element type of the tool active in the Toolbox. No element type is returned when the active tool makes no element, e.g. the Arrow or the Marquee."
+            "Returns the tool active in the Toolbox: its element type, its variation (the subtype, e.g. Door, Skylight or a library part subtype of an add-on) and, for the tools of add-ons, its class id, in the form SetCurrentTool accepts. Nothing is returned when the active tool makes no element, e.g. the Arrow or the Marquee."
+        );
+        err |= RegisterCommand<SetCurrentToolCommand> (
+            applicationCommands, "1.8.1",
+            "Activates a tool in the Toolbox, given as GetCurrentTool or GetToolboxItems returns it; an empty input activates the Arrow. Archicad switches the tool once it processes its events, so GetCurrentTool may still return the previous tool right after this command."
+        );
+        err |= RegisterCommand<GetToolboxItemsCommand> (
+            applicationCommands, "1.8.1",
+            "Lists the tools of the Toolbox, the tools of add-ons included, in the form SetCurrentTool accepts, and the active tool. includeHidden also lists the tools without an icon, e.g. the Slab Accessory."
         );
         err |= RegisterCommand<GetLineFromUserCommand> (
             applicationCommands, "1.8.0",
