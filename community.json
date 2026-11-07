@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-07T10:02:48Z",
+ "generatedAt": "2026-11-07T23:29:41Z",
  "months": [
   {
    "month": "2022-07",
@@ -231,7 +231,7 @@
    "commits": 28,
    "issuesOpened": 5,
    "pullRequestsMerged": 10,
-   "discordMembers": 246,
+   "discordMembers": 245,
    "discordMessages": 354
   },
   {
@@ -239,7 +239,7 @@
    "commits": 2,
    "issuesOpened": 1,
    "pullRequestsMerged": 2,
-   "discordMembers": 253,
+   "discordMembers": 252,
    "discordMessages": 119
   },
   {
@@ -247,7 +247,7 @@
    "commits": 12,
    "issuesOpened": 4,
    "pullRequestsMerged": 5,
-   "discordMembers": 261,
+   "discordMembers": 260,
    "discordMessages": 374
   },
   {
@@ -255,7 +255,7 @@
    "commits": 3,
    "issuesOpened": 0,
    "pullRequestsMerged": 4,
-   "discordMembers": 268,
+   "discordMembers": 267,
    "discordMessages": 33
   },
   {
@@ -263,7 +263,7 @@
    "commits": 3,
    "issuesOpened": 0,
    "pullRequestsMerged": 1,
-   "discordMembers": 277,
+   "discordMembers": 276,
    "discordMessages": 149
   },
   {
@@ -271,7 +271,7 @@
    "commits": 27,
    "issuesOpened": 1,
    "pullRequestsMerged": 8,
-   "discordMembers": 318,
+   "discordMembers": 317,
    "discordMessages": 338
   },
   {
@@ -279,7 +279,7 @@
    "commits": 39,
    "issuesOpened": 1,
    "pullRequestsMerged": 13,
-   "discordMembers": 333,
+   "discordMembers": 332,
    "discordMessages": 597
   },
   {
@@ -287,7 +287,7 @@
    "commits": 32,
    "issuesOpened": 0,
    "pullRequestsMerged": 10,
-   "discordMembers": 342,
+   "discordMembers": 341,
    "discordMessages": 291
   },
   {
@@ -295,7 +295,7 @@
    "commits": 38,
    "issuesOpened": 12,
    "pullRequestsMerged": 13,
-   "discordMembers": 349,
+   "discordMembers": 348,
    "discordMessages": 255
   },
   {
@@ -303,7 +303,7 @@
    "commits": 32,
    "issuesOpened": 9,
    "pullRequestsMerged": 8,
-   "discordMembers": 359,
+   "discordMembers": 358,
    "discordMessages": 91
   },
   {
@@ -311,7 +311,7 @@
    "commits": 9,
    "issuesOpened": 1,
    "pullRequestsMerged": 4,
-   "discordMembers": 373,
+   "discordMembers": 372,
    "discordMessages": 48
   },
   {
@@ -319,7 +319,7 @@
    "commits": 7,
    "issuesOpened": 7,
    "pullRequestsMerged": 2,
-   "discordMembers": 389,
+   "discordMembers": 388,
    "discordMessages": 200
   },
   {
@@ -327,7 +327,7 @@
    "commits": 54,
    "issuesOpened": 4,
    "pullRequestsMerged": 5,
-   "discordMembers": 399,
+   "discordMembers": 398,
    "discordMessages": 179
   },
   {
@@ -335,7 +335,7 @@
    "commits": 34,
    "issuesOpened": 4,
    "pullRequestsMerged": 6,
-   "discordMembers": 406,
+   "discordMembers": 405,
    "discordMessages": 250
   },
   {
@@ -343,7 +343,7 @@
    "commits": 10,
    "issuesOpened": 1,
    "pullRequestsMerged": 3,
-   "discordMembers": 412,
+   "discordMembers": 411,
    "discordMessages": 57
   },
   {
@@ -351,7 +351,7 @@
    "commits": 28,
    "issuesOpened": 5,
    "pullRequestsMerged": 10,
-   "discordMembers": 426,
+   "discordMembers": 425,
    "discordMessages": 209
   },
   {
@@ -359,7 +359,7 @@
    "commits": 8,
    "issuesOpened": 1,
    "pullRequestsMerged": 2,
-   "discordMembers": 428,
+   "discordMembers": 427,
    "discordMessages": 110
   },
   {
@@ -367,7 +367,7 @@
    "commits": 6,
    "issuesOpened": 3,
    "pullRequestsMerged": 0,
-   "discordMembers": 443,
+   "discordMembers": 442,
    "discordMessages": 102
   },
   {
@@ -375,7 +375,7 @@
    "commits": 48,
    "issuesOpened": 10,
    "pullRequestsMerged": 16,
-   "discordMembers": 461,
+   "discordMembers": 460,
    "discordMessages": 346
   },
   {
@@ -383,7 +383,7 @@
    "commits": 67,
    "issuesOpened": 15,
    "pullRequestsMerged": 22,
-   "discordMembers": 474,
+   "discordMembers": 473,
    "discordMessages": 217
   },
   {
@@ -391,7 +391,7 @@
    "commits": 93,
    "issuesOpened": 19,
    "pullRequestsMerged": 42,
-   "discordMembers": 489,
+   "discordMembers": 488,
    "discordMessages": 389
   },
   {
@@ -399,7 +399,7 @@
    "commits": 70,
    "issuesOpened": 45,
    "pullRequestsMerged": 50,
-   "discordMembers": 509,
+   "discordMembers": 508,
    "discordMessages": 417
   },
   {
@@ -407,27 +407,27 @@
    "commits": 65,
    "issuesOpened": 55,
    "pullRequestsMerged": 54,
-   "discordMembers": 535,
+   "discordMembers": 534,
    "discordMessages": 276
   },
   {
    "month": "2026-10",
-   "commits": 227,
+   "commits": 228,
    "issuesOpened": 406,
    "pullRequestsMerged": 380,
-   "discordMembers": 615,
+   "discordMembers": 614,
    "discordMessages": 834
   }
  ],
  "totals": {
-  "commits": 1254,
-  "discordMessages": 11501,
+  "commits": 1264,
+  "discordMessages": 11538,
   "discordMembers": 640,
   "discordMembersChange": {
    "diff": 0,
    "days": 1
   },
-  "participants": 452
+  "participants": 449
  },
  "topContributors": [
   {
@@ -435,20 +435,20 @@
    "commits": 397
   },
   {
-   "name": "Cri5chan",
-   "commits": 113
+   "name": "Viktor Kovacs",
+   "commits": 129
   },
   {
-   "name": "Viktor Kovacs",
-   "commits": 92
+   "name": "Cri5chan",
+   "commits": 116
   },
   {
    "name": "MathiasJon",
-   "commits": 85
+   "commits": 86
   },
   {
    "name": "SzamosiMate",
-   "commits": 54
+   "commits": 80
   },
   {
    "name": "fuzesArch",
@@ -463,16 +463,16 @@
    "commits": 39
   },
   {
-   "name": "kovacsv",
-   "commits": 32
+   "name": "Kaushik",
+   "commits": 31
   },
   {
    "name": "Drew Parkinson",
    "commits": 29
   },
   {
-   "name": "szamosi.mate",
-   "commits": 25
+   "name": "Parikshit Wadhwa",
+   "commits": 28
   },
   {
    "name": "fertegi",
@@ -487,16 +487,8 @@
    "commits": 24
   },
   {
-   "name": "Kaushik",
-   "commits": 24
-  },
-  {
    "name": "Lucas Becker",
    "commits": 20
-  },
-  {
-   "name": "Parikshit Wadhwa",
-   "commits": 19
   },
   {
    "name": "bimgeek",
@@ -507,12 +499,16 @@
    "commits": 15
   },
   {
+   "name": "Ben Tristem",
+   "commits": 14
+  },
+  {
    "name": "akunia",
    "commits": 13
   },
   {
-   "name": "Ben Tristem",
-   "commits": 11
+   "name": "JBENEITEZ",
+   "commits": 10
   },
   {
    "name": "Gigiasso",
@@ -523,40 +519,28 @@
    "commits": 10
   },
   {
-   "name": "JBENEITEZ",
-   "commits": 9
-  },
-  {
    "name": "poco2018",
    "commits": 8
   },
   {
-   "name": "Kaushik LS",
+   "name": "leceta",
    "commits": 7
+  },
+  {
+   "name": "Kappa-lo",
+   "commits": 6
+  },
+  {
+   "name": "Barancsuk Ádám",
+   "commits": 6
   },
   {
    "name": "Scott Yost",
    "commits": 6
   },
   {
-   "name": "Barancsuk Ádám",
-   "commits": 5
-  },
-  {
-   "name": "Kappa-lo",
-   "commits": 5
-  },
-  {
-   "name": "parikshit99",
-   "commits": 5
-  },
-  {
    "name": "Agnes Gaschitz",
-   "commits": 5
-  },
-  {
-   "name": "leceta",
-   "commits": 4
+   "commits": 6
   },
   {
    "name": "kozure-dev",
@@ -568,10 +552,6 @@
   },
   {
    "name": "Archigame",
-   "commits": 3
-  },
-  {
-   "name": "aitor leceta",
    "commits": 3
   },
   {
@@ -589,6 +569,14 @@
   {
    "name": "agmurf",
    "commits": 2
+  },
+  {
+   "name": "Blati",
+   "commits": 2
+  },
+  {
+   "name": "tomerikjansen-crypto",
+   "commits": 1
   }
  ],
  "memberHistory": [
