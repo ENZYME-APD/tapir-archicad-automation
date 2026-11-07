@@ -121,28 +121,8 @@ static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
         case ID_ADDON_MENU_FOR_UPDATE:
             switch (menuParams->menuItemRef.itemIndex) {
                 case ID_ADDON_MENU_UPDATE:
-                    {
-                        if (!VersionChecker::IsCheckCompleted ()) {
-                            DGAlert (DG_INFORMATION, "Tapir Update",
-                                "Tapir is still checking GitHub for the latest release.",
-                                "Please try again in a moment.",
-                                "OK");
-                        } else if (!VersionChecker::IsUsingLatestVersion ()) {
-                            TapirPalette::Instance ().UpdateAddOn ();
-                        } else if (VersionChecker::IsNewerVersionWithoutAddOn ()) {
-                            DGAlert (DG_INFORMATION, "Tapir Update",
-                                GS::UniString::Printf ("Tapir %T is available, but not yet for Archicad %d.",
-                                    VersionChecker::LatestVersion ().ToPrintf (), static_cast<int> (VersionChecker::ArchicadMainVersion ())),
-                                GS::UniString::Printf ("You are using Tapir %s.", ADDON_VERSION),
-                                "OK");
-                        } else {
-                            DGAlert (DG_INFORMATION,
-                                RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_TITLE, ACAPI_GetOwnResModule ()),
-                                GS::UniString::Printf (RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_TEXT, ACAPI_GetOwnResModule ()), ADDON_VERSION),
-                                GS::EmptyUniString,
-                                RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_BUTTON, ACAPI_GetOwnResModule ()));
-                        }
-                    }
+                    // The same code as the palette's update button.
+                    TapirPalette::Instance ().CheckForUpdates ();
                     break;
             }
             break;
@@ -3400,10 +3380,13 @@ GSErrCode Initialize (void)
     }
 
     // The latest release is looked up on a background thread, so Archicad does not wait for GitHub while it
-    // starts or opens a project (#798). The palette shows the "run with update" icon once the result is in.
+    // starts or opens a project (#798). Once the result is in, the palette shows the "run with update" icon and
+    // "Update to <version>" on its update button, and the menu item reads "Update Tapir to <version>...".
     VersionChecker::StartCheck ([] () {
+        TapirPalette::ApplyUpdateMenuItemState ();
         if (TapirPalette::HasInstance ()) {
             TapirPalette::Instance ().SetRunButtonIcon ();
+            TapirPalette::Instance ().SetUpdateButtonText ();
         }
     });
 
