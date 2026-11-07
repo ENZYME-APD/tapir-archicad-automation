@@ -2797,7 +2797,6 @@ static bool ResolveAttributeIndex (const GS::ObjectState& attributeId, API_AttrT
     return true;
 }
 
-// The library part's own A and B; a and b are left as they are when it has none to divide by.
 // Applies every optional API_ObjectType field beyond the library part itself - coordinates,
 // dimensions, angle, pen/line type/surface/section attributes, fixed-size/angle behavior,
 // per-story visibility, link-to-story, and (Lamp only) light color/on-off - shared by
@@ -3077,6 +3076,11 @@ static GS::Optional<GS::ObjectState> PrepareLibraryPartElement (API_Element& ele
         return err;
     }
     if (element.object.libInd != defaultsLibInd) {
+        // The part's own size goes into xRatio/yRatio as the size itself or as a ratio of 1,
+        // depending on useXYFixSize, so take the flag the element ends up with.
+        bool useFixSize = element.object.useXYFixSize;
+        parameters.Get ("useFixSize", useFixSize);
+        element.object.useXYFixSize = useFixSize;
         const GSErrCode loadErr = LoadLibraryPartDefaults (element, memo);
         if (loadErr != NoError) {
             return CreateErrorResponse (loadErr, "Failed to read the default parameters of the library part.");
