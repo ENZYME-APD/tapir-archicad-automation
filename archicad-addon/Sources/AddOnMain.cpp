@@ -901,6 +901,10 @@ GSErrCode Initialize (void)
             elementCommands, "1.8.1",
             "Distributes 3 or more elements on the floor plan or in the current 2D view evenly along X (horizontal) or Y (vertical), with equal distances between the middles of their plan bounding boxes (centers) or equal space between the boxes (gaps), by moving them in one undo step. The elements are taken in the order of their middles along the direction, and the two outermost stay where they are. The bounding boxes are those Get2DBoundingBoxes returns. Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Mesh, Zone, Object, Lamp, Stair, Railing, CurtainWall, Line, PolyLine, Arc, Circle, Spline, Hatch, Text and Hotspot. An element of another type (doors, windows and openings, which only slide along their host, subelements, dimensions, labels, ...) or one that cannot be edited gets a failed execution result naming the reason, and the other elements are still distributed."
         );
+        err |= RegisterCommand<SplitElementsCommand> (
+            elementCommands, "1.8.1",
+            "Splits each given element in two along a line (the infinite line through its begin and end point, like Archicad's Split command). The original element keeps the part from its begin point to the line, a copy of it (Drag a Copy, so it keeps the layer, classifications, properties and every other setting) gets the rest; both are returned. Supports straight walls without doors, windows or openings, straight unslanted single segment beams without holes or openings, and lines (their arrows stay at the original ends). An element the line does not cross is reported as notCut, an unsupported one as an error naming its type. One undo step."
+        );
         err |= RegisterCommand<CopyElementsToDatabaseCommand> (
             elementCommands, "1.8.1",
             "Copies 2D elements (lines, polylines, arcs, circles, splines, hotspots, texts, hatches, independent labels) from one database into another, e.g. from a worksheet into another worksheet, a detail or a layout, optionally moved by an offset. Returns the new elements in the order of the given ones."

@@ -7760,6 +7760,385 @@ GS::ObjectState RotateCopyElementsCommand::Execute (const GS::ObjectState& param
         });
 }
 
+// ---------------------------------------------------------------------------
+// SplitElements
+// ---------------------------------------------------------------------------
+
+SplitElementsCommand::SplitElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SplitElementsCommand::GetName () const
+{
+    return "SplitElements";
+}
+
+GS::Optional<GS::UniString> SplitElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The elements to split. Supported: straight walls (not polygonal, without doors, windows or openings), straight beams (not slanted or curved, one segment, without holes or openings) and lines. Other types are reported with their type name."
+            },
+            "line": {
+                "type": "object",
+                "description": "The split line in project coordinates: the infinite line through begin and end, as the split line of Archicad's Split command.",
+                "properties": {
+                    "begin": {
+                        "$ref": "#/Coordinate2D"
+                    },
+                    "end": {
+                        "$ref": "#/Coordinate2D"
+                    }
+                },
+                "additionalProperties": false,
+                "required": ["begin", "end"]
+            }
+        },
+        "additionalProperties": false,
+        "required": ["elements", "line"]
+    })";
+}
+
+GS::Optional<GS::UniString> SplitElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "results": {
+                "type": "array",
+                "description": "One item per given element, in the same order.",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "description": "The element was split.",
+                            "properties": {
+                                "elements": {
+                                    "$ref": "#/Elements",
+                                    "description": "The two parts: first the original element, which keeps the part from its begin point to the split line, then the new element, from the split line to the end point."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["elements"]
+                        },
+                        {
+                            "type": "object",
+                            "description": "The split line does not cross the element (or only touches one of its ends), so the element was left as it was.",
+                            "properties": {
+                                "notCut": {
+                                    "type": "boolean"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["notCut"]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["results"]
+    })";
+}
+
+// The parameter along begC -> endC where the infinite line through lineBeg and lineEnd
+// crosses the segment, or nothing when it is parallel to it or crosses it at an end
+// point or outside. tolerance is a length in meters at each end.
+static GS::Optional<double> GetSplitParameter (const API_Coord& begC, const API_Coord& endC, const API_Coord& lineBeg, const API_Coord& lineEnd, double tolerance)
+{
+    const double dx = endC.x - begC.x;
+    const double dy = endC.y - begC.y;
+    const double ex = lineEnd.x - lineBeg.x;
+    const double ey = lineEnd.y - lineBeg.y;
+    const double segmentLength = std::sqrt (dx * dx + dy * dy);
+    const double lineLength = std::sqrt (ex * ex + ey * ey);
+    if (segmentLength < tolerance || lineLength < tolerance) {
+        return GS::NoValue;
+    }
+
+    const double denom = dx * ey - dy * ex;
+    if (std::fabs (denom) < 1e-9 * segmentLength * lineLength) {
+        return GS::NoValue;
+    }
+
+    const double t = ((lineBeg.x - begC.x) * ey - (lineBeg.y - begC.y) * ex) / denom;
+    if (t * segmentLength <= tolerance || (1.0 - t) * segmentLength <= tolerance) {
+        return GS::NoValue;
+    }
+    return t;
+}
+
+static bool HasConnectedElementsOfType (const API_Guid& ownerGuid, API_ElemTypeID typeID)
+{
+    GS::Array<API_Guid> connected;
+    return ACAPI_Grouping_GetConnectedElements (ownerGuid, typeID, &connected) == NoError && !connected.IsEmpty ();
+}
+
+static bool HasBeamHoles (const API_Guid& beamGuid)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (beamGuid, &memo, APIMemoMask_BeamHole) != NoError || memo.beamHoles == nullptr) {
+        return false;
+    }
+    return BMhGetSize (reinterpret_cast<GSHandle> (memo.beamHoles)) / sizeof (API_Beam_Hole) > 0;
+}
+
+// Returns why the element cannot be split, or nothing when it can. Fills in the end
+// points of its reference line.
+static GS::Optional<GS::UniString> GetSplitRefusal (const API_Element& element, API_Coord& begC, API_Coord& endC)
+{
+    const API_Guid& guid = element.header.guid;
+    switch (GetElemTypeId (element.header)) {
+        case API_WallID:
+            if (element.wall.type == APIWtyp_Poly) {
+                return GS::UniString ("Polygonal walls cannot be split.");
+            }
+            if (std::fabs (element.wall.angle) > 1e-6) {
+                return GS::UniString ("Curved walls cannot be split yet.");
+            }
+            if (HasConnectedElementsOfType (guid, API_WindowID) || HasConnectedElementsOfType (guid, API_DoorID) || HasConnectedElementsOfType (guid, API_OpeningID)) {
+                return GS::UniString ("Walls with doors, windows or openings cannot be split yet.");
+            }
+            begC = element.wall.begC;
+            endC = element.wall.endC;
+            return GS::NoValue;
+        case API_BeamID:
+            if (element.beam.beamShape != API_StraightBeam || std::fabs (element.beam.curveAngle) > 1e-6) {
+                return GS::UniString ("Curved beams cannot be split yet.");
+            }
+            if (element.beam.isSlanted) {
+                return GS::UniString ("Slanted beams cannot be split yet.");
+            }
+            if (element.beam.nSegments > 1) {
+                return GS::UniString ("Beams with more than one segment cannot be split yet.");
+            }
+            if (HasBeamHoles (guid) || HasConnectedElementsOfType (guid, API_OpeningID)) {
+                return GS::UniString ("Beams with holes or openings cannot be split yet.");
+            }
+            begC = element.beam.begC;
+            endC = element.beam.endC;
+            return GS::NoValue;
+        case API_LineID:
+            begC = element.line.begC;
+            endC = element.line.endC;
+            return GS::NoValue;
+        default:
+            return "Elements of type " + GetElementTypeNonLocalizedName (GetElemTypeId (element.header)) + " cannot be split yet. Supported types: Wall, Beam, Line.";
+    }
+}
+
+// Sets the part of the element from 'from' to 'to' (both on its reference line), t0 and t1
+// being their parameters along the original reference line. keepBegin and keepEnd tell
+// whether the part keeps the begin or the end of the original (its line arrows).
+static GSErrCode ChangeToSplitPart (API_Element element, const API_Coord& from, const API_Coord& to, double t0, double t1, bool keepBegin, bool keepEnd)
+{
+    API_Element mask;
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+
+    switch (GetElemTypeId (element.header)) {
+        case API_WallID: {
+            if (element.wall.type == APIWtyp_Trapez) {
+                // The thickness changes linearly along a trapezoid wall.
+                const double begThickness = element.wall.thickness;
+                const double endThickness = element.wall.thickness1;
+                element.wall.thickness = begThickness + (endThickness - begThickness) * t0;
+                element.wall.thickness1 = begThickness + (endThickness - begThickness) * t1;
+                ACAPI_ELEMENT_MASK_SET (mask, API_WallType, thickness);
+                ACAPI_ELEMENT_MASK_SET (mask, API_WallType, thickness1);
+            }
+            element.wall.begC = from;
+            element.wall.endC = to;
+            ACAPI_ELEMENT_MASK_SET (mask, API_WallType, begC);
+            ACAPI_ELEMENT_MASK_SET (mask, API_WallType, endC);
+            break;
+        }
+        case API_BeamID:
+            element.beam.begC = from;
+            element.beam.endC = to;
+            ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, begC);
+            ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, endC);
+            break;
+        case API_LineID:
+            element.line.begC = from;
+            element.line.endC = to;
+            ACAPI_ELEMENT_MASK_SET (mask, API_LineType, begC);
+            ACAPI_ELEMENT_MASK_SET (mask, API_LineType, endC);
+            // The arrows stay at the original ends of the line, not at the split point.
+#ifdef ServerMainVers_2900
+            if (!keepBegin) {
+                element.line.startArrowData.arrowVisibility = false;
+                ACAPI_ELEMENT_MASK_SET (mask, API_LineType, startArrowData.arrowVisibility);
+            }
+            if (!keepEnd) {
+                element.line.endArrowData.arrowVisibility = false;
+                ACAPI_ELEMENT_MASK_SET (mask, API_LineType, endArrowData.arrowVisibility);
+            }
+#else
+            if (!keepBegin) {
+                element.line.arrowData.begArrow = false;
+                ACAPI_ELEMENT_MASK_SET (mask, API_LineType, arrowData.begArrow);
+            }
+            if (!keepEnd) {
+                element.line.arrowData.endArrow = false;
+                ACAPI_ELEMENT_MASK_SET (mask, API_LineType, arrowData.endArrow);
+            }
+#endif
+            break;
+        default:
+            return APIERR_BADELEMENTTYPE;
+    }
+
+    return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+}
+
+// Copies the element with Archicad's Drag a Copy, so the copy keeps every setting of the
+// original: layer, classifications, properties and the rest. The copy is moved away by
+// a vector, its geometry is set right after. Returns the guid of the copy.
+static GSErrCode CopyElementForSplit (const API_Guid& elemGuid, API_Guid& copyGuid)
+{
+    GS::Array<API_Neig> elementsToEdit = { API_Neig (elemGuid) };
+
+    API_EditPars editPars = {};
+    editPars.typeID = APIEdit_Drag;
+    editPars.endC = API_Coord3D { 1.0, 0.0, 0.0 };
+    editPars.withDelete = false;
+
+    const GSErrCode err = ACAPI_Element_Edit (&elementsToEdit, editPars);
+    if (err != NoError) {
+        return err;
+    }
+
+    // ACAPI_Element_Edit returns the guid of the new element in place of the original.
+    if (elementsToEdit.GetSize () != 1 || elementsToEdit[0].guid == elemGuid || elementsToEdit[0].guid == APINULLGuid) {
+        return APIERR_GENERAL;
+    }
+    copyGuid = elementsToEdit[0].guid;
+    return NoError;
+}
+
+GS::ObjectState SplitElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::ObjectState lineOs;
+    parameters.Get ("line", lineOs);
+    const GS::ObjectState* lineBegOs = lineOs.Get ("begin");
+    const GS::ObjectState* lineEndOs = lineOs.Get ("end");
+    if (lineBegOs == nullptr || lineEndOs == nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "line needs a begin and an end point.");
+    }
+    const API_Coord lineBeg = Get2DCoordinateFromObjectState (*lineBegOs);
+    const API_Coord lineEnd = Get2DCoordinateFromObjectState (*lineEndOs);
+    if (IsSame2DCoordinate (lineBeg, lineEnd)) {
+        return CreateErrorResponse (APIERR_BADPARS, "The begin and end points of line are the same point, so they do not define a line.");
+    }
+
+    // A part shorter than this is not made: the line only touches the element's end.
+    constexpr double Tolerance = 1e-4;
+
+    GS::ObjectState response;
+    const auto& results = response.AddList<GS::ObjectState> ("results");
+
+    ElementChangeReporter changeReporter;
+
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand ("Split Elements", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : elements) {
+            const API_Guid elemGuid = GetGuidFromElementsArrayItem (item);
+
+            API_Element element = {};
+            element.header.guid = elemGuid;
+            if (elemGuid == APINULLGuid || ACAPI_Element_Get (&element) != NoError) {
+                results (CreateErrorResponse (APIERR_BADID, "Element does not exist."));
+                continue;
+            }
+
+            API_Coord begC = {};
+            API_Coord endC = {};
+            const GS::Optional<GS::UniString> refusal = GetSplitRefusal (element, begC, endC);
+            if (refusal.HasValue ()) {
+                results (CreateErrorResponse (APIERR_BADELEMENTTYPE, *refusal));
+                continue;
+            }
+
+            const GS::Optional<double> t = GetSplitParameter (begC, endC, lineBeg, lineEnd, Tolerance);
+            if (!t.HasValue ()) {
+                results (GS::ObjectState ("notCut", true));
+                continue;
+            }
+
+            const GS::Optional<GS::ObjectState> notEditableResult = GetFailedExecutionResultIfNotEditable (elemGuid, "split");
+            if (notEditableResult.HasValue ()) {
+                GS::ObjectState error;
+                notEditableResult->Get ("error", error);
+                results (GS::ObjectState ("error", error));
+                continue;
+            }
+
+            // Drag a Copy of a grouped element copies its whole group (unless the groups are
+            // suspended), which would leave copies of the other members behind.
+            if (element.header.groupGuid != APINULLGuid) {
+                results (CreateErrorResponse (APIERR_GENERAL, "The element is in a group. Ungroup it first."));
+                continue;
+            }
+
+            const API_Coord splitC = { begC.x + (endC.x - begC.x) * *t, begC.y + (endC.y - begC.y) * *t };
+
+            API_Guid copyGuid = APINULLGuid;
+            GSErrCode err = CopyElementForSplit (elemGuid, copyGuid);
+            if (err != NoError) {
+                results (CreateErrorResponse (err, "Failed to copy the element for the split."));
+                continue;
+            }
+
+            API_Element copy = {};
+            copy.header.guid = copyGuid;
+            err = ACAPI_Element_Get (&copy);
+            if (err == NoError) {
+                err = ChangeToSplitPart (copy, splitC, endC, *t, 1.0, false, true);
+            }
+            if (err != NoError) {
+                ACAPI_Element_Delete ({ copyGuid });
+                results (CreateErrorResponse (err, "Failed to set the geometry of the new part, the element was left as it was."));
+                continue;
+            }
+
+            changeReporter.Add (elemGuid);
+            err = ChangeToSplitPart (element, begC, splitC, 0.0, *t, true, false);
+            if (err != NoError) {
+                ACAPI_Element_Delete ({ copyGuid });
+                const GS::UniString reason = DescribeElementEditRefusal (err, element.header);
+                results (CreateErrorResponse (err, reason.IsEmpty () ? GS::UniString ("Failed to shorten the element, it was left as it was.") : "Failed to shorten the element, because " + reason + "; it was left as it was."));
+                continue;
+            }
+            changeReporter.MarkChanged (elemGuid);
+
+            GS::ObjectState splitResult;
+            const auto& parts = splitResult.AddList<GS::ObjectState> ("elements");
+            parts (CreateElementIdObjectState (elemGuid));
+            parts (CreateElementIdObjectState (copyGuid));
+            results (splitResult);
+        }
+        return NoError;
+    });
+
+    if (undoErr != NoError) {
+        return CreateErrorResponse (undoErr, "Failed to open the undo step of the split.");
+    }
+
+    changeReporter.Report ();
+
+    return response;
+}
+
 FilterElementsCommand::FilterElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
