@@ -187,6 +187,11 @@ until they move here.
 
 ### A built-in script
 
+Every built-in script is in every Tapir user's palette, so this folder gets a new script only when a
+maintainer wants it there. A script asked for in an issue goes to the marketplace, as
+`marketplace/<slug>/`, unless a maintainer asks in the issue for a built-in one
+([A script requested in an issue](../marketplace/README.md#a-script-requested-in-an-issue)).
+
 To propose a script for every Tapir user's palette instead, put it into `builtin-scripts/` and open
 a pull request here. Once it is merged into `main`, it appears in every Tapir user's palette the
 next time they start Archicad or reload the scripts; no Tapir release is needed. Keep it to the
