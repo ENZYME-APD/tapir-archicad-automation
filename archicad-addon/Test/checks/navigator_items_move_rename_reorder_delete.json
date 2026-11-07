@@ -240,7 +240,9 @@
       },
       "expect": [
         { "path": "executionResults[0].success", "eq": false, "name": "folder with items: refused" },
-        { "path": "executionResults[1].success", "eq": true, "name": "empty folder: would be deleted" }
+        { "path": "executionResults[1].success", "eq": true, "name": "empty folder: would be deleted" },
+        { "path": "executionResults[1].wouldDelete", "eq": true, "name": "empty folder: wouldDelete" },
+        { "path": "dryRun", "eq": true, "name": "the response says it was a dry run" }
       ]
     },
     {

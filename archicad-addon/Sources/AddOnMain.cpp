@@ -384,7 +384,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteProjectInfoFieldsCommand> (
             projectCommands, "1.5.4",
-            "Deletes one or more custom project info fields, by their autotext keys or, from Archicad 30, by the ids of the fields of the Project Info groups. Hardcoded fields cannot be deleted."
+            "Deletes one or more custom project info fields, by their autotext keys or, from Archicad 30, by the ids of the fields of the Project Info groups. Hardcoded fields cannot be deleted. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each field that is found gets wouldDelete."
         );
         err |= RegisterCommand<RenameProjectInfoFieldsCommand> (
             projectCommands, "1.8.1",
@@ -408,7 +408,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteProjectInfoGroupsCommand> (
             projectCommands, "1.8.0",
-            "Deletes Project Info groups. A group that contains fixed (built-in) fields cannot be deleted. Available from Archicad 30."
+            "Deletes Project Info groups. A group that contains fixed (built-in) fields cannot be deleted. Available from Archicad 30. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each group that exists gets wouldDelete."
         );
         err |= RegisterCommand<MoveProjectInfoGroupsCommand> (
             projectCommands, "1.8.0",
@@ -472,11 +472,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<BreakHotlinkNodesCommand> (
             projectCommands, "1.8.0",
-            "Breaks hotlink nodes, as the Hotlink Manager's Break Hotlink does: the elements of each node's placed instances stay in the project as ordinary elements, no longer tied to the source file."
+            "Breaks hotlink nodes, as the Hotlink Manager's Break Hotlink does: the elements of each node's placed instances stay in the project as ordinary elements, no longer tied to the source file. With dryRun true nothing is broken and no undo step is created: the response has dryRun set to true, and each hotlink node that exists gets wouldDelete."
         );
         err |= RegisterCommand<DeleteHotlinkNodesCommand> (
             projectCommands, "1.8.0",
-            "Deletes hotlink nodes together with their placed instances, as the Hotlink Manager's Delete does."
+            "Deletes hotlink nodes together with their placed instances, as the Hotlink Manager's Delete does. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each hotlink node that exists gets wouldDelete."
         );
         err |= RegisterCommand<GetHotlinkOwnersOfElementsCommand> (
             projectCommands, "1.8.0",
@@ -803,7 +803,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteUserDataOfElementsCommand> (
             elementCommands, "1.8.1",
-            "Deletes the user data this add-on stored on the given elements. Archicad keeps the user data of an element per add-on, so the data of other add-ons is left as it is. All deletions are one undo step. The output has one execution result per element, aligned with the input array of elements."
+            "Deletes the user data this add-on stored on the given elements. Archicad keeps the user data of an element per add-on, so the data of other add-ons is left as it is. All deletions are one undo step. The output has one execution result per element, aligned with the input array of elements. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each element that exists gets wouldDelete."
         );
         err |= RegisterCommand<GetSurfaceQuantitiesOfElementsCommand> (
             elementCommands, "1.7.3",
@@ -931,11 +931,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteElementsCommand> (
             elementCommands, "1.2.1",
-            "Deletes elements. The zones of the call are deleted before all the other elements, so an automatic zone deleted together with its bounding walls is gone before its boundary is; deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found' dialog, which blocks the command until someone clicks it in Archicad. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) or a guid that is not in the project gets a failed execution result instead of being skipped silently, and does not stop the other elements from being deleted. dryRun reports the result of these checks without deleting anything or creating an undo step."
+            "Deletes elements. The zones of the call are deleted before all the other elements, so an automatic zone deleted together with its bounding walls is gone before its boundary is; deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found' dialog, which blocks the command until someone clicks it in Archicad. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) or a guid that is not in the project gets a failed execution result instead of being skipped silently, and does not stop the other elements from being deleted. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each element that passes the checks made before deleting gets wouldDelete, so a script can preview a deletion before making it."
         );
         err |= RegisterCommand<DeleteSelectedElementsCommand> (
             elementCommands, "1.7.3",
-            "Deletes the currently selected elements in one undo step, the same as pressing the Delete key."
+            "Deletes the currently selected elements in one undo step, the same as pressing the Delete key. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true and lists the selected elements, with wouldDelete when there is at least one, or fails when one of them cannot be edited (Archicad then deletes none of them)."
         );
         err |= RegisterCommand<LockElementsCommand> (
             elementCommands, "1.5.2",
@@ -1365,7 +1365,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteElementSetsCommand> (
             elementGroupingCommands, "1.8.0",
-            "Deletes the given element sets. The elements of a set are not deleted. Only element sets created by the Tapir Add-On can be deleted; sets created by other add-ons are reported as failed."
+            "Deletes the given element sets. The elements of a set are not deleted. Only element sets created by the Tapir Add-On can be deleted; sets created by other add-ons are reported as failed. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each element set that a real run would delete gets wouldDelete."
         );
         err |= RegisterCommand<GetElementSetsOfElementsCommand> (
             elementGroupingCommands, "1.7.3",
@@ -1439,7 +1439,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteFavoritesCommand> (
             favoritesCommands, "1.5.4",
-            "Delete existing favorites."
+            "Delete existing favorites. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each favorite that exists gets wouldDelete."
         );
         err |= RegisterCommand<GetFavoriteFoldersCommand> (
             favoritesCommands, "1.8.0",
@@ -1466,7 +1466,8 @@ GSErrCode Initialize (void)
             favoritesCommands, "1.8.0",
             "Deletes a folder of the Favorites palette given by its path. Archicad deletes the folder's Favorites and subfolders with it, "
             "so a folder that is not empty is deleted only if recursive is true. The root folder cannot be deleted. "
-            "Returns the deleted folder. Available from Archicad 29."
+            "Returns the deleted folder. Available from Archicad 29. With dryRun true nothing is deleted: the response has dryRun "
+            "and wouldDelete set to true and the folder a real run would delete, or the error a real run would give."
         );
         err |= RegisterCommand<GetFavoriteSettingsCommand> (
             favoritesCommands, "1.7.3",
@@ -1506,7 +1507,8 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<DeleteFavoritesWithManagerCommand> (
             favoritesCommands, "1.8.1",
             "Deletes the given Favorites through the Favorite manager, each found by name, optionally only in the given folder. "
-            "One execution result for each. Available from Archicad 29."
+            "One execution result for each. Available from Archicad 29. With dryRun true nothing is deleted and no undo step "
+            "is created: the response has dryRun set to true, and each Favorite that is found gets wouldDelete."
         );
         err |= RegisterCommand<MoveFavoritesCommand> (
             favoritesCommands, "1.8.0",
@@ -1583,7 +1585,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<RemovePropertyFromAttributesCommand> (
             propertyCommands, "1.7.3",
-            "Makes a custom property unavailable for the given attributes (for example Building Materials), in one undo step. Available in Archicad 25, 26 and 27 only."
+            "Makes a custom property unavailable for the given attributes (for example Building Materials), in one undo step. Available in Archicad 25, 26 and 27 only. With dryRun true nothing is changed and no undo step is created: the response has dryRun set to true, and wouldDelete when the property and every attribute exist."
         );
         err |= RegisterCommand<CreatePropertyGroupsCommand> (
             propertyCommands, "1.0.7",
@@ -1591,7 +1593,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeletePropertyGroupsCommand> (
             propertyCommands, "1.0.9",
-            "Deletes the given Custom Property Groups."
+            "Deletes the given Custom Property Groups. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each property group that exists gets wouldDelete."
         );
         err |= RegisterCommand<CreatePropertyDefinitionsCommand> (
             propertyCommands, "1.0.9",
@@ -1599,7 +1601,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeletePropertyDefinitionsCommand> (
             propertyCommands, "1.0.9",
-            "Deletes the given Custom Property Definitions."
+            "Deletes the given Custom Property Definitions. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each property that exists gets wouldDelete."
         );
         err |= RegisterCommand<UpdatePropertyDefinitionsCommand> (
             propertyCommands, "1.5.4",
@@ -1701,11 +1703,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteClassificationSystemsCommand> (
             classificationCommands, "1.5.2",
-            "Deletes the given Classification Systems."
+            "Deletes the given Classification Systems. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each classification system that exists gets wouldDelete."
         );
         err |= RegisterCommand<DeleteClassificationItemsCommand> (
             classificationCommands, "1.5.2",
-            "Deletes the given Classification Items."
+            "Deletes the given Classification Items. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each classification item that exists gets wouldDelete."
         );
         err |= RegisterCommand<UpdateClassificationSystemsCommand> (
             classificationCommands, "1.6.0",
@@ -1746,7 +1748,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteAttributesCommand> (
             attributeCommands, "1.5.4",
-            "Deletes the given attributes. Returns an execution result for each input item. dryRun only checks the items (attribute type, attribute exists) and deletes nothing."
+            "Deletes the given attributes. Returns an execution result for each input item. With dryRun true nothing is deleted: the response has dryRun set to true, and each attribute that passes the checks made before deleting (valid attribute type, attribute exists) gets wouldDelete."
         );
         err |= RegisterCommand<ImportAttributesFromProjectCommand> (
             attributeCommands, "1.8.1",
@@ -1770,7 +1772,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteAttributeFoldersCommand> (
             attributeCommands, "1.7.3",
-            "Deletes attribute folders, each given by attribute type and path, together with all the subfolders and deletable attributes they contain (a folder holding an attribute that cannot be deleted is kept). The root folder cannot be deleted. Available from Archicad 26."
+            "Deletes attribute folders, each given by attribute type and path, together with all the subfolders and deletable attributes they contain (a folder holding an attribute that cannot be deleted is kept). The root folder cannot be deleted. With dryRun true nothing is deleted: the response has dryRun set to true, and each folder that exists and is not the root folder gets wouldDelete. Available from Archicad 26."
         );
         err |= RegisterCommand<RenameAttributeFoldersCommand> (
             attributeCommands, "1.7.3",
@@ -1790,7 +1792,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteAndReplaceAttributesCommand> (
             attributeCommands, "1.8.1",
-            "Deletes fills, line types, surfaces or building materials and replaces each by another attribute of the same type wherever it was used, like Delete and Replace in the Attribute Manager. Every reference is rewritten to the replacement, the way ReindexAttributes rewrites them: the fields of the elements in the floor plan and in every view and layout, the parameters of library part based elements, their memo data, the tool defaults, the Favorites, the other attributes that refer to it (composites, building materials, surfaces, profiles, MEP systems) and the graphic override rules. Elements on a hidden or locked layer are changed too: their layers are shown and unlocked for the change and put back afterwards (in the current window). If an element cannot be changed (it is locked itself, or not reserved in Teamwork), everything is put back and that attribute is not deleted. Elements from hotlinked modules cannot be changed and are listed. Indices typed into GDL scripts are not found, and the frame and panel classes of curtain wall Favorites and of the Curtain Wall tool default keep the deleted attribute (named in the warnings). If a tool default, Favorite, attribute or rule cannot be rewritten to the replacement, it keeps a copy of the deleted attribute with its name and a new attribute id, named in the warnings. dryRun lists every reference without changing anything. The whole call is one undo step. Available from Archicad 27."
+            "Deletes fills, line types, surfaces or building materials and replaces each by another attribute of the same type wherever it was used, like Delete and Replace in the Attribute Manager. Every reference is rewritten to the replacement, the way ReindexAttributes rewrites them: the fields of the elements in the floor plan and in every view and layout, the parameters of library part based elements, their memo data, the tool defaults, the Favorites, the other attributes that refer to it (composites, building materials, surfaces, profiles, MEP systems) and the graphic override rules. Elements on a hidden or locked layer are changed too: their layers are shown and unlocked for the change and put back afterwards (in the current window). If an element cannot be changed (it is locked itself, or not reserved in Teamwork), everything is put back and that attribute is not deleted. Elements from hotlinked modules cannot be changed and are listed. Indices typed into GDL scripts are not found, and the frame and panel classes of curtain wall Favorites and of the Curtain Wall tool default keep the deleted attribute (named in the warnings). If a tool default, Favorite, attribute or rule cannot be rewritten to the replacement, it keeps a copy of the deleted attribute with its name and a new attribute id, named in the warnings. The whole call is one undo step. With dryRun true nothing is changed and no undo step is created: the response has dryRun set to true, and each attribute that passes the checks gets wouldDelete and lists every reference a real run would rewrite (elements, tool defaults, Favorites, other attributes, graphic override rules, elements from hotlinked modules). Available from Archicad 27."
         );
         err |= RegisterCommand<CreateLayersCommand> (
             attributeCommands, "1.0.3",
@@ -1986,7 +1988,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteUserDataOfAttributesCommand> (
             attributeCommands, "1.8.0",
-            "Removes the user data of attributes, every key at once. Archicad does not record this change as an undo step, so Undo does not revert it."
+            "Removes the user data of attributes, every key at once. Archicad does not record this change as an undo step, so Undo does not revert it. With dryRun true nothing is removed: the response has dryRun set to true, and each attribute that exists gets wouldDelete."
         );
         AddCommandGroup (attributeCommands);
     }
@@ -2039,11 +2041,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<RemoveIFCClassificationReferencesOfElementsCommand> (
             ifcCommands, "1.8.0",
-            "Removes IFC classification references stored on elements, given by the name of their classification and optionally their identification; without identification every stored reference of that classification is removed. Available only in Archicad 25, 26 and 27 for now."
+            "Removes IFC classification references stored on elements, given by the name of their classification and optionally their identification; without identification every stored reference of that classification is removed. Available only in Archicad 25, 26 and 27 for now. With dryRun true nothing is removed and no undo step is created: the response has dryRun set to true, and each element that has a matching stored reference gets wouldDelete."
         );
         err |= RegisterCommand<RemoveIFCPropertiesOfElementsCommand> (
             ifcCommands, "1.7.3",
-            "Removes local IFC properties, given by property set and property name, from elements. Available only in Archicad 25, 26 and 27 for now."
+            "Removes local IFC properties, given by property set and property name, from elements. Available only in Archicad 25, 26 and 27 for now. With dryRun true nothing is removed and no undo step is created: the response has dryRun set to true, and each element that has the local IFC property gets wouldDelete."
         );
         err |= RegisterCommand<GetIFCSpatialStructureCommand> (
             ifcCommands, "1.8.1",
@@ -2072,7 +2074,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteEmbeddedLibraryItemsCommand> (
             libraryCommands, "1.6.0",
-            "Deletes the given items from the embedded library. The path of an item is the same relative path that AddFilesToEmbeddedLibrary takes as outputPath. Available from Archicad 27."
+            "Deletes the given items from the embedded library. The path of an item is the same relative path that AddFilesToEmbeddedLibrary takes as outputPath. Available from Archicad 27. With dryRun true nothing is deleted: the response has dryRun set to true, and each item that is in the embedded library gets wouldDelete."
         );
         err |= RegisterCommand<CreateLibraryPartsCommand> (
             libraryCommands, "1.8.0",
@@ -2637,7 +2639,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteNavigatorItemsCommand> (
             navigatorCommands, "1.1.7",
-            "Deletes navigator items from the navigator tree: views and folders of the View Map, layouts and master layouts of the Layout Book, and independent worksheets and details of the Project Map. Layout subsets, View Map folders that are not empty, the other Project Map items and marker-linked worksheets and details cannot be deleted; the failed execution result says which case applies. An item that Archicad refuses to delete (in a Teamwork project: it is not reserved or the user has no right to delete it) is reported as a failed execution result. dryRun reports the result of the checks made before deleting (item not found, layout subset, View Map folder that is not empty) without deleting anything."
+            "Deletes navigator items from the navigator tree: views and folders of the View Map, layouts and master layouts of the Layout Book, and independent worksheets and details of the Project Map. Layout subsets, View Map folders that are not empty, the other Project Map items and marker-linked worksheets and details cannot be deleted; the failed execution result says which case applies. An item that Archicad refuses to delete (in a Teamwork project: it is not reserved or the user has no right to delete it) is reported as a failed execution result. With dryRun true nothing is deleted: the response has dryRun set to true, and each item that passes the checks made before deleting (item not found, layout subset, View Map folder that is not empty) gets wouldDelete."
         );
         err |= RegisterCommand<GetNavigatorItemTreeCommand> (
             navigatorCommands, "1.1.7",
@@ -2707,7 +2709,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteIssueCommand> (
             issueCommands, "1.0.2",
-            "Deletes the specified issue."
+            "Deletes the specified issue. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and wouldDelete when the issue exists."
         );
         err |= RegisterCommand<GetIssuesCommand> (
             issueCommands, "1.0.2",
@@ -2930,11 +2932,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteKeynoteFoldersCommand> (
             keynoteCommands, "1.5.6",
-            "Deletes the given keynote folders including their content. Available from Archicad 28."
+            "Deletes the given keynote folders including their content. Available from Archicad 28. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each folder that exists and is not the root folder gets wouldDelete."
         );
         err |= RegisterCommand<DeleteKeynoteItemsCommand> (
             keynoteCommands, "1.5.6",
-            "Deletes the given keynote items. Available from Archicad 28."
+            "Deletes the given keynote items. Available from Archicad 28. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each item that exists gets wouldDelete."
         );
         err |= RegisterCommand<CreateKeynoteLabelsCommand> (
             keynoteCommands, "1.5.6",
@@ -3340,7 +3342,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<RemoveSolidElementLinksCommand> (
             solidElementOperationCommands, "1.5.4",
-            "Removes solid element operation links between target and operator elements."
+            "Removes solid element operation links between target and operator elements. With dryRun true nothing is removed and no undo step is created: the response has dryRun set to true, and each link that exists gets wouldDelete."
         );
         err |= RegisterCommand<GetSolidElementLinksCommand> (
             solidElementOperationCommands, "1.5.4",
@@ -3356,7 +3358,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<RemoveElementTrimsCommand> (
             solidElementOperationCommands, "1.5.9",
-            "Removes the trim between an element and the roof or shell trimming it."
+            "Removes the trim between an element and the roof or shell trimming it. With dryRun true nothing is removed and no undo step is created: the response has dryRun set to true, and each pair whose element is trimmed by its trimming element gets wouldDelete."
         );
         err |= RegisterCommand<GetElementTrimsCommand> (
             solidElementOperationCommands, "1.5.9",
