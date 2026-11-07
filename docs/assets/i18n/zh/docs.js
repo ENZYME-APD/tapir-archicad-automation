@@ -27,6 +27,11 @@
     'Which Tapir commands have a Grasshopper component, and which inputs each component still lacks.':
         '哪些 Tapir 命令有 Grasshopper 运算器，以及每个运算器还缺少哪些输入。',
 
+    // The API limits teaser (its title is in common.js)
+    'What the Archicad API can\'t do, such as undo, the clipboard or the rows of a schedule, with what to do instead and the DevKit evidence.':
+        'Archicad API 做不到的事，例如撤销、剪贴板或清单中的行，附有替代办法和 DevKit 中的依据。',
+    'See the limits': '查看限制',
+
     // How it works
     'How it works': '工作原理',
     'How it <em>works.</em>': '<em>工作原理。</em>',

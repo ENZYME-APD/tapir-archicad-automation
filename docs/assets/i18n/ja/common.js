@@ -29,6 +29,7 @@
     'Commands': 'コマンド',
     'API coverage': 'API カバレッジ',
     'Grasshopper coverage': 'Grasshopper カバレッジ',
+    'API limits': 'API の限界',
     'Tutorials': 'チュートリアル',
     'How fixes happen': '修正の流れ',
     'Roadmap': 'ロードマップ',

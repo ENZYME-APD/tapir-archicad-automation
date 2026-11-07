@@ -31,6 +31,7 @@
     'Commands': 'कमांड',
     'API coverage': 'API कवरेज',
     'Grasshopper coverage': 'Grasshopper कवरेज',
+    'API limits': 'API की सीमाएँ',
     'Tutorials': 'ट्यूटोरियल',
     'How fixes happen': 'बग कैसे ठीक होते हैं',
     'Roadmap': 'रोडमैप',

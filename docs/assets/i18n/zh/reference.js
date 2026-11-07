@@ -9,8 +9,8 @@
     'Tapir <em>commands.</em>': 'Tapir <em>命令。</em>',
     'The JSON commands the Tapir add-on registers in Archicad, in the <code>TapirCommand</code> namespace, next to Graphisoft\'s official commands. Each command shows its parameters, its response and an example.':
         'Tapir 插件在 Archicad 中注册的 JSON 命令，位于 <code>TapirCommand</code> 命名空间，与 Graphisoft 的官方命令并列。每个命令都列出其参数、响应和一个示例。',
-    'New to Tapir? <a href="../start/">Get started</a> shows how to install it and run a first script.':
-        '第一次使用 Tapir？<a href="../start/">快速开始</a>介绍如何安装并运行第一个脚本。',
+    'New to Tapir? <a href="../start/">Get started</a> shows how to install it and run a first script. Looking for something no command does? <a href="../limits/">What the Archicad API can\'t do</a> lists what Graphisoft\'s API does not offer, with what to do instead.':
+        '第一次使用 Tapir？<a href="../start/">快速开始</a>介绍如何安装并运行第一个脚本。想找没有任何命令能做的事？<a href="../limits/">Archicad API 做不到的事</a>列出了 Graphisoft 的 API 没有提供的功能，以及替代办法。',
     'Calling a <em>command.</em>': '调用<em>命令。</em>',
     'Archicad answers JSON commands on <code>http://127.0.0.1:19723</code> while a project is open (the next Archicads opened use 19724, 19725 and so on). A Tapir command is sent through Archicad\'s <code>API.ExecuteAddOnCommand</code> command.':
         '打开项目时，Archicad 在 <code>http://127.0.0.1:19723</code> 上响应 JSON 命令（之后打开的 Archicad 依次使用 19724、19725 等）。Tapir 命令通过 Archicad 的 <code>API.ExecuteAddOnCommand</code> 命令发送。',
