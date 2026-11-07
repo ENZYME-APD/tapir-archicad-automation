@@ -23,6 +23,7 @@
 
 #include "ApplicationCommands.hpp"
 #include "ScriptUICommands.hpp"
+#include "DialogCommands.hpp"
 #include "ProjectCommands.hpp"
 #include "CustomDataCommands.hpp"
 #include "ElementCommands.hpp"
@@ -3427,6 +3428,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetScriptUIResultCommand> (
             scriptUICommands, "1.5.4",
             "Retrieves and clears the result last submitted from the Script UI palette's page (via window.ACAPI.SubmitResult), if any, and reports whether the palette is still open, so a waiting script can stop when the user closes it."
+        );
+        err |= RegisterCommand<OpenSettingsDialogCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens Archicad's settings dialog of the selected elements or the current tool (Archicad 28 and later), or the default settings dialog of the given element type, waits for the user and reports whether the dialog was closed with OK or Cancel."
+        );
+        err |= RegisterCommand<PickAttributeCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens a small dialog with Archicad's attribute picker for the given attribute type (layer, building material, composite, profile or surface; fill and line from Archicad 27), waits for the user and returns the chosen attribute, or cancelled. Available from Archicad 26."
+        );
+        err |= RegisterCommand<PickAttributeFolderCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens a small dialog with Archicad's attribute folder picker for the given attribute type, waits for the user and returns the chosen folder as its path from the root folder, or cancelled. Available from Archicad 26."
         );
         AddCommandGroup (scriptUICommands);
     }

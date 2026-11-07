@@ -15,6 +15,13 @@
 
 #define ID_SCRIPTUI_PALETTE             32041
 
+// The dialog of PickAttribute and PickAttributeFolder, which host Archicad's attribute (folder) picker.
+#define ID_ATTRIBUTE_PICKER_DIALOG      32042
+#define ID_ATTRIBUTE_PICKER_DIALOG_OK_BUTTON      1
+#define ID_ATTRIBUTE_PICKER_DIALOG_CANCEL_BUTTON  2
+#define ID_ATTRIBUTE_PICKER_DIALOG_LABEL          3
+#define ID_ATTRIBUTE_PICKER_DIALOG_PICKER         4
+
 #define ID_ADDON_MENU_FOR_SHORTCUTS     32026
 #define ID_ADDON_MENU_MANAGE_SHORTCUTS      1
 
