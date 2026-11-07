@@ -1590,15 +1590,17 @@ GS::ObjectState ExecuteForEachIdInList (
     const char* listFieldName,
     const char* idFieldName,
     const GS::UniString& undoName,
-    const std::function<GS::ObjectState (const API_Guid&)>& perItem)
+    const std::function<GS::ObjectState (const API_Guid&)>& perItem,
+    bool dryRun)
 {
     GS::Array<GS::ObjectState> items;
     parameters.Get (listFieldName, items);
 
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
-    ACAPI_CallUndoableCommand (undoName, [&] () -> GSErrCode {
+    const auto forEachItem = [&] () -> GSErrCode {
         for (const GS::ObjectState& item : items) {
             const GS::ObjectState* id = item.Get (idFieldName);
             if (id == nullptr) {
@@ -1610,7 +1612,15 @@ GS::ObjectState ExecuteForEachIdInList (
         }
 
         return NoError;
-    });
+    };
+
+    // A dry run makes the same checks item by item, but outside an undoable command, so nothing
+    // can be written and no undo step is made; perItem itself must not write on a dry run.
+    if (dryRun) {
+        forEachItem ();
+    } else {
+        ACAPI_CallUndoableCommand (undoName, forEachItem);
+    }
 
     return response;
 }

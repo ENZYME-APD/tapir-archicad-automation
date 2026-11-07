@@ -9671,15 +9671,89 @@ GS::String DeleteSelectedElementsCommand::GetName () const
     return "DeleteSelectedElements";
 }
 
-GS::Optional<GS::UniString> DeleteSelectedElementsCommand::GetRawResponseSchema () const
+GS::Optional<GS::UniString> DeleteSelectedElementsCommand::GetInputParametersSchema () const
 {
     return R"({
-        "$ref": "#/ExecutionResult"
+        "type": "object",
+        "properties": {
+            "dryRun": {
+                "$ref": "#/DryRun"
+            }
+        },
+        "additionalProperties": false
     })";
 }
 
-GS::ObjectState DeleteSelectedElementsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+GS::Optional<GS::UniString> DeleteSelectedElementsCommand::GetRawResponseSchema () const
 {
+    return R"({
+        "type": "object",
+        "description": "The result of the execution. A real run answers success, with error when it failed; a dry run also answers dryRun, and the elements it would delete.",
+        "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
+            "success": {
+                "type": "boolean"
+            },
+            "error": {
+                "$ref": "#/Error"
+            },
+            "wouldDelete": {
+                "type": "boolean",
+                "description": "Only on a dry run that passed the checks: true when at least one element is selected."
+            },
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "Only on a dry run: the selected elements (for a marquee, the ones it touches). A real run deletes them, together with the other members of their groups when Suspend Groups is off and the elements linked to them (labels, dimensions, ...)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "success"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteSelectedElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    if (IsDryRun (parameters)) {
+        // Archicad deletes the selection as a whole or not at all: one selected element it does
+        // not let the user edit (locked, on a locked layer, not reserved in Teamwork) stops it.
+        API_SelectionInfo selectionInfo = {};
+        GS::Array<API_Neig> selectedNeigs;
+        GSErrCode err = ACAPI_Selection_Get (&selectionInfo, &selectedNeigs, false);
+        BMKillHandle (reinterpret_cast<GSHandle*> (&selectionInfo.marquee.coords));
+        if (err != NoError && err != APIERR_NOSEL) {
+            GS::ObjectState result = CreateFailedExecutionResult (err, "Failed to get the selected elements.");
+            AddDryRunField (result, true);
+            return result;
+        }
+
+        API_SelectionInfo editableSelectionInfo = {};
+        GS::Array<API_Neig> editableNeigs;
+        err = ACAPI_Selection_Get (&editableSelectionInfo, &editableNeigs, true);
+        BMKillHandle (reinterpret_cast<GSHandle*> (&editableSelectionInfo.marquee.coords));
+        if (err != NoError && err != APIERR_NOSEL) {
+            GS::ObjectState result = CreateFailedExecutionResult (err, "Failed to get the selected elements.");
+            AddDryRunField (result, true);
+            return result;
+        }
+
+        GS::ObjectState result;
+        if (editableNeigs.GetSize () < selectedNeigs.GetSize ()) {
+            result = CreateFailedExecutionResult (APIERR_NOTMINE, "At least one selected element cannot be edited (it is locked, on a locked layer or not reserved), so Archicad would delete none of them.");
+        } else {
+            result = GS::ObjectState ("success", true, "wouldDelete", !selectedNeigs.IsEmpty ());
+        }
+        AddDryRunField (result, true);
+        const auto& elements = result.AddList<GS::ObjectState> ("elements");
+        for (const API_Neig& neig : selectedNeigs) {
+            elements (CreateElementIdObjectState (neig.guid));
+        }
+        return result;
+    }
+
     // The selected elements are read before they are deleted, so the deleted ones can be
     // reported to the notification clients. Only needed when a client wants them.
     ElementChangeReporter changeReporter;
@@ -10624,6 +10698,9 @@ GS::Optional<GS::UniString> DeleteUserDataOfElementsCommand::GetInputParametersS
         "properties": {
             "elements": {
                 "$ref": "#/Elements"
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -10638,9 +10715,12 @@ GS::Optional<GS::UniString> DeleteUserDataOfElementsCommand::GetRawResponseSchem
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults",
-                "description": "One result per element, aligned with the input."
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result per element, aligned with the input. On a dry run an element that exists gets wouldDelete; Archicad can still refuse to delete its user data."
             }
         },
         "additionalProperties": false,
@@ -10654,7 +10734,8 @@ GS::ObjectState DeleteUserDataOfElementsCommand::Execute (const GS::ObjectState&
 {
     // Archicad keeps the user data of an element per add-on, so this deletes only what this
     // add-on stored on the element.
-    return ExecuteForEachIdInList (parameters, "elements", "elementId", "DeleteUserDataOfElements", [] (const API_Guid& elemGuid) {
+    const bool dryRun = IsDryRun (parameters);
+    return ExecuteForEachIdInList (parameters, "elements", "elementId", "DeleteUserDataOfElements", [dryRun] (const API_Guid& elemGuid) {
         API_Elem_Head elemHead = {};
         elemHead.guid = elemGuid;
         GSErrCode err = ACAPI_Element_GetHeader (&elemHead);
@@ -10662,12 +10743,16 @@ GS::ObjectState DeleteUserDataOfElementsCommand::Execute (const GS::ObjectState&
             return CreateFailedExecutionResult (err, "Failed to find the element");
         }
 
+        if (dryRun) {
+            return CreateDryRunExecutionResult ("wouldDelete");
+        }
+
         err = TAPIR_UserData_DeleteUserData (&elemHead);
         if (err != NoError) {
             return CreateFailedExecutionResult (err, "Failed to delete the user data of the element.");
         }
         return CreateSuccessfulExecutionResult ();
-    });
+    }, dryRun);
 }
 
 // GetTextureCoordinates
