@@ -268,6 +268,31 @@ jobs:
             sleep "$wait"
           done
 
+      # Credits the person who opened the issue on the commits this run makes:
+      # a Co-authored-by trailer with their GitHub no-reply address puts the
+      # merged commits on their contribution graph. An issue a bot opened (the
+      # Discord issue bot's) has no GitHub person to credit.
+      - name: Name the issue's author
+        id: author
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+        run: |
+          # Never fails the job: without the author's name the run just credits nobody.
+          set -uo pipefail
+          info=$(gh api "repos/$REPO/issues/$ISSUE_NUMBER" \
+            --jq '"\(.user.login) \(.user.id) \(.user.type)"' 2>/dev/null) || info=""
+          read -r login id type <<<"$info" || true
+          login=${login:-}; id=${id:-}; type=${type:-}
+          credit="none"
+          # GitHub logins are letters, digits and hyphens; anything else stays out of the prompt.
+          if [ "$type" = "User" ] && [[ "$login" =~ ^[A-Za-z0-9-]{1,39}$ ]] && [[ "$id" =~ ^[0-9]+$ ]]; then
+            credit="Co-authored-by: $login <$id+$login@users.noreply.github.com>"
+          fi
+          echo "Credit: $credit"
+          echo "credit=$credit" >> "$GITHUB_OUTPUT"
+
       - name: Write the fix
         id: claude
         uses: anthropics/claude-code-action@v1
@@ -287,6 +312,7 @@ jobs:
           prompt: |
             REPO: ${{ github.repository }}
             ISSUE NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+            ISSUE AUTHOR CREDIT: ${{ steps.author.outputs.credit }}
 
             This issue was just opened (by a person, or filed by the Discord
             issue bot from a Discord message), or a maintainer labelled it
@@ -352,6 +378,14 @@ jobs:
             so get it right. The body must also contain the line
             `Fixes #<issue number>` - later runs find this pull request by
             that number, and without it they open a duplicate.
+
+            CREDIT. When ISSUE AUTHOR CREDIT above is a `Co-authored-by:`
+            line (it names the person who opened the issue; anything else
+            means credit nobody), end the message of every commit you make
+            for this issue with a blank line and then exactly that line,
+            and put `Reported by @<their login>` in the body of any pull
+            request you open, so the person who reported it is credited as a
+            co-author when it is merged. Add it to no other commit.
 
             SPLITTING. When the issue is clearly wanted and well defined but
             too large for one reviewable pull request - several independent
@@ -717,6 +751,31 @@ jobs:
             sleep "$wait"
           done
 
+      # Credits the person who opened the issue on the commits this run makes:
+      # a Co-authored-by trailer with their GitHub no-reply address puts the
+      # merged commits on their contribution graph. An issue a bot opened (the
+      # Discord issue bot's) has no GitHub person to credit.
+      - name: Name the issue's author
+        id: author
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number || inputs.issue_number }}
+        run: |
+          # Never fails the job: without the author's name the run just credits nobody.
+          set -uo pipefail
+          info=$(gh api "repos/$REPO/issues/$ISSUE_NUMBER" \
+            --jq '"\(.user.login) \(.user.id) \(.user.type)"' 2>/dev/null) || info=""
+          read -r login id type <<<"$info" || true
+          login=${login:-}; id=${id:-}; type=${type:-}
+          credit="none"
+          # GitHub logins are letters, digits and hyphens; anything else stays out of the prompt.
+          if [ "$type" = "User" ] && [[ "$login" =~ ^[A-Za-z0-9-]{1,39}$ ]] && [[ "$id" =~ ^[0-9]+$ ]]; then
+            credit="Co-authored-by: $login <$id+$login@users.noreply.github.com>"
+          fi
+          echo "Credit: $credit"
+          echo "credit=$credit" >> "$GITHUB_OUTPUT"
+
       - name: Respond to the comment
         id: claude
         uses: anthropics/claude-code-action@v1
@@ -733,12 +792,21 @@ jobs:
             ISSUE NUMBER: ${{ github.event.issue.number }}
             NEW COMMENT POSTED AT: ${{ github.event.comment.created_at }}
             NEW COMMENT AUTHOR: ${{ github.event.comment.user.login }}
+            ISSUE AUTHOR CREDIT: ${{ steps.author.outputs.credit }}
 
             Someone just commented on this issue of the Tapir Archicad
             automation package. Read CLAUDE.md first for the layout and the
             conventions, then read the issue and its whole comment thread
             (gh issue view <number> --comments), including any earlier answer
             of yours, and respond to the new comment.
+
+            CREDIT. When ISSUE AUTHOR CREDIT above is a `Co-authored-by:`
+            line (it names the person who opened the issue; anything else
+            means credit nobody), end the message of every commit you make
+            for this issue with a blank line and then exactly that line,
+            and put `Reported by @<their login>` in the body of any pull
+            request you open, so the person who reported it is credited as a
+            co-author when it is merged. Add it to no other commit.
 
             Decide what the comment needs:
 

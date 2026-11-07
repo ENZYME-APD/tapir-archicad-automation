@@ -391,7 +391,11 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   every new human comment on an issue (`reply` job), from anyone, runs Claude with
   write access: it answers, closes verified already-fixed issues, or opens a
   ready-for-review PR on a `claude/issue-<n>-…` branch with `Fixes #<n>`, and asks
-  the issue's author (tagged) to verify it in Archicad. An issue too large for
+  the issue's author (tagged) to verify it in Archicad. Its commits end with a
+  `Co-authored-by:` trailer for the person who opened the issue (their GitHub
+  no-reply address, worked out by a step without a model; none for issues a bot
+  opened) and its PR body says `Reported by @<login>`, so the reporter is
+  credited when the PR is merged. An issue too large for
   one PR gets a split plan (`<!-- claude-split-plan: parts=N -->`, at most six
   parts) and one PR per part, opened one run at a time (`next-part` job) on
   `claude/issue-<n>-part<k>-…` branches with `Part <k> of <N> of #<n>`. No label
@@ -524,8 +528,9 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   `tools/generate_community_data.py` counts,
   per month, the commits of `main`, the issues opened and pull requests merged, and
   the Discord messages and members of the project's server (only counts, never the
-  text of a message), plus the totals and top contributors (each person once,
-  whatever names and addresses their commits carry), and publishes
+  text of a message), plus the totals and top contributors (commit authors and
+  the people in `Co-authored-by` trailers, bots and AI assistants left out, each
+  person once whatever names and addresses they used), and publishes
   `community.json` to the `site-data` branch (never to `main`), read by
   `docs/community/community.js` (the Momentum figures and the growth chart). The
   Discord bot token is `DISCORD_STATS_TOKEN`, else `DISCORD_BOT_TOKEN`; members per
