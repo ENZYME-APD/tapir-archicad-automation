@@ -2561,6 +2561,12 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 break;
 
+            case API_SkylightID:
+                // The settings CreateSkylights and ModifySkylights write, read back (#2229).
+                AddLibPartBasedElementDetails (typeSpecificDetails, elem.skylight.openingBase.libInd, elem.skylight.owner);
+                AddSkylightDetails (elem, typeSpecificDetails);
+                break;
+
             case API_LabelID: {
                 AddLibPartBasedElementDetails (typeSpecificDetails, ((elem.label.labelClass == APILblClass_Symbol) ? elem.label.u.symbol.libInd : -1), elem.label.parent, GetElemTypeId (elem.label.parentType));
                 typeSpecificDetails.Add ("begCoordinate", Create2DCoordinateObjectState (elem.label.begC));

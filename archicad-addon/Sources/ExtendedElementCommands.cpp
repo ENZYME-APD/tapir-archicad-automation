@@ -3887,6 +3887,299 @@ GS::Optional<GS::UniString> ApplyWindowOrDoorDetails (API_Element& element, API_
     return {};
 }
 
+const std::pair<const char*, API_SkylightAnchorID> SkylightAnchorPoints[] = {
+    { "BottomCenter", APISkylightAnchor_BC }, { "BottomLeft", APISkylightAnchor_BL }, { "BottomRight", APISkylightAnchor_BR },
+    { "TopCenter", APISkylightAnchor_TC }, { "TopLeft", APISkylightAnchor_TL }, { "TopRight", APISkylightAnchor_TR }
+};
+
+const std::pair<const char*, API_SkylightFixModeID> SkylightFixModes[] = {
+    { "Horizontal", APISkylightFixMode_Horizontal }, { "Vertical", APISkylightFixMode_Vertical }
+};
+
+// The keys CreateSkylights and ModifySkylights take on top of their own (ownerId and
+// libraryPartName/favoriteName/id, or elementId), one string for both schemas, so they accept
+// the same keys - the ones ApplySkylightDetails writes and GetDetailsOfElements returns for
+// skylights (AddSkylightDetails).
+GS::UniString SkylightDetailSchemaFields ()
+{
+    return R"(
+        "anchorPosition": { "$ref": "#/Coordinate2D", "description": "Global XY coordinates of the skylight's anchor point (API_SkylightType::anchorPosition). Archicad places the skylight on its owner roof or shell at this point; moving it onto another plane of a multi-plane roof has not been verified." },
+        "anchorPoint": { "type": "string", "enum": ["BottomCenter", "BottomLeft", "BottomRight", "TopCenter", "TopLeft", "TopRight"], "description": "Which point of the skylight anchorPosition places (API_SkylightType::anchorPoint)." },
+        "fixMode": { "type": "string", "enum": ["Horizontal", "Vertical"], "description": "What the skylight keeps when the angle or the height of its owner changes (API_SkylightType::fixMode)." },
+        "width": { "type": "number", "exclusiveMinimum": 0.0 },
+        "height": { "type": "number", "exclusiveMinimum": 0.0 },
+        "azimuthAngle": { "type": "number", "description": "Rotation angle of the skylight in the horizontal plane, measured clockwise, in radians (API_SkylightType::azimuthAngle)." },
+        "elevationAngle": { "type": "number", "description": "Elevation angle of the owner's surface at the skylight, in radians (API_SkylightType::elevationAngle). Archicad may set it again from the owner roof or shell." },
+        "reflected": { "type": "boolean", "description": "Mirror the skylight (API_OpeningBaseType::reflected)." },
+        "displayOption": { "$ref": "#/DisplayOption" },
+        "pen": { "type": "integer", "minimum": 0, "maximum": 255, "description": "Pen of the skylight's floor plan symbol; used unless useObjectPens is true." },
+        "lineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the skylight's floor plan symbol; used unless useObjectLineTypes is true." },
+        "cutLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the cut lines of the skylight." },
+        "sectionFillId": { "$ref": "#/AttributeId", "description": "Fill of the section of the skylight; used unless useObjectSectionAttributes is true." },
+        "sectionFillPen": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "sectionFillBackgroundPen": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "sectionContourPen": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "aboveViewLinePen": { "type": "integer", "minimum": 0, "maximum": 255, "description": "Pen of the overhead lines." },
+        "aboveViewLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the overhead lines." },
+        "belowViewLinePen": { "type": "integer", "minimum": 0, "maximum": 255, "description": "Pen of the uncut lines of the skylight." },
+        "belowViewLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the uncut lines." },
+        "surfaceId": { "$ref": "#/AttributeId", "description": "Surface of the skylight (API_OpeningBaseType::mat); used unless useObjectMaterials is true." },
+        "useObjectPens": { "type": "boolean", "description": "Use the pens defined in the library part instead of 'pen'." },
+        "useObjectLineTypes": { "type": "boolean", "description": "Use the line types defined in the library part instead of 'lineTypeId'." },
+        "useObjectMaterials": { "type": "boolean", "description": "Use the surfaces defined in the library part instead of 'surfaceId'." },
+        "useObjectSectionAttributes": { "type": "boolean", "description": "Use the section attributes defined in the library part instead of 'sectionFillId' and the section pens." })";
+}
+
+// Writes the given keys of a skylight to `element` and sets them in `mask`; shared by
+// CreateSkylights (whose mask is not used) and ModifySkylights. `changed` tells whether any key
+// was given. An invalid enum value or attribute reference returns the error, and nothing is to
+// be written then.
+GS::Optional<GS::UniString> ApplySkylightDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed)
+{
+    changed = false;
+    API_SkylightType& skylight = element.skylight;
+    API_OpeningBaseType& opening = skylight.openingBase;
+
+    const auto anchorPosition = GetOptionalCoordinate2D (details, "anchorPosition");
+    if (anchorPosition.HasValue ()) {
+        skylight.anchorPosition = anchorPosition.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, anchorPosition);
+        changed = true;
+    }
+
+    GS::UniString anchorPoint;
+    if (details.Get ("anchorPoint", anchorPoint)) {
+        bool found = false;
+        for (const auto& anchor : SkylightAnchorPoints) {
+            if (anchorPoint == anchor.first) {
+                skylight.anchorPoint = anchor.second;
+                found = true;
+            }
+        }
+        if (!found) {
+            return GS::UniString ("Invalid 'anchorPoint'.");
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, anchorPoint);
+        changed = true;
+    }
+
+    GS::UniString fixMode;
+    if (details.Get ("fixMode", fixMode)) {
+        bool found = false;
+        for (const auto& mode : SkylightFixModes) {
+            if (fixMode == mode.first) {
+                skylight.fixMode = mode.second;
+                found = true;
+            }
+        }
+        if (!found) {
+            return GS::UniString ("Invalid 'fixMode'.");
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, fixMode);
+        changed = true;
+    }
+
+    const auto width = GetOptionalDouble (details, "width");
+    if (width.HasValue ()) {
+        opening.width = width.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.width);
+        changed = true;
+    }
+    const auto height = GetOptionalDouble (details, "height");
+    if (height.HasValue ()) {
+        opening.height = height.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.height);
+        changed = true;
+    }
+    const auto azimuthAngle = GetOptionalDouble (details, "azimuthAngle");
+    if (azimuthAngle.HasValue ()) {
+        skylight.azimuthAngle = azimuthAngle.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, azimuthAngle);
+        changed = true;
+    }
+    const auto elevationAngle = GetOptionalDouble (details, "elevationAngle");
+    if (elevationAngle.HasValue ()) {
+        skylight.elevationAngle = elevationAngle.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, elevationAngle);
+        changed = true;
+    }
+
+    bool boolValue = false;
+    if (details.Get ("reflected", boolValue)) {
+        opening.reflected = boolValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.reflected);
+        changed = true;
+    }
+
+    GS::UniString displayOptionStr;
+    if (details.Get ("displayOption", displayOptionStr)) {
+        API_ElemDisplayOptionsID displayOption = API_Standard;
+        if (!ElemDisplayOptionFromString (displayOptionStr, displayOption)) {
+            return GS::UniString ("Invalid 'displayOption'.");
+        }
+        opening.displayOption = displayOption;
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.displayOption);
+        changed = true;
+    }
+
+    // Resolves every attribute before anything is masked, so an invalid reference leaves the
+    // mask of the attributes untouched.
+    struct AttributeField {
+        const char*         fieldName;
+        API_AttrTypeID      attributeType;
+        API_AttributeIndex& target;
+        bool                hasValue;
+        API_AttributeIndex  index;
+    };
+    AttributeField attributeFields[] = {
+        { "lineTypeId",          API_LinetypeID, opening.ltypeInd,          false, APIInvalidAttributeIndex },
+        { "cutLineTypeId",       API_LinetypeID, opening.cutLineType,       false, APIInvalidAttributeIndex },
+        { "sectionFillId",       API_FilltypeID, opening.sectFill,          false, APIInvalidAttributeIndex },
+        { "aboveViewLineTypeId", API_LinetypeID, opening.aboveViewLineType, false, APIInvalidAttributeIndex },
+        { "belowViewLineTypeId", API_LinetypeID, opening.belowViewLineType, false, APIInvalidAttributeIndex },
+        { "surfaceId",           API_MaterialID, opening.mat,               false, APIInvalidAttributeIndex }
+    };
+    for (AttributeField& field : attributeFields) {
+        GS::Optional<GS::UniString> attributeError = TryResolveAttributeField (details, field.fieldName, field.attributeType, field.hasValue, field.index);
+        if (attributeError.HasValue ()) {
+            return attributeError;
+        }
+    }
+    for (AttributeField& field : attributeFields) {
+        if (field.hasValue) {
+            field.target = field.index;
+            changed = true;
+        }
+    }
+    if (attributeFields[0].hasValue) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.ltypeInd);
+    }
+    if (attributeFields[1].hasValue) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.cutLineType);
+    }
+    if (attributeFields[2].hasValue) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.sectFill);
+    }
+    if (attributeFields[3].hasValue) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.aboveViewLineType);
+    }
+    if (attributeFields[4].hasValue) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.belowViewLineType);
+    }
+    if (attributeFields[5].hasValue) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.mat);
+    }
+
+    Int32 penValue = 0;
+    if (details.Get ("pen", penValue)) {
+        opening.pen = (short) penValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.pen);
+        changed = true;
+    }
+    if (details.Get ("sectionFillPen", penValue)) {
+        opening.sectFillPen = (short) penValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.sectFillPen);
+        changed = true;
+    }
+    if (details.Get ("sectionFillBackgroundPen", penValue)) {
+        opening.sectBGPen = (short) penValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.sectBGPen);
+        changed = true;
+    }
+    if (details.Get ("sectionContourPen", penValue)) {
+        opening.sectContPen = (short) penValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.sectContPen);
+        changed = true;
+    }
+    if (details.Get ("aboveViewLinePen", penValue)) {
+        opening.aboveViewLinePen = (short) penValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.aboveViewLinePen);
+        changed = true;
+    }
+    if (details.Get ("belowViewLinePen", penValue)) {
+        opening.belowViewLinePen = (short) penValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.belowViewLinePen);
+        changed = true;
+    }
+
+    if (details.Get ("useObjectPens", boolValue)) {
+        opening.useObjPens = boolValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.useObjPens);
+        changed = true;
+    }
+    if (details.Get ("useObjectLineTypes", boolValue)) {
+        opening.useObjLtypes = boolValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.useObjLtypes);
+        changed = true;
+    }
+    if (details.Get ("useObjectMaterials", boolValue)) {
+        opening.useObjMaterials = boolValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.useObjMaterials);
+        changed = true;
+    }
+    if (details.Get ("useObjectSectionAttributes", boolValue)) {
+        opening.useObjSectAttrs = boolValue;
+        ACAPI_ELEMENT_MASK_SET (mask, API_SkylightType, openingBase.useObjSectAttrs);
+        changed = true;
+    }
+    return {};
+}
+
+}
+
+// The GetDetailsOfElements branch of skylights: the keys ApplySkylightDetails writes, plus the
+// library part, the owner and the anchor level, which are only read. Declared in CommandBase.hpp.
+void AddSkylightDetails (const API_Element& elem, GS::ObjectState& typeSpecificDetails)
+{
+    const API_SkylightType& skylight = elem.skylight;
+    const API_OpeningBaseType& opening = skylight.openingBase;
+
+    typeSpecificDetails.Add ("anchorPosition", Create2DCoordinateObjectState (skylight.anchorPosition));
+    for (const auto& anchor : SkylightAnchorPoints) {
+        if (skylight.anchorPoint == anchor.second) {
+            typeSpecificDetails.Add ("anchorPoint", GS::UniString (anchor.first));
+        }
+    }
+    for (const auto& mode : SkylightFixModes) {
+        if (skylight.fixMode == mode.second) {
+            typeSpecificDetails.Add ("fixMode", GS::UniString (mode.first));
+        }
+    }
+    typeSpecificDetails.Add ("anchorLevel", skylight.anchorLevel);
+    typeSpecificDetails.Add ("width", opening.width);
+    typeSpecificDetails.Add ("height", opening.height);
+    typeSpecificDetails.Add ("azimuthAngle", skylight.azimuthAngle);
+    typeSpecificDetails.Add ("elevationAngle", skylight.elevationAngle);
+    typeSpecificDetails.Add ("reflected", opening.reflected);
+    typeSpecificDetails.Add ("displayOption", ElemDisplayOptionToString (opening.displayOption));
+    typeSpecificDetails.Add ("pen", (Int32) opening.pen);
+    if (opening.ltypeInd != APIInvalidAttributeIndex) {
+        typeSpecificDetails.Add ("lineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, opening.ltypeInd)));
+    }
+    if (opening.cutLineType != APIInvalidAttributeIndex) {
+        typeSpecificDetails.Add ("cutLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, opening.cutLineType)));
+    }
+    if (opening.sectFill != APIInvalidAttributeIndex) {
+        typeSpecificDetails.Add ("sectionFillId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_FilltypeID, opening.sectFill)));
+    }
+    typeSpecificDetails.Add ("sectionFillPen", (Int32) opening.sectFillPen);
+    typeSpecificDetails.Add ("sectionFillBackgroundPen", (Int32) opening.sectBGPen);
+    typeSpecificDetails.Add ("sectionContourPen", (Int32) opening.sectContPen);
+    typeSpecificDetails.Add ("aboveViewLinePen", (Int32) opening.aboveViewLinePen);
+    if (opening.aboveViewLineType != APIInvalidAttributeIndex) {
+        typeSpecificDetails.Add ("aboveViewLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, opening.aboveViewLineType)));
+    }
+    typeSpecificDetails.Add ("belowViewLinePen", (Int32) opening.belowViewLinePen);
+    if (opening.belowViewLineType != APIInvalidAttributeIndex) {
+        typeSpecificDetails.Add ("belowViewLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, opening.belowViewLineType)));
+    }
+    if (opening.mat != APIInvalidAttributeIndex) {
+        typeSpecificDetails.Add ("surfaceId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_MaterialID, opening.mat)));
+    }
+    typeSpecificDetails.Add ("useObjectPens", opening.useObjPens);
+    typeSpecificDetails.Add ("useObjectLineTypes", opening.useObjLtypes);
+    typeSpecificDetails.Add ("useObjectMaterials", opening.useObjMaterials);
+    typeSpecificDetails.Add ("useObjectSectionAttributes", opening.useObjSectAttrs);
 }
 
 // Reads a Morph's full body geometry (vertices/faces/holes/per-face material) plus its default
@@ -5448,7 +5741,7 @@ CreateSkylightsCommand::CreateSkylightsCommand () :
 
 GS::Optional<GS::UniString> CreateSkylightsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
     "type": "object",
     "properties": {
         "skylightsData": {
@@ -5456,7 +5749,7 @@ GS::Optional<GS::UniString> CreateSkylightsCommand::GetInputParametersSchema () 
             "description": "Array of data to create Skylights.",
             "items": {
                 "type": "object",
-                "description": "The parameters of the new Skylight.",
+                "description": "The parameters of the new Skylight. The settings not given are the Skylight tool defaults' or the favorite's.",
                 "properties": {
                     "favoriteName": {
                         "type": "string",
@@ -5470,29 +5763,10 @@ GS::Optional<GS::UniString> CreateSkylightsCommand::GetInputParametersSchema () 
                         "$ref": "#/ElementId",
                         "description": "The roof (single- or multi-plane) or shell the skylight is placed in."
                     },
-                    "anchorPosition": {
-                        "$ref": "#/Coordinate2D",
-                        "description": "Global XY coordinates of the skylight's anchor point. Passed to Archicad with the owner and Skylight tool defaults or favorite settings; automatic height and roof-plane selection have not yet been verified for this command."
-                    },
-                    "anchorPoint": {
-                        "type": "string",
-                        "enum": ["BottomCenter", "BottomLeft", "BottomRight", "TopCenter", "TopLeft", "TopRight"],
-                        "description": "Which point of the skylight anchorPosition places. The tool default's by default."
-                    },
-                    "width": {
-                        "type": "number",
-                        "exclusiveMinimum": 0.0,
-                        "description": "Optional width of the skylight. The tool default's by default."
-                    },
-                    "height": {
-                        "type": "number",
-                        "exclusiveMinimum": 0.0,
-                        "description": "Optional height of the skylight. The tool default's by default."
-                    },
                     "libraryPartName": {
                         "type": "string",
                         "description": "Optional localized name of a skylight library part to place instead of the tool default's."
-                    }
+                    },)") + SkylightDetailSchemaFields () + R"(
                 },
                 "additionalProperties": false,
                 "required": ["ownerId", "anchorPosition"]
@@ -5513,31 +5787,12 @@ GS::Optional<GS::ObjectState> CreateSkylightsCommand::SetTypeSpecificParameters 
     }
     element.skylight.owner = ownerGuid;
 
-    const auto anchorPosition = GetOptionalCoordinate2D (parameters, "anchorPosition");
-    if (anchorPosition.HasValue ()) {
-        element.skylight.anchorPosition = anchorPosition.Get ();
-    }
-
-    GS::UniString anchorPoint;
-    if (parameters.Get ("anchorPoint", anchorPoint)) {
-        static const std::pair<const char*, API_SkylightAnchorID> anchors[] = {
-            { "BottomCenter", APISkylightAnchor_BC }, { "BottomLeft", APISkylightAnchor_BL }, { "BottomRight", APISkylightAnchor_BR },
-            { "TopCenter", APISkylightAnchor_TC }, { "TopLeft", APISkylightAnchor_TL }, { "TopRight", APISkylightAnchor_TR }
-        };
-        for (const auto& anchor : anchors) {
-            if (anchorPoint == anchor.first) {
-                element.skylight.anchorPoint = anchor.second;
-            }
-        }
-    }
-
-    const auto width = GetOptionalDouble (parameters, "width");
-    if (width.HasValue ()) {
-        element.skylight.openingBase.width = width.Get ();
-    }
-    const auto height = GetOptionalDouble (parameters, "height");
-    if (height.HasValue ()) {
-        element.skylight.openingBase.height = height.Get ();
+    // The same keys ModifySkylights writes; the mask is not used by the create.
+    API_Element unusedMask = {};
+    bool detailsGiven = false;
+    const GS::Optional<GS::UniString> detailsError = ApplySkylightDetails (element, unusedMask, parameters, detailsGiven);
+    if (detailsError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, detailsError.Get ());
     }
 
     GS::UniString libraryPartName;
@@ -11144,6 +11399,89 @@ GS::ObjectState ModifyDoorsCommand::Execute (const GS::ObjectState& parameters, 
 
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
             results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify door."));
+        }
+    });
+}
+
+ModifySkylightsCommand::ModifySkylightsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ModifySkylightsCommand::GetName () const
+{
+    return "ModifySkylights";
+}
+
+GS::Optional<GS::UniString> ModifySkylightsCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            "skylightsWithDetails": {
+                "type": "array",
+                "description": "The skylights to modify, each with the settings to change. The settings not given stay as they are.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": { "$ref": "#/ElementId" },)") + SkylightDetailSchemaFields () + R"(
+                    },
+                    "additionalProperties": false,
+                    "required": ["elementId"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["skylightsWithDetails"]
+    })";
+}
+
+GS::Optional<GS::UniString> ModifySkylightsCommand::GetRawResponseSchema () const
+{
+    return ModifyWallsCommand ().GetRawResponseSchema ();
+}
+
+GS::ObjectState ModifySkylightsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    GS::Array<GS::ObjectState> items;
+    auto error = GetElementArray (parameters, "skylightsWithDetails", items);
+    if (error.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
+    }
+
+    return ExecuteModifyWithResults ("Modify Skylights", items, [&](GS::Array<GS::ObjectState>& results) {
+        for (const auto& item : items) {
+            if (item.Get ("elementId") == nullptr) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Missing required 'elementId' field."));
+                continue;
+            }
+            API_Element element = {};
+            element.header.guid = GetGuidFromObjectState (*item.Get ("elementId"));
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to load skylight."));
+                continue;
+            }
+            if (GetElemTypeId (element.header) != API_SkylightID) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADID, "The element is not a Skylight."));
+                continue;
+            }
+
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            bool changed = false;
+            const GS::Optional<GS::UniString> detailsError = ApplySkylightDetails (element, mask, item, changed);
+            if (detailsError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, detailsError.Get ()));
+                continue;
+            }
+            if (!changed) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No skylight fields to modify."));
+                continue;
+            }
+
+            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify skylight."));
         }
     });
 }
