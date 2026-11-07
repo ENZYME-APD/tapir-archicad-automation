@@ -1,28 +1,28 @@
 # Zones to Walls and Slabs
 
 For early design: draw the rooms as zones, select them and run the script, and it
-makes the walls around them. An edge two zones share becomes one internal
-partition; every other edge gets an external wall, placed outside the zone so the
-room keeps its area. It works story by story, on as many stories as you select
-zones on.
-
-This version makes the walls. The slabs (a floor slab under each story's zones,
-extended over the setbacks of the story below, and a roof slab) follow in the
-next version.
+makes the walls around them and the slabs under and over them. An edge two zones
+share becomes one internal partition; every other edge gets an external wall,
+placed outside the zone so the room keeps its area. Each story gets a floor slab,
+and the story above the highest zones a roof slab. It works story by story, on as
+many stories as you select zones on.
 
 ## How to use it
 
 1. Select the zones, in a plan or in 3D, on one or several stories.
 2. Run the script from the Tapir palette.
 3. Pick the layer and the thickness of the internal partitions and of the
-   external walls, and the gap tolerance (below).
-4. Press **Preview**. The window lists, per story, how many zones it read and
-   how many partitions and external walls it will make, and how high they will
-   be, and draws the walls of the story you select in the list. The zones are
-   highlighted in Archicad.
+   external walls, the slabs' layer and thickness or a Slab favorite, and the
+   gap tolerance (below). Untick **Slabs** to make walls only.
+4. Press **Preview**. The window lists, per story, how many zones it read, how
+   many partitions and external walls it will make and how high they will be,
+   and how many slabs, with their area. It draws the walls and the slab outlines
+   (dashed) of the story you select in the list. The zones are highlighted in
+   Archicad.
 5. Press **Create**. It asks before it creates anything, then makes all the
-   walls in one Undo step and reports how many it made on each story. The new
-   walls are highlighted in blue; **Clear highlight** removes the highlight.
+   walls in one Undo step and all the slabs in another, and reports how many it
+   made on each story. The new elements are highlighted in blue; **Clear
+   highlight** removes the highlight.
 
 ## Settings
 
@@ -32,7 +32,11 @@ next version.
 | Internal partitions: thickness | 0.10 m | Their thickness. The partition is centred on the shared edge (halfway between the two zones when they do not quite touch). |
 | External walls: layer | the Wall tool's default layer | The layer of the walls on the other edges. |
 | External walls: thickness | 0.30 m | Their thickness. The wall stands outside the zone, its inner face on the zone's edge. |
-| Gap tolerance | empty: the partition thickness | Zone edges no farther apart than this count as shared, since zones rarely touch exactly. Collinear walls no farther apart than this are merged. |
+| Slabs | on | Whether slabs are made. |
+| Slabs: layer | the Slab tool's default layer | The layer of the slabs, when no favorite is chosen. |
+| Slabs: thickness | 0.25 m | Their thickness, when no favorite is chosen (a Basic slab). |
+| Slab favorite | none | A Slab favorite of the project. Its settings (layer, structure, composite, thickness, surfaces) are used instead of the layer and thickness. |
+| Gap tolerance | empty: the partition thickness | Zone edges no farther apart than this count as shared, since zones rarely touch exactly, and the slab closes the gap between them. Collinear walls no farther apart than this are merged. |
 
 ## The rules
 
@@ -45,17 +49,36 @@ next version.
 - Heights: the walls run from their story's level up to the next story's level.
   On the top story of the project they are as high as the highest selected zone
   of that story.
+- Slabs: the slab of a story is the outline of the zones on that story together
+  with the zones on the story below. So:
+  - where the story is set back, its slab also covers the exposed part of the
+    story below (the terrace);
+  - where a zone reaches out past the story below (a cantilever), the story's
+    own slab covers it, and nothing more is made;
+  - the story above the highest zones gets the roof slab, the outline of the
+    zones below it. Above the top story of the project, the roof slab is placed
+    on the top story, at the top of its walls.
+- The top of each slab is at its story's level (its reference plane is the top).
+  Zones that touch, or are closer than the gap tolerance, give one slab; a
+  courtyard between zones becomes a hole in the slab.
 
 ## What it changes
 
-It creates Basic walls (one building material, the Wall tool's default) with the
-reference line in the middle; everything else comes from the Wall tool's
-defaults. It changes nothing that is already in the project: existing walls are
-not looked at, so running it twice makes the walls twice. It writes no files.
+It creates walls and slabs. The walls are Basic walls (one building material,
+the Wall tool's default) with the reference line in the middle. Without a
+favorite the slabs are Basic slabs of the thickness given; everything else comes
+from the tools' defaults. It changes nothing that is already in the project:
+existing walls and slabs are not looked at, so running it twice makes them twice.
+It writes no files.
 
 ## Limits
 
-- Curved zone edges get no wall; the preview counts them per story.
+- Curved zone edges get no wall; the preview counts them per story. The slabs
+  follow them as a straight edge.
+- The slabs follow the zones, not the outer face of the external walls, which
+  stand outside the zones.
+- Zones of two stories that nearly line up give a slab with a narrow step where
+  they differ.
 - Doors and windows are not made.
 - Zones farther apart than the gap tolerance each get their own external wall,
   which may overlap the other's.

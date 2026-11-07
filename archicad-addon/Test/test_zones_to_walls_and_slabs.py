@@ -143,6 +143,119 @@ class WallsTest (unittest.TestCase):
         self.assertIn (expected ('external', (4 + H, 4 + H), (6 - H, 4 + H)), walls)
 
 
+def ring_key (ring):
+    """ The ring's points rounded, counterclockwise, starting at the lowest point. """
+    points = [(round (p[0], 6) + 0.0, round (p[1], 6) + 0.0) for p in ring]
+    if script.signed_area (points) < 0:
+        points.reverse ()
+    first = points.index (min (points))
+    return tuple (points[first:] + points[:first])
+
+
+def polygon_key (polygon):
+    return (ring_key (polygon['outline']), tuple (sorted (ring_key (h) for h in polygon.get ('holes') or [])))
+
+
+def box (x0, y0, x1, y1):
+    return [(x0, y0), (x1, y0), (x1, y1), (x0, y1)]
+
+
+def slab (outline, holes = ()):
+    return polygon_key ({'outline': outline, 'holes': list (holes)})
+
+
+class SlabsTest (unittest.TestCase):
+
+    def plan (self, zones_by_floor, tolerance = PARTITION):
+        slabs = script.plan_slabs (zones_by_floor, tolerance)
+        return {floor: sorted (polygon_key (p) for p in polygons) for floor, polygons in slabs.items ()}
+
+    def test_two_rooms_side_by_side (self):
+        # one story: its floor slab and the roof above, both the union of the two rooms
+        zones = [rectangle (0, 0, 4, 3), rectangle (4, 0, 8, 3, clockwise = True)]
+        self.assertEqual (self.plan ({0: zones}), {0: [slab (box (0, 0, 8, 3))], 1: [slab (box (0, 0, 8, 3))]})
+
+    def test_rooms_with_a_small_gap (self):
+        # 5 cm apart, less than the tolerance: the gap is closed, one slab
+        zones = [rectangle (0, 0, 4, 3), rectangle (4.05, 0, 8, 3)]
+        self.assertEqual (self.plan ({0: zones})[0], [slab (box (0, 0, 8, 3))])
+
+    def test_rooms_farther_apart_than_the_tolerance (self):
+        zones = [rectangle (0, 0, 4, 3), rectangle (4.5, 0, 8, 3)]
+        self.assertEqual (self.plan ({0: zones})[0], sorted ([slab (box (0, 0, 4, 3)), slab (box (4.5, 0, 8, 3))]))
+
+    def test_l_of_three_rooms (self):
+        zones = [rectangle (0, 0, 4, 4), rectangle (4, 0, 8, 4), rectangle (0, 4, 4, 8)]
+        self.assertEqual (self.plan ({0: zones})[0], [slab ([(0, 0), (8, 0), (8, 4), (4, 4), (4, 8), (0, 8)])])
+
+    def test_setback (self):
+        # the upper story is set back on one side: its slab covers the whole lower footprint, the
+        # exposed strip included; the roof covers the upper story only
+        lower = [rectangle (0, 0, 4, 6), rectangle (4, 0, 8, 6)]
+        upper = [rectangle (0, 0, 8, 4)]
+        self.assertEqual (self.plan ({0: lower, 1: upper}), {
+            0: [slab (box (0, 0, 8, 6))],
+            1: [slab (box (0, 0, 8, 6))],
+            2: [slab (box (0, 0, 8, 4))],
+        })
+
+    def test_cantilever (self):
+        # the upper story reaches out past the lower one: its own slab covers it, nothing extra
+        self.assertEqual (self.plan ({0: [rectangle (0, 0, 4, 4)], 1: [rectangle (0, 0, 6, 4)]}), {
+            0: [slab (box (0, 0, 4, 4))],
+            1: [slab (box (0, 0, 6, 4))],
+            2: [slab (box (0, 0, 6, 4))],
+        })
+
+    def test_setback_and_cantilever (self):
+        # shifted sideways: the slab of story 1 is the union of both footprints
+        self.assertEqual (self.plan ({0: [rectangle (0, 0, 4, 4)], 1: [rectangle (2, 0, 6, 4)]})[1],
+                          [slab (box (0, 0, 6, 4))])
+
+    def test_courtyard (self):
+        # four rooms around a courtyard: one slab with a hole
+        zones = [rectangle (0, 0, 9, 3), rectangle (0, 6, 9, 9), rectangle (0, 3, 3, 6), rectangle (6, 3, 9, 6)]
+        self.assertEqual (self.plan ({0: zones})[0], [slab (box (0, 0, 9, 9), [box (3, 3, 6, 6)])])
+
+    def test_zone_with_a_hole (self):
+        zone = rectangle (0, 0, 10, 10)
+        zone['holes'] = [[(4, 4), (6, 4), (6, 6), (4, 6)]]
+        self.assertEqual (self.plan ({0: [zone]})[0], [slab (box (0, 0, 10, 10), [box (4, 4, 6, 6)])])
+
+    def test_rooms_touching_at_a_corner (self):
+        zones = [rectangle (0, 0, 2, 2), rectangle (2, 2, 4, 4)]
+        self.assertEqual (self.plan ({0: zones}, tolerance = 0.0)[0],
+                          sorted ([slab (box (0, 0, 2, 2)), slab (box (2, 2, 4, 4))]))
+
+    def test_story_without_zones_between (self):
+        # zones on stories 0 and 2 only: story 1 gets the roof of story 0, story 3 that of story 2
+        slabs = self.plan ({0: [rectangle (0, 0, 4, 4)], 2: [rectangle (0, 0, 2, 2)]})
+        self.assertEqual (slabs, {
+            0: [slab (box (0, 0, 4, 4))],
+            1: [slab (box (0, 0, 4, 4))],
+            2: [slab (box (0, 0, 2, 2))],
+            3: [slab (box (0, 0, 2, 2))],
+        })
+
+    def test_outlines_counterclockwise_and_holes_clockwise (self):
+        zone = rectangle (0, 0, 10, 10, clockwise = True)
+        zone['holes'] = [[(4, 4), (6, 4), (6, 6), (4, 6)]]
+        polygon = script.plan_slabs ({0: [zone]}, PARTITION)[0][0]
+        self.assertGreater (script.signed_area (polygon['outline']), 0)
+        self.assertLess (script.signed_area (polygon['holes'][0]), 0)
+        self.assertAlmostEqual (script.polygon_area (polygon), 96.0)
+
+    def test_slab_placement (self):
+        levels = {0: 0.0, 1: 3.2}
+        self.assertEqual (script.slab_placement (1, levels, [2.7]), (1, 3.2))
+        # above the top story of the project: on the top story, at the top of its walls
+        placement = script.slab_placement (2, levels, [2.7, 3.0])
+        self.assertEqual (placement[0], 1)
+        self.assertAlmostEqual (placement[1], 6.2)
+        self.assertIsNone (script.slab_placement (2, levels, [0.0]))
+        self.assertIsNone (script.slab_placement (5, levels, [3.0]))
+
+
 class HelpersTest (unittest.TestCase):
 
     def test_wall_height (self):
