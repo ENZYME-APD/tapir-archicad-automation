@@ -57,7 +57,7 @@
     'Archicad answers JSON commands on <code>http://127.0.0.1:19723</code> while a project is open (with several Archicads open, the next ones use 19724, 19725 and so on). Tapir\'s commands are called through Archicad\'s <code>API.ExecuteAddOnCommand</code> command, in the <code>TapirCommand</code> namespace. Python\'s standard library is enough; there are no packages to install.':
         'प्रोजेक्ट खुला रहने तक Archicad <code>http://127.0.0.1:19723</code> पर JSON कमांड का जवाब देता है (कई Archicad खुले हों तो अगले वाले 19724, 19725 इत्यादि इस्तेमाल करते हैं)। Tapir के कमांड Archicad के <code>API.ExecuteAddOnCommand</code> कमांड से, <code>TapirCommand</code> namespace में, बुलाए जाते हैं। Python की standard library काफ़ी है; कोई package इंस्टॉल नहीं करना है।',
     'Graphisoft\'s <a href="https://pypi.org/project/archicad/"><code>archicad</code> package</a> sends the same commands and finds the port by itself, if you prefer it. Put your script in a <a href="#marketplace">local folder</a> to run it from the Tapir palette.':
-        'चाहें तो Graphisoft का <a href="https://pypi.org/project/archicad/"><code>archicad</code> package</a> भी यही कमांड भेजता है और port ख़ुद ढूँढ लेता है। अपनी script को Tapir palette से चलाने के लिए उसे एक <a href="#marketplace">local folder</a> में रखें।',
+        'चाहें तो Graphisoft का <a href="https://pypi.org/project/archicad/"><code>archicad</code> पैकेज</a> भी यही कमांड भेजता है और port ख़ुद ढूँढ लेता है। अपनी script को Tapir palette से चलाने के लिए उसे एक <a href="#marketplace">लोकल फ़ोल्डर</a> में रखें।',
     '<a href="../archicad-addon/">All commands, with schemas and examples</a>':
         '<a href="../archicad-addon/">सभी कमांड, schemas और उदाहरणों के साथ</a>',
 

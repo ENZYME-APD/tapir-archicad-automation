@@ -3032,6 +3032,343 @@ GS::ObjectState GetMissingLibPartNamesCommand::Execute (const GS::ObjectState& p
     return response;
 }
 
+GetUnusedLibraryPartsCommand::GetUnusedLibraryPartsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetUnusedLibraryPartsCommand::GetName () const
+{
+    return "GetUnusedLibraryParts";
+}
+
+GS::Optional<GS::UniString> GetUnusedLibraryPartsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "filterByTypeId": {
+                "$ref": "#/LibraryPartType",
+                "description": "Optional. Only list the unused library parts of this type (the typeId of GetAvailableLibraryParts)."
+            },
+            "includeNotPlaceable": {
+                "type": "boolean",
+                "description": "Also list the library parts that cannot be placed (macros, pictures, property objects, list schemes and the like), which are never placed on their own. Default: false."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> GetUnusedLibraryPartsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "unusedLibraryParts": {
+                "type": "array",
+                "description": "The loaded library parts that no element of the project is placed from, in index order.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "guid": { "type": "string" },
+                        "index": { "type": "integer" },
+                        "documentName": { "type": "string" },
+                        "fileName": { "type": "string" },
+                        "typeId": { "$ref": "#/LibraryPartType" },
+                        "isPlaceable": { "type": "boolean" }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "guid",
+                        "index",
+                        "documentName",
+                        "fileName",
+                        "typeId",
+                        "isPlaceable"
+                    ]
+                }
+            },
+            "usedLibraryPartCount": {
+                "type": "integer",
+                "description": "The number of different loaded library parts that are placed in the project."
+            },
+            "scannedElementCount": {
+                "type": "integer",
+                "description": "The number of elements checked, in the floor plan and every view and layout database."
+            },
+            "complete": {
+                "type": "boolean",
+                "description": "False when a view or layout database or a library part could not be read (see warnings): then a listed library part may still be used."
+            },
+            "warnings": {
+                "type": "array",
+                "items": { "type": "string" }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "unusedLibraryParts",
+            "usedLibraryPartCount",
+            "scannedElementCount",
+            "complete",
+            "warnings"
+        ]
+    })";
+}
+
+// The library part the element itself is placed from, 0 when it has none: objects, lamps, windows, doors,
+// skylights, zone stamps, symbol labels, drawing titles and curtain wall parts.
+static Int32 GetPlacedLibIndOfElement (const API_Element& element)
+{
+    switch (GetElemTypeId (element.header)) {
+        case API_ObjectID:                return element.object.libInd;
+        case API_LampID:                  return element.lamp.libInd;
+        case API_WindowID:                return element.window.openingBase.libInd;
+        case API_DoorID:                  return element.door.openingBase.libInd;
+        case API_SkylightID:              return element.skylight.openingBase.libInd;
+        case API_ZoneID:                  return element.zone.libInd;
+        // u.symbol shares its storage with u.text, so libInd is only meaningful for a symbol label.
+        case API_LabelID:                 return element.label.labelClass == APILblClass_Symbol ? element.label.u.symbol.libInd : 0;
+        case API_DrawingID:               return element.drawing.title.libInd;
+        case API_CurtainWallFrameID:      return element.cwFrame.libInd;
+        case API_CurtainWallPanelID:      return element.cwPanel.libInd;
+        case API_CurtainWallJunctionID:   return element.cwJunction.libInd;
+        case API_CurtainWallAccessoryID:  return element.cwAccessory.libInd;
+        default:                          return 0;
+    }
+}
+
+// The marker elements of the element (openings, sections, elevations, details and worksheets): each is an object
+// element placed from the marker's library part.
+static void GetMarkerGuidsOfElement (const API_Element& element, GS::Array<API_Guid>& markerGuids)
+{
+    switch (GetElemTypeId (element.header)) {
+        case API_WindowID:      markerGuids.Push (element.window.openingBase.markGuid); break;
+        case API_DoorID:        markerGuids.Push (element.door.openingBase.markGuid); break;
+        case API_SkylightID:    markerGuids.Push (element.skylight.openingBase.markGuid); break;
+        case API_CutPlaneID:
+            markerGuids.Push (element.cutPlane.segment.begMarkerId);
+            markerGuids.Push (element.cutPlane.segment.midMarkerId);
+            markerGuids.Push (element.cutPlane.segment.endMarkerId);
+            break;
+        case API_ElevationID:
+            markerGuids.Push (element.elevation.segment.begMarkerId);
+            markerGuids.Push (element.elevation.segment.midMarkerId);
+            markerGuids.Push (element.elevation.segment.endMarkerId);
+            break;
+        case API_DetailID:      markerGuids.Push (element.detail.markId); break;
+        case API_WorksheetID:   markerGuids.Push (element.worksheet.markId); break;
+        default:                break;
+    }
+}
+
+static bool MayUseLibraryPart (API_ElemTypeID typeId)
+{
+    switch (typeId) {
+        case API_ObjectID:
+        case API_LampID:
+        case API_WindowID:
+        case API_DoorID:
+        case API_SkylightID:
+        case API_ZoneID:
+        case API_LabelID:
+        case API_DrawingID:
+        case API_CurtainWallFrameID:
+        case API_CurtainWallPanelID:
+        case API_CurtainWallJunctionID:
+        case API_CurtainWallAccessoryID:
+        case API_CutPlaneID:
+        case API_ElevationID:
+        case API_DetailID:
+        case API_WorksheetID:
+            return true;
+        default:
+            return false;
+    }
+}
+
+// The floor plan and the databases of every view and layout, which together hold every placed element.
+static void GetDatabasesOfPlacedElements (GS::Array<API_DatabaseInfo>& databases, GS::Array<GS::UniString>& warnings)
+{
+    API_DatabaseInfo floorPlan = {};
+    floorPlan.typeID = APIWind_FloorPlanID;
+    if (ACAPI_Window_GetDatabaseInfo (&floorPlan) == NoError) {
+        databases.Push (floorPlan);
+    } else {
+        warnings.Push ("The floor plan database could not be read.");
+    }
+
+    const struct {
+        API_WindowTypeID typeID;
+        const char*      name;
+    } databaseTypes[] = {
+        { APIWind_SectionID,           "section" },
+        { APIWind_ElevationID,         "elevation" },
+        { APIWind_InteriorElevationID, "interior elevation" },
+        { APIWind_DetailID,            "detail" },
+        { APIWind_WorksheetID,         "worksheet" },
+        { APIWind_DocumentFrom3DID,    "3D document" },
+        { APIWind_LayoutID,            "layout" },
+        { APIWind_MasterLayoutID,      "master layout" }
+    };
+    for (const auto& databaseType : databaseTypes) {
+        GS::Array<API_DatabaseUnId> databaseUnIds;
+        GSErrCode err = NoError;
+        switch (databaseType.typeID) {
+            case APIWind_SectionID:           err = ACAPI_Database_GetSectionDatabases (nullptr, &databaseUnIds); break;
+            case APIWind_ElevationID:         err = ACAPI_Database_GetElevationDatabases (nullptr, &databaseUnIds); break;
+            case APIWind_InteriorElevationID: err = ACAPI_Database_GetInteriorElevationDatabases (nullptr, &databaseUnIds); break;
+            case APIWind_DetailID:            err = ACAPI_Database_GetDetailDatabases (nullptr, &databaseUnIds); break;
+            case APIWind_WorksheetID:         err = ACAPI_Database_GetWorksheetDatabases (nullptr, &databaseUnIds); break;
+            case APIWind_DocumentFrom3DID:    err = ACAPI_Database_GetDocumentFrom3DDatabases (nullptr, &databaseUnIds); break;
+            case APIWind_LayoutID:            err = ACAPI_Database_GetLayoutDatabases (nullptr, &databaseUnIds); break;
+            case APIWind_MasterLayoutID:      err = ACAPI_Database_GetMasterLayoutDatabases (nullptr, &databaseUnIds); break;
+            default:                          break;
+        }
+        if (err != NoError) {
+            warnings.Push (GS::UniString::Printf ("The %s databases could not be listed (error %d).", databaseType.name, (int) err));
+            continue;
+        }
+        for (const API_DatabaseUnId& databaseUnId : databaseUnIds) {
+            API_DatabaseInfo database = {};
+            database.typeID = databaseType.typeID;
+            database.databaseUnId = databaseUnId;
+            if (ACAPI_Window_GetDatabaseInfo (&database) != NoError) {
+                warnings.Push (GS::UniString::Printf ("A %s database could not be read.", databaseType.name));
+                continue;
+            }
+            databases.Push (database);
+        }
+    }
+}
+
+GS::ObjectState GetUnusedLibraryPartsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_LibTypeID filterTypeId = API_ZombieLibID;
+    GS::UniString filterTypeIdStr;
+    if (parameters.Get ("filterByTypeId", filterTypeIdStr) && !LibPartTypeIdFromString (filterTypeIdStr, filterTypeId)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Library part type '" + filterTypeIdStr + "' cannot be filtered by.");
+    }
+    bool includeNotPlaceable = false;
+    parameters.Get ("includeNotPlaceable", includeNotPlaceable);
+
+    Int32 partCount = 0;
+    GSErrCode err = ACAPI_LibraryPart_GetNum (&partCount);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to enumerate library parts.");
+    }
+
+    API_DatabaseInfo startingDatabase = {};
+    err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the current database.");
+    }
+
+    GS::Array<GS::UniString> warnings;
+    GS::Array<API_DatabaseInfo> databases;
+    GetDatabasesOfPlacedElements (databases, warnings);
+
+    GS::HashSet<Int32> usedLibInds;
+    Int32 scannedElementCount = 0;
+    for (const API_DatabaseInfo& database : databases) {
+        API_DatabaseInfo current = database;
+        if (ACAPI_Database_ChangeCurrentDatabase (&current) != NoError) {
+            warnings.Push ("The view or layout database '" + GS::UniString (database.name) + "' could not be opened, so its elements were not checked.");
+            continue;
+        }
+        GS::Array<API_Guid> guids;
+        if (ACAPI_Element_GetElemList (API_ZombieElemID, &guids) != NoError) {
+            warnings.Push ("The elements of the database '" + GS::UniString (database.name) + "' could not be listed.");
+            continue;
+        }
+        for (const API_Guid& guid : guids) {
+            ++scannedElementCount;
+            API_Elem_Head head = {};
+            head.guid = guid;
+            if (ACAPI_Element_GetHeader (&head) != NoError || !MayUseLibraryPart (GetElemTypeId (head))) {
+                continue;
+            }
+            API_Element element = {};
+            element.header.guid = guid;
+            if (ACAPI_Element_Get (&element) != NoError) {
+                continue;
+            }
+            const Int32 libInd = GetPlacedLibIndOfElement (element);
+            if (libInd > 0) {
+                usedLibInds.Add (libInd);
+            }
+            GS::Array<API_Guid> markerGuids;
+            GetMarkerGuidsOfElement (element, markerGuids);
+            for (const API_Guid& markerGuid : markerGuids) {
+                if (markerGuid == APINULLGuid) {
+                    continue;
+                }
+                API_Element marker = {};
+                marker.header.guid = markerGuid;
+                if (ACAPI_Element_Get (&marker) == NoError) {
+                    const Int32 markerLibInd = GetPlacedLibIndOfElement (marker);
+                    if (markerLibInd > 0) {
+                        usedLibInds.Add (markerLibInd);
+                    }
+                }
+            }
+        }
+    }
+
+    err = ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        warnings.Push ("The database that was current before the command could not be made current again.");
+    }
+
+    GS::ObjectState response;
+    const auto& unusedAdder = response.AddList<GS::ObjectState> ("unusedLibraryParts");
+    Int32 usedLibraryPartCount = 0;
+    Int32 unreadCount = 0;
+    for (Int32 i = 1; i <= partCount; ++i) {
+        API_LibPart libPart = {};
+        libPart.index = i;
+        if (ACAPI_LibraryPart_Get (&libPart) != NoError) {
+            // libPart.location is not allocated on failure.
+            ++unreadCount;
+            continue;
+        }
+        const bool isPlaceable = libPart.isPlaceable;
+        const bool isMissing = libPart.missingDef;
+        GS::ObjectState entry;
+        entry.Add ("guid", GS::UnID (libPart.ownUnID).GetMainGuid ().ToUniString ());
+        entry.Add ("index", static_cast<Int32> (libPart.index));
+        entry.Add ("documentName", GS::UniString (libPart.docu_UName));
+        entry.Add ("fileName", GS::UniString (libPart.file_UName));
+        entry.Add ("typeId", LibPartTypeIdToString (libPart.typeID));
+        entry.Add ("isPlaceable", isPlaceable);
+        const API_LibTypeID typeId = libPart.typeID;
+        // ACAPI_LibraryPart_Get allocates libPart.location.
+        delete libPart.location;
+        libPart.location = nullptr;
+
+        if (usedLibInds.Contains (i)) {
+            ++usedLibraryPartCount;
+            continue;
+        }
+        if (isMissing || (!includeNotPlaceable && !isPlaceable) || (filterTypeId != API_ZombieLibID && typeId != filterTypeId)) {
+            continue;
+        }
+        unusedAdder (entry);
+    }
+    if (unreadCount > 0) {
+        warnings.Push (GS::UniString::Printf ("%d library parts could not be read, so they were not checked.", (int) unreadCount));
+    }
+
+    response.Add ("usedLibraryPartCount", usedLibraryPartCount);
+    response.Add ("scannedElementCount", scannedElementCount);
+    response.Add ("complete", warnings.IsEmpty ());
+    const auto& warningAdder = response.AddList<GS::UniString> ("warnings");
+    for (const GS::UniString& warning : warnings) {
+        warningAdder (warning);
+    }
+    return response;
+}
+
 #ifdef ServerMainVers_2800
 
 namespace {

@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" data-copy="Copy" data-copied="Copied">
+<html lang="en" data-copy="Copy" data-copied="Copied" data-i18n-pages="reference" data-i18n-partial>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Archicad API coverage - Tapir documentation</title>
-<meta name="description" content="Which parts of the Archicad API the Tapir add-on uses, kept up to date from every issue, pull request and push.">
+<title data-i18n>Archicad API coverage - Tapir documentation</title>
+<meta name="description" data-i18n-attrs="content" content="Which parts of the Archicad API the Tapir add-on uses, kept up to date from every issue, pull request and push.">
 <!-- link-preview: the preview of a link to this page shared on Discord, WhatsApp and the like -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Tapir">
@@ -51,19 +51,19 @@
 <!-- /site-header -->
 <div class="page-head">
     <div class="wrap">
-        <p class="crumb"><a href="../">Tapir</a> / <a href="../docs/">Docs</a> / API coverage</p>
-        <h1>Archicad API <em>coverage.</em></h1>
-        <p>What Tapir covers of Graphisoft's Archicad API, item by item.</p>
+        <p class="crumb" data-i18n><a href="../">Tapir</a> / <a href="../docs/">Docs</a> / API coverage</p>
+        <h1 data-i18n>Archicad API <em>coverage.</em></h1>
+        <p data-i18n>What Tapir covers of Graphisoft's Archicad API, item by item.</p>
     </div>
 </div>
 <div class="layout">
 <nav class="sidebar" id="sidebar" aria-label="Sections"></nav>
 <main id="main">
-<p class="muted">Which parts of the Archicad API (<span id="archicad-range">every supported Archicad version</span>: C functions with their older names and command ids, and the C++ API) the <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> uses, updated within minutes of every issue and push to main, and within the hour of every pull request. See also the <a href="../archicad-addon/">command reference</a>.</p>
+<p class="muted" data-i18n>Which parts of the Archicad API (<span id="archicad-range">every supported Archicad version</span>: C functions with their older names and command ids, and the C++ API) the <a href="https://github.com/ENZYME-APD/tapir-archicad-automation">Tapir Add-On</a> uses, updated within minutes of every issue and push to main, and within the hour of every pull request. See also the <a href="../archicad-addon/">command reference</a>.</p>
 
 <section aria-labelledby="overview-title" id="overview">
     <div class="sec-head ref">
-        <h2 id="overview-title">Overview</h2>
+        <h2 id="overview-title" data-i18n>Overview</h2>
     </div>
     <div class="hero">
         <div>
@@ -75,10 +75,10 @@
     <div class="bar large" id="overall-bar" role="img"></div>
     <div class="legend" id="legend"></div>
 
-    <h3 class="ref-sub" id="by-part">By part of the API</h3>
+    <h3 class="ref-sub" id="by-part" data-i18n>By part of the API</h3>
     <div class="scroll"><table id="parts"></table></div>
 
-    <h3 class="ref-sub" id="by-group">By group</h3>
+    <h3 class="ref-sub" id="by-group" data-i18n>By group</h3>
     <div class="table-actions">
         <span class="muted">Sort by</span>
         <div class="options" id="group-sort" role="group" aria-label="Sort groups by">
@@ -93,12 +93,15 @@
 </section>
 
 <div class="sec-head ref">
-    <h2 id="checklist">Checklist</h2>
+    <h2 id="checklist" data-i18n>Checklist</h2>
 </div>
 <div class="toolbar" id="toolbar">
     <button type="button" class="sections-button" id="sections-button" aria-controls="sidebar">☰ Sections</button>
     <input type="search" id="search" placeholder="Search, e.g. Category or MEP::Pipe" aria-label="Search the checklist">
-    <div class="chips" id="statuses" role="group" aria-label="Statuses to show"></div>
+    <div class="chip-filter">
+        <span class="chips-title" id="statuses-title">Show items that are:</span>
+        <div class="chips" id="statuses" role="group" aria-labelledby="statuses-title"></div>
+    </div>
     <span class="filter-status" id="filter-status" aria-live="polite"></span>
 </div>
 <div id="list"></div>
@@ -112,7 +115,7 @@
                 <span class="lab">Project</span>
                 <span class="proj">Tapir</span>
                 <p class="note">Open-source automation for Archicad. 100% free and open source (MIT). Maintained by Enzyme APD and the community.</p>
-                <p class="note">Contact: <span class="nowrap">contact@enzyme-apd.com</span></p>
+                <p class="note">Contact: <span class="nowrap">tapir@weareenzyme.com</span></p>
             </div>
             <div>
                 <span class="lab">Product</span>
@@ -131,6 +134,7 @@
                     <li><a href="../archicad-addon/">Commands</a></li>
                     <li><a href="../api-coverage/">API coverage</a></li>
                     <li><a href="../gh-coverage/">Grasshopper coverage</a></li>
+                    <li><a href="../limits/">API limits</a></li>
                 </ul>
             </div>
             <div>
@@ -276,6 +280,9 @@ function renderOverview () {
     const overall = bar (counts, true);
     overall.id = 'overall-bar';
     document.getElementById ('overall-bar').replaceWith (overall);
+    for (const chip of document.querySelectorAll ('#statuses .chip')) {
+        chip.querySelector ('.chip-count').textContent = (counts[chip.dataset.status] || 0).toLocaleString ();
+    }
     document.getElementById ('legend').replaceChildren (...STATUSES.map (([status, , label]) =>
         el ('span', {}, statusPill (status), label)));
 
@@ -470,11 +477,19 @@ function updateToolbarHeight () {
     document.documentElement.style.setProperty ('--toolbar-height', document.getElementById ('toolbar').offsetHeight + 'px');
 }
 
+// Runs callback once ../assets/site.js has translated the page (at once if it is not there).
+function afterTranslation (callback) {
+    if (window.TapirI18n) window.TapirI18n.ready (callback);
+    else if (document.readyState === 'loading') document.addEventListener ('DOMContentLoaded', () => afterTranslation (callback));
+    else callback ();
+}
+
 async function main () {
     const statuses = document.getElementById ('statuses');
     for (const [value, , label, cls] of STATUSES) {
-        const chip = el ('button', { type: 'button', class: 'chip', 'data-status': value, 'aria-pressed': String (value !== 'not applicable'), title: label, 'aria-label': label },
-            swatch (cls), el ('span', { class: 'chip-label', text: label }));
+        // The label shows at every width; renderOverview fills in the count.
+        const chip = el ('button', { type: 'button', class: 'chip', 'data-status': value, 'aria-pressed': String (value !== 'not applicable'), title: label },
+            swatch (cls), el ('span', { class: 'chip-label', text: label }), el ('span', { class: 'chip-count' }));
         chip.addEventListener ('click', () => { chip.setAttribute ('aria-pressed', String (chip.getAttribute ('aria-pressed') !== 'true')); render (); });
         statuses.append (chip);
     }
@@ -488,9 +503,12 @@ async function main () {
         document.getElementById ('hero-caption').textContent = 'The checklist could not be loaded. Reload the page in a minute.';
         return;
     }
-    // The versions come from the DevKits the checklist was generated from.
+    // The versions come from the DevKits the checklist was generated from. Filled in once the page is
+    // translated: the translation looks the intro up by its English HTML and replaces the span with it.
     const v = data.versions;
-    if (v.length) document.getElementById ('archicad-range').textContent = 'Archicad ' + v[0] + (v.length > 1 ? '–' + v[v.length - 1] : '');
+    if (v.length) afterTranslation (() => {
+        document.getElementById ('archicad-range').textContent = 'Archicad ' + v[0] + (v.length > 1 ? '–' + v[v.length - 1] : '');
+    });
     document.getElementById ('search').addEventListener ('input', render);
     for (const button of document.querySelectorAll ('#group-sort .option')) {
         button.addEventListener ('click', () => {

@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en" data-copy="Copy" data-copied="Copied">
+<html lang="en" data-copy="Copy" data-copied="Copied" data-i18n-pages="reference" data-i18n-partial>
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Tapir commands - Tapir documentation</title>
-    <meta name="description" content="Every JSON command of the Tapir add-on for Archicad, with its parameters, its response and an example.">
+    <title data-i18n>Tapir commands - Tapir documentation</title>
+    <meta name="description" data-i18n-attrs="content" content="Every JSON command of the Tapir add-on for Archicad, with its parameters, its response and an example.">
     <!-- link-preview: the preview of a link to this page shared on Discord, WhatsApp and the like -->
     <meta property="og:type" content="website">
     <meta property="og:site_name" content="Tapir">
@@ -65,9 +65,9 @@
 
     <div class="page-head">
         <div class="wrap">
-            <p class="crumb"><a href="../">Tapir</a> / <a href="../docs/">Docs</a> / Commands</p>
-            <h1>Tapir <em>commands.</em></h1>
-            <p>
+            <p class="crumb" data-i18n><a href="../">Tapir</a> / <a href="../docs/">Docs</a> / Commands</p>
+            <h1 data-i18n>Tapir <em>commands.</em></h1>
+            <p data-i18n>
                 The JSON commands the Tapir add-on registers in Archicad, in the <code>TapirCommand</code> namespace,
                 next to Graphisoft's official commands. Each command shows its parameters, its response and an example.
             </p>
@@ -78,21 +78,23 @@
     <nav class="sidebar" id="sidebar" aria-label="Sections"></nav>
     <main class="frame" id="main">
         <section class="intro">
-            <p>
+            <p data-i18n>
                 New to Tapir? <a href="../start/">Get started</a> shows how to install it and run a first script.
+                Looking for something no command does? <a href="../limits/">What the Archicad API can't do</a>
+                lists what Graphisoft's API does not offer, with what to do instead.
             </p>
 
             <div class="sec-head ref">
-                <h2 id="calling-a-command">Calling a <em>command.</em></h2>
+                <h2 id="calling-a-command" data-i18n>Calling a <em>command.</em></h2>
             </div>
-            <p>
+            <p data-i18n>
                 Archicad answers JSON commands on <code>http://127.0.0.1:19723</code> while a project is open (the next
                 Archicads opened use 19724, 19725 and so on). A Tapir command is sent through Archicad's
                 <code>API.ExecuteAddOnCommand</code> command.
             </p>
             <div class="call_examples">
                 <div class="call_example">
-                    <h3>Python standard library</h3>
+                    <h3 data-i18n>Python standard library</h3>
 <pre><code class="language-python">import json
 import urllib.request
 
@@ -115,7 +117,7 @@ def run_tapir_command(command, parameters=None):
 print(run_tapir_command('GetAddOnVersion'))</code></pre>
                 </div>
                 <div class="call_example">
-                    <h3>Graphisoft's <a href="https://pypi.org/project/archicad/"><code>archicad</code> package</a></h3>
+                    <h3 data-i18n>Graphisoft's <a href="https://pypi.org/project/archicad/"><code>archicad</code> package</a></h3>
 <pre><code class="language-python">from archicad import ACConnection
 
 conn = ACConnection.connect()
@@ -126,7 +128,7 @@ response = acc.ExecuteAddOnCommand(act.AddOnCommandId('TapirCommand', 'GetAddOnV
 print(response)</code></pre>
                 </div>
             </div>
-            <p>
+            <p data-i18n>
                 The examples of the commands below use <code>aclib</code>, the small helper in
                 <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/tree/main/archicad-addon/Examples">archicad-addon/Examples</a>
                 that sends commands the same way as the standard-library script.
@@ -142,7 +144,7 @@ print(response)</code></pre>
         </noscript>
 
         <div class="sec-head ref">
-            <h2 id="all-commands">All <em>commands.</em></h2>
+            <h2 id="all-commands" data-i18n>All <em>commands.</em></h2>
         </div>
 
         <div id="commands">
@@ -170,7 +172,7 @@ print(response)</code></pre>
                     <span class="lab">Project</span>
                     <span class="proj">Tapir</span>
                     <p class="note">Open-source automation for Archicad. 100% free and open source (MIT). Maintained by Enzyme APD and the community.</p>
-                    <p class="note">Contact: <span class="nowrap">contact@enzyme-apd.com</span></p>
+                    <p class="note">Contact: <span class="nowrap">tapir@weareenzyme.com</span></p>
                 </div>
                 <div>
                     <span class="lab">Product</span>
@@ -189,6 +191,7 @@ print(response)</code></pre>
                         <li><a href="../archicad-addon/">Commands</a></li>
                         <li><a href="../api-coverage/">API coverage</a></li>
                         <li><a href="../gh-coverage/">Grasshopper coverage</a></li>
+                        <li><a href="../limits/">API limits</a></li>
                     </ul>
                 </div>
                 <div>

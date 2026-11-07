@@ -21,6 +21,17 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+// Lists the Camera Sets of the project with their perspective Cameras (API_CamSetType,
+// API_CameraType); reading only, nothing is created or changed.
+class GetCamerasCommand : public CommandBase
+{
+public:
+    GetCamerasCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class Get3DStylesCommand : public CommandBase
 {
 public:
