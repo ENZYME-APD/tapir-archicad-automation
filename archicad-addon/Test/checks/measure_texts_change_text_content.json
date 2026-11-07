@@ -1,0 +1,189 @@
+{
+  "title": "MeasureTexts measures lines by font, height and style; ChangeTextContent replaces, inserts and deletes and keeps the run styles",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [ "Text" ],
+  "steps": [
+    {
+      "id": "a two-run text and a two-line text",
+      "command": "CreateTexts",
+      "params": {
+        "textsData": [
+          {
+            "coordinate": { "x": 960.0, "y": 960.0, "z": 0.0 },
+            "floorIndex": 0,
+            "style": { "fontName": "Arial", "height": 2.5, "bold": false, "italic": false, "underline": false },
+            "runs": [
+              { "text": "Hello ", "bold": false },
+              { "text": "world", "bold": true }
+            ]
+          },
+          {
+            "coordinate": { "x": 960.0, "y": 955.0, "z": 0.0 },
+            "floorIndex": 0,
+            "style": { "fontName": "Arial", "height": 2.5, "bold": false, "italic": false, "underline": false },
+            "text": "First\nSecond"
+          }
+        ]
+      },
+      "save": {
+        "t1": "elements[0].elementId.guid",
+        "t2": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "two-run text created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "two-line text created" }
+      ]
+    },
+    {
+      "id": "the texts as created",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${t1}" } },
+          { "elementId": { "guid": "${t2}" } }
+        ]
+      },
+      "save": {
+        "fontIdx": "detailsOfElements[0].details.style.fontIndex"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.text", "eq": "Hello world", "name": "two-run text content" },
+        { "path": "detailsOfElements[0].details.runs", "len": 2, "name": "two runs" },
+        { "path": "detailsOfElements[0].details.runs[0].bold", "eq": false, "name": "first run regular" },
+        { "path": "detailsOfElements[0].details.runs[1].bold", "eq": true, "name": "second run bold" },
+        { "path": "detailsOfElements[1].details.text", "contains": "Second", "name": "two-line text content" },
+        { "path": "detailsOfElements[1].details.style.lineCount", "eq": 2, "name": "two lines" }
+      ]
+    },
+    {
+      "id": "measure lines, heights, styles and a font given by index",
+      "command": "MeasureTexts",
+      "creates": false,
+      "params": {
+        "texts": [
+          { "text": "mm\nmmmm\n\nm", "fontName": "Arial", "height": 3.0, "bold": false, "italic": false, "underline": false, "slant": 1.5707963267948966, "inModelUnits": false },
+          { "text": "mmmm", "fontName": "Arial", "height": 6.0, "bold": false, "italic": false, "underline": false, "slant": 1.5707963267948966, "inModelUnits": false },
+          { "text": "mmmm", "fontName": "Arial", "height": 3.0, "bold": true, "italic": false, "underline": false, "slant": 1.5707963267948966, "inModelUnits": false },
+          { "text": "mmmm", "fontIndex": "${fontIdx}", "height": 3.0, "bold": false, "italic": false, "underline": false, "slant": 1.5707963267948966, "inModelUnits": false },
+          { "text": "mm\r\nmmmm", "fontName": "Arial", "height": 3.0, "bold": false, "italic": false, "underline": false, "slant": 1.5707963267948966, "inModelUnits": false }
+        ]
+      },
+      "save": {
+        "len0": "measurements[0].length",
+        "a0": "measurements[0].lineLengths[0]",
+        "a1": "measurements[0].lineLengths[1]",
+        "a3": "measurements[0].lineLengths[3]",
+        "big": "measurements[1].length",
+        "bold": "measurements[2].length",
+        "byIndex": "measurements[3].length",
+        "crlf1": "measurements[4].lineLengths[1]"
+      },
+      "expect": [
+        { "path": "measurements", "len": 5, "name": "one measurement per text" },
+        { "path": "measurements[0].lineLengths", "len": 4, "name": "one length per line" },
+        { "path": "measurements[0].lineLengths[2]", "eq": 0, "name": "empty line has length 0" },
+        { "path": "measurements[0].longestLineIndex", "eq": 1, "name": "longest line found" },
+        { "path": "measurements[0].length", "gt": 0, "name": "length measured" },
+        { "path": "measurements[0].capitalSizeFactor", "gt": 0, "name": "capital size factor given" },
+        { "expr": "${len0} - ${a1}", "approx": 0, "tol": 0.000001, "name": "length is the longest line's" },
+        { "expr": "${a1} - 2 * ${a0}", "approx": 0, "tol": 0.1, "name": "twice the characters, twice the length" },
+        { "expr": "${a1} - 4 * ${a3}", "approx": 0, "tol": 0.1, "name": "four times the characters, four times the length" },
+        { "expr": "${big} - 2 * ${a1}", "approx": 0, "tol": 0.2, "name": "twice the height, twice the length" },
+        { "expr": "${bold} - ${a1}", "gt": 0, "name": "bold is wider" },
+        { "expr": "${byIndex} - ${a1}", "approx": 0, "tol": 0.000001, "name": "the text's fontIndex measures as the name" },
+        { "path": "measurements[4].lineLengths", "len": 2, "name": "CRLF is one line end" },
+        { "expr": "${crlf1} - ${a1}", "approx": 0, "tol": 0.000001, "name": "the line after a CRLF measures as after a LF" }
+      ]
+    },
+    {
+      "id": "measure with a zero height and an unknown font",
+      "command": "MeasureTexts",
+      "creates": false,
+      "params": {
+        "texts": [
+          { "text": "mmmm", "fontName": "Arial", "height": 0.0 },
+          { "text": "mmmm", "fontName": "No Such Font Tapir 1929", "height": 3.0 },
+          { "text": "mmmm", "fontName": "Arial", "height": 3.0 }
+        ]
+      },
+      "expect": [
+        { "path": "measurements", "len": 3, "name": "one item per text" },
+        { "path": "measurements[0].error.code", "exists": true, "name": "zero height refused" },
+        { "path": "measurements[1].error.code", "exists": true, "name": "unknown font refused" },
+        { "path": "measurements[2].length", "gt": 0, "name": "the good text after them is measured" }
+      ]
+    },
+    {
+      "id": "replace, insert and delete in order, and replace in the first line",
+      "command": "ChangeTextContent",
+      "creates": false,
+      "params": {
+        "contentChanges": [
+          { "elementId": { "guid": "${t1}" }, "from": 6, "range": 5, "content": "Tapir" },
+          { "elementId": { "guid": "${t1}" }, "from": 0, "range": 0, "content": "Say " },
+          { "elementId": { "guid": "${t1}" }, "from": 3, "range": 6, "content": "" },
+          { "elementId": { "guid": "${t2}" }, "from": 0, "range": 5, "content": "Start" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 4, "name": "one result per change" },
+        { "path": "executionResults[0].success", "eq": true, "name": "replace" },
+        { "path": "executionResults[1].success", "eq": true, "name": "insert" },
+        { "path": "executionResults[2].success", "eq": true, "name": "delete" },
+        { "path": "executionResults[3].success", "eq": true, "name": "replace in the first line" }
+      ]
+    },
+    {
+      "id": "a line end in the content, a missing element, from past the end",
+      "command": "ChangeTextContent",
+      "creates": false,
+      "params": {
+        "contentChanges": [
+          { "elementId": { "guid": "${t2}" }, "from": 0, "range": 0, "content": "a\nb" },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "from": 0, "range": 0, "content": "x" },
+          { "elementId": { "guid": "${t1}" }, "from": 100, "range": 0, "content": "x" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per change" },
+        { "path": "executionResults[0].success", "eq": false, "name": "line end refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "missing element refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "from past the end refused" }
+      ]
+    },
+    {
+      "id": "the changed content, with the run styles kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${t1}" } },
+          { "elementId": { "guid": "${t2}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.text", "eq": "Say Tapir", "name": "replaced, inserted, deleted, nothing from the refused change" },
+        { "path": "detailsOfElements[0].details.runs", "len": 2, "name": "still two runs" },
+        { "path": "detailsOfElements[0].details.runs[0].text", "eq": "Say ", "name": "insertion joins the regular run" },
+        { "path": "detailsOfElements[0].details.runs[0].bold", "eq": false, "name": "first run still regular" },
+        { "path": "detailsOfElements[0].details.runs[1].text", "eq": "Tapir", "name": "replacement takes the bold run's place" },
+        { "path": "detailsOfElements[0].details.runs[1].bold", "eq": true, "name": "replacement is bold, like the character at from" },
+        { "path": "detailsOfElements[1].details.text", "contains": "Start", "name": "first line replaced" },
+        { "path": "detailsOfElements[1].details.text", "contains": "Second", "name": "second line kept" },
+        { "path": "detailsOfElements[1].details.style.lineCount", "eq": 2, "name": "still two lines, the refused line end not inserted" }
+      ]
+    },
+    {
+      "id": "no text was added",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": {
+        "elementType": "Text"
+      },
+      "expect": [
+        { "path": "elements", "len": 2 }
+      ]
+    }
+  ]
+}

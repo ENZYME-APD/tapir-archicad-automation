@@ -1,8 +1,12 @@
+using Grasshopper.Kernel;
 using System;
 using System.Collections.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
+    // Replaced by the Fills tool component (DocumentToolsComponents), which
+    // covers all of its inputs; hidden for one release so that saved
+    // definitions keep working, then removed.
     public class CreateHatchesComponent : CreateElementsComponentBase
     {
         public override string CommandName => "CreateHatches";
@@ -10,12 +14,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public CreateHatchesComponent()
             : base(
                 "CreateHatches",
+                "Replaced by the Fills component. " +
                 "Create 2D Hatch (Fill) elements based on the given parameters. " +
                 "Outline arcs and the zone special area percent can be given through the " +
                 "AdditionalSettings input (arcs, roomSpecial).",
                 GroupNames.ElementCreation)
         {
         }
+
+        public override GH_Exposure Exposure => GH_Exposure.hidden;
 
         protected override string ArrayKey => "hatchesData";
 

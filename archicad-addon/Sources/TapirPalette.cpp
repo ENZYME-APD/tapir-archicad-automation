@@ -29,21 +29,33 @@
 #pragma warning (push)
 #pragma warning (disable : 4995 4091)   // as in the DevKit's Win32ShellInterface.hpp
 #include <shellapi.h>
+#include <tlhelp32.h>
 #pragma warning (pop)
 #pragma comment (lib, "shell32.lib")
 #endif
 
 #if defined (macintosh)
 #include <sys/sysctl.h>
+#include <libproc.h>
+#include <signal.h>
 #include <unistd.h>
 #endif
 
 const GS::Guid        TapirPalette::paletteGuid("{2D42DF37-222F-40CD-BA86-B3279CCA1FEE}");
 GS::Ref<TapirPalette> TapirPalette::instance;
+std::atomic<bool>     TapirPalette::quitting (false);
+std::mutex                    TapirPalette::postedTasksMutex;
+std::vector<GS::RunnableTask> TapirPalette::postedTasks;
+std::vector<GS::RunnableTask> TapirPalette::finishedTasks;
 
 // True while UpdateAddOn runs. Archicad handles its events during the installer download, so the palette's
 // Run button and the shortcut slots must not start a script that the installer would then interrupt.
 static bool isUpdatingAddOn = false;
+
+// True while the palette is hidden by Archicad (APIPalMsg_HidePalette_Begin, e.g. on a tab switch or Hide All Palettes)
+// and was visible before. Only then does APIPalMsg_HidePalette_End show it again: a palette the user closed stays
+// closed (#1915). Showing or hiding it any other way clears it.
+static bool isHiddenByArchicad = false;
 
 // The script repositories are read from GitHub while Archicad starts, on the main thread. Without a timeout
 // a connection that GitHub accepts but never answers kept Archicad from starting or opening a project (#798).
@@ -448,13 +460,18 @@ TapirPalette::TapirPalette ()
     , addScriptButton (GetReference (), 5)
     , delScriptButton (GetReference (), 6)
     , manageShortcutsButton (GetReference (), 7)
+    , installedVersionText (GetReference (), 8)
+    , checkForUpdatesButton (GetReference (), 9)
 {
     Attach (*this);
     AttachToAllItems (*this);
 
     LoadScriptsToPopUp ();
 
+    installedVersionText.SetText (GS::UniString::Printf (
+        RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_INSTALLED_VERSION_TEXT, ACAPI_GetOwnResModule ()), ADDON_VERSION));
     SetRunButtonIcon ();
+    SetUpdateButtonText ();
 
     BeginEventProcessing ();
 }
@@ -478,14 +495,63 @@ TapirPalette& TapirPalette::Instance ()
     return *instance;
 }
 
+void TapirPalette::StopRunningScriptOnQuit ()
+{
+    if (!HasInstance ()) {
+        return;
+    }
+    // The output reader checks this before it touches the process or posts anything to the message loop: a task
+    // posted now would only run after the add-on has been unloaded.
+    quitting = true;
+    TapirPalette& palette = Instance ();
+    if (palette.IsProcessRunning ()) {
+        try {
+            palette.process.Kill ();
+        } catch (...) {
+        }
+    }
+    palette.executor.Wait (GS::Timeout (0, 0, 2));
+
+    // Output posted while Archicad was already closing is still queued, and the message loop does not run it any
+    // more: Archicad would destroy those tasks after this add-on is unloaded and crash in their destructors. Keep
+    // them alive on purpose (never freed), so that discarding them later does not call into the unloaded add-on.
+    std::lock_guard<std::mutex> lock (postedTasksMutex);
+    finishedTasks.clear ();
+    if (!postedTasks.empty ()) {
+        new std::vector<GS::RunnableTask> (std::move (postedTasks));
+        postedTasks.clear ();
+    }
+}
+
+void TapirPalette::KeepPostedTask (const GS::RunnableTask& task)
+{
+    std::lock_guard<std::mutex> lock (postedTasksMutex);
+    finishedTasks.clear ();
+    postedTasks.push_back (task);
+}
+
+void TapirPalette::ForgetPostedTask (const GS::Runnable* task)
+{
+    std::lock_guard<std::mutex> lock (postedTasksMutex);
+    for (auto it = postedTasks.begin (); it != postedTasks.end (); ++it) {
+        if (it->operator-> () == task) {
+            finishedTasks.push_back (*it);
+            postedTasks.erase (it);
+            return;
+        }
+    }
+}
+
 void TapirPalette::Show ()
 {
+    isHiddenByArchicad = false;
     DG::Palette::Show ();
     SetMenuItemCheckedState (true);
 }
 
 void TapirPalette::Hide ()
 {
+    isHiddenByArchicad = false;
     DG::Palette::Hide ();
     SetMenuItemCheckedState (false);
 }
@@ -560,7 +626,7 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
 {
     if (ev.GetSource () == &runScriptButton) {
         if (IsProcessRunning ()) {
-            process.Kill ();
+            KillRunningProcess ();
         } else {
             if (isUpdatingAddOn) {
                 return;
@@ -589,6 +655,8 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
         DeleteScriptFromPopUp ();
     } else if (ev.GetSource () == &manageShortcutsButton) {
         OpenShortcutsDialog ();
+    } else if (ev.GetSource () == &checkForUpdatesButton) {
+        CheckForUpdates ();
     }
 }
 
@@ -625,6 +693,56 @@ void TapirPalette::PopUpChanged (const DG::PopUpChangeEvent& ev)
 
         SaveScriptsToPreferences ();
         SetDeleteScriptButtonStatus ();
+    }
+}
+
+GS::UniString TapirPalette::GetScriptDescription (const ScriptInfo& info)
+{
+    GS::UniString badge;
+    if (info.ChangesModel ()) {
+        badge = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_BADGE_CHANGES_MODEL, ACAPI_GetOwnResModule ());
+    } else if (info.WritesFiles ()) {
+        badge = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_BADGE_WRITES_FILES, ACAPI_GetOwnResModule ());
+    } else if (info.IsReadOnly ()) {
+        badge = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_BADGE_READ_ONLY, ACAPI_GetOwnResModule ());
+    }
+
+    if (info.summary.IsEmpty ()) {
+        return badge;
+    }
+    if (badge.IsEmpty ()) {
+        return info.summary;
+    }
+    return info.summary + "\n" + badge;
+}
+
+// The selected script's summary and badge, on the script list and on the Run button (while no script runs, when
+// the button is Stop).
+void TapirPalette::ItemToolTipRequested (const DG::ItemHelpEvent& ev, GS::UniString* toolTipText)
+{
+    const bool isPopUp = ev.GetSource () == &scriptSelectionPopUp;
+    const bool isRunButton = ev.GetSource () == &runScriptButton;
+    if (toolTipText == nullptr || !(isPopUp || isRunButton) || (isRunButton && IsProcessRunning ())) {
+        return;
+    }
+
+    const short selectedItem = scriptSelectionPopUp.GetSelectedItem ();
+    if (selectedItem <= 0 || scriptSelectionPopUp.IsSeparator (selectedItem)) {
+        return;
+    }
+    GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (selectedItem));
+    if (popUpItemData == nullptr) {
+        return;
+    }
+
+    const GS::UniString description = GetScriptDescription (popUpItemData->info);
+    if (description.IsEmpty ()) {
+        return;
+    }
+    if (isRunButton) {
+        *toolTipText = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_RUN_SCRIPT, ACAPI_GetOwnResModule ()) + "\n" + description;
+    } else {
+        *toolTipText = description;
     }
 }
 
@@ -949,13 +1067,16 @@ GSErrCode TapirPalette::PaletteControlCallBack (Int32, API_PaletteMessageID mess
             break;
 
         case APIPalMsg_HidePalette_Begin:
-            if (HasInstance () && Instance ().IsVisible ())
+            if (HasInstance () && Instance ().IsVisible ()) {
                 Instance ().Hide ();
+                isHiddenByArchicad = true;
+            }
             break;
 
         case APIPalMsg_HidePalette_End:
-            if (HasInstance () && !Instance ().IsVisible ())
+            if (isHiddenByArchicad && HasInstance () && !Instance ().IsVisible ())
                 Instance ().Show ();
+            isHiddenByArchicad = false;
             break;
 
         case APIPalMsg_IsPaletteVisible:
@@ -980,6 +1101,247 @@ GSErrCode TapirPalette::RegisterPaletteControlCallBack ()
                     GSGuid2APIGuid (paletteGuid));
 }
 
+// ---- Stopping a script ----
+//
+// GS::Process::Kill ends only the process the palette started. For a Python script that is uv, and the Python
+// process(es) uv started kept running without a parent (issue #769): a script waiting for something, such as a
+// ShowScriptUI page, went on in the background, and a second run of it competed with it for the same Archicad.
+// So Stop ends the started process together with all of its descendants. GS::Process gives no process id: the
+// started process is found among the child processes of this Archicad that did not run before it was started,
+// by the file name of its executable, which is unambiguous because the palette runs one script at a time and the
+// Add-On waits for its other uv runs. A script that is not Python may run as its interpreter (a shell script as
+// bash, a .bat as cmd.exe), so when no file name matches, the first started of those child processes is taken.
+// A process id can be reused, so a process is taken as the child of another only when it started after it.
+
+#if defined (WINDOWS)
+using ProcessId = DWORD;
+#else
+using ProcessId = pid_t;
+#endif
+
+struct ProcessInfo {
+    ProcessId     id = 0;
+    ProcessId     parentId = 0;
+    GS::UInt64    startTime = 0;     // in platform units, only compared with each other
+    GS::UniString executableName;    // the file name without the folder
+};
+
+#if defined (WINDOWS)
+
+static ProcessId GetThisProcessId ()
+{
+    return GetCurrentProcessId ();
+}
+
+static GS::Array<ProcessInfo> ListProcesses ()
+{
+    GS::Array<ProcessInfo> processes;
+    const HANDLE snapshot = CreateToolhelp32Snapshot (TH32CS_SNAPPROCESS, 0);
+    if (snapshot == INVALID_HANDLE_VALUE) {
+        return processes;
+    }
+    PROCESSENTRY32W entry = {};
+    entry.dwSize = static_cast<DWORD> (sizeof (entry));
+    for (BOOL hasEntry = Process32FirstW (snapshot, &entry); hasEntry; hasEntry = Process32NextW (snapshot, &entry)) {
+        ProcessInfo info;
+        info.id = entry.th32ProcessID;
+        info.parentId = entry.th32ParentProcessID;
+        info.executableName = GS::UniString (reinterpret_cast<const GS::UniChar::Layout*> (entry.szExeFile), static_cast<USize> (wcslen (entry.szExeFile)));
+        const HANDLE processHandle = OpenProcess (PROCESS_QUERY_LIMITED_INFORMATION, FALSE, entry.th32ProcessID);
+        if (processHandle != nullptr) {
+            FILETIME creationTime = {}, exitTime = {}, kernelTime = {}, userTime = {};
+            if (GetProcessTimes (processHandle, &creationTime, &exitTime, &kernelTime, &userTime)) {
+                info.startTime = (static_cast<GS::UInt64> (creationTime.dwHighDateTime) << 32) | creationTime.dwLowDateTime;
+            }
+            CloseHandle (processHandle);
+        }
+        processes.Push (info);
+    }
+    CloseHandle (snapshot);
+    return processes;
+}
+
+static void KillProcess (ProcessId id)
+{
+    const HANDLE processHandle = OpenProcess (PROCESS_TERMINATE, FALSE, id);
+    if (processHandle != nullptr) {
+        TerminateProcess (processHandle, 1);
+        CloseHandle (processHandle);
+    }
+}
+
+// Windows file names are case-insensitive, and the command may name uv without its .exe extension
+static GS::UniString NormalizeExecutableName (const GS::UniString& name)
+{
+    constexpr USize extensionLength = 4;
+    if (name.GetLength () > extensionLength &&
+        GS::UniString (name.GetSubstring (name.GetLength () - extensionLength, extensionLength)).Compare (".exe", CaseInsensitive) == GS::UniString::Equal) {
+        return GS::UniString (name.GetSubstring (0, name.GetLength () - extensionLength));
+    }
+    return name;
+}
+
+static bool IsSameExecutableName (const GS::UniString& name1, const GS::UniString& name2)
+{
+    return NormalizeExecutableName (name1).Compare (NormalizeExecutableName (name2), CaseInsensitive) == GS::UniString::Equal;
+}
+
+#else
+
+static ProcessId GetThisProcessId ()
+{
+    return getpid ();
+}
+
+static GS::Array<ProcessInfo> ListProcesses ()
+{
+    GS::Array<ProcessInfo> processes;
+    int name[] = { CTL_KERN, KERN_PROC, KERN_PROC_ALL, 0 };
+    size_t size = 0;
+    if (sysctl (name, 4, nullptr, &size, nullptr, 0) != 0) {
+        return processes;
+    }
+    std::vector<kinfo_proc> entries (size / sizeof (kinfo_proc) + 32);   // room for processes started since the size was asked
+    size = entries.size () * sizeof (kinfo_proc);
+    if (sysctl (name, 4, entries.data (), &size, nullptr, 0) != 0) {
+        return processes;
+    }
+    entries.resize (size / sizeof (kinfo_proc));
+    for (const kinfo_proc& entry : entries) {
+        ProcessInfo info;
+        info.id = entry.kp_proc.p_pid;
+        info.parentId = entry.kp_eproc.e_ppid;
+        info.startTime = static_cast<GS::UInt64> (entry.kp_proc.p_starttime.tv_sec) * 1000000 + static_cast<GS::UInt64> (entry.kp_proc.p_starttime.tv_usec);
+        char path[PROC_PIDPATHINFO_MAXSIZE] = {};
+        const char* executableName = entry.kp_proc.p_comm;   // the name cut to 16 characters, for processes whose path cannot be read
+        if (proc_pidpath (entry.kp_proc.p_pid, path, sizeof (path)) > 0) {
+            const char* lastSlash = strrchr (path, '/');
+            executableName = lastSlash != nullptr ? lastSlash + 1 : path;
+        }
+        info.executableName = GS::UniString (executableName, static_cast<USize> (strlen (executableName)), CC_UTF8);
+        processes.Push (info);
+    }
+    return processes;
+}
+
+static void KillProcess (ProcessId id)
+{
+    kill (id, SIGKILL);
+}
+
+static bool IsSameExecutableName (const GS::UniString& name1, const GS::UniString& name2)
+{
+    return name1 == name2;
+}
+
+#endif
+
+// The file name of the command's executable: the command is an absolute path, or on Windows the bare "uv"
+static GS::UniString GetExecutableName (const GS::UniString& command)
+{
+    UIndex nameStart = 0;
+    for (UIndex i = 0; i < command.GetLength (); ++i) {
+        const GS::UniChar ch = command.GetChar (i);
+        if (ch == '/' || ch == '\\') {
+            nameStart = i + 1;
+        }
+    }
+    return GS::UniString (command.GetSubstring (nameStart, command.GetLength () - nameStart));
+}
+
+static bool IsChildOf (const ProcessInfo& process, const ProcessInfo& parent)
+{
+    return process.parentId == parent.id && process.id != parent.id && process.startTime >= parent.startTime;
+}
+
+static void CollectDescendants (const GS::Array<ProcessInfo>& processes, const ProcessInfo& parent, GS::Array<ProcessId>& descendants)
+{
+    for (const ProcessInfo& process : processes) {
+        if (IsChildOf (process, parent) && !descendants.Contains (process.id)) {
+            descendants.Push (process.id);
+            CollectDescendants (processes, process, descendants);
+        }
+    }
+}
+
+static const ProcessInfo* FindThisProcess (const GS::Array<ProcessInfo>& processes)
+{
+    for (const ProcessInfo& process : processes) {
+        if (process.id == GetThisProcessId ()) {
+            return &process;
+        }
+    }
+    return nullptr;
+}
+
+// The ids of the running processes this Archicad started
+static GS::Array<GS::UInt64> ListChildProcessIds ()
+{
+    GS::Array<GS::UInt64> childIds;
+    const GS::Array<ProcessInfo> processes = ListProcesses ();
+    const ProcessInfo* thisProcess = FindThisProcess (processes);
+    if (thisProcess == nullptr) {
+        return childIds;
+    }
+    for (const ProcessInfo& process : processes) {
+        if (IsChildOf (process, *thisProcess)) {
+            childIds.Push (static_cast<GS::UInt64> (process.id));
+        }
+    }
+    return childIds;
+}
+
+// The processes started by the process this Archicad started for the command, the processes those started, and
+// so on. Returns false when the started process is not found.
+static bool FindDescendantsOfStartedProcess (const GS::UniString& command, const GS::Array<GS::UInt64>& childIdsBeforeStart, GS::Array<ProcessId>& descendants)
+{
+    const GS::Array<ProcessInfo> processes = ListProcesses ();
+    const GS::UniString executableName = GetExecutableName (command);
+
+    const ProcessInfo* thisProcess = FindThisProcess (processes);
+    if (thisProcess == nullptr) {
+        return false;
+    }
+
+    const ProcessInfo* startedProcess = nullptr;   // the most recently started one, should there be more
+    const ProcessInfo* firstNewChild = nullptr;
+    for (const ProcessInfo& process : processes) {
+        if (!IsChildOf (process, *thisProcess) || childIdsBeforeStart.Contains (static_cast<GS::UInt64> (process.id))) {
+            continue;
+        }
+        if (IsSameExecutableName (process.executableName, executableName) &&
+            (startedProcess == nullptr || process.startTime > startedProcess->startTime)) {
+            startedProcess = &process;
+        }
+        if (firstNewChild == nullptr || process.startTime < firstNewChild->startTime) {
+            firstNewChild = &process;
+        }
+    }
+    if (startedProcess == nullptr) {
+        startedProcess = firstNewChild;
+    }
+    if (startedProcess == nullptr) {
+        return false;
+    }
+    CollectDescendants (processes, *startedProcess, descendants);
+    return true;
+}
+
+void TapirPalette::KillRunningProcess ()
+{
+    // Found before Kill: afterwards the descendants have no parent any more (macOS gives them to launchd), and
+    // the id of the ended process may be reused
+    GS::Array<ProcessId> descendants;
+    const bool found = FindDescendantsOfStartedProcess (runningCommand, childProcessIdsBeforeStart, descendants);
+    process.Kill ();
+    if (!found) {
+        WriteReport (DG_WARNING, "Could not find the processes the script started, they may keep running.");
+    }
+    for (const ProcessId descendant : descendants) {
+        KillProcess (descendant);
+    }
+}
+
 void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
 {
     GS::UniString filePath;
@@ -994,6 +1356,7 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
             IconUpdateTask () = default;
             virtual void Run ()
             {
+                ForgetPostedTask (this);
                 TapirPalette::Instance ().SetRunButtonIcon ();
             }
         };
@@ -1005,6 +1368,7 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
             {}
             virtual void Run ()
             {
+                ForgetPostedTask (this);
                 TapirPalette::Instance ().WriteReport (type, text);
             }
         };
@@ -1022,14 +1386,23 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
 #endif
 
             if (lowerContent.Contains ("error:") || lowerContent.Contains ("failed") || lowerContent.Contains ("traceback (most recent call last)")) {
-                GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_ERROR, stderrContent));
+                Post (new OutputUpdateTask (DG_ERROR, stderrContent));
                 return;
             }
             if (lowerContent.Contains ("warning:")) {
-                GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_WARNING, stderrContent));
+                Post (new OutputUpdateTask (DG_WARNING, stderrContent));
                 return;
             }
-            GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_INFORMATION, stderrContent));
+            Post (new OutputUpdateTask (DG_INFORMATION, stderrContent));
+        }
+
+        // A task posted while Archicad is closing would only run after the add-on has been unloaded.
+        static void Post (const GS::RunnableTask& task)
+        {
+            if (!quitting) {
+                KeepPostedTask (task);
+                GS::MessageLoopExecutor ().Execute (task);
+            }
         }
 
     public:
@@ -1055,24 +1428,30 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
 
             const GS::UniString stdOutput = ReadFromChannel (process.GetStandardOutputChannel ());
             if (!stdOutput.IsEmpty ()) {
-                GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_INFORMATION, stdOutput));
+                Post (new OutputUpdateTask (DG_INFORMATION, stdOutput));
             }
         }
         virtual void Run () override final
         {
-            GS::MessageLoopExecutor ().Execute (new IconUpdateTask ());
+            Post (new IconUpdateTask ());
 
             const GS::Timeout Timeout = {0, 0, 0, 10 /*ms*/};
             while (!process.WaitFor (Timeout)) {
+                if (quitting) {
+                    return;   // StopRunningScriptOnQuit kills the process and waits for this thread
+                }
                 ReadFromChannels ();
+            }
+            if (quitting) {
+                return;
             }
 
             const int exitCode = process.GetExitCode ();
             ReadFromChannels ();
             process = {}; // Reset the process to an invalid state
 
-            GS::MessageLoopExecutor ().Execute (new IconUpdateTask ());
-            GS::MessageLoopExecutor ().Execute (new OutputUpdateTask (DG_INFORMATION, "ExitCode: " + GS::ValueToUniString (exitCode)));
+            Post (new IconUpdateTask ());
+            Post (new OutputUpdateTask (DG_INFORMATION, "ExitCode: " + GS::ValueToUniString (exitCode)));
         }
     };
 
@@ -1090,7 +1469,14 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
             command = uvCommand;
             argv = {"run"};
             argv.Append (uvManager.GetPythonSelectionArgs ());
-            argv.Append ({"--script", filePath, "--port", GS::ValueToUniString (GetConnectionPort ())});
+            if (popUpItemData.uvProjectPath.IsEmpty ()) {
+                argv.Append ({"--script", filePath});
+            } else {
+                // uv ignores pyproject.toml with --script; --project runs the script in the configured project
+                // (a script with inline metadata still runs with its own dependencies).
+                argv.Append ({"--project", popUpItemData.uvProjectPath, filePath});
+            }
+            argv.Append ({"--port", GS::ValueToUniString (GetConnectionPort ())});
             if (popUpItemData.repo != nullptr && !popUpItemData.repo->token.IsEmpty ()) {
                 argv.Append ({"--token", popUpItemData.repo->token});
             }
@@ -1102,6 +1488,8 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
         constexpr bool redirectStandardOutput = true;
         constexpr bool redirectStandardInput = false;
         constexpr bool redirectStandardError = true;
+        runningCommand = command;
+        childProcessIdsBeforeStart = ListChildProcessIds ();
         {
 #if defined (WINDOWS)
             // Python writes to a pipe in the system code page unless told otherwise (cp932 on Japanese
@@ -1159,10 +1547,51 @@ bool TapirPalette::AddScriptToPopUp (GS::Ref<PopUpItemData> popUpData, short ind
     } else {
         popUpData->baseDisplayText = name.ToString ();
     }
+    popUpData->info = ReadScriptInfo (popUpData->fileLocation);
     scriptSelectionPopUp.SetItemText (index, popUpData->baseDisplayText);
     scriptSelectionPopUp.SetItemObjectData (index, popUpData);
 
     return true;
+}
+
+// The folder of the uv project configured as uvProject (a path relative to baseFolderLoc, with '/' or '\'
+// separators, "." for baseFolderLoc itself, optionally ending in pyproject.toml), or empty when none is
+// configured or the path leaves baseFolderLoc.
+static GS::UniString GetUvProjectPath (const IO::Location& baseFolderLoc, const GS::UniString& configuredUvProject)
+{
+    GS::UniString uvProject = configuredUvProject;
+    uvProject.Trim ();
+    if (uvProject.IsEmpty ()) {
+        return GS::EmptyUniString;
+    }
+
+    IO::Location projectLoc = baseFolderLoc;
+    GS::UniString lastName;
+    UIndex nameStart = 0;
+    for (UIndex i = 0; i <= uvProject.GetLength (); ++i) {
+        if (i < uvProject.GetLength () && uvProject[i] != '/' && uvProject[i] != '\\') {
+            continue;
+        }
+        GS::UniString name (uvProject.GetSubstring (nameStart, i - nameStart));
+        name.Trim ();
+        nameStart = i + 1;
+        if (name.IsEmpty () || name == ".") {
+            continue;
+        }
+        if (name == "..") {
+            ACAPI_WriteReport ("Tapir: uvProject must not leave the repository or folder, ignoring it: " + uvProject, false);
+            return GS::EmptyUniString;
+        }
+        projectLoc.AppendToLocal (IO::Name (name));
+        lastName = name;
+    }
+    if (lastName.Compare ("pyproject.toml", CaseInsensitive) == GS::UniString::Equal) {
+        projectLoc.DeleteLastLocalName ();
+    }
+
+    GS::UniString projectPath;
+    projectLoc.ToPath (&projectPath);
+    return projectPath;
 }
 
 void TapirPalette::AddScriptsFromRepositories ()
@@ -1182,6 +1611,11 @@ void TapirPalette::AddScriptsFromRepositories ()
         if (!repo.relativeLoc.IsEmpty ()) {
             repoFolderRelativeLoc.Append (IO::RelativeLocation (repo.relativeLoc));
         };
+        // Only the files below relativeLoc are downloaded (under their path in the repository), so the project is
+        // looked for below that folder.
+        IO::Location repoFolderLoc = tapirTempFolder;
+        repoFolderLoc.AppendToLocal (repoFolderRelativeLoc);
+        const GS::UniString uvProjectPath = GetUvProjectPath (repoFolderLoc, repo.uvProject);
         std::map<GS::UniString, GS::UniString> headers;
         if (!repo.token.IsEmpty ()) {
             headers.emplace ("Authorization", "Bearer " + repo.token);
@@ -1232,7 +1666,9 @@ void TapirPalette::AddScriptsFromRepositories ()
                 }
             }
             ACAPI_WriteReport ("Added to the popup: " + repoLoc, false);
-            AddScriptToPopUp (GS::NewRef<PopUpItemData> (fileLoc, kv.first, &repo), DG::PopUp::BottomItem);
+            GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (fileLoc, kv.first, &repo);
+            popUpItemData->uvProjectPath = uvProjectPath;
+            AddScriptToPopUp (popUpItemData, DG::PopUp::BottomItem);
         }
     }
 }
@@ -1279,6 +1715,8 @@ void TapirPalette::AddScriptsFromLocalFolders ()
             sourceName = folderLoc.GetLastLocalName (&folderName) == NoError ? folderName.ToString () : localFolder.path;
         }
 
+        const GS::UniString uvProjectPath = GetUvProjectPath (folderLoc, localFolder.uvProject);
+
         ACAPI_WriteReport ("Tapir is loading scripts from local folder: " + localFolder.path, false);
         std::map<GS::UniString, IO::Location> files;
         CollectFilesInFolder (folderLoc, GS::EmptyUniString, files);
@@ -1309,6 +1747,7 @@ void TapirPalette::AddScriptsFromLocalFolders ()
             ACAPI_WriteReport ("Added to the popup: " + kv.first + " (" + sourceName + ")", false);
             GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (kv.second);
             popUpItemData->sourceName = sourceName;
+            popUpItemData->uvProjectPath = uvProjectPath;
             AddScriptToPopUp (popUpItemData, DG::PopUp::BottomItem);
         }
     }
@@ -1376,6 +1815,65 @@ void TapirPalette::SetRunButtonIcon ()
         resId = ID_RUNWITHUPDATE_BUTTON_ICON;
     }
     runScriptButton.SetIcon (DG::Icon (ACAPI_GetOwnResModule (), resId));
+}
+
+void TapirPalette::SetUpdateButtonText ()
+{
+    if (VersionChecker::IsUsingLatestVersion ()) {
+        checkForUpdatesButton.SetText (RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_CHECK_BUTTON_TEXT, ACAPI_GetOwnResModule ()));
+    } else {
+        checkForUpdatesButton.SetText (GS::UniString::Printf (
+            RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_UPDATE_BUTTON_TEXT, ACAPI_GetOwnResModule ()),
+            VersionChecker::LatestVersion ().ToPrintf ()));
+    }
+}
+
+void TapirPalette::ApplyUpdateMenuItemState ()
+{
+    API_MenuItemRef itemRef = {};
+    itemRef.menuResID = ID_ADDON_MENU_FOR_UPDATE;
+    itemRef.itemIndex = ID_ADDON_MENU_UPDATE;
+
+    // The text from the resource ("Check for Updates...") stays until a newer version is found.
+    if (!VersionChecker::IsUsingLatestVersion ()) {
+        GS::UniString label = GS::UniString::Printf (
+            RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_UPDATE_MENU_TEXT, ACAPI_GetOwnResModule ()),
+            VersionChecker::LatestVersion ().ToPrintf ());
+        ACAPI_MenuItem_SetMenuItemText (&itemRef, nullptr, &label);
+    }
+
+    // Nothing disables this item on purpose: make sure it never shows greyed out.
+    // (Before Archicad 27 these calls are macros that end with a semicolon, so their result is not used.)
+    GSFlags itemFlags = {};
+    ACAPI_MenuItem_GetMenuItemFlags (&itemRef, &itemFlags);
+    if ((itemFlags & API_MenuItemDisabled) != 0) {
+        itemFlags &= ~API_MenuItemDisabled;
+        ACAPI_MenuItem_SetMenuItemFlags (&itemRef, &itemFlags);
+    }
+}
+
+void TapirPalette::CheckForUpdates ()
+{
+    if (!VersionChecker::IsCheckCompleted ()) {
+        DGAlert (DG_INFORMATION, "Tapir Update",
+            "Tapir is still checking GitHub for the latest release.",
+            "Please try again in a moment.",
+            "OK");
+    } else if (!VersionChecker::IsUsingLatestVersion ()) {
+        UpdateAddOn ();
+    } else if (VersionChecker::IsNewerVersionWithoutAddOn ()) {
+        DGAlert (DG_INFORMATION, "Tapir Update",
+            GS::UniString::Printf ("Tapir %T is available, but not yet for Archicad %d.",
+                VersionChecker::LatestVersion ().ToPrintf (), static_cast<int> (VersionChecker::ArchicadMainVersion ())),
+            GS::UniString::Printf ("You are using Tapir %s.", ADDON_VERSION),
+            "OK");
+    } else {
+        DGAlert (DG_INFORMATION,
+            RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_TITLE, ACAPI_GetOwnResModule ()),
+            GS::UniString::Printf (RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_TEXT, ACAPI_GetOwnResModule ()), ADDON_VERSION),
+            GS::EmptyUniString,
+            RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_BUTTON, ACAPI_GetOwnResModule ()));
+    }
 }
 
 #if defined (WINDOWS)

@@ -1,0 +1,293 @@
+{
+  "title": "Navigator items: GetNavigatorItemTree, GetNavigatorParentItems, MoveNavigatorItem, ReorderNavigatorItems, RenameNavigatorItem and DeleteNavigatorItems on View Map folders, and refuse bad input",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "View Map before",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": { "navigatorMapId": "PublicViewMap" },
+      "save": {
+        "viewRoot": "navigatorItemTree.navigatorItemId.guid",
+        "viewFirst": "navigatorItemTree.children[0].navigatorItem.navigatorItemId.guid"
+      }
+    },
+    {
+      "id": "folder",
+      "command": "CreateViewMapFolder",
+      "creates": false,
+      "params": { "folderName": "Tapir check folder" },
+      "save": { "folder": "navigatorItemId.guid" }
+    },
+    {
+      "id": "folder A in it",
+      "command": "CreateViewMapFolder",
+      "creates": false,
+      "params": { "folderName": "Tapir check A", "parentNavigatorItemId": { "guid": "${folder}" } },
+      "save": { "a": "navigatorItemId.guid" }
+    },
+    {
+      "id": "folder B in it",
+      "command": "CreateViewMapFolder",
+      "creates": false,
+      "params": { "folderName": "Tapir check B", "parentNavigatorItemId": { "guid": "${folder}" } },
+      "save": { "b": "navigatorItemId.guid" }
+    },
+    {
+      "id": "folder C in it",
+      "command": "CreateViewMapFolder",
+      "creates": false,
+      "params": { "folderName": "Tapir check C", "parentNavigatorItemId": { "guid": "${folder}" } },
+      "save": { "c": "navigatorItemId.guid" }
+    },
+    {
+      "id": "folder second in the View Map",
+      "command": "MoveNavigatorItem",
+      "creates": false,
+      "params": {
+        "navigatorItemIdToMove": { "guid": "${folder}" },
+        "parentNavigatorItemId": { "guid": "${viewRoot}" },
+        "previousNavigatorItemId": { "guid": "${viewFirst}" }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "the folder and its three folders",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": { "navigatorMapId": "PublicViewMap", "includeChildCount": true },
+      "expect": [
+        { "path": "navigatorItemTree.children[1].navigatorItem.name", "eq": "Tapir check folder", "name": "second item is the moved folder" },
+        { "path": "navigatorItemTree.children[1].navigatorItem.type", "eq": "FolderItem" },
+        { "path": "navigatorItemTree.children[1].navigatorItem.childCount", "eq": 3, "name": "childCount" },
+        { "path": "navigatorItemTree.children[1].navigatorItem.children", "len": 3, "name": "three children" }
+      ]
+    },
+    {
+      "id": "reorder to C, A, B",
+      "command": "ReorderNavigatorItems",
+      "creates": false,
+      "params": {
+        "parentNavigatorItemId": { "guid": "${folder}" },
+        "orderedNavigatorItemIds": [
+          { "navigatorItemId": { "guid": "${c}" } },
+          { "navigatorItemId": { "guid": "${a}" } },
+          { "navigatorItemId": { "guid": "${b}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[1].success", "eq": true },
+        { "path": "executionResults[2].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the order C, A, B",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": { "navigatorMapId": "PublicViewMap" },
+      "expect": [
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.name", "eq": "Tapir check C" },
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[1].navigatorItem.name", "eq": "Tapir check A" },
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[2].navigatorItem.name", "eq": "Tapir check B" }
+      ]
+    },
+    {
+      "id": "[reorder without one of the children]",
+      "command": "ReorderNavigatorItems",
+      "creates": false,
+      "params": {
+        "parentNavigatorItemId": { "guid": "${folder}" },
+        "orderedNavigatorItemIds": [
+          { "navigatorItemId": { "guid": "${b}" } },
+          { "navigatorItemId": { "guid": "${a}" } }
+        ]
+      },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "refused" }
+      ]
+    },
+    {
+      "id": "order unchanged by the refused reorder",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": { "navigatorMapId": "PublicViewMap" },
+      "expect": [
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.name", "eq": "Tapir check C" },
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[1].navigatorItem.name", "eq": "Tapir check A" },
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[2].navigatorItem.name", "eq": "Tapir check B" }
+      ]
+    },
+    {
+      "id": "move A after B, within its folder",
+      "command": "MoveNavigatorItem",
+      "creates": false,
+      "params": {
+        "navigatorItemIdToMove": { "guid": "${a}" },
+        "parentNavigatorItemId": { "guid": "${folder}" },
+        "previousNavigatorItemId": { "guid": "${b}" }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "move C into B",
+      "command": "MoveNavigatorItem",
+      "creates": false,
+      "params": {
+        "navigatorItemIdToMove": { "guid": "${c}" },
+        "parentNavigatorItemId": { "guid": "${b}" }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read B (with C in it), then A",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": { "navigatorMapId": "PublicViewMap", "includeChildCount": true },
+      "expect": [
+        { "path": "navigatorItemTree.children[1].navigatorItem.childCount", "eq": 2 },
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.name", "eq": "Tapir check B" },
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.childCount", "eq": 1 },
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.children[0].navigatorItem.name", "eq": "Tapir check C" },
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[1].navigatorItem.name", "eq": "Tapir check A" }
+      ]
+    },
+    {
+      "id": "[parents of C, A and of the View Map root]",
+      "command": "GetNavigatorParentItems",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [
+          { "navigatorItemId": { "guid": "${c}" } },
+          { "navigatorItemId": { "guid": "${a}" } },
+          { "navigatorItemId": { "guid": "${viewRoot}" } }
+        ]
+      },
+      "expect": [
+        { "path": "parentItems", "len": 3, "name": "one result per item" },
+        { "path": "parentItems[0].name", "eq": "Tapir check B" },
+        { "path": "parentItems[0].type", "eq": "FolderItem" },
+        { "path": "parentItems[1].name", "eq": "Tapir check folder" },
+        { "path": "parentItems[2].error", "exists": true, "name": "the root has no parent" }
+      ]
+    },
+    {
+      "id": "[move A after an item of another folder]",
+      "command": "MoveNavigatorItem",
+      "creates": false,
+      "params": {
+        "navigatorItemIdToMove": { "guid": "${a}" },
+        "parentNavigatorItemId": { "guid": "${folder}" },
+        "previousNavigatorItemId": { "guid": "${c}" }
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "A stayed in the folder",
+      "command": "GetNavigatorParentItems",
+      "creates": false,
+      "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${a}" } } ] },
+      "expect": [
+        { "path": "parentItems[0].name", "eq": "Tapir check folder" }
+      ]
+    },
+    {
+      "id": "rename B",
+      "command": "RenameNavigatorItem",
+      "creates": false,
+      "params": { "navigatorItemId": { "guid": "${b}" }, "newName": "Tapir check B renamed" },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "the parent of C has the new name",
+      "command": "GetNavigatorParentItems",
+      "creates": false,
+      "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${c}" } } ] },
+      "expect": [
+        { "path": "parentItems[0].name", "eq": "Tapir check B renamed" }
+      ]
+    },
+    {
+      "id": "[rename an item that does not exist]",
+      "command": "RenameNavigatorItem",
+      "creates": false,
+      "params": { "navigatorItemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "newName": "Tapir check nothing" },
+      "expect": [
+        { "path": "success", "eq": false, "name": "failed" }
+      ]
+    },
+    {
+      "id": "[dry run: the folder that is not empty, folder A]",
+      "command": "DeleteNavigatorItems",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [
+          { "navigatorItemId": { "guid": "${folder}" } },
+          { "navigatorItemId": { "guid": "${a}" } }
+        ],
+        "dryRun": true
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "folder with items: refused" },
+        { "path": "executionResults[1].success", "eq": true, "name": "empty folder: would be deleted" }
+      ]
+    },
+    {
+      "id": "the dry run deleted nothing",
+      "command": "GetNavigatorParentItems",
+      "creates": false,
+      "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${a}" } } ] },
+      "expect": [
+        { "path": "parentItems[0].name", "eq": "Tapir check folder", "name": "A is still there" }
+      ]
+    },
+    {
+      "id": "[delete C, A, B, the folder, and an item that does not exist]",
+      "command": "DeleteNavigatorItems",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [
+          { "navigatorItemId": { "guid": "${c}" } },
+          { "navigatorItemId": { "guid": "${a}" } },
+          { "navigatorItemId": { "guid": "${b}" } },
+          { "navigatorItemId": { "guid": "${folder}" } },
+          { "navigatorItemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 5, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "C" },
+        { "path": "executionResults[1].success", "eq": true, "name": "A" },
+        { "path": "executionResults[2].success", "eq": true, "name": "B, empty now" },
+        { "path": "executionResults[3].success", "eq": true, "name": "folder, empty now" },
+        { "path": "executionResults[4].success", "eq": false, "name": "nonexistent item: failed" }
+      ]
+    },
+    {
+      "id": "the folder is gone",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": { "navigatorMapId": "PublicViewMap" },
+      "expect": [
+        { "path": "navigatorItemTree.children[1].navigatorItem.name", "ne": "Tapir check folder" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${c}" } } ] } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${a}" } } ] } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${b}" } } ] } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${folder}" } } ] } }
+  ]
+}

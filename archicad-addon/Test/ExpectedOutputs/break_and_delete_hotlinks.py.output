@@ -1,0 +1,8 @@
+Command: GetHotlinks
+Parameters:
+{}
+Response:
+{
+    "hotlinks": []
+}
+Set TAPIR_HOTLINK_SOURCE to a .mod or .pln to see BreakHotlinkNodes and DeleteHotlinkNodes on a node created from it.

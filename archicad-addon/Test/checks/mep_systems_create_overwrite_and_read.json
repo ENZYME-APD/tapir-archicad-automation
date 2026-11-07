@@ -1,0 +1,195 @@
+{
+  "title": "CreateMEPSystems creates an MEP System with its domain, pens, fill, center line type and surfaces, overwrites only the given fields by attributeId, and refuses a name in use without overwriteExisting; GetMEPSystems reads them back",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "a fill",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Fill" },
+      "save": { "fill": "attributes[1].attributeId.guid", "fillIndex": "attributes[1].index" }
+    },
+    {
+      "id": "a line type",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Line" },
+      "save": { "line": "attributes[1].attributeId.guid", "lineIndex": "attributes[1].index" }
+    },
+    {
+      "id": "two surfaces",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Surface" },
+      "save": {
+        "surface": "attributes[1].attributeId.guid",
+        "surfaceIndex": "attributes[1].index",
+        "insulationSurface": "attributes[2].attributeId.guid",
+        "insulationSurfaceIndex": "attributes[2].index"
+      }
+    },
+    {
+      "id": "create",
+      "command": "CreateMEPSystems",
+      "creates": false,
+      "params": {
+        "mepSystemDataArray": [
+          {
+            "name": "Tapir Check Piping System",
+            "domain": "Piping",
+            "contourPen": 5,
+            "fillPen": 6,
+            "fillBackgroundPen": 0,
+            "centerLinePen": 7,
+            "fillId": { "attributeId": { "guid": "${fill}" } },
+            "centerLineTypeId": { "attributeId": { "guid": "${line}" } },
+            "materialId": { "attributeId": { "guid": "${surface}" } },
+            "insulationMaterialId": { "attributeId": { "guid": "${insulationSurface}" } }
+          }
+        ],
+        "overwriteExisting": false
+      },
+      "save": { "sys": "attributeIds[0].attributeId.guid" },
+      "expect": [
+        { "path": "attributeIds[0].attributeId.guid", "exists": true, "name": "created" }
+      ]
+    },
+    {
+      "id": "read it",
+      "command": "GetMEPSystems",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${sys}" } } ] },
+      "expect": [
+        { "path": "mepSystems[0].name", "eq": "Tapir Check Piping System" },
+        { "path": "mepSystems[0].domain", "eq": [ "Piping" ] },
+        { "path": "mepSystems[0].contourPen", "eq": 5 },
+        { "path": "mepSystems[0].fillPen", "eq": 6 },
+        { "path": "mepSystems[0].fillBackgroundPen", "eq": 0 },
+        { "path": "mepSystems[0].centerLinePen", "eq": 7 },
+        { "path": "mepSystems[0].fillId.attributeId.guid", "exists": true, "name": "fill set" },
+        { "path": "mepSystems[0].centerLineTypeId.attributeId.guid", "exists": true, "name": "center line type set" },
+        { "path": "mepSystems[0].materialId.attributeId.guid", "exists": true, "name": "surface set" },
+        { "path": "mepSystems[0].insulationMaterialId.attributeId.guid", "exists": true, "name": "insulation surface set" }
+      ]
+    },
+    {
+      "id": "overwrite the name and the contour pen by attributeId",
+      "command": "CreateMEPSystems",
+      "creates": false,
+      "params": {
+        "mepSystemDataArray": [
+          {
+            "attributeId": { "guid": "${sys}" },
+            "name": "Tapir Check Piping System 2",
+            "contourPen": 8
+          }
+        ],
+        "overwriteExisting": true
+      },
+      "expect": [
+        { "path": "attributeIds[0].attributeId.guid", "exists": true, "name": "overwritten" }
+      ]
+    },
+    {
+      "id": "read it again",
+      "command": "GetMEPSystems",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${sys}" } } ] },
+      "expect": [
+        { "path": "mepSystems[0].name", "eq": "Tapir Check Piping System 2", "name": "renamed" },
+        { "path": "mepSystems[0].contourPen", "eq": 8, "name": "new contour pen" },
+        { "path": "mepSystems[0].fillPen", "eq": 6, "name": "fill pen kept" },
+        { "path": "mepSystems[0].centerLinePen", "eq": 7, "name": "center line pen kept" },
+        { "path": "mepSystems[0].domain", "eq": [ "Piping" ], "name": "domain kept" },
+        { "path": "mepSystems[0].fillId.attributeId.guid", "exists": true, "name": "fill kept" }
+      ]
+    },
+    {
+      "id": "the name in use, without overwriteExisting",
+      "command": "CreateMEPSystems",
+      "creates": false,
+      "params": {
+        "mepSystemDataArray": [
+          { "name": "Tapir Check Piping System 2", "domain": "Piping", "contourPen": 9 }
+        ]
+      },
+      "expect": [
+        { "path": "attributeIds[0].error", "exists": true, "name": "refused" },
+        { "path": "attributeIds[0].attributeId", "exists": false, "name": "nothing created" }
+      ]
+    },
+    {
+      "id": "not changed by the refused call",
+      "command": "GetMEPSystems",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${sys}" } } ] },
+      "expect": [
+        { "path": "mepSystems[0].contourPen", "eq": 8, "name": "contour pen kept" }
+      ]
+    },
+    {
+      "id": "a nonexistent MEP System",
+      "command": "GetMEPSystems",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } ] },
+      "expect": [
+        { "path": "mepSystems[0].error", "exists": true, "name": "an error item" }
+      ]
+    },
+    {
+      "id": "its fill, center line type and surfaces",
+      "command": "GetMEPSystems",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${sys}" } } ] },
+      "save": {
+        "readFill": "mepSystems[0].fillId.attributeId.guid",
+        "readLine": "mepSystems[0].centerLineTypeId.attributeId.guid",
+        "readSurface": "mepSystems[0].materialId.attributeId.guid",
+        "readInsulationSurface": "mepSystems[0].insulationMaterialId.attributeId.guid"
+      }
+    },
+    {
+      "id": "the fill it has",
+      "command": "GetFills",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${readFill}" } } ], "fields": [ "subType" ] },
+      "save": { "readFillIndex": "fills[0].index" },
+      "expect": [
+        { "expr": "${readFillIndex} - ${fillIndex}", "eq": 0, "name": "the given fill" }
+      ]
+    },
+    {
+      "id": "the center line type it has",
+      "command": "GetLines",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${readLine}" } } ], "fields": [ "lineType" ] },
+      "save": { "readLineIndex": "lines[0].index" },
+      "expect": [
+        { "expr": "${readLineIndex} - ${lineIndex}", "eq": 0, "name": "the given center line type" }
+      ]
+    },
+    {
+      "id": "the surfaces it has",
+      "command": "GetSurfaces",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${readSurface}" } },
+          { "attributeId": { "guid": "${readInsulationSurface}" } }
+        ],
+        "fields": [ "materialType" ]
+      },
+      "save": { "readSurfaceIndex": "surfaces[0].index", "readInsulationSurfaceIndex": "surfaces[1].index" },
+      "expect": [
+        { "expr": "${readSurfaceIndex} - ${surfaceIndex}", "eq": 0, "name": "the given surface" },
+        { "expr": "${readInsulationSurfaceIndex} - ${insulationSurfaceIndex}", "eq": 0, "name": "the given insulation surface" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "MEPSystem", "attributeId": { "attributeId": { "guid": "${sys}" } } } ] }
+    }
+  ]
+}

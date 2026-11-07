@@ -1,0 +1,278 @@
+{
+  "title": "Layers and layer combinations: CreateLayers, GetLayers, CreateLayerCombinations, GetLayerCombinations, ActivateLayerCombination, GetCurrentLayerCombination",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "create layer A",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "name": "Tapir check layer A", "isHidden": false, "isLocked": false, "isWireframe": true, "intersectionGroupNr": 7 }
+        ],
+        "overwriteExisting": false
+      },
+      "save": { "layerA": "attributeIds[0].attributeId.guid" },
+      "expect": [
+        { "path": "attributeIds", "len": 1, "name": "one id per layer" }
+      ]
+    },
+    {
+      "id": "read layer A",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${layerA}" } },
+          { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "layers", "len": 2, "name": "one item per id" },
+        { "path": "layers[0].name", "eq": "Tapir check layer A", "name": "name" },
+        { "path": "layers[0].isHidden", "eq": false, "name": "shown" },
+        { "path": "layers[0].isLocked", "eq": false, "name": "unlocked" },
+        { "path": "layers[0].isWireframe", "eq": true, "name": "wireframe" },
+        { "path": "layers[0].intersectionGroupNr", "eq": 7, "name": "intersection group" },
+        { "path": "layers[1].error", "exists": true, "name": "unknown guid: error item" }
+      ]
+    },
+    {
+      "id": "[layer with an existing name, no overwrite]",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "name": "Tapir check layer A", "isWireframe": false }
+        ],
+        "overwriteExisting": false
+      },
+      "expect": [
+        { "path": "attributeIds[0].error", "exists": true, "name": "rejected" },
+        { "path": "attributeIds[0].attributeId", "exists": false, "name": "no id" }
+      ]
+    },
+    {
+      "id": "overwrite layer A by attributeId: rename, no wireframe, group 8",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "attributeId": { "guid": "${layerA}" }, "name": "Tapir check layer A renamed", "isHidden": false, "isLocked": false, "isWireframe": false, "intersectionGroupNr": 8 }
+        ],
+        "overwriteExisting": true
+      },
+      "expect": [
+        { "path": "attributeIds[0].attributeId.guid", "exists": true, "name": "id of the overwritten layer" }
+      ]
+    },
+    {
+      "id": "read layer A after the overwrite",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layerA}" } } ]
+      },
+      "expect": [
+        { "path": "layers[0].name", "eq": "Tapir check layer A renamed", "name": "renamed" },
+        { "path": "layers[0].isWireframe", "eq": false, "name": "no longer wireframe" },
+        { "path": "layers[0].intersectionGroupNr", "eq": 8, "name": "intersection group changed" }
+      ]
+    },
+    {
+      "id": "create two combinations: A hidden, A locked",
+      "command": "CreateLayerCombinations",
+      "creates": false,
+      "params": {
+        "layerCombinationDataArray": [
+          {
+            "name": "Tapir check combination A hidden",
+            "layers": [
+              { "attributeId": { "guid": "${layerA}" }, "isHidden": true, "isLocked": false, "isWireframe": false, "intersectionGroupNr": 8 }
+            ]
+          },
+          {
+            "name": "Tapir check combination A locked",
+            "layers": [
+              { "attributeId": { "guid": "${layerA}" }, "isHidden": false, "isLocked": true, "isWireframe": false, "intersectionGroupNr": 8 }
+            ]
+          }
+        ],
+        "overwriteExisting": false
+      },
+      "save": {
+        "comboHidden": "attributeIds[0].attributeId.guid",
+        "comboLocked": "attributeIds[1].attributeId.guid"
+      },
+      "expect": [
+        { "path": "attributeIds", "len": 2, "name": "one id per combination" }
+      ]
+    },
+    {
+      "id": "read both combinations",
+      "command": "GetLayerCombinations",
+      "creates": false,
+      "params": {
+        "attributes": [
+          { "attributeId": { "guid": "${comboHidden}" } },
+          { "attributeId": { "guid": "${comboLocked}" } },
+          { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "layerCombinations", "len": 3, "name": "one item per id" },
+        { "path": "layerCombinations[0].layerCombination.name", "eq": "Tapir check combination A hidden", "name": "first name" },
+        { "path": "layerCombinations[1].layerCombination.name", "eq": "Tapir check combination A locked", "name": "second name" },
+        { "path": "layerCombinations[0].layerCombination.layers[0].attributeId.guid", "exists": true, "name": "lists the layers" },
+        { "path": "layerCombinations[2].error", "exists": true, "name": "unknown guid: error item" }
+      ]
+    },
+    {
+      "id": "activate 'A hidden'",
+      "command": "ActivateLayerCombination",
+      "creates": false,
+      "params": { "attributeId": { "guid": "${comboHidden}" } },
+      "expect": [
+        { "path": "success", "eq": true, "name": "activated" }
+      ]
+    },
+    {
+      "id": "current combination is 'A hidden'",
+      "command": "GetCurrentLayerCombination",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "layerCombinationId.guid", "exists": true, "name": "id" },
+        { "path": "name", "eq": "Tapir check combination A hidden", "name": "name" }
+      ]
+    },
+    {
+      "id": "layer A after 'A hidden'",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layerA}" } } ]
+      },
+      "expect": [
+        { "path": "layers[0].isHidden", "eq": true, "name": "hidden" },
+        { "path": "layers[0].isLocked", "eq": false, "name": "unlocked" }
+      ]
+    },
+    {
+      "id": "activate 'A locked'",
+      "command": "ActivateLayerCombination",
+      "creates": false,
+      "params": { "attributeId": { "guid": "${comboLocked}" } },
+      "expect": [
+        { "path": "success", "eq": true, "name": "activated" }
+      ]
+    },
+    {
+      "id": "current combination is 'A locked'",
+      "command": "GetCurrentLayerCombination",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "layerCombinationId.guid", "exists": true, "name": "id" },
+        { "path": "name", "eq": "Tapir check combination A locked", "name": "name" }
+      ]
+    },
+    {
+      "id": "layer A after 'A locked'",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layerA}" } } ]
+      },
+      "expect": [
+        { "path": "layers[0].isHidden", "eq": false, "name": "shown" },
+        { "path": "layers[0].isLocked", "eq": true, "name": "locked" }
+      ]
+    },
+    {
+      "id": "[activate a combination that does not exist]",
+      "command": "ActivateLayerCombination",
+      "creates": false,
+      "params": { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } },
+      "expect": [
+        { "path": "success", "eq": false, "name": "failed" },
+        { "path": "error", "exists": true, "name": "with an error" }
+      ]
+    },
+    {
+      "id": "[combination with an existing name, no overwrite]",
+      "command": "CreateLayerCombinations",
+      "creates": false,
+      "params": {
+        "layerCombinationDataArray": [
+          { "name": "Tapir check combination A hidden" }
+        ],
+        "overwriteExisting": false
+      },
+      "expect": [
+        { "path": "attributeIds[0].error", "exists": true, "name": "rejected" }
+      ]
+    },
+    {
+      "id": "overwrite 'A hidden' by attributeId: rename only",
+      "command": "CreateLayerCombinations",
+      "creates": false,
+      "params": {
+        "layerCombinationDataArray": [
+          { "attributeId": { "guid": "${comboHidden}" }, "name": "Tapir check combination A hidden renamed" }
+        ],
+        "overwriteExisting": true
+      },
+      "expect": [
+        { "path": "attributeIds[0].attributeId.guid", "exists": true, "name": "id of the overwritten combination" }
+      ]
+    },
+    {
+      "id": "renamed combination keeps layer A hidden",
+      "command": "GetLayerCombinations",
+      "creates": false,
+      "params": {
+        "attributes": [ { "attributeId": { "guid": "${comboHidden}" } } ]
+      },
+      "expect": [
+        { "path": "layerCombinations[0].layerCombination.name", "eq": "Tapir check combination A hidden renamed", "name": "renamed" }
+      ]
+    },
+    {
+      "id": "activate the renamed combination again",
+      "command": "ActivateLayerCombination",
+      "creates": false,
+      "params": { "attributeId": { "guid": "${comboHidden}" } },
+      "expect": [
+        { "path": "success", "eq": true, "name": "activated" }
+      ]
+    },
+    {
+      "id": "layer A is still hidden by it",
+      "command": "GetLayers",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layerA}" } } ]
+      },
+      "expect": [
+        { "path": "layers[0].isHidden", "eq": true, "name": "hidden (the rename kept the layer states)" },
+        { "path": "layers[0].isLocked", "eq": false, "name": "unlocked" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "LayerCombination", "attributeId": { "attributeId": { "guid": "${comboHidden}" } } } ] }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "LayerCombination", "attributeId": { "attributeId": { "guid": "${comboLocked}" } } } ] }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${layerA}" } } } ] }
+    }
+  ]
+}

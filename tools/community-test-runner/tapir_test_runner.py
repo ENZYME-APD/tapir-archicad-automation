@@ -11,6 +11,7 @@ the result as a pull request comment. Standard library only; no Claude or other 
     python tapir_test_runner.py prs                     # what is open and what can be tested, one line each
     python tapir_test_runner.py check checks/*.json     # run checks against an Archicad that is already open
     python tapir_test_runner.py record --out my.json    # write a check from the commands you send through it
+    python tapir_test_runner.py bench                   # speed and token benchmark of the open Archicad (empty, untitled project)
     python tapir_test_runner.py once / poll             # one pass / a pass every pollMinutes over labelled pull requests
 
 Checks are JSON data, not code: a pull request can only make the runner send Tapir commands and
@@ -281,6 +282,7 @@ def archicad_label(send: Callable[..., dict]) -> str:
 
 def run_checks(send: Callable[..., dict], spec_files: list[Path]) -> tuple[list[dict], str]:
     version = send("GetAddOnVersion", {}, DEFAULT_TIMEOUT).get("version", "?")
+    ac = archicad_version(send)
     rows: list[dict] = []
     for path in spec_files:
         spec = json.loads(path.read_text(encoding="utf-8"))
@@ -289,6 +291,11 @@ def run_checks(send: Callable[..., dict], spec_files: list[Path]) -> tuple[list[
         if needed and version_tuple(version) < version_tuple(needed):
             rows.append({"check": name, "step": "-", "what": "minTapir", "ok": None,
                          "detail": f"skipped: needs Tapir {needed}, running {version}"})
+            continue
+        needed = spec.get("minArchicad")
+        if needed and version_tuple(ac) < version_tuple(str(needed)):
+            rows.append({"check": name, "step": "-", "what": "minArchicad", "ok": None,
+                         "detail": f"skipped: needs Archicad {needed}, running {ac}"})
             continue
         ok, reason = project_is_scratch(send, spec)
         if not ok:
@@ -474,8 +481,18 @@ class Installation:
             shutil.copy2(self.keep, self.addon)
             self.keep.unlink()
 
+    def hidden(self) -> bool:
+        return os.name == "nt" and bool(self.ac.get("hidden"))
+
+    def where(self) -> str:
+        """Where to answer a dialog: the runner's desktop is never shown on its own."""
+        return " It is on the runner's own desktop: 'show' takes you there." if self.hidden() else ""
+
     def start(self) -> Tapir:
-        subprocess.Popen([self.ac["archicadExe"], self.ac["blankTemplate"]])
+        if self.hidden():
+            rw.start_hidden([self.ac["archicadExe"], self.ac["blankTemplate"]])
+        else:
+            subprocess.Popen([self.ac["archicadExe"], self.ac["blankTemplate"]])
         found: dict = {}
 
         def ready() -> bool:
@@ -494,11 +511,11 @@ class Installation:
         if not wait_for(ready, self.ac.get("startTimeout", 300), 5):
             raise RuntimeError(f"Archicad {self.ac['version']} did not answer with Tapir loaded within "
                                f"{self.ac.get('startTimeout', 300)} s; it may be waiting at a dialog (project recovery, "
-                               "licence, update). Answer it, quit Archicad, then 'restore' puts your add-on back")
+                               "licence, update). Answer it, quit Archicad, then 'restore' puts your add-on back." + self.where())
         if "port" not in found:
             raise RuntimeError(f"Archicad {self.ac['version']} shows a dialog ('{found['title']}') instead of answering "
                                "with Tapir loaded. Answer it, quit Archicad, then 'restore' puts your add-on back. If it "
-                               "says some add-ons could not be loaded, see #1150 (set \"addonFile\")")
+                               "says some add-ons could not be loaded, see #1150 (set \"addonFile\")." + self.where())
         tapir = Tapir(found["port"])
         running = archicad_version(tapir)
         if running != str(self.ac["version"]):
@@ -513,7 +530,7 @@ class Installation:
         except TapirError:
             pass
         if not wait_for(lambda: not archicad_running(self.ac["archicadExe"]), self.ac.get("quitTimeout", 180), 5):
-            raise RuntimeError(f"Archicad {self.ac['version']} did not quit; close it by hand, then run 'restore'")
+            raise RuntimeError(f"Archicad {self.ac['version']} did not quit; close it by hand, then run 'restore'." + self.where())
 
 
 def restore_all(cfg: dict, log: Callable[[str], None] = print) -> int:
@@ -869,6 +886,20 @@ def main(argv: list[str] | None = None) -> int:
     c.add_argument("files", nargs="*", help="default: this checkout's archicad-addon/Test/checks")
     c.add_argument("--port", type=int, help="default: the first Archicad that answers with Tapir")
     c.add_argument("--brief", action="store_true", help="the verdict line and the failures only")
+    b = sub.add_parser("bench", help="speed and token benchmark against an Archicad that is already open (an empty, untitled project)")
+    b.add_argument("--suite", default=str(Path(__file__).resolve().parent / "benchmarks" / "standard.json"))
+    b.add_argument("--port", type=int, help="default: the first Archicad that answers with Tapir")
+    b.add_argument("--scales", help="element counts to measure at, e.g. 100,1000 (default: the suite's)")
+    b.add_argument("--quick", action="store_true", help="100 elements, 2 runs per case: a minute, for a first look")
+    b.add_argument("--read-only", action="store_true", help="measure the reads on the open project as it is; creates nothing")
+    b.add_argument("--out", help="folder for the results (default: benchmarks next to the runner's configuration)")
+    b.add_argument("--exact-tokens", action="store_true", help="count tokens with Anthropic's count_tokens (anthropic package, API key)")
+    b.add_argument("--model", default="claude-opus-5-5", help="the model whose tokenizer --exact-tokens uses")
+    b.add_argument("--brief", action="store_true", help="the headline, errors and the change against the last run only")
+    bc = sub.add_parser("bench-compare", help="compare two benchmark results; exit 1 when something got slower or bigger")
+    bc.add_argument("old")
+    bc.add_argument("new")
+    bc.add_argument("--threshold", type=float, default=15.0, help="percent a case must move to count (default 15)")
     t = with_config(sub.add_parser("test", help="test chosen pull requests (default: those labelled for testing)"))
     t.add_argument("numbers", nargs="*", type=int)
     t.add_argument("--all", action="store_true", help="every open, non-draft pull request")
@@ -880,6 +911,7 @@ def main(argv: list[str] | None = None) -> int:
     p = with_config(sub.add_parser("prs", help="one line per open pull request: checks, builds, last results"))
     p.add_argument("--labelled", action="store_true", help="only those labelled for testing")
     with_config(sub.add_parser("restore", help="put your own add-on back after a test that did not finish"))
+    sub.add_parser("show", help="switch to the runner's own desktop, where a hidden Archicad shows its dialogs")
     with_config(sub.add_parser("uninstall", help="put your add-on back, then remove the token, the logon task and the runner's files"))
     for name in ("once", "poll"):
         o = with_config(sub.add_parser(name))
@@ -900,6 +932,9 @@ def main(argv: list[str] | None = None) -> int:
     if args.mode == "record":
         import runner_record
         return runner_record.run(args.out, args.port or find_port(), args.listen, args.title)
+    if args.mode in ("bench", "bench-compare"):
+        import runner_bench
+        return runner_bench.main(args)
     if args.mode == "check":
         port = args.port or find_port()
         if port is None:
@@ -909,6 +944,10 @@ def main(argv: list[str] | None = None) -> int:
         print((brief if args.brief else report)(rows, archicad_label(tapir), version, "local"))
         return 0 if all(r["ok"] is not False for r in rows) else 1
 
+    if args.mode == "show":
+        if not rw.show_desktop(sys.executable):
+            sys.exit("could not switch to the runner's desktop (nothing runs there?)")
+        return 0
     if args.mode == "uninstall":
         return uninstall(Path(args.config) if args.config else default_config_path())
     cfg = load_config(args.config)

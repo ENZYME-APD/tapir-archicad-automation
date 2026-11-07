@@ -5,9 +5,11 @@ report** or a **feature request**, files each one as a GitHub issue in this
 repository, and replies to the Discord message with the number and link of
 the created issue.
 
-It runs as a scheduled GitHub Actions workflow
+It runs as a GitHub Actions workflow
 ([`.github/workflows/discord_issue_bot.yml`](../../.github/workflows/discord_issue_bot.yml)),
-so no server hosting is needed. Every run:
+so no server hosting is needed. It is scheduled at :13 and :43 of every hour;
+GitHub skips some scheduled runs when it is busy, which delays an issue but loses
+nothing, because each run scans the last day. Every run:
 
 1. Fetches the recent messages (default: last 24 hours) of each configured
    channel over the Discord REST API.
@@ -45,6 +47,13 @@ are classified together, filed as one issue quoting all of them, and the
 reply and ✅ go to the first of them. The newest such run is left for the
 next scan while its last message is less than 10 minutes old, as its
 author may still be typing.
+
+Messages that are not classified at all — shorter than
+`MIN_MESSAGE_LENGTH`, an attachment without text — count as checked too,
+so the 👀 moves past them. Bot and system messages are not classified and
+do not carry the 👀. The run log lists, for every channel, how many
+messages follow the 👀, and for each of them what happened, including why
+one was skipped or left for the next run.
 
 Duplicates are prevented twice over: a message carrying the bot's own ✅
 reaction is skipped, and before creating an issue the bot searches

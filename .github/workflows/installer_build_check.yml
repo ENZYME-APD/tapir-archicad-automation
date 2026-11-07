@@ -3,6 +3,16 @@ name: Tapir Installer Build Check
 # On every push to main and every pull request, like the other build
 # checks, so the README badge shows the state of main after each merge - not
 # of the last commit that happened to touch the installer.
+#
+# Pull requests that only change files in the skip list of
+# .github/actions/build-gate - docs/**, archicad-addon/Test/**,
+# archicad-addon/Examples/**, archicad-addon/Workflows/**, builtin-scripts/**,
+# marketplace/**, branding/**, **/*.md - build nothing: the `changes` job
+# finds that out and build_installer is skipped by its `if:`, so its check
+# still appears, as skipped, which the bot PR steward, auto-merge and
+# GitHub's required checks all count as passing. Pushes to main always
+# build. Not paths-ignore: that would skip the whole workflow, and the check
+# the steward and auto-merge wait for would never appear.
 on:
   # Pushes to main only: a pull request's branch is built by its
   # pull_request run, and building it on push as well doubled every run.
@@ -20,7 +30,26 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
+  # Whether this change needs the build below (see the top of this file).
+  # If it fails, it builds (`changes` outputs nothing, which is not 'false').
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.gate.outputs.build }}
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        filter: blob:none
+        sparse-checkout: .github/actions
+    - name: Decide whether to build
+      id: gate
+      uses: ./.github/actions/build-gate
+
   build_installer:
+    needs: changes
+    if: ${{ !cancelled() && needs.changes.outputs.build != 'false' }}
     strategy:
       fail-fast: false
       matrix:

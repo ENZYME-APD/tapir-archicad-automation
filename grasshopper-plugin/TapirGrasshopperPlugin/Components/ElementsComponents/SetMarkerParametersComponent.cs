@@ -32,7 +32,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             InTexts(
                 "ParameterNames",
                 "Name of the marker parameter to set, see MarkerParameters " +
-                "(input only 1 to use the same value for all).");
+                "(input only 1 to use the same value for all). Optional when ParameterIndices is given.");
 
             InGenerics(
                 "Values",
@@ -40,6 +40,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "RealNumber, PenColor, LineType, Material, FillPattern, BuildingMaterial, Profile, RGBColor, " +
                 "Intensity), a text for String and Title, a boolean for Boolean and On/Off for LightSwitch. " +
                 "Array parameters are not supported (input only 1 to use the same value for all).");
+
+            InIntegers(
+                "ParameterIndices",
+                "Index of the marker parameter to set, as GetMarkerParametersOfElements reports it, instead of " +
+                "its name (input only 1 to use the same value for all). Optional; when given, ParameterNames " +
+                "is not used.");
+
+            SetOptionality(new[] { 1, 3 });
         }
 
         protected override void AddOutputs()
@@ -58,10 +66,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (!da.TryGetList(
-                    1,
-                    out List<string> parameterNames))
+            var parameterNames = da.OptionalList<string>(1);
+            var parameterIndices = da.OptionalList<int>(3);
+            if (parameterNames.Count == 0 &&
+                parameterIndices.Count == 0)
             {
+                this.AddError("Give the marker parameters in ParameterNames or ParameterIndices.");
                 return;
             }
 
@@ -72,11 +82,20 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
-            if (parameterNames.Count != 1 &&
+            if (parameterIndices.Count == 0 &&
+                parameterNames.Count != 1 &&
                 parameterNames.Count != elementWrappers.Count)
             {
                 this.AddError(
                     "The size of the input ParameterNames must be 1 or equal to the size of the input ElementGuids.");
+                return;
+            }
+
+            if (parameterIndices.Count > 1 &&
+                parameterIndices.Count != elementWrappers.Count)
+            {
+                this.AddError(
+                    "The size of the input ParameterIndices must be 0, 1 or equal to the size of the input ElementGuids.");
                 return;
             }
 
@@ -98,11 +117,21 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     return;
                 }
 
-                var parameterName = parameterNames[parameterNames.Count == 1 ? 0 : i];
-                if (string.IsNullOrEmpty(parameterName))
+                var markerParameter = new JObject();
+                if (parameterIndices.Count > 0)
                 {
-                    this.AddError("Empty parameter name in the ParameterNames input.");
-                    return;
+                    markerParameter["index"] = parameterIndices.At(i);
+                }
+                else
+                {
+                    var parameterName = parameterNames.At(i);
+                    if (string.IsNullOrEmpty(parameterName))
+                    {
+                        this.AddError("Empty parameter name in the ParameterNames input.");
+                        return;
+                    }
+
+                    markerParameter["name"] = parameterName;
                 }
 
                 var value = ToJsonValue(values[values.Count == 1 ? 0 : i]);
@@ -113,18 +142,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     return;
                 }
 
+                markerParameter["value"] = value;
                 elementsWithMarkerParameters.Add(
                     new JObject
                     {
                         ["elementId"] = new JObject { ["guid"] = elementId.Guid },
-                        ["markerParameters"] = new JArray
-                        {
-                            new JObject
-                            {
-                                ["name"] = parameterName,
-                                ["value"] = value
-                            }
-                        }
+                        ["markerParameters"] = new JArray { markerParameter }
                     });
             }
 

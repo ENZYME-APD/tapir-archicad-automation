@@ -3,6 +3,7 @@ using Grasshopper.Kernel.Data;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
+using TapirGrasshopperPlugin.Types.Element;
 using TapirGrasshopperPlugin.Types.GuidObjects;
 
 namespace TapirGrasshopperPlugin.Types.Project
@@ -37,6 +38,13 @@ namespace TapirGrasshopperPlugin.Types.Project
 
         [JsonProperty("type")]
         public string Type { get; set; }
+
+        // The hotlink instance elements placed from the node - the input of
+        // ChangeHotlinkInstances and DeleteElements. Null when the add-on
+        // left the field out (the instances could not be read), so the
+        // JsonHierarchy output drops it in that case too.
+        [JsonProperty("instances", NullValueHandling = NullValueHandling.Ignore)]
+        public List<ElementGuidWrapper> Instances { get; set; }
 
         [JsonProperty("children")]
         public Hotlinks Children { get; set; }

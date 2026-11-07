@@ -1,0 +1,90 @@
+# Keeps the Community page's figures and growth chart live.
+#
+# tools/generate_community_data.py counts, per month, the commits of main, the
+# issues opened and pull requests merged here, and the Discord messages and
+# members of the project's server, plus the totals and top contributors the
+# Momentum section shows. Only counts, never the text of a message. It runs
+# daily and by hand.
+#
+# It publishes community.json as one commit on the site-data branch (never on
+# main), read by docs/community/community.js from raw.githubusercontent.com.
+# The previous community.json there carries the daily member counts the
+# "+N in 30 days" change is computed from.
+#
+# Discord: the bot token is DISCORD_STATS_TOKEN, else DISCORD_BOT_TOKEN (the
+# issue bot's). Messages are counted in the text channels the bot can read;
+# members per month need the bot's Server Members Intent. Without a token only
+# the member count of the public invite is read. The server is the one the
+# bot is in (DISCORD_GUILD_ID picks one), so a changed invite never stops it.
+#
+# Security: it runs with a write token, so it never checks out or runs code
+# from a pull request; it only runs on schedule and by hand, on main.
+# SITE_DATA=false turns the workflow off.
+
+name: Site Data
+
+on:
+  schedule:
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: site-data
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  issues: read
+  pull-requests: read
+
+jobs:
+  update:
+    if: vars.SITE_DATA != 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Read the previous data
+        run: |
+          set -eu
+          if git fetch -q origin site-data; then
+            git show FETCH_HEAD:community.json > previous.json || true
+          fi
+
+      - name: Count the community
+        run: python3 tools/generate_community_data.py --repo "$GITHUB_REPOSITORY" --previous previous.json --out out/community.json
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DISCORD_STATS_TOKEN: ${{ secrets.DISCORD_STATS_TOKEN }}
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+          DISCORD_INVITE: ${{ vars.DISCORD_INVITE }}
+          DISCORD_GUILD_ID: ${{ vars.DISCORD_GUILD_ID }}
+
+      - name: Publish to the site-data branch
+        run: |
+          set -eu
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          if git fetch -q origin site-data; then
+            git worktree add -q publish FETCH_HEAD
+          else
+            git worktree add -q --detach publish
+            git -C publish checkout -q --orphan site-data
+            # -f: on the new orphan branch the files of main are staged, not committed.
+            git -C publish rm -rqf .
+          fi
+          cp out/community.json publish/
+          cd publish
+          git add community.json
+          if git diff --cached --quiet; then
+            echo "The community data did not change."
+            exit 0
+          fi
+          git commit -q -m "Update the community data"
+          git push -q origin HEAD:site-data

@@ -1,0 +1,547 @@
+{
+  "title": "Library part editing: parameters, scripts, metadata, custom sections, pictures and CreateLibraryPart",
+  "minTapir": "1.8.1",
+  "minArchicad": "28",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "[edit, subtype, locked]",
+      "command": "CreateLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          {
+            "name": "TapirCheckEdit",
+            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "path": "TapirCheckLibEdit/TapirCheckEdit.gsm",
+            "a": 0.6,
+            "b": 0.4,
+            "masterScript": "tapirMaster = 1",
+            "script2D": "RECT2 0, 0, A, B",
+            "script3D": "BLOCK A, B, 1",
+            "parameters": [
+              { "name": "tapirLength", "type": "Length", "value": 0.5, "description": "Tapir Length" },
+              { "name": "tapirText", "type": "String", "value": "one", "description": "Tapir Text" }
+            ]
+          },
+          {
+            "name": "TapirCheckSub",
+            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "path": "TapirCheckLibEdit/TapirCheckSub.gsm",
+            "script3D": "BLOCK A, B, 1"
+          },
+          {
+            "name": "TapirCheckLocked",
+            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "path": "TapirCheckLibEdit/TapirCheckLocked.gsm",
+            "masterScript": "tapirLocked = 1"
+          }
+        ]
+      },
+      "save": { "subIdx": "libraryParts[1].index" },
+      "expect": [
+        { "path": "libraryParts[0].name", "eq": "TapirCheckEdit", "name": "edit part created" },
+        { "path": "libraryParts[1].name", "eq": "TapirCheckSub", "name": "subtype part created" },
+        { "path": "libraryParts[2].name", "eq": "TapirCheckLocked", "name": "locked part created" }
+      ],
+      "stopOnFail": true
+    },
+    {
+      "id": "file of the subtype part",
+      "command": "GetLibraryPartIdentities",
+      "creates": false,
+      "params": { "libraryParts": [{ "index": "${subIdx}" }] },
+      "save": { "subPath": "identities[0].path" },
+      "expect": [
+        { "path": "identities[0].path", "contains": "TapirCheckSub.gsm", "name": "path of the subtype part" }
+      ]
+    },
+    {
+      "id": "defaults as created, [edit part, missing part]",
+      "command": "GetGDLParametersOfLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "libraryPartName": "TapirCheckEdit" },
+          { "libraryPartName": "TapirCheckNoSuchPart" }
+        ]
+      },
+      "expect": [
+        { "path": "gdlParametersOfLibraryParts", "len": 2, "name": "one item per library part" },
+        { "path": "gdlParametersOfLibraryParts[0].parameters[*].name", "eq": ["A", "B", "tapirLength", "tapirText"], "name": "A, B and the two own parameters, in order" },
+        { "path": "gdlParametersOfLibraryParts[0].parameters[0].value", "approx": 0.6, "name": "A as created" },
+        { "path": "gdlParametersOfLibraryParts[0].parameters[1].value", "approx": 0.4, "name": "B as created" },
+        { "path": "gdlParametersOfLibraryParts[0].parameters[2].type", "eq": "Length", "name": "tapirLength is a Length" },
+        { "path": "gdlParametersOfLibraryParts[0].parameters[2].displayName", "eq": "Tapir Length", "name": "tapirLength description" },
+        { "path": "gdlParametersOfLibraryParts[0].parameters[2].value", "approx": 0.5, "name": "tapirLength as created" },
+        { "path": "gdlParametersOfLibraryParts[0].parameters[3].type", "eq": "String", "name": "tapirText is a String" },
+        { "path": "gdlParametersOfLibraryParts[0].parameters[3].value", "eq": "one", "name": "tapirText as created" },
+        { "path": "gdlParametersOfLibraryParts[1].error", "exists": true, "name": "a missing part is an error" }
+      ]
+    },
+    {
+      "id": "[tapirLength, tapirText with an unknown parameter, missing part]",
+      "command": "SetLibraryPartParameters",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "TapirCheckEdit.gsm", "parameters": [{ "name": "tapirLength", "value": 1.25 }] },
+          { "name": "TapirCheckEdit.gsm", "parameters": [{ "name": "tapirText", "value": "two" }, { "name": "tapirNoSuchParameter", "value": 1 }] },
+          { "name": "TapirCheckNoSuchPart.gsm", "parameters": [{ "name": "tapirText", "value": "two" }] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per library part" },
+        { "path": "executionResults[0].success", "eq": true, "name": "tapirLength set" },
+        { "path": "executionResults[1].success", "eq": false, "name": "an unknown parameter fails the whole item" },
+        { "path": "executionResults[2].success", "eq": false, "name": "a missing part fails" }
+      ]
+    },
+    {
+      "id": "defaults after the set",
+      "command": "GetGDLParametersOfLibraryParts",
+      "creates": false,
+      "params": { "libraryParts": [{ "libraryPartName": "TapirCheckEdit" }] },
+      "expect": [
+        { "path": "gdlParametersOfLibraryParts[0].parameters[2].value", "approx": 1.25, "name": "tapirLength is the new value" },
+        { "path": "gdlParametersOfLibraryParts[0].parameters[3].value", "eq": "one", "name": "tapirText of the refused item is unchanged" },
+        { "path": "gdlParametersOfLibraryParts[0].parameters[2].displayName", "eq": "Tapir Length", "name": "descriptions kept when not given" }
+      ]
+    },
+    {
+      "id": "[merge tapirText, descriptions of the wrong count]",
+      "command": "SetLibraryPartParameters",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "TapirCheckEdit.gsm", "parameters": [{ "name": "tapirText", "value": "three" }], "merge": true },
+          { "name": "TapirCheckEdit.gsm", "parameters": [{ "name": "tapirLength", "value": 2.5 }], "descriptions": ["Only One"] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "merged" },
+        { "path": "executionResults[1].success", "eq": false, "name": "a single description for a part with more parameters fails" }
+      ]
+    },
+    {
+      "id": "defaults after the merge",
+      "command": "GetGDLParametersOfLibraryParts",
+      "creates": false,
+      "params": { "libraryParts": [{ "libraryPartName": "TapirCheckEdit" }] },
+      "expect": [
+        { "path": "gdlParametersOfLibraryParts[0].parameters[3].value", "eq": "three", "name": "tapirText merged" },
+        { "path": "gdlParametersOfLibraryParts[0].parameters[2].value", "approx": 1.25, "name": "tapirLength of the refused item is unchanged" },
+        { "path": "gdlParametersOfLibraryParts[0].parameters[2].displayName", "eq": "Tapir Length", "name": "descriptions of the refused item are unchanged" }
+      ]
+    },
+    {
+      "id": "scripts as created, [edit part, missing part]",
+      "command": "GetLibraryPartScripts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "libraryPartName": "TapirCheckEdit.gsm" },
+          { "libraryPartName": "TapirCheckNoSuchPart.gsm" }
+        ]
+      },
+      "expect": [
+        { "path": "libraryParts", "len": 2, "name": "one item per library part" },
+        { "path": "libraryParts[0].scripts.master.script", "contains": "tapirMaster = 1", "name": "master script as created" },
+        { "path": "libraryParts[0].scripts.3d.script", "contains": "BLOCK A, B, 1", "name": "3D script as created" },
+        { "path": "libraryParts[0].scripts.properties.present", "eq": false, "name": "no properties script" },
+        { "path": "libraryParts[0].unID", "contains": "}-{", "name": "unique ID" },
+        { "path": "libraryParts[1].error", "exists": true, "name": "a missing part is an error" }
+      ]
+    },
+    {
+      "id": "[set master and parameter, set and delete 2D, missing part]",
+      "command": "SetLibraryPartScripts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "TapirCheckEdit.gsm", "scripts": { "master": "tapirMaster = 2", "parameter": "! tapirParameterScript" } },
+          { "name": "TapirCheckEdit.gsm", "scripts": { "2d": "LINE2 0, 0, A, B" }, "deleteScripts": ["2d"] },
+          { "name": "TapirCheckNoSuchPart.gsm", "scripts": { "master": "tapirMaster = 2" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per library part" },
+        { "path": "executionResults[0].success", "eq": true, "name": "master and parameter scripts set" },
+        { "path": "executionResults[1].success", "eq": false, "name": "a script both set and deleted is refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "a missing part fails" }
+      ]
+    },
+    {
+      "id": "delete the 3D script",
+      "command": "SetLibraryPartScripts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "TapirCheckEdit.gsm", "deleteScripts": ["3d"] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "3D script deleted" }
+      ]
+    },
+    {
+      "id": "scripts after the changes",
+      "command": "GetLibraryPartScripts",
+      "creates": false,
+      "params": {
+        "libraryParts": [{ "libraryPartName": "TapirCheckEdit.gsm" }],
+        "scripts": ["master", "parameter", "2d", "3d"]
+      },
+      "expect": [
+        { "path": "libraryParts[0].scripts.master.script", "contains": "tapirMaster = 2", "name": "new master script" },
+        { "path": "libraryParts[0].scripts.parameter.script", "contains": "tapirParameterScript", "name": "new parameter script" },
+        { "path": "libraryParts[0].scripts.2d.script", "contains": "RECT2 0, 0, A, B", "name": "2D script of the refused item is unchanged" },
+        { "path": "libraryParts[0].scripts.3d.present", "eq": false, "name": "3D script deleted" },
+        { "path": "libraryParts[0].scripts.properties", "exists": false, "name": "only the requested scripts" }
+      ]
+    },
+    {
+      "id": "[author and keywords, subtype flag, missing part]",
+      "command": "SetLibraryPartMetadata",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "TapirCheckEdit.gsm", "metadata": { "author": "Tapir Check", "keywords": "tapir, check" } },
+          { "name": "TapirCheckSub.gsm", "metadata": { "isSubtype": true } },
+          { "name": "TapirCheckNoSuchPart.gsm", "metadata": { "author": "Tapir Check" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per library part" },
+        { "path": "executionResults[0].success", "eq": true, "name": "author and keywords set" },
+        { "path": "executionResults[1].success", "eq": true, "name": "subtype flag set" },
+        { "path": "executionResults[2].success", "eq": false, "name": "a missing part fails" }
+      ]
+    },
+    {
+      "id": "not placeable",
+      "command": "SetLibraryPartMetadata",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "TapirCheckLocked.gsm", "metadata": { "placeable": false } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "placeable flag cleared" }
+      ]
+    },
+    {
+      "id": "password",
+      "command": "SetLibraryPartMetadata",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "TapirCheckLocked.gsm", "metadata": { "password": "tapir" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "password set" }
+      ]
+    },
+    {
+      "id": "[edit part, locked part, missing part]",
+      "command": "GetLibraryPartMetadata",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "name": "TapirCheckEdit.gsm" },
+          { "name": "TapirCheckLocked.gsm" },
+          { "name": "TapirCheckNoSuchPart.gsm" }
+        ]
+      },
+      "expect": [
+        { "path": "libraryParts", "len": 3, "name": "one item per library part" },
+        { "path": "libraryParts[0].author", "eq": "Tapir Check", "name": "author" },
+        { "path": "libraryParts[0].keywords", "eq": "tapir, check", "name": "keywords" },
+        { "path": "libraryParts[0].isPlaceable", "eq": true, "name": "edit part still placeable" },
+        { "path": "libraryParts[0].isPasswordProtected", "eq": false, "name": "edit part not protected" },
+        { "path": "libraryParts[1].isPlaceable", "eq": false, "name": "locked part not placeable" },
+        { "path": "libraryParts[1].isPasswordProtected", "eq": true, "name": "locked part protected" },
+        { "path": "libraryParts[2].error", "exists": true, "name": "a missing part is an error" }
+      ]
+    },
+    {
+      "id": "locked part with a wrong password",
+      "command": "GetLibraryPartScripts",
+      "creates": false,
+      "params": {
+        "libraryParts": [{ "libraryPartName": "TapirCheckLocked.gsm" }],
+        "scripts": ["master"],
+        "password": "wrong"
+      },
+      "expect": [
+        { "path": "libraryParts[0].error", "exists": true, "name": "a wrong password is an error" }
+      ]
+    },
+    {
+      "id": "locked part with its password",
+      "command": "GetLibraryPartScripts",
+      "creates": false,
+      "params": {
+        "libraryParts": [{ "libraryPartName": "TapirCheckLocked.gsm" }],
+        "scripts": ["master"],
+        "password": "tapir"
+      },
+      "expect": [
+        { "path": "libraryParts[0].scripts.master.script", "contains": "tapirLocked = 1", "name": "read with the password" }
+      ]
+    },
+    {
+      "id": "custom section before it is set",
+      "command": "GetLibraryPartCustomSection",
+      "creates": false,
+      "params": { "name": "TapirCheckEdit.gsm", "sectionId": 1414546251 },
+      "expect": [
+        { "path": "exists", "eq": false, "name": "no TPCK section yet" },
+        { "path": "data", "exists": false, "name": "no data" }
+      ]
+    },
+    {
+      "id": "set the custom section",
+      "command": "SetLibraryPartCustomSection",
+      "creates": false,
+      "params": { "name": "TapirCheckEdit.gsm", "sectionId": 1414546251, "dataVersion": 3, "data": "dGFwaXI=" },
+      "expect": [
+        { "path": "success", "eq": true, "name": "section created" }
+      ]
+    },
+    {
+      "id": "custom section after the set",
+      "command": "GetLibraryPartCustomSection",
+      "creates": false,
+      "params": { "name": "TapirCheckEdit.gsm", "sectionId": 1414546251 },
+      "expect": [
+        { "path": "exists", "eq": true, "name": "section exists" },
+        { "path": "dataVersion", "eq": 3, "name": "data version" },
+        { "path": "data", "eq": "dGFwaXI=", "name": "content ('tapir')" }
+      ]
+    },
+    {
+      "id": "data that is not base64",
+      "command": "SetLibraryPartCustomSection",
+      "creates": false,
+      "params": { "name": "TapirCheckEdit.gsm", "sectionId": 1414546251, "data": "not base64!" },
+      "expect": [
+        { "path": "success", "eq": false, "name": "invalid base64 is refused" }
+      ]
+    },
+    {
+      "id": "delete a section index that does not exist",
+      "command": "SetLibraryPartCustomSection",
+      "creates": false,
+      "params": { "name": "TapirCheckEdit.gsm", "sectionId": 1414546251, "index": 1, "delete": true },
+      "expect": [
+        { "path": "success", "eq": false, "name": "deleting a missing section fails" }
+      ]
+    },
+    {
+      "id": "custom section after the refused changes",
+      "command": "GetLibraryPartCustomSection",
+      "creates": false,
+      "params": { "name": "TapirCheckEdit.gsm", "sectionId": 1414546251 },
+      "expect": [
+        { "path": "data", "eq": "dGFwaXI=", "name": "content unchanged" }
+      ]
+    },
+    {
+      "id": "delete the custom section",
+      "command": "SetLibraryPartCustomSection",
+      "creates": false,
+      "params": { "name": "TapirCheckEdit.gsm", "sectionId": 1414546251, "delete": true },
+      "expect": [
+        { "path": "success", "eq": true, "name": "section deleted" }
+      ]
+    },
+    {
+      "id": "custom section after the delete",
+      "command": "GetLibraryPartCustomSection",
+      "creates": false,
+      "params": { "name": "TapirCheckEdit.gsm", "sectionId": 1414546251 },
+      "expect": [
+        { "path": "exists", "eq": false, "name": "section gone" }
+      ]
+    },
+    {
+      "id": "custom section of a missing part",
+      "command": "GetLibraryPartCustomSection",
+      "creates": false,
+      "params": { "name": "TapirCheckNoSuchPart.gsm", "sectionId": 1414546251 },
+      "expect": [
+        { "path": "error", "exists": true, "name": "a missing part is an error" }
+      ]
+    },
+    {
+      "id": "pictures as created",
+      "command": "GetLibraryPartPictures",
+      "creates": false,
+      "params": { "name": "TapirCheckEdit.gsm" },
+      "expect": [
+        { "path": "gdlPictures", "len": 0, "name": "no GDL pictures" },
+        { "path": "previewPicture", "exists": false, "name": "no preview picture" }
+      ]
+    },
+    {
+      "id": "add a preview and a GDL picture (setup)",
+      "command": "SetLibraryPartPictureImages",
+      "creates": false,
+      "params": {
+        "name": "TapirCheckEdit.gsm",
+        "previewPicture": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+        "gdlPictures": ["iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="]
+      },
+      "expect": [
+        { "path": "success", "eq": true, "name": "pictures set" }
+      ]
+    },
+    {
+      "id": "pictures after the setup",
+      "command": "GetLibraryPartPictures",
+      "creates": false,
+      "params": { "name": "TapirCheckEdit.gsm" },
+      "expect": [
+        { "path": "gdlPictures", "len": 1, "name": "one GDL picture" },
+        { "path": "previewPicture", "exists": true, "name": "preview picture" }
+      ]
+    },
+    {
+      "id": "delete2DSymbol with copy2DSymbolFrom",
+      "command": "SetLibraryPartPictures",
+      "creates": false,
+      "params": { "name": "TapirCheckEdit.gsm", "deleteGdlPictures": true, "delete2DSymbol": true, "copy2DSymbolFrom": "TapirCheckSub.gsm" },
+      "expect": [
+        { "path": "success", "eq": false, "name": "the two 2D symbol options together are refused" }
+      ]
+    },
+    {
+      "id": "nothing to change",
+      "command": "SetLibraryPartPictures",
+      "creates": false,
+      "params": { "name": "TapirCheckEdit.gsm" },
+      "expect": [
+        { "path": "success", "eq": false, "name": "no option is refused" }
+      ]
+    },
+    {
+      "id": "pictures after the refused changes",
+      "command": "GetLibraryPartPictures",
+      "creates": false,
+      "params": { "name": "TapirCheckEdit.gsm" },
+      "expect": [
+        { "path": "gdlPictures", "len": 1, "name": "GDL picture kept" }
+      ]
+    },
+    {
+      "id": "delete the GDL pictures",
+      "command": "SetLibraryPartPictures",
+      "creates": false,
+      "params": { "name": "TapirCheckEdit.gsm", "deleteGdlPictures": true },
+      "expect": [
+        { "path": "success", "eq": true, "name": "GDL pictures deleted" }
+      ]
+    },
+    {
+      "id": "pictures after deleting the GDL pictures",
+      "command": "GetLibraryPartPictures",
+      "creates": false,
+      "params": { "name": "TapirCheckEdit.gsm" },
+      "expect": [
+        { "path": "gdlPictures", "len": 0, "name": "GDL pictures gone" },
+        { "path": "previewPicture", "exists": true, "name": "preview picture kept" }
+      ]
+    },
+    {
+      "id": "delete the preview picture",
+      "command": "SetLibraryPartPictures",
+      "creates": false,
+      "params": { "name": "TapirCheckEdit.gsm", "deletePreviewPicture": true },
+      "expect": [
+        { "path": "success", "eq": true, "name": "preview picture deleted" }
+      ]
+    },
+    {
+      "id": "pictures after deleting the preview",
+      "command": "GetLibraryPartPictures",
+      "creates": false,
+      "params": { "name": "TapirCheckEdit.gsm" },
+      "expect": [
+        { "path": "previewPicture", "exists": false, "name": "preview picture gone" }
+      ]
+    },
+    {
+      "id": "pictures of a missing part",
+      "command": "SetLibraryPartPictures",
+      "creates": false,
+      "params": { "name": "TapirCheckNoSuchPart.gsm", "deleteGdlPictures": true },
+      "expect": [
+        { "path": "success", "eq": false, "name": "a missing part fails" }
+      ]
+    },
+    {
+      "id": "new part of the subtype",
+      "command": "CreateLibraryPart",
+      "creates": false,
+      "params": { "path": "${subPath}-child.gsm", "ancestorSubtype": "TapirCheckSub.gsm" },
+      "expect": [
+        { "path": "error", "exists": false, "name": "no error" },
+        { "path": "isLoaded", "eq": true, "name": "loaded, as it is in the embedded library" },
+        { "path": "libraryPart.fileName", "eq": "TapirCheckSub.gsm-child.gsm", "name": "file name of the new part" }
+      ]
+    },
+    {
+      "id": "the new part is loaded",
+      "command": "GetLibraryPartMetadata",
+      "creates": false,
+      "params": { "libraryParts": [{ "name": "TapirCheckSub.gsm-child.gsm" }] },
+      "expect": [
+        { "path": "libraryParts[0].isPasswordProtected", "eq": false, "name": "found by its file name" }
+      ]
+    },
+    {
+      "id": "same path again",
+      "command": "CreateLibraryPart",
+      "creates": false,
+      "params": { "path": "${subPath}-child.gsm", "ancestorSubtype": "TapirCheckSub.gsm" },
+      "expect": [
+        { "path": "error", "exists": true, "name": "an existing file is refused" }
+      ]
+    },
+    {
+      "id": "ancestor that is not loaded",
+      "command": "CreateLibraryPart",
+      "creates": false,
+      "params": { "path": "${subPath}-orphan.gsm", "ancestorSubtype": "TapirCheckNoSuchPart.gsm" },
+      "expect": [
+        { "path": "error", "exists": true, "name": "a missing ancestor is refused" }
+      ]
+    },
+    {
+      "id": "path that is not a .gsm file",
+      "command": "CreateLibraryPart",
+      "creates": false,
+      "params": { "path": "${subPath}-child.txt", "ancestorSubtype": "TapirCheckSub.gsm" },
+      "expect": [
+        { "path": "error", "exists": true, "name": "a path without .gsm is refused" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteEmbeddedLibraryItems",
+      "params": {
+        "embeddedLibraryItems": [
+          { "path": "TapirCheckLibEdit/TapirCheckSub.gsm-child.gsm" },
+          { "path": "TapirCheckLibEdit/TapirCheckEdit.gsm" },
+          { "path": "TapirCheckLibEdit/TapirCheckSub.gsm" },
+          { "path": "TapirCheckLibEdit/TapirCheckLocked.gsm" },
+          { "path": "TapirCheckLibEdit" }
+        ]
+      }
+    }
+  ]
+}

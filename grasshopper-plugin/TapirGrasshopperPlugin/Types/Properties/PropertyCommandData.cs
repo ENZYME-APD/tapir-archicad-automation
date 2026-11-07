@@ -189,6 +189,24 @@ namespace TapirGrasshopperPlugin.Types.Properties
         public List<PropertyGroupUpdate> PropertyGroups;
     }
 
+    public class ElementDefaultPropertyValueObj
+    {
+        [JsonProperty("elementType")]
+        public string ElementType;
+
+        [JsonProperty("propertyId")]
+        public PropertyGuidObject PropertyId;
+
+        [JsonProperty("propertyValue")]
+        public PropertyValueObj PropertyValue;
+    }
+
+    public class SetPropertyValuesOfElementDefaultsParameters
+    {
+        [JsonProperty("elementDefaultPropertyValues")]
+        public List<ElementDefaultPropertyValueObj> ElementDefaultPropertyValues;
+    }
+
     public class ImportPropertiesXmlParameters
     {
         [JsonProperty("xml")]

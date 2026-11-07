@@ -1,0 +1,230 @@
+{
+  "title": "GetPropertyExpressionReferences, CheckPropertyValues, GetPropertyEditability and MakeProperty(Un)AvailableForElements on custom and built-in properties",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [ { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 703, "y": 700 },
+                         "zCoordinate": 0, "height": 2.5, "thickness": 0.2 } ]
+      },
+      "save": { "wall": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "wall created" }
+      ]
+    },
+    {
+      "id": "built-in Element ID and Width",
+      "command": "API.GetPropertyIds",
+      "creates": false,
+      "params": {
+        "properties": [
+          { "type": "BuiltIn", "nonLocalizedName": "General_ElementID" },
+          { "type": "BuiltIn", "nonLocalizedName": "General_Width" }
+        ]
+      },
+      "save": {
+        "propElementId": "properties[0].propertyId.guid",
+        "propWidth": "properties[1].propertyId.guid"
+      }
+    },
+    {
+      "id": "group",
+      "command": "CreatePropertyGroups",
+      "creates": false,
+      "params": { "propertyGroups": [ { "propertyGroup": { "name": "Tapir check group C", "description": "" } } ] },
+      "save": { "group": "propertyGroupIds[0].propertyGroupId.guid" }
+    },
+    {
+      "id": "[integer, single enum, expression]",
+      "command": "CreatePropertyDefinitions",
+      "creates": false,
+      "params": {
+        "propertyDefinitions": [
+          {
+            "propertyDefinition": {
+              "name": "Tapir check integer", "description": "", "type": "integer",
+              "isEditable": true, "availability": [],
+              "group": { "propertyGroupId": { "guid": "${group}" } },
+              "defaultValue": { "basicDefaultValue": { "type": "integer", "status": "normal", "value": 5 } }
+            }
+          },
+          {
+            "propertyDefinition": {
+              "name": "Tapir check enum", "description": "", "type": "singleEnum",
+              "isEditable": true, "availability": [],
+              "group": { "propertyGroupId": { "guid": "${group}" } },
+              "possibleEnumValues": [
+                { "enumValue": { "displayValue": "Red" } },
+                { "enumValue": { "displayValue": "Green" } }
+              ]
+            }
+          },
+          {
+            "propertyDefinition": {
+              "name": "Tapir check expression", "description": "", "type": "string",
+              "isEditable": true, "availability": [],
+              "group": { "propertyGroupId": { "guid": "${group}" } },
+              "defaultValue": { "expressions": [ "\"a\"" ] }
+            }
+          }
+        ]
+      },
+      "save": {
+        "propInt": "propertyIds[0].propertyId.guid",
+        "propEnum": "propertyIds[1].propertyId.guid",
+        "propExpr": "propertyIds[2].propertyId.guid"
+      }
+    },
+    {
+      "id": "[integer, built-in Element ID, guid not in the project]",
+      "command": "GetPropertyExpressionReferences",
+      "creates": false,
+      "params": {
+        "propertyIds": [
+          { "propertyId": { "guid": "${propInt}" } },
+          { "propertyId": { "guid": "${propElementId}" } },
+          { "propertyId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "save": { "refInt": "references[0].reference" },
+      "expect": [
+        { "path": "references", "len": 3, "name": "one item per property" },
+        { "path": "references[0].reference", "contains": "Tapir check integer", "name": "reference names the custom property" },
+        { "path": "references[1].reference", "exists": true, "name": "reference of the built-in property" },
+        { "path": "references[2].error", "exists": true, "name": "unknown property: error item" },
+        { "path": "references[2].reference", "exists": false, "name": "unknown property: no reference" }
+      ]
+    },
+    {
+      "id": "the reference is a valid expression: integer property defined by it",
+      "command": "CreatePropertyDefinitions",
+      "creates": false,
+      "params": {
+        "propertyDefinitions": [
+          {
+            "propertyDefinition": {
+              "name": "Tapir check reference user", "description": "", "type": "integer",
+              "isEditable": true, "availability": [],
+              "group": { "propertyGroupId": { "guid": "${group}" } },
+              "defaultValue": { "expressions": [ "${refInt}" ] }
+            }
+          }
+        ]
+      },
+      "save": { "propRef": "propertyIds[0].propertyId.guid" },
+      "expect": [
+        { "path": "propertyIds[0].propertyId.guid", "exists": true, "name": "Archicad accepted the reference as an expression" }
+      ]
+    },
+    {
+      "id": "[integer 42, integer abc, enum Green, enum Purple, property not in the project]",
+      "command": "CheckPropertyValues",
+      "creates": false,
+      "params": {
+        "propertyValues": [
+          { "propertyId": { "guid": "${propInt}" }, "propertyValue": { "value": "42" } },
+          { "propertyId": { "guid": "${propInt}" }, "propertyValue": { "value": "abc" } },
+          { "propertyId": { "guid": "${propEnum}" }, "propertyValue": { "value": "Green" } },
+          { "propertyId": { "guid": "${propEnum}" }, "propertyValue": { "value": "Purple" } },
+          { "propertyId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "propertyValue": { "value": "1" } }
+        ]
+      },
+      "expect": [
+        { "path": "results", "len": 5, "name": "one item per value" },
+        { "path": "results[0].isValid", "eq": true, "name": "42 is an integer" },
+        { "path": "results[1].isValid", "eq": false, "name": "abc is not an integer" },
+        { "path": "results[2].isValid", "eq": true, "name": "Green is an option" },
+        { "path": "results[3].isValid", "eq": false, "name": "Purple is not an option" },
+        { "path": "results[4].error", "exists": true, "name": "unknown property: error item" },
+        { "path": "results[4].isValid", "exists": false, "name": "unknown property: no isValid" }
+      ]
+    },
+    {
+      "id": "nothing changed: the integer default is still 5",
+      "command": "GetAllProperties",
+      "creates": false,
+      "params": { "properties": [ { "propertyId": { "guid": "${propInt}" } } ], "includeAvailability": false },
+      "expect": [
+        { "path": "properties[0].defaultValueDisplay", "eq": "5" }
+      ]
+    },
+    {
+      "id": "[Element ID, Width, expression, unknown property] x [wall, unknown element] and definition defaults",
+      "command": "GetPropertyEditability",
+      "creates": false,
+      "params": {
+        "properties": [
+          { "propertyId": { "guid": "${propElementId}" } },
+          { "propertyId": { "guid": "${propWidth}" } },
+          { "propertyId": { "guid": "${propExpr}" } },
+          { "propertyId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ],
+        "elements": [
+          { "elementId": { "guid": "${wall}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ],
+        "propertyDefinitionDefaults": true
+      },
+      "expect": [
+        { "path": "editabilityOfElements", "len": 2, "name": "one item per element" },
+        { "path": "editabilityOfElements[0].propertyEditabilities", "len": 4, "name": "one item per property" },
+        { "path": "editabilityOfElements[0].propertyEditabilities[0].editable", "eq": true, "name": "wall: Element ID editable" },
+        { "path": "editabilityOfElements[0].propertyEditabilities[0].visible", "eq": true, "name": "wall: Element ID visible" },
+        { "path": "editabilityOfElements[0].propertyEditabilities[1].editable", "eq": false, "name": "wall: Width (calculated) not editable" },
+        { "path": "editabilityOfElements[0].propertyEditabilities[2].editable", "exists": true, "name": "wall: expression property answered" },
+        { "path": "editabilityOfElements[0].propertyEditabilities[3].error", "exists": true, "name": "wall: unknown property is an error, not locked" },
+        { "path": "editabilityOfElements[1].error", "exists": true, "name": "unknown element: error item" },
+        { "path": "editabilityOfPropertyDefinitionDefaults", "len": 4, "name": "one item per property" },
+        { "path": "editabilityOfPropertyDefinitionDefaults[2].editable", "eq": true, "name": "expression without cycles: default editable" },
+        { "path": "editabilityOfPropertyDefinitionDefaults[3].error", "exists": true, "name": "unknown property: error item" },
+        { "path": "editabilityOfElementTypeDefaults", "exists": false, "name": "element types not asked: no list" }
+      ]
+    },
+    {
+      "id": "only the properties: no lists",
+      "command": "GetPropertyEditability",
+      "creates": false,
+      "params": { "properties": [ { "propertyId": { "guid": "${propElementId}" } } ] },
+      "expect": [
+        { "path": "editabilityOfElements", "exists": false },
+        { "path": "editabilityOfElementTypeDefaults", "exists": false },
+        { "path": "editabilityOfPropertyDefinitionDefaults", "exists": false }
+      ]
+    },
+    {
+      "id": "make a property that does not exist available for the wall",
+      "command": "MakePropertyAvailableForElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${wall}" } } ],
+        "propertyId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "failed" },
+        { "path": "error.message", "exists": true, "name": "with an error message" }
+      ]
+    },
+    {
+      "id": "make a property that does not exist unavailable for the wall",
+      "command": "MakePropertyUnavailableForElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${wall}" } } ],
+        "propertyId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "failed" },
+        { "path": "error.message", "exists": true, "name": "with an error message" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeletePropertyDefinitions", "params": { "propertyIds": [ { "propertyId": { "guid": "${propRef}" } } ] } },
+    { "command": "DeletePropertyDefinitions", "params": { "propertyIds": [ { "propertyId": { "guid": "${propInt}" } } ] } },
+    { "command": "DeletePropertyDefinitions", "params": { "propertyIds": [ { "propertyId": { "guid": "${propEnum}" } } ] } },
+    { "command": "DeletePropertyDefinitions", "params": { "propertyIds": [ { "propertyId": { "guid": "${propExpr}" } } ] } },
+    { "command": "DeletePropertyGroups", "params": { "propertyGroupIds": [ { "propertyGroupId": { "guid": "${group}" } } ] } }
+  ]
+}

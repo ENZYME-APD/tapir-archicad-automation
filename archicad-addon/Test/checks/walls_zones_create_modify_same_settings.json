@@ -1,0 +1,199 @@
+{
+  "title": "CreateWalls and ModifyWalls, CreateZones and ModifyZones take the same settings (#2233)",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "a surface",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Surface" },
+      "save": { "surf1": "attributes[0].attributeId.guid", "surf2": "attributes[1].attributeId.guid" }
+    },
+    {
+      "id": "a line type",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Line" },
+      "save": { "lt": "attributes[0].attributeId.guid" }
+    },
+    {
+      "id": "a fill",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Fill" },
+      "save": { "fill": "attributes[0].attributeId.guid" }
+    },
+    {
+      "id": "wall created with the settings ModifyWalls takes",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": { "x": 900.0, "y": 700.0 },
+            "endCoordinate": { "x": 905.0, "y": 700.0 },
+            "floorIndex": 0,
+            "zCoordinate": 0.0,
+            "height": 3.0,
+            "structureType": "Basic",
+            "thickness": 0.2,
+            "slantAlpha": 1.5707963267948966,
+            "slantBeta": 1.5707963267948966,
+            "topOffset": 0.0,
+            "relativeTopStory": 0,
+            "zoneRel": "ReduceArea",
+            "isAutoOnStoryVisibility": true,
+            "referenceMaterial": { "overridden": true, "attributeId": { "guid": "${surf1}" } },
+            "oppositeMaterial": { "overridden": true, "attributeId": { "guid": "${surf2}" } },
+            "sideMaterial": { "overridden": false },
+            "cutFillPen": { "overridden": true, "penIndex": 5 },
+            "cutFillBackgroundPen": { "overridden": false }
+          }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "wall created, the new keys accepted" }
+      ]
+    },
+    {
+      "id": "read the new wall",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.height", "approx": 3.0 },
+        { "path": "detailsOfElements[0].details.relativeTopStory", "eq": 0 },
+        { "path": "detailsOfElements[0].details.zoneRel", "eq": "ReduceArea" },
+        { "path": "detailsOfElements[0].details.isAutoOnStoryVisibility", "eq": true },
+        { "path": "detailsOfElements[0].details.referenceMaterial.overridden", "eq": true },
+        { "path": "detailsOfElements[0].details.referenceMaterial.attributeId.guid", "eq": "${surf1}" },
+        { "path": "detailsOfElements[0].details.oppositeMaterial.overridden", "eq": true },
+        { "path": "detailsOfElements[0].details.oppositeMaterial.attributeId.guid", "eq": "${surf2}" },
+        { "path": "detailsOfElements[0].details.sideMaterial.overridden", "eq": false },
+        { "path": "detailsOfElements[0].details.cutFillPen.overridden", "eq": true },
+        { "path": "detailsOfElements[0].details.cutFillPen.penIndex", "eq": 5 },
+        { "path": "detailsOfElements[0].details.cutFillBackgroundPen.overridden", "eq": false }
+      ]
+    },
+    {
+      "id": "modify the same keys",
+      "command": "ModifyWalls",
+      "creates": false,
+      "params": {
+        "wallsWithDetails": [
+          {
+            "elementId": { "guid": "${w1}" },
+            "zoneRel": "None",
+            "referenceMaterial": { "overridden": false },
+            "sideMaterial": { "overridden": true, "attributeId": { "guid": "${surf1}" } },
+            "cutFillPen": { "overridden": false },
+            "cutFillBackgroundPen": { "overridden": true, "penIndex": 7 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "wall modified" }
+      ]
+    },
+    {
+      "id": "read the modified wall",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.zoneRel", "eq": "None" },
+        { "path": "detailsOfElements[0].details.referenceMaterial.overridden", "eq": false },
+        { "path": "detailsOfElements[0].details.oppositeMaterial.attributeId.guid", "eq": "${surf2}", "name": "opposite material kept" },
+        { "path": "detailsOfElements[0].details.sideMaterial.overridden", "eq": true },
+        { "path": "detailsOfElements[0].details.sideMaterial.attributeId.guid", "eq": "${surf1}" },
+        { "path": "detailsOfElements[0].details.cutFillPen.overridden", "eq": false },
+        { "path": "detailsOfElements[0].details.cutFillBackgroundPen.overridden", "eq": true },
+        { "path": "detailsOfElements[0].details.cutFillBackgroundPen.penIndex", "eq": 7 },
+        { "path": "detailsOfElements[0].details.height", "approx": 3.0, "name": "height kept" }
+      ]
+    },
+    {
+      "id": "zone created with a contour line and a cover fill",
+      "command": "CreateZones",
+      "params": {
+        "zonesData": [
+          {
+            "name": "TapirCheck parity zone",
+            "numberStr": "P1",
+            "floorIndex": 0,
+            "contourLine": { "use": true, "pen": 3, "lineTypeId": { "guid": "${lt}" } },
+            "coverFill": { "use": true, "fillId": { "guid": "${fill}" }, "foregroundPen": 4, "backgroundPen": 5 },
+            "geometry": {
+              "polygonCoordinates": [
+                { "x": 920.0, "y": 700.0 },
+                { "x": 924.0, "y": 700.0 },
+                { "x": 924.0, "y": 703.0 },
+                { "x": 920.0, "y": 703.0 }
+              ]
+            }
+          }
+        ]
+      },
+      "save": { "z1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "zone created" }
+      ]
+    },
+    {
+      "id": "read the new zone",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${z1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.contourLine.use", "eq": true },
+        { "path": "detailsOfElements[0].details.contourLine.pen", "eq": 3 },
+        { "path": "detailsOfElements[0].details.contourLine.lineTypeId.guid", "eq": "${lt}" },
+        { "path": "detailsOfElements[0].details.coverFill.use", "eq": true },
+        { "path": "detailsOfElements[0].details.coverFill.fillId.guid", "eq": "${fill}" },
+        { "path": "detailsOfElements[0].details.coverFill.foregroundPen", "eq": 4 },
+        { "path": "detailsOfElements[0].details.coverFill.backgroundPen", "eq": 5 }
+      ]
+    },
+    {
+      "id": "modify the contour line and cover fill, and refuse an unknown fill",
+      "command": "ModifyZones",
+      "creates": false,
+      "params": {
+        "zonesWithDetails": [
+          {
+            "elementId": { "guid": "${z1}" },
+            "contourLine": { "use": false, "pen": 6 },
+            "coverFill": { "foregroundPen": 8 }
+          },
+          {
+            "elementId": { "guid": "${z1}" },
+            "name": "TapirCheck must not be renamed",
+            "coverFill": { "fillId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "zone modified" },
+        { "path": "executionResults[1].success", "eq": false, "name": "unknown fill refused" }
+      ]
+    },
+    {
+      "id": "read the modified zone",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${z1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.contourLine.use", "eq": false },
+        { "path": "detailsOfElements[0].details.contourLine.pen", "eq": 6 },
+        { "path": "detailsOfElements[0].details.contourLine.lineTypeId.guid", "eq": "${lt}", "name": "line type kept" },
+        { "path": "detailsOfElements[0].details.coverFill.use", "eq": true, "name": "cover fill still drawn" },
+        { "path": "detailsOfElements[0].details.coverFill.fillId.guid", "eq": "${fill}", "name": "fill kept" },
+        { "path": "detailsOfElements[0].details.coverFill.foregroundPen", "eq": 8 },
+        { "path": "detailsOfElements[0].details.coverFill.backgroundPen", "eq": 5, "name": "background pen kept" },
+        { "path": "detailsOfElements[0].details.name", "eq": "TapirCheck parity zone", "name": "the refused item changed nothing" }
+      ]
+    }
+  ]
+}

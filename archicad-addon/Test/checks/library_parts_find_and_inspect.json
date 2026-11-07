@@ -1,0 +1,404 @@
+{
+  "title": "Finding and inspecting library parts: a parent and a child part of the embedded library through the library part commands of the classic API",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "parent part under the General GDL Object (by main GUID)",
+      "command": "CreateLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          {
+            "name": "TapirCheckLibInspect Parent",
+            "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+            "path": "TapirCheckLibInspect/TapirCheckLibInspect Parent.gsm",
+            "a": 1.0,
+            "b": 1.0,
+            "script3D": "BLOCK A, B, 1"
+          }
+        ],
+        "overwriteExisting": true
+      },
+      "save": {
+        "parentUnId": "libraryParts[0].unId"
+      },
+      "expect": [
+        { "path": "libraryParts[0].error", "exists": false, "name": "parent created" }
+      ]
+    },
+    {
+      "id": "child part under the parent (by unique ID)",
+      "command": "CreateLibraryParts",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          {
+            "name": "TapirCheckLibInspect Child",
+            "parentId": "${parentUnId}",
+            "path": "TapirCheckLibInspect/TapirCheckLibInspect Child.gsm",
+            "a": 1.0,
+            "b": 1.0,
+            "script3D": "BLOCK A, B, 0.5"
+          }
+        ],
+        "overwriteExisting": true
+      },
+      "save": {
+        "childUnId": "libraryParts[0].unId",
+        "childIndex": "libraryParts[0].index"
+      },
+      "expect": [
+        { "path": "libraryParts[0].error", "exists": false, "name": "child created" }
+      ]
+    },
+    {
+      "id": "loaded libraries",
+      "command": "GetLibraries",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "libraries[0].name", "exists": true, "name": "at least one library, with a name" },
+        { "path": "libraries[0].type", "exists": true, "name": "with a type" }
+      ]
+    },
+    {
+      "id": "library check",
+      "command": "CheckLibraries",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "every available part",
+      "command": "GetAvailableLibraryParts",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "skippedCount", "eq": 0, "name": "every library part read" },
+        { "path": "libraryParts[0].guid", "exists": true, "name": "parts listed with their guid" },
+        { "path": "libraryParts[0].index", "exists": true, "name": "and their index" }
+      ]
+    },
+    {
+      "id": "available objects only",
+      "command": "GetAvailableLibraryParts",
+      "creates": false,
+      "params": {
+        "filterByTypeId": "Object"
+      },
+      "expect": [
+        { "path": "libraryParts[0].typeId", "eq": "Object", "name": "filtered by type (the two new parts are objects)" }
+      ]
+    },
+    {
+      "id": "[child by index, parent by name, index 0]",
+      "command": "GetLibraryPartTypeDetails",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "index": "${childIndex}" },
+          { "name": "TapirCheckLibInspect Parent" },
+          { "index": 0 }
+        ]
+      },
+      "save": {
+        "detailsChildIndex": "libraryParts[0].index",
+        "detailsChildUnId": "libraryParts[0].unId",
+        "detailsChildParentUnId": "libraryParts[0].parentUnId",
+        "gdlObjectUnId": "libraryParts[1].parentUnId"
+      },
+      "expect": [
+        { "path": "libraryParts", "len": 3, "name": "one item per input" },
+        { "path": "libraryParts[0].name", "eq": "TapirCheckLibInspect Child", "name": "child found by index: its name" },
+        { "path": "libraryParts[0].fileName", "eq": "TapirCheckLibInspect Child.gsm", "name": "child: its file name" },
+        { "expr": "${detailsChildIndex} - ${childIndex}", "eq": 0, "name": "child: the index it was asked by" },
+        { "path": "libraryParts[0].typeId", "eq": "Object", "name": "child: an Object" },
+        { "path": "libraryParts[0].isPlaceable", "eq": true, "name": "child: placeable" },
+        { "path": "libraryParts[0].objectDetails", "exists": true, "name": "child: object details" },
+        { "path": "libraryParts[1].name", "eq": "TapirCheckLibInspect Parent", "name": "parent found by name" },
+        { "path": "libraryParts[1].parentUnId", "contains": "F938E33A-329D-4A36-BE3E-85E126820996", "name": "parent: under the General GDL Object" },
+        { "path": "libraryParts[2].error", "exists": true, "name": "index 0: an error item" }
+      ]
+    },
+    {
+      "id": "[child, parent, missing name] subtype of the parent",
+      "command": "IsLibraryPartSubtypeOf",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "index": "${childIndex}" },
+          { "unId": "${parentUnId}" },
+          { "name": "TapirCheckLibInspect NoSuchPart" }
+        ],
+        "ancestor": { "unId": "${parentUnId}" }
+      },
+      "expect": [
+        { "path": "ancestorUnId", "exists": true },
+        { "path": "results", "len": 3, "name": "one result per input" },
+        { "path": "results[0].isSubtypeOf", "eq": true, "name": "the child is a subtype of the parent" },
+        { "path": "results[1].isSubtypeOf", "eq": false, "name": "the parent is not a subtype of itself" },
+        { "path": "results[2].error", "exists": true, "name": "missing name: an error item" }
+      ]
+    },
+    {
+      "id": "[child, parent] subtype of any revision of the General GDL Object",
+      "command": "IsLibraryPartSubtypeOf",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "index": "${childIndex}" },
+          { "name": "TapirCheckLibInspect Parent" }
+        ],
+        "ancestor": { "unId": "${gdlObjectUnId}" },
+        "matchAncestorByMainId": true
+      },
+      "expect": [
+        { "path": "results[0].isSubtypeOf", "eq": true, "name": "child: anywhere up its hierarchy" },
+        { "path": "results[1].isSubtypeOf", "eq": true, "name": "parent: its direct parent" }
+      ]
+    },
+    {
+      "id": "the parent is not a subtype of its child",
+      "command": "IsLibraryPartSubtypeOf",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "unId": "${parentUnId}" }
+        ],
+        "ancestor": { "index": "${childIndex}" }
+      },
+      "expect": [
+        { "path": "ancestorUnId", "exists": true, "name": "ancestor resolved by index" },
+        { "path": "results[0].isSubtypeOf", "eq": false }
+      ]
+    },
+    {
+      "id": "ancestor that is not loaded",
+      "command": "IsLibraryPartSubtypeOf",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "index": "${childIndex}" }
+        ],
+        "ancestor": { "name": "TapirCheckLibInspect NoSuchPart" }
+      },
+      "expect": [
+        { "path": "error", "exists": true, "name": "an error, no results" }
+      ]
+    },
+    {
+      "id": "search below the parent",
+      "command": "SearchLibraryParts",
+      "creates": false,
+      "params": {
+        "ancestorUnId": "${parentUnId}",
+        "pattern": "TapirCheckLibInspect*"
+      },
+      "save": {
+        "foundIndex": "libraryParts[0].index"
+      },
+      "expect": [
+        { "path": "libraryParts", "len": 1, "name": "only the child (not the parent itself)" },
+        { "path": "libraryParts[0].name", "eq": "TapirCheckLibInspect Child" },
+        { "path": "libraryParts[0].fileName", "eq": "TapirCheckLibInspect Child.gsm" },
+        { "expr": "${foundIndex} - ${childIndex}", "eq": 0, "name": "the index of the child" },
+        { "path": "libraryParts[0].typeId", "eq": "Object" }
+      ]
+    },
+    {
+      "id": "search below the General GDL Object",
+      "command": "SearchLibraryParts",
+      "creates": false,
+      "params": {
+        "ancestorUnId": "${gdlObjectUnId}",
+        "pattern": "TapirCheckLibInspect*"
+      },
+      "expect": [
+        { "path": "libraryParts", "len": 2, "name": "parent and child" }
+      ]
+    },
+    {
+      "id": "pattern that matches nothing",
+      "command": "SearchLibraryParts",
+      "creates": false,
+      "params": {
+        "ancestorUnId": "${parentUnId}",
+        "pattern": "TapirCheckLibInspect NoSuchPart*"
+      },
+      "expect": [
+        { "path": "libraryParts", "len": 0 }
+      ]
+    },
+    {
+      "id": "ancestor that is not a unique ID",
+      "command": "SearchLibraryParts",
+      "creates": false,
+      "params": {
+        "ancestorUnId": "TapirCheckLibInspect",
+        "pattern": "*"
+      },
+      "expect": [
+        { "path": "error", "exists": true }
+      ]
+    },
+    {
+      "id": "[child by index, index 0]",
+      "command": "GetLibraryPartIdentities",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "index": "${childIndex}" },
+          { "index": 0 }
+        ]
+      },
+      "save": {
+        "childFilePath": "identities[0].path",
+        "identityUnId": "identities[0].unId"
+      },
+      "expect": [
+        { "path": "identities", "len": 2, "name": "one item per input" },
+        { "path": "identities[0].path", "contains": "TapirCheckLibInspect Child.gsm", "name": "child: its file" },
+        { "path": "identities[0].mainGuid", "exists": true },
+        { "path": "identities[0].revisionGuid", "exists": true },
+        { "path": "identities[0].isServerLibraryPart", "eq": false, "name": "child: not in a server library" },
+        { "path": "identities[1].error", "exists": true, "name": "index 0: an error item" }
+      ]
+    },
+    {
+      "id": "child by the path of its file",
+      "command": "GetLibraryPartIdentities",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "path": "${childFilePath}" }
+        ]
+      },
+      "save": {
+        "identityByPathUnId": "identities[0].unId"
+      },
+      "expect": [
+        { "path": "identities[0].error", "exists": false, "name": "found by path" }
+      ]
+    },
+    {
+      "id": "unique ID of CreateLibraryParts and of GetLibraryPartIdentities by index",
+      "command": "CompareLibraryPartUnIds",
+      "creates": false,
+      "params": {
+        "unId1": "${childUnId}",
+        "unId2": "${identityUnId}"
+      },
+      "expect": [
+        { "path": "apiErrorCode", "eq": 0, "name": "Archicad reports them matching" },
+        { "path": "sameMainGuid", "eq": true },
+        { "path": "sameRevisionGuid", "eq": true }
+      ]
+    },
+    {
+      "id": "unique ID of GetLibraryPartIdentities by path",
+      "command": "CompareLibraryPartUnIds",
+      "creates": false,
+      "params": {
+        "unId1": "${childUnId}",
+        "unId2": "${identityByPathUnId}"
+      },
+      "expect": [
+        { "path": "sameMainGuid", "eq": true },
+        { "path": "sameRevisionGuid", "eq": true }
+      ]
+    },
+    {
+      "id": "unique ID of GetLibraryPartTypeDetails by index",
+      "command": "CompareLibraryPartUnIds",
+      "creates": false,
+      "params": {
+        "unId1": "${childUnId}",
+        "unId2": "${detailsChildUnId}"
+      },
+      "expect": [
+        { "path": "sameMainGuid", "eq": true },
+        { "path": "sameRevisionGuid", "eq": true }
+      ]
+    },
+    {
+      "id": "parent unique ID of GetLibraryPartTypeDetails is the parent's",
+      "command": "CompareLibraryPartUnIds",
+      "creates": false,
+      "params": {
+        "unId1": "${parentUnId}",
+        "unId2": "${detailsChildParentUnId}"
+      },
+      "expect": [
+        { "path": "sameMainGuid", "eq": true },
+        { "path": "sameRevisionGuid", "eq": true }
+      ]
+    },
+    {
+      "id": "child compared with the parent",
+      "command": "CompareLibraryPartUnIds",
+      "creates": false,
+      "params": {
+        "unId1": "${childUnId}",
+        "unId2": "${parentUnId}"
+      },
+      "expect": [
+        { "path": "apiErrorCode", "ne": 0, "name": "Archicad reports them different" },
+        { "path": "sameMainGuid", "eq": false },
+        { "path": "sameRevisionGuid", "eq": false }
+      ]
+    },
+    {
+      "id": "a text that is not a unique ID",
+      "command": "CompareLibraryPartUnIds",
+      "creates": false,
+      "params": {
+        "unId1": "${childUnId}",
+        "unId2": "TapirCheckLibInspect"
+      },
+      "expect": [
+        { "path": "error", "exists": true }
+      ]
+    },
+    {
+      "id": "[child, index 0] original location",
+      "command": "GetLibraryPartOriginalLocations",
+      "creates": false,
+      "params": {
+        "libraryParts": [
+          { "index": "${childIndex}" },
+          { "index": 0 }
+        ]
+      },
+      "expect": [
+        { "path": "locations", "len": 2, "name": "one item per input" },
+        { "path": "locations[0].path", "exists": true, "name": "child: a path" },
+        { "path": "locations[1].error", "exists": true, "name": "index 0: an error item" }
+      ]
+    },
+    {
+      "id": "last valid part of the embedded library",
+      "command": "GetLastValidEmbeddedLibraryPartName",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "error", "exists": false, "name": "found (the embedded library holds the two new parts)" },
+        { "path": "name", "exists": true },
+        { "path": "path", "exists": true }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteEmbeddedLibraryItems",
+      "params": {
+        "embeddedLibraryItems": [
+          { "path": "TapirCheckLibInspect" }
+        ]
+      }
+    }
+  ]
+}

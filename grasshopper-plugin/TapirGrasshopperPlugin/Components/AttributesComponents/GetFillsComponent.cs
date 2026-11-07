@@ -194,6 +194,14 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             OutTexts(
                 "ErrorMessages",
                 "Error message for each queried attribute (empty when successful).");
+
+            OutPoints(
+                "SymbolOffsets1",
+                "First offset vector (X1/Y1) of the repeating motif of each symbol fill.");
+
+            OutPoints(
+                "SymbolOffsets2",
+                "Second offset vector (X2/Y2) of the repeating motif of each symbol fill.");
         }
 
         protected override void SetOutputs(
@@ -214,6 +222,8 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             var bitPatterns = new List<object>();
             var gradientStarts = new List<object>();
             var gradientEnds = new List<object>();
+            var symbolOffsets1 = new List<object>();
+            var symbolOffsets2 = new List<object>();
             var percents = new List<object>();
             var textureNames = new List<object>();
             var textureRotationAngles = new List<object>();
@@ -269,6 +279,8 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                     bitPatterns.Add(null);
                     gradientStarts.Add(null);
                     gradientEnds.Add(null);
+                    symbolOffsets1.Add(null);
+                    symbolOffsets2.Add(null);
                     percents.Add(null);
                     textureNames.Add(null);
                     textureRotationAngles.Add(null);
@@ -296,6 +308,8 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 bitPatterns.Add(JsonOutputHelp.Scalar(item, "bitPattern"));
                 gradientStarts.Add(JsonOutputHelp.Point(item["gradientStart"]));
                 gradientEnds.Add(JsonOutputHelp.Point(item["gradientEnd"]));
+                symbolOffsets1.Add(JsonOutputHelp.Point(item["symbolOffset1"]));
+                symbolOffsets2.Add(JsonOutputHelp.Point(item["symbolOffset2"]));
                 percents.Add(JsonOutputHelp.Scalar(item, "percent"));
 
                 var texture = item["texture"];
@@ -416,6 +430,8 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             da.SetDataTree(38, symbolArcAngles);
             da.SetDataTree(39, symbolHotspots);
             da.SetDataList(40, errors);
+            da.SetDataList(41, symbolOffsets1);
+            da.SetDataList(42, symbolOffsets2);
         }
 
         protected override System.Drawing.Bitmap Icon =>

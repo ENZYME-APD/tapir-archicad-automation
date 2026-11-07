@@ -110,6 +110,21 @@ namespace TapirGrasshopperPlugin.Types.Element
         public List<ClassificationItemUpdate> ClassificationItems;
     }
 
+    public class ElementDefaultClassificationObj
+    {
+        [JsonProperty("elementType")]
+        public string ElementType;
+
+        [JsonProperty("classificationId")]
+        public ClassificationObj Classification;
+    }
+
+    public class SetClassificationsOfElementDefaultsParameters
+    {
+        [JsonProperty("elementDefaultClassifications")]
+        public List<ElementDefaultClassificationObj> ElementDefaultClassifications;
+    }
+
     public class ImportClassificationsXmlParameters
     {
         [JsonProperty("xml")]

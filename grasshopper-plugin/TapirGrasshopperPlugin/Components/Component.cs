@@ -315,6 +315,17 @@ namespace TapirGrasshopperPlugin.Components
                 GH_ParamAccess.list);
         }
 
+        public void InPoint(
+            string name,
+            string description = "")
+        {
+            inManager.AddPointParameter(
+                name,
+                name,
+                description.WithTypeName("pointItem"),
+                GH_ParamAccess.item);
+        }
+
         public void InPoints(
             string name,
             string description = "")
