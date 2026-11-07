@@ -39,16 +39,24 @@ DRY_RUN_COMMANDS = {
     'RemoveElementTrims',
     'RemoveIFCPropertiesOfElements',
     'RemoveIFCClassificationReferencesOfElements',
+    # Part 3: attribute, property and classification deletes
+    'DeleteAttributes',
+    'DeleteAndReplaceAttributes',
+    'DeleteAttributeFolders',
+    'DeleteUserDataOfAttributes',
+    'DeletePropertyGroups',
+    'DeletePropertyDefinitions',
+    'RemovePropertyFromAttributes',
+    'DeleteClassificationSystems',
+    'DeleteClassificationItems',
 }
 
 # The commands of DRY_RUN_COMMANDS that answer one execution result per target in executionResults.
-PER_TARGET_DRY_RUN_COMMANDS = DRY_RUN_COMMANDS - {'DeleteSelectedElements', 'DeleteIssue'}
+PER_TARGET_DRY_RUN_COMMANDS = DRY_RUN_COMMANDS - {'DeleteSelectedElements', 'DeleteIssue', 'RemovePropertyFromAttributes', 'DeleteAndReplaceAttributes'}
 
 # The commands that had a dryRun input of their own before #2195. The ones that delete or change
 # move onto the shared option (and into DRY_RUN_COMMANDS) in the later parts of #2195.
 COMMANDS_WITH_OWN_DRY_RUN = {
-    'DeleteAttributes',
-    'DeleteAndReplaceAttributes',
     'DeleteNavigatorItems',
     'ImportAttributesFromProject',
     'ReindexAttributes',
@@ -215,7 +223,7 @@ class DryRunTest (unittest.TestCase):
 
     def test_single_result_responses (self):
         failed = {'success': False, 'error': {'code': -2130313112, 'message': 'Failed.'}}
-        for name in ['DeleteIssue', 'DeleteSelectedElements']:
+        for name in ['DeleteIssue', 'DeleteSelectedElements', 'RemovePropertyFromAttributes']:
             with self.subTest (command=name):
                 outputSchema = self.commands[name]['output']
                 self.assertTrue (self.validator.IsValid ({'success': True}, outputSchema))
@@ -224,6 +232,7 @@ class DryRunTest (unittest.TestCase):
                 self.assertFalse (self.validator.IsValid ({'dryRun': False, 'success': True}, outputSchema))
                 self.assertFalse (self.validator.IsValid ({'dryRun': True}, outputSchema))
         self.assertTrue (self.validator.IsValid ({'dryRun': True, 'success': True, 'wouldDelete': True}, self.commands['DeleteIssue']['output']))
+        self.assertTrue (self.validator.IsValid ({'dryRun': True, 'success': True, 'wouldDelete': True}, self.commands['RemovePropertyFromAttributes']['output']))
         selected = {'dryRun': True, 'success': True, 'wouldDelete': True, 'elements': [{'elementId': {'guid': GUID}}]}
         self.assertTrue (self.validator.IsValid (selected, self.commands['DeleteSelectedElements']['output']))
         self.assertTrue (self.validator.IsValid ({'dryRun': True, 'success': True, 'wouldDelete': False, 'elements': []}, self.commands['DeleteSelectedElements']['output']))
@@ -232,6 +241,28 @@ class DryRunTest (unittest.TestCase):
         self.assertTrue (self.validator.IsValid ({}, inputSchema))
         self.assertTrue (self.validator.IsValid ({'dryRun': True}, inputSchema))
         self.assertFalse (self.validator.IsValid ({'elements': []}, inputSchema))
+
+    def test_delete_and_replace_attributes_responses (self):
+        outputSchema = self.commands['DeleteAndReplaceAttributes']['output']
+        replaced = {
+            'attributeId': {'guid': GUID},
+            'replacementAttributeId': {'guid': GUID},
+            'elements': [],
+            'hotlinkElements': [],
+            'toolDefaults': [],
+            'favorites': [],
+            'attributes': [],
+            'overrideRules': [],
+        }
+        notFound = {'error': {'code': -2130313112, 'message': 'The Fill to delete was not found.'}}
+        self.assertTrue (self.validator.IsValid ({'attributes': [replaced, notFound]}, outputSchema))
+        self.assertTrue (self.validator.IsValid ({'dryRun': True, 'attributes': [dict (replaced, wouldDelete=True), notFound]}, outputSchema))
+        self.assertFalse (self.validator.IsValid ({'dryRun': False, 'attributes': []}, outputSchema))
+        self.assertFalse (self.validator.IsValid ({'dryRun': True, 'attributes': [dict (replaced, wouldDelete=False)]}, outputSchema))
+        inputSchema = self.commands['DeleteAndReplaceAttributes']['input']
+        attributes = [{'attributeId': {'guid': GUID}, 'replacementAttributeId': {'guid': GUID}}]
+        self.assertTrue (self.validator.IsValid ({'attributeType': 'Fill', 'attributes': attributes, 'dryRun': True}, inputSchema))
+        self.assertFalse (self.validator.IsValid ({'attributeType': 'Fill', 'attributes': attributes, 'dryRun': 'yes'}, inputSchema))
 
 
 if __name__ == '__main__':

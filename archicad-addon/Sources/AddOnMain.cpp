@@ -1579,7 +1579,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<RemovePropertyFromAttributesCommand> (
             propertyCommands, "1.7.3",
-            "Makes a custom property unavailable for the given attributes (for example Building Materials), in one undo step. Available in Archicad 25, 26 and 27 only."
+            "Makes a custom property unavailable for the given attributes (for example Building Materials), in one undo step. Available in Archicad 25, 26 and 27 only. With dryRun true nothing is changed and no undo step is created: the response has dryRun set to true, and wouldDelete when the property and every attribute exist."
         );
         err |= RegisterCommand<CreatePropertyGroupsCommand> (
             propertyCommands, "1.0.7",
@@ -1587,7 +1587,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeletePropertyGroupsCommand> (
             propertyCommands, "1.0.9",
-            "Deletes the given Custom Property Groups."
+            "Deletes the given Custom Property Groups. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each property group that exists gets wouldDelete."
         );
         err |= RegisterCommand<CreatePropertyDefinitionsCommand> (
             propertyCommands, "1.0.9",
@@ -1595,7 +1595,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeletePropertyDefinitionsCommand> (
             propertyCommands, "1.0.9",
-            "Deletes the given Custom Property Definitions."
+            "Deletes the given Custom Property Definitions. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each property that exists gets wouldDelete."
         );
         err |= RegisterCommand<UpdatePropertyDefinitionsCommand> (
             propertyCommands, "1.5.4",
@@ -1697,11 +1697,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteClassificationSystemsCommand> (
             classificationCommands, "1.5.2",
-            "Deletes the given Classification Systems."
+            "Deletes the given Classification Systems. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each classification system that exists gets wouldDelete."
         );
         err |= RegisterCommand<DeleteClassificationItemsCommand> (
             classificationCommands, "1.5.2",
-            "Deletes the given Classification Items."
+            "Deletes the given Classification Items. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each classification item that exists gets wouldDelete."
         );
         err |= RegisterCommand<UpdateClassificationSystemsCommand> (
             classificationCommands, "1.6.0",
@@ -1742,7 +1742,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteAttributesCommand> (
             attributeCommands, "1.5.4",
-            "Deletes the given attributes. Returns an execution result for each input item. dryRun only checks the items (attribute type, attribute exists) and deletes nothing."
+            "Deletes the given attributes. Returns an execution result for each input item. With dryRun true nothing is deleted: the response has dryRun set to true, and each attribute that passes the checks made before deleting (valid attribute type, attribute exists) gets wouldDelete."
         );
         err |= RegisterCommand<ImportAttributesFromProjectCommand> (
             attributeCommands, "1.8.1",
@@ -1766,7 +1766,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteAttributeFoldersCommand> (
             attributeCommands, "1.7.3",
-            "Deletes attribute folders, each given by attribute type and path, together with all the subfolders and deletable attributes they contain (a folder holding an attribute that cannot be deleted is kept). The root folder cannot be deleted. Available from Archicad 26."
+            "Deletes attribute folders, each given by attribute type and path, together with all the subfolders and deletable attributes they contain (a folder holding an attribute that cannot be deleted is kept). The root folder cannot be deleted. With dryRun true nothing is deleted: the response has dryRun set to true, and each folder that exists and is not the root folder gets wouldDelete. Available from Archicad 26."
         );
         err |= RegisterCommand<RenameAttributeFoldersCommand> (
             attributeCommands, "1.7.3",
@@ -1786,7 +1786,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteAndReplaceAttributesCommand> (
             attributeCommands, "1.8.1",
-            "Deletes fills, line types, surfaces or building materials and replaces each by another attribute of the same type wherever it was used, like Delete and Replace in the Attribute Manager. Every reference is rewritten to the replacement, the way ReindexAttributes rewrites them: the fields of the elements in the floor plan and in every view and layout, the parameters of library part based elements, their memo data, the tool defaults, the Favorites, the other attributes that refer to it (composites, building materials, surfaces, profiles, MEP systems) and the graphic override rules. Elements on a hidden or locked layer are changed too: their layers are shown and unlocked for the change and put back afterwards (in the current window). If an element cannot be changed (it is locked itself, or not reserved in Teamwork), everything is put back and that attribute is not deleted. Elements from hotlinked modules cannot be changed and are listed. Indices typed into GDL scripts are not found, and the frame and panel classes of curtain wall Favorites and of the Curtain Wall tool default keep the deleted attribute (named in the warnings). If a tool default, Favorite, attribute or rule cannot be rewritten to the replacement, it keeps a copy of the deleted attribute with its name and a new attribute id, named in the warnings. dryRun lists every reference without changing anything. The whole call is one undo step. Available from Archicad 27."
+            "Deletes fills, line types, surfaces or building materials and replaces each by another attribute of the same type wherever it was used, like Delete and Replace in the Attribute Manager. Every reference is rewritten to the replacement, the way ReindexAttributes rewrites them: the fields of the elements in the floor plan and in every view and layout, the parameters of library part based elements, their memo data, the tool defaults, the Favorites, the other attributes that refer to it (composites, building materials, surfaces, profiles, MEP systems) and the graphic override rules. Elements on a hidden or locked layer are changed too: their layers are shown and unlocked for the change and put back afterwards (in the current window). If an element cannot be changed (it is locked itself, or not reserved in Teamwork), everything is put back and that attribute is not deleted. Elements from hotlinked modules cannot be changed and are listed. Indices typed into GDL scripts are not found, and the frame and panel classes of curtain wall Favorites and of the Curtain Wall tool default keep the deleted attribute (named in the warnings). If a tool default, Favorite, attribute or rule cannot be rewritten to the replacement, it keeps a copy of the deleted attribute with its name and a new attribute id, named in the warnings. The whole call is one undo step. With dryRun true nothing is changed and no undo step is created: the response has dryRun set to true, and each attribute that passes the checks gets wouldDelete and lists every reference a real run would rewrite (elements, tool defaults, Favorites, other attributes, graphic override rules, elements from hotlinked modules). Available from Archicad 27."
         );
         err |= RegisterCommand<GetUnusedAttributesCommand> (
             attributeCommands, "1.8.1",
@@ -1986,7 +1986,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteUserDataOfAttributesCommand> (
             attributeCommands, "1.8.0",
-            "Removes the user data of attributes, every key at once. Archicad does not record this change as an undo step, so Undo does not revert it."
+            "Removes the user data of attributes, every key at once. Archicad does not record this change as an undo step, so Undo does not revert it. With dryRun true nothing is removed: the response has dryRun set to true, and each attribute that exists gets wouldDelete."
         );
         AddCommandGroup (attributeCommands);
     }
