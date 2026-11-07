@@ -1,8 +1,8 @@
 {
- "generatedAt": "2026-11-07 22:45 UTC",
+ "generatedAt": "2026-11-07 23:05 UTC",
  "counts": {
   "done": 568,
-  "merged": 181,
+  "merged": 182,
   "in progress": 9,
   "skipped": 1,
   "not applicable": 1
@@ -10,7 +10,7 @@
  "parameters": {
   "all": 696,
   "json": 34,
-  "partial": 19
+  "partial": 20
  },
  "items": [
   {
@@ -4420,6 +4420,37 @@
     }
    ],
    "issues": []
+  },
+  {
+   "id": "ScaleElements",
+   "group": "Element Commands",
+   "version": "1.8.1",
+   "brief": "Scales elements on the floor plan or in the current 2D view by a factor around a center point with Archicad's Resize edit, in one undo step. Resize scales X and Y by the same ratio, so factorY, if given, must equal factor. Supported types: Wall, Column, Beam, Slab, Roof, Mesh, Zone, Line, PolyLine, Arc, Circle, Spline, Hatch and Hotspot. An element of another type (library parts such as objects, lamps, doors and windows, stairs, railings, curtain walls, shells, morphs, texts, subelements, dimensions, labels, ...) or one that cannot be edited gets a failed execution result naming the reason, and the other elements are still scaled.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "ScaleElementsComponent",
+     "path": "Components/ElementsComponents/ScaleElementsComponent.cs"
+    }
+   ],
+   "parameters": "partial",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "center",
+    "elements",
+    "factor"
+   ],
+   "missingParameters": [
+    "factorY"
+   ],
+   "pullRequests": [],
+   "issues": [
+    {
+     "number": 2188,
+     "title": "New commands: align, distribute and scale elements"
+    }
+   ]
   },
   {
    "id": "DeleteElements",

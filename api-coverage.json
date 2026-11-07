@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 22:45 UTC",
+ "generatedAt": "2026-11-07 23:05 UTC",
  "versions": [
   25,
   26,
@@ -13,8 +13,8 @@
   "done": 1908,
   "skipped": 29,
   "merged": 324,
-  "claimed": 26,
-  "in progress": 22
+  "claimed": 16,
+  "in progress": 32
  },
  "items": [
   {
@@ -4117,10 +4117,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2206,
-     "title": "[3/3] Add ScaleElements command"
-    },
-    {
      "number": 1470,
      "title": "Report failed creation transactions instead of returning element results"
     },
@@ -5596,9 +5592,14 @@
    "olderNames": [
     "APIIo_OpenLibPartFileDialogID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2287,
+     "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
+    }
+   ],
    "issues": [
     {
      "number": 2269,
@@ -5624,9 +5625,14 @@
    "olderNames": [
     "APIIo_OpenOtherObjectDialogID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2287,
+     "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
+    }
+   ],
    "issues": [
     {
      "number": 2269,
@@ -5652,9 +5658,14 @@
    "olderNames": [
     "APIIo_OpenPictureDialogID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2287,
+     "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
+    }
+   ],
    "issues": [
     {
      "number": 2269,
@@ -5703,9 +5714,14 @@
    "olderNames": [
     "APIIo_SaveLibPartFileDialogID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2287,
+     "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
+    }
+   ],
    "issues": [
     {
      "number": 2269,
@@ -5757,6 +5773,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2287,
+     "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
+    },
     {
      "number": 2281,
      "title": "[2/6] Add PickLibraryPart: Archicad's Object Settings dialog as a library part picker"
@@ -6881,9 +6901,18 @@
    "olderNames": [
     "ACAPI_Notify_CatchChangeDefaults"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2289,
+     "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
+    },
+    {
+     "number": 2285,
+     "title": "[4/6] Notification clients: tool default changes (notifyOnToolDefaultChanges)"
+    }
+   ],
    "issues": [
     {
      "number": 2267,
@@ -7372,10 +7401,6 @@
     {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    },
-    {
-     "number": 2206,
-     "title": "[3/3] Add ScaleElements command"
     }
    ],
    "issues": []
@@ -14800,6 +14825,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2289,
+     "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
+    },
+    {
+     "number": 2285,
+     "title": "[4/6] Notification clients: tool default changes (notifyOnToolDefaultChanges)"
+    },
+    {
      "number": 2284,
      "title": "[3/6] Notification clients: Teamwork lockable object set reservation changes"
     }
@@ -14856,6 +14889,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2289,
+     "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
+    },
+    {
+     "number": 2285,
+     "title": "[4/6] Notification clients: tool default changes (notifyOnToolDefaultChanges)"
+    },
+    {
      "number": 2284,
      "title": "[3/6] Notification clients: Teamwork lockable object set reservation changes"
     },
@@ -14896,6 +14937,14 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2289,
+     "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
+    },
+    {
+     "number": 2285,
+     "title": "[4/6] Notification clients: tool default changes (notifyOnToolDefaultChanges)"
+    },
     {
      "number": 2284,
      "title": "[3/6] Notification clients: Teamwork lockable object set reservation changes"
@@ -15049,9 +15098,14 @@
    "olderNames": [
     "ACAPI_Notify_RegisterEventHandler"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2289,
+     "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
+    }
+   ],
    "issues": [
     {
      "number": 2267,
@@ -15076,9 +15130,14 @@
    "olderNames": [
     "ACAPI_Notify_UnregisterEventHandler"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2289,
+     "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
+    }
+   ],
    "issues": [
     {
      "number": 2267,
@@ -16542,7 +16601,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2287,
+     "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
+    }
+   ],
    "issues": []
   },
   {
@@ -18102,6 +18166,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2289,
+     "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
+    },
+    {
+     "number": 2285,
+     "title": "[4/6] Notification clients: tool default changes (notifyOnToolDefaultChanges)"
+    },
+    {
      "number": 2284,
      "title": "[3/6] Notification clients: Teamwork lockable object set reservation changes"
     }
@@ -18244,6 +18316,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2289,
+     "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
+    },
+    {
+     "number": 2285,
+     "title": "[4/6] Notification clients: tool default changes (notifyOnToolDefaultChanges)"
+    },
     {
      "number": 2284,
      "title": "[3/6] Notification clients: Teamwork lockable object set reservation changes"
@@ -18712,6 +18792,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2287,
+     "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
+    },
+    {
      "number": 2282,
      "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
     },
@@ -18946,6 +19030,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2286,
+     "title": "[3/5] Constraint option on the Get...FromUser commands"
+    },
+    {
      "number": 2280,
      "title": "[2/5] Snap filter option on the Get...FromUser commands"
     }
@@ -19115,9 +19203,14 @@
    "olderNames": [
     "APIEnv_GetMagicWandSetsID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2290,
+     "title": "[4/5] Add GetMagicWandSettings command"
+    }
+   ],
    "issues": [
     {
      "number": 2268,
@@ -19146,6 +19239,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2286,
+     "title": "[3/5] Constraint option on the Get...FromUser commands"
+    },
     {
      "number": 2280,
      "title": "[2/5] Snap filter option on the Get...FromUser commands"
@@ -19202,6 +19299,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2286,
+     "title": "[3/5] Constraint option on the Get...FromUser commands"
+    },
+    {
      "number": 2280,
      "title": "[2/5] Snap filter option on the Get...FromUser commands"
     }
@@ -19231,9 +19332,14 @@
    "olderNames": [
     "APIIo_ResetConstraintID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2286,
+     "title": "[3/5] Constraint option on the Get...FromUser commands"
+    }
+   ],
    "issues": [
     {
      "number": 2268,
@@ -19259,9 +19365,14 @@
    "olderNames": [
     "APIIo_SetConstraintID"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2286,
+     "title": "[3/5] Constraint option on the Get...FromUser commands"
+    }
+   ],
    "issues": [
     {
      "number": 2268,
@@ -19312,6 +19423,10 @@
    "status": "in progress",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2286,
+     "title": "[3/5] Constraint option on the Get...FromUser commands"
+    },
     {
      "number": 2280,
      "title": "[2/5] Snap filter option on the Get...FromUser commands"
@@ -21516,6 +21631,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2290,
+     "title": "[4/5] Add GetMagicWandSettings command"
+    },
+    {
+     "number": 2287,
+     "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
+    },
+    {
      "number": 2282,
      "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
     },
@@ -22098,6 +22221,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2287,
+     "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
+    },
+    {
+     "number": 2286,
+     "title": "[3/5] Constraint option on the Get...FromUser commands"
+    },
     {
      "number": 2281,
      "title": "[2/6] Add PickLibraryPart: Archicad's Object Settings dialog as a library part picker"
@@ -27273,10 +27404,6 @@
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
     },
     {
-     "number": 2206,
-     "title": "[3/3] Add ScaleElements command"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -30156,6 +30283,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2287,
+     "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
+    },
+    {
      "number": 2282,
      "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
     },
@@ -31481,10 +31612,6 @@
     {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    },
-    {
-     "number": 2206,
-     "title": "[3/3] Add ScaleElements command"
     },
     {
      "number": 2148,
@@ -37942,6 +38069,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2289,
+     "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
+    },
+    {
+     "number": 2285,
+     "title": "[4/6] Notification clients: tool default changes (notifyOnToolDefaultChanges)"
+    },
+    {
      "number": 2284,
      "title": "[3/6] Notification clients: Teamwork lockable object set reservation changes"
     },
@@ -37968,10 +38103,6 @@
     {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    },
-    {
-     "number": 2206,
-     "title": "[3/3] Add ScaleElements command"
     },
     {
      "number": 2148,
@@ -43554,6 +43685,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2289,
+     "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
+    },
+    {
+     "number": 2285,
+     "title": "[4/6] Notification clients: tool default changes (notifyOnToolDefaultChanges)"
+    },
+    {
      "number": 2284,
      "title": "[3/6] Notification clients: Teamwork lockable object set reservation changes"
     },
@@ -44650,10 +44789,6 @@
     {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    },
-    {
-     "number": 2206,
-     "title": "[3/3] Add ScaleElements command"
     },
     {
      "number": 2148,
@@ -47778,10 +47913,6 @@
     {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    },
-    {
-     "number": 2206,
-     "title": "[3/3] Add ScaleElements command"
     },
     {
      "number": 2148,
