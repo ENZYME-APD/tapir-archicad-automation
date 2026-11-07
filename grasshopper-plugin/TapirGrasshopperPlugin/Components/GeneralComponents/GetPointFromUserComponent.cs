@@ -28,6 +28,8 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
                 "Single-byte text. Optional.");
 
             SetOptionality(new[] { 0 });
+
+            UserInputOptions.AddInputs(this);
         }
 
         protected override void AddOutputs()
@@ -66,6 +68,11 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
             {
                 parameters["prompt"] = prompt;
             }
+
+            UserInputOptions.AddParameters(
+                da,
+                1,
+                parameters);
 
             if (!TryGetCadResponse(
                     CommandName,

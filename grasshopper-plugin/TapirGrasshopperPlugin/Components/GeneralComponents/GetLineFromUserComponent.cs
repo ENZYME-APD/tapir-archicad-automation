@@ -38,6 +38,9 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
                 GH_ParamAccess.item);
 
             SetOptionality(new[] { 0, 1, 2 });
+
+            // The constraint applies to the end point.
+            UserInputOptions.AddInputs(this);
         }
 
         protected override void AddOutputs()
@@ -103,6 +106,11 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
             {
                 parameters["showRubberLineFeedback"] = showRubberLineFeedback;
             }
+
+            UserInputOptions.AddParameters(
+                da,
+                3,
+                parameters);
 
             if (!TryGetCadResponse(
                     CommandName,

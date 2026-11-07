@@ -39,6 +39,10 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
                 "RotRect (rotated rectangle) or Polyline (open polyline). Optional.");
 
             SetOptionality(new[] { 0, 1, 2 });
+
+            // The snap filter applies to the start point only, the constraint
+            // to the nodes after it.
+            UserInputOptions.AddInputs(this);
         }
 
         protected override void AddOutputs()
@@ -115,6 +119,11 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
                 method = methodInput;
                 parameters["method"] = methodInput;
             }
+
+            UserInputOptions.AddParameters(
+                da,
+                3,
+                parameters);
 
             if (!TryGetCadResponse(
                     CommandName,
