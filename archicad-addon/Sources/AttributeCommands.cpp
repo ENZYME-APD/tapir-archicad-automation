@@ -4353,8 +4353,7 @@ GS::Optional<GS::UniString> DeleteAttributesCommand::GetInputParametersSchema ()
                 }
             },
             "dryRun": {
-                "type": "boolean",
-                "description": "If true, nothing is deleted: each execution result says what the deletion would do for that attribute, from the checks made before deleting (invalid attributeType, attribute not found). Archicad can still refuse to delete an attribute that passes them. Default is false."
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -4369,8 +4368,12 @@ GS::Optional<GS::UniString> DeleteAttributesCommand::GetRawResponseSchema () con
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input attribute, in the order of the input. On a dry run an attribute that passes the checks made before deleting (valid attributeType, attribute found) gets wouldDelete; Archicad can still refuse to delete an attribute that passes them."
             }
         },
         "additionalProperties": false,
@@ -4396,6 +4399,7 @@ GS::ObjectState DeleteAttributesCommand::Execute (const GS::ObjectState& paramet
 {
     GS::Array<GS::ObjectState> attributesToDelete;
     parameters.Get ("attributesToDelete", attributesToDelete);
+    const bool dryRun = IsDryRun (parameters);
 
     struct AttributeToDelete {
         API_AttrTypeID typeID = API_ZombieAttrID;
@@ -4421,7 +4425,7 @@ GS::ObjectState DeleteAttributesCommand::Execute (const GS::ObjectState& paramet
                 results.Push (CreateFailedExecutionResult (APIERR_BADID, "Attribute not found."));
             } else {
                 attribute.typeID = typeID;
-                results.Push (CreateSuccessfulExecutionResult ());
+                results.Push (dryRun ? CreateDryRunExecutionResult ("wouldDelete") : CreateSuccessfulExecutionResult ());
                 if (!typeIDs.Contains (typeID)) {
                     typeIDs.Push (typeID);
                 }
@@ -4430,10 +4434,9 @@ GS::ObjectState DeleteAttributesCommand::Execute (const GS::ObjectState& paramet
         resolved.Push (attribute);
     }
 
-    bool dryRun = false;
-    parameters.Get ("dryRun", dryRun);
     if (dryRun) {
         GS::ObjectState response;
+        AddDryRunField (response, true);
         const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
         for (const GS::ObjectState& result : results) {
             executionResults (result);
@@ -4667,6 +4670,9 @@ GS::Optional<GS::UniString> DeleteAttributeFoldersCommand::GetInputParametersSch
         "properties": {
             "attributeFolders": {
                 "$ref": "#/AttributeFolders"
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -4681,8 +4687,12 @@ GS::Optional<GS::UniString> DeleteAttributeFoldersCommand::GetRawResponseSchema 
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input folder, in the order of the input. On a dry run a folder that is not the root folder and exists gets wouldDelete; Archicad can still refuse to delete a folder that passes these checks."
             }
         },
         "additionalProperties": false,
@@ -4697,8 +4707,10 @@ GS::ObjectState DeleteAttributeFoldersCommand::Execute (const GS::ObjectState& p
 #ifdef ServerMainVers_2600
     GS::Array<GS::ObjectState> attributeFolders;
     parameters.Get ("attributeFolders", attributeFolders);
+    const bool dryRun = IsDryRun (parameters);
 
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
     for (const GS::ObjectState& item : attributeFolders) {
@@ -4716,6 +4728,11 @@ GS::ObjectState DeleteAttributeFoldersCommand::Execute (const GS::ObjectState& p
         if (!FindAttributeFolder (folder)) {
             executionResults (CreateFailedExecutionResult (APIERR_BADID,
                 GS::UniString::Printf ("Attribute folder '%T' not found.", requestedPath.ToPrintf ())));
+            continue;
+        }
+
+        if (dryRun) {
+            executionResults (CreateDryRunExecutionResult ("wouldDelete"));
             continue;
         }
 
@@ -8661,6 +8678,9 @@ GS::Optional<GS::UniString> DeleteUserDataOfAttributesCommand::GetInputParameter
         "properties": {
             "attributeIds": {
                 "$ref": "#/AttributeIds"
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -8675,9 +8695,12 @@ GS::Optional<GS::UniString> DeleteUserDataOfAttributesCommand::GetRawResponseSch
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults",
-                "description": "One result per attribute, in the input order."
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result per attribute, in the input order. On a dry run an attribute that exists gets wouldDelete."
             }
         },
         "additionalProperties": false,
@@ -8691,14 +8714,21 @@ GS::ObjectState DeleteUserDataOfAttributesCommand::Execute (const GS::ObjectStat
 {
     GS::Array<GS::ObjectState> attributeIds;
     parameters.Get ("attributeIds", attributeIds);
+    const bool dryRun = IsDryRun (parameters);
 
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
     for (const GS::ObjectState& attributeIdItem : attributeIds) {
         API_Attr_Head attrHead = {};
         if (!FindAttributeForUserData (attributeIdItem, attrHead)) {
             executionResults (CreateFailedExecutionResult (APIERR_BADID, "Attribute not found."));
+            continue;
+        }
+
+        if (dryRun) {
+            executionResults (CreateDryRunExecutionResult ("wouldDelete"));
             continue;
         }
 
@@ -11049,6 +11079,7 @@ GS::ObjectState DeleteAndReplaceAttribute (const GS::Array<API_DatabaseInfo>& da
     result.Add ("attributeId", CreateGuidObjectState (attributeGuid));
     result.Add ("replacementAttributeId", CreateGuidObjectState (replacementGuid));
     if (dryRun) {
+        result.Add ("wouldDelete", true);
         const ReindexJob job = { typeID, oldIndex, replacementIndex };
         AddReplacementScanToResult (result, ScanReferences (databases, job, false), true, typeName);
         return finish (result);
@@ -11196,8 +11227,7 @@ GS::Optional<GS::UniString> DeleteAndReplaceAttributesCommand::GetInputParameter
                 }
             },
             "dryRun": {
-                "type": "boolean",
-                "description": "Only list every reference to each attribute to delete (elements, tool defaults, Favorites, other attributes, graphic override rules, elements from hotlinked modules) without changing anything. The default is false."
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -11213,6 +11243,9 @@ GS::Optional<GS::UniString> DeleteAndReplaceAttributesCommand::GetRawResponseSch
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "attributes": {
                 "type": "array",
                 "description": "One item per requested attribute, in the same order.",
@@ -11228,6 +11261,11 @@ GS::Optional<GS::UniString> DeleteAndReplaceAttributesCommand::GetRawResponseSch
                                 "replacementAttributeId": {
                                     "$ref": "#/AttributeId",
                                     "description": "The attribute that took its place."
+                                },
+                                "wouldDelete": {
+                                    "type": "boolean",
+                                    "enum": [ true ],
+                                    "description": "Only on a dry run: the attribute and its replacement passed the checks, and a real run would delete the attribute and rewrite the references listed here to the replacement."
                                 },
                                 "elements": {
                                     "$ref": "#/Elements",
@@ -11334,8 +11372,7 @@ GS::ObjectState DeleteAndReplaceAttributesCommand::Execute (const GS::ObjectStat
     }
     GS::Array<GS::ObjectState> attributes;
     parameters.Get ("attributes", attributes);
-    bool dryRun = false;
-    parameters.Get ("dryRun", dryRun);
+    const bool dryRun = IsDryRun (parameters);
 
     API_DatabaseInfo startingDatabase = {};
     GSErrCode err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
@@ -11349,6 +11386,7 @@ GS::ObjectState DeleteAndReplaceAttributesCommand::Execute (const GS::ObjectStat
     }
 
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& results = response.AddList<GS::ObjectState> ("attributes");
     const auto replaceAll = [&] () -> GSErrCode {
         for (const GS::ObjectState& attribute : attributes) {
