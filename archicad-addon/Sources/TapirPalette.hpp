@@ -30,6 +30,7 @@ public:
     void Hide ();
 
     bool UpdateAddOn ();
+    void CheckForUpdates ();   // the menu item Check for Updates; also offered when a script needs a newer Tapir
     void SetRunButtonIcon ();   // also called once the VersionChecker's lookup completes
 
     static constexpr short ScriptShortcutSlotCount = 6;
@@ -85,7 +86,8 @@ private:
     GS::UniString scriptShortcutLabels[ScriptShortcutSlotCount];  // empty = using the default menu text
 
     void SetMenuItemCheckedState (bool);
-    void ExecuteScript (const PopUpItemData& popUpItemData);
+    void ExecuteScript (const PopUpItemData& popUpItemData);   // every path that starts a script calls this
+    bool ConfirmScriptRequirements (const PopUpItemData& popUpItemData);   // min-tapir-version and archicad-versions; false: do not run
     void KillRunningProcess ();   // ends the running process together with the processes it started
     bool AddScriptToPopUp (GS::Ref<PopUpItemData> popUpData, short index = DG::PopUp::TopItem);
     void AddScriptsFromRepositories ();
@@ -118,7 +120,7 @@ private:
     // Overrides the ItemObserver function of both the button and the pop-up observer bases.
     virtual void ItemToolTipRequested (const DG::ItemHelpEvent& ev, GS::UniString* toolTipText) override;
 
-    static GS::UniString GetScriptDescription (const ScriptInfo& info);   // the summary and the badge, one per line
+    static GS::UniString GetScriptDescription (const ScriptInfo& info);   // the summary, the badge and the requirements, one per line
 
     static GSErrCode PaletteControlCallBack (Int32 paletteId, API_PaletteMessageID messageID, GS::IntPtr param);
 
