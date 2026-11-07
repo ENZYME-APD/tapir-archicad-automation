@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Windows.Forms;
 using TapirGrasshopperPlugin.Types.Element;
 
@@ -8,19 +9,31 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
     {
         private ElementTypeValueListType type;
 
+        // The item selected when the list is filled; null (or a name the
+        // current list does not have) selects Wall, or CurtainWallPanel when
+        // only the subelements are listed.
+        private readonly string defaultSelected;
+
         public ElementTypeValueList()
             : this(ElementTypeValueListType.AllElements)
         {
         }
 
         public ElementTypeValueList(
-            ElementTypeValueListType t)
+            ElementTypeValueListType t,
+            string defaultSelected = null)
             : base(
                 "ElementsType",
                 "Value List for Archicad Elements Types.",
                 GroupNames.Elements)
         {
             type = t;
+            this.defaultSelected = defaultSelected;
+
+            // The base constructor already filled the list, but it ran before
+            // the fields above were set (so with the default MainElementsOnly
+            // type and no default selection); fill it again with them.
+            RefreshItems();
         }
 
         public override void AppendAdditionalMenuItems(
@@ -95,6 +108,22 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (type != ElementTypeValueListType.MainElementsOnly)
             {
                 AddEnumItems(defaultSelected: SubElementType.CurtainWallPanel);
+            }
+
+            // Keep exactly one item selected: the default selection when the
+            // current list has it (the SubElements list has no Window),
+            // otherwise the first item AddEnumItems selected (Wall when both
+            // lists are shown).
+            var selectedName = defaultSelected;
+            if (selectedName == null ||
+                !ListItems.Any(item => item.Name == selectedName))
+            {
+                selectedName = ListItems.FirstOrDefault(item => item.Selected)?.Name;
+            }
+
+            foreach (var item in ListItems)
+            {
+                item.Selected = item.Name == selectedName;
             }
 
             ExpireSolution(true);

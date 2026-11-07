@@ -1,0 +1,149 @@
+{
+  "title": "DeleteAttributes deletes the given attributes, only checks them with dryRun, and fails for a wrong type or an unknown attribute; GetAttributesByType lists them",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "layer to delete",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "name": "Tapir check layer to delete" }
+        ]
+      },
+      "save": { "layer": "attributeIds[0].attributeId.guid" }
+    },
+    {
+      "id": "fill to delete",
+      "command": "CreateFills",
+      "creates": false,
+      "params": {
+        "fillDataArray": [
+          {
+            "name": "Tapir check fill to delete", "subType": "Vector", "scaleWithPlan": true,
+            "useForWalls": true, "useForDraft": true, "useForCover": true,
+            "horizontalSpacing": 1.0, "verticalSpacing": 1.0, "angle": 0.0,
+            "lineItems": [ { "frequency": 0.1, "direction": 0.0, "offsetLine": 0.0, "offset": { "x": 0.0, "y": 0.0 } } ]
+          }
+        ]
+      },
+      "save": { "fill": "attributeIds[0].attributeId.guid" }
+    },
+    {
+      "id": "list the layers",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Layer" },
+      "expect": [
+        { "path": "attributes[0].attributeId.guid", "exists": true, "name": "a layer with its id" },
+        { "path": "attributes[0].index", "exists": true, "name": "with its index" },
+        { "path": "attributes[0].name", "exists": true, "name": "with its name" },
+        { "path": "attributes[0].folderPath", "exists": true, "name": "with its folder path" }
+      ]
+    },
+    {
+      "id": "[layer, fill, layer as Fill, bogus layer] dry run",
+      "command": "DeleteAttributes",
+      "creates": false,
+      "params": {
+        "dryRun": true,
+        "attributesToDelete": [
+          { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${layer}" } } },
+          { "attributeType": "Fill", "attributeId": { "attributeId": { "guid": "${fill}" } } },
+          { "attributeType": "Fill", "attributeId": { "attributeId": { "guid": "${layer}" } } },
+          { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 4, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "layer would be deleted" },
+        { "path": "executionResults[1].success", "eq": true, "name": "fill would be deleted" },
+        { "path": "executionResults[2].success", "eq": false, "name": "layer given as Fill: failed" },
+        { "path": "executionResults[3].success", "eq": false, "name": "bogus layer: failed" }
+      ]
+    },
+    {
+      "id": "layer kept by the dry run",
+      "command": "GetLayers",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${layer}" } } ] },
+      "expect": [
+        { "path": "layers[0].name", "eq": "Tapir check layer to delete", "name": "still there" }
+      ]
+    },
+    {
+      "id": "fill kept by the dry run",
+      "command": "GetFills",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${fill}" } } ] },
+      "expect": [
+        { "path": "fills[0].name", "eq": "Tapir check fill to delete", "name": "still there" }
+      ]
+    },
+    {
+      "id": "[layer, fill, bogus layer]",
+      "command": "DeleteAttributes",
+      "creates": false,
+      "params": {
+        "attributesToDelete": [
+          { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${layer}" } } },
+          { "attributeType": "Fill", "attributeId": { "attributeId": { "guid": "${fill}" } } },
+          { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "layer deleted" },
+        { "path": "executionResults[1].success", "eq": true, "name": "fill deleted" },
+        { "path": "executionResults[2].success", "eq": false, "name": "bogus layer: failed" },
+        { "path": "executionResults[2].error", "exists": true, "name": "bogus layer: error" }
+      ]
+    },
+    {
+      "id": "layer gone",
+      "command": "GetLayers",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${layer}" } } ] },
+      "expect": [
+        { "path": "layers[0].error", "exists": true, "name": "not found" }
+      ]
+    },
+    {
+      "id": "fill gone",
+      "command": "GetFills",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${fill}" } } ] },
+      "expect": [
+        { "path": "fills[0].error", "exists": true, "name": "not found" }
+      ]
+    },
+    {
+      "id": "same layer again",
+      "command": "DeleteAttributes",
+      "creates": false,
+      "params": {
+        "attributesToDelete": [
+          { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${layer}" } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "already deleted" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": {
+        "attributesToDelete": [ { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${layer}" } } } ]
+      }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": {
+        "attributesToDelete": [ { "attributeType": "Fill", "attributeId": { "attributeId": { "guid": "${fill}" } } } ]
+      }
+    }
+  ]
+}

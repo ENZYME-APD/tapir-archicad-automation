@@ -11,7 +11,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateBeams",
                 "Create Beam elements based on the given parameters. " +
-                "The Z coordinate of each line's start point is used as the beam's Z coordinate.",
+                "The Z coordinate of each line's start point is used as the beam's Z coordinate. " +
+                "The explicit slanted state, the profile rotation and unlinked width and height can be " +
+                "given through the AdditionalSettings input (isSlanted, profileAngle, isWidthAndHeightLinked).",
                 GroupNames.ElementCreation)
         {
         }
@@ -38,7 +40,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         private static readonly List<Field> TrailingFieldDefinitions = new List<Field>
         {
-            new Field("CircleBased", "circleBased", FieldKind.Boolean, "True for a round beam cross section, false for rectangular (applied to all segments).")
+            new Field("CircleBased", "circleBased", FieldKind.Boolean, "True for a round beam cross section, false for rectangular (applied to all segments)."),
+            new Field("BuildingMaterialGuids", "buildingMaterialId", FieldKind.AttributeGuid, "Building material attribute of the round or rectangular cross section (applied to all segments)."),
+            new Field("ProfileGuids", "profileId", FieldKind.AttributeGuid, "Profile attribute; switches the cross section to this custom profile (applied to all segments)."),
+            TrailingAdditionalSettingsField
         };
 
         protected override IReadOnlyList<Field> TrailingFields => TrailingFieldDefinitions;

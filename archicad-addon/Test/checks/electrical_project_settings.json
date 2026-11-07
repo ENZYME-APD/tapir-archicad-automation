@@ -1,0 +1,126 @@
+{
+  "title": "ModifyElectricalProjectSettings sets the voltage, clears, adds and removes wiring types and load classifications, and refuses unknown or duplicate names; GetElectricalProjectSettings reads them back",
+  "minTapir": "1.8.1",
+  "minArchicad": "30",
+  "steps": [
+    {
+      "id": "read the settings of the template",
+      "command": "GetElectricalProjectSettings",
+      "creates": false,
+      "params": {},
+      "save": {
+        "voltage0": "voltage",
+        "wiringTypes0": "wiringTypes",
+        "loadClassifications0": "loadClassifications"
+      },
+      "expect": [
+        { "path": "voltage", "exists": true, "name": "voltage read" },
+        { "path": "wiringTypes", "exists": true, "name": "wiring types read" },
+        { "path": "loadClassifications", "exists": true, "name": "load classifications read" }
+      ]
+    },
+    {
+      "id": "set the voltage, replace every wiring type and load classification",
+      "command": "ModifyElectricalProjectSettings",
+      "creates": false,
+      "params": {
+        "voltage": 333,
+        "clearWiringTypes": true,
+        "wiringTypesToAdd": [ { "name": "Tapir check wire 2.5", "crossSectionalArea": 2.5 } ],
+        "clearLoadClassifications": true,
+        "loadClassificationsToAdd": [ { "name": "Tapir check kitchen", "demandFactor": 0.7 } ]
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the replaced settings",
+      "command": "GetElectricalProjectSettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "voltage", "approx": 333, "name": "voltage set" },
+        { "path": "wiringTypes", "len": 1, "name": "only the added wiring type" },
+        { "path": "wiringTypes[0].name", "eq": "Tapir check wire 2.5", "name": "wiring type name" },
+        { "path": "wiringTypes[0].crossSectionalArea", "approx": 2.5, "name": "cross-sectional area" },
+        { "path": "loadClassifications", "len": 1, "name": "only the added load classification" },
+        { "path": "loadClassifications[0].name", "eq": "Tapir check kitchen", "name": "load classification name" },
+        { "path": "loadClassifications[0].demandFactor", "approx": 0.7, "name": "demand factor" }
+      ]
+    },
+    {
+      "id": "replace the wiring type by removing it and adding another one",
+      "command": "ModifyElectricalProjectSettings",
+      "creates": false,
+      "params": {
+        "wiringTypesToRemove": [ "Tapir check wire 2.5" ],
+        "wiringTypesToAdd": [ { "name": "Tapir check wire 4", "crossSectionalArea": 4 } ]
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the swapped wiring type",
+      "command": "GetElectricalProjectSettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "voltage", "approx": 333, "name": "voltage kept" },
+        { "path": "wiringTypes", "len": 1, "name": "one wiring type" },
+        { "path": "wiringTypes[0].name", "eq": "Tapir check wire 4", "name": "the new one" },
+        { "path": "wiringTypes[0].crossSectionalArea", "approx": 4, "name": "its cross-sectional area" },
+        { "path": "loadClassifications", "len": 1, "name": "load classification kept" }
+      ]
+    },
+    {
+      "id": "[remove a wiring type that does not exist]",
+      "command": "ModifyElectricalProjectSettings",
+      "creates": false,
+      "params": {
+        "voltage": 111,
+        "wiringTypesToRemove": [ "Tapir check missing wire" ]
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "refused" },
+        { "path": "error.message", "exists": true, "name": "with a message" }
+      ]
+    },
+    {
+      "id": "[add a load classification that exists]",
+      "command": "ModifyElectricalProjectSettings",
+      "creates": false,
+      "params": {
+        "loadClassificationsToAdd": [ { "name": "Tapir check kitchen", "demandFactor": 0.5 } ]
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "the refused calls changed nothing",
+      "command": "GetElectricalProjectSettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "voltage", "approx": 333, "name": "voltage of the refused call not set" },
+        { "path": "wiringTypes", "len": 1, "name": "wiring types unchanged" },
+        { "path": "loadClassifications", "len": 1, "name": "no duplicate load classification" },
+        { "path": "loadClassifications[0].demandFactor", "approx": 0.7, "name": "demand factor unchanged" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "ModifyElectricalProjectSettings",
+      "params": {
+        "voltage": "${voltage0}",
+        "clearWiringTypes": true,
+        "wiringTypesToAdd": "${wiringTypes0}",
+        "clearLoadClassifications": true,
+        "loadClassificationsToAdd": "${loadClassifications0}"
+      }
+    }
+  ]
+}

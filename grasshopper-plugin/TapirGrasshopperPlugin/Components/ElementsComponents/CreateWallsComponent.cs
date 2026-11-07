@@ -11,7 +11,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             : base(
                 "CreateWalls",
                 "Create Wall elements based on the given parameters. " +
-                "The Z coordinate of each line's start point is used as the wall's Z coordinate.",
+                "The Z coordinate of each line's start point is used as the wall's Z coordinate. " +
+                "Pens, line types, the floor plan display, the view depth limitation and the other " +
+                "settings without an input can be given through the AdditionalSettings input " +
+                "(contourPen, displayOption, viewDepthLimitation, linkToSettings, etc.).",
                 GroupNames.ElementCreation)
         {
         }
@@ -23,8 +26,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         private static readonly List<Field> FieldDefinitions = new List<Field>
         {
             new Field("Lines", null, FieldKind.Line, "Reference lines of the walls (start and end point; the start point's Z is used as the wall's Z coordinate).", required: true),
-            new Field("Heights", "height", FieldKind.Number, "Height of the wall.", required: true),
-            new Field("Thicknesses", "thickness", FieldKind.Number, "Thickness of the wall.", required: true),
+            new Field("Heights", "height", FieldKind.Number, "Height of the wall. When not given, the height and top link of the favorite (or of the Wall tool default) are kept."),
+            new Field("Thicknesses", "thickness", FieldKind.Number, "Thickness of the wall. When not given, the thickness of the favorite (or of the Wall tool default) is kept. Only effective for a Basic wall."),
             new Field("Offsets", "offset", FieldKind.Number, "Offset of the wall from its reference line."),
             new Field("ArcAngles", "arcAngle", FieldKind.Number, "Arc angle in radians; a non-zero value makes the wall curved."),
             new Field("ReferenceLineLocations", "referenceLineLocation", FieldKind.Text, "Reference line location: Outside, Center, Inside, CoreOutside, CoreCenter or CoreInside.", valueList: () => new ReferenceLineLocationValueList ()),
@@ -37,6 +40,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         };
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;
+
+        private static readonly List<Field> TrailingFieldDefinitions = new List<Field>
+        {
+            TrailingAdditionalSettingsField
+        };
+
+        protected override IReadOnlyList<Field> TrailingFields => TrailingFieldDefinitions;
 
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.CreateWalls;

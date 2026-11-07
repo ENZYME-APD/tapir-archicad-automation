@@ -29,13 +29,13 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
             InGeneric(
                 "ParentNavigatorItemGuid",
-                "Identifier of the View Map folder to place the new views in. Optional; defaults to the View Map root.");
+                "Identifier of the View Map folder to place the new views in. Required - creating a view directly at the View Map root leaves it undeletable and unmovable afterwards, so the Add-On refuses it; create a View Map folder first if you don't already have one to target.");
 
             InTexts(
                 "Names",
                 "Names for the new views (input only 1 to use the same name for all). Optional; defaults to the source item names.");
 
-            SetOptionality(new[] { 1, 2 });
+            SetOptionality(2);
         }
 
         protected override void AddOutputs()
@@ -58,18 +58,19 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 return;
             }
 
-            NavigatorGuid parentId = null;
-            if (da.TryGet(
+            if (!da.TryGet(
                     1,
-                    out GH_ObjectWrapper parentWrapper) &&
-                parentWrapper?.Value != null)
+                    out GH_ObjectWrapper parentWrapper) ||
+                parentWrapper?.Value == null)
             {
-                parentId = GuidObject<NavigatorGuid>.CreateFromWrapper(parentWrapper);
-                if (parentId == null)
-                {
-                    this.AddError("Invalid ParentNavigatorItemGuid.");
-                    return;
-                }
+                this.AddError("ParentNavigatorItemGuid is required.");
+                return;
+            }
+            var parentId = GuidObject<NavigatorGuid>.CreateFromWrapper(parentWrapper);
+            if (parentId == null)
+            {
+                this.AddError("Invalid ParentNavigatorItemGuid.");
+                return;
             }
 
             da.TryGetList(
@@ -98,13 +99,9 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
 
                 var item = new JObject
                 {
-                    ["navigatorItemId"] = new JObject { ["guid"] = navId.Guid }
+                    ["navigatorItemId"] = new JObject { ["guid"] = navId.Guid },
+                    ["parentNavigatorItemId"] = new JObject { ["guid"] = parentId.Guid }
                 };
-
-                if (parentId != null)
-                {
-                    item["parentNavigatorItemId"] = new JObject { ["guid"] = parentId.Guid };
-                }
 
                 if (names.Count > 0)
                 {

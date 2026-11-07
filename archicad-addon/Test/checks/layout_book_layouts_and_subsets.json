@@ -1,0 +1,326 @@
+{
+  "title": "Layout Book: CreateLayoutSubset, CreateLayout, GetLayoutSubsetSettings, GetLayoutSettings and SetLayoutSettings write what they say, and refuse bad input",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "Layout Book before",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": { "navigatorMapId": "LayoutBook" },
+      "save": {
+        "bookRoot": "navigatorItemTree.navigatorItemId.guid",
+        "bookFirst": "navigatorItemTree.children[0].navigatorItem.navigatorItemId.guid"
+      }
+    },
+    {
+      "id": "subset with its numbering",
+      "command": "CreateLayoutSubset",
+      "creates": false,
+      "params": {
+        "subsetsData": [
+          {
+            "name": "Tapir check layouts",
+            "ownPrefix": "TCL",
+            "addOwnPrefix": true,
+            "customNumbering": false,
+            "numberingStyle": "001",
+            "startAt": 7,
+            "continueNumbering": false,
+            "useUpperPrefix": false,
+            "includeToIDSequence": true
+          }
+        ]
+      },
+      "save": { "subset": "navigatorItems[0].navigatorItemId.guid" },
+      "expect": [
+        { "path": "navigatorItems", "len": 1, "name": "one result" },
+        { "path": "navigatorItems[0].navigatorItemId.guid", "exists": true, "name": "id of the new subset" }
+      ]
+    },
+    {
+      "id": "[subset under a parent that does not exist]",
+      "command": "CreateLayoutSubset",
+      "creates": false,
+      "params": {
+        "subsetsData": [
+          { "name": "Tapir check orphan subset", "parentNavigatorItemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "navigatorItems[0].error", "exists": true, "name": "error in place of the id" },
+        { "path": "navigatorItems[0].navigatorItemId", "exists": false, "name": "no subset id" }
+      ]
+    },
+    {
+      "id": "[read the subset, read a nonexistent item]",
+      "command": "GetLayoutSubsetSettings",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [
+          { "navigatorItemId": { "guid": "${subset}" } },
+          { "navigatorItemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "subsetSettings", "len": 2, "name": "one result per item" },
+        { "path": "subsetSettings[0].name", "eq": "Tapir check layouts" },
+        { "path": "subsetSettings[0].ownPrefix", "eq": "TCL" },
+        { "path": "subsetSettings[0].addOwnPrefix", "eq": true },
+        { "path": "subsetSettings[0].customNumbering", "eq": false },
+        { "path": "subsetSettings[0].numberingStyle", "eq": "001" },
+        { "path": "subsetSettings[0].startAt", "eq": 7 },
+        { "path": "subsetSettings[0].continueNumbering", "eq": false },
+        { "path": "subsetSettings[0].includeToIDSequence", "eq": true },
+        { "path": "subsetSettings[1].error", "exists": true, "name": "nonexistent item: error" }
+      ]
+    },
+    {
+      "id": "subset second in the Layout Book",
+      "command": "MoveNavigatorItem",
+      "creates": false,
+      "params": {
+        "navigatorItemIdToMove": { "guid": "${subset}" },
+        "parentNavigatorItemId": { "guid": "${bookRoot}" },
+        "previousNavigatorItemId": { "guid": "${bookFirst}" }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "layout one with a new master of 420 x 297 mm",
+      "command": "CreateLayout",
+      "creates": false,
+      "params": {
+        "layoutsData": [
+          {
+            "layoutName": "Tapir check layout one",
+            "masterLayoutName": "Tapir check master",
+            "parentNavigatorItemId": { "guid": "${subset}" },
+            "paperWidth": 420,
+            "paperHeight": 297,
+            "layoutParameters": { "leftMargin": 11, "topMargin": 12, "rightMargin": 13, "bottomMargin": 14 }
+          }
+        ]
+      },
+      "save": { "layout1Db": "databases[0].databaseId.guid" },
+      "expect": [
+        { "path": "databases", "len": 1, "name": "one result" },
+        { "path": "databases[0].error", "exists": false, "name": "no error" }
+      ]
+    },
+    {
+      "id": "read layout one",
+      "command": "GetLayoutSettings",
+      "creates": false,
+      "params": { "layoutDatabaseIds": [ { "databaseId": { "guid": "${layout1Db}" } } ] },
+      "save": {
+        "master": "layoutSettings[0].masterNavigatorItemId.guid",
+        "masterDb": "layoutSettings[0].masterLayoutDatabaseId.guid"
+      },
+      "expect": [
+        { "path": "layoutSettings[0].layoutName", "eq": "Tapir check layout one" },
+        { "path": "layoutSettings[0].horizontalSize", "approx": 420, "tol": 0.01, "name": "paperWidth" },
+        { "path": "layoutSettings[0].verticalSize", "approx": 297, "tol": 0.01, "name": "paperHeight" },
+        { "path": "layoutSettings[0].leftMargin", "approx": 11, "tol": 0.01 },
+        { "path": "layoutSettings[0].topMargin", "approx": 12, "tol": 0.01 },
+        { "path": "layoutSettings[0].rightMargin", "approx": 13, "tol": 0.01 },
+        { "path": "layoutSettings[0].bottomMargin", "approx": 14, "tol": 0.01 },
+        { "path": "layoutSettings[0].masterLayoutName", "eq": "Tapir check master" }
+      ]
+    },
+    {
+      "id": "read the master",
+      "command": "GetLayoutSettings",
+      "creates": false,
+      "params": { "layoutDatabaseIds": [ { "navigatorItemId": { "guid": "${master}" } } ] },
+      "expect": [
+        { "path": "layoutSettings[0].horizontalSize", "approx": 420, "tol": 0.01, "name": "new master got paperWidth" },
+        { "path": "layoutSettings[0].verticalSize", "approx": 297, "tol": 0.01, "name": "new master got paperHeight" },
+        { "path": "layoutSettings[0].masterLayoutName", "exists": false, "name": "a master has no master" }
+      ]
+    },
+    {
+      "id": "layout one is the only item of the subset",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": { "navigatorMapId": "LayoutBook", "includeChildCount": true },
+      "save": { "layout1": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.navigatorItemId.guid" },
+      "expect": [
+        { "path": "navigatorItemTree.children[1].navigatorItem.type", "eq": "SubSetItem", "name": "second item is a subset" },
+        { "path": "navigatorItemTree.children[1].navigatorItem.name", "contains": "Tapir check layouts", "name": "the moved subset" },
+        { "path": "navigatorItemTree.children[1].navigatorItem.childCount", "eq": 1 },
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.type", "eq": "LayoutItem" },
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.name", "contains": "Tapir check layout one" }
+      ]
+    },
+    {
+      "id": "layout two on the existing master, after layout one",
+      "command": "CreateLayout",
+      "creates": false,
+      "params": {
+        "layoutsData": [
+          {
+            "layoutName": "Tapir check layout two",
+            "masterNavigatorItemId": { "guid": "${master}" },
+            "parentNavigatorItemId": { "guid": "${subset}" },
+            "previousNavigatorItemId": { "guid": "${layout1}" }
+          }
+        ]
+      },
+      "save": { "layout2Db": "databases[0].databaseId.guid" },
+      "expect": [
+        { "path": "databases[0].error", "exists": false, "name": "created and placed" }
+      ]
+    },
+    {
+      "id": "layout two follows layout one",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": { "navigatorMapId": "LayoutBook" },
+      "save": { "layout2": "navigatorItemTree.children[1].navigatorItem.children[1].navigatorItem.navigatorItemId.guid" },
+      "expect": [
+        { "path": "navigatorItemTree.children[1].navigatorItem.children", "len": 2 },
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.name", "contains": "Tapir check layout one" },
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[1].navigatorItem.name", "contains": "Tapir check layout two" }
+      ]
+    },
+    {
+      "id": "read layout two",
+      "command": "GetLayoutSettings",
+      "creates": false,
+      "params": { "layoutDatabaseIds": [ { "databaseId": { "guid": "${layout2Db}" } } ] },
+      "expect": [
+        { "path": "layoutSettings[0].layoutName", "eq": "Tapir check layout two" },
+        { "path": "layoutSettings[0].masterLayoutName", "eq": "Tapir check master", "name": "on the given master" },
+        { "path": "layoutSettings[0].horizontalSize", "approx": 420, "tol": 0.01, "name": "size of the master" },
+        { "path": "layoutSettings[0].verticalSize", "approx": 297, "tol": 0.01, "name": "size of the master" }
+      ]
+    },
+    {
+      "id": "[layout on a master that does not exist]",
+      "command": "CreateLayout",
+      "creates": false,
+      "params": {
+        "layoutsData": [
+          { "layoutName": "Tapir check orphan layout", "masterNavigatorItemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "databases[0].error", "exists": true, "name": "error" },
+        { "path": "databases[0].databaseId", "exists": false, "name": "no layout" }
+      ]
+    },
+    {
+      "id": "[rename and renumber layout one, resize the master]",
+      "command": "SetLayoutSettings",
+      "creates": false,
+      "params": {
+        "layoutsData": [
+          {
+            "layoutDatabaseId": { "guid": "${layout1Db}" },
+            "layoutName": "Tapir check layout one renamed",
+            "leftMargin": 21,
+            "customLayoutNumber": "TC-9",
+            "customLayoutNumbering": true,
+            "doNotIncludeInNumbering": true
+          },
+          {
+            "layoutNavigatorItemId": { "guid": "${master}" },
+            "horizontalSize": 594,
+            "verticalSize": 420
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2 },
+        { "path": "executionResults[0].success", "eq": true, "name": "layout: success" },
+        { "path": "executionResults[1].success", "eq": true, "name": "master: success" }
+      ]
+    },
+    {
+      "id": "read back layout one and the master",
+      "command": "GetLayoutSettings",
+      "creates": false,
+      "params": {
+        "layoutDatabaseIds": [
+          { "databaseId": { "guid": "${layout1Db}" } },
+          { "databaseId": { "guid": "${masterDb}" } }
+        ]
+      },
+      "expect": [
+        { "path": "layoutSettings[0].layoutName", "eq": "Tapir check layout one renamed" },
+        { "path": "layoutSettings[0].leftMargin", "approx": 21, "tol": 0.01 },
+        { "path": "layoutSettings[0].topMargin", "approx": 12, "tol": 0.01, "name": "topMargin kept" },
+        { "path": "layoutSettings[0].customLayoutNumber", "eq": "TC-9" },
+        { "path": "layoutSettings[0].customLayoutNumbering", "eq": true },
+        { "path": "layoutSettings[0].doNotIncludeInNumbering", "eq": true },
+        { "path": "layoutSettings[1].horizontalSize", "approx": 594, "tol": 0.01, "name": "master width" },
+        { "path": "layoutSettings[1].verticalSize", "approx": 420, "tol": 0.01, "name": "master height" }
+      ]
+    },
+    {
+      "id": "[size of a layout that is not a master]",
+      "command": "SetLayoutSettings",
+      "creates": false,
+      "params": {
+        "layoutsData": [
+          { "layoutDatabaseId": { "guid": "${layout2Db}" }, "horizontalSize": 500 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "layout two keeps its size",
+      "command": "GetLayoutSettings",
+      "creates": false,
+      "params": { "layoutDatabaseIds": [ { "databaseId": { "guid": "${layout2Db}" } } ] },
+      "expect": [
+        { "path": "layoutSettings[0].horizontalSize", "ne": 500, "name": "not the refused size" }
+      ]
+    },
+    {
+      "id": "layout number of layout two by RenameNavigatorItem newId",
+      "command": "RenameNavigatorItem",
+      "creates": false,
+      "params": { "navigatorItemId": { "guid": "${layout2}" }, "newId": "TC-2" },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "layout two has the custom number",
+      "command": "GetLayoutSettings",
+      "creates": false,
+      "params": { "layoutDatabaseIds": [ { "navigatorItemId": { "guid": "${layout2}" } } ] },
+      "expect": [
+        { "path": "layoutSettings[0].customLayoutNumber", "eq": "TC-2" },
+        { "path": "layoutSettings[0].customLayoutNumbering", "eq": true }
+      ]
+    },
+    {
+      "id": "parents of layout one and of the subset",
+      "command": "GetNavigatorParentItems",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [
+          { "navigatorItemId": { "guid": "${layout1}" } },
+          { "navigatorItemId": { "guid": "${subset}" } }
+        ]
+      },
+      "expect": [
+        { "path": "parentItems[0].type", "eq": "SubSetItem" },
+        { "path": "parentItems[0].name", "contains": "Tapir check layouts" },
+        { "path": "parentItems[1].type", "eq": "BookItem", "name": "subset is in the Layout Book root" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${layout1}" } } ] } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${layout2}" } } ] } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${master}" } } ] } }
+  ]
+}

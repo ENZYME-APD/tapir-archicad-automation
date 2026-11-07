@@ -1,0 +1,210 @@
+{
+  "title": "SetDetailsOfElements writes a Drawing's pen table, color mode, transparent background and anchor, and GetDetailsOfElements reads them back (#2230)",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "Layout Book before",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": { "navigatorMapId": "LayoutBook" },
+      "save": {
+        "bookRoot": "navigatorItemTree.navigatorItemId.guid",
+        "bookFirst": "navigatorItemTree.children[0].navigatorItem.navigatorItemId.guid"
+      }
+    },
+    {
+      "id": "subset for the layout",
+      "command": "CreateLayoutSubset",
+      "creates": false,
+      "params": { "subsetsData": [ { "name": "Tapir check drawing settings" } ] },
+      "save": { "subset": "navigatorItems[0].navigatorItemId.guid" }
+    },
+    {
+      "id": "subset second in the Layout Book",
+      "command": "MoveNavigatorItem",
+      "creates": false,
+      "params": {
+        "navigatorItemIdToMove": { "guid": "${subset}" },
+        "parentNavigatorItemId": { "guid": "${bookRoot}" },
+        "previousNavigatorItemId": { "guid": "${bookFirst}" }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "source worksheet",
+      "command": "CreateWorksheets",
+      "creates": false,
+      "params": {
+        "worksheetsData": [
+          { "name": "Tapir check drawing settings source", "referenceId": "TCDS1" }
+        ]
+      },
+      "save": {
+        "wsDb": "databases[0].databaseId.guid",
+        "ws": "databases[0].navigatorItemId.guid"
+      }
+    },
+    {
+      "id": "content in the worksheet",
+      "command": "CreatePolylines",
+      "params": {
+        "databaseId": { "guid": "${wsDb}" },
+        "polylinesData": [ { "coordinates": [ { "x": 0, "y": 0 }, { "x": 2, "y": 0 }, { "x": 2, "y": 1 } ] } ]
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "layout in the subset",
+      "command": "CreateLayout",
+      "creates": false,
+      "params": {
+        "layoutsData": [
+          {
+            "layoutName": "Tapir check drawing settings layout",
+            "masterLayoutName": "Tapir check drawing settings master",
+            "parentNavigatorItemId": { "guid": "${subset}" },
+            "paperWidth": 420,
+            "paperHeight": 297
+          }
+        ]
+      },
+      "save": { "layoutDb": "databases[0].databaseId.guid" }
+    },
+    {
+      "id": "the layout in the Layout Book",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": { "navigatorMapId": "LayoutBook" },
+      "save": { "layout": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.navigatorItemId.guid" },
+      "expect": [
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.name", "contains": "Tapir check drawing settings layout" }
+      ]
+    },
+    {
+      "id": "master of the layout",
+      "command": "GetLayoutSettings",
+      "creates": false,
+      "params": { "layoutDatabaseIds": [ { "databaseId": { "guid": "${layoutDb}" } } ] },
+      "save": { "master": "layoutSettings[0].masterNavigatorItemId.guid" }
+    },
+    {
+      "id": "Drawing of the worksheet on the layout",
+      "command": "CreateDrawings",
+      "params": {
+        "drawingsData": [
+          {
+            "navigatorItemId": { "guid": "${ws}" },
+            "layoutDatabaseId": { "guid": "${layoutDb}" },
+            "position": { "x": 0.1, "y": 0.08 },
+            "scale": 1,
+            "angle": 0
+          }
+        ]
+      },
+      "save": { "drawing": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "the new settings are read",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${drawing}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Drawing" },
+        { "path": "detailsOfElements[0].details.penTableUsageMode", "exists": true },
+        { "path": "detailsOfElements[0].details.penTableIndex", "exists": true },
+        { "path": "detailsOfElements[0].details.colorMode", "exists": true },
+        { "path": "detailsOfElements[0].details.isTransparentBackground", "exists": true },
+        { "path": "detailsOfElements[0].details.rasterizeDPI", "exists": true },
+        { "path": "detailsOfElements[0].details.anchorPoint", "exists": true },
+        { "path": "detailsOfElements[0].details.useOwnOriginAsAnchor", "exists": true }
+      ]
+    },
+    {
+      "id": "model pen table, grayscale, transparent, anchored at the bottom left",
+      "command": "SetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithDetails": [
+          {
+            "elementId": { "guid": "${drawing}" },
+            "details": {
+              "typeSpecificDetails": {
+                "penTableUsageMode": "ModelPenTable",
+                "colorMode": "Grayscale",
+                "isTransparentBackground": true,
+                "useOwnOriginAsAnchor": false,
+                "anchorPoint": "BottomLeft"
+              }
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the settings back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${drawing}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.penTableUsageMode", "eq": "ModelPenTable" },
+        { "path": "detailsOfElements[0].details.colorMode", "eq": "Grayscale" },
+        { "path": "detailsOfElements[0].details.isTransparentBackground", "eq": true },
+        { "path": "detailsOfElements[0].details.useOwnOriginAsAnchor", "eq": false },
+        { "path": "detailsOfElements[0].details.anchorPoint", "eq": "BottomLeft" }
+      ]
+    },
+    {
+      "id": "own pen table, black and white, opaque, anchored at the top right",
+      "command": "SetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithDetails": [
+          {
+            "elementId": { "guid": "${drawing}" },
+            "details": {
+              "typeSpecificDetails": {
+                "penTableUsageMode": "OwnPenTable",
+                "colorMode": "BlackAndWhite",
+                "isTransparentBackground": false,
+                "anchorPoint": "TopRight"
+              }
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the second settings back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${drawing}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.penTableUsageMode", "eq": "OwnPenTable" },
+        { "path": "detailsOfElements[0].details.colorMode", "eq": "BlackAndWhite" },
+        { "path": "detailsOfElements[0].details.isTransparentBackground", "eq": false },
+        { "path": "detailsOfElements[0].details.anchorPoint", "eq": "TopRight" },
+        { "path": "detailsOfElements[0].details.useOwnOriginAsAnchor", "eq": false, "name": "kept" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "ChangeWindow", "params": { "windowType": "FloorPlan" } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${layout}" } } ] } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${master}" } } ] } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${ws}" } } ] } }
+  ]
+}

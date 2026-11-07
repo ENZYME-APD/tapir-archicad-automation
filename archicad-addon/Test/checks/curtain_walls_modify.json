@@ -1,0 +1,526 @@
+{
+  "title": "ModifyCurtainWalls and ModifyCurtainWallFrames: every change read back, bad inputs refused",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "create a two-segment curtain wall A and a one-segment curtain wall B on story 0",
+      "command": "CreateCurtainWalls",
+      "params": {
+        "curtainWallsData": [
+          {
+            "coordinates": [
+              { "x": 900.0, "y": 900.0 },
+              { "x": 906.0, "y": 900.0 },
+              { "x": 906.0, "y": 903.0 }
+            ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "height": 3.0,
+            "primaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "secondaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "cells": [
+              { "columnIndex": 0, "rowIndex": 0, "panelClassIndex": 1, "leftFrameClassIndex": 1, "bottomFrameClassIndex": 1, "crossingFrameType": "None" }
+            ]
+          },
+          {
+            "coordinates": [
+              { "x": 920.0, "y": 900.0 },
+              { "x": 926.0, "y": 900.0 }
+            ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "height": 3.0,
+            "primaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "secondaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "cells": [
+              { "columnIndex": 0, "rowIndex": 0, "panelClassIndex": 1, "leftFrameClassIndex": 1, "bottomFrameClassIndex": 1, "crossingFrameType": "None" }
+            ]
+          }
+        ]
+      },
+      "save": { "a": "elements[0].elementId.guid", "b": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "curtain wall A created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "curtain wall B created" }
+      ]
+    },
+    {
+      "id": "read both back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${a}" } },
+          { "elementId": { "guid": "${b}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "CurtainWall", "name": "A is a curtain wall" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "A homed on story 0" },
+        { "path": "detailsOfElements[0].details.height", "approx": 3.0, "name": "A height as created" },
+        { "path": "detailsOfElements[1].floorIndex", "eq": 0, "name": "B homed on story 0" },
+        { "path": "detailsOfElements[1].details.height", "approx": 3.0, "name": "B height as created" }
+      ]
+    },
+    {
+      "id": "subelements as created",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${a}" } },
+          { "elementId": { "guid": "${b}" } }
+        ]
+      },
+      "save": { "f": "subelements[1].cWallFrames[0].elementId.guid" },
+      "expect": [
+        { "path": "subelements[0].cWallSegments", "len": 2, "name": "A has one segment per pair of points" },
+        { "path": "subelements[0].cWallPanels", "len": 12, "name": "A has 4 + 2 columns of 1.5 m and 2 rows of 1.5 m" },
+        { "path": "subelements[1].cWallSegments", "len": 1, "name": "B has one segment" },
+        { "path": "subelements[1].cWallPanels", "len": 8, "name": "B has 4 columns and 2 rows" },
+        { "path": "subelements[1].cWallFrames[0].elementId.guid", "exists": true, "name": "B has frames" }
+      ]
+    },
+    {
+      "id": "A bottom as created",
+      "command": "GetCurtainWallAbsoluteBottoms",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${a}" } } ] },
+      "expect": [
+        { "path": "absoluteBottoms[0].absoluteBottom", "approx": 0.0, "name": "A bottom at the given zCoordinate" }
+      ]
+    },
+    {
+      "id": "ModifyCurtainWalls: height only",
+      "command": "ModifyCurtainWalls",
+      "creates": false,
+      "params": {
+        "curtainWallsWithDetails": [
+          { "elementId": { "guid": "${a}" }, "height": 4.5 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "height change accepted" }
+      ]
+    },
+    {
+      "id": "A after the height change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${a}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.height", "approx": 4.5, "name": "height changed" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "home story unchanged" }
+      ]
+    },
+    {
+      "id": "A bottom after the height change",
+      "command": "GetCurtainWallAbsoluteBottoms",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${a}" } } ] },
+      "expect": [
+        { "path": "absoluteBottoms[0].absoluteBottom", "approx": 0.0, "name": "bottom unchanged" }
+      ]
+    },
+    {
+      "id": "ModifyCurtainWalls: bottom raised by 0.5 m on story 0",
+      "command": "ModifyCurtainWalls",
+      "creates": false,
+      "params": {
+        "curtainWallsWithDetails": [
+          { "elementId": { "guid": "${a}" }, "zCoordinate": 0.5, "floorIndex": 0 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "bottom change accepted" }
+      ]
+    },
+    {
+      "id": "A bottom after the bottom change",
+      "command": "GetCurtainWallAbsoluteBottoms",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${a}" } } ] },
+      "expect": [
+        { "path": "absoluteBottoms[0].absoluteBottom", "approx": 0.5, "name": "bottom at the new zCoordinate" }
+      ]
+    },
+    {
+      "id": "A details after the bottom change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${a}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "still on story 0" },
+        { "path": "detailsOfElements[0].details.height", "approx": 4.5, "name": "height unchanged" }
+      ]
+    },
+    {
+      "id": "ModifyCurtainWalls: story 1 alone",
+      "command": "ModifyCurtainWalls",
+      "creates": false,
+      "params": {
+        "curtainWallsWithDetails": [
+          { "elementId": { "guid": "${a}" }, "floorIndex": 1 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "story change accepted" }
+      ]
+    },
+    {
+      "id": "A details after the story change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${a}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].floorIndex", "eq": 1, "name": "moved to story 1" },
+        { "path": "detailsOfElements[0].details.height", "approx": 4.5, "name": "height unchanged" }
+      ]
+    },
+    {
+      "id": "A segment after the story change",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${a}" } } ] },
+      "save": { "s1": "subelements[0].cWallSegments[0].elementId.guid" },
+      "expect": [
+        { "path": "subelements[0].cWallSegments", "len": 2, "name": "segment count unchanged" }
+      ]
+    },
+    {
+      "id": "level of story 1, from the segment",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "save": { "level1": "detailsOfElements[0].details.homeStoryLevel" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.homeStoryLevel", "exists": true, "name": "segment reports the level of its home story" }
+      ]
+    },
+    {
+      "id": "A bottom after the story change",
+      "command": "GetCurtainWallAbsoluteBottoms",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${a}" } } ] },
+      "save": { "bottom1": "absoluteBottoms[0].absoluteBottom" },
+      "expect": [
+        { "expr": "${bottom1} - ${level1}", "approx": 0.5, "name": "the 0.5 m offset from the home story is kept" }
+      ]
+    },
+    {
+      "id": "ModifyCurtainWalls: back to zCoordinate 0 on story 0",
+      "command": "ModifyCurtainWalls",
+      "creates": false,
+      "params": {
+        "curtainWallsWithDetails": [
+          { "elementId": { "guid": "${a}" }, "zCoordinate": 0.0, "floorIndex": 0 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "bottom and story change accepted" }
+      ]
+    },
+    {
+      "id": "A details after moving back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${a}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "back on story 0" },
+        { "path": "detailsOfElements[0].details.height", "approx": 4.5, "name": "height unchanged" }
+      ]
+    },
+    {
+      "id": "A bottom after moving back",
+      "command": "GetCurtainWallAbsoluteBottoms",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${a}" } } ] },
+      "expect": [
+        { "path": "absoluteBottoms[0].absoluteBottom", "approx": 0.0, "name": "bottom back at 0" }
+      ]
+    },
+    {
+      "id": "ModifyCurtainWalls: new reference line with the same two segments",
+      "command": "ModifyCurtainWalls",
+      "creates": false,
+      "params": {
+        "curtainWallsWithDetails": [
+          {
+            "elementId": { "guid": "${a}" },
+            "coordinates": [
+              { "x": 900.0, "y": 900.0 },
+              { "x": 907.5, "y": 900.0 },
+              { "x": 907.5, "y": 902.5 }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "reference line change accepted" }
+      ]
+    },
+    {
+      "id": "A segments after the reference line change",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${a}" } } ] },
+      "save": {
+        "seg0": "subelements[0].cWallSegments[0].elementId.guid",
+        "seg1": "subelements[0].cWallSegments[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "subelements[0].cWallSegments", "len": 2, "name": "still two segments" }
+      ]
+    },
+    {
+      "id": "segment ends after the reference line change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${seg0}" } },
+          { "elementId": { "guid": "${seg1}" } },
+          { "elementId": { "guid": "${a}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.begCoordinate.x", "approx": 900.0, "name": "first segment starts at x 900" },
+        { "path": "detailsOfElements[0].details.begCoordinate.y", "approx": 900.0, "name": "first segment starts at y 900" },
+        { "path": "detailsOfElements[0].details.endCoordinate.x", "approx": 907.5, "name": "first segment ends at the moved x 907.5" },
+        { "path": "detailsOfElements[0].details.endCoordinate.y", "approx": 900.0, "name": "first segment ends at y 900" },
+        { "path": "detailsOfElements[1].details.begCoordinate.x", "approx": 907.5, "name": "second segment starts at the moved x 907.5" },
+        { "path": "detailsOfElements[1].details.endCoordinate.x", "approx": 907.5, "name": "second segment ends at the moved x 907.5" },
+        { "path": "detailsOfElements[1].details.endCoordinate.y", "approx": 902.5, "name": "second segment ends at the moved y 902.5" },
+        { "path": "detailsOfElements[2].details.height", "approx": 4.5, "name": "height unchanged" },
+        { "path": "detailsOfElements[2].floorIndex", "eq": 0, "name": "home story unchanged" }
+      ]
+    },
+    {
+      "id": "ModifyCurtainWalls: new column and row pattern",
+      "command": "ModifyCurtainWalls",
+      "creates": false,
+      "params": {
+        "curtainWallsWithDetails": [
+          {
+            "elementId": { "guid": "${a}" },
+            "primaryPattern": { "sizes": [ 2.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "secondaryPattern": { "sizes": [ 0.75 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "cells": [
+              { "columnIndex": 0, "rowIndex": 0, "panelClassIndex": 1, "leftFrameClassIndex": 1, "bottomFrameClassIndex": 1, "crossingFrameType": "None" }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "pattern change accepted" }
+      ]
+    },
+    {
+      "id": "A panels after the pattern change",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${a}" } } ] },
+      "save": { "seg0p": "subelements[0].cWallSegments[0].elementId.guid" },
+      "expect": [
+        { "path": "subelements[0].cWallSegments", "len": 2, "name": "still two segments" },
+        { "path": "subelements[0].cWallPanels", "len": 24, "name": "3 + 1 columns of 2.5 m and 6 rows of 0.75 m" }
+      ]
+    },
+    {
+      "id": "A after the pattern change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${a}" } },
+          { "elementId": { "guid": "${seg0p}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.height", "approx": 4.5, "name": "height unchanged" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "home story unchanged" },
+        { "path": "detailsOfElements[1].details.endCoordinate.x", "approx": 907.5, "name": "reference line unchanged" }
+      ]
+    },
+    {
+      "id": "ModifyCurtainWalls: bad inputs",
+      "command": "ModifyCurtainWalls",
+      "creates": false,
+      "params": {
+        "curtainWallsWithDetails": [
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "height": 2.0 },
+          { "elementId": { "guid": "${f}" }, "height": 2.0 },
+          {
+            "elementId": { "guid": "${a}" },
+            "coordinates": [
+              { "x": 900.0, "y": 900.0 },
+              { "x": 905.0, "y": 900.0 }
+            ]
+          },
+          { "elementId": { "guid": "${a}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "nonexistent guid refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "a curtain wall frame refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "a reference line with a different segment count refused" },
+        { "path": "executionResults[3].success", "eq": false, "name": "an item with no fields refused" }
+      ]
+    },
+    {
+      "id": "the refused ModifyCurtainWalls items changed nothing",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${a}" } } ] },
+      "expect": [
+        { "path": "subelements[0].cWallSegments", "len": 2, "name": "A still has two segments" },
+        { "path": "subelements[0].cWallPanels", "len": 24, "name": "A panels unchanged" }
+      ]
+    },
+    {
+      "id": "A and B heights after the refused items",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${a}" } },
+          { "elementId": { "guid": "${b}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.height", "approx": 4.5, "name": "A height unchanged" },
+        { "path": "detailsOfElements[1].details.height", "approx": 3.0, "name": "B height unchanged" }
+      ]
+    },
+    {
+      "id": "frame of B as created",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${f}" } } ] },
+      "save": {
+        "fbx": "detailsOfElements[0].details.begCoordinate.x",
+        "fby": "detailsOfElements[0].details.begCoordinate.y",
+        "fex": "detailsOfElements[0].details.endCoordinate.x",
+        "fey": "detailsOfElements[0].details.endCoordinate.y"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "CurtainWallFrame", "name": "the saved subelement is a frame" },
+        { "path": "detailsOfElements[0].details.frameContour.a1", "exists": true, "name": "frame reports its contour" }
+      ]
+    },
+    {
+      "id": "ModifyCurtainWallFrames: contour only",
+      "command": "ModifyCurtainWallFrames",
+      "creates": false,
+      "params": {
+        "framesWithDetails": [
+          { "frameId": { "guid": "${f}" }, "frameContour": { "a1": 0.025, "a2": 0.035, "b1": 0.04, "b2": 0.11 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "contour change accepted" }
+      ]
+    },
+    {
+      "id": "frame after the contour change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${f}" } } ] },
+      "save": {
+        "fbx2": "detailsOfElements[0].details.begCoordinate.x",
+        "fby2": "detailsOfElements[0].details.begCoordinate.y",
+        "fex2": "detailsOfElements[0].details.endCoordinate.x",
+        "fey2": "detailsOfElements[0].details.endCoordinate.y"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.frameContour.a1", "approx": 0.025, "name": "a1 changed" },
+        { "path": "detailsOfElements[0].details.frameContour.a2", "approx": 0.035, "name": "a2 changed" },
+        { "path": "detailsOfElements[0].details.frameContour.b1", "approx": 0.04, "name": "b1 changed" },
+        { "path": "detailsOfElements[0].details.frameContour.b2", "approx": 0.11, "name": "b2 changed" },
+        { "expr": "${fbx2} - ${fbx}", "approx": 0, "name": "frame start x unchanged" },
+        { "expr": "${fby2} - ${fby}", "approx": 0, "name": "frame start y unchanged" },
+        { "expr": "${fex2} - ${fex}", "approx": 0, "name": "frame end x unchanged" },
+        { "expr": "${fey2} - ${fey}", "approx": 0, "name": "frame end y unchanged" }
+      ]
+    },
+    {
+      "id": "ModifyCurtainWallFrames: Division class",
+      "command": "ModifyCurtainWallFrames",
+      "creates": false,
+      "params": {
+        "framesWithDetails": [
+          { "frameId": { "guid": "${f}" }, "classIndex": 1 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "class change to Division accepted" }
+      ]
+    },
+    {
+      "id": "frame after the Division class change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${f}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.type", "eq": "Division", "name": "frame class is Division" },
+        { "path": "detailsOfElements[0].details.frameContour.b2", "approx": 0.11, "name": "contour unchanged" }
+      ]
+    },
+    {
+      "id": "ModifyCurtainWallFrames: Boundary class",
+      "command": "ModifyCurtainWallFrames",
+      "creates": false,
+      "params": {
+        "framesWithDetails": [
+          { "frameId": { "guid": "${f}" }, "classIndex": 3 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "class change to Boundary accepted" }
+      ]
+    },
+    {
+      "id": "frame after the Boundary class change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${f}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.type", "eq": "Boundary", "name": "frame class is Boundary" },
+        { "path": "detailsOfElements[0].details.frameContour.b2", "approx": 0.11, "name": "contour unchanged" }
+      ]
+    },
+    {
+      "id": "ModifyCurtainWallFrames: bad inputs",
+      "command": "ModifyCurtainWallFrames",
+      "creates": false,
+      "params": {
+        "framesWithDetails": [
+          { "frameId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "frameContour": { "a1": 0.05 } },
+          { "frameId": { "guid": "${b}" }, "frameContour": { "a1": 0.05 } },
+          { "frameId": { "guid": "${f}" }, "classIndex": 99 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "nonexistent guid refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "a curtain wall refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "a frame class the curtain wall does not have refused" }
+      ]
+    },
+    {
+      "id": "the refused frame items changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${f}" } },
+          { "elementId": { "guid": "${b}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.type", "eq": "Boundary", "name": "frame class unchanged" },
+        { "path": "detailsOfElements[0].details.frameContour.a1", "approx": 0.025, "name": "frame a1 unchanged" },
+        { "path": "detailsOfElements[1].details.height", "approx": 3.0, "name": "B height unchanged" }
+      ]
+    }
+  ]
+}

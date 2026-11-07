@@ -1,0 +1,18 @@
+Command: NewProject
+Parameters:
+{
+    "newAndReset": false
+}
+Response:
+{
+    "success": true
+}
+Command: SaveProject
+Parameters:
+{
+    "projectPath": "<PATH>tapir_new_project.pln"
+}
+Response:
+{
+    "success": true
+}

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Commands;
+using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Components.FavoritesComponents
 {
@@ -13,7 +14,8 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
         public ExportFavoritesComponent()
             : base(
                 "ExportFavorites",
-                "Export the project's Favorites to a .prefs file or folder.",
+                "Export the project's Favorites to a .prefs file or folder. From Archicad 29 they can also be " +
+                "exported to a folder of Favorite files (xml format) or to a legacy .prf file (legacyPRF format).",
                 GroupNames.Favorites)
         {
         }
@@ -22,13 +24,42 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
         {
             InText(
                 "Path",
-                "Absolute path on the Archicad host. A .prefs extension writes a single file; otherwise it is treated as a folder.");
+                "Absolute path on the Archicad host. With the prefs format a .prefs extension writes a single file; " +
+                "otherwise it is treated as a folder. With the xml format: the folder to write the Favorite files to. " +
+                "With the legacyPRF format: the .prf file to write.");
 
             InTexts(
                 "Names",
                 "Optional subset of Favorites to export. Default: export all.");
 
-            SetOptionality(1);
+            InText(
+                "Format",
+                "The format to export to: prefs (the default, every Archicad version), xml (each Favorite " +
+                "to its own file in the folder) or legacyPRF (a Favorites file of earlier Archicad versions). " +
+                "xml and legacyPRF require Archicad 29 or newer.");
+
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "Overwrite",
+                "false refuses to export when a file already exists at Path, and writes nothing. Only " +
+                "for an export to a single file (prefs format with a .prefs path, or legacyPRF format); " +
+                "with an export to a folder it is an error. Default is true.",
+                true);
+
+            SetOptionality(
+                new[]
+                {
+                    1,
+                    2,
+                    3
+                });
+        }
+
+        protected override void AddOutputs()
+        {
+            OutText(
+                nameof(ExecutionResult.Message),
+                ExecutionResult.Doc);
         }
 
         protected override void Solve(
@@ -53,10 +84,37 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                 input.Names = names;
             }
 
-            SetCadValues(
-                CommandName,
-                input,
-                ToAddOn);
+            if (da.TryGet(
+                    2,
+                    out string format) &&
+                !string.IsNullOrEmpty(format))
+            {
+                input.Format = format;
+            }
+
+            if (!da.GetOptional(3, true))
+            {
+                input.Overwrite = false;
+            }
+
+            // The command answers with an ExecutionResult: the export fails as a
+            // whole or not at all, so there is nothing per item to hand out.
+            if (!TryGetConvertedCadValues(
+                    CommandName,
+                    input,
+                    ToAddOn,
+                    ExecutionResult.Deserialize,
+                    out ExecutionResult response))
+            {
+                return;
+            }
+
+            if (!response.Success)
+            {
+                this.AddError(response.Message());
+            }
+
+            da.SetData(0, response.Message());
         }
 
         protected override System.Drawing.Bitmap Icon =>

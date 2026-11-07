@@ -1,0 +1,191 @@
+{
+  "title": "CreateAnalyticalLoads puts a point and an edge load on a beam's curve member, GetAnalyticalLoads reads them back, and both fail on bad input",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "requiresEmpty": ["Wall", "Slab", "Stair", "Roof", "Zone", "Beam", "Column"],
+  "steps": [
+    {
+      "id": "load group",
+      "command": "CreateAnalyticalLoadGroups",
+      "creates": false,
+      "params": {
+        "loadGroups": [
+          { "name": "Tapir check loads group", "groupType": "VariableLoad", "relation": "StandardRelation", "loadType": "" }
+        ]
+      },
+      "save": {
+        "group": "loadGroupIds[0].loadGroupId.guid"
+      }
+    },
+    {
+      "id": "load case",
+      "command": "CreateAnalyticalLoadCases",
+      "creates": false,
+      "params": {
+        "loadCases": [
+          { "name": "Tapir check loads case", "description": "", "actionType": "VariableAction",
+            "loadGroupId": { "guid": "${group}" }, "loadType": "StaticLoad" }
+        ]
+      },
+      "save": {
+        "case": "loadCaseIds[0].loadCaseId.guid"
+      }
+    },
+    {
+      "id": "beam",
+      "command": "CreateBeams",
+      "params": {
+        "beamsData": [
+          { "begCoordinate": { "x": 700.0, "y": 700.0 }, "endCoordinate": { "x": 706.0, "y": 700.0 }, "zCoordinate": 3.0,
+            "width": 0.3, "height": 0.5, "isWidthAndHeightLinked": false, "anchorPoint": "TopCenter" }
+        ]
+      },
+      "save": {
+        "beam": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "update the Structural Analytical Model of the current view",
+      "command": "UpdateAnalyticalModel",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "the beam is a curve member",
+      "command": "GetAnalyticalMembers",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "curveMembers", "len": 1, "name": "one curve member" },
+        { "path": "curveMembers[0].elementId.guid", "eq": "${beam}", "name": "of the beam" }
+      ]
+    },
+    {
+      "id": "the beam's curve",
+      "command": "GetAnalyticalMemberDetails",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${beam}" } } ]
+      },
+      "save": {
+        "curve": "analyticalMembers[0].curveMember.curve",
+        "begX": "analyticalMembers[0].curveMember.curve.begNode.coord.x",
+        "begY": "analyticalMembers[0].curveMember.curve.begNode.coord.y",
+        "begZ": "analyticalMembers[0].curveMember.curve.begNode.coord.z"
+      }
+    },
+    {
+      "id": "[point load on the start vertex, trapezoid edge load on the edge]",
+      "command": "CreateAnalyticalLoads",
+      "params": {
+        "loads": [
+          {
+            "pointLoad": {
+              "loadSettings": {
+                "loadCaseId": { "guid": "${case}" },
+                "loadForceType": "Force",
+                "coordinateSystemType": "Global",
+                "xValue": 1000.0, "yValue": 0.0, "zValue": -10000.0
+              },
+              "loadedMemberPartRef": { "elemGuid": { "guid": "${beam}" }, "partRefType": "BegVertex" }
+            }
+          },
+          {
+            "edgeLoad": {
+              "loadSettings": {
+                "loadCaseId": { "guid": "${case}" },
+                "loadForceType": "Force",
+                "loadDistributionType": "Trapezoid",
+                "coordinateSystemType": "Global",
+                "startValue": { "x": 0.0, "y": 0.0, "z": -5000.0 },
+                "endValue": { "x": 0.0, "y": 0.0, "z": -2000.0 }
+              },
+              "loadedMemberPartRef": { "elemGuid": { "guid": "${beam}" }, "partRefType": "Edge" }
+            },
+            "customData": { "curve": [ "${curve}" ] }
+          }
+        ]
+      },
+      "save": {
+        "pointLoad": "elements[0].elementId.guid",
+        "edgeLoad": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements", "len": 2, "name": "one item per load" },
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "point load created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "edge load created" }
+      ]
+    },
+    {
+      "id": "read both loads back, and the beam, which is not a load",
+      "command": "GetAnalyticalLoads",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${pointLoad}" } },
+          { "elementId": { "guid": "${edgeLoad}" } },
+          { "elementId": { "guid": "${beam}" } }
+        ]
+      },
+      "save": {
+        "pointX": "loads[0].geometry.coordinate.x",
+        "pointY": "loads[0].geometry.coordinate.y",
+        "pointZ": "loads[0].geometry.coordinate.z"
+      },
+      "expect": [
+        { "path": "loads", "len": 3, "name": "one item per element" },
+        { "path": "loads[0].pointLoad.loadSettings.loadCaseId.guid", "eq": "${case}", "name": "point load: in the load case" },
+        { "path": "loads[0].pointLoad.loadSettings.loadForceType", "eq": "Force" },
+        { "path": "loads[0].pointLoad.loadSettings.coordinateSystemType", "eq": "Global" },
+        { "path": "loads[0].pointLoad.loadSettings.xValue", "approx": 1000.0 },
+        { "path": "loads[0].pointLoad.loadSettings.yValue", "approx": 0.0 },
+        { "path": "loads[0].pointLoad.loadSettings.zValue", "approx": -10000.0 },
+        { "path": "loads[0].pointLoad.loadedMemberPartRef.elemGuid.guid", "eq": "${beam}", "name": "point load: on the beam" },
+        { "path": "loads[0].pointLoad.loadedMemberPartRef.partRefType", "eq": "BegVertex" },
+        { "expr": "${pointX} - ${begX}", "approx": 0.0, "tol": 0.001, "name": "point load at the start node (x)" },
+        { "expr": "${pointY} - ${begY}", "approx": 0.0, "tol": 0.001, "name": "point load at the start node (y)" },
+        { "expr": "${pointZ} - ${begZ}", "approx": 0.0, "tol": 0.001, "name": "point load at the start node (z)" },
+        { "path": "loads[1].edgeLoad.loadSettings.loadCaseId.guid", "eq": "${case}", "name": "edge load: in the load case" },
+        { "path": "loads[1].edgeLoad.loadSettings.loadDistributionType", "eq": "Trapezoid" },
+        { "path": "loads[1].edgeLoad.loadSettings.startValue.z", "approx": -5000.0 },
+        { "path": "loads[1].edgeLoad.loadSettings.endValue.z", "approx": -2000.0 },
+        { "path": "loads[1].edgeLoad.loadedMemberPartRef.elemGuid.guid", "eq": "${beam}", "name": "edge load: on the beam" },
+        { "path": "loads[1].edgeLoad.loadedMemberPartRef.partRefType", "eq": "Edge" },
+        { "path": "loads[1].customData.curve", "len": 1, "name": "edge load: the one curve it was given" },
+        { "path": "loads[1].geometry.curve", "exists": true, "name": "edge load: its geometry" },
+        { "path": "loads[2].error", "exists": true, "name": "beam: error item, not a load" }
+      ]
+    },
+    {
+      "id": "[point load with an invalid load case id]",
+      "command": "CreateAnalyticalLoads",
+      "creates": false,
+      "params": {
+        "loads": [
+          {
+            "pointLoad": {
+              "loadSettings": {
+                "loadCaseId": { "guid": "00000000-0000-0000-0000-000000000000" },
+                "loadForceType": "Force",
+                "coordinateSystemType": "Global",
+                "xValue": 0.0, "yValue": 0.0, "zValue": -10000.0
+              },
+              "loadedMemberPartRef": { "elemGuid": { "guid": "${beam}" }, "partRefType": "BegVertex" }
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "one item per load" },
+        { "path": "elements[0].error", "exists": true, "name": "error item in place of the element" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteAnalyticalLoadCases", "params": { "loadCaseIds": [ { "loadCaseId": { "guid": "${case}" } } ] } },
+    { "command": "DeleteAnalyticalLoadGroups", "params": { "loadGroupIds": [ { "loadGroupId": { "guid": "${group}" } } ] } }
+  ]
+}

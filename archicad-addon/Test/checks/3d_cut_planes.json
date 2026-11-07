@@ -1,0 +1,116 @@
+{
+  "title": "Set3DCutPlanes switches the 3D cut on with the given planes and off with an empty list, as Get3DCutPlanes reads back",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "3D window",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "3DModel"
+      }
+    },
+    {
+      "id": "one horizontal plane at 2.5 m",
+      "command": "Set3DCutPlanes",
+      "creates": false,
+      "params": {
+        "cutPlanes": [
+          { "pa": 0, "pb": 0, "pc": 1, "pd": -2.5 }
+        ]
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the horizontal plane",
+      "command": "Get3DCutPlanes",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "isCutPlanes", "eq": true, "name": "cut on" },
+        { "path": "useCustom", "eq": false },
+        { "path": "cutPlanes", "len": 1, "name": "one plane" },
+        { "path": "cutPlanes[0].pa", "approx": 0, "tol": 1e-6 },
+        { "path": "cutPlanes[0].pb", "approx": 0, "tol": 1e-6 },
+        { "path": "cutPlanes[0].pc", "approx": 1, "tol": 1e-6 },
+        { "path": "cutPlanes[0].pd", "approx": -2.5, "tol": 1e-6 }
+      ]
+    },
+    {
+      "id": "two vertical planes replace it",
+      "command": "Set3DCutPlanes",
+      "creates": false,
+      "params": {
+        "cutPlanes": [
+          { "pa": 1, "pb": 0, "pc": 0, "pd": -3 },
+          { "pa": 0, "pb": -1, "pc": 0, "pd": 4 }
+        ]
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the two planes",
+      "command": "Get3DCutPlanes",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "isCutPlanes", "eq": true, "name": "cut on" },
+        { "path": "cutPlanes", "len": 2, "name": "two planes, the old one gone" },
+        { "path": "cutPlanes[0].pa", "approx": 1, "tol": 1e-6 },
+        { "path": "cutPlanes[0].pd", "approx": -3, "tol": 1e-6 },
+        { "path": "cutPlanes[1].pb", "approx": -1, "tol": 1e-6 },
+        { "path": "cutPlanes[1].pd", "approx": 4, "tol": 1e-6 }
+      ]
+    },
+    {
+      "id": "no cutPlanes given",
+      "command": "Set3DCutPlanes",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {},
+      "expect": [
+        { "path": "success", "ne": true, "name": "refused" }
+      ]
+    },
+    {
+      "id": "the planes are kept after the refused call",
+      "command": "Get3DCutPlanes",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "isCutPlanes", "eq": true },
+        { "path": "cutPlanes", "len": 2 }
+      ]
+    },
+    {
+      "id": "empty list switches the cut off",
+      "command": "Set3DCutPlanes",
+      "creates": false,
+      "params": {
+        "cutPlanes": []
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the cut off",
+      "command": "Get3DCutPlanes",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "isCutPlanes", "eq": false, "name": "cut off" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "Set3DCutPlanes",
+      "params": { "cutPlanes": [] }
+    }
+  ]
+}

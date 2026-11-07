@@ -1,0 +1,16 @@
+{
+    "notApplicable": {
+        "groups": {},
+        "items": {
+            "GenerateDocumentation": "developer command that writes the Add-On's documentation files"
+        },
+        "patterns": {}
+    },
+    "skip": {
+        "groups": {},
+        "items": {
+            "CreateSkylights": "Grasshopper component deferred to a follow-up; this PR adds the Add-On command and Python example"
+        },
+        "patterns": {}
+    }
+}

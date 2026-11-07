@@ -1,7 +1,9 @@
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Types.Element;
+using TapirGrasshopperPlugin.Types.Generic;
 using TapirGrasshopperPlugin.Types.GuidObjects;
+using TapirGrasshopperPlugin.Types.Navigator;
 
 namespace TapirGrasshopperPlugin.Types.DesignOptions
 {
@@ -55,8 +57,50 @@ namespace TapirGrasshopperPlugin.Types.DesignOptions
         }
     }
 
+    public class DesignOptionCombinationsObject
+        : GuidItemsObject<DesignOptionCombinationGuid, DesignOptionCombinationGuidWrapper, DesignOptionCombinationsObject>
+    {
+        [JsonProperty("designOptionCombinations")]
+        public List<DesignOptionCombinationGuidWrapper> DesignOptionCombinations;
+
+        [JsonIgnore]
+        public override List<DesignOptionCombinationGuidWrapper> GuidWrappers
+        {
+            get => DesignOptionCombinations;
+            set => DesignOptionCombinations = value;
+        }
+    }
+
     public class DesignOptionSetGuid : GuidObject<DesignOptionSetGuid>
     {
+    }
+
+    public class DesignOptionSetGuidWrapper
+        : GuidWrapper<DesignOptionSetGuid, DesignOptionSetGuidWrapper>
+    {
+        [JsonProperty("designOptionSetId")]
+        public DesignOptionSetGuid DesignOptionSetId;
+
+        [JsonIgnore]
+        public override DesignOptionSetGuid Id
+        {
+            get => DesignOptionSetId;
+            set => DesignOptionSetId = value;
+        }
+    }
+
+    public class DesignOptionSetsObject
+        : GuidItemsObject<DesignOptionSetGuid, DesignOptionSetGuidWrapper, DesignOptionSetsObject>
+    {
+        [JsonProperty("designOptionSets")]
+        public List<DesignOptionSetGuidWrapper> DesignOptionSets;
+
+        [JsonIgnore]
+        public override List<DesignOptionSetGuidWrapper> GuidWrappers
+        {
+            get => DesignOptionSets;
+            set => DesignOptionSets = value;
+        }
     }
 
     public class DesignOptionDetails
@@ -72,6 +116,14 @@ namespace TapirGrasshopperPlugin.Types.DesignOptions
 
         [JsonProperty("ownerSetName")]
         public string OwnerSetName;
+
+        // Returned by GetDesignOptions only.
+        [JsonProperty("isEditable")]
+        public bool? IsEditable;
+
+        // Set when IsEditable is false.
+        [JsonProperty("notEditableError")]
+        public Error NotEditableError;
     }
 
     public class GetDesignOptionsResponse
@@ -87,6 +139,13 @@ namespace TapirGrasshopperPlugin.Types.DesignOptions
 
         [JsonProperty("name")]
         public string Name;
+
+        [JsonProperty("isEditable")]
+        public bool? IsEditable;
+
+        // Set when IsEditable is false.
+        [JsonProperty("notEditableError")]
+        public Error NotEditableError;
 
         [JsonProperty("designOptions")]
         public List<DesignOptionGuidWrapper> DesignOptions;
@@ -108,6 +167,14 @@ namespace TapirGrasshopperPlugin.Types.DesignOptions
 
         [JsonProperty("activeDesignOptions")]
         public List<DesignOptionGuidWrapper> ActiveDesignOptions;
+
+        // Available from Archicad 29.
+        [JsonProperty("isEditable")]
+        public bool? IsEditable;
+
+        // Set when IsEditable is false.
+        [JsonProperty("notEditableError")]
+        public Error NotEditableError;
     }
 
     public class GetDesignOptionCombinationsResponse
@@ -123,6 +190,10 @@ namespace TapirGrasshopperPlugin.Types.DesignOptions
 
         [JsonProperty("elements")]
         public List<ElementGuidWrapper> Elements;
+
+        // Set instead of the fields above when the design option was not found.
+        [JsonProperty("error")]
+        public Error Error;
     }
 
     public class GetElementsOfDesignOptionsResponse
@@ -147,6 +218,50 @@ namespace TapirGrasshopperPlugin.Types.DesignOptions
     {
         [JsonProperty("designOptionForElements")]
         public List<DesignOptionForElement> DesignOptionForElements;
+    }
+
+    public class DesignOptionCombinationOfView
+    {
+        [JsonProperty("navigatorItemId")]
+        public NavigatorGuid NavigatorItemId;
+
+        [JsonProperty("status")]
+        public string Status;
+
+        [JsonProperty("name")]
+        public string Name;
+
+        [JsonProperty("designOptionCombinationId")]
+        public DesignOptionCombinationGuid DesignOptionCombinationId;
+
+        // Set instead of the fields above when the view was not found.
+        [JsonProperty("error")]
+        public Error Error;
+    }
+
+    public class GetDesignOptionCombinationOfViewsResponse
+    {
+        [JsonProperty("designOptionCombinationOfViews")]
+        public List<DesignOptionCombinationOfView> DesignOptionCombinationOfViews;
+    }
+
+    public class CanMoveElement
+    {
+        [JsonProperty("elementId")]
+        public ElementGuid ElementId;
+
+        [JsonProperty("canMove")]
+        public bool CanMove;
+
+        // Set when CanMove is false.
+        [JsonProperty("error")]
+        public Error Error;
+    }
+
+    public class CanMoveElementsToDesignOptionsResponse
+    {
+        [JsonProperty("canMoveElements")]
+        public List<CanMoveElement> CanMoveElements;
     }
 
     // Input parameter payloads
@@ -233,5 +348,124 @@ namespace TapirGrasshopperPlugin.Types.DesignOptions
     {
         [JsonProperty("designOptionAndSetPairs")]
         public List<DesignOptionAndSetPair> DesignOptionAndSetPairs;
+    }
+
+    public class RenameDesignOptionParameter
+    {
+        [JsonProperty("designOptionId")]
+        public DesignOptionGuid DesignOptionId;
+
+        [JsonProperty(
+            "name",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string Name;
+
+        [JsonProperty(
+            "id",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string Id;
+    }
+
+    public class RenameDesignOptionsParameters
+    {
+        [JsonProperty("designOptions")]
+        public List<RenameDesignOptionParameter> DesignOptions;
+    }
+
+    public class RenameDesignOptionSetParameter
+    {
+        [JsonProperty("designOptionSetId")]
+        public DesignOptionSetGuid DesignOptionSetId;
+
+        [JsonProperty("name")]
+        public string Name;
+    }
+
+    public class RenameDesignOptionSetsParameters
+    {
+        [JsonProperty("designOptionSets")]
+        public List<RenameDesignOptionSetParameter> DesignOptionSets;
+    }
+
+    public class RenameDesignOptionCombinationParameter
+    {
+        [JsonProperty("designOptionCombinationId")]
+        public DesignOptionCombinationGuid DesignOptionCombinationId;
+
+        [JsonProperty("name")]
+        public string Name;
+    }
+
+    public class RenameDesignOptionCombinationsParameters
+    {
+        [JsonProperty("designOptionCombinations")]
+        public List<RenameDesignOptionCombinationParameter> DesignOptionCombinations;
+    }
+
+    public class SetDefaultDesignOptionParameters
+    {
+        // Null selects the Main Model as the default.
+        [JsonProperty(
+            "designOptionId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public DesignOptionGuid DesignOptionId;
+    }
+
+    public class ReorderDesignOptionSetParameter
+    {
+        [JsonProperty("designOptionSetId")]
+        public DesignOptionSetGuid DesignOptionSetId;
+
+        // Null moves the set to the end.
+        [JsonProperty(
+            "beforeDesignOptionSetId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public DesignOptionSetGuid BeforeDesignOptionSetId;
+    }
+
+    public class ReorderDesignOptionSetsParameters
+    {
+        [JsonProperty("designOptionSets")]
+        public List<ReorderDesignOptionSetParameter> DesignOptionSets;
+    }
+
+    public class ReorderDesignOptionInSetParameter
+    {
+        [JsonProperty("designOptionId")]
+        public DesignOptionGuid DesignOptionId;
+
+        // Null moves the design option to the end of its set.
+        [JsonProperty(
+            "beforeDesignOptionId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public DesignOptionGuid BeforeDesignOptionId;
+    }
+
+    public class ReorderDesignOptionsInSetParameters
+    {
+        [JsonProperty("designOptions")]
+        public List<ReorderDesignOptionInSetParameter> DesignOptions;
+    }
+
+    public class NavigatorItemIdWithCombination
+    {
+        [JsonProperty("navigatorItemId")]
+        public NavigatorGuid NavigatorItemId;
+
+        [JsonProperty(
+            "designOptionCombinationId",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public DesignOptionCombinationGuid DesignOptionCombinationId;
+
+        [JsonProperty(
+            "mainModelOnly",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public bool? MainModelOnly;
+    }
+
+    public class SetDesignOptionCombinationOfViewsParameters
+    {
+        [JsonProperty("navigatorItemIdsWithCombination")]
+        public List<NavigatorItemIdWithCombination> NavigatorItemIdsWithCombination;
     }
 }

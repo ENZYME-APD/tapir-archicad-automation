@@ -1,0 +1,217 @@
+{
+  "title": "CreateProfiles creates, overwrites and copies a Profile, read back with GetProfiles",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "a building material",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": {"attributeType": "BuildingMaterial"},
+      "save": {"bm": "attributes[0].attributeId.guid"}
+    },
+    {
+      "id": "create from newSkins: a 0.2 x 0.25 rectangle",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 1924",
+            "wallType": true,
+            "beamType": false,
+            "coluType": true,
+            "handrailType": false,
+            "otherGDLObjectType": false,
+            "newSkins": [
+              {
+                "contours": [{"polygonCoordinates": [{"x": 0.0, "y": 0.0}, {"x": 0.2, "y": 0.0}, {"x": 0.2, "y": 0.25}, {"x": 0.0, "y": 0.25}]}],
+                "buildingMaterialId": {"attributeId": {"guid": "${bm}"}},
+                "contourPen": 4,
+                "isCore": true,
+                "isFinish": false,
+                "visibleCutEndLines": true,
+                "cutEndLinePen": 6
+              }
+            ]
+          }
+        ]
+      },
+      "save": {"p1": "attributeIds[0].attributeId.guid"},
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"}
+      ]
+    },
+    {
+      "id": "read back the created Profile",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${p1}"}}]},
+      "expect": [
+        {"path": "profiles", "len": 1},
+        {"path": "profiles[0].name", "eq": "TapirCheck Profile 1924"},
+        {"path": "profiles[0].index", "exists": true},
+        {"path": "profiles[0].wallType", "eq": true},
+        {"path": "profiles[0].beamType", "eq": false},
+        {"path": "profiles[0].coluType", "eq": true},
+        {"path": "profiles[0].handrailType", "eq": false},
+        {"path": "profiles[0].otherGDLObjectType", "eq": false},
+        {"path": "profiles[0].useWith", "eq": ["Wall", "Column"]},
+        {"path": "profiles[0].width", "approx": 0.2, "tol": 0.0001},
+        {"path": "profiles[0].height", "approx": 0.25, "tol": 0.0001},
+        {"path": "profiles[0].hasCoreSkin", "eq": true},
+        {"path": "profiles[0].skins", "len": 1},
+        {"path": "profiles[0].skins[0].isCore", "eq": true},
+        {"path": "profiles[0].skins[0].isFinish", "eq": false},
+        {"path": "profiles[0].skins[0].contourPen", "eq": 4},
+        {"path": "profiles[0].skins[0].cutEndLinePen", "eq": 6},
+        {"path": "profiles[0].skins[0].buildingMaterialId.attributeId.guid", "exists": true, "name": "skin has a building material"}
+      ]
+    },
+    {
+      "id": "bad input: a source Profile that does not exist",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 1924 bad source",
+            "sourceAttributeId": {"attributeId": {"guid": "00000000-0000-0000-0000-00000000BEEF"}}
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": true, "name": "failed"},
+        {"path": "attributeIds[0].attributeId", "exists": false, "name": "nothing created"}
+      ]
+    },
+    {
+      "id": "overwrite by attributeId: rename and use with flags only",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "profileDataArray": [
+          {
+            "attributeId": {"guid": "${p1}"},
+            "name": "TapirCheck Profile 1924 renamed",
+            "wallType": false,
+            "beamType": true
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"},
+        {"path": "attributeIds[0].attributeId.guid", "exists": true}
+      ]
+    },
+    {
+      "id": "read back the overwritten Profile",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${p1}"}}]},
+      "expect": [
+        {"path": "profiles", "len": 1},
+        {"path": "profiles[0].name", "eq": "TapirCheck Profile 1924 renamed", "name": "renamed"},
+        {"path": "profiles[0].wallType", "eq": false, "name": "wallType written"},
+        {"path": "profiles[0].beamType", "eq": true, "name": "beamType written"},
+        {"path": "profiles[0].coluType", "eq": true, "name": "coluType kept"},
+        {"path": "profiles[0].useWith", "eq": ["Beam", "Column"]},
+        {"path": "profiles[0].width", "approx": 0.2, "tol": 0.0001, "name": "geometry kept: width"},
+        {"path": "profiles[0].height", "approx": 0.25, "tol": 0.0001, "name": "geometry kept: height"},
+        {"path": "profiles[0].skins", "len": 1, "name": "skins kept"},
+        {"path": "profiles[0].skins[0].contourPen", "eq": 4, "name": "skin pen kept"}
+      ]
+    },
+    {
+      "id": "overwrite by name: move the top edge up by 0.1",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 1924 renamed",
+            "moveVertices": [{"region": {"yMin": 0.2}, "vector": {"x": 0.0, "y": 0.1}}]
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"}
+      ]
+    },
+    {
+      "id": "read back the moved vertices",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${p1}"}}], "fields": ["width", "height", "skins", "beamType"]},
+      "expect": [
+        {"path": "profiles", "len": 1},
+        {"path": "profiles[0].height", "approx": 0.35, "tol": 0.0001, "name": "height grew by 0.1"},
+        {"path": "profiles[0].width", "approx": 0.2, "tol": 0.0001, "name": "width kept"},
+        {"path": "profiles[0].skins", "len": 1},
+        {"path": "profiles[0].beamType", "eq": true, "name": "beamType kept"}
+      ]
+    },
+    {
+      "id": "copy: a new Profile from sourceAttributeId",
+      "command": "CreateProfiles",
+      "creates": false,
+      "params": {
+        "profileDataArray": [
+          {
+            "name": "TapirCheck Profile 1924 copy",
+            "sourceAttributeId": {"attributeId": {"guid": "${p1}"}},
+            "handrailType": true
+          }
+        ]
+      },
+      "save": {"p2": "attributeIds[0].attributeId.guid"},
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"}
+      ]
+    },
+    {
+      "id": "read back the copy",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${p2}"}}]},
+      "expect": [
+        {"path": "profiles", "len": 1},
+        {"path": "profiles[0].name", "eq": "TapirCheck Profile 1924 copy"},
+        {"path": "profiles[0].useWith", "eq": ["Beam", "Column", "Handrail"], "name": "flags from the source, handrailType from the input"},
+        {"path": "profiles[0].width", "approx": 0.2, "tol": 0.0001, "name": "geometry copied: width"},
+        {"path": "profiles[0].height", "approx": 0.35, "tol": 0.0001, "name": "geometry copied: height"},
+        {"path": "profiles[0].skins", "len": 1},
+        {"path": "profiles[0].skins[0].isCore", "eq": true, "name": "core skin copied"},
+        {"path": "profiles[0].skins[0].contourPen", "eq": 4, "name": "skin pen copied"}
+      ]
+    },
+    {
+      "id": "GetProfiles with a nonexistent guid",
+      "command": "GetProfiles",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "00000000-0000-0000-0000-00000000BEEF"}}]},
+      "expect": [
+        {"path": "profiles", "len": 1},
+        {"path": "profiles[0].error", "exists": true, "name": "failed"}
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": {"attributesToDelete": [{"attributeType": "Profile", "attributeId": {"attributeId": {"guid": "${p2}"}}}]}
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": {"attributesToDelete": [{"attributeType": "Profile", "attributeId": {"attributeId": {"guid": "${p1}"}}}]}
+    }
+  ]
+}

@@ -2,6 +2,12 @@
 
 #include "CommandBase.hpp"
 
+#ifdef ServerMainVers_2800
+// Declared in GDLParamInterface.hpp, included only where the parameters are used, as the
+// order of the GDL headers and ACAPinc.h matters (see ExtendedElementCommands.cpp).
+namespace GDL { class Parameters; }
+#endif
+
 class GetGDLParametersOfElementsCommand : public CommandBase
 {
 public:
@@ -34,6 +40,7 @@ private:
     static GSErrCode SetOneGDLParameter (
         const GS::ObjectState& parameter,
         const API_Guid& elemGuid,
+        API_ElemTypeID elemTypeId,
         const API_GetParamsType& getParams,
         const GS::HashTable<GS::String, API_AddParID>& gdlParametersTypeDictionary,
         const GS::HashTable<short, GS::String>& gdlParametersIndexNameDictionary,
@@ -48,8 +55,125 @@ private:
         ArrayParameterChange& change);
 
     static GSErrCode ApplyArrayParameterChanges (
-        const API_GetParamsType& getParams,
+        API_GetParamsType& getParams,
         const GS::Array<ArrayParameterChange>& changes,
         const API_Guid& elemGuid,
         GS::UniString& errMessage);
 };
+
+// The marker (the stamp drawn next to a window or a door on the floor plan) is a Main
+// Marker sub-element with a library part and GDL parameters of its own, separate from
+// the opening's. Get/SetGDLParametersOfElements reach the opening only, so these two
+// commands read and write the marker's parameters.
+class GetMarkerParametersOfElementsCommand : public CommandBase
+{
+public:
+    GetMarkerParametersOfElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// Adds "libPart" (when the library part can be read) and "parameters" to `os` from a GDL
+// parameter list held in a memo, without a parameter interface: how
+// GetMarkerParametersOfElements reports a marker and GetFavoriteSettings a Favorite.
+void AddLibPartAndGDLParameters (GS::ObjectState& os, Int32 libInd, API_AddParType** params);
+
+class SetMarkerParametersOfElementsCommand : public CommandBase
+{
+public:
+    SetMarkerParametersOfElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// The default GDL parameters of a library part, read from the part itself, so they can be
+// inspected (array dimensions included) before the part is placed.
+class GetGDLParametersOfLibraryPartsCommand : public CommandBase
+{
+public:
+    GetGDLParametersOfLibraryPartsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// Switches placed library part based elements (e.g. ones whose library part is missing) to
+// another library part, keeping the elements themselves.
+class ChangeLibraryPartOfElementsCommand : public CommandBase
+{
+public:
+    ChangeLibraryPartOfElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// The parameters of a curtain wall frame, panel, junction or accessory as Archicad calculated
+// them for its place in the curtain wall (ACAPI_CurtainWall_GetCWSubElemParams), which
+// GetGDLParametersOfElements, reading the parameters the sub-element was set up with, does not give.
+class GetCalculatedParametersOfCurtainWallSubElementsCommand : public CommandBase
+{
+public:
+    GetCalculatedParametersOfCurtainWallSubElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetHotspotsOfElementsCommand : public CommandBase
+{
+public:
+    GetHotspotsOfElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// Replaces the library part of the marker itself (which stamp is drawn), where
+// SetMarkerParametersOfElements only changes values within the one already assigned.
+class SetMarkerLibraryPartOfElementsCommand : public CommandBase
+{
+public:
+    SetMarkerLibraryPartOfElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class RunParameterScriptOfElementsCommand : public CommandBase
+{
+public:
+    RunParameterScriptOfElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// The JSON schemas of a parameter list GDLParametersToObjectStates gives and of the changes
+// SetGDLParametersFromObjectStates takes.
+extern const char* const GDLParameterValuesSchema;
+extern const char* const SetGDLParameterValuesSchema;
+
+#ifdef ServerMainVers_2800
+// The parameters of a GDL::Parameters list (such as an opening symbol's), in the format
+// GetGDLParametersOfElements gives them: name, type, value and, for an array, dimension1 and
+// dimension2. Separators, titles and dictionaries have no value read this way, so they are
+// left out.
+GS::Array<GS::ObjectState> GDLParametersToObjectStates (const GDL::Parameters& gdlParameters);
+
+// Changes the parameters named in `parameters`, given in the format SetGDLParametersOfElements
+// takes (name, value, index1, index2), in `gdlParameters`. Returns the error of the first one
+// that cannot be set, with the ones before it already changed, so the caller works on a copy
+// and only writes it back when this succeeds.
+GSErrCode SetGDLParametersFromObjectStates (GDL::Parameters& gdlParameters, const GS::Array<GS::ObjectState>& parameters, GS::UniString& errMessage);
+#endif

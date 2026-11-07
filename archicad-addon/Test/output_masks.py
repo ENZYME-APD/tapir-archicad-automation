@@ -8,6 +8,9 @@ import re
 
 MASKS = [(re.compile(r'[{]?[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}[}]?'), '<GUID>'),
          (re.compile(r'Time": [0-9]+'), 'Time": <TIME>'),
+         # creationInfo.creatorUserName of GetAttributesByType (Archicad 30) is the OS login name of
+         # whoever recorded the golden in a solo project.
+         (re.compile(r'"creatorUserName": "(?:[^"\\]|\\.)*"'), '"creatorUserName": "<USER>"'),
          # The text box of a Text or Label (style.boxWidth/boxHeight in GetDetailsOfElements) is
          # computed from the font metrics of the machine running the test.
          (re.compile(r'"(boxWidth|boxHeight)": -?[0-9.eE+-]+'), r'"\1": <SIZE>'),

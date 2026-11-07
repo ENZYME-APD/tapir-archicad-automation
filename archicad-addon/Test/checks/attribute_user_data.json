@@ -1,0 +1,151 @@
+{
+  "title": "SetUserDataOfAttributes merges and deletes keys, GetUserDataOfAttributes reads them, DeleteUserDataOfAttributes removes them all",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "layer to hold the user data",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "name": "Tapir check user data layer" }
+        ]
+      },
+      "save": { "layer": "attributeIds[0].attributeId.guid" }
+    },
+    {
+      "id": "new layer has no user data",
+      "command": "GetUserDataOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layer}" } } ]
+      },
+      "expect": [
+        { "path": "userDataOfAttributes", "len": 1, "name": "one item per attribute" },
+        { "path": "userDataOfAttributes[0].pairs", "len": 0, "name": "no pairs" }
+      ]
+    },
+    {
+      "id": "[layer, bogus] two pairs",
+      "command": "SetUserDataOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${layer}" } },
+          { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ],
+        "pairs": [
+          { "key": "tapirCheck.a", "value": "1" },
+          { "key": "tapirCheck.b", "value": "2" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per attribute" },
+        { "path": "executionResults[0].success", "eq": true, "name": "layer: success" },
+        { "path": "executionResults[1].success", "eq": false, "name": "bogus attribute: failed" },
+        { "path": "executionResults[1].error", "exists": true, "name": "bogus attribute: error" }
+      ]
+    },
+    {
+      "id": "[layer, bogus] read the two pairs",
+      "command": "GetUserDataOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${layer}" } },
+          { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "userDataOfAttributes", "len": 2, "name": "one item per attribute" },
+        { "path": "userDataOfAttributes[0].pairs", "len": 2, "name": "two pairs stored" },
+        { "path": "userDataOfAttributes[1].error", "exists": true, "name": "bogus attribute: error item" }
+      ]
+    },
+    {
+      "id": "change b, delete a",
+      "command": "SetUserDataOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layer}" } } ],
+        "pairs": [ { "key": "tapirCheck.b", "value": "3" } ],
+        "keysToDelete": [ "tapirCheck.a" ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "read b only, with its new value",
+      "command": "GetUserDataOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layer}" } } ]
+      },
+      "expect": [
+        { "path": "userDataOfAttributes[0].pairs", "len": 1, "name": "a deleted" },
+        { "path": "userDataOfAttributes[0].pairs[0].key", "eq": "tapirCheck.b", "name": "b kept" },
+        { "path": "userDataOfAttributes[0].pairs[0].value", "eq": "3", "name": "b has the new value" }
+      ]
+    },
+    {
+      "id": "neither pairs nor keysToDelete",
+      "command": "SetUserDataOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layer}" } } ]
+      },
+      "expect": [
+        { "path": "error", "exists": true, "name": "error answer" },
+        { "path": "executionResults", "exists": false, "name": "nothing written" }
+      ]
+    },
+    {
+      "id": "b still there after the bad call",
+      "command": "GetUserDataOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layer}" } } ]
+      },
+      "expect": [
+        { "path": "userDataOfAttributes[0].pairs", "len": 1, "name": "unchanged" }
+      ]
+    },
+    {
+      "id": "[layer, bogus] delete the user data",
+      "command": "DeleteUserDataOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${layer}" } },
+          { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per attribute" },
+        { "path": "executionResults[0].success", "eq": true, "name": "layer: success" },
+        { "path": "executionResults[1].success", "eq": false, "name": "bogus attribute: failed" }
+      ]
+    },
+    {
+      "id": "user data gone",
+      "command": "GetUserDataOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${layer}" } } ]
+      },
+      "expect": [
+        { "path": "userDataOfAttributes[0].pairs", "len": 0, "name": "no pairs" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": {
+        "attributesToDelete": [ { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${layer}" } } } ]
+      }
+    }
+  ]
+}

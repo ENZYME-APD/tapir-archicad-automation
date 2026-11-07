@@ -43,6 +43,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;
 
+        private static readonly List<Field> TrailingFieldDefinitions = new List<Field>
+        {
+            new Field("FontNames", "style.fontName", FieldKind.Text, "Font of text labels, by name (e.g. Arial), as the Font attributes carry it. An element whose font name no loaded font has fails. Takes precedence over Fonts.")
+        };
+
+        protected override IReadOnlyList<Field> TrailingFields => TrailingFieldDefinitions;
+
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.ModifyLabels;
 

@@ -1,0 +1,18 @@
+{
+  "repo": "ENZYME-APD/tapir-archicad-automation",
+  "label": "needs-test",
+  "checkFolder": "archicad-addon/Test/checks/",
+  "tokenEnv": "TAPIR_RUNNER_TOKEN",
+  "pollMinutes": 15,
+  "allowForks": false,
+  "trustedForks": ["your-github-name"],
+  "archicads": [
+    {
+      "version": "28",
+      "archicadExe": "C:\\Program Files\\Graphisoft\\Archicad 28\\Archicad.exe",
+      "blankTemplate": "C:\\Program Files\\Graphisoft\\Archicad 28\\Defaults\\Archicad\\Archicad 28 Template.tpl",
+      "startTimeout": 300,
+      "quitTimeout": 180
+    }
+  ]
+}

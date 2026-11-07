@@ -50,6 +50,14 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                 "ApplyProperties",
                 "Apply the Favorite's property values.",
                 true);
+
+            InTexts(
+                "KeepFields",
+                "Optional fields of the target element to keep, copied back after the Favorite has been applied: " +
+                "id, layerIndex, width, height, sillHeight, referenceLineLocation, topOffset, relativeTopStory. " +
+                "A field the element's type does not have is ignored.");
+
+            SetOptionality(6);
         }
 
         protected override void AddOutputs()
@@ -88,13 +96,16 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
             da.TryGet(4, out bool applyCategories);
             da.TryGet(5, out bool applyProperties);
 
+            da.TryGetList(6, out List<string> keepFields);
+
             var input = new ApplyFavoritesToElementsParameters
             {
                 FavoritesToApply = new List<FavoriteForElement>(),
                 ApplySettings = applySettings,
                 ApplyClassifications = applyClassifications,
                 ApplyCategories = applyCategories,
-                ApplyProperties = applyProperties
+                ApplyProperties = applyProperties,
+                KeepFields = keepFields != null && keepFields.Count > 0 ? keepFields : null
             };
 
             for (var i = 0; i < elementWrappers.Count; i++)

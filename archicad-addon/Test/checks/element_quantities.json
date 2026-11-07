@@ -1,0 +1,187 @@
+{
+  "title": "GetQuantitiesOfElements and GetSurfaceQuantitiesOfElements calculate a wall, a slab with a hole and a zone",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "basic walls: A 6 m (gets a window), B 5 m",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 706, "y": 700 }, "floorIndex": 0, "zCoordinate": 0,
+            "height": 3.0, "thickness": 0.2, "structureType": "Basic", "referenceLineLocation": "Center", "offset": 0.0 },
+          { "begCoordinate": { "x": 720, "y": 700 }, "endCoordinate": { "x": 725, "y": 700 }, "floorIndex": 0, "zCoordinate": 0,
+            "height": 3.0, "thickness": 0.2, "structureType": "Basic", "referenceLineLocation": "Center", "offset": 0.0 }
+        ]
+      },
+      "save": { "wA": "elements[0].elementId.guid", "wB": "elements[1].elementId.guid" }
+    },
+    {
+      "id": "1 m x 1.2 m window in wall A",
+      "command": "CreateWindows",
+      "params": {
+        "windowsData": [
+          { "ownerWallId": { "guid": "${wA}" }, "centerOffset": 3.0, "sillHeight": 0.9, "width": 1.0, "height": 1.2 }
+        ]
+      },
+      "save": { "win": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "basic slab 4 m x 4 m x 0.3 m with a 1 m x 1 m hole",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          { "level": 0, "floorIndex": 0, "thickness": 0.3, "structureType": "Basic",
+            "polygonCoordinates": [ { "x": 730, "y": 700 }, { "x": 734, "y": 700 }, { "x": 734, "y": 704 }, { "x": 730, "y": 704 } ],
+            "holes": [ { "polygonOutline": [ { "x": 731.5, "y": 701.5 }, { "x": 732.5, "y": 701.5 }, { "x": 732.5, "y": 702.5 }, { "x": 731.5, "y": 702.5 } ] } ] }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "manual zone 4 m x 4 m, 2.5 m high",
+      "command": "CreateZones",
+      "params": {
+        "zonesData": [
+          { "name": "Tapir check zone", "numberStr": "T1", "floorIndex": 0, "height": 2.5, "bottomOffset": 0.0, "floorThickness": 0.0,
+            "geometry": { "polygonCoordinates": [ { "x": 740, "y": 700 }, { "x": 744, "y": 700 }, { "x": 744, "y": 704 }, { "x": 740, "y": 704 } ] } }
+        ]
+      },
+      "save": { "z1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "quantities [wall B, wall A, slab, zone, window, bogus], every opening subtracted",
+      "command": "GetQuantitiesOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${wB}" } },
+          { "elementId": { "guid": "${wA}" } },
+          { "elementId": { "guid": "${s1}" } },
+          { "elementId": { "guid": "${z1}" } },
+          { "elementId": { "guid": "${win}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ],
+        "minOpeningSize": 0
+      },
+      "save": {
+        "aVolume": "quantitiesOfElements[1].quantities.volume",
+        "aGrossVolume": "quantitiesOfElements[1].quantities.grossVolume",
+        "aVolumeCond0": "quantitiesOfElements[1].quantities.volumeConditional"
+      },
+      "expect": [
+        { "path": "quantitiesOfElements", "len": 6, "name": "one item per element" },
+        { "path": "quantitiesOfElements[0].type", "eq": "Wall", "name": "wall B: type" },
+        { "path": "quantitiesOfElements[0].quantities.volume", "approx": 3.0, "name": "wall B: volume 5 x 0.2 x 3" },
+        { "path": "quantitiesOfElements[0].quantities.grossVolume", "approx": 3.0, "name": "wall B: gross volume, no openings" },
+        { "path": "quantitiesOfElements[0].quantities.referenceLineLength", "approx": 5.0, "name": "wall B: reference line length" },
+        { "path": "quantitiesOfElements[0].quantities.minHeight", "approx": 3.0, "name": "wall B: min height" },
+        { "path": "quantitiesOfElements[0].quantities.maxHeight", "approx": 3.0, "name": "wall B: max height" },
+        { "path": "quantitiesOfElements[0].composites", "len": 1, "name": "wall B: one item for a basic structure" },
+        { "path": "quantitiesOfElements[0].composites[0].volume", "approx": 3.0, "name": "wall B: its building material has the whole volume" },
+        { "path": "quantitiesOfElements[0].composites[0].buildingMaterialId", "exists": true, "name": "wall B: building material given" },
+        { "path": "quantitiesOfElements[1].quantities.grossVolume", "approx": 3.6, "name": "wall A: gross volume 6 x 0.2 x 3" },
+        { "expr": "${aGrossVolume} - ${aVolume}", "gt": 0.1, "name": "wall A: the window is taken off the net volume" },
+        { "path": "quantitiesOfElements[2].type", "eq": "Slab", "name": "slab: type" },
+        { "path": "quantitiesOfElements[2].quantities.volume", "approx": 4.5, "name": "slab: volume (16 - 1) x 0.3" },
+        { "path": "quantitiesOfElements[2].quantities.topSurface", "approx": 15.0, "name": "slab: top surface without the hole" },
+        { "path": "quantitiesOfElements[2].quantities.bottomSurface", "approx": 15.0, "name": "slab: bottom surface without the hole" },
+        { "path": "quantitiesOfElements[2].quantities.holesPerimeter", "approx": 4.0, "name": "slab: perimeter of the hole" },
+        { "path": "quantitiesOfElements[3].type", "eq": "Zone", "name": "zone: type" },
+        { "path": "quantitiesOfElements[3].quantities.area", "approx": 16.0, "name": "zone: area 4 x 4" },
+        { "path": "quantitiesOfElements[3].quantities.perimeter", "approx": 16.0, "name": "zone: perimeter" },
+        { "path": "quantitiesOfElements[3].quantities.height", "approx": 2.5, "name": "zone: height" },
+        { "path": "quantitiesOfElements[3].quantities.volume", "approx": 40.0, "tol": 0.01, "name": "zone: volume 16 x 2.5" },
+        { "path": "quantitiesOfElements[3].composites", "len": 0, "name": "zone: no skins" },
+        { "path": "quantitiesOfElements[4].error", "exists": true, "name": "window: unsupported type is an error item" },
+        { "path": "quantitiesOfElements[5].error", "exists": true, "name": "unknown element is an error item" }
+      ]
+    },
+    {
+      "id": "wall A with minOpeningSize 2 m2: the 1.2 m2 window is not subtracted from the conditional volume",
+      "command": "GetQuantitiesOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${wA}" } } ],
+        "minOpeningSize": 2.0
+      },
+      "save": { "aVolumeCond2": "quantitiesOfElements[0].quantities.volumeConditional" },
+      "expect": [
+        { "expr": "${aVolumeCond2} - ${aVolumeCond0}", "gt": 0.1, "name": "conditional volume grows by the window" },
+        { "path": "quantitiesOfElements[0].quantities.grossVolume", "approx": 3.6, "name": "gross volume unchanged" }
+      ]
+    },
+    {
+      "id": "the same in one call [wall B, slab, zone, window, bogus]",
+      "command": "GetQuantitiesOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${wB}" } },
+          { "elementId": { "guid": "${s1}" } },
+          { "elementId": { "guid": "${z1}" } },
+          { "elementId": { "guid": "${win}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ],
+        "minOpeningSize": 0,
+        "calculateInOneCall": true
+      },
+      "expect": [
+        { "path": "quantitiesOfElements", "len": 5, "name": "one item per element" },
+        { "path": "quantitiesOfElements[0].type", "eq": "Wall", "name": "wall B: type" },
+        { "path": "quantitiesOfElements[0].quantities.volume", "approx": 3.0, "name": "wall B: same volume" },
+        { "path": "quantitiesOfElements[0].composites", "len": 1, "name": "wall B: same composites" },
+        { "path": "quantitiesOfElements[1].quantities.volume", "approx": 4.5, "name": "slab: same volume" },
+        { "path": "quantitiesOfElements[2].quantities.area", "approx": 16.0, "name": "zone: same area" },
+        { "path": "quantitiesOfElements[3].error", "exists": true, "name": "window: still an error item" },
+        { "path": "quantitiesOfElements[4].error", "exists": true, "name": "unknown element: still an error item" }
+      ]
+    },
+    {
+      "id": "surfaces of [wall B, slab, bogus], nothing covering",
+      "command": "GetSurfaceQuantitiesOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${wB}" } },
+          { "elementId": { "guid": "${s1}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ],
+        "coverElements": []
+      },
+      "save": { "bArea0": "surfaceQuantitiesOfElements[0].surfaces[0].exposedArea" },
+      "expect": [
+        { "path": "surfaceQuantitiesOfElements", "len": 3, "name": "one item per element" },
+        { "path": "surfaceQuantitiesOfElements[0].surfaces[0].exposedArea", "gt": 0, "name": "wall B: has an exposed surface" },
+        { "path": "surfaceQuantitiesOfElements[0].surfaces[0].buildingMaterialId", "exists": true, "name": "wall B: surface names its building material" },
+        { "path": "surfaceQuantitiesOfElements[1].surfaces[0].exposedArea", "gt": 0, "name": "slab: has an exposed surface" },
+        { "path": "surfaceQuantitiesOfElements[2].error", "exists": true, "name": "unknown element is an error item" }
+      ]
+    },
+    {
+      "id": "wall B as its own cover: an element never covers itself",
+      "command": "GetSurfaceQuantitiesOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${wB}" } } ],
+        "coverElements": [ { "elementId": { "guid": "${wB}" } } ]
+      },
+      "save": { "bAreaSelf": "surfaceQuantitiesOfElements[0].surfaces[0].exposedArea" },
+      "expect": [
+        { "expr": "${bAreaSelf} - ${bArea0}", "approx": 0, "name": "same exposed area as with no cover" }
+      ]
+    },
+    {
+      "id": "wall B covered by the far slab: nothing to subtract",
+      "command": "GetSurfaceQuantitiesOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${wB}" } } ],
+        "coverElements": [ { "elementId": { "guid": "${s1}" } } ]
+      },
+      "save": { "bAreaFar": "surfaceQuantitiesOfElements[0].surfaces[0].exposedArea" },
+      "expect": [
+        { "expr": "${bAreaFar} - ${bArea0}", "approx": 0, "name": "same exposed area as with no cover" }
+      ]
+    }
+  ]
+}

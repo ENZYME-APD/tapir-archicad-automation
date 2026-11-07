@@ -37,6 +37,14 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
             OutTexts(
                 "ErrorMessages",
                 "Error message for each queried element (empty when successful).");
+
+            OutTexts(
+                "IFCGlobalIds",
+                "IFC GlobalId (22 characters) of each element, in every Archicad version.");
+
+            OutTexts(
+                "ExternalIFCGlobalIds",
+                "External IFC GlobalId (22 characters) of each element, in every Archicad version.");
         }
 
         protected override void SetOutputs(
@@ -47,6 +55,8 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
             var ifcIds = new List<object>();
             var externalIfcIds = new List<object>();
             var errors = new List<string>();
+            var ifcGlobalIds = new List<object>();
+            var externalIfcGlobalIds = new List<object>();
 
             foreach (var item in items)
             {
@@ -56,6 +66,8 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                     elementGuids.Add(null);
                     ifcIds.Add(null);
                     externalIfcIds.Add(null);
+                    ifcGlobalIds.Add(null);
+                    externalIfcGlobalIds.Add(null);
                     continue;
                 }
 
@@ -63,12 +75,23 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                 elementGuids.Add(ElementIdOf(item));
                 ifcIds.Add(JsonOutputHelp.Scalar(item, "ifcId"));
                 externalIfcIds.Add(JsonOutputHelp.Scalar(item, "externalIFCId"));
+
+                // Before Archicad 28 the GlobalIds come separately; from Archicad 28
+                // ifcId and externalIFCId already are the GlobalIds.
+                ifcGlobalIds.Add(
+                    JsonOutputHelp.Scalar(item, "ifcGlobalId") ??
+                    JsonOutputHelp.Scalar(item, "ifcId"));
+                externalIfcGlobalIds.Add(
+                    JsonOutputHelp.Scalar(item, "externalIFCGlobalId") ??
+                    JsonOutputHelp.Scalar(item, "externalIFCId"));
             }
 
             da.SetDataList(0, elementGuids);
             da.SetDataList(1, ifcIds);
             da.SetDataList(2, externalIfcIds);
             da.SetDataList(3, errors);
+            da.SetDataList(4, ifcGlobalIds);
+            da.SetDataList(5, externalIfcGlobalIds);
         }
 
         protected override System.Drawing.Bitmap Icon =>

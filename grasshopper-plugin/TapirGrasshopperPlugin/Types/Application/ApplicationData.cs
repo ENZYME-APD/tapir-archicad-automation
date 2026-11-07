@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using TapirGrasshopperPlugin.Types.Navigator;
 
 namespace TapirGrasshopperPlugin.Types.Application
 {
@@ -6,5 +7,8 @@ namespace TapirGrasshopperPlugin.Types.Application
     {
         [JsonProperty("currentWindowType")]
         public string CurrentWindowType;
+
+        [JsonProperty("databaseId")]
+        public DatabaseGuidObject DatabaseId;
     }
 }

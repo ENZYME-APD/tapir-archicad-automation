@@ -1,0 +1,223 @@
+{
+  "title": "Classifications of elements: GetClassificationItemVisibility, SetClassificationsOfElements, GetClassificationsOfElements and GetElementsByClassification",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "create a system",
+      "command": "CreateClassificationSystems",
+      "creates": false,
+      "params": {
+        "classificationSystemsWithItems": [
+          {
+            "classificationSystem": { "name": "Tapir check elements system", "description": "", "source": "", "version": "1", "date": "2026-01-01" },
+            "classificationItems": []
+          }
+        ]
+      },
+      "save": { "sys": "classificationSystemIds[0].classificationSystemId.guid" },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "system created" }
+      ]
+    },
+    {
+      "id": "create T1 and T2",
+      "command": "CreateClassificationItems",
+      "creates": false,
+      "params": {
+        "newClassificationItems": [
+          { "classificationSystemId": { "guid": "${sys}" }, "classificationItemDetails": { "id": "T1", "name": "Tapir check item T1", "description": "" } },
+          { "classificationSystemId": { "guid": "${sys}" }, "classificationItemDetails": { "id": "T2", "name": "Tapir check item T2", "description": "" } }
+        ]
+      },
+      "save": {
+        "t1": "classificationItemIds[0].classificationItemId.guid",
+        "t2": "classificationItemIds[1].classificationItemId.guid"
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "T1 created" },
+        { "path": "executionResults[1].success", "eq": true, "name": "T2 created" }
+      ]
+    },
+    {
+      "id": "a wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [ { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 703, "y": 700 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 } ]
+      },
+      "save": { "wall": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "GetClassificationItemVisibility [wall, Wall default, bogus element] x [T1, bogus item]",
+      "command": "GetClassificationItemVisibility",
+      "creates": false,
+      "params": {
+        "targets": [
+          { "elementId": { "guid": "${wall}" } },
+          { "elementType": "Wall" },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ],
+        "classificationItemIds": [
+          { "classificationItemId": { "guid": "${t1}" } },
+          { "classificationItemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "classificationItemVisibilities", "len": 3, "name": "one entry per target" },
+        { "path": "classificationItemVisibilities[0].visibilities", "len": 2, "name": "wall: one entry per item" },
+        { "path": "classificationItemVisibilities[0].visibilities[0].isVisible", "eq": true, "name": "a new item is offered for the wall" },
+        { "path": "classificationItemVisibilities[0].visibilities[1].error", "exists": true, "name": "wall, bogus item: error" },
+        { "path": "classificationItemVisibilities[1].visibilities[0].isVisible", "eq": true, "name": "a new item is offered for the Wall default" },
+        { "path": "classificationItemVisibilities[2].error", "exists": true, "name": "bogus element: error" }
+      ]
+    },
+    {
+      "id": "unclassified at first",
+      "command": "GetClassificationsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${wall}" } } ],
+        "classificationSystemIds": [ { "classificationSystemId": { "guid": "${sys}" } } ]
+      },
+      "expect": [
+        { "path": "elementClassifications[0].classificationIds[0].classificationSystemId.guid", "exists": true, "name": "the system is listed" },
+        { "path": "elementClassifications[0].classificationIds[0].classificationItemId", "exists": false, "name": "no item in a new system (unclassified)" }
+      ]
+    },
+    {
+      "id": "SetClassificationsOfElements [wall to T1, bogus element]",
+      "command": "SetClassificationsOfElements",
+      "creates": false,
+      "params": {
+        "elementClassifications": [
+          { "elementId": { "guid": "${wall}" }, "classificationId": { "classificationSystemId": { "guid": "${sys}" }, "classificationItemId": { "guid": "${t1}" } } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "classificationId": { "classificationSystemId": { "guid": "${sys}" }, "classificationItemId": { "guid": "${t1}" } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per element" },
+        { "path": "executionResults[0].success", "eq": true, "name": "wall: success" },
+        { "path": "executionResults[1].success", "eq": false, "name": "bogus element: failed" }
+      ]
+    },
+    {
+      "id": "GetClassificationsOfElements [wall, bogus element] x [system, bogus system]",
+      "command": "GetClassificationsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${wall}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ],
+        "classificationSystemIds": [
+          { "classificationSystemId": { "guid": "${sys}" } },
+          { "classificationSystemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "save": { "wallItem": "elementClassifications[0].classificationIds[0].classificationItemId.guid" },
+      "expect": [
+        { "path": "elementClassifications", "len": 2, "name": "one entry per element" },
+        { "path": "elementClassifications[0].classificationIds", "len": 2, "name": "wall: one entry per system" },
+        { "path": "elementClassifications[0].classificationIds[1].error", "exists": true, "name": "wall, bogus system: error" },
+        { "path": "elementClassifications[1].classificationIds[0].error", "exists": true, "name": "bogus element: error" }
+      ]
+    },
+    {
+      "id": "the wall's item is T1",
+      "command": "API.GetDetailsOfClassificationItems",
+      "creates": false,
+      "params": { "classificationItemIds": [ { "classificationItemId": { "guid": "${wallItem}" } } ] },
+      "expect": [
+        { "path": "classificationItems[0].classificationItem.id", "eq": "T1", "name": "T1" }
+      ]
+    },
+    {
+      "id": "GetElementsByClassification [T1, T2, bogus item]",
+      "command": "GetElementsByClassification",
+      "creates": false,
+      "params": {
+        "classificationItemIds": [
+          { "classificationItemId": { "guid": "${t1}" } },
+          { "classificationItemId": { "guid": "${t2}" } },
+          { "classificationItemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "save": { "foundByT1": "elementsOfClassificationItems[0].elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elementsOfClassificationItems", "len": 3, "name": "one entry per item" },
+        { "path": "elementsOfClassificationItems[0].elements", "len": 1, "name": "T1: the wall only" },
+        { "path": "elementsOfClassificationItems[1].elements", "len": 0, "name": "T2: no element" },
+        { "path": "elementsOfClassificationItems[2].error", "exists": true, "name": "bogus item: error" }
+      ]
+    },
+    {
+      "id": "the element found by T1 is classified T1",
+      "command": "GetClassificationsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${foundByT1}" } } ],
+        "classificationSystemIds": [ { "classificationSystemId": { "guid": "${sys}" } } ]
+      },
+      "save": { "foundItem": "elementClassifications[0].classificationIds[0].classificationItemId.guid" }
+    },
+    {
+      "id": "T1 indeed",
+      "command": "API.GetDetailsOfClassificationItems",
+      "creates": false,
+      "params": { "classificationItemIds": [ { "classificationItemId": { "guid": "${foundItem}" } } ] },
+      "expect": [
+        { "path": "classificationItems[0].classificationItem.id", "eq": "T1", "name": "T1" }
+      ]
+    },
+    {
+      "id": "SetClassificationsOfElements [wall unclassified]",
+      "command": "SetClassificationsOfElements",
+      "creates": false,
+      "params": {
+        "elementClassifications": [
+          { "elementId": { "guid": "${wall}" }, "classificationId": { "classificationSystemId": { "guid": "${sys}" } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "the wall is unclassified",
+      "command": "GetClassificationsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${wall}" } } ],
+        "classificationSystemIds": [ { "classificationSystemId": { "guid": "${sys}" } } ]
+      },
+      "expect": [
+        { "path": "elementClassifications[0].classificationIds[0].classificationSystemId.guid", "exists": true, "name": "the system is listed" },
+        { "path": "elementClassifications[0].classificationIds[0].classificationItemId", "exists": false, "name": "no item (unclassified)" }
+      ]
+    },
+    {
+      "id": "T1 has no element now",
+      "command": "GetElementsByClassification",
+      "creates": false,
+      "params": { "classificationItemIds": [ { "classificationItemId": { "guid": "${t1}" } } ] },
+      "expect": [
+        { "path": "elementsOfClassificationItems[0].elements", "len": 0, "name": "no element" }
+      ]
+    },
+    {
+      "id": "SetClassificationsOfElements [unclassified wall unclassified again]",
+      "command": "SetClassificationsOfElements",
+      "creates": false,
+      "params": {
+        "elementClassifications": [
+          { "elementId": { "guid": "${wall}" }, "classificationId": { "classificationSystemId": { "guid": "${sys}" } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "success, nothing to remove" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteClassificationSystems", "params": { "classificationSystemIds": [ { "classificationSystemId": { "guid": "${sys}" } } ] } }
+  ]
+}

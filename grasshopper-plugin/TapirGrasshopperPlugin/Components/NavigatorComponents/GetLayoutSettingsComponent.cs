@@ -18,7 +18,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         public GetLayoutSettingsComponent()
             : base(
                 "GetLayoutSettings",
-                "Get settings of layouts, including Layout Info Panel custom data fields. " +
+                "Get settings of layouts, including their master layout and Layout Info Panel custom data fields. " +
                 "Identify each layout either by its database or by its navigator item.",
                 GroupNames.Navigator)
         {
@@ -82,6 +82,18 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             OutBooleans(
                 "DisplayMasterLayoutBelow",
                 "True if the master layout is displayed below the layout.");
+
+            OutGenerics(
+                "MasterLayoutDatabaseGuids",
+                "Database identifier of the master layout of each layout (null for master layouts and failed items).");
+
+            OutGenerics(
+                "MasterNavigatorItemGuids",
+                "Navigator item identifier of the master layout of each layout (null for master layouts and failed items).");
+
+            OutTexts(
+                "MasterLayoutNames",
+                "Name of the master layout of each layout (null for master layouts and failed items).");
 
             OutTextTree(
                 "CustomDataKeys",
@@ -174,6 +186,9 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             var customLayoutNumbering = new List<object>();
             var doNotIncludeInNumbering = new List<object>();
             var displayMasterLayoutBelow = new List<object>();
+            var masterLayoutDatabaseGuids = new List<object>();
+            var masterNavigatorItemGuids = new List<object>();
+            var masterLayoutNames = new List<object>();
             var customDataKeys = new DataTree<object>();
             var customDataNames = new DataTree<object>();
             var customDataValues = new DataTree<object>();
@@ -204,6 +219,9 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                     customLayoutNumbering.Add(null);
                     doNotIncludeInNumbering.Add(null);
                     displayMasterLayoutBelow.Add(null);
+                    masterLayoutDatabaseGuids.Add(null);
+                    masterNavigatorItemGuids.Add(null);
+                    masterLayoutNames.Add(null);
                     continue;
                 }
 
@@ -219,6 +237,25 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 customLayoutNumbering.Add(JsonOutputHelp.Scalar(item, "customLayoutNumbering"));
                 doNotIncludeInNumbering.Add(JsonOutputHelp.Scalar(item, "doNotIncludeInNumbering"));
                 displayMasterLayoutBelow.Add(JsonOutputHelp.Scalar(item, "displayMasterLayoutBelow"));
+
+                // Master layouts have no master layout of their own, so these fields are absent for them.
+                var masterDatabaseGuid = JsonOutputHelp.WrappedGuidOf(item, "masterLayoutDatabaseId");
+                masterLayoutDatabaseGuids.Add(
+                    masterDatabaseGuid == null
+                        ? null
+                        : new DatabaseGuidWrapper
+                        {
+                            DatabaseId = new DatabaseGuidObject { Guid = masterDatabaseGuid }
+                        });
+                var masterNavigatorGuid = JsonOutputHelp.WrappedGuidOf(item, "masterNavigatorItemId");
+                masterNavigatorItemGuids.Add(
+                    masterNavigatorGuid == null
+                        ? null
+                        : new NavigatorGuidWrapper
+                        {
+                            NavigatorId = new NavigatorGuid { Guid = masterNavigatorGuid }
+                        });
+                masterLayoutNames.Add(JsonOutputHelp.Scalar(item, "masterLayoutName"));
 
                 if (item["customData"] is JArray customData)
                 {
@@ -248,10 +285,13 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             da.SetDataList(8, customLayoutNumbering);
             da.SetDataList(9, doNotIncludeInNumbering);
             da.SetDataList(10, displayMasterLayoutBelow);
-            da.SetDataTree(11, customDataKeys);
-            da.SetDataTree(12, customDataNames);
-            da.SetDataTree(13, customDataValues);
-            da.SetDataList(14, errors);
+            da.SetDataList(11, masterLayoutDatabaseGuids);
+            da.SetDataList(12, masterNavigatorItemGuids);
+            da.SetDataList(13, masterLayoutNames);
+            da.SetDataTree(14, customDataKeys);
+            da.SetDataTree(15, customDataNames);
+            da.SetDataTree(16, customDataValues);
+            da.SetDataList(17, errors);
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -64,7 +64,7 @@ namespace TapirGrasshopperPlugin.Types.Favorites
                         id,
                         fav) => new FavoriteFromElementObj
                     {
-                        ElementGuid = id, Favorite = fav
+                        ElementGuid = id.ElementId, Favorite = fav
                     })
                 .ToList();
         }
@@ -72,11 +72,18 @@ namespace TapirGrasshopperPlugin.Types.Favorites
 
     public class FavoriteFromElementObj
     {
+        // The plain {"guid": ...} identifier: the wrapper would nest a second
+        // elementId level, which the command rejects.
         [JsonProperty("elementId")]
-        public ElementGuidWrapper ElementGuid;
+        public ElementGuid ElementGuid;
 
         [JsonProperty("favorite")]
         public string Favorite;
+
+        [JsonProperty(
+            "folder",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> Folder;
     }
 
     public class ElementTypeObject
