@@ -122,7 +122,16 @@ static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
             switch (menuParams->menuItemRef.itemIndex) {
                 case ID_ADDON_MENU_UPDATE:
                     {
-                        if (!VersionChecker::IsCheckCompleted ()) {
+                        GS::UniString pendingVersion;
+                        if (TapirPalette::GetPendingAddOnUpdate (pendingVersion)) {
+                            // An update waits for Archicad to close: no second download
+                            DGAlert (DG_INFORMATION,
+                                RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_NEWVERSION_ALERT_TITLE, ACAPI_GetOwnResModule ()),
+                                GS::UniString::Printf (RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_PENDING_TEXT, ACAPI_GetOwnResModule ()),
+                                    pendingVersion.ToPrintf ()),
+                                GS::UniString::Printf ("You are using Tapir %s.", ADDON_VERSION),
+                                "OK");
+                        } else if (!VersionChecker::IsCheckCompleted ()) {
                             DGAlert (DG_INFORMATION, "Tapir Update",
                                 "Tapir is still checking GitHub for the latest release.",
                                 "Please try again in a moment.",
