@@ -3429,6 +3429,10 @@ GSErrCode Initialize (void)
             scriptUICommands, "1.8.1",
             "Opens Archicad's settings dialog of the selected elements or the current tool (Archicad 28 and later), or the default settings dialog of the given element type, waits for the user and reports whether the dialog was closed with OK or Cancel."
         );
+        err |= RegisterCommand<PickLibraryPartCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens Archicad's Object, Lamp, Window or Door Settings dialog, optionally limited to a library part subtype, lets the user pick a library part and set its parameters, and returns the chosen library part with its GDL parameters, or that the user cancelled. Places nothing."
+        );
         AddCommandGroup (scriptUICommands);
     }
 
