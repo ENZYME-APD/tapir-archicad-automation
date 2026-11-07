@@ -124,3 +124,71 @@ GS::ObjectState OpenSettingsDialogCommand::Execute (const GS::ObjectState& param
     }
     return GS::ObjectState ("cancelled", false);
 }
+
+PickLibraryFolderCommand::PickLibraryFolderCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String PickLibraryFolderCommand::GetName () const
+{
+    return "PickLibraryFolder";
+}
+
+GS::Optional<GS::UniString> PickLibraryFolderCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "defaultName": {
+                "type": "string",
+                "description": "The default name the dialog offers for a new library folder. Default: New Library."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> PickLibraryFolderCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "cancelled": {
+                "type": "boolean",
+                "description": "True when the user cancelled the dialog."
+            },
+            "path": {
+                "type": "string",
+                "description": "The location of the chosen or created folder. It is not added to the libraries of the project; use AddLibraries for that. Only when cancelled is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["cancelled"]
+    })";
+}
+
+GS::ObjectState PickLibraryFolderCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString defaultName = "New Library";
+    parameters.Get ("defaultName", defaultName);
+
+    // The API takes the name as a modifiable C string.
+    char defName[256] = {};
+    CHTruncate (defaultName.ToCStr ().Get (), defName, sizeof (defName));
+
+    IO::Location location;
+#ifdef ServerMainVers_2700
+    const GSErrCode err = ACAPI_LibraryManagement_NewLibDial (defName, &location);
+#else
+    const GSErrCode err = ACAPI_Environment (APIEnv_NewLibDialID, defName, &location);
+#endif
+
+    if (err == APIERR_CANCEL) {
+        return GS::ObjectState ("cancelled", true);
+    }
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to open the library folder dialog.");
+    }
+    return GS::ObjectState ("cancelled", false, "path", location.ToDisplayText ());
+}
