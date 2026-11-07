@@ -736,6 +736,12 @@ inline GSErrCode ACAPI_UserInput_DrawRubberLine (API_RubberLineType* rubberLine)
     return ACAPI_Interface (APIIo_DrawRubberLineID, rubberLine);
 }
 
+// APIEnv_GetMagicWandSetsID par1: API_MagicWandInfo* (APIdefs_Environment.h)
+inline GSErrCode ACAPI_UserInput_GetMagicWandSets (API_MagicWandInfo* magicWandInfo)
+{
+    return ACAPI_Environment (APIEnv_GetMagicWandSetsID, magicWandInfo);
+}
+
 inline GSErrCode ACAPI_Selection_GetSelectedElement (const API_Neig* apiNeig, API_Guid* apiGuid)
 {
     return ACAPI_Goodies (APIAny_GetSelectedElementID, (void*) apiNeig, apiGuid);

@@ -2523,6 +2523,107 @@ GS::ObjectState GetPolygonFromUserCommand::Execute (const GS::ObjectState& param
     }
 }
 
+// ---------------------------------------------------------------------------
+// GetMagicWandSettings
+// ---------------------------------------------------------------------------
+
+GetMagicWandSettingsCommand::GetMagicWandSettingsCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetMagicWandSettingsCommand::GetName () const
+{
+    return "GetMagicWandSettings";
+}
+
+GS::Optional<GS::UniString> GetMagicWandSettingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "curveApproximation": {
+                "type": "string",
+                "enum": [
+                    "SegmentsAlongArcs",
+                    "SegmentsAlongCircles",
+                    "DeviationFromCurves",
+                    "SegmentLength",
+                    "Unknown"
+                ],
+                "description": "How the Magic Wand approximates curves with straight segments: a fixed number of segments along arcs or along full circles (segmentCount), segments that deviate from the curve by at most maxDeviation, or segments of segmentLength. Unknown for a mode this version of Tapir does not know."
+            },
+            "segmentCount": {
+                "type": "integer",
+                "description": "The number of segments along an arc or circle, used by SegmentsAlongArcs and SegmentsAlongCircles."
+            },
+            "maxDeviation": {
+                "type": "number",
+                "description": "The largest distance of the segments from the curve, in meters, used by DeviationFromCurves."
+            },
+            "segmentLength": {
+                "type": "number",
+                "description": "The length of the segments, in meters, used by SegmentLength."
+            },
+            "traceMethod": {
+                "type": "string",
+                "enum": [
+                    "Linear",
+                    "BestMatch",
+                    "Unknown"
+                ],
+                "description": "How curves are traced: Linear traces them with straight segments as set above, BestMatch with the curves that match them best. Unknown for a method this version of Tapir does not know."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "curveApproximation",
+            "segmentCount",
+            "maxDeviation",
+            "segmentLength",
+            "traceMethod"
+        ]
+    })";
+}
+
+static GS::UniString ConvertMagicWandDivArcModeToString (short divArcMode)
+{
+    switch (divArcMode) {
+        case API_ArcDiv_DivArc:     return "SegmentsAlongArcs";
+        case API_ArcDiv_DivCircle:  return "SegmentsAlongCircles";
+        case API_ArcDiv_DiffArc:    return "DeviationFromCurves";
+        case API_ArcDiv_PartLength: return "SegmentLength";
+        default:                    return "Unknown";
+    }
+}
+
+static GS::UniString ConvertMagicWandTraceMethodToString (short traceMethod)
+{
+    switch (traceMethod) {
+        case API_ArcTrace_Linear:    return "Linear";
+        case API_ArcTrace_BestMatch: return "BestMatch";
+        default:                     return "Unknown";
+    }
+}
+
+GS::ObjectState GetMagicWandSettingsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    // The settings of the Magic Wand Settings dialog, read only.
+    API_MagicWandInfo magicWandInfo = {};
+    const GSErrCode err = ACAPI_UserInput_GetMagicWandSets (&magicWandInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the Magic Wand settings.");
+    }
+
+    GS::ObjectState response;
+    response.Add ("curveApproximation", ConvertMagicWandDivArcModeToString (magicWandInfo.divArcMode));
+    response.Add ("segmentCount", static_cast<Int32> (magicWandInfo.arcSegNumb));
+    response.Add ("maxDeviation", magicWandInfo.arcDiff);
+    response.Add ("segmentLength", magicWandInfo.partLength);
+    response.Add ("traceMethod", ConvertMagicWandTraceMethodToString (magicWandInfo.traceMethod));
+    return response;
+}
+
 
 // ---------------------------------------------------------------------------
 // ModelToScreen / ScreenToModel
