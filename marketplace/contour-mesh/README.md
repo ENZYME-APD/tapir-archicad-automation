@@ -26,7 +26,8 @@ a thickness.
 
 ## What it changes
 
-It creates one Mesh, *Solid Body with Skirt* with its ridge lines shown; the
+It creates one Mesh, *Solid Body with Skirt* with its ridge lines shown (with a
+thickness of 0 no skirt is set, so the skirt type is the Mesh tool's default); the
 rest (story, layer, building material) comes from the Mesh tool's defaults. Nothing else in the project is changed, and it writes no
 files. It is one Undo step.
 

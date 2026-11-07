@@ -390,7 +390,10 @@ def rings_to_tapir_mesh(rings, offset_x=0.0, offset_y=0.0, offset_z=0.0, scale=1
     # read via Get3DCoordinateFromObjectState, so the subline's Z values create
     # real 3D relief (the contour ridge lines). Passing bare arrays makes Tapir
     # ignore the sublines entirely (nSubLines stays 0).
-    sublines = [{"coordinates": [pt(p) for p in pts]} for pts, _closed in filtered]
+    # dedup_ring dropped the closing point of closed contours; repeat the first
+    # point at the end so the ridge line also runs from the last point back.
+    sublines = [{"coordinates": [pt(p) for p in (pts + [pts[0]] if closed else pts)]}
+                for pts, closed in filtered]
     mesh = {"polygonCoordinates": outer}
     if sublines:
         mesh["sublines"] = sublines
