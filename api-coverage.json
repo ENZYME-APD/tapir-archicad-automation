@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 21:44 UTC",
+ "generatedAt": "2026-11-07 21:52 UTC",
  "versions": [
   25,
   26,
@@ -2903,6 +2903,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2260,
+     "title": "[1/3] ResolveNames: check a user's words against the project's names"
+    },
+    {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
     },
@@ -2929,7 +2933,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2260,
+     "title": "[1/3] ResolveNames: check a user's words against the project's names"
+    }
+   ],
    "issues": []
   },
   {
@@ -7704,7 +7713,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2260,
+     "title": "[1/3] ResolveNames: check a user's words against the project's names"
+    }
+   ],
    "issues": []
   },
   {
@@ -16208,7 +16222,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2260,
+     "title": "[1/3] ResolveNames: check a user's words against the project's names"
+    }
+   ],
    "issues": []
   },
   {

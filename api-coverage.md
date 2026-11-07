@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 61 | 53 | 8 |  |  |  | 8 | 70 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1423 | 1207 | 216 |  |  |  | 12 | 392 |
 
-Archicad 25–30 DevKits; updated 2026-11-07 21:44 UTC.
+Archicad 25–30 DevKits; updated 2026-11-07 21:52 UTC.
 
 | | Status |
 |---|---|
@@ -164,7 +164,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_GetDescriptors` – Returns the descriptors of an element.
 - 🔀 `ACAPI_Element_GetElemCreatorToolUnId` – Returns the unique ID of the creator tool of the specified object. <sub>(was `APIAny_GetElemCreatorToolUnIdID`)</sub>
 - ✅ `ACAPI_Element_GetElemList` – Returns an array of guids of the elements of the given type. — [#2255](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2255 "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
-- ✅ `ACAPI_Element_GetElemTypeName` – Returns the localized name of the built-in element types. <sub>(was `ACAPI_Goodies_GetElemTypeName`, `APIAny_GetElemTypeNameID`)</sub>
+- ✅ `ACAPI_Element_GetElemTypeName` – Returns the localized name of the built-in element types. <sub>(was `ACAPI_Goodies_GetElemTypeName`, `APIAny_GetElemTypeNameID`)</sub> — [#2260](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2260 "[1/3] ResolveNames: check a user's words against the project's names")
 - ✅ `ACAPI_Element_GetElementFromAnywhere` – Returns the element referred by guid irrespectively of the current database. <sub>(was `APIDb_GetElementFromAnywhereID`)</sub>
 - 🔀 `ACAPI_Element_GetElementInfoString` – Returns the compound info string of the given element. <sub>(was `APIDb_GetElementInfoStringID`)</sub>
 - ✅ `ACAPI_Element_GetElementURLRef` – Retrieves the URL reference assigned to an element. <sub>(was `APIDb_GetElementURLRefID`)</sub>
@@ -327,8 +327,8 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Attribute_DeleteFolder` <sub>AC26–30</sub> – Deletes an attribute folder and all the folders and attributes it contains.
 - ✅ `ACAPI_Attribute_DeleteMore` – Deletes more attributes of the same type.
 - 🔀 `ACAPI_Attribute_EnumerateAttributesByType` <sub>AC27–30</sub> – Iterates the instances of a given attribute type in the database.
-- ✅ `ACAPI_Attribute_Get` – Retrieves an attribute from the database. — [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"), [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex")
-- ✅ `ACAPI_Attribute_GetAttributesByType` <sub>AC27–30</sub> – Returns the instances of a given attribute type in the database.
+- ✅ `ACAPI_Attribute_Get` – Retrieves an attribute from the database. — [#2260](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2260 "[1/3] ResolveNames: check a user's words against the project's names"), [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"), [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex")
+- ✅ `ACAPI_Attribute_GetAttributesByType` <sub>AC27–30</sub> – Returns the instances of a given attribute type in the database. — [#2260](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2260 "[1/3] ResolveNames: check a user's words against the project's names")
 - ✅ `ACAPI_Attribute_GetAttributesFromProject` – Loads the given attributes from a project file.
 - ✅ `ACAPI_Attribute_GetClassificationInSystem` – Retrieves a classification of an attribute in a given classification system.
 - ✅ `ACAPI_Attribute_GetClassificationItems` – Retrieves all of the classifications of an attribute.
@@ -1008,7 +1008,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_ProjectSetting_GetPreferences` <sub>AC27–30</sub> – Returns the preferences data.
 - ✅ `ACAPI_ProjectSetting_GetProjectNotes` – Returns information about the 'Project Info' dialog. <sub>(was `APIEnv_GetProjectNotesID`)</sub>
 - 🔀 `ACAPI_ProjectSetting_GetSplineMaxDist` – Returns the maximal distance of a spline segment and a set of coordinates. <sub>(was `APIAny_GetSplineMaxDistID`)</sub>
-- ✅ `ACAPI_ProjectSetting_GetStorySettings` – Returns the data of the installed stories. <sub>(was `APIEnv_GetStorySettingsID`)</sub>
+- ✅ `ACAPI_ProjectSetting_GetStorySettings` – Returns the data of the installed stories. <sub>(was `APIEnv_GetStorySettingsID`)</sub> — [#2260](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2260 "[1/3] ResolveNames: check a user's words against the project's names")
 - ✅ `ACAPI_ProjectSetting_SetLast3DDefLevels` – Sets the 3D default levels for the passed construction element types. <sub>(was `ACAPI_Database_SetLast3DDefLevels`, `APIDb_SetLast3DDefLevelsID`)</sub>
 - ✅ `ACAPI_ProjectSetting_SetPreferences` <sub>AC27–30</sub> – Adjusts the preferences.
 
