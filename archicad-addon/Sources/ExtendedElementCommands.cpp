@@ -4288,7 +4288,7 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
         },
         "additionalProperties": false,
         "required": ["wallsData"]
-    })");
+    })";
 }
 
 GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo&, const Stories& stories, const GS::ObjectState& parameters) const
@@ -8912,7 +8912,7 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
         },
         "additionalProperties": false,
         "required": ["wallsWithDetails"]
-    })");
+    })";
 }
 
 GS::Optional<GS::UniString> ModifyWallsCommand::GetRawResponseSchema () const
