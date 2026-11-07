@@ -809,6 +809,78 @@
           "sha256": "8f0bba3365688af844e2ee6e62e6e0d3dae2c451d8d78e1c68dea10ce402c3e4"
         }
       ]
+    },
+    {
+      "slug": "zones-to-walls-and-slabs",
+      "name": "Zones to Walls and Slabs",
+      "summary": "Turns selected zones into walls and slabs: partitions on shared edges, external walls elsewhere, a slab per story, and balustrades around the terraces.",
+      "category": "modeling-geometry",
+      "tags": [
+        "zones",
+        "walls",
+        "slabs",
+        "massing",
+        "early-design",
+        "partitions",
+        "terraces",
+        "railings"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "ZonesToWallsAndSlabs.py",
+      "changes": "model",
+      "versions": [
+        {
+          "version": "0.3.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "Terraces and balustrades: the part of a story's slab over a setback is a terrace, and its edges that no zone of the story stands on get a balustrade, made with the Railing tool or as a low wall, with its own favorite.",
+          "commit": "0d9b298912991c266a3e61f21c7234121a25ce01",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/0d9b298912991c266a3e61f21c7234121a25ce01/marketplace/zones-to-walls-and-slabs/ZonesToWallsAndSlabs.py",
+          "sha256": "da51670bf941d3c30bbc9f2bb40a9cf8b0cec4af6141cb2acfb5839333d9ec23"
+        },
+        {
+          "version": "0.2.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "The slabs: a floor slab under each story's zones, extended over the setbacks of the story below, and a roof slab over the highest zones, with their layer and thickness or a Slab favorite.",
+          "commit": "961e1e9491ff685fd6b524549cfae30429b827bb",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/961e1e9491ff685fd6b524549cfae30429b827bb/marketplace/zones-to-walls-and-slabs/ZonesToWallsAndSlabs.py",
+          "sha256": "0248771127ece8fbe7f3526fc32e4d5a9e7d91f6224cbba2d8d62e652397a6cf"
+        },
+        {
+          "version": "0.1.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version: the walls. The slabs follow in the next version.",
+          "commit": "565972c1f9d6bcf23832cd4f767c133023696b9f",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/565972c1f9d6bcf23832cd4f767c133023696b9f/marketplace/zones-to-walls-and-slabs/ZonesToWallsAndSlabs.py",
+          "sha256": "02f162c4c58496f886a89914b36175b2cb455858cb15b858a1eeb66798b8ac69"
+        }
+      ]
     }
   ]
 }
