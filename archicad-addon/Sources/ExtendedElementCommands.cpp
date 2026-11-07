@@ -10138,7 +10138,8 @@ GS::Optional<GS::UniString> ChangeSlabPolygonKeepingEdges (
     }
     RestoreRoofPolygonEdges (memo, oldEdges, false, false);
 
-    err = ACAPI_Element_ChangeMemo (slab.header.guid, APIMemoMask_Polygon | APIMemoMask_SideMaterials | APIMemoMask_EdgeTrims, &memo);
+    API_Guid slabGuid = slab.header.guid;
+    err = ACAPI_Element_ChangeMemo (slabGuid, APIMemoMask_Polygon | APIMemoMask_SideMaterials | APIMemoMask_EdgeTrims, &memo);
     if (err != NoError) {
         return GS::UniString ("Failed to change the polygon of the slab.");
     }
