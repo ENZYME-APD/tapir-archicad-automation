@@ -1,14 +1,18 @@
 {
- "generatedAt": "2026-11-07 19:37 UTC",
+ "generatedAt": "2026-11-07 20:19 UTC",
  "counts": {
   "done": 568,
-  "merged": 178,
+  "merged": 181,
+  "open": 5,
   "skipped": 1,
+  "in progress": 2,
+  "claimed": 1,
   "not applicable": 1
  },
  "parameters": {
-  "all": 713,
-  "json": 33
+  "all": 700,
+  "json": 33,
+  "partial": 16
  },
  "items": [
   {
@@ -1582,12 +1586,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2194,
-     "title": "Copy elements between open projects through a module file (the API has no clipboard)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "SaveProjectAsArchive",
@@ -2832,7 +2831,7 @@
    "id": "SetDetailsOfElements",
    "group": "Element Commands",
    "version": "1.0.7",
-   "brief": "Sets the details of the given elements (floor, layer, order, Element ID etc). An element Archicad does not let you edit (its layer is hidden or locked, it is locked, or it is not reserved by you in teamwork) gets a failed execution result naming the reason.",
+   "brief": "Sets the details of the given elements. Every element type: Element ID (id), story (floorIndex), layer (layerIndex) and display order (drawIndex). In typeSpecificDetails: Wall - start and end point, height, base offset, and the start and end thickness of a trapezoid wall; Zone - the ZoneSettings fields (the same as ModifyZones); Line - start and end point, pen, line type, room separator; Arc and Circle - origin, radius, angle, ratio, start and end angle (arcs only), reflected, pen, line type, room separator; Polyline - points and arcs, pen, line type, room separator; Spline - pen, line type, room separator; Hatch - outline, holes, contour pen, fill pen and background pen or colors, fill or building material, area display, room special and fill orientation; Hotspot - position, height, pen; Text - text, position, angle, height, justification; Label - the text of a text label; Drawing - position, angle, ratio, model offset, clip polygon (isCutWithFrame), name, ID and numbering, scale in Autotext, border, title library part, pen table (penTableUsageMode, penTableIndex), colorMode, isTransparentBackground, rasterizeDPI and the anchor (anchorPoint, useOwnOriginAsAnchor). Not written, because the Archicad API does not take them: the geometry of a Spline, the source of a Drawing (use ChangeDrawingLink), the Drawing Manager's update type and stored in project, and often a placed Drawing's drawingScale, which comes from its source view (the element's result then names the kept value). Other wall, slab, column, beam, stair and object settings are written by their Modify commands. An element Archicad does not let you edit (its layer is hidden or locked, it is locked, or it is not reserved by you in teamwork) gets a failed execution result naming the reason; a Drawing setting Archicad kept unchanged is named in a failed execution result too.",
    "status": "done",
    "reason": "",
    "components": [
@@ -3425,10 +3424,6 @@
     {
      "number": 2193,
      "title": "Long-running commands: progress reporting and cancel"
-    },
-    {
-     "number": 2189,
-     "title": "New command GetSchedules: list the Interactive Schedules (rows and export are not possible in the API)"
     }
    ]
   },
@@ -3523,7 +3518,7 @@
    "id": "DeleteUserDataOfElements",
    "group": "Element Commands",
    "version": "1.8.1",
-   "brief": "Deletes the user data this add-on stored on the given elements. Archicad keeps the user data of an element per add-on, so the data of other add-ons is left as it is. All deletions are one undo step. The output has one execution result per element, aligned with the input array of elements.",
+   "brief": "Deletes the user data this add-on stored on the given elements. Archicad keeps the user data of an element per add-on, so the data of other add-ons is left as it is. All deletions are one undo step. The output has one execution result per element, aligned with the input array of elements. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each element that exists gets wouldDelete.",
    "status": "merged",
    "reason": "",
    "components": [
@@ -3532,12 +3527,14 @@
      "path": "Components/ElementsComponents/DeleteUserDataOfElementsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 1,
+   "parameters": "partial",
+   "parameterCount": 2,
    "coveredParameters": [
     "elements"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "dryRun"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -4166,10 +4163,64 @@
     {
      "number": 2188,
      "title": "New commands: align, distribute and scale elements"
-    },
+    }
+   ]
+  },
+  {
+   "id": "AlignElements",
+   "group": "Element Commands",
+   "version": "1.8.1",
+   "brief": "Aligns elements on the floor plan or in the current 2D view to one edge of their plan bounding boxes (left, right, top or bottom) or to their middle (centerX, centerY), either of the whole set or of a reference element, by moving them in one undo step. The bounding boxes are those Get2DBoundingBoxes returns. Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Mesh, Zone, Object, Lamp, Stair, Railing, CurtainWall, Line, PolyLine, Arc, Circle, Spline, Hatch, Text and Hotspot. An element of another type (doors, windows and openings, which only slide along their host, subelements, dimensions, labels, ...) or one that cannot be edited gets a failed execution result naming the reason, and the other elements are still aligned.",
+   "status": "merged",
+   "reason": "",
+   "components": [
     {
-     "number": 2187,
-     "title": "New commands: copy elements, make an array of copies, offset copies"
+     "name": "AlignElementsComponent",
+     "path": "Components/ElementsComponents/AlignElementsComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "alignTo",
+    "elements",
+    "reference"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": [
+    {
+     "number": 2188,
+     "title": "New commands: align, distribute and scale elements"
+    }
+   ]
+  },
+  {
+   "id": "DistributeElements",
+   "group": "Element Commands",
+   "version": "1.8.1",
+   "brief": "Distributes 3 or more elements on the floor plan or in the current 2D view evenly along X (horizontal) or Y (vertical), with equal distances between the middles of their plan bounding boxes (centers) or equal space between the boxes (gaps), by moving them in one undo step. The elements are taken in the order of their middles along the direction, and the two outermost stay where they are. The bounding boxes are those Get2DBoundingBoxes returns. Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Mesh, Zone, Object, Lamp, Stair, Railing, CurtainWall, Line, PolyLine, Arc, Circle, Spline, Hatch, Text and Hotspot. An element of another type (doors, windows and openings, which only slide along their host, subelements, dimensions, labels, ...) or one that cannot be edited gets a failed execution result naming the reason, and the other elements are still distributed.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "DistributeElementsComponent",
+     "path": "Components/ElementsComponents/DistributeElementsComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "direction",
+    "elements",
+    "mode"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": [
+    {
+     "number": 2188,
+     "title": "New commands: align, distribute and scale elements"
     }
    ]
   },
@@ -4249,12 +4300,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2187,
-     "title": "New commands: copy elements, make an array of copies, offset copies"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "MirrorElements",
@@ -4276,18 +4322,43 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2187,
-     "title": "New commands: copy elements, make an array of copies, offset copies"
-    }
-   ]
+   "issues": []
+  },
+  {
+   "id": "CopyElements",
+   "group": "Element Commands",
+   "version": "1.8.1",
+   "brief": "Copies elements by an offset, like dragging a copy in Archicad, keeping all their settings. With count, copy n is moved by n times the offset, which makes a linear array. Returns the new elements of each given element, in the order of the given ones; an element Archicad cannot copy (a part of a curtain wall, stair or railing, a locked element or one on a hidden or locked layer, ...) gets an error naming the reason, and the other elements are still copied. All copies are one undo step.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "RotateCopyElements",
+   "group": "Element Commands",
+   "version": "1.8.1",
+   "brief": "Copies elements rotated around a center on the floor plan by an angle in radians, like rotating a copy in Archicad, keeping all their settings. With count, copy n is rotated by n times the angle, which makes a circular array. Returns the new elements of each given element, in the order of the given ones; an element Archicad cannot copy gets an error naming the reason, and the other elements are still copied. All copies are one undo step.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 4,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "DeleteElements",
    "group": "Element Commands",
    "version": "1.2.1",
-   "brief": "Deletes elements. The zones of the call are deleted before all the other elements, so an automatic zone deleted together with its bounding walls is gone before its boundary is; deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found' dialog, which blocks the command until someone clicks it in Archicad. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) or a guid that is not in the project gets a failed execution result instead of being skipped silently, and does not stop the other elements from being deleted. dryRun reports the result of these checks without deleting anything or creating an undo step.",
+   "brief": "Deletes elements. The zones of the call are deleted before all the other elements, so an automatic zone deleted together with its bounding walls is gone before its boundary is; deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found' dialog, which blocks the command until someone clicks it in Archicad. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) or a guid that is not in the project gets a failed execution result instead of being skipped silently, and does not stop the other elements from being deleted. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each element that passes the checks made before deleting gets wouldDelete, so a script can preview a deletion before making it.",
    "status": "done",
    "reason": "",
    "components": [
@@ -4314,7 +4385,7 @@
    "id": "DeleteSelectedElements",
    "group": "Element Commands",
    "version": "1.7.3",
-   "brief": "Deletes the currently selected elements in one undo step, the same as pressing the Delete key.",
+   "brief": "Deletes the currently selected elements in one undo step, the same as pressing the Delete key. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true and lists the selected elements, with wouldDelete when there is at least one, or fails when one of them cannot be edited (Archicad then deletes none of them).",
    "status": "done",
    "reason": "",
    "components": [
@@ -4323,10 +4394,12 @@
      "path": "Components/ElementsComponents/DeleteSelectedElementsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 0,
+   "parameters": "partial",
+   "parameterCount": 1,
    "coveredParameters": [],
-   "missingParameters": [],
+   "missingParameters": [
+    "dryRun"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -4662,7 +4735,7 @@
    "id": "CreateColumns",
    "group": "Element Commands",
    "version": "1.0.3",
-   "brief": "Creates Column elements based on the given parameters.",
+   "brief": "Creates Column elements based on the given parameters. Takes the same cut fill pens and cover fill as ModifyColumns, besides the position, size, slant, cross section and veneer; settings not given come from the Column tool defaults or the favorite. Not written by either command: the surfaces of the column segments, and the cut fill pens before Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [
@@ -4676,7 +4749,7 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 22,
+   "parameterCount": 25,
    "coveredParameters": [
     "columnsData",
     "columnsData.axisRotationAngle",
@@ -4687,6 +4760,9 @@
     "columnsData.coordinates.y",
     "columnsData.coordinates.z",
     "columnsData.coreAnchor",
+    "columnsData.coverFill",
+    "columnsData.cutFillBackgroundPen",
+    "columnsData.cutFillPen",
     "columnsData.depth",
     "columnsData.favoriteName",
     "columnsData.floorIndex",
@@ -4709,7 +4785,7 @@
    "id": "CreateWalls",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Creates Wall elements based on the given parameters.",
+   "brief": "Creates Wall elements based on the given parameters. Takes the same wall settings as ModifyWalls, applied by the same code, except geometryType and profileType, which the new wall takes from the favorite or the Wall tool defaults (its plan outline is always Straight), and bottomOffset, which comes from zCoordinate. Neither command can write a Polygonal outline (it needs an outline polygon, which these commands do not take), connectionPriority or junctionSequence (Archicad ignores writes to them; GetDetailsOfElements reads them), and on Archicad 29 any story visibility other than 'Home story only' and 'All relevant stories'.",
    "status": "done",
    "reason": "",
    "components": [
@@ -4727,7 +4803,7 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 33,
+   "parameterCount": 45,
    "coveredParameters": [
     "wallsData",
     "wallsData.aboveViewLinePen",
@@ -4741,6 +4817,8 @@
     "wallsData.contourLineTypeId",
     "wallsData.contourPen",
     "wallsData.contourPen3D",
+    "wallsData.cutFillBackgroundPen",
+    "wallsData.cutFillPen",
     "wallsData.displayOption",
     "wallsData.endCoordinate",
     "wallsData.favoriteName",
@@ -4749,19 +4827,29 @@
     "wallsData.height",
     "wallsData.id",
     "wallsData.inheritEndSurface",
+    "wallsData.isAutoOnStoryVisibility",
     "wallsData.layerIndex",
     "wallsData.linkToSettings",
     "wallsData.logHeight",
     "wallsData.materialsChained",
     "wallsData.offset",
+    "wallsData.oppositeMaterial",
     "wallsData.polyCanChange",
     "wallsData.profileId",
     "wallsData.referenceLineLocation",
+    "wallsData.referenceMaterial",
+    "wallsData.relativeTopStory",
+    "wallsData.sideMaterial",
+    "wallsData.slantAlpha",
+    "wallsData.slantBeta",
     "wallsData.structureType",
     "wallsData.thickness",
+    "wallsData.topOffset",
     "wallsData.useCompositePriority",
     "wallsData.viewDepthLimitation",
-    "wallsData.zCoordinate"
+    "wallsData.visibility",
+    "wallsData.zCoordinate",
+    "wallsData.zoneRel"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -4776,7 +4864,7 @@
    "id": "CreateBeams",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Creates Beam elements based on the given parameters.",
+   "brief": "Creates Beam elements based on the given parameters. Takes the same cut fill pens and cover fill as ModifyBeams, besides the position, shape, slant and cross section; settings not given come from the Beam tool defaults or the favorite. Not written by either command: the surfaces of the beam segments, and the cut fill pens before Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [
@@ -4790,7 +4878,7 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 21,
+   "parameterCount": 24,
    "coveredParameters": [
     "beamsData",
     "beamsData.anchorPoint",
@@ -4798,6 +4886,9 @@
     "beamsData.begCoordinate",
     "beamsData.buildingMaterialId",
     "beamsData.circleBased",
+    "beamsData.coverFill",
+    "beamsData.cutFillBackgroundPen",
+    "beamsData.cutFillPen",
     "beamsData.endCoordinate",
     "beamsData.favoriteName",
     "beamsData.floorIndex",
@@ -4822,7 +4913,7 @@
    "id": "CreateStairs",
    "group": "Element Commands",
    "version": "1.5.0",
-   "brief": "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge and the turn at each baseline point (landings and winders).",
+   "brief": "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge and the turn at each baseline point (landings and winders). Accepts the same settings as ModifyStairs: the step values with their locks, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser and structure settings of the flights and the landings; settings not given come from the Stair tool defaults or the favorite.",
    "status": "done",
    "reason": "",
    "components": [
@@ -4832,7 +4923,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 20,
+   "parameterCount": 49,
    "coveredParameters": [
     "stairsData",
     "stairsData.baseLinePoints",
@@ -4841,9 +4932,14 @@
     "stairsData.flightWidth",
     "stairsData.floorIndex",
     "stairsData.riserHeight",
+    "stairsData.risers.angle",
+    "stairsData.risers.position",
     "stairsData.stepNum",
+    "stairsData.structures.structureType",
     "stairsData.totalHeight",
     "stairsData.treadDepth",
+    "stairsData.treads.offset",
+    "stairsData.treads.thickness",
     "stairsData.zCoordinate"
    ],
    "missingParameters": [
@@ -4855,7 +4951,31 @@
     "stairsData.baseLineVertices.turnType",
     "stairsData.baselineOffset",
     "stairsData.baselinePosition",
-    "stairsData.id"
+    "stairsData.extraBottomTread",
+    "stairsData.extraTopTread",
+    "stairsData.id",
+    "stairsData.inputDirection",
+    "stairsData.numberingType",
+    "stairsData.risers",
+    "stairsData.risers.crossSection",
+    "stairsData.structureVisibility",
+    "stairsData.structures",
+    "stairsData.structures.bottomType",
+    "stairsData.structures.horizontalThickness",
+    "stairsData.structures.side",
+    "stairsData.totalHeightLocked",
+    "stairsData.treadDepthLocked",
+    "stairsData.treads",
+    "stairsData.treads.nosingSlant",
+    "stairsData.treads.nosingType",
+    "stairsData.treads.nosingValue",
+    "stairsData.treads.role",
+    "stairsData.treads.visible",
+    "stairsData.uniformDrainings",
+    "stairsData.uniformFinish",
+    "stairsData.uniformMonolithAttributes",
+    "stairsData.walkingLineOffset",
+    "stairsData.walkingLinePosition"
    ],
    "pullRequests": [],
    "issues": [
@@ -4891,7 +5011,7 @@
    "id": "CreateSlabs",
    "group": "Element Commands",
    "version": "1.0.3",
-   "brief": "Creates Slab elements based on the given parameters.",
+   "brief": "Creates Slab elements based on the given parameters. Takes the same surfaces (top, side, bottom), cut fill pens and floor fill as ModifySlabs, besides the outline, holes, level and structure; settings not given come from the Slab tool defaults or the favorite. Not written by either command: the surface of a single edge, and the cut fill pens before Archicad 27; of the floor fill orientation Archicad applies only the type through the API.",
    "status": "done",
    "reason": "",
    "components": [
@@ -4905,12 +5025,16 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 14,
+   "parameterCount": 20,
    "coveredParameters": [
     "slabsData",
+    "slabsData.bottomMaterial",
     "slabsData.buildingMaterialId",
     "slabsData.compositeId",
+    "slabsData.cutFillBackgroundPen",
+    "slabsData.cutFillPen",
     "slabsData.favoriteName",
+    "slabsData.floorFill",
     "slabsData.floorIndex",
     "slabsData.holes",
     "slabsData.id",
@@ -4919,8 +5043,10 @@
     "slabsData.polygonArcs",
     "slabsData.polygonCoordinates",
     "slabsData.referencePlaneLocation",
+    "slabsData.sideMaterial",
     "slabsData.structureType",
-    "slabsData.thickness"
+    "slabsData.thickness",
+    "slabsData.topMaterial"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -5572,12 +5698,27 @@
    "id": "CreateSkylights",
    "group": "Element Commands",
    "version": "1.8.1",
-   "brief": "Creates Skylight elements with a roof or shell owner and a floor plan anchor position. Width, height, anchor point and library part are optional; other settings come from the Skylight tool defaults or a favorite. Surface placement is handled by Archicad and has not yet been verified for this command.",
+   "brief": "Creates Skylight elements with a roof or shell owner and a floor plan anchor position. It takes the same settings as ModifySkylights (anchor point, fix mode, width, height, azimuth and elevation angles, mirroring, floor plan display, pens, line types, section fill, surface and the library part flags) and optionally a library part; the settings not given come from the Skylight tool defaults or a favorite. Surface placement is handled by Archicad and has not yet been verified for this command.",
    "status": "skipped",
    "reason": "Grasshopper component deferred to a follow-up; this PR adds the Add-On command and Python example",
    "components": [],
    "parameters": null,
-   "parameterCount": 9,
+   "parameterCount": 30,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ModifySkylights",
+   "group": "Element Commands",
+   "version": "1.8.1",
+   "brief": "Modifies Skylight elements: anchor position and anchor point, fix mode, width, height, azimuth and elevation angles, mirroring, floor plan display option, pens, line types, section fill and pens, surface and the use-the-library-part's-settings flags - the same settings CreateSkylights takes and GetDetailsOfElements returns. Only the given settings change. Not written by this command: the owner roof or shell, the anchor level and the vertical link (Archicad places the skylight on its owner), the plane of a multi-plane roof it sits on, the dimension marker (a separate element) and the library part's own parameters (use SetGDLParametersOfElements). Archicad may set the elevation angle again from the owner.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 27,
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
@@ -5691,18 +5832,24 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 11,
+   "parameterCount": 17,
    "coveredParameters": [
     "dimensionsData",
     "dimensionsData.direction",
+    "dimensionsData.marker.pen",
+    "dimensionsData.marker.type",
     "dimensionsData.referencePoint",
     "dimensionsData.witnessPoints"
    ],
    "missingParameters": [
     "dimensionsData.appearance",
+    "dimensionsData.defaultWitnessForm",
+    "dimensionsData.defaultWitnessVal",
     "dimensionsData.elevationOrigin",
     "dimensionsData.favoriteName",
     "dimensionsData.floorIndex",
+    "dimensionsData.linePen",
+    "dimensionsData.marker",
     "dimensionsData.textFrame",
     "dimensionsData.textHeight",
     "dimensionsData.textPen"
@@ -5724,10 +5871,12 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 16,
+   "parameterCount": 22,
    "coveredParameters": [
     "dimensionsData",
     "dimensionsData.direction",
+    "dimensionsData.marker.pen",
+    "dimensionsData.marker.type",
     "dimensionsData.preset",
     "dimensionsData.referencePoint",
     "dimensionsData.sectionElementId"
@@ -5735,8 +5884,12 @@
    "missingParameters": [
     "dimensionsData.appearance",
     "dimensionsData.beginPlane",
+    "dimensionsData.defaultWitnessForm",
+    "dimensionsData.defaultWitnessVal",
     "dimensionsData.elevationOrigin",
     "dimensionsData.favoriteName",
+    "dimensionsData.linePen",
+    "dimensionsData.marker",
     "dimensionsData.placeOnTop",
     "dimensionsData.sectionElementIds",
     "dimensionsData.skinBorderIndices",
@@ -5762,21 +5915,42 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 10,
+   "parameterCount": 16,
    "coveredParameters": [
     "dimensionsData",
     "dimensionsData.direction",
+    "dimensionsData.marker.pen",
+    "dimensionsData.marker.type",
     "dimensionsData.referencePoint",
     "dimensionsData.wallId"
    ],
    "missingParameters": [
     "dimensionsData.appearance",
+    "dimensionsData.defaultWitnessForm",
+    "dimensionsData.defaultWitnessVal",
     "dimensionsData.elevationOrigin",
     "dimensionsData.favoriteName",
+    "dimensionsData.linePen",
+    "dimensionsData.marker",
     "dimensionsData.textFrame",
     "dimensionsData.textHeight",
     "dimensionsData.textPen"
    ],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ModifyAssociativeDimensions",
+   "group": "Element Commands",
+   "version": "1.8.1",
+   "brief": "Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin, the line pen, the marker type and pen, the text height, pen and frame and the witness line form and value, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. Not written: the witness points, the dimension line position and direction (use MoveElements), the marker size, the text content and position, the witness extension line, the layout and the hole and composite wall dimensioning settings.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 13,
+   "coveredParameters": [],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -5829,7 +6003,7 @@
    "id": "CreateZones",
    "group": "Element Commands",
    "version": "1.1.8",
-   "brief": "Creates Zone elements based on the given parameters. An item whose area would overlap an existing Zone on the same story fails with an error naming that Zone instead of opening Archicad's modal overlap warning, unless its allowOverlap is true.",
+   "brief": "Creates Zone elements based on the given parameters. Takes the same zone settings as ModifyZones (name, number, category, zone stamp, levels, contour line and cover fill), applied by the same helpers; the polygon or reference point is only set here. An item whose area would overlap an existing Zone on the same story fails with an error naming that Zone instead of opening Archicad's modal overlap warning, unless its allowOverlap is true.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6476,10 +6650,42 @@
    "issues": []
   },
   {
+   "id": "ModifyLevelDimensions",
+   "group": "Element Commands",
+   "version": "1.8.1",
+   "brief": "Changes existing Level Dimension elements: the position of the marker and the settings CreateLevelDimensions takes (pen, text height and pen, marker type and size, plus sign, angle, origin), with the same keys. Not written: the parent element and the static level (delete and recreate the dimension to change them), the text content and the hide-with-base-element setting.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "LevelDimensionsComponent",
+     "path": "Components/DocumentToolsComponents/LevelDimensionsComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 11,
+   "coveredParameters": [
+    "levelDimensionsWithDetails",
+    "levelDimensionsWithDetails.angle",
+    "levelDimensionsWithDetails.dimForm",
+    "levelDimensionsWithDetails.elementId",
+    "levelDimensionsWithDetails.markerSize",
+    "levelDimensionsWithDetails.needPlus",
+    "levelDimensionsWithDetails.origin",
+    "levelDimensionsWithDetails.pen",
+    "levelDimensionsWithDetails.position",
+    "levelDimensionsWithDetails.textHeight",
+    "levelDimensionsWithDetails.textPen"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "ModifyWalls",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies Wall elements based on the given parameters.",
+   "brief": "Modifies Wall elements based on the given parameters. Takes the same wall settings as CreateWalls, applied by the same code, plus geometryType (Straight or Trapezoid), profileType and bottomOffset. Neither command can write a Polygonal outline (it needs an outline polygon, which these commands do not take), connectionPriority or junctionSequence (Archicad ignores writes to them; GetDetailsOfElements reads them), and on Archicad 29 any story visibility other than 'Home story only' and 'All relevant stories'.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6557,7 +6763,7 @@
    "id": "ModifyBeams",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies Beam elements based on the given parameters.",
+   "brief": "Modifies Beam elements based on the given parameters. CreateBeams takes the same cut fill pens and cover fill. Not written: the surfaces of the beam segments, and the cut fill pens before Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6606,7 +6812,7 @@
    "id": "ModifySlabs",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies Slab elements based on the given parameters. Of the cover fill orientation, Archicad applies only the type to a Slab through the API; a given origin or distortion matrix that did not stick gets a failed execution result, while the other details are applied.",
+   "brief": "Modifies Slab elements based on the given parameters. CreateSlabs takes the same surfaces, cut fill pens and floor fill. Not written: the surface of a single edge, and the cut fill pens before Archicad 27. Of the cover fill orientation, Archicad applies only the type to a Slab through the API; a given origin or distortion matrix that did not stick gets a failed execution result, while the other details are applied.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6649,7 +6855,7 @@
    "id": "ModifyColumns",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies Column elements based on the given parameters.",
+   "brief": "Modifies Column elements based on the given parameters. CreateColumns takes the same cut fill pens and cover fill. Not written: the surfaces of the column segments, and the cut fill pens before Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7265,7 +7471,7 @@
    "id": "ModifyStairs",
    "group": "Element Commands",
    "version": "1.8.1",
-   "brief": "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the finish visibility, and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness). Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements.",
+   "brief": "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the finish and structure visibility, the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction, the uniform finish, monolith and draining settings, and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness). CreateStairs accepts the same settings. Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements. Not written by this command: the baseline with its landings and winders, the top link, the floor plan display (symbol and marker layout), the headroom and the stair rules; the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API.",
    "status": "merged",
    "reason": "",
    "components": [
@@ -7275,7 +7481,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 27,
+   "parameterCount": 37,
    "coveredParameters": [
     "stairsWithDetails",
     "stairsWithDetails.elementId",
@@ -7294,8 +7500,13 @@
     "stairsWithDetails.treads.thickness"
    ],
    "missingParameters": [
+    "stairsWithDetails.extraBottomTread",
+    "stairsWithDetails.extraTopTread",
+    "stairsWithDetails.inputDirection",
+    "stairsWithDetails.numberingType",
     "stairsWithDetails.risers",
     "stairsWithDetails.risers.crossSection",
+    "stairsWithDetails.structureVisibility",
     "stairsWithDetails.structures",
     "stairsWithDetails.structures.bottomType",
     "stairsWithDetails.structures.horizontalThickness",
@@ -7305,7 +7516,12 @@
     "stairsWithDetails.treads.nosingType",
     "stairsWithDetails.treads.nosingValue",
     "stairsWithDetails.treads.role",
-    "stairsWithDetails.treads.visible"
+    "stairsWithDetails.treads.visible",
+    "stairsWithDetails.uniformDrainings",
+    "stairsWithDetails.uniformFinish",
+    "stairsWithDetails.uniformMonolithAttributes",
+    "stairsWithDetails.walkingLineOffset",
+    "stairsWithDetails.walkingLinePosition"
    ],
    "pullRequests": [],
    "issues": [
@@ -7345,7 +7561,7 @@
    "id": "ModifyZones",
    "group": "Element Commands",
    "version": "1.8.0",
-   "brief": "Modifies Zone elements: name, number, category, zone stamp, height, base offset, top link and floor thickness. Only the given fields are changed; the polygon is kept.",
+   "brief": "Modifies Zone elements: name, number, category, zone stamp, height, base offset, top link, floor thickness, contour line and cover fill - the same settings as CreateZones, applied by the same helpers. Only the given fields are changed. The polygon of a manual zone cannot be changed here (the change takes no polygon memo), nor the reference point of an automatic one (SetDetailsOfElements moves it).",
    "status": "merged",
    "reason": "",
    "components": [
@@ -7359,11 +7575,13 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 13,
+   "parameterCount": 15,
    "coveredParameters": [
     "zonesWithDetails",
     "zonesWithDetails.bottomOffset",
     "zonesWithDetails.categoryAttributeId",
+    "zonesWithDetails.contourLine",
+    "zonesWithDetails.coverFill",
     "zonesWithDetails.elementId",
     "zonesWithDetails.fixedStampAngle",
     "zonesWithDetails.floorThickness",
@@ -7900,7 +8118,7 @@
    "id": "DeleteElementSets",
    "group": "Element grouping Commands",
    "version": "1.8.0",
-   "brief": "Deletes the given element sets. The elements of a set are not deleted. Only element sets created by the Tapir Add-On can be deleted; sets created by other add-ons are reported as failed.",
+   "brief": "Deletes the given element sets. The elements of a set are not deleted. Only element sets created by the Tapir Add-On can be deleted; sets created by other add-ons are reported as failed. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each element set that a real run would delete gets wouldDelete.",
    "status": "merged",
    "reason": "",
    "components": [
@@ -7909,14 +8127,16 @@
      "path": "Components/ElementsComponents/DeleteElementSetsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 3,
+   "parameters": "partial",
+   "parameterCount": 4,
    "coveredParameters": [
     "elementSets",
     "elementSets.elementSetId",
     "elementSets.elementSetId.guid"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "dryRun"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -9006,7 +9226,7 @@
    "id": "RemovePropertyFromAttributes",
    "group": "Property Commands",
    "version": "1.7.3",
-   "brief": "Makes a custom property unavailable for the given attributes (for example Building Materials), in one undo step. Available in Archicad 25, 26 and 27 only.",
+   "brief": "Makes a custom property unavailable for the given attributes (for example Building Materials), in one undo step. Available in Archicad 25, 26 and 27 only. With dryRun true nothing is changed and no undo step is created: the response has dryRun set to true, and wouldDelete when the property and every attribute exist.",
    "status": "done",
    "reason": "",
    "components": [
@@ -9015,13 +9235,15 @@
      "path": "Components/PropertiesComponents/RemovePropertyFromAttributesComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 2,
+   "parameters": "partial",
+   "parameterCount": 3,
    "coveredParameters": [
     "attributeIds",
     "propertyId"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "dryRun"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -9055,7 +9277,7 @@
    "id": "DeletePropertyGroups",
    "group": "Property Commands",
    "version": "1.0.9",
-   "brief": "Deletes the given Custom Property Groups.",
+   "brief": "Deletes the given Custom Property Groups. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each property group that exists gets wouldDelete.",
    "status": "done",
    "reason": "",
    "components": [
@@ -9064,12 +9286,14 @@
      "path": "Components/PropertiesComponents/DeletePropertyGroupsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 1,
+   "parameters": "partial",
+   "parameterCount": 2,
    "coveredParameters": [
     "propertyGroupIds"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "dryRun"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -9103,7 +9327,7 @@
    "id": "DeletePropertyDefinitions",
    "group": "Property Commands",
    "version": "1.0.9",
-   "brief": "Deletes the given Custom Property Definitions.",
+   "brief": "Deletes the given Custom Property Definitions. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each property that exists gets wouldDelete.",
    "status": "done",
    "reason": "",
    "components": [
@@ -9112,12 +9336,14 @@
      "path": "Components/PropertiesComponents/DeletePropertyDefinitionsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 1,
+   "parameters": "partial",
+   "parameterCount": 2,
    "coveredParameters": [
     "propertyIds"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "dryRun"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -9646,7 +9872,7 @@
    "id": "DeleteClassificationSystems",
    "group": "Classification Commands",
    "version": "1.5.2",
-   "brief": "Deletes the given Classification Systems.",
+   "brief": "Deletes the given Classification Systems. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each classification system that exists gets wouldDelete.",
    "status": "done",
    "reason": "",
    "components": [
@@ -9655,12 +9881,14 @@
      "path": "Components/ClassificationsComponents/DeleteClassificationSystemsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 1,
+   "parameters": "partial",
+   "parameterCount": 2,
    "coveredParameters": [
     "classificationSystemIds"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "dryRun"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -9668,7 +9896,7 @@
    "id": "DeleteClassificationItems",
    "group": "Classification Commands",
    "version": "1.5.2",
-   "brief": "Deletes the given Classification Items.",
+   "brief": "Deletes the given Classification Items. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each classification item that exists gets wouldDelete.",
    "status": "done",
    "reason": "",
    "components": [
@@ -9677,12 +9905,14 @@
      "path": "Components/ClassificationsComponents/DeleteClassificationItemsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 1,
+   "parameters": "partial",
+   "parameterCount": 2,
    "coveredParameters": [
     "classificationItemIds"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "dryRun"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -9877,7 +10107,7 @@
    "id": "DeleteAttributes",
    "group": "Attribute Commands",
    "version": "1.5.4",
-   "brief": "Deletes the given attributes. Returns an execution result for each input item. dryRun only checks the items (attribute type, attribute exists) and deletes nothing.",
+   "brief": "Deletes the given attributes. Returns an execution result for each input item. With dryRun true nothing is deleted: the response has dryRun set to true, and each attribute that passes the checks made before deleting (valid attribute type, attribute exists) gets wouldDelete.",
    "status": "done",
    "reason": "",
    "components": [
@@ -10011,7 +10241,7 @@
    "id": "DeleteAttributeFolders",
    "group": "Attribute Commands",
    "version": "1.7.3",
-   "brief": "Deletes attribute folders, each given by attribute type and path, together with all the subfolders and deletable attributes they contain (a folder holding an attribute that cannot be deleted is kept). The root folder cannot be deleted. Available from Archicad 26.",
+   "brief": "Deletes attribute folders, each given by attribute type and path, together with all the subfolders and deletable attributes they contain (a folder holding an attribute that cannot be deleted is kept). The root folder cannot be deleted. With dryRun true nothing is deleted: the response has dryRun set to true, and each folder that exists and is not the root folder gets wouldDelete. Available from Archicad 26.",
    "status": "done",
    "reason": "",
    "components": [
@@ -10020,12 +10250,14 @@
      "path": "Components/AttributesComponents/DeleteAttributeFoldersComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 1,
+   "parameters": "partial",
+   "parameterCount": 2,
    "coveredParameters": [
     "attributeFolders"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "dryRun"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -10132,7 +10364,7 @@
    "id": "DeleteAndReplaceAttributes",
    "group": "Attribute Commands",
    "version": "1.8.1",
-   "brief": "Deletes fills, line types, surfaces or building materials and replaces each by another attribute of the same type wherever it was used, like Delete and Replace in the Attribute Manager. Every reference is rewritten to the replacement, the way ReindexAttributes rewrites them: the fields of the elements in the floor plan and in every view and layout, the parameters of library part based elements, their memo data, the tool defaults, the Favorites, the other attributes that refer to it (composites, building materials, surfaces, profiles, MEP systems) and the graphic override rules. Elements on a hidden or locked layer are changed too: their layers are shown and unlocked for the change and put back afterwards (in the current window). If an element cannot be changed (it is locked itself, or not reserved in Teamwork), everything is put back and that attribute is not deleted. Elements from hotlinked modules cannot be changed and are listed. Indices typed into GDL scripts are not found, and the frame and panel classes of curtain wall Favorites and of the Curtain Wall tool default keep the deleted attribute (named in the warnings). If a tool default, Favorite, attribute or rule cannot be rewritten to the replacement, it keeps a copy of the deleted attribute with its name and a new attribute id, named in the warnings. dryRun lists every reference without changing anything. The whole call is one undo step. Available from Archicad 27.",
+   "brief": "Deletes fills, line types, surfaces or building materials and replaces each by another attribute of the same type wherever it was used, like Delete and Replace in the Attribute Manager. Every reference is rewritten to the replacement, the way ReindexAttributes rewrites them: the fields of the elements in the floor plan and in every view and layout, the parameters of library part based elements, their memo data, the tool defaults, the Favorites, the other attributes that refer to it (composites, building materials, surfaces, profiles, MEP systems) and the graphic override rules. Elements on a hidden or locked layer are changed too: their layers are shown and unlocked for the change and put back afterwards (in the current window). If an element cannot be changed (it is locked itself, or not reserved in Teamwork), everything is put back and that attribute is not deleted. Elements from hotlinked modules cannot be changed and are listed. Indices typed into GDL scripts are not found, and the frame and panel classes of curtain wall Favorites and of the Curtain Wall tool default keep the deleted attribute (named in the warnings). If a tool default, Favorite, attribute or rule cannot be rewritten to the replacement, it keeps a copy of the deleted attribute with its name and a new attribute id, named in the warnings. The whole call is one undo step. With dryRun true nothing is changed and no undo step is created: the response has dryRun set to true, and each attribute that passes the checks gets wouldDelete and lists every reference a real run would rewrite (elements, tool defaults, Favorites, other attributes, graphic override rules, elements from hotlinked modules). Available from Archicad 27.",
    "status": "merged",
    "reason": "",
    "components": [
@@ -10153,6 +10385,31 @@
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
+  },
+  {
+   "id": "GetUnusedAttributes",
+   "group": "Attribute Commands",
+   "version": "1.8.1",
+   "brief": "Lists the unused layers, fills, surfaces, building materials, composites, profiles, line types, pen tables and zone categories (index, id and name), for the given types or all of them. The Archicad API has no function that tells which attributes are unused (only how many per type), so every reference is collected: the elements of the floor plan and of every view and layout (hotlinked ones too), with their library part parameters and memo data, the tool defaults, the Favorites, the other attributes (composites, building materials, surfaces, profiles, MEP systems) and the graphic override rules, the way ReindexAttributes finds them; for layers the layer of each element, tool default and Favorite; for composites and profiles the walls, slabs, roofs, shells, column and beam segments whose structure type uses them; for pen tables the current pen table and the drawings set to a pen table of their own. An attribute that only an unused attribute refers to counts as used. Indices typed into GDL scripts and the pen tables saved with views are not found. Each type also reports Archicad's own count of the attributes in use (archicadUsedCount, see GetUsedAttributes), so a difference shows. Read only. Available from Archicad 27.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 2224,
+     "title": "[5/5] Grasshopper components for GetUnusedAttributes, DeleteUnusedAttributes, GetUnusedLibraryParts and GetProjectHealth"
+    }
+   ],
+   "issues": [
+    {
+     "number": 2190,
+     "title": "New commands: list unused attributes and unused library parts (read only)"
+    }
+   ]
   },
   {
    "id": "CreateLayers",
@@ -11410,7 +11667,7 @@
    "id": "DeleteUserDataOfAttributes",
    "group": "Attribute Commands",
    "version": "1.8.0",
-   "brief": "Removes the user data of attributes, every key at once. Archicad does not record this change as an undo step, so Undo does not revert it.",
+   "brief": "Removes the user data of attributes, every key at once. Archicad does not record this change as an undo step, so Undo does not revert it. With dryRun true nothing is removed: the response has dryRun set to true, and each attribute that exists gets wouldDelete.",
    "status": "done",
    "reason": "",
    "components": [
@@ -11419,12 +11676,14 @@
      "path": "Components/AttributesComponents/DeleteUserDataOfAttributesComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 1,
+   "parameters": "partial",
+   "parameterCount": 2,
    "coveredParameters": [
     "attributeIds"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "dryRun"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -11693,7 +11952,7 @@
    "id": "RemoveIFCClassificationReferencesOfElements",
    "group": "IFC Commands",
    "version": "1.8.0",
-   "brief": "Removes IFC classification references stored on elements, given by the name of their classification and optionally their identification; without identification every stored reference of that classification is removed. Available only in Archicad 25, 26 and 27 for now.",
+   "brief": "Removes IFC classification references stored on elements, given by the name of their classification and optionally their identification; without identification every stored reference of that classification is removed. Available only in Archicad 25, 26 and 27 for now. With dryRun true nothing is removed and no undo step is created: the response has dryRun set to true, and each element that has a matching stored reference gets wouldDelete.",
    "status": "done",
    "reason": "",
    "components": [
@@ -11702,8 +11961,8 @@
      "path": "Components/IFCComponents/RemoveIFCClassificationReferencesOfElementsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 5,
+   "parameters": "partial",
+   "parameterCount": 6,
    "coveredParameters": [
     "elementIFCClassificationReferences",
     "elementIFCClassificationReferences.elementId",
@@ -11711,7 +11970,9 @@
     "elementIFCClassificationReferences.referencedSource",
     "elementIFCClassificationReferences.referencedSource.name"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "dryRun"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -11719,7 +11980,7 @@
    "id": "RemoveIFCPropertiesOfElements",
    "group": "IFC Commands",
    "version": "1.7.3",
-   "brief": "Removes local IFC properties, given by property set and property name, from elements. Available only in Archicad 25, 26 and 27 for now.",
+   "brief": "Removes local IFC properties, given by property set and property name, from elements. Available only in Archicad 25, 26 and 27 for now. With dryRun true nothing is removed and no undo step is created: the response has dryRun set to true, and each element that has the local IFC property gets wouldDelete.",
    "status": "done",
    "reason": "",
    "components": [
@@ -11728,12 +11989,14 @@
      "path": "Components/IFCComponents/RemoveIFCPropertiesOfElementsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 1,
+   "parameters": "partial",
+   "parameterCount": 2,
    "coveredParameters": [
     "elementIFCProperties"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "dryRun"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -12180,6 +12443,31 @@
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
+  },
+  {
+   "id": "GetUnusedLibraryParts",
+   "group": "Library Commands",
+   "version": "1.8.1",
+   "brief": "Lists the loaded library parts that no element of the project is placed from. Read only. The Archicad API does not tell which library parts are used, so every element of the floor plan and of every view and layout is checked: objects, lamps, doors, windows, skylights, zone stamps, symbol labels, drawing titles, curtain wall parts, and the markers of doors, windows, skylights, sections, elevations, details and worksheets. A library part used only in another way (called as a macro, linked as a property object, as an interior elevation marker, in stairs and railings, in the tool defaults or in Favorites) is listed as unused. Library parts that cannot be placed (e.g. macros) are only listed with includeNotPlaceable.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 2,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 2224,
+     "title": "[5/5] Grasshopper components for GetUnusedAttributes, DeleteUnusedAttributes, GetUnusedLibraryParts and GetProjectHealth"
+    }
+   ],
+   "issues": [
+    {
+     "number": 2190,
+     "title": "New commands: list unused attributes and unused library parts (read only)"
+    }
+   ]
   },
   {
    "id": "FindLibraryParts",
@@ -13639,7 +13927,7 @@
    "id": "ModifyDetailMarkers",
    "group": "Navigator Commands",
    "version": "1.8.1",
-   "brief": "Changes the name, the reference ID and the clip polygon of Detail and Worksheet markers.",
+   "brief": "Changes the name, the reference ID, the clip polygon, the boundary's pen and line type, the marker symbol's angle, always-horizontal setting and pen of Detail and Worksheet markers. Not written: the base point (Archicad places it at the center of the clip polygon's bounding box when the marker is created), the viewpoint the marker refers to, and the marker symbol's other settings, which are parameters of the library part placed as the marker (markerId in GetDetailsOfElements). A value Archicad did not apply gets a failed execution result.",
    "status": "merged",
    "reason": "",
    "components": [
@@ -13648,17 +13936,23 @@
      "path": "Components/NavigatorComponents/ModifyDetailMarkersComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 6,
+   "parameters": "partial",
+   "parameterCount": 11,
    "coveredParameters": [
     "detailMarkersWithDetails",
+    "detailMarkersWithDetails.angle",
     "detailMarkersWithDetails.clipPolygon",
     "detailMarkersWithDetails.elementId",
     "detailMarkersWithDetails.id",
     "detailMarkersWithDetails.name",
     "detailMarkersWithDetails.polygonArcs"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "detailMarkersWithDetails.isHorizontalMarker",
+    "detailMarkersWithDetails.lineTypeIndex",
+    "detailMarkersWithDetails.markerPenIndex",
+    "detailMarkersWithDetails.penIndex"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -14536,6 +14830,26 @@
    "issues": []
   },
   {
+   "id": "GetCameras",
+   "group": "Navigator Commands",
+   "version": "1.8.1",
+   "brief": "Gets the Camera Sets (camera paths) of the project with their name, whether the set is the active one, its current camera, and its cameras in path order. Each camera has its element id, whether it is active in the path, and its perspective: camera and target position, distance, azimuth, view cone, roll angle, two-point perspective and sun, in the shape Set3DProjectionSettings accepts, so passing a camera's perspective there shows its view in the 3D window. Archicad cameras are always perspective; they have no name of their own.",
+   "status": "claimed",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": [
+    {
+     "number": 2192,
+     "title": "New command GetCameras: read the camera sets and their cameras"
+    }
+   ]
+  },
+  {
    "id": "Get3DStyles",
    "group": "Navigator Commands",
    "version": "1.8.1",
@@ -15252,6 +15566,21 @@
    "issues": []
   },
   {
+   "id": "GetSchedules",
+   "group": "Navigator Commands",
+   "version": "1.8.1",
+   "brief": "Returns the Interactive Schedules of the Project Map: navigator item id, name, ID and the folders they are in. Archicad's API does not give the rows of a schedule nor export it; to export one, put it in a publisher set with a spreadsheet format in Archicad and run PublishPublisherSet.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "GetNavigatorParentItems",
    "group": "Navigator Commands",
    "version": "1.7.3",
@@ -15569,7 +15898,7 @@
    "id": "DeleteIssue",
    "group": "Issue Management Commands",
    "version": "1.0.2",
-   "brief": "Deletes the specified issue.",
+   "brief": "Deletes the specified issue. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and wouldDelete when the issue exists.",
    "status": "done",
    "reason": "",
    "components": [
@@ -15578,13 +15907,15 @@
      "path": "Components/IssuesComponents/DeleteIssueComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 2,
+   "parameters": "partial",
+   "parameterCount": 3,
    "coveredParameters": [
     "acceptAllElements",
     "issueId"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "dryRun"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -16540,12 +16871,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2187,
-     "title": "New commands: copy elements, make an array of copies, offset copies"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetDesignOptionCombinationOfViews",
@@ -19181,7 +19507,7 @@
    "id": "RemoveSolidElementLinks",
    "group": "Solid Element Operation Commands",
    "version": "1.5.4",
-   "brief": "Removes solid element operation links between target and operator elements.",
+   "brief": "Removes solid element operation links between target and operator elements. With dryRun true nothing is removed and no undo step is created: the response has dryRun set to true, and each link that exists gets wouldDelete.",
    "status": "done",
    "reason": "",
    "components": [
@@ -19190,12 +19516,14 @@
      "path": "Components/SolidOperationComponents/RemoveSolidElementLinksComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 1,
+   "parameters": "partial",
+   "parameterCount": 2,
    "coveredParameters": [
     "solidLinks"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "dryRun"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -19279,7 +19607,7 @@
    "id": "RemoveElementTrims",
    "group": "Solid Element Operation Commands",
    "version": "1.5.9",
-   "brief": "Removes the trim between an element and the roof or shell trimming it.",
+   "brief": "Removes the trim between an element and the roof or shell trimming it. With dryRun true nothing is removed and no undo step is created: the response has dryRun set to true, and each pair whose element is trimmed by its trimming element gets wouldDelete.",
    "status": "done",
    "reason": "",
    "components": [
@@ -19288,14 +19616,16 @@
      "path": "Components/SolidOperationComponents/RemoveElementTrimsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 3,
+   "parameters": "partial",
+   "parameterCount": 4,
    "coveredParameters": [
     "elementPairs",
     "elementPairs.elementId",
     "elementPairs.trimmingElementId"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "dryRun"
+   ],
    "pullRequests": [],
    "issues": []
   },

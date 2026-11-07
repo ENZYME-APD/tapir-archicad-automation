@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 19:37 UTC",
+ "generatedAt": "2026-11-07 20:19 UTC",
  "versions": [
   25,
   26,
@@ -2952,10 +2952,6 @@
     {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
     }
    ],
    "issues": []
@@ -3067,10 +3063,6 @@
     {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
     }
    ],
    "issues": []
@@ -4071,10 +4063,6 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
-     "number": 2228,
-     "title": "[2/6] Dimensions: ModifyAssociativeDimensions and ModifyLevelDimensions, with Create sharing their settings"
-    },
-    {
      "number": 2226,
      "title": "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"
     },
@@ -4087,16 +4075,8 @@
      "title": "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"
     },
     {
-     "number": 2216,
-     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
-    },
-    {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    },
-    {
-     "number": 2207,
-     "title": "[2/6] Dry run for the element delete and remove commands"
     },
     {
      "number": 2206,
@@ -4107,24 +4087,8 @@
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
     },
     {
-     "number": 2204,
-     "title": "[1/6] Shared dryRun for changing commands: base and DeleteElements"
-    },
-    {
-     "number": 2202,
-     "title": "[2/3] Add DistributeElements"
-    },
-    {
      "number": 2200,
      "title": "[1/5] SplitElements: split walls, beams and lines along a line"
-    },
-    {
-     "number": 2199,
-     "title": "[1/3] Add AlignElements command"
-    },
-    {
-     "number": 2197,
-     "title": "Add CopyElements and RotateCopyElements (linear and circular arrays of copies)"
     },
     {
      "number": 1470,
@@ -4444,10 +4408,6 @@
     {
      "number": 2222,
      "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    },
-    {
-     "number": 2216,
-     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
     }
    ],
    "issues": []
@@ -4542,10 +4502,6 @@
     {
      "number": 2222,
      "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    },
-    {
-     "number": 2216,
-     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
     }
    ],
    "issues": []
@@ -4904,16 +4860,8 @@
      "title": "[4/5] GetProjectHealth: read-only project health summary"
     },
     {
-     "number": 2211,
-     "title": "[3/5] Add GetUnusedLibraryParts"
-    },
-    {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
     },
     {
      "number": 995,
@@ -5040,16 +4988,8 @@
      "title": "[4/5] GetProjectHealth: read-only project health summary"
     },
     {
-     "number": 2211,
-     "title": "[3/5] Add GetUnusedLibraryParts"
-    },
-    {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
     }
    ],
    "issues": []
@@ -5149,10 +5089,6 @@
     {
      "number": 2217,
      "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2211,
-     "title": "[3/5] Add GetUnusedLibraryParts"
     }
    ],
    "issues": []
@@ -5181,10 +5117,6 @@
     {
      "number": 2217,
      "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2211,
-     "title": "[3/5] Add GetUnusedLibraryParts"
     }
    ],
    "issues": []
@@ -5213,10 +5145,6 @@
     {
      "number": 2217,
      "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2211,
-     "title": "[3/5] Add GetUnusedLibraryParts"
     }
    ],
    "issues": []
@@ -5268,10 +5196,6 @@
     {
      "number": 2217,
      "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2211,
-     "title": "[3/5] Add GetUnusedLibraryParts"
     }
    ],
    "issues": []
@@ -5300,10 +5224,6 @@
     {
      "number": 2217,
      "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2211,
-     "title": "[3/5] Add GetUnusedLibraryParts"
     }
    ],
    "issues": []
@@ -5355,10 +5275,6 @@
     {
      "number": 2217,
      "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2211,
-     "title": "[3/5] Add GetUnusedLibraryParts"
     }
    ],
    "issues": []
@@ -5387,10 +5303,6 @@
     {
      "number": 2217,
      "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2211,
-     "title": "[3/5] Add GetUnusedLibraryParts"
     }
    ],
    "issues": []
@@ -5419,10 +5331,6 @@
     {
      "number": 2217,
      "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2211,
-     "title": "[3/5] Add GetUnusedLibraryParts"
     }
    ],
    "issues": []
@@ -6029,10 +5937,6 @@
    "reason": "memory management",
    "pullRequests": [
     {
-     "number": 2228,
-     "title": "[2/6] Dimensions: ModifyAssociativeDimensions and ModifyLevelDimensions, with Create sharing their settings"
-    },
-    {
      "number": 2221,
      "title": "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"
     },
@@ -6047,10 +5951,6 @@
     {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
     },
     {
      "number": 2200,
@@ -6776,14 +6676,6 @@
     {
      "number": 2222,
      "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    },
-    {
-     "number": 2216,
-     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
-    },
-    {
-     "number": 2207,
-     "title": "[2/6] Dry run for the element delete and remove commands"
     }
    ],
    "issues": []
@@ -6810,14 +6702,6 @@
     {
      "number": 2222,
      "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    },
-    {
-     "number": 2216,
-     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
-    },
-    {
-     "number": 2207,
-     "title": "[2/6] Dry run for the element delete and remove commands"
     }
    ],
    "issues": []
@@ -6935,16 +6819,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2202,
-     "title": "[2/3] Add DistributeElements"
-    },
-    {
-     "number": 2199,
-     "title": "[1/3] Add AlignElements command"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2188,
@@ -7068,22 +6943,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2232,
-     "title": "Drawings and Detail/Worksheet markers: write the missing settings (#2230)"
-    },
-    {
-     "number": 2231,
-     "title": "ModifySkylights, sharing its settings with CreateSkylights"
-    },
-    {
-     "number": 2228,
-     "title": "[2/6] Dimensions: ModifyAssociativeDimensions and ModifyLevelDimensions, with Create sharing their settings"
-    },
-    {
-     "number": 2227,
-     "title": "[1/6] Stairs: CreateStairs and ModifyStairs share one set of settings"
-    },
     {
      "number": 2226,
      "title": "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"
@@ -7360,21 +7219,8 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2236,
-     "title": "Columns, Beams and Slabs: Create takes the surfaces, cut fill pens and cover fill Modify writes (#2220 part 5)"
-    },
-    {
-     "number": 2227,
-     "title": "[1/6] Stairs: CreateStairs and ModifyStairs share one set of settings"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
-    {
-     "number": 2187,
-     "title": "New commands: copy elements, make an array of copies, offset copies"
-    },
     {
      "number": 1914,
      "title": "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"
@@ -7562,10 +7408,6 @@
     {
      "number": 2200,
      "title": "[1/5] SplitElements: split walls, beams and lines along a line"
-    },
-    {
-     "number": 2197,
-     "title": "Add CopyElements and RotateCopyElements (linear and circular arrays of copies)"
     }
    ],
    "issues": []
@@ -7679,18 +7521,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2232,
-     "title": "Drawings and Detail/Worksheet markers: write the missing settings (#2230)"
-    },
-    {
-     "number": 2231,
-     "title": "ModifySkylights, sharing its settings with CreateSkylights"
-    },
-    {
-     "number": 2228,
-     "title": "[2/6] Dimensions: ModifyAssociativeDimensions and ModifyLevelDimensions, with Create sharing their settings"
-    },
-    {
      "number": 2221,
      "title": "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"
     },
@@ -7703,24 +7533,12 @@
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
     },
     {
-     "number": 2211,
-     "title": "[3/5] Add GetUnusedLibraryParts"
-    },
-    {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
     },
     {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
-    },
-    {
      "number": 2200,
      "title": "[1/5] SplitElements: split walls, beams and lines along a line"
-    },
-    {
-     "number": 2198,
-     "title": "Add GetCameras: list the camera sets and their cameras"
     },
     {
      "number": 1855,
@@ -7980,10 +7798,6 @@
     {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
     }
    ],
    "issues": [
@@ -8092,20 +7906,8 @@
      "title": "[4/5] GetProjectHealth: read-only project health summary"
     },
     {
-     "number": 2211,
-     "title": "[3/5] Add GetUnusedLibraryParts"
-    },
-    {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
-    },
-    {
-     "number": 2198,
-     "title": "Add GetCameras: list the camera sets and their cameras"
     },
     {
      "number": 1292,
@@ -8312,16 +8114,8 @@
      "title": "[4/5] GetProjectHealth: read-only project health summary"
     },
     {
-     "number": 2211,
-     "title": "[3/5] Add GetUnusedLibraryParts"
-    },
-    {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
     },
     {
      "number": 2148,
@@ -8374,10 +8168,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2228,
-     "title": "[2/6] Dimensions: ModifyAssociativeDimensions and ModifyLevelDimensions, with Create sharing their settings"
-    },
     {
      "number": 2221,
      "title": "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"
@@ -9716,14 +9506,6 @@
     {
      "number": 2222,
      "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    },
-    {
-     "number": 2216,
-     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
-    },
-    {
-     "number": 2207,
-     "title": "[2/6] Dry run for the element delete and remove commands"
     }
    ],
    "issues": []
@@ -9750,14 +9532,6 @@
     {
      "number": 2222,
      "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    },
-    {
-     "number": 2216,
-     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
-    },
-    {
-     "number": 2207,
-     "title": "[2/6] Dry run for the element delete and remove commands"
     }
    ],
    "issues": []
@@ -9902,10 +9676,6 @@
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
     },
     {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -9942,10 +9712,6 @@
     {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
     },
     {
      "number": 1292,
@@ -10392,10 +10158,6 @@
     {
      "number": 2185,
      "title": "[2/2] Add-On: \"Update when Archicad closes\" choice, pending marker and README (#2182)"
-    },
-    {
-     "number": 2181,
-     "title": "Update button in the Tapir palette, menu item shows a waiting update"
     }
    ],
    "issues": []
@@ -12577,10 +12339,6 @@
     {
      "number": 2217,
      "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2211,
-     "title": "[3/5] Add GetUnusedLibraryParts"
     }
    ],
    "issues": []
@@ -12860,10 +12618,6 @@
     {
      "number": 2217,
      "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2211,
-     "title": "[3/5] Add GetUnusedLibraryParts"
     }
    ],
    "issues": []
@@ -13855,14 +13609,6 @@
     {
      "number": 2222,
      "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    },
-    {
-     "number": 2216,
-     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
-    },
-    {
-     "number": 2207,
-     "title": "[2/6] Dry run for the element delete and remove commands"
     }
    ],
    "issues": []
@@ -13967,12 +13713,7 @@
    ],
    "status": "not applicable",
    "reason": "user interface",
-   "pullRequests": [
-    {
-     "number": 2181,
-     "title": "Update button in the Tapir palette, menu item shows a waiting update"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14056,12 +13797,7 @@
    ],
    "status": "not applicable",
    "reason": "user interface",
-   "pullRequests": [
-    {
-     "number": 2181,
-     "title": "Update button in the Tapir palette, menu item shows a waiting update"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14084,12 +13820,7 @@
    ],
    "status": "not applicable",
    "reason": "user interface",
-   "pullRequests": [
-    {
-     "number": 2181,
-     "title": "Update button in the Tapir palette, menu item shows a waiting update"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14863,12 +14594,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2196,
-     "title": "Add GetSchedules: list the Interactive Schedules (rows and export not in the API)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14891,12 +14617,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2196,
-     "title": "Add GetSchedules: list the Interactive Schedules (rows and export not in the API)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14942,12 +14663,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2196,
-     "title": "Add GetSchedules: list the Interactive Schedules (rows and export not in the API)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17289,10 +17005,6 @@
      "title": "[4/6] Shared dryRun: project, navigator and library deletes"
     },
     {
-     "number": 2216,
-     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -17370,10 +17082,6 @@
     {
      "number": 2222,
      "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    },
-    {
-     "number": 2216,
-     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
     }
    ],
    "issues": []
@@ -18260,14 +17968,6 @@
     {
      "number": 2222,
      "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    },
-    {
-     "number": 2216,
-     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
-    },
-    {
-     "number": 2207,
-     "title": "[2/6] Dry run for the element delete and remove commands"
     },
     {
      "number": 2148,
@@ -20994,10 +20694,6 @@
     {
      "number": 2217,
      "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2211,
-     "title": "[3/5] Add GetUnusedLibraryParts"
     },
     {
      "number": 995,
@@ -26303,26 +25999,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2236,
-     "title": "Columns, Beams and Slabs: Create takes the surfaces, cut fill pens and cover fill Modify writes (#2220 part 5)"
-    },
-    {
-     "number": 2232,
-     "title": "Drawings and Detail/Worksheet markers: write the missing settings (#2230)"
-    },
-    {
-     "number": 2231,
-     "title": "ModifySkylights, sharing its settings with CreateSkylights"
-    },
-    {
-     "number": 2228,
-     "title": "[2/6] Dimensions: ModifyAssociativeDimensions and ModifyLevelDimensions, with Create sharing their settings"
-    },
-    {
-     "number": 2227,
-     "title": "[1/6] Stairs: CreateStairs and ModifyStairs share one set of settings"
-    },
-    {
      "number": 2226,
      "title": "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"
     },
@@ -26335,24 +26011,8 @@
      "title": "[4/5] GetProjectHealth: read-only project health summary"
     },
     {
-     "number": 2216,
-     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
-    },
-    {
-     "number": 2207,
-     "title": "[2/6] Dry run for the element delete and remove commands"
-    },
-    {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2204,
-     "title": "[1/6] Shared dryRun for changing commands: base and DeleteElements"
-    },
-    {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
     },
     {
      "number": 1292,
@@ -27037,10 +26697,6 @@
     {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
     }
    ],
    "issues": []
@@ -27084,10 +26740,6 @@
     {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
     }
    ],
    "issues": []
@@ -27216,10 +26868,6 @@
     {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
     }
    ],
    "issues": []
@@ -27263,10 +26911,6 @@
     {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
     }
    ],
    "issues": []
@@ -27310,10 +26954,6 @@
     {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
     }
    ],
    "issues": []
@@ -27896,24 +27536,8 @@
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
     },
     {
-     "number": 2202,
-     "title": "[2/3] Add DistributeElements"
-    },
-    {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
-    },
-    {
      "number": 2200,
      "title": "[1/5] SplitElements: split walls, beams and lines along a line"
-    },
-    {
-     "number": 2199,
-     "title": "[1/3] Add AlignElements command"
-    },
-    {
-     "number": 2197,
-     "title": "Add CopyElements and RotateCopyElements (linear and circular arrays of copies)"
     },
     {
      "number": 1292,
@@ -30724,10 +30348,6 @@
     {
      "number": 2217,
      "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2211,
-     "title": "[3/5] Add GetUnusedLibraryParts"
     }
    ],
    "issues": []
@@ -30823,16 +30443,8 @@
      "title": "[4/5] GetProjectHealth: read-only project health summary"
     },
     {
-     "number": 2211,
-     "title": "[3/5] Add GetUnusedLibraryParts"
-    },
-    {
      "number": 2205,
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
     }
    ],
    "issues": []
@@ -32126,18 +31738,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2232,
-     "title": "Drawings and Detail/Worksheet markers: write the missing settings (#2230)"
-    },
-    {
-     "number": 2231,
-     "title": "ModifySkylights, sharing its settings with CreateSkylights"
-    },
-    {
-     "number": 2228,
-     "title": "[2/6] Dimensions: ModifyAssociativeDimensions and ModifyLevelDimensions, with Create sharing their settings"
-    },
-    {
      "number": 2222,
      "title": "[4/6] Shared dryRun: project, navigator and library deletes"
     },
@@ -32146,16 +31746,8 @@
      "title": "[4/5] GetProjectHealth: read-only project health summary"
     },
     {
-     "number": 2216,
-     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
-    },
-    {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    },
-    {
-     "number": 2211,
-     "title": "[3/5] Add GetUnusedLibraryParts"
     },
     {
      "number": 2206,
@@ -32166,24 +31758,8 @@
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
     },
     {
-     "number": 2202,
-     "title": "[2/3] Add DistributeElements"
-    },
-    {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
-    },
-    {
      "number": 2200,
      "title": "[1/5] SplitElements: split walls, beams and lines along a line"
-    },
-    {
-     "number": 2199,
-     "title": "[1/3] Add AlignElements command"
-    },
-    {
-     "number": 2197,
-     "title": "Add CopyElements and RotateCopyElements (linear and circular arrays of copies)"
     },
     {
      "number": 2148,
@@ -38738,26 +38314,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2236,
-     "title": "Columns, Beams and Slabs: Create takes the surfaces, cut fill pens and cover fill Modify writes (#2220 part 5)"
-    },
-    {
-     "number": 2232,
-     "title": "Drawings and Detail/Worksheet markers: write the missing settings (#2230)"
-    },
-    {
-     "number": 2231,
-     "title": "ModifySkylights, sharing its settings with CreateSkylights"
-    },
-    {
-     "number": 2228,
-     "title": "[2/6] Dimensions: ModifyAssociativeDimensions and ModifyLevelDimensions, with Create sharing their settings"
-    },
-    {
-     "number": 2227,
-     "title": "[1/6] Stairs: CreateStairs and ModifyStairs share one set of settings"
-    },
-    {
      "number": 2222,
      "title": "[4/6] Shared dryRun: project, navigator and library deletes"
     },
@@ -38782,24 +38338,8 @@
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
     },
     {
-     "number": 2202,
-     "title": "[2/3] Add DistributeElements"
-    },
-    {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
-    },
-    {
      "number": 2200,
      "title": "[1/5] SplitElements: split walls, beams and lines along a line"
-    },
-    {
-     "number": 2199,
-     "title": "[1/3] Add AlignElements command"
-    },
-    {
-     "number": 2197,
-     "title": "Add CopyElements and RotateCopyElements (linear and circular arrays of copies)"
     },
     {
      "number": 2148,
@@ -45594,18 +45134,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2232,
-     "title": "Drawings and Detail/Worksheet markers: write the missing settings (#2230)"
-    },
-    {
-     "number": 2231,
-     "title": "ModifySkylights, sharing its settings with CreateSkylights"
-    },
-    {
-     "number": 2228,
-     "title": "[2/6] Dimensions: ModifyAssociativeDimensions and ModifyLevelDimensions, with Create sharing their settings"
-    },
-    {
      "number": 2222,
      "title": "[4/6] Shared dryRun: project, navigator and library deletes"
     },
@@ -45614,16 +45142,8 @@
      "title": "[4/5] GetProjectHealth: read-only project health summary"
     },
     {
-     "number": 2216,
-     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
-    },
-    {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    },
-    {
-     "number": 2211,
-     "title": "[3/5] Add GetUnusedLibraryParts"
     },
     {
      "number": 2206,
@@ -45634,24 +45154,8 @@
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
     },
     {
-     "number": 2202,
-     "title": "[2/3] Add DistributeElements"
-    },
-    {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
-    },
-    {
      "number": 2200,
      "title": "[1/5] SplitElements: split walls, beams and lines along a line"
-    },
-    {
-     "number": 2199,
-     "title": "[1/3] Add AlignElements command"
-    },
-    {
-     "number": 2197,
-     "title": "Add CopyElements and RotateCopyElements (linear and circular arrays of copies)"
     },
     {
      "number": 2148,
@@ -48910,18 +48414,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2232,
-     "title": "Drawings and Detail/Worksheet markers: write the missing settings (#2230)"
-    },
-    {
-     "number": 2231,
-     "title": "ModifySkylights, sharing its settings with CreateSkylights"
-    },
-    {
-     "number": 2228,
-     "title": "[2/6] Dimensions: ModifyAssociativeDimensions and ModifyLevelDimensions, with Create sharing their settings"
-    },
-    {
      "number": 2222,
      "title": "[4/6] Shared dryRun: project, navigator and library deletes"
     },
@@ -48930,16 +48422,8 @@
      "title": "[4/5] GetProjectHealth: read-only project health summary"
     },
     {
-     "number": 2216,
-     "title": "[3/6] Shared dryRun: attribute, property and classification deletes"
-    },
-    {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    },
-    {
-     "number": 2211,
-     "title": "[3/5] Add GetUnusedLibraryParts"
     },
     {
      "number": 2206,
@@ -48950,24 +48434,8 @@
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
     },
     {
-     "number": 2202,
-     "title": "[2/3] Add DistributeElements"
-    },
-    {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
-    },
-    {
      "number": 2200,
      "title": "[1/5] SplitElements: split walls, beams and lines along a line"
-    },
-    {
-     "number": 2199,
-     "title": "[1/3] Add AlignElements command"
-    },
-    {
-     "number": 2197,
-     "title": "Add CopyElements and RotateCopyElements (linear and circular arrays of copies)"
     },
     {
      "number": 2148,
@@ -55504,16 +54972,12 @@
      "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
     },
     {
-     "number": 2201,
-     "title": "[1/5] GetUnusedAttributes: list unused attributes per type"
-    },
-    {
-     "number": 2196,
-     "title": "Add GetSchedules: list the Interactive Schedules (rows and export not in the API)"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
+    },
+    {
+     "number": 995,
+     "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
    ],
    "issues": []
@@ -56540,10 +56004,6 @@
     {
      "number": 2217,
      "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2211,
-     "title": "[3/5] Add GetUnusedLibraryParts"
     },
     {
      "number": 1292,
