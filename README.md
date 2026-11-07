@@ -83,6 +83,11 @@ The Add-On adds a **Tapir** menu to Archicad; open the palette with **Tapir > Ta
 - Choose a script and run it. Python scripts run with [uv](https://docs.astral.sh/uv/), which takes care of Python and of the packages the script needs; if uv is missing, the palette offers to install it. The script is told the port of the Archicad it was started from, so it works on that Archicad, and its output is shown in the palette. A running script can be stopped.
 - *Tapir > Manage Script Shortcuts...* puts up to six scripts on the menu commands *Tapir > Run Script Shortcut 1* to *6*, which you can give keyboard shortcuts in Archicad's Work Environment.
 
+### Update the Add-On
+
+- **From Archicad:** *Tapir > Check for Updates...*, or the *Check for Updates* button at the right end of the Tapir palette, next to the installed version. When a newer release exists for your Archicad version, the menu command reads *Update Tapir to &lt;version&gt;...* and the button *Update to &lt;version&gt;*; confirming downloads the Tapir Installer, which quits Archicad, replaces the Add-On and starts Archicad again.
+- **Without that menu command or button:** older Tapir releases have neither. Download and run the [Tapir Installer](#easy-installation-recommended) with Archicad closed: it replaces the Add-On in every Archicad version you select. Later updates can then be made from Archicad.
+
 ## What you can do
 
 - **[Command reference](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon):** every Tapir command with its parameters, its response and a Python example from [archicad-addon/Examples](archicad-addon/Examples/).
