@@ -24,6 +24,7 @@
 #include "ApplicationCommands.hpp"
 #include "ScriptUICommands.hpp"
 #include "ProjectCommands.hpp"
+#include "ProjectHealthCommands.hpp"
 #include "CustomDataCommands.hpp"
 #include "ElementCommands.hpp"
 #include "ElementChangeTrackingCommands.hpp"
@@ -489,6 +490,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetHotlinkSourceStatusCommand> (
             projectCommands, "1.8.0",
             "Tells for each hotlink source file whether it is available, missing, not accessible, incompatible or offline. Available from Archicad 27."
+        );
+        err |= RegisterCommand<GetProjectHealthCommand> (
+            projectCommands, "1.8.1",
+            "A read-only summary of what a project cleanup looks at: the number of unused attributes per type (as GetUnusedAttributes lists them, from Archicad 27), the unused library parts (as GetUnusedLibraryParts lists them), the missing library parts by name, the hotlinks whose source file is not available (from Archicad 27), the layers whose names differ only in case or surrounding spaces, and the stories that are the home story of no element. Each item has known: false with the reason when the Archicad API does not give it, never a guess; whether a hotlink is outdated (its source changed since the last update) is always known: false, because the API does not tell it. Nothing is changed."
         );
         err |= RegisterCommand<OpenProjectCommand> (
             projectCommands, "1.0.7",
@@ -1792,6 +1797,10 @@ GSErrCode Initialize (void)
             attributeCommands, "1.8.1",
             "Deletes fills, line types, surfaces or building materials and replaces each by another attribute of the same type wherever it was used, like Delete and Replace in the Attribute Manager. Every reference is rewritten to the replacement, the way ReindexAttributes rewrites them: the fields of the elements in the floor plan and in every view and layout, the parameters of library part based elements, their memo data, the tool defaults, the Favorites, the other attributes that refer to it (composites, building materials, surfaces, profiles, MEP systems) and the graphic override rules. Elements on a hidden or locked layer are changed too: their layers are shown and unlocked for the change and put back afterwards (in the current window). If an element cannot be changed (it is locked itself, or not reserved in Teamwork), everything is put back and that attribute is not deleted. Elements from hotlinked modules cannot be changed and are listed. Indices typed into GDL scripts are not found, and the frame and panel classes of curtain wall Favorites and of the Curtain Wall tool default keep the deleted attribute (named in the warnings). If a tool default, Favorite, attribute or rule cannot be rewritten to the replacement, it keeps a copy of the deleted attribute with its name and a new attribute id, named in the warnings. dryRun lists every reference without changing anything. The whole call is one undo step. Available from Archicad 27."
         );
+        err |= RegisterCommand<GetUnusedAttributesCommand> (
+            attributeCommands, "1.8.1",
+            "Lists the unused layers, fills, surfaces, building materials, composites, profiles, line types, pen tables and zone categories (index, id and name), for the given types or all of them. The Archicad API has no function that tells which attributes are unused (only how many per type), so every reference is collected: the elements of the floor plan and of every view and layout (hotlinked ones too), with their library part parameters and memo data, the tool defaults, the Favorites, the other attributes (composites, building materials, surfaces, profiles, MEP systems) and the graphic override rules, the way ReindexAttributes finds them; for layers the layer of each element, tool default and Favorite; for composites and profiles the walls, slabs, roofs, shells, column and beam segments whose structure type uses them; for pen tables the current pen table and the drawings set to a pen table of their own. An attribute that only an unused attribute refers to counts as used. Indices typed into GDL scripts and the pen tables saved with views are not found. Each type also reports Archicad's own count of the attributes in use (archicadUsedCount, see GetUsedAttributes), so a difference shows. Read only. Available from Archicad 27."
+        );
         err |= RegisterCommand<CreateLayersCommand> (
             attributeCommands, "1.0.3",
             "Creates or overwrites Layer attributes based on the given parameters."
@@ -2125,6 +2134,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetMissingLibPartNamesCommand> (
             libraryCommands, "1.8.1",
             "Gets the library part name of the given placed Object, Lamp, Window or Door elements, even if the library containing the part is not loaded. Use it to find the parts of elements that are shown as dots because their library part is missing."
+        );
+        err |= RegisterCommand<GetUnusedLibraryPartsCommand> (
+            libraryCommands, "1.8.1",
+            "Lists the loaded library parts that no element of the project is placed from. Read only. The Archicad API does not tell which library parts are used, so every element of the floor plan and of every view and layout is checked: objects, lamps, doors, windows, skylights, zone stamps, symbol labels, drawing titles, curtain wall parts, and the markers of doors, windows, skylights, sections, elevations, details and worksheets. A library part used only in another way (called as a macro, linked as a property object, as an interior elevation marker, in stairs and railings, in the tool defaults or in Favorites) is listed as unused. Library parts that cannot be placed (e.g. macros) are only listed with includeNotPlaceable."
         );
 
         err |= RegisterCommand<FindLibraryPartsCommand> (
