@@ -95,8 +95,10 @@ def request_json (url, headers, retries=5):
 
 # ---- git ----
 
-# A co-author that is a bot or an AI assistant (Claude adds itself as a co-author), by name or address.
-BOT_COAUTHOR = re.compile (r'(\[bot\]|^claude\b|^github-actions\b|^dependabot|@anthropic\.com>?$)', re.I)
+# A co-author that is a bot or an AI assistant. Claude adds itself as a co-author under several
+# names ("Claude", "Claude Opus 5.5", ...) but always with an @anthropic.com address, so it is
+# known by its address: a person whose name starts with Claude still counts.
+BOT_COAUTHOR = re.compile (r'(\[bot\]|^github-actions\b|^dependabot|@anthropic\.com>?$)', re.I)
 
 
 # A GitHub no-reply address, old (login@...) or new (id+login@...): the same account either way.
