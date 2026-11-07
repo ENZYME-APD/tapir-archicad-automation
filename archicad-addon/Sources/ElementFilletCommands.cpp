@@ -356,7 +356,7 @@ GS::UniString GetFilletCornerList (const GS::Array<Int32>& corners)
         if (i > 0) {
             list += i + 1 == corners.GetSize () ? " and " : ", ";
         }
-        list += GS::ValueToUniString (corners[i]);
+        list += GS::UniString::Printf ("%d", corners[i]);
     }
     return list;
 }
