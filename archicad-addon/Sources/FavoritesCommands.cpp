@@ -2166,6 +2166,9 @@ GS::Optional<GS::UniString> DeleteFavoritesCommand::GetInputParametersSchema () 
         "properties": {
             "favorites": {
                 "$ref": "#/Favorites"
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -2178,8 +2181,12 @@ GS::Optional<GS::UniString> DeleteFavoritesCommand::GetRawResponseSchema () cons
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input Favorite, in the order of the input. On a dry run a Favorite that exists gets wouldDelete; Archicad can still refuse to delete one that exists, for example in Teamwork one reserved by someone else."
             }
         },
         "additionalProperties": false,
@@ -2193,9 +2200,32 @@ GS::ObjectState DeleteFavoritesCommand::Execute (const GS::ObjectState& paramete
 {
     GS::Array<GS::UniString> favorites;
     parameters.Get ("favorites", favorites);
+    const bool dryRun = IsDryRun (parameters);
 
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    // A dry run (#2195) only looks the names up among the Favorites of every element type: a name
+    // that is not there gets the error ACAPI_Favorite_Delete gives for it, APIERR_BADNAME.
+    if (dryRun) {
+        GS::Array<GS::UniString> existingNames;
+#ifdef ServerMainVers_2600
+        const GSErrCode namesErr = ACAPI_Favorite_GetNum (API_ZombieElemID, nullptr, nullptr, &existingNames);
+#else
+        const GSErrCode namesErr = ACAPI_Favorite_GetNum (API_ZombieElemID, APIVarId_Generic, nullptr, nullptr, &existingNames);
+#endif
+        for (const GS::UniString& favoriteName : favorites) {
+            if (namesErr != NoError) {
+                executionResults (CreateFailedExecutionResult (namesErr, "Failed to retrieve the Favorites."));
+            } else if (!existingNames.Contains (favoriteName)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADNAME, "Failed to delete favorite"));
+            } else {
+                executionResults (CreateDryRunExecutionResult ("wouldDelete"));
+            }
+        }
+        return response;
+    }
 
     ACAPI_CallUndoableCommand ("DeleteFavorites", [&]() -> GSErrCode {
         for (const GS::UniString& favoriteName : favorites) {
@@ -2648,6 +2678,9 @@ GS::Optional<GS::UniString> DeleteFavoritesWithManagerCommand::GetInputParameter
                         "name"
                     ]
                 }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -2662,8 +2695,12 @@ GS::Optional<GS::UniString> DeleteFavoritesWithManagerCommand::GetRawResponseSch
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input Favorite, in the order of the input. On a dry run a Favorite that is found as a real run finds it gets wouldDelete; Archicad can still refuse to delete it."
             }
         },
         "additionalProperties": false,
@@ -2678,12 +2715,13 @@ GS::ObjectState DeleteFavoritesWithManagerCommand::Execute (const GS::ObjectStat
 #ifdef ServerMainVers_2900
     GS::Array<GS::ObjectState> favorites;
     parameters.Get ("favorites", favorites);
+    const bool dryRun = IsDryRun (parameters);
 
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
-    // One undoable command for the whole call, as DeleteFavorites does.
-    ACAPI_CallUndoableCommand ("DeleteFavoritesWithManager", [&]() -> GSErrCode {
+    const auto deleteFavorites = [&]() -> GSErrCode {
         const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
         for (const GS::ObjectState& item : favorites) {
             GS::UniString name;
@@ -2703,6 +2741,11 @@ GS::ObjectState DeleteFavoritesWithManagerCommand::Execute (const GS::ObjectStat
                 continue;
             }
 
+            if (dryRun) {
+                executionResults (CreateDryRunExecutionResult ("wouldDelete"));
+                continue;
+            }
+
             const auto deleteResult = manager.DeleteFavorite (*favorite);
             if (deleteResult.IsErr ()) {
                 executionResults (CreateFailedExecutionResult (deleteResult.UnwrapErr ().kind, GS::UniString::Printf ("Failed to delete the Favorite '%T'.", name.ToPrintf ())));
@@ -2713,7 +2756,16 @@ GS::ObjectState DeleteFavoritesWithManagerCommand::Execute (const GS::ObjectStat
         }
 
         return NoError;
-    });
+    };
+
+    // One undoable command for the whole call, as DeleteFavorites does. A dry run (#2195) finds the
+    // Favorites the same way outside any command scope, as the commands that read Favorites do,
+    // so nothing can be changed and no undo step is made.
+    if (dryRun) {
+        deleteFavorites ();
+    } else {
+        ACAPI_CallUndoableCommand ("DeleteFavoritesWithManager", deleteFavorites);
+    }
 
     return response;
 #else
@@ -2975,6 +3027,9 @@ GS::Optional<GS::UniString> DeleteFavoriteFolderCommand::GetInputParametersSchem
             "recursive": {
                 "type": "boolean",
                 "description": "Archicad deletes a folder together with everything in it: its Favorites and its subfolders with their Favorites. A folder that is not empty is deleted only if this is true. Default: false."
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -2989,8 +3044,17 @@ GS::Optional<GS::UniString> DeleteFavoriteFolderCommand::GetRawResponseSchema ()
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
+            "wouldDelete": {
+                "type": "boolean",
+                "description": "Present, and true, only on a dry run: the folder passed every check and a real run would delete it with its content. Archicad can still refuse to delete it.",
+                "enum": [ true ]
+            },
             "deletedFolder": {
-                "$ref": "#/FavoriteFolderDetails"
+                "$ref": "#/FavoriteFolderDetails",
+                "description": "The deleted folder with its content, read before deleting it; on a dry run the folder a real run would delete."
             }
         },
         "additionalProperties": false,
@@ -3007,14 +3071,15 @@ GS::ObjectState DeleteFavoriteFolderCommand::Execute (const GS::ObjectState& par
     bool recursive = false;
     parameters.Get ("path", path);
     parameters.Get ("recursive", recursive);
+    const bool dryRun = IsDryRun (parameters);
     if (path.IsEmpty ()) {
         return CreateErrorResponse (APIERR_BADPARS, "The root folder of the Favorites cannot be deleted.");
     }
 
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     GS::UniString errorMessage = "Failed to delete the Favorite folder.";
-    // The Favorite folder functions need a NotUndoable command scope.
-    const GSErrCode err = ACAPI_CallCommand ("DeleteFavoriteFolder", [&]() -> GSErrCode {
+    const auto deleteFolder = [&]() -> GSErrCode {
         const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
         std::optional<ACAPI::Favorite::FavoriteFolder> folder;
         const GSErrCode findErr = FindFavoriteFolderOfPath (manager, path, folder, errorMessage);
@@ -3036,6 +3101,12 @@ GS::ObjectState DeleteFavoriteFolderCommand::Execute (const GS::ObjectState& par
             return readErr;
         }
 
+        if (dryRun) {
+            response.Add ("wouldDelete", true);
+            response.Add ("deletedFolder", deletedFolderOs);
+            return NoError;
+        }
+
         const auto deleteResult = manager.DeleteFavoriteFolder (*folder);
         if (deleteResult.IsErr ()) {
             errorMessage = "Failed to delete the Favorite folder.";
@@ -3044,7 +3115,12 @@ GS::ObjectState DeleteFavoriteFolderCommand::Execute (const GS::ObjectState& par
 
         response.Add ("deletedFolder", deletedFolderOs);
         return NoError;
-    });
+    };
+
+    // The Favorite folder functions need a NotUndoable command scope. A dry run (#2195) only
+    // finds and reads the folder, which GetFavoriteFolders does outside any command scope too,
+    // so it makes the same checks without one and nothing can be changed.
+    const GSErrCode err = dryRun ? deleteFolder () : ACAPI_CallCommand ("DeleteFavoriteFolder", deleteFolder);
 
     if (err != NoError) {
         return CreateErrorResponse (err, errorMessage);

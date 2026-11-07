@@ -829,6 +829,9 @@ GS::Optional<GS::UniString> DeleteKeynoteFoldersCommand::GetInputParametersSchem
                 "items": {
                     "$ref": "#/KeynoteFolderIdArrayItem"
                 }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -840,7 +843,22 @@ GS::Optional<GS::UniString> DeleteKeynoteFoldersCommand::GetInputParametersSchem
 
 GS::Optional<GS::UniString> DeleteKeynoteFoldersCommand::GetRawResponseSchema () const
 {
-    return ModifyKeynoteFoldersCommand ().GetRawResponseSchema ();
+    return R"({
+        "type": "object",
+        "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
+            "executionResults": {
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input keynote folder, in the order of the input. On a dry run a folder that exists and is not the root folder gets wouldDelete; Archicad can still refuse to delete it, for example one deleted earlier in the same call with its parent folder."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
 }
 
 GS::ObjectState DeleteKeynoteFoldersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -861,10 +879,13 @@ GS::ObjectState DeleteKeynoteFoldersCommand::Execute (const GS::ObjectState& par
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'keynoteFolderIds' parameter.");
     }
 
+    const bool dryRun = IsDryRun (parameters);
+
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
-    ACAPI_CallUndoableCommand ("Delete Keynote Folders", [&]() -> GSErrCode {
+    const auto deleteFolders = [&]() -> GSErrCode {
         for (const GS::ObjectState& keynoteFolderId : keynoteFolderIds) {
             const API_Guid folderId = GetGuidFromArrayItem ("keynoteFolderId", keynoteFolderId);
 
@@ -885,13 +906,26 @@ GS::ObjectState DeleteKeynoteFoldersCommand::Execute (const GS::ObjectState& par
                 continue;
             }
 
+            if (dryRun) {
+                executionResults (CreateDryRunExecutionResult ("wouldDelete"));
+                continue;
+            }
+
             ACAPI::Result<void> result = parentFolder->RemoveSubFolder (folder->GetKey (), folder->GetTitle ());
             executionResults (result.IsOk ()
                 ? CreateSuccessfulExecutionResult ()
                 : CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to delete the keynote folder."));
         }
         return NoError;
-    });
+    };
+
+    // A dry run (#2195) makes the same checks outside an undoable command, so nothing can be
+    // written and no undo step is made.
+    if (dryRun) {
+        deleteFolders ();
+    } else {
+        ACAPI_CallUndoableCommand ("Delete Keynote Folders", deleteFolders);
+    }
 
     return response;
 #else
@@ -921,6 +955,9 @@ GS::Optional<GS::UniString> DeleteKeynoteItemsCommand::GetInputParametersSchema 
                 "items": {
                     "$ref": "#/KeynoteItemIdArrayItem"
                 }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -932,7 +969,22 @@ GS::Optional<GS::UniString> DeleteKeynoteItemsCommand::GetInputParametersSchema 
 
 GS::Optional<GS::UniString> DeleteKeynoteItemsCommand::GetRawResponseSchema () const
 {
-    return ModifyKeynoteFoldersCommand ().GetRawResponseSchema ();
+    return R"({
+        "type": "object",
+        "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
+            "executionResults": {
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input keynote item, in the order of the input. On a dry run an item that exists gets wouldDelete; Archicad can still refuse to delete it."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
 }
 
 GS::ObjectState DeleteKeynoteItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -953,14 +1005,22 @@ GS::ObjectState DeleteKeynoteItemsCommand::Execute (const GS::ObjectState& param
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'keynoteItemIds' parameter.");
     }
 
+    const bool dryRun = IsDryRun (parameters);
+
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
-    ACAPI_CallUndoableCommand ("Delete Keynote Items", [&]() -> GSErrCode {
+    const auto deleteItems = [&]() -> GSErrCode {
         for (const GS::ObjectState& keynoteItemId : keynoteItemIds) {
             std::optional<std::pair<KeynoteFolder, KeynoteItem>> found = FindKeynoteItemById (rootFolder.Unwrap (), GetGuidFromArrayItem ("keynoteItemId", keynoteItemId));
             if (!found.has_value ()) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Failed to find the keynote item."));
+                continue;
+            }
+
+            if (dryRun) {
+                executionResults (CreateDryRunExecutionResult ("wouldDelete"));
                 continue;
             }
 
@@ -970,7 +1030,15 @@ GS::ObjectState DeleteKeynoteItemsCommand::Execute (const GS::ObjectState& param
                 : CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to delete the keynote item."));
         }
         return NoError;
-    });
+    };
+
+    // A dry run (#2195) makes the same checks outside an undoable command, so nothing can be
+    // written and no undo step is made.
+    if (dryRun) {
+        deleteItems ();
+    } else {
+        ACAPI_CallUndoableCommand ("Delete Keynote Items", deleteItems);
+    }
 
     return response;
 #else

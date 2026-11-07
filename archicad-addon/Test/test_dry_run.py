@@ -49,15 +49,26 @@ DRY_RUN_COMMANDS = {
     'RemovePropertyFromAttributes',
     'DeleteClassificationSystems',
     'DeleteClassificationItems',
+    # Part 4: project, navigator and library deletes
+    'DeleteNavigatorItems',
+    'DeleteEmbeddedLibraryItems',
+    'DeleteProjectInfoFields',
+    'DeleteProjectInfoGroups',
+    'BreakHotlinkNodes',
+    'DeleteHotlinkNodes',
+    'DeleteFavorites',
+    'DeleteFavoriteFolder',
+    'DeleteFavoritesWithManager',
+    'DeleteKeynoteFolders',
+    'DeleteKeynoteItems',
 }
 
 # The commands of DRY_RUN_COMMANDS that answer one execution result per target in executionResults.
-PER_TARGET_DRY_RUN_COMMANDS = DRY_RUN_COMMANDS - {'DeleteSelectedElements', 'DeleteIssue', 'RemovePropertyFromAttributes', 'DeleteAndReplaceAttributes'}
+PER_TARGET_DRY_RUN_COMMANDS = DRY_RUN_COMMANDS - {'DeleteSelectedElements', 'DeleteIssue', 'RemovePropertyFromAttributes', 'DeleteAndReplaceAttributes', 'DeleteFavoriteFolder'}
 
 # The commands that had a dryRun input of their own before #2195. The ones that delete or change
 # move onto the shared option (and into DRY_RUN_COMMANDS) in the later parts of #2195.
 COMMANDS_WITH_OWN_DRY_RUN = {
-    'DeleteNavigatorItems',
     'ImportAttributesFromProject',
     'ReindexAttributes',
     'ReindexLayers',
@@ -263,6 +274,18 @@ class DryRunTest (unittest.TestCase):
         attributes = [{'attributeId': {'guid': GUID}, 'replacementAttributeId': {'guid': GUID}}]
         self.assertTrue (self.validator.IsValid ({'attributeType': 'Fill', 'attributes': attributes, 'dryRun': True}, inputSchema))
         self.assertFalse (self.validator.IsValid ({'attributeType': 'Fill', 'attributes': attributes, 'dryRun': 'yes'}, inputSchema))
+
+    def test_delete_favorite_folder_responses (self):
+        outputSchema = self.commands['DeleteFavoriteFolder']['output']
+        folder = {'name': 'Walls', 'path': ['Walls'], 'favorites': ['Wall 1'], 'subFolders': []}
+        self.assertTrue (self.validator.IsValid ({'deletedFolder': folder}, outputSchema))
+        self.assertTrue (self.validator.IsValid ({'dryRun': True, 'wouldDelete': True, 'deletedFolder': folder}, outputSchema))
+        self.assertFalse (self.validator.IsValid ({'dryRun': False, 'deletedFolder': folder}, outputSchema))
+        self.assertFalse (self.validator.IsValid ({'dryRun': True, 'wouldDelete': False, 'deletedFolder': folder}, outputSchema))
+        self.assertFalse (self.validator.IsValid ({'dryRun': True, 'wouldDelete': True}, outputSchema))
+        inputSchema = self.commands['DeleteFavoriteFolder']['input']
+        self.assertTrue (self.validator.IsValid ({'path': ['Walls'], 'recursive': True, 'dryRun': True}, inputSchema))
+        self.assertFalse (self.validator.IsValid ({'path': ['Walls'], 'dryRun': 'yes'}, inputSchema))
 
 
 if __name__ == '__main__':

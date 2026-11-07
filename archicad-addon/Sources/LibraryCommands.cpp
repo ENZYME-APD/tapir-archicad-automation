@@ -537,6 +537,9 @@ GS::Optional<GS::UniString> DeleteEmbeddedLibraryItemsCommand::GetInputParameter
                         "path"
                     ]
                 }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -551,8 +554,12 @@ GS::Optional<GS::UniString> DeleteEmbeddedLibraryItemsCommand::GetRawResponseSch
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input item, in the order of the input. On a dry run an item that is in the embedded library gets wouldDelete; Archicad can still refuse to delete it."
             }
         },
         "additionalProperties": false,
@@ -573,7 +580,10 @@ GS::ObjectState DeleteEmbeddedLibraryItemsCommand::Execute (const GS::ObjectStat
         return CreateErrorResponse (APIERR_GENERAL, "Failed to get embedded library folder.");
     }
 
+    const bool dryRun = IsDryRun (parameters);
+
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
     GS::Array<GS::ObjectState> items;
@@ -619,6 +629,12 @@ GS::ObjectState DeleteEmbeddedLibraryItemsCommand::Execute (const GS::ObjectStat
 
         if (!ItemExists (itemLocation)) {
             results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No item at the given path in the embedded library."));
+            continue;
+        }
+
+        // A dry run (#2195) stops after these checks: an item that exists would be deleted.
+        if (dryRun) {
+            results.Push (CreateDryRunExecutionResult ("wouldDelete"));
             continue;
         }
 

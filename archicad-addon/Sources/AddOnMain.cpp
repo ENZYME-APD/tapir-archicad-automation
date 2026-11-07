@@ -384,7 +384,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteProjectInfoFieldsCommand> (
             projectCommands, "1.5.4",
-            "Deletes one or more custom project info fields, by their autotext keys or, from Archicad 30, by the ids of the fields of the Project Info groups. Hardcoded fields cannot be deleted."
+            "Deletes one or more custom project info fields, by their autotext keys or, from Archicad 30, by the ids of the fields of the Project Info groups. Hardcoded fields cannot be deleted. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each field that is found gets wouldDelete."
         );
         err |= RegisterCommand<RenameProjectInfoFieldsCommand> (
             projectCommands, "1.8.1",
@@ -408,7 +408,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteProjectInfoGroupsCommand> (
             projectCommands, "1.8.0",
-            "Deletes Project Info groups. A group that contains fixed (built-in) fields cannot be deleted. Available from Archicad 30."
+            "Deletes Project Info groups. A group that contains fixed (built-in) fields cannot be deleted. Available from Archicad 30. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each group that exists gets wouldDelete."
         );
         err |= RegisterCommand<MoveProjectInfoGroupsCommand> (
             projectCommands, "1.8.0",
@@ -472,11 +472,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<BreakHotlinkNodesCommand> (
             projectCommands, "1.8.0",
-            "Breaks hotlink nodes, as the Hotlink Manager's Break Hotlink does: the elements of each node's placed instances stay in the project as ordinary elements, no longer tied to the source file."
+            "Breaks hotlink nodes, as the Hotlink Manager's Break Hotlink does: the elements of each node's placed instances stay in the project as ordinary elements, no longer tied to the source file. With dryRun true nothing is broken and no undo step is created: the response has dryRun set to true, and each hotlink node that exists gets wouldDelete."
         );
         err |= RegisterCommand<DeleteHotlinkNodesCommand> (
             projectCommands, "1.8.0",
-            "Deletes hotlink nodes together with their placed instances, as the Hotlink Manager's Delete does."
+            "Deletes hotlink nodes together with their placed instances, as the Hotlink Manager's Delete does. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each hotlink node that exists gets wouldDelete."
         );
         err |= RegisterCommand<GetHotlinkOwnersOfElementsCommand> (
             projectCommands, "1.8.0",
@@ -1439,7 +1439,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteFavoritesCommand> (
             favoritesCommands, "1.5.4",
-            "Delete existing favorites."
+            "Delete existing favorites. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each favorite that exists gets wouldDelete."
         );
         err |= RegisterCommand<GetFavoriteFoldersCommand> (
             favoritesCommands, "1.8.0",
@@ -1466,7 +1466,8 @@ GSErrCode Initialize (void)
             favoritesCommands, "1.8.0",
             "Deletes a folder of the Favorites palette given by its path. Archicad deletes the folder's Favorites and subfolders with it, "
             "so a folder that is not empty is deleted only if recursive is true. The root folder cannot be deleted. "
-            "Returns the deleted folder. Available from Archicad 29."
+            "Returns the deleted folder. Available from Archicad 29. With dryRun true nothing is deleted: the response has dryRun "
+            "and wouldDelete set to true and the folder a real run would delete, or the error a real run would give."
         );
         err |= RegisterCommand<GetFavoriteSettingsCommand> (
             favoritesCommands, "1.7.3",
@@ -1506,7 +1507,8 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<DeleteFavoritesWithManagerCommand> (
             favoritesCommands, "1.8.1",
             "Deletes the given Favorites through the Favorite manager, each found by name, optionally only in the given folder. "
-            "One execution result for each. Available from Archicad 29."
+            "One execution result for each. Available from Archicad 29. With dryRun true nothing is deleted and no undo step "
+            "is created: the response has dryRun set to true, and each Favorite that is found gets wouldDelete."
         );
         err |= RegisterCommand<MoveFavoritesCommand> (
             favoritesCommands, "1.8.0",
@@ -2072,7 +2074,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteEmbeddedLibraryItemsCommand> (
             libraryCommands, "1.6.0",
-            "Deletes the given items from the embedded library. The path of an item is the same relative path that AddFilesToEmbeddedLibrary takes as outputPath. Available from Archicad 27."
+            "Deletes the given items from the embedded library. The path of an item is the same relative path that AddFilesToEmbeddedLibrary takes as outputPath. Available from Archicad 27. With dryRun true nothing is deleted: the response has dryRun set to true, and each item that is in the embedded library gets wouldDelete."
         );
         err |= RegisterCommand<CreateLibraryPartsCommand> (
             libraryCommands, "1.8.0",
@@ -2637,7 +2639,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteNavigatorItemsCommand> (
             navigatorCommands, "1.1.7",
-            "Deletes navigator items from the navigator tree: views and folders of the View Map, layouts and master layouts of the Layout Book, and independent worksheets and details of the Project Map. Layout subsets, View Map folders that are not empty, the other Project Map items and marker-linked worksheets and details cannot be deleted; the failed execution result says which case applies. An item that Archicad refuses to delete (in a Teamwork project: it is not reserved or the user has no right to delete it) is reported as a failed execution result. dryRun reports the result of the checks made before deleting (item not found, layout subset, View Map folder that is not empty) without deleting anything."
+            "Deletes navigator items from the navigator tree: views and folders of the View Map, layouts and master layouts of the Layout Book, and independent worksheets and details of the Project Map. Layout subsets, View Map folders that are not empty, the other Project Map items and marker-linked worksheets and details cannot be deleted; the failed execution result says which case applies. An item that Archicad refuses to delete (in a Teamwork project: it is not reserved or the user has no right to delete it) is reported as a failed execution result. With dryRun true nothing is deleted: the response has dryRun set to true, and each item that passes the checks made before deleting (item not found, layout subset, View Map folder that is not empty) gets wouldDelete."
         );
         err |= RegisterCommand<GetNavigatorItemTreeCommand> (
             navigatorCommands, "1.1.7",
@@ -2930,11 +2932,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<DeleteKeynoteFoldersCommand> (
             keynoteCommands, "1.5.6",
-            "Deletes the given keynote folders including their content. Available from Archicad 28."
+            "Deletes the given keynote folders including their content. Available from Archicad 28. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each folder that exists and is not the root folder gets wouldDelete."
         );
         err |= RegisterCommand<DeleteKeynoteItemsCommand> (
             keynoteCommands, "1.5.6",
-            "Deletes the given keynote items. Available from Archicad 28."
+            "Deletes the given keynote items. Available from Archicad 28. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each item that exists gets wouldDelete."
         );
         err |= RegisterCommand<CreateKeynoteLabelsCommand> (
             keynoteCommands, "1.5.6",

@@ -790,21 +790,33 @@ static GSErrCode GetFirstProjectInfoGroup (API_Guid& groupGuid)
     return NoError;
 }
 
-static GS::ObjectState DeleteProjectInfoField (const API_Guid& fieldGuid)
+// On a dry run (#2195) the field is only looked up: a field that does not exist gets the error a
+// real run gets, any other gets wouldDelete. Whether it is a fixed (built-in) field, which Archicad
+// refuses to delete, cannot be read through the API, so a dry run cannot tell.
+static GS::ObjectState DeleteProjectInfoField (const API_Guid& fieldGuid, bool dryRun)
 {
-    const GSErrCode err = ACAPI_ProjectInfo_DeleteField (fieldGuid);
+    GSErrCode err = NoError;
+    if (dryRun) {
+        GS::UniString name;
+        GS::UniString value;
+        err = ACAPI_ProjectInfo_GetField (fieldGuid, name, value);
+    } else {
+        err = ACAPI_ProjectInfo_DeleteField (fieldGuid);
+    }
     if (err != NoError) {
         return CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to delete the project info field",
             "the field is a fixed (built-in) field and cannot be deleted"));
     }
-    return CreateSuccessfulExecutionResult ();
+    return dryRun ? CreateDryRunExecutionResult ("wouldDelete") : CreateSuccessfulExecutionResult ();
 }
 
 // The shared body of the commands that change a list of Project Info groups or fields one by one,
 // in one undo step named after the command: reads the list, checks the id of each item and passes
-// the item with its guid to applyItem, which returns the execution result of the item.
+// the item with its guid to applyItem, which returns the execution result of the item. On a dry
+// run (dryRun, see IsDryRun) applyItem is called outside any undoable command, so it must only make
+// its checks, and the response gets "dryRun": true.
 template <typename ApplyItemFunc>
-static GS::ObjectState ApplyToProjectInfoItems (const GS::ObjectState& parameters, const char* commandName, const char* listName, const char* idName, const ApplyItemFunc& applyItem)
+static GS::ObjectState ApplyToProjectInfoItems (const GS::ObjectState& parameters, const char* commandName, const char* listName, const char* idName, const ApplyItemFunc& applyItem, bool dryRun = false)
 {
     GS::Array<GS::ObjectState> items;
     if (!parameters.Get (listName, items) || items.IsEmpty ()) {
@@ -812,9 +824,10 @@ static GS::ObjectState ApplyToProjectInfoItems (const GS::ObjectState& parameter
     }
 
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
-    ACAPI_CallUndoableCommand (commandName, [&]() -> GSErrCode {
+    const auto forEachItem = [&]() -> GSErrCode {
         for (const GS::ObjectState& item : items) {
             const API_Guid guid = GetGuidFromArrayItem (idName, item);
             if (guid == APINULLGuid) {
@@ -825,7 +838,13 @@ static GS::ObjectState ApplyToProjectInfoItems (const GS::ObjectState& parameter
             executionResults (applyItem (item, guid));
         }
         return NoError;
-    });
+    };
+
+    if (dryRun) {
+        forEachItem ();
+    } else {
+        ACAPI_CallUndoableCommand (commandName, forEachItem);
+    }
 
     return response;
 }
@@ -1305,6 +1324,9 @@ GS::Optional<GS::UniString> DeleteProjectInfoFieldsCommand::GetInputParametersSc
                 "items": {
                     "$ref": "#/ProjectInfoFieldIdArrayItem"
                 }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false
@@ -1316,8 +1338,12 @@ GS::Optional<GS::UniString> DeleteProjectInfoFieldsCommand::GetRawResponseSchema
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each id of projectInfoIds, then one for each of projectInfoFieldIds. On a dry run a field that is found gets wouldDelete; Archicad can still refuse to delete it, for example a fixed (built-in) field on Archicad 30."
             }
         },
         "additionalProperties": false,
@@ -1337,10 +1363,13 @@ GS::ObjectState DeleteProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
         return CreateErrorResponse (APIERR_BADPARS, "projectInfoIds and projectInfoFieldIds are both missing or empty.");
     }
 
+    const bool dryRun = IsDryRun (parameters);
+
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
-    ACAPI_CallUndoableCommand ("DeleteProjectInfoFields", [&]() -> GSErrCode {
+    const auto deleteFields = [&]() -> GSErrCode {
 #ifdef ServerMainVers_3000
         // The autotext keys are matched to the fields of the Project Info API by name (see
         // FindProjectInfoAutoTextKey); the list is fetched once, before the first deletion.
@@ -1382,7 +1411,7 @@ GS::ObjectState DeleteProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
                 continue;
             }
 
-            executionResults (DeleteProjectInfoField (fieldGuid.Get ()));
+            executionResults (DeleteProjectInfoField (fieldGuid.Get (), dryRun));
 #else
             if (!projectInfoId.BeginsWith ("autotext-")) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADPARS,
@@ -1399,6 +1428,11 @@ GS::ObjectState DeleteProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
             // nothing (#667), so a missing field must be caught before the call.
             if (!existingIds.Contains (projectInfoId)) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADID, "No project info field found with this id."));
+                continue;
+            }
+
+            if (dryRun) {
+                executionResults (CreateDryRunExecutionResult ("wouldDelete"));
                 continue;
             }
 
@@ -1428,7 +1462,7 @@ GS::ObjectState DeleteProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
                 continue;
             }
 
-            executionResults (DeleteProjectInfoField (fieldGuid));
+            executionResults (DeleteProjectInfoField (fieldGuid, dryRun));
 #else
             (void) projectInfoFieldId; // suppress unused variable warning
             executionResults (CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "projectInfoFieldIds requires Archicad 30 or newer."));
@@ -1436,7 +1470,15 @@ GS::ObjectState DeleteProjectInfoFieldsCommand::Execute (const GS::ObjectState& 
         }
 
         return NoError;
-    });
+    };
+
+    // A dry run makes the same checks outside an undoable command, so nothing can be written and
+    // no undo step is made.
+    if (dryRun) {
+        deleteFields ();
+    } else {
+        ACAPI_CallUndoableCommand ("DeleteProjectInfoFields", deleteFields);
+    }
 
     return response;
 }
@@ -1942,6 +1984,9 @@ GS::Optional<GS::UniString> DeleteProjectInfoGroupsCommand::GetInputParametersSc
                     "$ref": "#/ProjectInfoGroupIdArrayItem"
                 },
                 "minItems": 1
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -1956,8 +2001,12 @@ GS::Optional<GS::UniString> DeleteProjectInfoGroupsCommand::GetRawResponseSchema
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input group, in the order of the input. On a dry run a group that exists gets wouldDelete; Archicad can still refuse to delete it, for example a group that contains fixed (built-in) fields."
             }
         },
         "additionalProperties": false,
@@ -1970,16 +2019,25 @@ GS::Optional<GS::UniString> DeleteProjectInfoGroupsCommand::GetRawResponseSchema
 GS::ObjectState DeleteProjectInfoGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_3000
+    const bool dryRun = IsDryRun (parameters);
     return ApplyToProjectInfoItems (parameters, "DeleteProjectInfoGroups", "projectInfoGroups", "projectInfoGroupId",
-        [] (const GS::ObjectState& /*projectInfoGroup*/, const API_Guid& groupGuid) -> GS::ObjectState {
-            const GSErrCode err = ACAPI_ProjectInfo_DeleteGroup (groupGuid);
+        [dryRun] (const GS::ObjectState& /*projectInfoGroup*/, const API_Guid& groupGuid) -> GS::ObjectState {
+            // A dry run only looks the group up: whether it holds fixed (built-in) fields, which
+            // Archicad refuses to delete, cannot be read through the API.
+            GSErrCode err = NoError;
+            if (dryRun) {
+                GS::UniString name;
+                err = ACAPI_ProjectInfo_GetGroupName (groupGuid, name);
+            } else {
+                err = ACAPI_ProjectInfo_DeleteGroup (groupGuid);
+            }
             if (err != NoError) {
                 return CreateFailedExecutionResult (CreateProjectInfoErrorResponse (err, "Failed to delete the Project Info group",
                     "the group contains fixed (built-in) fields and cannot be deleted"));
             }
 
-            return CreateSuccessfulExecutionResult ();
-        });
+            return dryRun ? CreateDryRunExecutionResult ("wouldDelete") : CreateSuccessfulExecutionResult ();
+        }, dryRun);
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 30 or newer.");
@@ -7530,6 +7588,9 @@ static GS::Optional<GS::UniString> GetHotlinkNodesInputSchema (const GS::UniStri
                         "hotlinkNodeId"
                     ]
                 }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -7539,16 +7600,41 @@ static GS::Optional<GS::UniString> GetHotlinkNodesInputSchema (const GS::UniStri
     })";
 }
 
+static GS::Optional<GS::UniString> GetHotlinkNodesResponseSchema (const GS::UniString& description)
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
+            "executionResults": {
+                "$ref": "#/DeletionExecutionResults",
+                "description": ")" + description + R"("
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+// On a dry run (#2195) each node is only read, outside any undoable command: a node that exists
+// gets wouldDelete, as its node is removed from the project by both. A real run can still fail for
+// a node that passes, for example a node removed earlier in the same call with its parent node.
 static GS::ObjectState RemoveHotlinkNodes (const GS::ObjectState& parameters, HotlinkNodeRemoval removal)
 {
     GS::Array<GS::ObjectState> hotlinkNodes;
     parameters.Get ("hotlinkNodes", hotlinkNodes);
+    const bool dryRun = IsDryRun (parameters);
 
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
     const bool isDelete = removal == HotlinkNodeRemoval::Delete;
-    ACAPI_CallUndoableCommand (isDelete ? "Delete Hotlink Nodes" : "Break Hotlink Nodes", [&] () -> GSErrCode {
+    const auto removeNodes = [&] () -> GSErrCode {
         for (const GS::ObjectState& nodeData : hotlinkNodes) {
             const GS::ObjectState* hotlinkNodeId = nodeData.Get ("hotlinkNodeId");
             if (hotlinkNodeId == nullptr) {
@@ -7568,6 +7654,11 @@ static GS::ObjectState RemoveHotlinkNodes (const GS::ObjectState& parameters, Ho
             }
             const GS::UniString name (node.name);
 
+            if (dryRun) {
+                executionResults (CreateDryRunExecutionResult ("wouldDelete"));
+                continue;
+            }
+
             const GSErrCode err = isDelete
                 ? ACAPI_Hotlink_DeleteHotlinkNode (&node.guid)
                 : ACAPI_Hotlink_BreakHotlinkNode (&node.guid);
@@ -7578,7 +7669,13 @@ static GS::ObjectState RemoveHotlinkNodes (const GS::ObjectState& parameters, Ho
             executionResults (CreateSuccessfulExecutionResult ());
         }
         return NoError;
-    });
+    };
+
+    if (dryRun) {
+        removeNodes ();
+    } else {
+        ACAPI_CallUndoableCommand (isDelete ? "Delete Hotlink Nodes" : "Break Hotlink Nodes", removeNodes);
+    }
 
     return response;
 }
@@ -7601,18 +7698,8 @@ GS::Optional<GS::UniString> BreakHotlinkNodesCommand::GetInputParametersSchema (
 
 GS::Optional<GS::UniString> BreakHotlinkNodesCommand::GetRawResponseSchema () const
 {
-    return R"({
-        "type": "object",
-        "properties": {
-            "executionResults": {
-                "$ref": "#/ExecutionResults"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "executionResults"
-        ]
-    })";
+    return GetHotlinkNodesResponseSchema (
+        "One result for each input hotlink node, in the order of the input. On a dry run a hotlink node that exists gets wouldDelete: a real run would break it, which removes the node and keeps its elements. Archicad can still refuse a node that exists, for example one broken earlier in the same call with its parent node.");
 }
 
 GS::ObjectState BreakHotlinkNodesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -7638,18 +7725,8 @@ GS::Optional<GS::UniString> DeleteHotlinkNodesCommand::GetInputParametersSchema 
 
 GS::Optional<GS::UniString> DeleteHotlinkNodesCommand::GetRawResponseSchema () const
 {
-    return R"({
-        "type": "object",
-        "properties": {
-            "executionResults": {
-                "$ref": "#/ExecutionResults"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "executionResults"
-        ]
-    })";
+    return GetHotlinkNodesResponseSchema (
+        "One result for each input hotlink node, in the order of the input. On a dry run a hotlink node that exists gets wouldDelete: a real run would delete it with its placed instances and their elements. Archicad can still refuse a node that exists, for example one deleted earlier in the same call with its parent node.");
 }
 
 GS::ObjectState DeleteHotlinkNodesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
