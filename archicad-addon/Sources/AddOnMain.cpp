@@ -29,6 +29,7 @@
 #include "ElementChangeTrackingCommands.hpp"
 #include "ProjectEventHandler.hpp"
 #include "ElementCategoryCommands.hpp"
+#include "ElementFilletCommands.hpp"
 #include "ElementGDLParameterCommands.hpp"
 #include "ElementURLReferenceCommands.hpp"
 #include "ElementCreationCommands.hpp"
@@ -928,6 +929,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<MirrorElementsCommand> (
             elementCommands, "1.7.3",
             "Mirrors elements across an axis given by two points on the floor plan, optionally as a copy. An element that cannot be edited (its layer is hidden or locked, it is locked, or it is not available in teamwork) gets a failed execution result naming the reason instead of being skipped silently."
+        );
+        err |= RegisterCommand<FilletElementsCommand> (
+            elementCommands, "1.8.1",
+            "Rounds (fillet) or cuts off (chamfer) the corners of slabs, manual zones, meshes without level lines, fills and single contour polylines, like Archicad's Fillet/Chamfer: each corner is replaced by an arc of the given radius, or by a straight edge between the points where that arc would touch the edges. Every corner whose two edges are straight and not in line is changed, or only the given corners (numbered over the points of the outline, then of each hole). The element's own polygon is changed, so it keeps every setting, its layer, classifications and properties; slab edges keep their trim and side surface (the new edge takes those of the edge before the corner), mesh points get their height from the edge they lie on. A radius too large for an edge, or a type that is not supported, fails the element with a message. One undo step."
         );
         err |= RegisterCommand<DeleteElementsCommand> (
             elementCommands, "1.2.1",
