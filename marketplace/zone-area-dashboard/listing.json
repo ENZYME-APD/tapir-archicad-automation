@@ -1,0 +1,18 @@
+{
+    "slug": "zone-area-dashboard",
+    "name": "Zone Area Dashboard",
+    "summary": "Shows zone areas grouped by name, number, category, story, property or classification, highlights groups in Archicad and exports to Excel or CSV.",
+    "category": "zones-areas",
+    "tags": ["zones", "areas", "dashboard", "highlight", "excel", "csv"],
+    "author": { "name": "Tapir" },
+    "license": "MIT",
+    "entry": "ZoneAreaDashboard.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "First version: summary cards, a grouped table, highlight and colour by parameter in Archicad, Excel and CSV export."
+        }
+    ]
+}
