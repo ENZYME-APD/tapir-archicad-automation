@@ -105,6 +105,35 @@ GS::ObjectState CreateSuccessfulExecutionResult ()
         "success", true);
 }
 
+bool IsDryRun (const GS::ObjectState& parameters)
+{
+    bool dryRun = false;
+    parameters.Get ("dryRun", dryRun);
+    return dryRun;
+}
+
+GSErrCode CallUndoableCommandUnlessDryRun (bool dryRun, const GS::UniString& undoString, const std::function<GSErrCode ()>& write)
+{
+    if (dryRun) {
+        return NoError;
+    }
+    return ACAPI_CallUndoableCommand (undoString, write);
+}
+
+void AddDryRunField (GS::ObjectState& response, bool dryRun)
+{
+    if (dryRun) {
+        response.Add ("dryRun", true);
+    }
+}
+
+GS::ObjectState CreateDryRunExecutionResult (const char* wouldKey)
+{
+    return GS::ObjectState (
+        "success", true,
+        wouldKey, true);
+}
+
 GS::UniString GetOverwriteRefusal (const GS::ObjectState& parameters, const IO::Location& location)
 {
     bool overwrite = true;
