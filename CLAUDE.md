@@ -506,7 +506,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
 - `site_data.yml` — daily and by hand: `tools/generate_community_data.py` counts,
   per month, the commits of `main`, the issues opened and pull requests merged, and
   the Discord messages and members of the project's server (only counts, never the
-  text of a message), plus the totals and top contributors, and publishes
+  text of a message), plus the totals and top contributors (each person once,
+  whatever names and addresses their commits carry), and publishes
   `community.json` to the `site-data` branch (never to `main`), read by
   `docs/community/community.js` (the Momentum figures and the growth chart). The
   Discord bot token is `DISCORD_STATS_TOKEN`, else `DISCORD_BOT_TOKEN`; members per
