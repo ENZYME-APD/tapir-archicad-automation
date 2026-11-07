@@ -811,6 +811,44 @@
       ]
     },
     {
+      "slug": "zone-area-dashboard",
+      "name": "Zone Area Dashboard",
+      "summary": "Shows zone areas grouped by name, number, category, story, property or classification, highlights groups in Archicad and exports to Excel or CSV.",
+      "category": "zones-areas",
+      "tags": [
+        "zones",
+        "areas",
+        "dashboard",
+        "highlight",
+        "excel",
+        "csv"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "ZoneAreaDashboard.py",
+      "changes": "files",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version: summary cards, a grouped table, highlight and colour by parameter in Archicad, Excel and CSV export.",
+          "commit": "06feac76e9da24ff97fb3f5b2b6952a1a8092ecd",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/06feac76e9da24ff97fb3f5b2b6952a1a8092ecd/marketplace/zone-area-dashboard/ZoneAreaDashboard.py",
+          "sha256": "a7759d58b8dc1e54deb63eb8ff872c701fa3ca64830532b58e7e666c544bbfef"
+        }
+      ]
+    },
+    {
       "slug": "zones-to-walls-and-slabs",
       "name": "Zones to Walls and Slabs",
       "summary": "Turns selected zones into walls and slabs: partitions on shared edges, external walls elsewhere, a slab per story, and balustrades around the terraces.",
