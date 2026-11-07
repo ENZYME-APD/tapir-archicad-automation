@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 20:36 UTC",
+ "generatedAt": "2026-11-07 21:01 UTC",
  "versions": [
   25,
   26,
@@ -2820,12 +2820,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2908,10 +2903,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
      "number": 1395,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
     }
@@ -2934,16 +2925,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3045,16 +3027,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4025,12 +3998,7 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "add-on infrastructure",
-   "pullRequests": [
-    {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4057,28 +4025,12 @@
      "title": "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"
     },
     {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    },
-    {
-     "number": 2221,
-     "title": "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"
-    },
-    {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
     },
     {
      "number": 2206,
      "title": "[3/3] Add ScaleElements command"
-    },
-    {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2200,
-     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
     },
     {
      "number": 1470,
@@ -4386,12 +4338,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4480,12 +4427,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4838,14 +4780,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -4964,16 +4898,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5057,12 +4982,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5085,12 +5005,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5113,12 +5028,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5164,12 +5074,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5192,12 +5097,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5243,12 +5143,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5271,12 +5166,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5299,12 +5189,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5904,28 +5789,8 @@
    "reason": "memory management",
    "pullRequests": [
     {
-     "number": 2221,
-     "title": "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"
-    },
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    },
-    {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2200,
-     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
-    },
-    {
-     "number": 1671,
-     "title": "Drawing anchor placement, offset, and pen table control"
     },
     {
      "number": 1292,
@@ -5934,10 +5799,6 @@
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
-    },
-    {
-     "number": 463,
-     "title": "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"
     }
    ],
    "issues": []
@@ -6634,12 +6495,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6660,12 +6516,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6914,24 +6765,8 @@
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
     },
     {
-     "number": 2200,
-     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
-    },
-    {
-     "number": 1855,
-     "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
-    },
-    {
-     "number": 1671,
-     "title": "Drawing anchor placement, offset, and pen table control"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
-    },
-    {
-     "number": 463,
-     "title": "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"
     }
    ],
    "issues": [
@@ -7085,10 +6920,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2221,
-     "title": "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"
-    },
-    {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
     }
@@ -7152,10 +6983,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 1671,
-     "title": "Drawing anchor placement, offset, and pen table control"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -7263,10 +7090,6 @@
     {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    },
-    {
-     "number": 2200,
-     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
     }
    ],
    "issues": []
@@ -7362,10 +7185,6 @@
     {
      "number": 2206,
      "title": "[3/3] Add ScaleElements command"
-    },
-    {
-     "number": 2200,
-     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
     }
    ],
    "issues": []
@@ -7479,32 +7298,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2221,
-     "title": "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"
-    },
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    },
-    {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2200,
-     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
-    },
-    {
-     "number": 1855,
-     "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
-    },
-    {
-     "number": 1671,
-     "title": "Drawing anchor placement, offset, and pen table control"
     },
     {
      "number": 1292,
@@ -7513,10 +7308,6 @@
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
-    },
-    {
-     "number": 463,
-     "title": "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"
     }
    ],
    "issues": [
@@ -7740,16 +7531,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1914,
@@ -7851,14 +7633,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -8046,14 +7820,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
     },
@@ -8105,20 +7871,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2221,
-     "title": "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"
-    },
-    {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    },
-    {
-     "number": 2200,
-     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
-    },
-    {
-     "number": 463,
-     "title": "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"
     }
    ],
    "issues": [
@@ -9420,12 +9174,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9446,12 +9195,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9537,12 +9281,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9586,14 +9325,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -9619,18 +9350,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    },
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -10727,10 +10446,6 @@
     {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    },
-    {
-     "number": 2200,
-     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
     }
    ],
    "issues": []
@@ -11273,12 +10988,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11324,12 +11034,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11397,12 +11102,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12208,12 +11908,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12487,12 +12182,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13395,12 +13085,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -15318,12 +15003,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2221,
-     "title": "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -15757,12 +15437,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -15778,12 +15453,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -15799,12 +15469,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -15836,12 +15501,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16505,12 +16165,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16748,10 +16403,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -16825,12 +16476,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17712,10 +17358,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    },
     {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
@@ -20397,10 +20039,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -21403,12 +21041,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2221,
-     "title": "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25639,28 +25272,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    },
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
-    },
-    {
-     "number": 463,
-     "title": "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"
     }
    ],
    "issues": []
@@ -26325,16 +25942,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26368,16 +25976,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26496,16 +26095,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26539,16 +26129,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26582,16 +26163,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27131,24 +26703,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
     },
     {
      "number": 2206,
      "title": "[3/3] Add ScaleElements command"
-    },
-    {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2200,
-     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
     },
     {
      "number": 1292,
@@ -29940,12 +29500,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30033,16 +29588,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31329,14 +30875,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    },
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
     },
@@ -31345,28 +30883,8 @@
      "title": "[3/3] Add ScaleElements command"
     },
     {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2200,
-     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
-    },
-    {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
-    },
-    {
-     "number": 1855,
-     "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
-    },
-    {
-     "number": 1671,
-     "title": "Drawing anchor placement, offset, and pen table control"
-    },
-    {
-     "number": 1431,
-     "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
     },
     {
      "number": 1292,
@@ -37820,18 +37338,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    },
-    {
-     "number": 2221,
-     "title": "[3/5] FilletElements: fillet or chamfer the corners of slabs, zones, meshes, fills and polylines"
-    },
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
     },
@@ -37840,28 +37346,8 @@
      "title": "[3/3] Add ScaleElements command"
     },
     {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2200,
-     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
-    },
-    {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
-    },
-    {
-     "number": 1855,
-     "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
-    },
-    {
-     "number": 1671,
-     "title": "Drawing anchor placement, offset, and pen table control"
-    },
-    {
-     "number": 1431,
-     "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
     },
     {
      "number": 1395,
@@ -37874,10 +37360,6 @@
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
-    },
-    {
-     "number": 463,
-     "title": "SetDetailsOfElements: modify any element type with the Modify commands' type-specific parameters"
     }
    ],
    "issues": []
@@ -44500,14 +43982,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    },
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
     },
@@ -44516,28 +43990,8 @@
      "title": "[3/3] Add ScaleElements command"
     },
     {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2200,
-     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
-    },
-    {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
-    },
-    {
-     "number": 1855,
-     "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
-    },
-    {
-     "number": 1671,
-     "title": "Drawing anchor placement, offset, and pen table control"
-    },
-    {
-     "number": 1431,
-     "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
     },
     {
      "number": 1292,
@@ -47640,14 +47094,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2222,
-     "title": "[4/6] Shared dryRun: project, navigator and library deletes"
-    },
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
     },
@@ -47656,28 +47102,8 @@
      "title": "[3/3] Add ScaleElements command"
     },
     {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
-     "number": 2200,
-     "title": "[1/5] SplitElements: split walls, beams and lines along a line"
-    },
-    {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
-    },
-    {
-     "number": 1855,
-     "title": "CreateTexts / ModifyTexts: optional width turns word wrap on"
-    },
-    {
-     "number": 1671,
-     "title": "Drawing anchor placement, offset, and pen table control"
-    },
-    {
-     "number": 1431,
-     "title": "Expose a Drawing's pen table usage (penTableUsageMode/penTableId)"
     },
     {
      "number": 1292,
@@ -54170,14 +53596,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
-    {
-     "number": 2205,
-     "title": "[2/5] DeleteUnusedAttributes: delete the unused attributes (dryRun by default)"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -55152,10 +54570,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2217,
-     "title": "[4/5] GetProjectHealth: read-only project health summary"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"

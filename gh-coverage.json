@@ -1,11 +1,11 @@
 {
- "generatedAt": "2026-11-07 20:36 UTC",
+ "generatedAt": "2026-11-07 21:01 UTC",
  "counts": {
   "done": 568,
   "merged": 181,
-  "open": 6,
+  "claimed": 1,
+  "open": 8,
   "skipped": 1,
-  "in progress": 2,
   "not applicable": 1
  },
  "parameters": {
@@ -3968,9 +3968,10 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 2,
+   "parameterCount": 3,
    "coveredParameters": [
     "elements",
+    "elements.elementId",
     "elements.elementType"
    ],
    "missingParameters": [],
@@ -4211,6 +4212,26 @@
     {
      "number": 2188,
      "title": "New commands: align, distribute and scale elements"
+    }
+   ]
+  },
+  {
+   "id": "SplitElements",
+   "group": "Element Commands",
+   "version": "1.8.1",
+   "brief": "Splits each given element in two along a line (the infinite line through its begin and end point, like Archicad's Split command). The original element keeps the part from its begin point to the line, a copy of it (Drag a Copy, so it keeps the layer, classifications, properties and every other setting) gets the rest; both are returned. Supports straight walls without doors, windows or openings, straight unslanted single segment beams without holes or openings, and lines (their arrows stay at the original ends). An element the line does not cross is reported as notCut, an unsupported one as an error naming its type. One undo step.",
+   "status": "claimed",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 4,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": [
+    {
+     "number": 2191,
+     "title": "New command SplitElements: split elements along a line"
     }
    ]
   },
@@ -6570,7 +6591,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 14,
+   "parameterCount": 15,
    "coveredParameters": [
     "textsData",
     "textsData.angle",
@@ -6584,7 +6605,8 @@
     "textsData.pen",
     "textsData.runs",
     "textsData.style",
-    "textsData.text"
+    "textsData.text",
+    "textsData.width"
    ],
    "missingParameters": [
     "databaseId"
@@ -7322,7 +7344,7 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 7,
+   "parameterCount": 8,
    "coveredParameters": [
     "textsWithDetails",
     "textsWithDetails.coordinate",
@@ -7330,7 +7352,8 @@
     "textsWithDetails.floorIndex",
     "textsWithDetails.runs",
     "textsWithDetails.style",
-    "textsWithDetails.text"
+    "textsWithDetails.text",
+    "textsWithDetails.width"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -10351,19 +10374,14 @@
    "group": "Attribute Commands",
    "version": "1.8.1",
    "brief": "Lists the unused layers, fills, surfaces, building materials, composites, profiles, line types, pen tables and zone categories (index, id and name), for the given types or all of them. The Archicad API has no function that tells which attributes are unused (only how many per type), so every reference is collected: the elements of the floor plan and of every view and layout (hotlinked ones too), with their library part parameters and memo data, the tool defaults, the Favorites, the other attributes (composites, building materials, surfaces, profiles, MEP systems) and the graphic override rules, the way ReindexAttributes finds them; for layers the layer of each element, tool default and Favorite; for composites and profiles the walls, slabs, roofs, shells, column and beam segments whose structure type uses them; for pen tables the current pen table and the drawings set to a pen table of their own. An attribute that only an unused attribute refers to counts as used. Indices typed into GDL scripts and the pen tables saved with views are not found. Each type also reports Archicad's own count of the attributes in use (archicadUsedCount, see GetUsedAttributes), so a difference shows. Read only. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "open",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2224,
-     "title": "[5/5] Grasshopper components for GetUnusedAttributes, DeleteUnusedAttributes, GetUnusedLibraryParts and GetProjectHealth"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12404,19 +12422,14 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Lists the loaded library parts that no element of the project is placed from. Read only. The Archicad API does not tell which library parts are used, so every element of the floor plan and of every view and layout is checked: objects, lamps, doors, windows, skylights, zone stamps, symbol labels, drawing titles, curtain wall parts, and the markers of doors, windows, skylights, sections, elevations, details and worksheets. A library part used only in another way (called as a macro, linked as a property object, as an interior elevation marker, in stairs and railings, in the tool defaults or in Favorites) is listed as unused. Library parts that cannot be placed (e.g. macros) are only listed with includeNotPlaceable.",
-   "status": "in progress",
+   "status": "open",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 2,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2224,
-     "title": "[5/5] Grasshopper components for GetUnusedAttributes, DeleteUnusedAttributes, GetUnusedLibraryParts and GetProjectHealth"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
