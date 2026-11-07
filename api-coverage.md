@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 61 | 53 | 8 |  |  |  | 8 | 70 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1423 | 1207 | 216 |  |  |  | 12 | 392 |
 
-Archicad 25–30 DevKits; updated 2026-11-07 21:52 UTC.
+Archicad 25–30 DevKits; updated 2026-11-07 22:03 UTC.
 
 | | Status |
 |---|---|
@@ -119,7 +119,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## Element
 
-- ✅ `ACAPI_Element_AddClassificationItem` – Classifies an element. — [#2226](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2226 "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI_Element_AddClassificationItem` – Classifies an element. — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
 - ✅ `ACAPI_Element_AddClassificationItemDefault` – Classifies an element.
 - ✅ `ACAPI_Element_AttachObserver` – Attaches an observer to the given element.
 - ✅ `ACAPI_Element_CalcBounds` – Returns the model extent of an element in the current database. <sub>(was `APIDb_CalcBoundsID`)</sub> — [#2188](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2188 "New commands: align, distribute and scale elements")
@@ -127,7 +127,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_CalcSideOffsetToCoreOffset` – Converts the reveal depth offset from wall side to core skin for wall openings. <sub>(was `APIAny_CalcSideOffsetToCoreOffsetID`)</sub>
 - ➖ `ACAPI_Element_CatchChangeDefaults` – Register or unregister your add-on to be notified if the default settings of a given element type is modified. <sub>(was `ACAPI_Notify_CatchChangeDefaults`)</sub> *(event handlers, not commands)*
 - ➖ `ACAPI_Element_CatchNewElement` – Register or unregister your add-on to be notified if the given type of element is created. <sub>(was `ACAPI_Notify_CatchNewElement`)</sub> — [#1825](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1825 "Element notifications: changes and deletions made by Tapir commands are not reported") *(event handlers, not commands)*
-- ✅ `ACAPI_Element_Change` — [#2226](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2226 "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"), [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#371](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/371 "Lessons learned building a Tapir-based automation toolkit (AC29)")
+- ✅ `ACAPI_Element_Change` — [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#371](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/371 "Lessons learned building a Tapir-based automation toolkit (AC29)")
 - ✅ `ACAPI_Element_ChangeContent` – Change the content of a text or a textual label element. <sub>(was `APIAny_ChangeContentID`)</sub>
 - ✅ `ACAPI_Element_ChangeDefaults` – Changes the default parameters of an element. — [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
 - ✅ `ACAPI_Element_ChangeDefaultsExt` – Changes the default parameters of the Window, Door, Section, Elevation, Interior Elevation, ChangeMarker, Detail, Worksheet, or Stair default element and its marker(s). This function also allows you to change the default settings of the Curtain Wall and its subelem.
@@ -151,7 +151,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_Filter` – Tests an element by some given criteria.
 - ✅ `ACAPI_Element_Get` – Returns information on the main parameters of a given element. — [#2212](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2212 "[2/5] SplitElements: split slabs, meshes, fills and polylines"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
 - ✅ `ACAPI_Element_GetActualOverrideStyle` – Get actual (merged) visual override style for an element.
-- ✅ `ACAPI_Element_GetClassificationInSystem` – Retrieves a classification of an elem in a given classification system. — [#2226](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2226 "[6/6] Dry run with wouldChange for the bulk element setters (#2195)")
+- ✅ `ACAPI_Element_GetClassificationInSystem` – Retrieves a classification of an elem in a given classification system.
 - ✅ `ACAPI_Element_GetClassificationInSystemDefault` – Retrieves a classification of a default elem in a given classification system.
 - ✅ `ACAPI_Element_GetClassificationItems` – Retrieves all of the classifications of an element.
 - ✅ `ACAPI_Element_GetClassificationItemsDefault` – Retrieves all of the classifications of a default elem.
@@ -164,7 +164,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_GetDescriptors` – Returns the descriptors of an element.
 - 🔀 `ACAPI_Element_GetElemCreatorToolUnId` – Returns the unique ID of the creator tool of the specified object. <sub>(was `APIAny_GetElemCreatorToolUnIdID`)</sub>
 - ✅ `ACAPI_Element_GetElemList` – Returns an array of guids of the elements of the given type. — [#2255](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2255 "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
-- ✅ `ACAPI_Element_GetElemTypeName` – Returns the localized name of the built-in element types. <sub>(was `ACAPI_Goodies_GetElemTypeName`, `APIAny_GetElemTypeNameID`)</sub> — [#2260](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2260 "[1/3] ResolveNames: check a user's words against the project's names")
+- ✅ `ACAPI_Element_GetElemTypeName` – Returns the localized name of the built-in element types. <sub>(was `ACAPI_Goodies_GetElemTypeName`, `APIAny_GetElemTypeNameID`)</sub> — [#2263](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2263 "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"), [#2262](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2262 "[2/3] ResolveNames: look up properties and classifications"), [#2260](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2260 "[1/3] ResolveNames: check a user's words against the project's names")
 - ✅ `ACAPI_Element_GetElementFromAnywhere` – Returns the element referred by guid irrespectively of the current database. <sub>(was `APIDb_GetElementFromAnywhereID`)</sub>
 - 🔀 `ACAPI_Element_GetElementInfoString` – Returns the compound info string of the given element. <sub>(was `APIDb_GetElementInfoStringID`)</sub>
 - ✅ `ACAPI_Element_GetElementURLRef` – Retrieves the URL reference assigned to an element. <sub>(was `APIDb_GetElementURLRefID`)</sub>
@@ -327,8 +327,8 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Attribute_DeleteFolder` <sub>AC26–30</sub> – Deletes an attribute folder and all the folders and attributes it contains.
 - ✅ `ACAPI_Attribute_DeleteMore` – Deletes more attributes of the same type.
 - 🔀 `ACAPI_Attribute_EnumerateAttributesByType` <sub>AC27–30</sub> – Iterates the instances of a given attribute type in the database.
-- ✅ `ACAPI_Attribute_Get` – Retrieves an attribute from the database. — [#2260](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2260 "[1/3] ResolveNames: check a user's words against the project's names"), [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"), [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex")
-- ✅ `ACAPI_Attribute_GetAttributesByType` <sub>AC27–30</sub> – Returns the instances of a given attribute type in the database. — [#2260](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2260 "[1/3] ResolveNames: check a user's words against the project's names")
+- ✅ `ACAPI_Attribute_Get` – Retrieves an attribute from the database. — [#2263](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2263 "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"), [#2262](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2262 "[2/3] ResolveNames: look up properties and classifications"), [#2260](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2260 "[1/3] ResolveNames: check a user's words against the project's names"), [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"), [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex")
+- ✅ `ACAPI_Attribute_GetAttributesByType` <sub>AC27–30</sub> – Returns the instances of a given attribute type in the database. — [#2263](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2263 "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"), [#2262](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2262 "[2/3] ResolveNames: look up properties and classifications"), [#2260](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2260 "[1/3] ResolveNames: check a user's words against the project's names")
 - ✅ `ACAPI_Attribute_GetAttributesFromProject` – Loads the given attributes from a project file.
 - ✅ `ACAPI_Attribute_GetClassificationInSystem` – Retrieves a classification of an attribute in a given classification system.
 - ✅ `ACAPI_Attribute_GetClassificationItems` – Retrieves all of the classifications of an attribute.
@@ -424,7 +424,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_LibraryPart_Create` <sub>AC27–30</sub> – Starts to create a new Library Part from scratch.
 - 🔀 `ACAPI_LibraryPart_EndSection` – Closes the last opened section of the Library Part under creation. <sub>(was `ACAPI_LibPart_EndSection`)</sub>
 - ✅ `ACAPI_LibraryPart_Get` <sub>AC27–30</sub> – Returns the data for a registered library part.
-- ✅ `ACAPI_LibraryPart_GetActParameters` – Returns the actual (edited) values of a Library Part parameter list opened to edit. <sub>(was `APIAny_GetActParametersID`)</sub> — [#2226](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2226 "[6/6] Dry run with wouldChange for the bulk element setters (#2195)")
+- ✅ `ACAPI_LibraryPart_GetActParameters` – Returns the actual (edited) values of a Library Part parameter list opened to edit. <sub>(was `APIAny_GetActParametersID`)</sub>
 - ➖ `ACAPI_LibraryPart_GetBuiltInLibpartUnId` – Retrieves the GUID of a built-in library part. <sub>(was `APIAny_GetBuiltInLibpartUnIdID`)</sub> *(returns the id of a library part compiled into the calling add-on as a resource; Tapir has none)*
 - 🔀 `ACAPI_LibraryPart_GetDetails` – Returns the detailed parameters of a registered Library Part. <sub>(was `ACAPI_LibPart_GetDetails`)</sub>
 - 🔀 `ACAPI_LibraryPart_GetElemLibPartUnId` – Returns the library part unique identifier of the GDL based element (object/lamp/window/door). <sub>(was `APIAny_GetElemLibPartUnIdID`)</sub>
@@ -507,8 +507,8 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 - ➖ `ACAPI_ActivatePropertyObjectHandler` – Activates or deactivates an add-on's property handler. *(event handlers, not commands)*
 - ➖ `ACAPI_CallCommand` – Performs an operation without opening an undoable session. *(add-on infrastructure)*
-- ➖ `ACAPI_CallUndoableCommand` – Performs an undoable operation. — [#2226](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2226 "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"), [#2206](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2206 "[3/3] Add ScaleElements command"), [#1470](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1470 "Report failed creation transactions instead of returning element results"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#2218](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2218 "Docs: a page of what the Archicad API cannot do, with the workaround and the DevKit evidence"), [#1820](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1820 "Run several commands as one undo step") *(add-on infrastructure)*
-- ➖ `ACAPI_DisposeAddParHdl` – Frees the memory occupied by a handle to an array of @ref API_AddParType. — [#2251](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2251 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex (supersedes #1395)"), [#2226](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2226 "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"), [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex") *(memory management)*
+- ➖ `ACAPI_CallUndoableCommand` – Performs an undoable operation. — [#2206](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2206 "[3/3] Add ScaleElements command"), [#1470](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1470 "Report failed creation transactions instead of returning element results"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#2218](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2218 "Docs: a page of what the Archicad API cannot do, with the workaround and the DevKit evidence"), [#1820](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1820 "Run several commands as one undo step") *(add-on infrastructure)*
+- ➖ `ACAPI_DisposeAddParHdl` – Frees the memory occupied by a handle to an array of @ref API_AddParType. — [#2251](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2251 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex (supersedes #1395)"), [#1395](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1395 "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex") *(memory management)*
 - ➖ `ACAPI_DisposeAttrDefsHdls` – Frees the memory occupied by all of the attribute definition handles. *(memory management)*
 - ➖ `ACAPI_DisposeAttrDefsHdlsExt` – Frees the memory occupied by all of the attribute definition handles. — [#2258](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2258 "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes") *(memory management)*
 - ➖ `ACAPI_DisposeBeamRelationHdls` – Frees the memory occupied by all allocated beam relation handles. *(memory management)*
@@ -703,10 +703,10 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Property_DeletePropertyDefinition` – Deletes a property definition in the current plan.
 - ✅ `ACAPI_Property_DeletePropertyGroup` – Deletes a property group and all of the property definitions inside in the current plan.
 - ✅ `ACAPI_Property_GetPropertyDefinition` – Retrieves one property definition identified by its guid. — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
-- ✅ `ACAPI_Property_GetPropertyDefinitions` – Retrieves all the property definitions from a given group. — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI_Property_GetPropertyDefinitions` – Retrieves all the property definitions from a given group. — [#2263](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2263 "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"), [#2262](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2262 "[2/3] ResolveNames: look up properties and classifications"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
 - 🔀 `ACAPI_Property_GetPropertyExprReferenceString` – Returns the string that can be used in expressions to refer to a specific property. <sub>(was `APIAny_GetPropertyExprReferenceStringID`)</sub>
 - ✅ `ACAPI_Property_GetPropertyGroup` – Retrieves one property group identified by its guid.
-- ✅ `ACAPI_Property_GetPropertyGroups` – Retrieves all the property groups. — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI_Property_GetPropertyGroups` – Retrieves all the property groups. — [#2263](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2263 "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"), [#2262](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2262 "[2/3] ResolveNames: look up properties and classifications"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
 - ✅ `ACAPI_Property_GetPropertyValueString` – Convert an API property value to display string.
 - ✅ `ACAPI_Property_Import` – Imports a property xml.
 - ➖ `ACAPI_Property_InstallPropertyObjectHandler` <sub>AC27–30</sub> – Installs the property handler function for the given menu item. *(event handlers, not commands)*
@@ -854,12 +854,12 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Classification_DeleteClassificationItem` – Deletes a classification item.
 - ✅ `ACAPI_Classification_DeleteClassificationSystem` – Deletes a classification system.
 - ✅ `ACAPI_Classification_GetClassificationItem` – Retrieves a classification item identified by its guid.
-- ✅ `ACAPI_Classification_GetClassificationItemChildren` – Retrieves the children of a classification item.
+- ✅ `ACAPI_Classification_GetClassificationItemChildren` – Retrieves the children of a classification item. — [#2263](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2263 "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"), [#2262](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2262 "[2/3] ResolveNames: look up properties and classifications")
 - ✅ `ACAPI_Classification_GetClassificationItemParent` – Retrieves the parent of a classification item.
-- ✅ `ACAPI_Classification_GetClassificationItemSystem` – Retrieves the system of a classification item. — [#2226](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2226 "[6/6] Dry run with wouldChange for the bulk element setters (#2195)")
+- ✅ `ACAPI_Classification_GetClassificationItemSystem` – Retrieves the system of a classification item.
 - ✅ `ACAPI_Classification_GetClassificationSystem` – Retrieves a classification system identified by its guid or by its name and edition version.
-- ✅ `ACAPI_Classification_GetClassificationSystemRootItems` – Retrieves the root items of a classification system.
-- ✅ `ACAPI_Classification_GetClassificationSystems` – Retrieves all of the classification systems in the plan.
+- ✅ `ACAPI_Classification_GetClassificationSystemRootItems` – Retrieves the root items of a classification system. — [#2263](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2263 "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"), [#2262](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2262 "[2/3] ResolveNames: look up properties and classifications")
+- ✅ `ACAPI_Classification_GetClassificationSystems` – Retrieves all of the classification systems in the plan. — [#2263](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2263 "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"), [#2262](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2262 "[2/3] ResolveNames: look up properties and classifications")
 - ✅ `ACAPI_Classification_Import` – Imports a classification xml.
 
 ## Window
@@ -1008,7 +1008,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_ProjectSetting_GetPreferences` <sub>AC27–30</sub> – Returns the preferences data.
 - ✅ `ACAPI_ProjectSetting_GetProjectNotes` – Returns information about the 'Project Info' dialog. <sub>(was `APIEnv_GetProjectNotesID`)</sub>
 - 🔀 `ACAPI_ProjectSetting_GetSplineMaxDist` – Returns the maximal distance of a spline segment and a set of coordinates. <sub>(was `APIAny_GetSplineMaxDistID`)</sub>
-- ✅ `ACAPI_ProjectSetting_GetStorySettings` – Returns the data of the installed stories. <sub>(was `APIEnv_GetStorySettingsID`)</sub> — [#2260](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2260 "[1/3] ResolveNames: check a user's words against the project's names")
+- ✅ `ACAPI_ProjectSetting_GetStorySettings` – Returns the data of the installed stories. <sub>(was `APIEnv_GetStorySettingsID`)</sub> — [#2263](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2263 "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"), [#2262](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2262 "[2/3] ResolveNames: look up properties and classifications"), [#2260](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2260 "[1/3] ResolveNames: check a user's words against the project's names")
 - ✅ `ACAPI_ProjectSetting_SetLast3DDefLevels` – Sets the 3D default levels for the passed construction element types. <sub>(was `ACAPI_Database_SetLast3DDefLevels`, `APIDb_SetLast3DDefLevelsID`)</sub>
 - ✅ `ACAPI_ProjectSetting_SetPreferences` <sub>AC27–30</sub> – Adjusts the preferences.
 
@@ -3015,7 +3015,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `IFCAPI::Classification::GetEdition` <sub>AC28–30</sub>
 - 🔀 `IFCAPI::Classification::GetEditionDate` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Classification::GetLocation` <sub>AC28–30</sub>
-- ✅ `IFCAPI::Classification::GetName` <sub>AC28–30</sub>
+- ✅ `IFCAPI::Classification::GetName` <sub>AC28–30</sub> — [#2263](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2263 "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"), [#2262](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2262 "[2/3] ResolveNames: look up properties and classifications")
 - ✅ `IFCAPI::Classification::GetSource` <sub>AC28–30</sub>
 - ✅ `IFCAPI::ClassificationReference::GetDescription` <sub>AC29–30</sub>
 - ✅ `IFCAPI::ClassificationReference::GetIdentification` <sub>AC28–30</sub>
@@ -3062,7 +3062,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🔀 `IFCAPI::ObjectAccessor::GetStoryIndex` <sub>AC28–30</sub>
 - ✅ `IFCAPI::ObjectAccessor::GetTypeObjectIFCType` <sub>AC28–30</sub>
 - 🔀 `IFCAPI::ObjectID::GenerateHashValue` <sub>AC28–30</sub>
-- ✅ `IFCAPI::Property::GetName` <sub>AC28–30</sub> — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `IFCAPI::Property::GetName` <sub>AC28–30</sub> — [#2263](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2263 "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"), [#2262](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2262 "[2/3] ResolveNames: look up properties and classifications"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
 - ✅ `IFCAPI::Property::GetPropertySetName` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Property::GetTyped` <sub>AC28–30</sub>
 - ✅ `IFCAPI::PropertyAccessor::GetAttributes` <sub>AC28–30</sub>

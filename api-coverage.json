@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 21:52 UTC",
+ "generatedAt": "2026-11-07 22:03 UTC",
  "versions": [
   25,
   26,
@@ -2903,6 +2903,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2263,
+     "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
+    },
+    {
+     "number": 2262,
+     "title": "[2/3] ResolveNames: look up properties and classifications"
+    },
+    {
      "number": 2260,
      "title": "[1/3] ResolveNames: check a user's words against the project's names"
     },
@@ -2934,6 +2942,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2263,
+     "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
+    },
+    {
+     "number": 2262,
+     "title": "[2/3] ResolveNames: look up properties and classifications"
+    },
     {
      "number": 2260,
      "title": "[1/3] ResolveNames: check a user's words against the project's names"
@@ -4054,10 +4070,6 @@
    "reason": "add-on infrastructure",
    "pullRequests": [
     {
-     "number": 2226,
-     "title": "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"
-    },
-    {
      "number": 2206,
      "title": "[3/3] Add ScaleElements command"
     },
@@ -4388,7 +4400,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2263,
+     "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
+    },
+    {
+     "number": 2262,
+     "title": "[2/3] ResolveNames: look up properties and classifications"
+    }
+   ],
    "issues": []
   },
   {
@@ -4430,12 +4451,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2226,
-     "title": "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4477,7 +4493,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2263,
+     "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
+    },
+    {
+     "number": 2262,
+     "title": "[2/3] ResolveNames: look up properties and classifications"
+    }
+   ],
    "issues": []
   },
   {
@@ -4498,7 +4523,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2263,
+     "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
+    },
+    {
+     "number": 2262,
+     "title": "[2/3] ResolveNames: look up properties and classifications"
+    }
+   ],
    "issues": []
   },
   {
@@ -5708,10 +5742,6 @@
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex (supersedes #1395)"
     },
     {
-     "number": 2226,
-     "title": "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"
-    },
-    {
      "number": 1395,
      "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
     }
@@ -6598,10 +6628,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2226,
-     "title": "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -6794,10 +6820,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2226,
-     "title": "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"
-    },
     {
      "number": 2212,
      "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
@@ -7399,12 +7421,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2226,
-     "title": "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7714,6 +7731,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2263,
+     "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
+    },
+    {
+     "number": 2262,
+     "title": "[2/3] ResolveNames: look up properties and classifications"
+    },
     {
      "number": 2260,
      "title": "[1/3] ResolveNames: check a user's words against the project's names"
@@ -11984,12 +12009,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2226,
-     "title": "[6/6] Dry run with wouldChange for the bulk element setters (#2195)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16224,6 +16244,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2263,
+     "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
+    },
+    {
+     "number": 2262,
+     "title": "[2/3] ResolveNames: look up properties and classifications"
+    },
+    {
      "number": 2260,
      "title": "[1/3] ResolveNames: check a user's words against the project's names"
     }
@@ -16491,6 +16519,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2263,
+     "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
+    },
+    {
+     "number": 2262,
+     "title": "[2/3] ResolveNames: look up properties and classifications"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -16560,6 +16596,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2263,
+     "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
+    },
+    {
+     "number": 2262,
+     "title": "[2/3] ResolveNames: look up properties and classifications"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -53864,7 +53908,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2263,
+     "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
+    },
+    {
+     "number": 2262,
+     "title": "[2/3] ResolveNames: look up properties and classifications"
+    }
+   ],
    "issues": []
   },
   {
@@ -54705,6 +54758,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2263,
+     "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
+    },
+    {
+     "number": 2262,
+     "title": "[2/3] ResolveNames: look up properties and classifications"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
