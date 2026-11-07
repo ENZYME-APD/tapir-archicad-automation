@@ -143,7 +143,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetPropertyDefinitionsOfAttributes;
+            Properties.Resources.GetPropertyDefinitionsOfElementComponents;
 
         public override Guid ComponentGuid =>
             new Guid("3179fddd-8090-45ef-b61a-151d49b2fd27");
