@@ -83,8 +83,15 @@
     'Discord messages': 'Discord संदेश',
     'Discord members <span class="change"></span>': 'Discord सदस्य <span class="change"></span>',
     'People taking part, last 12 months': 'भाग लेने वाले लोग, पिछले 12 महीने',
-    'Top code contributors': 'कोड में सबसे ज़्यादा योगदान देने वाले',
+    'Top contributors': 'सबसे ज़्यादा योगदान देने वाले',
+    'Counted: commits (co-authors included), issues they reported that a merged fix closed, and pull requests they tested in Archicad (passed or failed).':
+        'गिनती में: कमिट (co-authors समेत), उनके रिपोर्ट किए issues जिन्हें merge हुए fix ने बंद किया, और pull requests जिन्हें उन्होंने Archicad में टेस्ट किया (पास या फ़ेल)।',
+    '{count} commit': '{count} कमिट',
     '{count} commits': '{count} कमिट',
+    '{count} report': '{count} रिपोर्ट',
+    '{count} reports': '{count} रिपोर्ट',
+    '{count} test': '{count} टेस्ट',
+    '{count} tests': '{count} टेस्ट',
 
     // Growth
     'Commits, issues and pull requests, and Discord messages per month, stacked, with the number of Discord members as a line, {first} to {last}. The table below lists every number.':

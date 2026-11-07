@@ -83,8 +83,15 @@
     'Discord messages': 'Discord 消息',
     'Discord members <span class="change"></span>': 'Discord 成员 <span class="change"></span>',
     'People taking part, last 12 months': '参与人数（最近 12 个月）',
-    'Top code contributors': '代码贡献最多的人',
+    'Top contributors': '主要贡献者',
+    'Counted: commits (co-authors included), issues they reported that a merged fix closed, and pull requests they tested in Archicad (passed or failed).':
+        '统计内容：提交（包括共同作者）、本人报告并由已合并的修复关闭的 issue，以及本人在 Archicad 中测试过的 pull request（无论通过与否）。',
+    '{count} commit': '{count} 次提交',
     '{count} commits': '{count} 次提交',
+    '{count} report': '{count} 次报告',
+    '{count} reports': '{count} 次报告',
+    '{count} test': '{count} 次测试',
+    '{count} tests': '{count} 次测试',
 
     // Growth
     'Commits, issues and pull requests, and Discord messages per month, stacked, with the number of Discord members as a line, {first} to {last}. The table below lists every number.':

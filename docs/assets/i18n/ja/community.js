@@ -83,8 +83,15 @@
     'Discord messages': 'Discord メッセージ',
     'Discord members <span class="change"></span>': 'Discord メンバー <span class="change"></span>',
     'People taking part, last 12 months': '参加している人（過去 12 か月）',
-    'Top code contributors': 'コードの主な貢献者',
+    'Top contributors': '主な貢献者',
+    'Counted: commits (co-authors included), issues they reported that a merged fix closed, and pull requests they tested in Archicad (passed or failed).':
+        '数えているもの：コミット（共同作成者を含む）、本人が報告し、マージされた修正で閉じられた Issue、本人が Archicad でテストしたプルリクエスト（成功・失敗を問わず）。',
+    '{count} commit': '{count} コミット',
     '{count} commits': '{count} コミット',
+    '{count} report': '{count} 件の報告',
+    '{count} reports': '{count} 件の報告',
+    '{count} test': '{count} 件のテスト',
+    '{count} tests': '{count} 件のテスト',
 
     // Growth
     'Commits, issues and pull requests, and Discord messages per month, stacked, with the number of Discord members as a line, {first} to {last}. The table below lists every number.':
