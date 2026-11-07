@@ -7,6 +7,7 @@
 #include "GSUnID.hpp"
 #include "Plane.hpp"
 #include "Polygon2D.hpp"
+#include "Polyline2D.hpp"
 #include "CoordTypedef.hpp"
 #include "ModelEdge.hpp"
 #include "ModelMeshBody.hpp"
@@ -7783,7 +7784,7 @@ GS::Optional<GS::UniString> SplitElementsCommand::GetInputParametersSchema () co
         "properties": {
             "elements": {
                 "$ref": "#/Elements",
-                "description": "The elements to split. Supported: straight walls (not polygonal, without doors, windows or openings), straight beams (not slanted or curved, one segment, without holes or openings) and lines. Other types are reported with their type name."
+                "description": "The elements to split. Supported: straight walls (not polygonal, without doors, windows or openings), straight beams (not slanted or curved, one segment, without holes or openings), lines, slabs, meshes (without level lines or points), fills and polylines (one contour). Other types are reported with their type name."
             },
             "line": {
                 "type": "object",
@@ -7821,7 +7822,7 @@ GS::Optional<GS::UniString> SplitElementsCommand::GetRawResponseSchema () const
                             "properties": {
                                 "elements": {
                                     "$ref": "#/Elements",
-                                    "description": "The two parts: first the original element, which keeps the part from its begin point to the split line, then the new element, from the split line to the end point."
+                                    "description": "The parts, first the original element, then the new ones (copies of it). A wall, beam or line gives two parts: the original keeps the part from its begin point to the split line. A slab, mesh or fill gives one part per piece of its polygon on each side of the line (more than two when the line crosses a concave polygon more than twice); the original keeps the largest. A polyline is cut at every crossing; the original keeps the part with its begin point."
                                 }
                             },
                             "additionalProperties": false,
@@ -7933,7 +7934,7 @@ static GS::Optional<GS::UniString> GetSplitRefusal (const API_Element& element, 
             endC = element.line.endC;
             return GS::NoValue;
         default:
-            return "Elements of type " + GetElementTypeNonLocalizedName (GetElemTypeId (element.header)) + " cannot be split yet. Supported types: Wall, Beam, Line.";
+            return "Elements of type " + GetElementTypeNonLocalizedName (GetElemTypeId (element.header)) + " cannot be split yet. Supported types: Wall, Beam, Line, Slab, Mesh, Fill (Hatch), PolyLine.";
     }
 }
 
@@ -8026,6 +8027,520 @@ static GSErrCode CopyElementForSplit (const API_Guid& elemGuid, API_Guid& copyGu
     return NoError;
 }
 
+// Why the element cannot be edited (its layer, lock, teamwork reservation or group), or nothing.
+static GS::Optional<GS::ObjectState> GetSplitEditRefusal (const API_Element& element)
+{
+    const GS::Optional<GS::ObjectState> notEditableResult = GetFailedExecutionResultIfNotEditable (element.header.guid, "split");
+    if (notEditableResult.HasValue ()) {
+        GS::ObjectState error;
+        notEditableResult->Get ("error", error);
+        return GS::ObjectState ("error", error);
+    }
+
+    // Drag a Copy of a grouped element copies its whole group (unless the groups are
+    // suspended), which would leave copies of the other members behind.
+    if (element.header.groupGuid != APINULLGuid) {
+        return CreateErrorResponse (APIERR_GENERAL, "The element is in a group. Ungroup it first.");
+    }
+    return GS::NoValue;
+}
+
+// ---------------------------------------------------------------------------
+// SplitElements: slabs, meshes, fills and polylines
+// ---------------------------------------------------------------------------
+
+// One contour of a part of a split element: its vertices (the first one is not repeated at the
+// end) and the arc angle of the edge after each vertex (0 for a straight edge). A polyline has
+// one edge less than vertices.
+struct SplitContour {
+    GS::Array<API_Coord> coords;
+    GS::Array<double>    arcAngles;
+};
+
+// A part of a split element: the outline and then the holes of a polygon, or the one contour of
+// a polyline.
+using SplitPart = GS::Array<SplitContour>;
+
+static bool IsPolygonSplitType (API_ElemTypeID typeID)
+{
+    return typeID == API_SlabID || typeID == API_MeshID || typeID == API_HatchID || typeID == API_PolyLineID;
+}
+
+static const API_Polygon& GetSplitElementPolygon (const API_Element& element)
+{
+    switch (GetElemTypeId (element.header)) {
+        case API_SlabID: return element.slab.poly;
+        case API_MeshID: return element.mesh.poly;
+        case API_HatchID: return element.hatch.poly;
+        default: return element.polyLine.poly;
+    }
+}
+
+// The half plane on one side of the infinite line through lineBeg and lineEnd. Polygon2D::Cut
+// and Polyline2D::Cut keep the part where ca * x + cb * y <= cc.
+static HalfPlane2DData GetSplitHalfPlane (const API_Coord& lineBeg, const API_Coord& lineEnd, bool otherSide)
+{
+    const double ex = lineEnd.x - lineBeg.x;
+    const double ey = lineEnd.y - lineBeg.y;
+    const double length = std::sqrt (ex * ex + ey * ey);
+    const double sign = otherSide ? -1.0 : 1.0;
+    const double ca = sign * ey / length;
+    const double cb = -sign * ex / length;
+    return HalfPlane2DData (ca, cb, ca * lineBeg.x + cb * lineBeg.y);
+}
+
+static GS::Array<Point2D> GetSplitMemoCoords (const API_ElementMemo& memo, Int32 nCoords)
+{
+    GS::Array<Point2D> coords;
+    for (Int32 i = 0; i <= nCoords; ++i) {
+        coords.Push (Point2D { (*memo.coords)[i].x, (*memo.coords)[i].y });
+    }
+    return coords;
+}
+
+static GS::Array<PolyArcRec> GetSplitMemoArcs (const API_ElementMemo& memo, Int32 nArcs)
+{
+    GS::Array<PolyArcRec> arcs;
+    for (Int32 i = 0; memo.parcs != nullptr && i < nArcs; ++i) {
+        PolyArcRec arc;
+        arc.begIndex = (UIndex) (*memo.parcs)[i].begIndex;
+        arc.endIndex = (UIndex) (*memo.parcs)[i].endIndex;
+        arc.arcAngle = (*memo.parcs)[i].arcAngle;
+        arcs.Push (arc);
+    }
+    return arcs;
+}
+
+static SplitPart GetSplitPolygonPart (const Geometry::Polygon2D& polygon)
+{
+    SplitPart part;
+    for (auto contourIt = polygon.EnumerateContour (); contourIt != nullptr; ++contourIt) {
+        SplitContour contour;
+        for (auto vertexIt = contourIt->EnumerateVertex (); vertexIt != nullptr; ++vertexIt) {
+            const Point2D& coord = vertexIt->GetCoord ();
+            contour.coords.Push (API_Coord { coord.x, coord.y });
+            const auto edgeIt = contourIt->GetNextEdge (vertexIt);
+            contour.arcAngles.Push (edgeIt->IsStraight () ? 0.0 : edgeIt->GetArcAngle ());
+        }
+        if (contour.coords.GetSize () > 1 && IsSame2DCoordinate (contour.coords.GetFirst (), contour.coords.GetLast ())) {
+            contour.coords.Pop ();
+            contour.arcAngles.Pop ();
+        }
+        if (contour.coords.GetSize () >= 3) {
+            part.Push (contour);
+        }
+    }
+    return part;
+}
+
+// Cuts the polygon of a slab, mesh or fill along the line. Each side may give more than one
+// part (a concave polygon); the part with the largest area comes first, the original keeps it.
+static GS::Optional<GS::UniString> CutSplitPolygon (const API_ElementMemo& memo, const API_Polygon& poly, const API_Coord& lineBeg, const API_Coord& lineEnd, GS::Array<SplitPart>& parts)
+{
+    if (memo.coords == nullptr || memo.pends == nullptr || poly.nCoords < 4 || poly.nSubPolys < 1) {
+        return GS::UniString ("The polygon of the element could not be read.");
+    }
+    GS::Array<UIndex> contourEnds;
+    for (Int32 i = 0; i <= poly.nSubPolys; ++i) {
+        contourEnds.Push ((UIndex) (*memo.pends)[i]);
+    }
+    const Geometry::MultiPolygon2D polygons = Geometry::Polygon2D::Create (GetSplitMemoCoords (memo, poly.nCoords), GetSplitMemoArcs (memo, poly.nArcs), contourEnds, Geometry::PolyCreateFlags_VBElemPolygonDataRepresentation);
+    if (polygons.GetSize () != 1) {
+        return GS::UniString ("The polygon of the element could not be read.");
+    }
+
+    UIndex largest = 0;
+    double largestArea = -1.0;
+    for (const bool otherSide : { false, true }) {
+        const Geometry::MultiPolygon2D side = polygons[0].Cut (GetSplitHalfPlane (lineBeg, lineEnd, otherSide));
+        const UIndex partsBefore = parts.GetSize ();
+        for (const Geometry::Polygon2D& piece : side) {
+            const SplitPart part = GetSplitPolygonPart (piece);
+            if (part.IsEmpty ()) {
+                continue;
+            }
+            const double area = std::fabs (piece.CalcArea ());
+            if (area > largestArea) {
+                largestArea = area;
+                largest = parts.GetSize ();
+            }
+            parts.Push (part);
+        }
+        // Nothing on one side: the line does not cross the polygon, or only touches it.
+        if (parts.GetSize () == partsBefore) {
+            parts.Clear ();
+            return GS::NoValue;
+        }
+    }
+
+    if (largest > 0) {
+        const SplitPart first = parts[largest];
+        parts.Delete (largest);
+        parts.Insert (0, first);
+    }
+    return GS::NoValue;
+}
+
+static SplitContour GetSplitPolylineContour (const Geometry::Polyline2D& polyline)
+{
+    SplitContour contour;
+    const USize nVertices = polyline.GetVertexNum ();
+    UIndex index = 0;
+    for (auto vertexIt = polyline.EnumerateVertex (); vertexIt != nullptr; ++vertexIt, ++index) {
+        const Point2D& coord = vertexIt->GetCoord ();
+        contour.coords.Push (API_Coord { coord.x, coord.y });
+        if (index + 1 < nVertices) {
+            const auto edgeIt = polyline.GetNextEdge (vertexIt);
+            contour.arcAngles.Push (edgeIt->IsStraight () ? 0.0 : edgeIt->GetArcAngle ());
+        }
+    }
+    return contour;
+}
+
+// Cuts a polyline along the line. It is cut at every crossing, so it may give more than two
+// parts; the original keeps the part with the polyline's begin point.
+static GS::Optional<GS::UniString> CutSplitPolyline (const API_ElementMemo& memo, const API_Polygon& poly, const API_Coord& lineBeg, const API_Coord& lineEnd, GS::Array<SplitPart>& parts)
+{
+    if (memo.coords == nullptr || poly.nCoords < 2) {
+        return GS::UniString ("The points of the polyline could not be read.");
+    }
+    if (poly.nSubPolys > 1) {
+        return GS::UniString ("Polylines with more than one contour cannot be split yet.");
+    }
+    const Geometry::Polyline2D polyline = Geometry::Polyline2D::Create (GetSplitMemoCoords (memo, poly.nCoords), GetSplitMemoArcs (memo, poly.nArcs), Geometry::PolyCreateFlags_DummyCoordAtIdxZero | Geometry::PolyCreateFlags_IdxRefInArcFromZero);
+    if (polyline.GetVertexNum () < 2) {
+        return GS::UniString ("The points of the polyline could not be read.");
+    }
+
+    const API_Coord begC = (*memo.coords)[1];
+    const API_Coord endC = (*memo.coords)[poly.nCoords];
+    const bool closed = IsSame2DCoordinate (begC, endC);
+
+    for (const bool otherSide : { false, true }) {
+        const Geometry::MultiPolyline2D side = polyline.Cut (GetSplitHalfPlane (lineBeg, lineEnd, otherSide));
+        GS::Array<SplitContour> contours;
+        for (const Geometry::Polyline2D& piece : side) {
+            SplitContour contour = GetSplitPolylineContour (piece);
+            if (contour.coords.GetSize () >= 2) {
+                contours.Push (contour);
+            }
+        }
+        // Nothing on one side: the line does not cross the polyline, or only touches it.
+        if (contours.IsEmpty ()) {
+            parts.Clear ();
+            return GS::NoValue;
+        }
+
+        // A closed polyline is cut at its begin point too: the piece that ends there and the one
+        // that starts there are one part.
+        if (closed) {
+            for (UIndex last = 0; last < contours.GetSize (); ++last) {
+                if (!IsSame2DCoordinate (contours[last].coords.GetLast (), begC)) {
+                    continue;
+                }
+                for (UIndex first = 0; first < contours.GetSize (); ++first) {
+                    if (first == last || !IsSame2DCoordinate (contours[first].coords.GetFirst (), begC)) {
+                        continue;
+                    }
+                    for (UIndex i = 1; i < contours[first].coords.GetSize (); ++i) {
+                        contours[last].coords.Push (contours[first].coords[i]);
+                    }
+                    for (const double arcAngle : contours[first].arcAngles) {
+                        contours[last].arcAngles.Push (arcAngle);
+                    }
+                    contours.Delete (first);
+                    break;
+                }
+                break;
+            }
+        }
+
+        for (const SplitContour& contour : contours) {
+            parts.Push (SplitPart { contour });
+        }
+    }
+
+    for (UIndex i = 1; i < parts.GetSize (); ++i) {
+        if (IsSame2DCoordinate (parts[i][0].coords.GetFirst (), begC)) {
+            const SplitPart first = parts[i];
+            parts.Delete (i);
+            parts.Insert (0, first);
+            break;
+        }
+    }
+    return GS::NoValue;
+}
+
+// The height of a point on the outline of the original mesh: interpolated along the edge it lies
+// on (an arc edge is taken by its chord), from the heights of the mesh's polygon points.
+static double GetSplitMeshHeight (const API_ElementMemo& memo, const API_Polygon& poly, const API_Coord& c)
+{
+    double bestDistance = std::numeric_limits<double>::max ();
+    double bestHeight = 0.0;
+    Int32 contour = 1;
+    for (Int32 i = 1; i < poly.nCoords; ++i) {
+        // The closing point of a contour starts no edge.
+        if (contour <= poly.nSubPolys && i == (*memo.pends)[contour]) {
+            ++contour;
+            continue;
+        }
+        const API_Coord& a = (*memo.coords)[i];
+        const API_Coord& b = (*memo.coords)[i + 1];
+        const double dx = b.x - a.x;
+        const double dy = b.y - a.y;
+        const double lengthSquare = dx * dx + dy * dy;
+        double t = lengthSquare < 1e-12 ? 0.0 : ((c.x - a.x) * dx + (c.y - a.y) * dy) / lengthSquare;
+        t = std::max (0.0, std::min (1.0, t));
+        const double px = a.x + dx * t - c.x;
+        const double py = a.y + dy * t - c.y;
+        const double distance = std::sqrt (px * px + py * py);
+        if (distance < bestDistance) {
+            bestDistance = distance;
+            bestHeight = (*memo.meshPolyZ)[i] + ((*memo.meshPolyZ)[i + 1] - (*memo.meshPolyZ)[i]) * t;
+        }
+    }
+    return bestHeight;
+}
+
+// One contour in the JSON format of the Create/Modify commands: its points, and its arcs indexed
+// from its first point. originalMemo is given for a mesh, whose points get their heights from it.
+static void GetSplitContourObjectStates (const SplitContour& contour, bool closed, const API_ElementMemo* originalMemo, const API_Polygon& originalPoly, GS::Array<GS::ObjectState>& coords, GS::Array<GS::ObjectState>& arcs)
+{
+    for (const API_Coord& c : contour.coords) {
+        if (originalMemo != nullptr) {
+            coords.Push (Create3DCoordinateObjectState (API_Coord3D { c.x, c.y, GetSplitMeshHeight (*originalMemo, originalPoly, c) }));
+        } else {
+            coords.Push (Create2DCoordinateObjectState (c));
+        }
+    }
+    const UIndex nEdges = closed ? contour.coords.GetSize () : contour.coords.GetSize () - 1;
+    for (UIndex i = 0; i < nEdges && i < contour.arcAngles.GetSize (); ++i) {
+        if (std::fabs (contour.arcAngles[i]) > 1e-9) {
+            arcs.Push (GS::ObjectState ("begIndex", (Int32) i, "endIndex", (Int32) i + 1, "arcAngle", contour.arcAngles[i]));
+        }
+    }
+}
+
+// Writes the points of a polyline as SetDetailsOfElements does: a dummy (-1, 0) point at index 0,
+// one vertex ID per point and the largest of them at index 0.
+static bool BuildSplitPolyLineMemo (const GS::Array<GS::ObjectState>& coordinates, const GS::Array<GS::ObjectState>& arcs, API_Polygon& poly, API_ElementMemo& memo)
+{
+    const GS::Array<API_PolyArc> polyArcs = GetPolyArcs (arcs, 1);
+    const Int32 nCoords = (Int32) coordinates.GetSize ();
+    memo.coords    = reinterpret_cast<API_Coord**>   (BMAllocateHandle ((nCoords + 1) * sizeof (API_Coord), ALLOCATE_CLEAR, 0));
+    memo.pends     = reinterpret_cast<Int32**>       (BMAllocateHandle (2 * sizeof (Int32), ALLOCATE_CLEAR, 0));
+    memo.parcs     = reinterpret_cast<API_PolyArc**> (BMAllocateHandle (polyArcs.GetSize () * sizeof (API_PolyArc), ALLOCATE_CLEAR, 0));
+    memo.vertexIDs = reinterpret_cast<UInt32**>      (BMAllocateHandle ((nCoords + 1) * sizeof (UInt32), ALLOCATE_CLEAR, 0));
+    if (memo.coords == nullptr || memo.pends == nullptr || memo.vertexIDs == nullptr) {
+        return false;
+    }
+    (*memo.coords)[0] = { -1.0, 0.0 };
+    (*memo.vertexIDs)[0] = (UInt32) nCoords;
+    for (Int32 i = 0; i < nCoords; ++i) {
+        (*memo.coords)[i + 1] = Get2DCoordinateFromObjectState (coordinates[i]);
+        (*memo.vertexIDs)[i + 1] = (UInt32) (i + 1);
+    }
+    (*memo.pends)[0] = 0;
+    (*memo.pends)[1] = nCoords;
+    if (memo.parcs != nullptr) {
+        Int32 iArc = 0;
+        for (const API_PolyArc& a : polyArcs) {
+            (*memo.parcs)[iArc++] = a;
+        }
+    }
+    poly.nCoords = nCoords;
+    poly.nSubPolys = 1;
+    poly.nArcs = (Int32) polyArcs.GetSize ();
+    return true;
+}
+
+// Gives one part to the element: its outline and holes, or its polyline points. Each type is
+// changed the way its Modify command (ModifySlabs, ModifyMeshes, SetDetailsOfElements for fills
+// and polylines) changes it.
+static GSErrCode SetSplitPartGeometry (const API_Guid& elemGuid, const SplitPart& part, const API_ElementMemo& originalMemo, const API_Polygon& originalPoly, GS::UniString& message)
+{
+    API_Element element = {};
+    element.header.guid = elemGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        message = "the element could not be read";
+        return err;
+    }
+    const API_ElemTypeID typeID = GetElemTypeId (element.header);
+
+    GS::Array<GS::ObjectState> coords;
+    GS::Array<GS::ObjectState> arcs;
+    GS::Array<GS::ObjectState> holes;
+    const bool closed = typeID != API_PolyLineID;
+    const API_ElementMemo* heightMemo = typeID == API_MeshID ? &originalMemo : nullptr;
+    GetSplitContourObjectStates (part[0], closed, heightMemo, originalPoly, coords, arcs);
+    for (UIndex i = 1; i < part.GetSize (); ++i) {
+        GS::Array<GS::ObjectState> holeCoords;
+        GS::Array<GS::ObjectState> holeArcs;
+        GetSplitContourObjectStates (part[i], closed, heightMemo, originalPoly, holeCoords, holeArcs);
+        GS::ObjectState hole;
+        hole.Add ("polygonOutline", holeCoords);
+        if (!holeArcs.IsEmpty ()) {
+            hole.Add ("polygonArcs", holeArcs);
+        }
+        holes.Push (hole);
+    }
+
+    switch (typeID) {
+        case API_SlabID: {
+            const GS::Optional<GS::UniString> error = ChangeSlabPolygonKeepingEdges (element, coords, arcs, holes, err);
+            if (error.HasValue ()) {
+                message = *error;
+            }
+            return err;
+        }
+        case API_MeshID: {
+            API_ElementMemo memo = {};
+            const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+            err = ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_Polygon | APIMemoMask_MeshPolyZ);
+            if (err != NoError) {
+                message = "the polygon of the mesh could not be read";
+                return err;
+            }
+            const GS::Optional<GS::UniString> error = BuildMeshPolyMemoFromGeometry (element, memo, coords, arcs, holes);
+            if (error.HasValue ()) {
+                message = *error;
+                return APIERR_BADPARS;
+            }
+            API_Element mask;
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_Polygon | APIMemoMask_MeshPolyZ, true);
+            if (err != NoError) {
+                message = "the polygon of the mesh could not be changed";
+            }
+            return err;
+        }
+        case API_HatchID:
+        case API_PolyLineID: {
+            API_ElementMemo memo = {};
+            const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+            API_Element mask;
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            bool built = false;
+            if (typeID == API_HatchID) {
+                built = BuildHatchPolygonMemo (coords, arcs, holes, element.hatch.poly, memo);
+                ACAPI_ELEMENT_MASK_SET (mask, API_HatchType, poly);
+            } else {
+                built = BuildSplitPolyLineMemo (coords, arcs, element.polyLine.poly, memo);
+                ACAPI_ELEMENT_MASK_SET (mask, API_PolyLineType, poly);
+            }
+            if (!built) {
+                message = "out of memory";
+                return APIERR_MEMFULL;
+            }
+            err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_Polygon, true);
+            if (err != NoError) {
+                message = "the points of the element could not be changed";
+            }
+            return err;
+        }
+        default:
+            message = "the type of the element cannot be split";
+            return APIERR_BADELEMENTTYPE;
+    }
+}
+
+// Copies the element as CopyElementForSplit does, then moves the copy back onto the original, so
+// whatever Drag a Copy moved with it (the origin of a fill pattern, for example) is where the
+// original has it. Returns the guid of the copy.
+static GSErrCode CopyElementInPlaceForSplit (const API_Guid& elemGuid, API_Guid& copyGuid)
+{
+    GSErrCode err = CopyElementForSplit (elemGuid, copyGuid);
+    if (err != NoError) {
+        return err;
+    }
+
+    GS::Array<API_Neig> elementsToMove = { API_Neig (copyGuid) };
+    API_EditPars editPars = {};
+    editPars.typeID = APIEdit_Drag;
+    editPars.endC = API_Coord3D { -1.0, 0.0, 0.0 };
+    editPars.withDelete = true;
+    err = ACAPI_Element_Edit (&elementsToMove, editPars);
+    if (err != NoError) {
+        ACAPI_Element_Delete ({ copyGuid });
+        return err;
+    }
+    if (elementsToMove.GetSize () == 1 && elementsToMove[0].guid != APINULLGuid) {
+        copyGuid = elementsToMove[0].guid;
+    }
+    return NoError;
+}
+
+static GS::ObjectState SplitPolygonElement (const API_Element& element, const API_Coord& lineBeg, const API_Coord& lineEnd, ElementChangeReporter& changeReporter)
+{
+    const API_Guid elemGuid = element.header.guid;
+    const API_ElemTypeID typeID = GetElemTypeId (element.header);
+    if (typeID == API_MeshID && element.mesh.levelLines.nSubLines > 0) {
+        return CreateErrorResponse (APIERR_BADELEMENTTYPE, "Meshes with level lines or level points cannot be split yet.");
+    }
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    GSErrCode err = ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_Polygon | (typeID == API_MeshID ? APIMemoMask_MeshPolyZ : 0));
+    if (err != NoError || (typeID == API_MeshID && memo.meshPolyZ == nullptr)) {
+        return CreateErrorResponse (err != NoError ? err : APIERR_GENERAL, "Failed to read the polygon of the element.");
+    }
+    const API_Polygon& poly = GetSplitElementPolygon (element);
+
+    GS::Array<SplitPart> parts;
+    const GS::Optional<GS::UniString> refusal = typeID == API_PolyLineID
+        ? CutSplitPolyline (memo, poly, lineBeg, lineEnd, parts)
+        : CutSplitPolygon (memo, poly, lineBeg, lineEnd, parts);
+    if (refusal.HasValue ()) {
+        return CreateErrorResponse (APIERR_GENERAL, *refusal);
+    }
+    if (parts.GetSize () < 2) {
+        return GS::ObjectState ("notCut", true);
+    }
+
+    const GS::Optional<GS::ObjectState> editRefusal = GetSplitEditRefusal (element);
+    if (editRefusal.HasValue ()) {
+        return *editRefusal;
+    }
+
+    // The new parts first, each a copy of the untouched original; the original is changed last.
+    GS::Array<API_Guid> copies;
+    GS::UniString message;
+    for (UIndex i = 1; i < parts.GetSize (); ++i) {
+        API_Guid copyGuid = APINULLGuid;
+        err = CopyElementInPlaceForSplit (elemGuid, copyGuid);
+        if (err != NoError) {
+            if (!copies.IsEmpty ()) {
+                ACAPI_Element_Delete (copies);
+            }
+            return CreateErrorResponse (err, "Failed to copy the element for the split, it was left as it was.");
+        }
+        copies.Push (copyGuid);
+        err = SetSplitPartGeometry (copyGuid, parts[i], memo, poly, message);
+        if (err != NoError) {
+            ACAPI_Element_Delete (copies);
+            return CreateErrorResponse (err, "Failed to set the geometry of a new part (" + message + "), the element was left as it was.");
+        }
+    }
+
+    changeReporter.Add (elemGuid);
+    err = SetSplitPartGeometry (elemGuid, parts[0], memo, poly, message);
+    if (err != NoError) {
+        ACAPI_Element_Delete (copies);
+        const GS::UniString reason = DescribeElementEditRefusal (err, element.header);
+        return CreateErrorResponse (err, "Failed to change the element (" + (reason.IsEmpty () ? message : reason) + "), it was left as it was.");
+    }
+    changeReporter.MarkChanged (elemGuid);
+
+    GS::ObjectState splitResult;
+    const auto& resultParts = splitResult.AddList<GS::ObjectState> ("elements");
+    resultParts (CreateElementIdObjectState (elemGuid));
+    for (const API_Guid& copyGuid : copies) {
+        resultParts (CreateElementIdObjectState (copyGuid));
+    }
+    return splitResult;
+}
+
 GS::ObjectState SplitElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elements;
@@ -8063,6 +8578,11 @@ GS::ObjectState SplitElementsCommand::Execute (const GS::ObjectState& parameters
                 continue;
             }
 
+            if (IsPolygonSplitType (GetElemTypeId (element.header))) {
+                results (SplitPolygonElement (element, lineBeg, lineEnd, changeReporter));
+                continue;
+            }
+
             API_Coord begC = {};
             API_Coord endC = {};
             const GS::Optional<GS::UniString> refusal = GetSplitRefusal (element, begC, endC);
@@ -8077,18 +8597,9 @@ GS::ObjectState SplitElementsCommand::Execute (const GS::ObjectState& parameters
                 continue;
             }
 
-            const GS::Optional<GS::ObjectState> notEditableResult = GetFailedExecutionResultIfNotEditable (elemGuid, "split");
-            if (notEditableResult.HasValue ()) {
-                GS::ObjectState error;
-                notEditableResult->Get ("error", error);
-                results (GS::ObjectState ("error", error));
-                continue;
-            }
-
-            // Drag a Copy of a grouped element copies its whole group (unless the groups are
-            // suspended), which would leave copies of the other members behind.
-            if (element.header.groupGuid != APINULLGuid) {
-                results (CreateErrorResponse (APIERR_GENERAL, "The element is in a group. Ungroup it first."));
+            const GS::Optional<GS::ObjectState> editRefusal = GetSplitEditRefusal (element);
+            if (editRefusal.HasValue ()) {
+                results (*editRefusal);
                 continue;
             }
 
