@@ -856,6 +856,54 @@ static API_NumberingTypeValues DrawingNumberingTypeFromString (const GS::UniStri
     return APINumbering_ByLayout;
 }
 
+// Drawing Settings > Pens and Colors: which pen table the drawing uses (API_PenTableUsageModeValues).
+static GS::UniString DrawingPenTableUsageModeToString (API_PenTableUsageModeValues mode)
+{
+    switch (mode) {
+        case APIPenTableUsageMode_UseModelPenTable:  return "ModelPenTable";
+        case APIPenTableUsageMode_UsePenTableIndex:  return "PenTableIndex";
+        default:
+        case APIPenTableUsageMode_UseOwnPenTable:    return "OwnPenTable";
+    }
+}
+
+static bool DrawingPenTableUsageModeFromString (const GS::UniString& str, API_PenTableUsageModeValues& mode)
+{
+    if (str == "OwnPenTable")   { mode = APIPenTableUsageMode_UseOwnPenTable;   return true; }
+    if (str == "ModelPenTable") { mode = APIPenTableUsageMode_UseModelPenTable; return true; }
+    if (str == "PenTableIndex") { mode = APIPenTableUsageMode_UsePenTableIndex; return true; }
+    return false;
+}
+
+// Drawing Settings > Pens and Colors: original colors, black and white or grayscale (API_ColorModeValues).
+static GS::UniString DrawingColorModeToString (API_ColorModeValues mode)
+{
+    switch (mode) {
+        case APIColorMode_BlackAndWhite:  return "BlackAndWhite";
+        case APIColorMode_GrayScale:      return "Grayscale";
+        default:
+        case APIColorMode_OriginalColors: return "OriginalColors";
+    }
+}
+
+static bool DrawingColorModeFromString (const GS::UniString& str, API_ColorModeValues& mode)
+{
+    if (str == "OriginalColors") { mode = APIColorMode_OriginalColors; return true; }
+    if (str == "BlackAndWhite")  { mode = APIColorMode_BlackAndWhite;  return true; }
+    if (str == "Grayscale")      { mode = APIColorMode_GrayScale;      return true; }
+    return false;
+}
+
+static bool DrawingAnchorPointFromString (const GS::UniString& str, API_AnchorID& anchor)
+{
+    // AnchorIdFromString falls back to its default for an unknown name; MM is its own "Center".
+    const API_AnchorID parsed = AnchorIdFromString (str, APIAnc_MM);
+    if (parsed == APIAnc_MM && str != "Center")
+        return false;
+    anchor = parsed;
+    return true;
+}
+
 // The status ACAPI_Drawing_CheckDrawingStatus reports is the Drawing Manager's Status column:
 // 1 is OK (the drawing is up to date with its source), 0 is Modified (the source changed since
 // the drawing was last updated). Anything else (-1, e.g. a source that cannot be checked, like
@@ -2997,6 +3045,14 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("borderLineTypeIndex", GetAttributeIndex (elem.drawing.borderLineType));
                 typeSpecificDetails.Add ("borderPenIndex",      (Int32)elem.drawing.borderPen);
                 typeSpecificDetails.Add ("borderSize",          elem.drawing.borderSize);
+                // Drawing Settings > Pens and Colors and the anchor (#2230).
+                typeSpecificDetails.Add ("penTableUsageMode",       DrawingPenTableUsageModeToString (elem.drawing.penTableUsageMode));
+                typeSpecificDetails.Add ("penTableIndex",           GetAttributeIndex (elem.drawing.penTableIndex));
+                typeSpecificDetails.Add ("colorMode",               DrawingColorModeToString (elem.drawing.colorMode));
+                typeSpecificDetails.Add ("isTransparentBackground", elem.drawing.isTransparentBk);
+                typeSpecificDetails.Add ("rasterizeDPI",            elem.drawing.rasterizeDPI);
+                typeSpecificDetails.Add ("anchorPoint",             AnchorIdToString (elem.drawing.anchorPoint));
+                typeSpecificDetails.Add ("useOwnOriginAsAnchor",    elem.drawing.useOwnOrigoAsAnchor);
                 // Drawing Manager columns: Update Type and Stored in Project come from the element
                 // itself, Status and Source from their own API calls.
                 typeSpecificDetails.Add ("manualUpdate",    elem.drawing.manualUpdate);
@@ -3383,6 +3439,53 @@ static bool GetIndexValue (const GS::ObjectState& os, const char* fieldName, Int
     return false;
 }
 
+// The Drawing settings of Pens and Colors and of the anchor (#2230) a SetDetailsOfElements call
+// gave. ACAPI_Element_Change can return NoError and keep a value it does not take (as it does
+// with drawingScale, #1476), so they are read back and a value not taken is named.
+struct RequestedDrawingSettings {
+    GS::Optional<API_PenTableUsageModeValues> penTableUsageMode;
+    GS::Optional<Int32>                       penTableIndex;
+    GS::Optional<API_ColorModeValues>         colorMode;
+    GS::Optional<bool>                        isTransparentBk;
+    GS::Optional<double>                      rasterizeDPI;
+    GS::Optional<API_AnchorID>                anchorPoint;
+    GS::Optional<bool>                        useOwnOrigoAsAnchor;
+
+    bool HasValue () const
+    {
+        return penTableUsageMode.HasValue () || penTableIndex.HasValue () || colorMode.HasValue () ||
+            isTransparentBk.HasValue () || rasterizeDPI.HasValue () || anchorPoint.HasValue () || useOwnOrigoAsAnchor.HasValue ();
+    }
+
+    // The names of the given settings the drawing does not have, comma separated; empty when all were taken.
+    GS::UniString NotApplied (const API_DrawingType& drawing) const
+    {
+        GS::Array<GS::UniString> names;
+        if (penTableUsageMode.HasValue () && drawing.penTableUsageMode != *penTableUsageMode)
+            names.Push ("penTableUsageMode");
+        if (penTableIndex.HasValue () && GetAttributeIndex (drawing.penTableIndex) != *penTableIndex)
+            names.Push ("penTableIndex");
+        if (colorMode.HasValue () && drawing.colorMode != *colorMode)
+            names.Push ("colorMode");
+        if (isTransparentBk.HasValue () && drawing.isTransparentBk != *isTransparentBk)
+            names.Push ("isTransparentBackground");
+        if (rasterizeDPI.HasValue () && GS::Abs (drawing.rasterizeDPI - *rasterizeDPI) > 1e-6)
+            names.Push ("rasterizeDPI");
+        if (anchorPoint.HasValue () && drawing.anchorPoint != *anchorPoint)
+            names.Push ("anchorPoint");
+        if (useOwnOrigoAsAnchor.HasValue () && drawing.useOwnOrigoAsAnchor != *useOwnOrigoAsAnchor)
+            names.Push ("useOwnOriginAsAnchor");
+
+        GS::UniString result;
+        for (const GS::UniString& name : names) {
+            if (!result.IsEmpty ())
+                result += ", ";
+            result += name;
+        }
+        return result;
+    }
+};
+
 GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elementsWithDetails;
@@ -3474,6 +3577,7 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             short drwIndexTarget = -1;
             GetIndexValue (*details, "drawIndex", drwIndexTarget);
             GS::Optional<double> requestedDrawingScale;
+            RequestedDrawingSettings requestedDrawingSettings;
 
             API_ElementMemo clipMemo = {};
             UInt64 memoMask = 0;
@@ -3694,6 +3798,44 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         }
                         if (typeSpecificDetails->Get ("titleLibraryPartIndex", elem.drawing.title.libInd)) {
                             ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, title.libInd);
+                        }
+                        // Drawing Settings > Pens and Colors (#2230).
+                        GS::UniString penTableUsageModeStr;
+                        if (typeSpecificDetails->Get ("penTableUsageMode", penTableUsageModeStr) &&
+                            DrawingPenTableUsageModeFromString (penTableUsageModeStr, elem.drawing.penTableUsageMode)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, penTableUsageMode);
+                            requestedDrawingSettings.penTableUsageMode = elem.drawing.penTableUsageMode;
+                        }
+                        Int32 penTableIndex = 0;
+                        if (GetIndexValue (*typeSpecificDetails, "penTableIndex", penTableIndex) && penTableIndex > 0) {
+                            elem.drawing.penTableIndex = ACAPI_CreateAttributeIndex (penTableIndex);
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, penTableIndex);
+                            requestedDrawingSettings.penTableIndex = penTableIndex;
+                        }
+                        GS::UniString colorModeStr;
+                        if (typeSpecificDetails->Get ("colorMode", colorModeStr) &&
+                            DrawingColorModeFromString (colorModeStr, elem.drawing.colorMode)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, colorMode);
+                            requestedDrawingSettings.colorMode = elem.drawing.colorMode;
+                        }
+                        if (typeSpecificDetails->Get ("isTransparentBackground", elem.drawing.isTransparentBk)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, isTransparentBk);
+                            requestedDrawingSettings.isTransparentBk = elem.drawing.isTransparentBk;
+                        }
+                        if (typeSpecificDetails->Get ("rasterizeDPI", elem.drawing.rasterizeDPI)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, rasterizeDPI);
+                            requestedDrawingSettings.rasterizeDPI = elem.drawing.rasterizeDPI;
+                        }
+                        // Drawing Settings > Size and Display: the anchor point the drawing is placed by.
+                        GS::UniString anchorPointStr;
+                        if (typeSpecificDetails->Get ("anchorPoint", anchorPointStr) &&
+                            DrawingAnchorPointFromString (anchorPointStr, elem.drawing.anchorPoint)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, anchorPoint);
+                            requestedDrawingSettings.anchorPoint = elem.drawing.anchorPoint;
+                        }
+                        if (typeSpecificDetails->Get ("useOwnOriginAsAnchor", elem.drawing.useOwnOrigoAsAnchor)) {
+                            ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, useOwnOrigoAsAnchor);
+                            requestedDrawingSettings.useOwnOrigoAsAnchor = elem.drawing.useOwnOrigoAsAnchor;
                         }
                     } break;
                     case API_TextID: {
@@ -4070,6 +4212,18 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         "Archicad did not apply drawingScale: it stayed %g instead of %g. The other details given were applied.",
                         changedElem.drawing.drawingScale, *requestedDrawingScale)));
                     continue;
+                }
+            }
+            if (requestedDrawingSettings.HasValue ()) {
+                API_Element changedElem = {};
+                changedElem.header.guid = elem.header.guid;
+                if (ACAPI_Element_Get (&changedElem) == NoError) {
+                    const GS::UniString notApplied = requestedDrawingSettings.NotApplied (changedElem.drawing);
+                    if (!notApplied.IsEmpty ()) {
+                        executionResults (CreateFailedExecutionResult (APIERR_GENERAL,
+                            "Archicad did not apply " + notApplied + " of the Drawing. The other details given were applied."));
+                        continue;
+                    }
                 }
             }
 
