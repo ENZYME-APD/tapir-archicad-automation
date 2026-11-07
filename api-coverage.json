@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 07:46 UTC",
+ "generatedAt": "2026-11-07 08:44 UTC",
  "versions": [
   25,
   26,
@@ -4045,6 +4045,10 @@
    ],
    "issues": [
     {
+     "number": 2186,
+     "title": "New command: run several commands as one undo step"
+    },
+    {
      "number": 1820,
      "title": "Run several commands as one undo step"
     },
@@ -6646,7 +6650,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2188,
+     "title": "New commands: scale, stretch, align and distribute elements"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_CalcCoreOffsetToSideOffset",
@@ -7021,6 +7030,10 @@
    "reason": "",
    "pullRequests": [],
    "issues": [
+    {
+     "number": 2187,
+     "title": "New commands: copy elements, make an array of copies, offset copies"
+    },
     {
      "number": 1914,
      "title": "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found"
@@ -9805,7 +9818,12 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "add-on infrastructure",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2185,
+     "title": "[2/2] Add-On: \"Update when Archicad closes\" choice, pending marker and README (#2182)"
+    }
+   ],
    "issues": []
   },
   {
@@ -9827,6 +9845,10 @@
    "status": "not applicable",
    "reason": "add-on infrastructure",
    "pullRequests": [
+    {
+     "number": 2185,
+     "title": "[2/2] Add-On: \"Update when Archicad closes\" choice, pending marker and README (#2182)"
+    },
     {
      "number": 2181,
      "title": "Update button in the Tapir palette, menu item shows a waiting update"

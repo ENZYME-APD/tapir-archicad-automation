@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 07:46 UTC",
+ "generatedAt": "2026-11-07 08:44 UTC",
  "counts": {
   "done": 568,
   "merged": 178,
@@ -1324,7 +1324,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2193,
+     "title": "Long-running commands: progress reporting and cancel"
+    }
+   ]
   },
   {
    "id": "ChangeHotlinkNodes",
@@ -1572,7 +1577,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2194,
+     "title": "New commands: copy elements to the clipboard and paste, and move elements between open projects"
+    }
+   ]
   },
   {
    "id": "SaveProjectAsArchive",
@@ -2376,7 +2386,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2193,
+     "title": "Long-running commands: progress reporting and cancel"
+    }
+   ]
   },
   {
    "id": "GetAllElements",
@@ -3392,7 +3407,16 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2193,
+     "title": "Long-running commands: progress reporting and cancel"
+    },
+    {
+     "number": 2189,
+     "title": "New commands: list, read and export Interactive Schedules"
+    }
+   ]
   },
   {
    "id": "TriangulatePolygonsOfElements",
@@ -4124,7 +4148,16 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2188,
+     "title": "New commands: scale, stretch, align and distribute elements"
+    },
+    {
+     "number": 2187,
+     "title": "New commands: copy elements, make an array of copies, offset copies"
+    }
+   ]
   },
   {
    "id": "CopyElementsToDatabase",
@@ -4202,7 +4235,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2187,
+     "title": "New commands: copy elements, make an array of copies, offset copies"
+    }
+   ]
   },
   {
    "id": "MirrorElements",
@@ -4224,7 +4262,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2187,
+     "title": "New commands: copy elements, make an array of copies, offset copies"
+    }
+   ]
   },
   {
    "id": "DeleteElements",
@@ -13323,7 +13366,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2193,
+     "title": "Long-running commands: progress reporting and cancel"
+    }
+   ]
   },
   {
    "id": "GetPublisherSets",
@@ -16448,7 +16496,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2187,
+     "title": "New commands: copy elements, make an array of copies, offset copies"
+    }
+   ]
   },
   {
    "id": "GetDesignOptionCombinationOfViews",
@@ -19171,7 +19224,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2191,
+     "title": "New commands: split elements, explode into pieces, fillet and chamfer corners"
+    }
+   ]
   },
   {
    "id": "RemoveElementTrims",
@@ -19239,7 +19297,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2191,
+     "title": "New commands: split elements, explode into pieces, fillet and chamfer corners"
+    }
+   ]
   },
   {
    "id": "UnmergeElements",
@@ -19263,7 +19326,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2191,
+     "title": "New commands: split elements, explode into pieces, fillet and chamfer corners"
+    }
+   ]
   },
   {
    "id": "GetMergedElements",
