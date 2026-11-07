@@ -2876,6 +2876,61 @@ GS::ObjectState GetElementFromUserCommand::Execute (const GS::ObjectState& param
     }
 }
 
+// ---------------------------------------------------------------------------
+// GetCurrentTool
+// ---------------------------------------------------------------------------
+
+GetCurrentToolCommand::GetCurrentToolCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetCurrentToolCommand::GetName () const
+{
+    return "GetCurrentTool";
+}
+
+GS::Optional<GS::UniString> GetCurrentToolCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "type": "string",
+                "description": "The element type of the active tool in the Toolbox (one of the ElementType values, or Unknown). Missing when the active tool makes no element, e.g. the Arrow or the Marquee."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::ObjectState GetCurrentToolCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_ToolBoxItem toolBoxItem = {};
+#ifdef ServerMainVers_2700
+    const GSErrCode err = ACAPI_Toolbox_GetToolBoxMode (&toolBoxItem);
+#else
+    const GSErrCode err = ACAPI_Environment (APIEnv_GetToolBoxModeID, &toolBoxItem);
+#endif
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the active tool.");
+    }
+
+#ifdef ServerMainVers_2600
+    const API_ElemTypeID typeID = toolBoxItem.type.typeID;
+#else
+    const API_ElemTypeID typeID = toolBoxItem.typeID;
+#endif
+
+    GS::ObjectState response;
+    // The Arrow and the Marquee have no element type (API_ZombieElemID).
+    if (typeID != API_ZombieElemID) {
+        response.Add ("elementType", GetElementTypeNonLocalizedName (typeID));
+    }
+    return response;
+}
+
 GetDialogAutoCloseCommand::GetDialogAutoCloseCommand () :
     CommandBase (CommonSchema::NotUsed)
 {

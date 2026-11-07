@@ -11850,3 +11850,382 @@ GS::ObjectState GetUnusedAttributesCommand::Execute (const GS::ObjectState& para
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "GetUnusedAttributes requires Archicad 27 or newer.");
 #endif
 }
+
+// Reads the tool defaults of a plain element type (generic variation), without the memo.
+static GSErrCode GetElementDefaultsOfType (API_ElemTypeID typeID, API_Element& defaults)
+{
+    defaults = {};
+#ifdef ServerMainVers_2600
+    defaults.header.type = typeID;
+#else
+    defaults.header.typeID = typeID;
+#endif
+    return ACAPI_Element_GetDefaults (&defaults, nullptr);
+}
+
+GetLayerOfElementDefaultsCommand::GetLayerOfElementDefaultsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLayerOfElementDefaultsCommand::GetName () const
+{
+    return "GetLayerOfElementDefaults";
+}
+
+GS::Optional<GS::UniString> GetLayerOfElementDefaultsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementTypes": {
+                "type": "array",
+                "description": "The element types whose tool defaults are read.",
+                "items": {
+                    "$ref": "#/ElementType"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementTypes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLayerOfElementDefaultsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "layersOfElementDefaults": {
+                "type": "array",
+                "description": "One item per element type, in the input order: the layer of its tool defaults, or an error when the type is unknown or has no tool defaults.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementType": {
+                                    "$ref": "#/ElementType"
+                                },
+                                "layerId": {
+                                    "$ref": "#/AttributeId",
+                                    "description": "The layer new elements of this type are placed on."
+                                },
+                                "layerName": {
+                                    "type": "string",
+                                    "description": "The name of the layer."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementType",
+                                "layerId",
+                                "layerName"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "layersOfElementDefaults"
+        ]
+    })";
+}
+
+GS::ObjectState GetLayerOfElementDefaultsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::UniString> elementTypes;
+    parameters.Get ("elementTypes", elementTypes);
+
+    GS::ObjectState response;
+    const auto& layersOfElementDefaults = response.AddList<GS::ObjectState> ("layersOfElementDefaults");
+
+    for (const GS::UniString& elementType : elementTypes) {
+        const API_ElemTypeID typeID = GetElementTypeFromNonLocalizedName (elementType);
+        if (typeID == API_ZombieElemID) {
+            layersOfElementDefaults (CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Unknown element type: ") + elementType));
+            continue;
+        }
+
+        API_Element defaults = {};
+        GSErrCode err = GetElementDefaultsOfType (typeID, defaults);
+        if (err != NoError) {
+            layersOfElementDefaults (CreateErrorResponse (err, GS::UniString ("Failed to read the tool defaults of ") + elementType + "."));
+            continue;
+        }
+
+        GS::UniString layerName;
+        API_Attribute layer = {};
+        layer.header.typeID = API_LayerID;
+        layer.header.index = defaults.header.layer;
+        layer.header.uniStringNamePtr = &layerName;
+        err = ACAPI_Attribute_Get (&layer);
+        if (err != NoError) {
+            layersOfElementDefaults (CreateErrorResponse (err, GS::UniString ("Failed to read the layer of the tool defaults of ") + elementType + "."));
+            continue;
+        }
+
+        GS::ObjectState item;
+        item.Add ("elementType", elementType);
+        item.Add ("layerId", CreateGuidObjectState (layer.header.guid));
+        item.Add ("layerName", layerName);
+        layersOfElementDefaults (item);
+    }
+
+    return response;
+}
+
+SetLayerOfElementDefaultsCommand::SetLayerOfElementDefaultsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetLayerOfElementDefaultsCommand::GetName () const
+{
+    return "SetLayerOfElementDefaults";
+}
+
+GS::Optional<GS::UniString> SetLayerOfElementDefaultsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "layersOfElementDefaults": {
+                "type": "array",
+                "description": "The element types whose tool defaults get a new layer.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementType": {
+                            "$ref": "#/ElementType"
+                        },
+                        "layerId": {
+                            "$ref": "#/AttributeId",
+                            "description": "The layer new elements of this type will be placed on."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementType",
+                        "layerId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "layersOfElementDefaults"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetLayerOfElementDefaultsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per item, in the input order."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetLayerOfElementDefaultsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> items;
+    parameters.Get ("layersOfElementDefaults", items);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& item : items) {
+        GS::UniString elementType;
+        item.Get ("elementType", elementType);
+        const API_ElemTypeID typeID = GetElementTypeFromNonLocalizedName (elementType);
+        if (typeID == API_ZombieElemID) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString ("Unknown element type: ") + elementType));
+            continue;
+        }
+
+        const GS::ObjectState* layerId = item.Get ("layerId");
+        if (layerId == nullptr) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "layerId is missing."));
+            continue;
+        }
+        const API_AttributeIndex layerIndex = GetAttributeIndexFromGuid (API_LayerID, GetGuidFromObjectState (*layerId));
+        if (GetAttributeIndex (layerIndex) <= 0) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADID, "Layer not found."));
+            continue;
+        }
+
+        API_Element defaults = {};
+        GSErrCode err = GetElementDefaultsOfType (typeID, defaults);
+        if (err != NoError) {
+            executionResults (CreateFailedExecutionResult (err, GS::UniString ("Failed to read the tool defaults of ") + elementType + "."));
+            continue;
+        }
+
+        // Only the layer is written: the mask leaves every other field of the defaults as it is.
+        API_Element mask = {};
+        ACAPI_ELEMENT_MASK_CLEAR (mask);
+        ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
+        defaults.header.layer = layerIndex;
+        err = ACAPI_Element_ChangeDefaults (&defaults, nullptr, &mask);
+        executionResults (err == NoError
+            ? CreateSuccessfulExecutionResult ()
+            : CreateFailedExecutionResult (err, GS::UniString ("Failed to change the tool defaults of ") + elementType + "."));
+    }
+
+    return response;
+}
+
+RenameAttributesCommand::RenameAttributesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RenameAttributesCommand::GetName () const
+{
+    return "RenameAttributes";
+}
+
+GS::Optional<GS::UniString> RenameAttributesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "attributes": {
+                "type": "array",
+                "description": "The attributes to rename, of any type.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "attributeId": {
+                            "$ref": "#/AttributeId"
+                        },
+                        "newName": {
+                            "type": "string",
+                            "description": "The new name of the attribute. It must not be empty or the name of another attribute of the same type."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "attributeId",
+                        "newName"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributes"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> RenameAttributesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per attribute, in the input order."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+// Renames one attribute in place, so it keeps its index and guid. The attribute and its extended definition are
+// read and written back with only the name changed (the way ReindexAttributes and ImportAttributesFromProject write
+// attributes), so composites, profiles, layer combinations and pen tables keep their content.
+static GS::ObjectState RenameAttribute (const API_Guid& guid, const GS::UniString& newName)
+{
+    if (newName.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "newName must not be empty.");
+    }
+
+    const API_Attr_Head head = GetAttributeHeadFromGuid (guid);
+    if (head.typeID == API_ZombieAttrID) {
+        return CreateFailedExecutionResult (APIERR_BADID, "Attribute not found.");
+    }
+
+    // Searched by type and Unicode name (ACAPI_Attribute_Search tries the guid first, so it is left null).
+    GS::UniString searchedName = newName;
+    API_Attr_Head sameName = {};
+    sameName.typeID = head.typeID;
+    sameName.uniStringNamePtr = &searchedName;
+    if (ACAPI_Attribute_Search (&sameName) == NoError && sameName.guid != guid) {
+        return CreateFailedExecutionResult (APIERR_NAMEALREADYUSED, GS::UniString ("Another attribute of the same type is already called '") + newName + "'.");
+    }
+
+    GS::UniString name;
+    API_Attribute attribute = {};
+    attribute.header.typeID = head.typeID;
+    attribute.header.index = head.index;
+    attribute.header.guid = guid;
+    attribute.header.uniStringNamePtr = &name;
+    GSErrCode err = ACAPI_Attribute_Get (&attribute);
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to read the attribute.");
+    }
+
+    API_AttributeDefExt defs = {};
+    const bool hasDefs = (ACAPI_Attribute_GetDefExt (attribute.header.typeID, attribute.header.index, &defs) == NoError);
+
+    name = newName;
+    attribute.header.uniStringNamePtr = &name;
+    err = hasDefs ? ACAPI_Attribute_ModifyExt (&attribute, &defs) : ACAPI_Attribute_Modify (&attribute, nullptr);
+    attribute.header.uniStringNamePtr = nullptr;
+
+    if (hasDefs) {
+        ACAPI_DisposeAttrDefsHdlsExt (&defs);
+    }
+    DisposeAttribute (attribute);
+
+    if (err == APIERR_REFUSEDPAR) {
+        return CreateFailedExecutionResult (err, "Archicad does not allow renaming this attribute (e.g. the built-in Archicad Layer, or the Solid and Empty fills).");
+    }
+    return err == NoError
+        ? CreateSuccessfulExecutionResult ()
+        : CreateFailedExecutionResult (err, "Failed to rename the attribute.");
+}
+
+GS::ObjectState RenameAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> attributes;
+    parameters.Get ("attributes", attributes);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    for (const GS::ObjectState& item : attributes) {
+        const GS::ObjectState* attributeId = item.Get ("attributeId");
+        GS::UniString newName;
+        if (attributeId == nullptr || !item.Get ("newName", newName)) {
+            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "attributeId or newName is missing."));
+            continue;
+        }
+        executionResults (RenameAttribute (GetGuidFromObjectState (*attributeId), newName));
+    }
+
+    return response;
+}
