@@ -33,11 +33,11 @@ public:
         Client(
             const IO::URI::URI& url,
             bool onNew, bool onMod, bool onResChanges, bool onSelChange, bool onWindowChange, bool onProjectEvents, bool onAttrReplacement,
-            bool onToolChange,
+            bool onToolChange, bool onViewEvents,
             const std::set<API_ElemTypeID>& typesToObserve)
             : url(url), notifyOnNew(onNew), notifyOnModification(onMod), notifyOnReservationChanges(onResChanges), notifyOnSelectionChange(onSelChange),
               notifyOnWindowChange(onWindowChange), notifyOnProjectEvents(onProjectEvents), notifyOnAttributeReplacement(onAttrReplacement),
-              notifyOnToolChange(onToolChange),
+              notifyOnToolChange(onToolChange), notifyOnViewEvents(onViewEvents),
               elementTypesToObserve(typesToObserve) {}
 
         IO::URI::URI             url;
@@ -49,6 +49,7 @@ public:
         bool                     notifyOnProjectEvents;
         bool                     notifyOnAttributeReplacement;
         bool                     notifyOnToolChange;
+        bool                     notifyOnViewEvents;
         // The element types whose modifications this client is notified of; empty means every type.
         std::set<API_ElemTypeID> elementTypesToObserve;
 
@@ -105,6 +106,8 @@ public:
 #endif
     static void UninstallToolChangeHandlerIfNotNeeded ();
     static GSErrCode ToolChangeHandler (const API_ToolBoxItem* newToolMode);
+    static void UninstallViewEventHandlerIfNotNeeded ();
+    static GSErrCode ViewEventHandler (const API_NotifyViewEventType* viewEvent);
     // Called by the add-on's one project event handler (ProjectEventHandler.cpp) on every project
     // event it catches; sends the window, floor and project events to the clients that asked for them.
     static void ProjectEventHandler (API_NotifyEventID notifID, Int32 param);
@@ -122,6 +125,7 @@ private:
     static bool hasClientToNotifyOnSelectionChange;
     static bool hasClientToNotifyOnAttributeReplacement;
     static bool hasClientToNotifyOnToolChange;
+    static bool hasClientToNotifyOnViewEvents;
 
     using EventQueue = std::map<ElementEventType, std::vector<GS::ObjectState>>;
     static std::unique_ptr<EventQueue> queuedEvents;
