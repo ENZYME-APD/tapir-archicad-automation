@@ -902,6 +902,10 @@ static bool ApplyDimensionSettingsToWitnessPoints (const GS::ObjectState& data, 
     return true;
 }
 
+} // namespace
+
+// Defined OUTSIDE the anonymous namespace: ExtendedElementCommands.hpp declares it for
+// GetDetailsOfElements in ElementCommands.cpp, so it needs external linkage.
 void AddDimensionDetails (GS::ObjectState& details, const API_Element& element)
 {
     details.Add ("appearance", DimensionAppearanceToString (element.dimension.dimAppear));
@@ -919,6 +923,8 @@ void AddDimensionDetails (GS::ObjectState& details, const API_Element& element)
     details.Add ("defaultWitnessForm", WitnessFormToString (element.dimension.defWitnessForm));
     details.Add ("defaultWitnessVal", element.dimension.defWitnessVal);
 }
+
+namespace {
 
 // Reads the Dimension tool defaults into element and memo, with the item's optional
 // "favoriteName" applied to them first (#1390).
