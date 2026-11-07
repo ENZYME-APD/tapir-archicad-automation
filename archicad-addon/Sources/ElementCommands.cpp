@@ -7485,16 +7485,16 @@ GS::ObjectState ScaleElementsCommand::Execute (const GS::ObjectState& parameters
         }
     }
 
-    // Resize scales around origC by a ratio given as a reference vector (begC - origC) and its
-    // scaled image (endC - origC), the two clicks of the graphic Resize in Archicad. Both are on
-    // the diagonal, so the ratio of their lengths and the ratio of each of their components is
-    // factor; z stays 0, so nothing is elevated.
+    // Resize scales around begC by a ratio given as a reference vector (endC - begC) and its
+    // scaled image (endC2 - begC), as in the DevKit's Do_ResizeElems example (origC is unused).
+    // Both vectors are on the diagonal, so the ratio of their lengths and the ratio of each of
+    // their components is factor; z stays 0, so nothing is elevated.
     API_EditPars editPars = {};
     editPars.typeID = APIEdit_Resize;
     editPars.withDelete = true;
-    editPars.origC = center;
-    editPars.begC = API_Coord3D { center.x + 1.0, center.y + 1.0, 0.0 };
-    editPars.endC = API_Coord3D { center.x + factor, center.y + factor, 0.0 };
+    editPars.begC = API_Coord3D { center.x, center.y, 0.0 };
+    editPars.endC = API_Coord3D { center.x + 1.0, center.y + 1.0, 0.0 };
+    editPars.endC2 = API_Coord3D { center.x + factor, center.y + factor, 0.0 };
 
     const bool isIdentity = std::abs (factor - 1.0) < 1e-9;
 
