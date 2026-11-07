@@ -84,6 +84,8 @@ tools/                   Version bump scripts (update_version.py), package_info.
                          gh_coverage_rules.json),
                          Archicad version list reader and updater (devkits.py),
                          Community page data (generate_community_data.py),
+                         marketplace folder checker (check_marketplace.py) and
+                         Scripts page catalogue (generate_catalogue.py),
                          site copies for AI assistants (generate_llm_files.py)
   discord-issue-bot/     Discord -> GitHub issue bot (run by .github/workflows/discord_issue_bot.yml)
 sandbox/                 Experiments / scratch
@@ -309,6 +311,10 @@ A new script *requested* in an issue also goes to `marketplace/<slug>/` (listing
 README "Requested by @<login> in #<n>"); `builtin-scripts/` gets a new script only when a maintainer
 asks for it in the issue. A marketplace script may import `utilities`/`aclib` of `builtin-scripts/`,
 which are copied next to it when it is installed, so keep those helpers backward compatible.
+`python tools/check_marketplace.py` checks every folder against marketplace/README.md (the add-on
+build check runs it on every pull request); `tools/generate_catalogue.py` lists the folders on
+`main` that pass in `catalogue.json` (`site_data.yml`, `site-data` branch), which the website's
+Scripts page reads, so a merged script is listed within minutes and a wrong listing is left out.
 
 ## Versioning
 
@@ -338,7 +344,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   `installer_build_check.yml` — PR build checks for each component, also run
   on pushes to `main` and by `workflow_dispatch` (which the bot PR steward
   uses); a newer push to a pull request cancels its superseded runs. The add-on
-  check also runs `tools/check_examples.py` (one example per command). The installer
+  check also runs `tools/check_examples.py` (one example per command), and
+  `tools/check_marketplace.py` with `tools/generate_catalogue.py --self-test`. The installer
   check also runs `Installer/test_update_mode.py` and syntax-checks the legacy
   auto-update script.
   A pull request (or the steward's dispatch on a branch) whose changed files are
@@ -512,7 +519,9 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   rest through a JSON input, or miss some. It publishes `gh-coverage.*` to the
   same branch, read by `docs/gh-coverage/index.html`; commands that need no
   component go in `tools/gh_coverage_rules.json`.
-- `site_data.yml` — daily and by hand: `tools/generate_community_data.py` counts,
+- `site_data.yml` — daily, by hand and on pushes to `main` that change
+  `marketplace/`, `tools/check_marketplace.py` or `tools/generate_catalogue.py`:
+  `tools/generate_community_data.py` counts,
   per month, the commits of `main`, the issues opened and pull requests merged, and
   the Discord messages and members of the project's server (only counts, never the
   text of a message), plus the totals and top contributors (each person once,
@@ -521,8 +530,13 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   `docs/community/community.js` (the Momentum figures and the growth chart). The
   Discord bot token is `DISCORD_STATS_TOKEN`, else `DISCORD_BOT_TOKEN`; members per
   month need the bot's Server Members Intent, and without a token only the public
-  invite's member count is read. It never runs on pull request events and never
-  checks out pull request code; `SITE_DATA=false` turns it off.
+  invite's member count is read. Every run also writes `catalogue.json` (the
+  marketplace scripts, read by `docs/scripts/scripts.js` and the site's live
+  script count) to the same branch with `tools/generate_catalogue.py`, which needs
+  the full history for each version's commit, URL and SHA-256; a push run writes
+  only that and leaves `community.json` as it is. Its runs never cancel each
+  other. It never runs on pull request events and never checks out pull request
+  code; `SITE_DATA=false` turns it off.
 
 ## Installation (end users)
 
