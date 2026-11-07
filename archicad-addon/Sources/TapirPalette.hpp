@@ -29,7 +29,11 @@ public:
     void Show ();
     void Hide ();
 
+    // Returns true when the update quits Archicad ("Update and Restart Archicad"), so the caller must not run a
+    // script; an update installed when Archicad closes, or none, returns false.
     bool UpdateAddOn ();
+    // True, with the version to install, while an update of this Add-On file waits for Archicad to close.
+    static bool GetPendingAddOnUpdate (GS::UniString& version);
     void SetRunButtonIcon ();   // also called once the VersionChecker's lookup completes
 
     static constexpr short ScriptShortcutSlotCount = 6;
