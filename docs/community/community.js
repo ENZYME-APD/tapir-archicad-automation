@@ -382,10 +382,10 @@
             if (!CONTRIBUTIONS.some (function (kind) { return isCount (entry[kind]); })) {
                 return;
             }
-            var login = typeof entry.login === 'string' && LOGIN_PATTERN.test (entry.login) ? entry.login : null;
-            if (login && isBot (login)) {
+            if (typeof entry.login === 'string' && isBot (entry.login)) {
                 return;
             }
+            var login = typeof entry.login === 'string' && LOGIN_PATTERN.test (entry.login) ? entry.login : null;
             var alias = aliasOf[personKey (entry.name)];
             var name = alias || entry.name.trim ();
             var key = personKey (name);
