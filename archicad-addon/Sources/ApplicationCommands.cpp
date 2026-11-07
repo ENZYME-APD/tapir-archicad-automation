@@ -2273,6 +2273,93 @@ static GSErrCode ReadSnapFilter (const GS::ObjectState& parameters, bool& change
 }
 
 // ---------------------------------------------------------------------------
+// Drawing constraint of the Get...FromUser commands (#/InputConstraint)
+// ---------------------------------------------------------------------------
+
+// Reads the optional constraint parameter. hasConstraint stays false when it is not given,
+// so the input is not constrained.
+static GSErrCode ReadInputConstraint (const GS::ObjectState& parameters, bool& hasConstraint, API_ConstraintPars& constraintPars, GS::UniString& errorMessage)
+{
+    hasConstraint = false;
+    const GS::ObjectState* constraint = parameters.Get ("constraint");
+    if (constraint == nullptr) {
+        return NoError;
+    }
+
+    GS::UniString type;
+    double value = 0.0;
+    if (!constraint->Get ("type", type) || !constraint->Get ("value", value)) {
+        errorMessage = "The constraint needs a type and a value.";
+        return APIERR_BADPARS;
+    }
+
+    constraintPars = {};
+    if (type == "X") {
+        constraintPars.constType = APIConst_X;
+    } else if (type == "Y") {
+        constraintPars.constType = APIConst_Y;
+    } else if (type == "Z") {
+        constraintPars.constType = APIConst_Z;
+    } else if (type == "Angle") {
+        constraintPars.constType = APIConst_A;
+    } else if (type == "Distance") {
+        constraintPars.constType = APIConst_R;
+    } else {
+        errorMessage = GS::UniString ("Unknown constraint.type: ") + type;
+        return APIERR_BADPARS;
+    }
+    constraintPars.constValue = value;
+
+    bool fromLastPoint = false;
+    constraint->Get ("fromLastPoint", fromLastPoint);
+    constraintPars.useLocOrigo = fromLastPoint;
+
+    hasConstraint = true;
+    return NoError;
+}
+
+// Sets Archicad's drawing constraint for the input that follows, and dissolves it when it goes
+// out of scope, so the constraint never outlives the command (also on Escape and on errors).
+class InputConstraintScope {
+public:
+    InputConstraintScope (bool hasConstraintIn, const API_ConstraintPars& constraintParsIn) :
+        hasConstraint (hasConstraintIn),
+        constraintPars (constraintParsIn),
+        isSet (false)
+    {
+    }
+
+    InputConstraintScope (const InputConstraintScope&) = delete;
+    InputConstraintScope& operator= (const InputConstraintScope&) = delete;
+
+    ~InputConstraintScope ()
+    {
+        if (isSet) {
+            ACAPI_UserInput_ResetConstraint ();
+        }
+    }
+
+    // Called just before each ACAPI_UserInput_Get... call it should constrain.
+    GSErrCode Set ()
+    {
+        if (!hasConstraint) {
+            return NoError;
+        }
+        API_ConstraintPars pars = constraintPars;
+        const GSErrCode err = ACAPI_UserInput_SetConstraint (&pars);
+        if (err == NoError) {
+            isSet = true;
+        }
+        return err;
+    }
+
+private:
+    const bool hasConstraint;
+    const API_ConstraintPars constraintPars;
+    bool isSet;
+};
+
+// ---------------------------------------------------------------------------
 // GetPointFromUser
 // ---------------------------------------------------------------------------
 
@@ -2298,6 +2385,10 @@ GS::Optional<GS::UniString> GetPointFromUserCommand::GetInputParametersSchema ()
             "snapFilter": {
                 "$ref": "#/SnapFilter",
                 "description": "Which points and lines of the elements the cursor snaps to. Default: Archicad's usual snapping."
+            },
+            "constraint": {
+                "$ref": "#/InputConstraint",
+                "description": "Constrains the click, for example to a fixed X coordinate or to a direction. Default: no constraint."
             }
         },
         "additionalProperties": false,
@@ -2338,6 +2429,20 @@ GS::ObjectState GetPointFromUserCommand::Execute (const GS::ObjectState& paramet
     GSErrCode err = ReadSnapFilter (parameters, pointInfo.changeFilter, pointInfo.filter, snapFilterError);
     if (err != NoError) {
         return CreateErrorResponse (err, snapFilterError);
+    }
+
+    bool hasConstraint = false;
+    API_ConstraintPars constraintPars = {};
+    GS::UniString constraintError;
+    err = ReadInputConstraint (parameters, hasConstraint, constraintPars, constraintError);
+    if (err != NoError) {
+        return CreateErrorResponse (err, constraintError);
+    }
+
+    InputConstraintScope constraintScope (hasConstraint, constraintPars);
+    err = constraintScope.Set ();
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to set the constraint.");
     }
 
     err = ACAPI_UserInput_GetPoint (&pointInfo);
@@ -2413,6 +2518,10 @@ GS::Optional<GS::UniString> GetLineFromUserCommand::GetInputParametersSchema () 
             "snapFilter": {
                 "$ref": "#/SnapFilter",
                 "description": "Which points and lines of the elements the cursor snaps to, for both points. Default: Archicad's usual snapping."
+            },
+            "constraint": {
+                "$ref": "#/InputConstraint",
+                "description": "Constrains the end point, for example to a direction from the start point (type Angle with fromLastPoint). The start point is not constrained. Default: no constraint."
             }
         },
         "additionalProperties": false
@@ -2460,6 +2569,15 @@ GS::ObjectState GetLineFromUserCommand::Execute (const GS::ObjectState& paramete
         return CreateErrorResponse (err, snapFilterError);
     }
 
+    bool hasConstraint = false;
+    API_ConstraintPars constraintPars = {};
+    GS::UniString constraintError;
+    err = ReadInputConstraint (parameters, hasConstraint, constraintPars, constraintError);
+    if (err != NoError) {
+        return CreateErrorResponse (err, constraintError);
+    }
+    InputConstraintScope constraintScope (hasConstraint, constraintPars);
+
     err = ACAPI_UserInput_GetPoint (&pointInfo);
 
     if (err == APIERR_CANCEL) {
@@ -2475,6 +2593,13 @@ GS::ObjectState GetLineFromUserCommand::Execute (const GS::ObjectState& paramete
     CHTruncate (endPromptStr.ToCStr ().Get (), lineInfo.prompt, sizeof (lineInfo.prompt));
     lineInfo.changeFilter = pointInfo.changeFilter;
     std::memcpy (lineInfo.filter, pointInfo.filter, sizeof (lineInfo.filter));
+
+    // The constraint applies to the end point only, so a direction measured from
+    // the last clicked point (fromLastPoint) is measured from the start point.
+    err = constraintScope.Set ();
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to set the constraint.");
+    }
 
     err = showRubberLineFeedback
         ? ACAPI_UserInput_GetLine (&lineInfo, RubberLineCallBack)
@@ -2548,6 +2673,10 @@ GS::Optional<GS::UniString> GetPolygonFromUserCommand::GetInputParametersSchema 
             "snapFilter": {
                 "$ref": "#/SnapFilter",
                 "description": "Which points and lines of the elements the cursor snaps to for the start point. Archicad's polygon input has no snap filter, so the other nodes snap as usual. Default: Archicad's usual snapping."
+            },
+            "constraint": {
+                "$ref": "#/InputConstraint",
+                "description": "Constrains the nodes after the start point, for example to a direction from the previous node (type Angle with fromLastPoint). The start point is not constrained. Default: no constraint."
             }
         },
         "additionalProperties": false
@@ -2609,6 +2738,15 @@ GS::ObjectState GetPolygonFromUserCommand::Execute (const GS::ObjectState& param
             return CreateErrorResponse (err, snapFilterError);
         }
 
+        bool hasConstraint = false;
+        API_ConstraintPars constraintPars = {};
+        GS::UniString constraintError;
+        err = ReadInputConstraint (parameters, hasConstraint, constraintPars, constraintError);
+        if (err != NoError) {
+            return CreateErrorResponse (err, constraintError);
+        }
+        InputConstraintScope constraintScope (hasConstraint, constraintPars);
+
         err = ACAPI_UserInput_GetPoint (&startPointInfo);
         if (err == APIERR_CANCEL) {
             return GS::ObjectState ("cancelled", true);
@@ -2621,6 +2759,12 @@ GS::ObjectState GetPolygonFromUserCommand::Execute (const GS::ObjectState& param
         polyInfo.startCoord = startPointInfo.pos;
         polyInfo.method = polyMethod;
         CHTruncate (promptStr.ToCStr ().Get (), polyInfo.prompt, sizeof (polyInfo.prompt));
+
+        // The constraint applies to the nodes after the start point.
+        err = constraintScope.Set ();
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to set the constraint.");
+        }
 
         err = ACAPI_UserInput_GetPoly (&polyInfo);
 
@@ -2948,6 +3092,10 @@ GS::Optional<GS::UniString> GetElementFromUserCommand::GetInputParametersSchema 
             "snapFilter": {
                 "$ref": "#/SnapFilter",
                 "description": "Which points and lines of the elements the cursor snaps to, for example only the points and edges of the element types asked for. Default: Archicad's usual snapping."
+            },
+            "constraint": {
+                "$ref": "#/InputConstraint",
+                "description": "Constrains every click, for example to a fixed X coordinate or to a direction. Default: no constraint."
             }
         },
         "additionalProperties": false,
@@ -3012,12 +3160,27 @@ GS::ObjectState GetElementFromUserCommand::Execute (const GS::ObjectState& param
         return CreateErrorResponse (snapFilterErr, snapFilterError);
     }
 
+    bool hasConstraint = false;
+    API_ConstraintPars constraintPars = {};
+    GS::UniString constraintError;
+    const GSErrCode constraintErr = ReadInputConstraint (parameters, hasConstraint, constraintPars, constraintError);
+    if (constraintErr != NoError) {
+        return CreateErrorResponse (constraintErr, constraintError);
+    }
+    InputConstraintScope constraintScope (hasConstraint, constraintPars);
+
     for (;;) {
         API_GetPointType pointInfo = {};
         CHTruncate (prompt.ToCStr ().Get (), pointInfo.prompt, sizeof (pointInfo.prompt));
         pointInfo.enableQuickSelection = true;
         pointInfo.changeFilter = changeFilter;
         std::memcpy (pointInfo.filter, filter, sizeof (pointInfo.filter));
+
+        // Set again before every click, also the ones repeated after a miss.
+        const GSErrCode constraintSetErr = constraintScope.Set ();
+        if (constraintSetErr != NoError) {
+            return CreateErrorResponse (constraintSetErr, "Failed to set the constraint.");
+        }
 
         const GSErrCode err = ACAPI_UserInput_GetPoint (&pointInfo);
         if (err == APIERR_CANCEL) {
