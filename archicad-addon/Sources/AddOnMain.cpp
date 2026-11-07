@@ -2543,6 +2543,10 @@ GSErrCode Initialize (void)
             navigatorCommands, "1.7.2",
             "Sets a perspective or an axonometric projection for the 3D window. Every perspective parameter but sun is required: read a known good set with Get3DProjectionSettings and pass it back, with the values to change replaced. An axonometry changes only the values given: the projection type, the azimuth, the transformation matrix and the sun. The sun of either changes only the values given in it and is kept when sun is missing. The 3D window shows the change after a rebuild (RebuildView), e.g. before SaveCurrentWindowAsImage."
         );
+        err |= RegisterCommand<GetCamerasCommand> (
+            navigatorCommands, "1.8.1",
+            "Gets the Camera Sets (camera paths) of the project with their name, whether the set is the active one, its current camera, and its cameras in path order. Each camera has its element id, whether it is active in the path, and its perspective: camera and target position, distance, azimuth, view cone, roll angle, two-point perspective and sun, in the shape Set3DProjectionSettings accepts, so passing a camera's perspective there shows its view in the 3D window. Archicad cameras are always perspective; they have no name of their own."
+        );
         err |= RegisterCommand<Get3DStylesCommand> (
             navigatorCommands, "1.8.1",
             "Gets the names of the 3D styles of the project and the name of the current one, which the 3D window uses."
