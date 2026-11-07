@@ -1,4 +1,42 @@
 {
+    "applicable": {
+        "items": {
+            "ACAPI_Notification_CatchToolChange": "#2237: useful: a tool-change option for SetElementNotificationClient",
+            "ACAPI_Notification_CatchViewEvent": "#2237: useful: Project Navigator events (view saved, renamed, deleted, opened)",
+            "ACAPI_Notification_CatchLockableReservationChange": "#2237: useful: Teamwork reservation events of non-element objects",
+            "ACAPI_Element_CatchChangeDefaults": "#2237: useful: tool default change events, so a tool component can refresh",
+            "ACAPI_Notification_RegisterEventHandler": "#2237: useful: attribute, classification, property definition, marquee and 3D-settings events (AC26+)",
+            "ACAPI_Notification_UnregisterEventHandler": "#2237: useful: attribute, classification, property definition, marquee and 3D-settings events (AC26+)",
+            "ACAPI_Notification_GetTranParams": "#2237: useful: the move, rotate or mirror behind an element modification event",
+            "ACAPI_Toolbox_SetToolBoxMode": "#2237: useful: SetActiveTool",
+            "ACAPI_Toolbox_GetToolBoxMode": "#2237: useful: GetActiveTool",
+            "ACAPI_Toolbox_GetToolBoxInfo": "#2237: useful: list the toolbox items, add-on tools included",
+            "ACAPI_UserInput_GetArc": "#2237: useful: GetArcFromUser",
+            "ACAPI_UserInput_DrawRubberArc": "#2237: useful: the arc feedback of GetArcFromUser",
+            "ACAPI_UserInput_InitNeigFilter": "#2237: useful: a snap filter option of the Get...FromUser commands",
+            "ACAPI_UserInput_SetNeigFilter": "#2237: useful: a snap filter option of the Get...FromUser commands",
+            "ACAPI_UserInput_ClearNeigFilter": "#2237: useful: a snap filter option of the Get...FromUser commands",
+            "ACAPI_UserInput_SetConstraint": "#2237: useful: a constraint option of the Get...FromUser commands",
+            "ACAPI_UserInput_ResetConstraint": "#2237: useful: a constraint option of the Get...FromUser commands",
+            "ACAPI_UserInput_GetMagicWandSets": "#2237: useful (low priority): read the Magic Wand settings",
+            "ACAPI_Dialog_SettingsDialog": "#2237: useful: open the settings dialog of the selection or the current tool, report OK or Cancel",
+            "APIIo_NewSettingsDialogID": "#2237: useful: the Archicad 25/26 form of ACAPI_Dialog_SettingsDialog",
+            "ACAPI_Dialog_ObjectSettings": "#2237: useful: let the user pick a library part and its parameters",
+            "ACAPI_Dialog_OpenLibPartFileDialog": "#2237: useful: a file picker that returns a location",
+            "ACAPI_Dialog_OpenPictureDialog": "#2237: useful: a file picker that returns a location",
+            "ACAPI_Dialog_OpenOtherObjectDialog": "#2237: useful: a file picker that returns a location",
+            "ACAPI_Dialog_SaveLibPartFileDialog": "#2237: useful: a file picker that returns a location",
+            "ACAPI_LibraryManagement_NewLibDial": "#2237: useful (low priority): a folder picker",
+            "ACAPI_IFC_InvokeIFCExportSettingsDlg": "#2237: useful: the user picks a view and a translator before an IFC export (AC28+)",
+            "ACAPI_Dialog_CreateAttributePicker": "#2237: useful: an attribute picker, hosted in a small Tapir dialog (AC26+)",
+            "ACAPI_Attribute_CreateAttributeFolderPicker": "#2237: useful: an attribute folder picker, hosted in a small Tapir dialog (AC26+)",
+            "ACAPI_Licensing_GetProtectionMode": "#2237: useful (low priority): the Archicad edition and license type",
+            "ACAPI_Licensing_IsSSALevelAtLeast": "#2237: useful (low priority): the Archicad edition and license type"
+        },
+        "patterns": {
+            "^ACAPI::UI::Notification::": "#2237: useful: non-blocking notification bubbles, where ShowAlert is modal (AC29+)"
+        }
+    },
     "notApplicable": {
         "groups": {
             "AddOnIntegration": "add-on registration and menus",
