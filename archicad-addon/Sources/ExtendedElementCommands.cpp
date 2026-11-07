@@ -14493,6 +14493,16 @@ GS::ObjectState PlaceOpeningsCommand::Execute (const GS::ObjectState& parameters
 // CreateSections does for sections. API_WorksheetType is API_DetailType, so element.detail
 // serves both.
 
+// Archicad may store an angle normalized to another full turn, so angles are compared modulo 2 pi.
+static bool IsSameDirection (double angle1, double angle2)
+{
+    const double fullTurn = 2.0 * 3.14159265358979323846;
+    double diff = std::fmod (angle1 - angle2, fullTurn);
+    if (diff < 0.0)
+        diff += fullTurn;
+    return diff < 1e-6 || fullTurn - diff < 1e-6;
+}
+
 static void CopyToDetailString (GS::uchar_t (&target)[API_UniLongNameLen], const GS::UniString& source)
 {
     GS::ucsncpy (target, source.ToUStr (), API_UniLongNameLen);
@@ -14753,7 +14763,12 @@ GS::Optional<GS::UniString> ModifyDetailMarkersCommand::GetInputParametersSchema
                             "type": "array",
                             "description": "Optional arcs of the new boundary, with indices into clipPolygon.",
                             "items": { "$ref": "#/PolyArc" }
-                        }
+                        },
+                        "penIndex": { "type": "integer", "minimum": 1, "maximum": 255, "description": "The new pen of the boundary (API_DetailType::pen)." },
+                        "lineTypeIndex": { "type": "integer", "minimum": 1, "description": "Attribute index of the new line type of the boundary (API_DetailType::ltypeInd)." },
+                        "angle": { "type": "number", "description": "The new rotation of the marker symbol, in radians (API_DetailType::angle)." },
+                        "isHorizontalMarker": { "type": "boolean", "description": "Whether the marker symbol is always horizontal (API_DetailType::horizontalMarker)." },
+                        "markerPenIndex": { "type": "integer", "minimum": 1, "maximum": 255, "description": "The new pen of the marker symbol, the library part placed as the marker (its markerId in GetDetailsOfElements)." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -14788,8 +14803,27 @@ GS::ObjectState ModifyDetailMarkersCommand::Execute (const GS::ObjectState& para
             const bool hasId = item.Get ("id", id);
             const bool hasClipPolygon = item.Get ("clipPolygon", clipPolygon);
             item.Get ("polygonArcs", clipPolygonArcs);
-            if (!hasName && !hasId && !hasClipPolygon) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Nothing to change: give 'name', 'id' or 'clipPolygon'."));
+            Int32 penIndex = 0;
+            Int32 lineTypeIndex = 0;
+            double angle = 0.0;
+            bool isHorizontalMarker = false;
+            Int32 markerPenIndex = 0;
+            const bool hasPen = item.Get ("penIndex", penIndex);
+            const bool hasLineType = item.Get ("lineTypeIndex", lineTypeIndex);
+            const bool hasAngle = item.Get ("angle", angle);
+            const bool hasHorizontalMarker = item.Get ("isHorizontalMarker", isHorizontalMarker);
+            const bool hasMarkerPen = item.Get ("markerPenIndex", markerPenIndex);
+            const bool hasSettings = hasPen || hasLineType || hasAngle || hasHorizontalMarker;
+            if (!hasName && !hasId && !hasClipPolygon && !hasSettings && !hasMarkerPen) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "Nothing to change: give 'name', 'id', 'clipPolygon', 'penIndex', 'lineTypeIndex', 'angle', 'isHorizontalMarker' or 'markerPenIndex'."));
+                continue;
+            }
+            if ((hasPen && (penIndex < 1 || penIndex > 255)) || (hasMarkerPen && (markerPenIndex < 1 || markerPenIndex > 255))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "A pen index must be between 1 and 255."));
+                continue;
+            }
+            if (hasLineType && lineTypeIndex < 1) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'lineTypeIndex' must be 1 or more."));
                 continue;
             }
             if (hasClipPolygon && clipPolygon.GetSize () < 3) {
@@ -14846,6 +14880,54 @@ GS::ObjectState ModifyDetailMarkersCommand::Execute (const GS::ObjectState& para
                 }
             }
 
+            if (hasSettings) {
+                // The fields the DevKit's Element_Test changes on Details and Worksheets with ACAPI_Element_Change.
+                API_Element mask = {};
+                ACAPI_ELEMENT_MASK_CLEAR (mask);
+                if (hasPen) {
+                    element.detail.pen = (short) penIndex;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_DetailType, pen);
+                }
+                if (hasLineType) {
+                    element.detail.ltypeInd = ACAPI_CreateAttributeIndex (lineTypeIndex);
+                    ACAPI_ELEMENT_MASK_SET (mask, API_DetailType, ltypeInd);
+                }
+                if (hasAngle) {
+                    element.detail.angle = angle;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_DetailType, angle);
+                }
+                if (hasHorizontalMarker) {
+                    element.detail.horizontalMarker = isHorizontalMarker;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_DetailType, horizontalMarker);
+                }
+                err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, "Failed to change the pen, line type, angle or marker orientation of the marker."));
+                    continue;
+                }
+            }
+
+            if (hasMarkerPen) {
+                // The marker symbol is a placed library part of its own (markId); the DevKit's
+                // Element_Test changes its pen as an API_ObjectType.
+                API_Element markerElement = {};
+                markerElement.header.guid = element.detail.markId;
+                err = ACAPI_Element_Get (&markerElement);
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, "Failed to load the marker symbol."));
+                    continue;
+                }
+                API_Element markerMask = {};
+                ACAPI_ELEMENT_MASK_CLEAR (markerMask);
+                markerElement.object.pen = (short) markerPenIndex;
+                ACAPI_ELEMENT_MASK_SET (markerMask, API_ObjectType, pen);
+                err = ACAPI_Element_Change (&markerElement, &markerMask, nullptr, 0, true);
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, "Failed to change the pen of the marker symbol."));
+                    continue;
+                }
+            }
+
             if (hasClipPolygon) {
                 API_ElementMemo memo = {};
                 const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
@@ -14882,6 +14964,21 @@ GS::ObjectState ModifyDetailMarkersCommand::Execute (const GS::ObjectState& para
             if (hasClipPolygon && changed.detail.poly.nCoords != element.detail.poly.nCoords) {
                 results.Push (CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply the new clip polygon."));
                 continue;
+            }
+            if ((hasPen && changed.detail.pen != penIndex) ||
+                (hasLineType && GetAttributeIndex (changed.detail.ltypeInd) != lineTypeIndex) ||
+                (hasAngle && !changed.detail.horizontalMarker && !IsSameDirection (changed.detail.angle, angle)) ||
+                (hasHorizontalMarker && changed.detail.horizontalMarker != isHorizontalMarker)) {
+                results.Push (CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply the new pen, line type, angle or marker orientation."));
+                continue;
+            }
+            if (hasMarkerPen) {
+                API_Element changedMarker = {};
+                changedMarker.header.guid = changed.detail.markId;
+                if (ACAPI_Element_Get (&changedMarker) == NoError && changedMarker.object.pen != markerPenIndex) {
+                    results.Push (CreateFailedExecutionResult (APIERR_REFUSEDPAR, "Archicad did not apply the new pen of the marker symbol."));
+                    continue;
+                }
             }
             results.Push (CreateSuccessfulExecutionResult ());
         }
