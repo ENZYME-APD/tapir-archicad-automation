@@ -26,7 +26,7 @@
         'किन Tapir कमांड का component है, और हर एक कौन-सी settings cover करता है, यह <a href="../gh-coverage/">Grasshopper कवरेज</a> पेज पर है।',
 
     // Tool components
-    'Tool components': 'Tool components',
+    'Tool components': 'Tool के components',
     'One per Archicad <em>tool.</em>': 'हर Archicad tool के लिए <em>एक।</em>',
     'A tool component works like the Archicad tool of the same name. One JSON input and one JSON output per panel of its settings dialog, keyed by the labels you see there, such as <code>Wall Height</code>.':
         'एक tool component उसी नाम के Archicad tool की तरह काम करता है। उसके settings dialog के हर panel के लिए एक JSON input और एक JSON output, जिनकी keys वही labels हैं जो आप वहाँ देखते हैं, जैसे <code>Wall Height</code>।',

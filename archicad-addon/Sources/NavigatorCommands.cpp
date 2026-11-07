@@ -5064,6 +5064,118 @@ GS::ObjectState GetNavigatorItemTreeCommand::Execute (const GS::ObjectState& par
     return response;
 }
 
+// ─── GetSchedules ─────────────────────────────────────────────────────────────
+
+// Collects the Interactive Schedules (API_ScheduleNavItem) below the given
+// Project Map item, depth first in navigator order. folderPath holds the names
+// of the items between the Project Map root and the schedule. The API does not
+// tell an element, component or surface schedule apart, so the folder path is
+// the only hint of the kind.
+static void CollectSchedules (API_NavigatorItem item, const GS::Array<GS::UniString>& folderPath, GS::Array<GS::ObjectState>& schedules)
+{
+    item.mapId = API_ProjectMap;
+
+    GS::Array<API_NavigatorItem> children;
+    if (ACAPI_Navigator_GetNavigatorChildrenItems (&item, &children) != NoError) {
+        return;
+    }
+
+    for (const API_NavigatorItem& child : children) {
+        if (child.itemType == API_ScheduleNavItem) {
+            GS::ObjectState scheduleOS;
+            scheduleOS.Add ("navigatorItemId", CreateGuidObjectState (child.guid));
+            scheduleOS.Add ("name", GS::UniString (child.uName));
+            scheduleOS.Add ("uiId", GS::UniString (child.uiId));
+            const auto& folderPathList = scheduleOS.AddList<GS::UniString> ("folderPath");
+            for (const GS::UniString& folderName : folderPath) {
+                folderPathList (folderName);
+            }
+            schedules.Push (scheduleOS);
+            continue;
+        }
+
+        GS::Array<GS::UniString> childFolderPath = folderPath;
+        childFolderPath.Push (GS::UniString (child.uName));
+        CollectSchedules (child, childFolderPath, schedules);
+    }
+}
+
+GetSchedulesCommand::GetSchedulesCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetSchedulesCommand::GetName () const
+{
+    return "GetSchedules";
+}
+
+GS::Optional<GS::UniString> GetSchedulesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "schedules": {
+                "type": "array",
+                "description": "The Interactive Schedules of the Project Map, in navigator order.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "navigatorItemId": {
+                            "$ref": "#/NavigatorItemId"
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the schedule."
+                        },
+                        "uiId": {
+                            "type": "string",
+                            "description": "The ID of the schedule, shown before its name in the navigator."
+                        },
+                        "folderPath": {
+                            "type": "array",
+                            "description": "The names of the Project Map items the schedule is in, from the top down, without the project itself (e.g. Schedules, Element). Archicad's API does not say whether a schedule lists elements, components or surfaces; the default Project Map shows it by these folders.",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": ["navigatorItemId", "name", "uiId", "folderPath"]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["schedules"]
+    })";
+}
+
+GS::ObjectState GetSchedulesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_NavigatorSet navSet = {};
+    navSet.mapId = API_ProjectMap;
+    Int32 idx = 0;
+    GSErrCode err = ACAPI_Navigator_GetNavigatorSet (&navSet, &idx);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the Project Map.");
+    }
+
+    API_NavigatorItem rootItem = {};
+    err = ACAPI_Navigator_GetNavigatorItem (&navSet.rootGuid, &rootItem);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the root of the Project Map.");
+    }
+
+    GS::Array<GS::ObjectState> schedules;
+    CollectSchedules (rootItem, GS::Array<GS::UniString> (), schedules);
+
+    GS::ObjectState response;
+    const auto& scheduleList = response.AddList<GS::ObjectState> ("schedules");
+    for (const GS::ObjectState& scheduleOS : schedules) {
+        scheduleList (scheduleOS);
+    }
+    return response;
+}
+
 // ─── GetNavigatorParentItems ──────────────────────────────────────────────────
 
 GetNavigatorParentItemsCommand::GetNavigatorParentItemsCommand () :

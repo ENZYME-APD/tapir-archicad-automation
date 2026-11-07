@@ -22,7 +22,7 @@
     'Licence': 'ライセンス',
     'Open-source automation for Archicad. 100% free and open source (MIT). Maintained by Enzyme APD and the community.':
         'Archicad のためのオープンソース自動化ツール。100% 無料のオープンソース（MIT）。Enzyme APD とコミュニティが保守しています。',
-    'Contact: <span class="nowrap">contact@enzyme-apd.com</span>': 'お問い合わせ：<span class="nowrap">contact@enzyme-apd.com</span>',
+    'Contact: <span class="nowrap">tapir@weareenzyme.com</span>': 'お問い合わせ：<span class="nowrap">tapir@weareenzyme.com</span>',
     'Share a script': 'スクリプトを共有',
     'Tapir and AI': 'Tapir と AI',
     'All docs': 'すべてのドキュメント',

@@ -1,0 +1,125 @@
+{
+  "title": "ModifyDetailMarkers writes the boundary pen and line type, the marker angle, always-horizontal and the marker symbol's pen of Detail and Worksheet markers (#2230)",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [ "Wall", "Slab", "Stair", "Roof", "Zone", "Detail", "Worksheet" ],
+  "steps": [
+    {
+      "id": "floor plan, story 0",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "detail marker",
+      "command": "CreateDetailMarkers",
+      "params": {
+        "detailMarkersData": [
+          {
+            "clipPolygon": [ { "x": 940.0, "y": 900.0 }, { "x": 944.0, "y": 900.0 }, { "x": 944.0, "y": 903.0 }, { "x": 940.0, "y": 903.0 } ],
+            "markerCoordinate": { "x": 939.0, "y": 899.0 },
+            "angle": 0.0,
+            "name": "TapirCheck Detail Pens",
+            "id": "TDP-1",
+            "floorIndex": 0
+          }
+        ]
+      },
+      "save": { "dm": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "worksheet marker",
+      "command": "CreateWorksheetMarkers",
+      "params": {
+        "worksheetMarkersData": [
+          {
+            "clipPolygon": [ { "x": 950.0, "y": 900.0 }, { "x": 954.0, "y": 900.0 }, { "x": 954.0, "y": 903.0 } ],
+            "markerCoordinate": { "x": 949.0, "y": 899.0 },
+            "angle": 0.0,
+            "name": "TapirCheck Worksheet Pens",
+            "id": "TWP-1",
+            "floorIndex": 0
+          }
+        ]
+      },
+      "save": { "wm": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "pens, line type, angle and a turning marker on the detail marker",
+      "command": "ModifyDetailMarkers",
+      "creates": false,
+      "params": {
+        "detailMarkersWithDetails": [
+          {
+            "elementId": { "guid": "${dm}" },
+            "penIndex": 3,
+            "lineTypeIndex": 1,
+            "markerPenIndex": 5,
+            "isHorizontalMarker": false,
+            "angle": 0.5
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "applied (read back by the command)" }
+      ]
+    },
+    {
+      "id": "the detail marker's angle and orientation read back, name kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${dm}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.angle", "approx": 0.5, "tol": 0.000001 },
+        { "path": "detailsOfElements[0].details.isHorizontalMarker", "eq": false },
+        { "path": "detailsOfElements[0].details.detailName", "eq": "TapirCheck Detail Pens", "name": "name kept" },
+        { "path": "detailsOfElements[0].details.clipPolygon", "len": 5, "name": "polygon kept" }
+      ]
+    },
+    {
+      "id": "an always horizontal marker and another pen on the worksheet marker",
+      "command": "ModifyDetailMarkers",
+      "creates": false,
+      "params": {
+        "detailMarkersWithDetails": [
+          { "elementId": { "guid": "${wm}" }, "isHorizontalMarker": true, "penIndex": 4 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "applied (read back by the command)" }
+      ]
+    },
+    {
+      "id": "the worksheet marker is always horizontal, ID kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${wm}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.isHorizontalMarker", "eq": true },
+        { "path": "detailsOfElements[0].details.detailIdStr", "eq": "TWP-1", "name": "ID kept" }
+      ]
+    },
+    {
+      "id": "bad input: a pen out of range",
+      "command": "ModifyDetailMarkers",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "detailMarkersWithDetails": [
+          { "elementId": { "guid": "${dm}" }, "penIndex": 300 }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the input schema (penIndex maximum 255)" }
+      ]
+    }
+  ]
+}
