@@ -1401,6 +1401,9 @@ GS::Optional<GS::UniString> DeleteElementSetsCommand::GetInputParametersSchema()
                         "elementSetId"
                     ]
                 }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -1415,8 +1418,12 @@ GS::Optional<GS::UniString> DeleteElementSetsCommand::GetRawResponseSchema() con
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input element set, in the order of the input. On a dry run an element set that exists and was created by the Tapir Add-On gets wouldDelete."
             }
         },
         "additionalProperties": false,
@@ -1433,10 +1440,13 @@ GS::ObjectState DeleteElementSetsCommand::Execute(const GS::ObjectState& paramet
         return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'elementSets' parameter.");
     }
 
+    const bool dryRun = IsDryRun(parameters);
+
     GS::ObjectState response;
+    AddDryRunField(response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState>("executionResults");
 
-    const GSErrCode undoErr = ACAPI_CallUndoableCommand("Delete Element Sets", [&]() -> GSErrCode {
+    const auto deleteElementSets = [&]() -> GSErrCode {
         for (const GS::ObjectState& elementSet : elementSets) {
             const GS::ObjectState* elementSetId = elementSet.Get("elementSetId");
             if (elementSetId == nullptr) {
@@ -1450,10 +1460,13 @@ GS::ObjectState DeleteElementSetsCommand::Execute(const GS::ObjectState& paramet
                 continue;
             }
 
-            const GSErrCode err = ACAPI_ElementSet_Delete(setGuid);
+            // A dry run reads the set instead of deleting it: ACAPI_ElementSet_GetData answers the
+            // same errors as ACAPI_ElementSet_Delete for a set that does not exist, is already
+            // deleted or was created by another add-on.
+            const GSErrCode err = dryRun ? ACAPI_ElementSet_GetData(setGuid, nullptr, nullptr) : ACAPI_ElementSet_Delete(setGuid);
             switch (err) {
                 case NoError:
-                    executionResults(CreateSuccessfulExecutionResult());
+                    executionResults(dryRun ? CreateDryRunExecutionResult("wouldDelete") : CreateSuccessfulExecutionResult());
                     break;
                 case APIERR_NOTMINE:
                     executionResults(CreateFailedExecutionResult(err, "The element set was not created by the Tapir Add-On, so it cannot be deleted."));
@@ -1470,8 +1483,14 @@ GS::ObjectState DeleteElementSetsCommand::Execute(const GS::ObjectState& paramet
             }
         }
         return NoError;
-    });
+    };
 
+    if (dryRun) {
+        deleteElementSets();
+        return response;
+    }
+
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand("Delete Element Sets", deleteElementSets);
     if (undoErr != NoError) {
         return CreateErrorResponse(undoErr, "Failed to delete the element sets.");
     }

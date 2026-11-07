@@ -75,6 +75,16 @@ with urllib.request.urlopen(request, json.dumps(body).encode()) as response:
 
 Every Tapir command is called this way: change `commandName` and put the command's parameters in `addOnCommandParameters`. The [examples](archicad-addon/Examples/) use `aclib`, a small helper that does this for you.
 
+#### Preview a change with `dryRun`
+
+The commands that delete or change can be asked what they would do first. With `"dryRun": true` among its parameters such a command makes all the checks of a real run, with the same errors, but changes nothing in the project and adds no undo step; its response is a real run's plus `"dryRun": true`, and says for each target what would happen (`"wouldDelete": true` for an element `DeleteElements` would delete). Without `dryRun`, or with `false`, the command works as before. The [command reference](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon) says which commands take it.
+
+```python
+preview = aclib.RunTapirCommand('DeleteElements', {'elements': elements, 'dryRun': True})
+if all(result['success'] for result in preview['executionResults']):
+    aclib.RunTapirCommand('DeleteElements', {'elements': elements})
+```
+
 ### Use the Tapir palette in Archicad
 
 The Add-On adds a **Tapir** menu to Archicad; open the palette with **Tapir > Tapir Palette**.
@@ -82,6 +92,11 @@ The Add-On adds a **Tapir** menu to Archicad; open the palette with **Tapir > Ta
 - The palette lists the scripts of [builtin-scripts/](builtin-scripts/), which it reads from this repository on GitHub when Archicad starts, the scripts of the GitHub repositories and folders named in its configuration file (`Documents/Tapir/config.json`), and the scripts you add with its *Add* button.
 - Choose a script and run it. Python scripts run with [uv](https://docs.astral.sh/uv/), which takes care of Python and of the packages the script needs; if uv is missing, the palette offers to install it. The script is told the port of the Archicad it was started from, so it works on that Archicad, and its output is shown in the palette. A running script can be stopped.
 - *Tapir > Manage Script Shortcuts...* puts up to six scripts on the menu commands *Tapir > Run Script Shortcut 1* to *6*, which you can give keyboard shortcuts in Archicad's Work Environment.
+
+### Update the Add-On
+
+- **From Archicad:** *Tapir > Check for Updates...*, or the *Check for Updates* button at the right end of the Tapir palette, next to the installed version. When a newer release exists for your Archicad version, the menu command reads *Update Tapir to &lt;version&gt;...* and the button *Update to &lt;version&gt;*; confirming downloads the Tapir Installer, which quits Archicad, replaces the Add-On and starts Archicad again.
+- **Without that menu command or button:** older Tapir releases have neither. Download and run the [Tapir Installer](#easy-installation-recommended) with Archicad closed: it replaces the Add-On in every Archicad version you select. Later updates can then be made from Archicad.
 
 ## What you can do
 
