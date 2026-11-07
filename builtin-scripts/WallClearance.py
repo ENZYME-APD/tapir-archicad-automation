@@ -13,8 +13,11 @@ Wall Clearance
 Finds the doors, windows and objects whose space is too close to a wall and
 moves them just enough. One rule for every kind:
 - the element's space is its own floor plan outline (the convex hull of what
-  Archicad draws for it: a door's swing, an object's symbol, rotated with it)
-  plus a margin;
+  Archicad draws for it: an object's symbol, rotated with it) plus a margin.
+  Archicad draws doors and windows as part of their wall and gives no outline
+  of their own, so a door's or window's space is its opening in the wall: its
+  width (centerOffset +/- width / 2) across the wall's thickness. The swing of
+  a door is not part of it;
 - the obstructions are the walls, columns and curtain walls cut on its story
   (their floor plan cut fill, GetDetailsOfElements floorPlanPolygons), except
   the wall a door or window sits in and the wall an object stands against;
@@ -363,7 +366,10 @@ def smallest_move(t_low: float, t_high: float, clears) -> float | None:
                     t = middle
                 else:
                     fails = middle
-            return t
+            # the refined move ends right at the edge of the tolerance, so a check after the move could find the
+            # gap just short of the margin again: go a little further when that still clears
+            further = max(t_low, min(t_high, t + math.copysign(2 * TOLERANCE, t)))
+            return further if clears(further) else t
     return None
 
 
@@ -765,8 +771,9 @@ class WallClearance:
             openings = [e for e in elements if e["kind"] in ("Door", "Window")]
             objects = [e for e in elements if e["kind"] == "Object"]
             try:
-                # GetShapePrimitivesOfElements draws on the current story only; a door or window elsewhere gets an
-                # error item and is listed as not checked. Objects are drawn on every story.
+                # GetShapePrimitivesOfElements gives no primitives for doors and windows (Archicad draws them as part
+                # of their wall), so they are measured by their opening in the wall (see _opening_outline). Objects
+                # are drawn on every story.
                 for element, (outline, error) in zip(openings, self._read_outlines(
                         "GetShapePrimitivesOfElements", "shapePrimitivesOfElements", openings, {"includeMarkers": False})):
                     element["outline"], element["outlineError"] = outline, error
@@ -860,11 +867,11 @@ class WallClearance:
             if owner.curved:
                 rows.append({**row, "status": "skipped", "result": "In a curved wall; not checked."})
                 continue
-            outline = element["outline"]
+            outline = element["outline"] or self._opening_outline(owner, d)
             if not outline:
-                reason = element["outlineError"] or "Archicad draws no floor plan outline for it"
+                reason = element["outlineError"] or "it has no width"
                 rows.append({**row, "status": "skipped",
-                             "result": f"Its swing and space outline cannot be read ({reason}); not checked."})
+                             "result": f"Its space in the wall cannot be worked out ({reason}); not checked."})
                 continue
             margin = element["margin"]
             active = [o for o in obstructions if o.floorIndex == owner.floorIndex and o.guid != owner.guid]
@@ -882,8 +889,14 @@ class WallClearance:
             low, high = center - half, center + half
             t_low = max(owner.t_range[0] - low, -center)
             t_high = owner.t_range[1] - high
-            near = self._near(outline, active, max(abs(t_low), abs(t_high)) + margin)
             neighbours = [p for g, p in positions.items() if g != guid and p["owner"] == owner.guid]
+            # it slides up to the next door or window in its wall, never past it
+            for p in neighbours:
+                if p["low"] >= high - TOLERANCE:
+                    t_high = min(t_high, p["low"] - high)
+                elif p["high"] <= low + TOLERANCE:
+                    t_low = max(t_low, p["high"] - low)
+            near = self._near(outline, active, max(abs(t_low), abs(t_high)) + margin)
 
             def clears(t):
                 if any(p["high"] > low + t + TOLERANCE and p["low"] < high + t - TOLERANCE for p in neighbours):
@@ -901,6 +914,19 @@ class WallClearance:
                 positions[guid].update(low=low + shift, high=high + shift)
             rows.append({**row, "status": "fix", "result": "", "action": {"centerOffset": center + shift}})
         return rows
+
+    @staticmethod
+    def _opening_outline(wall: Wall, d: dict) -> list[tuple[float, float]]:
+        """ The opening of a door or window in its wall: from centerOffset - width / 2 to centerOffset + width / 2
+        along the wall, across the wall's body. GetShapePrimitivesOfElements gives no primitives for doors and
+        windows (Archicad draws them as part of their wall), and their 2D bounding box is this opening too. """
+        width = float(d.get("width") or 0.0)
+        local = [wall.local(p) for polygon in wall.polygons for p in polygon]
+        if width <= EPSILON or not local:
+            return []
+        s_low, s_high = min(p[1] for p in local), max(p[1] for p in local)
+        low, high = float(d["centerOffset"]) - width / 2.0, float(d["centerOffset"]) + width / 2.0
+        return [wall.world(low, s_low), wall.world(high, s_low), wall.world(high, s_high), wall.world(low, s_high)]
 
     @staticmethod
     def _back_face(element: dict, outline, obstructions: list[Obstruction]):

@@ -22,7 +22,7 @@
     'Licence': 'Lizenz',
     'Open-source automation for Archicad. 100% free and open source (MIT). Maintained by Enzyme APD and the community.':
         'Open-Source-Automatisierung für Archicad. 100 % kostenlos und quelloffen (MIT). Gepflegt von Enzyme APD und der Community.',
-    'Contact: <span class="nowrap">contact@enzyme-apd.com</span>': 'Kontakt: <span class="nowrap">contact@enzyme-apd.com</span>',
+    'Contact: <span class="nowrap">tapir@weareenzyme.com</span>': 'Kontakt: <span class="nowrap">tapir@weareenzyme.com</span>',
     'Share a script': 'Ein Skript teilen',
     'Tapir and AI': 'Tapir und KI',
     'All docs': 'Die ganze Doku',

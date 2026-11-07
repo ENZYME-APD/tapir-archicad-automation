@@ -13,9 +13,11 @@ namespace TapirGrasshopperPlugin.Components.DocumentToolsComponents
     // The Level Dimension tool: reads and creates level dimensions with the
     // settings of the Level Dimension Settings dialog, from
     // ToolSettings/LevelDimension.json. Position, ParentElementGuid and Level
-    // define a new level dimension. There is no ModifyLevelDimensions command,
-    // so Execute only writes the Element ID, the layer and the draw order of
-    // existing level dimensions.
+    // define a new level dimension. Execute writes the settings of existing
+    // level dimensions with ModifyLevelDimensions, which takes the same
+    // setting keys as CreateLevelDimensions (ApplyLevelDimensionSettings),
+    // and the Element ID, the layer and the draw order with
+    // SetDetailsOfElements.
     public class LevelDimensionsComponent : ElementToolComponent
     {
         protected override string ToolName => "LevelDimension";
@@ -24,8 +26,8 @@ namespace TapirGrasshopperPlugin.Components.DocumentToolsComponents
 
         protected override string CreateCommand => "CreateLevelDimensions";
         protected override string CreateArrayKey => "levelDimensionsData";
-        protected override string ModifyCommand => null;
-        protected override string ModifyArrayKey => null;
+        protected override string ModifyCommand => "ModifyLevelDimensions";
+        protected override string ModifyArrayKey => "levelDimensionsWithDetails";
 
         // The item properties of the CreateLevelDimensions input schema
         // (ElementCreationCommands.cpp).
@@ -35,8 +37,15 @@ namespace TapirGrasshopperPlugin.Components.DocumentToolsComponents
             "needPlus", "origin", "parentElementId", "pen", "position", "textHeight", "textPen"
         };
 
+        // The settings of the ModifyLevelDimensions input schema; its
+        // position is a geometry input, which only Create uses.
+        private static readonly ISet<string> ModifyLevelDimensionsKeys = new HashSet<string>
+        {
+            "angle", "dimForm", "markerSize", "needPlus", "origin", "pen", "textHeight", "textPen"
+        };
+
         protected override ISet<string> CreateKeys => CreateLevelDimensionsKeys;
-        protected override ISet<string> ModifyKeys { get; } = new HashSet<string>();
+        protected override ISet<string> ModifyKeys => ModifyLevelDimensionsKeys;
 
         // The Level Dimension Settings dialog's panels, in its order;
         // append-only (see ElementToolComponent.JsonGroups).
@@ -50,13 +59,14 @@ namespace TapirGrasshopperPlugin.Components.DocumentToolsComponents
         public LevelDimensionsComponent()
             : base(
                 "LevelDimensions",
-                "Reads (Refresh) and creates (Create) level dimensions, with the settings of the Level Dimension " +
+                "Reads (Refresh), changes (Execute) and creates (Create) level dimensions, with the settings of the Level Dimension " +
                 "Settings dialog as one JSON object per dialog panel. A new level dimension starts from the Level " +
                 "Dimension tool defaults, or from FavoriteName, and the given settings override them. With a " +
                 "ParentElementGuid the dimension is associative: it shows the height of the parent element (Mesh, " +
                 "Slab, Roof ...) at its position and follows the element when it changes. The story can be given " +
-                "as {\"floorIndex\": ...} in any JSON input. Archicad has no command to modify level dimensions, " +
-                "so Execute only writes ElementID, LayerIndex and DrawOrder.",
+                "as {\"floorIndex\": ...} in any JSON input. Execute writes the settings, ElementID, LayerIndex and " +
+                "DrawOrder of existing level dimensions; their position, parent element and fixed level are only " +
+                "used by Create.",
                 GroupNames.DocumentTools)
         {
         }

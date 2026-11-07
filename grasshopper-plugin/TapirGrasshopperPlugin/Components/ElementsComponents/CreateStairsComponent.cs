@@ -10,7 +10,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public CreateStairsComponent()
             : base(
                 "CreateStairs",
-                "Create Stair elements based on the given parameters.",
+                "Create Stair elements based on the given parameters. The settings without an input " +
+                "(the baseline position, the landings and winders, the locks, the extra treads, the " +
+                "walking line, the numbering, the walking direction, and the tread, riser and structure " +
+                "settings of the flights and the landings, the same ones ModifyStairs accepts) can be " +
+                "given through the AdditionalSettings input, in the fields of the CreateStairs command.",
                 GroupNames.ElementCreation)
         {
         }
@@ -34,6 +38,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         };
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;
+
+        private static readonly List<Field> TrailingFieldDefinitions = new List<Field>
+        {
+            TrailingAdditionalSettingsField
+        };
+
+        protected override IReadOnlyList<Field> TrailingFields => TrailingFieldDefinitions;
 
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.CreateStairs;
