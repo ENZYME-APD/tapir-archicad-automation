@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 61 | 53 | 8 |  |  |  | 8 | 70 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1423 | 1207 | 216 |  |  |  | 12 | 392 |
 
-Archicad 25–30 DevKits; updated 2026-11-07 06:55 UTC.
+Archicad 25–30 DevKits; updated 2026-11-07 07:05 UTC.
 
 | | Status |
 |---|---|
@@ -522,7 +522,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `ACAPI_GetExtensionInstance` – Returns the HINSTANCE of the add-on's DLL. *(add-on infrastructure)*
 - ➖ `ACAPI_GetMainWindow` – Returns the application's main window where the add-on works. *(user interface)*
 - ➖ `ACAPI_GetOwnLocation` – Returns the location of the add-on in the file system. *(add-on infrastructure)*
-- ➖ `ACAPI_GetOwnResModule` – Returns the add-on's resource module identifier for loading resources. *(add-on infrastructure)*
+- ➖ `ACAPI_GetOwnResModule` – Returns the add-on's resource module identifier for loading resources. — [#2181](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2181 "Update button in the Tapir palette, menu item shows a waiting update") *(add-on infrastructure)*
 - ➖ `ACAPI_GetPreferences` – Returns the stored preferences of the add-on. *(add-on preferences)*
 - ✅ `ACAPI_GetReleaseNumber`
 - ➖ `ACAPI_GetToken` <sub>AC26–30</sub> – Returns the token associated with the AddOn. *(add-on infrastructure)*
@@ -1145,12 +1145,12 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 ## MenuItem
 
 - ➖ `ACAPI_MenuItem_AddMenuItemText` – Sets the text of a specified menu item that will appear in the Work Environment dialog. <sub>(was `APIIo_AddMenuItemTextID`)</sub> *(user interface)*
-- ➖ `ACAPI_MenuItem_GetMenuItemFlags` – Returns the flag values of the specified menu item mounted by an API tool add-on. <sub>(was `APIIo_GetMenuItemFlagsID`)</sub> *(user interface)*
+- ➖ `ACAPI_MenuItem_GetMenuItemFlags` – Returns the flag values of the specified menu item mounted by an API tool add-on. <sub>(was `APIIo_GetMenuItemFlagsID`)</sub> — [#2181](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2181 "Update button in the Tapir palette, menu item shows a waiting update") *(user interface)*
 - ➖ `ACAPI_MenuItem_GetMenuItemText` – Returns the text of the specified menu item. <sub>(was `APIIo_GetMenuItemTextID`)</sub> *(user interface)*
 - ➖ `ACAPI_MenuItem_InstallMenuHandler` <sub>AC27–30</sub> – Installs a callback procedure for handling the add-on's menu commands. *(user interface)*
 - ➖ `ACAPI_MenuItem_RegisterMenu` <sub>AC27–30</sub> – Registers the menu items of the add-on. *(user interface)*
-- ➖ `ACAPI_MenuItem_SetMenuItemFlags` – Sets the flag values of the specified menu item. <sub>(was `APIIo_SetMenuItemFlagsID`)</sub> *(user interface)*
-- ➖ `ACAPI_MenuItem_SetMenuItemText` – Sets the text of the specified menu item. <sub>(was `APIIo_SetMenuItemTextID`)</sub> *(user interface)*
+- ➖ `ACAPI_MenuItem_SetMenuItemFlags` – Sets the flag values of the specified menu item. <sub>(was `APIIo_SetMenuItemFlagsID`)</sub> — [#2181](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2181 "Update button in the Tapir palette, menu item shows a waiting update") *(user interface)*
+- ➖ `ACAPI_MenuItem_SetMenuItemText` – Sets the text of the specified menu item. <sub>(was `APIIo_SetMenuItemTextID`)</sub> — [#2181](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2181 "Update button in the Tapir palette, menu item shows a waiting update") *(user interface)*
 
 ## Category
 

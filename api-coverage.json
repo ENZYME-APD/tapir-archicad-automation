@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 06:55 UTC",
+ "generatedAt": "2026-11-07 07:05 UTC",
  "versions": [
   25,
   26,
@@ -9826,7 +9826,12 @@
    "olderNames": [],
    "status": "not applicable",
    "reason": "add-on infrastructure",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2181,
+     "title": "Update button in the Tapir palette, menu item shows a waiting update"
+    }
+   ],
    "issues": []
   },
   {
@@ -13336,7 +13341,12 @@
    ],
    "status": "not applicable",
    "reason": "user interface",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2181,
+     "title": "Update button in the Tapir palette, menu item shows a waiting update"
+    }
+   ],
    "issues": []
   },
   {
@@ -13420,7 +13430,12 @@
    ],
    "status": "not applicable",
    "reason": "user interface",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2181,
+     "title": "Update button in the Tapir palette, menu item shows a waiting update"
+    }
+   ],
    "issues": []
   },
   {
@@ -13443,7 +13458,12 @@
    ],
    "status": "not applicable",
    "reason": "user interface",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2181,
+     "title": "Update button in the Tapir palette, menu item shows a waiting update"
+    }
+   ],
    "issues": []
   },
   {
