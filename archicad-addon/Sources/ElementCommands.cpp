@@ -8112,6 +8112,18 @@ GS::ObjectState Get3DBoundingBoxesCommand::Execute (const GS::ObjectState& param
     return response;
 }
 
+// The plan box of an element of the current database, as Get2DBoundingBoxes reports it. The box
+// can be empty (see IsEmptyBounds) for an element without geometry.
+static GSErrCode Calculate2DBounds (API_Elem_Head& elemHead, API_Box3D& outBounds)
+{
+    if (GetElemTypeId (elemHead) == API_SlabID) {
+        // ACAPI_Element_CalcBounds crashes Archicad for a Slab that is not drawn in the current
+        // window (#686, see Get3DBoundingBoxes), so its box is the plan view of its 3D body.
+        return CalculateSolidBodyBounds (elemHead, outBounds);
+    }
+    return ACAPI_Element_CalcBounds (&elemHead, &outBounds);
+}
+
 Get2DBoundingBoxesCommand::Get2DBoundingBoxesCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -8191,13 +8203,7 @@ GS::ObjectState Get2DBoundingBoxesCommand::Execute (const GS::ObjectState& param
         }
 
         API_Box3D box3D = {};
-        if (GetElemTypeId (elemHead) == API_SlabID) {
-            // ACAPI_Element_CalcBounds crashes Archicad for a Slab that is not drawn in the current
-            // window (#686, see Get3DBoundingBoxes), so its box is the plan view of its 3D body.
-            err = CalculateSolidBodyBounds (elemHead, box3D);
-        } else {
-            err = ACAPI_Element_CalcBounds (&elemHead, &box3D);
-        }
+        err = Calculate2DBounds (elemHead, box3D);
         if (err != NoError) {
             boundingBoxes2D (CreateErrorResponse (err, "Failed to get the 2D bounding box"));
             continue;
@@ -8215,6 +8221,274 @@ GS::ObjectState Get2DBoundingBoxesCommand::Execute (const GS::ObjectState& param
     }
 
     return response;
+}
+
+// The types AlignElements and DistributeElements move (#2188): those that stand on their own
+// in the plan and are moved as a whole by the drag MoveElements uses. Hosted elements (doors,
+// windows, skylights, openings) only slide along their host, subelements (curtain wall, stair
+// and railing parts) belong to their parent, and dimensions and labels follow what they are
+// attached to, so they are refused rather than moved by an amount that does not align them.
+static bool IsArrangeableType (API_ElemTypeID typeId)
+{
+    switch (typeId) {
+        case API_WallID:
+        case API_ColumnID:
+        case API_BeamID:
+        case API_SlabID:
+        case API_RoofID:
+        case API_ShellID:
+        case API_MorphID:
+        case API_MeshID:
+        case API_ZoneID:
+        case API_ObjectID:
+        case API_LampID:
+        case API_StairID:
+        case API_RailingID:
+        case API_CurtainWallID:
+        case API_LineID:
+        case API_PolyLineID:
+        case API_ArcID:
+        case API_CircleID:
+        case API_SplineID:
+        case API_HatchID:
+        case API_TextID:
+        case API_HotspotID:
+            return true;
+        default:
+            return false;
+    }
+}
+
+// A move shorter than this (in meters) is no move: the element is already in place.
+static constexpr double ArrangeTolerance = 1e-6;
+
+struct ElementToArrange {
+    API_Guid guid = APINULLGuid;
+    API_Box3D bounds = {};
+    API_Vector3D moveVector = {};
+    GS::Optional<GS::ObjectState> failedResult;
+};
+
+// Reads the elements of AlignElements or DistributeElements with their plan boxes, in input
+// order. An element that cannot be arranged gets its failed execution result instead: a missing
+// elementId, an element given twice, one that cannot be edited, an unsupported type or one
+// without a box. operation is the past participle of the edit ("aligned").
+static GS::Array<ElementToArrange> GetElementsToArrange (const GS::Array<GS::ObjectState>& elements, const char* operation)
+{
+    GS::Array<ElementToArrange> result;
+    GS::HashSet<API_Guid> seen;
+    for (const GS::ObjectState& element : elements) {
+        ElementToArrange item;
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            item.failedResult = CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing");
+            result.Push (item);
+            continue;
+        }
+
+        item.guid = GetGuidFromObjectState (*elementId);
+        if (seen.Contains (item.guid)) {
+            item.failedResult = CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("The element was not %s again, because it is given more than once.", operation));
+            result.Push (item);
+            continue;
+        }
+        seen.Add (item.guid);
+
+        item.failedResult = GetFailedExecutionResultIfNotEditable (item.guid, operation);
+        if (item.failedResult.HasValue ()) {
+            result.Push (item);
+            continue;
+        }
+
+        API_Elem_Head elemHead = {};
+        if (!LoadElementHeaderByGuid (item.guid, elemHead)) {
+            item.failedResult = CreateFailedExecutionResult (APIERR_BADID, "Element does not exist.");
+            result.Push (item);
+            continue;
+        }
+
+        const API_ElemTypeID typeId = GetElemTypeId (elemHead);
+        if (!IsArrangeableType (typeId)) {
+            item.failedResult = CreateFailedExecutionResult (APIERR_NOTSUPPORTED,
+                GS::UniString::Printf ("The element was not %s, because elements of type %T are not supported.", operation, GetElementTypeNonLocalizedName (typeId).ToPrintf ()));
+            result.Push (item);
+            continue;
+        }
+
+        if (Calculate2DBounds (elemHead, item.bounds) != NoError || IsEmptyBounds (item.bounds)) {
+            item.failedResult = CreateFailedExecutionResult (APIERR_GENERAL,
+                GS::UniString::Printf ("The element was not %s, because its bounding box could not be calculated.", operation));
+        }
+        result.Push (item);
+    }
+    return result;
+}
+
+// Moves each element by its moveVector with the drag MoveElements uses, all in one undo step,
+// and returns one execution result per element in input order. An element whose move is shorter
+// than ArrangeTolerance is already in place and is not edited.
+static GS::ObjectState MoveArrangedElements (const GS::Array<ElementToArrange>& items, const char* undoStepName)
+{
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ElementChangeReporter changeReporter;
+
+    ACAPI_CallUndoableCommand (undoStepName, [&]() -> GSErrCode {
+        for (const ElementToArrange& item : items) {
+            if (item.failedResult.HasValue ()) {
+                executionResults (*item.failedResult);
+                continue;
+            }
+
+            if (std::abs (item.moveVector.x) < ArrangeTolerance && std::abs (item.moveVector.y) < ArrangeTolerance) {
+                executionResults (CreateSuccessfulExecutionResult ());
+                continue;
+            }
+
+            changeReporter.Add (item.guid);
+            const GSErrCode err = MoveElement (item.guid, item.moveVector, false);
+            if (err != NoError) {
+                const GS::UniString errorMsg = GS::UniString::Printf ("Failed to move element with guid %T!", APIGuidToString (item.guid).ToPrintf ());
+                executionResults (CreateFailedExecutionResult (err, errorMsg));
+            } else {
+                changeReporter.MarkChanged (item.guid);
+                executionResults (CreateSuccessfulExecutionResult ());
+            }
+        }
+
+        return NoError;
+    });
+
+    changeReporter.Report ();
+
+    return response;
+}
+
+AlignElementsCommand::AlignElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String AlignElementsCommand::GetName () const
+{
+    return "AlignElements";
+}
+
+GS::Optional<GS::UniString> AlignElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The elements to align: Wall, Column, Beam, Slab, Roof, Shell, Morph, Mesh, Zone, Object, Lamp, Stair, Railing, CurtainWall, Line, PolyLine, Arc, Circle, Spline, Hatch, Text or Hotspot, in the current database."
+            },
+            "alignTo": {
+                "type": "string",
+                "enum": ["left", "right", "top", "bottom", "centerX", "centerY"],
+                "description": "The edge of the plan bounding boxes to align: left (smallest X), right (largest X), bottom (smallest Y), top (largest Y), centerX (the middle in X, so the elements line up on one vertical line) or centerY (the middle in Y, on one horizontal line)."
+            },
+            "reference": {
+                "$ref": "#/ElementId",
+                "description": "Optional element to align to; it is not moved itself. Without it the elements are aligned to the outermost edge of the whole set (its leftmost left edge, its topmost top edge, ...), or for centerX and centerY to the middle of the bounding box of the whole set."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements",
+            "alignTo"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> AlignElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState AlignElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+    GS::UniString alignTo;
+    parameters.Get ("alignTo", alignTo);
+
+    const bool alongX = (alignTo == "left" || alignTo == "right" || alignTo == "centerX");
+    if (!alongX && alignTo != "top" && alignTo != "bottom" && alignTo != "centerY") {
+        return CreateErrorResponse (APIERR_BADPARS, "alignTo must be one of left, right, top, bottom, centerX and centerY.");
+    }
+
+    // The coordinate of a box that is aligned: one of its edges or its middle.
+    const auto alignedCoordinateOf = [&alignTo] (const API_Box3D& box) -> double {
+        if (alignTo == "left") {
+            return box.xMin;
+        } else if (alignTo == "right") {
+            return box.xMax;
+        } else if (alignTo == "centerX") {
+            return (box.xMin + box.xMax) / 2.0;
+        } else if (alignTo == "bottom") {
+            return box.yMin;
+        } else if (alignTo == "top") {
+            return box.yMax;
+        }
+        return (box.yMin + box.yMax) / 2.0;
+    };
+
+    GS::Array<ElementToArrange> items = GetElementsToArrange (elements, "aligned");
+
+    double target = 0.0;
+    if (const GS::ObjectState* referenceId = parameters.Get ("reference")) {
+        API_Elem_Head referenceHead = {};
+        if (!LoadElementHeaderByGuid (GetGuidFromObjectState (*referenceId), referenceHead)) {
+            return CreateErrorResponse (APIERR_BADID, "The reference element does not exist.");
+        }
+        API_Box3D referenceBounds = {};
+        if (Calculate2DBounds (referenceHead, referenceBounds) != NoError || IsEmptyBounds (referenceBounds)) {
+            return CreateErrorResponse (APIERR_GENERAL, "Failed to calculate the bounding box of the reference element. It must be in the current database.");
+        }
+        target = alignedCoordinateOf (referenceBounds);
+    } else {
+        API_Box3D setBounds = {};
+        InitializeEmptyBounds (setBounds);
+        for (const ElementToArrange& item : items) {
+            if (item.failedResult.HasValue ()) {
+                continue;
+            }
+            setBounds.xMin = std::min (setBounds.xMin, item.bounds.xMin);
+            setBounds.yMin = std::min (setBounds.yMin, item.bounds.yMin);
+            setBounds.xMax = std::max (setBounds.xMax, item.bounds.xMax);
+            setBounds.yMax = std::max (setBounds.yMax, item.bounds.yMax);
+        }
+        // With no element to align setBounds stays empty, and target is never used.
+        target = alignedCoordinateOf (setBounds);
+    }
+
+    for (ElementToArrange& item : items) {
+        if (item.failedResult.HasValue ()) {
+            continue;
+        }
+        const double move = target - alignedCoordinateOf (item.bounds);
+        if (alongX) {
+            item.moveVector.x = move;
+        } else {
+            item.moveVector.y = move;
+        }
+    }
+
+    return MoveArrangedElements (items, "Align Elements");
 }
 
 GetLibPartTransformationsCommand::GetLibPartTransformationsCommand () :
