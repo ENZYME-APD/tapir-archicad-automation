@@ -2,7 +2,8 @@
 
 The script's geometry functions do not talk to Archicad; this loads the script from
 marketplace/zones-to-walls-and-slabs/ (its Archicad and window code only runs from its main())
-and checks the walls it plans for small sets of zones, each with the expected walls written out.
+and checks the walls, slabs, terraces and balustrades it plans for small sets of zones, each with
+the expected result written out.
 Lengths are in metres; the zones are drawn the way Archicad gives them, in either orientation.
 
 Standard library only. Run: python archicad-addon/Test/test_zones_to_walls_and_slabs.py
@@ -254,6 +255,70 @@ class SlabsTest (unittest.TestCase):
         self.assertAlmostEqual (placement[1], 6.2)
         self.assertIsNone (script.slab_placement (2, levels, [0.0]))
         self.assertIsNone (script.slab_placement (5, levels, [3.0]))
+
+
+def line_key (balustrade):
+    """ The balustrade's points rounded, and whether it is closed. """
+    return ([(round (p[0], 6) + 0.0, round (p[1], 6) + 0.0) for p in balustrade['points']], balustrade['closed'])
+
+
+def line (points):
+    """ An open balustrade along the points, as line_key gives it. """
+    return line_key ({'points': points, 'closed': False})
+
+
+class TerracesTest (unittest.TestCase):
+
+    def plan (self, zones_by_floor, tolerance = PARTITION):
+        return script.plan_terraces (zones_by_floor, tolerance, EXTERNAL)
+
+    def test_setback_on_one_side (self):
+        # the upper story is set back from the north side: one terrace, the exposed strip, with one
+        # balustrade along its three exposed edges, none along the upper zone's wall. The balustrade is
+        # centred over the external walls of the lower story (H outside the zones) and ends at the
+        # outer face of the upper story's north wall (EXTERNAL above the zone)
+        lower = [rectangle (0, 0, 4, 6), rectangle (4, 0, 8, 6)]
+        upper = [rectangle (0, 0, 8, 4)]
+        plans = self.plan ({0: lower, 1: upper})
+        self.assertEqual (list (plans), [1])
+        self.assertEqual ([polygon_key (p) for p in plans[1]['terraces']], [slab (box (0, 4, 8, 6))])
+        self.assertEqual ([line_key (b) for b in plans[1]['balustrades']], [
+            line ([(8 + H, 4 + EXTERNAL), (8 + H, 6 + H), (-H, 6 + H), (-H, 4 + EXTERNAL)]),
+        ])
+        balustrade = plans[1]['balustrades'][0]
+        self.assertAlmostEqual (script.polyline_length (balustrade['points'], balustrade['closed']), 12.0)
+
+    def test_setback_on_two_sides (self):
+        # the upper story is set back from the east and the north: an L-shaped terrace, its balustrade
+        # running from the upper story's south wall round to its north wall
+        plans = self.plan ({0: [rectangle (0, 0, 8, 6)], 1: [rectangle (0, 0, 6, 4)]})
+        self.assertEqual ([polygon_key (p) for p in plans[1]['terraces']],
+                          [slab ([(6, 0), (8, 0), (8, 6), (0, 6), (0, 4), (6, 4)])])
+        self.assertEqual ([line_key (b) for b in plans[1]['balustrades']], [
+            line ([(6 + EXTERNAL, -H), (8 + H, -H), (8 + H, 6 + H), (-H, 6 + H), (-H, 4 + EXTERNAL)]),
+        ])
+
+    def test_setback_all_round (self):
+        # a smaller upper story in the middle: a terrace all round it, with one closed balustrade
+        # along the outer edge and none along the upper story
+        plans = self.plan ({0: [rectangle (0, 0, 10, 10)], 1: [rectangle (3, 3, 7, 7)]})
+        self.assertEqual ([polygon_key (p) for p in plans[1]['terraces']],
+                          [slab (box (0, 0, 10, 10), [box (3, 3, 7, 7)])])
+        balustrades = plans[1]['balustrades']
+        self.assertEqual (len (balustrades), 1)
+        self.assertTrue (balustrades[0]['closed'])
+        self.assertEqual (ring_key (balustrades[0]['points']), ring_key (box (-H, -H, 10 + H, 10 + H)))
+
+    def test_no_setback (self):
+        # the same footprint on both stories, and the roof above them: no terrace
+        self.assertEqual (self.plan ({0: [rectangle (0, 0, 8, 6)], 1: [rectangle (0, 0, 8, 6)]}), {})
+
+    def test_cantilever (self):
+        self.assertEqual (self.plan ({0: [rectangle (0, 0, 4, 4)], 1: [rectangle (0, 0, 6, 4)]}), {})
+
+    def test_narrow_misfit_is_no_terrace (self):
+        # the upper zone is drawn 5 cm short of the lower one, less than the tolerance
+        self.assertEqual (self.plan ({0: [rectangle (0, 0, 8, 4)], 1: [rectangle (0, 0, 8, 3.95)]}), {})
 
 
 class HelpersTest (unittest.TestCase):
