@@ -717,6 +717,104 @@ class UpdateTests (UpdateModeTestBase):
         self.AssertAddOnIsOld ()
 
 
+class WaitingModeTests (UpdateModeTestBase):
+    # Update when Archicad closes: Archicad is neither quit nor started again.
+    def CreateWaitingTarget (self, pid, markerPath = None, archicadPort = None):
+        return tapir_installer.AddOnUpdateTarget (ARCHICAD_VERSION, self.targetPath, archicadPort, pid, True, True, markerPath)
+
+    def CreateMarker (self):
+        markerPath = os.path.join (self.tempFolderPath, 'TapirPending.json')
+        WriteFiles (self.tempFolderPath, { 'TapirPending.json' : '{}' })
+        return markerPath
+
+    def testWaitsForProcessThenReplacesWithoutRestart (self):
+        processSeconds = 2
+        process = self.StartProcess (processSeconds)
+        mockArchicad = self.StartMockArchicad ()
+        markerPath = self.CreateMarker ()
+        statusTexts = []
+        startTime = time.monotonic ()
+        resultText = tapir_installer.UpdateAddOn (self.CreateWaitingTarget (process.pid, markerPath, mockArchicad.port), self.releaseInfo, False, statusTexts.append)
+        self.assertGreater (time.monotonic () - startTime, processSeconds - 0.5)
+        self.assertEqual (resultText, 'Tapir was updated to {0}. Archicad was not started again.'.format (RELEASE_TAG))
+        self.assertIn ('Waiting for Archicad to close...', statusTexts)
+        # Archicad is never contacted, and never started.
+        self.assertEqual (mockArchicad.receivedCommands, [])
+        self.assertFalse (mockArchicad.isStopped)
+        self.assertEqual (self.startedArchicadLocations, [])
+        self.assertFalse (os.path.exists (markerPath))
+        self.AssertAddOnIsNew ()
+
+    def testAddOnIsNotReplacedWhileArchicadRuns (self):
+        process = self.StartProcess (60)
+        updateTarget = self.CreateWaitingTarget (process.pid)
+        cancelEvent = self.CreateCancelEvent (1.0)
+        with self.assertRaises (tapir_installer.UpdateCancelledError):
+            tapir_installer.UpdateAddOn (updateTarget, self.releaseInfo, False, cancelEvent = cancelEvent)
+        self.assertIsNone (process.poll ())
+        self.AssertAddOnIsOld ()
+
+    def testAlreadyExitedProcessUpdatesAtOnce (self):
+        process = self.StartProcess (0)
+        process.wait ()
+        markerPath = self.CreateMarker ()
+        startTime = time.monotonic ()
+        tapir_installer.UpdateAddOn (self.CreateWaitingTarget (process.pid, markerPath), self.releaseInfo, False)
+        self.assertLess (time.monotonic () - startTime, 5)
+        self.assertEqual (self.startedArchicadLocations, [])
+        self.assertFalse (os.path.exists (markerPath))
+        self.AssertAddOnIsNew ()
+
+    def testFailedReplaceGivesUpAndRemovesMarker (self):
+        process = self.StartProcess (0)
+        process.wait ()
+        markerPath = self.CreateMarker ()
+        replace = unittest.mock.Mock (side_effect = tapir_installer.InstallerError ('The file is locked.'))
+        self.Patch (tapir_installer, 'ReplaceAddOn', replace)
+        with self.assertRaises (tapir_installer.InstallerError) as context:
+            tapir_installer.UpdateAddOn (self.CreateWaitingTarget (process.pid, markerPath), self.releaseInfo, False)
+        # Tried once, without waiting for the file lock.
+        replace.assert_called_once_with (unittest.mock.ANY, self.targetPath, 0)
+        self.assertIn ('The file is locked.', str (context.exception))
+        self.assertIn ('offers the update again', str (context.exception))
+        self.assertEqual (self.startedArchicadLocations, [])
+        self.assertFalse (os.path.exists (markerPath))
+        self.AssertAddOnIsOld ()
+
+    def testDownloadFailureRemovesMarker (self):
+        process = self.StartProcess (0)
+        process.wait ()
+        markerPath = self.CreateMarker ()
+        self.releaseInfo['assets'] = []
+        with self.assertRaises (tapir_installer.InstallerError):
+            tapir_installer.UpdateAddOn (self.CreateWaitingTarget (process.pid, markerPath), self.releaseInfo, False)
+        self.assertFalse (os.path.exists (markerPath))
+        self.AssertAddOnIsOld ()
+
+    def testConsoleOptions (self):
+        process = self.StartProcess (0)
+        process.wait ()
+        markerPath = self.CreateMarker ()
+        exitCode, stdout, stderr = self.RunMain (['--console', '--addOnFile', self.targetPath, '--versions', str (ARCHICAD_VERSION),
+            '--archicadPid', str (process.pid), '--waitForArchicadExit', '--pendingMarker', markerPath])
+        self.assertEqual (exitCode, 0, stderr)
+        self.assertIn ('Tapir was updated to {0}.'.format (RELEASE_TAG), stdout)
+        self.assertFalse (os.path.exists (markerPath))
+        self.AssertAddOnIsNew ()
+
+    def testWaitingRequiresPid (self):
+        exitCode, stdout, stderr = self.RunMain (['--console', '--addOnFile', self.targetPath, '--versions', str (ARCHICAD_VERSION),
+            '--waitForArchicadExit'])
+        self.assertNotEqual (exitCode, 0)
+        self.AssertAddOnIsOld ()
+
+    def testDryRunDoesNotWait (self):
+        process = self.StartProcess (60)
+        resultText = tapir_installer.UpdateAddOn (self.CreateWaitingTarget (process.pid), self.releaseInfo, True)
+        self.assertTrue (resultText.startswith ('Would wait for the Archicad process'))
+        self.AssertAddOnIsOld ()
+
+
 @unittest.skipIf (IS_MAC, 'tests the Windows add-on file logic')
 class AddOnFileTests (UpdateModeTestBase):
     def PatchReplaceFailures (self, failureCount):
