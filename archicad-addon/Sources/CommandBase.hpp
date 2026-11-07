@@ -212,6 +212,10 @@ API_NameTypeValues DrawingNameTypeFromString (const GS::UniString& str, API_Name
 // root cause not fully understood, kept as two separate translation units instead.
 void AddMorphBodyFromMemo (const API_Element& elem, GS::ObjectState& typeSpecificDetails);
 
+// The GetDetailsOfElements keys of a Skylight, the ones CreateSkylights and ModifySkylights write
+// (ApplySkylightDetails) - defined next to them in ExtendedElementCommands.cpp.
+void AddSkylightDetails (const API_Element& elem, GS::ObjectState& typeSpecificDetails);
+
 // Shared by Morph and Wall (Get and Modify/Create) - defined in ExtendedElementCommands.cpp.
 GS::UniString ElemDisplayOptionToString (API_ElemDisplayOptionsID displayOption);
 bool ElemDisplayOptionFromString (const GS::UniString& str, API_ElemDisplayOptionsID& out);

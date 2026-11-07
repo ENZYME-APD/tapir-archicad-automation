@@ -9930,6 +9930,126 @@
             "revealDepthOffset"
         ]
     },
+    "SkylightDetails": {
+        "type": "object",
+        "description": "The details of a Skylight: the settings CreateSkylights and ModifySkylights write, plus the library part, the owner and anchorLevel, which are only read.",
+        "properties": {
+            "libPart": {
+                "$ref": "#/LibPartDetails"
+            },
+            "ownerElementId": {
+                "$ref": "#/ElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
+            "anchorPosition": {
+                "$ref": "#/Coordinate2D",
+                "description": "Global XY coordinates of the skylight's anchor point."
+            },
+            "anchorPoint": {
+                "type": "string",
+                "enum": ["BottomCenter", "BottomLeft", "BottomRight", "TopCenter", "TopLeft", "TopRight"],
+                "description": "Which point of the skylight anchorPosition places."
+            },
+            "fixMode": {
+                "type": "string",
+                "enum": ["Horizontal", "Vertical"],
+                "description": "What the skylight keeps when the angle or the height of its owner changes."
+            },
+            "anchorLevel": {
+                "type": "number",
+                "description": "The global Z coordinate of the anchor point. Only read; Archicad sets it from the owner."
+            },
+            "width": {
+                "type": "number"
+            },
+            "height": {
+                "type": "number"
+            },
+            "azimuthAngle": {
+                "type": "number",
+                "description": "Rotation angle in the horizontal plane, measured clockwise, in radians."
+            },
+            "elevationAngle": {
+                "type": "number",
+                "description": "Elevation angle of the owner's surface at the skylight, in radians."
+            },
+            "reflected": {
+                "type": "boolean"
+            },
+            "displayOption": {
+                "$ref": "#/DisplayOption"
+            },
+            "pen": {
+                "type": "integer",
+                "description": "Pen of the skylight's floor plan symbol; used unless useObjectPens is true."
+            },
+            "lineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the skylight's floor plan symbol; used unless useObjectLineTypes is true."
+            },
+            "cutLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the cut lines of the skylight."
+            },
+            "sectionFillId": {
+                "$ref": "#/AttributeId",
+                "description": "Fill of the section of the skylight; used unless useObjectSectionAttributes is true."
+            },
+            "sectionFillPen": {
+                "type": "integer"
+            },
+            "sectionFillBackgroundPen": {
+                "type": "integer"
+            },
+            "sectionContourPen": {
+                "type": "integer"
+            },
+            "aboveViewLinePen": {
+                "type": "integer",
+                "description": "Pen of the overhead lines."
+            },
+            "aboveViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the overhead lines."
+            },
+            "belowViewLinePen": {
+                "type": "integer",
+                "description": "Pen of the uncut lines."
+            },
+            "belowViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the uncut lines."
+            },
+            "surfaceId": {
+                "$ref": "#/AttributeId",
+                "description": "Surface of the skylight; used unless useObjectMaterials is true."
+            },
+            "useObjectPens": {
+                "type": "boolean"
+            },
+            "useObjectLineTypes": {
+                "type": "boolean"
+            },
+            "useObjectMaterials": {
+                "type": "boolean"
+            },
+            "useObjectSectionAttributes": {
+                "type": "boolean"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libPart",
+            "anchorPosition",
+            "anchorLevel",
+            "width",
+            "height",
+            "azimuthAngle",
+            "elevationAngle"
+        ]
+    },
     "PolylineDetails": {
         "type": "object",
         "properties": {
@@ -12092,6 +12212,9 @@
             },
             {
                 "$ref": "#/WindowDoorDetails"
+            },
+            {
+                "$ref": "#/SkylightDetails"
             },
             {
                 "$ref": "#/LibPartBasedElementDetails"
