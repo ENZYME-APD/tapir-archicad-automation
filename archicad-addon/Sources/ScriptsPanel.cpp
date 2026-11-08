@@ -14,8 +14,8 @@ static GS::UniString PanelText (Int32 index)
 
 ScriptsPanel::ScriptsPanel (DG::Palette& _palette, short expandButtonItem, short separatorItem)
     : palette (_palette)
-    , expandButton (_palette.GetReference (), expandButtonItem)
-    , separator (_palette.GetReference (), separatorItem)
+    , expandButton (_palette, expandButtonItem)
+    , separator (_palette, separatorItem)
 {
     // Never narrower than the bar's controls, never lower than the bar.
     palette.SetMinClientSize (palette.GetOriginalClientWidth (), BarHeight);
