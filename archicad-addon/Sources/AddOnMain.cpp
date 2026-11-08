@@ -274,6 +274,10 @@ GSErrCode Initialize (void)
             applicationCommands, "1.8.0",
             "Waits for the user to input a polygon in the active Archicad window and returns its points and arcs."
         );
+        err |= RegisterCommand<GetMagicWandSettingsCommand> (
+            applicationCommands, "1.8.1",
+            "Returns the settings of Archicad's Magic Wand Settings dialog: how curves are approximated with straight segments (a number of segments along arcs or circles, a largest deviation from the curve, or a segment length) and the trace method. Useful to know how the Magic Wand will trace a curve. Changes nothing in the project."
+        );
         err |= RegisterCommand<ConvertImagesCommand> (
             applicationCommands, "1.8.1",
             "Converts base64 encoded images from one image format to another with Archicad's own image converters, for example a PNG preview image to JPEG. The formats are Bitmap, GIF, TIFF, JPEG and PNG, or the MIME type of another format Archicad can read or write. The output is aligned with the input array of images. Changes nothing in the project."
