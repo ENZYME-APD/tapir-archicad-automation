@@ -101,6 +101,7 @@
 /* [  2] */ "Remove from favourites"
 /* [  3] */ "Search scripts"
 /* [  4] */ "No matching scripts"
+/* [  5] */ "Filtered by \"%T\" - click to change the search"
 }
 
 'STR#' ID_AUTOUPDATE_STRINGS "Tapir Update Strings" {
@@ -213,18 +214,19 @@
 4    ""        VersionText
 }
 
-'GDLG' ID_PALETTE Palette | leftCaption | close   0   0  588  28  "Tapir Palette"  {
+'GDLG' ID_PALETTE Palette | leftCaption | close   0   0  592  28  "Tapir Palette"  {
 /* [  1] */ IconButton                 0   0  28  28    ID_TAPIR_LOGO_MINI noFrame
-/* [  2] */ PopupControl             152   3 160  22    80  3
-/* [  3] */ IconButton               340   0  28  28    ID_RUN_BUTTON_ICON noFrame
-/* [  4] */ IconButton               368   0  28  28    ID_OPENSCRIPT_BUTTON_ICON noFrame
-/* [  5] */ IconButton               396   0  28  28    ID_ADDSCRIPT_BUTTON_ICON noFrame
-/* [  6] */ IconButton               424   0  28  28    ID_DELSCRIPT_BUTTON_ICON noFrame
-/* [  7] */ IconButton               452   0  28  28    ID_SHORTCUTS_BUTTON_ICON noFrame
-/* [  8] */ LeftText                 486   6  72  16    SmallPlain  vCenter  "Tapir"
-/* [  9] */ IconButton               560   0  28  28    ID_CHECKFORUPDATES_BUTTON_ICON noFrame
-/* [ 10] */ TextEdit                  30   3 120  22    SmallPlain  255
-/* [ 11] */ IconButton               312   0  28  28    ID_STAR_BUTTON_ICON noFrame
+/* [  2] */ PopupControl              56   3 260  22    80  3
+/* [  3] */ IconButton               344   0  28  28    ID_RUN_BUTTON_ICON noFrame
+/* [  4] */ IconButton               372   0  28  28    ID_OPENSCRIPT_BUTTON_ICON noFrame
+/* [  5] */ IconButton               400   0  28  28    ID_ADDSCRIPT_BUTTON_ICON noFrame
+/* [  6] */ IconButton               428   0  28  28    ID_DELSCRIPT_BUTTON_ICON noFrame
+/* [  7] */ IconButton               456   0  28  28    ID_SHORTCUTS_BUTTON_ICON noFrame
+/* [  8] */ LeftText                 520   6  72  16    SmallPlain  vCenter  "Tapir"
+/* [  9] */ IconButton               488   0  28  28    ID_CHECKFORUPDATES_BUTTON_ICON noFrame
+/* [ 10] */ TextEdit                  56   3 120  22    SmallPlain  255
+/* [ 11] */ IconButton               316   0  28  28    ID_STAR_BUTTON_ICON noFrame
+/* [ 12] */ IconButton                28   0  28  28    ID_SEARCH_BUTTON_ICON noFrame
 }
 
 'DLGH' ID_PALETTE Tapir_Palette {
@@ -239,6 +241,7 @@
 9    "Check for Updates"               CheckForUpdatesButton
 10   ""        SearchEdit
 11   ""        FavouriteButton
+12   "Search scripts"      SearchButton
 }
 
 'GDLG' ID_SCRIPTUI_PALETTE Palette | leftCaption | close | grow   0   0  600  450  "Tapir Script UI"  {

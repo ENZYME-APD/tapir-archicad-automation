@@ -489,9 +489,13 @@ TapirPalette::TapirPalette ()
     , checkForUpdatesButton (GetReference (), 9)
     , searchEdit (GetReference (), ID_PALETTE_SEARCH_EDIT)
     , favouriteButton (GetReference (), ID_PALETTE_FAVOURITE_BUTTON)
+    , searchButton (GetReference (), ID_PALETTE_SEARCH_BUTTON)
 {
     Attach (*this);
     AttachToAllItems (*this);
+
+    // The search field opens with the search button, in the left part of the dropdown's place (SetSearchOpen)
+    searchEdit.Hide ();
 
     paletteState.Load ();
     LoadScriptsToPopUp ();
@@ -500,6 +504,7 @@ TapirPalette::TapirPalette ()
         UpdateText (ID_AUTOUPDATE_INSTALLED_VERSION_TEXT), ADDON_VERSION));
     SetRunButtonIcon ();
     SetUpdateButtonIcon ();
+    SetSearchButtonIcon ();
 
     BeginEventProcessing ();
 }
@@ -686,6 +691,8 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
         CheckForUpdates ();
     } else if (ev.GetSource () == &favouriteButton) {
         ToggleFavourite ();
+    } else if (ev.GetSource () == &searchButton) {
+        SetSearchOpen (!searchEdit.IsVisible ());
     }
 }
 
@@ -743,11 +750,55 @@ void TapirPalette::TextEditChanged (const DG::TextEditChangeEvent& ev)
     }
     RebuildScriptPopUp (GetSelectedScript ());
     SelectedScriptChanged ();
+    SetSearchButtonIcon ();
+}
+
+GS::UniString TapirPalette::GetSearchText () const
+{
+    GS::UniString search = searchEdit.GetText ();
+    search.Trim ();
+    return search;
+}
+
+// The field takes the left part of the dropdown's place and the dropdown gets narrower, so the bar keeps its width
+// (it may be docked in a toolbar). Closing it keeps the filter; the search button shows that one is applied.
+void TapirPalette::SetSearchOpen (bool open)
+{
+    if (open == searchEdit.IsVisible ()) {
+        if (open) {
+            searchEdit.SetFocus ();
+        }
+        return;
+    }
+    const short shift = static_cast<short> (searchEdit.GetWidth () + 4);
+    if (open) {
+        scriptSelectionPopUp.MoveAndResize (shift, 0, -shift, 0);
+        searchEdit.Show ();
+        searchEdit.SetFocus ();
+    } else {
+        searchEdit.Hide ();
+        scriptSelectionPopUp.MoveAndResize (-shift, 0, shift, 0);
+    }
+}
+
+void TapirPalette::ClearSearch ()
+{
+    searchEdit.SetText (GS::EmptyUniString);
+    RebuildScriptPopUp (GetSelectedScript ());
+    SelectedScriptChanged ();
+    SetSearchButtonIcon ();
+    SetSearchOpen (false);
+}
+
+void TapirPalette::SetSearchButtonIcon ()
+{
+    const short resId = GetSearchText ().IsEmpty () ? ID_SEARCH_BUTTON_ICON : ID_SEARCHACTIVE_BUTTON_ICON;
+    searchButton.SetIcon (DG::Icon (ACAPI_GetOwnResModule (), resId));
 }
 
 void TapirPalette::SetSearchHotKeys (bool registered)
 {
-    short* const hotKeys[] = { &upHotKey, &downHotKey, &returnHotKey, &enterHotKey };
+    short* const hotKeys[] = { &returnHotKey, &enterHotKey, &escapeHotKey };
     if (!registered) {
         for (short* hotKey : hotKeys) {
             if (*hotKey != 0) {
@@ -755,13 +806,10 @@ void TapirPalette::SetSearchHotKeys (bool registered)
                 *hotKey = 0;
             }
         }
+        if (DG::LowLevelKeyboardHandler::IsHandlerInstalled (searchKeyHandler)) {
+            DG::LowLevelKeyboardHandler::RemoveHandler (searchKeyHandler);
+        }
         return;
-    }
-    if (upHotKey == 0) {
-        upHotKey = RegisterHotKey (DG::Key::Up);
-    }
-    if (downHotKey == 0) {
-        downHotKey = RegisterHotKey (DG::Key::Down);
     }
     if (returnHotKey == 0) {
         returnHotKey = RegisterHotKey (DG::Key::Return);
@@ -769,6 +817,24 @@ void TapirPalette::SetSearchHotKeys (bool registered)
     if (enterHotKey == 0) {
         enterHotKey = RegisterHotKey (DG::Key::Enter);
     }
+    if (escapeHotKey == 0) {
+        escapeHotKey = RegisterHotKey (DG::Key::Escape);
+    }
+    if (!DG::LowLevelKeyboardHandler::IsHandlerInstalled (searchKeyHandler)) {
+        DG::LowLevelKeyboardHandler::InstallHandler (searchKeyHandler);
+    }
+}
+
+DG::EventHandlerResultType TapirPalette::SearchKeyHandler::KeyPressed (const DG::Key::Code& code, DG::Item** /*item*/)
+{
+    if (!palette.searchEdit.IsFocused () || !code.IsSpecial ()) {
+        return DG::NotProcessedEvent;
+    }
+    if (code.GetSpecialKey () == DG::Key::Up || code.GetSpecialKey () == DG::Key::Down) {
+        palette.MoveSelection (code.GetSpecialKey () == DG::Key::Down);
+        return DG::ProcessedEvent;
+    }
+    return DG::NotProcessedEvent;
 }
 
 // The keys are registered only while the search field has the focus, so the arrows and Enter work as usual
@@ -787,7 +853,8 @@ void TapirPalette::ItemFocusLost (const DG::ItemFocusEvent& ev)
     }
 }
 
-// While the search field has the focus: Up and Down move the dropdown's selection, Enter runs the selected script.
+// While the search field has the focus: Enter runs the selected script, Escape clears the search and closes the
+// field. Up and Down come through searchKeyHandler.
 void TapirPalette::PanelHotkeyPressed (const DG::PanelHotKeyEvent& ev, bool* processed)
 {
     if (processed == nullptr || !searchEdit.IsFocused ()) {
@@ -797,8 +864,8 @@ void TapirPalette::PanelHotkeyPressed (const DG::PanelHotKeyEvent& ev, bool* pro
     if (keyId == 0) {
         return;
     }
-    if (keyId == upHotKey || keyId == downHotKey) {
-        MoveSelection (keyId == downHotKey);
+    if (keyId == escapeHotKey) {
+        ClearSearch ();
         *processed = true;
     } else if (keyId == returnHotKey || keyId == enterHotKey) {
         GS::Ref<PopUpItemData> popUpItemData = GetSelectedScript ();
@@ -844,9 +911,7 @@ TapirPalette::VisibleItemList TapirPalette::BuildVisibleItems (bool forDropdown)
 {
     GS::UniString search;
     if (forDropdown) {
-        search = searchEdit.GetText ();
-        search.Trim ();
-        search = LowerCased (search);
+        search = LowerCased (GetSearchText ());
     }
     const bool isSearching = !search.IsEmpty ();
 
@@ -1196,6 +1261,14 @@ void TapirPalette::ItemToolTipRequested (const DG::ItemHelpEvent& ev, GS::UniStr
     // DG's text edit has no placeholder text, so the field tells what it is for in its tooltip
     if (toolTipText != nullptr && ev.GetSource () == &searchEdit) {
         *toolTipText = SearchText (ID_PALETTE_SEARCH_STRINGS_PLACEHOLDER);
+        return;
+    }
+    // The search button says what the list is filtered by, also while the field is closed
+    if (toolTipText != nullptr && ev.GetSource () == &searchButton) {
+        const GS::UniString search = GetSearchText ();
+        *toolTipText = search.IsEmpty ()
+            ? SearchText (ID_PALETTE_SEARCH_STRINGS_PLACEHOLDER)
+            : GS::UniString::Printf (SearchText (ID_PALETTE_SEARCH_STRINGS_FILTERED), search.ToPrintf ());
         return;
     }
 

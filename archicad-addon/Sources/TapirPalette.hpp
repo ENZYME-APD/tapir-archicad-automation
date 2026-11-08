@@ -3,6 +3,7 @@
 #include "APIEnvir.h"
 #include "ACAPinc.h"
 #include "DGModule.hpp"
+#include "DGLowLevelKeyboardHandling.hpp"
 #include "ThreadedExecutor.hpp"
 #include "Process.hpp"
 #include "Config.hpp"
@@ -89,14 +90,28 @@ private:
     DG::IconButton manageShortcutsButton;
     DG::LeftText   installedVersionText;
     DG::IconButton checkForUpdatesButton;
-    DG::TextEdit   searchEdit;        // filters the dropdown (BuildVisibleItems)
+    DG::TextEdit   searchEdit;        // filters the dropdown (BuildVisibleItems); hidden until searchButton opens it
     DG::IconButton favouriteButton;   // the star: adds the selected script to the favourites or removes it
+    DG::IconButton searchButton;      // shows or hides searchEdit; highlighted while a filter is applied
 
-    // Up, Down, Return and Enter, registered only while searchEdit has the focus (0: not registered)
-    short upHotKey = 0;
-    short downHotKey = 0;
+    // Return, Enter and Escape, registered only while searchEdit has the focus (0: not registered)
     short returnHotKey = 0;
     short enterHotKey = 0;
+    short escapeHotKey = 0;
+
+    // Up and Down while searchEdit has the focus: they move the dropdown's selection. The text edit takes the arrow
+    // keys before the palette's hot keys see them (Return comes through, Up and Down did not in Archicad 29), so they
+    // come through a low level keyboard handler, the way Graphisoft's search fields send them to their list (UDLib's
+    // KeyPressedHandler). Installed only while searchEdit has the focus.
+    class SearchKeyHandler : public DG::LowLevelKeyboardHandler
+    {
+        TapirPalette& palette;
+    public:
+        explicit SearchKeyHandler (TapirPalette& _palette) : palette (_palette) {}
+        using DG::LowLevelKeyboardHandler::KeyPressed;
+        virtual DG::EventHandlerResultType KeyPressed (const DG::Key::Code& code, DG::Item** item) override;
+    };
+    SearchKeyHandler searchKeyHandler { *this };
 
     // A script started by the palette, until it ended or was stopped. Any number of scripts run at the same time,
     // but a script at most once: Run, and its shortcut slot, stop it while it runs (issue #1819).
@@ -186,6 +201,11 @@ private:
     void ToggleFavourite ();         // the star
     void SetFavouriteButtonIcon ();  // StarFilled when the selected script is a favourite, else Star
     void SetSearchHotKeys (bool registered);
+    // Shows searchEdit in the left part of the dropdown's place, with the focus, or hides it; the filter stays.
+    void SetSearchOpen (bool open);
+    void ClearSearch ();             // Escape: no filter, and the field closes
+    GS::UniString GetSearchText () const;   // the search, trimmed; empty: no filter
+    void SetSearchButtonIcon ();     // SearchActive while a filter is applied, else Search
     ScriptList GetAllScripts () const;   // in the order of the dropdown
     GS::UniString GetScriptLabel (const PopUpItemData& popUpData) const;   // the label with the "[Shortcut N]" suffix
     bool IsPopUpContainsFile (const IO::Location& fileLocation) const;
