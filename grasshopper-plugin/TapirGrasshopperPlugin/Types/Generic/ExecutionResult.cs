@@ -71,6 +71,34 @@ namespace TapirGrasshopperPlugin.Types.Generic
 
             return messages;
         }
+
+        // Maps the per-item executionResults of a dry run to one value per
+        // item: the given part (oldValue or newValue) of the item's
+        // wouldChange as JSON text, null for the items without one (the
+        // failed items, and every item of a real run).
+        public static List<string> WouldChangeValues(
+            JObject response,
+            string valueKey,
+            string arrayKey = "executionResults")
+        {
+            var values = new List<string>();
+
+            if (!(response?[arrayKey] is JArray results))
+            {
+                return values;
+            }
+
+            foreach (var result in results)
+            {
+                var value = result["wouldChange"]?[valueKey];
+                values.Add(
+                    value == null || value.Type == JTokenType.Null
+                        ? null
+                        : value.ToString(Formatting.None));
+            }
+
+            return values;
+        }
     }
 
     public class ExecutionResultResponse

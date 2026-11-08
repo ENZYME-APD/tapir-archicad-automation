@@ -33,6 +33,15 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             InGenerics(
                 "AttributeGuids",
                 "The attributes (for example Building Materials) to make the property unavailable for.");
+
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "DryRun",
+                "If true, nothing is changed: Message says whether the property and every attribute exist, " +
+                "the checks made before removing. Default is false.",
+                false);
+
+            SetOptionality(2);
         }
 
         protected override void AddOutputs()
@@ -87,6 +96,12 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 ["propertyId"] = new JObject { ["guid"] = propertyId.Guid },
                 ["attributeIds"] = attributeIds
             };
+
+            // Only sent when it differs from the command's default.
+            if (da.GetOptional(2, false))
+            {
+                parameters["dryRun"] = true;
+            }
 
             // The command answers with one ExecutionResult: it succeeds or fails
             // as a whole, so there is nothing per item to hand out.

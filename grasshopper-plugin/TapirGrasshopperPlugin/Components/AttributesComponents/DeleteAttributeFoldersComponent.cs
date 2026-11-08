@@ -30,12 +30,23 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 "Paths",
                 AttributeFolderInput.PathsDescription.WithTypeName("textTree"),
                 GH_ParamAccess.tree);
+
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "DryRun",
+                "If true, nothing is deleted: ErrorMessages says what the deletion would do for each folder, " +
+                "from the checks made before deleting (the folder exists and is not the root folder). " +
+                "Archicad can still refuse to delete a folder that passes them. Default is false.",
+                false);
+
+            SetOptionality(2);
         }
 
         protected override void AddOutputs()
         {
             OutErrorMessages(
-                "Error message of each folder (empty when it succeeded).");
+                "Error message of each folder (empty when it was deleted, or with DryRun when it would be " +
+                "deleted).");
         }
 
         protected override void Solve(
@@ -51,9 +62,17 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 return;
             }
 
+            var parameters = new JObject { ["attributeFolders"] = new JArray(folders) };
+
+            // Only sent when it differs from the command's default.
+            if (da.GetOptional(2, false))
+            {
+                parameters["dryRun"] = true;
+            }
+
             SetCadValuesWithErrorMessages(
                 CommandName,
-                new JObject { ["attributeFolders"] = new JArray(folders) },
+                parameters,
                 ToAddOn,
                 da);
         }
