@@ -14,3 +14,8 @@ This is the source code of an Archicad Add-On that registers several additional 
 - [Workflows/](Workflows/): scripts that combine several commands into a task or a tool.
 - [Test/Scripts/](Test/Scripts/): regression and behaviour tests, run with `Test/test_examples.py`,
   which also smoke-tests every example.
+
+## Translations
+
+The texts of the Add-On's user interface are resources in [Sources/RINT/AddOn.grc](Sources/RINT/AddOn.grc).
+[Sources/LOCALIZATION.md](Sources/LOCALIZATION.md) says how a language is added.
