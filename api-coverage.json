@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 14:35 UTC",
+ "generatedAt": "2026-11-08 14:56 UTC",
  "versions": [
   25,
   26,
@@ -5762,10 +5762,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2368,
-     "title": "Read and set per-edge cut angles of single-plane roofs"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -6731,8 +6727,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2368,
-     "title": "Read and set per-edge cut angles of single-plane roofs"
+     "number": 2375,
+     "title": "ModifyRoofs: keep a multi-plane roof's surface overrides when its outline changes"
     },
     {
      "number": 995,
@@ -6878,12 +6874,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2368,
-     "title": "Read and set per-edge cut angles of single-plane roofs"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7243,6 +7234,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2375,
+     "title": "ModifyRoofs: keep a multi-plane roof's surface overrides when its outline changes"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -7802,12 +7797,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2368,
-     "title": "Read and set per-edge cut angles of single-plane roofs"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1914,
@@ -25176,10 +25166,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2368,
-     "title": "Read and set per-edge cut angles of single-plane roofs"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -30774,10 +30760,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2368,
-     "title": "Read and set per-edge cut angles of single-plane roofs"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -37214,10 +37196,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2368,
-     "title": "Read and set per-edge cut angles of single-plane roofs"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -43837,10 +43815,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2368,
-     "title": "Read and set per-edge cut angles of single-plane roofs"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -46935,10 +46909,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2368,
-     "title": "Read and set per-edge cut angles of single-plane roofs"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"

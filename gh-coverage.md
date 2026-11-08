@@ -34,7 +34,7 @@ Parameters of the 782 used commands: 🟢 746 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 12 | 2 | 10 |  |  |  |  |  | 12 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-08 14:35 UTC.
+Updated 2026-11-08 14:56 UTC.
 
 | | Status |
 |---|---|
@@ -323,7 +323,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `ModifyDoors` 🟢 26/26 parameters – `DoorsComponent`, `ModifyDoorsComponent` — [#1791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1791 "Grasshopper: Doors and Windows tool components, with their floor plan parameters")
 - 🔀 `ModifyOpenings` 🟢 5/5 parameters – `ModifyOpeningsComponent`
 - ✅ `ModifyMorphs` 🟢 37/37 parameters – `ModifyMorphsComponent`, `MorphsComponent`
-- ✅ `ModifyRoofs` 🟡 20/21 parameters – `ModifyRoofsComponent`, `RoofsComponent`<br><sub>no input: `roofsWithDetails.pivotEdges.levels.angleType`</sub>
+- ✅ `ModifyRoofs` 🟡 20/23 parameters – `ModifyRoofsComponent`, `RoofsComponent`<br><sub>no input: `roofsWithDetails.edgeTrims`, `roofsWithDetails.edgeTrims.trimType`, `roofsWithDetails.pivotEdges.levels.angleType`</sub>
 - 🔀 `ModifyShells` 🟢 5/5 parameters – `ModifyShellsComponent`
 - ✅ `ModifyMeshes` 🟢 3/3 parameters – `MeshesComponent`, `ModifyMeshesComponent`
 - 🔀 `ModifyRailings` 🟢 5/5 parameters – `RailingsComponent`

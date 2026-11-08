@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 66 | 57 | 9 |  |  |  | 9 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1441 | 1207 | 234 |  |  |  | 11 | 375 |
 
-Archicad 25–30 DevKits; updated 2026-11-08 14:35 UTC.
+Archicad 25–30 DevKits; updated 2026-11-08 14:56 UTC.
 
 | | Status |
 |---|---|
@@ -127,13 +127,13 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_CalcSideOffsetToCoreOffset` – Converts the reveal depth offset from wall side to core skin for wall openings. <sub>(was `APIAny_CalcSideOffsetToCoreOffsetID`)</sub>
 - 🔀 `ACAPI_Element_CatchChangeDefaults` – Register or unregister your add-on to be notified if the default settings of a given element type is modified. <sub>(was `ACAPI_Notify_CatchChangeDefaults`)</sub>
 - ✅ `ACAPI_Element_CatchNewElement` – Register or unregister your add-on to be notified if the given type of element is created. <sub>(was `ACAPI_Notify_CatchNewElement`)</sub> — [#1825](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1825 "Element notifications: changes and deletions made by Tapir commands are not reported")
-- ✅ `ACAPI_Element_Change` — [#2368](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2368 "Read and set per-edge cut angles of single-plane roofs"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
+- ✅ `ACAPI_Element_Change` — [#2375](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2375 "ModifyRoofs: keep a multi-plane roof's surface overrides when its outline changes"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
 - ✅ `ACAPI_Element_ChangeContent` – Change the content of a text or a textual label element. <sub>(was `APIAny_ChangeContentID`)</sub>
 - ✅ `ACAPI_Element_ChangeDefaults` – Changes the default parameters of an element. — [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
 - ✅ `ACAPI_Element_ChangeDefaultsExt` – Changes the default parameters of the Window, Door, Section, Elevation, Interior Elevation, ChangeMarker, Detail, Worksheet, or Stair default element and its marker(s). This function also allows you to change the default settings of the Curtain Wall and its subelem.
 - ✅ `ACAPI_Element_ChangeElementInfoString` – Changes the compound info string of the given element. <sub>(was `APIDb_ChangeElementInfoStringID`)</sub>
 - ✅ `ACAPI_Element_ChangeExt` – Modifies a Window, Door, Section, Elevation, Interior Elevation, ChangeMarker, Detail, Worksheet, Stair or External element in the current database. — [#1377](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1377 "Place Detail and Worksheet markers, and change their settings")
-- ✅ `ACAPI_Element_ChangeMemo` – Changes the memo part of certain element types. — [#2368](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2368 "Read and set per-edge cut angles of single-plane roofs")
+- ✅ `ACAPI_Element_ChangeMemo` – Changes the memo part of certain element types.
 - ⛔ `ACAPI_Element_ChangeMore` – Modifies a number of elements in the current database. *(no speed gain over SetDetailsOfElements / the Modify* commands in the #1226 measurement, and one error code for the whole batch instead of per-element results)*
 - ✅ `ACAPI_Element_ChangeMorphEdgeType` <sub>AC29–30</sub> – Modifies a morph element's edge type in the current database.
 - ✅ `ACAPI_Element_ChangeParameters` – Changes the parameters of a number of elements. — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
@@ -149,7 +149,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_ElemHasVisibleSkin` – Returns if elem has visible skin depending on Partial Structure Display. <sub>(was `APIAny_ElemHasVisibleSkinID`)</sub>
 - ➖ `ACAPI_Element_ElemTypeToNeigID` <sub>AC26–30</sub> – Returns a neig for the given element type. <sub>(was `ACAPI_Goodies_ElemTypeToNeigID`)</sub> *(neig ids, an internal of interactive input and selection)*
 - ✅ `ACAPI_Element_Filter` – Tests an element by some given criteria.
-- ✅ `ACAPI_Element_Get` – Returns information on the main parameters of a given element. — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
+- ✅ `ACAPI_Element_Get` – Returns information on the main parameters of a given element. — [#2375](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2375 "ModifyRoofs: keep a multi-plane roof's surface overrides when its outline changes"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
 - ✅ `ACAPI_Element_GetActualOverrideStyle` – Get actual (merged) visual override style for an element.
 - ✅ `ACAPI_Element_GetClassificationInSystem` – Retrieves a classification of an elem in a given classification system.
 - ✅ `ACAPI_Element_GetClassificationInSystemDefault` – Retrieves a classification of a default elem in a given classification system.
@@ -173,7 +173,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🔀 `ACAPI_Element_GetExtent3D` – Returns the model extent of the current database. <sub>(was `APIDb_GetExtent3DID`)</sub>
 - ✅ `ACAPI_Element_GetHeader` – Returns general information on the given element. — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
 - 🔀 `ACAPI_Element_GetHotspots` – Retrieves the hotspots of the given element.
-- ✅ `ACAPI_Element_GetMemo` — [#2368](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2368 "Read and set per-edge cut angles of single-plane roofs"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
+- ✅ `ACAPI_Element_GetMemo` — [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
 - ✅ `ACAPI_Element_GetMemo_ExternalHierarchical` <sub>AC27–30</sub> – @brief Retrieves all additional information of the sub-elements of an external hierarchical element.
 - ✅ `ACAPI_Element_GetMoreQuantities` – Returns information on the quantities parameters of multiple elements of the same type.
 - ✅ `ACAPI_Element_GetOpeningTransformation` – Returns the position and the normal vector of the given opening. <sub>(was `APIAny_GetOpeningTransformationID`)</sub>
@@ -513,7 +513,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_DisposeAttrDefsHdlsExt` – Frees the memory occupied by all of the attribute definition handles.
 - ✅ `ACAPI_DisposeBeamRelationHdls` – Frees the memory occupied by all allocated beam relation handles.
 - ✅ `ACAPI_DisposeBeamSegmentRelationHdls` – Frees the memory occupied by all the allocated beam segment relation handles.
-- ✅ `ACAPI_DisposeElemMemoHdls` – Frees the memory occupied by all of the allocated memo handles. — [#2368](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2368 "Read and set per-edge cut angles of single-plane roofs"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#2313](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2313 "Self-audit of the whole repository: AI slop, performance and safety")
+- ✅ `ACAPI_DisposeElemMemoHdls` – Frees the memory occupied by all of the allocated memo handles. — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#2313](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2313 "Self-audit of the whole repository: AI slop, performance and safety")
 - ✅ `ACAPI_DisposeParagraphsHdl` – Frees the memory occupied by a handle to an array of @ref API_ParagraphType.
 - ✅ `ACAPI_DisposeRoomRelationHdls` – Frees the memory occupied by all allocated room relation handles.
 - ✅ `ACAPI_DisposeWallRelationHdls` – Frees the memory occupied by all allocated wall relation handles.
@@ -1392,7 +1392,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::AngleSetBase::GetSize` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::IsAngleDefined` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::IsEditable` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::AngleSetBase::Modifier::Add` <sub>AC29–30</sub> — [#2368](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2368 "Read and set per-edge cut angles of single-plane roofs"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
+- ✅ `ACAPI::MEP::AngleSetBase::Modifier::Add` <sub>AC29–30</sub> — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
 - ✅ `ACAPI::MEP::AngleSetBase::Modifier::Delete` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::Modifier::SetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::Modify` <sub>AC29–30</sub>
@@ -1764,7 +1764,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::RemoveWiringType` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::SetVoltage` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modify` <sub>AC30</sub>
-- ✅ `ACAPI::MEP::Element::Get` <sub>AC27–30</sub> — [#2368](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2368 "Read and set per-edge cut angles of single-plane roofs"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
+- ✅ `ACAPI::MEP::Element::Get` <sub>AC27–30</sub> — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
 - ✅ `ACAPI::MEP::ElementBase::Exists` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetAnchorPoint` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetBaseRotation` <sub>AC30</sub>
@@ -2141,7 +2141,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ReferenceSetBase::GetSize` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::IsEditable` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::IsReferenceIdDefined` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Add` <sub>AC28–30</sub> — [#2368](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2368 "Read and set per-edge cut angles of single-plane roofs"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
+- ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Add` <sub>AC28–30</sub> — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Delete` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::SetName` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modify` <sub>AC28–30</sub>
@@ -2310,7 +2310,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::SystemGroup::GetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::GetSystemIDs` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::IsEditable` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::SystemGroup::Modifier::Add` <sub>AC29–30</sub> — [#2368](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2368 "Read and set per-edge cut angles of single-plane roofs"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
+- ✅ `ACAPI::MEP::SystemGroup::Modifier::Add` <sub>AC29–30</sub> — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
 - ✅ `ACAPI::MEP::SystemGroup::Modifier::Remove` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::Modifier::SetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::Modify` <sub>AC29–30</sub>
@@ -2446,7 +2446,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::Element::ModifiableOpeningGeometry::SetPolygon` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::ModifiableOpeningGeometry::Transform` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::Opening::Exists` <sub>AC29–30</sub>
-- ✅ `ACAPI::Element::Opening::Get` <sub>AC29–30</sub> — [#2368](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2368 "Read and set per-edge cut angles of single-plane roofs"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
+- ✅ `ACAPI::Element::Opening::Get` <sub>AC29–30</sub> — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
 - ✅ `ACAPI::Element::Opening::GetConnectedOpenings` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::Opening::GetCutElements` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::Opening::GetExtrusionParameters` <sub>AC29–30</sub>

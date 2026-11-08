@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 14:35 UTC",
+ "generatedAt": "2026-11-08 14:56 UTC",
  "counts": {
   "done": 568,
   "merged": 214,
@@ -7460,7 +7460,7 @@
    "id": "ModifyRoofs",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness and structure apply to both; angle and pivotLine only to single-plane roofs; levels, eavesOverhang and pivotEdges only to multi-plane roofs.",
+   "brief": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness and structure apply to both; angle, pivotLine and edgeTrims (the cut of each polygon edge) only to single-plane roofs; levels, eavesOverhang and pivotEdges only to multi-plane roofs.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7474,7 +7474,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 21,
+   "parameterCount": 23,
    "coveredParameters": [
     "roofsWithDetails",
     "roofsWithDetails.angle",
@@ -7498,6 +7498,8 @@
     "roofsWithDetails.thickness"
    ],
    "missingParameters": [
+    "roofsWithDetails.edgeTrims",
+    "roofsWithDetails.edgeTrims.trimType",
     "roofsWithDetails.pivotEdges.levels.angleType"
    ],
    "pullRequests": [],
@@ -20041,7 +20043,7 @@
    "id": "RemoveElementTrims",
    "group": "Solid Element Operation Commands",
    "version": "1.5.9",
-   "brief": "Removes the trim between an element and the roof or shell trimming it. With dryRun true nothing is removed and no undo step is created: the response has dryRun set to true, and each pair whose element is trimmed by its trimming element gets wouldDelete.",
+   "brief": "Removes the trim between an element and the roof or shell trimming it. The Archicad API removes the trimming connection between the two elements, so when they trim each other (two roofs or shells) both directions are removed; trim the other direction again with TrimElements to keep it. With dryRun true nothing is removed and no undo step is created: the response has dryRun set to true, and each pair whose element is trimmed by its trimming element gets wouldDelete.",
    "status": "done",
    "reason": "",
    "components": [
