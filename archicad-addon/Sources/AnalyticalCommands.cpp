@@ -3468,7 +3468,7 @@ GS::Optional<GS::UniString> CreateAnalyticalLoadGroupsCommand::GetInputParameter
                 "type": "array",
                 "description": "The load groups to create.",
                 "items": {
-                    "$ref": "#/AnalyticalLoadGroupCreationData"
+                    "$ref": "#/AnalyticalLoadGroupData"
                 }
             }
         },
@@ -3555,7 +3555,7 @@ GS::Optional<GS::UniString> CreateAnalyticalLoadCasesCommand::GetInputParameters
                 "type": "array",
                 "description": "The load cases to create.",
                 "items": {
-                    "$ref": "#/AnalyticalLoadCaseCreationData"
+                    "$ref": "#/AnalyticalLoadCaseData"
                 }
             }
         },
@@ -3642,7 +3642,7 @@ GS::Optional<GS::UniString> CreateAnalyticalLoadCombinationsCommand::GetInputPar
                 "type": "array",
                 "description": "The load combinations to create.",
                 "items": {
-                    "$ref": "#/AnalyticalLoadCombinationCreationData"
+                    "$ref": "#/AnalyticalLoadCombinationData"
                 }
             }
         },
@@ -4281,7 +4281,7 @@ GS::Optional<GS::UniString> SetAnalyticalReleasesCommand::GetInputParametersSche
                 "type": "array",
                 "description": "The element and its new release, as GetAnalyticalReleases returns it. The release replaces the element's release as a whole.",
                 "items": {
-                    "$ref": "#/AnalyticalReleaseOfElement"
+                    "$ref": "#/ElementAnalyticalRelease"
                 }
             }
         },
@@ -4466,7 +4466,7 @@ GS::Optional<GS::UniString> SetCustomCurveMemberStretchCommand::GetInputParamete
                 "type": "array",
                 "description": "The element of the curve member and the lengths to add to it.",
                 "items": {
-                    "$ref": "#/AnalyticalCurveMemberStretchOfElement"
+                    "$ref": "#/AnalyticalCurveMemberStretchUpdate"
                 }
             }
         },
@@ -4552,7 +4552,7 @@ GS::Optional<GS::UniString> GetLCSOfAnalyticalMembersCommand::GetInputParameters
                 "type": "array",
                 "description": "The member parts to get the local coordinate system of.",
                 "items": {
-                    "$ref": "#/AnalyticalMemberPartQuery"
+                    "$ref": "#/AnalyticalMemberCoordinateSystemRequest"
                 }
             }
         },

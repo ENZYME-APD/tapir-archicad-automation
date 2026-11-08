@@ -2340,7 +2340,7 @@ GS::Optional<GS::UniString> CreateMEPRoutingElementsCommand::GetInputParametersS
                 "type": "array",
                 "description": "Array of data to create MEP routing elements.",
                 "items": {
-                    "$ref": "#/MEPRoutingElementCreationData"
+                    "$ref": "#/MEPRoutingElementData"
                 }
             }
         },
@@ -2579,7 +2579,7 @@ GS::Optional<GS::UniString> CreateMEPElementsCommand::GetInputParametersSchema (
                 "type": "array",
                 "description": "Array of data to create MEP elements.",
                 "items": {
-                    "$ref": "#/MEPElementCreationData"
+                    "$ref": "#/MEPElementData"
                 }
             }
         },
@@ -3518,7 +3518,8 @@ GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetInputParametersSch
         "type": "object",
         "properties": {
             "domain": {
-                "$ref": "#/MEPPreferenceTableDomain"
+                "$ref": "#/MEPPreferenceTableDomain",
+                "description": "The MEP domain of the segment preference tables."
             },
             "includeFittingTables": {
                 "type": "boolean",
@@ -4010,13 +4011,14 @@ GS::Optional<GS::UniString> ModifyMEPPreferenceTablesCommand::GetInputParameters
         "type": "object",
         "properties": {
             "domain": {
-                "$ref": "#/MEPPreferenceTableDomain"
+                "$ref": "#/MEPPreferenceTableDomain",
+                "description": "The MEP domain of the segment preference tables."
             },
             "tablesToAdd": {
                 "type": "array",
                 "description": "New tables to add to the domain, before the other changes.",
                 "items": {
-                    "$ref": "#/MEPPreferenceTableToAdd"
+                    "$ref": "#/MEPPreferenceTableAddition"
                 }
             },
             "tables": {
@@ -5513,7 +5515,7 @@ GS::Optional<GS::UniString> CreateElectricalPanelsCommand::GetInputParametersSch
                 "type": "array",
                 "description": "Array of data to create electrical panels. The fields that are not given are taken from the default settings of the Electrical Panel tool.",
                 "items": {
-                    "$ref": "#/ElectricalPanelCreationData"
+                    "$ref": "#/ElectricalPanelData"
                 }
             }
         },
@@ -5642,7 +5644,7 @@ GS::Optional<GS::UniString> CreateElectricalDevicesCommand::GetInputParametersSc
                 "type": "array",
                 "description": "Array of data to create electrical devices. The fields that are not given are taken from the default settings of the Electrical Device tool.",
                 "items": {
-                    "$ref": "#/ElectricalDeviceCreationData"
+                    "$ref": "#/ElectricalDeviceData"
                 }
             }
         },
@@ -5859,7 +5861,7 @@ GS::Optional<GS::UniString> CreateElectricalCircuitsCommand::GetInputParametersS
                 "type": "array",
                 "description": "Array of data to create electrical circuits. Each item adds one circuit to the given panel.",
                 "items": {
-                    "$ref": "#/ElectricalCircuitCreationData"
+                    "$ref": "#/ElectricalCircuitData"
                 }
             }
         },
@@ -6732,7 +6734,7 @@ GS::Optional<GS::UniString> CreateMEPSystemGroupsCommand::GetInputParametersSche
                 "type": "array",
                 "description": "Array of data to create system groups.",
                 "items": {
-                    "$ref": "#/MEPSystemGroupCreationData"
+                    "$ref": "#/MEPSystemGroupData"
                 }
             }
         },
@@ -6823,7 +6825,7 @@ GS::Optional<GS::UniString> CreateMEPPhysicalSystemsCommand::GetInputParametersS
                 "type": "array",
                 "description": "Array of data to create physical systems.",
                 "items": {
-                    "$ref": "#/MEPPhysicalSystemCreationData"
+                    "$ref": "#/MEPPhysicalSystemData"
                 }
             }
         },
