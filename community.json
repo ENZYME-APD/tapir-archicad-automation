@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-07T23:29:41Z",
+ "generatedAt": "2026-11-08T10:17:38Z",
  "months": [
   {
    "month": "2022-07",
@@ -412,7 +412,7 @@
   },
   {
    "month": "2026-10",
-   "commits": 228,
+   "commits": 233,
    "issuesOpened": 406,
    "pullRequestsMerged": 380,
    "discordMembers": 614,
@@ -420,19 +420,19 @@
   }
  ],
  "totals": {
-  "commits": 1264,
-  "discordMessages": 11538,
-  "discordMembers": 640,
+  "commits": 1273,
+  "discordMessages": 11566,
+  "discordMembers": 643,
   "discordMembersChange": {
-   "diff": 0,
-   "days": 1
+   "diff": 3,
+   "days": 2
   },
-  "participants": 449
+  "participants": 457
  },
  "topContributors": [
   {
    "name": "tlorantfy",
-   "commits": 397
+   "commits": 422
   },
   {
    "name": "Viktor Kovacs",
@@ -440,7 +440,7 @@
   },
   {
    "name": "Cri5chan",
-   "commits": 116
+   "commits": 119
   },
   {
    "name": "MathiasJon",
@@ -467,12 +467,12 @@
    "commits": 31
   },
   {
-   "name": "Drew Parkinson",
+   "name": "Parikshit Wadhwa",
    "commits": 29
   },
   {
-   "name": "Parikshit Wadhwa",
-   "commits": 28
+   "name": "Drew Parkinson",
+   "commits": 29
   },
   {
    "name": "fertegi",
@@ -483,8 +483,8 @@
    "commits": 24
   },
   {
-   "name": "Tibor Lorántfy",
-   "commits": 24
+   "name": "Aleš Dolenec",
+   "commits": 20
   },
   {
    "name": "Lucas Becker",
@@ -495,20 +495,16 @@
    "commits": 15
   },
   {
-   "name": "Aleš Dolenec",
-   "commits": 15
-  },
-  {
    "name": "Ben Tristem",
    "commits": 14
   },
   {
-   "name": "akunia",
+   "name": "JBENEITEZ",
    "commits": 13
   },
   {
-   "name": "JBENEITEZ",
-   "commits": 10
+   "name": "akunia",
+   "commits": 13
   },
   {
    "name": "Gigiasso",
@@ -517,6 +513,10 @@
   {
    "name": "Sven Neumann",
    "commits": 10
+  },
+  {
+   "name": "parikshit99",
+   "commits": 8
   },
   {
    "name": "poco2018",
@@ -543,6 +543,14 @@
    "commits": 6
   },
   {
+   "name": "cmartif",
+   "commits": 5
+  },
+  {
+   "name": "gabrielggordillo-boop",
+   "commits": 5
+  },
+  {
    "name": "kozure-dev",
    "commits": 3
   },
@@ -557,6 +565,10 @@
   {
    "name": "iyur",
    "commits": 3
+  },
+  {
+   "name": "teddybarbin",
+   "commits": 2
   },
   {
    "name": "Marcel Winklmüller",
@@ -587,6 +599,10 @@
   {
    "date": "2026-11-07",
    "members": 640
+  },
+  {
+   "date": "2026-11-08",
+   "members": 643
   }
  ]
 }
