@@ -7,7 +7,12 @@ using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class RotateElementsComponent : ArchicadExecutorComponent
+    // Sends one RotateElements request for every branch of the inputs, so a
+    // tree input makes one undo step in Archicad (#203). The add-on edits the
+    // items one after the other, so an element given in several branches is
+    // still rotated once for each of them, as with one request per branch.
+    public class RotateElementsComponent
+        : BatchedExecutorComponent<ElementWithRotationParameters>
     {
         public override string CommandName => "RotateElements";
 
@@ -49,35 +54,38 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Error message of each element (empty when it succeeded).");
         }
 
-        protected override void Solve(
-            IGH_DataAccess da)
+        protected override bool TryGetBatchItems(
+            IGH_DataAccess da,
+            out List<ElementWithRotationParameters> items)
         {
+            items = null;
+
             if (!da.TryCreateFromList(
                     0,
                     out ElementsObject elements))
             {
-                return;
+                return false;
             }
 
             if (!da.TryGetList(
                     1,
                     out List<Point2D> beginPoints))
             {
-                return;
+                return false;
             }
 
             if (!da.TryGetList(
                     2,
                     out List<Point2D> endPoints))
             {
-                return;
+                return false;
             }
 
             if (!da.TryGetList(
                     3,
                     out List<Point2D> origins))
             {
-                return;
+                return false;
             }
 
             if (beginPoints.Count != 1 &&
@@ -85,7 +93,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             {
                 this.AddError(
                     "The count of BeginPoints must be 1 or equal to the count of ElementGuids.");
-                return;
+                return false;
             }
 
             if (endPoints.Count != 1 &&
@@ -93,7 +101,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             {
                 this.AddError(
                     "The count of EndPoints must be 1 or equal to the count of ElementGuids.");
-                return;
+                return false;
             }
 
             if (origins.Count != 1 &&
@@ -101,20 +109,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             {
                 this.AddError(
                     "The count of Origins must be 1 or equal to the count of ElementGuids.");
-                return;
+                return false;
             }
 
             if (!da.TryGet(
                     4,
                     out bool copy))
             {
-                return;
+                return false;
             }
 
-            var input = new RotateElementsParameters
-            {
-                ElementsWithRotations = new List<ElementWithRotationParameters>()
-            };
+            items = new List<ElementWithRotationParameters>();
 
             for (var i = 0; i < elements.Elements.Count; i++)
             {
@@ -123,7 +128,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 var endPoint = endPoints[endPoints.Count == 1 ? 0 : i];
                 var origin = origins[origins.Count == 1 ? 0 : i];
 
-                input.ElementsWithRotations.Add(
+                items.Add(
                     new ElementWithRotationParameters()
                     {
                         Element = element.ElementId,
@@ -137,11 +142,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     });
             }
 
-            SetCadValuesWithErrorMessages(
-                CommandName,
-                input,
-                ToAddOn,
-                da);
+            return true;
+        }
+
+        protected override object CreateBatchParameters(
+            List<ElementWithRotationParameters> items)
+        {
+            return new RotateElementsParameters
+            {
+                ElementsWithRotations = items
+            };
         }
 
         protected override System.Drawing.Bitmap Icon =>

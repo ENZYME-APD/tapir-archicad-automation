@@ -1,0 +1,236 @@
+{
+  "title": "CreatePenTables creates and overwrites a Pen Table, read back with GetPenTables and GetCurrentPenTable",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "the current Pen Table",
+      "command": "GetCurrentPenTable",
+      "creates": false,
+      "params": {},
+      "save": {"cur": "attributeId.guid", "curIndex": "index"},
+      "expect": [
+        {"path": "isPenTableAttribute", "eq": true, "name": "the current pens are a Pen Table attribute"},
+        {"path": "attributeId.guid", "exists": true},
+        {"path": "name", "exists": true},
+        {"path": "penCount", "eq": 255}
+      ]
+    },
+    {
+      "id": "its pens",
+      "command": "GetPenTables",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${cur}"}}], "fields": ["pens"]},
+      "save": {
+        "srcWidth7": "penTables[0].pens[6].width",
+        "srcRed7": "penTables[0].pens[6].color.red",
+        "srcGreen7": "penTables[0].pens[6].color.green",
+        "srcBlue7": "penTables[0].pens[6].color.blue"
+      },
+      "expect": [
+        {"path": "penTables", "len": 1},
+        {"path": "penTables[0].error", "exists": false, "name": "no error"},
+        {"path": "penTables[0].pens", "len": 255},
+        {"path": "penTables[0].pens[0].index", "eq": 1},
+        {"path": "penTables[0].pens[6].index", "eq": 7},
+        {"path": "penTables[0].pens[254].index", "eq": 255},
+        {"path": "penTables[0].isActiveForModel", "exists": false, "name": "fields filter leaves out isActiveForModel"}
+      ]
+    },
+    {
+      "id": "create from the current Pen Table",
+      "command": "CreatePenTables",
+      "creates": false,
+      "params": {
+        "penTableDataArray": [
+          {
+            "name": "TapirCheck Pen Table 1924",
+            "isActiveForModel": false,
+            "isActiveForLayout": false,
+            "sourceAttributeId": {"attributeId": {"guid": "${cur}"}},
+            "pens": [
+              {"index": 1, "color": {"red": 0.25, "green": 0.5, "blue": 0.75}, "width": 0.35, "description": "TapirCheck pen 1"},
+              {"index": 2, "color": {"red": 1.0, "green": 0.0, "blue": 0.0}, "width": 0.7, "description": "TapirCheck pen 2"}
+            ]
+          }
+        ]
+      },
+      "save": {"t1": "attributeIds[0].attributeId.guid"},
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"},
+        {"path": "attributeIds[0].attributeId.guid", "exists": true}
+      ]
+    },
+    {
+      "id": "read back the created Pen Table",
+      "command": "GetPenTables",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${t1}"}}]},
+      "save": {
+        "newWidth7": "penTables[0].pens[6].width",
+        "newRed7": "penTables[0].pens[6].color.red",
+        "newGreen7": "penTables[0].pens[6].color.green",
+        "newBlue7": "penTables[0].pens[6].color.blue"
+      },
+      "expect": [
+        {"path": "penTables", "len": 1},
+        {"path": "penTables[0].error", "exists": false, "name": "no error"},
+        {"path": "penTables[0].index", "exists": true},
+        {"path": "penTables[0].name", "eq": "TapirCheck Pen Table 1924"},
+        {"path": "penTables[0].pens", "len": 255},
+        {"path": "penTables[0].pens[0].index", "eq": 1},
+        {"path": "penTables[0].pens[0].color.red", "approx": 0.25, "tol": 0.001, "name": "pen 1 color"},
+        {"path": "penTables[0].pens[0].color.green", "approx": 0.5, "tol": 0.001},
+        {"path": "penTables[0].pens[0].color.blue", "approx": 0.75, "tol": 0.001},
+        {"path": "penTables[0].pens[0].width", "approx": 0.35, "tol": 0.0001, "name": "pen 1 width"},
+        {"path": "penTables[0].pens[0].description", "eq": "TapirCheck pen 1", "name": "pen 1 description"},
+        {"path": "penTables[0].pens[1].color.red", "approx": 1.0, "tol": 0.001, "name": "pen 2 color"},
+        {"path": "penTables[0].pens[1].color.green", "approx": 0.0, "tol": 0.001},
+        {"path": "penTables[0].pens[1].color.blue", "approx": 0.0, "tol": 0.001},
+        {"path": "penTables[0].pens[1].width", "approx": 0.7, "tol": 0.0001, "name": "pen 2 width"},
+        {"path": "penTables[0].pens[1].description", "eq": "TapirCheck pen 2", "name": "pen 2 description"}
+      ]
+    },
+    {
+      "id": "an unlisted pen is copied from the source",
+      "command": "GetCurrentPenTable",
+      "creates": false,
+      "params": {},
+      "save": {"curIndex2": "index"},
+      "expect": [
+        {"expr": "${newWidth7} - ${srcWidth7}", "approx": 0, "tol": 0.0001, "name": "pen 7 width as in the source"},
+        {"expr": "${newRed7} - ${srcRed7}", "approx": 0, "tol": 0.001, "name": "pen 7 red as in the source"},
+        {"expr": "${newGreen7} - ${srcGreen7}", "approx": 0, "tol": 0.001, "name": "pen 7 green as in the source"},
+        {"expr": "${newBlue7} - ${srcBlue7}", "approx": 0, "tol": 0.001, "name": "pen 7 blue as in the source"},
+        {"expr": "${curIndex2} - ${curIndex}", "approx": 0, "tol": 0, "name": "creating did not change the current Pen Table"}
+      ]
+    },
+    {
+      "id": "not made active",
+      "command": "GetPenTables",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${t1}"}}], "fields": ["isActiveForModel", "isActiveForLayout"]},
+      "expect": [
+        {"path": "penTables[0].isActiveForModel", "eq": false},
+        {"path": "penTables[0].isActiveForLayout", "eq": false},
+        {"path": "penTables[0].pens", "exists": false, "name": "fields filter leaves out pens"}
+      ]
+    },
+    {
+      "id": "bad input: the same name without overwriteExisting",
+      "command": "CreatePenTables",
+      "creates": false,
+      "params": {
+        "penTableDataArray": [
+          {
+            "name": "TapirCheck Pen Table 1924",
+            "pens": [{"index": 1, "width": 2.0, "description": "BAD"}]
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": true, "name": "failed"},
+        {"path": "attributeIds[0].attributeId", "exists": false, "name": "no attribute returned"}
+      ]
+    },
+    {
+      "id": "the bad input changed nothing",
+      "command": "GetPenTables",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${t1}"}}], "fields": ["pens"]},
+      "expect": [
+        {"path": "penTables[0].pens[0].width", "approx": 0.35, "tol": 0.0001, "name": "pen 1 width unchanged"},
+        {"path": "penTables[0].pens[0].description", "eq": "TapirCheck pen 1", "name": "pen 1 description unchanged"}
+      ]
+    },
+    {
+      "id": "overwrite by attributeId: new name and pen 2's width only",
+      "command": "CreatePenTables",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "penTableDataArray": [
+          {
+            "attributeId": {"guid": "${t1}"},
+            "name": "TapirCheck Pen Table 1924 renamed",
+            "pens": [{"index": 2, "width": 0.5}]
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"},
+        {"path": "attributeIds[0].attributeId.guid", "exists": true}
+      ]
+    },
+    {
+      "id": "read back the overwritten Pen Table",
+      "command": "GetPenTables",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${t1}"}}]},
+      "expect": [
+        {"path": "penTables", "len": 1},
+        {"path": "penTables[0].name", "eq": "TapirCheck Pen Table 1924 renamed", "name": "renamed"},
+        {"path": "penTables[0].pens[1].width", "approx": 0.5, "tol": 0.0001, "name": "pen 2 width replaced"},
+        {"path": "penTables[0].pens[1].color.red", "approx": 1.0, "tol": 0.001, "name": "pen 2 color kept"},
+        {"path": "penTables[0].pens[1].description", "eq": "TapirCheck pen 2", "name": "pen 2 description kept"},
+        {"path": "penTables[0].pens[0].width", "approx": 0.35, "tol": 0.0001, "name": "pen 1 kept"},
+        {"path": "penTables[0].pens[0].color.blue", "approx": 0.75, "tol": 0.001},
+        {"path": "penTables[0].pens[0].description", "eq": "TapirCheck pen 1"},
+        {"path": "penTables[0].isActiveForModel", "eq": false, "name": "still not active"}
+      ]
+    },
+    {
+      "id": "overwrite by name: pen 1's color only",
+      "command": "CreatePenTables",
+      "creates": false,
+      "params": {
+        "overwriteExisting": true,
+        "penTableDataArray": [
+          {
+            "name": "TapirCheck Pen Table 1924 renamed",
+            "pens": [{"index": 1, "color": {"red": 0.9, "green": 0.1, "blue": 0.2}}]
+          }
+        ]
+      },
+      "expect": [
+        {"path": "attributeIds", "len": 1},
+        {"path": "attributeIds[0].error", "exists": false, "name": "no error"},
+        {"path": "attributeIds[0].attributeId.guid", "exists": true}
+      ]
+    },
+    {
+      "id": "read back pen 1",
+      "command": "GetPenTables",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "${t1}"}}], "fields": ["pens"]},
+      "expect": [
+        {"path": "penTables[0].name", "eq": "TapirCheck Pen Table 1924 renamed", "name": "name kept"},
+        {"path": "penTables[0].pens[0].color.red", "approx": 0.9, "tol": 0.001, "name": "pen 1 color replaced"},
+        {"path": "penTables[0].pens[0].color.green", "approx": 0.1, "tol": 0.001},
+        {"path": "penTables[0].pens[0].color.blue", "approx": 0.2, "tol": 0.001},
+        {"path": "penTables[0].pens[0].width", "approx": 0.35, "tol": 0.0001, "name": "pen 1 width kept"},
+        {"path": "penTables[0].pens[0].description", "eq": "TapirCheck pen 1", "name": "pen 1 description kept"},
+        {"path": "penTables[0].pens[1].width", "approx": 0.5, "tol": 0.0001, "name": "pen 2 kept"}
+      ]
+    },
+    {
+      "id": "GetPenTables with a nonexistent guid",
+      "command": "GetPenTables",
+      "creates": false,
+      "params": {"attributeIds": [{"attributeId": {"guid": "00000000-0000-0000-0000-00000000BEEF"}}]},
+      "expect": [
+        {"path": "penTables", "len": 1},
+        {"path": "penTables[0].error", "exists": true, "name": "failed"}
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": {"attributesToDelete": [{"attributeType": "PenTable", "attributeId": {"attributeId": {"guid": "${t1}"}}}]}
+    }
+  ]
+}

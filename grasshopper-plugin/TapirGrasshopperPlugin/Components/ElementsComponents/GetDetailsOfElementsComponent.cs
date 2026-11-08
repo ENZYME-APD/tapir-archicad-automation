@@ -1,12 +1,14 @@
 using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
+using Newtonsoft.Json;
 using Rhino.Geometry;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Attributes;
 using TapirGrasshopperPlugin.Types.Element;
+using TapirGrasshopperPlugin.Types.Project;
 using Arc = TapirGrasshopperPlugin.Types.Element.Arc;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
@@ -101,6 +103,86 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "FloorPlanPolygons",
                 "The cut-fill polygons of each element as drawn on the floor plan " +
                 "(one branch per element, empty for the elements without a cut fill).");
+
+            OutTexts(
+                "Details",
+                "Type-specific details of each element as JSON text " +
+                "(see the GetDetailsOfElements command documentation for the " +
+                "fields of each element type).");
+
+            OutNumbers(
+                "Elevations",
+                "Absolute elevation (project Z) of each element: the level of its " +
+                "home story plus its offset from that story (the zCoordinate of its " +
+                "Details; for objects and lamps the Z of their origin, for meshes the " +
+                "story level plus the mesh level). Null for the element types without " +
+                "a single base elevation, such as windows, doors, morphs, shells and " +
+                "curtain walls.");
+        }
+
+        // The absolute elevation of an element, or null when its type has
+        // none. storyLevels is filled on the first mesh, which is the only
+        // type whose details give an offset but no absolute Z.
+        private double? GetElevation(
+            DetailsOfElementObj detailsOfElement,
+            ref Dictionary<int, double> storyLevels)
+        {
+            var details = detailsOfElement.Details;
+            if (details == null)
+            {
+                return null;
+            }
+
+            var zCoordinate = details.Value<double?>("zCoordinate");
+            if (zCoordinate.HasValue)
+            {
+                return zCoordinate;
+            }
+
+            if (detailsOfElement.Type == "Object" ||
+                detailsOfElement.Type == "Lamp")
+            {
+                return details["origin"]?.Value<double?>("z");
+            }
+
+            if (detailsOfElement.Type == "Mesh")
+            {
+                var level = details.Value<double?>("level");
+                if (!level.HasValue)
+                {
+                    return null;
+                }
+
+                if (storyLevels == null)
+                {
+                    storyLevels = new Dictionary<int, double>();
+                    if (TryGetConvertedCadValues(
+                            "GetStories",
+                            null,
+                            ToAddOn,
+                            JHelp.Deserialize<StoriesData>,
+                            out StoriesData stories) &&
+                        stories?.Stories != null)
+                    {
+                        foreach (var story in stories.Stories)
+                        {
+                            if (story.Index.HasValue)
+                            {
+                                storyLevels[story.Index.Value] = story.Level;
+                            }
+                        }
+                    }
+                }
+
+                if (storyLevels.TryGetValue(
+                        detailsOfElement.FloorIndex,
+                        out var storyLevel))
+                {
+                    return storyLevel + level.Value;
+                }
+            }
+
+            return null;
         }
 
         protected override void ManageResponse(
@@ -113,11 +195,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             var layerIndices = new List<int>();
             var drawIndices = new List<int>();
             var floorPlanPolygonsTree = new DataTree<PolyCurve>();
+            var details = new List<String>();
+            var elevations = new List<double?>();
+            Dictionary<int, double> storyLevels = null;
 
             for (var i = 0; i < response.DetailsOfElements.Count; i++)
             {
                 var detailsOfElement = response.DetailsOfElements[i];
-                if (detailsOfElement == null)
+                // An element that could not be read comes back as an error
+                // entry, which has no type.
+                if (detailsOfElement == null || detailsOfElement.Type == null)
                 {
                     continue;
                 }
@@ -132,6 +219,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 storyIndices.Add(detailsOfElement.FloorIndex);
                 layerIndices.Add(detailsOfElement.LayerIndex);
                 drawIndices.Add(detailsOfElement.DrawIndex);
+                details.Add(
+                    detailsOfElement.Details?.ToString(Formatting.Indented));
+                elevations.Add(
+                    GetElevation(
+                        detailsOfElement,
+                        ref storyLevels));
 
                 var floorPlanPolygons = new List<PolyCurve>();
                 if (detailsOfElement.FloorPlanPolygons != null)
@@ -174,6 +267,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             da.SetDataTree(
                 6,
                 floorPlanPolygonsTree);
+            da.SetDataList(
+                7,
+                details);
+            da.SetDataList(
+                8,
+                elevations);
         }
 
         protected override System.Drawing.Bitmap Icon =>
@@ -286,7 +385,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 var wallDetails =
-                    detailsOfElement.Details.ToObject<WallDetails>();
+                    detailsOfElement.Details?.ToObject<WallDetails>();
 
                 if (wallDetails == null)
                 {
@@ -513,7 +612,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 var beamDetails =
-                    detailsOfElement.Details.ToObject<BeamDetails>();
+                    detailsOfElement.Details?.ToObject<BeamDetails>();
 
                 if (beamDetails == null)
                 {
@@ -728,7 +827,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 var columnDetails =
-                    detailsOfElement.Details.ToObject<ColumnDetails>();
+                    detailsOfElement.Details?.ToObject<ColumnDetails>();
 
                 if (columnDetails == null)
                 {
@@ -882,7 +981,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 var slabDetails =
-                    detailsOfElement.Details.ToObject<SlabDetails>();
+                    detailsOfElement.Details?.ToObject<SlabDetails>();
                 if (slabDetails == null)
                 {
                     continue;
@@ -1030,7 +1129,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 var roofDetails =
-                    detailsOfElement.Details.ToObject<RoofDetails>();
+                    detailsOfElement.Details?.ToObject<RoofDetails>();
                 if (roofDetails == null || roofDetails.PolygonCoordinates == null)
                 {
                     continue;
@@ -1163,7 +1262,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 var polylineDetails =
-                    detailsOfElement.Details.ToObject<PolylineDetails>();
+                    detailsOfElement.Details?.ToObject<PolylineDetails>();
                 if (polylineDetails == null)
                 {
                     continue;
@@ -1261,7 +1360,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 var zoneDetails =
-                    detailsOfElement.Details.ToObject<ZoneDetails>();
+                    detailsOfElement.Details?.ToObject<ZoneDetails>();
                 if (zoneDetails == null)
                 {
                     continue;
@@ -1401,7 +1500,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 var textDetails =
-                    detailsOfElement.Details.ToObject<TextDetails>();
+                    detailsOfElement.Details?.ToObject<TextDetails>();
                 if (textDetails == null)
                 {
                     continue;
@@ -1499,7 +1598,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 }
 
                 var labelDetails =
-                    detailsOfElement.Details.ToObject<LabelDetails>();
+                    detailsOfElement.Details?.ToObject<LabelDetails>();
                 if (labelDetails == null || labelDetails.Text == null)
                 {
                     continue;

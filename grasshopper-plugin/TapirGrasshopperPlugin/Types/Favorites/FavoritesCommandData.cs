@@ -37,6 +37,11 @@ namespace TapirGrasshopperPlugin.Types.Favorites
             "applyProperties",
             NullValueHandling = NullValueHandling.Ignore)]
         public bool? ApplyProperties;
+
+        [JsonProperty(
+            "keepFields",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> KeepFields;
     }
 
     public class UpdateFavoritesFromElementsParameters

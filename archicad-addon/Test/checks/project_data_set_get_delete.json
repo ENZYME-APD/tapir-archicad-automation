@@ -1,0 +1,167 @@
+{
+  "title": "Project data: set (normal, client-only, unique), list, get, overwrite and delete (#1938)",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "project data before",
+      "command": "GetProjectDataKeys",
+      "creates": false,
+      "params": {},
+      "stopOnFail": true,
+      "expect": [
+        { "path": "keys", "len": 0, "name": "precondition: the untitled project has no Tapir project data" }
+      ]
+    },
+    {
+      "id": "[client-only data]",
+      "command": "SetProjectData",
+      "creates": false,
+      "params": {
+        "values": [
+          { "name": "tapir-check/local", "content": "kept on this client", "clientOnly": true }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per value" },
+        { "path": "executionResults[0].success", "eq": true, "name": "client-only: success" }
+      ]
+    },
+    {
+      "id": "list the client-only data",
+      "command": "GetProjectDataKeys",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "keys", "len": 1, "name": "the client-only data is listed" },
+        { "path": "keys[0].name", "eq": "tapir-check/local" },
+        { "path": "keys[0].clientOnly", "eq": true, "name": "marked client-only" },
+        { "path": "keys[0].guid", "exists": true }
+      ]
+    },
+    {
+      "id": "[normal, unique, clientOnly and unique, same name twice]",
+      "command": "SetProjectData",
+      "creates": false,
+      "params": {
+        "values": [
+          { "name": "tapir-check/normal", "content": "{\"a\": 1, \"text\": \"Épület – ü\"}" },
+          { "name": "tapir-check/unique", "content": "one per Teamwork project", "unique": true },
+          { "name": "tapir-check/both", "content": "never stored", "clientOnly": true, "unique": true },
+          { "name": "tapir-check/normal", "content": "the second value of the same name" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 4, "name": "one result per value" },
+        { "path": "executionResults[0].success", "eq": true, "name": "normal: success" },
+        { "path": "executionResults[1].success", "eq": true, "name": "unique: success" },
+        { "path": "executionResults[2].success", "eq": false, "name": "clientOnly and unique: failed" },
+        { "path": "executionResults[3].success", "eq": false, "name": "same name twice: failed" }
+      ]
+    },
+    {
+      "id": "list all data",
+      "command": "GetProjectDataKeys",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "keys", "len": 3, "name": "client-only, normal and unique listed, not the failed one" }
+      ]
+    },
+    {
+      "id": "[get normal, client-only, unique, failed, missing]",
+      "command": "GetProjectData",
+      "creates": false,
+      "params": {
+        "names": [ "tapir-check/normal", "tapir-check/local", "tapir-check/unique", "tapir-check/both", "tapir-check/missing" ]
+      },
+      "expect": [
+        { "path": "values", "len": 5, "name": "one result per name" },
+        { "path": "values[0].name", "eq": "tapir-check/normal" },
+        { "path": "values[0].content", "eq": "{\"a\": 1, \"text\": \"Épület – ü\"}", "name": "normal: content of the first value, UTF-8 kept" },
+        { "path": "values[1].content", "eq": "kept on this client", "name": "client-only: content" },
+        { "path": "values[2].content", "eq": "one per Teamwork project", "name": "unique: content" },
+        { "path": "values[3].error", "exists": true, "name": "clientOnly and unique: not stored" },
+        { "path": "values[4].error", "exists": true, "name": "missing: error" }
+      ]
+    },
+    {
+      "id": "[overwrite normal, overwrite client-only]",
+      "command": "SetProjectData",
+      "creates": false,
+      "params": {
+        "values": [
+          { "name": "tapir-check/normal", "content": "{\"a\": 2}" },
+          { "name": "tapir-check/local", "content": "changed on this client", "unique": true }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per value" },
+        { "path": "executionResults[0].success", "eq": true, "name": "normal: success" },
+        { "path": "executionResults[1].success", "eq": true, "name": "client-only: success (unique is ignored for existing data)" }
+      ]
+    },
+    {
+      "id": "read the overwritten data",
+      "command": "GetProjectData",
+      "creates": false,
+      "params": {
+        "names": [ "tapir-check/normal", "tapir-check/local" ]
+      },
+      "expect": [
+        { "path": "values[0].content", "eq": "{\"a\": 2}", "name": "normal: new content" },
+        { "path": "values[1].content", "eq": "changed on this client", "name": "client-only: new content" }
+      ]
+    },
+    {
+      "id": "list after overwriting",
+      "command": "GetProjectDataKeys",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "keys", "len": 3, "name": "overwriting created no new data" }
+      ]
+    },
+    {
+      "id": "[delete normal, missing]",
+      "command": "DeleteProjectData",
+      "creates": false,
+      "params": {
+        "names": [ "tapir-check/normal", "tapir-check/missing" ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per name" },
+        { "path": "executionResults[0].success", "eq": true, "name": "normal: success" },
+        { "path": "executionResults[1].success", "eq": false, "name": "missing: failed" }
+      ]
+    },
+    {
+      "id": "read the deleted data",
+      "command": "GetProjectData",
+      "creates": false,
+      "params": {
+        "names": [ "tapir-check/normal", "tapir-check/unique" ]
+      },
+      "expect": [
+        { "path": "values[0].error", "exists": true, "name": "normal: gone" },
+        { "path": "values[1].content", "eq": "one per Teamwork project", "name": "unique: kept" }
+      ]
+    },
+    {
+      "id": "list after deleting",
+      "command": "GetProjectDataKeys",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "keys", "len": 2, "name": "client-only and unique left" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteProjectData",
+      "params": {
+        "names": [ "tapir-check/local", "tapir-check/unique", "tapir-check/normal", "tapir-check/both" ]
+      }
+    }
+  ]
+}

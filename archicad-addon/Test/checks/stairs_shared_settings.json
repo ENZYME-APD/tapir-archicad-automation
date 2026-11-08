@@ -1,0 +1,141 @@
+{
+  "title": "CreateStairs and ModifyStairs accept the same settings: treads, structures, walking line and numbering on creation, the new settings on modification, bad values refused",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "create a monolithic stair with the shared settings",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [
+              { "x": 740.0, "y": 700.0 },
+              { "x": 746.0, "y": 700.0 }
+            ],
+            "baselinePosition": "Center",
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.2,
+            "treadDepth": 0.28,
+            "finishVisible": true,
+            "extraTopTread": false,
+            "walkingLinePosition": "Center",
+            "numberingType": "Treads",
+            "inputDirection": "Upward",
+            "treads": [
+              { "role": "Run", "thickness": 0.04, "nosingType": "ByValue", "nosingValue": 0.02 }
+            ],
+            "risers": [
+              { "role": "Run", "thickness": 0.02, "position": "BehindTread" }
+            ],
+            "structures": [
+              { "role": "Run", "side": "UnderSide", "visible": true, "structureType": "Monolith", "bottomType": "Smooth", "thickness": 0.18 }
+            ]
+          }
+        ]
+      },
+      "save": { "s": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "stair created with the shared settings" }
+      ]
+    },
+    {
+      "id": "read the created stair back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "stair homed on story 0" },
+        { "path": "detailsOfElements[0].details.flightWidth", "approx": 1.2, "name": "flight width as created" },
+        { "path": "detailsOfElements[0].details.totalHeight", "approx": 2.8, "name": "total height as created" },
+        { "path": "detailsOfElements[0].details.treadDepth", "approx": 0.28, "tol": 0.005, "name": "going as created" },
+        { "path": "detailsOfElements[0].details.finishVisible", "eq": true, "name": "finishes shown as created" },
+        { "path": "detailsOfElements[0].details.baseLinePoints", "len": 2, "name": "straight baseline kept" }
+      ]
+    },
+    {
+      "id": "CreateStairs: a bad tread role is refused by the shared schema",
+      "command": "CreateStairs",
+      "creates": false,
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [
+              { "x": 750.0, "y": 700.0 },
+              { "x": 756.0, "y": 700.0 }
+            ],
+            "zCoordinate": 0.0,
+            "totalHeight": 2.8,
+            "treads": [
+              { "role": "Stairway", "thickness": 0.04 }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "refused" },
+        { "path": "elements", "exists": false, "name": "no stair created" }
+      ]
+    },
+    {
+      "id": "ModifyStairs: the settings new to both commands",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          {
+            "elementId": { "guid": "${s}" },
+            "extraTopTread": true,
+            "extraBottomTread": false,
+            "walkingLinePosition": "Left",
+            "walkingLineOffset": 0.4,
+            "numberingType": "Risers",
+            "inputDirection": "Upward",
+            "uniformFinish": true,
+            "structureVisibility": true
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "walking line, numbering and extra tread change accepted" }
+      ]
+    },
+    {
+      "id": "the stair after the change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.flightWidth", "approx": 1.2, "name": "flight width unchanged" },
+        { "path": "detailsOfElements[0].details.totalHeight", "approx": 2.8, "name": "total height unchanged" },
+        { "path": "detailsOfElements[0].details.baseLinePoints[0].x", "approx": 740.0, "name": "baseline start x kept" },
+        { "path": "detailsOfElements[0].details.baseLinePoints[0].y", "approx": 700.0, "name": "baseline start y kept" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "home story unchanged" }
+      ]
+    },
+    {
+      "id": "ModifyStairs: a bad walking line position is refused by the shared schema",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          { "elementId": { "guid": "${s}" }, "walkingLinePosition": "Middle" }
+        ]
+      },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "refused" }
+      ]
+    },
+    {
+      "id": "the refused items changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.flightWidth", "approx": 1.2, "name": "flight width still as created" },
+        { "path": "detailsOfElements[0].details.totalHeight", "approx": 2.8, "name": "total height still as created" }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,123 @@
+{
+  "title": "CreateMEPTakeOffs places a take-off on a duct segment, and refuses a distance beyond the segment's end",
+  "minTapir": "1.8.1",
+  "minArchicad": "28",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      }
+    },
+    {
+      "id": "duct",
+      "command": "CreateMEPRoutingElements",
+      "params": {
+        "routingElementsData": [
+          {
+            "domain": "Ventilation",
+            "crossSectionShape": "Rectangular",
+            "crossSectionWidth": 0.4,
+            "crossSectionHeight": 0.3,
+            "nodeCoordinates": [
+              { "x": 0.0, "y": -30.0, "z": 3.0 },
+              { "x": 6.0, "y": -30.0, "z": 3.0 }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "duct": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "its segment",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${duct}" } } ]
+      },
+      "save": {
+        "segment": "routingElements[0].segments[0].elementId.guid"
+      }
+    },
+    {
+      "id": "no take-off yet",
+      "command": "GetMEPElements",
+      "creates": false,
+      "params": {
+        "elementTypes": [ "TakeOff" ]
+      },
+      "expect": [
+        { "path": "elements", "len": 0 }
+      ]
+    },
+    {
+      "id": "take-off 2 m from the beginning",
+      "command": "CreateMEPTakeOffs",
+      "params": {
+        "takeOffsData": [
+          {
+            "domain": "Ventilation",
+            "segmentId": { "guid": "${segment}" },
+            "distanceFromBeginning": 2.0,
+            "rotationAroundMainAxis": 0,
+            "length": 0.3
+          }
+        ]
+      },
+      "save": {
+        "takeOff": "elements[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "take-off created" }
+      ]
+    },
+    {
+      "id": "take-off beyond the segment",
+      "command": "CreateMEPTakeOffs",
+      "creates": false,
+      "params": {
+        "takeOffsData": [
+          {
+            "domain": "Ventilation",
+            "segmentId": { "guid": "${segment}" },
+            "distanceFromBeginning": 10.0,
+            "rotationAroundMainAxis": 0
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "refused" },
+        { "path": "elements[0].error.message", "contains": "more than the length", "name": "says why" }
+      ]
+    },
+    {
+      "id": "read the take-offs",
+      "command": "GetMEPElements",
+      "creates": false,
+      "params": {
+        "elementTypes": [ "TakeOff" ]
+      },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "only the valid one placed" },
+        { "path": "elements[0].domain", "eq": "Ventilation" }
+      ]
+    },
+    {
+      "id": "take-off details",
+      "command": "GetMEPElementDetails",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${takeOff}" } } ]
+      },
+      "expect": [
+        { "path": "elementDetails[0].type", "eq": "TakeOff" },
+        { "path": "elementDetails[0].domain", "eq": "Ventilation" }
+      ]
+    }
+  ]
+}

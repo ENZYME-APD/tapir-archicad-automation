@@ -1,0 +1,18 @@
+{
+    "slug": "material-take-off",
+    "name": "Material Take-Off",
+    "summary": "Totals the volume and projected area of every building material of walls, columns, beams, slabs, roofs and shells, per story, for Excel or CSV.",
+    "category": "quantities-scheduling",
+    "tags": ["building-materials", "quantities", "volume", "take-off", "export"],
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
+    "license": "MIT",
+    "entry": "MaterialTakeOff.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "First version in the marketplace, the same as the built-in script of the same name."
+        }
+    ]
+}

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en" data-copy="Copy" data-copied="Copied">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n>Your first Archicad Python script | Tapir</title>
+<meta name="description" data-i18n-attrs="content" content="Install Tapir, write a short Python script that calls one Tapir command through aclib, and run it from the Tapir palette in Archicad, no packages needed.">
+<link rel="canonical" href="https://archicad-api.com/tutorials/first-python-script/">
+<!-- link-preview: the preview of a link to this page shared on Discord, WhatsApp and the like -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tapir">
+<meta property="og:title" content="Your first Archicad Python script | Tapir">
+<meta property="og:description" content="Install Tapir, write a short Python script that calls one Tapir command through aclib, and run it from the Tapir palette in Archicad, no packages needed.">
+<meta property="og:url" content="https://archicad-api.com/tutorials/first-python-script/">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Tapir", "item": "https://archicad-api.com/"},
+        {"@type": "ListItem", "position": 2, "name": "Tutorials", "item": "https://archicad-api.com/tutorials/"},
+        {"@type": "ListItem", "position": 3, "name": "Your first Archicad Python script", "item": "https://archicad-api.com/tutorials/first-python-script/"}
+    ]
+}
+</script>
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Your first Archicad Python script",
+    "description": "Install Tapir, write a short Python script that calls one Tapir command through aclib, and run it from the Tapir palette in Archicad, no packages needed.",
+    "url": "https://archicad-api.com/tutorials/first-python-script/",
+    "inLanguage": "en",
+    "isPartOf": {"@type": "WebSite", "name": "Tapir", "url": "https://archicad-api.com/"},
+    "publisher": {"@type": "Organization", "name": "Enzyme APD", "url": "https://archicad-api.com/"},
+    "about": {"@type": "SoftwareApplication", "name": "Tapir", "applicationCategory": "DesignApplication"}
+}
+</script>
+<!-- site-assets -->
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#2D3A30" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#2D3A30">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
+<script>try { var l = /[?&]lang=([A-Za-z]{2})(?:[&#]|$)/.exec (location.search); l = l ? l[1].toLowerCase () : localStorage.getItem ('tapir-lang') || (navigator.language || '').slice (0, 2).toLowerCase (); if (l && l !== 'en') { document.documentElement.setAttribute ('data-i18n-loading', ''); setTimeout (function () { document.documentElement.removeAttribute ('data-i18n-loading'); }, 2000); } } catch (e) {}</script>
+<script src="../../assets/site.js" defer></script>
+<link rel="stylesheet" href="../../assets/motion.css"><script src="../../assets/motion.js" defer></script>
+<script>try { if ((!sessionStorage.getItem ('tapir-splash') || /[?&]splash/.test (location.search)) && !/nomotion/.test (location.search + location.hash) && 'IntersectionObserver' in window && !matchMedia ('(prefers-reduced-motion: reduce)').matches) { var h = document.documentElement; h.classList.add ('m-splash'); var f = function () { h.classList.add ('m-font'); }; setTimeout (f, 2500); if (document.fonts && document.fonts.load) document.fonts.load ('900 56px Fraunces').then (f, f); else f (); } } catch (e) {}</script>
+<!-- /site-assets -->
+</head>
+<body>
+<!-- site-header -->
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+    <div class="wrap nav">
+        <a class="brand" href="../../"><img src="../../assets/tapir_mark_cream.svg" alt="" width="30" height="30">Tapir</a>
+        <nav class="site-nav" aria-label="Site"><ul>
+            <li><a href="../../start/">Get started</a></li>
+            <li><a href="../../docs/">Docs</a></li>
+            <li><a href="../../scripts/">Scripts</a></li>
+            <li><a href="../../scripts/share/">Share</a></li>
+            <li><a href="../../community/" aria-current="true">Community</a></li>
+            <li><a href="../../about/">About</a></li>
+        </ul></nav>
+        <div class="right">
+            <button class="toggle" id="theme-toggle" type="button" data-dark="Dark" data-light="Light" hidden><span class="toggle-word">Dark</span><span class="visually-hidden"> mode</span></button>
+            <a class="btn btn-primary btn-sm" href="../../start/#install">Download</a>
+        </div>
+    </div>
+</header>
+<!-- /site-header -->
+
+<main id="main">
+    <div class="page-head">
+        <div class="wrap">
+            <p class="crumb" data-i18n><a href="../../">Tapir</a> / <a href="../">Tutorials</a> / First Python script</p>
+            <h1 data-i18n>Your first Archicad <em>Python script.</em></h1>
+            <p data-i18n>A Tapir script is a Python file that sends JSON commands to Archicad. This one asks Archicad how many elements are selected, and runs from the Tapir palette.</p>
+        </div>
+    </div>
+
+    <div class="wrap page-body">
+        <section>
+            <ol class="timeline">
+                <li>
+                    <span class="n" aria-hidden="true">1</span>
+                    <div class="body">
+                        <h2 id="install" data-i18n>Install Tapir</h2>
+                        <p data-i18n>Install the Tapir Add-On with the Tapir Installer, as <a href="../../start/#install">Get started</a> shows, and start Archicad with a project open. The Tapir palette runs scripts with <a href="https://docs.astral.sh/uv/">uv</a>, which brings the Python each script needs; if uv is not installed yet, Tapir offers to install it the first time you run a script.</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="n" aria-hidden="true">2</span>
+                    <div class="body">
+                        <h2 id="folder" data-i18n>Make a folder with aclib</h2>
+                        <p data-i18n>Make a folder for your scripts, for example <code>Documents/Tapir scripts</code>, and an <code>aclib</code> folder inside it. Download <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/aclib/__init__.py"><code>builtin-scripts/aclib/__init__.py</code></a> into that <code>aclib</code> folder. <code>aclib</code> is the small helper of the built-in scripts: it sends a Tapir command to Archicad and returns the answer.</p>
+                        <div class="term">
+                            <div class="bar"><span>Documents/Tapir scripts</span><span>folder</span></div>
+<pre><code>FirstScript.py
+aclib/
+    __init__.py</code></pre>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <span class="n" aria-hidden="true">3</span>
+                    <div class="body">
+                        <h2 id="write" data-i18n>Write the script</h2>
+                        <p data-i18n>Save this as <code>FirstScript.py</code> in the folder. The two headers are those of the built-in scripts, described in <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/README.md"><code>builtin-scripts/README.md</code></a>: uv reads the first, and the palette shows <code>changes</code> as <em>Read only</em>. The last two lines are <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetSelectedElements.py"><code>archicad-addon/Examples/Element/GetSelectedElements.py</code></a>, the example of <a href="../../archicad-addon/#GetSelectedElements"><code>GetSelectedElements</code></a>.</p>
+                        <div class="term">
+                            <div class="bar"><span>FirstScript.py</span><span>Python</span></div>
+<pre><code><span class="c"># /// script</span>
+<span class="c"># requires-python = "&gt;=3.11"</span>
+<span class="c"># dependencies = []</span>
+<span class="c"># ///</span>
+
+<span class="c"># /// tapir</span>
+<span class="c"># changes = "read-only"</span>
+<span class="c"># ///</span>
+
+<span class="s">"""
+First Script
+
+Prints how many elements are selected in Archicad.
+"""</span>
+<span class="k">import</span> aclib
+
+selectedElements = aclib.RunTapirCommand (<span class="s">'GetSelectedElements'</span>, {})[<span class="s">'elements'</span>]
+print (<span class="s">'{} elements are selected.'</span>.format (len (selectedElements)))</code></pre>
+                        </div>
+                    </div>
+                </li>
+                <li>
+                    <span class="n" aria-hidden="true">4</span>
+                    <div class="body">
+                        <h2 id="run" data-i18n>Run it from the palette</h2>
+                        <p data-i18n>Add the folder to <code>localFolders</code> in <code>Documents/Tapir/config.json</code>, with the <code>displayName</code> <em>My scripts</em>, as <a href="../../start/#marketplace">Get started</a> shows. Choose <em>Tapir Palette</em> from the <em>Tapir</em> menu, then <em>Reload scripts...</em> at the bottom of its script list.</p>
+                        <p data-i18n>Select a few elements in Archicad, pick <em>FirstScript (My scripts)</em> in the palette's list and click <em>Run Script</em>. The palette reports what the script prints, such as <code>3 elements are selected.</code> Edits to the file take effect the next time you run it.</p>
+                        <p data-i18n>The palette starts the script with <code>uv run --script FirstScript.py --port &lt;port&gt;</code>, and <code>aclib</code> reads <code>--port</code>, so the script talks to the Archicad whose palette started it. With Python installed, you can also run it yourself as <code>python FirstScript.py</code>; it then uses the first Archicad, on port 19723.</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="n" aria-hidden="true">5</span>
+                    <div class="body">
+                        <h2 id="next" data-i18n>Call another command</h2>
+                        <p data-i18n>Every Tapir command is called the same way: its name and a dictionary of its parameters. These lines count the walls of the project with <a href="../../archicad-addon/#GetElementsByType"><code>GetElementsByType</code></a>:</p>
+                        <div class="term">
+                            <div class="bar"><span>FirstScript.py</span><span>Python</span></div>
+<pre><code>walls = aclib.RunTapirCommand (<span class="s">'GetElementsByType'</span>, {<span class="s">'elementType'</span>: <span class="s">'Wall'</span>})[<span class="s">'elements'</span>]
+print (<span class="s">'{} walls in the project.'</span>.format (len (walls)))</code></pre>
+                        </div>
+                        <p data-i18n><a href="../../archicad-addon/">The command reference</a> lists every command with its parameters, its response and an example like the one above. To send the commands without <code>aclib</code>, see <a href="../../start/#python">Write a script of your own</a>.</p>
+                    </div>
+                </li>
+            </ol>
+        </section>
+
+        <div class="dim" aria-hidden="true"><i></i><span data-i18n>Next tutorial</span><i></i></div>
+        <section>
+            <div class="teasers">
+                <a class="teaser dark" href="../export-properties-to-excel/">
+                    <span class="tagline" data-i18n>Data</span>
+                    <h3 data-i18n>Export Archicad element properties to Excel with Python</h3>
+                    <p data-i18n>A script that does more: property values to Excel and back.</p>
+                    <span class="go" data-i18n>Read it</span>
+                </a>
+                <a class="teaser" href="../">
+                    <span class="tagline" data-i18n>Tutorials</span>
+                    <h3 data-i18n>All tutorials</h3>
+                    <p data-i18n>The written tutorials and the videos.</p>
+                    <span class="go" data-i18n>See them all</span>
+                </a>
+                <a class="teaser" href="https://discord.gg/NAnSennmpY">
+                    <span class="tagline" data-i18n>Stuck?</span>
+                    <h3 data-i18n>Ask on Discord</h3>
+                    <p data-i18n>Architects, developers and the maintainers answer there. Or open an issue on GitHub.</p>
+                    <span class="go" data-i18n>Join Discord</span>
+                </a>
+            </div>
+        </section>
+    </div>
+</main>
+
+<!-- site-footer -->
+<footer class="site-footer">
+    <div class="wrap">
+        <div class="tblock">
+            <div>
+                <span class="lab">Project</span>
+                <span class="proj">Tapir</span>
+                <p class="note">Open-source automation for Archicad. 100% free and open source (MIT). Maintained by Enzyme APD and the community.</p>
+                <p class="note">Contact: <span class="nowrap">tapir@weareenzyme.com</span></p>
+            </div>
+            <div>
+                <span class="lab">Product</span>
+                <ul>
+                    <li><a href="../../start/">Get started</a></li>
+                    <li><a href="../../scripts/">Scripts</a></li>
+                    <li><a href="../../scripts/share/">Share a script</a></li>
+                    <li><a href="../../grasshopper/">Grasshopper</a></li>
+                    <li><a href="../../ai/">Tapir and AI</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Docs</span>
+                <ul>
+                    <li><a href="../../docs/">All docs</a></li>
+                    <li><a href="../../archicad-addon/">Commands</a></li>
+                    <li><a href="../../api-coverage/">API coverage</a></li>
+                    <li><a href="../../gh-coverage/">Grasshopper coverage</a></li>
+                    <li><a href="../../limits/">API limits</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Community</span>
+                <ul>
+                    <li><a href="https://discord.gg/NAnSennmpY">Discord</a></li>
+                    <li><a href="https://github.com/ENZYME-APD/tapir-archicad-automation">GitHub</a></li>
+                    <li><a href="../../tutorials/">Tutorials</a></li>
+                    <li><a href="../../community/#bots">How fixes happen</a></li>
+                    <li><a href="../../roadmap/">Roadmap</a></li>
+                    <li><a href="../../about/">About Tapir</a></li>
+                </ul>
+            </div>
+            <div>
+                <div class="rev" data-live="release" hidden>
+                    <span class="lab">Revision</span>
+                    <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest" data-live-value="release"></a>
+                </div>
+                <span class="lab">Licence</span>
+                <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/LICENSE">MIT</a>
+            </div>
+        </div>
+        <p class="fine">Not affiliated with Graphisoft. Archicad is a trademark of Graphisoft SE.</p>
+    </div>
+</footer>
+<!-- /site-footer -->
+</body>
+</html>

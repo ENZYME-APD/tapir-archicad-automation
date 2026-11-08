@@ -3,14 +3,19 @@
 # dependencies = []
 # ///
 
+# /// tapir
+# changes = "read-only"
+# ///
+
 '''
-Non-orthogonal wall finder
-by Daniel Alexander Kovacs for tapir
-https://kadsolutions.co.uk/
-Modified by Lucas Becker (@runxel)
+Non-orthogonal Wall Finder
 
 Lists the walls that are not aligned to the allowed angle grid (every 90° or
 every 45°), highlights them in red and selects them in Archicad on request.
+
+by Daniel Alexander Kovacs for tapir
+https://kadsolutions.co.uk/
+Modified by Lucas Becker (@runxel)
 '''
 
 import math

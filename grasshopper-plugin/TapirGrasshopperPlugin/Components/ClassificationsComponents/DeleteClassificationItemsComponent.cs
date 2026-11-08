@@ -1,5 +1,6 @@
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
@@ -25,12 +26,23 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             InGenerics(
                 "ClassificationItemGuids",
                 "Identifiers of the classification items to delete.");
+
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "DryRun",
+                "If true, nothing is deleted: ErrorMessages says what the deletion would do for each " +
+                "classification item, from the check made before deleting (the classification item exists). " +
+                "Archicad can still refuse to delete one that exists. Default is false.",
+                false);
+
+            SetOptionality(1);
         }
 
         protected override void AddOutputs()
         {
             OutErrorMessages(
-                "Error message of each classification item (empty when it succeeded).");
+                "Error message of each classification item (empty when it was deleted, or with DryRun when " +
+                "it would be deleted).");
         }
 
         protected override void Solve(
@@ -61,9 +73,17 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                     new ClassificationItemGuidWrapper { ClassificationItemId = id });
             }
 
+            var parameters = JObject.FromObject(input);
+
+            // Only sent when it differs from the command's default.
+            if (da.GetOptional(1, false))
+            {
+                parameters["dryRun"] = true;
+            }
+
             SetCadValuesWithErrorMessages(
                 CommandName,
-                input,
+                parameters,
                 ToAddOn,
                 da);
         }

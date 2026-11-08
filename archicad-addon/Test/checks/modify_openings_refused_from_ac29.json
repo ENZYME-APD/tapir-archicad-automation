@@ -1,0 +1,171 @@
+{
+  "title": "ModifyOpenings refuses every item from Archicad 29, names SetOpeningDetails and leaves the opening unchanged",
+  "minTapir": "1.8.1",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "host wall",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": { "x": 950.0, "y": 950.0 },
+            "endCoordinate": { "x": 956.0, "y": 950.0 },
+            "zCoordinate": 0.0,
+            "height": 3.0,
+            "thickness": 0.3
+          }
+        ]
+      },
+      "save": {
+        "wall": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "opening",
+      "command": "CreateOpenings",
+      "params": {
+        "openingsData": [
+          {
+            "ownerElementId": { "guid": "${wall}" },
+            "basePoint": { "x": 952.0, "y": 950.0, "z": 0.6 },
+            "width": 1.0,
+            "height": 1.2
+          }
+        ]
+      },
+      "save": {
+        "opening": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "opening created"
+        }
+      ]
+    },
+    {
+      "id": "opening before",
+      "command": "GetOpeningDetails",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${opening}" } }
+        ]
+      },
+      "save": {
+        "x0": "openings[0].geometry.anchorPoint.x",
+        "y0": "openings[0].geometry.anchorPoint.y",
+        "z0": "openings[0].geometry.anchorPoint.z"
+      },
+      "expect": [
+        {
+          "path": "openings[0].extrusionParameters.width",
+          "approx": 1.0,
+          "tol": 0.001,
+          "name": "width as created"
+        },
+        {
+          "path": "openings[0].extrusionParameters.height",
+          "approx": 1.2,
+          "tol": 0.001,
+          "name": "height as created"
+        }
+      ]
+    },
+    {
+      "id": "[real opening, nonexistent opening]",
+      "command": "ModifyOpenings",
+      "creates": false,
+      "params": {
+        "openingsWithDetails": [
+          {
+            "elementId": { "guid": "${opening}" },
+            "basePoint": { "x": 953.0, "y": 950.0, "z": 1.0 },
+            "width": 2.0,
+            "height": 1.5
+          },
+          {
+            "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "width": 2.0
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": false,
+          "name": "real opening refused"
+        },
+        {
+          "path": "executionResults[0].error.message",
+          "contains": "SetOpeningDetails",
+          "name": "refusal names SetOpeningDetails"
+        },
+        {
+          "path": "executionResults[1].success",
+          "eq": false,
+          "name": "nonexistent opening fails"
+        },
+        {
+          "path": "executionResults[1].error.message",
+          "exists": true,
+          "name": "nonexistent opening has an error message"
+        }
+      ]
+    },
+    {
+      "id": "opening after",
+      "command": "GetOpeningDetails",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${opening}" } }
+        ]
+      },
+      "save": {
+        "x1": "openings[0].geometry.anchorPoint.x",
+        "y1": "openings[0].geometry.anchorPoint.y",
+        "z1": "openings[0].geometry.anchorPoint.z"
+      },
+      "expect": [
+        {
+          "path": "openings[0].exists",
+          "eq": true,
+          "name": "opening still exists"
+        },
+        {
+          "path": "openings[0].extrusionParameters.width",
+          "approx": 1.0,
+          "tol": 0.001,
+          "name": "width unchanged"
+        },
+        {
+          "path": "openings[0].extrusionParameters.height",
+          "approx": 1.2,
+          "tol": 0.001,
+          "name": "height unchanged"
+        },
+        {
+          "expr": "${x1} - ${x0}",
+          "approx": 0.0,
+          "tol": 0.001,
+          "name": "anchor point X unchanged"
+        },
+        {
+          "expr": "${y1} - ${y0}",
+          "approx": 0.0,
+          "tol": 0.001,
+          "name": "anchor point Y unchanged"
+        },
+        {
+          "expr": "${z1} - ${z0}",
+          "approx": 0.0,
+          "tol": 0.001,
+          "name": "anchor point Z unchanged"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,212 @@
+{
+  "title": "3D styles: Create3DStyles starts from the current style, Change3DStyles changes only the given fields, SetCurrent3DStyle switches the style Get3DStyles and Get3DStyleDetails report",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "the styles before",
+      "command": "Get3DStyles",
+      "creates": false,
+      "params": {},
+      "save": {
+        "current0": "currentStyleName"
+      },
+      "expect": [
+        { "path": "currentStyleName", "ne": "", "name": "there is a current style" }
+      ]
+    },
+    {
+      "id": "details of the current style",
+      "command": "Get3DStyleDetails",
+      "creates": false,
+      "params": {},
+      "save": {
+        "engine0": "styles[0].engineId",
+        "model0": "styles[0].model3D"
+      },
+      "expect": [
+        { "path": "styles", "len": 1, "name": "no names: the current style" },
+        { "path": "styles[0].name", "exists": true }
+      ]
+    },
+    {
+      "id": "create a style",
+      "command": "Create3DStyles",
+      "creates": false,
+      "params": {
+        "styles": [
+          {
+            "name": "TapirCheck style A",
+            "monochromeEnabled": true,
+            "monochromeSurfaceColor": { "red": 0.25, "green": 0.5, "blue": 0.75 },
+            "contourThickness": 3,
+            "castShadowPercent": 40
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per style" },
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the new style",
+      "command": "Get3DStyleDetails",
+      "creates": false,
+      "params": {
+        "names": ["TapirCheck style A"]
+      },
+      "save": {
+        "engine1": "styles[0].engineId",
+        "model1": "styles[0].model3D"
+      },
+      "expect": [
+        { "path": "styles[0].name", "eq": "TapirCheck style A" },
+        { "path": "styles[0].monochromeEnabled", "eq": true },
+        { "path": "styles[0].monochromeSurfaceColor.red", "approx": 0.25, "tol": 1e-3 },
+        { "path": "styles[0].monochromeSurfaceColor.green", "approx": 0.5, "tol": 1e-3 },
+        { "path": "styles[0].monochromeSurfaceColor.blue", "approx": 0.75, "tol": 1e-3 },
+        { "path": "styles[0].contourThickness", "eq": 3 },
+        { "path": "styles[0].castShadowPercent", "eq": 40 },
+        { "expr": "${engine1} - ${engine0}", "approx": 0, "tol": 0, "name": "engine taken from the current style" },
+        { "expr": "${model1} - ${model0}", "approx": 0, "tol": 0, "name": "model type taken from the current style" }
+      ]
+    },
+    {
+      "id": "change two fields",
+      "command": "Change3DStyles",
+      "creates": false,
+      "params": {
+        "styles": [
+          { "name": "TapirCheck style A", "castShadowPercent": 70, "shadingPercent": 60 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per style" },
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the changed style",
+      "command": "Get3DStyleDetails",
+      "creates": false,
+      "params": {
+        "names": ["TapirCheck style A"]
+      },
+      "expect": [
+        { "path": "styles[0].castShadowPercent", "eq": 70, "name": "changed" },
+        { "path": "styles[0].shadingPercent", "eq": 60, "name": "changed" },
+        { "path": "styles[0].contourThickness", "eq": 3, "name": "kept" },
+        { "path": "styles[0].monochromeEnabled", "eq": true, "name": "kept" }
+      ]
+    },
+    {
+      "id": "make it the current style",
+      "command": "SetCurrent3DStyle",
+      "creates": false,
+      "params": {
+        "styleName": "TapirCheck style A"
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "the current style is the new one",
+      "command": "Get3DStyles",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "currentStyleName", "eq": "TapirCheck style A" }
+      ]
+    },
+    {
+      "id": "details without names follow the current style",
+      "command": "Get3DStyleDetails",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "styles[0].name", "eq": "TapirCheck style A" },
+        { "path": "styles[0].castShadowPercent", "eq": 70 }
+      ]
+    },
+    {
+      "id": "create with a used name and with an empty name",
+      "command": "Create3DStyles",
+      "creates": false,
+      "params": {
+        "styles": [
+          { "name": "TapirCheck style A", "castShadowPercent": 10 },
+          { "name": "" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per style" },
+        { "path": "executionResults[0].success", "eq": false, "name": "used name refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "empty name refused" }
+      ]
+    },
+    {
+      "id": "the used name kept its style",
+      "command": "Get3DStyleDetails",
+      "creates": false,
+      "params": {
+        "names": ["TapirCheck style A"]
+      },
+      "expect": [
+        { "path": "styles[0].castShadowPercent", "eq": 70, "name": "not overwritten" }
+      ]
+    },
+    {
+      "id": "change a style that does not exist",
+      "command": "Change3DStyles",
+      "creates": false,
+      "params": {
+        "styles": [
+          { "name": "TapirCheck no such style", "castShadowPercent": 10 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "failed" }
+      ]
+    },
+    {
+      "id": "details of a style that does not exist",
+      "command": "Get3DStyleDetails",
+      "creates": false,
+      "params": {
+        "names": ["TapirCheck no such style"]
+      },
+      "expect": [
+        { "path": "styles", "len": 1, "name": "one item per name" },
+        { "path": "styles[0].error", "exists": true, "name": "error item" }
+      ]
+    },
+    {
+      "id": "make a style that does not exist current",
+      "command": "SetCurrent3DStyle",
+      "creates": false,
+      "params": {
+        "styleName": "TapirCheck no such style"
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "failed" }
+      ]
+    },
+    {
+      "id": "the current style is kept after the failed call",
+      "command": "Get3DStyles",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "currentStyleName", "eq": "TapirCheck style A" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "SetCurrent3DStyle",
+      "params": { "styleName": "${current0}" }
+    }
+  ]
+}

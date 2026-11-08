@@ -1,0 +1,147 @@
+{
+  "title": "Get3DBoundingBoxes, Get2DBoundingBoxes and GetModelExtent measure a wall and a slab, and follow them when they move",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "free-standing basic wall, 6 m x 0.2 m x 3 m",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 706, "y": 700 }, "floorIndex": 0, "zCoordinate": 0,
+            "height": 3.0, "thickness": 0.2, "structureType": "Basic", "referenceLineLocation": "Center", "offset": 0.0 }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "basic slab, 4 m x 4 m x 0.3 m",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          { "level": 0, "floorIndex": 0, "thickness": 0.3, "structureType": "Basic",
+            "polygonCoordinates": [ { "x": 710, "y": 700 }, { "x": 714, "y": 700 }, { "x": 714, "y": 704 }, { "x": 710, "y": 704 } ] }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "3D boxes [wall, slab, bogus]",
+      "command": "Get3DBoundingBoxes",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${w1}" } },
+          { "elementId": { "guid": "${s1}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "save": {
+        "w3yMin": "boundingBoxes3D[0].boundingBox3D.yMin", "w3yMax": "boundingBoxes3D[0].boundingBox3D.yMax",
+        "w3zMin": "boundingBoxes3D[0].boundingBox3D.zMin", "w3zMax": "boundingBoxes3D[0].boundingBox3D.zMax",
+        "s3zMin": "boundingBoxes3D[1].boundingBox3D.zMin", "s3zMax": "boundingBoxes3D[1].boundingBox3D.zMax"
+      },
+      "expect": [
+        { "path": "boundingBoxes3D", "len": 3, "name": "one item per element" },
+        { "path": "boundingBoxes3D[0].boundingBox3D.xMin", "approx": 700, "name": "wall: starts at its begin point" },
+        { "path": "boundingBoxes3D[0].boundingBox3D.xMax", "approx": 706, "name": "wall: ends at its end point" },
+        { "expr": "${w3yMax} - ${w3yMin}", "approx": 0.2, "name": "wall: as wide as its thickness" },
+        { "expr": "${w3zMax} - ${w3zMin}", "approx": 3.0, "name": "wall: as high as its height" },
+        { "path": "boundingBoxes3D[1].boundingBox3D.xMin", "approx": 710, "name": "slab: xMin of its polygon" },
+        { "path": "boundingBoxes3D[1].boundingBox3D.xMax", "approx": 714, "name": "slab: xMax of its polygon" },
+        { "path": "boundingBoxes3D[1].boundingBox3D.yMin", "approx": 700, "name": "slab: yMin of its polygon" },
+        { "path": "boundingBoxes3D[1].boundingBox3D.yMax", "approx": 704, "name": "slab: yMax of its polygon" },
+        { "expr": "${s3zMax} - ${s3zMin}", "approx": 0.3, "name": "slab: as high as its thickness" },
+        { "path": "boundingBoxes3D[2].error", "exists": true, "name": "unknown element is an error item" }
+      ]
+    },
+    {
+      "id": "2D boxes [wall, slab, bogus]",
+      "command": "Get2DBoundingBoxes",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${w1}" } },
+          { "elementId": { "guid": "${s1}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "save": { "w2yMin": "boundingBoxes2D[0].boundingBox2D.yMin", "w2yMax": "boundingBoxes2D[0].boundingBox2D.yMax" },
+      "expect": [
+        { "path": "boundingBoxes2D", "len": 3, "name": "one item per element" },
+        { "path": "boundingBoxes2D[0].boundingBox2D.xMin", "approx": 700, "name": "wall: starts at its begin point" },
+        { "path": "boundingBoxes2D[0].boundingBox2D.xMax", "approx": 706, "name": "wall: ends at its end point" },
+        { "expr": "${w2yMax} - ${w2yMin}", "approx": 0.2, "name": "wall: as wide as its thickness" },
+        { "path": "boundingBoxes2D[1].boundingBox2D.xMin", "approx": 710, "name": "slab: xMin of its polygon" },
+        { "path": "boundingBoxes2D[1].boundingBox2D.xMax", "approx": 714, "name": "slab: xMax of its polygon" },
+        { "path": "boundingBoxes2D[1].boundingBox2D.yMin", "approx": 700, "name": "slab: yMin of its polygon" },
+        { "path": "boundingBoxes2D[1].boundingBox2D.yMax", "approx": 704, "name": "slab: yMax of its polygon" },
+        { "path": "boundingBoxes2D[2].error", "exists": true, "name": "unknown element is an error item" }
+      ]
+    },
+    {
+      "id": "model extent covers both",
+      "command": "GetModelExtent",
+      "creates": false,
+      "params": {},
+      "save": { "ezMin": "zMin", "ezMax": "zMax" },
+      "expect": [
+        { "path": "xMin", "lt": 700.001, "name": "reaches the wall's begin point" },
+        { "path": "xMax", "gt": 713.999, "name": "reaches the slab's far edge" },
+        { "path": "yMax", "gt": 703.999, "name": "reaches the slab's far edge in y" },
+        { "expr": "${ezMax} - ${ezMin}", "gt": 2.999, "name": "vertical range includes the wall's height" }
+      ]
+    },
+    {
+      "id": "move the wall 10 m in y, the slab 1 m up",
+      "command": "MoveElements",
+      "creates": false,
+      "params": {
+        "elementsWithMoveVectors": [
+          { "elementId": { "guid": "${w1}" }, "moveVector": { "x": 0, "y": 10, "z": 0 } },
+          { "elementId": { "guid": "${s1}" }, "moveVector": { "x": 0, "y": 0, "z": 1 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "wall moved" },
+        { "path": "executionResults[1].success", "eq": true, "name": "slab moved" }
+      ]
+    },
+    {
+      "id": "3D boxes after the move",
+      "command": "Get3DBoundingBoxes",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${w1}" } },
+          { "elementId": { "guid": "${s1}" } }
+        ]
+      },
+      "save": { "w3yMinMoved": "boundingBoxes3D[0].boundingBox3D.yMin", "s3zMinMoved": "boundingBoxes3D[1].boundingBox3D.zMin" },
+      "expect": [
+        { "expr": "${w3yMinMoved} - ${w3yMin}", "approx": 10, "name": "wall's box moved 10 m in y" },
+        { "path": "boundingBoxes3D[0].boundingBox3D.xMin", "approx": 700, "name": "wall's box kept its x" },
+        { "expr": "${s3zMinMoved} - ${s3zMin}", "approx": 1, "name": "slab's box moved 1 m up" },
+        { "path": "boundingBoxes3D[1].boundingBox3D.xMin", "approx": 710, "name": "slab's box kept its x" }
+      ]
+    },
+    {
+      "id": "2D box of the wall after the move",
+      "command": "Get2DBoundingBoxes",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } } ] },
+      "save": { "w2yMinMoved": "boundingBoxes2D[0].boundingBox2D.yMin" },
+      "expect": [
+        { "expr": "${w2yMinMoved} - ${w2yMin}", "approx": 10, "name": "wall's 2D box moved 10 m in y" }
+      ]
+    },
+    {
+      "id": "model extent after the move",
+      "command": "GetModelExtent",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "yMax", "gt": 710.099, "name": "reaches the moved wall" }
+      ]
+    }
+  ]
+}

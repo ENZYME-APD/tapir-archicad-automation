@@ -1,0 +1,103 @@
+{
+  "title": "Get3DGeometryOfElements and GetCutPolygonsOfElements read the bodies of a wall and a slab and cut them with a vertical plane",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "free-standing basic wall, 6 m x 0.2 m x 3 m",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 706, "y": 700 }, "floorIndex": 0, "zCoordinate": 0,
+            "height": 3.0, "thickness": 0.2, "structureType": "Basic", "referenceLineLocation": "Center", "offset": 0.0 }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "basic slab, 4 m x 4 m x 0.3 m",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          { "level": 0, "floorIndex": 0, "thickness": 0.3, "structureType": "Basic",
+            "polygonCoordinates": [ { "x": 710, "y": 700 }, { "x": 714, "y": 700 }, { "x": 714, "y": 704 }, { "x": 710, "y": 704 } ] }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "3D geometry [wall, slab, bogus]",
+      "command": "Get3DGeometryOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${w1}" } },
+          { "elementId": { "guid": "${s1}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "geometries3D", "len": 3, "name": "one item per element" },
+        { "path": "geometries3D[0].bodies", "len": 1, "name": "wall: one body" },
+        { "path": "geometries3D[0].bodies[0].vertices", "len": 8, "name": "wall: a box has 8 vertices" },
+        { "path": "geometries3D[0].bodies[0].polygons", "len": 6, "name": "wall: a box has 6 faces" },
+        { "path": "geometries3D[0].bodies[0].polygons[0].vertexIds", "len": 4, "name": "wall: a face of a box has 4 vertices" },
+        { "path": "geometries3D[1].bodies", "len": 1, "name": "slab: one body" },
+        { "path": "geometries3D[1].bodies[0].vertices", "len": 8, "name": "slab: a box has 8 vertices" },
+        { "path": "geometries3D[1].bodies[0].polygons", "len": 6, "name": "slab: a box has 6 faces" },
+        { "path": "geometries3D[2].error", "exists": true, "name": "unknown element is an error item" }
+      ]
+    },
+    {
+      "id": "cut [wall, slab, bogus] with the vertical plane x = 703",
+      "command": "GetCutPolygonsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${w1}" } },
+          { "elementId": { "guid": "${s1}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ],
+        "cutPlane": {
+          "basePoint": { "x": 703, "y": 0, "z": 0 },
+          "axisX": { "x": 0, "y": 1, "z": 0 },
+          "axisY": { "x": 0, "y": 0, "z": 1 },
+          "axisZ": { "x": 1, "y": 0, "z": 0 }
+        }
+      },
+      "expect": [
+        { "path": "cutPolygons", "len": 3, "name": "one item per element" },
+        { "path": "cutPolygons[0].bodies", "len": 1, "name": "wall: one body (basic structure)" },
+        { "path": "cutPolygons[0].bodies[0].bodyIndex", "eq": 0, "name": "wall: body index from 0" },
+        { "path": "cutPolygons[0].bodies[0].area", "approx": 0.6, "tol": 0.001, "name": "wall: cut is thickness x height" },
+        { "path": "cutPolygons[0].bodies[0].polygons", "len": 1, "name": "wall: one cut polygon" },
+        { "path": "cutPolygons[0].bodies[0].polygons[0].holes", "len": 0, "name": "wall: the cut has no hole" },
+        { "path": "cutPolygons[1].bodies", "len": 1, "name": "slab: one body" },
+        { "path": "cutPolygons[1].bodies[0].area", "approx": 0, "name": "slab: the plane misses it, area 0" },
+        { "path": "cutPolygons[1].bodies[0].polygons", "len": 0, "name": "slab: the plane misses it, no polygon" },
+        { "path": "cutPolygons[2].error", "exists": true, "name": "unknown element is an error item" }
+      ]
+    },
+    {
+      "id": "cut [wall, slab] with the vertical plane x = 712",
+      "command": "GetCutPolygonsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${w1}" } },
+          { "elementId": { "guid": "${s1}" } }
+        ],
+        "cutPlane": {
+          "basePoint": { "x": 712, "y": 0, "z": 0 },
+          "axisX": { "x": 0, "y": 1, "z": 0 },
+          "axisY": { "x": 0, "y": 0, "z": 1 },
+          "axisZ": { "x": 1, "y": 0, "z": 0 }
+        }
+      },
+      "expect": [
+        { "path": "cutPolygons[0].bodies[0].area", "approx": 0, "name": "wall: now missed, area 0" },
+        { "path": "cutPolygons[1].bodies[0].area", "approx": 1.2, "tol": 0.001, "name": "slab: cut is width x thickness" },
+        { "path": "cutPolygons[1].bodies[0].polygons", "len": 1, "name": "slab: one cut polygon" }
+      ]
+    }
+  ]
+}

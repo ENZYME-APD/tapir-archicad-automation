@@ -1,0 +1,18 @@
+{
+    "slug": "contour-mesh",
+    "name": "ContourMesh",
+    "summary": "Creates one Archicad terrain mesh from a DXF file with 3D contour lines, with every contour as a ridge line of the mesh.",
+    "category": "modeling-geometry",
+    "tags": ["terrain", "mesh", "dxf", "contours"],
+    "author": { "name": "Paul K", "github": "ArchPrime" },
+    "license": "MIT",
+    "entry": "contour_mesh.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [30],
+            "minTapirVersion": "1.5.0",
+            "changelog": "First version."
+        }
+    ]
+}

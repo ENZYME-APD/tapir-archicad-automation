@@ -1,5 +1,8 @@
 #include "ElementGroupingCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "Base64Converter.hpp"
+#include "UserDataPairs.hpp"
+#include "NotificationCommands.hpp"
 
 #ifdef ServerMainVers_2600
 static GS::UniString GetGroupCreationErrorMessage(const GS::Array<API_Guid>& elemGuids, GSErrCode /*originalErr*/)
@@ -79,6 +82,9 @@ GS::ObjectState CreateGroupsCommand::Execute(const GS::ObjectState& parameters, 
 
 #ifdef ServerMainVers_2600
 
+    // The grouped elements are reported to the notification clients as changed (#1825).
+    ElementChangeReporter changeReporter;
+
     ACAPI_CallUndoableCommand("Create Element Groups", [&]() -> GSErrCode {
         for (const GS::ObjectState& groupParam : elementGroups) {
 
@@ -104,6 +110,10 @@ GS::ObjectState CreateGroupsCommand::Execute(const GS::ObjectState& parameters, 
                 parentGroupGuid = GetGuidFromObjectState(*parentGroupId);
             }
 
+            for (const API_Guid& elemGuid : elemGuids) {
+                changeReporter.Add(elemGuid);
+            }
+
             API_Guid newGroupGuid = APINULLGuid;
             GSErrCode err = ACAPI_Grouping_CreateGroup(
                 elemGuids,
@@ -116,6 +126,9 @@ GS::ObjectState CreateGroupsCommand::Execute(const GS::ObjectState& parameters, 
                 groupGuids(CreateErrorResponse(err, errorMsg));
             }
             else {
+                for (const API_Guid& elemGuid : elemGuids) {
+                    changeReporter.MarkChanged(elemGuid);
+                }
                 GS::ObjectState successResult;
                 successResult.Add("groupId", CreateGuidObjectState(newGroupGuid));
                 groupGuids(successResult);
@@ -123,10 +136,141 @@ GS::ObjectState CreateGroupsCommand::Execute(const GS::ObjectState& parameters, 
         }
         return NoError;
         });
+
+    changeReporter.Report();
 #else
     GS::UniString notSupportedMsg = "The Create Groups command is not supported in Archicad 25 or older.";
     groupGuids (CreateErrorResponse (APIERR_NOTSUPPORTED, notSupportedMsg));
 #endif
+    return response;
+}
+
+UngroupElementsCommand::UngroupElementsCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String UngroupElementsCommand::GetName() const
+{
+    return "UngroupElements";
+}
+
+GS::Optional<GS::UniString> UngroupElementsCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "groups": {
+                "type": "array",
+                "description": "The groups to ungroup, as returned by CreateGroups or GetGroupsOfElements. A group nested in another group is reported as failed: ungroup the containing group first.",
+                "items": {
+                    "$ref": "#/GroupIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "groups"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> UngroupElementsCommand::GetRawResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState UngroupElementsCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> groups;
+    if (!parameters.Get("groups", groups)) {
+        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'groups' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState>("executionResults");
+
+    // The members of the dissolved groups are reported to the notification clients as changed (#1825).
+    ElementChangeReporter changeReporter;
+
+    ACAPI_CallUndoableCommand("Ungroup Elements", [&]() -> GSErrCode {
+        for (const GS::ObjectState& group : groups) {
+            const GS::ObjectState* groupId = group.Get("groupId");
+            if (groupId == nullptr) {
+                executionResults(CreateFailedExecutionResult(APIERR_BADPARS, "groupId is missing"));
+                continue;
+            }
+
+            // Ungroup works on the members, not on the group itself: the group is
+            // dissolved one level, like Edit > Grouping > Ungroup, so the directly
+            // contained elements and subgroups stay as they are.
+            const API_Guid groupGuid = GetGuidFromObjectState(*groupId);
+            GS::Array<API_Guid> elemGuids;
+            GSErrCode err = ACAPI_Grouping_GetGroupedElems(groupGuid, &elemGuids);
+            if (err != NoError) {
+                executionResults(CreateFailedExecutionResult(err, "Failed to get the elements of the group."));
+                continue;
+            }
+            if (elemGuids.IsEmpty()) {
+                executionResults(CreateFailedExecutionResult(APIERR_BADID, "The group does not exist or contains no elements."));
+                continue;
+            }
+
+            // Edit > Grouping > Ungroup dissolves the outermost group of the selected
+            // elements, so the tool is only called on groups that are not nested in
+            // another one; otherwise it could dissolve the containing group instead
+            // of the given one.
+            API_Guid rootGroupGuid = APINULLGuid;
+            err = ACAPI_Grouping_GetRootGroup(elemGuids.GetFirst(), &rootGroupGuid);
+            if (err != NoError) {
+                executionResults(CreateFailedExecutionResult(err, "Failed to get the root group of the group's elements."));
+                continue;
+            }
+            if (rootGroupGuid != groupGuid) {
+                executionResults(CreateFailedExecutionResult(APIERR_BADPARS, "The group is nested in another group. Ungroup the containing group first."));
+                continue;
+            }
+
+            for (const API_Guid& elemGuid : elemGuids) {
+                changeReporter.Add(elemGuid);
+            }
+
+            err = ACAPI_Grouping_Tool(elemGuids, APITool_Ungroup, nullptr);
+            if (err != NoError) {
+                executionResults(CreateFailedExecutionResult(err, "Failed to ungroup the elements of the group."));
+                continue;
+            }
+
+            // The tool call may succeed without dissolving the given group (for
+            // example when its elements are not editable), so report success only
+            // when a member is no longer in it.
+            API_Guid currentGroupGuid = APINULLGuid;
+            if (ACAPI_Grouping_GetGroup(elemGuids.GetFirst(), &currentGroupGuid) == NoError && currentGroupGuid == groupGuid) {
+                executionResults(CreateFailedExecutionResult(APIERR_GENERAL, "The group was not dissolved."));
+                continue;
+            }
+
+            for (const API_Guid& elemGuid : elemGuids) {
+                changeReporter.MarkChanged(elemGuid);
+            }
+            executionResults(CreateSuccessfulExecutionResult());
+        }
+        return NoError;
+    });
+
+    changeReporter.Report();
+
     return response;
 }
 
@@ -212,6 +356,54 @@ GS::ObjectState GetGroupsOfElementsCommand::Execute(const GS::ObjectState& param
     return response;
 }
 
+// Shared by the commands that list the guids belonging to each given item
+// (the elements of a group, the element sets of an element): reads the input
+// list, checks each item's id and writes one list of ids, or an error, per
+// item. getGuids fills the guids of one item; on failure it returns the error
+// code and sets the error message.
+static GS::ObjectState GetGuidsOfEachItem (
+    const GS::ObjectState& parameters,
+    const char* inputListName,
+    const char* inputIdName,
+    const char* outputListName,
+    const char* outputItemListName,
+    const char* outputIdName,
+    const std::function<GSErrCode (const API_Guid&, GS::Array<API_Guid>&, GS::UniString&)>& getGuids)
+{
+    GS::Array<GS::ObjectState> items;
+    if (!parameters.Get (inputListName, items)) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Invalid or missing '") + inputListName + "' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& outputList = response.AddList<GS::ObjectState> (outputListName);
+
+    for (const GS::ObjectState& item : items) {
+        const GS::ObjectState* id = item.Get (inputIdName);
+        if (id == nullptr) {
+            outputList (CreateErrorResponse (APIERR_BADPARS, GS::UniString (inputIdName) + " is missing"));
+            continue;
+        }
+
+        GS::Array<API_Guid> guids;
+        GS::UniString errorMessage;
+        const GSErrCode err = getGuids (GetGuidFromObjectState (*id), guids, errorMessage);
+        if (err != NoError) {
+            outputList (CreateErrorResponse (err, errorMessage));
+            continue;
+        }
+
+        GS::ObjectState outputItem;
+        const auto& outputIds = outputItem.AddList<GS::ObjectState> (outputItemListName);
+        for (const API_Guid& guid : guids) {
+            outputIds (CreateIdObjectState (outputIdName, guid));
+        }
+        outputList (outputItem);
+    }
+
+    return response;
+}
+
 GetElementsOfGroupsCommand::GetElementsOfGroupsCommand() :
     CommandBase(CommonSchema::Used)
 {
@@ -264,34 +456,687 @@ GS::Optional<GS::UniString> GetElementsOfGroupsCommand::GetRawResponseSchema() c
 
 GS::ObjectState GetElementsOfGroupsCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    return GetGuidsOfEachItem (parameters, "groups", "groupId", "elementsOfGroups", "elements", "elementId",
+        [] (const API_Guid& groupGuid, GS::Array<API_Guid>& elemGuids, GS::UniString& errorMessage) -> GSErrCode {
+            const GSErrCode err = ACAPI_Grouping_GetGroupedElems (groupGuid, &elemGuids);
+            if (err != NoError) {
+                errorMessage = "Failed to get the elements of the group.";
+            }
+            return err;
+        });
+}
+
+static GSErrCode GetMainGroupGuid(const API_Guid& groupGuid, API_Guid& mainGroupGuid)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Grouping_GetMainGroupGuid(&groupGuid, &mainGroupGuid);
+#else
+    // The given guid must be a group, as ACAPI_Grouping_GetMainGroupGuid requires on 27+.
+    GS::Array<API_Guid> elemGuids;
+    GSErrCode err = ACAPI_Grouping_GetGroupedElems(groupGuid, &elemGuids);
+    if (err != NoError) {
+        return err;
+    }
+
+    // Walk up the parent groups until the top level one.
+    mainGroupGuid = groupGuid;
+    for (UInt32 depth = 0; depth < 1000; ++depth) {
+        API_Guid parentGroupGuid = APINULLGuid;
+        err = ACAPI_Grouping_GetGroup(mainGroupGuid, &parentGroupGuid);
+        if (err != NoError) {
+            return err;
+        }
+        if (parentGroupGuid == APINULLGuid) {
+            return NoError;
+        }
+        mainGroupGuid = parentGroupGuid;
+    }
+    return APIERR_GENERAL;
+#endif
+}
+
+GetMainGroupsCommand::GetMainGroupsCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String GetMainGroupsCommand::GetName() const
+{
+    return "GetMainGroups";
+}
+
+GS::Optional<GS::UniString> GetMainGroupsCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "groups": {
+                "type": "array",
+                "description": "The groups to get the top level group of.",
+                "items": {
+                    "$ref": "#/GroupIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "groups"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetMainGroupsCommand::GetRawResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "mainGroups": {
+                "type": "array",
+                "description": "The top level group of each given group (the group itself if it is not nested in another group), or an error.",
+                "items": {
+                    "$ref": "#/GroupIdOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "mainGroups"
+        ]
+    })";
+}
+
+GS::ObjectState GetMainGroupsCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
     GS::Array<GS::ObjectState> groups;
     if (!parameters.Get("groups", groups)) {
         return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'groups' parameter.");
     }
 
     GS::ObjectState response;
-    const auto& elementsOfGroups = response.AddList<GS::ObjectState>("elementsOfGroups");
+    const auto& mainGroups = response.AddList<GS::ObjectState>("mainGroups");
 
     for (const GS::ObjectState& group : groups) {
         const GS::ObjectState* groupId = group.Get("groupId");
         if (groupId == nullptr) {
-            elementsOfGroups(CreateErrorResponse(APIERR_BADPARS, "groupId is missing"));
+            mainGroups(CreateErrorResponse(APIERR_BADPARS, "groupId is missing"));
+            continue;
+        }
+
+        API_Guid mainGroupGuid = APINULLGuid;
+        const GSErrCode err = GetMainGroupGuid(GetGuidFromObjectState(*groupId), mainGroupGuid);
+        if (err != NoError || mainGroupGuid == APINULLGuid) {
+            mainGroups(CreateErrorResponse(err != NoError ? err : APIERR_GENERAL, "Failed to get the top level group of the group."));
+            continue;
+        }
+
+        GS::ObjectState groupIdItem;
+        groupIdItem.Add("groupId", CreateGuidObjectState(mainGroupGuid));
+        mainGroups(groupIdItem);
+    }
+
+    return response;
+}
+
+GetAllElementsOfGroupsCommand::GetAllElementsOfGroupsCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String GetAllElementsOfGroupsCommand::GetName() const
+{
+    return "GetAllElementsOfGroups";
+}
+
+GS::Optional<GS::UniString> GetAllElementsOfGroupsCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "groups": {
+                "type": "array",
+                "description": "The groups to get all the elements of.",
+                "items": {
+                    "$ref": "#/GroupIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "groups"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetAllElementsOfGroupsCommand::GetRawResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementsOfGroups": {
+                "type": "array",
+                "description": "All the elements of each given group, including the elements of its nested groups, or an error.",
+                "items": {
+                    "$ref": "#/ElementsWrapperOrError"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementsOfGroups"
+        ]
+    })";
+}
+
+GS::ObjectState GetAllElementsOfGroupsCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    return GetGuidsOfEachItem (parameters, "groups", "groupId", "elementsOfGroups", "elements", "elementId",
+        [] (const API_Guid& groupGuid, GS::Array<API_Guid>& elemGuids, GS::UniString& errorMessage) -> GSErrCode {
+            const GSErrCode err = ACAPI_Grouping_GetAllGroupedElems (groupGuid, &elemGuids);
+            if (err != NoError) {
+                errorMessage = "Failed to get all the elements of the group.";
+            }
+            return err;
+        });
+}
+
+GetAutoGroupModeCommand::GetAutoGroupModeCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String GetAutoGroupModeCommand::GetName() const
+{
+    return "GetAutoGroupMode";
+}
+
+GS::Optional<GS::UniString> GetAutoGroupModeCommand::GetRawResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "autoGroup": {
+                "type": "boolean",
+                "description": "True if the Auto Group mode is currently on."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "autoGroup"
+        ]
+    })";
+}
+
+GS::ObjectState GetAutoGroupModeCommand::Execute(const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    bool autoGroup = false;
+    const GSErrCode err = ACAPI_View_IsAutoGroupOn(&autoGroup);
+    if (err != NoError) {
+        return CreateErrorResponse(err, "Failed to get the Auto Group mode.");
+    }
+
+    return GS::ObjectState("autoGroup", autoGroup);
+}
+
+GetElementSetDataCommand::GetElementSetDataCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String GetElementSetDataCommand::GetName() const
+{
+    return "GetElementSetData";
+}
+
+GS::Optional<GS::UniString> GetElementSetDataCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementSets": {
+                "type": "array",
+                "description": "The element sets to get the data of.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementSetId": {
+                            "type": "object",
+                            "description": "The identifier of an element set.",
+                            "properties": {
+                                "guid": {
+                                    "$ref": "#/Guid"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "guid"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementSetId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementSets"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetElementSetDataCommand::GetRawResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementSets": {
+                "type": "array",
+                "description": "The data of each given element set, or an error.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elements": {
+                                    "$ref": "#/Elements",
+                                    "description": "The elements of the element set."
+                                },
+                                "userData": {
+                                    "type": "object",
+                                    "description": "The custom data stored with the element set by the add-on that created it.",
+                                    "properties": {
+                                        "dataVersion": {
+                                            "type": "integer",
+                                            "description": "The version of the data, as set by the add-on that created the element set."
+                                        },
+                                        "platformSign": {
+                                            "type": "integer",
+                                            "description": "The platform sign of the data, telling the byte order it was written with."
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "description": "The raw bytes of the data, Base64 encoded. Empty when the element set has no data."
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "dataVersion",
+                                        "platformSign",
+                                        "data"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elements",
+                                "userData"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementSets"
+        ]
+    })";
+}
+
+GS::ObjectState GetElementSetDataCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementSets;
+    if (!parameters.Get("elementSets", elementSets)) {
+        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'elementSets' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& elementSetsData = response.AddList<GS::ObjectState>("elementSets");
+
+    for (const GS::ObjectState& elementSet : elementSets) {
+        const GS::ObjectState* elementSetId = elementSet.Get("elementSetId");
+        if (elementSetId == nullptr) {
+            elementSetsData(CreateErrorResponse(APIERR_BADPARS, "elementSetId is missing"));
             continue;
         }
 
         GS::Array<API_Guid> elemGuids;
-        const GSErrCode err = ACAPI_Grouping_GetGroupedElems(GetGuidFromObjectState(*groupId), &elemGuids);
+        API_UserData userData = {};
+        const GSErrCode err = ACAPI_ElementSet_GetData(GetGuidFromObjectState(*elementSetId), &elemGuids, &userData);
         if (err != NoError) {
-            elementsOfGroups(CreateErrorResponse(err, "Failed to get the elements of the group."));
+            BMKillHandle(&userData.dataHdl);
+            elementSetsData(CreateErrorResponse(err, "Failed to get the data of the element set."));
             continue;
         }
 
-        GS::ObjectState elementsItem;
-        const auto& elements = elementsItem.AddList<GS::ObjectState>("elements");
+        GS::UniString data;
+        const GSSize dataSize = BMGetHandleSize(userData.dataHdl);
+        if (dataSize > 0) {
+            data = Base64Converter::Encode(*userData.dataHdl, dataSize);
+            data.DeleteAll(GS::UniChar(char('\n')));
+        }
+        BMKillHandle(&userData.dataHdl);
+
+        GS::ObjectState elementSetData;
+        const auto& elements = elementSetData.AddList<GS::ObjectState>("elements");
         for (const API_Guid& elemGuid : elemGuids) {
             elements(CreateElementIdObjectState(elemGuid));
         }
-        elementsOfGroups(elementsItem);
+        GS::ObjectState userDataObj;
+        userDataObj.Add("dataVersion", static_cast<Int32>(userData.dataVersion));
+        userDataObj.Add("platformSign", static_cast<Int32>(userData.platformSign));
+        userDataObj.Add("data", data);
+        elementSetData.Add("userData", userDataObj);
+        elementSetsData(elementSetData);
+    }
+
+    return response;
+}
+
+GetUserDataOfGroupsCommand::GetUserDataOfGroupsCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String GetUserDataOfGroupsCommand::GetName() const
+{
+    return "GetUserDataOfGroups";
+}
+
+GS::Optional<GS::UniString> GetUserDataOfGroupsCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "groups": {
+                "type": "array",
+                "description": "The groups to get the user data of.",
+                "items": {
+                    "$ref": "#/GroupIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "groups"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetUserDataOfGroupsCommand::GetRawResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "userDataOfGroups": {
+                "type": "array",
+                "description": "The user data attached to each given group, or an error for groups that have none.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "userData": {
+                                    "type": "object",
+                                    "description": "The user data an add-on attached to the group.",
+                                    "properties": {
+                                        "dataVersion": {
+                                            "type": "integer",
+                                            "description": "The version of the user data, as set by the add-on that attached it."
+                                        },
+                                        "platformSign": {
+                                            "type": "integer",
+                                            "description": "The platform sign of the user data, which tells the byte order the data was written in."
+                                        },
+                                        "flags": {
+                                            "type": "integer",
+                                            "description": "The flags of the user data (APIUserDataFlag_FillWith and APIUserDataFlag_Pickup bits), as set by the add-on that attached it."
+                                        },
+                                        "data": {
+                                            "type": "string",
+                                            "description": "The bytes of the user data, base64 encoded. Empty when the user data has no bytes."
+                                        },
+                                        "pairs": {
+                                            "$ref": "#/UserDataPairs",
+                                            "description": "The key-value pairs of the user data, decoded from data. Only present when dataVersion is 1, the layout SetUserDataOfGroups writes."
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "dataVersion",
+                                        "platformSign",
+                                        "flags",
+                                        "data"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "userData"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "userDataOfGroups"
+        ]
+    })";
+}
+
+GS::ObjectState GetUserDataOfGroupsCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> groups;
+    if (!parameters.Get("groups", groups)) {
+        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'groups' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& userDataOfGroups = response.AddList<GS::ObjectState>("userDataOfGroups");
+
+    for (const GS::ObjectState& group : groups) {
+        const GS::ObjectState* groupId = group.Get("groupId");
+        if (groupId == nullptr) {
+            userDataOfGroups(CreateErrorResponse(APIERR_BADPARS, "groupId is missing"));
+            continue;
+        }
+
+        API_UserData userData = {};
+        const GSErrCode err = ACAPI_Grouping_GetUserData(GetGuidFromObjectState(*groupId), &userData);
+        if (err != NoError) {
+            BMKillHandle(&userData.dataHdl);
+            userDataOfGroups(CreateErrorResponse(err, err == APIERR_NOUSERDATA
+                ? "The group has no user data."
+                : "Failed to get the user data of the group."));
+            continue;
+        }
+
+        // The API hands over the data handle; it is the caller's to dispose.
+        GS::UniString data;
+        if (userData.dataHdl != nullptr) {
+            data = Base64Converter::Encode(*userData.dataHdl, BMGetHandleSize(userData.dataHdl));
+            data.DeleteAll(GS::UniChar(char('\n')));
+        }
+        const UserDataPairs pairs = ParseUserDataPairs(userData.dataHdl);
+        BMKillHandle(&userData.dataHdl);
+
+        GS::ObjectState userDataItem;
+        userDataItem.Add("dataVersion", static_cast<Int32>(userData.dataVersion));
+        userDataItem.Add("platformSign", static_cast<Int32>(userData.platformSign));
+        userDataItem.Add("flags", static_cast<Int32>(userData.flags));
+        userDataItem.Add("data", data);
+        if (userData.dataVersion == UserDataPairsLayoutVersion) {
+            AddUserDataPairsList(userDataItem, "pairs", pairs);
+        }
+
+        GS::ObjectState item;
+        item.Add("userData", userDataItem);
+        userDataOfGroups(item);
+    }
+
+    return response;
+}
+
+SetUserDataOfGroupsCommand::SetUserDataOfGroupsCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String SetUserDataOfGroupsCommand::GetName() const
+{
+    return "SetUserDataOfGroups";
+}
+
+GS::Optional<GS::UniString> SetUserDataOfGroupsCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "groups": {
+                "type": "array",
+                "description": "The groups to store the pairs on.",
+                "items": {
+                    "$ref": "#/GroupIdArrayItem"
+                },
+                "minItems": 1
+            },
+            "pairs": {
+                "$ref": "#/UserDataPairs",
+                "description": "The key-value pairs to store on each group. A key the group already holds gets the new value; other keys are left as they are."
+            },
+            "keysToDelete": {
+                "$ref": "#/UserDataKeysToDelete"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "groups"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetUserDataOfGroupsCommand::GetRawResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults",
+                "description": "One result per group, in the input order."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetUserDataOfGroupsCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> groups;
+    if (!parameters.Get("groups", groups)) {
+        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'groups' parameter.");
+    }
+
+    UserDataPairs pairsToSet;
+    GS::Array<GS::UniString> keysToDelete;
+    GS::UniString errorMessage;
+    if (!GetUserDataPairChanges(parameters, pairsToSet, keysToDelete, errorMessage)) {
+        return CreateErrorResponse(APIERR_BADPARS, errorMessage);
+    }
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState>("executionResults");
+
+    // ACAPI_Grouping_SetUserData needs an undo scope (APIERR_NEEDSUNDOSCOPE). One undo step for the
+    // whole call; the lambda reports success when any group was changed, so a failed group does not
+    // roll back the others, and each group carries its own result.
+    bool executed = false;
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand("SetUserDataOfGroups", [&]() -> GSErrCode {
+        executed = true;
+        GSErrCode firstErr = NoError;
+        bool anyStored = false;
+
+        const auto fail = [&](GSErrCode err, const GS::UniString& message) {
+            executionResults(CreateFailedExecutionResult(err, message));
+            if (firstErr == NoError) {
+                firstErr = err;
+            }
+        };
+
+        for (const GS::ObjectState& group : groups) {
+            const GS::ObjectState* groupId = group.Get("groupId");
+            if (groupId == nullptr) {
+                fail(APIERR_BADPARS, "groupId is missing");
+                continue;
+            }
+            const API_Guid groupGuid = GetGuidFromObjectState(*groupId);
+
+            UserDataPairs pairs;
+            API_UserData storedData = {};
+            GSErrCode err = ACAPI_Grouping_GetUserData(groupGuid, &storedData);
+            if (err == APIERR_NOUSERDATA) {
+                err = NoError;
+            } else if (err == NoError && storedData.dataHdl != nullptr) {
+                // Data in a layout this command does not write may belong to another add-on or a newer
+                // Tapir, so it is reported rather than overwritten.
+                if (storedData.dataVersion != UserDataPairsLayoutVersion) {
+                    BMKillHandle(&storedData.dataHdl);
+                    fail(APIERR_BADPARS, GS::UniString::Printf("The group holds user data in another layout (version %d); it is left unchanged.",
+                                                               static_cast<int>(storedData.dataVersion)));
+                    continue;
+                }
+                pairs = ParseUserDataPairs(storedData.dataHdl);
+            }
+            BMKillHandle(&storedData.dataHdl);
+            if (err != NoError) {
+                fail(err, "Failed to get the user data of the group.");
+                continue;
+            }
+
+            ApplyUserDataPairChanges(pairs, pairsToSet, keysToDelete);
+
+            API_UserData userData = {};
+            userData.dataVersion = UserDataPairsLayoutVersion;
+            userData.platformSign = GS::Act_Platform_Sign;
+            // Not FillWith or Pickup: the pairs are script state, not a setting of the group.
+            userData.flags = 0;
+            userData.dataHdl = SerializeUserDataPairs(pairs);
+            if (userData.dataHdl == nullptr) {
+                fail(APIERR_MEMFULL, "Failed to store the user data of the group.");
+                continue;
+            }
+
+            // The API copies the data, the handle stays ours to free.
+            err = ACAPI_Grouping_SetUserData(groupGuid, &userData);
+            BMKillHandle(&userData.dataHdl);
+            if (err != NoError) {
+                fail(err, "Failed to store the user data of the group.");
+                continue;
+            }
+
+            anyStored = true;
+            executionResults(CreateSuccessfulExecutionResult());
+        }
+
+        return anyStored ? NoError : firstErr;
+    });
+
+    if (!executed) {
+        return CreateErrorResponse(undoErr != NoError ? undoErr : APIERR_GENERAL, "Failed to start the undoable operation that stores the user data.");
     }
 
     return response;
@@ -400,4 +1245,353 @@ GS::ObjectState SetSuspendGroupsModeCommand::Execute(const GS::ObjectState& para
     return GS::ObjectState("executionResult", err == NoError
         ? CreateSuccessfulExecutionResult()
         : CreateFailedExecutionResult(err, "Failed to set the Suspend Groups mode."));
+}
+
+CreateElementSetsCommand::CreateElementSetsCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String CreateElementSetsCommand::GetName() const
+{
+    return "CreateElementSets";
+}
+
+GS::Optional<GS::UniString> CreateElementSetsCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementSets": {
+                "type": "array",
+                "description": "The element sets to create.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elements": {
+                            "$ref": "#/Elements",
+                            "description": "The elements to put into the element set."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elements"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementSets"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> CreateElementSetsCommand::GetRawResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementSets": {
+                "type": "array",
+                "description": "The identifier of each created element set, or an error, in the order of the input.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementSetId": {
+                                    "type": "object",
+                                    "description": "The identifier of an element set.",
+                                    "properties": {
+                                        "guid": {
+                                            "$ref": "#/Guid"
+                                        }
+                                    },
+                                    "additionalProperties": false,
+                                    "required": [
+                                        "guid"
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementSetId"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementSets"
+        ]
+    })";
+}
+
+GS::ObjectState CreateElementSetsCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementSets;
+    if (!parameters.Get("elementSets", elementSets)) {
+        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'elementSets' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& elementSetIds = response.AddList<GS::ObjectState>("elementSets");
+
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand("Create Element Sets", [&]() -> GSErrCode {
+        for (const GS::ObjectState& elementSet : elementSets) {
+            GS::Array<GS::ObjectState> elements;
+            if (!elementSet.Get("elements", elements) || elements.IsEmpty()) {
+                elementSetIds(CreateErrorResponse(APIERR_BADPARS, "Elements array is missing or empty."));
+                continue;
+            }
+
+            GS::Array<API_Guid> elemGuids;
+            for (const GS::ObjectState& item : elements) {
+                elemGuids.Push(GetGuidFromElementsArrayItem(item));
+            }
+
+            // No user data is stored with the set; an empty handle is passed
+            // rather than a null one, as the API copies the handle's content.
+            // The platform sign must be valid even then, otherwise the API
+            // refuses the set with APIERR_BADPLATFORMSIGN (#1862).
+            API_UserData userData = {};
+            userData.platformSign = GS::Act_Platform_Sign;
+            userData.dataHdl = BMAllocateHandle(0, ALLOCATE_CLEAR, 0);
+
+            API_Guid setGuid = APINULLGuid;
+            const GSErrCode err = ACAPI_ElementSet_Create(&elemGuids, &userData, &setGuid);
+            BMKillHandle(&userData.dataHdl);
+
+            if (err != NoError) {
+                elementSetIds(CreateErrorResponse(err, "Failed to create the element set."));
+                continue;
+            }
+
+            elementSetIds(CreateIdObjectState("elementSetId", setGuid));
+        }
+        return NoError;
+    });
+
+    if (undoErr != NoError) {
+        return CreateErrorResponse(undoErr, "Failed to create the element sets.");
+    }
+
+    return response;
+}
+
+DeleteElementSetsCommand::DeleteElementSetsCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String DeleteElementSetsCommand::GetName() const
+{
+    return "DeleteElementSets";
+}
+
+GS::Optional<GS::UniString> DeleteElementSetsCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementSets": {
+                "type": "array",
+                "description": "The element sets to delete, as returned by CreateElementSets or GetElementSetsOfElements. Only element sets created by the Tapir Add-On can be deleted. The elements of a deleted set are not deleted.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementSetId": {
+                            "type": "object",
+                            "description": "The identifier of an element set.",
+                            "properties": {
+                                "guid": {
+                                    "$ref": "#/Guid"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "guid"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementSetId"
+                    ]
+                }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementSets"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> DeleteElementSetsCommand::GetRawResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
+            "executionResults": {
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input element set, in the order of the input. On a dry run an element set that exists and was created by the Tapir Add-On gets wouldDelete."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState DeleteElementSetsCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elementSets;
+    if (!parameters.Get("elementSets", elementSets)) {
+        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'elementSets' parameter.");
+    }
+
+    const bool dryRun = IsDryRun(parameters);
+
+    GS::ObjectState response;
+    AddDryRunField(response, dryRun);
+    const auto& executionResults = response.AddList<GS::ObjectState>("executionResults");
+
+    const auto deleteElementSets = [&]() -> GSErrCode {
+        for (const GS::ObjectState& elementSet : elementSets) {
+            const GS::ObjectState* elementSetId = elementSet.Get("elementSetId");
+            if (elementSetId == nullptr) {
+                executionResults(CreateFailedExecutionResult(APIERR_BADPARS, "elementSetId is missing"));
+                continue;
+            }
+
+            const API_Guid setGuid = GetGuidFromObjectState(*elementSetId);
+            if (setGuid == APINULLGuid) {
+                executionResults(CreateFailedExecutionResult(APIERR_BADID, "Invalid element set identifier."));
+                continue;
+            }
+
+            // A dry run reads the set instead of deleting it: ACAPI_ElementSet_GetData answers the
+            // same errors as ACAPI_ElementSet_Delete for a set that does not exist, is already
+            // deleted or was created by another add-on.
+            const GSErrCode err = dryRun ? ACAPI_ElementSet_GetData(setGuid, nullptr, nullptr) : ACAPI_ElementSet_Delete(setGuid);
+            switch (err) {
+                case NoError:
+                    executionResults(dryRun ? CreateDryRunExecutionResult("wouldDelete") : CreateSuccessfulExecutionResult());
+                    break;
+                case APIERR_NOTMINE:
+                    executionResults(CreateFailedExecutionResult(err, "The element set was not created by the Tapir Add-On, so it cannot be deleted."));
+                    break;
+                case APIERR_DELETED:
+                    executionResults(CreateFailedExecutionResult(err, "The element set is already deleted."));
+                    break;
+                case APIERR_BADID:
+                    executionResults(CreateFailedExecutionResult(err, "The element set does not exist."));
+                    break;
+                default:
+                    executionResults(CreateFailedExecutionResult(err, "Failed to delete the element set."));
+                    break;
+            }
+        }
+        return NoError;
+    };
+
+    if (dryRun) {
+        deleteElementSets();
+        return response;
+    }
+
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand("Delete Element Sets", deleteElementSets);
+    if (undoErr != NoError) {
+        return CreateErrorResponse(undoErr, "Failed to delete the element sets.");
+    }
+
+    return response;
+}
+
+GetElementSetsOfElementsCommand::GetElementSetsOfElementsCommand() :
+    CommandBase(CommonSchema::Used)
+{
+}
+
+GS::String GetElementSetsOfElementsCommand::GetName() const
+{
+    return "GetElementSetsOfElements";
+}
+
+GS::Optional<GS::UniString> GetElementSetsOfElementsCommand::GetInputParametersSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetElementSetsOfElementsCommand::GetRawResponseSchema() const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementSetsOfElements": {
+                "type": "array",
+                "description": "The element sets that contain each given element, or an error, in the order of the input. Only element sets created by the Tapir Add-On are examined.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "$ref": "#/ElementSetsOfElement"
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementSetsOfElements"
+        ]
+    })";
+}
+
+GS::ObjectState GetElementSetsOfElementsCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    return GetGuidsOfEachItem (parameters, "elements", "elementId", "elementSetsOfElements", "elementSets", "elementSetId",
+        [] (const API_Guid& elemGuid, GS::Array<API_Guid>& setGuids, GS::UniString& errorMessage) -> GSErrCode {
+            // The null GUID would make the API return every element set of the
+            // add-on, which is not what an element lookup should do.
+            if (elemGuid == APINULLGuid) {
+                errorMessage = "Invalid element identifier.";
+                return APIERR_BADPARS;
+            }
+
+            const GSErrCode err = ACAPI_ElementSet_Identify (elemGuid, &setGuids);
+            if (err != NoError) {
+                errorMessage = "Failed to get the element sets of the element.";
+            }
+            return err;
+        });
 }

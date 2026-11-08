@@ -1,0 +1,18 @@
+{
+    "slug": "wall-clearance",
+    "name": "Wall Clearance",
+    "summary": "Finds doors, windows and objects too close to a wall, column or curtain wall and moves them just enough to keep the margin.",
+    "category": "quality-assurance",
+    "tags": ["doors", "windows", "objects", "walls", "clearance", "check"],
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
+    "license": "MIT",
+    "entry": "WallClearance.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.1",
+            "changelog": "First version in the marketplace, the same as the built-in script of the same name, with doors and windows measured by their opening in the wall."
+        }
+    ]
+}

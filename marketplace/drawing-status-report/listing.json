@@ -1,0 +1,18 @@
+{
+    "slug": "drawing-status-report",
+    "name": "Drawing Status Report",
+    "summary": "Lists every drawing on the layouts with its Drawing Manager status, source and path, exports the list and updates the drawings you choose.",
+    "category": "documentation-layouts",
+    "tags": ["drawings", "layouts", "drawing-manager", "excel"],
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
+    "license": "MIT",
+    "entry": "DrawingStatusReport.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "First version in the marketplace, the same as the built-in script of the same name."
+        }
+    ]
+}

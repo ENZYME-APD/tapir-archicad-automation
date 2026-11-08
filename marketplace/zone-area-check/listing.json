@@ -1,0 +1,18 @@
+{
+    "slug": "zone-area-check",
+    "name": "Zone Area Check",
+    "summary": "Compares the area of every zone with a target area property within a tolerance, and highlights the zones over, under and on target.",
+    "category": "zones-areas",
+    "tags": ["zones", "areas", "check", "highlight"],
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
+    "license": "MIT",
+    "entry": "ZoneAreaCheck.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "First version in the marketplace, the same as the built-in script of the same name."
+        }
+    ]
+}

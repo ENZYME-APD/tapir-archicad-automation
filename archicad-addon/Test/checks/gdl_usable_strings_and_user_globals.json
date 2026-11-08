@@ -1,0 +1,56 @@
+{
+  "title": "IsUsableGDLString accepts an identifier and refuses GDL keywords, GetGDLUserGlobals lists the GDL globals (#1950)",
+  "minTapir": "1.8.1",
+  "minArchicad": "28",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "[identifier, IF, ENDIF, BLOCK]",
+      "command": "IsUsableGDLString",
+      "creates": false,
+      "params": {
+        "strings": [ "tapirCheckValue", "IF", "ENDIF", "BLOCK" ]
+      },
+      "expect": [
+        { "path": "results", "len": 4, "name": "one result per string" },
+        { "path": "results[0]", "eq": true, "name": "an own identifier is usable" },
+        { "path": "results[1]", "eq": false, "name": "IF is a keyword" },
+        { "path": "results[2]", "eq": false, "name": "ENDIF is a keyword" },
+        { "path": "results[3]", "eq": false, "name": "BLOCK is a keyword" }
+      ]
+    },
+    {
+      "id": "no strings",
+      "command": "IsUsableGDLString",
+      "creates": false,
+      "params": {
+        "strings": []
+      },
+      "expect": [
+        { "path": "results", "len": 0 }
+      ]
+    },
+    {
+      "id": "strings not given as a list",
+      "command": "IsUsableGDLString",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "strings": "IF"
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the input schema" }
+      ]
+    },
+    {
+      "id": "GDL globals",
+      "command": "GetGDLUserGlobals",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "error", "exists": false, "name": "no error" },
+        { "path": "globals", "exists": true, "name": "a list of globals" }
+      ]
+    }
+  ]
+}

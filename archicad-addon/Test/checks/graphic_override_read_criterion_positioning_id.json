@@ -1,0 +1,118 @@
+{
+  "title": "Graphic override rules: includeCriterion reads the Positioning and ID and Categories conditions by name",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "create rule",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck read positioning and ID",
+            "ruleGroupName": "TapirCheck read positioning and ID",
+            "criterion": {
+              "and": [
+                { "elementType": "Wall" },
+                {
+                  "or": [
+                    { "seaLevelAltitudeGreaterThan": 1.5 },
+                    { "floorIndex": 0 }
+                  ]
+                },
+                { "elementIdStartsWith": "W-" },
+                { "nameContains": "Tapir & Co" },
+                { "structuralFunctionNot": "LoadBearing" },
+                { "position": "Exterior" },
+                { "renovationStatus": "New" },
+                { "uniqueIdIsNot": "TapirCheck" }
+              ]
+            },
+            "style": {
+              "lineMarkerTextPen": 20
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "rule created"
+        }
+      ]
+    },
+    {
+      "id": "read criterion",
+      "command": "GetGraphicOverrideRulesByName",
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck read positioning and ID",
+            "ruleGroupName": "TapirCheck read positioning and ID"
+          }
+        ],
+        "includeCriterion": true
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRules[0].criterion.and[0].elementType",
+          "eq": "Wall",
+          "name": "element type"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[1].or[0].seaLevelAltitudeGreaterThan",
+          "eq": 1.5,
+          "name": "sea level altitude greater than"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[1].or[1].floorIndex",
+          "eq": 0,
+          "name": "home story"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[2].elementIdStartsWith",
+          "eq": "W-",
+          "name": "element ID starts with"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[3].nameContains",
+          "eq": "Tapir & Co",
+          "name": "name contains"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[4].structuralFunctionNot",
+          "eq": "LoadBearing",
+          "name": "structural function is not"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[5].position",
+          "eq": "Exterior",
+          "name": "position"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[6].renovationStatus",
+          "eq": "New",
+          "name": "renovation status"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[7].uniqueIdIsNot",
+          "eq": "TapirCheck",
+          "name": "unique ID is not"
+        }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteGraphicOverrideRuleGroups",
+      "params": {
+        "ruleGroupNames": [
+          "TapirCheck read positioning and ID"
+        ],
+        "deleteRules": true
+      }
+    }
+  ]
+}

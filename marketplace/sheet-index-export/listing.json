@@ -1,0 +1,18 @@
+{
+    "slug": "sheet-index-export",
+    "name": "Sheet Index Export",
+    "summary": "Lists every layout of the Layout Book with its subset, number, name, paper size and current revision, and saves it as Excel or CSV.",
+    "category": "documentation-layouts",
+    "tags": ["layouts", "sheet-index", "revisions", "excel"],
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
+    "license": "MIT",
+    "entry": "SheetIndexExport.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "First version in the marketplace, the same as the built-in script of the same name."
+        }
+    ]
+}

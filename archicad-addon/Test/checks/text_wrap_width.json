@@ -1,0 +1,164 @@
+{
+  "title": "CreateTexts / ModifyTexts: width turns word wrap on, alone it keeps the content",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "a wrapped text, an auto-width one and one of two runs",
+      "command": "CreateTexts",
+      "params": {
+        "textsData": [
+          {
+            "coordinate": { "x": 700.0, "y": 700.0, "z": 0.0 },
+            "text": "A long line of text that does not fit into a narrow text box",
+            "height": 2.5,
+            "justification": "Left",
+            "width": 30.0
+          },
+          {
+            "coordinate": { "x": 700.0, "y": 695.0, "z": 0.0 },
+            "text": "A long line of text that does not fit into a narrow text box",
+            "height": 2.5,
+            "justification": "Left"
+          },
+          {
+            "coordinate": { "x": 700.0, "y": 690.0, "z": 0.0 },
+            "runs": [
+              { "text": "Title\n", "bold": true },
+              { "text": "A long line of text that does not fit into a narrow text box", "bold": false }
+            ],
+            "style": { "height": 2.5, "justification": "Left" }
+          }
+        ]
+      },
+      "save": {
+        "t0": "elements[0].elementId.guid",
+        "t1": "elements[1].elementId.guid",
+        "t2": "elements[2].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "wrapped text created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "auto-width text created" },
+        { "path": "elements[2].elementId.guid", "exists": true, "name": "two-run text created" }
+      ]
+    },
+    {
+      "id": "read them back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${t0}" } },
+          { "elementId": { "guid": "${t1}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.style.nonBreaking", "eq": false, "name": "width turns word wrap on" },
+        { "path": "detailsOfElements[0].details.style.boxWidth", "approx": 30.0, "tol": 0.01, "name": "box width is the given width" },
+        { "path": "detailsOfElements[0].details.style.lineCount", "gt": 1, "name": "the long text wraps" },
+        { "path": "detailsOfElements[1].details.style.nonBreaking", "eq": true, "name": "no width: auto-width, as before" },
+        { "path": "detailsOfElements[1].details.style.lineCount", "eq": 1, "name": "auto-width text stays on one line" }
+      ]
+    },
+    {
+      "id": "width alone, and a new text without a width",
+      "command": "ModifyTexts",
+      "creates": false,
+      "params": {
+        "textsWithDetails": [
+          { "elementId": { "guid": "${t1}" }, "width": 40.0 },
+          { "elementId": { "guid": "${t2}" }, "width": 50.0 },
+          { "elementId": { "guid": "${t0}" }, "text": "Replaced" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "width alone accepted" },
+        { "path": "executionResults[1].success", "eq": true, "name": "width alone on two runs accepted" },
+        { "path": "executionResults[2].success", "eq": true, "name": "text change accepted" }
+      ]
+    },
+    {
+      "id": "read the modified texts back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${t1}" } },
+          { "elementId": { "guid": "${t2}" } },
+          { "elementId": { "guid": "${t0}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.style.nonBreaking", "eq": false, "name": "width alone turns word wrap on" },
+        { "path": "detailsOfElements[0].details.style.boxWidth", "approx": 40.0, "tol": 0.01, "name": "width alone sets the box width" },
+        { "path": "detailsOfElements[0].details.text", "eq": "A long line of text that does not fit into a narrow text box", "name": "width alone keeps the content" },
+        { "path": "detailsOfElements[0].details.style.lineCount", "gt": 1, "name": "the text wraps after a width alone" },
+        { "path": "detailsOfElements[1].details.style.boxWidth", "approx": 50.0, "tol": 0.01, "name": "two-run text gets the width" },
+        { "path": "detailsOfElements[1].details.runs", "len": 2, "name": "width alone keeps both runs" },
+        { "path": "detailsOfElements[1].details.runs[0].bold", "eq": true, "name": "first run still bold" },
+        { "path": "detailsOfElements[1].details.runs[1].bold", "eq": false, "name": "second run still not bold" },
+        { "path": "detailsOfElements[2].details.style.nonBreaking", "eq": false, "name": "new text without width keeps the wrap" },
+        { "path": "detailsOfElements[2].details.style.boxWidth", "approx": 30.0, "tol": 0.01, "name": "new text without width keeps the wrap width" }
+      ]
+    },
+    {
+      "id": "new text and width in the same item",
+      "command": "ModifyTexts",
+      "creates": false,
+      "params": {
+        "textsWithDetails": [
+          { "elementId": { "guid": "${t0}" }, "text": "A long line of text that does not fit into a narrow text box", "width": 25.0 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "text and width accepted" }
+      ]
+    },
+    {
+      "id": "the width wins over the rebuild",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${t0}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.style.nonBreaking", "eq": false, "name": "word wrap on after the content rebuild" },
+        { "path": "detailsOfElements[0].details.style.boxWidth", "approx": 25.0, "tol": 0.01, "name": "box width applied after the content rebuild" },
+        { "path": "detailsOfElements[0].details.text", "eq": "A long line of text that does not fit into a narrow text box", "name": "new content written" }
+      ]
+    },
+    {
+      "id": "a pen change on a wrapped text, and width 0",
+      "command": "ModifyTexts",
+      "params": {
+        "textsWithDetails": [
+          { "elementId": { "guid": "${t2}" }, "style": { "penIndex": 3 } },
+          { "elementId": { "guid": "${t0}" }, "width": 0.0 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "pen change accepted" },
+        { "path": "executionResults[1].success", "eq": true, "name": "width 0 accepted" }
+      ]
+    },
+    {
+      "id": "the pen change keeps the wrap, width 0 turns it off",
+      "command": "GetDetailsOfElements",
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${t2}" } },
+          { "elementId": { "guid": "${t0}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.style.nonBreaking", "eq": false, "name": "word wrap still on after a pen change" },
+        { "path": "detailsOfElements[0].details.style.boxWidth", "approx": 50.0, "tol": 0.01, "name": "wrap width kept through the rebuild" },
+        { "path": "detailsOfElements[0].details.runs", "len": 2, "name": "pen change keeps both runs" },
+        { "path": "detailsOfElements[0].details.runs[0].bold", "eq": true, "name": "first run still bold after the pen change" },
+        { "path": "detailsOfElements[1].details.style.nonBreaking", "eq": true, "name": "width 0 turns word wrap off" },
+        { "path": "detailsOfElements[1].details.text", "eq": "A long line of text that does not fit into a narrow text box", "name": "width 0 keeps the content" }
+      ]
+    }
+  ]
+}

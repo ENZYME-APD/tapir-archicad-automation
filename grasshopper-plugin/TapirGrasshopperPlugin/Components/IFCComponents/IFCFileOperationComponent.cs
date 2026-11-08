@@ -47,7 +47,24 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                 "VisibleElementsOnCurrentStory or SelectedElementsOnly. Only " +
                 "valid together with TranslatorName. Optional.");
 
-            SetOptionality(new[] { 3, 4 });
+            // No default value: without a StoryIndex the merge keeps
+            // using the active story.
+            inManager.AddIntegerParameter(
+                "StoryIndex",
+                "StoryIndex",
+                ("The story the first storey of the IFC file is placed on; " +
+                 "see GetStories. Only valid with the merge method. The " +
+                 "active story and window are restored afterwards. Optional.")
+                .WithTypeName("integerItem"),
+                GH_ParamAccess.item);
+
+            InBoolean(
+                "Overwrite",
+                "Only for the save method: false refuses to save when a file already exists at " +
+                "IfcFilePath, and writes nothing. Default is true.",
+                true);
+
+            SetOptionality(new[] { 3, 4, 5, 6 });
         }
 
         protected override void Solve(
@@ -83,6 +100,14 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                 4,
                 out string elementsToExport);
 
+            int? storyIndex = null;
+            if (da.TryGet(
+                    5,
+                    out int storyIndexValue))
+            {
+                storyIndex = storyIndexValue;
+            }
+
             var input = new IFCFileOperationParameters
             {
                 Method = method,
@@ -93,7 +118,9 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                     : translatorName,
                 ElementsToExport = string.IsNullOrEmpty(elementsToExport)
                     ? null
-                    : elementsToExport
+                    : elementsToExport,
+                StoryIndex = storyIndex,
+                Overwrite = da.GetOptional(6, true) ? (bool?)null : false
             };
 
             SetCadValues(

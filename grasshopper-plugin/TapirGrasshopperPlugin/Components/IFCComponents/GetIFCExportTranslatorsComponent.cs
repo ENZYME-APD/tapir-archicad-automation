@@ -13,9 +13,9 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
         public GetIFCExportTranslatorsComponent()
             : base(
                 "GetIFCExportTranslators",
-                "Get the IFC export translators of the project, the preview " +
-                "translator first. A translator name can be wired into the " +
-                "TranslatorName input of IFCFileOperation.",
+                "Get the IFC export translators of the project, in the order " +
+                "of Archicad's translator list. A translator name can be " +
+                "wired into the TranslatorName input of IFCFileOperation.",
                 GroupNames.IFC)
         {
         }
@@ -24,12 +24,16 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
         {
             OutTexts(
                 "TranslatorNames",
-                "Names of the IFC export translators of the project, the " +
-                "preview translator first.");
+                "Names of the IFC export translators of the project, in the " +
+                "order of Archicad's translator list.");
 
             OutText(
                 "PreviewTranslatorName",
-                "Name of the preview translator.");
+                "Name of the first translator of Archicad's list, which the " +
+                "Archicad API documents as the preview translator. No API " +
+                "identifies the preview translator otherwise, and in some " +
+                "projects the IFC Translators dialog shows another one as " +
+                "preview.");
         }
 
         protected override void Solve(
