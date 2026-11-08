@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 11:07 UTC",
+ "generatedAt": "2026-11-08 11:22 UTC",
  "versions": [
   25,
   26,
@@ -13,7 +13,8 @@
   "done": 1908,
   "skipped": 29,
   "merged": 362,
-  "claimed": 11
+  "claimed": 1,
+  "in progress": 10
  },
  "items": [
   {
@@ -18606,7 +18607,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2346,
+     "title": "GetArcFromUser: optional snapFilter and constraint inputs"
+    }
+   ],
    "issues": []
   },
   {
@@ -30517,7 +30523,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2347,
+     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
+    }
+   ],
    "issues": []
   },
   {
@@ -52720,7 +52731,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2347,
+     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
+    }
+   ],
    "issues": []
   },
   {
@@ -52735,9 +52751,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2347,
+     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
+    }
+   ],
    "issues": [
     {
      "number": 2345,
@@ -52757,9 +52778,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2347,
+     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
+    }
+   ],
    "issues": [
     {
      "number": 2345,
@@ -52779,9 +52805,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2347,
+     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
+    }
+   ],
    "issues": [
     {
      "number": 2345,
@@ -52801,9 +52832,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2347,
+     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
+    }
+   ],
    "issues": [
     {
      "number": 2345,
@@ -52823,9 +52859,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2347,
+     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
+    }
+   ],
    "issues": [
     {
      "number": 2345,
@@ -52845,9 +52886,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2347,
+     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
+    }
+   ],
    "issues": [
     {
      "number": 2345,
@@ -52867,9 +52913,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2347,
+     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
+    }
+   ],
    "issues": [
     {
      "number": 2345,
@@ -52906,9 +52957,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2347,
+     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
+    }
+   ],
    "issues": [
     {
      "number": 2345,
@@ -52945,9 +53001,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2347,
+     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
+    }
+   ],
    "issues": [
     {
      "number": 2345,
@@ -53003,7 +53064,12 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2347,
+     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
+    }
+   ],
    "issues": []
   },
   {
@@ -53035,9 +53101,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2347,
+     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
+    }
+   ],
    "issues": [
     {
      "number": 2345,
