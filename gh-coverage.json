@@ -1,16 +1,14 @@
 {
- "generatedAt": "2026-11-08 05:50 UTC",
+ "generatedAt": "2026-11-08 06:58 UTC",
  "counts": {
   "done": 568,
-  "merged": 195,
+  "merged": 196,
   "open": 7,
-  "in progress": 1,
   "claimed": 1,
   "not applicable": 1
  },
  "parameters": {
-  "all": 722,
-  "partial": 4,
+  "all": 727,
   "json": 37
  },
  "items": [
@@ -182,14 +180,14 @@
      "path": "Components/GeneralComponents/GetPointFromUserComponent.cs"
     }
    ],
-   "parameters": "partial",
-   "parameterCount": 2,
+   "parameters": "all",
+   "parameterCount": 3,
    "coveredParameters": [
-    "prompt"
-   ],
-   "missingParameters": [
+    "constraint",
+    "prompt",
     "snapFilter"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": [
     {
@@ -257,15 +255,15 @@
      "path": "Components/GeneralComponents/GetElementFromUserComponent.cs"
     }
    ],
-   "parameters": "partial",
-   "parameterCount": 3,
+   "parameters": "all",
+   "parameterCount": 4,
    "coveredParameters": [
+    "constraint",
     "elementTypes",
-    "prompt"
-   ],
-   "missingParameters": [
+    "prompt",
     "snapFilter"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -358,16 +356,16 @@
      "path": "Components/GeneralComponents/GetLineFromUserComponent.cs"
     }
    ],
-   "parameters": "partial",
-   "parameterCount": 4,
+   "parameters": "all",
+   "parameterCount": 5,
    "coveredParameters": [
+    "constraint",
     "endPrompt",
     "showRubberLineFeedback",
+    "snapFilter",
     "startPrompt"
    ],
-   "missingParameters": [
-    "snapFilter"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": [
     {
@@ -381,19 +379,24 @@
    "group": "Application Commands",
    "version": "1.8.1",
    "brief": "Asks the designer to draw an arc in the current window - its center, its start point (which sets the radius) and its end point - with a rubber-band circle shown while drawing, and returns its center, radius, start and end angles, the angle it turns through, its direction and its start and end points. Archicad waits for the clicks or for Escape, and every other JSON command queues behind this one until then; cancelling returns cancelled.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 4,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2295,
-     "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
+     "name": "GetArcFromUserComponent",
+     "path": "Components/GeneralComponents/GetArcFromUserComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "centerPrompt",
+    "endPrompt",
+    "showRubberArcFeedback",
+    "startPrompt"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2268,
@@ -414,16 +417,16 @@
      "path": "Components/GeneralComponents/GetPolygonFromUserComponent.cs"
     }
    ],
-   "parameters": "partial",
-   "parameterCount": 4,
+   "parameters": "all",
+   "parameterCount": 5,
    "coveredParameters": [
+    "constraint",
     "method",
     "prompt",
+    "snapFilter",
     "startPrompt"
    ],
-   "missingParameters": [
-    "snapFilter"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": [
     {
