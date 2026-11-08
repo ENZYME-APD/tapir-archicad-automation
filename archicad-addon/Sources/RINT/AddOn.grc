@@ -193,6 +193,10 @@
 /* [ 46] */ "Tapir: %T %T was installed in %T"
 /* [ 47] */ "Tapir: %T was removed"
 /* [ 48] */ "%T: %T"
+/* [ 49] */ "Installed"
+/* [ 50] */ "New"
+/* [ 51] */ "%T could not be updated."
+/* [ 52] */ "Tapir: %T was updated from %T to %T in %T"
 }
 
 'STR#' ID_UV_STRINGS "Tapir uv Strings" {
@@ -317,6 +321,8 @@
 /* [ 26] */ CheckBox                 640 444 290  18    LargePlain  "Enabled in the Tapir Palette"
 /* [ 27] */ Button                   830 466 100  24    LargePlain  "Install"
 /* [ 28] */ Button                   830 466 100  24    LargePlain  "Remove"
+/* [ 29] */ Button                   720 466 100  24    LargePlain  "Update"
+/* [ 30] */ Button                   510 500 120  24    LargePlain  "Update all"
 }
 
 'DLGH' ID_SCRIPT_MANAGER Tapir_Script_Manager {
@@ -348,6 +354,8 @@
 26   "Untick to keep the script installed but leave it out of the list of the Tapir Palette" EnabledCheckBox
 27   "Download the newest version, check it and install it" InstallButton
 28   "Delete the installed script" RemoveButton
+29   "Download the newest version made for this Archicad and Tapir, check it and replace the installed one" UpdateButton
+30   "Update every script listed" UpdateAllButton
 }
 
 'GDLG' ID_SCRIPTUI_PALETTE Palette | leftCaption | close | grow   0   0  600  450  "Tapir Script UI"  {

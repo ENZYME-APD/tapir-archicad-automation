@@ -5,6 +5,7 @@
 #include "VersionChecker.hpp"
 #include "ScriptRequirements.hpp"
 #include "Sha256.hpp"
+#include "TapirPalette.hpp"
 #include "HTTP/Client/ClientConnection.hpp"
 #include "HTTP/Client/Request.hpp"
 #include "HTTP/Client/Response.hpp"
@@ -427,6 +428,50 @@ static bool ImportsHelpers (const std::vector<char>& code)
     return false;
 }
 
+// Whether candidate is a newer version than installed, both written as N.N.N; false when either is not.
+static bool IsNewerVersion (const GS::UniString& candidate, const GS::UniString& installed)
+{
+    std::vector<std::uint32_t> candidateParts;
+    std::vector<std::uint32_t> installedParts;
+    if (!ScriptRequirements::ParseVersion (candidate.ToCStr (CC_UTF8).Get (), candidateParts) ||
+        !ScriptRequirements::ParseVersion (installed.ToCStr (CC_UTF8).Get (), installedParts))
+    {
+        return false;
+    }
+    return candidateParts > installedParts;
+}
+
+// Whether location is folder or anything inside it.
+static bool IsInFolder (const IO::Location& location, const IO::Location& folder)
+{
+    IO::Location current = location;
+    for (int depth = 0; depth < 256 && !current.IsEmpty (); ++depth) {
+        if (current == folder) {
+            return true;
+        }
+        if (current.DeleteLastLocalName () != NoError) {
+            break;
+        }
+    }
+    return false;
+}
+
+// The Tapir Palette's shortcut slots that point at a file in folder are set to newLocation, or cleared when it is
+// empty: on Update they follow the script to its new version's folder, on Remove they are cleared.
+static void ReplaceShortcutSlotsIn (const IO::Location& folder, const IO::Location& newLocation)
+{
+    if (!TapirPalette::HasInstance ()) {
+        return;
+    }
+    TapirPalette& palette = TapirPalette::Instance ();
+    for (short slot = 0; slot < TapirPalette::ScriptShortcutSlotCount; ++slot) {
+        const IO::Location assigned = palette.GetShortcutSlot (slot);
+        if (!assigned.IsEmpty () && IsInFolder (assigned, folder)) {
+            palette.SetShortcutSlot (slot, newLocation);
+        }
+    }
+}
+
 // Who is allowed once for all their scripts: the GitHub login when the listing has one, else the name.
 static GS::UniString AuthorKey (const ScriptManager::Script& script)
 {
@@ -466,6 +511,8 @@ ScriptManager::ScriptManager ()
     , enabledCheckBox (GetReference (), ID_SCRIPT_MANAGER_ENABLED)
     , installButton (GetReference (), ID_SCRIPT_MANAGER_INSTALL)
     , removeButton (GetReference (), ID_SCRIPT_MANAGER_REMOVE)
+    , updateButton (GetReference (), ID_SCRIPT_MANAGER_UPDATE)
+    , updateAllButton (GetReference (), ID_SCRIPT_MANAGER_UPDATE_ALL)
 {
     SetGrowType (DG::Dialog::HVGrow);
     SetMinClientSize (GetOriginalClientWidth (), GetOriginalClientHeight ());
@@ -497,6 +544,8 @@ ScriptManager::ScriptManager ()
     enabledCheckBox.Attach (*this);
     installButton.Attach (*this);
     removeButton.Attach (*this);
+    updateButton.Attach (*this);
+    updateAllButton.Attach (*this);
     searchEdit.Attach (*this);
     availableTab.Attach (*this);
     installedTab.Attach (*this);
@@ -528,6 +577,8 @@ ScriptManager::~ScriptManager ()
     enabledCheckBox.Detach (*this);
     installButton.Detach (*this);
     removeButton.Detach (*this);
+    updateButton.Detach (*this);
+    updateAllButton.Detach (*this);
     EndEventProcessing ();
 }
 
@@ -666,6 +717,36 @@ const MarketplaceInstalls::InstalledScript* ScriptManager::GetInstalled (const S
     return installs.Find (script.slug);
 }
 
+const ScriptManager::ScriptVersion* ScriptManager::GetUpdate (const Script& script) const
+{
+    const MarketplaceInstalls::InstalledScript* installed = GetInstalled (script);
+    if (installed == nullptr || !script.inCatalogue) {
+        return nullptr;
+    }
+    // The catalogue lists the versions newest first, so the ones before the installed version are newer. When the
+    // catalogue no longer lists the installed version, the version numbers are compared.
+    bool installedListed = false;
+    for (const ScriptVersion& version : script.versions) {
+        if (version.version == installed->version) {
+            installedListed = true;
+            break;
+        }
+    }
+    for (const ScriptVersion& version : script.versions) {
+        if (version.version == installed->version) {
+            break;
+        }
+        if (!installedListed && !IsNewerVersion (version.version, installed->version)) {
+            continue;
+        }
+        GS::UniString reason;
+        if (!version.url.IsEmpty () && !version.sha256.IsEmpty () && FitsThisArchicad (version, reason)) {
+            return &version;
+        }
+    }
+    return nullptr;
+}
+
 ScriptManager::Tab ScriptManager::GetCurrentTab () const
 {
     if (installedTab.IsSelected ()) {
@@ -688,18 +769,22 @@ GS::UniString ScriptManager::GetSelectedCategory () const
 
 bool ScriptManager::FitsThisArchicad (const Script& script, GS::UniString& reason) const
 {
+    return FitsThisArchicad (script.versions.front (), reason);
+}
+
+bool ScriptManager::FitsThisArchicad (const ScriptVersion& version, GS::UniString& reason) const
+{
     reason = GS::EmptyUniString;
-    const ScriptVersion& newest = script.versions.front ();
-    if (ScriptRequirements::CheckMinTapirVersion (newest.minTapirVersion.ToCStr (CC_UTF8).Get (), ADDON_VERSION) ==
+    if (ScriptRequirements::CheckMinTapirVersion (version.minTapirVersion.ToCStr (CC_UTF8).Get (), ADDON_VERSION) ==
         ScriptRequirements::MinTapirVersionResult::TooOld)
     {
-        reason = GS::UniString::Printf (PaletteText (ID_PALETTE_STRINGS_NEEDS_TAPIR_NOT_MET), newest.minTapirVersion.ToPrintf (), ADDON_VERSION);
+        reason = GS::UniString::Printf (PaletteText (ID_PALETTE_STRINGS_NEEDS_TAPIR_NOT_MET), version.minTapirVersion.ToPrintf (), ADDON_VERSION);
         return false;
     }
     const int archicadVersion = static_cast<int> (VersionChecker::ArchicadMainVersion ());
-    if (!ScriptRequirements::IsArchicadVersionListed (newest.archicadVersions, archicadVersion)) {
+    if (!ScriptRequirements::IsArchicadVersionListed (version.archicadVersions, archicadVersion)) {
         reason = GS::UniString::Printf (PaletteText (ID_PALETTE_STRINGS_TESTED_ON_AC_NOT_MET),
-            JoinArchicadVersions (newest.archicadVersions).ToPrintf (), archicadVersion);
+            JoinArchicadVersions (version.archicadVersions).ToPrintf (), archicadVersion);
         return false;
     }
     return true;
@@ -727,11 +812,6 @@ std::vector<size_t> ScriptManager::GetScriptsOfTabAndSearch () const
 {
     std::vector<size_t> result;
     const Tab tab = GetCurrentTab ();
-    // Updates lists the installed scripts with a newer fitting version, which come with part 3 of #2408.
-    if (tab == Tab::Updates) {
-        return result;
-    }
-
     const GS::UniString search = ToLowerCased (searchEdit.GetText ());
     const bool onlyFitting = fitsCheckBox.IsChecked ();
     for (size_t i = 0; i < scripts.size (); ++i) {
@@ -740,6 +820,11 @@ std::vector<size_t> ScriptManager::GetScriptsOfTabAndSearch () const
         }
         if (tab == Tab::Installed) {
             if (GetInstalled (scripts[i]) == nullptr) {
+                continue;
+            }
+        } else if (tab == Tab::Updates) {
+            // The installed scripts with a newer fitting version.
+            if (GetUpdate (scripts[i]) == nullptr) {
                 continue;
             }
         } else {
@@ -764,6 +849,7 @@ void ScriptManager::RefreshTabTexts ()
 {
     int availableCount = 0;
     int installedCount = 0;
+    int updatesCount = 0;
     const GS::UniString search = ToLowerCased (searchEdit.GetText ());
     const bool onlyFitting = fitsCheckBox.IsChecked ();
     for (const Script& script : scripts) {
@@ -777,10 +863,13 @@ void ScriptManager::RefreshTabTexts ()
         if (GetInstalled (script) != nullptr) {
             ++installedCount;
         }
+        if (GetUpdate (script) != nullptr) {
+            ++updatesCount;
+        }
     }
     availableTab.SetText (GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_AVAILABLE_TAB), availableCount));
     installedTab.SetText (GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_INSTALLED_TAB), installedCount));
-    updatesTab.SetText (GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_UPDATES_TAB), 0));
+    updatesTab.SetText (GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_UPDATES_TAB), updatesCount));
     fitsCheckBox.SetVisibility (GetCurrentTab () == Tab::Available);
 }
 
@@ -804,19 +893,22 @@ void ScriptManager::SetupScriptListColumns ()
     scriptList.SetTabFieldCount (ScriptTabCount);
     scriptList.SetHeaderSynchronState (false);
     scriptList.SetHeaderItemCount (ScriptTabCount);
-    scriptList.SetHeaderItemText (ScriptNameTab, ManagerText (ID_SCRIPT_MANAGER_STRINGS_NAME_COLUMN));
-    scriptList.SetHeaderItemText (ScriptSummaryTab, ManagerText (ID_SCRIPT_MANAGER_STRINGS_SUMMARY_COLUMN));
-    scriptList.SetHeaderItemText (ScriptVersionTab, ManagerText (ID_SCRIPT_MANAGER_STRINGS_VERSION_COLUMN));
     LayoutScriptListColumns ();
 }
 
-// The summary column takes what the name and version columns leave of the list's width.
+// Available and Installed: Name, Summary and Version, the summary taking what the others leave of the list's width.
+// Updates: Name, Installed and New, the name taking the rest.
 void ScriptManager::LayoutScriptListColumns ()
 {
+    const bool updates = GetCurrentTab () == Tab::Updates;
+    scriptList.SetHeaderItemText (ScriptNameTab, ManagerText (ID_SCRIPT_MANAGER_STRINGS_NAME_COLUMN));
+    scriptList.SetHeaderItemText (ScriptSummaryTab, ManagerText (updates ? ID_SCRIPT_MANAGER_STRINGS_INSTALLED_COLUMN : ID_SCRIPT_MANAGER_STRINGS_SUMMARY_COLUMN));
+    scriptList.SetHeaderItemText (ScriptVersionTab, ManagerText (updates ? ID_SCRIPT_MANAGER_STRINGS_NEW_COLUMN : ID_SCRIPT_MANAGER_STRINGS_VERSION_COLUMN));
+
     const short width = scriptList.GetItemWidth ();
-    constexpr short nameWidth = 140;
     constexpr short versionWidth = 58;
     const short versionStart = static_cast<short> (width - versionWidth);
+    const short nameWidth = updates ? static_cast<short> (versionStart - versionWidth) : static_cast<short> (140);
     scriptList.SetTabFieldProperties (ScriptNameTab, 0, nameWidth, DG::ListBox::Left, DG::ListBox::EndTruncate, false);
     scriptList.SetTabFieldProperties (ScriptSummaryTab, nameWidth, versionStart, DG::ListBox::Left, DG::ListBox::EndTruncate, false);
     scriptList.SetTabFieldProperties (ScriptVersionTab, versionStart, width, DG::ListBox::Left, DG::ListBox::EndTruncate, false);
@@ -829,7 +921,9 @@ void ScriptManager::RefreshScriptList ()
 {
     // The selected script stays selected when it is still listed (selectedSlug, as the rows may point into a list
     // that was replaced since).
-    const bool listsInstalled = GetCurrentTab () != Tab::Available;
+    const Tab currentTab = GetCurrentTab ();
+    const bool listsInstalled = currentTab != Tab::Available;
+    LayoutScriptListColumns ();   // the columns of Updates differ
     const GS::UniString category = GetSelectedCategory ();
     shownScripts.clear ();
     for (size_t index : GetScriptsOfTabAndSearch ()) {
@@ -853,10 +947,18 @@ void ScriptManager::RefreshScriptList ()
         const MarketplaceInstalls::InstalledScript* installed = GetInstalled (script);
         const bool fits = listsInstalled || FitsThisArchicad (script, reason);
         scriptList.SetTabItemText (item, ScriptNameTab, script.name);
-        // A script that does not fit is only listed with Fits this Archicad off: greyed out, with the reason.
-        scriptList.SetTabItemText (item, ScriptSummaryTab, fits ? script.summary : reason + " - " + script.summary);
-        scriptList.SetTabItemText (item, ScriptVersionTab,
-            (listsInstalled && installed != nullptr) ? installed->version : script.versions.front ().version);
+        const ScriptVersion* update = (currentTab == Tab::Updates) ? GetUpdate (script) : nullptr;
+        if (update != nullptr && installed != nullptr) {
+            // Updates: the installed version, and the new one in bold.
+            scriptList.SetTabItemText (item, ScriptSummaryTab, installed->version);
+            scriptList.SetTabItemText (item, ScriptVersionTab, update->version);
+            scriptList.SetTabItemFontStyle (item, ScriptVersionTab, DG::Font::Bold);
+        } else {
+            // A script that does not fit is only listed with Fits this Archicad off: greyed out, with the reason.
+            scriptList.SetTabItemText (item, ScriptSummaryTab, fits ? script.summary : reason + " - " + script.summary);
+            scriptList.SetTabItemText (item, ScriptVersionTab,
+                (listsInstalled && installed != nullptr) ? installed->version : script.versions.front ().version);
+        }
         if (!fits) {
             for (short tab = 1; tab <= ScriptTabCount; ++tab) {
                 scriptList.SetTabItemColor (item, tab, grey);
@@ -893,11 +995,14 @@ void ScriptManager::RefreshDetails ()
     DG::Item* const detailItems[] = {
         &nameText, &bylineText, &summaryText, &changesLabel, &changesValue, &archicadLabel, &archicadValue,
         &tapirLabel, &tapirValue, &licenceLabel, &licenceValue, &whatIsNewTitle, &changelogText,
-        &enabledCheckBox, &installButton, &removeButton
+        &enabledCheckBox, &installButton, &removeButton, &updateButton
     };
     for (DG::Item* item : detailItems) {
         item->SetVisibility (script != nullptr);
     }
+    // Update all, under the list of the Updates tab.
+    updateAllButton.SetVisibility (GetCurrentTab () == Tab::Updates);
+    updateAllButton.SetStatus (!shownScripts.empty ());
     if (script == nullptr) {
         return;
     }
@@ -919,8 +1024,8 @@ void ScriptManager::RefreshDetails ()
     }
     summaryText.SetText (script->summary);
 
-    // Enabled, for an installed script; Install on Available, for a script not installed yet (an installed one
-    // gets Update in part 3 of #2408); Remove on Installed and Updates.
+    // Enabled, for an installed script; Install on Available, for a script not installed yet; Remove on Installed
+    // and Updates, with Update beside it when a newer fitting version exists.
     enabledCheckBox.SetVisibility (installed != nullptr);
     if (installed != nullptr) {
         enabledCheckBox.SetState (installed->enabled);
@@ -928,6 +1033,8 @@ void ScriptManager::RefreshDetails ()
     installButton.SetVisibility (tab == Tab::Available);
     installButton.SetStatus (installed == nullptr && script->inCatalogue && !newest.url.IsEmpty () && !newest.sha256.IsEmpty ());
     removeButton.SetVisibility (tab != Tab::Available && installed != nullptr);
+    const ScriptVersion* update = GetUpdate (*script);
+    updateButton.SetVisibility (tab != Tab::Available && update != nullptr);
 
     // What it changes: the badge of the entry script's header; the row is left out when the header has none.
     const GS::UniString badge = GetChangesBadge (script->changes);
@@ -967,25 +1074,33 @@ void ScriptManager::RefreshDetails ()
     changelogText.SetText (changelog);
 }
 
-void ScriptManager::ShowInstallError (const Script& script, const GS::UniString& reason) const
+void ScriptManager::ShowInstallError (const Script& script, bool isUpdate, const GS::UniString& reason) const
 {
     DGAlert (DG_ERROR, ManagerText (ID_SCRIPT_MANAGER_STRINGS_ALERT_TITLE),
-        GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_INSTALL_FAILED), script.name.ToPrintf ()),
+        GS::UniString::Printf (ManagerText (isUpdate ? ID_SCRIPT_MANAGER_STRINGS_UPDATE_FAILED : ID_SCRIPT_MANAGER_STRINGS_INSTALL_FAILED), script.name.ToPrintf ()),
         reason, ManagerText (ID_SCRIPT_MANAGER_STRINGS_OK));
 }
 
-bool ScriptManager::Install (const Script& script)
+bool ScriptManager::Install (const Script& script, const ScriptVersion& version)
 {
-    const ScriptVersion& version = script.versions.front ();
+    // An update when another version of the script is installed: that version's folder is removed afterwards.
+    GS::UniString oldVersion;
+    if (const MarketplaceInstalls::InstalledScript* current = GetInstalled (script)) {
+        if (current->version != version.version) {
+            oldVersion = current->version;
+        }
+    }
+    const bool isUpdate = !oldVersion.IsEmpty ();
+
     if (version.url.IsEmpty () || version.sha256.IsEmpty ()) {
-        ShowInstallError (script, GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_NO_DOWNLOAD), version.version.ToPrintf ()));
+        ShowInstallError (script, isUpdate, GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_NO_DOWNLOAD), version.version.ToPrintf ()));
         return false;
     }
     // They become the path Documents/Tapir/marketplace/<slug>/<version>/<entry>.
     const GS::UniString* const names[] = { &script.slug, &version.version, &script.entry };
     for (const GS::UniString* name : names) {
         if (!MarketplaceInstalls::IsSafeName (*name)) {
-            ShowInstallError (script, GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_UNSAFE_NAME), name->ToPrintf ()));
+            ShowInstallError (script, isUpdate, GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_UNSAFE_NAME), name->ToPrintf ()));
             return false;
         }
     }
@@ -1008,13 +1123,13 @@ bool ScriptManager::Install (const Script& script)
     std::vector<char> code;
     GS::UniString error;
     if (!DownloadBytes (version.url, code, error)) {
-        ShowInstallError (script, GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_DOWNLOAD_FAILED), script.entry.ToPrintf (), error.ToPrintf ()));
+        ShowInstallError (script, isUpdate, GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_DOWNLOAD_FAILED), script.entry.ToPrintf (), error.ToPrintf ()));
         return false;
     }
     const GS::UniString actualHash (Sha256::HexDigest (code.data (), code.size ()).c_str ());
     const GS::UniString expectedHash = ToLowerCased (version.sha256);
     if (actualHash != expectedHash) {
-        ShowInstallError (script, GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_HASH_MISMATCH),
+        ShowInstallError (script, isUpdate, GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_HASH_MISMATCH),
             script.entry.ToPrintf (), actualHash.ToPrintf (), expectedHash.ToPrintf ()));
         return false;
     }
@@ -1026,7 +1141,7 @@ bool ScriptManager::Install (const Script& script)
             const GS::UniString relativePath = GS::UniString (helper[0]) + "/" + helper[1];
             std::vector<char> content;
             if (!DownloadBytes (GS::UniString (HelpersBaseUrl) + relativePath, content, error)) {
-                ShowInstallError (script, GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_DOWNLOAD_FAILED), relativePath.ToPrintf (), error.ToPrintf ()));
+                ShowInstallError (script, isUpdate, GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_DOWNLOAD_FAILED), relativePath.ToPrintf (), error.ToPrintf ()));
                 return false;
             }
             IO::RelativeLocation relativeLocation;
@@ -1067,13 +1182,17 @@ bool ScriptManager::Install (const Script& script)
     }
     if (!written) {
         IO::fileSystem.Delete (versionFolder);
-        ShowInstallError (script, GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_WRITE_FAILED), LocationText (failedFile).ToPrintf ()));
+        ShowInstallError (script, isUpdate, GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_WRITE_FAILED), LocationText (failedFile).ToPrintf ()));
         return false;
     }
 
     // installed.json, read again first so that nothing written since the window loaded it is lost.
     installs = MarketplaceInstalls::Load ();
     MarketplaceInstalls::InstalledScript* existing = installs.Find (script.slug);
+    MarketplaceInstalls::InstalledScript previous;
+    if (existing != nullptr) {
+        previous = *existing;
+    }
     MarketplaceInstalls::InstalledScript installed;
     installed.slug = script.slug;
     installed.name = script.name;
@@ -1092,15 +1211,49 @@ bool ScriptManager::Install (const Script& script)
     if (!MarketplaceInstalls::Save (installs)) {
         IO::Location installedFile = MarketplaceInstalls::GetMarketplaceFolder ();
         installedFile.AppendToLocal (IO::Name ("installed.json"));
-        ShowInstallError (script, GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_WRITE_FAILED), LocationText (installedFile).ToPrintf ()));
+        ShowInstallError (script, isUpdate, GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_WRITE_FAILED), LocationText (installedFile).ToPrintf ()));
         IO::fileSystem.Delete (versionFolder);
         LoadInstalls ();
         return false;
     }
 
+    // An update: the old version's folder goes only now that the new one is written and listed, and a shortcut slot
+    // that pointed at the old version points at the new one (Enabled was kept above).
+    if (!previous.version.IsEmpty () && previous.version != version.version) {
+        const IO::Location oldVersionFolder = MarketplaceInstalls::GetVersionFolder (script.slug, previous.version);
+        IO::Location newEntryLocation = versionFolder;
+        newEntryLocation.AppendToLocal (IO::Name (script.entry));
+        ReplaceShortcutSlotsIn (oldVersionFolder, newEntryLocation);
+        IO::fileSystem.Delete (oldVersionFolder);
+        ACAPI_WriteReport (ManagerText (ID_SCRIPT_MANAGER_STRINGS_UPDATED_REPORT), false,
+            script.name.ToPrintf (), previous.version.ToPrintf (), version.version.ToPrintf (), LocationText (versionFolder).ToPrintf ());
+        return true;
+    }
+
     ACAPI_WriteReport (ManagerText (ID_SCRIPT_MANAGER_STRINGS_INSTALLED_REPORT), false,
         script.name.ToPrintf (), version.version.ToPrintf (), LocationText (versionFolder).ToPrintf ());
     return true;
+}
+
+bool ScriptManager::UpdateAll ()
+{
+    // What the Updates tab lists, with its search and category. Copies: each update re-reads installed.json and
+    // rebuilds the list the rows point into.
+    std::vector<std::pair<Script, ScriptVersion>> updates;
+    for (size_t index : shownScripts) {
+        const ScriptVersion* update = index < scripts.size () ? GetUpdate (scripts[index]) : nullptr;
+        if (update != nullptr) {
+            updates.emplace_back (scripts[index], *update);
+        }
+    }
+    bool anyUpdated = false;
+    for (const auto& update : updates) {
+        if (Install (update.first, update.second)) {
+            anyUpdated = true;
+            LoadInstalls ();
+        }
+    }
+    return anyUpdated;
 }
 
 bool ScriptManager::Remove (const Script& script)
@@ -1135,6 +1288,8 @@ bool ScriptManager::Remove (const Script& script)
         LoadInstalls ();
         return false;
     }
+    // A shortcut slot pointing at the script would run nothing any more.
+    ReplaceShortcutSlotsIn (scriptFolder, IO::Location ());
     IO::fileSystem.Delete (scriptFolder);
     ACAPI_WriteReport (ManagerText (ID_SCRIPT_MANAGER_STRINGS_REMOVED_REPORT), false, script.name.ToPrintf ());
     return true;
@@ -1172,6 +1327,8 @@ void ScriptManager::PanelResized (const DG::PanelResizeEvent& ev)
     enabledCheckBox.Move (h, v);
     installButton.Move (h, v);
     removeButton.Move (h, v);
+    updateButton.Move (h, v);
+    updateAllButton.Move (h, v);   // right-aligned under the list, which follows the width
     EndMoveResizeItems ();
 
     LayoutScriptListColumns ();
@@ -1188,14 +1345,30 @@ void ScriptManager::ButtonClicked (const DG::ButtonClickEvent& ev)
         OpenWebpage (ScriptsPageUrl);
     } else if (ev.GetSource () == &closeButton) {
         Hide ();
-    } else if (ev.GetSource () == &installButton || ev.GetSource () == &removeButton) {
+    } else if (ev.GetSource () == &updateAllButton) {
+        if (UpdateAll ()) {
+            LoadInstalls ();
+        }
+        RefreshAll ();
+    } else if (ev.GetSource () == &installButton || ev.GetSource () == &removeButton || ev.GetSource () == &updateButton) {
         const Script* selected = GetSelectedScript ();
         if (selected == nullptr) {
             return;
         }
-        // A copy: installing or removing rebuilds the list the selection points into.
+        // Copies: installing, updating or removing rebuilds the list the selection points into.
         const Script script = *selected;
-        const bool changed = (ev.GetSource () == &installButton) ? Install (script) : Remove (script);
+        bool changed = false;
+        if (ev.GetSource () == &removeButton) {
+            changed = Remove (script);
+        } else if (ev.GetSource () == &installButton) {
+            changed = Install (script, script.versions.front ());
+        } else {
+            const ScriptVersion* update = GetUpdate (script);
+            if (update != nullptr) {
+                const ScriptVersion version = *update;
+                changed = Install (script, version);
+            }
+        }
         if (changed) {
             LoadInstalls ();
         }

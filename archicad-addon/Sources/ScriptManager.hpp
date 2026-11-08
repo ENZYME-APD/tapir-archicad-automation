@@ -18,9 +18,13 @@
 // before anything is written, asks once per author whether their scripts may run, and writes it to
 // Documents/Tapir/marketplace/<slug>/<version>/ (see MarketplaceInstalls.hpp). Remove deletes that folder.
 //
-// Parts 1 and 2 of the plan in #2408 are done: the window, the catalogue, search, categories, the Available and
-// Installed tabs, the details, Install, Remove and Enabled. Updates (part 3), the palette's Marketplace section
-// (part 4) and the README and screenshots (part 5) come next, so the Updates tab is empty for now.
+// Update installs the newest fitting version newer than the installed one the same way, then removes the old
+// version's folder; Enabled is kept, and a Tapir Palette shortcut slot that pointed at the old version points at the
+// new one. Remove clears the slot.
+//
+// Parts 1 to 3 of the plan in #2408 are done: the window, the catalogue, search, categories, the three tabs, the
+// details, Install, Remove, Enabled, Update and Update all. The palette's Marketplace section (part 4) and the
+// README and screenshots (part 5) come next.
 class ScriptManager final : public DG::Palette,
     public DG::PanelObserver,
     public DG::ButtonItemObserver,
@@ -108,6 +112,8 @@ private:
     DG::CheckBox         enabledCheckBox;
     DG::Button           installButton;
     DG::Button           removeButton;
+    DG::Button           updateButton;
+    DG::Button           updateAllButton;
 
     std::vector<Script> scripts;            // the catalogue, in its order (by slug), then the installed scripts it lacks
     bool                hasCatalogue = false;
@@ -124,16 +130,24 @@ private:
     void MergeInstalledScripts ();
 
     const MarketplaceInstalls::InstalledScript* GetInstalled (const Script& script) const;
-    // Downloads, checks and writes the newest version of the script, after asking about its author; false when it
-    // was not installed (the reason was shown).
-    bool Install (const Script& script);
+    // The version an installed script can be updated to: the newest version newer than the installed one that fits
+    // this Archicad and Tapir and can be downloaded. nullptr when there is none.
+    const ScriptVersion* GetUpdate (const Script& script) const;
+    // Downloads, checks and writes the given version of the script, after asking about its author. When another
+    // version of it is installed (an update), that version's folder is removed afterwards, and Enabled and a
+    // shortcut slot pointing at it are kept. False when it was not installed (the reason was shown).
+    bool Install (const Script& script, const ScriptVersion& version);
     bool Remove (const Script& script);
-    void ShowInstallError (const Script& script, const GS::UniString& reason) const;
+    // Updates every installed script on the Updates tab; true when any was updated.
+    bool UpdateAll ();
+    void ShowInstallError (const Script& script, bool isUpdate, const GS::UniString& reason) const;
 
     Tab GetCurrentTab () const;
     GS::UniString GetSelectedCategory () const;   // empty: All categories
-    // Whether the script fits the running Archicad and Tapir; reason: why not, empty when it fits.
+    // Whether the script's newest version (or the given version) fits the running Archicad and Tapir; reason: why
+    // not, empty when it fits.
     bool FitsThisArchicad (const Script& script, GS::UniString& reason) const;
+    bool FitsThisArchicad (const ScriptVersion& version, GS::UniString& reason) const;
     bool MatchesSearch (const Script& script, const GS::UniString& lowerCasedSearch) const;
     // The scripts of the current tab and search, the Fits filter included, before the category filter.
     std::vector<size_t> GetScriptsOfTabAndSearch () const;
