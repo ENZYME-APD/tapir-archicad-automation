@@ -111,9 +111,12 @@ def distance_to_rings(point, rings) -> float:
 
 def grid_frame(outline: list[tuple[float, float]]) -> tuple[tuple[float, float], tuple[float, float]]:
     """ The origin and the direction of the grid: the start and the direction of the zone's longest
-    edge, so the same zone moved or rotated gets the same cells. """
+    edge, so the same zone moved or rotated gets the same cells. Edges of the same length (within
+    rounding) count as equal and the first is taken, so a rectangle does not turn with the last bit. """
     count = len(outline)
-    best = max(range(count), key=lambda i: math.dist(outline[i], outline[(i + 1) % count]))
+    lengths = [math.dist(outline[i], outline[(i + 1) % count]) for i in range(count)]
+    longest = max(lengths)
+    best = next(i for i, length in enumerate(lengths) if length >= longest - 1e-9)
     a, b = outline[best], outline[(best + 1) % count]
     length = math.dist(a, b)
     if length < EPSILON:
