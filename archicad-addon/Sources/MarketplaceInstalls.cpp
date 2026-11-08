@@ -151,4 +151,22 @@ bool IsSafeName (const GS::UniString& text)
     return true;
 }
 
+// Touched on the main thread only, by the Script Manager and the Tapir Palette.
+static GS::Array<GS::UniString> updatableSlugs;
+
+void SetUpdatableSlugs (const GS::Array<GS::UniString>& slugs)
+{
+    updatableSlugs = slugs;
+}
+
+bool HasUpdate (const GS::UniString& slug)
+{
+    for (const GS::UniString& updatable : updatableSlugs) {
+        if (updatable == slug) {
+            return true;
+        }
+    }
+    return false;
+}
+
 }

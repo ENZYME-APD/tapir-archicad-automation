@@ -53,4 +53,10 @@ bool Save (const State& state);
 // be pointed anywhere, so a slug, a version or an entry is checked before it becomes a path.
 bool IsSafeName (const GS::UniString& text);
 
+// The installed scripts that have a newer version fitting this Archicad and Tapir, as the Script Manager found them
+// in the catalogue it fetched last (only in memory: nothing is known before the first fetch). The Tapir Palette
+// shows "(update available)" after their names.
+void SetUpdatableSlugs (const GS::Array<GS::UniString>& slugs);
+bool HasUpdate (const GS::UniString& slug);
+
 }

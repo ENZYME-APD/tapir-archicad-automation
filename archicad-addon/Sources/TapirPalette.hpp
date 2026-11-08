@@ -53,6 +53,11 @@ public:
     void SetShortcutLabel (short slotIndex, const GS::UniString& label);   // empty resets to the default text
     void OpenShortcutsDialog ();
 
+    // Lists the enabled scripts of Documents/Tapir/marketplace/installed.json again in the Marketplace section of the
+    // script list, keeping the selected script. The Script Manager calls it after a catalogue fetch, Install, Update,
+    // Remove and a change to Enabled (#2408).
+    void ReloadMarketplaceScripts ();
+
     static GSErrCode RegisterPaletteControlCallBack ();
 
     // Called from FreeData: kills every script that is still running, with the processes it started, and waits for
@@ -110,11 +115,14 @@ private:
     GS::UInt32 startedScriptCount = 0;   // numbers the TAPIR_SCRIPT_ID of each started script
     // The script list. scriptSelectionPopUp only shows it (RebuildScriptPopUp), in this order: the scripts the user
     // added, a separator when hasAddedScript, the scripts of the custom-scripts folder, a separator when
-    // hasCustomScript, the scripts of the local folders and repositories, a separator and "Reload scripts...".
+    // hasCustomScript, the scripts of the local folders and repositories, then, when marketplaceScripts is not empty,
+    // a separator, the disabled "Marketplace" heading and the marketplace scripts, and last a separator and
+    // "Reload scripts...".
     using ScriptList = GS::Array<GS::Ref<PopUpItemData>>;
     ScriptList addedScripts;    // added with the Add button, saved in the preferences; the newest first
     ScriptList customScripts;   // Documents/Tapir/custom-scripts
     ScriptList listedScripts;   // localFolders and repositories of the config
+    ScriptList marketplaceScripts;   // the enabled scripts installed with the Script Manager, by name (#2408)
     bool hasCustomScript = false;   // the custom-scripts section and its separator are shown
     bool hasAddedScript = false;    // the added section and its separator are shown
     UvManager uvManager;
@@ -139,7 +147,10 @@ private:
     void AddScriptsFromRepositories ();
     void AddScriptsFromLocalFolders ();
     void AddScriptsFromCustomScriptsFolder ();
+    void AddScriptsFromMarketplace ();   // fills marketplaceScripts from installed.json
     void LoadScriptsToPopUp ();
+    // An item that can be selected: not a separator, the "Marketplace" heading or "Reload scripts...".
+    bool IsScriptItem (short item) const;
     void RebuildScriptPopUp (short itemToSelect);   // fills scriptSelectionPopUp from the script list
     // Marks each running script in scriptSelectionPopUp; called when a script starts or ends and on each rebuild.
     void RefreshRunningMarks ();

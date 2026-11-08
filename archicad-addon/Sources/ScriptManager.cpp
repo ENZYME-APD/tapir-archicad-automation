@@ -670,6 +670,7 @@ void ScriptManager::LoadCatalogue ()
 
     LoadInstalls ();
     RefreshAll ();
+    NotifyPalette ();
 }
 
 void ScriptManager::LoadInstalls ()
@@ -745,6 +746,20 @@ const ScriptManager::ScriptVersion* ScriptManager::GetUpdate (const Script& scri
         }
     }
     return nullptr;
+}
+
+void ScriptManager::NotifyPalette () const
+{
+    GS::Array<GS::UniString> updatableSlugs;
+    for (const Script& script : scripts) {
+        if (GetUpdate (script) != nullptr) {
+            updatableSlugs.Push (script.slug);
+        }
+    }
+    MarketplaceInstalls::SetUpdatableSlugs (updatableSlugs);
+    if (TapirPalette::HasInstance ()) {
+        TapirPalette::Instance ().ReloadMarketplaceScripts ();
+    }
 }
 
 ScriptManager::Tab ScriptManager::GetCurrentTab () const
@@ -1348,6 +1363,7 @@ void ScriptManager::ButtonClicked (const DG::ButtonClickEvent& ev)
     } else if (ev.GetSource () == &updateAllButton) {
         if (UpdateAll ()) {
             LoadInstalls ();
+            NotifyPalette ();
         }
         RefreshAll ();
     } else if (ev.GetSource () == &installButton || ev.GetSource () == &removeButton || ev.GetSource () == &updateButton) {
@@ -1371,6 +1387,7 @@ void ScriptManager::ButtonClicked (const DG::ButtonClickEvent& ev)
         }
         if (changed) {
             LoadInstalls ();
+            NotifyPalette ();
         }
         RefreshAll ();
     }
@@ -1411,6 +1428,7 @@ void ScriptManager::CheckItemChanged (const DG::CheckItemChangeEvent& ev)
     }
     MergeInstalledScripts ();
     RefreshAll ();
+    NotifyPalette ();
 }
 
 void ScriptManager::RadioItemChanged (const DG::RadioItemChangeEvent&)

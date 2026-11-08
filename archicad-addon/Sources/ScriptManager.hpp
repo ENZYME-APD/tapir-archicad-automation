@@ -22,9 +22,12 @@
 // version's folder; Enabled is kept, and a Tapir Palette shortcut slot that pointed at the old version points at the
 // new one. Remove clears the slot.
 //
-// Parts 1 to 3 of the plan in #2408 are done: the window, the catalogue, search, categories, the three tabs, the
-// details, Install, Remove, Enabled, Update and Update all. The palette's Marketplace section (part 4) and the
-// README and screenshots (part 5) come next.
+// The enabled installed scripts are listed in the Tapir Palette's Marketplace section, with "(update available)" after
+// the name of one that has an update (NotifyPalette).
+//
+// Parts 1 to 4 of the plan in #2408 are done: the window, the catalogue, search, categories, the three tabs, the
+// details, Install, Remove, Enabled, Update, Update all and the palette's Marketplace section. The README and
+// screenshots (part 5) come next.
 class ScriptManager final : public DG::Palette,
     public DG::PanelObserver,
     public DG::ButtonItemObserver,
@@ -141,6 +144,9 @@ private:
     // Updates every installed script on the Updates tab; true when any was updated.
     bool UpdateAll ();
     void ShowInstallError (const Script& script, bool isUpdate, const GS::UniString& reason) const;
+    // Tells the Tapir Palette which installed scripts have an update and has it list the installed scripts again;
+    // called after a catalogue fetch, Install, Update, Remove and a change to Enabled.
+    void NotifyPalette () const;
 
     Tab GetCurrentTab () const;
     GS::UniString GetSelectedCategory () const;   // empty: All categories

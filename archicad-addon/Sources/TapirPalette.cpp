@@ -18,7 +18,9 @@
 #include "ScriptRequirements.hpp"
 #include "ScriptUIPalette.hpp"
 #include "ScriptManager.hpp"
+#include "MarketplaceInstalls.hpp"
 
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
@@ -69,6 +71,12 @@ static constexpr int RepositoryRequestTimeoutMs = 15 * 1000;
 static GS::UniString PaletteText (Int32 index)
 {
     return RSGetIndString (ID_PALETTE_STRINGS, index, ACAPI_GetOwnResModule ());
+}
+
+// The Marketplace section's texts are the Script Manager's, so ID_PALETTE_STRINGS stays as it is.
+static GS::UniString MarketplaceText (Int32 index)
+{
+    return RSGetIndString (ID_SCRIPT_MANAGER_STRINGS, index, ACAPI_GetOwnResModule ());
 }
 
 static GS::UniString UpdateText (Int32 index)
@@ -610,9 +618,9 @@ void TapirPalette::PanelOpened (const DG::PanelOpenEvent&)
     const short selectedItemBefore = scriptSelectionPopUp.GetSelectedItem ();
     auto itemToSelect = AddScriptsFromPreferences ();
     RebuildScriptPopUp (selectedItemBefore);
-    if (itemToSelect <= 0 || scriptSelectionPopUp.IsSeparator (itemToSelect) || scriptSelectionPopUp.GetItemCount () - 1 <= itemToSelect) {
+    if (!IsScriptItem (itemToSelect)) {
         itemToSelect = scriptSelectionPopUp.GetSelectedItem ();
-        if (scriptSelectionPopUp.IsSeparator (itemToSelect) || scriptSelectionPopUp.GetItemCount () - 1 <= itemToSelect) {
+        if (!IsScriptItem (itemToSelect)) {
             itemToSelect = DG::PopUp::TopItem;
         }
     }
@@ -697,7 +705,7 @@ bool TapirPalette::IsPopUpContainsFile (const IO::Location& fileLocation) const
 TapirPalette::ScriptList TapirPalette::GetAllScripts () const
 {
     ScriptList scripts;
-    for (const ScriptList* list : { &addedScripts, &customScripts, &listedScripts }) {
+    for (const ScriptList* list : { &addedScripts, &customScripts, &listedScripts, &marketplaceScripts }) {
         for (const GS::Ref<PopUpItemData>& popUpItemData : *list) {
             scripts.Push (popUpItemData);
         }
@@ -705,23 +713,37 @@ TapirPalette::ScriptList TapirPalette::GetAllScripts () const
     return scripts;
 }
 
-// The dropdown's sections, as RebuildScriptPopUp fills them: each list followed by its separator when shown.
+// The dropdown's sections, as RebuildScriptPopUp fills them: each list followed by its separator when shown, and the
+// marketplace scripts after their "Marketplace" heading.
 GS::Ref<TapirPalette::PopUpItemData> TapirPalette::GetScriptOfPopUpItem (short item) const
 {
-    const std::pair<const ScriptList*, bool> sections[] = {
-        { &addedScripts, hasAddedScript },
-        { &customScripts, hasCustomScript },
-        { &listedScripts, true }
+    struct Section {
+        const ScriptList* scripts;
+        Int32 itemsBefore;   // the heading
+        Int32 itemsAfter;    // the separator
+    };
+    const bool hasMarketplaceScript = !marketplaceScripts.IsEmpty ();
+    const Section sections[] = {
+        { &addedScripts, 0, hasAddedScript ? 1 : 0 },
+        { &customScripts, 0, hasCustomScript ? 1 : 0 },
+        { &listedScripts, 0, 1 },
+        { &marketplaceScripts, hasMarketplaceScript ? 1 : 0, hasMarketplaceScript ? 1 : 0 }
     };
     Int32 firstItem = DG::PopUp::TopItem;
-    for (const auto& section : sections) {
-        const Int32 size = static_cast<Int32> (section.first->GetSize ());
+    for (const Section& section : sections) {
+        firstItem += section.itemsBefore;
+        const Int32 size = static_cast<Int32> (section.scripts->GetSize ());
         if (item >= firstItem && item < firstItem + size) {
-            return (*section.first)[static_cast<UIndex> (item - firstItem)];
+            return (*section.scripts)[static_cast<UIndex> (item - firstItem)];
         }
-        firstItem += size + (section.second ? 1 : 0);
+        firstItem += size + section.itemsAfter;
     }
     return GS::Ref<PopUpItemData> ();
+}
+
+bool TapirPalette::IsScriptItem (short item) const
+{
+    return item >= DG::PopUp::TopItem && item <= scriptSelectionPopUp.GetItemCount () && GetScriptOfPopUpItem (item) != nullptr;
 }
 
 GS::Ref<TapirPalette::PopUpItemData> TapirPalette::GetSelectedScript () const
@@ -761,11 +783,22 @@ void TapirPalette::RebuildScriptPopUp (short itemToSelect)
     }
     appendScripts (listedScripts);
 
+    // DG::PopUp has no section headings, so the heading is a disabled item in bold.
+    if (!marketplaceScripts.IsEmpty ()) {
+        scriptSelectionPopUp.AppendSeparator ();
+        scriptSelectionPopUp.AppendItem ();
+        const short marketplaceHeadingItem = scriptSelectionPopUp.GetItemCount ();
+        scriptSelectionPopUp.SetItemText (marketplaceHeadingItem, MarketplaceText (ID_SCRIPT_MANAGER_STRINGS_PALETTE_SECTION));
+        scriptSelectionPopUp.SetItemFontStyle (marketplaceHeadingItem, DG::Font::Bold);
+        scriptSelectionPopUp.DisableItem (marketplaceHeadingItem);
+        appendScripts (marketplaceScripts);
+    }
+
     scriptSelectionPopUp.AppendSeparator ();
     scriptSelectionPopUp.AppendItem ();
     scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, PaletteText (ID_PALETTE_STRINGS_RELOAD_SCRIPTS));
 
-    if (itemToSelect <= 0 || scriptSelectionPopUp.IsSeparator (itemToSelect) || scriptSelectionPopUp.GetItemCount () - 1 <= itemToSelect) {
+    if (!IsScriptItem (itemToSelect)) {
         itemToSelect = DG::PopUp::TopItem;
     }
     scriptSelectionPopUp.SelectItem (itemToSelect);
@@ -2232,11 +2265,70 @@ void TapirPalette::AddScriptsFromCustomScriptsFolder ()
     });
 }
 
+// The enabled scripts of installed.json, by name; one whose entry file is missing is left out. Reads only local
+// files, so installed scripts are listed offline too. "(update available)" follows the name of one the Script
+// Manager found an update for in the catalogue it fetched last.
+void TapirPalette::AddScriptsFromMarketplace ()
+{
+    marketplaceScripts.Clear ();
+
+    MarketplaceInstalls::State state = MarketplaceInstalls::Load ();
+    std::vector<MarketplaceInstalls::InstalledScript> installed;
+    for (const MarketplaceInstalls::InstalledScript& script : state.scripts) {
+        if (script.enabled) {
+            installed.push_back (script);
+        }
+    }
+    std::stable_sort (installed.begin (), installed.end (),
+        [] (const MarketplaceInstalls::InstalledScript& a, const MarketplaceInstalls::InstalledScript& b) {
+            return a.name.IsLess (b.name, CaseInsensitive);
+        });
+
+    for (const MarketplaceInstalls::InstalledScript& script : installed) {
+        IO::Location entryLoc = MarketplaceInstalls::GetVersionFolder (script.slug, script.version);
+        entryLoc.AppendToLocal (IO::Name (script.entry));
+        GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (entryLoc);
+        if (!PrepareScript (*popUpItemData)) {
+            continue;
+        }
+        popUpItemData->baseDisplayText = script.name;
+        if (MarketplaceInstalls::HasUpdate (script.slug)) {
+            popUpItemData->baseDisplayText = GS::UniString::Printf (MarketplaceText (ID_SCRIPT_MANAGER_STRINGS_UPDATE_AVAILABLE), script.name.ToPrintf ());
+        }
+        marketplaceScripts.Push (popUpItemData);
+    }
+}
+
+void TapirPalette::ReloadMarketplaceScripts ()
+{
+    const GS::Ref<PopUpItemData> selectedScript = GetSelectedScript ();
+    const IO::Location selectedLocation = selectedScript != nullptr ? selectedScript->fileLocation : IO::Location ();
+
+    AddScriptsFromMarketplace ();
+
+    // The selected script stays selected, wherever its item is now; a removed or disabled one gives way to the first.
+    RebuildScriptPopUp (DG::PopUp::TopItem);
+    short itemToSelect = DG::PopUp::TopItem;
+    const short itemCount = scriptSelectionPopUp.GetItemCount ();
+    for (short item = DG::PopUp::TopItem; !selectedLocation.IsEmpty () && item <= itemCount; ++item) {
+        const GS::Ref<PopUpItemData> popUpItemData = GetScriptOfPopUpItem (item);
+        if (popUpItemData != nullptr && popUpItemData->fileLocation == selectedLocation) {
+            itemToSelect = item;
+            break;
+        }
+    }
+    scriptSelectionPopUp.SelectItem (itemToSelect);
+    SaveScriptsToPreferences ();
+    SetDeleteScriptButtonStatus ();
+    SetRunButtonIcon ();
+}
+
 void TapirPalette::LoadScriptsToPopUp ()
 {
     addedScripts.Clear ();
     customScripts.Clear ();
     listedScripts.Clear ();
+    marketplaceScripts.Clear ();
     hasCustomScript = false;
     hasAddedScript = false;
 
@@ -2244,6 +2336,7 @@ void TapirPalette::LoadScriptsToPopUp ()
     auto itemToSelect = AddScriptsFromPreferences ();
     AddScriptsFromLocalFolders ();
     AddScriptsFromRepositories ();
+    AddScriptsFromMarketplace ();
 
     RebuildScriptPopUp (itemToSelect);
     SetDeleteScriptButtonStatus ();

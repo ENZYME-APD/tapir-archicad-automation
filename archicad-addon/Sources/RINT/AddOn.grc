@@ -197,6 +197,8 @@
 /* [ 50] */ "New"
 /* [ 51] */ "%T could not be updated."
 /* [ 52] */ "Tapir: %T was updated from %T to %T in %T"
+/* [ 53] */ "Marketplace"
+/* [ 54] */ "%T (update available)"
 }
 
 'STR#' ID_UV_STRINGS "Tapir uv Strings" {
