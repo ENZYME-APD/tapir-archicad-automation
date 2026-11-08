@@ -1,13 +1,15 @@
 {
- "generatedAt": "2026-11-08 16:43 UTC",
+ "generatedAt": "2026-11-08 16:59 UTC",
  "counts": {
   "done": 568,
-  "merged": 214,
+  "merged": 215,
+  "open": 2,
   "not applicable": 1
  },
  "parameters": {
-  "all": 746,
-  "json": 36
+  "all": 745,
+  "json": 36,
+  "partial": 2
  },
  "items": [
   {
@@ -15826,7 +15828,7 @@
    "id": "CreateSections",
    "group": "Navigator Commands",
    "version": "1.5.0",
-   "brief": "Creates Section elements on the floor plan. A section looks to the left of its start to end direction, with its depth line that far on that side. GetDetailsOfElements reads the geometry of existing sections back.",
+   "brief": "Creates Section elements on the floor plan. A section looks to the left of its start to end direction, with its depth line that far on that side. GetDetailsOfElements reads the geometry of existing sections back. The floor plan must be the active window: creation fails while a Section or Elevation window is active.",
    "status": "done",
    "reason": "",
    "components": [
@@ -15835,8 +15837,8 @@
      "path": "Components/NavigatorComponents/CreateSectionsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 8,
+   "parameters": "partial",
+   "parameterCount": 9,
    "coveredParameters": [
     "sectionsData",
     "sectionsData.depth",
@@ -15847,7 +15849,9 @@
     "sectionsData.name",
     "sectionsData.startCoordinate"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "sectionsData.details"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -15894,6 +15898,66 @@
    "coveredParameters": [
     "interiorElevationsData"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "CreateElevations",
+   "group": "Navigator Commands",
+   "version": "1.8.1",
+   "brief": "Creates Elevation elements on the floor plan. The floor plan must be the active window: creation fails while a Section or Elevation window is active.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "CreateElevationsComponent",
+     "path": "Components/NavigatorComponents/CreateElevationsComponent.cs"
+    }
+   ],
+   "parameters": "partial",
+   "parameterCount": 8,
+   "coveredParameters": [
+    "elevationsData",
+    "elevationsData.depth",
+    "elevationsData.endCoordinate",
+    "elevationsData.floorIndex",
+    "elevationsData.id",
+    "elevationsData.name",
+    "elevationsData.startCoordinate"
+   ],
+   "missingParameters": [
+    "elevationsData.details"
+   ],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetSectionsAndElevationsDetails",
+   "group": "Navigator Commands",
+   "version": "1.8.1",
+   "brief": "Gets every configurable setting of the given Section and Elevation elements, with their name and reference ID.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetSectionsAndElevationsDetails",
+   "group": "Navigator Commands",
+   "version": "1.8.1",
+   "brief": "Sets settings of the given Section and Elevation elements: pens, line types, horizontal and vertical range, model effects, story handles and markers. The name and the reference ID are changed with ModifySections.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
