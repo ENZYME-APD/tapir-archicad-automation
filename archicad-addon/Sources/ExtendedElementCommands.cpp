@@ -10986,6 +10986,82 @@ static void GetCurrentRoofOutline (const API_ElementMemo& memo, bool isPlaneRoof
     current.Get ("polygonArcs", arcs);
 }
 
+// Resizes the pivot polygon data of a multi-plane roof's own memo (from ACAPI_Element_GetMemo)
+// after BuildRoofMemoFromGeometry gave it a pivot polygon of nCoords points and nSubPolys
+// contours, so that every array has the length Archicad expects: the vertex and edge IDs and
+// pivotPolyEdges one record per point (nCoords + 1), the contour IDs one per contour. The
+// records up to keepUpTo (the closing point of the outline, when the outline kept its point
+// count) stay as they were, so those edges keep their IDs and roof planes. The others are new:
+// ID 0, as API_ElementMemo asks for new vertices, edges and contours, and the roof planes of the
+// first edge of the old outline. An empty memo built from scratch (no IDs, no pivotPolyEdges) is
+// refused by ACAPI_Element_Change on an existing roof (Archicad 29, #2398).
+static void ResizeRoofPivotPolygonData (API_ElementMemo& memo, GSSize oldCoordCount, GSIndex keepUpTo, Int32 nCoords, Int32 nSubPolys)
+{
+    const GSSize newCoordCount = nCoords + 1;
+    const auto resizeIds = [] (UInt32**& ids, GSSize count, GSIndex lastKept) {
+        if (ids == nullptr) {
+            return;
+        }
+        ids = reinterpret_cast<UInt32**> (BMReallocHandle (reinterpret_cast<GSHandle> (ids), count * sizeof (UInt32), REALLOC_CLEAR, 0));
+        if (ids == nullptr) {
+            return;
+        }
+        for (GSIndex i = lastKept + 1; i < count; ++i) {
+            (*ids)[i] = 0;
+        }
+    };
+    resizeIds (memo.additionalPolyVertexIDs, newCoordCount, keepUpTo);
+    resizeIds (memo.additionalPolyEdgeIDs, newCoordCount, keepUpTo);
+    resizeIds (memo.additionalPolyContourIDs, nSubPolys + 1, keepUpTo > 0 ? 1 : 0);
+
+    if (memo.pivotPolyEdges == nullptr) {
+        return;
+    }
+    const GSSize oldEdgeCount = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.pivotPolyEdges)) / sizeof (API_PivotPolyEdgeData);
+    if (oldEdgeCount < 2 || oldEdgeCount != oldCoordCount) {
+        return;
+    }
+
+    // The planes of the first edge of the old outline, for the new edges.
+    API_PivotPolyEdgeData templateEdge = memo.pivotPolyEdges[1];
+    GS::Array<API_RoofSegmentData> templateSegments;
+    for (Int32 j = 0; j < templateEdge.nLevelEdgeData && templateEdge.levelEdgeData != nullptr; ++j) {
+        API_RoofSegmentData segment = templateEdge.levelEdgeData[j];
+        segment.lcoo = {};
+        templateSegments.Push (segment);
+    }
+
+    // The records that are not kept give up their level data before the array is resized.
+    for (GSIndex i = keepUpTo + 1; i < oldEdgeCount; ++i) {
+        if (memo.pivotPolyEdges[i].levelEdgeData != nullptr) {
+            BMKillPtr (reinterpret_cast<GSPtr*> (&memo.pivotPolyEdges[i].levelEdgeData));
+        }
+        memo.pivotPolyEdges[i] = {};
+    }
+    API_PivotPolyEdgeData* edges = reinterpret_cast<API_PivotPolyEdgeData*> (
+        BMReallocPtr (reinterpret_cast<GSPtr> (memo.pivotPolyEdges), newCoordCount * sizeof (API_PivotPolyEdgeData), REALLOC_CLEAR, 0));
+    if (edges == nullptr) {
+        return;
+    }
+    memo.pivotPolyEdges = edges;
+    for (GSIndex i = keepUpTo + 1; i < newCoordCount; ++i) {
+        API_PivotPolyEdgeData& edge = memo.pivotPolyEdges[i];
+        edge = {};
+        edge.segmentType = templateEdge.segmentType;
+        edge.segmentsByArc = templateEdge.segmentsByArc;
+        edge.segmentsByCircle = templateEdge.segmentsByCircle;
+        if (!templateSegments.IsEmpty ()) {
+            edge.levelEdgeData = reinterpret_cast<API_RoofSegmentData*> (BMAllocatePtr (templateSegments.GetSize () * sizeof (API_RoofSegmentData), ALLOCATE_CLEAR, 0));
+            if (edge.levelEdgeData != nullptr) {
+                for (UIndex j = 0; j < templateSegments.GetSize (); ++j) {
+                    edge.levelEdgeData[j] = templateSegments[j];
+                }
+                edge.nLevelEdgeData = (Int32) templateSegments.GetSize ();
+            }
+        }
+    }
+}
+
 ModifyRoofsCommand::ModifyRoofsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -11044,7 +11120,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                             "type": "array",
                             "items": { "$ref": "#/PolyArc" }
                         },
-                        "holes": { "$ref": "#/Holes2D", "description": "The holes of the roof: of a single-plane roof in its polygon, of a multi-plane roof in its pivot polygon. Replaces the roof's holes; given without 'polygonOutline' the roof keeps its outline, and an empty array removes every hole. When the pivot polygon of a multi-plane roof gets another number of points (a hole added or removed), each of its edges gets its planes from the roof's levels and eaves overhang again, as on a new roof." },
+                        "holes": { "$ref": "#/Holes2D", "description": "The holes of the roof: of a single-plane roof in its polygon, of a multi-plane roof in its pivot polygon. Replaces the roof's holes; given without 'polygonOutline' the roof keeps its outline, and an empty array removes every hole. On a multi-plane roof the edges of an outline that keeps its number of points keep their roof planes; every other edge (a new hole's, or each edge of an outline with another number of points) gets the roof planes of the first edge of the old outline." },
                         "angle": {
                             "type": "number",
                             "description": "Single-plane roofs only: the angle of the plane to the XY plane."
@@ -11329,35 +11405,25 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 const API_ShellBaseType oldShellBase = element.roof.shellBase;
                 // The pivot edge data and the vertex, edge and contour IDs of the memo have one
                 // record per point of the old pivot polygon (pivotPolyEdges must be nCoords + 1
-                // long), so a pivot polygon with another number of points or contours (a hole
-                // added or removed) was refused with them (#2398). It is then built in an empty
-                // memo, as CreateRoofs builds it, and Archicad makes the planes of every edge
-                // from the roof's levels and eaves overhang. With the same number of points the
-                // memo of the roof is edited, so each edge keeps its planes.
-                API_Polygon newPivotPolygon = {};
-                {
-                    auto error = PreparePolygonWithHoles ("polygonOutline", polygonOutline, polygonArcs, holes, newPivotPolygon);
-                    if (error.HasValue ()) {
-                        results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
-                        continue;
-                    }
-                }
+                // long), so after a hole is added or removed they are resized to the new polygon
+                // (ResizeRoofPivotPolygonData). The roof's own memo is edited: a memo built from
+                // scratch was refused by ACAPI_Element_Change (#2398).
                 const GSSize oldCoordCount = memo.additionalPolyCoords == nullptr ? 0 : BMhGetSize (reinterpret_cast<GSHandle> (memo.additionalPolyCoords)) / sizeof (API_Coord);
                 const GSSize oldPendCount = memo.additionalPolyPends == nullptr ? 0 : BMhGetSize (reinterpret_cast<GSHandle> (memo.additionalPolyPends)) / sizeof (Int32);
-                const bool samePointCount = oldCoordCount == newPivotPolygon.nCoords + 1 && oldPendCount == newPivotPolygon.nSubPolys + 1;
-
-                API_ElementMemo newPivotMemo = {};
-                const GS::OnExit newPivotCleanup ([&]() {
-                    ACAPI_DisposeElemMemoHdls (&newPivotMemo);
-                });
-                API_ElementMemo& pivotMemo = samePointCount ? memo : newPivotMemo;
-                auto error = BuildRoofMemoFromGeometry (element, pivotMemo, polygonOutline, polygonArcs, holes);
+                const GSIndex oldOutlineEnd = oldPendCount >= 2 ? (*memo.additionalPolyPends)[1] : 0;
+                auto error = BuildRoofMemoFromGeometry (element, memo, polygonOutline, polygonArcs, holes);
                 if (error.HasValue ()) {
                     results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                     continue;
                 }
+                const API_Polygon& pivotPolygon = element.roof.u.polyRoof.pivotPolygon;
+                const GSIndex newOutlineEnd = (*memo.additionalPolyPends)[1];
+                const GSIndex keepUpTo = oldOutlineEnd > 0 && oldOutlineEnd == newOutlineEnd ? newOutlineEnd : 0;
+                if (oldCoordCount != pivotPolygon.nCoords + 1 || oldPendCount != pivotPolygon.nSubPolys + 1) {
+                    ResizeRoofPivotPolygonData (memo, oldCoordCount, keepUpTo, pivotPolygon.nCoords, pivotPolygon.nSubPolys);
+                }
 
-                err = ACAPI_Element_Change (&element, &mask, &pivotMemo, APIMemoMask_AdditionalPolygon, true);
+                err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AdditionalPolygon, true);
                 if (err != NoError) {
                     results.Push (CreateFailedExecutionResult (err, "Failed to modify roof geometry."));
                     continue;

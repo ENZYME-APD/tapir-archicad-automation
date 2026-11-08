@@ -51,6 +51,10 @@
       "command": "GetDetailsOfElements",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${multi}" } }, { "elementId": { "guid": "${plane}" } } ] },
+      "save": {
+        "planeX2Before": "detailsOfElements[1].details.polygonOutline[2].x",
+        "planeY2Before": "detailsOfElements[1].details.polygonOutline[2].y"
+      },
       "expect": [
         { "path": "detailsOfElements[0].details.roofClass", "eq": "MultiPlane" },
         { "path": "detailsOfElements[0].details.pivotEdges", "len": 4, "name": "four pivot edges, no hole" },
@@ -110,6 +114,10 @@
       "command": "GetDetailsOfElements",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${multi}" } }, { "elementId": { "guid": "${plane}" } } ] },
+      "save": {
+        "planeX2After": "detailsOfElements[1].details.polygonOutline[2].x",
+        "planeY2After": "detailsOfElements[1].details.polygonOutline[2].y"
+      },
       "expect": [
         { "path": "detailsOfElements[0].details.roofClass", "eq": "MultiPlane", "name": "still multi-plane" },
         { "path": "detailsOfElements[0].details.pivotEdges", "len": 8, "name": "four outline edges and four hole edges" },
@@ -120,8 +128,8 @@
         { "path": "detailsOfElements[0].details.eavesOverhang", "approx": 0.6, "name": "eaves overhang kept" },
         { "path": "detailsOfElements[1].details.holes", "len": 1, "name": "plane roof has the hole" },
         { "path": "detailsOfElements[1].details.polygonOutline", "len": 5, "name": "plane roof outline kept" },
-        { "path": "detailsOfElements[1].details.polygonOutline[2].x", "approx": 936.0, "name": "plane roof corner kept (x)" },
-        { "path": "detailsOfElements[1].details.polygonOutline[2].y", "approx": 904.0, "name": "plane roof corner kept (y)" },
+        { "expr": "${planeX2After} - ${planeX2Before}", "approx": 0.0, "name": "plane roof corner kept (x)" },
+        { "expr": "${planeY2After} - ${planeY2Before}", "approx": 0.0, "name": "plane roof corner kept (y)" },
         { "path": "detailsOfElements[1].details.angle", "approx": 0.5, "name": "plane roof angle kept" }
       ]
     },
