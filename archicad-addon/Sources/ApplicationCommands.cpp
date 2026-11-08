@@ -3494,8 +3494,140 @@ GS::ObjectState GetElementFromUserCommand::Execute (const GS::ObjectState& param
 }
 
 // ---------------------------------------------------------------------------
-// GetCurrentTool
+// Toolbox: GetCurrentTool, SetCurrentTool, GetToolboxItems
 // ---------------------------------------------------------------------------
+
+// The JSON form of a Toolbox item, shared by GetCurrentTool, SetCurrentTool and GetToolboxItems:
+// elementType, plus variation (the four-character subtype, e.g. DOOR, SKYL or the signature of an
+// add-on's library part subtype) when it is not generic, plus classId for the tools of add-ons
+// (Archicad 26 and later). The Arrow and the Marquee have no element type and give an empty object.
+static const char* ToolDescriptionPropertiesSchema = R"(
+            "elementType": {
+                "$ref": "#/ElementType",
+                "description": "The element type of the tool. Unknown for the tools of add-ons, which classId identifies."
+            },
+            "variation": {
+                "type": "string",
+                "description": "The four-character subtype of the tool, e.g. DOOR, SKYL, CRWD, or the signature of a library part subtype registered by an add-on. Missing for the generic tool of the element type.",
+                "minLength": 1,
+                "maxLength": 4
+            },
+            "classId": {
+                "type": "string",
+                "description": "The class id (a guid) of the tool of an add-on, whose elementType is Unknown. Archicad 26 and later.",
+                "format": "uuid",
+                "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+            })";
+
+static GS::UniString ToolVariationToString (API_ElemVariationID variationID)
+{
+    const UInt32 v = static_cast<UInt32> (variationID);
+    char s[5] = {
+        (char) ((v >> 24) & 0xFF),
+        (char) ((v >> 16) & 0xFF),
+        (char) ((v >> 8) & 0xFF),
+        (char) (v & 0xFF),
+        0
+    };
+    return GS::UniString (s);
+}
+
+// The reverse of ToolVariationToString: 'DOOR' is "DOOR"; a shorter string fills the high bytes.
+static bool ToolVariationFromString (const GS::UniString& str, API_ElemVariationID& variationID)
+{
+    if (str.IsEmpty () || str.GetLength () > 4) {
+        return false;
+    }
+    UInt32 v = 0;
+    for (UIndex i = 0; i < 4; ++i) {
+        UInt32 c = 0;
+        if (i < str.GetLength ()) {
+            const GS::UniChar::Layout ch = static_cast<GS::UniChar::Layout> (str[i]);
+            if (ch < 0x20 || ch > 0x7E) {
+                return false;
+            }
+            c = static_cast<UInt32> (ch);
+        }
+        v = (v << 8) | c;
+    }
+    variationID = static_cast<API_ElemVariationID> (v);
+    return true;
+}
+
+static GS::ObjectState ToolBoxItemToObjectState (const API_ToolBoxItem& toolBoxItem)
+{
+#ifdef ServerMainVers_2600
+    const API_ElemTypeID typeID = toolBoxItem.type.typeID;
+    const API_ElemVariationID variationID = toolBoxItem.type.variationID;
+#else
+    const API_ElemTypeID typeID = toolBoxItem.typeID;
+    const API_ElemVariationID variationID = toolBoxItem.variationID;
+#endif
+
+    GS::ObjectState os;
+    // The Arrow and the Marquee have no element type (API_ZombieElemID).
+    if (typeID == API_ZombieElemID) {
+        return os;
+    }
+    os.Add ("elementType", GetElementTypeNonLocalizedName (typeID));
+    if (variationID != APIVarId_Generic) {
+        os.Add ("variation", ToolVariationToString (variationID));
+    }
+#ifdef ServerMainVers_2600
+    if (typeID == API_ExternalElemID && toolBoxItem.type.classID != APINULLGuid) {
+        os.Add ("classId", APIGuidToString (toolBoxItem.type.classID));
+    }
+#endif
+    return os;
+}
+
+// Reads a tool description into toolBoxItem. An empty description is the Arrow.
+static GS::Optional<GS::UniString> ToolBoxItemFromObjectState (const GS::ObjectState& os, API_ToolBoxItem& toolBoxItem)
+{
+    API_ElemTypeID typeID = API_ZombieElemID;
+    API_ElemVariationID variationID = APIVarId_Generic;
+
+    GS::UniString variationStr;
+    if (os.Get ("variation", variationStr) && !ToolVariationFromString (variationStr, variationID)) {
+        return GS::UniString::Printf ("Invalid variation '%T': it must be 1 to 4 ASCII characters.", variationStr.ToPrintf ());
+    }
+
+    GS::UniString classIdStr;
+    if (os.Get ("classId", classIdStr)) {
+#ifdef ServerMainVers_2600
+        const API_Guid classID = APIGuidFromString (classIdStr.ToCStr ());
+        if (classID == APINULLGuid) {
+            return GS::UniString::Printf ("Invalid classId '%T'.", classIdStr.ToPrintf ());
+        }
+        toolBoxItem = {};
+        toolBoxItem.type = API_ElemType (classID);
+        toolBoxItem.type.variationID = variationID;
+        return {};
+#else
+        return GS::UniString ("classId needs Archicad 26 or later.");
+#endif
+    }
+
+    GS::UniString elementTypeStr;
+    if (os.Get ("elementType", elementTypeStr)) {
+        typeID = GetElementTypeFromNonLocalizedName (elementTypeStr);
+        // SetToolBoxMode silently switches to the Arrow for an unknown type, so refuse it here.
+        if (typeID == API_ZombieElemID) {
+            return GS::UniString::Printf ("Invalid elementType '%T'. The tools of add-ons are given by classId.", elementTypeStr.ToPrintf ());
+        }
+    } else if (variationID != APIVarId_Generic) {
+        return GS::UniString ("A variation needs an elementType.");
+    }
+
+    toolBoxItem = {};
+#ifdef ServerMainVers_2600
+    toolBoxItem.type = API_ElemType (typeID, variationID);
+#else
+    toolBoxItem.typeID = typeID;
+    toolBoxItem.variationID = variationID;
+#endif
+    return {};
+}
 
 GetCurrentToolCommand::GetCurrentToolCommand () :
     CommandBase (CommonSchema::NotUsed)
@@ -3509,13 +3641,10 @@ GS::String GetCurrentToolCommand::GetName () const
 
 GS::Optional<GS::UniString> GetCurrentToolCommand::GetRawResponseSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
-        "properties": {
-            "elementType": {
-                "type": "string",
-                "description": "The element type of the active tool in the Toolbox (one of the ElementType values, or Unknown). Missing when the active tool makes no element, e.g. the Arrow or the Marquee."
-            }
+        "description": "The tool active in the Toolbox, in the form SetCurrentTool accepts. Empty when the active tool makes no element, e.g. the Arrow or the Marquee.",
+        "properties": {)") + ToolDescriptionPropertiesSchema + R"(
         },
         "additionalProperties": false,
         "required": []
@@ -3534,17 +3663,156 @@ GS::ObjectState GetCurrentToolCommand::Execute (const GS::ObjectState& /*paramet
         return CreateErrorResponse (err, "Failed to get the active tool.");
     }
 
-#ifdef ServerMainVers_2600
-    const API_ElemTypeID typeID = toolBoxItem.type.typeID;
+    return ToolBoxItemToObjectState (toolBoxItem);
+}
+
+// ---------------------------------------------------------------------------
+// SetCurrentTool
+// ---------------------------------------------------------------------------
+
+SetCurrentToolCommand::SetCurrentToolCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetCurrentToolCommand::GetName () const
+{
+    return "SetCurrentTool";
+}
+
+GS::Optional<GS::UniString> SetCurrentToolCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "description": "The tool to activate, in the form GetCurrentTool and GetToolboxItems return. An empty object activates the Arrow.",
+        "properties": {)") + ToolDescriptionPropertiesSchema + R"(
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> SetCurrentToolCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetCurrentToolCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_ToolBoxItem toolBoxItem = {};
+    const GS::Optional<GS::UniString> error = ToolBoxItemFromObjectState (parameters, toolBoxItem);
+    if (error.HasValue ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, *error);
+    }
+
+#ifdef ServerMainVers_2700
+    const GSErrCode err = ACAPI_Toolbox_SetToolBoxMode (&toolBoxItem);
 #else
-    const API_ElemTypeID typeID = toolBoxItem.typeID;
+    const GSErrCode err = ACAPI_Environment (APIEnv_SetToolBoxModeID, &toolBoxItem);
 #endif
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to activate the tool. Check that the variation belongs to the element type (GetToolboxItems lists the tools).");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+// ---------------------------------------------------------------------------
+// GetToolboxItems
+// ---------------------------------------------------------------------------
+
+GetToolboxItemsCommand::GetToolboxItemsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetToolboxItemsCommand::GetName () const
+{
+    return "GetToolboxItems";
+}
+
+GS::Optional<GS::UniString> GetToolboxItemsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "includeHidden": {
+                "type": "boolean",
+                "description": "Also list the tools that have no icon in the Toolbox but can be active, e.g. the Slab Accessory. Default: false."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetToolboxItemsCommand::GetRawResponseSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            "toolboxItems": {
+                "type": "array",
+                "description": "The tools installed in the Toolbox, the tools of add-ons included, each in the form SetCurrentTool accepts.",
+                "items": {
+                    "type": "object",
+                    "properties": {)") + ToolDescriptionPropertiesSchema + R"(
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementType"
+                    ]
+                }
+            },
+            "currentTool": {
+                "type": "object",
+                "description": "The tool active in the Toolbox, as GetCurrentTool returns it. Empty for the Arrow and the Marquee.",
+                "properties": {)" + ToolDescriptionPropertiesSchema + R"(
+                },
+                "additionalProperties": false,
+                "required": []
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "toolboxItems",
+            "currentTool"
+        ]
+    })";
+}
+
+GS::ObjectState GetToolboxItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    bool includeHidden = false;
+    parameters.Get ("includeHidden", includeHidden);
+
+    API_ToolBoxInfo toolBoxInfo = {};
+#ifdef ServerMainVers_2700
+    const GSErrCode err = ACAPI_Toolbox_GetToolBoxInfo (&toolBoxInfo, includeHidden);
+#else
+    const GSErrCode err = ACAPI_Environment (APIEnv_GetToolBoxInfoID, &toolBoxInfo, reinterpret_cast<void*> (static_cast<GS::IntPtr> (includeHidden)));
+#endif
+    if (err != NoError) {
+        BMKillHandle ((GSHandle*) &toolBoxInfo.data);
+        return CreateErrorResponse (err, "Failed to get the Toolbox items.");
+    }
 
     GS::ObjectState response;
-    // The Arrow and the Marquee have no element type (API_ZombieElemID).
-    if (typeID != API_ZombieElemID) {
-        response.Add ("elementType", GetElementTypeNonLocalizedName (typeID));
+    const auto& toolboxItems = response.AddList<GS::ObjectState> ("toolboxItems");
+    if (toolBoxInfo.data != nullptr) {
+        for (Int32 i = 0; i < toolBoxInfo.nTools; ++i) {
+            const GS::ObjectState item = ToolBoxItemToObjectState ((*toolBoxInfo.data)[i]);
+            // An item without an element type would mean the Arrow, which SetCurrentTool gets from {}.
+            if (item.Contains ("elementType")) {
+                toolboxItems (item);
+            }
+        }
     }
+    response.Add ("currentTool", ToolBoxItemToObjectState (toolBoxInfo.activeTool));
+
+    BMKillHandle ((GSHandle*) &toolBoxInfo.data);
     return response;
 }
 
