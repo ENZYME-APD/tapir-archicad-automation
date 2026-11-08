@@ -681,6 +681,40 @@ static void OpenFileInExplorer (const IO::Location& file)
     system (command.ToCStr ().Get ());
 }
 
+// Opens a file in a text editor, for the scripts panel's Edit and Settings. Windows: the file type's "edit" verb, else
+// Notepad, never "open", which runs a .py file. macOS: the default text editor (open -t), the path in single quotes.
+static void OpenFileInEditor (const IO::Location& file)
+{
+    GS::UniString path;
+    file.ToPath (&path);
+    if (path.IsEmpty ()) {
+        return;
+    }
+#if defined (WINDOWS)
+    // The UStr objects own the UTF-16 strings, they must live until ShellExecuteW returns
+    const auto pathUStr = path.ToUStr ();
+    const HINSTANCE result = ShellExecuteW (nullptr, L"edit", reinterpret_cast<LPCWSTR> (pathUStr.Get ()), nullptr, nullptr, SW_SHOWNORMAL);
+    if (reinterpret_cast<INT_PTR> (result) <= 32) {
+        const GS::UniString quotedPath = GS::UniString ("\"") + path + "\"";
+        const auto quotedPathUStr = quotedPath.ToUStr ();
+        ShellExecuteW (nullptr, L"open", L"notepad.exe", reinterpret_cast<LPCWSTR> (quotedPathUStr.Get ()), nullptr, SW_SHOWNORMAL);
+    }
+#else
+    GS::UniString quotedPath = path;
+    quotedPath.ReplaceAll ("'", "'\\''");
+    const GS::UniString command = "open -t '" + quotedPath + "'";
+    system (command.ToCStr (CC_UTF8).Get ());
+#endif
+}
+
+GS::UniString TapirPalette::GetScriptWebUrl (const PopUpItemData& popUpItemData)
+{
+    if (popUpItemData.repo == nullptr) {
+        return GS::EmptyUniString;
+    }
+    return "https://github.com/" + popUpItemData.repo->repoOwner + "/" + popUpItemData.repo->repoName + "/blob/main/" + popUpItemData.repoRelLoc;
+}
+
 void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
 {
     if (scriptsPanel.ButtonClicked (ev)) {
@@ -701,7 +735,7 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
         if (popUpItemData->repoRelLoc.IsEmpty ()) {
             OpenFileInExplorer (popUpItemData->fileLocation);
         } else {
-            OpenWebpage ("https://github.com/" + popUpItemData->repo->repoOwner + "/" + popUpItemData->repo->repoName + "/blob/main/" + popUpItemData->repoRelLoc);
+            OpenWebpage (GetScriptWebUrl (*popUpItemData));
         }
     } else if (ev.GetSource () == &addScriptButton) {
         AddNewScript ();
@@ -987,6 +1021,11 @@ GS::Array<ScriptsPanel::Script> TapirPalette::GetPanelScripts () const
             script.source = GetScriptSource (popUpItemData->repo, popUpItemData->sourceName, list.second);
             script.badge = GetScriptBadge (popUpItemData->info);
             script.requirements = GetScriptRequirements (popUpItemData->info);
+            if (!popUpItemData->repoRelLoc.IsEmpty () && popUpItemData->repo != nullptr) {
+                script.webUrl = GetScriptWebUrl (*popUpItemData);
+            }
+            script.isAdded = list.first == &addedScripts;
+            script.isUsersOwn = list.second;
             script.info = popUpItemData->info;
             scripts.Push (script);
         }
@@ -1002,6 +1041,15 @@ ScriptsPanel::Actions TapirPalette::GetPanelActions ()
     actions.run = [this] (const IO::Location& fileLocation) { RunListedScript (fileLocation); };
     actions.stop = [this] (const IO::Location& fileLocation) { StopScript (fileLocation); };
     actions.openWebpage = [] (const GS::UniString& url) { OpenUrl (url); };
+    actions.openShortcuts = [this] () { OpenShortcutsDialog (); };
+    actions.editFile = [] (const IO::Location& fileLocation) { OpenFileInEditor (fileLocation); };
+    actions.showInFolder = [] (const IO::Location& fileLocation) { OpenFileInExplorer (fileLocation); };
+    actions.remove = [this] (const IO::Location& fileLocation) { RemoveAddedScript (fileLocation); };
+    actions.addScripts = [this] (const GS::Array<IO::Location>& files) { AddScriptFiles (files); };
+    actions.openSettings = [] () {
+        Config::Instance ();   // writes the default settings when the file does not exist yet
+        OpenFileInEditor (Config::GetConfigFileLocation ());
+    };
     return actions;
 }
 
@@ -3068,9 +3116,17 @@ bool TapirPalette::AddNewScript ()
     if (!dlg.Invoke ()) {
         return false;
     }
-    bool hasNew = false;
+    GS::Array<IO::Location> files;
     for (UIndex i = 0; i < dlg.GetSelectionCount (); ++i) {
-        IO::Location file = dlg.GetSelectedFile (i);
+        files.Push (dlg.GetSelectedFile (i));
+    }
+    return AddScriptFiles (files);
+}
+
+bool TapirPalette::AddScriptFiles (const GS::Array<IO::Location>& files)
+{
+    bool hasNew = false;
+    for (const IO::Location& file : files) {
         if (IsPopUpContainsFile (file)) {
             continue;
         }
@@ -3110,6 +3166,55 @@ void TapirPalette::DeleteScriptFromPopUp ()
         itemToSelect = static_cast<short> (addedScripts.GetSize ());
     }
     RebuildScriptPopUp (itemToSelect);
+
+    SaveScriptsToPreferences ();
+    SetDeleteScriptButtonStatus ();
+}
+
+short TapirPalette::FindPopUpItem (const IO::Location& fileLocation) const
+{
+    if (fileLocation.IsEmpty ()) {
+        return 0;
+    }
+    const short itemCount = scriptSelectionPopUp.GetItemCount ();
+    for (short item = DG::PopUp::TopItem; item <= itemCount; ++item) {
+        if (scriptSelectionPopUp.IsSeparator (item)) {
+            continue;
+        }
+        GS::Ref<PopUpItemData> popUpItemData = GetScriptOfPopUpItem (item);
+        if (popUpItemData != nullptr && popUpItemData->fileLocation == fileLocation) {
+            return item;
+        }
+    }
+    return 0;
+}
+
+// The scripts panel's Remove: as the Remove button, for any script the user added, whichever the dropdown shows. The
+// dropdown keeps its script unless that is the one removed.
+void TapirPalette::RemoveAddedScript (const IO::Location& fileLocation)
+{
+    UIndex index = 0;
+    while (index < addedScripts.GetSize () && !(addedScripts[index]->fileLocation == fileLocation)) {
+        ++index;
+    }
+    if (index >= addedScripts.GetSize ()) {
+        return;
+    }
+
+    GS::Ref<PopUpItemData> selectedScript = GetSelectedScript ();
+    const IO::Location selectedLocation = selectedScript != nullptr ? selectedScript->fileLocation : IO::Location ();
+    addedScripts.Delete (index);
+    if (addedScripts.IsEmpty ()) {
+        hasAddedScript = false;
+    }
+
+    // Rebuilt first without a selection, so that the item of the kept script can be found in the new dropdown.
+    RebuildScriptPopUp (DG::PopUp::TopItem);
+    const short itemToSelect = FindPopUpItem (selectedLocation);
+    if (itemToSelect > 0 && itemToSelect != DG::PopUp::TopItem) {
+        scriptSelectionPopUp.SelectItem (itemToSelect);
+        SetRunButtonIcon ();
+    }
 
     SaveScriptsToPreferences ();
     SetDeleteScriptButtonStatus ();

@@ -164,7 +164,13 @@ private:
     bool IsValidLocation (const IO::Location& location);
     short AddScriptsFromPreferences ();
     bool AddNewScript ();
+    // Adds the files to the scripts the user added, as the Add button does; files already listed are skipped.
+    bool AddScriptFiles (const GS::Array<IO::Location>& files);
     void DeleteScriptFromPopUp ();
+    // The scripts panel's Remove: removes the script from the scripts the user added.
+    void RemoveAddedScript (const IO::Location& fileLocation);
+    short FindPopUpItem (const IO::Location& fileLocation) const;   // 0: not in the dropdown
+    static GS::UniString GetScriptWebUrl (const PopUpItemData& popUpItemData);   // its page on GitHub; empty for a local file
     bool IsSelectedScriptFromGitHub () const;
     void SetDeleteScriptButtonStatus ();
     void RefreshScriptListShortcutLabels ();   // appends "  [Shortcut N]" to scripts assigned to a slot

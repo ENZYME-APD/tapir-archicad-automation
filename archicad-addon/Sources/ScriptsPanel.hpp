@@ -20,6 +20,12 @@
 // "Running...", "Finished", "Stopped", or an error in plain words with Details (the last lines of its output) and a
 // button that offers a fix (Install uv, Try again, or Report a problem).
 //
+// A right-click on a script offers Run (Stop while it runs), Assign Shortcut, Edit and Show in Folder for a local
+// file or Open on GitHub for a repository's script, and Remove for a script the user added. A .py file dropped on the
+// list is added as the bar's Add button adds it. While the user has no script of their own, the list starts with
+// "New to Tapir? Try Project Health Check", which selects that built-in script. Settings, in the panel's footer,
+// opens Documents/Tapir/config.json.
+//
 // The panel's controls are the items of ID_PALETTE below y BarHeight. TapirPalette creates the panel, forwards its
 // resize and the button and tooltip events to it, gives it the script list and its run and stop functions (Actions),
 // and tells it when a script starts, writes output, is stopped and ends. The panel observes its search field,
@@ -46,6 +52,9 @@ public:
         GS::UniString source;        // Built-in, Marketplace, My scripts, or the folder's or repository's name
         GS::UniString badge;         // Changes the model, Writes files, Read only, or empty
         GS::UniString requirements;  // "Needs Tapir ..." and "Tested on Archicad ...", one per line, as in the bar's tooltip
+        GS::UniString webUrl;        // the script's page on GitHub for a repository's script; empty for a local file
+        bool          isAdded = false;     // added with the bar's Add button (or dropped on the panel): Remove removes it
+        bool          isUsersOwn = false;  // added, or in the custom-scripts folder
         ScriptInfo    info;
     };
     using ScriptsGetter = std::function<GS::Array<Script> ()>;
@@ -58,10 +67,17 @@ public:
         std::function<void (const IO::Location&)>   run;           // starts it, as the bar's Run button does
         std::function<void (const IO::Location&)>   stop;          // stops it with the processes it started
         std::function<void (const GS::UniString&)>  openWebpage;   // opens the URL in the browser
+        std::function<void ()>                      openShortcuts; // the Shortcuts dialog of the bar
+        std::function<void (const IO::Location&)>   editFile;      // opens the file in a text editor
+        std::function<void (const IO::Location&)>   showInFolder;  // opens the file's folder
+        std::function<void (const IO::Location&)>   remove;        // removes a script the user added, as the bar's Remove button does
+        std::function<void (const GS::Array<IO::Location>&)>  addScripts;   // adds the files, as the bar's Add button does
+        std::function<void ()>                      openSettings;  // opens Documents/Tapir/config.json
     };
 
     // The item numbers of the expand arrow and of the panel's controls in ID_PALETTE, in their order there:
-    // separator, search field, category filter, list, name, badge, details, Run, Stop, result, Details, fix button.
+    // separator, search field, category filter, list, name, badge, details, Run, Stop, result, Details, fix button,
+    // Settings.
     ScriptsPanel (DG::Palette& palette, short expandButtonItem, short firstPanelItem, const Actions& actions);
     ~ScriptsPanel ();
 
@@ -132,10 +148,24 @@ private:
     void FillList ();
     void ShowDetails ();
     const Script* GetSelectedScript () const;
+    const Script* GetScriptOfRow (short row) const;   // nullptr for a group's row and the other rows without a script
+    // Selects the built-in Project Health Check, for the first-run row.
+    void SelectFirstRunScript ();
+    void ShowContextMenu (const Script& script);
+    // The .py files of a drag over or a drop on the list.
+    static GS::Array<IO::Location> GetDroppedScripts (const DG::ListBoxDropTargetEvent& ev);
 
     virtual void TextEditChanged (const DG::TextEditChangeEvent& ev) override;
     virtual void PopUpChanged (const DG::PopUpChangeEvent& ev) override;
     virtual void ListBoxSelectionChanged (const DG::ListBoxSelectionEvent& ev) override;
+    virtual void ListBoxContextMenuRequested (const DG::ListBoxContextMenuEvent& ev, bool* processed) override;
+    // Both overloads of ListBoxDragEntered, so that whichever DG calls accepts the files.
+    virtual void ListBoxDragEntered (const DG::ListBoxDropTargetEvent& ev, DG::DragDrop::Effect* effect, bool* defBehaviour) override;
+    virtual void ListBoxDragEntered (const DG::ListBoxDropTargetEvent& ev, DG::DragDrop::Effect* effect, bool* defBehaviour,
+        bool* rightDragMenu) override;
+    virtual void ListBoxDragMoved (const DG::ListBoxDropTargetEvent& ev, DG::DragDrop::Effect* effect,
+        DG::DragDrop::Feedback* denyFeedback) override;
+    virtual void ListBoxDropped (const DG::ListBoxDropTargetEvent& ev, DG::DragDrop::Effect* effect) override;
 
     DG::Palette&         palette;
     DG::IconButton       expandButton;
@@ -151,6 +181,7 @@ private:
     DG::LeftText         resultText;
     DG::Button           outputButton;   // Details: the last lines of the script's output
     DG::Button           fixButton;      // Install uv, Try again or Report a problem
+    DG::Button           settingsButton; // the footer's Settings: opens Documents/Tapir/config.json
 
     Actions              actions;
     GS::Array<RunResult> results;
@@ -158,6 +189,7 @@ private:
     bool                 fixButtonShown = false;
     GS::Array<Script>    scripts;              // as GetScripts returned them last; a list row's value is its index + 1
     IO::Location         selectedLocation;     // the selected script, kept when the list is refilled
+    short                firstRunRow = 0;      // the "New to Tapir? Try Project Health Check" row; 0: not shown
 
     short openHeight = DefaultOpenHeight;   // the client height the arrow opens the panel at
     bool  expandButtonShowsOpen = false;    // the arrow's icon is the up chevron

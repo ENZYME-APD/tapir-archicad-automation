@@ -140,6 +140,14 @@
 /* [ 36] */ "The script wrote nothing."
 /* [ 37] */ "Script error: %T"
 /* [ 38] */ "The script **%T** failed when run from the Tapir Palette.\n\n- Tapir: %T\n- Archicad: %d\n\nThe last lines of its output:\n\n```\n%T\n```\n\nWhat I did before it failed:\n"
+/* [ 39] */ "Run"
+/* [ 40] */ "Stop"
+/* [ 41] */ "Assign Shortcut..."
+/* [ 42] */ "Edit"
+/* [ 43] */ "Show in Folder"
+/* [ 44] */ "Open on GitHub"
+/* [ 45] */ "Remove"
+/* [ 46] */ "New to Tapir? Try Project Health Check"
 }
 
 'STR#' ID_AUTOUPDATE_STRINGS "Tapir Update Strings" {
@@ -275,6 +283,7 @@
 /* [ 20] */ LeftText                 158 498 186  24    SmallPlain  vCenter | truncEnd  ""
 /* [ 21] */ Button                   344 498  80  24    LargePlain  "Details"
 /* [ 22] */ Button                   428 498 130  24    LargePlain  "Report a problem"
+/* [ 23] */ Button                     6 528  90  24    LargePlain  "Settings"
 }
 
 'DLGH' ID_PALETTE Tapir_Palette {
@@ -300,6 +309,7 @@
 20   ""                                ScriptsPanelResult
 21   "Show the last lines of the script's output"              ScriptsPanelOutputButton
 22   ""                                ScriptsPanelFixButton
+23   "Open the Tapir settings (Documents/Tapir/config.json)"   ScriptsPanelSettingsButton
 }
 
 'GDLG' ID_SCRIPTUI_PALETTE Palette | leftCaption | close | grow   0   0  600  450  "Tapir Script UI"  {

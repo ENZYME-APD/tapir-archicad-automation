@@ -7,6 +7,10 @@
 #include "ObjectStateJSONConversion.hpp"
 #include "AddOnVersion.hpp"
 #include "VersionChecker.hpp"
+#include "DGMenu.hpp"
+#include "DGMenuItem.hpp"
+#include "DGCommandDescriptor.hpp"
+#include "DGCommandEvent.hpp"
 
 #include <initializer_list>
 #include <string>
@@ -40,6 +44,23 @@ static constexpr UIndex OtherGroup = CategoryCount;
 // The category filter's items: All, the categories in the order above, Other.
 static constexpr short CategoryPopUpAllItem = 1;
 
+// The built-in script the first-run row selects.
+static const char* const FirstRunScriptFileName = "ProjectHealthCheck.py";
+
+// The commands of the right-click menu. Each is a DG::Command of Tapir's 'MDID' (RFIX/AddOnFix.grc), so that it is
+// never taken for a command of Archicad or another add-on.
+static constexpr ULong TapirDeveloperId = 826567491;
+static constexpr ULong TapirLocalId = 368333322;
+enum ContextMenuCommand : ULong {
+    RunCommand = 1,
+    StopCommand,
+    AssignShortcutCommand,
+    EditCommand,
+    ShowInFolderCommand,
+    OpenOnGitHubCommand,
+    RemoveCommand
+};
+
 // The layout below the bar
 static constexpr short Margin = 6;
 static constexpr short SearchTop = ScriptsPanel::BarHeight + 8;
@@ -54,7 +75,11 @@ static constexpr short RunRowHeight = 24;
 static constexpr short RunButtonWidth = 70;
 static constexpr short OutputButtonWidth = 80;
 static constexpr short FixButtonWidth = 130;
-static constexpr short DetailsBlockHeight = Margin + NameHeight + 2 + BadgeHeight + 2 + DetailsHeight + Margin + RunRowHeight + Margin;
+// The footer under the run row: Settings.
+static constexpr short FooterHeight = 24;
+static constexpr short SettingsButtonWidth = 90;
+static constexpr short DetailsBlockHeight = Margin + NameHeight + 2 + BadgeHeight + 2 + DetailsHeight + Margin + RunRowHeight + Margin +
+    FooterHeight + Margin;
 static constexpr short MinListHeight = 40;
 static constexpr short ListScrollBarWidth = 18;
 static constexpr short SourceColumnWidth = 120;
@@ -101,10 +126,13 @@ ScriptsPanel::ScriptsPanel (DG::Palette& _palette, short expandButtonItem, short
     , resultText (_palette.GetReference (), static_cast<short> (firstPanelItem + 9))
     , outputButton (_palette.GetReference (), static_cast<short> (firstPanelItem + 10))
     , fixButton (_palette.GetReference (), static_cast<short> (firstPanelItem + 11))
+    , settingsButton (_palette.GetReference (), static_cast<short> (firstPanelItem + 12))
     , actions (_actions)
 {
     // Never narrower than the bar's controls, never lower than the bar.
     palette.SetMinClientSize (palette.GetOriginalClientWidth (), BarHeight);
+    // A .py file dropped on the list is added (ListBoxDropped).
+    palette.EnableDragAndDropEvent ();
 
     scriptList.SetTabFieldCount (3);
     FillCategoryPopUp ();
@@ -161,6 +189,7 @@ void ScriptsPanel::Layout ()
     const short badgeTop = static_cast<short> (nameTop + NameHeight + 2);
     const short detailsTop = static_cast<short> (badgeTop + BadgeHeight + 2);
     const short runRowTop = static_cast<short> (detailsTop + DetailsHeight + Margin);
+    const short footerTop = static_cast<short> (runRowTop + RunRowHeight + Margin);
     const short stopLeft = static_cast<short> (Margin + RunButtonWidth + 4);
     const short resultLeft = static_cast<short> (stopLeft + RunButtonWidth + 8);
     const short fixLeft = static_cast<short> (width - Margin - FixButtonWidth);
@@ -196,6 +225,8 @@ void ScriptsPanel::Layout ()
     outputButton.SetSize (OutputButtonWidth, RunRowHeight);
     fixButton.SetPosition (fixLeft, runRowTop);
     fixButton.SetSize (FixButtonWidth, RunRowHeight);
+    settingsButton.SetPosition (Margin, footerTop);
+    settingsButton.SetSize (SettingsButtonWidth, FooterHeight);
     palette.EndMoveResizeItems ();
 
     // The columns: the name about a third of the list, the source at the right, what the script does between them.
@@ -218,6 +249,7 @@ void ScriptsPanel::Layout ()
     resultText.SetVisibility (open);
     outputButton.SetVisibility (open && outputButtonShown);
     fixButton.SetVisibility (open && fixButtonShown);
+    settingsButton.SetVisibility (open);
     SetExpandButtonIcon (open);
 }
 
@@ -264,6 +296,22 @@ void ScriptsPanel::FillList ()
         scriptList.SetItemValue (row, value);
         return row;
     };
+
+    // First run: while the user has no script of their own, the list starts with a row that selects Project Health
+    // Check. It is left out while the user searches or filters, and when that script is not in the list.
+    firstRunRow = 0;
+    if (search.IsEmpty () && allCategories) {
+        bool hasOwnScript = false;
+        bool hasFirstRunScript = false;
+        for (const Script& script : scripts) {
+            hasOwnScript = hasOwnScript || script.isUsersOwn;
+            hasFirstRunScript = hasFirstRunScript || script.fileName == GS::UniString (FirstRunScriptFileName);
+        }
+        if (!hasOwnScript && hasFirstRunScript) {
+            firstRunRow = appendRow (PanelText (ID_SCRIPTS_PANEL_STRINGS_FIRST_RUN), GS::EmptyUniString, GS::EmptyUniString, 0);
+            scriptList.SetItemFontStyle (firstRunRow, DG::Font::Italic);
+        }
+    }
 
     short rowToSelect = 0;
     for (UIndex group = 0; group <= OtherGroup; ++group) {
@@ -314,7 +362,11 @@ void ScriptsPanel::FillList ()
 
 const ScriptsPanel::Script* ScriptsPanel::GetSelectedScript () const
 {
-    const short row = scriptList.GetSelectedItem ();
+    return GetScriptOfRow (scriptList.GetSelectedItem ());
+}
+
+const ScriptsPanel::Script* ScriptsPanel::GetScriptOfRow (short row) const
+{
     if (row <= 0 || row > scriptList.GetItemCount ()) {
         return nullptr;
     }
@@ -389,12 +441,188 @@ void ScriptsPanel::ListBoxSelectionChanged (const DG::ListBoxSelectionEvent& ev)
     if (ev.GetSource () != &scriptList) {
         return;
     }
+    if (firstRunRow > 0 && scriptList.GetSelectedItem () == firstRunRow) {
+        SelectFirstRunScript ();
+        return;
+    }
     const Script* script = GetSelectedScript ();
     // A group's row or the "no match" row keeps the last script, so that it is selected again when it shows again.
     if (script != nullptr) {
         selectedLocation = script->fileLocation;
     }
     ShowDetails ();
+}
+
+void ScriptsPanel::SelectFirstRunScript ()
+{
+    const short itemCount = scriptList.GetItemCount ();
+    for (short row = 1; row <= itemCount; ++row) {
+        const Script* script = GetScriptOfRow (row);
+        if (script != nullptr && script->fileName == GS::UniString (FirstRunScriptFileName)) {
+            selectedLocation = script->fileLocation;
+            scriptList.SelectItem (row);
+            break;
+        }
+    }
+    ShowDetails ();
+}
+
+// ---- The right-click menu and dropped files ----
+
+void ScriptsPanel::ListBoxContextMenuRequested (const DG::ListBoxContextMenuEvent& ev, bool* processed)
+{
+    if (ev.GetSource () != &scriptList) {
+        return;
+    }
+    // The script under the mouse becomes the selected one, so the details show what the menu acts on.
+    const short row = ev.GetItem ();
+    const Script* script = GetScriptOfRow (row);
+    if (script == nullptr) {
+        return;
+    }
+    selectedLocation = script->fileLocation;
+    scriptList.SelectItem (row);
+    ShowDetails ();
+
+    // A copy: a command may refill the list (Remove) and with it the scripts.
+    const Script clickedScript = *script;
+    ShowContextMenu (clickedScript);
+    if (processed != nullptr) {
+        *processed = true;
+    }
+}
+
+// Run (Stop while it runs), Assign Shortcut, Edit and Show in Folder for a local file or Open on GitHub for a
+// repository's script, and Remove for a script the user added.
+void ScriptsPanel::ShowContextMenu (const Script& script)
+{
+    const bool isRunning = actions.isRunning (script.fileLocation);
+    const bool isLocal = script.webUrl.IsEmpty ();
+
+    DG::Menu menu ("-");
+    DG::CommandTable commandTable;
+    const auto addCommand = [&menu, &commandTable] (ULong commandId, Int32 textIndex) {
+        const DG::Command command (commandId, TapirDeveloperId, TapirLocalId);
+        commandTable.Add (command, new DG::CommandDescriptor (command, PanelText (textIndex)));
+        menu.AddMenuItem (DG::MenuSimpleItem (command));
+    };
+    if (isRunning) {
+        addCommand (StopCommand, ID_SCRIPTS_PANEL_STRINGS_MENU_STOP);
+    } else {
+        addCommand (RunCommand, ID_SCRIPTS_PANEL_STRINGS_MENU_RUN);
+    }
+    addCommand (AssignShortcutCommand, ID_SCRIPTS_PANEL_STRINGS_MENU_ASSIGN_SHORTCUT);
+    menu.AddMenuItem (DG::MenuSeparatorItem ());
+    if (isLocal) {
+        addCommand (EditCommand, ID_SCRIPTS_PANEL_STRINGS_MENU_EDIT);
+        addCommand (ShowInFolderCommand, ID_SCRIPTS_PANEL_STRINGS_MENU_SHOW_IN_FOLDER);
+    } else {
+        addCommand (OpenOnGitHubCommand, ID_SCRIPTS_PANEL_STRINGS_MENU_OPEN_ON_GITHUB);
+    }
+    if (script.isAdded) {
+        menu.AddMenuItem (DG::MenuSeparatorItem ());
+        addCommand (RemoveCommand, ID_SCRIPTS_PANEL_STRINGS_MENU_REMOVE);
+    }
+
+    ULong chosenCommand = 0;
+    {
+        DG::ContextMenu contextMenu ("-", &menu);
+        contextMenu.SetEnabledCommands (commandTable);
+        DG::MousePosData mousePos;
+        mousePos.Retrieve ();
+        DG::CommandEvent* commandEvent = contextMenu.Display (mousePos.GetMouseOffsetInNativeUnits ());
+        if (commandEvent != nullptr) {
+            chosenCommand = commandEvent->GetCommand ().GetCommandId ();
+            delete commandEvent;
+        }
+    }
+    for (auto it = commandTable.EnumerateValues (); it != nullptr; ++it) {
+        delete *it;
+    }
+
+    switch (chosenCommand) {
+        case RunCommand:
+            actions.run (script.fileLocation);
+            break;
+        case StopCommand:
+            actions.stop (script.fileLocation);
+            break;
+        case AssignShortcutCommand:
+            actions.openShortcuts ();
+            break;
+        case EditCommand:
+            actions.editFile (script.fileLocation);
+            break;
+        case ShowInFolderCommand:
+            actions.showInFolder (script.fileLocation);
+            break;
+        case OpenOnGitHubCommand:
+            actions.openWebpage (script.webUrl);
+            break;
+        case RemoveCommand:
+            actions.remove (script.fileLocation);   // refills the list
+            break;
+        default:
+            break;
+    }
+    ShowResult ();
+}
+
+GS::Array<IO::Location> ScriptsPanel::GetDroppedScripts (const DG::ListBoxDropTargetEvent& ev)
+{
+    GS::Array<IO::Location> files;
+    const ULong count = ev.GetLocationCount ();
+    for (ULong i = 0; i < count; ++i) {
+        IO::Location location;
+        IO::Name name;
+        if (!ev.GetLocation (i, location) || location.GetLastLocalName (&name) != NoError) {
+            continue;
+        }
+        if (LowerCased (name.ToString ()).EndsWith (GS::UniString (".py"))) {
+            files.Push (location);
+        }
+    }
+    return files;
+}
+
+void ScriptsPanel::ListBoxDragEntered (const DG::ListBoxDropTargetEvent& ev, DG::DragDrop::Effect* effect, bool*)
+{
+    if (ev.GetSource () == &scriptList && effect != nullptr) {
+        *effect = GetDroppedScripts (ev).IsEmpty () ? DG::DragDrop::Effect::Reject : DG::DragDrop::Effect::Copy;
+    }
+}
+
+void ScriptsPanel::ListBoxDragEntered (const DG::ListBoxDropTargetEvent& ev, DG::DragDrop::Effect* effect, bool* defBehaviour, bool*)
+{
+    ListBoxDragEntered (ev, effect, defBehaviour);
+}
+
+void ScriptsPanel::ListBoxDragMoved (const DG::ListBoxDropTargetEvent& ev, DG::DragDrop::Effect* effect, DG::DragDrop::Feedback* denyFeedback)
+{
+    if (ev.GetSource () != &scriptList) {
+        return;
+    }
+    // A file is dropped on the list, not between its rows: no insertion mark.
+    if (denyFeedback != nullptr) {
+        *denyFeedback = DG::DragDrop::RejectSelAndIns;
+    }
+    if (effect != nullptr) {
+        *effect = GetDroppedScripts (ev).IsEmpty () ? DG::DragDrop::Effect::Reject : DG::DragDrop::Effect::Copy;
+    }
+}
+
+void ScriptsPanel::ListBoxDropped (const DG::ListBoxDropTargetEvent& ev, DG::DragDrop::Effect* effect)
+{
+    if (ev.GetSource () != &scriptList) {
+        return;
+    }
+    const GS::Array<IO::Location> files = GetDroppedScripts (ev);
+    if (effect != nullptr) {
+        *effect = files.IsEmpty () ? DG::DragDrop::Effect::Reject : DG::DragDrop::Effect::Copy;
+    }
+    if (!files.IsEmpty ()) {
+        actions.addScripts (files);   // refills the list
+    }
 }
 
 void ScriptsPanel::Resized ()
@@ -420,6 +648,10 @@ bool ScriptsPanel::ButtonClicked (const DG::ButtonClickEvent& ev)
 {
     if (ev.GetSource () == &expandButton) {
         SetOpen (!IsOpen ());
+        return true;
+    }
+    if (ev.GetSource () == &settingsButton) {
+        actions.openSettings ();
         return true;
     }
 
