@@ -2,9 +2,9 @@
    gh-coverage/), which stay mostly English (data-i18n-partial). See ../README.md. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
     // The command reference (archicad-addon/)
-    'Tapir commands - Tapir documentation': 'Tapir コマンド - Tapir ドキュメント',
-    'Every JSON command of the Tapir add-on for Archicad, with its parameters, its response and an example.':
-        'Archicad 用 Tapir アドオンのすべての JSON コマンドを、パラメーター、レスポンス、例とともに掲載します。',
+    'Archicad JSON API commands reference | Tapir': 'Archicad JSON API コマンドリファレンス | Tapir',
+    'Every JSON command the Tapir add-on adds to Archicad, with its parameters, its response and a Python example, and how to call one from Python.':
+        'Tapir アドオンが Archicad に追加するすべての JSON コマンドを、パラメーター、レスポンス、Python の例とともに掲載し、Python から呼び出す方法も説明します。',
     '<a href="../">Tapir</a> / <a href="../docs/">Docs</a> / Commands': '<a href="../">Tapir</a> / <a href="../docs/">ドキュメント</a> / コマンド',
     'Tapir <em>commands.</em>': 'Tapir <em>コマンド。</em>',
     'The JSON commands the Tapir add-on registers in Archicad, in the <code>TapirCommand</code> namespace, next to Graphisoft\'s official commands. Each command shows its parameters, its response and an example.':
@@ -27,9 +27,9 @@
     'Checklist': 'チェックリスト',
 
     // The Archicad API coverage (api-coverage/)
-    'Archicad API coverage - Tapir documentation': 'Archicad API カバレッジ - Tapir ドキュメント',
-    'Which parts of the Archicad API the Tapir add-on uses, kept up to date from every issue, pull request and push.':
-        'Tapir アドオンが Archicad API のどの部分を使っているか。issue、pull request、push のたびに更新されます。',
+    'Archicad API coverage checklist | Tapir': 'Archicad API カバレッジチェックリスト | Tapir',
+    'Which parts of Graphisoft\'s Archicad API the Tapir add-on uses, item by item, kept up to date from every issue, pull request and push to the repository.':
+        'Tapir アドオンが Graphisoft の Archicad API のどの部分を使っているかを項目ごとに示します。リポジトリへの issue、pull request、push のたびに更新されます。',
     '<a href="../">Tapir</a> / <a href="../docs/">Docs</a> / API coverage': '<a href="../">Tapir</a> / <a href="../docs/">ドキュメント</a> / API カバレッジ',
     'Archicad API <em>coverage.</em>': 'Archicad API <em>カバレッジ。</em>',
     'What Tapir covers of Graphisoft\'s Archicad API, item by item.': 'Tapir が Graphisoft の Archicad API の何をカバーしているかを、項目ごとに示します。',
@@ -38,9 +38,9 @@
     'By part of the API': 'API の部分別',
 
     // The Grasshopper coverage (gh-coverage/)
-    'Grasshopper coverage - Tapir documentation': 'Grasshopper カバレッジ - Tapir ドキュメント',
-    'Which Tapir commands the components of the Tapir Grasshopper plugin call, and whether they cover the commands\' parameters.':
-        'Tapir Grasshopper プラグインのコンポーネントがどの Tapir コマンドを呼び出し、そのパラメーターをカバーしているか。',
+    'Grasshopper coverage of the Tapir commands | Tapir': 'Tapir コマンドの Grasshopper カバレッジ | Tapir',
+    'Which Tapir commands for Archicad the components of the Tapir Grasshopper plugin call, and whether they cover each command\'s parameters or still miss some.':
+        'Tapir Grasshopper プラグインのコンポーネントが Archicad 用のどの Tapir コマンドを呼び出し、各コマンドのパラメーターをカバーしているか、まだ足りないものがあるか。',
     '<a href="../">Tapir</a> / <a href="../docs/">Docs</a> / Grasshopper coverage': '<a href="../">Tapir</a> / <a href="../docs/">ドキュメント</a> / Grasshopper カバレッジ',
     'Grasshopper <em>coverage.</em>': 'Grasshopper <em>カバレッジ。</em>',
     'Which Tapir commands the Grasshopper components call, and the parameters they still miss.':

@@ -1,7 +1,8 @@
 /* Italiano: the home page (index.html and the texts home.js shows). See ../README.md.
    The labels of the floor plan sit in boxes of a fixed width: keep them as short as the English. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Tapir - automation for Archicad': 'Tapir - automazione per Archicad',
+    'Tapir – free Archicad automation: Python, JSON API, Grasshopper':
+        'Tapir – automazione gratuita per Archicad: Python, JSON API, Grasshopper',
     'Tapir is a free, open-source Archicad add-on: hundreds of extra JSON commands, a palette that runs scripts in one click, and a Grasshopper plugin.':
         'Tapir è un add-on per Archicad gratuito e open source: centinaia di comandi JSON in più, una palette che esegue script con un clic e un plugin per Grasshopper.',
 

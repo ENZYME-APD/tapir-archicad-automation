@@ -2,9 +2,9 @@
    gh-coverage/), which stay mostly English (data-i18n-partial). See ../README.md. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
     // The command reference (archicad-addon/)
-    'Tapir commands - Tapir documentation': 'Tapir 命令 - Tapir 文档',
-    'Every JSON command of the Tapir add-on for Archicad, with its parameters, its response and an example.':
-        'Archicad 的 Tapir 插件的每个 JSON 命令，附带其参数、响应和示例。',
+    'Archicad JSON API commands reference | Tapir': 'Archicad JSON API 命令参考 | Tapir',
+    'Every JSON command the Tapir add-on adds to Archicad, with its parameters, its response and a Python example, and how to call one from Python.':
+        'Tapir 插件为 Archicad 新增的每个 JSON 命令，附带其参数、响应和 Python 示例，以及如何从 Python 调用命令。',
     '<a href="../">Tapir</a> / <a href="../docs/">Docs</a> / Commands': '<a href="../">Tapir</a> / <a href="../docs/">文档</a> / 命令',
     'Tapir <em>commands.</em>': 'Tapir <em>命令。</em>',
     'The JSON commands the Tapir add-on registers in Archicad, in the <code>TapirCommand</code> namespace, next to Graphisoft\'s official commands. Each command shows its parameters, its response and an example.':
@@ -27,9 +27,9 @@
     'Checklist': '清单',
 
     // The Archicad API coverage (api-coverage/)
-    'Archicad API coverage - Tapir documentation': 'Archicad API 覆盖率 - Tapir 文档',
-    'Which parts of the Archicad API the Tapir add-on uses, kept up to date from every issue, pull request and push.':
-        'Tapir 插件使用了 Archicad API 的哪些部分，随每个 issue、pull request 和 push 保持更新。',
+    'Archicad API coverage checklist | Tapir': 'Archicad API 覆盖率清单 | Tapir',
+    'Which parts of Graphisoft\'s Archicad API the Tapir add-on uses, item by item, kept up to date from every issue, pull request and push to the repository.':
+        'Tapir 插件使用了 Graphisoft 的 Archicad API 的哪些部分，逐项列出，并随仓库的每个 issue、pull request 和 push 保持更新。',
     '<a href="../">Tapir</a> / <a href="../docs/">Docs</a> / API coverage': '<a href="../">Tapir</a> / <a href="../docs/">文档</a> / API 覆盖率',
     'Archicad API <em>coverage.</em>': 'Archicad API <em>覆盖率。</em>',
     'What Tapir covers of Graphisoft\'s Archicad API, item by item.': 'Tapir 覆盖了 Graphisoft 的 Archicad API 的哪些内容，逐项列出。',
@@ -38,9 +38,9 @@
     'By part of the API': '按 API 部分',
 
     // The Grasshopper coverage (gh-coverage/)
-    'Grasshopper coverage - Tapir documentation': 'Grasshopper 覆盖率 - Tapir 文档',
-    'Which Tapir commands the components of the Tapir Grasshopper plugin call, and whether they cover the commands\' parameters.':
-        'Tapir Grasshopper 插件的运算器调用了哪些 Tapir 命令，以及它们是否覆盖了命令的参数。',
+    'Grasshopper coverage of the Tapir commands | Tapir': 'Tapir 命令的 Grasshopper 覆盖率 | Tapir',
+    'Which Tapir commands for Archicad the components of the Tapir Grasshopper plugin call, and whether they cover each command\'s parameters or still miss some.':
+        'Tapir Grasshopper 插件的运算器调用了哪些用于 Archicad 的 Tapir 命令，以及它们是覆盖了每个命令的参数，还是仍缺少一些。',
     '<a href="../">Tapir</a> / <a href="../docs/">Docs</a> / Grasshopper coverage': '<a href="../">Tapir</a> / <a href="../docs/">文档</a> / Grasshopper 覆盖率',
     'Grasshopper <em>coverage.</em>': 'Grasshopper <em>覆盖率。</em>',
     'Which Tapir commands the Grasshopper components call, and the parameters they still miss.':

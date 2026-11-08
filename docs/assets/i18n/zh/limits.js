@@ -1,9 +1,9 @@
 /* 中文 (简体): the API limits page (limits/index.html). The Evidence column (headers and function names)
    stays English. See ../README.md. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'What the Archicad API can\'t do - Tapir': 'Archicad API 做不到的事 - Tapir',
-    'What people ask Tapir for that Graphisoft\'s Archicad API does not offer: undo, the clipboard, File > Merge, Interactive Schedule rows and more, each with the workaround and the DevKit evidence.':
-        '大家向 Tapir 提出、而 Graphisoft 的 Archicad API 并未提供的功能：撤销、剪贴板、File > Merge、Interactive Schedule 的行等，每项都附有替代办法和 DevKit 中的依据。',
+    'What the Archicad API can\'t do | Tapir': 'Archicad API 做不到的事 | Tapir',
+    'What people ask for that Graphisoft\'s Archicad API does not offer, such as undo or the clipboard, each with what to do instead and the DevKit evidence.':
+        '大家提出、而 Graphisoft 的 Archicad API 并未提供的功能，例如撤销或剪贴板，每项都附有替代办法和 DevKit 中的依据。',
     '<a href="../">Tapir</a> / <a href="../docs/">Docs</a> / API limits': '<a href="../">Tapir</a> / <a href="../docs/">文档</a> / API 限制',
     'What the Archicad API <em>can\'t do.</em>': 'Archicad API <em>做不到的事。</em>',
     'Tapir uses the Archicad API that Graphisoft publishes for add-ons, and covers all of it that can be a JSON command. What that API does not offer, Tapir cannot offer either. This page lists what people ask for that is not in it, with what to do instead.':
