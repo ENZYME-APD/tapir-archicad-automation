@@ -606,17 +606,14 @@ void TapirPalette::PanelCloseRequested (const DG::PanelCloseRequestEvent&, bool*
 
 void TapirPalette::PanelOpened (const DG::PanelOpenEvent&)
 {
-    const short selectedItemBefore = scriptSelectionPopUp.GetSelectedItem ();
-    auto itemToSelect = AddScriptsFromPreferences ();
-    itemToSelect = GetSavedSelectionItem (itemToSelect);
-    RebuildScriptPopUp (selectedItemBefore);
-    if (itemToSelect <= 0 || scriptSelectionPopUp.IsSeparator (itemToSelect) || scriptSelectionPopUp.GetItemCount () - 1 <= itemToSelect) {
-        itemToSelect = scriptSelectionPopUp.GetSelectedItem ();
-        if (scriptSelectionPopUp.IsSeparator (itemToSelect) || scriptSelectionPopUp.GetItemCount () - 1 <= itemToSelect) {
-            itemToSelect = DG::PopUp::TopItem;
-        }
+    // The saved selection, else the one before (SelectScript finds it by its file), else the first script
+    const GS::Ref<PopUpItemData> selectedBefore = GetSelectedScript ();
+    const short savedItem = AddScriptsFromPreferences ();
+    GS::Ref<PopUpItemData> scriptToSelect = GetSavedSelection (savedItem);
+    if (scriptToSelect == nullptr) {
+        scriptToSelect = selectedBefore;
     }
-    scriptSelectionPopUp.SelectItem (itemToSelect);
+    RebuildScriptPopUp (scriptToSelect);
     RefreshScriptListShortcutLabels ();
     SetRunButtonIcon ();
 }
@@ -703,28 +700,63 @@ TapirPalette::ScriptList TapirPalette::GetAllScripts () const
     return scripts;
 }
 
-// The dropdown's sections, as RebuildScriptPopUp fills them: each list followed by its separator when shown.
+// The dropdown's sections: each list followed by its separator when shown, then "Reload scripts...".
+TapirPalette::VisibleItemList TapirPalette::BuildVisibleItems () const
+{
+    VisibleItemList items;
+    const auto appendScripts = [&items] (const ScriptList& scripts) {
+        for (const GS::Ref<PopUpItemData>& popUpItemData : scripts) {
+            items.Push (VisibleItem (VisibleItem::Kind::Script, popUpItemData));
+        }
+    };
+    appendScripts (addedScripts);
+    if (hasAddedScript) {
+        items.Push (VisibleItem (VisibleItem::Kind::Separator));
+    }
+    appendScripts (customScripts);
+    if (hasCustomScript) {
+        items.Push (VisibleItem (VisibleItem::Kind::Separator));
+    }
+    appendScripts (listedScripts);
+
+    items.Push (VisibleItem (VisibleItem::Kind::Separator));
+    items.Push (VisibleItem (VisibleItem::Kind::Reload));
+    return items;
+}
+
+const TapirPalette::VisibleItem* TapirPalette::GetVisibleItem (short item) const
+{
+    if (item < DG::PopUp::TopItem || static_cast<UIndex> (item - DG::PopUp::TopItem) >= visibleItems.GetSize ()) {
+        return nullptr;
+    }
+    return &visibleItems[static_cast<UIndex> (item - DG::PopUp::TopItem)];
+}
+
 GS::Ref<TapirPalette::PopUpItemData> TapirPalette::GetScriptOfPopUpItem (short item) const
 {
-    const std::pair<const ScriptList*, bool> sections[] = {
-        { &addedScripts, hasAddedScript },
-        { &customScripts, hasCustomScript },
-        { &listedScripts, true }
-    };
-    Int32 firstItem = DG::PopUp::TopItem;
-    for (const auto& section : sections) {
-        const Int32 size = static_cast<Int32> (section.first->GetSize ());
-        if (item >= firstItem && item < firstItem + size) {
-            return (*section.first)[static_cast<UIndex> (item - firstItem)];
-        }
-        firstItem += size + (section.second ? 1 : 0);
+    const VisibleItem* visibleItem = GetVisibleItem (item);
+    if (visibleItem == nullptr || visibleItem->kind != VisibleItem::Kind::Script) {
+        return GS::Ref<PopUpItemData> ();
     }
-    return GS::Ref<PopUpItemData> ();
+    return visibleItem->script;
 }
 
 GS::Ref<TapirPalette::PopUpItemData> TapirPalette::GetSelectedScript () const
 {
     return GetScriptOfPopUpItem (scriptSelectionPopUp.GetSelectedItem ());
+}
+
+bool TapirPalette::IsAddedScript (const GS::Ref<PopUpItemData>& script) const
+{
+    if (script == nullptr) {
+        return false;
+    }
+    for (const GS::Ref<PopUpItemData>& popUpItemData : addedScripts) {
+        if (popUpItemData == script) {
+            return true;
+        }
+    }
+    return false;
 }
 
 GS::UniString TapirPalette::GetScriptLabel (const PopUpItemData& popUpData) const
@@ -739,36 +771,55 @@ GS::UniString TapirPalette::GetScriptLabel (const PopUpItemData& popUpData) cons
     return label;
 }
 
-void TapirPalette::RebuildScriptPopUp (short itemToSelect)
+void TapirPalette::RebuildScriptPopUp (const GS::Ref<PopUpItemData>& scriptToSelect)
 {
+    visibleItems = BuildVisibleItems ();
     scriptSelectionPopUp.DeleteItem (DG_ALL_ITEMS);
-
-    const auto appendScripts = [this] (const ScriptList& scripts) {
-        for (const GS::Ref<PopUpItemData>& popUpItemData : scripts) {
-            scriptSelectionPopUp.AppendItem ();
-            scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, GetScriptLabel (*popUpItemData));
+    for (const VisibleItem& visibleItem : visibleItems) {
+        switch (visibleItem.kind) {
+            case VisibleItem::Kind::Script:
+                scriptSelectionPopUp.AppendItem ();
+                scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, GetScriptLabel (*visibleItem.script));
+                break;
+            case VisibleItem::Kind::Reload:
+                scriptSelectionPopUp.AppendItem ();
+                scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, PaletteText (ID_PALETTE_STRINGS_RELOAD_SCRIPTS));
+                break;
+            case VisibleItem::Kind::Separator:
+            default:
+                scriptSelectionPopUp.AppendSeparator ();
+                break;
         }
-    };
-    appendScripts (addedScripts);
-    if (hasAddedScript) {
-        scriptSelectionPopUp.AppendSeparator ();
     }
-    appendScripts (customScripts);
-    if (hasCustomScript) {
-        scriptSelectionPopUp.AppendSeparator ();
-    }
-    appendScripts (listedScripts);
 
-    scriptSelectionPopUp.AppendSeparator ();
-    scriptSelectionPopUp.AppendItem ();
-    scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, PaletteText (ID_PALETTE_STRINGS_RELOAD_SCRIPTS));
-
-    if (itemToSelect <= 0 || scriptSelectionPopUp.IsSeparator (itemToSelect) || scriptSelectionPopUp.GetItemCount () - 1 <= itemToSelect) {
-        itemToSelect = DG::PopUp::TopItem;
-    }
-    scriptSelectionPopUp.SelectItem (itemToSelect);
+    SelectScript (scriptToSelect);
     RefreshRunningMarks ();
     SetRunButtonIcon ();   // the selected script may have changed
+}
+
+void TapirPalette::SelectScript (const GS::Ref<PopUpItemData>& script)
+{
+    short itemToSelect = 0;
+    short firstScriptItem = 0;
+    for (UIndex i = 0; i < visibleItems.GetSize (); ++i) {
+        const VisibleItem& visibleItem = visibleItems[i];
+        if (visibleItem.kind != VisibleItem::Kind::Script) {
+            continue;
+        }
+        const short item = static_cast<short> (DG::PopUp::TopItem + i);
+        if (firstScriptItem == 0) {
+            firstScriptItem = item;
+        }
+        if (script != nullptr && visibleItem.script->fileLocation == script->fileLocation) {
+            itemToSelect = item;
+            break;
+        }
+    }
+    if (itemToSelect == 0) {
+        itemToSelect = firstScriptItem;
+    }
+    // Without a script the first item, as before: "Reload scripts..." is never selected, so choosing it is a change
+    scriptSelectionPopUp.SelectItem (itemToSelect != 0 ? itemToSelect : static_cast<short> (DG::PopUp::TopItem));
 }
 
 // DG::PopUp has no right-aligned column or tab stop for a mark after the name, so the mark is the item's icon,
@@ -777,31 +828,26 @@ void TapirPalette::RefreshRunningMarks ()
 {
     const DG::Icon runningIcon (ACAPI_GetOwnResModule (), ID_SCRIPT_RUNNING_ICON);
     const DG::Icon notRunningIcon (ACAPI_GetOwnResModule (), ID_SCRIPT_NOT_RUNNING_ICON);
-    const short itemCount = scriptSelectionPopUp.GetItemCount ();
-    for (short i = DG::PopUp::TopItem; i <= itemCount; ++i) {
-        if (scriptSelectionPopUp.IsSeparator (i)) {
+    for (UIndex i = 0; i < visibleItems.GetSize (); ++i) {
+        const VisibleItem& visibleItem = visibleItems[i];
+        if (visibleItem.kind == VisibleItem::Kind::Separator) {
             continue;
         }
-        GS::Ref<PopUpItemData> popUpItemData = GetScriptOfPopUpItem (i);   // nullptr for "Reload scripts..."
-        const bool isRunning = popUpItemData != nullptr && IsScriptRunning (popUpItemData->fileLocation);
-        scriptSelectionPopUp.SetItemIcon (i, isRunning ? runningIcon : notRunningIcon);
+        const bool isRunning = visibleItem.kind == VisibleItem::Kind::Script && IsScriptRunning (visibleItem.script->fileLocation);
+        scriptSelectionPopUp.SetItemIcon (static_cast<short> (DG::PopUp::TopItem + i), isRunning ? runningIcon : notRunningIcon);
     }
 }
 
 void TapirPalette::PopUpChanged (const DG::PopUpChangeEvent& ev)
 {
     if (ev.GetSource () == &scriptSelectionPopUp) {
-        const short selectedItem = scriptSelectionPopUp.GetSelectedItem ();
+        const VisibleItem* selectedItem = GetVisibleItem (scriptSelectionPopUp.GetSelectedItem ());
 
-        if (selectedItem == scriptSelectionPopUp.GetItemCount ()) {
+        if (selectedItem != nullptr && selectedItem->kind == VisibleItem::Kind::Reload) {
+            // The script selected before stays selected while it is still listed, found by its file
+            const GS::Ref<PopUpItemData> previousScript = GetScriptOfPopUpItem (ev.GetPreviousSelection ());
             LoadScriptsToPopUp ();
-
-            if (!scriptSelectionPopUp.IsSeparator (ev.GetPreviousSelection ()) &&
-                ev.GetPreviousSelection () < scriptSelectionPopUp.GetItemCount ()) {
-                scriptSelectionPopUp.SelectItem (ev.GetPreviousSelection ());
-            } else {
-                scriptSelectionPopUp.SelectItem (DG::PopUp::TopItem);
-            }
+            SelectScript (previousScript);
         }
 
         SaveScriptsToPreferences ();
@@ -1063,10 +1109,9 @@ void TapirPalette::SetShortcutLabel (short slotIndex, const GS::UniString& label
 // the normal script dropdown, not only inside the dedicated Shortcuts dialog.
 void TapirPalette::RefreshScriptListShortcutLabels ()
 {
-    for (short i = 1; i <= scriptSelectionPopUp.GetItemCount () - 1; ++i) {
-        GS::Ref<PopUpItemData> popUpItemData = GetScriptOfPopUpItem (i);
-        if (popUpItemData != nullptr) {
-            scriptSelectionPopUp.SetItemText (i, GetScriptLabel (*popUpItemData));
+    for (UIndex i = 0; i < visibleItems.GetSize (); ++i) {
+        if (visibleItems[i].kind == VisibleItem::Kind::Script) {
+            scriptSelectionPopUp.SetItemText (static_cast<short> (DG::PopUp::TopItem + i), GetScriptLabel (*visibleItems[i].script));
         }
     }
 }
@@ -2242,11 +2287,11 @@ void TapirPalette::LoadScriptsToPopUp ()
     hasAddedScript = false;
 
     AddScriptsFromCustomScriptsFolder ();
-    auto itemToSelect = AddScriptsFromPreferences ();
+    const short savedItem = AddScriptsFromPreferences ();
     AddScriptsFromLocalFolders ();
     AddScriptsFromRepositories ();
 
-    RebuildScriptPopUp (GetSavedSelectionItem (itemToSelect));
+    RebuildScriptPopUp (GetSavedSelection (savedItem));
     SetDeleteScriptButtonStatus ();
 }
 
@@ -2795,7 +2840,8 @@ void TapirPalette::SaveScriptsToPreferences ()
         preferencesStr += pathStr + '\n';
     }
     // The dropdown's item index, as before, so that every Tapir version reads the blob the same way
-    preferencesStr += GS::ValueToUniString (scriptSelectionPopUp.GetSelectedItem ());
+    const GS::Ref<PopUpItemData> selectedScript = GetSelectedScript ();
+    preferencesStr += GS::ValueToUniString (GetPreferencesItemIndex (selectedScript));
     for (short slot = 0; slot < ScriptShortcutSlotCount; ++slot) {
         GS::UniString slotPathStr = ShortcutSlotEmptyMarker;
         if (!scriptShortcutSlots[slot].IsEmpty ()) {
@@ -2812,8 +2858,7 @@ void TapirPalette::SaveScriptsToPreferences ()
     // only, which made the load side read past its buffer (see AddScriptsFromPreferences).
     ACAPI_SetPreferences (PREFERENCES_VERSION, (GSSize)strlen (cStr.Get()) + 1, cStr.Get());
 
-    // The selection by its path as well, which outlives a change of the list (GetSavedSelectionItem)
-    const GS::Ref<PopUpItemData> selectedScript = GetSelectedScript ();
+    // The selection by its path as well, which outlives a change of the list (GetSavedSelection)
     paletteState.SetSelected (selectedScript != nullptr ? GetScriptPath (*selectedScript) : GS::EmptyUniString);
     paletteState.Save ();
 }
@@ -2825,21 +2870,38 @@ GS::UniString TapirPalette::GetScriptPath (const PopUpItemData& popUpData)
     return path;
 }
 
-short TapirPalette::GetSavedSelectionItem (short savedItem) const
+GS::Ref<TapirPalette::PopUpItemData> TapirPalette::GetSavedSelection (short savedItem) const
 {
     const GS::UniString& selectedPath = paletteState.Selected ();
-    if (selectedPath.IsEmpty ()) {
-        return savedItem;
-    }
-    // Every script item and separator of the dropdown as RebuildScriptPopUp builds it
-    const short lastItem = static_cast<short> (GetAllScripts ().GetSize () + 2);
-    for (short item = DG::PopUp::TopItem; item <= lastItem; ++item) {
-        const GS::Ref<PopUpItemData> popUpItemData = GetScriptOfPopUpItem (item);
-        if (popUpItemData != nullptr && GetScriptPath (*popUpItemData) == selectedPath) {
-            return item;
+    if (!selectedPath.IsEmpty ()) {
+        for (const GS::Ref<PopUpItemData>& popUpItemData : GetAllScripts ()) {
+            if (GetScriptPath (*popUpItemData) == selectedPath) {
+                return popUpItemData;
+            }
         }
     }
-    return savedItem;
+
+    const VisibleItemList items = BuildVisibleItems ();
+    if (savedItem >= DG::PopUp::TopItem && static_cast<UIndex> (savedItem - DG::PopUp::TopItem) < items.GetSize ()) {
+        const VisibleItem& item = items[static_cast<UIndex> (savedItem - DG::PopUp::TopItem)];
+        if (item.kind == VisibleItem::Kind::Script) {
+            return item.script;
+        }
+    }
+    return GS::Ref<PopUpItemData> ();
+}
+
+short TapirPalette::GetPreferencesItemIndex (const GS::Ref<PopUpItemData>& script) const
+{
+    if (script != nullptr) {
+        const VisibleItemList items = BuildVisibleItems ();
+        for (UIndex i = 0; i < items.GetSize (); ++i) {
+            if (items[i].kind == VisibleItem::Kind::Script && items[i].script == script) {
+                return static_cast<short> (DG::PopUp::TopItem + i);
+            }
+        }
+    }
+    return DG::PopUp::TopItem;
 }
 
 bool TapirPalette::IsValidLocation (const IO::Location& location)
@@ -2955,7 +3017,8 @@ bool TapirPalette::AddNewScript ()
     }
 
     if (hasNew) {
-        RebuildScriptPopUp (DG::PopUp::TopItem);
+        // The newest added script, the first of its section
+        RebuildScriptPopUp (addedScripts.IsEmpty () ? GS::Ref<PopUpItemData> () : addedScripts[0]);
         SaveScriptsToPreferences ();
         SetDeleteScriptButtonStatus ();
     }
@@ -2963,25 +3026,25 @@ bool TapirPalette::AddNewScript ()
     return hasNew;
 }
 
-// The selected item is one of addedScripts: SetDeleteScriptButtonStatus enables the button only then.
+// The selected script is one of addedScripts: SetDeleteScriptButtonStatus enables the button only then.
 void TapirPalette::DeleteScriptFromPopUp ()
 {
-    const short selectedItem = scriptSelectionPopUp.GetSelectedItem ();
-    if (!hasAddedScript || selectedItem < DG::PopUp::TopItem || selectedItem > static_cast<short> (addedScripts.GetSize ())) {
+    const GS::Ref<PopUpItemData> selectedScript = GetSelectedScript ();
+    const UIndex index = IsAddedScript (selectedScript) ? addedScripts.FindFirst (selectedScript) : MaxUIndex;
+    if (index >= addedScripts.GetSize ()) {
         return;
     }
-    addedScripts.Delete (static_cast<UIndex> (selectedItem - DG::PopUp::TopItem));
+    addedScripts.Delete (index);
 
-    // The next script takes the deleted one's place; after the last added one the one above it is selected. When
-    // none is left, the section and its separator go, and the first item is selected.
-    short itemToSelect = selectedItem;
+    // The next added script takes the deleted one's place; after the last added one the one above it is selected.
+    // When none is left, the section and its separator go, and the first script is selected.
+    GS::Ref<PopUpItemData> scriptToSelect;
     if (addedScripts.IsEmpty ()) {
         hasAddedScript = false;
-        itemToSelect = DG::PopUp::TopItem;
-    } else if (itemToSelect > static_cast<short> (addedScripts.GetSize ())) {
-        itemToSelect = static_cast<short> (addedScripts.GetSize ());
+    } else {
+        scriptToSelect = addedScripts[index < addedScripts.GetSize () ? index : addedScripts.GetSize () - 1];
     }
-    RebuildScriptPopUp (itemToSelect);
+    RebuildScriptPopUp (scriptToSelect);
 
     SaveScriptsToPreferences ();
     SetDeleteScriptButtonStatus ();
@@ -2989,8 +3052,7 @@ void TapirPalette::DeleteScriptFromPopUp ()
 
 void TapirPalette::SetDeleteScriptButtonStatus ()
 {
-    const short selectedItem = scriptSelectionPopUp.GetSelectedItem ();
-    if (hasAddedScript && selectedItem >= DG::PopUp::TopItem && selectedItem <= static_cast<short> (addedScripts.GetSize ())) {
+    if (IsAddedScript (GetSelectedScript ())) {
         delScriptButton.Enable ();
     } else {
         delScriptButton.Disable ();

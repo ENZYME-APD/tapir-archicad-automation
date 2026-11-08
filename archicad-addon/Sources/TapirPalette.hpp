@@ -117,6 +117,21 @@ private:
     ScriptList listedScripts;   // localFolders and repositories of the config
     bool hasCustomScript = false;   // the custom-scripts section and its separator are shown
     bool hasAddedScript = false;    // the added section and its separator are shown
+
+    // One item of scriptSelectionPopUp. Every reader of the dropdown goes through visibleItems: item i of the
+    // dropdown is visibleItems[i - 1], so nothing counts sections and separators to find a script.
+    struct VisibleItem
+    {
+        enum class Kind { Script, Separator, Reload };
+        Kind kind = Kind::Separator;
+        GS::Ref<PopUpItemData> script;   // set for Kind::Script only
+
+        VisibleItem () = default;
+        VisibleItem (Kind _kind, const GS::Ref<PopUpItemData>& _script = GS::Ref<PopUpItemData> ())
+            : kind (_kind), script (_script) {}
+    };
+    using VisibleItemList = GS::Array<VisibleItem>;
+    VisibleItemList visibleItems;   // what scriptSelectionPopUp shows now
     UvManager uvManager;
     IO::Location scriptShortcutSlots[ScriptShortcutSlotCount];    // empty = unassigned
     GS::UniString scriptShortcutLabels[ScriptShortcutSlotCount];  // empty = using the default menu text
@@ -141,20 +156,31 @@ private:
     void AddScriptsFromLocalFolders ();
     void AddScriptsFromCustomScriptsFolder ();
     void LoadScriptsToPopUp ();
-    void RebuildScriptPopUp (short itemToSelect);   // fills scriptSelectionPopUp from the script list
+    // The dropdown's items for the script list, in the order of the script list
+    VisibleItemList BuildVisibleItems () const;
+    // Fills scriptSelectionPopUp and visibleItems from the script list and selects scriptToSelect (SelectScript).
+    void RebuildScriptPopUp (const GS::Ref<PopUpItemData>& scriptToSelect);
+    // Selects the item of the script with the same file, else the first script, else the first item that is no
+    // separator.
+    void SelectScript (const GS::Ref<PopUpItemData>& script);
     // Marks each running script in scriptSelectionPopUp; called when a script starts or ends and on each rebuild.
     void RefreshRunningMarks ();
+    const VisibleItem* GetVisibleItem (short item) const;   // nullptr outside the dropdown
     GS::Ref<PopUpItemData> GetScriptOfPopUpItem (short item) const;   // nullptr for a separator and "Reload scripts..."
     GS::Ref<PopUpItemData> GetSelectedScript () const;
+    bool IsAddedScript (const GS::Ref<PopUpItemData>& script) const;   // one of addedScripts
     ScriptList GetAllScripts () const;   // in the order of the dropdown
     GS::UniString GetScriptLabel (const PopUpItemData& popUpData) const;   // the label with the "[Shortcut N]" suffix
     bool IsPopUpContainsFile (const IO::Location& fileLocation) const;
     void SaveScriptsToPreferences ();   // also writes the selection to palette.json
     bool IsValidLocation (const IO::Location& location);
     short AddScriptsFromPreferences ();
-    // The item to select once the list is loaded: the script saved in palette.json while it is still listed,
-    // otherwise savedItem, the item index saved in the preferences.
-    short GetSavedSelectionItem (short savedItem) const;
+    // The script to select once the list is loaded: the script saved in palette.json while it is still listed,
+    // otherwise the script at savedItem, the item index saved in the preferences; nullptr when neither is.
+    GS::Ref<PopUpItemData> GetSavedSelection (short savedItem) const;
+    // The item index of the script in the dropdown as every Tapir version builds it (BuildVisibleItems), which the
+    // preferences keep so that an older Tapir reads them unchanged; the first item when the script is not there.
+    short GetPreferencesItemIndex (const GS::Ref<PopUpItemData>& script) const;
     static GS::UniString GetScriptPath (const PopUpItemData& popUpData);   // how palette.json names the script
     bool AddNewScript ();
     void DeleteScriptFromPopUp ();
