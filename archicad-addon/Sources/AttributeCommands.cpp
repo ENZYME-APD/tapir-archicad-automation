@@ -12101,6 +12101,44 @@ GS::Array<SettingsReferences> CollectFavoriteReferences ()
     return result;
 }
 
+// A graphic override rule that holds references: its guid and name.
+struct OverrideRuleReferences {
+    API_Guid                     guid;
+    GS::UniString                name;
+    GS::Array<ElementReference>  references;
+};
+
+// The references of every graphic override rule, the fields ScanOverrideRules rewrites for ReindexAttributes: the
+// line type, the fill and the surface the rule overrides with (a surface override can be a color instead, which
+// refers to no attribute). Returns false when the rules cannot be listed.
+bool CollectOverrideRuleReferences (GS::Array<OverrideRuleReferences>& result, GS::Array<GS::UniString>& warnings)
+{
+    GS::Array<API_Guid> ruleIds;
+    if (ACAPI_GraphicalOverride_GetOverrideRuleList (ruleIds) != NoError) {
+        return false;
+    }
+    for (const API_Guid& ruleId : ruleIds) {
+        API_OverrideRule rule = {};
+        rule.guid = ruleId;
+        if (ACAPI_GraphicalOverride_GetOverrideRuleById (rule) != NoError) {
+            warnings.Push (GS::UniString::Printf ("The graphic override rule %T could not be read.", APIGuidToString (ruleId).ToPrintf ()));
+            continue;
+        }
+        OverrideRuleReferences ruleReferences = { ruleId, rule.name, {} };
+        if (rule.style.lineType.hasValue) {
+            ruleReferences.references.Push ({ API_LinetypeID, GetAttributeIndex (rule.style.lineType.value), "lineType", false });
+        }
+        if (rule.style.fillOverride.hasValue) {
+            ruleReferences.references.Push ({ API_FilltypeID, GetAttributeIndex (rule.style.fillOverride.value), "fillOverride", false });
+        }
+        if (rule.style.surfaceOverride.hasValue && rule.style.surfaceOverride.value.IsType<API_AttributeIndex> ()) {
+            ruleReferences.references.Push ({ API_MaterialID, GetAttributeIndex (rule.style.surfaceOverride.value.Get<API_AttributeIndex> ()), "surfaceOverride", false });
+        }
+        result.Push (ruleReferences);
+    }
+    return true;
+}
+
 // The element that owns a sub-element (a curtain wall of its frame, a column of its segment, ...); APINULLGuid
 // for an element that is not part of another one.
 API_Guid GetParentElementGuid (const API_Guid& guid)
@@ -12197,10 +12235,10 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetInputParametersSchem
             },
             "sources": {
                 "type": "array",
-                "description": "What to check: the placed elements (element), the tool default settings (toolDefault) and the Favorites (favorite). All of them when omitted.",
+                "description": "What to check: the placed elements (element), the tool default settings (toolDefault), the Favorites (favorite) and the graphic override rules (overrideRule). All of them when omitted.",
                 "items": {
                     "type": "string",
-                    "enum": ["element", "toolDefault", "favorite"]
+                    "enum": ["element", "toolDefault", "favorite", "overrideRule"]
                 },
                 "minItems": 1
             }
@@ -12216,14 +12254,14 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetRawResponseSchema ()
         "properties": {
             "missingAttributes": {
                 "type": "array",
-                "description": "One item per reference to an attribute index that has no attribute in the project: first the placed elements in the order they were found (the floor plan first, then the views and layouts), then the tool defaults, then the Favorites.",
+                "description": "One item per reference to an attribute index that has no attribute in the project: first the placed elements in the order they were found (the floor plan first, then the views and layouts), then the tool defaults, then the Favorites, then the graphic override rules.",
                 "items": {
                     "type": "object",
                     "properties": {
                         "source": {
                             "type": "string",
-                            "enum": ["element", "toolDefault", "favorite"],
-                            "description": "What refers to the missing attribute: a placed element, the default settings of a tool, or a Favorite."
+                            "enum": ["element", "toolDefault", "favorite", "overrideRule"],
+                            "description": "What refers to the missing attribute: a placed element, the default settings of a tool, a Favorite, or a graphic override rule."
                         },
                         "elementId": {
                             "$ref": "#/ElementId",
@@ -12231,7 +12269,22 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetRawResponseSchema ()
                         },
                         "elementType": {
                             "type": "string",
-                            "description": "The element's type, as GetElementsByType names it: for a tool default or a Favorite the type of its tool."
+                            "description": "The element's type, as GetElementsByType names it: for a tool default or a Favorite the type of its tool. Missing for a graphic override rule."
+                        },
+                        "overrideRuleId": {
+                            "type": "object",
+                            "description": "The graphic override rule. Only for source overrideRule.",
+                            "properties": {
+                                "guid": {
+                                    "$ref": "#/Guid"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["guid"]
+                        },
+                        "overrideRuleName": {
+                            "type": "string",
+                            "description": "The name of the graphic override rule. Only for source overrideRule."
                         },
                         "favoriteName": {
                             "type": "string",
@@ -12282,11 +12335,11 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetRawResponseSchema ()
                         },
                         "index": {
                             "type": "integer",
-                            "description": "The attribute index the element, tool default or Favorite refers to, which no attribute of attributeType has."
+                            "description": "The attribute index the element, tool default, Favorite or graphic override rule refers to, which no attribute of attributeType has."
                         },
                         "field": {
                             "type": "string",
-                            "description": "The element's setting that holds the index, named as in the Archicad API (e.g. layer, contLtype, cWallFrameDefaults.material). Missing when gdlParameter is given."
+                            "description": "The element's setting that holds the index, named as in the Archicad API (e.g. layer, contLtype, cWallFrameDefaults.material); for a graphic override rule lineType, fillOverride or surfaceOverride. Missing when gdlParameter is given."
                         },
                         "gdlParameter": {
                             "type": "string",
@@ -12294,7 +12347,7 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetRawResponseSchema ()
                         }
                     },
                     "additionalProperties": false,
-                    "required": ["source", "elementType", "attributeType", "index"]
+                    "required": ["source", "attributeType", "index"]
                 }
             },
             "checkedElementCount": {
@@ -12308,6 +12361,10 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetRawResponseSchema ()
             "checkedFavoriteCount": {
                 "type": "integer",
                 "description": "The number of Favorites checked. Missing when the Favorites were not checked."
+            },
+            "checkedOverrideRuleCount": {
+                "type": "integer",
+                "description": "The number of graphic override rules checked. Missing when the rules were not checked or could not be listed."
             },
             "warnings": {
                 "type": "array",
@@ -12477,6 +12534,29 @@ GS::ObjectState GetMissingAttributesCommand::Execute (const GS::ObjectState& par
             }
         }
         response.Add ("checkedFavoriteCount", favoriteCount);
+    }
+    if (IsSourceRequested (requestedSources, "overrideRule")) {
+        GS::Array<OverrideRuleReferences> rules;
+        if (CollectOverrideRuleReferences (rules, warnings)) {
+            for (const OverrideRuleReferences& rule : rules) {
+                for (const ElementReference& reference : rule.references) {
+                    if (!IsMissingReference (reference, existingIndices)) {
+                        continue;
+                    }
+                    GS::ObjectState entry;
+                    entry.Add ("source", GS::UniString ("overrideRule"));
+                    entry.Add ("overrideRuleId", CreateGuidObjectState (rule.guid));
+                    entry.Add ("overrideRuleName", rule.name);
+                    entry.Add ("attributeType", typeNames[reference.type]);
+                    entry.Add ("index", reference.index);
+                    entry.Add ("field", reference.field);
+                    missingAttributes (entry);
+                }
+            }
+            response.Add ("checkedOverrideRuleCount", static_cast<Int32> (rules.GetSize ()));
+        } else {
+            warnings.Push ("The graphic override rules could not be listed, so they were not checked.");
+        }
     }
 
     if (!warnings.IsEmpty ()) {
