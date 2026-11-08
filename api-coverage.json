@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 17:32 UTC",
+ "generatedAt": "2026-11-08 18:09 UTC",
  "versions": [
   25,
   26,
@@ -102,7 +102,12 @@
    ],
    "status": "not applicable",
    "reason": "communication between add-ons",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2401,
+     "title": "SetCurrent3DStyle: refuse instead of crashing Archicad 29"
+    }
+   ],
    "issues": []
   },
   {
@@ -4014,7 +4019,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2401,
+     "title": "SetCurrent3DStyle: refuse instead of crashing Archicad 29"
+    }
+   ],
    "issues": [
     {
      "number": 2313,
@@ -5747,7 +5757,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2400,
+     "title": "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"
+    }
+   ],
    "issues": [
     {
      "number": 2313,
@@ -6698,7 +6713,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2400,
+     "title": "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"
+    }
+   ],
    "issues": []
   },
   {
@@ -7681,7 +7701,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2402,
+     "title": "GetLCSOfAnalyticalMembers: refuse non-members instead of crashing Archicad 29"
+    }
+   ],
    "issues": []
   },
   {
@@ -7723,7 +7748,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2400,
+     "title": "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"
+    }
+   ],
    "issues": [
     {
      "number": 1914,
@@ -9616,12 +9646,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2377,
-     "title": "Tapir palette: running mark in the script list, logo opens tapir-api.com, icon-only update button"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11575,7 +11600,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2397,
+     "title": "SetGDLParametersOfElements: report a parameter the Parameter Script sets back (#2396)"
+    }
+   ],
    "issues": []
   },
   {
@@ -19470,7 +19500,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2401,
+     "title": "SetCurrent3DStyle: refuse instead of crashing Archicad 29"
+    }
+   ],
    "issues": []
   },
   {
@@ -25040,7 +25075,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2400,
+     "title": "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"
+    }
+   ],
    "issues": []
   },
   {
@@ -30750,7 +30790,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {
@@ -31100,7 +31145,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {
@@ -32291,7 +32341,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {
@@ -33202,7 +33257,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {
@@ -33839,7 +33899,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {
@@ -34440,7 +34505,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {
@@ -34757,7 +34827,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {
@@ -37043,7 +37118,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2400,
+     "title": "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"
+    },
+    {
+     "number": 2397,
+     "title": "SetGDLParametersOfElements: report a parameter the Parameter Script sets back (#2396)"
+    }
+   ],
    "issues": []
   },
   {
@@ -38412,7 +38496,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {
@@ -38447,7 +38536,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {
@@ -38465,7 +38559,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {
@@ -38517,7 +38616,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {
@@ -38534,7 +38638,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {
@@ -38619,7 +38728,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {
@@ -38637,7 +38751,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {
@@ -38689,7 +38808,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {
@@ -38706,7 +38830,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {
@@ -39592,7 +39721,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {
@@ -40503,7 +40637,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {
@@ -41104,7 +41243,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {
@@ -41739,7 +41883,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {
@@ -43271,7 +43420,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {
@@ -43469,7 +43623,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {
@@ -52824,7 +52983,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2403,
+     "title": "MEP preference tables: ask the container before getting a table"
+    }
+   ],
    "issues": []
   },
   {

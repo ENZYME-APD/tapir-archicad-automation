@@ -1,22 +1,22 @@
-**783 of 788** applicable Tapir commands have a Grasshopper component (99 %): ✅ 568 done, 🔀 215 merged, 🚧 5 in progress, ➖ 1 not applicable.
+**786 of 788** applicable Tapir commands have a Grasshopper component (99 %): ✅ 568 done, 🔀 218 merged, 🚧 2 in progress, ➖ 1 not applicable.
 
-Parameters of the 783 used commands: 🟢 744 every parameter has an input, 🟡 36 the rest through a JSON input, 🟠 3 some parameters missing.
+Parameters of the 786 used commands: 🟢 748 every parameter has an input, 🟡 36 the rest through a JSON input, 🟠 2 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Application Commands | 100 % | 42 | 25 | 17 |  |  |  |  |  | 42 |  |  |
 | Project Commands | 100 % | 66 | 50 | 16 |  |  |  |  |  | 66 |  |  |
 | Custom Data Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
-| Element Commands | 99 % | 174 | 130 | 43 | 1 |  |  |  |  | 150 | 23 |  |
+| Element Commands | 100 % | 174 | 130 | 44 |  |  |  |  |  | 151 | 23 |  |
 | Element grouping Commands | 100 % | 15 | 11 | 4 |  |  |  |  |  | 15 |  |  |
-| Favorites Commands | 96 % | 27 | 18 | 8 | 1 |  |  |  |  | 25 |  | 1 |
+| Favorites Commands | 96 % | 27 | 18 | 8 | 1 |  |  |  |  | 26 |  |  |
 | Property Commands | 96 % | 31 | 21 | 9 | 1 |  |  |  |  | 30 |  |  |
 | Classification Commands | 100 % | 19 | 17 | 2 |  |  |  |  |  | 19 |  |  |
 | Attribute Commands | 100 % | 69 | 55 | 14 |  |  |  |  |  | 60 | 9 |  |
 | IFC Commands | 100 % | 15 | 13 | 2 |  |  |  |  |  | 15 |  |  |
 | Library Commands | 100 % | 51 | 18 | 33 |  |  |  |  |  | 51 |  |  |
 | Teamwork Commands | 100 % | 18 | 15 | 3 |  |  |  |  |  | 18 |  |  |
-| Navigator Commands | 97 % | 85 | 61 | 22 | 2 |  |  |  |  | 78 | 3 | 2 |
+| Navigator Commands | 100 % | 85 | 61 | 24 |  |  |  |  |  | 80 | 3 | 2 |
 | Graphic Override Commands | 100 % | 4 | 4 |  |  |  |  |  |  | 4 |  |  |
 | Issue Management Commands | 100 % | 11 | 11 |  |  |  |  |  |  | 11 |  |  |
 | Revision Management Commands | 100 % | 7 | 7 |  |  |  |  |  |  | 7 |  |  |
@@ -30,4 +30,4 @@ Parameters of the 783 used commands: 🟢 744 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 12 | 2 | 10 |  |  |  |  |  | 12 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-08 17:32 UTC.
+Updated 2026-11-08 18:09 UTC.

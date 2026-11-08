@@ -1,15 +1,15 @@
 {
- "generatedAt": "2026-11-08 17:32 UTC",
+ "generatedAt": "2026-11-08 18:09 UTC",
  "counts": {
   "done": 568,
-  "merged": 215,
-  "in progress": 5,
+  "merged": 218,
+  "in progress": 2,
   "not applicable": 1
  },
  "parameters": {
-  "all": 744,
+  "all": 748,
   "json": 36,
-  "partial": 3
+  "partial": 2
  },
  "items": [
   {
@@ -232,11 +232,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 3,
+   "parameterCount": 1,
    "coveredParameters": [
-    "screenPoints",
-    "screenPoints.h",
-    "screenPoints.v"
+    "screenPoints"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -576,11 +574,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 3,
+   "parameterCount": 1,
    "coveredParameters": [
-    "windows",
-    "windows.databaseId",
-    "windows.windowType"
+    "windows"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -1153,11 +1149,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 3,
+   "parameterCount": 1,
    "coveredParameters": [
-    "projectInfoGroups",
-    "projectInfoGroups.name",
-    "projectInfoGroups.projectInfoGroupId"
+    "projectInfoGroups"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -1199,11 +1193,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 3,
+   "parameterCount": 1,
    "coveredParameters": [
-    "projectInfoGroups",
-    "projectInfoGroups.beforeProjectInfoGroupId",
-    "projectInfoGroups.projectInfoGroupId"
+    "projectInfoGroups"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -1638,10 +1630,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 2,
+   "parameterCount": 1,
    "coveredParameters": [
-    "hotlinks",
-    "hotlinks.location"
+    "hotlinks"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -2108,11 +2099,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 3,
+   "parameterCount": 1,
    "coveredParameters": [
-    "values",
-    "values.preference",
-    "values.value"
+    "values"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -2215,22 +2204,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 14,
+   "parameterCount": 1,
    "coveredParameters": [
-    "placeInfo",
-    "placeInfo.altitude",
-    "placeInfo.day",
-    "placeInfo.hour",
-    "placeInfo.latitude",
-    "placeInfo.longitude",
-    "placeInfo.minute",
-    "placeInfo.month",
-    "placeInfo.north",
-    "placeInfo.second",
-    "placeInfo.sumTime",
-    "placeInfo.timeZoneInMinutes",
-    "placeInfo.timeZoneOffset",
-    "placeInfo.year"
+    "placeInfo"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -2853,19 +2829,32 @@
    "group": "Element Commands",
    "version": "1.8.1",
    "brief": "Returns the elements, or with countOnly only their number, that match all the given criteria: element types, home stories, layers, Archicad's element filter flags and property criteria (a value compared in internal units, or a value status such as hasValue, isUserUndefined, isNotAvailable, isDefault or hasCustomValue). An unknown type, property or operator is an error, not ignored. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 12,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2393,
-     "title": "[2/4] Grasshopper: ElementsByCriteria component"
+     "name": "GetElementsByCriteriaComponent",
+     "path": "Components/ElementsComponents/GetElementsByCriteriaComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 12,
+   "coveredParameters": [
+    "countOnly",
+    "filters",
+    "floorIndices",
+    "layerIndices",
+    "limit",
+    "propertyCriteria",
+    "propertyCriteria.operator",
+    "propertyCriteria.propertyGroupName",
+    "propertyCriteria.propertyId",
+    "propertyCriteria.propertyName",
+    "propertyCriteria.value",
+    "types"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2391,
@@ -3030,11 +3019,11 @@
    "parameterCount": 4,
    "coveredParameters": [
     "elements",
-    "fields"
+    "fields",
+    "filter"
    ],
    "missingParameters": [
-    "additionalFields",
-    "filter"
+    "additionalFields"
    ],
    "pullRequests": [],
    "issues": [
@@ -8672,12 +8661,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 4,
+   "parameterCount": 1,
    "coveredParameters": [
-    "favoritesFromElements",
-    "favoritesFromElements.elementId",
-    "favoritesFromElements.favorite",
-    "favoritesFromElements.folder"
+    "favoritesFromElements"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -8748,22 +8734,20 @@
      "path": "Components/FavoritesComponents/ApplyFavoritesToElementsComponent.cs"
     }
    ],
-   "parameters": "partial",
-   "parameterCount": 10,
+   "parameters": "all",
+   "parameterCount": 9,
    "coveredParameters": [
     "applyCategories",
     "applyClassifications",
     "applyProperties",
     "applySettings",
+    "elements",
+    "favorite",
     "favoritesToApply",
-    "favoritesToApply.elementId",
-    "favoritesToApply.favorite",
+    "filter",
     "keepFields"
    ],
-   "missingParameters": [
-    "elements",
-    "filter"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": [
     {
@@ -8985,14 +8969,12 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 6,
+   "parameterCount": 4,
    "coveredParameters": [
     "conflictPolicy",
     "folder",
     "name",
-    "source",
-    "source.favoriteName",
-    "source.toolDefault"
+    "source"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -9103,11 +9085,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 3,
+   "parameterCount": 1,
    "coveredParameters": [
-    "favorites",
-    "favorites.folderPath",
-    "favorites.name"
+    "favorites"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -9557,13 +9537,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 5,
+   "parameterCount": 1,
    "coveredParameters": [
-    "attributes",
-    "attributes.attributeId",
-    "attributes.properties",
-    "attributes.properties.propertyId",
-    "attributes.properties.propertyValue"
+    "attributes"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -10143,11 +10119,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 3,
+   "parameterCount": 1,
    "coveredParameters": [
-    "attributeClassifications",
-    "attributeClassifications.attributeId",
-    "attributeClassifications.classificationId"
+    "attributeClassifications"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -12410,14 +12384,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 6,
+   "parameterCount": 1,
    "coveredParameters": [
-    "elementIFCPropertyValues",
-    "elementIFCPropertyValues.elementId",
-    "elementIFCPropertyValues.propertyName",
-    "elementIFCPropertyValues.propertySetName",
-    "elementIFCPropertyValues.type",
-    "elementIFCPropertyValues.value"
+    "elementIFCPropertyValues"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -12460,17 +12429,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 9,
+   "parameterCount": 1,
    "coveredParameters": [
-    "elementIFCClassificationReferences",
-    "elementIFCClassificationReferences.elementId",
-    "elementIFCClassificationReferences.identification",
-    "elementIFCClassificationReferences.location",
-    "elementIFCClassificationReferences.name",
-    "elementIFCClassificationReferences.referencedSource",
-    "elementIFCClassificationReferences.referencedSource.description",
-    "elementIFCClassificationReferences.referencedSource.edition",
-    "elementIFCClassificationReferences.referencedSource.editionDate"
+    "elementIFCClassificationReferences"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -12490,14 +12451,10 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 6,
+   "parameterCount": 2,
    "coveredParameters": [
     "dryRun",
-    "elementIFCClassificationReferences",
-    "elementIFCClassificationReferences.elementId",
-    "elementIFCClassificationReferences.identification",
-    "elementIFCClassificationReferences.referencedSource",
-    "elementIFCClassificationReferences.referencedSource.name"
+    "elementIFCClassificationReferences"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -12645,10 +12602,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 2,
+   "parameterCount": 1,
    "coveredParameters": [
-    "embeddedLibraryItems",
-    "embeddedLibraryItems.path"
+    "embeddedLibraryItems"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -12668,26 +12624,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 19,
+   "parameterCount": 2,
    "coveredParameters": [
     "libraryParts",
-    "libraryParts.a",
-    "libraryParts.b",
-    "libraryParts.masterScript",
-    "libraryParts.name",
-    "libraryParts.parameterScript",
-    "libraryParts.parameters",
-    "libraryParts.parameters.description",
-    "libraryParts.parameters.isHidden",
-    "libraryParts.parameters.value",
-    "libraryParts.parentId",
-    "libraryParts.parentName",
-    "libraryParts.path",
-    "libraryParts.propertiesScript",
-    "libraryParts.script2D",
-    "libraryParts.script3D",
-    "libraryParts.type",
-    "libraryParts.uiScript",
     "overwriteExisting"
    ],
    "missingParameters": [],
@@ -12820,11 +12759,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 3,
+   "parameterCount": 1,
    "coveredParameters": [
-    "libraryParts",
-    "libraryParts.index",
-    "libraryParts.password"
+    "libraryParts"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -12869,11 +12806,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 3,
+   "parameterCount": 1,
    "coveredParameters": [
-    "libraryParts",
-    "libraryParts.guid",
-    "libraryParts.name"
+    "libraryParts"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -13031,13 +12966,10 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 6,
+   "parameterCount": 3,
    "coveredParameters": [
     "includeScripts",
     "libraryParts",
-    "libraryParts.index",
-    "libraryParts.name",
-    "libraryParts.password",
     "subTypeOf"
    ],
    "missingParameters": [],
@@ -13058,12 +12990,10 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 4,
+   "parameterCount": 2,
    "coveredParameters": [
     "add",
-    "remove",
-    "remove.name",
-    "remove.path"
+    "remove"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -13083,10 +13013,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 2,
+   "parameterCount": 1,
    "coveredParameters": [
-    "libraryParts",
-    "libraryParts.name"
+    "libraryParts"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -13106,10 +13035,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 2,
+   "parameterCount": 1,
    "coveredParameters": [
-    "libraryParts",
-    "libraryParts.index"
+    "libraryParts"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -13239,20 +13167,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 12,
+   "parameterCount": 1,
    "coveredParameters": [
-    "libraryParts",
-    "libraryParts.deleteScripts",
-    "libraryParts.name",
-    "libraryParts.scripts",
-    "libraryParts.scripts.2d",
-    "libraryParts.scripts.3d",
-    "libraryParts.scripts.backwardMigration",
-    "libraryParts.scripts.forwardMigration",
-    "libraryParts.scripts.interface",
-    "libraryParts.scripts.master",
-    "libraryParts.scripts.parameter",
-    "libraryParts.scripts.properties"
+    "libraryParts"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -13272,20 +13189,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 12,
+   "parameterCount": 1,
    "coveredParameters": [
-    "libraryParts",
-    "libraryParts.metadata",
-    "libraryParts.metadata.author",
-    "libraryParts.metadata.hierarchicalPagesUsed",
-    "libraryParts.metadata.isSubtype",
-    "libraryParts.metadata.keywords",
-    "libraryParts.metadata.license",
-    "libraryParts.metadata.licenseVersion",
-    "libraryParts.metadata.password",
-    "libraryParts.metadata.placeable",
-    "libraryParts.metadata.uiDefault",
-    "libraryParts.name"
+    "libraryParts"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -13607,14 +13513,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 6,
+   "parameterCount": 1,
    "coveredParameters": [
-    "libraryParts",
-    "libraryParts.elementId",
-    "libraryParts.keepMainGuid",
-    "libraryParts.libraryPartName",
-    "libraryParts.newName",
-    "libraryParts.targetFolder"
+    "libraryParts"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -13634,11 +13535,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 3,
+   "parameterCount": 1,
    "coveredParameters": [
-    "libraryParts",
-    "libraryParts.index",
-    "libraryParts.path"
+    "libraryParts"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -14775,10 +14674,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 3,
+   "parameterCount": 2,
    "coveredParameters": [
     "modelViewOptionId",
-    "modelViewOptionId.guid",
     "name"
    ],
    "missingParameters": [],
@@ -14844,12 +14742,10 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 4,
+   "parameterCount": 2,
    "coveredParameters": [
     "modelViewOptionIndex",
-    "viewOptions",
-    "viewOptions.modelViewOptions",
-    "viewOptions.onScreenViewOptions"
+    "viewOptions"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -15492,23 +15388,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 27,
+   "parameterCount": 13,
    "coveredParameters": [
     "attributeOptions",
-    "attributeOptions.elemPen",
-    "attributeOptions.hiddenEdgeLinePen",
-    "attributeOptions.hiddenEdgeLineType",
-    "attributeOptions.shadContPen",
-    "attributeOptions.shadFill",
-    "attributeOptions.shadFillBkgPen",
-    "attributeOptions.shadFillPen",
-    "attributeOptions.shouldUseElemPen",
-    "attributeOptions.shouldUseUncutSurfaceFill",
-    "attributeOptions.shouldUseUniformCutAttributes",
-    "attributeOptions.uncutSurfaceBkgPen",
-    "attributeOptions.uniformFillBkgPen",
-    "attributeOptions.uniformFillPen",
-    "attributeOptions.uniformLineType",
     "boundaryDisplay",
     "boundaryLineType",
     "boundaryPen",
@@ -16040,19 +15922,21 @@
    "group": "Navigator Commands",
    "version": "1.8.1",
    "brief": "Gets every configurable setting of the given Section and Elevation elements, with their name and reference ID.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2392,
-     "title": "[1/4] Grasshopper: GetSectionsAndElevationsDetails and SetSectionsAndElevationsDetails components"
+     "name": "GetSectionsAndElevationsDetailsComponent",
+     "path": "Components/NavigatorComponents/GetSectionsAndElevationsDetailsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2391,
@@ -16065,19 +15949,23 @@
    "group": "Navigator Commands",
    "version": "1.8.1",
    "brief": "Sets settings of the given Section and Elevation elements: pens, line types, horizontal and vertical range, model effects, story handles and markers. The name and the reference ID are changed with ModifySections.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2392,
-     "title": "[1/4] Grasshopper: GetSectionsAndElevationsDetails and SetSectionsAndElevationsDetails components"
+     "name": "SetSectionsAndElevationsDetailsComponent",
+     "path": "Components/NavigatorComponents/SetSectionsAndElevationsDetailsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "elementsWithDetails",
+    "elementsWithDetails.details",
+    "elementsWithDetails.elementId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2391,
@@ -16363,15 +16251,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 7,
+   "parameterCount": 1,
    "coveredParameters": [
-    "viewpoints",
-    "viewpoints.data",
-    "viewpoints.displayId",
-    "viewpoints.displayName",
-    "viewpoints.viewSettingsFlags",
-    "viewpoints.viewpointId",
-    "viewpoints.viewpointId.guid"
+    "viewpoints"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -18132,24 +18014,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 16,
+   "parameterCount": 1,
    "coveredParameters": [
-    "routingElementsData",
-    "routingElementsData.crossSectionHeight",
-    "routingElementsData.crossSectionReferenceId",
-    "routingElementsData.crossSectionShape",
-    "routingElementsData.crossSectionWidth",
-    "routingElementsData.defaults",
-    "routingElementsData.defaults.routingNode",
-    "routingElementsData.defaults.routingNode.elbow",
-    "routingElementsData.defaults.routingNode.elbow.factorRadius",
-    "routingElementsData.defaults.routingNode.transition",
-    "routingElementsData.domain",
-    "routingElementsData.floorIndex",
-    "routingElementsData.layerIndex",
-    "routingElementsData.mepSystemId",
-    "routingElementsData.nodeCoordinates",
-    "routingElementsData.preferenceTableId"
+    "routingElementsData"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -18169,28 +18036,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 20,
+   "parameterCount": 1,
    "coveredParameters": [
-    "elementsData",
-    "elementsData.defaults",
-    "elementsData.defaults.insulationThickness",
-    "elementsData.defaults.removeInsulation",
-    "elementsData.domain",
-    "elementsData.floorIndex",
-    "elementsData.libraryPartId",
-    "elementsData.mepSystemId",
-    "elementsData.orientationDirection",
-    "elementsData.orientationRotation",
-    "elementsData.ports",
-    "elementsData.ports.diameter",
-    "elementsData.ports.height",
-    "elementsData.ports.portIndex",
-    "elementsData.ports.shape",
-    "elementsData.ports.width",
-    "elementsData.position",
-    "elementsData.type",
-    "elementsData.xSize",
-    "elementsData.ySize"
+    "elementsData"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -18210,30 +18058,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 22,
+   "parameterCount": 1,
    "coveredParameters": [
-    "routingElementsData",
-    "routingElementsData.anchor",
-    "routingElementsData.branchPreferenceTableId",
-    "routingElementsData.connectionStyle",
-    "routingElementsData.crossSectionHeight",
-    "routingElementsData.crossSectionReferenceId",
-    "routingElementsData.crossSectionShape",
-    "routingElementsData.crossSectionWidth",
-    "routingElementsData.cutPlanePosition",
-    "routingElementsData.elementId",
-    "routingElementsData.flangeSize",
-    "routingElementsData.floorPlanDisplayOption",
-    "routingElementsData.insulationThickness",
-    "routingElementsData.mepSystemId",
-    "routingElementsData.nodePositions",
-    "routingElementsData.onStoryVisibility",
-    "routingElementsData.preferenceTableId",
-    "routingElementsData.preferredTransitionPlacement",
-    "routingElementsData.referenceLineOffsetX",
-    "routingElementsData.referenceLineOffsetY",
-    "routingElementsData.showProjection",
-    "routingElementsData.wallThickness"
+    "routingElementsData"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -18253,15 +18080,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 7,
+   "parameterCount": 1,
    "coveredParameters": [
-    "portsData",
-    "portsData.connectionStyle",
-    "portsData.flowDirection",
-    "portsData.nominalSize",
-    "portsData.outerDiameter",
-    "portsData.portId",
-    "portsData.shape"
+    "portsData"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -18281,11 +18102,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 3,
+   "parameterCount": 1,
    "coveredParameters": [
-    "connectionsData",
-    "connectionsData.connectToId",
-    "connectionsData.routingElementId"
+    "connectionsData"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -18305,11 +18124,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 3,
+   "parameterCount": 1,
    "coveredParameters": [
-    "portPairs",
-    "portPairs.otherPortId",
-    "portPairs.portId"
+    "portPairs"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -18352,15 +18169,13 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 9,
+   "parameterCount": 7,
    "coveredParameters": [
     "anglesToDelete",
     "domain",
     "referenceIdsToDelete",
     "tables",
     "tablesToAdd",
-    "tablesToAdd.name",
-    "tablesToAdd.type",
     "tablesToDelete"
    ],
    "missingParameters": [
@@ -18403,10 +18218,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 2,
+   "parameterCount": 1,
    "coveredParameters": [
-    "systemGroupsData",
-    "systemGroupsData.name"
+    "systemGroupsData"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -18426,13 +18240,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 5,
+   "parameterCount": 1,
    "coveredParameters": [
-    "physicalSystemsData",
-    "physicalSystemsData.mepSystemId",
-    "physicalSystemsData.name",
-    "physicalSystemsData.rootElementId",
-    "physicalSystemsData.systemGroupId"
+    "physicalSystemsData"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -18452,11 +18262,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 3,
+   "parameterCount": 1,
    "coveredParameters": [
-    "systemGroupsData",
-    "systemGroupsData.name",
-    "systemGroupsData.systemGroupId"
+    "systemGroupsData"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -18476,13 +18284,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 5,
+   "parameterCount": 1,
    "coveredParameters": [
-    "physicalSystemsData",
-    "physicalSystemsData.mepSystemId",
-    "physicalSystemsData.name",
-    "physicalSystemsData.physicalSystemId",
-    "physicalSystemsData.rootElementId"
+    "physicalSystemsData"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -18502,10 +18306,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 2,
+   "parameterCount": 1,
    "coveredParameters": [
-    "physicalSystems",
-    "physicalSystems.physicalSystemId"
+    "physicalSystems"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -18592,16 +18395,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 8,
+   "parameterCount": 1,
    "coveredParameters": [
-    "flexibleSegmentsData",
-    "flexibleSegmentsData.controlPoints",
-    "flexibleSegmentsData.domain",
-    "flexibleSegmentsData.endDirection",
-    "flexibleSegmentsData.endOrientation",
-    "flexibleSegmentsData.polyline",
-    "flexibleSegmentsData.startDirection",
-    "flexibleSegmentsData.startOrientation"
+    "flexibleSegmentsData"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -18621,16 +18417,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 8,
+   "parameterCount": 1,
    "coveredParameters": [
-    "takeOffsData",
-    "takeOffsData.defaults",
-    "takeOffsData.defaults.removeInsulation",
-    "takeOffsData.distanceFromBeginning",
-    "takeOffsData.domain",
-    "takeOffsData.length",
-    "takeOffsData.rotationAroundMainAxis",
-    "takeOffsData.segmentId"
+    "takeOffsData"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -18650,17 +18439,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 9,
+   "parameterCount": 1,
    "coveredParameters": [
-    "elements",
-    "elements.anchorPoint",
-    "elements.controlPoints",
-    "elements.elementId",
-    "elements.height",
-    "elements.libraryPartId",
-    "elements.orientation",
-    "elements.polyline",
-    "elements.width"
+    "elements"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -18702,22 +18483,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 14,
+   "parameterCount": 1,
    "coveredParameters": [
-    "elements",
-    "elements.elbowParameters",
-    "elements.elementId",
-    "elements.routingNodeParameters",
-    "elements.routingNodeParameters.elbow",
-    "elements.routingNodeParameters.elbow.factorRadius",
-    "elements.routingNodeParameters.elbow.preferenceTableId",
-    "elements.routingNodeParameters.transition",
-    "elements.routingSegmentParameters",
-    "elements.routingSegmentParameters.crossSectionHeight",
-    "elements.routingSegmentParameters.crossSectionReferenceId",
-    "elements.routingSegmentParameters.crossSectionShape",
-    "elements.routingSegmentParameters.crossSectionWidth",
-    "elements.transitionParameters"
+    "elements"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -18824,19 +18592,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 11,
+   "parameterCount": 1,
    "coveredParameters": [
-    "electricalPanelsData",
-    "electricalPanelsData.circuitIdStyle",
-    "electricalPanelsData.circuitNamePrefix",
-    "electricalPanelsData.isReflected",
-    "electricalPanelsData.libraryPartId",
-    "electricalPanelsData.orientation",
-    "electricalPanelsData.panelName",
-    "electricalPanelsData.position",
-    "electricalPanelsData.rotation",
-    "electricalPanelsData.xSize",
-    "electricalPanelsData.ySize"
+    "electricalPanelsData"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -18856,20 +18614,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 12,
+   "parameterCount": 1,
    "coveredParameters": [
-    "electricalDevicesData",
-    "electricalDevicesData.apparentPower",
-    "electricalDevicesData.circuitId",
-    "electricalDevicesData.isApparentPowerEnabled",
-    "electricalDevicesData.isReflected",
-    "electricalDevicesData.libraryPartId",
-    "electricalDevicesData.loadClassificationName",
-    "electricalDevicesData.orientation",
-    "electricalDevicesData.position",
-    "electricalDevicesData.rotation",
-    "electricalDevicesData.xSize",
-    "electricalDevicesData.ySize"
+    "electricalDevicesData"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -18889,20 +18636,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 12,
+   "parameterCount": 1,
    "coveredParameters": [
-    "electricalPanelsData",
-    "electricalPanelsData.anchorPoint",
-    "electricalPanelsData.circuitIdStyle",
-    "electricalPanelsData.circuitNamePrefix",
-    "electricalPanelsData.elementId",
-    "electricalPanelsData.isReflected",
-    "electricalPanelsData.libraryPartId",
-    "electricalPanelsData.orientation",
-    "electricalPanelsData.panelName",
-    "electricalPanelsData.rotation",
-    "electricalPanelsData.xSize",
-    "electricalPanelsData.ySize"
+    "electricalPanelsData"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -18922,16 +18658,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 8,
+   "parameterCount": 1,
    "coveredParameters": [
-    "electricalCircuitsData",
-    "electricalCircuitsData.description",
-    "electricalCircuitsData.electricalPanelId",
-    "electricalCircuitsData.isPhaseAUsed",
-    "electricalCircuitsData.isPhaseBUsed",
-    "electricalCircuitsData.isPhaseCUsed",
-    "electricalCircuitsData.voltage",
-    "electricalCircuitsData.wiringTypeName"
+    "electricalCircuitsData"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -18973,16 +18702,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 8,
+   "parameterCount": 1,
    "coveredParameters": [
-    "electricalCircuitsData",
-    "electricalCircuitsData.description",
-    "electricalCircuitsData.elementId",
-    "electricalCircuitsData.isPhaseAUsed",
-    "electricalCircuitsData.isPhaseBUsed",
-    "electricalCircuitsData.isPhaseCUsed",
-    "electricalCircuitsData.voltage",
-    "electricalCircuitsData.wiringTypeName"
+    "electricalCircuitsData"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -19002,20 +18724,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 12,
+   "parameterCount": 1,
    "coveredParameters": [
-    "electricalDevicesData",
-    "electricalDevicesData.anchorPoint",
-    "electricalDevicesData.apparentPower",
-    "electricalDevicesData.elementId",
-    "electricalDevicesData.isApparentPowerEnabled",
-    "electricalDevicesData.isReflected",
-    "electricalDevicesData.libraryPartId",
-    "electricalDevicesData.loadClassificationName",
-    "electricalDevicesData.orientation",
-    "electricalDevicesData.rotation",
-    "electricalDevicesData.xSize",
-    "electricalDevicesData.ySize"
+    "electricalDevicesData"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -19035,11 +18746,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 3,
+   "parameterCount": 1,
    "coveredParameters": [
-    "connectionsData",
-    "connectionsData.circuitId",
-    "connectionsData.elementId"
+    "connectionsData"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -19112,20 +18821,10 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 12,
+   "parameterCount": 2,
    "coveredParameters": [
     "keys",
-    "keys.angle",
-    "keys.beginReferenceId",
-    "keys.branchAxisAngle",
-    "keys.branchAxisReferenceId",
-    "keys.endReferenceId",
-    "keys.index",
-    "keys.mainAxisReferenceId",
-    "keys.referenceId",
-    "keys.shape",
-    "tableId",
-    "tableId.guid"
+    "tableId"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -19145,34 +18844,10 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 26,
+   "parameterCount": 2,
    "coveredParameters": [
     "rows",
-    "rows.key",
-    "rows.key.angle",
-    "rows.key.beginReferenceId",
-    "rows.key.branchAxisAngle",
-    "rows.key.branchAxisReferenceId",
-    "rows.key.endReferenceId",
-    "rows.key.index",
-    "rows.key.mainAxisReferenceId",
-    "rows.key.referenceId",
-    "rows.key.shape",
-    "rows.values",
-    "rows.values.beginDiameter",
-    "rows.values.branchAxisDiameter",
-    "rows.values.branchOffset",
-    "rows.values.connectionLength",
-    "rows.values.description",
-    "rows.values.diameter",
-    "rows.values.endDiameter",
-    "rows.values.length",
-    "rows.values.mainAxisDiameter",
-    "rows.values.radius",
-    "rows.values.value",
-    "rows.values.wallThickness",
-    "tableId",
-    "tableId.guid"
+    "tableId"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -19192,34 +18867,10 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 26,
+   "parameterCount": 2,
    "coveredParameters": [
     "rows",
-    "rows.key",
-    "rows.key.angle",
-    "rows.key.beginReferenceId",
-    "rows.key.branchAxisAngle",
-    "rows.key.branchAxisReferenceId",
-    "rows.key.endReferenceId",
-    "rows.key.index",
-    "rows.key.mainAxisReferenceId",
-    "rows.key.referenceId",
-    "rows.key.shape",
-    "rows.values",
-    "rows.values.beginDiameter",
-    "rows.values.branchAxisDiameter",
-    "rows.values.branchOffset",
-    "rows.values.connectionLength",
-    "rows.values.description",
-    "rows.values.diameter",
-    "rows.values.endDiameter",
-    "rows.values.length",
-    "rows.values.mainAxisDiameter",
-    "rows.values.radius",
-    "rows.values.value",
-    "rows.values.wallThickness",
-    "tableId",
-    "tableId.guid"
+    "tableId"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -19239,20 +18890,10 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 12,
+   "parameterCount": 2,
    "coveredParameters": [
     "keys",
-    "keys.angle",
-    "keys.beginReferenceId",
-    "keys.branchAxisAngle",
-    "keys.branchAxisReferenceId",
-    "keys.endReferenceId",
-    "keys.index",
-    "keys.mainAxisReferenceId",
-    "keys.referenceId",
-    "keys.shape",
-    "tableId",
-    "tableId.guid"
+    "tableId"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -19570,13 +19211,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 5,
+   "parameterCount": 1,
    "coveredParameters": [
-    "loadGroups",
-    "loadGroups.groupType",
-    "loadGroups.loadType",
-    "loadGroups.name",
-    "loadGroups.relation"
+    "loadGroups"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -19596,15 +19233,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 7,
+   "parameterCount": 1,
    "coveredParameters": [
-    "loadCases",
-    "loadCases.actionType",
-    "loadCases.description",
-    "loadCases.duration",
-    "loadCases.loadGroupId",
-    "loadCases.loadType",
-    "loadCases.name"
+    "loadCases"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -19624,15 +19255,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 7,
+   "parameterCount": 1,
    "coveredParameters": [
-    "loadCombinations",
-    "loadCombinations.category",
-    "loadCombinations.description",
-    "loadCombinations.loadFactors",
-    "loadCombinations.name",
-    "loadCombinations.nationalStandard",
-    "loadCombinations.type"
+    "loadCombinations"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -19652,10 +19277,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 2,
+   "parameterCount": 1,
    "coveredParameters": [
-    "loadGroupIds",
-    "loadGroupIds.loadGroupId"
+    "loadGroupIds"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -19675,10 +19299,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 2,
+   "parameterCount": 1,
    "coveredParameters": [
-    "loadCaseIds",
-    "loadCaseIds.loadCaseId"
+    "loadCaseIds"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -19698,10 +19321,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 2,
+   "parameterCount": 1,
    "coveredParameters": [
-    "loadCombinationIds",
-    "loadCombinationIds.loadCombinationId"
+    "loadCombinationIds"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -19813,11 +19435,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 3,
+   "parameterCount": 1,
    "coveredParameters": [
-    "releases",
-    "releases.elementId",
-    "releases.release"
+    "releases"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -19859,12 +19479,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 4,
+   "parameterCount": 1,
    "coveredParameters": [
-    "stretches",
-    "stretches.begAdditionalLength",
-    "stretches.elementId",
-    "stretches.endAdditionalLength"
+    "stretches"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -19884,11 +19501,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 3,
+   "parameterCount": 1,
    "coveredParameters": [
-    "memberParts",
-    "memberParts.intersectingMemberPartRef",
-    "memberParts.memberPartRef"
+    "memberParts"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -20093,13 +19708,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 5,
+   "parameterCount": 1,
    "coveredParameters": [
-    "members",
-    "members.curveMember",
-    "members.favoriteName",
-    "members.segmentedSurfaceMembers",
-    "members.surfaceMember"
+    "members"
    ],
    "missingParameters": [],
    "pullRequests": [],
