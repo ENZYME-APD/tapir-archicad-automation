@@ -1,5 +1,5 @@
 {
-  "title": "3D styles: Create3DStyles starts from the current style, Change3DStyles changes only the given fields, SetCurrent3DStyle switches the style Get3DStyles and Get3DStyleDetails report",
+  "title": "3D styles: Create3DStyles starts from the current style, Change3DStyles changes only the given fields, SetCurrent3DStyle refuses instead of crashing Archicad, Get3DStyles and Get3DStyleDetails report",
   "minTapir": "1.8.1",
   "minArchicad": "27",
   "steps": [
@@ -101,33 +101,24 @@
       ]
     },
     {
-      "id": "make it the current style",
+      "id": "making it the current style is refused",
       "command": "SetCurrent3DStyle",
       "creates": false,
       "params": {
         "styleName": "TapirCheck style A"
       },
       "expect": [
-        { "path": "success", "eq": true }
+        { "path": "success", "eq": false, "name": "refused: Archicad's function crashes Archicad" },
+        { "path": "error.message", "contains": "not available", "name": "the refusal, not an unknown name" }
       ]
     },
     {
-      "id": "the current style is the new one",
+      "id": "the current style is unchanged",
       "command": "Get3DStyles",
       "creates": false,
       "params": {},
       "expect": [
-        { "path": "currentStyleName", "eq": "TapirCheck style A" }
-      ]
-    },
-    {
-      "id": "details without names follow the current style",
-      "command": "Get3DStyleDetails",
-      "creates": false,
-      "params": {},
-      "expect": [
-        { "path": "styles[0].name", "eq": "TapirCheck style A" },
-        { "path": "styles[0].castShadowPercent", "eq": 70 }
+        { "path": "currentStyleName", "eq": "${current0}", "name": "the style of before" }
       ]
     },
     {
@@ -199,14 +190,8 @@
       "creates": false,
       "params": {},
       "expect": [
-        { "path": "currentStyleName", "eq": "TapirCheck style A" }
+        { "path": "currentStyleName", "eq": "${current0}", "name": "the style of before" }
       ]
-    }
-  ],
-  "teardown": [
-    {
-      "command": "SetCurrent3DStyle",
-      "params": { "styleName": "${current0}" }
     }
   ]
 }
