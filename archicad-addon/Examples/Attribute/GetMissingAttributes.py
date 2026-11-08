@@ -1,6 +1,6 @@
-"""Lists the references of placed elements, tool defaults, Favorites, graphic override rules and Model View Options to attributes that are not in the project with GetMissingAttributes, one line per reference, like the missing attributes report of the GDL palette.
+"""Lists the references of placed elements, tool defaults, Favorites, graphic override rules, Model View Options and attributes to attributes that are not in the project with GetMissingAttributes, one line per reference, like the missing attributes report of the GDL palette.
 
-Leave out 'attributeTypes' to check every attribute type, and 'sources' to check elements, tool defaults, Favorites, graphic override rules and Model View Options. Nothing is changed. Requires Archicad 27 or later.
+Leave out 'attributeTypes' to check every attribute type, and 'sources' to check elements, tool defaults, Favorites, graphic override rules, Model View Options and the attributes that refer to other attributes (composites, building materials, surfaces, MEP systems, profiles). Nothing is changed. Requires Archicad 27 or later.
 """
 import aclib
 
@@ -9,8 +9,9 @@ aclib.PrintJson (result)
 
 print (f"{len (result['missingAttributes'])} missing references in {result['checkedElementCount']} elements, "
        f"{result.get ('checkedToolDefaultCount', 0)} tool defaults, {result.get ('checkedFavoriteCount', 0)} Favorites, "
-       f"{result.get ('checkedOverrideRuleCount', 0)} graphic override rules "
-       f"and {result.get ('checkedModelViewOptionCount', 0)} Model View Options combinations")
+       f"{result.get ('checkedOverrideRuleCount', 0)} graphic override rules, "
+       f"{result.get ('checkedModelViewOptionCount', 0)} Model View Options combinations "
+       f"and {result.get ('checkedAttributeCount', 0)} attributes")
 for missing in result['missingAttributes']:
     usedBy = missing.get ('field') or missing.get ('gdlParameter')
     if missing['source'] == 'element':
@@ -24,6 +25,8 @@ for missing in result['missingAttributes']:
         what = f"Model View Options '{missing['modelViewOptionName']}'"
         if 'gdlOptionsName' in missing:
             what += f" ({missing['gdlOptionsName']})"
+    elif missing['source'] == 'attribute':
+        what = f"{missing['ownerAttributeType']} '{missing['ownerAttributeName']}'"
     else:
         what = f"Tool default of {missing['elementType']}"
     print (f"{what} | {missing['attributeType']} {missing['index']} ({usedBy})")
