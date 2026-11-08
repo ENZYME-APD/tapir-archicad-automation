@@ -840,11 +840,13 @@ static bool IsGivenNumberKept (API_AddParID typeID, double kept, double given)
     }
 }
 
-// A given string as it is written: cut to MaxStrValueLength - 1 characters, as SetParamValueString
-// and ApplyArrayParameterChanges cut it.
-static GS::UniString ToWrittenString (const GS::UniString& given)
+// A given string as it can be read back: cut to MaxStrValueLength - 1 characters, as
+// SetParamValueString and ApplyArrayParameterChanges cut it, and a simple value further to
+// API_UAddParStrLen - 1, because API_AddParType::value.uStr holds no more (array items have no
+// such limit).
+static GS::UniString ToWrittenString (const GS::UniString& given, USize maxLength = MaxStrValueLength)
 {
-    return GS::UniString (given.ToUStr (0, GS::Min (given.GetLength (), MaxStrValueLength - 1)).Get ());
+    return GS::UniString (given.ToUStr (0, GS::Min (given.GetLength (), maxLength - 1)).Get ());
 }
 
 // Whether a parameter holds exactly the given value. A simple value is given with dim1 = dim2 = 0
@@ -860,7 +862,7 @@ static bool IsGivenValueKept (const API_AddParType& param, const SetGDLParameter
             return false;
         }
         if (isString) {
-            return GS::UniString (param.value.uStr) == ToWrittenString (given.stringValues[0]);
+            return GS::UniString (param.value.uStr) == ToWrittenString (given.stringValues[0], static_cast<USize> (API_UAddParStrLen));
         }
         return IsGivenNumberKept (given.typeID, param.value.real, given.numberValues[0]);
     }
