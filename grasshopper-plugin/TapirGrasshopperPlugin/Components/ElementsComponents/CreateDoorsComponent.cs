@@ -1,3 +1,4 @@
+using Grasshopper.Kernel;
 using System;
 using System.Collections.Generic;
 
@@ -14,6 +15,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 GroupNames.ElementCreation)
         {
         }
+
+        // Replaced by the Doors tool component (DesignToolsComponents), which
+        // covers all of these inputs; hidden for one release, then removed.
+        public override GH_Exposure Exposure => GH_Exposure.hidden;
 
         protected override string ArrayKey => "doorsData";
 
