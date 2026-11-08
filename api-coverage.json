@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 09:46 UTC",
+ "generatedAt": "2026-11-08 10:18 UTC",
  "versions": [
   25,
   26,
@@ -13,8 +13,7 @@
   "done": 1908,
   "skipped": 29,
   "merged": 362,
-  "claimed": 1,
-  "open": 10
+  "open": 11
  },
  "items": [
   {
@@ -2761,12 +2760,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2269,
-     "title": "Reusable Archicad dialogs: settings dialog, library part, file, IFC and attribute pickers"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Attribute_CreateExt",
@@ -5412,12 +5406,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2269,
-     "title": "Reusable Archicad dialogs: settings dialog, library part, file, IFC and attribute pickers"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Dialog_ObjectSettings",
@@ -5440,12 +5429,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2269,
-     "title": "Reusable Archicad dialogs: settings dialog, library part, file, IFC and attribute pickers"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Dialog_OpenLibPartFileDialog",
@@ -5468,12 +5452,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2269,
-     "title": "Reusable Archicad dialogs: settings dialog, library part, file, IFC and attribute pickers"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Dialog_OpenOtherObjectDialog",
@@ -5496,12 +5475,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2269,
-     "title": "Reusable Archicad dialogs: settings dialog, library part, file, IFC and attribute pickers"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Dialog_OpenPictureDialog",
@@ -5524,12 +5498,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2269,
-     "title": "Reusable Archicad dialogs: settings dialog, library part, file, IFC and attribute pickers"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Dialog_PetPalette",
@@ -5575,12 +5544,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2269,
-     "title": "Reusable Archicad dialogs: settings dialog, library part, file, IFC and attribute pickers"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Dialog_SetUserControlCallback",
@@ -5626,12 +5590,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2269,
-     "title": "Reusable Archicad dialogs: settings dialog, library part, file, IFC and attribute pickers"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_DifferenceGenerator_GenerateDifference",
@@ -6719,12 +6678,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2267,
-     "title": "Notification clients: tool change, view, reservation, tool default and AC26+ events"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_CatchNewElement",
@@ -11186,12 +11140,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2269,
-     "title": "Reusable Archicad dialogs: settings dialog, library part, file, IFC and attribute pickers"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_KeepInMemory",
@@ -11532,12 +11481,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2269,
-     "title": "Reusable Archicad dialogs: settings dialog, library part, file, IFC and attribute pickers"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_LibraryManagement_OpenLibraryPart",
@@ -14516,12 +14460,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2267,
-     "title": "Notification clients: tool change, view, reservation, tool default and AC26+ events"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Notification_CatchSelectionChange",
@@ -14567,12 +14506,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2267,
-     "title": "Notification clients: tool change, view, reservation, tool default and AC26+ events"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Notification_CatchViewEvent",
@@ -14595,12 +14529,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2267,
-     "title": "Notification clients: tool change, view, reservation, tool default and AC26+ events"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Notification_ClassificationVisibilityChanged",
@@ -14692,12 +14621,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2267,
-     "title": "Notification clients: tool change, view, reservation, tool default and AC26+ events"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Notification_PropertyVisibilityChanged",
@@ -14742,12 +14666,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2267,
-     "title": "Notification clients: tool change, view, reservation, tool default and AC26+ events"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Notification_UnregisterEventHandler",
@@ -14769,12 +14688,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2267,
-     "title": "Notification clients: tool change, view, reservation, tool default and AC26+ events"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_OldListing_Get",
@@ -18310,12 +18224,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2266,
-     "title": "Expose the Toolbox: GetActiveTool, SetActiveTool, GetToolboxItems"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Toolbox_GetToolBoxMode",
@@ -18338,12 +18247,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2266,
-     "title": "Expose the Toolbox: GetActiveTool, SetActiveTool, GetToolboxItems"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Toolbox_SetToolBoxMode",
@@ -18366,12 +18270,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2266,
-     "title": "Expose the Toolbox: GetActiveTool, SetActiveTool, GetToolboxItems"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_UnregisterModelessWindow",
@@ -18542,12 +18441,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2268,
-     "title": "User input: GetArcFromUser, snap filter and constraint options"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_UserInput_CompleteUserInput",
@@ -18593,12 +18487,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2268,
-     "title": "User input: GetArcFromUser, snap filter and constraint options"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_UserInput_DrawRubberLine",
@@ -18644,12 +18533,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2268,
-     "title": "User input: GetArcFromUser, snap filter and constraint options"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_UserInput_GetLine",
@@ -18695,12 +18579,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2268,
-     "title": "User input: GetArcFromUser, snap filter and constraint options"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_UserInput_GetPoint",
@@ -18769,12 +18648,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2268,
-     "title": "User input: GetArcFromUser, snap filter and constraint options"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_UserInput_ResetConstraint",
@@ -18797,12 +18671,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2268,
-     "title": "User input: GetArcFromUser, snap filter and constraint options"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_UserInput_SetConstraint",
@@ -18825,12 +18694,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2268,
-     "title": "User input: GetArcFromUser, snap filter and constraint options"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_UserInput_SetElementHighlight",
@@ -18875,12 +18739,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2268,
-     "title": "User input: GetArcFromUser, snap filter and constraint options"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_View_Change3DCuttingPlanes",
@@ -22587,15 +22446,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2269,
-     "title": "Reusable Archicad dialogs: settings dialog, library part, file, IFC and attribute pickers"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "APIIo_Set3DCutawayStatusID",

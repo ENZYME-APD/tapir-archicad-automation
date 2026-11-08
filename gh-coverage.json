@@ -1,10 +1,9 @@
 {
- "generatedAt": "2026-11-08 09:46 UTC",
+ "generatedAt": "2026-11-08 10:18 UTC",
  "counts": {
   "done": 568,
   "merged": 197,
-  "open": 16,
-  "claimed": 1,
+  "open": 17,
   "not applicable": 1
  },
  "parameters": {
@@ -190,12 +189,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2268,
-     "title": "User input: GetArcFromUser, snap filter and constraint options"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ModelToScreen",
@@ -286,12 +280,7 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2266,
-     "title": "Expose the Toolbox: GetActiveTool, SetActiveTool, GetToolboxItems"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "SetCurrentTool",
@@ -337,12 +326,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2266,
-     "title": "Expose the Toolbox: GetActiveTool, SetActiveTool, GetToolboxItems"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetLineFromUser",
@@ -368,12 +352,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2268,
-     "title": "User input: GetArcFromUser, snap filter and constraint options"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetArcFromUser",
@@ -398,12 +377,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2268,
-     "title": "User input: GetArcFromUser, snap filter and constraint options"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetPolygonFromUser",
@@ -429,19 +403,14 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2268,
-     "title": "User input: GetArcFromUser, snap filter and constraint options"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetMagicWandSettings",
    "group": "Application Commands",
    "version": "1.8.1",
    "brief": "Returns the settings of Archicad's Magic Wand Settings dialog: how curves are approximated with straight segments (a number of segments along arcs or circles, a largest deviation from the curve, or a segment length) and the trace method. Useful to know how the Magic Wand will trace a curve. Changes nothing in the project.",
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "components": [],
    "parameters": null,
@@ -449,12 +418,7 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2268,
-     "title": "User input: GetArcFromUser, snap filter and constraint options"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ConvertImages",
@@ -8084,12 +8048,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2267,
-     "title": "Notification clients: tool change, view, reservation, tool default and AC26+ events"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "RemoveElementNotificationClient",
