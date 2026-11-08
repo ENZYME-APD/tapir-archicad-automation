@@ -16125,15 +16125,15 @@ namespace {
 
 struct RailingSegmentChange {
     UInt32                  index = 0;
-    std::optional<double>   height;
-    std::optional<double>   lateralOffset;
+    GS::Optional<double>    height;
+    GS::Optional<double>    lateralOffset;
 };
 
 struct RailingNodeChange {
     UInt32                  index = 0;
-    std::optional<double>   postOffset;
-    std::optional<double>   elevation;
-    std::optional<bool>     unifyPatterns;
+    GS::Optional<double>    postOffset;
+    GS::Optional<double>    elevation;
+    GS::Optional<bool>      unifyPatterns;
 };
 
 // Reads the "segments" or "nodes" list of a ModifyRailings item. Returns an error text, or nothing.
@@ -16160,7 +16160,7 @@ GS::Optional<GS::UniString> ReadRailingSegmentChanges (const GS::ObjectState& it
         if (entry.Get ("lateralOffset", value)) {
             change.lateralOffset = value;
         }
-        if (!change.height.has_value () && !change.lateralOffset.has_value ()) {
+        if (!change.height.HasValue () && !change.lateralOffset.HasValue ()) {
             return GS::UniString::Printf ("segments: no fields to modify for segment %d.", static_cast<int> (index));
         }
         changes.Push (change);
@@ -16192,7 +16192,7 @@ GS::Optional<GS::UniString> ReadRailingNodeChanges (const GS::ObjectState& item,
         if (entry.Get ("unifyPatterns", flag)) {
             change.unifyPatterns = flag;
         }
-        if (!change.postOffset.has_value () && !change.elevation.has_value () && !change.unifyPatterns.has_value ()) {
+        if (!change.postOffset.HasValue () && !change.elevation.HasValue () && !change.unifyPatterns.HasValue ()) {
             return GS::UniString::Printf ("nodes: no fields to modify for node %d.", static_cast<int> (index));
         }
         changes.Push (change);
@@ -16223,12 +16223,12 @@ GSErrCode ChangeRailingSegment (const API_Guid& railingGuid, const RailingSegmen
     }
     API_Element mask = {};
     ACAPI_ELEMENT_MASK_CLEAR (mask);
-    if (change.height.has_value ()) {
-        segment.railingSegment.height = *change.height;
+    if (change.height.HasValue ()) {
+        segment.railingSegment.height = change.height.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_RailingSegmentType, height);
     }
-    if (change.lateralOffset.has_value ()) {
-        segment.railingSegment.yOffset = *change.lateralOffset;
+    if (change.lateralOffset.HasValue ()) {
+        segment.railingSegment.yOffset = change.lateralOffset.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_RailingSegmentType, yOffset);
     }
     return ACAPI_Element_Change (&segment, &mask, nullptr, 0, true);
@@ -16253,16 +16253,16 @@ GSErrCode ChangeRailingNode (const API_Guid& railingGuid, const RailingNodeChang
     }
     API_Element mask = {};
     ACAPI_ELEMENT_MASK_CLEAR (mask);
-    if (change.postOffset.has_value ()) {
-        node.railingNode.postOffset = *change.postOffset;
+    if (change.postOffset.HasValue ()) {
+        node.railingNode.postOffset = change.postOffset.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_RailingNodeType, postOffset);
     }
-    if (change.elevation.has_value ()) {
-        node.railingNode.elevation = *change.elevation;
+    if (change.elevation.HasValue ()) {
+        node.railingNode.elevation = change.elevation.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_RailingNodeType, elevation);
     }
-    if (change.unifyPatterns.has_value ()) {
-        node.railingNode.unifyPatterns = *change.unifyPatterns;
+    if (change.unifyPatterns.HasValue ()) {
+        node.railingNode.unifyPatterns = change.unifyPatterns.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_RailingNodeType, unifyPatterns);
     }
     return ACAPI_Element_Change (&node, &mask, nullptr, 0, true);
@@ -16405,25 +16405,25 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
                     }
                 }
                 for (const RailingSegmentChange& change : segmentChanges) {
-                    if (change.height.has_value ()) {
-                        expectedHeights[change.index] = *change.height;
+                    if (change.height.HasValue ()) {
+                        expectedHeights[change.index] = change.height.Get ();
                     }
-                    if (change.lateralOffset.has_value ()) {
-                        expectedLateralOffsets[change.index] = *change.lateralOffset;
+                    if (change.lateralOffset.HasValue ()) {
+                        expectedLateralOffsets[change.index] = change.lateralOffset.Get ();
                     }
                 }
                 std::map<UInt32, double> expectedPostOffsets;
                 std::map<UInt32, double> expectedElevations;
                 std::map<UInt32, bool> expectedUnifyPatterns;
                 for (const RailingNodeChange& change : nodeChanges) {
-                    if (change.postOffset.has_value ()) {
-                        expectedPostOffsets[change.index] = *change.postOffset;
+                    if (change.postOffset.HasValue ()) {
+                        expectedPostOffsets[change.index] = change.postOffset.Get ();
                     }
-                    if (change.elevation.has_value ()) {
-                        expectedElevations[change.index] = *change.elevation;
+                    if (change.elevation.HasValue ()) {
+                        expectedElevations[change.index] = change.elevation.Get ();
                     }
-                    if (change.unifyPatterns.has_value ()) {
-                        expectedUnifyPatterns[change.index] = *change.unifyPatterns;
+                    if (change.unifyPatterns.HasValue ()) {
+                        expectedUnifyPatterns[change.index] = change.unifyPatterns.Get ();
                     }
                 }
 
