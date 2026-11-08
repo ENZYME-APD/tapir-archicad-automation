@@ -4,7 +4,7 @@
     "summary": "Reads a CSV or Excel file from the Property Value Exporter and writes its values into the elements' properties, after a preview.",
     "category": "import-export",
     "tags": ["properties", "excel", "csv", "import"],
-    "author": { "name": "Tapir" },
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
     "license": "MIT",
     "entry": "PropertyValueImporter.py",
     "versions": [

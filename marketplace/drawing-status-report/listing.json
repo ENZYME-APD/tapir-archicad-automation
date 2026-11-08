@@ -4,7 +4,7 @@
     "summary": "Lists every drawing on the layouts with its Drawing Manager status, source and path, exports the list and updates the drawings you choose.",
     "category": "documentation-layouts",
     "tags": ["drawings", "layouts", "drawing-manager", "excel"],
-    "author": { "name": "Tapir" },
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
     "license": "MIT",
     "entry": "DrawingStatusReport.py",
     "versions": [

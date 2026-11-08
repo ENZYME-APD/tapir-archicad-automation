@@ -4,7 +4,7 @@
     "summary": "Lists the floor, wall and ceiling finish areas of every zone, the walls split by surface, and saves the table as CSV or Excel.",
     "category": "quantities-scheduling",
     "tags": ["zones", "finishes", "surfaces", "areas", "schedule", "export"],
-    "author": { "name": "Tapir" },
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
     "license": "MIT",
     "entry": "RoomFinishesSchedule.py",
     "versions": [

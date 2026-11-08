@@ -48,4 +48,4 @@ file, where you choose in the save dialog; its default name is `Object count <da
 
 ## Credits
 
-Requested by @parikshit99 in #2015. Written by the Tapir project.
+Requested by @parikshit99 in #2015, written with the Tapir issue bot.

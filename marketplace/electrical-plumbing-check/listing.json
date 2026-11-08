@@ -4,7 +4,7 @@
     "summary": "Lists electrical symbols with an empty circuit, board or number, devices not on a circuit, empty circuits and sanitary objects outside every zone.",
     "category": "quality-assurance",
     "tags": ["electrical", "plumbing", "circuits", "symbols", "zones", "check"],
-    "author": { "name": "Tapir" },
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
     "license": "MIT",
     "entry": "ElectricalPlumbingCheck.py",
     "versions": [

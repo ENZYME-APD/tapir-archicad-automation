@@ -114,6 +114,6 @@ It writes no files.
 ## Credits
 
 Requested by @JBENEITEZ in
-[#2261](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2261).
-The geometry is tested without Archicad by
+[#2261](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2261),
+written with the Tapir issue bot. The geometry is tested without Archicad by
 `archicad-addon/Test/test_zones_to_walls_and_slabs.py`.

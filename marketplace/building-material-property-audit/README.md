@@ -47,5 +47,5 @@ one in the window's status line. Reading and exporting change nothing in the pro
 
 ## Credits
 
-Requested by @parikshit99 in #1992. Written by the Tapir project, based on the
+Requested by @parikshit99 in #1992, written with the Tapir issue bot, based on the
 `audit_building_material_properties.py` workflow example.
