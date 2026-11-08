@@ -1,6 +1,6 @@
-**764 of 781** applicable Tapir commands have a Grasshopper component (97 %): ✅ 568 done, 🔀 196 merged, 🙋 1 claimed, ⬜ 16 open, ➖ 1 not applicable.
+**765 of 782** applicable Tapir commands have a Grasshopper component (97 %): ✅ 568 done, 🔀 197 merged, 🙋 1 claimed, ⬜ 16 open, ➖ 1 not applicable.
 
-Parameters of the 764 used commands: 🟢 727 every parameter has an input, 🟡 37 the rest through a JSON input, 🟠 0 some parameters missing.
+Parameters of the 765 used commands: 🟢 726 every parameter has an input, 🟡 37 the rest through a JSON input, 🟠 2 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -12,7 +12,7 @@ Parameters of the 764 used commands: 🟢 727 every parameter has an input, 🟡
 | Favorites Commands | 100 % | 26 | 18 | 8 |  |  |  |  |  | 26 |  |  |
 | Property Commands | 100 % | 30 | 21 | 9 |  |  |  |  |  | 29 | 1 |  |
 | Classification Commands | 100 % | 19 | 17 | 2 |  |  |  |  |  | 19 |  |  |
-| Attribute Commands | 95 % | 68 | 55 | 10 |  |  | 3 |  |  | 56 | 9 |  |
+| Attribute Commands | 95 % | 69 | 55 | 11 |  |  | 3 |  |  | 55 | 9 | 2 |
 | IFC Commands | 100 % | 15 | 13 | 2 |  |  |  |  |  | 15 |  |  |
 | Library Commands | 100 % | 51 | 18 | 33 |  |  |  |  |  | 51 |  |  |
 | Teamwork Commands | 100 % | 18 | 15 | 3 |  |  |  |  |  | 18 |  |  |
@@ -30,4 +30,4 @@ Parameters of the 764 used commands: 🟢 727 every parameter has an input, 🟡
 | Script UI Commands | 16 % | 12 | 2 |  |  |  | 10 |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-08 08:51 UTC.
+Updated 2026-11-08 09:46 UTC.

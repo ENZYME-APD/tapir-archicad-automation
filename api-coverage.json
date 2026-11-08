@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 08:51 UTC",
+ "generatedAt": "2026-11-08 09:46 UTC",
  "versions": [
   25,
   26,
@@ -2908,24 +2908,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2338,
-     "title": "[4/5] Graphic override rules: read Plan and Section and Surfaces and Materials criteria by name"
-    },
-    {
-     "number": 2337,
-     "title": "[3/5] Read Positioning and ID and Categories graphic override criteria by name"
-    },
-    {
-     "number": 2336,
-     "title": "[2/5] Read Layers, Model View and Construction criteria back by name (includeCriterion)"
-    },
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2944,40 +2927,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2338,
-     "title": "[4/5] Graphic override rules: read Plan and Section and Surfaces and Materials criteria by name"
-    },
-    {
-     "number": 2337,
-     "title": "[3/5] Read Positioning and ID and Categories graphic override criteria by name"
-    },
-    {
-     "number": 2336,
-     "title": "[2/5] Read Layers, Model View and Construction criteria back by name (includeCriterion)"
-    },
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3141,12 +3091,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4824,26 +4769,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -4962,28 +4887,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5835,12 +5739,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5904,26 +5803,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -7399,26 +7278,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -7643,24 +7502,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1914,
@@ -7762,26 +7604,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -7969,30 +7791,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    },
-    {
-     "number": 2148,
-     "title": "ChangeSelectionOfElements: report elements Archicad did not select"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -8038,28 +7836,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1914,
@@ -9510,22 +9287,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -9551,22 +9312,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -9754,16 +9499,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10014,10 +9750,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2326,
-     "title": "Add-On: translatable user interface (#2119)"
-    },
     {
      "number": 2185,
      "title": "[2/2] Add-On: \"Update when Archicad closes\" choice, pending marker and README (#2182)"
@@ -10406,20 +10138,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10499,20 +10218,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10918,28 +10624,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14333,7 +14018,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2342,
+     "title": "ChangeWindow crashes Archicad (ODB type compatibility violation)"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_GetNavigatorParentItem",
@@ -14604,16 +14294,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14632,16 +14313,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16481,28 +16153,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17694,12 +17345,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2148,
-     "title": "ChangeSelectionOfElements: report elements Archicad did not select"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -17745,12 +17391,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2148,
-     "title": "ChangeSelectionOfElements: report elements Archicad did not select"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20597,10 +20238,6 @@
     {
      "number": 2340,
      "title": "Pin the uv version Tapir installs; explain uv exit code 134 on macOS"
-    },
-    {
-     "number": 2326,
-     "title": "Add-On: translatable user interface (#2119)"
     }
    ],
    "issues": []
@@ -25668,42 +25305,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2338,
-     "title": "[4/5] Graphic override rules: read Plan and Section and Surfaces and Materials criteria by name"
-    },
-    {
-     "number": 2337,
-     "title": "[3/5] Read Positioning and ID and Categories graphic override criteria by name"
-    },
-    {
-     "number": 2336,
-     "title": "[2/5] Read Layers, Model View and Construction criteria back by name (includeCriterion)"
-    },
-    {
-     "number": 2334,
-     "title": "[1/5] Read graphic override criteria back as structured conditions (includeCriterion)"
-    },
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -26374,28 +25975,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26429,28 +26009,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26569,28 +26128,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26624,28 +26162,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26679,28 +26196,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -27239,26 +26735,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -30137,28 +29613,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31444,30 +30899,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    },
-    {
-     "number": 2148,
-     "title": "ChangeSelectionOfElements: report elements Archicad did not select"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -37905,30 +37336,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    },
-    {
-     "number": 2148,
-     "title": "ChangeSelectionOfElements: report elements Archicad did not select"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -38617,24 +38024,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2338,
-     "title": "[4/5] Graphic override rules: read Plan and Section and Surfaces and Materials criteria by name"
-    },
-    {
-     "number": 2337,
-     "title": "[3/5] Read Positioning and ID and Categories graphic override criteria by name"
-    },
-    {
-     "number": 2336,
-     "title": "[2/5] Read Layers, Model View and Construction criteria back by name (includeCriterion)"
-    },
-    {
-     "number": 2334,
-     "title": "[1/5] Read graphic override criteria back as structured conditions (includeCriterion)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44564,30 +43954,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    },
-    {
-     "number": 2148,
-     "title": "ChangeSelectionOfElements: report elements Archicad did not select"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -47682,30 +47048,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    },
-    {
-     "number": 2148,
-     "title": "ChangeSelectionOfElements: report elements Archicad did not select"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -54196,26 +53538,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2329,
-     "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
-    },
-    {
-     "number": 2327,
-     "title": "[4/5] GetMissingAttributes: check Model View Options"
-    },
-    {
-     "number": 2325,
-     "title": "[3/5] GetMissingAttributes: check graphic override rules"
-    },
-    {
-     "number": 2321,
-     "title": "[2/5] GetMissingAttributes: check tool defaults and Favorites"
-    },
-    {
-     "number": 2319,
-     "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"

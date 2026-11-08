@@ -1,15 +1,16 @@
 {
- "generatedAt": "2026-11-08 08:51 UTC",
+ "generatedAt": "2026-11-08 09:46 UTC",
  "counts": {
   "done": 568,
-  "merged": 196,
+  "merged": 197,
   "open": 16,
   "claimed": 1,
   "not applicable": 1
  },
  "parameters": {
-  "all": 727,
-  "json": 37
+  "all": 726,
+  "json": 37,
+  "partial": 2
  },
  "items": [
   {
@@ -6663,7 +6664,7 @@
    "id": "CreateObjects",
    "group": "Element Commands",
    "version": "1.5.7",
-   "brief": "Creates Object elements based on the given parameters. A library part named in libraryPartName starts from its own default size and GDL parameters, not from those of the part the Object tool holds; the dimensions and the GDL parameters given (by name, in parameters) override them. layerIndex places the element on a layer.",
+   "brief": "Creates Object elements based on the given parameters. A library part named in libraryPartName starts from its own default size and GDL parameters, not from those of the part the Object tool holds; the dimensions and the GDL parameters given (by name, in parameters) override them. layerIndex places the element on a layer. With databaseId the objects are placed in that database, e.g. a worksheet, instead of the current one.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6677,8 +6678,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 31,
+   "parameterCount": 32,
    "coveredParameters": [
+    "databaseId",
     "objectsData",
     "objectsData.angle",
     "objectsData.coordinates",
@@ -6719,7 +6721,7 @@
    "id": "CreateLamps",
    "group": "Element Commands",
    "version": "1.5.7",
-   "brief": "Creates Lamp elements based on the given parameters. A library part named in libraryPartName starts from its own default size and GDL parameters, not from those of the part the Lamp tool holds; the dimensions and the GDL parameters given (by name, in parameters) override them. layerIndex places the element on a layer.",
+   "brief": "Creates Lamp elements based on the given parameters. A library part named in libraryPartName starts from its own default size and GDL parameters, not from those of the part the Lamp tool holds; the dimensions and the GDL parameters given (by name, in parameters) override them. layerIndex places the element on a layer. With databaseId the lamps are placed in that database, e.g. a worksheet, instead of the current one.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6733,8 +6735,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 33,
+   "parameterCount": 34,
    "coveredParameters": [
+    "databaseId",
     "lampsData",
     "lampsData.angle",
     "lampsData.coordinates",
@@ -10760,6 +10763,29 @@
    "issues": []
   },
   {
+   "id": "GetMissingAttributes",
+   "group": "Attribute Commands",
+   "version": "1.8.1",
+   "brief": "Lists the references of placed elements to layers, fills, surfaces, building materials, composites, profiles, line types, pen tables and zone categories that do not exist in the project, for the given types or all of them, and of the tool defaults, Favorites, graphic override rules, Model View Options combinations and attributes: the structured counterpart of the missing attributes report of Archicad's GDL palette. Every element of the floor plan and of every view and layout (hotlinked ones too) is checked, and so is every tool default and Favorite (with its sub-elements): its layer, its attribute fields and memo data as ReindexAttributes finds them, its composite or profile when its structure type uses one, a drawing's own pen table, and its library part parameters of attribute types; of every graphic override rule the line type, fill and surface it overrides with; of every Model View Options combination the surfaces and line types of the stair and railing schemes and the library part settings' GDL parameters of attribute types; of every composite the building materials of its skins and the line types of its separators, of every building material its cut fill and cut surface, of every surface the fill of its vectorial hatching, of every MEP system its fill, center line type and surfaces, and of every profile the building material, surface or fill of each skin and its contour, cut end and edge line types. The sources input limits the check to elements, tool defaults, Favorites, graphic override rules, Model View Options or attributes. Each item names the source; for an element the element (and the element it is part of, for a curtain wall frame, a column segment, ...) and the story or view it sits on, for a tool default the tool, for a Favorite its name and tool, for a graphic override rule its guid and name, for a Model View Options combination its guid and name (and the library part option set), for an attribute its type, guid and name; then the attribute type, the missing index and the field or GDL parameter that holds it. Index 0 counts as no attribute. Read only. Available from Archicad 27.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "GetMissingAttributesComponent",
+     "path": "Components/AttributesComponents/GetMissingAttributesComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "attributeTypes",
+    "sources"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
    "id": "CreateLayers",
    "group": "Attribute Commands",
    "version": "1.0.3",
@@ -11649,7 +11675,7 @@
    "id": "GetGraphicOverrideRules",
    "group": "Attribute Commands",
    "version": "1.7.2",
-   "brief": "Gets all graphic override rules of the project, with their rule group, criterion and style. Available from Archicad 27.",
+   "brief": "Gets all graphic override rules of the project, with their rule group, criterion and style. With includeCriterion the criterion also comes as structured conditions, which CreateGraphicOverrideRules and ModifyGraphicOverrideRules take back. Available from Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [
@@ -11658,10 +11684,12 @@
      "path": "Components/AttributesComponents/GetGraphicOverrideRulesComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 0,
+   "parameters": "partial",
+   "parameterCount": 1,
    "coveredParameters": [],
-   "missingParameters": [],
+   "missingParameters": [
+    "includeCriterion"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -11669,7 +11697,7 @@
    "id": "GetGraphicOverrideRulesByName",
    "group": "Attribute Commands",
    "version": "1.7.3",
-   "brief": "Gets graphic override rules by name, with their rule group, criterion and style. The rule group narrows the search; without it the rule is searched in every rule group. Available from Archicad 27.",
+   "brief": "Gets graphic override rules by name, with their rule group, criterion and style. The rule group narrows the search; without it the rule is searched in every rule group. With includeCriterion the criterion also comes as structured conditions. Available from Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [
@@ -11678,12 +11706,14 @@
      "path": "Components/AttributesComponents/GetGraphicOverrideRulesByNameComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 1,
+   "parameters": "partial",
+   "parameterCount": 2,
    "coveredParameters": [
     "graphicOverrideRules"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "includeCriterion"
+   ],
    "pullRequests": [],
    "issues": []
   },
