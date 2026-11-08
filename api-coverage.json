@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 16:59 UTC",
+ "generatedAt": "2026-11-08 17:15 UTC",
  "versions": [
   25,
   26,
@@ -4014,16 +4014,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2313,
@@ -5756,16 +5747,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2313,
@@ -6528,16 +6510,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6725,12 +6698,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6929,16 +6897,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7228,16 +7187,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1914,
@@ -7550,16 +7500,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7740,16 +7681,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7791,12 +7723,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1914,
@@ -8011,16 +7938,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8738,16 +8656,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9253,16 +9162,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9283,16 +9183,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16325,16 +16216,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16355,16 +16237,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16429,16 +16302,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25176,16 +25040,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26607,16 +26462,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26752,16 +26598,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -30779,16 +30616,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37215,16 +37043,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43833,16 +43652,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -46928,16 +46738,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -53418,16 +53219,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -54393,16 +54185,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2386,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
-    },
-    {
-     "number": 1292,
-     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {

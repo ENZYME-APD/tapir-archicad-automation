@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 66 | 57 | 9 |  |  |  | 9 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1441 | 1207 | 234 |  |  |  | 11 | 375 |
 
-Archicad 25–30 DevKits; updated 2026-11-08 16:59 UTC.
+Archicad 25–30 DevKits; updated 2026-11-08 17:15 UTC.
 
 | | Status |
 |---|---|
@@ -119,7 +119,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 ## Element
 
-- ✅ `ACAPI_Element_AddClassificationItem` – Classifies an element. — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI_Element_AddClassificationItem` – Classifies an element.
 - ✅ `ACAPI_Element_AddClassificationItemDefault` – Classifies an element.
 - ✅ `ACAPI_Element_AttachObserver` – Attaches an observer to the given element.
 - ✅ `ACAPI_Element_CalcBounds` – Returns the model extent of an element in the current database. <sub>(was `APIDb_CalcBoundsID`)</sub> — [#2188](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2188 "New commands: align, distribute and scale elements")
@@ -127,7 +127,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_CalcSideOffsetToCoreOffset` – Converts the reveal depth offset from wall side to core skin for wall openings. <sub>(was `APIAny_CalcSideOffsetToCoreOffsetID`)</sub>
 - 🔀 `ACAPI_Element_CatchChangeDefaults` – Register or unregister your add-on to be notified if the default settings of a given element type is modified. <sub>(was `ACAPI_Notify_CatchChangeDefaults`)</sub>
 - ✅ `ACAPI_Element_CatchNewElement` – Register or unregister your add-on to be notified if the given type of element is created. <sub>(was `ACAPI_Notify_CatchNewElement`)</sub> — [#1825](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1825 "Element notifications: changes and deletions made by Tapir commands are not reported")
-- ✅ `ACAPI_Element_Change` — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)")
+- ✅ `ACAPI_Element_Change`
 - ✅ `ACAPI_Element_ChangeContent` – Change the content of a text or a textual label element. <sub>(was `APIAny_ChangeContentID`)</sub>
 - ✅ `ACAPI_Element_ChangeDefaults` – Changes the default parameters of an element. — [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
 - ✅ `ACAPI_Element_ChangeDefaultsExt` – Changes the default parameters of the Window, Door, Section, Elevation, Interior Elevation, ChangeMarker, Detail, Worksheet, or Stair default element and its marker(s). This function also allows you to change the default settings of the Curtain Wall and its subelem.
@@ -136,7 +136,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_ChangeMemo` – Changes the memo part of certain element types.
 - ⛔ `ACAPI_Element_ChangeMore` – Modifies a number of elements in the current database. *(no speed gain over SetDetailsOfElements / the Modify* commands in the #1226 measurement, and one error code for the whole batch instead of per-element results)*
 - ✅ `ACAPI_Element_ChangeMorphEdgeType` <sub>AC29–30</sub> – Modifies a morph element's edge type in the current database.
-- ✅ `ACAPI_Element_ChangeParameters` – Changes the parameters of a number of elements. — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI_Element_ChangeParameters` – Changes the parameters of a number of elements.
 - ✅ `ACAPI_Element_Create` — [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
 - ✅ `ACAPI_Element_CreateExt` – Places a new Window, Door, Skylight, Section, Elevation, Interior Elevation, ChangeMarker, Detail, or Worksheet element with the specified marker into the current database. — [#1377](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1377 "Place Detail and Worksheet markers, and change their settings")
 - 🔀 `ACAPI_Element_Decompose` – Enumerates the planes of a Multi-plane Roof.
@@ -149,7 +149,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_ElemHasVisibleSkin` – Returns if elem has visible skin depending on Partial Structure Display. <sub>(was `APIAny_ElemHasVisibleSkinID`)</sub>
 - ➖ `ACAPI_Element_ElemTypeToNeigID` <sub>AC26–30</sub> – Returns a neig for the given element type. <sub>(was `ACAPI_Goodies_ElemTypeToNeigID`)</sub> *(neig ids, an internal of interactive input and selection)*
 - ✅ `ACAPI_Element_Filter` – Tests an element by some given criteria.
-- ✅ `ACAPI_Element_Get` – Returns information on the main parameters of a given element. — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
+- ✅ `ACAPI_Element_Get` – Returns information on the main parameters of a given element. — [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
 - ✅ `ACAPI_Element_GetActualOverrideStyle` – Get actual (merged) visual override style for an element.
 - ✅ `ACAPI_Element_GetClassificationInSystem` – Retrieves a classification of an elem in a given classification system.
 - ✅ `ACAPI_Element_GetClassificationInSystemDefault` – Retrieves a classification of a default elem in a given classification system.
@@ -163,7 +163,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_GetDefaultsExt` – Retrieves the actual default settings for the Window, Door, Section, Elevation, Interior Elevation, ChangeMarker, Detail, Worksheet, or Stair element with its marker(s). You are also able to obtain the Curtain Wall and its sub-element default settings via this function. — [#1377](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1377 "Place Detail and Worksheet markers, and change their settings")
 - ✅ `ACAPI_Element_GetDescriptors` – Returns the descriptors of an element.
 - 🔀 `ACAPI_Element_GetElemCreatorToolUnId` – Returns the unique ID of the creator tool of the specified object. <sub>(was `APIAny_GetElemCreatorToolUnIdID`)</sub>
-- ✅ `ACAPI_Element_GetElemList` – Returns an array of guids of the elements of the given type. — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI_Element_GetElemList` – Returns an array of guids of the elements of the given type.
 - ✅ `ACAPI_Element_GetElemTypeName` – Returns the localized name of the built-in element types. <sub>(was `ACAPI_Goodies_GetElemTypeName`, `APIAny_GetElemTypeNameID`)</sub>
 - ✅ `ACAPI_Element_GetElementFromAnywhere` – Returns the element referred by guid irrespectively of the current database. <sub>(was `APIDb_GetElementFromAnywhereID`)</sub>
 - 🔀 `ACAPI_Element_GetElementInfoString` – Returns the compound info string of the given element. <sub>(was `APIDb_GetElementInfoStringID`)</sub>
@@ -171,9 +171,9 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_GetElementsWithClassification` – Query elements with the given classification.
 - ✅ `ACAPI_Element_GetExtent` – Returns the drawing extent of the current database. <sub>(was `APIDb_GetExtentID`)</sub>
 - 🔀 `ACAPI_Element_GetExtent3D` – Returns the model extent of the current database. <sub>(was `APIDb_GetExtent3DID`)</sub>
-- ✅ `ACAPI_Element_GetHeader` – Returns general information on the given element. — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI_Element_GetHeader` – Returns general information on the given element.
 - 🔀 `ACAPI_Element_GetHotspots` – Retrieves the hotspots of the given element.
-- ✅ `ACAPI_Element_GetMemo` — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
+- ✅ `ACAPI_Element_GetMemo` — [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
 - ✅ `ACAPI_Element_GetMemo_ExternalHierarchical` <sub>AC27–30</sub> – @brief Retrieves all additional information of the sub-elements of an external hierarchical element.
 - ✅ `ACAPI_Element_GetMoreQuantities` – Returns information on the quantities parameters of multiple elements of the same type.
 - ✅ `ACAPI_Element_GetOpeningTransformation` – Returns the position and the normal vector of the given opening. <sub>(was `APIAny_GetOpeningTransformationID`)</sub>
@@ -183,7 +183,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ⛔ `ACAPI_Element_GetPropertyValue` – Retrieves the specified property definition's value from the element. *(GetPropertyValuesOfElements reads the same values with ACAPI_Element_GetPropertyValuesByGuid)*
 - ✅ `ACAPI_Element_GetPropertyValueOfDefaultElem` – Retrieves the value of the specified property definition.
 - ✅ `ACAPI_Element_GetPropertyValues` – Retrieves the specified property definitions with values.
-- ✅ `ACAPI_Element_GetPropertyValuesByGuid` – Retrieves the specified property definitions (defined by their GUIDs) with values. — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI_Element_GetPropertyValuesByGuid` – Retrieves the specified property definitions (defined by their GUIDs) with values.
 - 🔀 `ACAPI_Element_GetPropertyValuesOfDefaultElem` – Retrieves the values of the specified property definitions.
 - 🔀 `ACAPI_Element_GetPropertyValuesOfDefaultElemByGuid` – Retrieves the values of the specified property definitions.
 - ✅ `ACAPI_Element_GetQuantities` – Returns information on the quantities parameters of an element.
@@ -216,7 +216,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_SearchElementByCoord` – Searches for an element by coordinate. <sub>(was `APIAny_SearchElementByCoordID`)</sub>
 - ✅ `ACAPI_Element_SetElementURLRef` – Assigns a URL reference to an element. <sub>(was `APIDb_SetElementURLRefID`)</sub>
 - ➖ `ACAPI_Element_SetEmptyHoleUnId` – Sets the unique ID of the empty hole. <sub>(was `APIAny_SetEmptyHoleUnIdID`)</sub> *(takes the signature of a library part subtype the add-on registers itself; Tapir registers none)*
-- ✅ `ACAPI_Element_SetProperties` – Sets the specified properties for the given values on an element. — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI_Element_SetProperties` – Sets the specified properties for the given values on an element.
 - ✅ `ACAPI_Element_SetPropertiesOfDefaultElem` – Sets the specified properties for the given values on an element default.
 - ✅ `ACAPI_Element_SetProperty` – Sets the specified property for the given values on an element.
 - 🔀 `ACAPI_Element_SetPropertyOfDefaultElem` – Sets the specified property to the given value on an element default.
@@ -507,13 +507,13 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 - ➖ `ACAPI_ActivatePropertyObjectHandler` – Activates or deactivates an add-on's property handler. *(event handlers, not commands)*
 - ✅ `ACAPI_CallCommand` – Performs an operation without opening an undoable session.
-- ✅ `ACAPI_CallUndoableCommand` – Performs an undoable operation. — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#2313](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2313 "Self-audit of the whole repository: AI slop, performance and safety"), [#2218](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2218 "Docs: a page of what the Archicad API cannot do, with the workaround and the DevKit evidence"), [#1820](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1820 "Run several commands as one undo step")
+- ✅ `ACAPI_CallUndoableCommand` – Performs an undoable operation. — [#2313](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2313 "Self-audit of the whole repository: AI slop, performance and safety"), [#2218](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2218 "Docs: a page of what the Archicad API cannot do, with the workaround and the DevKit evidence"), [#1820](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1820 "Run several commands as one undo step")
 - ✅ `ACAPI_DisposeAddParHdl` – Frees the memory occupied by a handle to an array of @ref API_AddParType.
 - ✅ `ACAPI_DisposeAttrDefsHdls` – Frees the memory occupied by all of the attribute definition handles.
 - ✅ `ACAPI_DisposeAttrDefsHdlsExt` – Frees the memory occupied by all of the attribute definition handles.
 - ✅ `ACAPI_DisposeBeamRelationHdls` – Frees the memory occupied by all allocated beam relation handles.
 - ✅ `ACAPI_DisposeBeamSegmentRelationHdls` – Frees the memory occupied by all the allocated beam segment relation handles.
-- ✅ `ACAPI_DisposeElemMemoHdls` – Frees the memory occupied by all of the allocated memo handles. — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#2313](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2313 "Self-audit of the whole repository: AI slop, performance and safety")
+- ✅ `ACAPI_DisposeElemMemoHdls` – Frees the memory occupied by all of the allocated memo handles. — [#2313](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2313 "Self-audit of the whole repository: AI slop, performance and safety")
 - ✅ `ACAPI_DisposeParagraphsHdl` – Frees the memory occupied by a handle to an array of @ref API_ParagraphType.
 - ✅ `ACAPI_DisposeRoomRelationHdls` – Frees the memory occupied by all allocated room relation handles.
 - ✅ `ACAPI_DisposeWallRelationHdls` – Frees the memory occupied by all allocated wall relation handles.
@@ -702,11 +702,11 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Property_CreatePropertyGroup` – Creates a property group in the current plan.
 - ✅ `ACAPI_Property_DeletePropertyDefinition` – Deletes a property definition in the current plan.
 - ✅ `ACAPI_Property_DeletePropertyGroup` – Deletes a property group and all of the property definitions inside in the current plan.
-- ✅ `ACAPI_Property_GetPropertyDefinition` – Retrieves one property definition identified by its guid. — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
-- ✅ `ACAPI_Property_GetPropertyDefinitions` – Retrieves all the property definitions from a given group. — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI_Property_GetPropertyDefinition` – Retrieves one property definition identified by its guid.
+- ✅ `ACAPI_Property_GetPropertyDefinitions` – Retrieves all the property definitions from a given group.
 - 🔀 `ACAPI_Property_GetPropertyExprReferenceString` – Returns the string that can be used in expressions to refer to a specific property. <sub>(was `APIAny_GetPropertyExprReferenceStringID`)</sub>
 - ✅ `ACAPI_Property_GetPropertyGroup` – Retrieves one property group identified by its guid.
-- ✅ `ACAPI_Property_GetPropertyGroups` – Retrieves all the property groups. — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI_Property_GetPropertyGroups` – Retrieves all the property groups.
 - ✅ `ACAPI_Property_GetPropertyValueString` – Convert an API property value to display string.
 - ✅ `ACAPI_Property_Import` – Imports a property xml.
 - ➖ `ACAPI_Property_InstallPropertyObjectHandler` <sub>AC27–30</sub> – Installs the property handler function for the given menu item. *(event handlers, not commands)*
@@ -1031,8 +1031,8 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Favorite_Create` – Creates a new Favorites entry based on the given element.
 - ✅ `ACAPI_Favorite_Delete` – Deletes a Favorites entry.
 - ✅ `ACAPI_Favorite_Export` – Exports the Favorites in the plan into a Favorites file or folder.
-- ✅ `ACAPI_Favorite_Get` – Loads the parameters of the given favorite. — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
-- ✅ `ACAPI_Favorite_GetNum` – Returns the names and indexes of the contents of the Favorites list, along with the amount of entries, for a given type and variation. — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI_Favorite_Get` – Loads the parameters of the given favorite.
+- ✅ `ACAPI_Favorite_GetNum` – Returns the names and indexes of the contents of the Favorites list, along with the amount of entries, for a given type and variation.
 - ✅ `ACAPI_Favorite_GetPreviewImage` – Returns the favorite preview image.
 - ✅ `ACAPI_Favorite_Import` – Imports the contents of a Favorites file or folder into the plan.
 - 🔀 `ACAPI_Favorite_Read` – Reads the contents of a Favorites file or folder.
@@ -1392,7 +1392,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::AngleSetBase::GetSize` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::IsAngleDefined` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::IsEditable` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::AngleSetBase::Modifier::Add` <sub>AC29–30</sub> — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI::MEP::AngleSetBase::Modifier::Add` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::Modifier::Delete` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::Modifier::SetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::Modify` <sub>AC29–30</sub>
@@ -1764,7 +1764,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::RemoveWiringType` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::SetVoltage` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modify` <sub>AC30</sub>
-- ✅ `ACAPI::MEP::Element::Get` <sub>AC27–30</sub> — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI::MEP::Element::Get` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::Exists` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetAnchorPoint` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetBaseRotation` <sub>AC30</sub>
@@ -2141,7 +2141,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ReferenceSetBase::GetSize` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::IsEditable` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::IsReferenceIdDefined` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Add` <sub>AC28–30</sub> — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Add` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Delete` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::SetName` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modify` <sub>AC28–30</sub>
@@ -2310,7 +2310,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::SystemGroup::GetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::GetSystemIDs` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::IsEditable` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::SystemGroup::Modifier::Add` <sub>AC29–30</sub> — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI::MEP::SystemGroup::Modifier::Add` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::Modifier::Remove` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::Modifier::SetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::Modify` <sub>AC29–30</sub>
@@ -2446,7 +2446,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::Element::ModifiableOpeningGeometry::SetPolygon` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::ModifiableOpeningGeometry::Transform` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::Opening::Exists` <sub>AC29–30</sub>
-- ✅ `ACAPI::Element::Opening::Get` <sub>AC29–30</sub> — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI::Element::Opening::Get` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::Opening::GetConnectedOpenings` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::Opening::GetCutElements` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::Opening::GetExtrusionParameters` <sub>AC29–30</sub>
@@ -2529,7 +2529,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::Favorite::Favorite::GetElementType` <sub>AC29–30</sub>
 - 🔀 `ACAPI::Favorite::Favorite::GetMemo` <sub>AC29–30</sub>
 - 🔀 `ACAPI::Favorite::Favorite::GetMemoMarker` <sub>AC29–30</sub>
-- ✅ `ACAPI::Favorite::Favorite::GetName` <sub>AC29–30</sub> — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI::Favorite::Favorite::GetName` <sub>AC29–30</sub>
 - 🔀 `ACAPI::Favorite::Favorite::GetOldElementDefault` <sub>AC29–30</sub>
 - ✅ `ACAPI::Favorite::Favorite::GetParentFolder` <sub>AC29–30</sub>
 - ⛔ `ACAPI::Favorite::Favorite::GetPreviewImage` <sub>AC29–30</sub> *(GetFavoritePreviewImage stays on the C API on purpose (8dbbe7b9))*
@@ -2537,7 +2537,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🔀 `ACAPI::Favorite::Favorite::GetSubElements` <sub>AC29–30</sub>
 - ✅ `ACAPI::Favorite::Favorite::IsValid` <sub>AC29–30</sub>
 - ✅ `ACAPI::Favorite::FavoriteFolder::GetFavorites` <sub>AC29–30</sub>
-- ✅ `ACAPI::Favorite::FavoriteFolder::GetName` <sub>AC29–30</sub> — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `ACAPI::Favorite::FavoriteFolder::GetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::Favorite::FavoriteFolder::GetParentFolder` <sub>AC29–30</sub>
 - 🔀 `ACAPI::Favorite::FavoriteFolder::GetPath` <sub>AC29–30</sub>
 - ✅ `ACAPI::Favorite::FavoriteFolder::GetSubFolders` <sub>AC29–30</sub>
@@ -3008,7 +3008,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🔀 `IFCAPI::Assignments::GetChildObjectTable` <sub>AC28–30</sub>
 - 🔀 `IFCAPI::Assignments::GetParentObjectTable` <sub>AC28–30</sub>
 - 🔀 `IFCAPI::Assignments::GetRootGroups` <sub>AC28–30</sub>
-- ✅ `IFCAPI::Attribute::GetName` <sub>AC28–30</sub> — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `IFCAPI::Attribute::GetName` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Attribute::GetValue` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Attribute::GetValueType` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Classification::GetDescription` <sub>AC28–30</sub>
@@ -3062,7 +3062,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🔀 `IFCAPI::ObjectAccessor::GetStoryIndex` <sub>AC28–30</sub>
 - ✅ `IFCAPI::ObjectAccessor::GetTypeObjectIFCType` <sub>AC28–30</sub>
 - 🔀 `IFCAPI::ObjectID::GenerateHashValue` <sub>AC28–30</sub>
-- ✅ `IFCAPI::Property::GetName` <sub>AC28–30</sub> — [#2386](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2386 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)")
+- ✅ `IFCAPI::Property::GetName` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Property::GetPropertySetName` <sub>AC28–30</sub>
 - ✅ `IFCAPI::Property::GetTyped` <sub>AC28–30</sub>
 - ✅ `IFCAPI::PropertyAccessor::GetAttributes` <sub>AC28–30</sub>

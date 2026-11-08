@@ -1,15 +1,15 @@
 {
- "generatedAt": "2026-11-08 16:59 UTC",
+ "generatedAt": "2026-11-08 17:15 UTC",
  "counts": {
   "done": 568,
   "merged": 215,
-  "open": 2,
+  "claimed": 5,
   "not applicable": 1
  },
  "parameters": {
-  "all": 745,
+  "all": 744,
   "json": 36,
-  "partial": 2
+  "partial": 3
  },
  "items": [
   {
@@ -2849,10 +2849,30 @@
    "issues": []
   },
   {
+   "id": "GetElementsByCriteria",
+   "group": "Element Commands",
+   "version": "1.8.1",
+   "brief": "Returns the elements, or with countOnly only their number, that match all the given criteria: element types, home stories, layers, Archicad's element filter flags and property criteria (a value compared in internal units, or a value status such as hasValue, isUserUndefined, isNotAvailable, isDefault or hasCustomValue). An unknown type, property or operator is an error, not ignored. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given.",
+   "status": "claimed",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 12,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": [
+    {
+     "number": 2391,
+     "title": "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"
+    }
+   ]
+  },
+  {
    "id": "GetDetailsOfElements",
    "group": "Element Commands",
    "version": "1.5.7",
-   "brief": "Gets the details of the given elements (geometry parameters etc). Use the optional fields parameter to return only the fields you need and skip the computation of the others (for example floorPlanPolygons). Use the optional additionalFields parameter to also get the info string, the compound info string, the library part unique ID and the creator tool unique ID. An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true.",
+   "brief": "Gets the details of elements (geometry parameters etc). When elements is omitted, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried; an empty elements list returns no details. Use the optional fields parameter to return only the fields you need (e.g. elementId, type, id, floorIndex) and skip the computation of the others (for example floorPlanPolygons). Use the optional additionalFields parameter to also get the info string, the compound info string, the library part unique ID and the creator tool unique ID. An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true.",
    "status": "done",
    "reason": "",
    "components": [
@@ -3002,16 +3022,21 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 3,
+   "parameterCount": 4,
    "coveredParameters": [
     "elements",
     "fields"
    ],
    "missingParameters": [
-    "additionalFields"
+    "additionalFields",
+    "filter"
    ],
    "pullRequests": [],
    "issues": [
+    {
+     "number": 2391,
+     "title": "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"
+    },
     {
      "number": 1791,
      "title": "Grasshopper: Doors and Windows tool components, with their floor plan parameters"
@@ -8709,7 +8734,7 @@
    "id": "ApplyFavoritesToElements",
    "group": "Favorites Commands",
    "version": "1.5.4",
-   "brief": "Apply the given favorites to existing elements. Only settings-type parameters are changed - geometry (position, floor, and dimensions such as a Wall's height) is left untouched, so applying a Favorite never moves the target element. A Window or Door keeps its wall, marker and placement, and takes the Favorite's library part and parameters, size included. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. By default settings, classifications, categories and properties are all applied; each can be opted out of individually. keepFields lists fields of the target (its ID, layer, an opening's width, height and sill height, a Wall's reference line location, height and top link) that are copied back after the Favorite has been applied, so that e.g. only the library part or the wall type changes.",
+   "brief": "Apply the given favorites to existing elements. Only settings-type parameters are changed - geometry (position, floor, and dimensions such as a Wall's height) is left untouched, so applying a Favorite never moves the target element. A Window or Door keeps its wall, marker and placement, and takes the Favorite's library part and parameters, size included. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. By default settings, classifications, categories and properties are all applied; each can be opted out of individually. keepFields lists fields of the target (its ID, layer, an opening's width, height and sill height, a Wall's reference line location, height and top link) that are copied back after the Favorite has been applied, so that e.g. only the library part or the wall type changes. With favorite instead of favoritesToApply, one Favorite is read once and applied to the given elements, or to every element of its type that matches the filter.",
    "status": "done",
    "reason": "",
    "components": [
@@ -8718,8 +8743,8 @@
      "path": "Components/FavoritesComponents/ApplyFavoritesToElementsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 8,
+   "parameters": "partial",
+   "parameterCount": 10,
    "coveredParameters": [
     "applyCategories",
     "applyClassifications",
@@ -8730,9 +8755,17 @@
     "favoritesToApply.favorite",
     "keepFields"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "elements",
+    "filter"
+   ],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2391,
+     "title": "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"
+    }
+   ]
   },
   {
    "id": "UpdateFavoritesFromElements",
@@ -9121,6 +9154,26 @@
    "issues": []
   },
   {
+   "id": "SearchFavorites",
+   "group": "Favorites Commands",
+   "version": "1.8.1",
+   "brief": "Searches project favorites by keyword (matching favorite name or folder) and/or element type.",
+   "status": "claimed",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": [
+    {
+     "number": 2391,
+     "title": "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"
+    }
+   ]
+  },
+  {
    "id": "GetAllProperties",
    "group": "Property Commands",
    "version": "1.1.3",
@@ -9155,6 +9208,26 @@
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
+  },
+  {
+   "id": "SearchProperties",
+   "group": "Property Commands",
+   "version": "1.8.1",
+   "brief": "Searches properties by name or group substring with optional filtering by property type, value type, and collection type.",
+   "status": "claimed",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 8,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": [
+    {
+     "number": 2391,
+     "title": "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"
+    }
+   ]
   },
   {
    "id": "GetPropertyValuesOfElements",
@@ -15853,7 +15926,12 @@
     "sectionsData.details"
    ],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2391,
+     "title": "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"
+    }
+   ]
   },
   {
    "id": "ModifySections",
@@ -15878,7 +15956,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2391,
+     "title": "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"
+    }
+   ]
   },
   {
    "id": "CreateInteriorElevations",
@@ -15930,14 +16013,19 @@
     "elevationsData.details"
    ],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2391,
+     "title": "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"
+    }
+   ]
   },
   {
    "id": "GetSectionsAndElevationsDetails",
    "group": "Navigator Commands",
    "version": "1.8.1",
    "brief": "Gets every configurable setting of the given Section and Elevation elements, with their name and reference ID.",
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "components": [],
    "parameters": null,
@@ -15945,14 +16033,19 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2391,
+     "title": "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"
+    }
+   ]
   },
   {
    "id": "SetSectionsAndElevationsDetails",
    "group": "Navigator Commands",
    "version": "1.8.1",
    "brief": "Sets settings of the given Section and Elevation elements: pens, line types, horizontal and vertical range, model effects, story handles and markers. The name and the reference ID are changed with ModifySections.",
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "components": [],
    "parameters": null,
@@ -15960,7 +16053,12 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2391,
+     "title": "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"
+    }
+   ]
   },
   {
    "id": "MoveNavigatorItem",
