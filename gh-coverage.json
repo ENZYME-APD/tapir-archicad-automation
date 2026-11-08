@@ -1,13 +1,12 @@
 {
- "generatedAt": "2026-11-08 18:27 UTC",
+ "generatedAt": "2026-11-08 18:44 UTC",
  "counts": {
   "done": 568,
-  "merged": 218,
-  "in progress": 2,
+  "merged": 220,
   "not applicable": 1
  },
  "parameters": {
-  "all": 748,
+  "all": 750,
   "json": 36,
   "partial": 2
  },
@@ -9143,19 +9142,23 @@
    "group": "Favorites Commands",
    "version": "1.8.1",
    "brief": "Searches project favorites by keyword (matching favorite name or folder) and/or element type.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2394,
-     "title": "[3/4] Grasshopper: SearchProperties and SearchFavorites components"
+     "name": "SearchFavoritesComponent",
+     "path": "Components/FavoritesComponents/SearchFavoritesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "elementType",
+    "limit",
+    "query"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2391,
@@ -9204,19 +9207,28 @@
    "group": "Property Commands",
    "version": "1.8.1",
    "brief": "Searches properties by name or group substring with optional filtering by property type, value type, and collection type.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 8,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2394,
-     "title": "[3/4] Grasshopper: SearchProperties and SearchFavorites components"
+     "name": "SearchPropertiesComponent",
+     "path": "Components/PropertiesComponents/SearchPropertiesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 8,
+   "coveredParameters": [
+    "collectionType",
+    "includeAvailability",
+    "includeEnumValues",
+    "limit",
+    "propertyGroup",
+    "propertyType",
+    "query",
+    "valueType"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2391,

@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 18:27 UTC",
+ "generatedAt": "2026-11-08 18:44 UTC",
  "versions": [
   25,
   26,
@@ -9646,7 +9646,24 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2414,
+     "title": "[1/5] Tapir Script Manager: the window, the catalogue and browsing"
+    },
+    {
+     "number": 2413,
+     "title": "[2/5] Tapir Palette: the palette grows into a scripts panel (expand arrow, menu item, remembered size)"
+    },
+    {
+     "number": 2412,
+     "title": "Tapir Palette: search field and favourites in the compact bar"
+    },
+    {
+     "number": 2411,
+     "title": "[1/2] Share a script from Archicad: Share dialog, sent to the share service, website fallback"
+    }
+   ],
    "issues": []
   },
   {
@@ -13070,7 +13087,20 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2414,
+     "title": "[1/5] Tapir Script Manager: the window, the catalogue and browsing"
+    },
+    {
+     "number": 2413,
+     "title": "[2/5] Tapir Palette: the palette grows into a scripts panel (expand arrow, menu item, remembered size)"
+    },
+    {
+     "number": 2411,
+     "title": "[1/2] Share a script from Archicad: Share dialog, sent to the share service, website fallback"
+    }
+   ],
    "issues": []
   },
   {
@@ -13089,7 +13119,20 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2414,
+     "title": "[1/5] Tapir Script Manager: the window, the catalogue and browsing"
+    },
+    {
+     "number": 2413,
+     "title": "[2/5] Tapir Palette: the palette grows into a scripts panel (expand arrow, menu item, remembered size)"
+    },
+    {
+     "number": 2411,
+     "title": "[1/2] Share a script from Archicad: Share dialog, sent to the share service, website fallback"
+    }
+   ],
    "issues": []
   },
   {
@@ -16553,7 +16596,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2414,
+     "title": "[1/5] Tapir Script Manager: the window, the catalogue and browsing"
+    }
+   ],
    "issues": []
   },
   {
@@ -20016,7 +20064,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2414,
+     "title": "[1/5] Tapir Script Manager: the window, the catalogue and browsing"
+    },
+    {
+     "number": 2411,
+     "title": "[1/2] Share a script from Archicad: Share dialog, sent to the share service, website fallback"
+    }
+   ],
    "issues": []
   },
   {
