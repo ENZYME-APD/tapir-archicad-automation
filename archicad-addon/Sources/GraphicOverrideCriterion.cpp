@@ -1386,6 +1386,39 @@ static const EnumValue kMorphBodyTypes[]  = { { "NonSolid", 0 }, { "Solid", 1 } 
 // The values the structureType condition writes, see EmitCriterionNode.
 static const EnumValue kStructureTypes[] = { { "Basic", 1 }, { "Composite", 2 }, { "ComplexProfile", 3 } };
 
+// An enum stored as a GuidVariant: each name's fixed built-in value guid.
+struct GuidEnumValue {
+    const char* name;
+    const char* guid;
+};
+
+static const GuidEnumValue kStructuralFunctionValues[] = {
+    { "LoadBearing",    "C852BD7D-1198-2802-7E37-E4925B997B8B" },
+    { "NonLoadBearing", "539EA1F2-E319-7D11-7CAC-CCAA638FAD6E" },
+    { "Undefined",      "CCCC2E1F-54E6-8534-EEA0-F571386498E1" }
+};
+static const GuidEnumValue kPositionValues[] = {
+    { "Exterior",  "6F76AEB9-1C41-7E76-5254-57399CBF985B" },
+    { "Interior",  "512CBDAC-06A3-A73D-ED46-1701A8BCE536" },
+    { "Undefined", "677677E5-E514-E73F-39B9-E7AFC2031846" }
+};
+static const GuidEnumValue kRenovationStatusValues[] = {
+    { "Existing",       kRenovationExistingGuid },
+    { "ToBeDemolished", kRenovationToBeDemolishedGuid },
+    { "New",            kRenovationNewGuid }
+};
+// "Source de lien": the one value the editor offered, "Toute source de lien" (any link source).
+static const GuidEnumValue kLinkSourceValues[] = { { "Any", "4BD63BB7-0A82-4680-B6A7-708DC0AF0EC2" } };
+
+static const char* FindGuidEnumValue (const GS::UniString& name, const GuidEnumValue* values, int count)
+{
+    for (int i = 0; i < count; ++i) {
+        if (name == values[i].name)
+            return values[i].guid;
+    }
+    return nullptr;
+}
+
 static GS::UniString NumPropertyCriterionXML (const char* propertyGuid, double value, int numOp, const char* groupGuid)
 {
     return GS::UniString ("<ClassGuid>") + kPropertyClassGuid + "</ClassGuid>"
@@ -2674,11 +2707,8 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
     if (node.Get ("structuralFunction", structuralFunction) || node.Get ("structuralFunctionNot", structuralFunctionNot)) {
         const bool isNot = !structuralFunctionNot.IsEmpty ();
         const GS::UniString& val = isNot ? structuralFunctionNot : structuralFunction;
-        const char* valueGuid = nullptr;
-        if (val == "LoadBearing")         valueGuid = "C852BD7D-1198-2802-7E37-E4925B997B8B";
-        else if (val == "NonLoadBearing") valueGuid = "539EA1F2-E319-7D11-7CAC-CCAA638FAD6E";
-        else if (val == "Undefined")      valueGuid = "CCCC2E1F-54E6-8534-EEA0-F571386498E1";
-        else {
+        const char* valueGuid = FindGuidEnumValue (val, kStructuralFunctionValues, 3);
+        if (valueGuid == nullptr) {
             outError = "Invalid structuralFunction/structuralFunctionNot '" + val + "'. Must be 'LoadBearing', 'NonLoadBearing', or 'Undefined'.";
             return false;
         }
@@ -2688,11 +2718,8 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
     if (node.Get ("position", position) || node.Get ("positionNot", positionNot)) {
         const bool isNot = !positionNot.IsEmpty ();
         const GS::UniString& val = isNot ? positionNot : position;
-        const char* valueGuid = nullptr;
-        if (val == "Exterior")        valueGuid = "6F76AEB9-1C41-7E76-5254-57399CBF985B";
-        else if (val == "Interior")   valueGuid = "512CBDAC-06A3-A73D-ED46-1701A8BCE536";
-        else if (val == "Undefined")  valueGuid = "677677E5-E514-E73F-39B9-E7AFC2031846";
-        else {
+        const char* valueGuid = FindGuidEnumValue (val, kPositionValues, 3);
+        if (valueGuid == nullptr) {
             outError = "Invalid position/positionNot '" + val + "'. Must be 'Exterior', 'Interior', or 'Undefined'.";
             return false;
         }
@@ -2729,11 +2756,11 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
     // captured example - exposed as two presence-triggered booleans (matching all3DTypes/
     // all2DTypes' convention) around that one constant, rather than a real enum.
     if (node.Get ("hasLinkSource", hasLinkSource) && hasLinkSource) {
-        outXML = WrapAsTrivialGroup (GuidEqualsPropertyCriterionXML (kLinkSourcePropertyGuid, "4BD63BB7-0A82-4680-B6A7-708DC0AF0EC2", false, kIdCategoryGroupGuid3));
+        outXML = WrapAsTrivialGroup (GuidEqualsPropertyCriterionXML (kLinkSourcePropertyGuid, kLinkSourceValues[0].guid, false, kIdCategoryGroupGuid3));
         return true;
     }
     if (node.Get ("hasLinkSourceNot", hasLinkSourceNot) && hasLinkSourceNot) {
-        outXML = WrapAsTrivialGroup (GuidEqualsPropertyCriterionXML (kLinkSourcePropertyGuid, "4BD63BB7-0A82-4680-B6A7-708DC0AF0EC2", true, kIdCategoryGroupGuid3));
+        outXML = WrapAsTrivialGroup (GuidEqualsPropertyCriterionXML (kLinkSourcePropertyGuid, kLinkSourceValues[0].guid, true, kIdCategoryGroupGuid3));
         return true;
     }
     if (node.Get ("missingVariant", missingVariant)) {
@@ -3121,11 +3148,8 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
 
     GS::UniString renovationStatus;
     if (node.Get ("renovationStatus", renovationStatus)) {
-        const char* statusGuid = nullptr;
-        if (renovationStatus == "Existing")             statusGuid = kRenovationExistingGuid;
-        else if (renovationStatus == "ToBeDemolished")  statusGuid = kRenovationToBeDemolishedGuid;
-        else if (renovationStatus == "New")             statusGuid = kRenovationNewGuid;
-        else {
+        const char* statusGuid = FindGuidEnumValue (renovationStatus, kRenovationStatusValues, 3);
+        if (statusGuid == nullptr) {
             outError = "Invalid renovationStatus '" + renovationStatus + "'. Must be one of: Existing, ToBeDemolished, New.";
             return false;
         }
@@ -3589,6 +3613,8 @@ static const BuiltInPropertyField kBuiltInPropertyFields[] = {
     { "roofConnected",          BuiltInFieldKind::Bool,         kRoofConnectedPropertyGuid,          kConstructionPropertyGroupGuid, API_ZombieAttrID,  nullptr,         0, false },
     { "structureType",          BuiltInFieldKind::Enum,         kStructureTypePropertyGuid,          kConstructionPropertyGroupGuid, API_ZombieAttrID,  kStructureTypes, 3, false },
     { "morphBodyType",          BuiltInFieldKind::Enum,         kMorphBodyTypePropertyGuid,          kConstructionPropertyGroupGuid, API_ZombieAttrID,  kMorphBodyTypes, 2, true  },
+    // ID and Categories (part 3 of #1816), the rest of which is in kPositionAndIdFields.
+    { "missingVariant",         BuiltInFieldKind::Bool,         kMissingVariantPropertyGuid,         kIdCategoryGroupGuid4,          API_ZombieAttrID,  nullptr,         0, false },
 };
 
 static bool ReadBuiltInPropertyField (const BuiltInPropertyField& field, const CriterionXmlNode& classGuid, const CriterionXmlNode& leaf, int op, const std::string& valueText, GS::ObjectState& outLeaf)
@@ -3660,6 +3686,140 @@ static bool ReadBuiltInPropertyField (const BuiltInPropertyField& field, const C
     return false;
 }
 
+// The built-in properties of the Positioning and ID and Categories categories (part 3 of #1816), each
+// written by EmitCriterionNode with the same key, guid, group and operators. The fields of one tool
+// (wallLevelOffset, wallParentId, ...) are not here.
+enum class BuiltInValueKind {
+    Number,     // key + "", Not, LessThan, GreaterThan, LessOrEqual, GreaterOrEqual: a number
+    Integer,    // key: an integer, "is"
+    Text,       // key + the suffix of each operator in textOps (kTextOperatorSuffixes): a text
+    TextList,   // the same, written as a list of one text
+    GuidEnum,   // key / keyNot (when notAllowed): an enum name, "is" / "is not"
+    GuidFlag    // key / keyNot: true, "is" / "is not" the one value of values
+};
+
+// The key suffix of each text operator, by CriteriaOperatorEnum.
+static const char* kTextOperatorSuffixes[] = { "Is", "IsNot", "LessThan", "GreaterThan", "LessOrEqual", "GreaterOrEqual", "Contains", "NotContains", "StartsWith", "EndsWith" };
+static const unsigned kTextIsOps       = 0x003; // is, is not
+static const unsigned kTextContainsOps = 0x040; // contains
+static const unsigned kText6Ops        = 0x3C3; // is, is not, contains, does not contain, starts with, ends with
+static const unsigned kText10Ops       = 0x3FF; // and less than, greater than, less or equal, greater or equal
+
+struct BuiltInValueField {
+    const char*          key;
+    BuiltInValueKind     kind;
+    const char*          propertyGuid;
+    const char*          groupGuid;
+    unsigned             textOps;       // Text, TextList: bit n accepts operator n
+    bool                 bareVariant;   // Text, GuidEnum: the <Variant> has no <Value> wrapper
+    const GuidEnumValue* values;        // GuidEnum, GuidFlag
+    int                  valueCount;
+    bool                 notAllowed;    // GuidEnum
+};
+
+static const BuiltInValueField kPositionAndIdFields[] = {
+    { "seaLevelAltitude",    BuiltInValueKind::Number,   kSeaLevelAltitudePropertyGuid,    kPositioningPropertyGroupGuid, 0,                false, nullptr,                   0, false },
+    { "projectZeroAltitude", BuiltInValueKind::Number,   kProjectZeroAltitudePropertyGuid, kPositioningPropertyGroupGuid, 0,                false, nullptr,                   0, false },
+    { "groundFloorAltitude", BuiltInValueKind::Number,   kGroundFloorAltitudePropertyGuid, kPositioningPropertyGroupGuid, 0,                false, nullptr,                   0, false },
+    { "roofAltitude",        BuiltInValueKind::Number,   kRoofAltitudePropertyGuid,        kPositioningPropertyGroupGuid, 0,                false, nullptr,                   0, false },
+    { "sillHeight",          BuiltInValueKind::Number,   kSillHeightPropertyGuid,          kPositioningPropertyGroupGuid, 0,                false, nullptr,                   0, false },
+    { "lintelHeight",        BuiltInValueKind::Number,   kLintelHeightPropertyGuid,        kPositioningPropertyGroupGuid, 0,                false, nullptr,                   0, false },
+    { "floorIndex",          BuiltInValueKind::Integer,  kPlacementStoryPropertyGuid,      kPositioningPropertyGroupGuid, 0,                false, nullptr,                   0, false },
+    { "renovationFilter",    BuiltInValueKind::Text,     kRenovationFilterPropertyGuid,    kIdCategoryGroupGuid1,         kTextIsOps,       true,  nullptr,                   0, false },
+    { "structuralFunction",  BuiltInValueKind::GuidEnum, kStructuralFunctionPropertyGuid,  kIdCategoryGroupGuid1,         0,                true,  kStructuralFunctionValues, 3, true  },
+    { "position",            BuiltInValueKind::GuidEnum, kPositionPropertyGuid,            kIdCategoryGroupGuid1,         0,                true,  kPositionValues,           3, true  },
+    { "renovationStatus",    BuiltInValueKind::GuidEnum, kRenovationStatusPropertyGuid,    kIdCategoryGroupGuid1,         0,                true,  kRenovationStatusValues,   3, false },
+    { "variantState",        BuiltInValueKind::Text,     kVariantStatePropertyGuid,        kIdCategoryGroupGuid2,         kTextIsOps,       true,  nullptr,                   0, false },
+    { "variantSet",          BuiltInValueKind::Text,     kVariantSetPropertyGuid,          kIdCategoryGroupGuid2,         kTextIsOps,       true,  nullptr,                   0, false },
+    { "elementId",           BuiltInValueKind::Text,     kElementIdPropertyGuid,           kIdCategoryGroupGuid3,         kText10Ops,       false, nullptr,                   0, false },
+    { "uniqueId",            BuiltInValueKind::Text,     kUniqueIdPropertyGuid,            kIdCategoryGroupGuid3,         kText6Ops,        false, nullptr,                   0, false },
+    { "linkMainId",          BuiltInValueKind::Text,     kLinkMainIdPropertyGuid,          kIdCategoryGroupGuid3,         kText10Ops,       false, nullptr,                   0, false },
+    { "linkedElementId",     BuiltInValueKind::Text,     kLinkedElementIdPropertyGuid,     kIdCategoryGroupGuid3,         kText10Ops,       false, nullptr,                   0, false },
+    { "name",                BuiltInValueKind::Text,     kNamePropertyGuid,                kIdCategoryGroupGuid3,         kText6Ops,        false, nullptr,                   0, false },
+    { "libraryPartName",     BuiltInValueKind::Text,     kLibraryPartNamePropertyGuid,     kIdCategoryGroupGuid3,         kText6Ops,        false, nullptr,                   0, false },
+    { "subTypeName",         BuiltInValueKind::TextList, kSubTypeNamePropertyGuid,         kIdCategoryGroupGuid3,         kText6Ops,        false, nullptr,                   0, false },
+    { "hasLinkSource",       BuiltInValueKind::GuidFlag, kLinkSourcePropertyGuid,          kIdCategoryGroupGuid3,         0,                false, kLinkSourceValues,         1, false },
+    { "variantSetName",      BuiltInValueKind::Text,     kVariantSetNamePropertyGuid,      kIdCategoryGroupGuid4,         kTextContainsOps, false, nullptr,                   0, false },
+    { "variantName",         BuiltInValueKind::Text,     kVariantNamePropertyGuid,         kIdCategoryGroupGuid4,         kTextContainsOps, false, nullptr,                   0, false },
+};
+
+// Whether the generator writes this leaf for generatedXML once its value is written as writtenText:
+// a number is written back with %.15g, which may differ from the digits Archicad wrote. The leaf's
+// shape was checked by ReadPropertyLeaf and ReadSingleVariantValue.
+static bool MatchesGeneratedWithValue (const CriterionXmlNode& classGuid, const CriterionXmlNode& leaf, const GS::UniString& generatedXML, const std::string& writtenText)
+{
+    CriterionXmlNode written = leaf;
+    CriterionXmlNode& valueNode = written.children[0].children[2];
+    CriterionXmlNode& variant = valueNode.name == "Variant" ? valueNode : valueNode.children[0];
+    CriterionXmlNode& value = variant.children[1];
+    (value.name == "ValueArray" ? value.children[0] : value).text = writtenText;
+    return MatchesGenerated (classGuid, written, generatedXML);
+}
+
+static bool ReadBuiltInValueField (const BuiltInValueField& field, const CriterionXmlNode& classGuid, const CriterionXmlNode& leaf, int op, const std::string& valueText, GS::ObjectState& outLeaf)
+{
+    const GS::String key (field.key);
+    const GS::String notKey = key + "Not";
+    switch (field.kind) {
+        case BuiltInValueKind::Number: {
+            static const char* kSuffixes[] = { "", "Not", "LessThan", "GreaterThan", "LessOrEqual", "GreaterOrEqual" };
+            double value = 0.0;
+            if (op < 0 || op > 5 || !ParseDouble (valueText, value))
+                return false;
+            const GS::UniString generatedXML = NumPropertyCriterionXML (field.propertyGuid, value, op, field.groupGuid);
+            if (!MatchesGeneratedWithValue (classGuid, leaf, generatedXML, ToUtf8 (GS::UniString::Printf ("%.15g", value))))
+                return false;
+            outLeaf = GS::ObjectState ();
+            outLeaf.Add (key + kSuffixes[op], value);
+            return true;
+        }
+        case BuiltInValueKind::Integer: {
+            int value = 0;
+            if (op != 0 || !ParseInt (valueText, value))
+                return false;
+            if (!MatchesGenerated (classGuid, leaf, IntPropertyCriterionXML (field.propertyGuid, value, 0, field.groupGuid)))
+                return false;
+            outLeaf = GS::ObjectState ();
+            outLeaf.Add (key, static_cast<Int32> (value));
+            return true;
+        }
+        case BuiltInValueKind::Text:
+        case BuiltInValueKind::TextList: {
+            if (op < 0 || op > 9 || (field.textOps & (1u << op)) == 0)
+                return false;
+            const GS::UniString value = FromUtf8 (valueText);
+            const GS::UniString generatedXML = field.kind == BuiltInValueKind::TextList
+                ? StringListCriterionXML (field.propertyGuid, value, op, field.groupGuid)
+                : StringModelViewCriterionXML (field.propertyGuid, value, op, field.groupGuid, field.bareVariant);
+            if (!MatchesGenerated (classGuid, leaf, generatedXML))
+                return false;
+            outLeaf = GS::ObjectState ();
+            outLeaf.Add (key + kTextOperatorSuffixes[op], value);
+            return true;
+        }
+        case BuiltInValueKind::GuidEnum:
+        case BuiltInValueKind::GuidFlag: {
+            const bool isFlag = field.kind == BuiltInValueKind::GuidFlag;
+            if (op != 0 && !(op == 1 && (field.notAllowed || isFlag)))
+                return false;
+            for (int i = 0; i < field.valueCount; ++i) {
+                if (!SameGuid (valueText, field.values[i].guid))
+                    continue;
+                if (!MatchesGenerated (classGuid, leaf, GuidEqualsPropertyCriterionXML (field.propertyGuid, field.values[i].guid, op == 1, field.groupGuid, field.bareVariant)))
+                    return false;
+                outLeaf = GS::ObjectState ();
+                if (isFlag)
+                    outLeaf.Add (op == 1 ? notKey : key, true);
+                else
+                    outLeaf.Add (op == 1 ? notKey : key, GS::UniString (field.values[i].name));
+                return true;
+            }
+            return false;
+        }
+    }
+    return false;
+}
+
 // Built-in properties, identified by guid. Those of the categories not decoded yet stay raw.
 static bool ReadBuiltInPropertyLeaf (const CriterionXmlNode& classGuid, const CriterionXmlNode& leaf, const CriterionXmlNode& definition, int op, const CriterionXmlNode& valueNode, GS::ObjectState& outLeaf)
 {
@@ -3672,6 +3832,10 @@ static bool ReadBuiltInPropertyLeaf (const CriterionXmlNode& classGuid, const Cr
     for (const BuiltInPropertyField& field : kBuiltInPropertyFields) {
         if (SameGuid (guidNode->text, field.propertyGuid) && SameGuid (groupGuidNode->text, field.groupGuid))
             return ReadBuiltInPropertyField (field, classGuid, leaf, op, valueText, outLeaf);
+    }
+    for (const BuiltInValueField& field : kPositionAndIdFields) {
+        if (SameGuid (guidNode->text, field.propertyGuid) && SameGuid (groupGuidNode->text, field.groupGuid))
+            return ReadBuiltInValueField (field, classGuid, leaf, op, valueText, outLeaf);
     }
     return false;
 }
