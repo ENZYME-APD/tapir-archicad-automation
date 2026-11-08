@@ -4,7 +4,7 @@
     "summary": "Copies the settings of one element to the selected elements of the same type, keeping their geometry, ID and the sizes you choose.",
     "category": "element-data-properties",
     "tags": ["settings", "favorites", "eyedropper", "selection"],
-    "author": { "name": "Tapir" },
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
     "license": "MIT",
     "entry": "CopySettingsToSelection.py",
     "versions": [

@@ -4,7 +4,7 @@
     "summary": "Turns selected zones into walls and slabs: partitions on shared edges, external walls elsewhere, a slab per story, and balustrades around the terraces.",
     "category": "modeling-geometry",
     "tags": ["zones", "walls", "slabs", "massing", "early-design", "partitions", "terraces", "railings"],
-    "author": { "name": "Tapir" },
+    "author": { "name": "Jorge Beneitez", "github": "JBENEITEZ" },
     "license": "MIT",
     "entry": "ZonesToWallsAndSlabs.py",
     "versions": [

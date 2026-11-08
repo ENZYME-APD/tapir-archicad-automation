@@ -11,6 +11,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <optional>
+#include <utility>
 
 static ULong GenerateProjectLocationHashValue (const IO::Location& projectLocation)
 {
@@ -2522,6 +2523,141 @@ GS::ObjectState Set3DCutawayStatusCommand::Execute (const GS::ObjectState& param
 }
 
 // ---------------------------------------------------------------------------
+// Snap filter of the Get...FromUser commands (#/SnapFilter)
+// ---------------------------------------------------------------------------
+
+// The #/SnapType names. Every API_NeigID here exists in Archicad 25 to 30.
+static const std::pair<const char*, API_NeigID> SnapTypeNames[] = {
+    { "Wall",          APINeig_Wall },
+    { "WallOn",        APINeig_WallOn },
+    { "Column",        APINeig_Colu },
+    { "ColumnOn",      APINeig_ColuOn },
+    { "Beam",          APINeig_Beam },
+    { "BeamOn",        APINeig_BeamOn },
+    { "Window",        APINeig_Wind },
+    { "WindowOn",      APINeig_WindOn },
+    { "Door",          APINeig_Door },
+    { "DoorOn",        APINeig_DoorOn },
+    { "Object",        APINeig_Symb },
+    { "ObjectOn",      APINeig_SymbOn },
+    { "Slab",          APINeig_Ceil },
+    { "SlabOn",        APINeig_CeilOn },
+    { "Roof",          APINeig_Roof },
+    { "RoofOn",        APINeig_RoofOn },
+    { "Mesh",          APINeig_Mesh },
+    { "MeshOn",        APINeig_MeshOn },
+    { "Shell",         APINeig_Shell },
+    { "ShellOn",       APINeig_ShellOn },
+    { "Morph",         APINeig_Morph },
+    { "MorphOn",       APINeig_MorphOn },
+    { "Skylight",      APINeig_Skylight },
+    { "SkylightOn",    APINeig_SkylightOn },
+    { "CurtainWall",   APINeig_CurtainWall },
+    { "CurtainWallOn", APINeig_CurtainWallOn },
+    { "Stair",         APINeig_Stair },
+    { "StairOn",       APINeig_StairOn },
+    { "Railing",       APINeig_Railing },
+    { "RailingOn",     APINeig_RailingOn },
+    { "Zone",          APINeig_Room },
+    { "ZoneOn",        APINeig_RoomOn },
+    { "Hatch",         APINeig_Hatch },
+    { "HatchOn",       APINeig_HatchOn },
+    { "Line",          APINeig_Line },
+    { "LineOn",        APINeig_LineOn },
+    { "PolyLine",      APINeig_PolyLine },
+    { "PolyLineOn",    APINeig_PolyLineOn },
+    { "Arc",           APINeig_Arc },
+    { "ArcOn",         APINeig_ArcOn },
+    { "Circle",        APINeig_Circ },
+    { "CircleOn",      APINeig_CircOn },
+    { "Spline",        APINeig_Spline },
+    { "SplineOn",      APINeig_SplineOn },
+    { "Hotspot",       APINeig_Hot },
+    { "Text",          APINeig_Word },
+    { "Label",         APINeig_Label },
+    { "Dimension",     APINeig_DimPt },
+    { "DimensionOn",   APINeig_DimOn }
+};
+
+static bool GetSnapTypeFromName (const GS::UniString& name, API_NeigID& neigID)
+{
+    for (const auto& snapType : SnapTypeNames) {
+        if (name == snapType.first) {
+            neigID = snapType.second;
+            return true;
+        }
+    }
+    return false;
+}
+
+static GSErrCode ReadSnapTypes (const GS::ObjectState& snapFilter, const char* key, GS::Array<API_NeigID>& neigIDs, GS::UniString& errorMessage)
+{
+    GS::Array<GS::UniString> names;
+    snapFilter.Get (key, names);
+    for (const GS::UniString& name : names) {
+        API_NeigID neigID = APINeig_None;
+        if (!GetSnapTypeFromName (name, neigID)) {
+            errorMessage = GS::UniString ("Unknown snap type in snapFilter.") + GS::UniString (key) + GS::UniString (": ") + name;
+            return APIERR_BADPARS;
+        }
+        neigIDs.Push (neigID);
+    }
+    return NoError;
+}
+
+// Reads the optional snapFilter parameter into the filter of a point or line input.
+// changeFilter stays false when the parameter is not given, so Archicad snaps as usual.
+static GSErrCode ReadSnapFilter (const GS::ObjectState& parameters, bool& changeFilter, API_NeigFilter& filter, GS::UniString& errorMessage)
+{
+    changeFilter = false;
+    const GS::ObjectState* snapFilter = parameters.Get ("snapFilter");
+    if (snapFilter == nullptr) {
+        return NoError;
+    }
+
+    GS::Array<API_NeigID> include;
+    GS::Array<API_NeigID> exclude;
+    GSErrCode err = ReadSnapTypes (*snapFilter, "include", include, errorMessage);
+    if (err == NoError) {
+        err = ReadSnapTypes (*snapFilter, "exclude", exclude, errorMessage);
+    }
+    if (err != NoError) {
+        return err;
+    }
+
+    GS::UniString base = include.IsEmpty () ? "All" : "None";
+    snapFilter->Get ("base", base);
+    API_InitNeigFilterID initNeigFilterID = APIInitNeigFilter_Full;
+    if (base == "All") {
+        initNeigFilterID = APIInitNeigFilter_Full;
+    } else if (base == "None") {
+        initNeigFilterID = APIInitNeigFilter_Empty;
+    } else if (base == "Edges") {
+        initNeigFilterID = APIInitNeigFilter_On;
+    } else if (base == "Nodes") {
+        initNeigFilterID = APIInitNeigFilter_Node;
+    } else {
+        errorMessage = GS::UniString ("Unknown snapFilter.base: ") + base;
+        return APIERR_BADPARS;
+    }
+
+    err = ACAPI_UserInput_InitNeigFilter (&filter, initNeigFilterID);
+    for (UIndex i = 0; i < include.GetSize () && err == NoError; ++i) {
+        err = ACAPI_UserInput_SetNeigFilter (&filter, include[i]);
+    }
+    for (UIndex i = 0; i < exclude.GetSize () && err == NoError; ++i) {
+        err = ACAPI_UserInput_ClearNeigFilter (&filter, exclude[i]);
+    }
+    if (err != NoError) {
+        errorMessage = "Failed to set up the snap filter.";
+        return err;
+    }
+
+    changeFilter = true;
+    return NoError;
+}
+
+// ---------------------------------------------------------------------------
 // GetPointFromUser
 // ---------------------------------------------------------------------------
 
@@ -2543,6 +2679,10 @@ GS::Optional<GS::UniString> GetPointFromUserCommand::GetInputParametersSchema ()
             "prompt": {
                 "type": "string",
                 "description": "Shown in the control box while Archicad waits for the click. Single-byte text: the box takes a char field. Archicad's main thread waits for the click or for Escape, and every other JSON command queues behind this one until then."
+            },
+            "snapFilter": {
+                "$ref": "#/SnapFilter",
+                "description": "Which points and lines of the elements the cursor snaps to. Default: Archicad's usual snapping."
             }
         },
         "additionalProperties": false,
@@ -2579,7 +2719,13 @@ GS::ObjectState GetPointFromUserCommand::Execute (const GS::ObjectState& paramet
     CHTruncate (prompt.ToCStr ().Get (), pointInfo.prompt, sizeof (pointInfo.prompt));
     pointInfo.enableQuickSelection = true;
 
-    const GSErrCode err = ACAPI_UserInput_GetPoint (&pointInfo);
+    GS::UniString snapFilterError;
+    GSErrCode err = ReadSnapFilter (parameters, pointInfo.changeFilter, pointInfo.filter, snapFilterError);
+    if (err != NoError) {
+        return CreateErrorResponse (err, snapFilterError);
+    }
+
+    err = ACAPI_UserInput_GetPoint (&pointInfo);
     if (err != NoError) {
         return CreateErrorResponse (err, "No point was given - the input was cancelled or could not start (a modal dialog or a non-model window).");
     }
@@ -2648,6 +2794,10 @@ GS::Optional<GS::UniString> GetLineFromUserCommand::GetInputParametersSchema () 
                 "type": "boolean",
                 "description": "If true, draws a unit-square rubber feedback around the cursor while input is active.",
                 "default": true
+            },
+            "snapFilter": {
+                "$ref": "#/SnapFilter",
+                "description": "Which points and lines of the elements the cursor snaps to, for both points. Default: Archicad's usual snapping."
             }
         },
         "additionalProperties": false
@@ -2689,7 +2839,13 @@ GS::ObjectState GetLineFromUserCommand::Execute (const GS::ObjectState& paramete
     API_GetPointType pointInfo = {};
     CHTruncate (startPromptStr.ToCStr ().Get (), pointInfo.prompt, sizeof (pointInfo.prompt));
 
-    GSErrCode err = ACAPI_UserInput_GetPoint (&pointInfo);
+    GS::UniString snapFilterError;
+    GSErrCode err = ReadSnapFilter (parameters, pointInfo.changeFilter, pointInfo.filter, snapFilterError);
+    if (err != NoError) {
+        return CreateErrorResponse (err, snapFilterError);
+    }
+
+    err = ACAPI_UserInput_GetPoint (&pointInfo);
 
     if (err == APIERR_CANCEL) {
         return GS::ObjectState ("cancelled", true);
@@ -2702,6 +2858,8 @@ GS::ObjectState GetLineFromUserCommand::Execute (const GS::ObjectState& paramete
     API_GetLineType lineInfo = {};
     lineInfo.startCoord = pointInfo.pos;
     CHTruncate (endPromptStr.ToCStr ().Get (), lineInfo.prompt, sizeof (lineInfo.prompt));
+    lineInfo.changeFilter = pointInfo.changeFilter;
+    std::memcpy (lineInfo.filter, pointInfo.filter, sizeof (lineInfo.filter));
 
     err = showRubberLineFeedback
         ? ACAPI_UserInput_GetLine (&lineInfo, RubberLineCallBack)
@@ -3003,6 +3161,10 @@ GS::Optional<GS::UniString> GetPolygonFromUserCommand::GetInputParametersSchema 
                 "description": "Polygon input method. 'General' = free polygon, 'Rect' = axis-aligned rectangle, 'RotRect' = rotated rectangle, 'Polyline' = open polyline.",
                 "enum": ["General", "Rect", "RotRect", "Polyline"],
                 "default": "General"
+            },
+            "snapFilter": {
+                "$ref": "#/SnapFilter",
+                "description": "Which points and lines of the elements the cursor snaps to for the start point. Archicad's polygon input has no snap filter, so the other nodes snap as usual. Default: Archicad's usual snapping."
             }
         },
         "additionalProperties": false
@@ -3058,7 +3220,13 @@ GS::ObjectState GetPolygonFromUserCommand::Execute (const GS::ObjectState& param
         API_GetPointType startPointInfo = {};
         CHTruncate (startPromptStr.ToCStr ().Get (), startPointInfo.prompt, sizeof (startPointInfo.prompt));
 
-        GSErrCode err = ACAPI_UserInput_GetPoint (&startPointInfo);
+        GS::UniString snapFilterError;
+        GSErrCode err = ReadSnapFilter (parameters, startPointInfo.changeFilter, startPointInfo.filter, snapFilterError);
+        if (err != NoError) {
+            return CreateErrorResponse (err, snapFilterError);
+        }
+
+        err = ACAPI_UserInput_GetPoint (&startPointInfo);
         if (err == APIERR_CANCEL) {
             return GS::ObjectState ("cancelled", true);
         }
@@ -3138,6 +3306,107 @@ GS::ObjectState GetPolygonFromUserCommand::Execute (const GS::ObjectState& param
     } catch (...) {
         return CreateErrorResponse (APIERR_GENERAL, "Unexpected exception while processing polygon input.");
     }
+}
+
+// ---------------------------------------------------------------------------
+// GetMagicWandSettings
+// ---------------------------------------------------------------------------
+
+GetMagicWandSettingsCommand::GetMagicWandSettingsCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetMagicWandSettingsCommand::GetName () const
+{
+    return "GetMagicWandSettings";
+}
+
+GS::Optional<GS::UniString> GetMagicWandSettingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "curveApproximation": {
+                "type": "string",
+                "enum": [
+                    "SegmentsAlongArcs",
+                    "SegmentsAlongCircles",
+                    "DeviationFromCurves",
+                    "SegmentLength",
+                    "Unknown"
+                ],
+                "description": "How the Magic Wand approximates curves with straight segments: a fixed number of segments along arcs or along full circles (segmentCount), segments that deviate from the curve by at most maxDeviation, or segments of segmentLength. Unknown for a mode this version of Tapir does not know."
+            },
+            "segmentCount": {
+                "type": "integer",
+                "description": "The number of segments along an arc or circle, used by SegmentsAlongArcs and SegmentsAlongCircles."
+            },
+            "maxDeviation": {
+                "type": "number",
+                "description": "The largest distance of the segments from the curve, in meters, used by DeviationFromCurves."
+            },
+            "segmentLength": {
+                "type": "number",
+                "description": "The length of the segments, in meters, used by SegmentLength."
+            },
+            "traceMethod": {
+                "type": "string",
+                "enum": [
+                    "Linear",
+                    "BestMatch",
+                    "Unknown"
+                ],
+                "description": "How curves are traced: Linear traces them with straight segments as set above, BestMatch with the curves that match them best. Unknown for a method this version of Tapir does not know."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "curveApproximation",
+            "segmentCount",
+            "maxDeviation",
+            "segmentLength",
+            "traceMethod"
+        ]
+    })";
+}
+
+static GS::UniString ConvertMagicWandDivArcModeToString (short divArcMode)
+{
+    switch (divArcMode) {
+        case API_ArcDiv_DivArc:     return "SegmentsAlongArcs";
+        case API_ArcDiv_DivCircle:  return "SegmentsAlongCircles";
+        case API_ArcDiv_DiffArc:    return "DeviationFromCurves";
+        case API_ArcDiv_PartLength: return "SegmentLength";
+        default:                    return "Unknown";
+    }
+}
+
+static GS::UniString ConvertMagicWandTraceMethodToString (short traceMethod)
+{
+    switch (traceMethod) {
+        case API_ArcTrace_Linear:    return "Linear";
+        case API_ArcTrace_BestMatch: return "BestMatch";
+        default:                     return "Unknown";
+    }
+}
+
+GS::ObjectState GetMagicWandSettingsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    // The settings of the Magic Wand Settings dialog, read only.
+    API_MagicWandInfo magicWandInfo = {};
+    const GSErrCode err = ACAPI_UserInput_GetMagicWandSets (&magicWandInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the Magic Wand settings.");
+    }
+
+    GS::ObjectState response;
+    response.Add ("curveApproximation", ConvertMagicWandDivArcModeToString (magicWandInfo.divArcMode));
+    response.Add ("segmentCount", static_cast<Int32> (magicWandInfo.arcSegNumb));
+    response.Add ("maxDeviation", magicWandInfo.arcDiff);
+    response.Add ("segmentLength", magicWandInfo.partLength);
+    response.Add ("traceMethod", ConvertMagicWandTraceMethodToString (magicWandInfo.traceMethod));
+    return response;
 }
 
 
@@ -3393,6 +3662,10 @@ GS::Optional<GS::UniString> GetElementFromUserCommand::GetInputParametersSchema 
                 "items": {
                     "$ref": "#/ElementType"
                 }
+            },
+            "snapFilter": {
+                "$ref": "#/SnapFilter",
+                "description": "Which points and lines of the elements the cursor snaps to, for example only the points and edges of the element types asked for. Default: Archicad's usual snapping."
             }
         },
         "additionalProperties": false,
@@ -3449,10 +3722,20 @@ GS::ObjectState GetElementFromUserCommand::Execute (const GS::ObjectState& param
         elementTypes.Push (elementType);
     }
 
+    bool changeFilter = false;
+    API_NeigFilter filter = {};
+    GS::UniString snapFilterError;
+    const GSErrCode snapFilterErr = ReadSnapFilter (parameters, changeFilter, filter, snapFilterError);
+    if (snapFilterErr != NoError) {
+        return CreateErrorResponse (snapFilterErr, snapFilterError);
+    }
+
     for (;;) {
         API_GetPointType pointInfo = {};
         CHTruncate (prompt.ToCStr ().Get (), pointInfo.prompt, sizeof (pointInfo.prompt));
         pointInfo.enableQuickSelection = true;
+        pointInfo.changeFilter = changeFilter;
+        std::memcpy (pointInfo.filter, filter, sizeof (pointInfo.filter));
 
         const GSErrCode err = ACAPI_UserInput_GetPoint (&pointInfo);
         if (err == APIERR_CANCEL) {

@@ -87,4 +87,4 @@ zone's GUID.
 
 ## Credits
 
-Requested by @JBENEITEZ in #2283. Written by the Tapir project.
+Requested by @JBENEITEZ in #2283, written with the Tapir issue bot.

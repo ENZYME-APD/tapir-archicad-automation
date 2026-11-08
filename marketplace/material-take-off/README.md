@@ -40,4 +40,4 @@ default name is `Material take-off <date> <time>.xlsx`.
 
 ## Credits
 
-Requested by @parikshit99 in #2013. Written by the Tapir project.
+Requested by @parikshit99 in #2013, written with the Tapir issue bot.

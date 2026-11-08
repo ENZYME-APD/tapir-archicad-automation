@@ -4,7 +4,7 @@
     "summary": "Finds a word in the Texts and text Labels and replaces it in the matches you check, keeping the styles and autotexts of the rest of the text.",
     "category": "documentation-layouts",
     "tags": ["texts", "labels", "find-replace", "annotation"],
-    "author": { "name": "Tapir" },
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
     "license": "MIT",
     "entry": "TextFindReplace.py",
     "versions": [

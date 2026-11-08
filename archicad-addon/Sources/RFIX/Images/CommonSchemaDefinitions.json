@@ -3119,6 +3119,93 @@
             "arcAngle"
         ]
     },
+    "SnapFilter": {
+        "type": "object",
+        "description": "Which points and lines of the elements the cursor snaps to while the designer clicks (Archicad's neig filter). Without it, the cursor snaps as usual.",
+        "properties": {
+            "base": {
+                "type": "string",
+                "description": "What the cursor snaps to before include and exclude are applied: All = everything, None = nothing, Edges = only the lines and edges of the elements, Nodes = only their points (end points, vertices, hotspots). Default: None when include is given, otherwise All.",
+                "enum": [
+                    "All",
+                    "None",
+                    "Edges",
+                    "Nodes"
+                ]
+            },
+            "include": {
+                "type": "array",
+                "description": "The cursor also snaps to these.",
+                "items": {
+                    "$ref": "#/SnapType"
+                }
+            },
+            "exclude": {
+                "type": "array",
+                "description": "The cursor does not snap to these. Applied after include.",
+                "items": {
+                    "$ref": "#/SnapType"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "SnapType": {
+        "type": "string",
+        "description": "A kind of point or line the cursor can snap to. An element type name means the element's points (end points, vertices, corners, hotspots); with On it means its lines and edges (for walls the reference line). Hotspot is a hotspot element, Text the corners of a text, Label the points of a label, Dimension a dimension point and DimensionOn the dimension line.",
+        "enum": [
+            "Wall",
+            "WallOn",
+            "Column",
+            "ColumnOn",
+            "Beam",
+            "BeamOn",
+            "Window",
+            "WindowOn",
+            "Door",
+            "DoorOn",
+            "Object",
+            "ObjectOn",
+            "Slab",
+            "SlabOn",
+            "Roof",
+            "RoofOn",
+            "Mesh",
+            "MeshOn",
+            "Shell",
+            "ShellOn",
+            "Morph",
+            "MorphOn",
+            "Skylight",
+            "SkylightOn",
+            "CurtainWall",
+            "CurtainWallOn",
+            "Stair",
+            "StairOn",
+            "Railing",
+            "RailingOn",
+            "Zone",
+            "ZoneOn",
+            "Hatch",
+            "HatchOn",
+            "Line",
+            "LineOn",
+            "PolyLine",
+            "PolyLineOn",
+            "Arc",
+            "ArcOn",
+            "Circle",
+            "CircleOn",
+            "Spline",
+            "SplineOn",
+            "Hotspot",
+            "Text",
+            "Label",
+            "Dimension",
+            "DimensionOn"
+        ]
+    },
     "Coordinate2D": {
         "type": "object",
         "description": "2D coordinate.",

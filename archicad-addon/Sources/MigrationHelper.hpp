@@ -169,6 +169,7 @@ inline GSErrCode ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (const AP
 #define ACAPI_Element_InstallElementObserver ACAPI_Notify_InstallElementObserver
 #define ACAPI_Element_CatchNewElement ACAPI_Notify_CatchNewElement
 #define ACAPI_Notification_GetParentElement ACAPI_Notify_GetParentElement
+#define ACAPI_Notification_GetTranParams ACAPI_Notify_GetTranParams
 #define ACAPI_Notification_CatchElementReservationChange ACAPI_Notify_CatchElementReservationChange
 #define ACAPI_Notification_CatchSelectionChange ACAPI_Notify_CatchSelectionChange
 // Archicad 26 only, Archicad 25 has no attribute replacement notification.
@@ -718,6 +719,26 @@ inline GSErrCode ACAPI_ProjectOperation_SaveAsModuleFile (const IO::Location* lo
     return ACAPI_Automate (APIDo_SaveAsModuleFileID, (void*) location);
 }
 
+// The AC25/26 forms of the AC27 ACAPI_UserInput_* neig filter functions (APIdefs_Interface.h):
+// APIIo_InitNeigFilterID  par1: API_NeigFilter*  par2: API_InitNeigFilterID
+// APIIo_SetNeigFilterID   par1: API_NeigFilter*  par2: API_NeigID
+// APIIo_ClearNeigFilterID par1: API_NeigFilter*  par2: API_NeigID
+// The second parameter is passed by value, cast to a pointer, like the other by-value parameters here.
+inline GSErrCode ACAPI_UserInput_InitNeigFilter (API_NeigFilter* neigFilter, API_InitNeigFilterID initNeigFilterID)
+{
+    return ACAPI_Interface (APIIo_InitNeigFilterID, neigFilter, (void*) (GS::IntPtr) initNeigFilterID);
+}
+
+inline GSErrCode ACAPI_UserInput_SetNeigFilter (API_NeigFilter* neigFilter, API_NeigID neigID)
+{
+    return ACAPI_Interface (APIIo_SetNeigFilterID, neigFilter, (void*) (GS::IntPtr) neigID);
+}
+
+inline GSErrCode ACAPI_UserInput_ClearNeigFilter (API_NeigFilter* neigFilter, API_NeigID neigID)
+{
+    return ACAPI_Interface (APIIo_ClearNeigFilterID, neigFilter, (void*) (GS::IntPtr) neigID);
+}
+
 // The AC25/26 forms of the AC27 ACAPI_UserInput_* input functions (APIdefs_Interface.h):
 // APIIo_GetPointID       par1: API_GetPointType*   par2: [RubberLineInfoProc*]   par3: [Get3DComponentProc*]
 // APIIo_GetLineID        par1: API_GetLineType*    par2: [RubberLineInfoProc*]
@@ -753,6 +774,12 @@ inline GSErrCode ACAPI_UserInput_GetArc (API_GetArcType* arcInfo, RubberLineInfo
 inline GSErrCode ACAPI_UserInput_DrawRubberArc (API_RubberArcType* rubberArc)
 {
     return ACAPI_Interface (APIIo_DrawRubberArcID, rubberArc);
+}
+
+// APIEnv_GetMagicWandSetsID par1: API_MagicWandInfo* (APIdefs_Environment.h)
+inline GSErrCode ACAPI_UserInput_GetMagicWandSets (API_MagicWandInfo* magicWandInfo)
+{
+    return ACAPI_Environment (APIEnv_GetMagicWandSetsID, magicWandInfo);
 }
 
 inline GSErrCode ACAPI_Selection_GetSelectedElement (const API_Neig* apiNeig, API_Guid* apiGuid)
