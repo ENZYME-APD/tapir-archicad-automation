@@ -7,7 +7,7 @@
 # category = "zones-areas"
 # archicad-versions = [25, 26, 27, 28, 29, 30]
 # min-tapir-version = "1.8.0"
-# changes = "files"
+# changes = "model"
 # ///
 
 """
@@ -21,8 +21,13 @@ covered with a grid of points at the work-plane height; the window lists per zon
 and median DF and the share of the floor that reaches the target (EN 17037: 2 % over 50 % of
 the floor), colours the zones in Archicad by their average DF, and exports the zones and every
 point to Excel or CSV. The Radiance files of each run are kept in
-Documents/Tapir/Daylight Factor/<date and time>/, so a result can be reproduced. It changes
-nothing in the project apart from the highlight.
+Documents/Tapir/Daylight Factor/<date and time>/, so a result can be reproduced.
+
+Place heatmaps (after asking) writes a GDL heatmap object into the embedded library once and
+places one per zone on a layer chosen in the window, drawing each cell in its colour on the floor
+plan with a label (average, median, share reaching the target) and a legend, optionally as a thin
+surface at the work plane in 3D; placing again updates the zone's object instead of adding one.
+Apart from these objects it changes nothing in the project but the highlight.
 """
 
 import datetime
@@ -457,6 +462,346 @@ def zone_label(zone: dict) -> str:
     return f"{zone.get('number', '')} {zone.get('name', '')}".strip() or zone["guid"]
 
 
+# ---- the GDL heatmap object (tested by archicad-addon/Test/test_daylight_factor_heatmap.py) ----
+
+# A new revision gets a new name, so a changed object never replaces the one placed heatmaps use.
+HEATMAP_PART_NAME = "Tapir Daylight Factor Heatmap 1"
+HEATMAP_PART_PATH = f"Tapir/{HEATMAP_PART_NAME}.gsm"
+HEATMAP_PARENTS = ["General Object", "Model Element", "General GDL Object"]
+HEATMAP_LAYER_NAME = "Daylight Factor Heatmap"
+NEW_LAYER = f"{HEATMAP_LAYER_NAME} (new layer)"
+
+# The cells are written into string parameters, which hold at most 255 characters: each cell of the
+# grid's bounding rectangle is two characters of CELL_ALPHABET, its DF in steps of CELL_STEP %
+# (base 36), or EMPTY_CELL outside the zone.
+CELL_ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+CELL_STEP = 0.05
+CELL_MAX_CODE = len(CELL_ALPHABET) ** 2 - 1
+EMPTY_CELL = ".."
+CHUNK_LENGTH = 250
+CHUNK_COUNT = 100
+MAX_SLOTS = CHUNK_COUNT * CHUNK_LENGTH // 2
+HEATMAP_BANDS = 20
+
+
+def band_of(value: float, maximum: float) -> int:
+    """ The colour band (0..HEATMAP_BANDS - 1) of a DF on the scale from 0 to maximum, as the GDL
+    object computes it. """
+    if maximum <= 0:
+        return HEATMAP_BANDS - 1
+    return max(0, min(HEATMAP_BANDS - 1, int(value / maximum * HEATMAP_BANDS)))
+
+
+def band_colors(maximum: float = 1.0) -> list[tuple[int, int, int]]:
+    """ The colour of each band: the scale's colour at the middle of the band. """
+    return [scale_color(maximum * (k + 0.5) / HEATMAP_BANDS, maximum) for k in range(HEATMAP_BANDS)]
+
+
+def encode_value(value: float) -> str:
+    code = max(0, min(CELL_MAX_CODE, round(value / CELL_STEP)))
+    base = len(CELL_ALPHABET)
+    return CELL_ALPHABET[code // base] + CELL_ALPHABET[code % base]
+
+
+def encode_cells(cells: list[dict], values: list[float]) -> dict | None:
+    """ The cells of a zone as the heatmap object takes them: the first column and row (i0, j0),
+    the number of columns and rows (nI, nJ) of their bounding rectangle, and the chunks (strings of
+    at most CHUNK_LENGTH) of its cells row by row. None when the rectangle has more than MAX_SLOTS
+    cells. """
+    if not cells:
+        return None
+    i0 = min(c["i"] for c in cells)
+    j0 = min(c["j"] for c in cells)
+    n_i = max(c["i"] for c in cells) - i0 + 1
+    n_j = max(c["j"] for c in cells) - j0 + 1
+    if n_i * n_j > MAX_SLOTS:
+        return None
+    slots = [EMPTY_CELL] * (n_i * n_j)
+    for cell, value in zip(cells, values):
+        slots[(cell["j"] - j0) * n_i + cell["i"] - i0] = encode_value(value)
+    text = "".join(slots).rstrip(".")
+    chunks = [text[k:k + CHUNK_LENGTH] for k in range(0, len(text), CHUNK_LENGTH)]
+    return {"i0": i0, "j0": j0, "nI": n_i, "nJ": n_j, "chunks": chunks + [""] * (CHUNK_COUNT - len(chunks))}
+
+
+def decode_cells(encoded: dict) -> dict[tuple[int, int], float]:
+    """ What the GDL object reads from encode_cells: the DF of each cell by (i, j). """
+    base = len(CELL_ALPHABET)
+    text = "".join(encoded["chunks"])
+    cells = {}
+    for s in range(len(text) // 2):
+        pair = text[2 * s:2 * s + 2]
+        if pair[0] in CELL_ALPHABET and pair[1] in CELL_ALPHABET:
+            code = CELL_ALPHABET.index(pair[0]) * base + CELL_ALPHABET.index(pair[1])
+            cells[(encoded["i0"] + s % encoded["nI"], encoded["j0"] + s // encoded["nI"])] = code * CELL_STEP
+    return cells
+
+
+def heatmap_placement(zone: dict) -> tuple[float, float, float]:
+    """ Where the zone's heatmap object goes: the origin of its grid, x and y, and the angle (radians)
+    of its longest edge, so the object draws the cells in the grid's own coordinates. """
+    (ox, oy), (ux, uy) = grid_frame(zone["outline"])
+    return ox, oy, math.atan2(uy, ux)
+
+
+def label_point(zone: dict, cells: list[dict], size: float) -> tuple[float, float]:
+    """ The label's place in the grid's coordinates: the centre of the cell nearest to the zone's
+    centroid, so it stays inside L-shaped zones. """
+    outline = zone["outline"]
+    area = signed_area(outline)
+    if abs(area) > EPSILON:
+        cx = sum((a[0] + b[0]) * (a[0] * b[1] - b[0] * a[1]) for a, b in zip(outline, outline[1:] + outline[:1])) / (6 * area)
+        cy = sum((a[1] + b[1]) * (a[0] * b[1] - b[0] * a[1]) for a, b in zip(outline, outline[1:] + outline[:1])) / (6 * area)
+    else:
+        cx, cy = centroid([(p[0], p[1], 0.0) for p in outline])[:2]
+    nearest = min(cells, key=lambda c: (c["x"] - cx) ** 2 + (c["y"] - cy) ** 2)
+    return (nearest["i"] + 0.5) * size, (nearest["j"] + 0.5) * size
+
+
+def nearest_pens(colors: list[tuple[int, int, int]], pens: list[dict]) -> list[int]:
+    """ The index of the pen nearest to each colour; pens: {"index", "color": {"red", "green", "blue"}},
+    their colour 0..1, as GetPens and GetPenTables give them. The distance weighs red and blue by
+    the mean red, as the eye does. """
+    table = []
+    for pen in pens:
+        color = pen.get("color") or {}
+        try:
+            table.append((int(pen["index"]), (float(color["red"]) * 255, float(color["green"]) * 255,
+                                              float(color["blue"]) * 255)))
+        except (KeyError, TypeError, ValueError):
+            continue
+    if not table:
+        return []
+
+    def distance(a, b):
+        mean_red = (a[0] + b[0]) / 2
+        dr, dg, db = a[0] - b[0], a[1] - b[1], a[2] - b[2]
+        return (2 + mean_red / 256) * dr * dr + 4 * dg * dg + (2 + (255 - mean_red) / 256) * db * db
+
+    return [min(table, key=lambda item: (distance(color, item[1]), item[0]))[0] for color in colors]
+
+
+def heatmap_part_parameters() -> list[dict]:
+    """ The parameters of the heatmap library part, for CreateLibraryParts. """
+    def p(name, type_, value, description, hidden=False):
+        item = {"name": name, "type": type_, "value": value, "description": description}
+        if hidden:
+            item["isHidden"] = True
+        return item
+
+    parameters = [
+        p("dfhShowLabel", "Integer", 1, "Show the label (1 yes, 0 no)"),
+        p("dfhShowLegend", "Integer", 1, "Show the legend (1 yes, 0 no)"),
+        p("dfhMarkBelow", "Integer", 1, "Cross the cells below the target (1 yes, 0 no)"),
+        p("dfhShow3D", "Integer", 0, "Coloured surface in 3D (1 yes, 0 no)"),
+        p("dfhWorkPlane", "Length", 0.85, "Work-plane height"),
+        p("dfhScaleMax", "RealNumber", 5.0, "Top of the colour scale (DF %)"),
+        p("dfhTarget", "RealNumber", 2.0, "Target DF (%)"),
+        p("dfhTargetShare", "RealNumber", 50.0, "Share of the floor reaching it (%)"),
+        p("dfhAverage", "RealNumber", 0.0, "Average DF (%)"),
+        p("dfhMedian", "RealNumber", 0.0, "Median DF (%)"),
+        p("dfhShare", "RealNumber", 0.0, "Share of the floor reaching the target (%)"),
+        p("dfhPasses", "Integer", 0, "Passes (1) or fails (0)"),
+        p("dfhZoneName", "String", "", "Zone"),
+        p("dfhTextPen", "PenColor", 1, "Pen of the label, legend and crosses"),
+        p("dfhTextSize", "RealNumber", 2.5, "Text size (mm)"),
+        p("dfhFill", "FillPattern", 1, "Fill of the cells (a solid fill)"),
+        p("dfhGrid", "Length", 0.5, "Grid size", True),
+        p("dfhI0", "Integer", 0, "First column", True),
+        p("dfhJ0", "Integer", 0, "First row", True),
+        p("dfhNI", "Integer", 0, "Columns", True),
+        p("dfhNJ", "Integer", 0, "Rows", True),
+        p("dfhLabelX", "Length", 0.0, "Label x", True),
+        p("dfhLabelY", "Length", 0.0, "Label y", True),
+        p("dfhZoneGuid", "String", "", "Zone GUID", True),
+    ]
+    parameters += [p(f"dfhPen{k + 1}", "PenColor", 1, f"Pen of colour band {k + 1}", True) for k in range(HEATMAP_BANDS)]
+    parameters += [p(f"dfhC{k + 1}", "String", "", f"Cells {k + 1}", True) for k in range(CHUNK_COUNT)]
+    return parameters
+
+
+def _gdl_cell_loop(body: list[str]) -> list[str]:
+    """ GDL that runs body for each cell with a value: dfI and dfJ its column and row from dfhI0 and
+    dfhJ0, dfValue its DF (%) and dfBand its colour band (0..HEATMAP_BANDS - 1). """
+    lines = [
+        f'dfAlphabet = "{CELL_ALPHABET}"',
+        f"FOR dfK = 1 TO {CHUNK_COUNT}",
+        '    dfText = ""',
+    ]
+    lines += [f"    IF dfK = {k + 1} THEN dfText = dfhC{k + 1}" for k in range(CHUNK_COUNT)]
+    lines += [
+        "    dfLength = STRLEN (dfText)",
+        "    FOR dfP = 1 TO dfLength - 1 STEP 2",
+        "        dfD1 = STRSTR (dfAlphabet, STRSUB (dfText, dfP, 1)) - 1",
+        "        dfD2 = STRSTR (dfAlphabet, STRSUB (dfText, dfP + 1, 1)) - 1",
+        "        IF dfD1 >= 0 AND dfD2 >= 0 AND dfhNI > 0 THEN",
+        f"            dfS = INT (((dfK - 1) * {CHUNK_LENGTH} + dfP - 1) / 2)",
+        "            dfRow = INT (dfS / dfhNI)",
+        "            dfI = dfhI0 + dfS - dfRow * dfhNI",
+        "            dfJ = dfhJ0 + dfRow",
+        f"            dfValue = (dfD1 * {len(CELL_ALPHABET)} + dfD2) * {CELL_STEP}",
+        f"            dfBand = {HEATMAP_BANDS - 1}",
+        f"            IF dfhScaleMax > 0 THEN dfBand = MAX (0, MIN ({HEATMAP_BANDS - 1}, INT (dfValue / dfhScaleMax * {HEATMAP_BANDS})))",
+    ]
+    lines += ["            " + line for line in body]
+    lines += [
+        "        ENDIF",
+        "    NEXT dfP",
+        "NEXT dfK",
+    ]
+    return lines
+
+
+def heatmap_script_2d() -> str:
+    lines = [
+        "! The Daylight Factor Heatmap script writes the cells into dfhC1...; each cell is drawn",
+        "! with the pen of its colour band, dfhPen1... (the pens nearest to the scale's colours).",
+        f"DIM dfPens[{HEATMAP_BANDS}]",
+    ]
+    lines += [f"dfPens[{k + 1}] = dfhPen{k + 1}" for k in range(HEATMAP_BANDS)]
+    lines += [
+        "dfSize = dfhGrid",
+        "HOTSPOT2 dfhI0 * dfSize, dfhJ0 * dfSize",
+        "HOTSPOT2 (dfhI0 + dfhNI) * dfSize, dfhJ0 * dfSize",
+        "HOTSPOT2 (dfhI0 + dfhNI) * dfSize, (dfhJ0 + dfhNJ) * dfSize",
+        "HOTSPOT2 dfhI0 * dfSize, (dfhJ0 + dfhNJ) * dfSize",
+        "FILL dfhFill",
+    ]
+    lines += _gdl_cell_loop([
+        "dfX = dfI * dfSize",
+        "dfY = dfJ * dfSize",
+        "dfPen = dfPens[dfBand + 1]",
+        "POLY2_B 4, 6, dfPen, dfPen, dfX, dfY, 1, dfX + dfSize, dfY, 1, dfX + dfSize, dfY + dfSize, 1, dfX, dfY + dfSize, 1",
+        "IF dfhMarkBelow AND dfValue < dfhTarget - 0.0001 THEN",
+        "    PEN dfhTextPen",
+        "    LINE2 dfX + dfSize * 0.2, dfY + dfSize * 0.2, dfX + dfSize * 0.8, dfY + dfSize * 0.8",
+        "ENDIF",
+    ])
+    lines += [
+        "",
+        "! The label and the legend, upright whatever the object's angle",
+        "dfU = GLOB_SCALE / 1000",
+        "dfLineHeight = dfhTextSize * 1.5 * dfU",
+        'DEFINE STYLE "dfhLabelStyle" "Arial", dfhTextSize, 8, 0',
+        'DEFINE STYLE "dfhTickStyle" "Arial", dfhTextSize * 0.8, 2, 0',
+        "PEN dfhTextPen",
+        "ADD2 dfhLabelX, dfhLabelY",
+        "ROT2 -SYMB_ROTANGLE",
+        "IF dfhShowLabel THEN",
+        '    SET STYLE "dfhLabelStyle"',
+        '    dfResult = "fails"',
+        '    IF dfhPasses THEN dfResult = "passes"',
+        "    TEXT2 0, 2 * dfLineHeight, dfhZoneName",
+        '    TEXT2 0, dfLineHeight, "DF " + STR (dfhAverage, 1, 2) + " % average, " + STR (dfhMedian, 1, 2) + " % median"',
+        '    TEXT2 0, 0, STR (dfhShare, 1, 0) + " % of the floor >= " + STR (dfhTarget, 1, 1) + " %: " + dfResult',
+        "ENDIF",
+        "IF dfhShowLegend THEN",
+        "    dfLegendLength = 40 * dfU",
+        "    dfLegendHeight = 3 * dfU",
+        "    dfLx = -dfLegendLength / 2",
+        "    dfLy = -dfLegendHeight - 0.5 * dfLineHeight",
+        f"    dfStep = dfLegendLength / {HEATMAP_BANDS}",
+        f"    FOR dfK = 1 TO {HEATMAP_BANDS}",
+        "        dfX = dfLx + (dfK - 1) * dfStep",
+        "        POLY2_B 4, 6, dfPens[dfK], dfPens[dfK], dfX, dfLy, 1, dfX + dfStep, dfLy, 1, dfX + dfStep, dfLy + dfLegendHeight, 1, dfX, dfLy + dfLegendHeight, 1",
+        "    NEXT dfK",
+        "    PEN dfhTextPen",
+        "    RECT2 dfLx, dfLy, dfLx + dfLegendLength, dfLy + dfLegendHeight",
+        '    SET STYLE "dfhTickStyle"',
+        '    TEXT2 dfLx, dfLy - 0.3 * dfLineHeight, "0 %"',
+        '    TEXT2 dfLx + dfLegendLength, dfLy - 0.3 * dfLineHeight, STR (dfhScaleMax, 1, 1) + "+ %"',
+        "    IF dfhScaleMax > 0 AND dfhTarget > 0 AND dfhTarget < dfhScaleMax THEN",
+        "        dfTx = dfLx + dfLegendLength * dfhTarget / dfhScaleMax",
+        "        LINE2 dfTx, dfLy - 0.4 * dfLegendHeight, dfTx, dfLy + 1.4 * dfLegendHeight",
+        '        TEXT2 dfTx, dfLy - 0.3 * dfLineHeight, "target " + STR (dfhTarget, 1, 1) + " %"',
+        "    ENDIF",
+        "ENDIF",
+        "DEL 2",
+    ]
+    return "\n".join(lines) + "\n"
+
+
+def heatmap_script_3d() -> str:
+    lines = [
+        "! A thin coloured surface at the work-plane height, when dfhShow3D is 1",
+        "dfSize = dfhGrid",
+        "IF dfhShow3D AND dfSize > 0 THEN",
+    ]
+    for k, (r, g, b) in enumerate(band_colors()):
+        lines.append(f'DEFINE MATERIAL "dfh_band_{k + 1}" 1, {r / 255:.4f}, {g / 255:.4f}, {b / 255:.4f}')
+    lines += [
+        "dfLastBand = -1",
+        "ADDZ dfhWorkPlane",
+    ]
+    choose = ["IF dfBand <> dfLastBand THEN"]
+    choose += [f'    IF dfBand = {k} THEN MATERIAL "dfh_band_{k + 1}"' for k in range(HEATMAP_BANDS)]
+    choose += ["    dfLastBand = dfBand", "ENDIF"]
+    lines += _gdl_cell_loop(choose + [
+        "ADD dfI * dfSize, dfJ * dfSize, 0",
+        "BLOCK dfSize, dfSize, 0.005",
+        "DEL 1",
+    ])
+    lines += ["DEL 1", "ENDIF", "END"]
+    return "\n".join(lines) + "\n"
+
+
+def heatmap_parameter_script() -> str:
+    names = ["dfhShowLabel", "dfhShowLegend", "dfhMarkBelow", "dfhShow3D"]
+    return "\n".join(f'VALUES "{name}" 0, 1' for name in names) + "\n"
+
+
+def heatmap_library_part(parent: dict) -> dict:
+    """ The heatmap library part for CreateLibraryParts; parent is {"parentId": ...} or {"parentName": ...}. """
+    return {
+        "name": HEATMAP_PART_NAME,
+        **parent,
+        "path": HEATMAP_PART_PATH,
+        "a": 1.0,
+        "b": 1.0,
+        "parameters": heatmap_part_parameters(),
+        "script2D": heatmap_script_2d(),
+        "script3D": heatmap_script_3d(),
+        "parameterScript": heatmap_parameter_script(),
+    }
+
+
+def heatmap_values(result: dict, settings: dict, encoded: dict, pens: list[int], fill_index: int,
+                   options: dict) -> list[dict]:
+    """ The GDL parameter values of a zone's heatmap object, for CreateObjects and
+    SetGDLParametersOfElements. options: showLegend, show3D, markBelow (booleans). """
+    zone, stats = result["zone"], result["stats"]
+    label_x, label_y = label_point(zone, result["cells"], settings["gridSize"])
+    values = {
+        "dfhShowLabel": 1,
+        "dfhShowLegend": 1 if options["showLegend"] else 0,
+        "dfhMarkBelow": 1 if options["markBelow"] else 0,
+        "dfhShow3D": 1 if options["show3D"] else 0,
+        "dfhWorkPlane": settings["workPlane"],
+        "dfhScaleMax": settings["scaleMax"],
+        "dfhTarget": settings["targetDf"],
+        "dfhTargetShare": settings["targetShare"] * 100,
+        "dfhAverage": round(stats["average"], 3),
+        "dfhMedian": round(stats["median"], 3),
+        "dfhShare": round(stats["share"] * 100, 2),
+        "dfhPasses": 1 if passes(stats, settings["targetShare"]) else 0,
+        "dfhZoneName": zone_label(zone)[:CHUNK_LENGTH],
+        "dfhFill": fill_index,
+        "dfhGrid": settings["gridSize"],
+        "dfhI0": encoded["i0"],
+        "dfhJ0": encoded["j0"],
+        "dfhNI": encoded["nI"],
+        "dfhNJ": encoded["nJ"],
+        "dfhLabelX": label_x,
+        "dfhLabelY": label_y,
+        "dfhZoneGuid": zone["guid"].lower(),
+    }
+    for k, pen in enumerate(pens):
+        values[f"dfhPen{k + 1}"] = pen
+    for k, chunk in enumerate(encoded["chunks"]):
+        values[f"dfhC{k + 1}"] = chunk
+    return [{"name": name, "value": value} for name, value in values.items()]
+
+
 def results_tables(results: list[dict], settings: dict, unit_name: str) -> tuple[tuple, tuple, tuple]:
     """ The zones, the cells and the settings as (headers, rows) for the export. """
     factor = UNITS[unit_name]
@@ -616,8 +961,9 @@ def main() -> None:
                 SCRIPT_NAME,
                 "The Daylight Factor of the selected zones under a CIE overcast sky, computed with Radiance from the "
                 "model's 3D geometry. Select zones in Archicad, check the settings and press Run; Radiance can take "
-                "minutes per zone. The zones are coloured in Archicad by their average DF.",
-                min_width=880, min_height=780)
+                "minutes per zone. The zones are coloured in Archicad by their average DF; Place heatmaps draws each "
+                "zone's cells on the floor plan with a heatmap object.",
+                min_width=880, min_height=860)
             self.results: list[dict] = []
             self.settings: dict | None = None
             self.unit_name = "m"
@@ -627,6 +973,7 @@ def main() -> None:
             self.window.add_button("Export...", self.export)
             self.window.add_button("Clear", self.clear)
             self.window.add_button("Colour zones", self.highlight)
+            self.window.add_button("Place heatmaps...", self.place_heatmaps)
             self.stop_button = self.window.add_button("Stop", self.stop)
             self.stop_button.state(["disabled"])
             self.window.add_button("Run", self.run_analysis, primary=True)
@@ -669,6 +1016,23 @@ def main() -> None:
             self.radiance_parameters = tk.StringVar(value=DEFAULT_RADIANCE_PARAMETERS)
             ttk.Entry(settings, textvariable=self.radiance_parameters, width=70).grid(row=9, column=1, columnspan=4,
                                                                                       sticky="ew", padx=(6, 0), pady=(6, 0))
+
+            heatmaps = ttk.LabelFrame(body, text="Heatmap objects in Archicad (Place heatmaps)", padding=(10, 6))
+            heatmaps.grid(row=4, column=0, sticky="ew", pady=(10, 0))
+            ttk.Label(heatmaps, text="Layer:").grid(row=0, column=0, sticky="w")
+            self.layer = tk.StringVar(value=NEW_LAYER)
+            self.layer_box = ttk.Combobox(heatmaps, textvariable=self.layer, values=[NEW_LAYER], state="readonly", width=40)
+            self.layer_box.grid(row=0, column=1, sticky="w", padx=(6, 0))
+            self.show_legend = tk.BooleanVar(value=True)
+            ttk.Checkbutton(heatmaps, text="Legend under each label", variable=self.show_legend).grid(
+                row=0, column=2, sticky="w", padx=(18, 0))
+            self.mark_below = tk.BooleanVar(value=True)
+            ttk.Checkbutton(heatmaps, text="Cross the cells below the target", variable=self.mark_below).grid(
+                row=1, column=2, sticky="w", padx=(18, 0))
+            self.show_3d = tk.BooleanVar(value=False)
+            ttk.Checkbutton(heatmaps, text="Coloured surface at the work plane in 3D", variable=self.show_3d).grid(
+                row=1, column=1, sticky="w", padx=(6, 0))
+            self.layers: dict[str, int] = {}
 
             self.legend = tk.Canvas(body, height=46, highlightthickness=0, background="#ffffff")
             self.legend.grid(row=1, column=0, sticky="ew", pady=(10, 0))
@@ -755,7 +1119,7 @@ def main() -> None:
             zones = []
             if not elements:
                 return zones
-            details = get_details_of_elements(elements, ["type", "details"])
+            details = get_details_of_elements(elements, ["type", "floorIndex", "details"])
             for element, detail in zip(elements, details):
                 info = (detail.get("details") or {}) if "error" not in detail else {}
                 outline = read_ring(info.get("polygonOutline"))
@@ -769,6 +1133,7 @@ def main() -> None:
                               "name": str(info.get("name") or ""), "number": str(info.get("numberStr") or ""),
                               "outline": outline, "holes": [h for h in holes if len(h) >= 3],
                               "z": float(info["zCoordinate"]), "height": float(info.get("height") or 0.0),
+                              "floorIndex": detail.get("floorIndex"),
                               "curved": bool(info.get("polygonArcs"))})
             return zones
 
@@ -990,8 +1355,239 @@ def main() -> None:
             self.window.set_status(f"Exported {len(self.results)} zone(s) to {os.path.basename(path)}, with the cells "
                                    "and the settings next to it.", "ok")
 
+        # ---- the heatmap objects ----
+
+        def load_layers(self) -> None:
+            layers = run_tapir("GetAttributesByType", {"attributeType": "Layer"}).get("attributes", [])
+            self.layers = {}
+            for layer in sorted(layers, key=lambda a: str(a.get("name", "")).lower()):
+                label = str(layer.get("name", ""))
+                if label in self.layers:
+                    label = f"{label} ({layer['index']})"
+                self.layers[label] = int(layer["index"])
+            values = list(self.layers)
+            if HEATMAP_LAYER_NAME in self.layers:
+                if self.layer.get() == NEW_LAYER:
+                    self.layer.set(HEATMAP_LAYER_NAME)
+            else:
+                values.insert(0, NEW_LAYER)
+            self.layer_box.configure(values=values)
+
+        def read_pens(self) -> list[dict]:
+            """ The pens in effect: GetPens (Archicad 27 and newer), else the Pen Table in effect for the model. """
+            try:
+                pens = [p for p in run_tapir("GetPens").get("pens", []) if "error" not in p]
+                if pens:
+                    return pens
+            except ArchicadError:
+                pass
+            table_ids = []
+            try:
+                current = run_tapir("GetCurrentPenTable")
+                if current.get("attributeId"):
+                    table_ids.append(current["attributeId"])
+            except ArchicadError:
+                pass
+            if not table_ids:
+                tables = run_tapir("GetAttributesByType", {"attributeType": "PenTable"}).get("attributes", [])
+                table_ids = [t["attributeId"] for t in tables if "attributeId" in t]
+            if not table_ids:
+                return []
+            tables = run_tapir("GetPenTables", {"attributeIds": [{"attributeId": a} for a in table_ids],
+                                                "fields": ["isActiveForModel", "pens"]}).get("penTables", [])
+            tables = [t for t in tables if "error" not in t and t.get("pens")]
+            active = [t for t in tables if t.get("isActiveForModel")]
+            return (active or tables or [{}])[0].get("pens", [])
+
+        def solid_fill(self) -> int | None:
+            fills = run_tapir("GetAttributesByType", {"attributeType": "Fill"}).get("attributes", [])
+            if not fills:
+                return None
+            details = run_tapir("GetFills", {"attributeIds": [{"attributeId": f["attributeId"]} for f in fills],
+                                             "fields": ["subType"]}).get("fills", [])
+            for fill in details:
+                if isinstance(fill, dict) and fill.get("subType") == "Solid":
+                    return int(fill["index"])
+            return None
+
+        def heatmap_part(self) -> tuple[bool, dict | None]:
+            """ Whether the heatmap library part is loaded, and the parent subtype to create it under. """
+            parts = run_tapir("GetAvailableLibraryParts", {"filterByTypeId": "Object"}).get("libraryParts", [])
+            names = {str(p.get("documentName", "")): p for p in parts}
+            if HEATMAP_PART_NAME in names:
+                return True, names[HEATMAP_PART_NAME]
+            parent = next(({"parentId": names[n]["guid"]} for n in HEATMAP_PARENTS if n in names and names[n].get("guid")),
+                          {"parentName": HEATMAP_PARENTS[-1]})
+            return False, parent
+
+        def find_heatmaps(self, part: dict | None, layer_index: int | None) -> dict[str, dict]:
+            """ The heatmap objects already placed, by the GUID of their zone: {"elementId", "origin", "angle"}.
+            Looked for among the objects of the heatmap library part, or, with an Add-On that cannot tell
+            an object's library part, among the objects on the heatmap layer. """
+            objects = get_elements("project", ["Object"])
+            if not objects:
+                return {}
+            candidates = None
+            part_guid = str((part or {}).get("guid") or "").strip("{}").lower()
+            if part_guid:
+                try:
+                    candidates = []
+                    for chunk in batched(objects, 500):
+                        details = run_tapir("GetDetailsOfElements", {"elements": chunk, "fields": ["type"],
+                                                                     "additionalFields": ["libraryPartUnId"]})
+                        for element, detail in zip(chunk, details.get("detailsOfElements", [])):
+                            if part_guid in str(detail.get("libraryPartUnId", "")).lower():
+                                candidates.append(element)
+                except ArchicadError:
+                    candidates = None
+            if candidates is None:
+                if layer_index is None:
+                    return {}
+                details = get_details_of_elements(objects, ["layerIndex"])
+                candidates = [e for e, d in zip(objects, details) if d.get("layerIndex") == layer_index]
+            found = {}
+            for chunk in batched(candidates, 50):
+                lists = run_tapir("GetGDLParametersOfElements", {"elements": chunk}).get("gdlParametersOfElements", [])
+                for element, item in zip(chunk, lists):
+                    parameters = {str(p.get("name", "")).lower(): p.get("value") for p in (item.get("parameters") or [])}
+                    zone_guid = str(parameters.get("dfhzoneguid") or "").lower()
+                    if zone_guid:
+                        found.setdefault(zone_guid, {"elementId": element["elementId"]})
+            if found:
+                ids = [{"elementId": f["elementId"]} for f in found.values()]
+                for item, detail in zip(found.values(), get_details_of_elements(ids, ["details"])):
+                    info = detail.get("details") or {}
+                    item["origin"] = info.get("origin")
+                    item["angle"] = info.get("angle")
+            return found
+
+        def place_heatmaps(self) -> None:
+            if self.running:
+                return
+            placeable = [r for r in self.results if r["stats"] is not None and r["cells"]]
+            if not placeable:
+                self.window.set_status("Press Run first.", "warning")
+                return
+            with self.window.busy("Reading the pens, the fills and the library parts..."):
+                encoded = {r["zone"]["guid"]: encode_cells(r["cells"], r["values"]) for r in placeable}
+                too_large = [r for r in placeable if encoded[r["zone"]["guid"]] is None]
+                placeable = [r for r in placeable if encoded[r["zone"]["guid"]] is not None]
+                if not placeable:
+                    self.window.set_status("The zones are too large for the heatmap object at this grid size "
+                                           f"(at most {MAX_SLOTS} cells around each zone): use a larger grid.", "warning")
+                    return
+                pens = nearest_pens(band_colors(), self.read_pens())
+                if len(pens) != HEATMAP_BANDS:
+                    self.window.set_status("Cannot read the pens of the project, which the heatmap colours are drawn "
+                                           "with.", "error")
+                    return
+                fill = self.solid_fill()
+                if fill is None:
+                    self.window.set_status("The project has no Solid fill, which the heatmap cells are drawn with.",
+                                           "error")
+                    return
+                loaded, part = self.heatmap_part()
+                layer_name = self.layer.get()
+                layer_index = self.layers.get(layer_name)
+                existing = self.find_heatmaps(part, layer_index) if loaded else {}
+            new = [r for r in placeable if r["zone"]["guid"].lower() not in existing]
+            update = [r for r in placeable if r["zone"]["guid"].lower() in existing]
+            lines = []
+            if not loaded:
+                lines.append(f"Create the library part \"{HEATMAP_PART_NAME}\" in the embedded library.")
+            if new:
+                if layer_index is None:
+                    lines.append(f"Create the layer \"{HEATMAP_LAYER_NAME}\".")
+                lines.append(f"Place {len(new)} heatmap object(s) on the layer \"{layer_name.replace(NEW_LAYER, HEATMAP_LAYER_NAME)}\".")
+            if update:
+                lines.append(f"Update the {len(update)} heatmap object(s) placed before for these zones.")
+            if too_large:
+                lines.append(f"Leave out {len(too_large)} zone(s) too large for the heatmap at this grid size.")
+            if not self.window.ask_ok_cancel(SCRIPT_NAME, "\n".join(lines) + "\n\nPlacing and updating the objects can be undone in "
+                                                         "Archicad; the library part stays in the embedded library."):
+                return
+            with self.window.busy("Placing the heatmaps..."):
+                self._place(new, update, existing, encoded, pens, fill, loaded, part, layer_index, too_large)
+
+        def _place(self, new, update, existing, encoded, pens, fill, loaded, part, layer_index, too_large) -> None:
+            settings = self.settings
+            options = {"showLegend": self.show_legend.get(), "show3D": self.show_3d.get(),
+                       "markBelow": self.mark_below.get()}
+            if not loaded:
+                self.window.set_status("Creating the heatmap library part...")
+                created = run_tapir("CreateLibraryParts", {"libraryParts": [heatmap_library_part(part)]}).get("libraryParts", [{}])
+                if not created or "error" in created[0]:
+                    message = (created[0].get("error") or {}).get("message", "no answer") if created else "no answer"
+                    self.window.set_status(f"Cannot create the heatmap library part: {message}", "error")
+                    return
+            if new and layer_index is None:
+                self.window.set_status("Creating the layer...")
+                run_tapir("CreateLayers", {"layerDataArray": [{"name": HEATMAP_LAYER_NAME}]})
+                self.load_layers()
+                layer_index = self.layers.get(HEATMAP_LAYER_NAME)
+                if layer_index is None:
+                    self.window.set_status(f"Cannot create the layer \"{HEATMAP_LAYER_NAME}\".", "error")
+                    return
+                self.layer.set(HEATMAP_LAYER_NAME)
+            errors = []
+            placed = 0
+            if new:
+                self.window.set_status(f"Placing {len(new)} heatmap object(s)...")
+                data = []
+                for result in new:
+                    zone = result["zone"]
+                    x, y, angle = heatmap_placement(zone)
+                    item = {"libraryPartName": HEATMAP_PART_NAME, "coordinates": {"x": x, "y": y, "z": zone["z"]},
+                            "angle": angle, "layerIndex": layer_index,
+                            "parameters": heatmap_values(result, settings, encoded[zone["guid"]], pens, fill, options)}
+                    if zone.get("floorIndex") is not None:
+                        item["floorIndex"] = zone["floorIndex"]
+                    data.append(item)
+                answers = run_tapir("CreateObjects", {"objectsData": data}).get("elements", [])
+                for result, answer in zip(new, answers):
+                    if isinstance(answer, dict) and "error" in answer:
+                        errors.append(f"{zone_label(result['zone'])}: {answer['error'].get('message', 'not placed')}")
+                    else:
+                        placed += 1
+            updated = 0
+            if update:
+                self.window.set_status(f"Updating {len(update)} heatmap object(s)...")
+                answers = run_tapir("SetGDLParametersOfElements", {"elementsWithGDLParameters": [
+                    {"elementId": existing[r["zone"]["guid"].lower()]["elementId"],
+                     "gdlParameters": heatmap_values(r, settings, encoded[r["zone"]["guid"]], pens, fill, options)}
+                    for r in update]}).get("executionResults", [])
+                for result, answer in zip(update, answers):
+                    if isinstance(answer, dict) and not answer.get("success", False):
+                        errors.append(f"{zone_label(result['zone'])}: "
+                                      f"{(answer.get('error') or {}).get('message', 'not updated')}")
+                    else:
+                        updated += 1
+                moves = []
+                for result in update:
+                    found = existing[result["zone"]["guid"].lower()]
+                    x, y, angle = heatmap_placement(result["zone"])
+                    origin, current = found.get("origin") or {}, found.get("angle")
+                    same = (origin and current is not None and math.hypot(origin.get("x", 0) - x, origin.get("y", 0) - y) < 1e-4
+                            and abs(math.remainder(float(current) - angle, 2 * math.pi)) < 1e-6
+                            and abs(origin.get("z", 0) - result["zone"]["z"]) < 1e-4)
+                    if not same:
+                        moves.append({"elementId": found["elementId"],
+                                      "coordinates": {"x": x, "y": y, "z": result["zone"]["z"]}, "angle": angle})
+                if moves:
+                    answers = run_tapir("ModifyObjects", {"objectsWithDetails": moves}).get("executionResults", [])
+                    errors += [f"Moving a heatmap with its zone: {(a.get('error') or {}).get('message', 'failed')}"
+                               for a in answers if isinstance(a, dict) and not a.get("success", False)]
+            text = f"Placed {placed} and updated {updated} heatmap object(s)."
+            if too_large:
+                text += f" {len(too_large)} zone(s) left out, too large at this grid size."
+            if errors:
+                print("Heatmap errors:\n" + "\n".join(errors))
+                self.window.set_status(f"{text} {len(errors)} problem(s): {errors[0]}", "warning")
+            else:
+                self.window.set_status(text, "ok")
+
         def run(self) -> None:
-            self.window.run(on_close=self.close, can_close=self.can_close)
+            self.window.run(on_start=self.load_layers, on_close=self.close, can_close=self.can_close)
 
     require_archicad(SCRIPT_NAME)
     DaylightFactorHeatmap().run()

@@ -5,7 +5,9 @@ The script's geometry functions do not talk to Archicad or run Radiance; this lo
 marketplace/daylight-factor-heatmap/ (its window and Radiance calls only run from main () and
 find_radiance ()) and checks the grid cells in rectangular, L-shaped, holed, moved and rotated
 zones, the wall band, the statistics, the colour scale, the sky's normalisation and the faces,
-glass panes and materials of the scene. Lengths are in metres.
+glass panes and materials of the scene, and the GDL heatmap object: the cells written into its
+string parameters and read back, its placement and label, the pens chosen for the colour bands,
+and that its scripts only use its own parameters. Lengths are in metres.
 
 Standard library only. Run: python archicad-addon/Test/test_daylight_factor_heatmap.py
 """
@@ -220,6 +222,123 @@ class TestRadianceInputs (unittest.TestCase):
         for wrong in ('-ab 5 -I+', '-h', '-ab five', '-oov'):
             with self.assertRaises (ValueError):
                 script.check_radiance_parameters (wrong)
+
+
+class TestHeatmapObject (unittest.TestCase):
+
+    def l_zone (self):
+        outline = [(0, 0), (6, 0), (6, 2), (2, 2), (2, 5), (0, 5)]
+        return {'guid': 'ABC-1', 'number': '1', 'name': 'Living', 'outline': outline, 'holes': [], 'z': 0.0}
+
+    def test_cells_survive_the_encoding (self):
+        zone = self.l_zone ()
+        cells = script.grid_cells (zone['outline'], [], 0.5, 0.0)
+        values = [0.03 * k for k in range (len (cells))]
+        encoded = script.encode_cells (cells, values)
+        self.assertEqual (len (encoded['chunks']), script.CHUNK_COUNT)
+        self.assertTrue (all (len (chunk) <= script.CHUNK_LENGTH and len (chunk) % 2 == 0 for chunk in encoded['chunks']))
+        decoded = script.decode_cells (encoded)
+        self.assertEqual (set (decoded), {(c['i'], c['j']) for c in cells})
+        for cell, value in zip (cells, values):
+            self.assertAlmostEqual (decoded[(cell['i'], cell['j'])], value, delta = script.CELL_STEP / 2 + 1e-9)
+
+    def test_negative_columns_and_rows (self):
+        cells = [{'i': -3, 'j': -1}, {'i': -2, 'j': 0}]
+        encoded = script.encode_cells (cells, [1.0, 2.5])
+        self.assertEqual ((encoded['i0'], encoded['j0'], encoded['nI'], encoded['nJ']), (-3, -1, 2, 2))
+        decoded = script.decode_cells (encoded)
+        self.assertEqual (set (decoded), {(-3, -1), (-2, 0)})
+        self.assertAlmostEqual (decoded[(-3, -1)], 1.0)
+        self.assertAlmostEqual (decoded[(-2, 0)], 2.5)
+
+    def test_values_are_clamped (self):
+        self.assertEqual (script.encode_value (-1), '00')
+        self.assertEqual (script.encode_value (1000), 'ZZ')
+
+    def test_too_large_zone (self):
+        cells = [{'i': 0, 'j': 0}, {'i': script.MAX_SLOTS, 'j': 0}]
+        self.assertIsNone (script.encode_cells (cells, [1.0, 1.0]))
+        self.assertIsNone (script.encode_cells ([], []))
+
+    def test_bands (self):
+        self.assertEqual (script.band_of (0, 5), 0)
+        self.assertEqual (script.band_of (4.99, 5), script.HEATMAP_BANDS - 1)
+        self.assertEqual (script.band_of (50, 5), script.HEATMAP_BANDS - 1)
+        self.assertEqual (script.band_of (2.5, 5), script.HEATMAP_BANDS // 2)
+        colors = script.band_colors ()
+        self.assertEqual (len (colors), script.HEATMAP_BANDS)
+        # sequential: each band is lighter than the one before
+        lightness = [0.299 * r + 0.587 * g + 0.114 * b for r, g, b in colors]
+        self.assertEqual (lightness, sorted (lightness))
+
+    def test_nearest_pens (self):
+        pens = [{'index': 1, 'color': {'red': 0, 'green': 0, 'blue': 0}},
+                {'index': 2, 'color': {'red': 1, 'green': 1, 'blue': 0}},
+                {'index': 3, 'color': {'red': 0.3, 'green': 0.0, 'blue': 0.35}},
+                {'error': {'code': 1, 'message': 'x'}}]
+        self.assertEqual (script.nearest_pens ([(255, 240, 30), (68, 1, 84), (5, 5, 5)], pens), [2, 3, 1])
+        self.assertEqual (script.nearest_pens ([(0, 0, 0)], []), [])
+
+    def test_placement_follows_the_grid (self):
+        zone = self.l_zone ()
+        zone['outline'] = transform (zone['outline'], 0.7, 10, -4)
+        x, y, angle = script.heatmap_placement (zone)
+        (ox, oy), (ux, uy) = script.grid_frame (zone['outline'])
+        self.assertAlmostEqual (x, ox)
+        self.assertAlmostEqual (y, oy)
+        self.assertAlmostEqual (math.cos (angle), ux)
+        self.assertAlmostEqual (math.sin (angle), uy)
+        # the object draws cell (i, j) at ((i + 0.5) size, (j + 0.5) size) in its own coordinates
+        cells = script.grid_cells (zone['outline'], [], 0.5, 0.0)
+        for cell in cells[:5]:
+            lx, ly = (cell['i'] + 0.5) * 0.5, (cell['j'] + 0.5) * 0.5
+            self.assertAlmostEqual (x + lx * math.cos (angle) - ly * math.sin (angle), cell['x'])
+            self.assertAlmostEqual (y + lx * math.sin (angle) + ly * math.cos (angle), cell['y'])
+
+    def test_label_inside_an_l_shaped_zone (self):
+        zone = self.l_zone ()
+        cells = script.grid_cells (zone['outline'], [], 0.5, 0.0)
+        lx, ly = script.label_point (zone, cells, 0.5)
+        self.assertIn ((round (lx / 0.5 - 0.5), round (ly / 0.5 - 0.5)), {(c['i'], c['j']) for c in cells})
+
+    def test_library_part_and_values_agree (self):
+        definitions = script.heatmap_part_parameters ()
+        names = [d['name'] for d in definitions]
+        self.assertEqual (len (names), len ({n.lower () for n in names}))
+        self.assertTrue (all (len (n) <= 31 for n in names))
+        for d in definitions:
+            self.assertIn (d['type'], ('Integer', 'Length', 'RealNumber', 'String', 'PenColor', 'FillPattern'))
+        zone = self.l_zone ()
+        cells = script.grid_cells (zone['outline'], [], 0.5, 0.0)
+        values = [1.0] * len (cells)
+        stats = script.zone_statistics (values, [False] * len (cells), 2.0, False)
+        result = {'zone': zone, 'cells': cells, 'values': values, 'stats': stats}
+        settings = {'gridSize': 0.5, 'workPlane': 0.85, 'scaleMax': 5.0, 'targetDf': 2.0, 'targetShare': 0.5}
+        pens = list (range (1, script.HEATMAP_BANDS + 1))
+        written = script.heatmap_values (result, settings, script.encode_cells (cells, values), pens, 7,
+                                         {'showLegend': True, 'show3D': False, 'markBelow': True})
+        # the label's pen and text size stay as the user set them in the object
+        self.assertEqual (set (names) - {w['name'] for w in written}, {'dfhTextPen', 'dfhTextSize'})
+        self.assertLessEqual ({w['name'] for w in written}, set (names))
+        by_name = {w['name']: w['value'] for w in written}
+        self.assertEqual (by_name['dfhZoneGuid'], 'abc-1')
+        self.assertEqual (by_name['dfhPasses'], 0)
+        self.assertTrue (all (len (by_name[f'dfhC{k + 1}']) <= script.CHUNK_LENGTH for k in range (script.CHUNK_COUNT)))
+
+    def test_scripts_use_only_the_parameters (self):
+        import re
+        names = {d['name'].lower () for d in script.heatmap_part_parameters ()}
+        part = script.heatmap_library_part ({'parentName': 'General GDL Object'})
+        for key in ('script2D', 'script3D', 'parameterScript'):
+            used = {n.lower () for n in re.findall (r'\bdfh[A-Za-z0-9]+\b', part[key])}
+            used -= {'dfhlabelstyle', 'dfhtickstyle'}
+            self.assertLessEqual (used, names, key)
+            self.assertTrue (part[key].isascii (), key)
+        for key in ('script2D', 'script3D'):
+            text = part[key]
+            self.assertEqual (len (re.findall (r'^\s*FOR\b', text, re.M)), len (re.findall (r'^\s*NEXT\b', text, re.M)), key)
+            block_ifs = [l for l in text.splitlines () if re.match (r'\s*IF\b.*\bTHEN\s*$', l)]
+            self.assertEqual (len (block_ifs), len (re.findall (r'^\s*ENDIF\b', text, re.M)), key)
 
 
 if __name__ == '__main__':

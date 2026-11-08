@@ -3,7 +3,8 @@
 Computes the Daylight Factor (DF) of the selected zones under a CIE overcast sky with
 [Radiance](https://www.radiance-online.org/), from the model's real 3D geometry, and checks each
 zone against a target (EN 17037: 2 % DF over 50 % of the floor for side-lit rooms). The zones are
-coloured in Archicad by their average DF.
+coloured in Archicad by their average DF, and **Place heatmaps** draws each zone's grid in its
+colours on the floor plan, with a label and a legend.
 
 ## How to use it
 
@@ -18,7 +19,9 @@ coloured in Archicad by their average DF.
    coloured in Archicad on the scale shown above the table (dark is low, light is high; the
    target is marked), and the other elements are faded. **Colour zones** colours them again,
    **Clear** removes the colours.
-5. **Export...** writes an Excel workbook (sheets Zones, Cells and Settings) or CSV files (the
+5. **Place heatmaps...** places a heatmap object in each zone of the table, after saying what it
+   will do (see Heatmap objects below). Run it again after a new **Run** to update the objects.
+6. **Export...** writes an Excel workbook (sheets Zones, Cells and Settings) or CSV files (the
    zones, plus `<name> cells.csv` and `<name> settings.csv` next to it).
 
 ## Settings
@@ -38,6 +41,31 @@ coloured in Archicad by their average DF.
 | Glass surface names: a face is glass when its surface's name contains one of these | glass, glazing, glas, verre, vitre, vetro, vidrio, … |
 | Radiance options (rtrace) | `-ab 5 -ad 2048 -as 1024 -ar 256 -aa 0.1 -lw 0.0002` |
 | Unit of the lengths | m (or ft) |
+| Layer of the heatmap objects | Daylight Factor Heatmap (created when missing) |
+| Legend under each label | on |
+| Cross the cells below the target | on |
+| Coloured surface at the work plane in 3D | off |
+
+## Heatmap objects
+
+**Place heatmaps...** writes the library part *Tapir Daylight Factor Heatmap 1* into the
+project's embedded library (once, under `Tapir/`) and places one of it in each zone, on the
+layer chosen in the window, at the zone's story and floor level. Each object:
+
+- draws every cell of the zone's grid filled in its colour on the floor plan. Archicad draws
+  plans with the pens of the pen table, so each of the scale's 20 colour bands is drawn with
+  the pen of the pen table nearest to that colour (read when you place the objects);
+- crosses the cells below the target DF, so the plan reads without colour too;
+- shows the zone's name, average and median DF and the share of the floor reaching the target,
+  with a legend of the scale and the target marked under it. The label stays upright; its pen
+  and text size are settings of the object;
+- optionally (*Coloured surface at the work plane in 3D*) shows the cells in 3D as a thin
+  surface at the work-plane height, in the scale's own colours.
+
+Placing again after a new run finds the zones' objects (by the zone they were placed for) and
+updates their values, and moves them when the zone has moved, instead of placing new ones. The
+top of the scale, the target and the switches above are also parameters of the object, so they
+can be changed in its settings dialog afterwards.
 
 ## How it is computed
 
@@ -60,8 +88,13 @@ coloured in Archicad by their average DF.
 
 ## What it changes
 
-Nothing in the project: it only colours the zones (the highlight, which closing the window or
-**Clear** removes). It writes the Radiance files of each run in
+**Run** and **Colour zones** change nothing in the project: they only colour the zones (the
+highlight, which closing the window or **Clear** removes). **Place heatmaps...**, after asking,
+creates the heatmap library part in the embedded library, the layer *Daylight Factor Heatmap*
+when it is chosen and missing, places the heatmap objects and updates (and moves) the ones it
+placed before. Placing and updating the objects can be undone in Archicad; the library part
+stays in the embedded library. Delete the objects to remove the heatmaps.
+It writes the Radiance files of each run in
 `Documents/Tapir/Daylight Factor/<date and time>/`, and the exported files where you save them.
 It runs the Radiance programs `oconv` and `rtrace` of the pyradiance package on your computer.
 
@@ -78,6 +111,13 @@ It runs the Radiance programs `oconv` and `rtrace` of the pyradiance package on 
 - Windows on ARM computers: pyradiance has no version for them yet, and the script says so.
 - Without an internet connection, or with pypi.org blocked, the first start fails while the
   palette installs pyradiance, before the script's window opens.
+- The heatmap object holds at most 12,500 cells around a zone (3,125 m² at the 0.5 m grid);
+  larger zones are left out of **Place heatmaps** and need a larger grid. Its cell values are
+  rounded to 0.05 % DF.
+- The plan colours are the nearest pens of the pen table, so they depend on it; the 3D surface
+  and the window show the exact scale.
+- A heatmap object moved to another layer by hand may not be found again (with Tapir versions
+  that cannot tell an object's library part), and then a new one is placed.
 - Works in Archicad 25 to 30, with Tapir 1.8.0 or newer.
 
 Requested by @JBENEITEZ in #2301.
