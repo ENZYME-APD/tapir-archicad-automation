@@ -16,8 +16,10 @@ Zone Area Dashboard
 Shows the areas of the project's zones (all of them, or the selected ones) grouped by any zone
 metric: zone name, number, category, story, a custom property or a classification. Summary cards
 give the total, the number of zones and the area and share of each group; the table lists the
-groups and, expanded, their zones. Clicking a card or a row highlights those zones in Archicad in
-the colour of their colour-by value and fades the rest. Exports to Excel and CSV. It changes
+groups and, expanded, their zones; charts show the share per group (donut), the area per group
+(bars), the area per story split by the colour-by metric and a treemap of the zones. Clicking a
+card, a row or a chart item highlights those zones in Archicad in the colour of their colour-by
+value and fades the rest. Exports to Excel and CSV. It changes
 nothing in the project apart from the highlight and, on request, the selection.
 """
 
@@ -41,6 +43,11 @@ NO_VALUE_COLOR = (170, 170, 170)
 SQUARE_FEET_IN_SQUARE_METERS = 0.09290304
 MAX_CARDS = 12
 NO_FILTER = "(no filter)"
+# the charts are drawn on white, like a printed page, in the light and the dark theme
+CHART_BACKGROUND = "#ffffff"
+CHART_TEXT = "#1f1f1f"
+CHART_MUTED = "#5f6368"
+CHART_SELECTED = "#1f1f1f"
 
 # The area: the label in the window and the key of GetQuantitiesOfElements' zone quantities (all in m²).
 AREAS = [
@@ -198,6 +205,119 @@ def is_additive_click(event) -> bool:
     return bool(state & 0x0004) or (sys.platform == "darwin" and bool(state & 0x0008))
 
 
+# ---- the charts' data, without a window (tested as well) ----
+
+def donut_slices(groups: list[dict]) -> list[dict]:
+    """ One slice per group with an area, clockwise from 12 o'clock in the order of the groups:
+    value, start and extent in Tk's degrees (counter-clockwise from 3 o'clock) and share. """
+    total = sum(g["area"] for g in groups if g["area"] > 0)
+    slices, done = [], 0.0
+    if total <= 0:
+        return slices
+    for group in groups:
+        if group["area"] <= 0:
+            continue
+        extent = group["area"] / total * 360.0
+        slices.append({"value": group["value"], "start": 90.0 - done - extent, "extent": extent,
+                       "share": group["area"] / total})
+        done += extent
+    return slices
+
+
+def story_stack(zones: list[dict], area_key: str, colour_key: str, story_order: dict[str, int] | None = None,
+                colour_order: dict[str, int] | None = None) -> list[dict]:
+    """ One entry per story, lowest first: story, area (m²), count and parts, one part per colour-by
+    value in the story (value, area, zones), in the values' sort order, so every story stacks alike. """
+    stories: dict[str, dict] = {}
+    for zone in zones:
+        story = metric_value(zone, "story")
+        value = metric_value(zone, colour_key)
+        entry = stories.setdefault(story, {"story": story, "area": 0.0, "count": 0, "parts": {}})
+        part = entry["parts"].setdefault(value, {"value": value, "area": 0.0, "zones": []})
+        part["zones"].append(zone)
+        entry["count"] += 1
+        area = zone_area(zone, area_key)
+        if area is not None:
+            part["area"] += area
+            entry["area"] += area
+    result = []
+    for story in sorted(stories, key=lambda s: value_sort_key(s, story_order)):
+        entry = stories[story]
+        entry["parts"] = [entry["parts"][v] for v in sorted(entry["parts"], key=lambda v: value_sort_key(v, colour_order))]
+        result.append(entry)
+    return result
+
+
+def story_table(stack: list[dict], colour_label: str, area_header: str, factor: float,
+                colour_order: dict[str, int] | None = None) -> tuple[list[str], list[list]]:
+    """ The stack as a sheet: one row per story, one column per colour-by value, a total column and row. """
+    values = sorted({p["value"] for entry in stack for p in entry["parts"]}, key=lambda v: value_sort_key(v, colour_order))
+    headers = [f"Story / {colour_label}, {area_header}"] + values + ["Total"]
+    rows = []
+    for entry in stack:
+        areas = {p["value"]: p["area"] for p in entry["parts"]}
+        rows.append([entry["story"]] + [round(areas.get(v, 0.0) / factor, 2) for v in values]
+                    + [round(entry["area"] / factor, 2)])
+    column_totals = [sum(p["area"] for entry in stack for p in entry["parts"] if p["value"] == v) for v in values]
+    rows.append(["Total"] + [round(a / factor, 2) for a in column_totals]
+                + [round(sum(e["area"] for e in stack) / factor, 2)])
+    return headers, rows
+
+
+def squarify(sizes: list[float], x: float, y: float, width: float, height: float) -> list[tuple[float, float, float, float]]:
+    """ A squarified treemap: one rectangle (x, y, width, height) per size, in the order of the sizes,
+    their areas proportional to the sizes and together filling the box. A size of 0 or less gets an
+    empty rectangle. """
+    rects: list[tuple[float, float, float, float]] = [(x, y, 0.0, 0.0)] * len(sizes)
+    items = sorted((i for i, s in enumerate(sizes) if s > 0), key=lambda i: -sizes[i])
+    total = sum(sizes[i] for i in items)
+    if not items or width <= 0 or height <= 0:
+        return rects
+    remaining = [(i, sizes[i] * width * height / total) for i in items]
+
+    def worst(row: list[tuple[int, float]], side: float) -> float:
+        row_sum = sum(a for _i, a in row)
+        return max(max(side * side * a / (row_sum * row_sum), row_sum * row_sum / (side * side * a)) for _i, a in row)
+
+    while remaining:
+        side = min(width, height)
+        if side <= 0:
+            break
+        count = 1
+        while count < len(remaining) and worst(remaining[:count + 1], side) <= worst(remaining[:count], side):
+            count += 1
+        row, remaining = remaining[:count], remaining[count:]
+        row_sum = sum(a for _i, a in row)
+        if width >= height:
+            # a column along the left side
+            column_width = row_sum / height
+            top = y
+            for index, area in row:
+                rects[index] = (x, top, column_width, area / column_width)
+                top += area / column_width
+            x, width = x + column_width, width - column_width
+        else:
+            # a row along the top
+            row_height = row_sum / width
+            left = x
+            for index, area in row:
+                rects[index] = (left, y, area / row_height, row_height)
+                left += area / row_height
+            y, height = y + row_height, height - row_height
+    return rects
+
+
+def text_color(rgb) -> str:
+    """ Black or white, whichever reads better on the colour. """
+    red, green, blue = (c / 255 for c in rgb[:3])
+    return "#000000" if 0.299 * red + 0.587 * green + 0.114 * blue > 0.6 else "#ffffff"
+
+
+def faded(rgb, amount: float = 0.7) -> tuple[int, int, int]:
+    """ The colour mixed with white, as the charts show what is not highlighted. """
+    return tuple(round(c + (255 - c) * amount) for c in rgb[:3])
+
+
 # ---- the window ----
 
 class ZoneAreaDashboard:
@@ -206,7 +326,8 @@ class ZoneAreaDashboard:
             SCRIPT_NAME,
             "The area of the zones, grouped by any zone metric. Click a card or a table row to highlight "
             "those zones in Archicad in their colour and fade the rest; Ctrl-click (Cmd-click on macOS) adds to "
-            "the highlight, clicking again removes it.",
+            "the highlight, clicking again removes it. The tabs next to the table show charts; click a slice, bar, "
+            "tile or legend entry to highlight its zones the same way.",
             min_width=900, min_height=760)
         self.zones: list[dict] = []  # {"elementId", "guid", "floorIndex", "areas": {key: m²}, "values": {metric: text}}
         self.metrics: list[dict] = list(BUILT_IN_METRICS)
@@ -220,6 +341,12 @@ class ZoneAreaDashboard:
         self.swatches: dict[tuple, tk.PhotoImage] = {}
         self.cards: dict[str, ttk.Frame] = {}
         self.colour_all = False
+        # what a chart click highlights besides the table rows: a key per clicked item, and its zones
+        self.picked: dict[tuple, list[dict]] = {}
+        self.charts: list[dict] = []
+        self._targets: dict[str, tuple] = {}
+        self._draw_pending = False
+        self._selected_guids: set[str] = set()
         self._highlight_key = None
         self.sort_column, self.sort_reverse = "area", True
         self._build_body()
@@ -310,19 +437,342 @@ class ZoneAreaDashboard:
         self.group_cards.bind("<Configure>", lambda _e: self._place_cards())
         self._card_columns = 0
 
-        self.tree = make_tree(body, [
+        self.notebook = ttk.Notebook(body)
+        self.notebook.grid(row=3, column=0, sticky="nsew")
+        table = ttk.Frame(self.notebook)
+        table.columnconfigure(0, weight=1)
+        table.rowconfigure(0, weight=1)
+        self.notebook.add(table, text="Table")
+        self.tree = make_tree(table, [
             ("area", "Area", 120, "e"), ("count", "Zones", 60, "e"), ("share", "Share", 70, "e"),
             ("story", "Story", 120, "w"),
         ], height=10, show_tree=True)
         self.tree.column("#0", width=280, stretch=True)
         for column in ("#0", "area", "count", "share", "story"):
             self.tree.heading(column, command=lambda c=column: self.window.guarded(lambda: self.sort_by(c))())
-        self.tree.container.grid(row=3, column=0, sticky="nsew")
+        self.tree.container.grid(row=0, column=0, sticky="nsew")
+        self._build_charts(family)
         self.tree.tag_configure("total", font=(family, 10, "bold"))
         self.tree.tag_configure("missing", foreground="#a15c00")
         self.tree.bind("<Button-1>", self._on_tree_click)
         self.tree.bind("<<TreeviewSelect>>", lambda _e: self.window.guarded(self.selection_changed)())
         self.tree.bind("<Double-1>", lambda _e: self.window.guarded(self.select_clicked)())
+
+    # ---- charts ----
+
+    def _build_charts(self, family: str) -> None:
+        root = self.window.root
+        self.chart_font = tkfont.Font(root=root, family=family, size=9)
+        self.chart_bold = tkfont.Font(root=root, family=family, size=9, weight="bold")
+        self.chart_big = tkfont.Font(root=root, family=family, size=13, weight="bold")
+        for title, draw in (("Share", self._draw_donut), ("Area per group", self._draw_bars),
+                            ("Per story", self._draw_stories), ("Treemap", self._draw_treemap)):
+            canvas = tk.Canvas(self.notebook, background=CHART_BACKGROUND, highlightthickness=0, height=self._px(260))
+            self.notebook.add(canvas, text=title)
+            # redrawn when the window is resized
+            canvas.bind("<Configure>", lambda _e: self._schedule_draw())
+            canvas.tag_bind("hit", "<Button-1>", self._chart_click)
+            canvas.tag_bind("hit", "<Enter>", self._chart_enter)
+            canvas.tag_bind("hit", "<Leave>", lambda e: e.widget.itemconfigure("info", text=""))
+            self.charts.append({"canvas": canvas, "draw": draw})
+        self.notebook.bind("<<NotebookTabChanged>>", lambda _e: self._schedule_draw())
+
+    def _px(self, size: float) -> float:
+        """ Pixels of a 96 dpi screen on this one, so the charts keep their size on high-DPI screens. """
+        return size * self.window.root.winfo_fpixels("1i") / 96
+
+    def _group_metric(self) -> dict:
+        return self._metric(self.group_by.get()) or BUILT_IN_METRICS[2]
+
+    def _colour_metric(self) -> dict:
+        return self._metric(self.colour_by.get()) or self._group_metric()
+
+    def _schedule_draw(self) -> None:
+        if not self._draw_pending:
+            self._draw_pending = True
+            self.window.root.after_idle(self._draw_current)
+
+    def _draw_current(self) -> None:
+        """ Draws the chart of the open tab; the others are drawn when they are opened. """
+        self._draw_pending = False
+        try:
+            index = self.notebook.index("current")
+        except tk.TclError:
+            return
+        if index == 0:
+            return
+        canvas, draw = self.charts[index - 1]["canvas"], self.charts[index - 1]["draw"]
+        canvas.delete("all")
+        self._targets = {}
+        width, height = canvas.winfo_width(), canvas.winfo_height()
+        if width < 60 or height < 60:
+            return
+        pad = self._px(12)
+        info_height = self.chart_font.metrics("linespace") + self._px(4)
+        if not self.shown:
+            canvas.create_text(width / 2, height / 2, text="There is no zone to show. Press Refresh.",
+                               font=self.chart_font, fill=CHART_MUTED)
+            return
+        self._selected_guids = {z["guid"] for z in self._picked_zones()}
+        draw(canvas, pad, pad, width - pad, height - pad - info_height)
+        # what the pointer is over
+        canvas.create_text(pad, height - pad, anchor="sw", text="", font=self.chart_font, fill=CHART_MUTED, tags=("info",))
+
+    def _target(self, action, info: str) -> tuple[str, str]:
+        """ The tags of a clickable chart item: action(event) runs on a click, info shows on hover. """
+        tag = f"t{len(self._targets)}"
+        self._targets[tag] = (action, info)
+        return "hit", tag
+
+    def _chart_click(self, event):
+        for tag in event.widget.gettags("current"):
+            if tag in self._targets:
+                action = self._targets[tag][0]
+                self.window.guarded(lambda: action(event))()
+                return "break"
+        return None
+
+    def _chart_enter(self, event) -> None:
+        for tag in event.widget.gettags("current"):
+            if tag in self._targets:
+                event.widget.itemconfigure("info", text=self._targets[tag][1])
+                return
+
+    def _look(self, rgb, zones: list[dict]) -> dict:
+        """ The fill and outline of a chart item: as Archicad shows it, the highlighted items in their
+        colour with a dark outline and, while something is highlighted, the others faded. """
+        selected = [z for z in zones if z["guid"] in self._selected_guids]
+        if not self._selected_guids or (selected and len(selected) < len(zones)):
+            return {"fill": to_hex(rgb), "outline": CHART_BACKGROUND, "width": 1}
+        if selected:
+            return {"fill": to_hex(rgb), "outline": CHART_SELECTED, "width": max(2, round(self._px(2)))}
+        return {"fill": to_hex(faded(rgb)), "outline": CHART_BACKGROUND, "width": 1}
+
+    def _fit(self, text: str, width: float, font: tkfont.Font) -> str:
+        """ The text, cut with an ellipsis to the width. """
+        if width <= 0:
+            return ""
+        if font.measure(text) <= width:
+            return text
+        low, high = 0, len(text)
+        while low < high:
+            middle = (low + high + 1) // 2
+            if font.measure(text[:middle] + "…") <= width:
+                low = middle
+            else:
+                high = middle - 1
+        return text[:low] + "…" if low else ""
+
+    def _title(self, canvas: tk.Canvas, left: float, top: float, right: float, text: str) -> float:
+        """ Draws the chart's title and returns the y below it. """
+        canvas.create_text(left, top, anchor="nw", text=self._fit(text, right - left, self.chart_bold),
+                           font=self.chart_bold, fill=CHART_TEXT)
+        return top + self.chart_bold.metrics("linespace") + self._px(8)
+
+    def _area_text(self, area_m2: float | None) -> str:
+        unit, factor = self._unit()
+        return format_area(area_m2, factor, unit)
+
+    def _legend(self, canvas: tk.Canvas, left: float, top: float, right: float, bottom: float, entries: list[tuple]) -> None:
+        """ entries: (colour, text, zones, action, info), one per row, "and N more" when they do not fit. """
+        row = max(self.chart_font.metrics("linespace") + self._px(4), self._px(18))
+        box = self._px(11)
+        for index, (rgb, text, zones, action, info) in enumerate(entries):
+            if top + row > bottom or (index < len(entries) - 1 and top + 2 * row > bottom):
+                canvas.create_text(left, top + row / 2, anchor="w", text=f"and {len(entries) - index} more",
+                                   font=self.chart_font, fill=CHART_MUTED)
+                return
+            look = self._look(rgb, zones)
+            tags = self._target(action, info)
+            canvas.create_rectangle(left, top + (row - box) / 2, left + box, top + (row + box) / 2, fill=look["fill"],
+                                    outline=look["outline"] if look["width"] > 1 else look["fill"], width=look["width"], tags=tags)
+            font = self.chart_bold if look["width"] > 1 else self.chart_font
+            canvas.create_text(left + box + self._px(6), top + row / 2, anchor="w", font=font, fill=CHART_TEXT, tags=tags,
+                               text=self._fit(text, right - left - box - self._px(6), font))
+            top += row
+
+    def _group_entries(self) -> list[tuple]:
+        """ The legend of the group-by values, clicked like their table rows. """
+        colors = self._colors(self._group_metric()["key"])
+        return [(colors.get(g["value"], NO_VALUE_COLOR), f"{g['value']}  {g['share'] * 100:.1f} %", g["zones"],
+                 lambda e, v=g["value"]: self.click_group(v, e), self._group_info(g)) for g in self.groups]
+
+    def _colour_entries(self) -> list[tuple]:
+        """ The legend of the colour-by values of the listed zones; a click highlights the zones with the value. """
+        metric = self._colour_metric()
+        colors = self._colors(metric["key"])
+        by_value: dict[str, list[dict]] = {}
+        for zone in self.shown:
+            by_value.setdefault(metric_value(zone, metric["key"]), []).append(zone)
+        _label, area_key = self._area()
+        entries = []
+        for value in sorted(by_value, key=lambda v: value_sort_key(v, self.orders.get(metric["key"]))):
+            zones = by_value[value]
+            entries.append((colors.get(value, NO_VALUE_COLOR), value, zones,
+                            lambda e, v=value, z=zones: self.pick(("colour", v), z, e),
+                            f"{metric['label']}: {value}, {self._area_text(totals(zones, area_key)['area'])}, "
+                            f"{len(zones)} zone(s)"))
+        return entries
+
+    def _group_info(self, group: dict) -> str:
+        return (f"{self._group_metric()['label']}: {group['value']}, {self._area_text(group['area'])}, "
+                f"{group['share'] * 100:.1f} %, {group['count']} zone(s)")
+
+    def _draw_donut(self, canvas: tk.Canvas, left: float, top: float, right: float, bottom: float) -> None:
+        area_label, _area_key = self._area()
+        top = self._title(canvas, left, top, right, f"Share of the {area_label.lower()} per {self._group_metric()['label'].lower()}")
+        legend_width = min((right - left) / 2, self._px(280))
+        size = min(right - left - legend_width - self._px(16), bottom - top)
+        colors = self._colors(self._group_metric()["key"])
+        if size >= self._px(60):
+            radius = size / 2
+            cx, cy = left + radius, top + radius
+            by_value = {g["value"]: g for g in self.groups}
+            slices = donut_slices(self.groups)
+            # the highlighted slices last, so their outline is on top
+            slices.sort(key=lambda s: self._look(NO_VALUE_COLOR, by_value[s["value"]]["zones"])["width"])
+            for piece in slices:
+                group = by_value[piece["value"]]
+                look = self._look(colors.get(piece["value"], NO_VALUE_COLOR), group["zones"])
+                tags = self._target(lambda e, v=piece["value"]: self.click_group(v, e), self._group_info(group))
+                if piece["extent"] >= 359.99:
+                    canvas.create_oval(cx - radius, cy - radius, cx + radius, cy + radius, tags=tags, **look)
+                else:
+                    canvas.create_arc(cx - radius, cy - radius, cx + radius, cy + radius, start=piece["start"],
+                                      extent=piece["extent"], style="pieslice", tags=tags, **look)
+            hole = radius * 0.55
+            canvas.create_oval(cx - hole, cy - hole, cx + hole, cy + hole, fill=CHART_BACKGROUND, outline=CHART_BACKGROUND)
+            total = totals(self.shown, self._area()[1])
+            canvas.create_text(cx, cy, anchor="s", text=self._fit(self._area_text(total["area"]), 2 * hole, self.chart_big),
+                               font=self.chart_big, fill=CHART_TEXT)
+            canvas.create_text(cx, cy + self._px(2), anchor="n", font=self.chart_font, fill=CHART_MUTED,
+                               text=self._fit(f"{total['count']} zones", 2 * hole, self.chart_font))
+            if not slices:
+                canvas.create_text(cx, cy + radius / 2, text=f"No zone has a {area_label.lower()}.", font=self.chart_font,
+                                   fill=CHART_MUTED)
+            legend_left = left + size + self._px(16)
+        else:
+            legend_left = left
+        self._legend(canvas, legend_left, top, right, bottom, self._group_entries())
+
+    def _draw_bars(self, canvas: tk.Canvas, left: float, top: float, right: float, bottom: float) -> None:
+        area_label, _area_key = self._area()
+        group_metric = self._group_metric()
+        top = self._title(canvas, left, top, right, f"{area_label} per {group_metric['label'].lower()}, largest first")
+        colors = self._colors(group_metric["key"])
+        row = max(self.chart_font.metrics("linespace") + self._px(8), self._px(22))
+        fit = max(1, int((bottom - top) // row))
+        groups = self.groups if len(self.groups) <= fit else self.groups[:max(1, fit - 1)]
+        label_width = min((right - left) * 0.35, max(self.chart_font.measure(g["value"]) for g in self.groups) + self._px(8))
+        value_width = self.chart_font.measure("000,000.00 ft² · 100.0 %") + self._px(8)
+        bar_left = left + label_width
+        bar_width = max(self._px(20), right - bar_left - value_width)
+        largest = max((g["area"] for g in self.groups), default=0) or 1.0
+        for index, group in enumerate(groups):
+            y = top + index * row
+            look = self._look(colors.get(group["value"], NO_VALUE_COLOR), group["zones"])
+            tags = self._target(lambda e, v=group["value"]: self.click_group(v, e), self._group_info(group))
+            font = self.chart_bold if look["width"] > 1 else self.chart_font
+            canvas.create_text(bar_left - self._px(8), y + row / 2, anchor="e", font=font, fill=CHART_TEXT, tags=tags,
+                               text=self._fit(group["value"], label_width - self._px(8), font))
+            length = max(1.0, group["area"] / largest * bar_width) if group["area"] > 0 else 0
+            if length:
+                canvas.create_rectangle(bar_left, y + self._px(3), bar_left + length, y + row - self._px(3), tags=tags, **look)
+            text = f"{self._area_text(group['area'])} · {group['share'] * 100:.1f} %" if group["area"] > 0 else "no area"
+            canvas.create_text(bar_left + length + self._px(6), y + row / 2, anchor="w", text=text, font=self.chart_font,
+                               fill=CHART_MUTED, tags=tags)
+        if len(groups) < len(self.groups):
+            canvas.create_text(bar_left, top + len(groups) * row + row / 2, anchor="w", font=self.chart_font, fill=CHART_MUTED,
+                               text=f"and {len(self.groups) - len(groups)} more groups in the table")
+
+    def _draw_stories(self, canvas: tk.Canvas, left: float, top: float, right: float, bottom: float) -> None:
+        area_label, area_key = self._area()
+        colour_metric = self._colour_metric()
+        top = self._title(canvas, left, top, right, f"{area_label} per story by {colour_metric['label'].lower()}")
+        colors = self._colors(colour_metric["key"])
+        stack = story_stack(self.shown, area_key, colour_metric["key"], self.orders.get("story"),
+                            self.orders.get(colour_metric["key"]))
+        # the highest story at the top
+        stack.reverse()
+        legend_width = min((right - left) * 0.3, self._px(220))
+        self._legend(canvas, right - legend_width, top, right, bottom, self._colour_entries())
+        right -= legend_width + self._px(16)
+        row = min(self._px(28), max(self.chart_font.metrics("linespace") + self._px(4), (bottom - top) / max(1, len(stack))))
+        fit = max(1, int((bottom - top) // row))
+        stories = stack if len(stack) <= fit else stack[:max(1, fit - 1)]
+        label_width = min((right - left) * 0.3, max(self.chart_font.measure(e["story"]) for e in stack) + self._px(8))
+        value_width = self.chart_font.measure("000,000.00 ft²") + self._px(8)
+        bar_left = left + label_width
+        bar_width = max(self._px(20), right - bar_left - value_width)
+        largest = max((e["area"] for e in stack), default=0) or 1.0
+        for index, entry in enumerate(stories):
+            y = top + index * row
+            zones = [z for part in entry["parts"] for z in part["zones"]]
+            story_tags = self._target(lambda e, s=entry["story"], z=zones: self.pick(("story", s), z, e),
+                                      f"Story {entry['story']}: {self._area_text(entry['area'])}, {entry['count']} zone(s)")
+            canvas.create_text(bar_left - self._px(8), y + row / 2, anchor="e", font=self.chart_font, fill=CHART_TEXT,
+                               tags=story_tags, text=self._fit(entry["story"], label_width - self._px(8), self.chart_font))
+            x = bar_left
+            for part in entry["parts"]:
+                if part["area"] <= 0:
+                    continue
+                length = part["area"] / largest * bar_width
+                look = self._look(colors.get(part["value"], NO_VALUE_COLOR), part["zones"])
+                tags = self._target(lambda e, s=entry["story"], v=part["value"], z=part["zones"]: self.pick(("stack", s, v), z, e),
+                                    f"{entry['story']}, {colour_metric['label']}: {part['value']}, {self._area_text(part['area'])}, "
+                                    f"{part['area'] / entry['area'] * 100:.1f} % of the story, {len(part['zones'])} zone(s)")
+                canvas.create_rectangle(x, y + self._px(3), x + length, y + row - self._px(3), tags=tags, **look)
+                x += length
+            canvas.create_text(x + self._px(6), y + row / 2, anchor="w", font=self.chart_font, fill=CHART_MUTED, tags=story_tags,
+                               text=self._area_text(entry["area"]) if entry["area"] > 0 else "no area")
+        if len(stories) < len(stack):
+            canvas.create_text(bar_left, top + len(stories) * row + row / 2, anchor="w", font=self.chart_font, fill=CHART_MUTED,
+                               text=f"and {len(stack) - len(stories)} more stories")
+
+    def _draw_treemap(self, canvas: tk.Canvas, left: float, top: float, right: float, bottom: float) -> None:
+        area_label, area_key = self._area()
+        group_metric, colour_metric = self._group_metric(), self._colour_metric()
+        top = self._title(canvas, left, top, right, f"The zones by {group_metric['label'].lower()}, coloured by "
+                                                    f"{colour_metric['label'].lower()}, sized by the {area_label.lower()}")
+        group_colors, colors = self._colors(group_metric["key"]), self._colors(colour_metric["key"])
+        legend_width = min((right - left) * 0.3, self._px(220))
+        self._legend(canvas, right - legend_width, top, right, bottom, self._colour_entries())
+        right -= legend_width + self._px(16)
+        if right - left < self._px(40) or bottom - top < self._px(40):
+            return
+        header = self.chart_font.metrics("linespace") + self._px(4)
+        rects = squarify([g["area"] for g in self.groups], left, top, right - left, bottom - top)
+        for group, (x, y, width, height) in zip(self.groups, rects):
+            if width < 1 or height < 1:
+                continue
+            group_tags = self._target(lambda e, v=group["value"]: self.click_group(v, e), self._group_info(group))
+            look = self._look(group_colors.get(group["value"], NO_VALUE_COLOR), group["zones"])
+            has_header = height > 2.5 * header and width > self._px(40)
+            inner_top = y + header if has_header else y
+            if has_header:
+                canvas.create_rectangle(x, y, x + width, inner_top, fill=look["fill"], outline=CHART_BACKGROUND, tags=group_tags)
+                canvas.create_text(x + self._px(4), y + header / 2, anchor="w", font=self.chart_bold,
+                                   fill=text_color(group_colors.get(group["value"], NO_VALUE_COLOR)), tags=group_tags,
+                                   text=self._fit(f"{group['value']}  {group['share'] * 100:.1f} %", width - self._px(8), self.chart_bold))
+            zones = [z for z in group["zones"] if (zone_area(z, area_key) or 0) > 0]
+            tiles = squarify([zone_area(z, area_key) for z in zones], x, inner_top, width, y + height - inner_top)
+            for zone, (zx, zy, zw, zh) in zip(zones, tiles):
+                if zw <= 0 or zh <= 0:
+                    continue
+                value = metric_value(zone, colour_metric["key"])
+                rgb = colors.get(value, NO_VALUE_COLOR)
+                zone_look = self._look(rgb, [zone])
+                name = f"{metric_value(zone, 'number')} {metric_value(zone, 'name')}"
+                tags = self._target(lambda e, g=zone["guid"]: self.click_row(f"z{g}", e),
+                                    f"{name}, {metric_value(zone, 'story')}: {self._area_text(zone_area(zone, area_key))}, "
+                                    f"{colour_metric['label']}: {value}")
+                canvas.create_rectangle(zx, zy, zx + zw, zy + zh, tags=tags, **zone_look)
+                if zw > self._px(36) and zh > header:
+                    canvas.create_text(zx + self._px(3), zy + self._px(2), anchor="nw", font=self.chart_font, tags=tags,
+                                       fill=text_color(rgb) if zone_look["fill"] == to_hex(rgb) else CHART_MUTED,
+                                       text=self._fit(name, zw - self._px(6), self.chart_font))
+            # the group's border over its zones
+            canvas.create_rectangle(x, y, x + width, y + height, outline=CHART_TEXT, width=1)
 
     # ---- metrics ----
 
@@ -594,6 +1044,8 @@ class ZoneAreaDashboard:
         area_label, area_key = self._area()
         filters = self._active_filters()
         self.shown = filter_zones(self.zones, filters)
+        # the table is filled again, so its selection goes; what the charts highlighted goes with it
+        self.picked = {}
         self.groups = group_zones(self.shown, group_metric["key"], area_key, self.orders.get(group_metric["key"]))
         self._fill_summary(area_label, area_key)
         self._fill_cards(group_metric)
@@ -752,6 +1204,13 @@ class ZoneAreaDashboard:
             else:
                 self.tree.selection_add(row)
             return "break"
+        if self.picked:
+            # a plain click replaces what the charts highlighted
+            self.picked = {}
+            if self.tree.selection() == (row,):
+                self.window.guarded(self.selection_changed)()
+                return "break"
+            return None
         if self.tree.selection() == (row,):
             # clicking the highlighted row again removes the highlight
             self.tree.selection_set(())
@@ -759,19 +1218,42 @@ class ZoneAreaDashboard:
         return None
 
     def click_group(self, value: str, event=None) -> None:
-        iid = self.group_rows.get(value)
-        if iid is None:
+        self.click_row(self.group_rows.get(value), event)
+
+    def click_row(self, iid: str | None, event=None) -> None:
+        """ A card or a chart item standing for a table row: highlights it like a click on the row. """
+        if iid is None or not self.tree.exists(iid):
             return
         if is_additive_click(event):
             if iid in self.tree.selection():
                 self.tree.selection_remove(iid)
             else:
                 self.tree.selection_add(iid)
-        elif self.tree.selection() == (iid,):
+        elif self.tree.selection() == (iid,) and not self.picked:
             self.tree.selection_set(())
         else:
+            self.picked = {}
+            if self.tree.selection() == (iid,):
+                self.selection_changed()
             self.tree.selection_set(iid)
         self.tree.see(iid)
+
+    def pick(self, key: tuple, zones: list[dict], event=None) -> None:
+        """ A chart item that is no table row (a part of a story's bar, a colour in a legend):
+        highlights its zones; Ctrl/Cmd-click adds or removes it, clicking it again clears it. """
+        if not zones:
+            return
+        if is_additive_click(event):
+            if key in self.picked:
+                del self.picked[key]
+            else:
+                self.picked[key] = zones
+        elif list(self.picked) == [key] and not self.tree.selection():
+            self.picked = {}
+        else:
+            self.picked = {key: zones}
+            self.tree.selection_set(())
+        self.selection_changed()
 
     def _click_summary(self, key: str, event) -> None:
         largest, smallest = largest_and_smallest(self.groups)
@@ -786,19 +1268,24 @@ class ZoneAreaDashboard:
                 card.title.configure(style="CardSelected.TLabel" if self.group_rows.get(value) in selected else "CardTitle.TLabel")
         self._apply_highlight()
 
-    def _highlighted_zones(self) -> list[dict]:
-        rows = self.tree.selection()
-        if not rows:
-            return list(self.shown) if self.colour_all else []
+    def _picked_zones(self) -> list[dict]:
+        """ The zones of the selected table rows and of the clicked chart items. """
         seen, zones = set(), []
-        for row in rows:
-            for zone in self.row_zones.get(row, []):
+        for members in [self.row_zones.get(row, []) for row in self.tree.selection()] + list(self.picked.values()):
+            for zone in members:
                 if zone["guid"] not in seen:
                     seen.add(zone["guid"])
                     zones.append(zone)
         return zones
 
+    def _highlighted_zones(self) -> list[dict]:
+        zones = self._picked_zones()
+        if not zones and self.colour_all:
+            return list(self.shown)
+        return zones
+
     def _apply_highlight(self, force: bool = False) -> None:
+        self._schedule_draw()
         zones = self._highlighted_zones()
         colour_metric = self._metric(self.colour_by.get()) or BUILT_IN_METRICS[2]
         key = (tuple(z["guid"] for z in zones), colour_metric["key"])
@@ -829,6 +1316,7 @@ class ZoneAreaDashboard:
             self.window.set_status("There is no zone to colour. Press Refresh first.", "warning")
             return
         self.colour_all = True
+        self.picked = {}
         self.tree.selection_set(())
         self._apply_highlight(force=True)
         colour_metric = self._metric(self.colour_by.get()) or BUILT_IN_METRICS[2]
@@ -837,6 +1325,7 @@ class ZoneAreaDashboard:
 
     def clear(self) -> None:
         self.colour_all = False
+        self.picked = {}
         self.tree.selection_set(())
         self._apply_highlight(force=True)
         self.window.set_status("The highlight is cleared.")
@@ -887,6 +1376,14 @@ class ZoneAreaDashboard:
             groups = group_zones(self.shown, metric["key"], area_key, self.orders.get(metric["key"]))
             group_headers, group_rows = group_table(groups, metric["label"], area_header, factor)
             sheets.append((f"By {re.sub(r'^(Property|Classification): ', '', metric['label'])}", group_headers, group_rows))
+        if colour_metric["key"] != "story":
+            # the "Per story" chart: the area per story split by the colour-by value
+            stack = story_stack(self.shown, area_key, colour_metric["key"], self.orders.get("story"),
+                                self.orders.get(colour_metric["key"]))
+            story_headers, story_rows = story_table(stack, colour_metric["label"], area_header, factor,
+                                                    self.orders.get(colour_metric["key"]))
+            sheets.append((f"Story x {re.sub(r'^(Property|Classification): ', '', colour_metric['label'])}",
+                           story_headers, story_rows))
         write_workbook(path, sheets)
         self.window.set_status(f"Exported {len(rows)} zone(s) and {len(sheets) - 1} grouping(s) to "
                                f"{os.path.basename(path)}.", "ok")

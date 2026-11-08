@@ -3116,7 +3116,7 @@ bool ApplyColumnDetails (API_Element& element, API_Element& mask, const GS::Obje
     return changed;
 }
 
-bool ApplyBeamDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details)
+bool ApplyBeamDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details, const Stories& stories)
 {
     bool changed = false;
     auto begCoordinate = GetOptionalCoordinate2D (details, "begCoordinate");
@@ -3129,6 +3129,23 @@ bool ApplyBeamDetails (API_Element& element, API_Element& mask, const GS::Object
     if (endCoordinate.HasValue ()) {
         element.beam.endC = endCoordinate.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, endC);
+        changed = true;
+    }
+    // The absolute elevation of the reference line, resolved as in CreateBeams (#521); an
+    // explicit level below is applied after it, as bottomOffset is for columns.
+    auto zCoordinate = GetOptionalDouble (details, "zCoordinate");
+    short floorIndex = 0;
+    const bool hasFloorIndex = details.Get ("floorIndex", floorIndex);
+    if (zCoordinate.HasValue ()) {
+        const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (details, "floorIndex", zCoordinate.Get (), stories);
+        element.header.floorInd = floorIndexAndOffset.first;
+        element.beam.level = floorIndexAndOffset.second;
+        ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+        ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, level);
+        changed = true;
+    } else if (hasFloorIndex) {
+        element.header.floorInd = floorIndex;
+        ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
         changed = true;
     }
     auto level = GetOptionalDouble (details, "level");
@@ -9773,7 +9790,9 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
                         "elementId": { "$ref": "#/ElementId" },
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
-                        "level": { "type": "number" },
+                        "zCoordinate": { "type": "number", "description": "Absolute Z of the beam's reference line, as in CreateBeams. The home story is derived from it unless floorIndex is given; level, when given too, is applied after it." },
+                        "floorIndex": { "type": "integer", "description": "Optional home story index (as returned by GetStories). With zCoordinate it pins the story the Z is resolved against; alone it only changes the home story (combine with level to set the offset relative to it)." },
+                        "level": { "type": "number", "description": "Elevation of the reference line relative to the home story." },
                         "offset": { "type": "number" },
                         "slantAngle": { "type": "number" },
                         "arcAngle": { "type": "number" },
@@ -9820,6 +9839,8 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
+    const Stories stories = GetStories ();
+
     return ExecuteModifyWithResults ("Modify Beams", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
@@ -9836,7 +9857,7 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
 
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
-            bool changed = ApplyBeamDetails (element, mask, item);
+            bool changed = ApplyBeamDetails (element, mask, item, stories);
             const GS::Optional<GS::UniString> settingsError = ApplyBeamSurfaceAndFillSettings (element, mask, item, changed);
             if (settingsError.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, settingsError.Get ()));

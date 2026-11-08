@@ -1,8 +1,8 @@
 # Zone Area Dashboard
 
 Shows the areas of the project's zones grouped by any zone metric (zone name, number, category,
-story, a custom property or a classification), as summary cards and a table, and highlights the
-zones of a group in Archicad in their colour while fading the rest.
+story, a custom property or a classification), as summary cards, a table and charts, and
+highlights the zones of a group in Archicad in their colour while fading the rest.
 
 ## How to use it
 
@@ -27,15 +27,31 @@ zones of a group in Archicad in their colour while fading the rest.
    *Colour by* value, and fade all the other elements. Ctrl-click (Cmd-click on macOS) adds a
    group or a zone to the highlight. Clicking the highlighted card or row again, or *Clear*,
    removes it. The *Total* row highlights every listed zone.
-7. *Colour by parameter* colours every listed zone by its *Colour by* value without changing the
+7. The tabs next to *Table* show the listed zones as charts, redrawn when you resize the window.
+   Every value has the same colour in the cards, the table, every chart, the legends and Archicad.
+   - *Share*: a donut of the share of each *Group by* group in the total area, with a legend.
+   - *Area per group*: a bar per group, largest first, with its area and share.
+   - *Per story*: a bar per story, the highest at the top, split by the *Colour by* value (e.g.
+     the categories on each floor), with a legend of the *Colour by* values.
+   - *Treemap*: a tile per zone, sized by its area, inside a box per *Group by* group and coloured
+     by its *Colour by* value.
+
+   Click a slice, a bar, a part of a story's bar, a tile, a story's name or a legend entry to
+   highlight its zones, as a click on a table row does: Ctrl-click (Cmd-click on macOS) adds it to
+   the highlight, clicking it again or *Clear* removes it. While something is highlighted, the
+   charts show the rest faded. Pointing at an item shows its area, share and number of zones
+   under the chart.
+8. *Colour by parameter* colours every listed zone by its *Colour by* value without changing the
    zones. *Select in Archicad* selects the highlighted zones (every listed zone when none is),
    and a double-click on a zone row selects that zone.
-8. *Refresh* reads the zones and their values again without closing the window.
-9. *Export...* saves the listed zones:
-   - as a CSV file: one row per zone with every metric (all custom properties and classification
-     systems included) and the chosen area;
-   - as an Excel workbook (`.xlsx`): the same *Zones* sheet, one sheet for the *Group by* grouping
-     and, when it is different, one for the *Colour by* grouping, each with a total row.
+9. *Refresh* reads the zones and their values again without closing the window.
+10. *Export...* saves the listed zones:
+    - as a CSV file: one row per zone with every metric (all custom properties and classification
+      systems included) and the chosen area;
+    - as an Excel workbook (`.xlsx`): the same *Zones* sheet, one sheet for the *Group by* grouping
+      and, when it is different, one for the *Colour by* grouping, each with a total row, and
+      (unless *Colour by* is *Story*) the *Per story* chart as a sheet: a row per story, a column
+      per *Colour by* value, with totals.
 
 A zone without a value for the chosen metric is in the group *(no value)*, never left out. A
 zone that Archicad gives no area for counts in its group's number of zones, with no area. Its
@@ -63,7 +79,8 @@ zone's GUID.
   groups.
 - Works in Archicad 25 to 30 with Tapir 1.8.0 or later. In Archicad 25 the other elements are not
   faded.
-- Charts (donut, bars, a stack per story, a treemap) follow in the next version (part 2 of #2283).
+- The donut and the treemap leave out the zones without area; the bars and the table show them.
+- The charts are drawn on white in the light and the dark theme.
 - It needs the `utilities/` and `aclib/` folders of
   [`builtin-scripts/`](../../builtin-scripts/) next to it (see
   [The helpers `utilities` and `aclib`](../README.md#the-helpers-utilities-and-aclib)).

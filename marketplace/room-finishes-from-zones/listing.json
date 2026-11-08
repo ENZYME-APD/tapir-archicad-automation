@@ -1,0 +1,18 @@
+{
+    "slug": "room-finishes-from-zones",
+    "name": "Room Finishes from Zones",
+    "summary": "Adds the floor finish and the ceiling of the selected zones as slabs from a favorite or a material, and replaces them on a re-run.",
+    "category": "modeling-geometry",
+    "tags": ["zones", "finishes", "slabs", "ceilings", "floors", "interiors"],
+    "author": { "name": "Tapir" },
+    "license": "MIT",
+    "entry": "RoomFinishesFromZones.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "First version: floor finishes and ceilings."
+        }
+    ]
+}
