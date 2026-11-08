@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 66 | 57 | 9 |  |  |  | 9 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1441 | 1207 | 234 |  |  |  | 11 | 375 |
 
-Archicad 25–30 DevKits; updated 2026-11-08 14:56 UTC.
+Archicad 25–30 DevKits; updated 2026-11-08 15:18 UTC.
 
 | | Status |
 |---|---|
@@ -507,7 +507,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 - ➖ `ACAPI_ActivatePropertyObjectHandler` – Activates or deactivates an add-on's property handler. *(event handlers, not commands)*
 - ✅ `ACAPI_CallCommand` – Performs an operation without opening an undoable session.
-- ✅ `ACAPI_CallUndoableCommand` – Performs an undoable operation. — [#1470](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1470 "Report failed creation transactions instead of returning element results"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#2313](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2313 "Self-audit of the whole repository: AI slop, performance and safety"), [#2218](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2218 "Docs: a page of what the Archicad API cannot do, with the workaround and the DevKit evidence"), [#1820](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1820 "Run several commands as one undo step")
+- ✅ `ACAPI_CallUndoableCommand` – Performs an undoable operation. — [#2380](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2380 "Report failed creation transactions instead of returning element results (supersedes #1470)"), [#1470](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1470 "Report failed creation transactions instead of returning element results"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"), [#2313](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2313 "Self-audit of the whole repository: AI slop, performance and safety"), [#2218](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2218 "Docs: a page of what the Archicad API cannot do, with the workaround and the DevKit evidence"), [#1820](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1820 "Run several commands as one undo step")
 - ✅ `ACAPI_DisposeAddParHdl` – Frees the memory occupied by a handle to an array of @ref API_AddParType.
 - ✅ `ACAPI_DisposeAttrDefsHdls` – Frees the memory occupied by all of the attribute definition handles.
 - ✅ `ACAPI_DisposeAttrDefsHdlsExt` – Frees the memory occupied by all of the attribute definition handles.
@@ -522,7 +522,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `ACAPI_GetExtensionInstance` – Returns the HINSTANCE of the add-on's DLL. *(add-on infrastructure)*
 - ➖ `ACAPI_GetMainWindow` – Returns the application's main window where the add-on works. *(user interface)*
 - ✅ `ACAPI_GetOwnLocation` – Returns the location of the add-on in the file system. — [#2185](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2185 "[2/2] Add-On: Update when Archicad closes choice, pending marker and README (#2182)")
-- ✅ `ACAPI_GetOwnResModule` – Returns the add-on's resource module identifier for loading resources. — [#2185](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2185 "[2/2] Add-On: Update when Archicad closes choice, pending marker and README (#2182)")
+- ✅ `ACAPI_GetOwnResModule` – Returns the add-on's resource module identifier for loading resources. — [#2377](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2377 "Tapir palette: running mark in the script list, logo opens tapir-api.com, icon-only update button")
 - ✅ `ACAPI_GetPreferences` – Returns the stored preferences of the add-on.
 - ✅ `ACAPI_GetReleaseNumber`
 - ✅ `ACAPI_GetToken` <sub>AC26–30</sub> – Returns the token associated with the AddOn.
