@@ -1,4 +1,5 @@
 #include "DialogCommands.hpp"
+#include "ElementGDLParameterCommands.hpp"
 
 namespace {
 
@@ -43,6 +44,26 @@ GSErrCode GetCurrentToolBoxItem (API_ToolBoxItem& toolBoxItem)
 #endif
 }
 #endif
+
+GSErrCode OpenObjectSettingsDialog (API_ObjectSettingsPars& objectSettingsPars)
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Dialog_ObjectSettings (&objectSettingsPars);
+#else
+    return ACAPI_Interface (APIIo_ObjectSettingsID, &objectSettingsPars, nullptr);
+#endif
+}
+
+Int32 GetLibIndOfLibPartElement (const API_Element& element, API_ElemTypeID typeID)
+{
+    switch (typeID) {
+        case API_ObjectID:  return element.object.libInd;
+        case API_LampID:    return element.lamp.libInd;
+        case API_WindowID:  return element.window.openingBase.libInd;
+        case API_DoorID:    return element.door.openingBase.libInd;
+        default:            return 0;
+    }
+}
 
 }
 
@@ -123,4 +144,114 @@ GS::ObjectState OpenSettingsDialogCommand::Execute (const GS::ObjectState& param
         return CreateErrorResponse (err, "Failed to open the settings dialog.");
     }
     return GS::ObjectState ("cancelled", false);
+}
+
+PickLibraryPartCommand::PickLibraryPartCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String PickLibraryPartCommand::GetName () const
+{
+    return "PickLibraryPart";
+}
+
+GS::Optional<GS::UniString> PickLibraryPartCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementType": {
+                "type": "string",
+                "enum": ["Object", "Lamp", "Window", "Door"],
+                "description": "Whose settings dialog to open: the Object, Lamp, Window or Door tool's. Without a subtypeUnID the dialog lists the library parts of that tool. Object by default."
+            },
+            "subtypeUnID": {
+                "type": "string",
+                "description": "Limits the dialog to the library parts of this subtype: the unique ID of the subtype library part, its main and revision GUID in the form {main}-{revision}."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> PickLibraryPartCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "cancelled": {
+                "type": "boolean",
+                "description": "True when the user closed the dialog with Cancel; then nothing else is returned."
+            },
+            "libPart": {
+                "$ref": "#/LibPartDetails",
+                "description": "The library part the user chose. Absent when it could not be read."
+            },
+            "subtypeUnID": {
+                "type": "string",
+                "description": "The unique ID of the chosen library part's subtype, as Archicad returned it."
+            },
+            "parameters": {
+                "type": "array",
+                "description": "The GDL parameters of the chosen library part, with the values set in the dialog. Present when the user pressed OK.",
+                "items": {
+                    "$ref": "#/StoredGDLParameter"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": ["cancelled"]
+    })";
+}
+
+GS::ObjectState PickLibraryPartCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_ElemTypeID typeID = API_ObjectID;
+    GS::UniString elementTypeStr;
+    if (parameters.Get ("elementType", elementTypeStr)) {
+        typeID = GetElementTypeFromNonLocalizedName (elementTypeStr);
+        if (typeID != API_ObjectID && typeID != API_LampID && typeID != API_WindowID && typeID != API_DoorID) {
+            return CreateErrorResponse (APIERR_BADPARS, "Unsupported elementType: " + elementTypeStr + ". Use Object, Lamp, Window or Door.");
+        }
+    }
+
+    API_ObjectSettingsPars objectSettingsPars = {};
+#ifdef ServerMainVers_2600
+    objectSettingsPars.elemDef.header.type = API_ElemType (typeID);
+#else
+    objectSettingsPars.elemDef.header.typeID = typeID;
+#endif
+
+    GS::UniString subtypeUnIDStr;
+    if (parameters.Get ("subtypeUnID", subtypeUnIDStr)) {
+        if (subtypeUnIDStr.GetLength () >= sizeof (objectSettingsPars.subtypeID)) {
+            return CreateErrorResponse (APIERR_BADPARS, "subtypeUnID is too long: " + subtypeUnIDStr + ".");
+        }
+        CHTruncate (subtypeUnIDStr.ToCStr ().Get (), objectSettingsPars.subtypeID, sizeof (objectSettingsPars.subtypeID));
+    }
+
+    const GSErrCode err = OpenObjectSettingsDialog (objectSettingsPars);
+    if (err != NoError) {
+        if (objectSettingsPars.addPars != nullptr) {
+            ACAPI_DisposeAddParHdl (&objectSettingsPars.addPars);
+        }
+        if (err == APIERR_CANCEL) {
+            return GS::ObjectState ("cancelled", true);
+        }
+        if (err == APIERR_BADID) {
+            return CreateErrorResponse (err, "Archicad could not open the settings dialog with these parameters (e.g. an unknown subtypeUnID).");
+        }
+        return CreateErrorResponse (err, "Failed to open the library part settings dialog.");
+    }
+
+    GS::ObjectState response ("cancelled", false);
+    if (objectSettingsPars.subtypeID[0] != '\0') {
+        response.Add ("subtypeUnID", GS::UniString (objectSettingsPars.subtypeID));
+    }
+    AddLibPartAndGDLParameters (response, GetLibIndOfLibPartElement (objectSettingsPars.elemDef, typeID), objectSettingsPars.addPars);
+    if (objectSettingsPars.addPars != nullptr) {
+        ACAPI_DisposeAddParHdl (&objectSettingsPars.addPars);
+    }
+    return response;
 }
