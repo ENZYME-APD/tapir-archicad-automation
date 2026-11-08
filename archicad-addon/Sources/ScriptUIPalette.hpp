@@ -4,6 +4,7 @@
 #include "ACAPinc.h"
 #include "DGModule.hpp"
 #include "DGBrowser.hpp"
+#include "HashTable.hpp"
 
 // Archicad < 27's browser JS bridge used DG::JSObject/JSFunction/JSValue/JSBase/JSArray (same
 // shape as JS::Object/Function/Value/Base/Array from the JavascriptEngine module introduced in
@@ -46,16 +47,36 @@ struct ScriptUIOptions
 // on branch experiment/native-browser-poc). The script itself retrieves that data by polling the
 // "GetScriptUIResult" Tapir command, which also tells it whether the palette is still open (see
 // IsOpen), so it can stop waiting when the user closes the palette instead.
+//
+// There is one window per script (issue #1819): SlotCount palettes, each registered with its own
+// GUID, so Archicad remembers the position of each. A window is addressed by its uiId (1-based
+// slot index, returned by ShowScriptUI) or by the scriptId of the script that owns it; a call with
+// neither uses the first window, as before there were several.
 class ScriptUIPalette final : public DG::Palette,
     public DG::PanelObserver
 {
 public:
+    static constexpr Int32 SlotCount = 8;
+
     virtual ~ScriptUIPalette ();
 
-    static bool            HasInstance ();
-    static ScriptUIPalette& Instance ();
+    static bool             HasInstance (Int32 slotIndex);   // 0-based, 0..SlotCount-1
+    static ScriptUIPalette& Instance (Int32 slotIndex);
 
-    // Explicitly tears down the browser control while Archicad's own environment (including its
+    // The window of the script: the slot it owns, -1 when it owns none.
+    static Int32 FindSlotOfScript (const GS::UniString& scriptId);
+    // The window of the script, given to it when it owns none yet: first a window that is closed,
+    // then one whose script has ended (no owner), the first window last, as it is also the window
+    // of the callers that cannot be identified. -1 when every window is open for another script.
+    static Int32 AcquireSlotForScript (const GS::UniString& scriptId);
+    // Frees the window of the script once it ended or was stopped, and forgets its name. Its page
+    // stays shown until another script takes the window.
+    static void  ReleaseScript (const GS::UniString& scriptId);
+    // The name shown in the title of the script's window, given by the Tapir palette for the
+    // scripts it starts (their scriptId is the TAPIR_SCRIPT_ID environment variable it sets).
+    static void  SetScriptName (const GS::UniString& scriptId, const GS::UniString& scriptName);
+
+    // Explicitly tears down the browser controls while Archicad's own environment (including its
     // CEF/browser subsystem) is still fully alive - must be called from FreeData, not left to run
     // via the static GS::Ref's destructor at DLL/dylib unload time (confirmed via a real macOS
     // crash report: EXC_BAD_ACCESS in the DG::Browser destructor when it ran during add-on
@@ -81,10 +102,20 @@ public:
     static GSErrCode RegisterPaletteControlCallBack ();
 
 private:
+    const Int32 slotIndex;
     DG::Browser browser;
 
     GS::UniString pendingResult;
     bool          hasPendingResult = false;
+
+    // The title: defaultTitle ("Tapir Script UI 2") until a script gives one (pageTitle), followed
+    // by the name of the script that owns the window, when the Tapir palette started it. pageTitle
+    // belongs to titleOwner, the owner of the window when it was given, and is dropped when
+    // another script takes the window.
+    GS::UniString defaultTitle;
+    GS::UniString pageTitle;
+    GS::UniString titleOwner;
+    void UpdateTitle (const GS::UniString& newPageTitle);
 
     // Guards the ReportContentHeight JS bridge function: only resizes when the currently shown
     // page was opened with options.autoHeight = true (and therefore has the auto-height observer
@@ -114,8 +145,12 @@ private:
 
     static GSErrCode PaletteControlCallBack (Int32 paletteId, API_PaletteMessageID messageID, GS::IntPtr param);
 
-    static const GS::Guid             paletteGuid;
-    static GS::Ref<ScriptUIPalette>   instance;
+    static Int32 GetSlotOfPaletteId (Int32 paletteId);   // -1 for an unknown id
 
-    ScriptUIPalette ();
+    static const GS::Guid             paletteGuids[SlotCount];
+    static GS::Ref<ScriptUIPalette>   instances[SlotCount];
+    static GS::UniString              slotOwners[SlotCount];   // the scriptId owning each window; empty: none
+    static GS::HashTable<GS::UniString, GS::UniString> scriptNames;   // scriptId -> name, see SetScriptName
+
+    explicit ScriptUIPalette (Int32 slotIndex);
 };

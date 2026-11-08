@@ -1537,6 +1537,21 @@ GS::Optional<GS::UniString> ShowNotificationBubbleCommand::GetInputParametersSch
                     "h",
                     "v"
                 ]
+            },
+            "largeIcon": {
+                "type": "string",
+                "enum": ["information", "warning", "error"],
+                "description": "The icon shown instead of icon when the \"Use large alert cues\" option is on in Work Environment. Not set by default."
+            },
+            "redrawCountLimit": {
+                "type": "integer",
+                "description": "Shows the bubble at most this many times. After that it does not appear again, for any later ShowNotificationBubble call, until the user runs the 'Enable all informational messages' command in Archicad. Not set by default.",
+                "minimum": 1,
+                "maximum": 4294967295
+            },
+            "disabled": {
+                "type": "boolean",
+                "description": "True turns the bubble off instead of showing it: it does not appear again, for any later ShowNotificationBubble call, until the user runs the 'Enable all informational messages' command in Archicad. False (the default) changes nothing."
             }
         },
         "additionalProperties": false,
@@ -1549,11 +1564,93 @@ GS::Optional<GS::UniString> ShowNotificationBubbleCommand::GetInputParametersSch
 GS::Optional<GS::UniString> ShowNotificationBubbleCommand::GetRawResponseSchema () const
 {
     return R"({
-        "$ref": "#/ExecutionResult"
+        "type": "object",
+        "description": "The settings of the bubble after the call, read back from Archicad.",
+        "properties": {
+            "text": {
+                "type": "string",
+                "description": "The text of the bubble. Missing when it has none."
+            },
+            "icon": {
+                "type": "string",
+                "enum": ["none", "information", "warning", "error", "other"],
+                "description": "The icon of the bubble."
+            },
+            "largeIcon": {
+                "type": "string",
+                "enum": ["none", "information", "warning", "error", "other"],
+                "description": "The icon shown when the \"Use large alert cues\" option is on in Work Environment."
+            },
+            "offset": {
+                "type": "object",
+                "description": "The offset of the bubble from its position, in pixels.",
+                "properties": {
+                    "h": {
+                        "type": "integer"
+                    },
+                    "v": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "h",
+                    "v"
+                ]
+            },
+            "timeoutMilliseconds": {
+                "type": "integer",
+                "description": "How long the bubble stays, in milliseconds."
+            },
+            "redrawCountLimit": {
+                "type": "integer",
+                "description": "How many times the bubble is shown at most. Missing when it has no limit."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "icon",
+            "largeIcon",
+            "offset",
+            "timeoutMilliseconds"
+        ]
     })";
 }
 
 #ifdef TAPIR_HAS_NOTIFICATION_BUBBLE
+// One bubble of Tapir's own; showing it again replaces its text and settings.
+static constexpr const char* TapirNotificationBubbleGuid = "8D3B6F1E-5C2A-4E7B-9A41-2F6C0D8E7B53";
+
+static GSErrCode GetIconIdFromString (const GS::UniString& iconStr, std::optional<short>& iconId)
+{
+    if (iconStr == "information") {
+        iconId = DG::Icon::Information;
+    } else if (iconStr == "warning") {
+        iconId = DG::Icon::Warning;
+    } else if (iconStr == "error") {
+        iconId = DG::Icon::Error;
+    } else if (iconStr == "none") {
+        iconId.reset ();
+    } else {
+        return APIERR_BADPARS;
+    }
+    return NoError;
+}
+
+static GS::UniString GetIconString (const std::optional<DG::Icon>& icon)
+{
+    if (!icon.has_value () || icon->IsEmpty ()) {
+        return "none";
+    }
+    // ShowNotificationBubble only sets these system icons.
+    switch (icon->GetResourceId ()) {
+        case DG::Icon::Information: return "information";
+        case DG::Icon::Warning:     return "warning";
+        case DG::Icon::Error:       return "error";
+        default:                    return "other";
+    }
+}
+
 static API_Point GetPointFromObjectState (const GS::ObjectState& os)
 {
     Int32 h = 0;
@@ -1583,26 +1680,37 @@ GS::ObjectState ShowNotificationBubbleCommand::Execute (const GS::ObjectState& p
     GS::UniString message;
     parameters.Get ("message", message);
     if (message.IsEmpty ()) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "message must not be empty.");
+        return CreateErrorResponse (APIERR_BADPARS, "message must not be empty.");
     }
 
     GS::UniString iconStr = "information";
     parameters.Get ("icon", iconStr);
     std::optional<short> iconId;
-    if (iconStr == "information") {
-        iconId = DG::Icon::Information;
-    } else if (iconStr == "warning") {
-        iconId = DG::Icon::Warning;
-    } else if (iconStr == "error") {
-        iconId = DG::Icon::Error;
-    } else if (iconStr != "none") {
-        return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString ("Unknown icon: ") + iconStr + ".");
+    if (GetIconIdFromString (iconStr, iconId) != NoError) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Unknown icon: ") + iconStr + ".");
     }
+
+    std::optional<short> largeIconId;
+    GS::UniString largeIconStr;
+    if (parameters.Get ("largeIcon", largeIconStr)) {
+        if (largeIconStr == "none" || GetIconIdFromString (largeIconStr, largeIconId) != NoError) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Unknown largeIcon: ") + largeIconStr + ".");
+        }
+    }
+
+    GS::Int64 redrawCountLimit = 0;
+    const bool hasRedrawCountLimit = parameters.Get ("redrawCountLimit", redrawCountLimit);
+    if (hasRedrawCountLimit && (redrawCountLimit < 1 || redrawCountLimit > 4294967295LL)) {
+        return CreateErrorResponse (APIERR_BADPARS, "redrawCountLimit must be between 1 and 4294967295.");
+    }
+
+    bool disabled = false;
+    parameters.Get ("disabled", disabled);
 
     const GS::ObjectState* coordinateOS = parameters.Get ("coordinate");
     const GS::ObjectState* screenPointOS = parameters.Get ("screenPoint");
     if (coordinateOS != nullptr && screenPointOS != nullptr) {
-        return CreateFailedExecutionResult (APIERR_BADPARS, "Give either coordinate or screenPoint, not both.");
+        return CreateErrorResponse (APIERR_BADPARS, "Give either coordinate or screenPoint, not both.");
     }
 
     API_Point point = {};
@@ -1611,7 +1719,7 @@ GS::ObjectState ShowNotificationBubbleCommand::Execute (const GS::ObjectState& p
     } else if (coordinateOS != nullptr) {
         const GSErrCode err = GetModelCoordinateScreenPoint (Get3DCoordinateFromObjectState (*coordinateOS), point);
         if (err != NoError) {
-            return CreateFailedExecutionResult (err, "Failed to convert the coordinate to a screen point of the current view.");
+            return CreateErrorResponse (err, "Failed to convert the coordinate to a screen point of the current view.");
         }
     } else {
         // The center of the visible area of a 2D window; ACAPI_View_GetZoom fails in
@@ -1631,12 +1739,10 @@ GS::ObjectState ShowNotificationBubbleCommand::Execute (const GS::ObjectState& p
             }
         }
         if (err != NoError) {
-            return CreateFailedExecutionResult (err, "Failed to find a position in the current view; give coordinate or screenPoint.");
+            return CreateErrorResponse (err, "Failed to find a position in the current view; give coordinate or screenPoint.");
         }
     }
 
-    // One bubble of Tapir's own; showing it again replaces its text and settings.
-    static constexpr const char* TapirNotificationBubbleGuid = "8D3B6F1E-5C2A-4E7B-9A41-2F6C0D8E7B53";
     auto notificationBubble = ACAPI::UI::Notification::CreateNotificationBubbleManager ().CreateNotificationBubble (APIGuidFromString (TapirNotificationBubbleGuid));
 
     notificationBubble.SetText (message);
@@ -1654,12 +1760,48 @@ GS::ObjectState ShowNotificationBubbleCommand::Execute (const GS::ObjectState& p
         notificationBubble.SetOffset (GetPointFromObjectState (*offsetOS));
     }
 
-    notificationBubble.Show (point);
+    if (largeIconId.has_value ()) {
+        notificationBubble.SetLargeIcon (DG::Icon (SysResModule, *largeIconId));
+    }
 
-    return CreateSuccessfulExecutionResult ();
+    if (hasRedrawCountLimit) {
+        notificationBubble.SetRedrawCountLimit (static_cast<UInt32> (redrawCountLimit));
+    }
+
+    if (disabled) {
+        notificationBubble.SetDisabled ();
+    } else {
+        notificationBubble.Show (point);
+    }
+
+    GS::ObjectState response;
+    const std::optional<GS::UniString> text = notificationBubble.GetText ();
+    if (text.has_value ()) {
+        response.Add ("text", *text);
+    }
+    response.Add ("icon", GetIconString (notificationBubble.GetIcon ()));
+    response.Add ("largeIcon", GetIconString (notificationBubble.GetLargeIcon ()));
+    const API_Point offset = notificationBubble.GetOffset ();
+    GS::ObjectState offsetResponse;
+    offsetResponse.Add ("h", static_cast<Int32> (offset.h));
+    offsetResponse.Add ("v", static_cast<Int32> (offset.v));
+    response.Add ("offset", offsetResponse);
+    response.Add ("timeoutMilliseconds", static_cast<GS::Int64> (notificationBubble.GetTimeout ()));
+    const std::optional<UInt32> effectiveRedrawCountLimit = notificationBubble.GetRedrawCountLimit ();
+    if (effectiveRedrawCountLimit.has_value ()) {
+        response.Add ("redrawCountLimit", static_cast<GS::Int64> (*effectiveRedrawCountLimit));
+    }
+    return response;
 #else
     (void) parameters;
-    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "ShowNotificationBubble requires Archicad 29 or later.");
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "ShowNotificationBubble requires Archicad 29 or later.");
+#endif
+}
+
+void RegisterTapirNotificationBubble ()
+{
+#ifdef TAPIR_HAS_NOTIFICATION_BUBBLE
+    ACAPI::UI::Notification::CreateNotificationBubbleManager ().RegisterNotificationBubble (APIGuidFromString (TapirNotificationBubbleGuid));
 #endif
 }
 
@@ -3076,6 +3218,14 @@ GS::Optional<GS::UniString> GetArcFromUserCommand::GetInputParametersSchema () c
                 "type": "boolean",
                 "description": "If true, also draws the whole circle of the arc while the start and end points are chosen: its radius follows the cursor until the start point is clicked. Drawn in 2D windows only; the 3D window shows Archicad's default feedback.",
                 "default": true
+            },
+            "snapFilter": {
+                "$ref": "#/SnapFilter",
+                "description": "Which points and lines of the elements the cursor snaps to for the center and the start point. Archicad's arc input has no snap filter, so the end point snaps as usual. Default: Archicad's usual snapping."
+            },
+            "constraint": {
+                "$ref": "#/InputConstraint",
+                "description": "Constrains every click: the center, the start point and the end point. With fromLastPoint the start point is measured from the center (type Distance fixes the radius, type Angle the direction of the start point) and the end point from the start point. Default: no constraint."
             }
         },
         "additionalProperties": false
@@ -3153,7 +3303,28 @@ GS::ObjectState GetArcFromUserCommand::Execute (const GS::ObjectState& parameter
     API_GetPointType pointInfo = {};
     CHTruncate (centerPromptStr.ToCStr ().Get (), pointInfo.prompt, sizeof (pointInfo.prompt));
 
-    GSErrCode err = ACAPI_UserInput_GetPoint (&pointInfo);
+    GS::UniString snapFilterError;
+    GSErrCode err = ReadSnapFilter (parameters, pointInfo.changeFilter, pointInfo.filter, snapFilterError);
+    if (err != NoError) {
+        return CreateErrorResponse (err, snapFilterError);
+    }
+
+    bool hasConstraint = false;
+    API_ConstraintPars constraintPars = {};
+    GS::UniString constraintError;
+    err = ReadInputConstraint (parameters, hasConstraint, constraintPars, constraintError);
+    if (err != NoError) {
+        return CreateErrorResponse (err, constraintError);
+    }
+
+    // The constraint applies to every click, so it is set before each input.
+    InputConstraintScope constraintScope (hasConstraint, constraintPars);
+    err = constraintScope.Set ();
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to set the constraint.");
+    }
+
+    err = ACAPI_UserInput_GetPoint (&pointInfo);
     if (err == APIERR_CANCEL) {
         return GS::ObjectState ("cancelled", true);
     }
@@ -3168,6 +3339,13 @@ GS::ObjectState GetArcFromUserCommand::Execute (const GS::ObjectState& parameter
     API_GetLineType lineInfo = {};
     lineInfo.startCoord = pointInfo.pos;
     CHTruncate (startPromptStr.ToCStr ().Get (), lineInfo.prompt, sizeof (lineInfo.prompt));
+    lineInfo.changeFilter = pointInfo.changeFilter;
+    std::memcpy (lineInfo.filter, pointInfo.filter, sizeof (lineInfo.filter));
+
+    err = constraintScope.Set ();
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to set the constraint.");
+    }
 
     err = showRubberArcFeedback
         ? ACAPI_UserInput_GetLine (&lineInfo, RubberArcCallBack)
@@ -3194,6 +3372,12 @@ GS::ObjectState GetArcFromUserCommand::Execute (const GS::ObjectState& parameter
     arcInfo.startCoord = lineInfo.pos;
     arcInfo.startCoordGiven = true;
     CHTruncate (endPromptStr.ToCStr ().Get (), arcInfo.prompt, sizeof (arcInfo.prompt));
+
+    // API_GetArcType has no snap filter, so only the constraint applies to the end point.
+    err = constraintScope.Set ();
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to set the constraint.");
+    }
 
     err = showRubberArcFeedback
         ? ACAPI_UserInput_GetArc (&arcInfo, RubberArcCallBack)

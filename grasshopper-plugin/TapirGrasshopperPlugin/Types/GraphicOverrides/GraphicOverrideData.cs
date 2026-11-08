@@ -245,6 +245,10 @@ namespace TapirGrasshopperPlugin.Types.GraphicOverrides
         public List<string> Styles = new List<string>();
         public List<string> ErrorMessages = new List<string>();
 
+        // The structured criterion as JSON, given only with includeCriterion;
+        // set by the components as their last output.
+        public List<string> Criteria = new List<string>();
+
         public void Add(
             JToken rule)
         {
@@ -255,6 +259,7 @@ namespace TapirGrasshopperPlugin.Types.GraphicOverrides
                 RuleGroupNames.Add(null);
                 CriterionXMLs.Add(null);
                 Styles.Add(null);
+                Criteria.Add(null);
                 ErrorMessages.Add(JsonOutputHelp.ErrorMessage(rule));
                 return;
             }
@@ -264,6 +269,7 @@ namespace TapirGrasshopperPlugin.Types.GraphicOverrides
             RuleGroupNames.Add(rule?["ruleGroupName"]?.ToString());
             CriterionXMLs.Add(rule?["criterionXML"]?.ToString());
             Styles.Add(rule?["style"]?.ToString(Formatting.None));
+            Criteria.Add(rule?["criterion"]?.ToString(Formatting.None));
             ErrorMessages.Add("");
         }
 

@@ -1,9 +1,9 @@
 /* 日本語: the API limits page (limits/index.html). The Evidence column (headers and function names)
    stays English. See ../README.md. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'What the Archicad API can\'t do - Tapir': 'Archicad API にできないこと - Tapir',
-    'What people ask Tapir for that Graphisoft\'s Archicad API does not offer: undo, the clipboard, File > Merge, Interactive Schedule rows and more, each with the workaround and the DevKit evidence.':
-        'Tapir に求められているのに Graphisoft の Archicad API が提供していないもの：元に戻す、クリップボード、File > Merge、Interactive Schedule の行など。それぞれに代わりの方法と DevKit での根拠を示します。',
+    'What the Archicad API can\'t do | Tapir': 'Archicad API にできないこと | Tapir',
+    'What people ask for that Graphisoft\'s Archicad API does not offer, such as undo or the clipboard, each with what to do instead and the DevKit evidence.':
+        '求められているのに Graphisoft の Archicad API が提供していないもの（元に戻す、クリップボードなど）を、代わりにできることと DevKit での根拠とともにまとめています。',
     '<a href="../">Tapir</a> / <a href="../docs/">Docs</a> / API limits': '<a href="../">Tapir</a> / <a href="../docs/">ドキュメント</a> / API の限界',
     'What the Archicad API <em>can\'t do.</em>': 'Archicad API に<em>できないこと。</em>',
     'Tapir uses the Archicad API that Graphisoft publishes for add-ons, and covers all of it that can be a JSON command. What that API does not offer, Tapir cannot offer either. This page lists what people ask for that is not in it, with what to do instead.':
@@ -30,6 +30,10 @@
     'A camera with a name of its own, or an axonometric camera': '独自の名前を持つカメラ、またはアクソメのカメラ',
     'Name the Camera Set the camera is in. For an axonometric view, set the 3D window with <a href="../archicad-addon/#Set3DProjectionSettings">Set3DProjectionSettings</a>.':
         'カメラが入っている Camera Set に名前を付けてください。アクソメのビューには、<a href="../archicad-addon/#Set3DProjectionSettings">Set3DProjectionSettings</a> で 3D ウィンドウを設定します。',
+    'Remove one direction of a trim between two roofs or shells that trim each other':
+        '互いにトリムし合う 2 つの屋根またはシェルの間のトリムを、片方向だけ削除する',
+    'Remove the trim with <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a>, which removes both directions, then trim the other direction again with <a href="../archicad-addon/#TrimElements">TrimElements</a>.':
+        '<a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a> でトリムを削除し（両方向が削除されます）、もう一方の方向を <a href="../archicad-addon/#TrimElements">TrimElements</a> で再びトリムしてください。',
 
     // Navigator and views
     'Navigator and views': 'ナビゲータとビュー',

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en" data-copy="Copy" data-copied="Copied">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n>Batch rename views in Archicad | Tapir</title>
+<meta name="description" data-i18n-attrs="content" content="Rename the views of the Archicad View Map in one go with a Tapir script: find and replace, a prefix and a suffix, or a pattern with a counter, checked first.">
+<link rel="canonical" href="https://archicad-api.com/tutorials/batch-rename-views/">
+<!-- link-preview: the preview of a link to this page shared on Discord, WhatsApp and the like -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tapir">
+<meta property="og:title" content="Batch rename views in Archicad | Tapir">
+<meta property="og:description" content="Rename the views of the Archicad View Map in one go with a Tapir script: find and replace, a prefix and a suffix, or a pattern with a counter, checked first.">
+<meta property="og:url" content="https://archicad-api.com/tutorials/batch-rename-views/">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Tapir", "item": "https://archicad-api.com/"},
+        {"@type": "ListItem", "position": 2, "name": "Tutorials", "item": "https://archicad-api.com/tutorials/"},
+        {"@type": "ListItem", "position": 3, "name": "Batch rename views in Archicad", "item": "https://archicad-api.com/tutorials/batch-rename-views/"}
+    ]
+}
+</script>
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Batch rename views in Archicad",
+    "description": "Rename the views of the Archicad View Map in one go with a Tapir script: find and replace, a prefix and a suffix, or a pattern with a counter, checked first.",
+    "url": "https://archicad-api.com/tutorials/batch-rename-views/",
+    "inLanguage": "en",
+    "isPartOf": {"@type": "WebSite", "name": "Tapir", "url": "https://archicad-api.com/"},
+    "publisher": {"@type": "Organization", "name": "Enzyme APD", "url": "https://archicad-api.com/"},
+    "about": {"@type": "SoftwareApplication", "name": "Tapir", "applicationCategory": "DesignApplication"}
+}
+</script>
+<!-- site-assets -->
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#2D3A30" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#2D3A30">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
+<script>try { var l = /[?&]lang=([A-Za-z]{2})(?:[&#]|$)/.exec (location.search); l = l ? l[1].toLowerCase () : localStorage.getItem ('tapir-lang') || (navigator.language || '').slice (0, 2).toLowerCase (); if (l && l !== 'en') { document.documentElement.setAttribute ('data-i18n-loading', ''); setTimeout (function () { document.documentElement.removeAttribute ('data-i18n-loading'); }, 2000); } } catch (e) {}</script>
+<script src="../../assets/site.js" defer></script>
+<link rel="stylesheet" href="../../assets/motion.css"><script src="../../assets/motion.js" defer></script>
+<script>try { if ((!sessionStorage.getItem ('tapir-splash') || /[?&]splash/.test (location.search)) && !/nomotion/.test (location.search + location.hash) && 'IntersectionObserver' in window && !matchMedia ('(prefers-reduced-motion: reduce)').matches) { var h = document.documentElement; h.classList.add ('m-splash'); var f = function () { h.classList.add ('m-font'); }; setTimeout (f, 2500); if (document.fonts && document.fonts.load) document.fonts.load ('900 56px Fraunces').then (f, f); else f (); } } catch (e) {}</script>
+<!-- /site-assets -->
+</head>
+<body>
+<!-- site-header -->
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+    <div class="wrap nav">
+        <a class="brand" href="../../"><img src="../../assets/tapir_mark_cream.svg" alt="" width="30" height="30">Tapir</a>
+        <nav class="site-nav" aria-label="Site"><ul>
+            <li><a href="../../start/">Get started</a></li>
+            <li><a href="../../docs/">Docs</a></li>
+            <li><a href="../../scripts/">Scripts</a></li>
+            <li><a href="../../scripts/share/">Share</a></li>
+            <li><a href="../../community/" aria-current="true">Community</a></li>
+            <li><a href="../../about/">About</a></li>
+        </ul></nav>
+        <div class="right">
+            <button class="toggle" id="theme-toggle" type="button" data-dark="Dark" data-light="Light" hidden><span class="toggle-word">Dark</span><span class="visually-hidden"> mode</span></button>
+            <a class="btn btn-primary btn-sm" href="../../start/#install">Download</a>
+        </div>
+    </div>
+</header>
+<!-- /site-header -->
+
+<main id="main">
+    <div class="page-head">
+        <div class="wrap">
+            <p class="crumb" data-i18n><a href="../../">Tapir</a> / <a href="../">Tutorials</a> / Batch rename views</p>
+            <h1 data-i18n>Batch rename views in <em>Archicad.</em></h1>
+            <p data-i18n>Bulk View Renamer, a script that comes with Tapir, renames the views of the View Map, or of one of its folders, in one go. You see every new name before anything is renamed.</p>
+        </div>
+    </div>
+
+    <div class="wrap page-body">
+        <section>
+            <ol class="timeline">
+                <li>
+                    <span class="n" aria-hidden="true">1</span>
+                    <div class="body">
+                        <h2 id="open" data-i18n>Open the script</h2>
+                        <p data-i18n>Install the Tapir Add-On with the Tapir Installer, as <a href="../../start/#install">Get started</a> shows, and start Archicad with a project open. Choose <em>Tapir Palette</em> from the <em>Tapir</em> menu.</p>
+                        <p data-i18n>Bulk View Renamer is a built-in script: pick <em>BulkViewRenamer</em> in the palette's list and click <em>Run Script</em>. It lists the views of the View Map with their folder, ID and name. It is also on the Scripts page as <a href="../../scripts/?s=bulk-view-renamer">Bulk View Renamer</a>.</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="n" aria-hidden="true">2</span>
+                    <div class="body">
+                        <h2 id="views" data-i18n>Choose the views</h2>
+                        <p data-i18n>In <em>Views in</em>, choose the whole View Map or one folder; its subfolders are included.</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="n" aria-hidden="true">3</span>
+                    <div class="body">
+                        <h2 id="rule" data-i18n>Choose how the names change</h2>
+                        <ul>
+                            <li data-i18n><em>Find and replace</em>: <em>Find</em> and <em>Replace with</em>, optionally with <em>Match case</em> and <em>Regular expression</em>.</li>
+                            <li data-i18n><em>Prefix and suffix</em>: <em>Add before</em> and <em>Add after</em>.</li>
+                            <li data-i18n><em>Pattern with counter</em>: a <em>Pattern</em> in which <code>{name}</code> is the current name, <code>{id}</code> the view's ID and <code>{n}</code> the counter, with its <em>Start</em>, <em>Step</em> and <em>Digits</em>. The counter counts in View Map order. With the first settings, pattern <code>{name} {n}</code>, start 1 and 2 digits, a first view named <em>Ground Floor</em> becomes <em>Ground Floor 01</em>.</li>
+                        </ul>
+                    </div>
+                </li>
+                <li>
+                    <span class="n" aria-hidden="true">4</span>
+                    <div class="body">
+                        <h2 id="check" data-i18n>Check the new names</h2>
+                        <p data-i18n>The table shows the new names. A <em>clash</em> is a view that would get the same name as another view in its folder; an empty new name is skipped. Select rows to rename only those; <em>Clear selection</em> renames every listed view again.</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="n" aria-hidden="true">5</span>
+                    <div class="body">
+                        <h2 id="rename" data-i18n>Rename</h2>
+                        <p data-i18n>Press <em>Rename...</em>: the script lists the changes and asks first, then renames the views one at a time and reads the View Map again. Views that could not be renamed are named in the palette's output. Only the names change, not the view IDs or the views' settings.</p>
+                    </div>
+                </li>
+            </ol>
+        </section>
+
+        <section aria-labelledby="commands">
+            <div class="sec-head">
+                <h2 id="commands" data-i18n>The commands <em>behind it.</em></h2>
+            </div>
+            <p data-i18n>The script reads the View Map with Archicad's own <code>API.GetNavigatorItemTree</code> command and renames each view with the Tapir command <a href="../../archicad-addon/#RenameNavigatorItem"><code>RenameNavigatorItem</code></a>. Its code is <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/BulkViewRenamer.py"><code>builtin-scripts/BulkViewRenamer.py</code></a>. It works in Archicad 25 to 30 with Tapir 1.8.0 or later.</p>
+        </section>
+
+        <div class="dim" aria-hidden="true"><i></i><span data-i18n>Next tutorial</span><i></i></div>
+        <section>
+            <div class="teasers">
+                <a class="teaser dark" href="../number-doors-and-windows-by-zone/">
+                    <span class="tagline" data-i18n>Elements</span>
+                    <h3 data-i18n>Number doors and windows by room in Archicad</h3>
+                    <p data-i18n>Element IDs such as 1.04-D1, from the zone each door or window opens into.</p>
+                    <span class="go" data-i18n>Read it</span>
+                </a>
+                <a class="teaser" href="../">
+                    <span class="tagline" data-i18n>Tutorials</span>
+                    <h3 data-i18n>All tutorials</h3>
+                    <p data-i18n>The written tutorials and the videos.</p>
+                    <span class="go" data-i18n>See them all</span>
+                </a>
+                <a class="teaser" href="https://discord.gg/NAnSennmpY">
+                    <span class="tagline" data-i18n>Stuck?</span>
+                    <h3 data-i18n>Ask on Discord</h3>
+                    <p data-i18n>Architects, developers and the maintainers answer there. Or open an issue on GitHub.</p>
+                    <span class="go" data-i18n>Join Discord</span>
+                </a>
+            </div>
+        </section>
+    </div>
+</main>
+
+<!-- site-footer -->
+<footer class="site-footer">
+    <div class="wrap">
+        <div class="tblock">
+            <div>
+                <span class="lab">Project</span>
+                <span class="proj">Tapir</span>
+                <p class="note">Open-source automation for Archicad. 100% free and open source (MIT). Maintained by Enzyme APD and the community.</p>
+                <p class="note">Contact: <span class="nowrap">tapir@weareenzyme.com</span></p>
+            </div>
+            <div>
+                <span class="lab">Product</span>
+                <ul>
+                    <li><a href="../../start/">Get started</a></li>
+                    <li><a href="../../scripts/">Scripts</a></li>
+                    <li><a href="../../scripts/share/">Share a script</a></li>
+                    <li><a href="../../grasshopper/">Grasshopper</a></li>
+                    <li><a href="../../ai/">Tapir and AI</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Docs</span>
+                <ul>
+                    <li><a href="../../docs/">All docs</a></li>
+                    <li><a href="../../archicad-addon/">Commands</a></li>
+                    <li><a href="../../api-coverage/">API coverage</a></li>
+                    <li><a href="../../gh-coverage/">Grasshopper coverage</a></li>
+                    <li><a href="../../limits/">API limits</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Community</span>
+                <ul>
+                    <li><a href="https://discord.gg/NAnSennmpY">Discord</a></li>
+                    <li><a href="https://github.com/ENZYME-APD/tapir-archicad-automation">GitHub</a></li>
+                    <li><a href="../../tutorials/">Tutorials</a></li>
+                    <li><a href="../../community/#bots">How fixes happen</a></li>
+                    <li><a href="../../roadmap/">Roadmap</a></li>
+                    <li><a href="../../about/">About Tapir</a></li>
+                </ul>
+            </div>
+            <div>
+                <div class="rev" data-live="release" hidden>
+                    <span class="lab">Revision</span>
+                    <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest" data-live-value="release"></a>
+                </div>
+                <span class="lab">Licence</span>
+                <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/LICENSE">MIT</a>
+            </div>
+        </div>
+        <p class="fine">Not affiliated with Graphisoft. Archicad is a trademark of Graphisoft SE.</p>
+    </div>
+</footer>
+<!-- /site-footer -->
+</body>
+</html>

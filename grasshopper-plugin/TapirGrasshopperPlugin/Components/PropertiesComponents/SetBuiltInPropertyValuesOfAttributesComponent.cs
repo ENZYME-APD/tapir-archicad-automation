@@ -11,8 +11,10 @@ using TapirGrasshopperPlugin.Types.Properties;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
+    // Sends one SetBuiltInPropertyValuesOfAttributes request for every branch
+    // of the inputs, so a tree input makes one undo step in Archicad (#203).
     public class SetBuiltInPropertyValuesOfAttributesComponent
-        : ArchicadExecutorComponent
+        : BatchedExecutorComponent<AttributePropertyValueObj>
     {
         public override string CommandName =>
             "SetBuiltInPropertyValuesOfAttributes";
@@ -49,35 +51,38 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 "Error message of each property value (empty when it succeeded).");
         }
 
-        protected override void Solve(
-            IGH_DataAccess da)
+        protected override bool TryGetBatchItems(
+            IGH_DataAccess da,
+            out List<AttributePropertyValueObj> items)
         {
+            items = null;
+
             if (!da.TryGetList(
                     0,
                     out List<GH_ObjectWrapper> attributeWrappers))
             {
-                return;
+                return false;
             }
 
             if (!da.TryGetList(
                     1,
                     out List<GH_ObjectWrapper> propertyWrappers))
             {
-                return;
+                return false;
             }
 
             if (!da.TryGetList(
                     2,
                     out List<string> values))
             {
-                return;
+                return false;
             }
 
             if (attributeWrappers.Count == 0 ||
                 propertyWrappers.Count == 0 ||
                 values.Count == 0)
             {
-                return;
+                return false;
             }
 
             // The longest list gives the number of values.
@@ -101,15 +106,10 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                     ("PropertyGuids", propertyWrappers.Count),
                     ("Values", values.Count)))
             {
-                return;
+                return false;
             }
 
-            // The values of one attribute go into one item, so they are
-            // written together. The results come attribute by attribute; the
-            // row of each is kept to hand the messages out in the input order.
-            var attributeItems = new Dictionary<string, JArray>();
-            var attributeRows = new Dictionary<string, List<int>>();
-            var attributeOrder = new List<string>();
+            var branchItems = new List<AttributePropertyValueObj>();
 
             for (var i = 0; i < count; i++)
             {
@@ -118,7 +118,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 if (attributeId == null)
                 {
                     this.AddError("Invalid attribute identifier in the AttributeGuids input.");
-                    return;
+                    return false;
                 }
 
                 var propertyId = GuidObject<PropertyGuidObject>.CreateFromWrapper(
@@ -126,63 +126,70 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 if (propertyId == null)
                 {
                     this.AddError("Invalid property identifier in the PropertyGuids input.");
-                    return;
+                    return false;
                 }
 
-                var key = attributeId.Guid.ToLowerInvariant();
-                if (!attributeItems.ContainsKey(key))
-                {
-                    attributeItems[key] = new JArray();
-                    attributeRows[key] = new List<int>();
-                    attributeOrder.Add(key);
-                }
-
-                attributeItems[key].Add(
-                    new JObject
+                branchItems.Add(
+                    new AttributePropertyValueObj
                     {
-                        ["propertyId"] = new JObject { ["guid"] = propertyId.Guid },
-                        ["propertyValue"] = new JObject { ["value"] = values.At(i) }
+                        AttributeId = attributeId,
+                        PropertyId = propertyId,
+                        PropertyValue = new PropertyValueObj
+                        {
+                            Value = values.At(i)
+                        }
                     });
-                attributeRows[key].Add(i);
             }
 
+            items = branchItems;
+            return true;
+        }
+
+        // The command refuses a property given twice for one attribute; the
+        // branches used to be sent one after the other, so the last value won.
+        protected override string GetBatchItemKey(
+            AttributePropertyValueObj item)
+        {
+            return $"{item.AttributeId?.Guid?.ToLowerInvariant()}|" +
+                   $"{item.PropertyId?.Guid?.ToLowerInvariant()}";
+        }
+
+        // The values that follow each other on the same attribute go into one
+        // entry, so they are written together. The command answers entry by
+        // entry, so the results stay in the order of the items; an attribute
+        // given again later gets an entry of its own, written in the same
+        // undo step.
+        protected override object CreateBatchParameters(
+            List<AttributePropertyValueObj> items)
+        {
             var attributes = new JArray();
-            var rows = new List<int>();
-            foreach (var key in attributeOrder)
+            string lastKey = null;
+            JObject entry = null;
+
+            foreach (var item in items)
             {
-                attributes.Add(
+                var key = item.AttributeId.Guid.ToLowerInvariant();
+                if (entry == null || key != lastKey)
+                {
+                    entry = new JObject
+                    {
+                        ["attributeId"] = new JObject { ["guid"] = item.AttributeId.Guid },
+                        ["properties"] = new JArray()
+                    };
+                    attributes.Add(entry);
+                    entry = (JObject)attributes.Last;
+                    lastKey = key;
+                }
+
+                ((JArray)entry["properties"]).Add(
                     new JObject
                     {
-                        ["attributeId"] = new JObject { ["guid"] = key },
-                        ["properties"] = attributeItems[key]
+                        ["propertyId"] = new JObject { ["guid"] = item.PropertyId.Guid },
+                        ["propertyValue"] = new JObject { ["value"] = item.PropertyValue.Value }
                     });
-                rows.AddRange(attributeRows[key]);
             }
 
-            if (!TryGetCadResponse(
-                    CommandName,
-                    new JObject { ["attributes"] = attributes },
-                    ToAddOn,
-                    out JObject response))
-            {
-                return;
-            }
-
-            var resultMessages = ExecutionResultsResponse.ErrorMessages(response);
-            var errorMessages = new List<string>();
-            for (var i = 0; i < count; i++)
-            {
-                errorMessages.Add("");
-            }
-
-            for (var k = 0; k < resultMessages.Count && k < rows.Count; k++)
-            {
-                errorMessages[rows[k]] = resultMessages[k];
-            }
-
-            da.SetDataList(
-                0,
-                errorMessages);
+            return new JObject { ["attributes"] = attributes };
         }
 
         protected override System.Drawing.Bitmap Icon =>

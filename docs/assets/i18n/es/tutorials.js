@@ -1,7 +1,7 @@
 /* Español: the Tutorials page (tutorials/index.html). See ../README.md.
    The videos themselves are in English; the page says so. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Tutorials - Tapir': 'Tutoriales - Tapir',
+    'Archicad automation tutorials | Tapir': 'Tutoriales de automatización de Archicad | Tapir',
     'Videos that show Tapir at work in Archicad and Grasshopper: installing it, selecting elements, columns, Grasshopper, spreadsheet sync and filtering.':
         'Vídeos que muestran Tapir en acción en Archicad y Grasshopper: instalación, selección de elementos, pilares, Grasshopper, sincronización con hojas de cálculo y filtrado.',
     '<a href="../">Tapir</a> / <a href="../community/">Community</a> / Tutorials':

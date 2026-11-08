@@ -11,6 +11,7 @@
 #include "ResourceIds.hpp"
 
 #include <atomic>
+#include <memory>
 #include <mutex>
 #include <utility>
 #include <vector>
@@ -52,8 +53,9 @@ public:
 
     static GSErrCode RegisterPaletteControlCallBack ();
 
-    // Called from FreeData: kills a script that is still running and waits for its output reader thread, so that
-    // the thread does not outlive the add-on (Archicad crashed on quit while a palette script was running).
+    // Called from FreeData: kills every script that is still running, with the processes it started, and waits for
+    // their output reader threads, so that no thread outlives the add-on (Archicad crashed on quit while a palette
+    // script was running).
     static void StopRunningScriptOnQuit ();
 
 private:
@@ -63,9 +65,9 @@ private:
         const GS::UniString repoRelLoc;
         const Config::Repository* repo = nullptr;
         GS::UniString sourceName;        // shown after the file name for scripts from a configured local folder; empty for repository and user-added scripts
-        GS::UniString baseDisplayText;   // label as computed by AddScriptToPopUp, before any shortcut-slot suffix
+        GS::UniString baseDisplayText;   // label as computed by PrepareScript, before any shortcut-slot suffix
         GS::UniString uvProjectPath;     // the folder of the uv project (uvProject in the config) the script runs in; empty: run it with --script
-        ScriptInfo info;                 // the script's docstring summary and `# /// tapir` header, read by AddScriptToPopUp
+        ScriptInfo info;                 // the script's docstring summary and `# /// tapir` header, read by PrepareScript
 
         explicit PopUpItemData (
             const IO::Location& _fileLocation,
@@ -84,12 +86,34 @@ private:
     DG::LeftText   installedVersionText;
     DG::Button     checkForUpdatesButton;
 
-    GS::Process process;
-    GS::UniString runningCommand;   // the command process was started with, to find the process among the child processes of Archicad
-    GS::Array<GS::UInt64> childProcessIdsBeforeStart;   // the child processes of Archicad that ran before process was started, so are not it
-    GS::ThreadedExecutor executor;
-    bool hasCustomScript = false;
-    bool hasAddedScript = false;
+    // A script started by the palette, until it ended or was stopped. Any number of scripts run at the same time,
+    // but a script at most once: Run, and its shortcut slot, stop it while it runs (issue #1819).
+    struct RunningScript
+    {
+        IO::Location fileLocation;   // the script, as in the script list
+        GS::UniString scriptName;    // its file name, which starts each of its lines in the Report window
+        GS::UniString scriptId;      // its TAPIR_SCRIPT_ID
+        GS::Process process;
+        // The process this Archicad started for the script, found among its child processes just after the start
+        // (the palette gives no process id). Stop ends it together with its descendants.
+        bool startedProcessFound = false;
+        GS::UInt64 startedProcessId = 0;
+        GS::UInt64 startedProcessStartTime = 0;
+        std::atomic<bool> ended { false };   // set by the output reader once the process ended and its output is read
+        GS::ThreadedExecutor executor;       // runs the output reader of this script
+    };
+
+    std::vector<std::unique_ptr<RunningScript>> runningScripts;   // touched on the main thread only
+    GS::UInt32 startedScriptCount = 0;   // numbers the TAPIR_SCRIPT_ID of each started script
+    // The script list. scriptSelectionPopUp only shows it (RebuildScriptPopUp), in this order: the scripts the user
+    // added, a separator when hasAddedScript, the scripts of the custom-scripts folder, a separator when
+    // hasCustomScript, the scripts of the local folders and repositories, a separator and "Reload scripts...".
+    using ScriptList = GS::Array<GS::Ref<PopUpItemData>>;
+    ScriptList addedScripts;    // added with the Add button, saved in the preferences; the newest first
+    ScriptList customScripts;   // Documents/Tapir/custom-scripts
+    ScriptList listedScripts;   // localFolders and repositories of the config
+    bool hasCustomScript = false;   // the custom-scripts section and its separator are shown
+    bool hasAddedScript = false;    // the added section and its separator are shown
     UvManager uvManager;
     IO::Location scriptShortcutSlots[ScriptShortcutSlotCount];    // empty = unassigned
     GS::UniString scriptShortcutLabels[ScriptShortcutSlotCount];  // empty = using the default menu text
@@ -97,12 +121,27 @@ private:
     void SetMenuItemCheckedState (bool);
     void ExecuteScript (const PopUpItemData& popUpItemData);   // every path that starts a script calls this
     bool ConfirmScriptRequirements (const PopUpItemData& popUpItemData);   // min-tapir-version and archicad-versions; false: do not run
-    void KillRunningProcess ();   // ends the running process together with the processes it started
-    bool AddScriptToPopUp (GS::Ref<PopUpItemData> popUpData, short index = DG::PopUp::TopItem);
+    // Ends the script's process together with the processes it started; reportNotFound: warn when they cannot
+    // be found.
+    void KillScript (RunningScript& script, bool reportNotFound);
+    RunningScript* FindRunningScript (const IO::Location& fileLocation) const;   // nullptr: the script does not run
+    bool IsScriptRunning (const IO::Location& fileLocation) const {
+        return FindRunningScript (fileLocation) != nullptr;
+    }
+    // Run, the Run button and the shortcut slots: stops the script when it runs, otherwise starts it.
+    void RunOrStopScript (const PopUpItemData& popUpItemData);
+    // Called on the main thread once the output reader of the script finished.
+    void RemoveEndedScript (const GS::UniString& scriptId);
+    bool PrepareScript (PopUpItemData& popUpData);   // sets its label and reads its info; false: the file cannot be listed
     void AddScriptsFromRepositories ();
     void AddScriptsFromLocalFolders ();
     void AddScriptsFromCustomScriptsFolder ();
     void LoadScriptsToPopUp ();
+    void RebuildScriptPopUp (short itemToSelect);   // fills scriptSelectionPopUp from the script list
+    GS::Ref<PopUpItemData> GetScriptOfPopUpItem (short item) const;   // nullptr for a separator and "Reload scripts..."
+    GS::Ref<PopUpItemData> GetSelectedScript () const;
+    ScriptList GetAllScripts () const;   // in the order of the dropdown
+    GS::UniString GetScriptLabel (const PopUpItemData& popUpData) const;   // the label with the "[Shortcut N]" suffix
     bool IsPopUpContainsFile (const IO::Location& fileLocation) const;
     void SaveScriptsToPreferences ();
     bool IsValidLocation (const IO::Location& location);
@@ -114,10 +153,6 @@ private:
     void RefreshScriptListShortcutLabels ();   // appends "  [Shortcut N]" to scripts assigned to a slot
     void ApplyShortcutMenuItemText (short slotIndex);   // pushes scriptShortcutLabels[slotIndex] to the real Archicad menu item
     void ApplyAllShortcutMenuItemTexts ();
-    bool IsProcessRunning () {
-        return process.IsValid ();
-    }
-
 
     template<typename... Args>
     void WriteReport (short type, const GS::UniString& format, Args&&... args);

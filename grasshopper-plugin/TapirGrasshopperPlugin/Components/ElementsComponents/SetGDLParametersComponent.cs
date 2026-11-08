@@ -9,7 +9,10 @@ using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class SetGDLParametersComponent : ArchicadExecutorComponent
+    // Sends one SetGDLParametersOfElements request for every branch of the
+    // inputs, so a tree input makes one undo step in Archicad (#203).
+    public class SetGDLParametersComponent
+        : BatchedExecutorComponent<ElementWithGDLParameters>
     {
         public override string CommandName => "SetGDLParametersOfElements";
         public string GetCommandName => "GetGDLParametersOfElements";
@@ -70,21 +73,51 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "null for the other elements and without DryRun.");
         }
 
-        protected override void Solve(
-            IGH_DataAccess da)
+        protected override int DryRunInputIndex => 3;
+
+        protected override int OldValuesOutputIndex => 1;
+
+        protected override int NewValuesOutputIndex => 2;
+
+        protected override bool TryGetBatchItems(
+            IGH_DataAccess da,
+            out List<ElementWithGDLParameters> items)
         {
+            items = null;
+
             if (!da.TryCreateFromList(
                     0,
                     out ElementsObject elements))
             {
-                return;
+                return false;
             }
 
             if (!da.TryGet(
                     1,
                     out string parameterName))
             {
-                return;
+                return false;
+            }
+
+            // The Value is tried as each type in turn and every failed
+            // conversion adds an error, so the messages are cleared after the
+            // tries; the messages of the earlier iterations are put back.
+            var earlierMessages =
+                new List<KeyValuePair<GH_RuntimeMessageLevel, string>>();
+            foreach (var level in new[]
+                     {
+                         GH_RuntimeMessageLevel.Error,
+                         GH_RuntimeMessageLevel.Warning,
+                         GH_RuntimeMessageLevel.Remark
+                     })
+            {
+                foreach (var message in RuntimeMessages(level))
+                {
+                    earlierMessages.Add(
+                        new KeyValuePair<GH_RuntimeMessageLevel, string>(
+                            level,
+                            message));
+                }
             }
 
             bool isString = false;
@@ -119,12 +152,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             {
                 isBool = true;
             }
-            else
-            {
-                this.AddError(
-                    $"Value input must be string, integer or a real number");
-            }
             this.ClearRuntimeMessages();
+            foreach (var message in earlierMessages)
+            {
+                AddRuntimeMessage(
+                    message.Key,
+                    message.Value);
+            }
 
             SetGdlParameterDetails setParametersInput = null;
             if (isString)
@@ -163,80 +197,64 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             {
                 this.AddError(
                     $"Value input must be string, integer, real number or a boolean");
-                return;
+                return false;
             }
 
-            var input = new ElementsWithGDLParametersInput
-            {
-                ElementsWithGDLParameters =
-                    new List<ElementWithGDLParameters>()
-            };
+            items = new List<ElementWithGDLParameters>();
 
             foreach (var element in elements.Elements)
             {
-                input.ElementsWithGDLParameters.Add(
+                items.Add(
                     new ElementWithGDLParameters()
                     {
                         ElementId = element.ElementId,
-                        GdlParameterList = new SetGdlParameterArray()
+                        GdlParameterList = new SetGdlParameterArray
+                        {
+                            setParametersInput
+                        }
                     });
-                input.ElementsWithGDLParameters.Last().
-                    GdlParameterList.Add(setParametersInput);
             }
 
-            var dryRun = da.GetOptional(
-                3,
-                false);
-            if (!dryRun)
+            return true;
+        }
+
+        // The branches used to be sent one after the other, so of a
+        // parameter given twice for an element the last value won. GDL
+        // parameter names are not case sensitive.
+        protected override string GetBatchItemKey(
+            ElementWithGDLParameters item)
+        {
+            return $"{item.ElementId?.Guid?.ToLowerInvariant()}|" +
+                   $"{item.GdlParameterList?.FirstOrDefault()?.Name?.ToLowerInvariant()}";
+        }
+
+        protected override object CreateBatchParameters(
+            List<ElementWithGDLParameters> items)
+        {
+            return new ElementsWithGDLParametersInput
             {
-                if (!TryGetConvertedCadValues(
-                        CommandName,
-                        input,
-                        ToAddOn,
-                        ExecutionResultsResponse.Deserialize,
-                        out ExecutionResultsResponse response))
-                {
-                    return;
-                }
+                ElementsWithGDLParameters = items
+            };
+        }
 
-                da.SetDataList(
-                    0,
-                    response.ExecutionResults.Select(x => x.Message()));
-                return;
-            }
+        // The ExecutionResults output says "Success." or the failure of each
+        // element, and a real run in which every element failed is an error.
+        protected override List<string> GetBatchErrorMessages(
+            JObject response,
+            bool dryRun)
+        {
+            var results = ExecutionResultsResponse.Deserialize(response).
+                ExecutionResults;
 
-            // Only sent when it differs from the command's default.
-            var parameters = JObject.FromObject(input);
-            parameters["dryRun"] = true;
-
-            if (!TryGetCadResponse(
-                    CommandName,
-                    parameters,
-                    ToAddOn,
-                    out JObject dryRunResponse))
+            if (!dryRun &&
+                results.Count > 0 &&
+                results.All(x => !x.Success))
             {
-                return;
+                this.AddError(
+                    $"Failed executions, the first error message: {results.First().Message()}");
             }
 
-            // A dry run changes nothing, so its refusals are reported, not
-            // failed.
-            AddDryRunWarnings(
-                ExecutionResultsResponse.ErrorMessages(dryRunResponse));
-
-            da.SetDataList(
-                0,
-                ExecutionResultsResponse.Deserialize(dryRunResponse).
-                    ExecutionResults.Select(x => x.Message()));
-            da.SetDataList(
-                1,
-                ExecutionResultsResponse.WouldChangeValues(
-                    dryRunResponse,
-                    "oldValue"));
-            da.SetDataList(
-                2,
-                ExecutionResultsResponse.WouldChangeValues(
-                    dryRunResponse,
-                    "newValue"));
+            return results.Select(x => x.Message()).ToList();
         }
 
         protected override System.Drawing.Bitmap Icon =>

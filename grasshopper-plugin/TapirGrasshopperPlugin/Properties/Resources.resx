@@ -2334,4 +2334,55 @@
   <data name="GetUnusedLibraryParts" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetUnusedLibraryParts.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="GetArchicadLicenseInfo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetArchicadLicenseInfo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetMagicWandSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetMagicWandSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ShowNotificationBubble" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ShowNotificationBubble.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ResolveNames" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ResolveNames.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetLayerOfElementDefaults" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetLayerOfElementDefaults.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SetLayerOfElementDefaults" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetLayerOfElementDefaults.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="RenameAttributes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RenameAttributes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="OpenSettingsDialog" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\OpenSettingsDialog.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PickLibraryPart" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PickLibraryPart.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PickLibraryPartFile" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PickLibraryPartFile.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PickPictureFile" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PickPictureFile.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PickZoneStampOrLabelFile" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PickZoneStampOrLabelFile.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PickLibraryPartSaveLocation" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PickLibraryPartSaveLocation.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PickLibraryFolder" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PickLibraryFolder.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ShowIFCExportSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ShowIFCExportSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PickAttribute" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PickAttribute.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PickAttributeFolder" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PickAttributeFolder.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

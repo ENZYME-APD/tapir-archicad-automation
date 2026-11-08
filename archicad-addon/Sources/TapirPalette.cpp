@@ -16,11 +16,13 @@
 #include "AddOnVersion.hpp"
 #include "MigrationHelper.hpp"
 #include "ScriptRequirements.hpp"
+#include "ScriptUIPalette.hpp"
 
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <functional>
+#include <initializer_list>
 #include <map>
 #include <regex>
 #include <string>
@@ -521,14 +523,19 @@ void TapirPalette::StopRunningScriptOnQuit ()
     // The output reader checks this before it touches the process or posts anything to the message loop: a task
     // posted now would only run after the add-on has been unloaded.
     quitting = true;
+    // Every running script ends, with the processes it started; then each output reader is given up to 2 seconds.
     TapirPalette& palette = Instance ();
-    if (palette.IsProcessRunning ()) {
-        try {
-            palette.process.Kill ();
-        } catch (...) {
+    for (const std::unique_ptr<RunningScript>& script : palette.runningScripts) {
+        if (!script->ended) {
+            try {
+                palette.KillScript (*script, false);
+            } catch (...) {
+            }
         }
     }
-    palette.executor.Wait (GS::Timeout (0, 0, 2));
+    for (const std::unique_ptr<RunningScript>& script : palette.runningScripts) {
+        script->executor.Wait (GS::Timeout (0, 0, 2));
+    }
 
     // Output posted while Archicad was already closing is still queued, and the message loop does not run it any
     // more: Archicad would destroy those tasks after this add-on is unloaded and crash in their destructors. Keep
@@ -598,7 +605,9 @@ void TapirPalette::PanelCloseRequested (const DG::PanelCloseRequestEvent&, bool*
 
 void TapirPalette::PanelOpened (const DG::PanelOpenEvent&)
 {
+    const short selectedItemBefore = scriptSelectionPopUp.GetSelectedItem ();
     auto itemToSelect = AddScriptsFromPreferences ();
+    RebuildScriptPopUp (selectedItemBefore);
     if (itemToSelect <= 0 || scriptSelectionPopUp.IsSeparator (itemToSelect) || scriptSelectionPopUp.GetItemCount () - 1 <= itemToSelect) {
         itemToSelect = scriptSelectionPopUp.GetSelectedItem ();
         if (scriptSelectionPopUp.IsSeparator (itemToSelect) || scriptSelectionPopUp.GetItemCount () - 1 <= itemToSelect) {
@@ -607,6 +616,7 @@ void TapirPalette::PanelOpened (const DG::PanelOpenEvent&)
     }
     scriptSelectionPopUp.SelectItem (itemToSelect);
     RefreshScriptListShortcutLabels ();
+    SetRunButtonIcon ();
 }
 
 static void OpenWebpage (const GS::UniString& webpage)
@@ -643,25 +653,17 @@ static void OpenFileInExplorer (const IO::Location& file)
 void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
 {
     if (ev.GetSource () == &runScriptButton) {
-        if (IsProcessRunning ()) {
-            KillRunningProcess ();
-        } else {
-            if (isUpdatingAddOn) {
-                return;
-            }
-            if (Config::Instance().AskUpdatingAddOnBeforeEachExecution () && UpdateAddOn ()) {
-                return;
-            }
-
-            GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (scriptSelectionPopUp.GetSelectedItem ()));
-            if (popUpItemData != nullptr) {
-                ExecuteScript (*popUpItemData);
-            }
+        GS::Ref<PopUpItemData> popUpItemData = GetSelectedScript ();
+        if (popUpItemData != nullptr) {
+            RunOrStopScript (*popUpItemData);
         }
     } else if (ev.GetSource () == &tapirButton) {
         OpenWebpage ("https://github.com/ENZYME-APD/tapir-archicad-automation");
     } else if (ev.GetSource () == &openScriptButton) {
-        GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (scriptSelectionPopUp.GetSelectedItem ()));
+        GS::Ref<PopUpItemData> popUpItemData = GetSelectedScript ();
+        if (popUpItemData == nullptr) {
+            return;
+        }
         if (popUpItemData->repoRelLoc.IsEmpty ()) {
             OpenFileInExplorer (popUpItemData->fileLocation);
         } else {
@@ -680,17 +682,90 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
 
 bool TapirPalette::IsPopUpContainsFile (const IO::Location& fileLocation) const
 {
-    for (short i = 1; i <= scriptSelectionPopUp.GetItemCount () - 1; ++i) {
-        if (scriptSelectionPopUp.IsSeparator (i)) {
-            continue;
-        }
-
-        GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (i));
-        if (popUpItemData != nullptr && popUpItemData->fileLocation == fileLocation) {
+    for (const GS::Ref<PopUpItemData>& popUpItemData : GetAllScripts ()) {
+        if (popUpItemData->fileLocation == fileLocation) {
             return true;
         }
     }
     return false;
+}
+
+TapirPalette::ScriptList TapirPalette::GetAllScripts () const
+{
+    ScriptList scripts;
+    for (const ScriptList* list : { &addedScripts, &customScripts, &listedScripts }) {
+        for (const GS::Ref<PopUpItemData>& popUpItemData : *list) {
+            scripts.Push (popUpItemData);
+        }
+    }
+    return scripts;
+}
+
+// The dropdown's sections, as RebuildScriptPopUp fills them: each list followed by its separator when shown.
+GS::Ref<TapirPalette::PopUpItemData> TapirPalette::GetScriptOfPopUpItem (short item) const
+{
+    const std::pair<const ScriptList*, bool> sections[] = {
+        { &addedScripts, hasAddedScript },
+        { &customScripts, hasCustomScript },
+        { &listedScripts, true }
+    };
+    Int32 firstItem = DG::PopUp::TopItem;
+    for (const auto& section : sections) {
+        const Int32 size = static_cast<Int32> (section.first->GetSize ());
+        if (item >= firstItem && item < firstItem + size) {
+            return (*section.first)[static_cast<UIndex> (item - firstItem)];
+        }
+        firstItem += size + (section.second ? 1 : 0);
+    }
+    return GS::Ref<PopUpItemData> ();
+}
+
+GS::Ref<TapirPalette::PopUpItemData> TapirPalette::GetSelectedScript () const
+{
+    return GetScriptOfPopUpItem (scriptSelectionPopUp.GetSelectedItem ());
+}
+
+GS::UniString TapirPalette::GetScriptLabel (const PopUpItemData& popUpData) const
+{
+    GS::UniString label = popUpData.baseDisplayText;
+    for (short slot = 0; slot < ScriptShortcutSlotCount; ++slot) {
+        if (!scriptShortcutSlots[slot].IsEmpty () && scriptShortcutSlots[slot] == popUpData.fileLocation) {
+            label += "   " + GS::UniString::Printf (PaletteText (ID_PALETTE_STRINGS_SHORTCUT_SUFFIX), (int) (slot + 1));
+            break;
+        }
+    }
+    return label;
+}
+
+void TapirPalette::RebuildScriptPopUp (short itemToSelect)
+{
+    scriptSelectionPopUp.DeleteItem (DG_ALL_ITEMS);
+
+    const auto appendScripts = [this] (const ScriptList& scripts) {
+        for (const GS::Ref<PopUpItemData>& popUpItemData : scripts) {
+            scriptSelectionPopUp.AppendItem ();
+            scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, GetScriptLabel (*popUpItemData));
+        }
+    };
+    appendScripts (addedScripts);
+    if (hasAddedScript) {
+        scriptSelectionPopUp.AppendSeparator ();
+    }
+    appendScripts (customScripts);
+    if (hasCustomScript) {
+        scriptSelectionPopUp.AppendSeparator ();
+    }
+    appendScripts (listedScripts);
+
+    scriptSelectionPopUp.AppendSeparator ();
+    scriptSelectionPopUp.AppendItem ();
+    scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, PaletteText (ID_PALETTE_STRINGS_RELOAD_SCRIPTS));
+
+    if (itemToSelect <= 0 || scriptSelectionPopUp.IsSeparator (itemToSelect) || scriptSelectionPopUp.GetItemCount () - 1 <= itemToSelect) {
+        itemToSelect = DG::PopUp::TopItem;
+    }
+    scriptSelectionPopUp.SelectItem (itemToSelect);
+    SetRunButtonIcon ();   // the selected script may have changed
 }
 
 void TapirPalette::PopUpChanged (const DG::PopUpChangeEvent& ev)
@@ -711,6 +786,7 @@ void TapirPalette::PopUpChanged (const DG::PopUpChangeEvent& ev)
 
         SaveScriptsToPreferences ();
         SetDeleteScriptButtonStatus ();
+        SetRunButtonIcon ();   // Stop when the newly selected script runs
     }
 }
 
@@ -842,22 +918,18 @@ bool TapirPalette::ConfirmScriptRequirements (const PopUpItemData& popUpItemData
     return true;
 }
 
-// The selected script's summary and badge, on the script list and on the Run button (while no script runs, when
-// the button is Stop).
+// The selected script's summary and badge, on the script list and on the Run button (while the selected script
+// does not run, when the button is Stop).
 void TapirPalette::ItemToolTipRequested (const DG::ItemHelpEvent& ev, GS::UniString* toolTipText)
 {
     const bool isPopUp = ev.GetSource () == &scriptSelectionPopUp;
     const bool isRunButton = ev.GetSource () == &runScriptButton;
-    if (toolTipText == nullptr || !(isPopUp || isRunButton) || (isRunButton && IsProcessRunning ())) {
+    if (toolTipText == nullptr || !(isPopUp || isRunButton)) {
         return;
     }
 
-    const short selectedItem = scriptSelectionPopUp.GetSelectedItem ();
-    if (selectedItem <= 0 || scriptSelectionPopUp.IsSeparator (selectedItem)) {
-        return;
-    }
-    GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (selectedItem));
-    if (popUpItemData == nullptr) {
+    GS::Ref<PopUpItemData> popUpItemData = GetSelectedScript ();
+    if (popUpItemData == nullptr || (isRunButton && IsScriptRunning (popUpItemData->fileLocation))) {
         return;
     }
 
@@ -881,42 +953,30 @@ void TapirPalette::RunShortcutSlot (short slotIndex)
         WriteReport (DG_ERROR, PaletteText (ID_PALETTE_STRINGS_SLOT_EMPTY), (int) (slotIndex + 1));
         return;
     }
-    if (IsProcessRunning ()) {
-        WriteReport (DG_ERROR, PaletteText (ID_PALETTE_STRINGS_SLOT_SCRIPT_RUNNING));
-        return;
-    }
-    if (isUpdatingAddOn) {
-        return;
-    }
-    if (Config::Instance ().AskUpdatingAddOnBeforeEachExecution () && UpdateAddOn ()) {
-        return;
-    }
 
-    for (short i = 1; i <= scriptSelectionPopUp.GetItemCount () - 1; ++i) {
-        if (scriptSelectionPopUp.IsSeparator (i)) {
-            continue;
-        }
-        GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (i));
-        if (popUpItemData != nullptr && popUpItemData->fileLocation == scriptShortcutSlots[slotIndex]) {
-            ExecuteScript (*popUpItemData);
+    // Like the Run button: the slot stops its script while it runs, and other scripts may run meanwhile.
+    const ScriptList scripts = GetAllScripts ();
+    for (const GS::Ref<PopUpItemData>& popUpItemData : scripts) {
+        if (popUpItemData->fileLocation == scriptShortcutSlots[slotIndex]) {
+            RunOrStopScript (*popUpItemData);
             return;
         }
     }
+    RunningScript* runningScript = FindRunningScript (scriptShortcutSlots[slotIndex]);
+    if (runningScript != nullptr) {
+        // still running after the script list was reloaded without it
+        KillScript (*runningScript, true);
+        return;
+    }
     WriteReport (DG_ERROR, PaletteText (ID_PALETTE_STRINGS_SLOT_SCRIPT_NOT_FOUND),
-        (int) (slotIndex + 1), (int) (scriptSelectionPopUp.GetItemCount () - 1));
+        (int) (slotIndex + 1), (int) scripts.GetSize ());
 }
 
 void TapirPalette::GetAvailableScripts (GS::Array<std::pair<GS::UniString, IO::Location>>& outScripts)
 {
     outScripts.Clear ();
-    for (short i = 1; i <= scriptSelectionPopUp.GetItemCount () - 1; ++i) {
-        if (scriptSelectionPopUp.IsSeparator (i)) {
-            continue;
-        }
-        GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (i));
-        if (popUpItemData != nullptr) {
-            outScripts.Push ({ scriptSelectionPopUp.GetItemText (i), popUpItemData->fileLocation });
-        }
+    for (const GS::Ref<PopUpItemData>& popUpItemData : GetAllScripts ()) {
+        outScripts.Push ({ GetScriptLabel (*popUpItemData), popUpItemData->fileLocation });
     }
 }
 
@@ -975,21 +1035,10 @@ void TapirPalette::SetShortcutLabel (short slotIndex, const GS::UniString& label
 void TapirPalette::RefreshScriptListShortcutLabels ()
 {
     for (short i = 1; i <= scriptSelectionPopUp.GetItemCount () - 1; ++i) {
-        if (scriptSelectionPopUp.IsSeparator (i)) {
-            continue;
+        GS::Ref<PopUpItemData> popUpItemData = GetScriptOfPopUpItem (i);
+        if (popUpItemData != nullptr) {
+            scriptSelectionPopUp.SetItemText (i, GetScriptLabel (*popUpItemData));
         }
-        GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (i));
-        if (popUpItemData == nullptr) {
-            continue;
-        }
-        GS::UniString label = popUpItemData->baseDisplayText;
-        for (short slot = 0; slot < ScriptShortcutSlotCount; ++slot) {
-            if (!scriptShortcutSlots[slot].IsEmpty () && scriptShortcutSlots[slot] == popUpItemData->fileLocation) {
-                label += "   " + GS::UniString::Printf (PaletteText (ID_PALETTE_STRINGS_SHORTCUT_SUFFIX), (int) (slot + 1));
-                break;
-            }
-        }
-        scriptSelectionPopUp.SetItemText (i, label);
     }
 }
 
@@ -1233,11 +1282,13 @@ GSErrCode TapirPalette::RegisterPaletteControlCallBack ()
 // process(es) uv started kept running without a parent (issue #769): a script waiting for something, such as a
 // ShowScriptUI page, went on in the background, and a second run of it competed with it for the same Archicad.
 // So Stop ends the started process together with all of its descendants. GS::Process gives no process id: the
-// started process is found among the child processes of this Archicad that did not run before it was started,
-// by the file name of its executable, which is unambiguous because the palette runs one script at a time and the
-// Add-On waits for its other uv runs. A script that is not Python may run as its interpreter (a shell script as
-// bash, a .bat as cmd.exe), so when no file name matches, the first started of those child processes is taken.
-// A process id can be reused, so a process is taken as the child of another only when it started after it.
+// started process is found just after the start, among the child processes of this Archicad that did not run
+// before it was started and are not the started process of another running script, by the file name of its
+// executable. Scripts run at the same time (issue #1819), but they are started one after the other on the main
+// thread, and the Add-On waits for its other uv runs, so this is unambiguous. A script that is not Python may run
+// as its interpreter (a shell script as bash, a .bat as cmd.exe), so when no file name matches, the first started
+// of those child processes is taken. Stop then finds the process again by its id and start time. A process id
+// can be reused, so a process is taken as the child of another only when it started after it.
 
 #if defined (WINDOWS)
 using ProcessId = DWORD;
@@ -1417,9 +1468,11 @@ static GS::Array<GS::UInt64> ListChildProcessIds ()
     return childIds;
 }
 
-// The processes started by the process this Archicad started for the command, the processes those started, and
-// so on. Returns false when the started process is not found.
-static bool FindDescendantsOfStartedProcess (const GS::UniString& command, const GS::Array<GS::UInt64>& childIdsBeforeStart, GS::Array<ProcessId>& descendants)
+// The process this Archicad has just started for the command: a child process that did not run before it was
+// started (childIdsBeforeStart) and is not the started process of another running script (otherStartedIds).
+// Returns false when it is not found.
+static bool FindStartedProcess (const GS::UniString& command, const GS::Array<GS::UInt64>& childIdsBeforeStart,
+    const GS::Array<GS::UInt64>& otherStartedIds, ProcessInfo& result)
 {
     const GS::Array<ProcessInfo> processes = ListProcesses ();
     const GS::UniString executableName = GetExecutableName (command);
@@ -1432,7 +1485,8 @@ static bool FindDescendantsOfStartedProcess (const GS::UniString& command, const
     const ProcessInfo* startedProcess = nullptr;   // the most recently started one, should there be more
     const ProcessInfo* firstNewChild = nullptr;
     for (const ProcessInfo& process : processes) {
-        if (!IsChildOf (process, *thisProcess) || childIdsBeforeStart.Contains (static_cast<GS::UInt64> (process.id))) {
+        const GS::UInt64 id = static_cast<GS::UInt64> (process.id);
+        if (!IsChildOf (process, *thisProcess) || childIdsBeforeStart.Contains (id) || otherStartedIds.Contains (id)) {
             continue;
         }
         if (IsSameExecutableName (process.executableName, executableName) &&
@@ -1449,23 +1503,153 @@ static bool FindDescendantsOfStartedProcess (const GS::UniString& command, const
     if (startedProcess == nullptr) {
         return false;
     }
-    CollectDescendants (processes, *startedProcess, descendants);
+    result = *startedProcess;
     return true;
 }
 
-void TapirPalette::KillRunningProcess ()
+// The processes started by the given process (found by its id and start time, as the id may be reused), the
+// processes those started, and so on. Returns false when the process is not found.
+static bool FindDescendantsOfProcess (GS::UInt64 id, GS::UInt64 startTime, GS::Array<ProcessId>& descendants)
+{
+    const GS::Array<ProcessInfo> processes = ListProcesses ();
+    for (const ProcessInfo& process : processes) {
+        if (static_cast<GS::UInt64> (process.id) == id && process.startTime == startTime) {
+            CollectDescendants (processes, process, descendants);
+            return true;
+        }
+    }
+    return false;
+}
+
+void TapirPalette::KillScript (RunningScript& script, bool reportNotFound)
 {
     // Found before Kill: afterwards the descendants have no parent any more (macOS gives them to launchd), and
     // the id of the ended process may be reused
     GS::Array<ProcessId> descendants;
-    const bool found = FindDescendantsOfStartedProcess (runningCommand, childProcessIdsBeforeStart, descendants);
-    process.Kill ();
-    if (!found) {
-        WriteReport (DG_WARNING, PaletteText (ID_PALETTE_STRINGS_PROCESSES_NOT_FOUND));
+    const bool found = script.startedProcessFound &&
+        FindDescendantsOfProcess (script.startedProcessId, script.startedProcessStartTime, descendants);
+    script.process.Kill ();
+    if (!found && reportNotFound) {
+        WriteReport (DG_WARNING, "[%T] %T", script.scriptName.ToPrintf (), PaletteText (ID_PALETTE_STRINGS_PROCESSES_NOT_FOUND).ToPrintf ());
     }
     for (const ProcessId descendant : descendants) {
         KillProcess (descendant);
     }
+}
+
+TapirPalette::RunningScript* TapirPalette::FindRunningScript (const IO::Location& fileLocation) const
+{
+    for (const std::unique_ptr<RunningScript>& script : runningScripts) {
+        if (!script->ended && script->fileLocation == fileLocation) {
+            return script.get ();
+        }
+    }
+    return nullptr;
+}
+
+void TapirPalette::RunOrStopScript (const PopUpItemData& popUpItemData)
+{
+    RunningScript* runningScript = FindRunningScript (popUpItemData.fileLocation);
+    if (runningScript != nullptr) {
+        KillScript (*runningScript, true);
+        return;
+    }
+    if (isUpdatingAddOn) {
+        return;
+    }
+    if (Config::Instance ().AskUpdatingAddOnBeforeEachExecution () && UpdateAddOn ()) {
+        return;
+    }
+    ExecuteScript (popUpItemData);
+}
+
+void TapirPalette::RemoveEndedScript (const GS::UniString& scriptId)
+{
+    // The output reader posted this as its last step, so it returns at once. A reader that still does not
+    // return in time is kept, and removed with the next ended script; an ended script no longer counts as running.
+    for (auto it = runningScripts.begin (); it != runningScripts.end ();) {
+        RunningScript& script = **it;
+        const bool isEnded = script.ended || script.scriptId == scriptId;
+        if (isEnded && script.executor.Wait (GS::Timeout (0, 0, 0, 500 /*ms*/))) {
+            it = runningScripts.erase (it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+// Sets an environment variable in Archicad's environment while this object exists, so that only the process
+// started meanwhile inherits it, then puts back the value Archicad had. The value must be ASCII.
+class ScopedEnvironmentVariable {
+public:
+    ScopedEnvironmentVariable (const char* _name, const GS::UniString& value) : name (_name)
+    {
+        const std::string valueStr (value.ToCStr ().Get ());
+#if defined (WINDOWS)
+        const std::wstring nameW (name.begin (), name.end ());
+        const DWORD oldValueSize = GetEnvironmentVariableW (nameW.c_str (), nullptr, 0);
+        std::vector<wchar_t> oldValueW (oldValueSize + 1);
+        hasOldValue = oldValueSize > 0 && GetEnvironmentVariableW (nameW.c_str (), oldValueW.data (), oldValueSize) < oldValueSize;
+        if (hasOldValue) {
+            oldValue = std::wstring (oldValueW.data ());
+        }
+        const std::wstring valueW (valueStr.begin (), valueStr.end ());
+        SetEnvironmentVariableW (nameW.c_str (), valueW.c_str ());
+#else
+        const char* old = getenv (name.c_str ());
+        hasOldValue = old != nullptr;
+        if (hasOldValue) {
+            oldValue = old;
+        }
+        setenv (name.c_str (), valueStr.c_str (), 1);
+#endif
+    }
+
+    ~ScopedEnvironmentVariable ()
+    {
+#if defined (WINDOWS)
+        const std::wstring nameW (name.begin (), name.end ());
+        SetEnvironmentVariableW (nameW.c_str (), hasOldValue ? oldValue.c_str () : nullptr);
+#else
+        if (hasOldValue) {
+            setenv (name.c_str (), oldValue.c_str (), 1);
+        } else {
+            unsetenv (name.c_str ());
+        }
+#endif
+    }
+
+    ScopedEnvironmentVariable (const ScopedEnvironmentVariable&) = delete;
+    ScopedEnvironmentVariable& operator= (const ScopedEnvironmentVariable&) = delete;
+
+private:
+    const std::string name;
+    bool hasOldValue = false;
+#if defined (WINDOWS)
+    std::wstring oldValue;
+#else
+    std::string oldValue;
+#endif
+};
+
+// Starts every line of the text with "[<script name>] ", so that the output of scripts running at the same time
+// can be told apart in the Report window.
+static GS::UniString PrefixLines (const GS::UniString& scriptName, const GS::UniString& text)
+{
+    const GS::UniString prefix = "[" + scriptName + "] ";
+    const USize length = text.GetLength ();
+    GS::UniString result;
+    UIndex lineStart = 0;
+    for (UIndex i = 0; i < length; ++i) {
+        if (text[i] == '\n') {
+            result += prefix + GS::UniString (text.GetSubstring (lineStart, i + 1 - lineStart));
+            lineStart = i + 1;
+        }
+    }
+    if (lineStart < length) {
+        result += prefix + GS::UniString (text.GetSubstring (lineStart, length - lineStart));
+    }
+    return result;
 }
 
 void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
@@ -1477,10 +1661,31 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
     GS::UniString filePath;
     popUpItemData.fileLocation.ToPath (&filePath);
 
+    // Reads the output of one script. Several run at the same time, one for each running script, each on the
+    // thread of its script's executor. The RunningScript is removed only after this has returned.
     class UIUpdaterThread : public GS::Runnable
     {
+        RunningScript& script;
         GS::Process& process;
+        const GS::UniString scriptId;
+        const GS::UniString scriptName;
         const bool runWithUv;
+
+        // The script's Script UI window is free for other scripts once it ended or was stopped, and the palette
+        // forgets the script, so its Run button and shortcut slot start it again.
+        class ScriptEndedTask : public GS::Runnable {
+            GS::UniString scriptId;
+        public:
+            explicit ScriptEndedTask (const GS::UniString& _scriptId) : scriptId(_scriptId)
+            {}
+            virtual void Run ()
+            {
+                ForgetPostedTask (this);
+                ScriptUIPalette::ReleaseScript (scriptId);
+                TapirPalette::Instance ().RemoveEndedScript (scriptId);
+                TapirPalette::Instance ().SetRunButtonIcon ();
+            }
+        };
 
         class IconUpdateTask : public GS::Runnable {
         public:
@@ -1491,6 +1696,7 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
                 TapirPalette::Instance ().SetRunButtonIcon ();
             }
         };
+        // The text is the script's output, never a format string.
         class OutputUpdateTask : public GS::Runnable {
             short type;
             GS::UniString text;
@@ -1500,22 +1706,37 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
             virtual void Run ()
             {
                 ForgetPostedTask (this);
-                TapirPalette::Instance ().WriteReport (type, text);
+                TapirPalette::Instance ().WriteReport (type, "%T", text.ToPrintf ());
             }
         };
         // The text is read from the resources in Run, on the main thread, not on the reader thread.
         class ExitCodeReportTask : public GS::Runnable {
+            GS::UniString scriptName;
             int exitCode;
         public:
-            explicit ExitCodeReportTask (int _exitCode) : exitCode(_exitCode)
+            ExitCodeReportTask (const GS::UniString& _scriptName, int _exitCode) : scriptName(_scriptName), exitCode(_exitCode)
             {}
             virtual void Run ()
             {
                 ForgetPostedTask (this);
-                TapirPalette::Instance ().WriteReport (DG_INFORMATION,
-                    PaletteText (ID_PALETTE_STRINGS_EXIT_CODE), exitCode);
+                const GS::UniString text = GS::UniString::Printf (PaletteText (ID_PALETTE_STRINGS_EXIT_CODE), exitCode);
+                TapirPalette::Instance ().WriteReport (DG_INFORMATION, "%T", PrefixLines (scriptName, text).ToPrintf ());
             }
         };
+#if defined (macintosh)
+        // The hint for a uv that aborted (exit code 134), also read from the resources on the main thread.
+        class AbortedUvHintTask : public GS::Runnable {
+            GS::UniString scriptName;
+        public:
+            explicit AbortedUvHintTask (const GS::UniString& _scriptName) : scriptName(_scriptName)
+            {}
+            virtual void Run ()
+            {
+                ForgetPostedTask (this);
+                TapirPalette::Instance ().WriteReport (DG_ERROR, "%T", PrefixLines (scriptName, UvManager::GetAbortedUvHint ()).ToPrintf ());
+            }
+        };
+#endif
 
         void ProcessStderrBlock (const GS::UniString& stderrContent)
         {
@@ -1529,15 +1750,16 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
             const GS::UniString lowerContent = stderrContent.ToLowerCase ();
 #endif
 
+            const GS::UniString text = PrefixLines (scriptName, stderrContent);
             if (lowerContent.Contains ("error:") || lowerContent.Contains ("failed") || lowerContent.Contains ("traceback (most recent call last)")) {
-                Post (new OutputUpdateTask (DG_ERROR, stderrContent));
+                Post (new OutputUpdateTask (DG_ERROR, text));
                 return;
             }
             if (lowerContent.Contains ("warning:")) {
-                Post (new OutputUpdateTask (DG_WARNING, stderrContent));
+                Post (new OutputUpdateTask (DG_WARNING, text));
                 return;
             }
-            Post (new OutputUpdateTask (DG_INFORMATION, stderrContent));
+            Post (new OutputUpdateTask (DG_INFORMATION, text));
         }
 
         // A task posted while Archicad is closing would only run after the add-on has been unloaded.
@@ -1550,7 +1772,8 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
         }
 
     public:
-        UIUpdaterThread (GS::Process& p, bool _runWithUv) : process(p), runWithUv(_runWithUv)
+        UIUpdaterThread (RunningScript& _script, bool _runWithUv)
+            : script(_script), process(_script.process), scriptId(_script.scriptId), scriptName(_script.scriptName), runWithUv(_runWithUv)
         {
         }
         GS::UniString ReadFromChannel (GS::IBinaryChannel& channel)
@@ -1572,7 +1795,7 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
 
             const GS::UniString stdOutput = ReadFromChannel (process.GetStandardOutputChannel ());
             if (!stdOutput.IsEmpty ()) {
-                Post (new OutputUpdateTask (DG_INFORMATION, stdOutput));
+                Post (new OutputUpdateTask (DG_INFORMATION, PrefixLines (scriptName, stdOutput)));
             }
         }
         virtual void Run () override final
@@ -1592,22 +1815,28 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
 
             const int exitCode = process.GetExitCode ();
             ReadFromChannels ();
-            process = {}; // Reset the process to an invalid state
+            script.ended = true;   // no longer running; the last thing done with script
 
-            Post (new IconUpdateTask ());
-            Post (new ExitCodeReportTask (exitCode));
+            Post (new ExitCodeReportTask (scriptName, exitCode));
 #if defined (macintosh)
             // Exit code 134 is an abort (SIGABRT). uv builds that need a newer macOS than the one running
             // abort at start with "macOS <x> or later required" (issue #392).
             if (runWithUv && exitCode == 134) {
-                Post (new OutputUpdateTask (DG_ERROR, UvManager::GetAbortedUvHint ()));
+                Post (new AbortedUvHintTask (scriptName));
             }
 #endif
+            Post (new ScriptEndedTask (scriptId));   // last: it removes the script once this has returned
         }
     };
 
+    IO::Name scriptFileName;
+    popUpItemData.fileLocation.GetLastLocalName (&scriptFileName);
+    const GS::UniString scriptName = scriptFileName.ToString ();
+    GS::UniString scriptId;
+
     try {
-        WriteReport (DG_INFORMATION, PaletteText (ID_PALETTE_STRINGS_EXECUTING_WITH_UV), filePath.ToPrintf ());
+        WriteReport (DG_INFORMATION, "%T", PrefixLines (scriptName,
+            GS::UniString::Printf (PaletteText (ID_PALETTE_STRINGS_EXECUTING_WITH_UV), filePath.ToPrintf ())).ToPrintf ());
 
         GS::UniString command;
         GS::Array<GS::UniString> argv;
@@ -1639,9 +1868,21 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
         constexpr bool redirectStandardOutput = true;
         constexpr bool redirectStandardInput = false;
         constexpr bool redirectStandardError = true;
-        runningCommand = command;
-        childProcessIdsBeforeStart = ListChildProcessIds ();
+        const GS::Array<GS::UInt64> childProcessIdsBeforeStart = ListChildProcessIds ();
+
+        // Every started script gets its own id in TAPIR_SCRIPT_ID, which aclib passes to the Script UI commands as
+        // scriptId, so that each script has its own Script UI window, titled with the script's name (issue #1819).
+        // The id of this Archicad's process keeps the ids of two Archicads apart.
+        scriptId = "tapir-" + GS::ValueToUniString (static_cast<GS::UInt32> (GetThisProcessId ())) +
+            "-" + GS::ValueToUniString (++startedScriptCount);
+        ScriptUIPalette::SetScriptName (scriptId, scriptName);
+
+        std::unique_ptr<RunningScript> script (new RunningScript ());
+        script->fileLocation = popUpItemData.fileLocation;
+        script->scriptName = scriptName;
+        script->scriptId = scriptId;
         {
+            const ScopedEnvironmentVariable scriptIdVariable ("TAPIR_SCRIPT_ID", scriptId);
 #if defined (WINDOWS)
             // Python writes to a pipe in the system code page unless told otherwise (cp932 on Japanese
             // Windows), while the output is read as UTF-8. PYTHONIOENCODING makes the script's standard
@@ -1656,28 +1897,55 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
                 }
             });
 #endif
-            process = GS::Process::Create (command, argv, GS::Process::CreateNoWindow, redirectStandardOutput, redirectStandardInput, redirectStandardError);
+            script->process = GS::Process::Create (command, argv, GS::Process::CreateNoWindow, redirectStandardOutput, redirectStandardInput, redirectStandardError);
         }
-        if (!process.IsValid ()) {
+        if (!script->process.IsValid ()) {
+            ScriptUIPalette::ReleaseScript (scriptId);
             WriteReport (DG_ERROR, PaletteText (ID_PALETTE_STRINGS_UV_START_FAILED));
+            return;
         }
 
-        executor.Execute (new UIUpdaterThread (process, filePath.EndsWith (".py")));
+        // The started process is found now, while it surely runs and before another script is started: later the
+        // processes started meanwhile for other scripts would be among the new child processes too. Scripts are
+        // only started here, on the main thread, one after the other.
+        GS::Array<GS::UInt64> otherStartedIds;
+        for (const std::unique_ptr<RunningScript>& other : runningScripts) {
+            if (other->startedProcessFound) {
+                otherStartedIds.Push (other->startedProcessId);
+            }
+        }
+        ProcessInfo startedProcess;
+        if (FindStartedProcess (command, childProcessIdsBeforeStart, otherStartedIds, startedProcess)) {
+            script->startedProcessFound = true;
+            script->startedProcessId = static_cast<GS::UInt64> (startedProcess.id);
+            script->startedProcessStartTime = startedProcess.startTime;
+        }
+
+        RunningScript& startedScript = *script;
+        runningScripts.push_back (std::move (script));
+        startedScript.executor.Execute (new UIUpdaterThread (startedScript, filePath.EndsWith (".py")));
     } catch (const GS::ProcessException&) {
+        if (!scriptId.IsEmpty ()) {
+            ScriptUIPalette::ReleaseScript (scriptId);
+        }
         WriteReport (DG_ERROR, PaletteText (ID_PALETTE_STRINGS_EXECUTE_FAILED), filePath.ToPrintf ());
     } catch (...) {
+        if (!scriptId.IsEmpty ()) {
+            ScriptUIPalette::ReleaseScript (scriptId);
+        }
         WriteReport (DG_ERROR, PaletteText (ID_PALETTE_STRINGS_EXECUTE_UNEXPECTED), filePath.ToPrintf ());
     }
+    SetRunButtonIcon ();
 }
 
-bool TapirPalette::AddScriptToPopUp (GS::Ref<PopUpItemData> popUpData, short index)
+bool TapirPalette::PrepareScript (PopUpItemData& popUpData)
 {
-    if (popUpData == nullptr || !IsValidLocation (popUpData->fileLocation)) {
+    if (!IsValidLocation (popUpData.fileLocation)) {
         return false;
     }
 
     IO::Name name;
-    popUpData->fileLocation.GetLastLocalName (&name);
+    popUpData.fileLocation.GetLastLocalName (&name);
 
 #if defined (macintosh)
     if (name.ToString ().BeginsWith ('.')) {
@@ -1685,22 +1953,19 @@ bool TapirPalette::AddScriptToPopUp (GS::Ref<PopUpItemData> popUpData, short ind
     }
 #endif
 
-    scriptSelectionPopUp.InsertItem (index);
-    if (popUpData->repo) {
-        auto* repo = popUpData->repo;
+    if (popUpData.repo) {
+        auto* repo = popUpData.repo;
         if (repo->displayName.IsEmpty ()) {
-            popUpData->baseDisplayText = name.ToString () + " (" + repo->repoOwner + "/" + repo->repoName + ")";
+            popUpData.baseDisplayText = name.ToString () + " (" + repo->repoOwner + "/" + repo->repoName + ")";
         } else {
-            popUpData->baseDisplayText = name.ToString () + " (" + repo->displayName + ")";
+            popUpData.baseDisplayText = name.ToString () + " (" + repo->displayName + ")";
         }
-    } else if (!popUpData->sourceName.IsEmpty ()) {
-        popUpData->baseDisplayText = name.ToString () + " (" + popUpData->sourceName + ")";
+    } else if (!popUpData.sourceName.IsEmpty ()) {
+        popUpData.baseDisplayText = name.ToString () + " (" + popUpData.sourceName + ")";
     } else {
-        popUpData->baseDisplayText = name.ToString ();
+        popUpData.baseDisplayText = name.ToString ();
     }
-    popUpData->info = ReadScriptInfo (popUpData->fileLocation);
-    scriptSelectionPopUp.SetItemText (index, popUpData->baseDisplayText);
-    scriptSelectionPopUp.SetItemObjectData (index, popUpData);
+    popUpData.info = ReadScriptInfo (popUpData.fileLocation);
 
     return true;
 }
@@ -1819,7 +2084,9 @@ void TapirPalette::AddScriptsFromRepositories ()
             ACAPI_WriteReport (ReportText (ID_REPORT_STRINGS_ADDED_TO_POPUP), false, repoLoc.ToPrintf ());
             GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (fileLoc, kv.first, &repo);
             popUpItemData->uvProjectPath = uvProjectPath;
-            AddScriptToPopUp (popUpItemData, DG::PopUp::BottomItem);
+            if (PrepareScript (*popUpItemData)) {
+                listedScripts.Push (popUpItemData);
+            }
         }
     }
 }
@@ -1899,7 +2166,9 @@ void TapirPalette::AddScriptsFromLocalFolders ()
             GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (kv.second);
             popUpItemData->sourceName = sourceName;
             popUpItemData->uvProjectPath = uvProjectPath;
-            AddScriptToPopUp (popUpItemData, DG::PopUp::BottomItem);
+            if (PrepareScript (*popUpItemData)) {
+                listedScripts.Push (popUpItemData);
+            }
         }
     }
 }
@@ -1920,20 +2189,21 @@ void TapirPalette::AddScriptsFromCustomScriptsFolder ()
             return;
         }
 
-        if (!hasCustomScript) {
-            scriptSelectionPopUp.InsertSeparator (DG::PopUp::TopItem);
-            hasCustomScript = true;
-        }
+        hasCustomScript = true;
 
-        IO::Location file (customScriptsFolderLoc, name);
-        AddScriptToPopUp (GS::NewRef<PopUpItemData> (file));
+        // Each one goes first, as when they were inserted at the top of the dropdown.
+        GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (IO::Location (customScriptsFolderLoc, name));
+        if (PrepareScript (*popUpItemData)) {
+            customScripts.Insert (0, popUpItemData);
+        }
     });
 }
 
 void TapirPalette::LoadScriptsToPopUp ()
 {
-    scriptSelectionPopUp.DeleteItem (DG_ALL_ITEMS);
-
+    addedScripts.Clear ();
+    customScripts.Clear ();
+    listedScripts.Clear ();
     hasCustomScript = false;
     hasAddedScript = false;
 
@@ -1942,23 +2212,16 @@ void TapirPalette::LoadScriptsToPopUp ()
     AddScriptsFromLocalFolders ();
     AddScriptsFromRepositories ();
 
-    scriptSelectionPopUp.AppendSeparator ();
-    scriptSelectionPopUp.AppendItem ();
-    scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, PaletteText (ID_PALETTE_STRINGS_RELOAD_SCRIPTS));
-
-    if (itemToSelect <= 0 || scriptSelectionPopUp.IsSeparator (itemToSelect) || scriptSelectionPopUp.GetItemCount () - 1 <= itemToSelect) {
-        itemToSelect = DG::PopUp::TopItem;
-    }
-    scriptSelectionPopUp.SelectItem (itemToSelect);
-
-    RefreshScriptListShortcutLabels ();
+    RebuildScriptPopUp (itemToSelect);
     SetDeleteScriptButtonStatus ();
 }
 
 void TapirPalette::SetRunButtonIcon ()
 {
+    // Stop while the selected script runs; other scripts may run meanwhile.
+    const GS::Ref<PopUpItemData> selectedScript = GetSelectedScript ();
     short resId = ID_RUN_BUTTON_ICON;
-    if (IsProcessRunning ()) {
+    if (selectedScript != nullptr && IsScriptRunning (selectedScript->fileLocation)) {
         resId = ID_KILL_BUTTON_ICON;
     } else if (VersionChecker::IsUsingLatestVersion ()) {
         resId = ID_RUN_BUTTON_ICON;
@@ -2496,18 +2759,12 @@ static const GS::UniString ShortcutLabelDefaultMarker ("(default)");   // means 
 void TapirPalette::SaveScriptsToPreferences ()
 {
     GS::UniString preferencesStr;
-    if (hasAddedScript) {
-        for (short i = 1; i <= scriptSelectionPopUp.GetItemCount () - 1 && !scriptSelectionPopUp.IsSeparator (i); ++i) {
-            GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (i));
-            if (popUpItemData == nullptr) {
-                continue;
-            }
-
-            GS::UniString pathStr;
-            popUpItemData->fileLocation.ToPath (&pathStr);
-            preferencesStr += pathStr + '\n';
-        }
+    for (const GS::Ref<PopUpItemData>& popUpItemData : addedScripts) {
+        GS::UniString pathStr;
+        popUpItemData->fileLocation.ToPath (&pathStr);
+        preferencesStr += pathStr + '\n';
     }
+    // The dropdown's item index, as before, so that every Tapir version reads the blob the same way
     preferencesStr += GS::ValueToUniString (scriptSelectionPopUp.GetSelectedItem ());
     for (short slot = 0; slot < ScriptShortcutSlotCount; ++slot) {
         GS::UniString slotPathStr = ShortcutSlotEmptyMarker;
@@ -2539,11 +2796,8 @@ bool TapirPalette::IsValidLocation (const IO::Location& location)
 
 short TapirPalette::AddScriptsFromPreferences ()
 {
-    if (hasAddedScript) {
-        while (!scriptSelectionPopUp.IsSeparator (DG::PopUp::TopItem)) {
-            scriptSelectionPopUp.DeleteItem (DG::PopUp::TopItem);
-        }
-    }
+    // The caller shows the result with RebuildScriptPopUp. hasAddedScript stays as it was, as the separator did.
+    addedScripts.Clear ();
     for (short slot = 0; slot < ScriptShortcutSlotCount; ++slot) {
         scriptShortcutSlots[slot] = IO::Location ();
         scriptShortcutLabels[slot] = GS::EmptyUniString;
@@ -2605,11 +2859,12 @@ short TapirPalette::AddScriptsFromPreferences ()
         if (!IsValidLocation (ownScript)) {
             continue;
         }
-        if (!hasAddedScript) {
-            scriptSelectionPopUp.InsertSeparator (DG::PopUp::TopItem);
-            hasAddedScript = true;
+        hasAddedScript = true;
+        // Each one goes first, as when they were inserted at the top of the dropdown.
+        GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (ownScript);
+        if (PrepareScript (*popUpItemData)) {
+            addedScripts.Insert (0, popUpItemData);
         }
-        AddScriptToPopUp (GS::NewRef<PopUpItemData> (ownScript));
     }
     return selectedItemBeforeClose;
 }
@@ -2632,16 +2887,16 @@ bool TapirPalette::AddNewScript ()
         if (IsPopUpContainsFile (file)) {
             continue;
         }
-        if (!hasAddedScript) {
-            scriptSelectionPopUp.InsertSeparator (DG::PopUp::TopItem);
-            hasAddedScript = true;
+        hasAddedScript = true;
+        GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (file);
+        if (PrepareScript (*popUpItemData)) {
+            addedScripts.Insert (0, popUpItemData);
         }
-        AddScriptToPopUp (GS::NewRef<PopUpItemData> (file));
         hasNew = true;
     }
 
     if (hasNew) {
-        scriptSelectionPopUp.SelectItem (DG::PopUp::TopItem);
+        RebuildScriptPopUp (DG::PopUp::TopItem);
         SaveScriptsToPreferences ();
         SetDeleteScriptButtonStatus ();
     }
@@ -2649,17 +2904,25 @@ bool TapirPalette::AddNewScript ()
     return hasNew;
 }
 
+// The selected item is one of addedScripts: SetDeleteScriptButtonStatus enables the button only then.
 void TapirPalette::DeleteScriptFromPopUp ()
 {
-    short selectedItem = scriptSelectionPopUp.GetSelectedItem ();
-    scriptSelectionPopUp.DeleteItem (selectedItem);
-    if (scriptSelectionPopUp.IsSeparator (DG::PopUp::TopItem)) {
-        scriptSelectionPopUp.DeleteItem (DG::PopUp::TopItem);
+    const short selectedItem = scriptSelectionPopUp.GetSelectedItem ();
+    if (!hasAddedScript || selectedItem < DG::PopUp::TopItem || selectedItem > static_cast<short> (addedScripts.GetSize ())) {
+        return;
+    }
+    addedScripts.Delete (static_cast<UIndex> (selectedItem - DG::PopUp::TopItem));
+
+    // The next script takes the deleted one's place; after the last added one the one above it is selected. When
+    // none is left, the section and its separator go, and the first item is selected.
+    short itemToSelect = selectedItem;
+    if (addedScripts.IsEmpty ()) {
         hasAddedScript = false;
+        itemToSelect = DG::PopUp::TopItem;
+    } else if (itemToSelect > static_cast<short> (addedScripts.GetSize ())) {
+        itemToSelect = static_cast<short> (addedScripts.GetSize ());
     }
-    if (scriptSelectionPopUp.IsSeparator (scriptSelectionPopUp.GetSelectedItem ())) {
-        scriptSelectionPopUp.SelectItem (scriptSelectionPopUp.GetSelectedItem () - 1);
-    }
+    RebuildScriptPopUp (itemToSelect);
 
     SaveScriptsToPreferences ();
     SetDeleteScriptButtonStatus ();
@@ -2667,17 +2930,10 @@ void TapirPalette::DeleteScriptFromPopUp ()
 
 void TapirPalette::SetDeleteScriptButtonStatus ()
 {
-    if (!hasAddedScript) {
+    const short selectedItem = scriptSelectionPopUp.GetSelectedItem ();
+    if (hasAddedScript && selectedItem >= DG::PopUp::TopItem && selectedItem <= static_cast<short> (addedScripts.GetSize ())) {
+        delScriptButton.Enable ();
+    } else {
         delScriptButton.Disable ();
-        return;
     }
-
-    for (short i = scriptSelectionPopUp.GetSelectedItem (); i >= DG_POPUP_TOP; --i) {
-        if (scriptSelectionPopUp.IsSeparator (i)) {
-            delScriptButton.Disable ();
-            return;
-        }
-    }
-
-    delScriptButton.Enable ();
 }

@@ -542,7 +542,7 @@
             if (heading) {
                 flushParagraph ();
                 closeList ();
-                // The page's h1 is the script's name and "About this script" is an h2.
+                // The script's name and "What it does" are h2s (the page's h1 is the list's heading).
                 var level = Math.min (heading[1].length + 2, 6);
                 var h = document.createElement ('h' + level);
                 appendInline (h, heading[2], links);
@@ -595,6 +595,98 @@
         flushParagraph ();
     }
 
+    // ---- The page head: for search engines and link previews ----
+
+    var SITE = 'https://archicad-api.com/';
+    var LIST_URL = SITE + 'scripts/';
+
+    function setContent (id, value) {
+        var element = byId (id);
+        if (element) {
+            element.setAttribute (element.tagName === 'LINK' ? 'href' : 'content', value);
+        }
+    }
+
+    function setJsonLd (id, data) {
+        var element = byId (id);
+        if (!data) {
+            if (element) {
+                element.remove ();
+            }
+            return;
+        }
+        if (!element) {
+            element = document.createElement ('script');
+            element.type = 'application/ld+json';
+            element.id = id;
+            document.head.appendChild (element);
+        }
+        element.textContent = JSON.stringify (data, null, 4);
+    }
+
+    function breadcrumb (items) {
+        return {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: items.map (function (item, index) {
+                return { '@type': 'ListItem', position: index + 1, name: item[0], item: item[1] };
+            })
+        };
+    }
+
+    function setRobotsNoindex (noindex) {
+        var robots = byId ('meta-robots');
+        if (noindex && !robots) {
+            robots = document.createElement ('meta');
+            robots.name = 'robots';
+            robots.id = 'meta-robots';
+            robots.content = 'noindex';
+            document.head.appendChild (robots);
+        } else if (!noindex && robots) {
+            robots.remove ();
+        }
+    }
+
+    // The head of the page showing one script: its own title, description, address and crumb, and
+    // a SoftwareSourceCode block of what the page shows of it. Without a script, the list's head.
+    function setScriptHead (script) {
+        if (!script) {
+            setContent ('canonical', LIST_URL);
+            setContent ('og-url', LIST_URL);
+            setJsonLd ('script-data', null);
+            setJsonLd ('breadcrumb-data', breadcrumb ([['Tapir', SITE], ['Scripts', LIST_URL]]));
+            return;
+        }
+        var url = LIST_URL + '?s=' + encodeURIComponent (script.slug);
+        setContent ('meta-description', script.summary);
+        setContent ('og-description', script.summary);
+        setContent ('og-title', document.title);
+        setContent ('canonical', url);
+        setContent ('og-url', url);
+        setRobotsNoindex (false);
+        setJsonLd ('breadcrumb-data', breadcrumb ([['Tapir', SITE], ['Scripts', LIST_URL], [script.name, url]]));
+        var author = { '@type': 'Person', name: script.author.name };
+        if (script.author.github) {
+            author.url = 'https://github.com/' + script.author.github;
+        }
+        var data = {
+            '@context': 'https://schema.org',
+            '@type': 'SoftwareSourceCode',
+            name: script.name,
+            description: script.summary,
+            url: url,
+            programmingLanguage: 'Python',
+            author: author,
+            version: script.newest.version,
+            license: script.license
+        };
+        // The folder the page's "source" link opens, at the commit of the newest version.
+        if (script.newest.commit) {
+            data.codeRepository = GITHUB_BASE + 'tree/' + script.newest.commit + '/marketplace/' + script.slug + '/';
+        }
+        setJsonLd ('script-data', data);
+    }
+
     // ---- One script ----
 
     function bytesToHex (buffer) {
@@ -609,6 +701,7 @@
     function showScript (script, categories) {
         var newest = script.newest;
         document.title = script.name + ' - ' + document.title;
+        setScriptHead (script);
 
         // The name in the page head, with its last word in italics.
         var title = byId ('detail-name');
@@ -744,6 +837,9 @@
     }
 
     function showNotFound () {
+        // Search engines keep the list, not an address without a script.
+        setScriptHead (null);
+        setRobotsNoindex (true);
         byId ('scripts-list-view').hidden = true;
         byId ('script-not-found').hidden = false;
     }

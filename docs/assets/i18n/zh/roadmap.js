@@ -1,9 +1,9 @@
 /* 中文 (简体): the Roadmap page (roadmap/index.html). See ../README.md.
    Command names, the label enhancement and the names of the issue form and of the old list stay English. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Roadmap - Tapir': '路线图 - Tapir',
-    'How to ask for a feature in Tapir, what is being asked for now, and what shipped recently.':
-        '如何向 Tapir 提出功能请求、目前大家在请求什么，以及最近发布了什么。',
+    'Tapir roadmap – Archicad automation': 'Tapir 路线图 – Archicad 自动化',
+    'How to ask for a feature in Tapir, the Archicad add-on, what people are asking for now, what shipped from the old list and which ideas are still open.':
+        '如何向 Archicad 插件 Tapir 提出功能请求、目前大家在请求什么、旧清单中哪些已经发布，以及哪些想法仍待实现。',
     '<a href="../">Tapir</a> / <a href="../community/">Community</a> / Roadmap':
         '<a href="../">Tapir</a> / <a href="../community/">社区</a> / 路线图',
     'What\'s <em>next.</em>': '接下来<em>是什么。</em>',

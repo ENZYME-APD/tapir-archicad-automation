@@ -2,9 +2,9 @@
    The two prompts are translated too (an AI tool understands them in any language), the Python
    example stays as it is. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Tapir and AI - Tapir': 'Tapir と AI - Tapir',
-    'Use Tapir from Claude and other AI tools: Tapir MCP servers, a prompt to start with, and how to let an AI write a script that sends Tapir commands.':
-        'Claude などの AI ツールから Tapir を使う方法。Tapir 用の MCP サーバー、最初に試すプロンプト、Tapir コマンドを送るスクリプトを AI に書かせる方法を紹介します。',
+    'Control Archicad with AI assistants (MCP) | Tapir': 'AI アシスタント（MCP）で Archicad を操作 | Tapir',
+    'Control Archicad with Claude and other AI assistants through Tapir: the Tapir MCP servers, a prompt to start with, and how to let an AI write a script.':
+        'Tapir を通じて Claude などの AI アシスタントで Archicad を操作する方法。Tapir 用の MCP サーバー、最初に試すプロンプト、スクリプトを AI に書かせる方法を紹介します。',
     '<a href="../">Tapir</a> / <a href="../docs/">Docs</a> / AI': '<a href="../">Tapir</a> / <a href="../docs/">ドキュメント</a> / AI',
     'Tapir and <em>AI.</em>': 'Tapir と <em>AI。</em>',
     'An AI assistant can read your Archicad project and change it through Tapir. You ask in plain words; it sends the commands to the Archicad running on your computer.':

@@ -3322,6 +3322,22 @@
             "trimType"
         ]
     },
+    "RoofEdgeTrim": {
+        "type": "object",
+        "description": "How an edge of a single-plane roof's polygon is cut (the edge's cut in the roof's settings).",
+        "properties": {
+            "trimType": {
+                "type": "string",
+                "enum": ["Vertical", "Perpendicular", "Horizontal", "CustomAngle", "AlignWithCut"],
+                "description": "Vertical, Perpendicular to the roof plane, Horizontal, or at 'angle' (CustomAngle). AlignWithCut is only reported, for shell edges; it cannot be written to a roof."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The angle of the edge cut in radians, as Archicad stores it. Only CustomAngle uses it."
+            }
+        },
+        "additionalProperties": false
+    },
     "ShellProfile": {
         "type": "object",
         "description": "A profile polyline of a shell, in the XY plane of its coordinate system.",
@@ -9353,6 +9369,13 @@
                 "description": "The custom side surface of each edge of the roof's polygon: the edges of polygonOutline first, then those of each hole in order, the item i of a polygon belonging to its edge from vertex i to vertex i + 1.",
                 "items": {
                     "$ref": "#/OverriddenMaterial"
+                }
+            },
+            "edgeTrims": {
+                "type": "array",
+                "description": "Single-plane roofs only: the cut of each edge of the roof's polygon, in the order of edgeSideMaterials. ModifyRoofs takes the same list.",
+                "items": {
+                    "$ref": "#/RoofEdgeTrim"
                 }
             },
             "pivotEdges": {

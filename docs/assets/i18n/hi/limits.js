@@ -1,9 +1,9 @@
 /* हिन्दी: the API limits page (limits/index.html). The Evidence column (headers and function names)
    stays English. See ../README.md. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'What the Archicad API can\'t do - Tapir': 'Archicad API क्या नहीं कर सकता - Tapir',
-    'What people ask Tapir for that Graphisoft\'s Archicad API does not offer: undo, the clipboard, File > Merge, Interactive Schedule rows and more, each with the workaround and the DevKit evidence.':
-        'लोग Tapir से जो माँगते हैं पर Graphisoft का Archicad API नहीं देता: undo, clipboard, File > Merge, Interactive Schedule की rows और भी बहुत कुछ, हर एक के साथ workaround और DevKit का सबूत।',
+    'What the Archicad API can\'t do | Tapir': 'Archicad API क्या नहीं कर सकता | Tapir',
+    'What people ask for that Graphisoft\'s Archicad API does not offer, such as undo or the clipboard, each with what to do instead and the DevKit evidence.':
+        'लोग जो माँगते हैं पर Graphisoft का Archicad API नहीं देता, जैसे undo या clipboard, हर एक के साथ उसकी जगह क्या करें और DevKit का सबूत।',
     '<a href="../">Tapir</a> / <a href="../docs/">Docs</a> / API limits': '<a href="../">Tapir</a> / <a href="../docs/">दस्तावेज़</a> / API की सीमाएँ',
     'What the Archicad API <em>can\'t do.</em>': 'Archicad API <em>क्या नहीं कर सकता।</em>',
     'Tapir uses the Archicad API that Graphisoft publishes for add-ons, and covers all of it that can be a JSON command. What that API does not offer, Tapir cannot offer either. This page lists what people ask for that is not in it, with what to do instead.':
@@ -30,6 +30,10 @@
     'A camera with a name of its own, or an axonometric camera': 'अपने नाम वाला camera, या axonometric camera',
     'Name the Camera Set the camera is in. For an axonometric view, set the 3D window with <a href="../archicad-addon/#Set3DProjectionSettings">Set3DProjectionSettings</a>.':
         'जिस Camera Set में camera है, उसका नाम रखें। Axonometric view के लिए <a href="../archicad-addon/#Set3DProjectionSettings">Set3DProjectionSettings</a> से 3D window सेट करें।',
+    'Remove one direction of a trim between two roofs or shells that trim each other':
+        'एक-दूसरे को trim करने वाली दो roofs या shells के बीच trim की केवल एक दिशा हटाना',
+    'Remove the trim with <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a>, which removes both directions, then trim the other direction again with <a href="../archicad-addon/#TrimElements">TrimElements</a>.':
+        '<a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a> से trim हटाएँ, जो दोनों दिशाएँ हटाता है, फिर दूसरी दिशा को <a href="../archicad-addon/#TrimElements">TrimElements</a> से दोबारा trim करें।',
 
     // Navigator and views
     'Navigator and views': 'Navigator और views',

@@ -1,9 +1,9 @@
 /* Français: the About page (about/index.html). See ../README.md.
    The names of the people stay as they are. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'About Tapir - Tapir': 'À propos de Tapir - Tapir',
-    'Why Tapir exists, how it grew from Enzyme\'s R&D and Tibor Lorántfy\'s JSON template into an open-source project, the people behind it and how to support it.':
-        'Pourquoi Tapir existe, comment il est né de la R&D d\'Enzyme et du modèle JSON de Tibor Lorántfy pour devenir un projet open source, les personnes qui le font et comment le soutenir.',
+    'About Tapir – open-source Archicad add-on': 'À propos de Tapir – l\'add-on Archicad open source',
+    'Why the open-source Archicad add-on Tapir exists, how it grew from Enzyme\'s R&D and Tibor Lorántfy\'s JSON template, who builds it and how to support it.':
+        'Pourquoi l\'add-on Archicad open source Tapir existe, comment il est né de la R&D d\'Enzyme et du modèle JSON de Tibor Lorántfy, qui le développe et comment le soutenir.',
     '<a href="../">Tapir</a> / About': '<a href="../">Tapir</a> / À propos',
     'About <em>Tapir.</em>': 'À propos de <em>Tapir.</em>',
     'An open-source project that makes Archicad scriptable for architects, not only for programmers. Started in 2022, released every week since.':

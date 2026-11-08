@@ -1,6 +1,6 @@
 /* Italiano: the Docs page (docs/index.html). See ../README.md. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Docs - Tapir': 'Docs - Tapir',
+    'Archicad automation docs | Tapir': 'Documentazione sull\'automazione di Archicad | Tapir',
     'Tapir\'s documentation: every JSON command, the Grasshopper guide, the Archicad API coverage and the Grasshopper coverage, and how a call to Tapir works.':
         'La documentazione di Tapir: ogni comando JSON, la guida a Grasshopper, la copertura dell\'API di Archicad e quella di Grasshopper, e come funziona una chiamata a Tapir.',
     '<a href="../">Tapir</a> / Docs': '<a href="../">Tapir</a> / Docs',

@@ -174,6 +174,10 @@ GSErrCode RegisterInterface (void)
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_RUNSCRIPT_5, 0, MenuCode_UserDef, MenuFlag_Default);
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_RUNSCRIPT_6, 0, MenuCode_UserDef, MenuFlag_Default);
 
+    // So that 'Enable all informational messages' also re-enables ShowNotificationBubble's bubble
+    // after its redrawCountLimit or disabled input turned it off.
+    RegisterTapirNotificationBubble ();
+
     return err;
 }
 
@@ -324,7 +328,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ShowNotificationBubbleCommand> (
             applicationCommands, "1.8.1",
-            "Shows a non-blocking notification bubble with a message in the current Archicad window, e.g. to report progress or a result without stopping the user as ShowAlert does. The bubble disappears by itself after the timeout. It is shown at a model coordinate or a pixel position of the current view, by default at the center of the current 2D view. Requires Archicad 29 or later."
+            "Shows a non-blocking notification bubble with a message in the current Archicad window, e.g. to report progress or a result without stopping the user as ShowAlert does. The bubble disappears by itself after the timeout. It is shown at a model coordinate or a pixel position of the current view, by default at the center of the current 2D view. Optionally it gets a large icon, is shown at most a given number of times, or is turned off, until the user runs 'Enable all informational messages'. Returns the bubble's settings read back from Archicad. Requires Archicad 29 or later."
         );
         err |= RegisterCommand<GetSpecialFoldersCommand> (
             applicationCommands, "1.5.6",
@@ -1274,7 +1278,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyRoofsCommand> (
             elementCommands, "1.4.0",
-            "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness and structure apply to both; angle and pivotLine only to single-plane roofs; levels, eavesOverhang and pivotEdges only to multi-plane roofs."
+            "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness and structure apply to both; angle, pivotLine and edgeTrims (the cut of each polygon edge) only to single-plane roofs; levels, eavesOverhang and pivotEdges only to multi-plane roofs."
         );
         err |= RegisterCommand<ModifyShellsCommand> (
             elementCommands, "1.8.0",
@@ -3443,11 +3447,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<TrimElementsCommand> (
             solidElementOperationCommands, "1.5.9",
-            "Trims construction elements with a roof or shell: the roofs and shells in the list, or one given trimming element with a trim type."
+            "Trims construction elements with a roof or shell: the roofs and shells in the list, or one given trimming element with a trim type. With several roofs or shells in the list Archicad decides which of them trims which element (they may also trim each other), so not every element is necessarily trimmed by each; to trim each element with each roof or shell, call it once per roof or shell with trimmingElement, and check the result with GetElementTrims."
         );
         err |= RegisterCommand<RemoveElementTrimsCommand> (
             solidElementOperationCommands, "1.5.9",
-            "Removes the trim between an element and the roof or shell trimming it. With dryRun true nothing is removed and no undo step is created: the response has dryRun set to true, and each pair whose element is trimmed by its trimming element gets wouldDelete."
+            "Removes the trim between an element and the roof or shell trimming it. The Archicad API removes the trimming connection between the two elements, so when they trim each other (two roofs or shells) both directions are removed; trim the other direction again with TrimElements to keep it. With dryRun true nothing is removed and no undo step is created: the response has dryRun set to true, and each pair whose element is trimmed by its trimming element gets wouldDelete."
         );
         err |= RegisterCommand<GetElementTrimsCommand> (
             solidElementOperationCommands, "1.5.9",
@@ -3472,11 +3476,11 @@ GSErrCode Initialize (void)
         CommandGroup scriptUICommands ("Script UI Commands");
         err |= RegisterCommand<ShowScriptUICommand> (
             scriptUICommands, "1.5.4",
-            "Shows the given HTML content in a native Archicad palette (a tkinter alternative for Python scripts)."
+            "Shows the given HTML content in a native Archicad palette (a tkinter alternative for Python scripts) and returns the uiId of its window. Each script can have its own window, picked by uiId or scriptId; without them the first window is used."
         );
         err |= RegisterCommand<GetScriptUIResultCommand> (
             scriptUICommands, "1.5.4",
-            "Retrieves and clears the result last submitted from the Script UI palette's page (via window.ACAPI.SubmitResult), if any, and reports whether the palette is still open, so a waiting script can stop when the user closes it."
+            "Retrieves and clears the result last submitted from a Script UI window's page (via window.ACAPI.SubmitResult), if any, and reports whether the window is still open, so a waiting script can stop when the user closes it. The window is picked by uiId or scriptId; without them the first window is used."
         );
         err |= RegisterCommand<OpenSettingsDialogCommand> (
             scriptUICommands, "1.8.1",

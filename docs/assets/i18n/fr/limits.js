@@ -1,9 +1,9 @@
 /* Français: the API limits page (limits/index.html). The Evidence column (headers and function names)
    stays English. See ../README.md. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'What the Archicad API can\'t do - Tapir': 'Ce que l’API Archicad ne sait pas faire - Tapir',
-    'What people ask Tapir for that Graphisoft\'s Archicad API does not offer: undo, the clipboard, File > Merge, Interactive Schedule rows and more, each with the workaround and the DevKit evidence.':
-        'Ce que l’on demande à Tapir et que l’API Archicad de Graphisoft n’offre pas : annuler, le presse-papiers, File > Merge, les lignes d’un Interactive Schedule et plus encore, chacun avec sa solution de contournement et la preuve dans le DevKit.',
+    'What the Archicad API can\'t do | Tapir': 'Ce que l’API Archicad ne sait pas faire | Tapir',
+    'What people ask for that Graphisoft\'s Archicad API does not offer, such as undo or the clipboard, each with what to do instead and the DevKit evidence.':
+        'Ce que l’on demande et que l’API Archicad de Graphisoft n’offre pas, comme annuler ou le presse-papiers, chacun avec ce qu’il faut faire à la place et la preuve dans le DevKit.',
     '<a href="../">Tapir</a> / <a href="../docs/">Docs</a> / API limits': '<a href="../">Tapir</a> / <a href="../docs/">Docs</a> / Limites de l’API',
     'What the Archicad API <em>can\'t do.</em>': 'Ce que l’API Archicad <em>ne sait pas faire.</em>',
     'Tapir uses the Archicad API that Graphisoft publishes for add-ons, and covers all of it that can be a JSON command. What that API does not offer, Tapir cannot offer either. This page lists what people ask for that is not in it, with what to do instead.':
@@ -30,6 +30,10 @@
     'A camera with a name of its own, or an axonometric camera': 'Une caméra avec son propre nom, ou une caméra axonométrique',
     'Name the Camera Set the camera is in. For an axonometric view, set the 3D window with <a href="../archicad-addon/#Set3DProjectionSettings">Set3DProjectionSettings</a>.':
         'Nommez le Camera Set qui contient la caméra. Pour une vue axonométrique, réglez la fenêtre 3D avec <a href="../archicad-addon/#Set3DProjectionSettings">Set3DProjectionSettings</a>.',
+    'Remove one direction of a trim between two roofs or shells that trim each other':
+        'Supprimer une seule direction d\'un ajustement entre deux toits ou coques qui s\'ajustent l\'un l\'autre',
+    'Remove the trim with <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a>, which removes both directions, then trim the other direction again with <a href="../archicad-addon/#TrimElements">TrimElements</a>.':
+        'Supprimez l\'ajustement avec <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a>, qui supprime les deux directions, puis ajustez à nouveau l\'autre direction avec <a href="../archicad-addon/#TrimElements">TrimElements</a>.',
 
     // Navigator and views
     'Navigator and views': 'Navigateur et vues',

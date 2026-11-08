@@ -10795,6 +10795,77 @@ static void RestoreRoofPolygonEdges (API_ElementMemo& memo, const GS::Array<Roof
     }
 }
 
+// Writes the given "edgeTrims" (see ModifyRoofs) into memo.edgeTrims, one item per edge in the
+// order of GetPolygonEdgeIndices, which is the order GetDetailsOfElements reports them in (#2363).
+// Only the given fields of an item change. Changes nothing on an error.
+static GS::Optional<GS::UniString> ApplyRoofEdgeTrims (API_ElementMemo& memo, const GS::Array<GS::ObjectState>& edgeTrims)
+{
+    const GS::Array<Int32> edgeIndices = GetPolygonEdgeIndices (memo);
+    if (edgeIndices.IsEmpty ()) {
+        return GS::UniString ("Failed to read the edges of the roof's polygon.");
+    }
+    if (edgeTrims.GetSize () != edgeIndices.GetSize ()) {
+        return GS::UniString::Printf ("'edgeTrims' must have one item per edge of the roof's polygon (%u).", (unsigned) edgeIndices.GetSize ());
+    }
+    for (UIndex k = 0; k < edgeTrims.GetSize (); ++k) {
+        GS::UniString trimType;
+        if (edgeTrims[k].Get ("trimType", trimType) && trimType != "Vertical" && trimType != "Perpendicular" && trimType != "Horizontal" && trimType != "CustomAngle") {
+            return "Unknown trimType '" + trimType + GS::UniString::Printf ("' in 'edgeTrims' item %u: use Vertical, Perpendicular, Horizontal or CustomAngle.", (unsigned) k);
+        }
+    }
+
+    const Int32 nCoords = (Int32) (BMGetHandleSize ((GSHandle) memo.coords) / sizeof (API_Coord)) - 1;
+    const GSSize nTrims = memo.edgeTrims == nullptr ? 0 : BMGetHandleSize ((GSHandle) memo.edgeTrims) / sizeof (API_EdgeTrim);
+    if (nTrims < nCoords + 1) {
+        // A roof that never had a custom edge cut may have no edge trims: its edges are Vertical,
+        // as GetRoofPolygonEdges reads them. The trims it has are kept.
+        API_EdgeTrim** trims = reinterpret_cast<API_EdgeTrim**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_EdgeTrim), ALLOCATE_CLEAR, 0));
+        if (trims == nullptr) {
+            return GS::UniString ("Failed to allocate the edge trims of the roof.");
+        }
+        for (Int32 i = 0; i <= nCoords; ++i) {
+            (*trims)[i].sideType = APIEdgeTrim_Vertical;
+            (*trims)[i].sideAngle = HalfTurn / 2.0;
+            if (i < nTrims) {
+                (*trims)[i] = (*memo.edgeTrims)[i];
+            }
+        }
+        if (memo.edgeTrims != nullptr) {
+            BMKillHandle (reinterpret_cast<GSHandle*> (&memo.edgeTrims));
+        }
+        memo.edgeTrims = trims;
+    }
+
+    for (UIndex k = 0; k < edgeTrims.GetSize (); ++k) {
+        API_EdgeTrim& trim = (*memo.edgeTrims)[edgeIndices[k]];
+        GS::UniString trimType;
+        if (edgeTrims[k].Get ("trimType", trimType)) {
+            if (trimType == "Perpendicular") {
+                trim.sideType = APIEdgeTrim_Perpendicular;
+            } else if (trimType == "Horizontal") {
+                trim.sideType = APIEdgeTrim_Horizontal;
+            } else if (trimType == "CustomAngle") {
+                trim.sideType = APIEdgeTrim_CustomAngle;
+            } else {
+                trim.sideType = APIEdgeTrim_Vertical;
+            }
+        }
+        edgeTrims[k].Get ("angle", trim.sideAngle);
+    }
+
+    // The closing vertex of each contour repeats the data of its first vertex, as AddPolyToMemo
+    // (ElementCreationCommands.cpp) writes it.
+    const Int32 nSubPolys = (Int32) (BMGetHandleSize ((GSHandle) memo.pends) / sizeof (Int32)) - 1;
+    for (Int32 subPoly = 1; subPoly <= nSubPolys; ++subPoly) {
+        const Int32 first = (*memo.pends)[subPoly - 1] + 1;
+        const Int32 closing = (*memo.pends)[subPoly];
+        if (closing <= nCoords && first < closing) {
+            (*memo.edgeTrims)[closing] = (*memo.edgeTrims)[first];
+        }
+    }
+    return {};
+}
+
 static GS::Array<Int32> GetContourPointCounts (const API_ElementMemo& memo)
 {
     GS::Array<Int32> counts;
@@ -10916,6 +10987,25 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                             },
                             "additionalProperties": false
                         },
+                        "edgeTrims": {
+                            "type": "array",
+                            "description": "Single-plane roofs only: the cut of each edge of the roof's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeTrims (the outline, then each hole). Only the given fields change; an empty item keeps its edge. Cannot be combined with polygonOutline.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "trimType": {
+                                        "type": "string",
+                                        "enum": [ "Vertical", "Perpendicular", "Horizontal", "CustomAngle" ],
+                                        "description": "Vertical, Perpendicular to the roof plane, Horizontal, or at 'angle' (CustomAngle)."
+                                    },
+                                    "angle": {
+                                        "type": "number",
+                                        "description": "The angle of the edge cut in radians, as GetDetailsOfElements reports it. Only CustomAngle uses it."
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
                         "pivotEdges": {
                             "type": "array",
                             "description": "Multi-plane roofs only: the roof planes of each edge of the pivot polygon, one item per edge in the order GetDetailsOfElements reports them (the outline, then each hole). Only the given fields change; an item without levels keeps its edge. Cannot be combined with polygonOutline.",
@@ -10989,8 +11079,12 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'levels', 'eavesOverhang' and 'pivotEdges' are only valid for multi-plane roofs."));
                 continue;
             }
-            if (!isPlaneRoof && (item.Contains ("angle") || item.Contains ("pivotLine"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'angle' and 'pivotLine' are only valid for single-plane roofs."));
+            if (!isPlaneRoof && (item.Contains ("angle") || item.Contains ("pivotLine") || item.Contains ("edgeTrims"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'angle', 'pivotLine' and 'edgeTrims' are only valid for single-plane roofs."));
+                continue;
+            }
+            if (item.Contains ("edgeTrims") && item.Contains ("polygonOutline")) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTrims' cannot be combined with 'polygonOutline', which makes new edges."));
                 continue;
             }
 
@@ -11040,6 +11134,53 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 }
                 err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AdditionalPolygon, true);
                 results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the roof planes of the edges."));
+                continue;
+            }
+
+            GS::Array<GS::ObjectState> edgeTrims;
+            if (item.Get ("edgeTrims", edgeTrims)) {
+                API_ElementMemo memo = {};
+                const GS::OnExit cleanup ([&]() {
+                    ACAPI_DisposeElemMemoHdls (&memo);
+                });
+                err = ACAPI_Element_GetMemo (element.header.guid, &memo);
+                if (err != NoError || memo.coords == nullptr || memo.pends == nullptr) {
+                    results.Push (CreateFailedExecutionResult (err != NoError ? err : APIERR_GENERAL, "Failed to read the polygon of the roof."));
+                    continue;
+                }
+                auto trimError = ApplyRoofEdgeTrims (memo, edgeTrims);
+                if (trimError.HasValue ()) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, trimError.Get ()));
+                    continue;
+                }
+                if (changed) {
+                    err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+                    if (err != NoError) {
+                        results.Push (CreateFailedExecutionResult (err, "Failed to modify roof."));
+                        continue;
+                    }
+                }
+                // Passed as the polygon edit below passes it: only the polygon handles and the edge
+                // data, unchanged but for the trims, so the side surfaces and edge types stay.
+                API_ElementMemo polygonMemo = {};
+                polygonMemo.coords = memo.coords;
+                polygonMemo.pends = memo.pends;
+                polygonMemo.parcs = memo.parcs;
+                polygonMemo.vertexIDs = memo.vertexIDs;
+                polygonMemo.edgeIDs = memo.edgeIDs;
+                polygonMemo.edgeTrims = memo.edgeTrims;
+                polygonMemo.sideMaterials = memo.sideMaterials;
+                polygonMemo.roofEdgeTypes = memo.roofEdgeTypes;
+                polygonMemo.contourIDs = memo.contourIDs;
+                UInt64 memoMask = APIMemoMask_Polygon | APIMemoMask_EdgeTrims;
+                if (memo.sideMaterials != nullptr) {
+                    memoMask |= APIMemoMask_SideMaterials;
+                }
+                if (memo.roofEdgeTypes != nullptr) {
+                    memoMask |= APIMemoMask_RoofEdgeTypes;
+                }
+                err = ACAPI_Element_ChangeMemo (element.header.guid, memoMask, &polygonMemo);
+                results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the edge trims of the roof."));
                 continue;
             }
 
