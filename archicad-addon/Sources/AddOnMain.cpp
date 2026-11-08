@@ -3536,12 +3536,13 @@ GSErrCode Initialize (void)
 
     // The latest release is looked up on a background thread, so Archicad does not wait for GitHub while it
     // starts or opens a project (#798). Once the result is in, the palette shows the "run with update" icon and
-    // "Update to <version>" on its update button, and the menu item reads "Update Tapir to <version>...".
+    // the "update available" icon with "Update to <version>" as its tooltip on its update button, and the menu item
+    // reads "Update Tapir to <version>...".
     VersionChecker::StartCheck ([] () {
         TapirPalette::ApplyUpdateMenuItemState ();
         if (TapirPalette::HasInstance ()) {
             TapirPalette::Instance ().SetRunButtonIcon ();
-            TapirPalette::Instance ().SetUpdateButtonText ();
+            TapirPalette::Instance ().SetUpdateButtonIcon ();
         }
     });
 

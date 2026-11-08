@@ -36,7 +36,9 @@ public:
     // The "Check for Updates..." menu item and the palette's update button: updates when a newer version exists,
     // otherwise tells why there is nothing to update to. Also offered when a script needs a newer Tapir.
     void CheckForUpdates ();
-    void SetUpdateButtonText ();   // also called once the VersionChecker's lookup completes
+    // The update button's icon: a mark on it when a newer version exists. Also called once the VersionChecker's
+    // lookup completes.
+    void SetUpdateButtonIcon ();
     // Shows "Update Tapir to <version>..." on the update menu item when a newer version exists, and keeps the item
     // enabled. Needs no palette, so it is static.
     static void ApplyUpdateMenuItemState ();
@@ -84,7 +86,7 @@ private:
     DG::IconButton delScriptButton;
     DG::IconButton manageShortcutsButton;
     DG::LeftText   installedVersionText;
-    DG::Button     checkForUpdatesButton;
+    DG::IconButton checkForUpdatesButton;
 
     // A script started by the palette, until it ended or was stopped. Any number of scripts run at the same time,
     // but a script at most once: Run, and its shortcut slot, stop it while it runs (issue #1819).
@@ -138,6 +140,8 @@ private:
     void AddScriptsFromCustomScriptsFolder ();
     void LoadScriptsToPopUp ();
     void RebuildScriptPopUp (short itemToSelect);   // fills scriptSelectionPopUp from the script list
+    // Marks each running script in scriptSelectionPopUp; called when a script starts or ends and on each rebuild.
+    void RefreshRunningMarks ();
     GS::Ref<PopUpItemData> GetScriptOfPopUpItem (short item) const;   // nullptr for a separator and "Reload scripts..."
     GS::Ref<PopUpItemData> GetSelectedScript () const;
     ScriptList GetAllScripts () const;   // in the order of the dropdown
