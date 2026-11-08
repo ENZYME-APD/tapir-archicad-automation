@@ -2386,38 +2386,11 @@ GS::ObjectState SearchFavoritesCommand::Execute (const GS::ObjectState& paramete
         }
         typesToQuery.Push (elemType);
     } else {
-        static const GS::Array<API_ElemTypeID> allSupportedTypes = {
-            API_WallID,
-            API_ColumnID,
-            API_BeamID,
-            API_WindowID,
-            API_DoorID,
-            API_ObjectID,
-            API_LampID,
-            API_SlabID,
-            API_RoofID,
-            API_MeshID,
-            API_DimensionID,
-            API_RadialDimensionID,
-            API_LevelDimensionID,
-            API_AngleDimensionID,
-            API_TextID,
-            API_LabelID,
-            API_ZoneID,
-            API_HatchID,
-            API_LineID,
-            API_PolyLineID,
-            API_ArcID,
-            API_CircleID,
-            API_SplineID,
-            API_HotspotID,
-            API_DrawingID,
-            API_CurtainWallID,
-            API_StairID,
-            API_RailingID,
-            API_OpeningID
-        };
-        typesToQuery = allSupportedTypes;
+        // Every element type, as ScanFavorites in AttributeCommands.cpp does: a type without
+        // Favorites (or one ACAPI_Favorite_GetNum refuses) is skipped in the loop below.
+        for (Int32 type = API_FirstElemType; type <= API_LastElemType; ++type) {
+            typesToQuery.Push (static_cast<API_ElemTypeID> (type));
+        }
     }
 
     Int32 limit = 0;
