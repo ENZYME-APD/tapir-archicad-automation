@@ -4,17 +4,17 @@ Every JSON command of the Tapir Add-On, whether a Grasshopper component calls it
 
 **782 of 782** applicable Tapir commands have a Grasshopper component (100 %): ✅ 568 done, 🔀 214 merged, ➖ 1 not applicable.
 
-Parameters of the 782 used commands: 🟢 742 every parameter has an input, 🟡 37 the rest through a JSON input, 🟠 3 some parameters missing.
+Parameters of the 782 used commands: 🟢 746 every parameter has an input, 🟡 36 the rest through a JSON input, 🟠 0 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Application Commands | 100 % | 42 | 25 | 17 |  |  |  |  |  | 41 |  | 1 |
+| Application Commands | 100 % | 42 | 25 | 17 |  |  |  |  |  | 42 |  |  |
 | Project Commands | 100 % | 66 | 50 | 16 |  |  |  |  |  | 66 |  |  |
 | Custom Data Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Element Commands | 100 % | 173 | 130 | 43 |  |  |  |  |  | 150 | 23 |  |
 | Element grouping Commands | 100 % | 15 | 11 | 4 |  |  |  |  |  | 15 |  |  |
 | Favorites Commands | 100 % | 26 | 18 | 8 |  |  |  |  |  | 26 |  |  |
-| Property Commands | 100 % | 30 | 21 | 9 |  |  |  |  |  | 29 | 1 |  |
+| Property Commands | 100 % | 30 | 21 | 9 |  |  |  |  |  | 30 |  |  |
 | Classification Commands | 100 % | 19 | 17 | 2 |  |  |  |  |  | 19 |  |  |
 | Attribute Commands | 100 % | 69 | 55 | 14 |  |  |  |  |  | 60 | 9 |  |
 | IFC Commands | 100 % | 15 | 13 | 2 |  |  |  |  |  | 15 |  |  |
@@ -31,10 +31,10 @@ Parameters of the 782 used commands: 🟢 742 every parameter has an input, 🟡
 | MEP Commands (extended) | 100 % | 6 | 6 |  |  |  |  |  |  | 6 |  |  |
 | Analytical Commands | 100 % | 35 | 19 | 16 |  |  |  |  |  | 35 |  |  |
 | Solid Element Operation Commands | 100 % | 10 | 10 |  |  |  |  |  |  | 10 |  |  |
-| Script UI Commands | 100 % | 12 | 2 | 10 |  |  |  |  |  | 10 |  | 2 |
+| Script UI Commands | 100 % | 12 | 2 | 10 |  |  |  |  |  | 12 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-08 13:50 UTC.
+Updated 2026-11-08 14:23 UTC.
 
 | | Status |
 |---|---|
@@ -83,7 +83,7 @@ A parameter counts as covered when the component's code names it (a static check
 - 🔀 `DeleteGhostRecords` 🟢 1/1 parameters – `DeleteGhostRecordsComponent`
 - ✅ `GetUserGSID` 🟢 0/0 parameters – `GetUserGSIDComponent`
 - ✅ `ShowAlert` 🟢 7/7 parameters – `ShowAlertComponent`
-- 🔀 `ShowNotificationBubble` 🟠 8/11 parameters – `ShowNotificationBubbleComponent` — [#2361](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2361 "Grasshopper: ShowNotificationBubble gets LargeIcon, RedrawCountLimit and Disabled")<br><sub>no input: `disabled`, `largeIcon`, `redrawCountLimit`</sub>
+- 🔀 `ShowNotificationBubble` 🟢 11/11 parameters – `ShowNotificationBubbleComponent`
 - ✅ `GetSpecialFolders` 🟢 1/1 parameters – `GetSpecialFoldersComponent`
 - ✅ `GetEditModeState` 🟢 0/0 parameters – `GetEditModeStateComponent`
 - 🔀 `GetArchicadVisibility` 🟢 0/0 parameters – `GetArchicadVisibilityComponent`
@@ -397,7 +397,7 @@ A parameter counts as covered when the component's code names it (a static check
 
 - ✅ `GetAllProperties` 🟢 3/3 parameters – `ElementMetadata`, `FindPropertyByGuidComponent`, `FindPropertyByName`, `GetAllPropertiesComponent`
 - ✅ `GetPropertyValuesOfElements` 🟢 4/4 parameters – `ElementMetadata`, `GetPropertyValuesOfElementsComponent`
-- ✅ `SetPropertyValuesOfElements` 🟡 1/2 parameters – `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `ElementMetadata`, `FillsComponent`, `HotspotsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SetPropertyValuesOfElementsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent`<br><sub>no input: `dryRun`</sub>
+- ✅ `SetPropertyValuesOfElements` 🟢 2/2 parameters – `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `ElementMetadata`, `FillsComponent`, `HotspotsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SetPropertyValuesOfElementsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent`
 - 🔀 `GetComponentsOfElements` 🟢 1/1 parameters – `GetComponentsOfElementsComponent`
 - 🔀 `GetPropertyDefinitionsOfElementComponents` 🟢 2/2 parameters – `GetPropertyDefinitionsOfElementComponentsComponent`
 - 🔀 `GetPropertyValuesOfElementComponents` 🟢 2/2 parameters – `GetPropertyValuesOfElementComponentsComponent`
@@ -892,8 +892,8 @@ A parameter counts as covered when the component's code names it (a static check
 
 ## Script UI Commands
 
-- ✅ `ShowScriptUI` 🟠 13/15 parameters – `ShowScriptUIComponent`<br><sub>no input: `scriptId`, `uiId`</sub>
-- ✅ `GetScriptUIResult` 🟠 0/2 parameters – `GetScriptUIResultComponent`<br><sub>no input: `scriptId`, `uiId`</sub>
+- ✅ `ShowScriptUI` 🟢 15/15 parameters – `ShowScriptUIComponent`
+- ✅ `GetScriptUIResult` 🟢 2/2 parameters – `GetScriptUIResultComponent`
 - 🔀 `OpenSettingsDialog` 🟢 1/1 parameters – `OpenSettingsDialogComponent`
 - 🔀 `PickLibraryPart` 🟢 2/2 parameters – `PickLibraryPartComponent`
 - 🔀 `PickLibraryPartFile` 🟢 1/1 parameters – `PickLibraryPartFileComponent`

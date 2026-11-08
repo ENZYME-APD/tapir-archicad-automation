@@ -1,14 +1,13 @@
 {
- "generatedAt": "2026-11-08 13:50 UTC",
+ "generatedAt": "2026-11-08 14:23 UTC",
  "counts": {
   "done": 568,
   "merged": 214,
   "not applicable": 1
  },
  "parameters": {
-  "all": 742,
-  "partial": 3,
-  "json": 37
+  "all": 746,
+  "json": 36
  },
  "items": [
   {
@@ -688,30 +687,24 @@
      "path": "Components/GeneralComponents/ShowNotificationBubbleComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 11,
    "coveredParameters": [
     "coordinate",
+    "disabled",
     "icon",
+    "largeIcon",
     "message",
     "offset",
+    "redrawCountLimit",
     "screenPoint",
     "screenPoint.h",
     "screenPoint.v",
     "timeoutMilliseconds"
    ],
-   "missingParameters": [
-    "disabled",
-    "largeIcon",
-    "redrawCountLimit"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2361,
-     "title": "Grasshopper: ShowNotificationBubble gets LargeIcon, RedrawCountLimit and Disabled"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetSpecialFolders",
@@ -9309,14 +9302,13 @@
      "path": "Components/DesignToolsComponents/ZonesComponent.cs"
     }
    ],
-   "parameters": "json",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
+    "dryRun",
     "elementPropertyValues"
    ],
-   "missingParameters": [
-    "dryRun"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -20020,7 +20012,7 @@
    "id": "TrimElements",
    "group": "Solid Element Operation Commands",
    "version": "1.5.9",
-   "brief": "Trims construction elements with a roof or shell: the roofs and shells in the list, or one given trimming element with a trim type.",
+   "brief": "Trims construction elements with a roof or shell: the roofs and shells in the list, or one given trimming element with a trim type. With several roofs or shells in the list Archicad decides which of them trims which element (they may also trim each other), so not every element is necessarily trimmed by each; to trim each element with each roof or shell, call it once per roof or shell with trimmingElement, and check the result with GetElementTrims.",
    "status": "done",
    "reason": "",
    "components": [
@@ -20183,7 +20175,7 @@
      "path": "Components/GeneralComponents/ShowScriptUIComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 15,
    "coveredParameters": [
     "allowSelfSignedCertificates",
@@ -20194,16 +20186,15 @@
     "htmlContent",
     "navigationDisabled",
     "resizable",
+    "scriptId",
     "scrollBarsVisible",
     "title",
+    "uiId",
     "width",
     "zoomEnabled",
     "zoomLevel"
    ],
-   "missingParameters": [
-    "scriptId",
-    "uiId"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -20220,13 +20211,13 @@
      "path": "Components/GeneralComponents/GetScriptUIResultComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [
+   "coveredParameters": [
     "scriptId",
     "uiId"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },

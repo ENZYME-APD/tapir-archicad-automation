@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 13:50 UTC",
+ "generatedAt": "2026-11-08 14:23 UTC",
  "versions": [
   25,
   26,
@@ -9722,18 +9722,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2354,
-     "title": "[4/4] Palette: run scripts at the same time, each with its own Run/Stop"
-    },
-    {
-     "number": 2353,
-     "title": "[3/4] Grasshopper: UiId and ScriptId on the Script UI components"
-    },
-    {
-     "number": 2352,
-     "title": "[2/4] Palette and aclib: TAPIR_SCRIPT_ID picks each script's Script UI window"
-    },
-    {
      "number": 2185,
      "title": "[2/2] Add-On: \"Update when Archicad closes\" choice, pending marker and README (#2182)"
     }
@@ -16654,20 +16642,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2354,
-     "title": "[4/4] Palette: run scripts at the same time, each with its own Run/Stop"
-    },
-    {
-     "number": 2353,
-     "title": "[3/4] Grasshopper: UiId and ScriptId on the Script UI components"
-    },
-    {
-     "number": 2352,
-     "title": "[2/4] Palette and aclib: TAPIR_SCRIPT_ID picks each script's Script UI window"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37242,18 +37217,6 @@
     {
      "number": 2368,
      "title": "Read and set per-edge cut angles of single-plane roofs"
-    },
-    {
-     "number": 2354,
-     "title": "[4/4] Palette: run scripts at the same time, each with its own Run/Stop"
-    },
-    {
-     "number": 2353,
-     "title": "[3/4] Grasshopper: UiId and ScriptId on the Script UI components"
-    },
-    {
-     "number": 2352,
-     "title": "[2/4] Palette and aclib: TAPIR_SCRIPT_ID picks each script's Script UI window"
     },
     {
      "number": 1292,
