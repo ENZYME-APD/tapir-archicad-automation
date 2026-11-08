@@ -640,11 +640,11 @@ GS::Optional<GS::UniString> TrimElementsCommand::GetInputParametersSchema () con
         "properties": {
             "elements": {
                 "$ref": "#/Elements",
-                "description": "The construction elements to trim. Without trimmingElement the roofs and shells among them do the trimming."
+                "description": "The construction elements to trim. Without trimmingElement the roofs and shells among them do the trimming: Archicad decides which roof or shell trims which element and with which trim type, and may trim the roofs and shells with each other, so not every element is necessarily trimmed by every roof or shell. The call reports no result per pair; read them back with GetElementTrims. For a known result, use trimmingElement and call the command once per roof or shell."
             },
             "trimmingElement": {
                 "$ref": "#/ElementId",
-                "description": "Optional. The roof or shell that trims every element in the list."
+                "description": "Optional. The roof or shell that trims every element in the list, with trimType."
             },
             "trimType": {
                 "$ref": "#/TrimType",

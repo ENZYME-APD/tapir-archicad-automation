@@ -3447,7 +3447,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<TrimElementsCommand> (
             solidElementOperationCommands, "1.5.9",
-            "Trims construction elements with a roof or shell: the roofs and shells in the list, or one given trimming element with a trim type."
+            "Trims construction elements with a roof or shell: the roofs and shells in the list, or one given trimming element with a trim type. With several roofs or shells in the list Archicad decides which of them trims which element (they may also trim each other), so not every element is necessarily trimmed by each; to trim each element with each roof or shell, call it once per roof or shell with trimmingElement, and check the result with GetElementTrims."
         );
         err |= RegisterCommand<RemoveElementTrimsCommand> (
             solidElementOperationCommands, "1.5.9",
