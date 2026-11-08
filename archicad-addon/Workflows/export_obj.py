@@ -7,8 +7,15 @@ joined to the outline by a seam. Faces without holes are written as they are. Th
 window (Get3DProjectionSettings) is written as a comment at the top of the file. Changes nothing in
 the project.
 
+The materials go to a .mtl file next to the OBJ (same name, .mtl extension), which the OBJ names
+with mtllib. It has one material per surface the faces use, named after the surface, with the
+surface's colour, transparency and specular reflection read by GetSurfaces. Each face gets the
+material of its surface with usemtl; a face whose material is not a surface attribute of the
+project (one defined in a GDL script) gets the grey material Tapir_NoSurface. --noMtl writes no
+.mtl and no usemtl lines.
+
     python archicad-addon/Workflows/export_obj.py [<output.obj>] [--elementType Wall ...] [--selected]
-        [--holes triangulate|bridge] [--zUp] [--batchSize 100] [--port 19723]
+        [--holes triangulate|bridge] [--zUp] [--noMtl] [--batchSize 100] [--port 19723]
 
 Without an output path the file goes to the temp folder. Without --elementType or --selected every
 element visible in 3D is exported. Archicad is Z up; the file is written Y up (x, z, -y) for the
@@ -31,6 +38,7 @@ parser.add_argument ('--elementType', action = 'append', default = [], help = 'E
 parser.add_argument ('--selected', action = 'store_true', help = 'Export only the elements selected in Archicad.')
 parser.add_argument ('--holes', choices = ['triangulate', 'bridge'], default = 'triangulate', help = 'How faces with holes are written.')
 parser.add_argument ('--zUp', action = 'store_true', help = 'Keep the Z up axes of Archicad instead of writing Y up.')
+parser.add_argument ('--noMtl', action = 'store_true', help = 'Write no .mtl material file and no materials in the OBJ.')
 parser.add_argument ('--batchSize', type = int, default = 100, help = 'The number of elements read with one Get3DGeometryOfElements call.')
 # Read by aclib; named here so that their values are not taken for the output path.
 parser.add_argument ('--host', help = 'The host of Archicad (see aclib).')
@@ -256,10 +264,103 @@ def CameraComment ():
     return lines
 
 
+# --- Materials ---------------------------------------------------------------------------------
+# One material per surface attribute the faces use. The surfaces are read with GetSurfaces once per
+# batch of elements, only the ones not read before.
+
+NO_SURFACE_MATERIAL = 'Tapir_NoSurface'
+SURFACE_FIELDS = ['surfaceColor', 'transparency', 'specularReflection', 'specularColor', 'shine']
+
+
+class Materials:
+    def __init__ (self):
+        self.nameOfGuid = {}     # surface guid -> material name
+        self.surfaceOfName = {}  # material name -> the surface read by GetSurfaces (None: not readable)
+        self.used = []           # the material names used by a face, in the order of first use
+
+    def ReadSurfaces (self, geometries):
+        guids = []
+        for geometry in geometries:
+            if 'error' in geometry:
+                continue
+            for body in geometry.get ('bodies', []):
+                for polygon in body['polygons']:
+                    guid = SurfaceGuidOf (polygon)
+                    if guid and guid not in self.nameOfGuid and guid not in guids:
+                        guids.append (guid)
+        if not guids:
+            return
+        result = RunTapirCommand ('GetSurfaces', {
+            'attributeIds': [{'attributeId': {'guid': guid}} for guid in guids],
+            'fields': SURFACE_FIELDS
+        }, required = False)
+        surfaces = result.get ('surfaces', []) if result and 'error' not in result else []
+        for i, guid in enumerate (guids):
+            surface = surfaces[i] if i < len (surfaces) and 'error' not in surfaces[i] else None
+            self.Add (guid, surface)
+
+    def Add (self, guid, surface):
+        base = MaterialName (surface['name']) if surface and surface.get ('name') else 'Surface_' + guid
+        name = base
+        if name in self.surfaceOfName or name == NO_SURFACE_MATERIAL:
+            name = '{}_{}'.format (base, guid[:8])  # two surfaces with the same name after the cleanup
+        self.nameOfGuid[guid] = name
+        self.surfaceOfName[name] = surface
+
+    def NameOf (self, polygon):
+        guid = SurfaceGuidOf (polygon)
+        name = self.nameOfGuid.get (guid, NO_SURFACE_MATERIAL) if guid else NO_SURFACE_MATERIAL
+        if name not in self.used:
+            self.used.append (name)
+        return name
+
+    def WriteMtl (self, path):
+        with open (path, 'w', encoding = 'utf-8', newline = '\n') as mtl:
+            mtl.write ('# Materials of the Archicad surfaces, exported by Tapir (archicad-addon/Workflows/export_obj.py)\n')
+            for name in self.used:
+                surface = self.surfaceOfName.get (name)
+                mtl.write ('\nnewmtl {}\n'.format (name))
+                if surface is None:
+                    if name != NO_SURFACE_MATERIAL:
+                        mtl.write ('# The surface could not be read with GetSurfaces.\n')
+                    mtl.write ('Kd 0.800000 0.800000 0.800000\nKs 0.000000 0.000000 0.000000\nNs 0.000000\nd 1.000000\nillum 1\n')
+                    continue
+                mtl.write ('# Surface "{}"\n'.format (surface.get ('name', '')))
+                mtl.write ('Kd {:.6f} {:.6f} {:.6f}\n'.format (*Rgb (surface.get ('surfaceColor'), 0.8)))
+                specular = Clamp (surface.get ('specularReflection', 0.0) / 100.0)
+                mtl.write ('Ks {:.6f} {:.6f} {:.6f}\n'.format (*(c * specular for c in Rgb (surface.get ('specularColor'), 1.0))))
+                # Archicad's shine runs from 0 to 10000, the OBJ exponent from 0 to 1000.
+                mtl.write ('Ns {:.6f}\n'.format (max (0.0, min (1000.0, surface.get ('shine', 0.0) / 10.0))))
+                mtl.write ('d {:.6f}\n'.format (1.0 - Clamp (surface.get ('transparency', 0.0) / 100.0)))
+                mtl.write ('illum 2\n')
+
+
+def SurfaceGuidOf (polygon):
+    surfaceId = polygon.get ('surfaceId')
+    return surfaceId.get ('guid') if isinstance (surfaceId, dict) else None
+
+
+def MaterialName (name):
+    # A material name is one token in OBJ and MTL files.
+    return '_'.join (name.split ()) or 'Surface'
+
+
+def Clamp (value):
+    return max (0.0, min (1.0, value))
+
+
+def Rgb (color, default):
+    if not isinstance (color, dict):
+        return (default, default, default)
+    return tuple (Clamp (color.get (key, default)) for key in ('red', 'green', 'blue'))
+
+
 def Main ():
     output = args.output
     if output is None:
         output = os.path.join (tempfile.gettempdir (), 'tapir_export_{}.obj'.format (datetime.datetime.now ().strftime ('%Y%m%d_%H%M%S')))
+    mtlPath = None if args.noMtl else os.path.splitext (output)[0] + '.mtl'
+    materials = Materials ()
 
     elements = GetElementsToExport ()
     print ('Exporting {} elements to {}'.format (len (elements), output))
@@ -269,22 +370,32 @@ def Main ():
         obj.write ('# Exported from Archicad by Tapir (archicad-addon/Workflows/export_obj.py)\n')
         obj.write ('# Axes: {}\n'.format ('Archicad (Z up)' if args.zUp else 'Y up (x, z, -y of Archicad)'))
         obj.write ('\n'.join (CameraComment ()) + '\n')
+        if mtlPath:
+            obj.write ('mtllib {}\n'.format (os.path.basename (mtlPath)))
 
         vertexOffset = 1  # OBJ vertex indices start at 1 and run through the whole file.
         for batch in Batches (elements, max (1, args.batchSize)):
             geometries = RunTapirCommand ('Get3DGeometryOfElements', {'elements': batch})['geometries3D']
             detailsList = RunTapirCommand ('GetDetailsOfElements', {'elements': batch, 'fields': ['type', 'id']})['detailsOfElements']
+            if mtlPath:
+                materials.ReadSurfaces (geometries)
             for element, geometry, details in zip (batch, geometries, detailsList):
                 if 'error' in geometry or not geometry.get ('bodies'):
                     counts['skipped'] += 1
                     continue
                 obj.write ('o {}\n'.format (ObjectName (element, details if 'error' not in details else {})))
                 counts['objects'] += 1
+                currentMaterial = None  # each object names its first material
                 for body in geometry['bodies']:
                     vertices = [(v['x'], v['y'], v['z']) for v in body['vertices']]
                     for v in body['vertices']:
                         obj.write ('v {:.6f} {:.6f} {:.6f}\n'.format (*ToObjAxes (v)))
                     for polygon in body['polygons']:
+                        if mtlPath:
+                            material = materials.NameOf (polygon)
+                            if material != currentMaterial:
+                                obj.write ('usemtl {}\n'.format (material))
+                                currentMaterial = material
                         for face in FacesOfPolygon (polygon, vertices):
                             obj.write ('f {}\n'.format (' '.join (str (vertexOffset + v) for v in face)))
                             counts['faces'] += 1
@@ -293,6 +404,10 @@ def Main ():
 
     print ('Wrote {objects} objects, {vertices} vertices and {faces} faces; {skipped} elements had no 3D body.'.format (**counts))
     print (output)
+    if mtlPath:
+        materials.WriteMtl (mtlPath)
+        print ('Wrote {} materials.'.format (len (materials.used)))
+        print (mtlPath)
 
 
 Main ()
