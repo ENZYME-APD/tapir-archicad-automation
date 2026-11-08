@@ -33,9 +33,11 @@ public:
         Client(
             const IO::URI::URI& url,
             bool onNew, bool onMod, bool onResChanges, bool onSelChange, bool onWindowChange, bool onProjectEvents, bool onAttrReplacement,
+            bool onToolChange,
             const std::set<API_ElemTypeID>& typesToObserve)
             : url(url), notifyOnNew(onNew), notifyOnModification(onMod), notifyOnReservationChanges(onResChanges), notifyOnSelectionChange(onSelChange),
               notifyOnWindowChange(onWindowChange), notifyOnProjectEvents(onProjectEvents), notifyOnAttributeReplacement(onAttrReplacement),
+              notifyOnToolChange(onToolChange),
               elementTypesToObserve(typesToObserve) {}
 
         IO::URI::URI             url;
@@ -46,6 +48,7 @@ public:
         bool                     notifyOnWindowChange;
         bool                     notifyOnProjectEvents;
         bool                     notifyOnAttributeReplacement;
+        bool                     notifyOnToolChange;
         // The element types whose modifications this client is notified of; empty means every type.
         std::set<API_ElemTypeID> elementTypesToObserve;
 
@@ -100,6 +103,8 @@ public:
     // Archicad 25 has no attribute replacement notification.
     static GSErrCode AttributeReplacementHandler (const API_AttributeReplaceIndexTable& table);
 #endif
+    static void UninstallToolChangeHandlerIfNotNeeded ();
+    static GSErrCode ToolChangeHandler (const API_ToolBoxItem* newToolMode);
     // Called by the add-on's one project event handler (ProjectEventHandler.cpp) on every project
     // event it catches; sends the window, floor and project events to the clients that asked for them.
     static void ProjectEventHandler (API_NotifyEventID notifID, Int32 param);
@@ -116,6 +121,7 @@ private:
     static bool hasClientToNotifyOnReservationChanges;
     static bool hasClientToNotifyOnSelectionChange;
     static bool hasClientToNotifyOnAttributeReplacement;
+    static bool hasClientToNotifyOnToolChange;
 
     using EventQueue = std::map<ElementEventType, std::vector<GS::ObjectState>>;
     static std::unique_ptr<EventQueue> queuedEvents;
@@ -142,6 +148,8 @@ public:
     // Adds the "elementId" of each item (the items of a Modify<Tool> command); items without one are skipped.
     void AddElementIdsOf (const GS::Array<GS::ObjectState>& items);
     void MarkChanged (const API_Guid& element);
+    // Marks the "elementId" of item as changed when executionResult is a successful execution result.
+    void MarkChangedIfSucceeded (const GS::ObjectState& item, const GS::ObjectState& executionResult);
     void Report () const;
 
 private:

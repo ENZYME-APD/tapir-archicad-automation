@@ -48,7 +48,7 @@ elements = aclib.RunTapirCommand (
 PrintTexts (elements)
 
 # A width alone wraps the text and keeps its content and runs; a new text without a width
-# makes the text auto-width again, as before.
+# keeps the wrap the text had.
 aclib.RunTapirCommand (
     'ModifyTexts', {
         'textsWithDetails': [
@@ -67,3 +67,14 @@ aclib.RunTapirCommand (
         ]
     })
 PrintTexts (elements[:1])
+
+# A pen change rebuilds the content of the two-run text: it keeps its wrap and its runs. Width 0
+# turns word wrap off.
+aclib.RunTapirCommand (
+    'ModifyTexts', {
+        'textsWithDetails': [
+            {'elementId': elements[2]['elementId'], 'style': {'penIndex': 3}},
+            {'elementId': elements[0]['elementId'], 'width': 0.0}
+        ]
+    })
+PrintTexts ([elements[2], elements[0]])

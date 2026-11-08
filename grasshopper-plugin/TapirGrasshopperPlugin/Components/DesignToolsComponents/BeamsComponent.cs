@@ -37,10 +37,15 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         private static readonly ISet<string> ModifyBeamsKeys = new HashSet<string>
         {
             "anchorPoint", "arcAngle", "beamShape", "begCoordinate", "buildingMaterialId", "circleBased",
-            "coverFill", "cutFillBackgroundPen", "cutFillPen", "endCoordinate", "height", "holes", "isFlipped",
-            "isSlanted", "isWidthAndHeightLinked", "level", "offset", "profileAngle", "profileId", "slantAngle",
-            "verticalCurveHeight", "width"
+            "coverFill", "cutFillBackgroundPen", "cutFillPen", "endCoordinate", "floorIndex", "height", "holes",
+            "isFlipped", "isSlanted", "isWidthAndHeightLinked", "level", "offset", "profileAngle", "profileId",
+            "slantAngle", "verticalCurveHeight", "width", "zCoordinate"
         };
+
+        // ModifyBeams takes the reference line and its elevation, so Create
+        // updates the beams this component made before instead of making new
+        // ones (#521).
+        protected override bool CanUpdateCreatedElements => true;
 
         protected override ISet<string> CreateKeys => CreateBeamsKeys;
         protected override ISet<string> ModifyKeys => ModifyBeamsKeys;
@@ -62,17 +67,31 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 "Beam Settings dialog as one JSON object per dialog panel. A new beam starts from the Beam " +
                 "tool defaults, or from FavoriteName, and the given settings override them. ReferenceLine " +
                 "places a new beam: the Z of its start point is the elevation of the beam's reference line, " +
-                "on the home story it lies in unless Home Story is given.")
+                "on the home story it lies in unless Home Story is given. Create updates the beams this " +
+                "component created before (kept in the .gh file) instead of creating new ones; a beam deleted " +
+                "since then is reported in Errors, not created again. Switch this off or forget the beams in the " +
+                "component menu.")
         {
         }
 
-        // A horizontally curved beam needs its arc angle, which no panel of
-        // the table holds, so a shape read by Refresh could not be written
-        // back as it was: it is left unchanged instead.
         protected override void PrepareSettings(
             JObject settings,
             ISet<string> notes)
         {
+            // Reference Line Elevation and Offset to Home Story both set the
+            // elevation: ModifyBeams applies level after zCoordinate, undoing
+            // it. A JSON read by Refresh carries both, so the elevation is used.
+            if (settings["zCoordinate"] != null && settings["level"] != null)
+            {
+                settings.Remove("level");
+                notes.Add(
+                    $"{KeyOf("level")} is not used together with {KeyOf("zCoordinate")}; " +
+                    $"{KeyOf("zCoordinate")} sets the elevation.");
+            }
+
+            // A horizontally curved beam needs its arc angle, which no panel of
+            // the table holds, so a shape read by Refresh could not be written
+            // back as it was: it is left unchanged instead.
             if (settings["beamShape"]?.ToString() == "HorizontallyCurved" && settings["arcAngle"] == null)
             {
                 settings.Remove("beamShape");
@@ -80,9 +99,10 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             }
         }
 
-        // On Create the Z of ReferenceLine sets the elevation of the new beam
-        // (with Home Story, its offset to the home story), so an Offset to Home
-        // Story read by Refresh from another beam must not move it afterwards.
+        // On Create the Z of ReferenceLine sets the elevation of the new or
+        // updated beam (with Home Story, its offset to the home story), so an
+        // Offset to Home Story read by Refresh from another beam must not move
+        // it afterwards.
         protected override void PrepareCreateSettings(
             JObject settings,
             ISet<string> notes)
@@ -90,8 +110,8 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             if (settings.Remove("level"))
             {
                 notes.Add(
-                    $"{Table.Find("level")?.Key(UseLabels) ?? "level"} is not used on Create: " +
-                    "the Z of ReferenceLine sets the elevation of a new beam.");
+                    $"{KeyOf("level")} is not used on Create: " +
+                    "the Z of ReferenceLine sets the elevation of the beam.");
             }
         }
 

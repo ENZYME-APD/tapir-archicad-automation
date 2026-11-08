@@ -80,6 +80,7 @@ std::set<API_ElemTypeID> AddElementNotificationClientCommand::observedElementTyp
 bool AddElementNotificationClientCommand::hasClientToNotifyOnReservationChanges = false;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnSelectionChange = false;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnAttributeReplacement = false;
+bool AddElementNotificationClientCommand::hasClientToNotifyOnToolChange = false;
 std::unique_ptr<AddElementNotificationClientCommand::EventQueue> AddElementNotificationClientCommand::queuedEvents;
 GS::Thread AddElementNotificationClientCommand::messageSenderThread;
 
@@ -127,7 +128,7 @@ GS::Optional<GS::UniString> AddElementNotificationClientCommand::GetInputParamet
             },
             "notifyOnModificationOfAnElement": {
                 "type": "boolean",
-                "description": "Notify on modification/deletion of an element. The observed elements are the ones ACAPI_Element_GetElemList returns, for API_ZombieElemID or, with elementTypesToObserve, for each of those types, when the first client asking for these notifications of them is registered, and every element of the observed types created after that. Archicad does not report the changes made by Tapir's own commands, so Tapir reports them itself for SetDetailsOfElements, SetPropertyValuesOfElements, MoveElements, RotateElements, MirrorElements (not for the copies they make, which are new elements), DeleteElements, DeleteSelectedElements, the Modify<Tool> commands (ModifyWalls, ModifyBeams, ModifySlabs, ModifyColumns, ModifyWindows, ModifyDoors, ModifyOpenings, ModifyMorphs, ModifyRoofs, ModifyShells, ModifyMeshes, ModifyObjects, ModifyLamps, ModifyTexts, ModifyLabels, ModifyCurtainWalls, ModifyCurtainWallFrames, ModifyZones, ModifySections, ModifyDetailMarkers, ModifyRailings, ModifyStairs), ChangeTextContent, SetGDLParametersOfElements, RunParameterScriptOfElements (only when the script changed the element), SetMarkerParametersOfElements, SetMarkerLibraryPartOfElements, ChangeLibraryPartOfElements, SetClassificationsOfElements, SetCategoryValuesOfElements, ModifyPropertyValueOfElements, SetElementInfoStrings, SetURLReferencesOfElements, SetIFCAttributesOfElements, SetIFCPropertiesOfElements, RemoveIFCPropertiesOfElements, SetIFCClassificationReferencesOfElements, RemoveIFCClassificationReferencesOfElements, LockElements, UnlockElements, SetOpeningDetails, SetOpeningFloorPlanParameters and SetOpeningSymbolParameters. Of the elements these commands change, only the given ones are reported: an element deleted together with its owner (a door or window of a deleted wall) is not. Optional parameter, by default true. Archicad attaches an observer to each element to observe (see elementTypesToObserve) when the first client asks for this, and detaches them when the last one stops, and it is blocked meanwhile: the time grows faster than the number of elements, from seconds for a few hundred elements to many minutes for a few thousand. Count the elements first (GetAllElements with IncludeSubElemObjects, or GetElementsByType) and limit the types on large projects."
+                "description": "Notify on modification/deletion of an element. The observed elements are the ones ACAPI_Element_GetElemList returns, for API_ZombieElemID or, with elementTypesToObserve, for each of those types, when the first client asking for these notifications of them is registered, and every element of the observed types created after that. Archicad does not report the changes made by Tapir's own commands, so Tapir reports them itself for SetDetailsOfElements, SetPropertyValuesOfElements, MoveElements, RotateElements, MirrorElements (not for the copies they make, which are new elements), DeleteElements, DeleteSelectedElements, the Modify<Tool> commands (ModifyWalls, ModifyBeams, ModifySlabs, ModifyColumns, ModifyWindows, ModifyDoors, ModifyOpenings, ModifyMorphs, ModifyRoofs, ModifyShells, ModifyMeshes, ModifyObjects, ModifyLamps, ModifyTexts, ModifyLabels, ModifyCurtainWalls, ModifyCurtainWallFrames, ModifyZones, ModifySections, ModifyDetailMarkers, ModifyRailings, ModifyStairs), ChangeTextContent, SetGDLParametersOfElements, RunParameterScriptOfElements (only when the script changed the element), SetMarkerParametersOfElements, SetMarkerLibraryPartOfElements, ChangeLibraryPartOfElements, SetClassificationsOfElements, SetCategoryValuesOfElements, ModifyPropertyValueOfElements, SetElementInfoStrings, SetURLReferencesOfElements, SetIFCAttributesOfElements, SetIFCPropertiesOfElements, RemoveIFCPropertiesOfElements, SetIFCClassificationReferencesOfElements, RemoveIFCClassificationReferencesOfElements, LockElements, UnlockElements, SetOpeningDetails, SetOpeningFloorPlanParameters, SetOpeningSymbolParameters, CreateGroups and UngroupElements (the grouped elements), MoveElementsToDesignOptions, CreateSolidElementLinks, RemoveSolidElementLinks, CreateSolidOperations (the target and operator when the operation changed or deleted them; the results are new elements), TrimElements, RemoveElementTrims, MergeElements, UnmergeElements, ModifyMEPRoutingElements, ModifyMEPPorts (the element owning the port), ConnectMEPElements, ModifyMEPElements, SetMEPRoutingParameters, ModifyElectricalPanels, ModifyElectricalDevices and ConnectToElectricalCircuits. Of the elements these commands change, only the given ones are reported: an element deleted together with its owner (a door or window of a deleted wall) is not. UpdateZones is not reported by Tapir, because Archicad updates the Zones after the command has returned. Optional parameter, by default true. Archicad attaches an observer to each element to observe (see elementTypesToObserve) when the first client asks for this, and detaches them when the last one stops, and it is blocked meanwhile: the time grows faster than the number of elements, from seconds for a few hundred elements to many minutes for a few thousand. Count the elements first (GetAllElements with IncludeSubElemObjects, or GetElementsByType) and limit the types on large projects."
             },
             "elementTypesToObserve": {
                 "type": "array",
@@ -155,6 +156,10 @@ GS::Optional<GS::UniString> AddElementNotificationClientCommand::GetInputParamet
             "notifyOnAttributeReplacement": {
                 "type": "boolean",
                 "description": "Notify when attributes are deleted and replaced by other attributes of the same type (for example Delete and Replace in the Attribute Manager). The message is {\"replacedAttributes\": [{\"attributeType\": ..., \"oldIndex\": ..., \"newIndex\": ..., \"newAttributeId\": ...}, ...]}: attributeType is one of the type names of GetAttributesByType (\"Layer\", \"Line\", \"Fill\", \"Composite\", \"Surface\", \"LayerCombination\", \"ZoneCategory\", \"Profile\", \"PenTable\", \"MEPSystem\", \"OperationProfile\", \"BuildingMaterial\", or \"Unknown\"), oldIndex is the index of the replaced attribute and newIndex the index of the attribute that replaces it, newAttributeId is the attributeId of that attribute, missing when it cannot be found. Not available in Archicad 25: setting it to true there fails. Optional parameter, by default false."
+            },
+            "notifyOnToolChange": {
+                "type": "boolean",
+                "description": "Notify when the user switches to another tool in the Toolbox. The message is {\"toolChanged\": {\"elementType\": ...}}: elementType is the element type of the new tool, as in elementTypesToObserve (for example \"Wall\" or \"Column\"), \"None\" for the Arrow and the Marquee, and \"Unknown\" for a tool Tapir has no type name for. Optional parameter, by default false."
             }
         },
         "additionalProperties": false,
@@ -214,6 +219,9 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
     }
 #endif
 
+    bool notifyOnToolChange = false;
+    parameters.Get ("notifyOnToolChange", notifyOnToolChange);
+
     std::set<API_ElemTypeID> elementTypesToObserve;
     GS::Array<GS::UniString> elementTypeNames;
     if (parameters.Get ("elementTypesToObserve", elementTypeNames)) {
@@ -231,7 +239,7 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
 
     const GS::UniString connectionUrlStr = GS::UniString::Printf ("http://%T:%d/", host.ToPrintf (), port);
     const IO::URI::URI connectionUrl (connectionUrlStr);
-    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges, notifyOnSelectionChange, notifyOnWindowChange, notifyOnProjectEvents, notifyOnAttributeReplacement, elementTypesToObserve));
+    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges, notifyOnSelectionChange, notifyOnWindowChange, notifyOnProjectEvents, notifyOnAttributeReplacement, notifyOnToolChange, elementTypesToObserve));
     if (!result.second) {
         result.first->second.notifyOnNew = notifyOnNew;
         result.first->second.notifyOnModification = notifyOnModification;
@@ -240,6 +248,7 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
         result.first->second.notifyOnWindowChange = notifyOnWindowChange;
         result.first->second.notifyOnProjectEvents = notifyOnProjectEvents;
         result.first->second.notifyOnAttributeReplacement = notifyOnAttributeReplacement;
+        result.first->second.notifyOnToolChange = notifyOnToolChange;
         result.first->second.elementTypesToObserve = elementTypesToObserve;
         // A client registered again without these notifications may have been the
         // last one that wanted them; uninstall the handlers in that case, as
@@ -247,6 +256,7 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
         // below.
         UninstallSelectionChangeHandlerIfNotNeeded ();
         UninstallAttributeReplacementHandlerIfNotNeeded ();
+        UninstallToolChangeHandlerIfNotNeeded ();
     }
 
     if (notifyOnNew && !hasClientToNotifyOnNew) {
@@ -275,6 +285,11 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
         hasClientToNotifyOnAttributeReplacement = true;
     }
 #endif
+
+    if (notifyOnToolChange && !hasClientToNotifyOnToolChange) {
+        ACAPI_Notification_CatchToolChange (ToolChangeHandler);
+        hasClientToNotifyOnToolChange = true;
+    }
 
     ACAPI_Element_InstallElementObserver (ElementEventHandlerProc);
 
@@ -518,6 +533,52 @@ AddElementNotificationClientCommand::AttributeReplacementHandler (const API_Attr
 }
 
 #endif
+
+void
+AddElementNotificationClientCommand::UninstallToolChangeHandlerIfNotNeeded ()
+{
+    if (!hasClientToNotifyOnToolChange) {
+        return;
+    }
+
+    for (const auto& kv : clients) {
+        if (kv.second.notifyOnToolChange) {
+            return;
+        }
+    }
+
+    ACAPI_Notification_CatchToolChange (nullptr);
+    hasClientToNotifyOnToolChange = false;
+}
+
+GSErrCode
+AddElementNotificationClientCommand::ToolChangeHandler (const API_ToolBoxItem* newToolMode)
+{
+    if (newToolMode == nullptr) {
+        return NoError;
+    }
+
+#ifdef ServerMainVers_2600
+    const API_ElemTypeID typeID = newToolMode->type.typeID;
+#else
+    const API_ElemTypeID typeID = newToolMode->typeID;
+#endif
+    // The Arrow and the Marquee have no element type (as in the DevKit's Notification_Manager example).
+    const GS::UniString elementType = (typeID == API_ZombieElemID) ? GS::UniString ("None") : GetElementTypeNonLocalizedName (typeID);
+    const GS::ObjectState message ("toolChanged", GS::ObjectState ("elementType", elementType));
+
+    // Sent at once, like the selection: a tool change is not an element event.
+    for (auto& kv : clients) {
+        auto& client = kv.second;
+        if (!client.notifyOnToolChange) {
+            continue;
+        }
+
+        SendMessageToNotificationClient (client, message);
+    }
+
+    return NoError;
+}
 
 static GS::Optional<GS::UniString> ProjectEventToString (API_NotifyEventID notifID)
 {
@@ -807,6 +868,20 @@ ElementChangeReporter::MarkChanged (const API_Guid& element)
 }
 
 void
+ElementChangeReporter::MarkChangedIfSucceeded (const GS::ObjectState& item, const GS::ObjectState& executionResult)
+{
+    if (!enabled) {
+        return;
+    }
+
+    bool success = false;
+    const GS::ObjectState* elementId = item.Get ("elementId");
+    if (elementId != nullptr && executionResult.Get ("success", success) && success) {
+        MarkChanged (GetGuidFromObjectState (*elementId));
+    }
+}
+
+void
 ElementChangeReporter::Report () const
 {
     if (!enabled) {
@@ -940,6 +1015,7 @@ GS::ObjectState RemoveElementNotificationClientCommand::Execute (const GS::Objec
     AddElementNotificationClientCommand::UpdateElementObservers ();
     AddElementNotificationClientCommand::UninstallSelectionChangeHandlerIfNotNeeded ();
     AddElementNotificationClientCommand::UninstallAttributeReplacementHandlerIfNotNeeded ();
+    AddElementNotificationClientCommand::UninstallToolChangeHandlerIfNotNeeded ();
 
     return CreateSuccessfulExecutionResult ();
 }
