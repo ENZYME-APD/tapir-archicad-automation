@@ -362,15 +362,42 @@ def door_window_points(owner_beg, owner_end, center_offset: float, width: float)
     return [(cx - ux * width / 2, cy - uy * width / 2), (cx + ux * width / 2, cy + uy * width / 2)]
 
 
-def opening_world_points(geometry: dict) -> list[tuple[float, float, float]]:
-    """ The corners of an Opening element's polygon in world coordinates, from GetOpeningDetails'
-    geometry (the polygon is in the plane of xAxis and yAxis through the anchor point). """
+def _anchor_offsets(anchor: str, width: float, height: float) -> tuple[float, float]:
+    """ How far the anchor point of an opening is from the low corner of the box around its
+    outline, along xAxis and yAxis (as the add-on's GetAnchorOffset). """
+    anchor = anchor or ""
+    x = width if anchor.endswith("Right") else width / 2.0 if anchor.endswith("Center") or anchor == "Center" else 0.0
+    y = height if anchor.startswith("Top") else height / 2.0 if anchor.startswith("Middle") or anchor == "Center" else 0.0
+    return x, y
+
+
+def opening_world_points(geometry: dict, extrusion: dict | None = None) -> list[tuple[float, float, float]]:
+    """ The corners of an Opening element's outline in world coordinates, from GetOpeningDetails'
+    geometry and extrusionParameters. The outline is in the plane of xAxis and yAxis through the
+    anchor point, and the box around it sits on the anchor point where its anchor says. A polygonal
+    opening's outline is its polygon (only its size counts for where it sits); a rectangular or
+    circular one, which has no polygon, is the width x height box (a circle's bounding square). """
+    extrusion = extrusion or {}
     try:
         ax, ay, az = _plan_xyz(geometry["anchorPoint"])
         xx, xy, xz = _plan_xyz(geometry["xAxis"])
         yx, yy, yz = _plan_xyz(geometry["yAxis"])
-        return [(ax + float(p["x"]) * xx + float(p["y"]) * yx, ay + float(p["x"]) * xy + float(p["y"]) * yy,
-                 az + float(p["x"]) * xz + float(p["y"]) * yz) for p in geometry.get("polygon") or []]
+        polygon = [(float(p["x"]), float(p["y"])) for p in geometry.get("polygon") or []]
+        if len(polygon) >= 3:
+            x_min, y_min = min(p[0] for p in polygon), min(p[1] for p in polygon)
+            width, height = max(p[0] for p in polygon) - x_min, max(p[1] for p in polygon) - y_min
+            outline = [(x - x_min, y - y_min) for x, y in polygon]
+        else:
+            if extrusion.get("width") is None:
+                return []
+            width = float(extrusion["width"])
+            height = float(extrusion["height"]) if extrusion.get("height") is not None else width
+            if width <= EPSILON or height <= EPSILON:
+                return []
+            outline = [(0.0, 0.0), (width, 0.0), (width, height), (0.0, height)]
+        off_x, off_y = _anchor_offsets(str(extrusion.get("anchor") or ""), width, height)
+        outline = [(x - off_x, y - off_y) for x, y in outline]
+        return [(ax + x * xx + y * yx, ay + x * xy + y * yy, az + x * xz + y * yz) for x, y in outline]
     except (KeyError, TypeError, ValueError):
         return []
 
@@ -1073,7 +1100,7 @@ class RoomFinishesFromZones:
                 earlier.append({"elementId": element_id["elementId"], "parent": parent})
                 continue
             wall = walls.get(parent)
-            points = opening_world_points(d.get("geometry") or {})
+            points = opening_world_points(d.get("geometry") or {}, d.get("extrusionParameters") or {})
             if wall is None or len(points) < 3:
                 continue
             thickness = max(float(wall.get("begThickness") or 0.0), float(wall.get("endThickness") or 0.0))

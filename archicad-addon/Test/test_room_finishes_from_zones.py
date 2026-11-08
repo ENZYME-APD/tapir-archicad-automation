@@ -528,8 +528,10 @@ class DoorWindowTests(unittest.TestCase):
                     "yAxis": {"x": 0.0, "y": 0.0, "z": 1.0}, "extrusionDirection": {"x": 0.0, "y": 1.0, "z": 0.0},
                     "polygon": [{"x": -0.3, "y": 0.0}, {"x": 0.3, "y": 0.0}, {"x": 0.3, "y": 0.5},
                                 {"x": -0.3, "y": 0.5}]}
-        points = rf.opening_world_points(geometry)
+        points = rf.opening_world_points(geometry, {"anchor": "BottomCenter"})
         self.assertEqual(len(points), 4)
+        self.assertAlmostEqual(min(p[0] for p in points), 1.7)
+        self.assertAlmostEqual(max(p[0] for p in points), 2.3)
         self.assertAlmostEqual(min(p[2] for p in points), 1.0)
         self.assertAlmostEqual(max(p[2] for p in points), 1.5)
         element = {"guid": "O1", "kind": "Opening", "label": "Opening", "maxDistance": 0.2,
@@ -537,6 +539,36 @@ class DoorWindowTests(unittest.TestCase):
         cut = rf.opening_cut(_piece_on(_rectangle_pieces(), y=0.0), element, 0.0, 2.6)
         self.assertAlmostEqual(cut["to"] - cut["from"], 0.6)
         self.assertAlmostEqual(cut["bottom"], 1.0)
+
+    def test_opening_element_polygon_off_the_origin(self):
+        # Only the polygon's size counts: drawn from (5, 5), it still sits on the anchor point.
+        geometry = {"anchorPoint": {"x": 2.0, "y": -0.2, "z": 1.0}, "xAxis": {"x": 1.0, "y": 0.0, "z": 0.0},
+                    "yAxis": {"x": 0.0, "y": 0.0, "z": 1.0},
+                    "polygon": [{"x": 5.0, "y": 5.0}, {"x": 5.6, "y": 5.0}, {"x": 5.6, "y": 5.5},
+                                {"x": 5.0, "y": 5.5}]}
+        points = rf.opening_world_points(geometry, {"anchor": "BottomLeft"})
+        self.assertAlmostEqual(min(p[0] for p in points), 2.0)
+        self.assertAlmostEqual(max(p[0] for p in points), 2.6)
+        self.assertAlmostEqual(min(p[2] for p in points), 1.0)
+        self.assertAlmostEqual(max(p[2] for p in points), 1.5)
+
+    def test_rectangular_opening_element_without_polygon(self):
+        # The Opening tool's default shape has no polygon: its box comes from width, height and anchor.
+        geometry = {"anchorPoint": {"x": 2.0, "y": -0.2, "z": 1.5}, "xAxis": {"x": 1.0, "y": 0.0, "z": 0.0},
+                    "yAxis": {"x": 0.0, "y": 0.0, "z": 1.0}, "extrusionDirection": {"x": 0.0, "y": 1.0, "z": 0.0}}
+        extrusion = {"shapeType": "Rectangular", "width": 0.8, "height": 1.0, "anchor": "Center"}
+        points = rf.opening_world_points(geometry, extrusion)
+        self.assertEqual(len(points), 4)
+        self.assertAlmostEqual(min(p[0] for p in points), 1.6)
+        self.assertAlmostEqual(max(p[0] for p in points), 2.4)
+        self.assertAlmostEqual(min(p[2] for p in points), 1.0)
+        self.assertAlmostEqual(max(p[2] for p in points), 2.0)
+        element = {"guid": "O2", "kind": "Opening", "label": "Opening", "maxDistance": 0.2,
+                   "points": [(p[0], p[1]) for p in points], "bottom": 1.0, "top": 2.0}
+        cut = rf.opening_cut(_piece_on(_rectangle_pieces(), y=0.0), element, 0.0, 2.6)
+        self.assertAlmostEqual(cut["to"] - cut["from"], 0.8)
+        self.assertAlmostEqual(cut["bottom"], 1.0)
+        self.assertEqual(rf.opening_world_points(geometry, {"anchor": "Center"}), [])
 
 
 class FinishAreaTests(unittest.TestCase):
