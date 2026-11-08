@@ -14,7 +14,7 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             : base(
                 "SetCurrent3DStyle",
                 "Meant to make the given 3D style, one of the names Get3DStyles returns, the current one. Not " +
-                "available yet: Archicad's API function for it crashes Archicad 29, so the command refuses.",
+                "available yet: Archicad's API function for it crashes Archicad, so the command refuses.",
                 GroupNames.Navigator)
         {
         }

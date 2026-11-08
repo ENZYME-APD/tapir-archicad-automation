@@ -108,7 +108,7 @@
         "styleName": "TapirCheck style A"
       },
       "expect": [
-        { "path": "success", "eq": false, "name": "refused: Archicad's function crashes Archicad 29" },
+        { "path": "success", "eq": false, "name": "refused: Archicad's function crashes Archicad" },
         { "path": "error.message", "contains": "not available", "name": "the refusal, not an unknown name" }
       ]
     },

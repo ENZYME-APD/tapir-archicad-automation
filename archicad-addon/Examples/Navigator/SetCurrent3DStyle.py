@@ -1,5 +1,5 @@
 """SetCurrent3DStyle is meant to make one of the 3D styles Get3DStyles lists the current one. It is not available
-yet: Archicad's API function for it crashes Archicad 29, so the command checks the name, then refuses.
+yet: Archicad's API function for it crashes Archicad, so the command checks the name, then refuses.
 """
 import aclib
 
