@@ -176,6 +176,8 @@ public:
     // Adds the "elementId" of each item (the items of a Modify<Tool> command); items without one are skipped.
     void AddElementIdsOf (const GS::Array<GS::ObjectState>& items);
     void MarkChanged (const API_Guid& element);
+    // Marks the "elementId" of item as changed when executionResult is a successful execution result.
+    void MarkChangedIfSucceeded (const GS::ObjectState& item, const GS::ObjectState& executionResult);
     void Report () const;
 
 private:

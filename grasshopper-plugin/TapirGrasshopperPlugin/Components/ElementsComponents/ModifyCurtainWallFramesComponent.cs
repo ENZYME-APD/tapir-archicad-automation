@@ -155,10 +155,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 da);
         }
 
-        // No icon of its own yet; the CreateCurtainWalls icon marks the
-        // component as the curtain wall one, as for ModifyCurtainWalls.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.CreateCurtainWalls;
+            Properties.Resources.ModifyCurtainWallFrames;
 
         public override Guid ComponentGuid =>
             new Guid("8ff5a7e0-1dca-4423-ae87-5ef476528812");
