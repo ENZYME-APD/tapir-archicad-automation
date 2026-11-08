@@ -1286,7 +1286,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyShellsCommand> (
             elementCommands, "1.8.0",
-            "Modifies the structure (Basic or Composite, building material or composite) and the top, side (edge) and bottom surface overrides of Shell elements based on the given parameters."
+            "Modifies the structure (Basic or Composite, building material or composite), the top, side (edge) and bottom surface overrides and the custom surface of individual edges (edgeMaterials) of Shell elements based on the given parameters."
         );
         err |= RegisterCommand<ModifyMeshesCommand> (
             elementCommands, "1.5.4",

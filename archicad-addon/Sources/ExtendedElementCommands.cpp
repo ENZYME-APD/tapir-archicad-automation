@@ -11529,6 +11529,70 @@ static GS::Optional<GS::UniString> ApplyShellSurfaces (API_Element& element, API
     return {};
 }
 
+// The given "edgeMaterials" of a Shell (ShellEdgeMaterials, as GetDetailsOfElements reports them):
+// the custom surface of its begin and end profile edges and of the two edges along its surface
+// (#2433). Only the given edges are written; an item that is not overridden clears the edge's
+// custom surface. Changes nothing on an error.
+static GS::Optional<GS::UniString> ApplyShellEdgeMaterials (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed)
+{
+    GS::ObjectState edgeMaterialsOs;
+    if (!details.Get ("edgeMaterials", edgeMaterialsOs)) {
+        return {};
+    }
+    API_ContourEdgeData* begEdge = nullptr;
+    API_ContourEdgeData* endEdge = nullptr;
+    API_ContourEdgeData* sideEdges = nullptr;
+    switch (element.shell.shellClass) {
+        case API_ExtrudedShellID:
+            begEdge = &element.shell.u.extrudedShell.begShapeEdgeData;
+            endEdge = &element.shell.u.extrudedShell.endShapeEdgeData;
+            sideEdges = element.shell.u.extrudedShell.extrudedEdgeDatas;
+            break;
+        case API_RevolvedShellID:
+            begEdge = &element.shell.u.revolvedShell.begShapeEdgeData;
+            endEdge = &element.shell.u.revolvedShell.endShapeEdgeData;
+            sideEdges = element.shell.u.revolvedShell.revolvedEdgeDatas;
+            break;
+        case API_RuledShellID:
+            begEdge = &element.shell.u.ruledShell.begShapeEdgeData;
+            endEdge = &element.shell.u.ruledShell.endShapeEdgeData;
+            sideEdges = element.shell.u.ruledShell.ruledEdgeDatas;
+            break;
+        default:
+            return GS::UniString ("The shell class is not known, so its edges cannot be written.");
+    }
+
+    const char* names[4] = { "begShapeEdge", "endShapeEdge", "begSideEdge", "endSideEdge" };
+    API_ContourEdgeData* edges[4] = { begEdge, endEdge, &sideEdges[0], &sideEdges[1] };
+    API_OverriddenAttribute materials[4];
+    bool given[4] = { false, false, false, false };
+    for (UIndex i = 0; i < 4; ++i) {
+        materials[i] = edges[i]->sideMaterial;
+        GS::ObjectState materialOs;
+        if (!edgeMaterialsOs.Get (names[i], materialOs)) {
+            continue;
+        }
+        auto error = GetOverriddenMaterialChecked (materialOs, GS::UniString ("edgeMaterials.") + GS::UniString (names[i]), materials[i]);
+        if (error.HasValue ()) {
+            return error;
+        }
+        given[i] = true;
+    }
+
+    for (UIndex i = 0; i < 4; ++i) {
+        if (!given[i]) {
+            continue;
+        }
+        edges[i]->sideMaterial = materials[i];
+        // ACAPI_ELEMENT_MASK_SET of the same member, whichever shell class's data it is in: the
+        // mask byte at the member's offset in the element.
+        const size_t offset = (size_t) (reinterpret_cast<const char*> (&edges[i]->sideMaterial) - reinterpret_cast<const char*> (&element));
+        *(reinterpret_cast<char*> (&mask) + offset) = -1;
+        changed = true;
+    }
+    return {};
+}
+
 ModifyShellsCommand::ModifyShellsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -11558,7 +11622,8 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                         "topMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of one face of the shell (topMaterial of GetDetailsOfElements); overridden false clears the override." },
                         "sideMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the edges of the shell; overridden false clears the override." },
                         "bottomMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the other face of the shell (bottomMaterial of GetDetailsOfElements); overridden false clears the override." },
-                        "materialsChained": { "type": "boolean", "description": "Whether the surface materials are chained, as GetDetailsOfElements reports it." }
+                        "materialsChained": { "type": "boolean", "description": "Whether the surface materials are chained, as GetDetailsOfElements reports it." },
+                        "edgeMaterials": { "$ref": "#/ShellEdgeMaterials", "description": "The custom surface of individual edges of the shell, as GetDetailsOfElements reports them. Only the edges given are written; overridden false clears an edge's custom surface." }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -11612,6 +11677,11 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
             auto surfaceError = ApplyShellSurfaces (element, mask, item, changed);
             if (surfaceError.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, surfaceError.Get ()));
+                continue;
+            }
+            auto edgeError = ApplyShellEdgeMaterials (element, mask, item, changed);
+            if (edgeError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, edgeError.Get ()));
                 continue;
             }
 
