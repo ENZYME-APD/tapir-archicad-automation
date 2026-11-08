@@ -3478,6 +3478,42 @@ GSErrCode Initialize (void)
             scriptUICommands, "1.8.1",
             "Opens Archicad's settings dialog of the selected elements or the current tool (Archicad 28 and later), or the default settings dialog of the given element type, waits for the user and reports whether the dialog was closed with OK or Cancel."
         );
+        err |= RegisterCommand<PickLibraryPartCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens Archicad's Object, Lamp, Window or Door Settings dialog, optionally limited to a library part subtype, lets the user pick a library part and set its parameters, and returns the chosen library part with its GDL parameters, or that the user cancelled. Places nothing."
+        );
+        err |= RegisterCommand<PickLibraryPartFileCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens Archicad's Open Library Part dialog, waits for the user and returns the location of the chosen library part, or reports that the user cancelled."
+        );
+        err |= RegisterCommand<PickPictureFileCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens Archicad's Open Picture dialog (the one of the texture settings), waits for the user and returns the location of the chosen picture, or reports that the user cancelled. Archicad adds the chosen picture to the embedded library when it is not in it yet."
+        );
+        err |= RegisterCommand<PickZoneStampOrLabelFileCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens Archicad's dialog for opening a zone stamp or label library part, waits for the user and returns the location of the chosen file, or reports that the user cancelled."
+        );
+        err |= RegisterCommand<PickLibraryPartSaveLocationCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens Archicad's Save Library Part dialog (object, door or window), waits for the user and returns the location chosen to save the library part to, or reports that the user cancelled. Nothing is saved."
+        );
+        err |= RegisterCommand<PickLibraryFolderCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens Archicad's dialog for choosing or creating a library folder, waits for the user and returns the location of the folder, or reports that the user cancelled. The folder is not added to the libraries of the project."
+        );
+        err |= RegisterCommand<ShowIFCExportSettingsCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens Archicad's IFC export settings dialog, where the user picks a view and an IFC export translator, waits for the user and returns the chosen view and translator, or cancelled. Available from Archicad 28."
+        );
+        err |= RegisterCommand<PickAttributeCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens a small dialog with Archicad's attribute picker for the given attribute type (layer, building material, composite, profile or surface; fill and line from Archicad 27), waits for the user and returns the chosen attribute, or cancelled. Available from Archicad 26."
+        );
+        err |= RegisterCommand<PickAttributeFolderCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens a small dialog with Archicad's attribute folder picker for the given attribute type, waits for the user and returns the chosen folder as its path from the root folder, or cancelled. Available from Archicad 26."
+        );
         AddCommandGroup (scriptUICommands);
     }
 
