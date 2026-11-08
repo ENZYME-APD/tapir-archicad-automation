@@ -6973,10 +6973,18 @@ static GSErrCode ApplyWindowOrDoorLibraryPart (Int32 libInd, API_Element& elemen
     return NoError;
 }
 
-GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+// The shared body of CreateWindows and CreateDoors (#1889): typeID is API_WindowID or
+// API_DoorID, dataKey the input array ("windowsData"/"doorsData"), undoName the undo step and
+// noun the element's name in the messages ("window"/"door"). Both write through element.window,
+// the door being the same struct.
+static GS::ObjectState CreateWindowsOrDoors (const GS::ObjectState& parameters,
+    API_ElemTypeID typeID,
+    const char* dataKey,
+    const GS::String& undoName,
+    const char* noun)
 {
-    GS::Array<GS::ObjectState> windowsData;
-    auto error = GetElementArray (parameters, "windowsData", windowsData);
+    GS::Array<GS::ObjectState> elementsData;
+    auto error = GetElementArray (parameters, dataKey, elementsData);
     if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
@@ -6994,11 +7002,11 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
     });
     if (databaseErr != NoError) {
         return CreateErrorResponse (databaseErr,
-            "Failed to activate the floor plan database, which is needed to create a window. Activate the floor plan in Archicad and run the command again.");
+            GS::UniString ("Failed to activate the floor plan database, which is needed to create a ") + noun + ". Activate the floor plan in Archicad and run the command again.");
     }
 
-    return ExecuteCreateWithElements ("Create Windows", [&](GS::Array<GS::ObjectState>& elements) {
-        for (const auto& data : windowsData) {
+    return ExecuteCreateWithElements (undoName, [&](GS::Array<GS::ObjectState>& elements) {
+        for (const auto& data : elementsData) {
             if (data.Get ("ownerWallId") == nullptr) {
                 elements.Push (CreateErrorResponse (APIERR_BADPARS, "Missing required 'ownerWallId' field."));
                 continue;
@@ -7010,7 +7018,7 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
             }
             if (IsPolygonalWall (wallGuid)) {
                 elements.Push (CreateErrorResponse (APIERR_BADPARS,
-                    "The owner wall is polygonal, and Archicad cannot place a window in one."));
+                    GS::UniString ("The owner wall is polygonal, and Archicad cannot place a ") + noun + " in one."));
                 continue;
             }
 
@@ -7022,28 +7030,28 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
                 ACAPI_DisposeElemMemoHdls (&marker.memo);
             });
 
-            // Apply the favorite to the Window tool defaults FIRST so
+            // Apply the favorite to the Window/Door tool defaults FIRST so
             // that PrepareWindowOrDoorDefaults clones the favorite-applied
             // libpart and builds a matching marker. Calling
             // PrepareWindowOrDoorDefaults first and applying the favorite
             // after leaves the marker pointing at the previous libpart,
             // causing CreateExt to fail with -2130313110.
-            GSErrCode err = ApplyWindowOrDoorFavoriteToDefaults (data, API_WindowID);
+            GSErrCode err = ApplyWindowOrDoorFavoriteToDefaults (data, typeID);
             if (err != NoError) {
-                elements.Push (CreateErrorResponse (err, "Failed to resolve `favoriteName` for window."));
+                elements.Push (CreateErrorResponse (err, GS::UniString ("Failed to resolve `favoriteName` for ") + noun + "."));
                 continue;
             }
             Int32 libInd = 0;
-            err = FindWindowOrDoorLibraryPart (data, API_WindowID, libInd);
+            err = FindWindowOrDoorLibraryPart (data, typeID, libInd);
             if (err != NoError) {
-                elements.Push (CreateErrorResponse (err, "Failed to resolve `libraryPartName`: no window library part with that name."));
+                elements.Push (CreateErrorResponse (err, GS::UniString ("Failed to resolve `libraryPartName`: no ") + noun + " library part with that name."));
                 continue;
             }
 
             bool withMarker = true;
-            err = PrepareWindowOrDoorDefaults (API_WindowID, element, memo, marker, withMarker);
+            err = PrepareWindowOrDoorDefaults (typeID, element, memo, marker, withMarker);
             if (err != NoError) {
-                elements.Push (CreateErrorResponse (err, "Failed to prepare window defaults."));
+                elements.Push (CreateErrorResponse (err, GS::UniString ("Failed to prepare ") + noun + " defaults."));
                 continue;
             }
 
@@ -7051,7 +7059,7 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
             data.Get ("centerOffset", centerOffset);
             element.window.owner = wallGuid;
             element.window.objLoc = centerOffset;
-            // The same keys ModifyWindows writes; the mask is not used by the create.
+            // The same keys ModifyWindows and ModifyDoors write; the mask is not used by the create.
             API_Element unusedMask = {};
             bool detailsGiven = false;
             const GS::Optional<GS::UniString> detailsError = ApplyWindowOrDoorDetails (element, unusedMask, data, detailsGiven);
@@ -7074,9 +7082,9 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
                 // The switch above should have ruled this one out, but say what it means
                 // if Archicad still refuses the database - #532 was reported for a year as
                 // a parameter problem because the message named none of this.
-                GS::UniString errorMessage = "Failed to create window.";
+                GS::UniString errorMessage = GS::UniString ("Failed to create ") + noun + ".";
                 if (err == APIERR_BADDATABASE) {
-                    errorMessage = "Failed to create window: Archicad refused the current database. A window can only be created while the floor plan is the current database.";
+                    errorMessage = GS::UniString ("Failed to create ") + noun + ": Archicad refused the current database. A " + noun + " can only be created while the floor plan is the current database.";
                 }
                 elements.Push (CreateErrorResponse (err, errorMessage));
                 continue;
@@ -7084,6 +7092,11 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
             elements.Push (CreateElementIdObjectState (element.header.guid));
         }
     });
+}
+
+GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    return CreateWindowsOrDoors (parameters, API_WindowID, "windowsData", "Create Windows", "window");
 }
 
 CreateDoorsCommand::CreateDoorsCommand () :
@@ -7142,113 +7155,7 @@ GS::Optional<GS::UniString> CreateDoorsCommand::GetRawResponseSchema () const
 
 GS::ObjectState CreateDoorsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
-    GS::Array<GS::ObjectState> doorsData;
-    auto error = GetElementArray (parameters, "doorsData", doorsData);
-    if (error.HasValue ()) {
-        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
-    }
-
-    // The create needs the floor plan as the current database - see
-    // SwitchCurrentDatabaseToFloorPlan. The previous database is restored after the
-    // undoable command has finished, on every exit path.
-    API_DatabaseInfo previousDatabase = {};
-    bool databaseSwitched = false;
-    const GSErrCode databaseErr = SwitchCurrentDatabaseToFloorPlan (previousDatabase, databaseSwitched);
-    const GS::OnExit restoreDatabase ([&]() {
-        if (databaseSwitched) {
-            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
-        }
-    });
-    if (databaseErr != NoError) {
-        return CreateErrorResponse (databaseErr,
-            "Failed to activate the floor plan database, which is needed to create a door. Activate the floor plan in Archicad and run the command again.");
-    }
-
-    return ExecuteCreateWithElements ("Create Doors", [&](GS::Array<GS::ObjectState>& elements) {
-        for (const auto& data : doorsData) {
-            if (data.Get ("ownerWallId") == nullptr) {
-                elements.Push (CreateErrorResponse (APIERR_BADPARS, "Missing required 'ownerWallId' field."));
-                continue;
-            }
-            const API_Guid wallGuid = GetGuidFromObjectState (*data.Get ("ownerWallId"));
-            if (!DoesWallExist (wallGuid)) {
-                elements.Push (CreateErrorResponse (APIERR_BADID, "Failed to load owner wall."));
-                continue;
-            }
-            if (IsPolygonalWall (wallGuid)) {
-                elements.Push (CreateErrorResponse (APIERR_BADPARS,
-                    "The owner wall is polygonal, and Archicad cannot place a door in one."));
-                continue;
-            }
-
-            API_Element element = {};
-            API_ElementMemo memo = {};
-            API_SubElement marker = {};
-            const GS::OnExit cleanup ([&]() {
-                ACAPI_DisposeElemMemoHdls (&memo);
-                ACAPI_DisposeElemMemoHdls (&marker.memo);
-            });
-
-            // Apply the favorite to the Door tool defaults FIRST so
-            // that PrepareWindowOrDoorDefaults clones the favorite-applied
-            // libpart and builds a matching marker. Calling
-            // PrepareWindowOrDoorDefaults first and applying the favorite
-            // after leaves the marker pointing at the previous libpart,
-            // causing CreateExt to fail with -2130313110.
-            GSErrCode err = ApplyWindowOrDoorFavoriteToDefaults (data, API_DoorID);
-            if (err != NoError) {
-                elements.Push (CreateErrorResponse (err, "Failed to resolve `favoriteName` for door."));
-                continue;
-            }
-            Int32 libInd = 0;
-            err = FindWindowOrDoorLibraryPart (data, API_DoorID, libInd);
-            if (err != NoError) {
-                elements.Push (CreateErrorResponse (err, "Failed to resolve `libraryPartName`: no door library part with that name."));
-                continue;
-            }
-
-            bool withMarker = true;
-            err = PrepareWindowOrDoorDefaults (API_DoorID, element, memo, marker, withMarker);
-            if (err != NoError) {
-                elements.Push (CreateErrorResponse (err, "Failed to prepare door defaults."));
-                continue;
-            }
-
-            double centerOffset = 0.0;
-            data.Get ("centerOffset", centerOffset);
-            element.window.owner = wallGuid;
-            element.window.objLoc = centerOffset;
-            // The same keys ModifyDoors writes; the mask is not used by the create.
-            API_Element unusedMask = {};
-            bool detailsGiven = false;
-            const GS::Optional<GS::UniString> detailsError = ApplyWindowOrDoorDetails (element, unusedMask, data, detailsGiven);
-            if (detailsError.HasValue ()) {
-                elements.Push (CreateErrorResponse (APIERR_BADPARS, detailsError.Get ()));
-                continue;
-            }
-            if (libInd > 0) {
-                err = ApplyWindowOrDoorLibraryPart (libInd, element, memo);
-                if (err != NoError) {
-                    elements.Push (CreateErrorResponse (err, "Failed to read the parameters of the `libraryPartName` library part."));
-                    continue;
-                }
-            }
-
-            err = withMarker
-                ? ACAPI_Element_CreateExt (&element, &memo, 1UL, &marker)
-                : ACAPI_Element_Create (&element, &memo);
-            if (err != NoError) {
-                // See the same spot in CreateWindowsCommand::Execute.
-                GS::UniString errorMessage = "Failed to create door.";
-                if (err == APIERR_BADDATABASE) {
-                    errorMessage = "Failed to create door: Archicad refused the current database. A door can only be created while the floor plan is the current database.";
-                }
-                elements.Push (CreateErrorResponse (err, errorMessage));
-                continue;
-            }
-            elements.Push (CreateElementIdObjectState (element.header.guid));
-        }
-    });
+    return CreateWindowsOrDoors (parameters, API_DoorID, "doorsData", "Create Doors", "door");
 }
 
 CreateOpeningsCommand::CreateOpeningsCommand () :
