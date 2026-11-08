@@ -118,7 +118,8 @@
       "creates": false,
       "params": {},
       "expect": [
-        { "path": "currentStyleName", "eq": "${current0}", "name": "the style of before" }
+        { "path": "currentStyleName", "ne": "", "name": "there is a current style" },
+        { "path": "currentStyleName", "ne": "TapirCheck style A", "name": "not the style the refused call named" }
       ]
     },
     {
@@ -190,7 +191,9 @@
       "creates": false,
       "params": {},
       "expect": [
-        { "path": "currentStyleName", "eq": "${current0}", "name": "the style of before" }
+        { "path": "currentStyleName", "ne": "", "name": "there is a current style" },
+        { "path": "currentStyleName", "ne": "TapirCheck no such style", "name": "not the name of the failed call" },
+        { "path": "currentStyleName", "ne": "TapirCheck style A", "name": "not the style the refused call named" }
       ]
     }
   ]
