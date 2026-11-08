@@ -2191,9 +2191,14 @@ GS::Optional<GS::UniString> ApplyWallStructure (
     return {};
 }
 
-// Roofs and shells share API_ShellBaseType, so CreateShells takes the same structure fields.
-GS::Optional<GS::UniString> ApplyShellBaseStructure (
-    API_ShellBaseType& shellBase,
+// The structure (basic or composite, no profile) of roofs, shells and slabs (#1889). They keep it
+// in different places (roof.shellBase, shell.shellBase, slab), so the caller passes the three
+// fields; it also sets its own mask bits, as each element type has its own ACAPI_ELEMENT_MASK_SET.
+// applied is false when the details name no structure.
+GS::Optional<GS::UniString> ApplyBasicOrCompositeStructure (
+    API_ModelElemStructureType& modelElemStructureType,
+    API_AttributeIndex& buildingMaterial,
+    API_AttributeIndex& composite,
     const GS::ObjectState& details,
     bool& applied)
 {
@@ -2206,16 +2211,16 @@ GS::Optional<GS::UniString> ApplyShellBaseStructure (
 
     switch (selection.kind) {
         case StructureSelectionKind::Basic:
-            shellBase.modelElemStructureType = API_BasicStructure;
+            modelElemStructureType = API_BasicStructure;
             if (selection.buildingMaterial != APIInvalidAttributeIndex) {
-                shellBase.buildingMaterial = selection.buildingMaterial;
+                buildingMaterial = selection.buildingMaterial;
             }
-            shellBase.composite = APIInvalidAttributeIndex;
+            composite = APIInvalidAttributeIndex;
             break;
         case StructureSelectionKind::Composite:
-            shellBase.modelElemStructureType = API_CompositeStructure;
+            modelElemStructureType = API_CompositeStructure;
             if (selection.composite != APIInvalidAttributeIndex) {
-                shellBase.composite = selection.composite;
+                composite = selection.composite;
             }
             break;
         case StructureSelectionKind::Profile:
@@ -2225,6 +2230,15 @@ GS::Optional<GS::UniString> ApplyShellBaseStructure (
 
     applied = true;
     return {};
+}
+
+// Roofs and shells share API_ShellBaseType, so CreateShells takes the same structure fields.
+GS::Optional<GS::UniString> ApplyShellBaseStructure (
+    API_ShellBaseType& shellBase,
+    const GS::ObjectState& details,
+    bool& applied)
+{
+    return ApplyBasicOrCompositeStructure (shellBase.modelElemStructureType, shellBase.buildingMaterial, shellBase.composite, details, applied);
 }
 
 GS::Optional<GS::UniString> ApplyRoofStructure (
@@ -2259,33 +2273,14 @@ GS::Optional<GS::UniString> ApplyShellStructure (
     const GS::ObjectState& details,
     bool& changed)
 {
-    StructureSelection selection;
-    auto error = ParseStructureSelection (details, true, false, selection);
+    bool applied = false;
+    auto error = ApplyShellBaseStructure (element.shell.shellBase, details, applied);
     if (error.HasValue ()) {
         return error;
     }
 
-    if (selection.kind == StructureSelectionKind::Unspecified) {
+    if (!applied) {
         return {};
-    }
-
-    switch (selection.kind) {
-        case StructureSelectionKind::Basic:
-            element.shell.shellBase.modelElemStructureType = API_BasicStructure;
-            if (selection.buildingMaterial != APIInvalidAttributeIndex) {
-                element.shell.shellBase.buildingMaterial = selection.buildingMaterial;
-            }
-            element.shell.shellBase.composite = APIInvalidAttributeIndex;
-            break;
-        case StructureSelectionKind::Composite:
-            element.shell.shellBase.modelElemStructureType = API_CompositeStructure;
-            if (selection.composite != APIInvalidAttributeIndex) {
-                element.shell.shellBase.composite = selection.composite;
-            }
-            break;
-        case StructureSelectionKind::Profile:
-        case StructureSelectionKind::Unspecified:
-            break;
     }
 
     if (mask != nullptr) {
@@ -2309,33 +2304,14 @@ GS::Optional<GS::UniString> ApplySlabStructure (
     const GS::ObjectState& details,
     bool& changed)
 {
-    StructureSelection selection;
-    auto error = ParseStructureSelection (details, true, false, selection);
+    bool applied = false;
+    auto error = ApplyBasicOrCompositeStructure (element.slab.modelElemStructureType, element.slab.buildingMaterial, element.slab.composite, details, applied);
     if (error.HasValue ()) {
         return error;
     }
 
-    if (selection.kind == StructureSelectionKind::Unspecified) {
+    if (!applied) {
         return {};
-    }
-
-    switch (selection.kind) {
-        case StructureSelectionKind::Basic:
-            element.slab.modelElemStructureType = API_BasicStructure;
-            if (selection.buildingMaterial != APIInvalidAttributeIndex) {
-                element.slab.buildingMaterial = selection.buildingMaterial;
-            }
-            element.slab.composite = APIInvalidAttributeIndex;
-            break;
-        case StructureSelectionKind::Composite:
-            element.slab.modelElemStructureType = API_CompositeStructure;
-            if (selection.composite != APIInvalidAttributeIndex) {
-                element.slab.composite = selection.composite;
-            }
-            break;
-        case StructureSelectionKind::Profile:
-        case StructureSelectionKind::Unspecified:
-            break;
     }
 
     if (mask != nullptr) {
