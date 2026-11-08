@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-08T19:00:44Z",
+ "generatedAt": "2026-11-08T20:15:27Z",
  "months": [
   {
    "month": "2022-07",
@@ -420,8 +420,8 @@
   }
  ],
  "totals": {
-  "commits": 1296,
-  "discordMessages": 11588,
+  "commits": 1298,
+  "discordMessages": 11595,
   "discordMembers": 643,
   "discordMembersChange": {
    "diff": 3,
@@ -432,163 +432,280 @@
  "topContributors": [
   {
    "name": "tlorantfy",
-   "commits": 437
-  },
-  {
-   "name": "Viktor Kovacs",
-   "commits": 129
-  },
-  {
-   "name": "Cri5chan",
-   "commits": 119
-  },
-  {
-   "name": "MathiasJon",
-   "commits": 92
-  },
-  {
-   "name": "SzamosiMate",
-   "commits": 86
-  },
-  {
-   "name": "fuzesArch",
-   "commits": 54
-  },
-  {
-   "name": "weltmaister",
-   "commits": 44
-  },
-  {
-   "name": "grzegorzwilk",
-   "commits": 39
+   "login": "tlorantfy",
+   "commits": 437,
+   "reports": 14,
+   "tests": 0
   },
   {
    "name": "Parikshit Wadhwa",
-   "commits": 36
+   "login": "parikshit99",
+   "commits": 48,
+   "reports": 157,
+   "tests": 0
   },
   {
-   "name": "Kaushik",
-   "commits": 31
-  },
-  {
-   "name": "Drew Parkinson",
-   "commits": 29
-  },
-  {
-   "name": "fertegi",
-   "commits": 24
-  },
-  {
-   "name": "ooki-atsufumi",
-   "commits": 24
-  },
-  {
-   "name": "Aleš Dolenec",
-   "commits": 20
-  },
-  {
-   "name": "Lucas Becker",
-   "commits": 20
-  },
-  {
-   "name": "bimgeek",
-   "commits": 15
-  },
-  {
-   "name": "Ben Tristem",
-   "commits": 14
-  },
-  {
-   "name": "JBENEITEZ",
-   "commits": 13
-  },
-  {
-   "name": "akunia",
-   "commits": 13
-  },
-  {
-   "name": "parikshit99",
-   "commits": 12
-  },
-  {
-   "name": "Gigiasso",
-   "commits": 10
-  },
-  {
-   "name": "Sven Neumann",
-   "commits": 10
-  },
-  {
-   "name": "cmartif",
-   "commits": 9
-  },
-  {
-   "name": "Developer",
-   "commits": 8
-  },
-  {
-   "name": "poco2018",
-   "commits": 8
-  },
-  {
-   "name": "leceta",
-   "commits": 7
-  },
-  {
-   "name": "Kappa-lo",
-   "commits": 6
-  },
-  {
-   "name": "Barancsuk Ádám",
-   "commits": 6
-  },
-  {
-   "name": "Scott Yost",
-   "commits": 6
-  },
-  {
-   "name": "Agnes Gaschitz",
-   "commits": 6
-  },
-  {
-   "name": "gabrielggordillo-boop",
-   "commits": 5
+   "name": "Viktor Kovacs",
+   "login": "kovacsv",
+   "commits": 129,
+   "reports": 1,
+   "tests": 0
   },
   {
    "name": "archispatialist",
-   "commits": 4
+   "login": "archispatialist",
+   "commits": 4,
+   "reports": 123,
+   "tests": 0
   },
   {
-   "name": "kozure-dev",
-   "commits": 3
+   "name": "Cri5chan",
+   "login": "Cri5chan",
+   "commits": 119,
+   "reports": 2,
+   "tests": 0
   },
   {
-   "name": "KK6877aSKJ",
-   "commits": 3
+   "name": "MathiasJon",
+   "login": "MathiasJon",
+   "commits": 92,
+   "reports": 20,
+   "tests": 0
   },
   {
-   "name": "Archigame",
-   "commits": 3
+   "name": "SzamosiMate",
+   "login": "SzamosiMate",
+   "commits": 86,
+   "reports": 6,
+   "tests": 0
   },
   {
-   "name": "iyur",
-   "commits": 3
+   "name": "weltmaister",
+   "login": "weltmaister",
+   "commits": 46,
+   "reports": 19,
+   "tests": 25
   },
   {
-   "name": "teddybarbin",
-   "commits": 2
+   "name": "fuzesArch",
+   "login": "fuzesArch",
+   "commits": 54,
+   "reports": 0,
+   "tests": 0
+  },
+  {
+   "name": "grzegorzwilk",
+   "login": "grzegorzwilk",
+   "commits": 39,
+   "reports": 2,
+   "tests": 0
+  },
+  {
+   "name": "Drew Parkinson",
+   "login": "kozure-dev",
+   "commits": 32,
+   "reports": 6,
+   "tests": 0
+  },
+  {
+   "name": "Kaushik",
+   "login": "thekaushikls",
+   "commits": 31,
+   "reports": 1,
+   "tests": 0
+  },
+  {
+   "name": "ooki-atsufumi",
+   "login": "ooki-atsufumi",
+   "commits": 24,
+   "reports": 1,
+   "tests": 0
+  },
+  {
+   "name": "JBENEITEZ",
+   "login": "JBENEITEZ",
+   "commits": 13,
+   "reports": 12,
+   "tests": 0
+  },
+  {
+   "name": "fertegi",
+   "login": "fertegi",
+   "commits": 24,
+   "reports": 0,
+   "tests": 0
+  },
+  {
+   "name": "Lucas Becker",
+   "login": "runxel",
+   "commits": 20,
+   "reports": 4,
+   "tests": 0
+  },
+  {
+   "name": "cmartif",
+   "login": "cmartif",
+   "commits": 9,
+   "reports": 15,
+   "tests": 0
+  },
+  {
+   "name": "Aleš Dolenec",
+   "login": "alesdev88",
+   "commits": 20,
+   "reports": 2,
+   "tests": 0
+  },
+  {
+   "name": "Ben Tristem",
+   "login": "BenTristem",
+   "commits": 14,
+   "reports": 7,
+   "tests": 0
+  },
+  {
+   "name": "bimgeek",
+   "login": "bimgeek",
+   "commits": 15,
+   "reports": 0,
+   "tests": 0
+  },
+  {
+   "name": "akunia",
+   "commits": 13,
+   "reports": 0,
+   "tests": 0
+  },
+  {
+   "name": "Gigiasso",
+   "login": "Gigiasso",
+   "commits": 10,
+   "reports": 0,
+   "tests": 0
+  },
+  {
+   "name": "Sven Neumann",
+   "commits": 10,
+   "reports": 0,
+   "tests": 0
+  },
+  {
+   "name": "ferencz-tamas",
+   "login": "ferencz-tamas",
+   "commits": 0,
+   "reports": 10,
+   "tests": 0
+  },
+  {
+   "name": "Developer",
+   "commits": 8,
+   "reports": 0,
+   "tests": 0
+  },
+  {
+   "name": "poco2018",
+   "login": "poco2018",
+   "commits": 8,
+   "reports": 0,
+   "tests": 0
+  },
+  {
+   "name": "Kappa-lo",
+   "login": "Kappa-lo",
+   "commits": 6,
+   "reports": 2,
+   "tests": 0
+  },
+  {
+   "name": "leceta",
+   "login": "leceta",
+   "commits": 7,
+   "reports": 0,
+   "tests": 0
+  },
+  {
+   "name": "Barancsuk Ádám",
+   "login": "brncsk",
+   "commits": 6,
+   "reports": 1,
+   "tests": 0
+  },
+  {
+   "name": "cichym",
+   "login": "cichym",
+   "commits": 0,
+   "reports": 7,
+   "tests": 0
+  },
+  {
+   "name": "Agnes Gaschitz",
+   "login": "Gaschitz",
+   "commits": 6,
+   "reports": 0,
+   "tests": 0
+  },
+  {
+   "name": "Scott Yost",
+   "login": "Yostage",
+   "commits": 6,
+   "reports": 0,
+   "tests": 0
   },
   {
    "name": "Marcel Winklmüller",
-   "commits": 2
+   "login": "Liquidmasl",
+   "commits": 2,
+   "reports": 4,
+   "tests": 0
   },
   {
-   "name": "sdh001905",
-   "commits": 2
+   "name": "gabrielggordillo-boop",
+   "login": "gabrielggordillo-boop",
+   "commits": 5,
+   "reports": 0,
+   "tests": 0
   },
   {
-   "name": "agmurf",
-   "commits": 2
+   "name": "Hcf-Archi",
+   "login": "Hcf-Archi",
+   "commits": 0,
+   "reports": 5,
+   "tests": 0
+  },
+  {
+   "name": "AlexanderBurkeAB",
+   "login": "AlexanderBurkeAB",
+   "commits": 0,
+   "reports": 4,
+   "tests": 0
+  },
+  {
+   "name": "gustavodazarq-blip",
+   "login": "gustavodazarq-blip",
+   "commits": 0,
+   "reports": 4,
+   "tests": 0
+  },
+  {
+   "name": "LuisaRaadius",
+   "login": "LuisaRaadius",
+   "commits": 0,
+   "reports": 4,
+   "tests": 0
+  },
+  {
+   "name": "signzero",
+   "login": "signzero",
+   "commits": 0,
+   "reports": 4,
+   "tests": 0
+  },
+  {
+   "name": "UGEFONTAN",
+   "login": "UGEFONTAN",
+   "commits": 0,
+   "reports": 4,
+   "tests": 0
   }
  ],
  "memberHistory": [
