@@ -1385,6 +1385,11 @@ static bool FindEnumValue (const char* fieldName, const GS::UniString& name, con
 static const EnumValue kMorphBodyTypes[]  = { { "NonSolid", 0 }, { "Solid", 1 } };
 // The values the structureType condition writes, see EmitCriterionNode.
 static const EnumValue kStructureTypes[] = { { "Basic", 1 }, { "Composite", 2 }, { "ComplexProfile", 3 } };
+// The values of the Plan and Section enum conditions, see EmitCriterionNode.
+static const EnumValue kPenReplacementValues[] = { { "None", 1 }, { "ForegroundOnly", 2 }, { "BackgroundOnly", 3 }, { "Both", 4 } };
+static const EnumValue kTextAlignments[]       = { { "Left", 0 }, { "Center", 1 }, { "Right", -1 }, { "Justified", 20 } };
+static const EnumValue kTextStyles[]           = { { "Bold", 1 }, { "Italic", 2 }, { "Underline", 4 }, { "Strikethrough", 256 }, { "Superscript", 512 }, { "Subscript", 1024 } };
+static const EnumValue kHatchCategories[]      = { { "Drafting", 1 }, { "Cover", 2 }, { "Cut", 3 }, { "BuildingMaterialCut", 4 }, { "SurfaceColor", 5 }, { "SurfaceCover", 6 }, { "SurfaceTexture", 7 } };
 
 // An enum stored as a GuidVariant: each name's fixed built-in value guid.
 struct GuidEnumValue {
@@ -2622,11 +2627,8 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
         const bool isNot = !penReplacementNot.IsEmpty ();
         const GS::UniString& name = isNot ? penReplacementNot : penReplacement;
         int value = 0;
-        if (name == "None")                value = 1;
-        else if (name == "ForegroundOnly") value = 2;
-        else if (name == "BackgroundOnly") value = 3;
-        else if (name == "Both")           value = 4;
-        else {
+        GS::UniString enumError;
+        if (!FindEnumValue ("penReplacement", name, kPenReplacementValues, 4, value, enumError)) {
             outError = "Invalid penReplacement/penReplacementNot '" + name + "'. Must be 'None', 'ForegroundOnly', 'BackgroundOnly', or 'Both'.";
             return false;
         }
@@ -3030,9 +3032,6 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
     }
 
     static const EnumValue kBeamCrossSections[]    = { { "Rectangular", 0 }, { "Profiled", 1 }, { "Circular", 2 } };
-    static const EnumValue kTextAlignments[]       = { { "Left", 0 }, { "Center", 1 }, { "Right", -1 }, { "Justified", 20 } };
-    static const EnumValue kTextStyles[]           = { { "Bold", 1 }, { "Italic", 2 }, { "Underline", 4 }, { "Strikethrough", 256 }, { "Superscript", 512 }, { "Subscript", 1024 } };
-    static const EnumValue kHatchCategories[]      = { { "Drafting", 1 }, { "Cover", 2 }, { "Cut", 3 }, { "BuildingMaterialCut", 4 }, { "SurfaceColor", 5 }, { "SurfaceCover", 6 }, { "SurfaceTexture", 7 } };
     static const EnumValue kOpeningShapes[]        = { { "Square", 0 }, { "Rectangle", 1 }, { "Circle", 2 }, { "Ellipse", 3 }, { "Polygonal", 4 } };
     static const EnumValue kOpeningLimits[]        = { { "Infinite", 0 }, { "BothSides", 1 }, { "OneSide", 2 } };
     static const EnumValue kOpeningOrientations[]  = { { "Vertical", 0 }, { "Horizontal", 1 }, { "Aligned", 2 }, { "Custom", 3 } };
@@ -3578,13 +3577,16 @@ static bool FindAttributeNameByIndex (API_AttrTypeID typeID, Int32 index, GS::Un
 }
 
 // The built-in properties of the Layers, Model View and Construction categories (part 2 of #1816),
-// each written by EmitCriterionNode with the same key, guid and group.
+// each written by EmitCriterionNode with the same key, guid and group, and those of the Plan and
+// Section and Surfaces and Materials categories that need an attribute or an enum (part 4).
 enum class BuiltInFieldKind {
     Bool,           // key: true/false, "is"
-    AttributeIs,    // key / keyNot: an attribute name, "is" / "is not"
-    AttributeHas,   // key / keyNot: an attribute name, "contains" / "does not contain"
+    AttributeIs,    // key / keyNot (when notAllowed): an attribute name, "is" / "is not"
+    AttributeHas,   // key / keyNot (when notAllowed): an attribute name, "contains" / "does not contain"
     String,         // key + Is, IsNot, Contains, NotContains, StartsWith, EndsWith: a text
-    Enum            // key / keyNot (when notAllowed): an enum name, "is" / "is not"
+    Enum,           // key / keyNot (when notAllowed): an enum name, "is" / "is not"
+    ListEnum,       // key: an enum name, "is", stored as a list of one integer
+    ListFlags       // key: a list of enum names, "is", stored as one integer of their flags
 };
 
 struct BuiltInPropertyField {
@@ -3613,8 +3615,19 @@ static const BuiltInPropertyField kBuiltInPropertyFields[] = {
     { "roofConnected",          BuiltInFieldKind::Bool,         kRoofConnectedPropertyGuid,          kConstructionPropertyGroupGuid, API_ZombieAttrID,  nullptr,         0, false },
     { "structureType",          BuiltInFieldKind::Enum,         kStructureTypePropertyGuid,          kConstructionPropertyGroupGuid, API_ZombieAttrID,  kStructureTypes, 3, false },
     { "morphBodyType",          BuiltInFieldKind::Enum,         kMorphBodyTypePropertyGuid,          kConstructionPropertyGroupGuid, API_ZombieAttrID,  kMorphBodyTypes, 2, true  },
-    // ID and Categories (part 3 of #1816), the rest of which is in kPositionAndIdFields.
+    // ID and Categories (part 3 of #1816), the rest of which is in kBuiltInValueFields.
     { "missingVariant",         BuiltInFieldKind::Bool,         kMissingVariantPropertyGuid,         kIdCategoryGroupGuid4,          API_ZombieAttrID,  nullptr,         0, false },
+    // Plan and Section (part 4 of #1816), the rest of which is in kBuiltInValueFields.
+    { "hatchFill",              BuiltInFieldKind::AttributeHas, kHatchFillPropertyGuid,              kPlanSectionPropertyGroupGuid,  API_FilltypeID,    nullptr,         0, true  },
+    { "lineAttribute",          BuiltInFieldKind::AttributeHas, kLineTypeAttrPropertyGuid,           kPlanSectionPropertyGroupGuid,  API_LinetypeID,    nullptr,         0, true  },
+    { "dimensionPointerLineTypeContains", BuiltInFieldKind::AttributeHas, kDimensionPointerLineTypePropertyGuid, kPlanSectionPropertyGroupGuid, API_LinetypeID, nullptr, 0, false },
+    { "penReplacement",         BuiltInFieldKind::Enum,         kPenReplacementPropertyGuid,         kPlanSectionPropertyGroupGuid,  API_ZombieAttrID,  kPenReplacementValues, 4, true  },
+    { "hatchCategory",          BuiltInFieldKind::Enum,         kHatchCategoryPropertyGuid,          kPlanSectionPropertyGroupGuid,  API_ZombieAttrID,  kHatchCategories,      7, false },
+    { "textAlignment",          BuiltInFieldKind::ListEnum,     kTextAlignmentPropertyGuid,          kPlanSectionPropertyGroupGuid,  API_ZombieAttrID,  kTextAlignments,       4, false },
+    { "textStyle",              BuiltInFieldKind::ListFlags,    kTextStylePropertyGuid,              kPlanSectionPropertyGroupGuid,  API_ZombieAttrID,  kTextStyles,           6, false },
+    // Surfaces and Materials (part 4 of #1816).
+    { "constructionMaterial",   BuiltInFieldKind::AttributeHas, kConstructionMaterialPropertyGuid,   kSurfaceMaterialPropertyGroupGuid, API_BuildingMaterialID, nullptr,   0, true  },
+    { "surface",                BuiltInFieldKind::AttributeHas, kSurfacePropertyGuid,                kSurfaceMaterialPropertyGroupGuid, API_MaterialID,     nullptr,        0, true  },
 };
 
 static bool ReadBuiltInPropertyField (const BuiltInPropertyField& field, const CriterionXmlNode& classGuid, const CriterionXmlNode& leaf, int op, const std::string& valueText, GS::ObjectState& outLeaf)
@@ -3638,7 +3651,7 @@ static bool ReadBuiltInPropertyField (const BuiltInPropertyField& field, const C
             const int isOp = isHas ? 6 : 0;
             const int isNotOp = isHas ? 7 : 1;
             int index = 0;
-            if ((op != isOp && op != isNotOp) || !ParseInt (valueText, index))
+            if ((op != isOp && !(op == isNotOp && field.notAllowed)) || !ParseInt (valueText, index))
                 return false;
             const bool isNot = op == isNotOp;
             const GS::UniString generatedXML = isHas
@@ -3682,18 +3695,59 @@ static bool ReadBuiltInPropertyField (const BuiltInPropertyField& field, const C
             }
             return false;
         }
+        case BuiltInFieldKind::ListEnum: {
+            int value = 0;
+            if (op != 0 || !ParseInt (valueText, value))
+                return false;
+            for (int i = 0; i < field.valueCount; ++i) {
+                if (field.values[i].value != value)
+                    continue;
+                if (!MatchesGenerated (classGuid, leaf, IntListCriterionXML (field.propertyGuid, value, 0, field.groupGuid)))
+                    return false;
+                outLeaf = GS::ObjectState ();
+                outLeaf.Add (key, GS::UniString (field.values[i].name));
+                return true;
+            }
+            return false;
+        }
+        case BuiltInFieldKind::ListFlags: {
+            // A flag not in values cannot be named, so the condition stays raw. No flag at all is the
+            // empty list, which the generator writes as 0.
+            int mask = 0;
+            if (op != 0 || !ParseInt (valueText, mask) || !MatchesGenerated (classGuid, leaf, IntListCriterionXML (field.propertyGuid, mask, 0, field.groupGuid)))
+                return false;
+            int remaining = mask;
+            GS::Array<GS::UniString> names;
+            for (int i = 0; i < field.valueCount; ++i) {
+                if ((mask & field.values[i].value) != 0) {
+                    names.Push (GS::UniString (field.values[i].name));
+                    remaining &= ~field.values[i].value;
+                }
+            }
+            if (remaining != 0)
+                return false;
+            outLeaf = GS::ObjectState ();
+            const auto& nameList = outLeaf.AddList<GS::UniString> (key);
+            for (const GS::UniString& name : names)
+                nameList (name);
+            return true;
+        }
     }
     return false;
 }
 
 // The built-in properties of the Positioning and ID and Categories categories (part 3 of #1816), each
-// written by EmitCriterionNode with the same key, guid, group and operators. The fields of one tool
-// (wallLevelOffset, wallParentId, ...) are not here.
+// written by EmitCriterionNode with the same key, guid, group and operators, and those of the Plan and
+// Section and Surfaces and Materials categories that hold a value (part 4). The fields of one tool
+// (wallLevelOffset, wallParentId, meshEdgePen, ...) are not here.
 enum class BuiltInValueKind {
     Number,     // key + "", Not, LessThan, GreaterThan, LessOrEqual, GreaterOrEqual: a number
-    Integer,    // key: an integer, "is"
+    Integer,    // key / keyNot (when notAllowed): an integer, "is" / "is not"
     Text,       // key + the suffix of each operator in textOps (kTextOperatorSuffixes): a text
     TextList,   // the same, written as a list of one text
+    IntList,    // the same, an integer written as a list of one integer
+    IntListIs,  // key: an integer written as a list of one integer, "is"
+    Font,       // like IntList, the font named by its name (the list holds its index)
     GuidEnum,   // key / keyNot (when notAllowed): an enum name, "is" / "is not"
     GuidFlag    // key / keyNot: true, "is" / "is not" the one value of values
 };
@@ -3704,20 +3758,22 @@ static const unsigned kTextIsOps       = 0x003; // is, is not
 static const unsigned kTextContainsOps = 0x040; // contains
 static const unsigned kText6Ops        = 0x3C3; // is, is not, contains, does not contain, starts with, ends with
 static const unsigned kText10Ops       = 0x3FF; // and less than, greater than, less or equal, greater or equal
+static const unsigned kListHasOps      = 0x0C0; // contains, does not contain
+static const unsigned kListIsHasOps    = 0x0C1; // is, contains, does not contain
 
 struct BuiltInValueField {
     const char*          key;
     BuiltInValueKind     kind;
     const char*          propertyGuid;
     const char*          groupGuid;
-    unsigned             textOps;       // Text, TextList: bit n accepts operator n
+    unsigned             textOps;       // Text, TextList, IntList, Font: bit n accepts operator n
     bool                 bareVariant;   // Text, GuidEnum: the <Variant> has no <Value> wrapper
     const GuidEnumValue* values;        // GuidEnum, GuidFlag
     int                  valueCount;
-    bool                 notAllowed;    // GuidEnum
+    bool                 notAllowed;    // Integer, GuidEnum
 };
 
-static const BuiltInValueField kPositionAndIdFields[] = {
+static const BuiltInValueField kBuiltInValueFields[] = {
     { "seaLevelAltitude",    BuiltInValueKind::Number,   kSeaLevelAltitudePropertyGuid,    kPositioningPropertyGroupGuid, 0,                false, nullptr,                   0, false },
     { "projectZeroAltitude", BuiltInValueKind::Number,   kProjectZeroAltitudePropertyGuid, kPositioningPropertyGroupGuid, 0,                false, nullptr,                   0, false },
     { "groundFloorAltitude", BuiltInValueKind::Number,   kGroundFloorAltitudePropertyGuid, kPositioningPropertyGroupGuid, 0,                false, nullptr,                   0, false },
@@ -3741,6 +3797,20 @@ static const BuiltInValueField kPositionAndIdFields[] = {
     { "hasLinkSource",       BuiltInValueKind::GuidFlag, kLinkSourcePropertyGuid,          kIdCategoryGroupGuid3,         0,                false, kLinkSourceValues,         1, false },
     { "variantSetName",      BuiltInValueKind::Text,     kVariantSetNamePropertyGuid,      kIdCategoryGroupGuid4,         kTextContainsOps, false, nullptr,                   0, false },
     { "variantName",         BuiltInValueKind::Text,     kVariantNamePropertyGuid,         kIdCategoryGroupGuid4,         kTextContainsOps, false, nullptr,                   0, false },
+    // Plan and Section (part 4 of #1816). Pens are plain pen numbers.
+    { "font",                BuiltInValueKind::Font,      kFontPropertyGuid,                  kPlanSectionPropertyGroupGuid, kListIsHasOps,    false, nullptr,                   0, false },
+    { "linePen",             BuiltInValueKind::IntList,   kLinePenPropertyGuid,               kPlanSectionPropertyGroupGuid, kListHasOps,      false, nullptr,                   0, false },
+    { "textPen",             BuiltInValueKind::IntList,   kTextPenPropertyGuid,               kPlanSectionPropertyGroupGuid, kListIsHasOps,    false, nullptr,                   0, false },
+    { "hatchContourPen",     BuiltInValueKind::Integer,   kHatchContourPenPropertyGuid,       kPlanSectionPropertyGroupGuid, 0,                false, nullptr,                   0, true  },
+    { "textLineSpacing",     BuiltInValueKind::IntListIs, kTextLineSpacingPropertyGuid,       kPlanSectionPropertyGroupGuid, 0,                false, nullptr,                   0, false },
+    { "dimensionMarkerSize", BuiltInValueKind::Number,    kDimensionMarkerSizePropertyGuid,   kWallGeometryGroupGuid,        0,                false, nullptr,                   0, false },
+    { "dimensionMarkerPen",  BuiltInValueKind::Integer,   kDimensionMarkerPenPropertyGuid,    kPlanSectionPropertyGroupGuid, 0,                false, nullptr,                   0, false },
+    { "dimensionMarkerPen",  BuiltInValueKind::IntList,   kDimensionMarkerPenListPropertyGuid, kPlanSectionPropertyGroupGuid, kTextContainsOps, false, nullptr,                  0, false },
+    { "dimensionPointerPen", BuiltInValueKind::IntList,   kDimensionPointerPenPropertyGuid,   kPlanSectionPropertyGroupGuid, kTextContainsOps, false, nullptr,                   0, false },
+    // Surfaces and Materials (part 4 of #1816).
+    { "constructionMaterialId",   BuiltInValueKind::TextList, kConstructionMaterialIdPropertyGuid,   kSurfaceMaterialPropertyGroupGuid, kText6Ops, false, nullptr, 0, false },
+    { "constructionMaterialName", BuiltInValueKind::TextList, kConstructionMaterialNamePropertyGuid, kSurfaceMaterialPropertyGroupGuid, kText6Ops, false, nullptr, 0, false },
+    { "surfaceName",              BuiltInValueKind::TextList, kSurfaceNamePropertyGuid,              kSurfaceMaterialPropertyGroupGuid, kText6Ops, false, nullptr, 0, false },
 };
 
 // Whether the generator writes this leaf for generatedXML once its value is written as writtenText:
@@ -3775,12 +3845,40 @@ static bool ReadBuiltInValueField (const BuiltInValueField& field, const Criteri
         }
         case BuiltInValueKind::Integer: {
             int value = 0;
-            if (op != 0 || !ParseInt (valueText, value))
+            if ((op != 0 && !(op == 1 && field.notAllowed)) || !ParseInt (valueText, value))
                 return false;
-            if (!MatchesGenerated (classGuid, leaf, IntPropertyCriterionXML (field.propertyGuid, value, 0, field.groupGuid)))
+            if (!MatchesGenerated (classGuid, leaf, IntPropertyCriterionXML (field.propertyGuid, value, op, field.groupGuid)))
                 return false;
             outLeaf = GS::ObjectState ();
-            outLeaf.Add (key, static_cast<Int32> (value));
+            outLeaf.Add (op == 1 ? notKey : key, static_cast<Int32> (value));
+            return true;
+        }
+        case BuiltInValueKind::IntList:
+        case BuiltInValueKind::IntListIs:
+        case BuiltInValueKind::Font: {
+            const unsigned ops = field.kind == BuiltInValueKind::IntListIs ? 0x001u : field.textOps;
+            int value = 0;
+            if (op < 0 || op > 9 || (ops & (1u << op)) == 0 || !ParseInt (valueText, value))
+                return false;
+            if (!MatchesGenerated (classGuid, leaf, IntListCriterionXML (field.propertyGuid, value, op, field.groupGuid)))
+                return false;
+            const GS::String outKey = field.kind == BuiltInValueKind::IntListIs ? key : key + kTextOperatorSuffixes[op];
+            outLeaf = GS::ObjectState ();
+            if (field.kind != BuiltInValueKind::Font) {
+                outLeaf.Add (outKey, static_cast<Int32> (value));
+                return true;
+            }
+            // A font that is not loaded cannot be named, nor one whose name the generator resolves
+            // to another font, so those stay raw.
+            if (value < 1 || value > 32767)
+                return false;
+            const GS::Optional<GS::UniString> fontName = GetFontNameFromIndex (static_cast<short> (value));
+            if (!fontName.HasValue () || fontName->IsEmpty ())
+                return false;
+            const GS::Optional<short> resolvedIndex = GetFontIndexFromName (*fontName);
+            if (!resolvedIndex.HasValue () || *resolvedIndex != value)
+                return false;
+            outLeaf.Add (outKey, *fontName);
             return true;
         }
         case BuiltInValueKind::Text:
@@ -3833,7 +3931,7 @@ static bool ReadBuiltInPropertyLeaf (const CriterionXmlNode& classGuid, const Cr
         if (SameGuid (guidNode->text, field.propertyGuid) && SameGuid (groupGuidNode->text, field.groupGuid))
             return ReadBuiltInPropertyField (field, classGuid, leaf, op, valueText, outLeaf);
     }
-    for (const BuiltInValueField& field : kPositionAndIdFields) {
+    for (const BuiltInValueField& field : kBuiltInValueFields) {
         if (SameGuid (guidNode->text, field.propertyGuid) && SameGuid (groupGuidNode->text, field.groupGuid))
             return ReadBuiltInValueField (field, classGuid, leaf, op, valueText, outLeaf);
     }
