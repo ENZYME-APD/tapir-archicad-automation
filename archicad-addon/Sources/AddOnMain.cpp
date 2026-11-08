@@ -3482,6 +3482,22 @@ GSErrCode Initialize (void)
             scriptUICommands, "1.8.1",
             "Opens Archicad's Object, Lamp, Window or Door Settings dialog, optionally limited to a library part subtype, lets the user pick a library part and set its parameters, and returns the chosen library part with its GDL parameters, or that the user cancelled. Places nothing."
         );
+        err |= RegisterCommand<PickLibraryPartFileCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens Archicad's Open Library Part dialog, waits for the user and returns the location of the chosen library part, or reports that the user cancelled."
+        );
+        err |= RegisterCommand<PickPictureFileCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens Archicad's Open Picture dialog (the one of the texture settings), waits for the user and returns the location of the chosen picture, or reports that the user cancelled. Archicad adds the chosen picture to the embedded library when it is not in it yet."
+        );
+        err |= RegisterCommand<PickZoneStampOrLabelFileCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens Archicad's dialog for opening a zone stamp or label library part, waits for the user and returns the location of the chosen file, or reports that the user cancelled."
+        );
+        err |= RegisterCommand<PickLibraryPartSaveLocationCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens Archicad's Save Library Part dialog (object, door or window), waits for the user and returns the location chosen to save the library part to, or reports that the user cancelled. Nothing is saved."
+        );
         AddCommandGroup (scriptUICommands);
     }
 
