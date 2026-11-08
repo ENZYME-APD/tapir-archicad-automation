@@ -9,7 +9,10 @@ using TapirGrasshopperPlugin.Types.Properties;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
-    public class SetPropertyValuesOfAttributesComponent : ArchicadExecutorComponent
+    // Sends one SetPropertyValuesOfAttributes request for every branch of the
+    // inputs, so a tree input makes one undo step in Archicad (#203).
+    public class SetPropertyValuesOfAttributesComponent
+        : BatchedExecutorComponent<AttributePropertyValueObj>
     {
         public override string CommandName => "SetPropertyValuesOfAttributes";
 
@@ -42,28 +45,31 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 "Error message of each property value (empty when it succeeded).");
         }
 
-        protected override void Solve(
-            IGH_DataAccess da)
+        protected override bool TryGetBatchItems(
+            IGH_DataAccess da,
+            out List<AttributePropertyValueObj> items)
         {
+            items = null;
+
             if (!da.TryGetList(
                     0,
                     out List<GH_ObjectWrapper> attributeWrappers))
             {
-                return;
+                return false;
             }
 
             if (!da.TryGetList(
                     1,
                     out List<GH_ObjectWrapper> propertyWrappers))
             {
-                return;
+                return false;
             }
 
             if (!da.TryGetList(
                     2,
                     out List<string> values))
             {
-                return;
+                return false;
             }
 
             if (propertyWrappers.Count != 1 &&
@@ -71,7 +77,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             {
                 this.AddError(
                     "The size of the input PropertyGuids must be 1 or equal to the size of the input AttributeGuids.");
-                return;
+                return false;
             }
 
             if (values.Count != 1 &&
@@ -79,13 +85,10 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             {
                 this.AddError(
                     "The size of the input Values must be 1 or equal to the size of the input AttributeGuids.");
-                return;
+                return false;
             }
 
-            var input = new SetPropertyValuesOfAttributesParameters
-            {
-                AttributePropertyValues = new List<AttributePropertyValueObj>()
-            };
+            var branchItems = new List<AttributePropertyValueObj>();
 
             for (var i = 0; i < attributeWrappers.Count; i++)
             {
@@ -94,7 +97,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 if (attributeId == null)
                 {
                     this.AddError("Invalid attribute identifier in the AttributeGuids input.");
-                    return;
+                    return false;
                 }
 
                 var propertyWrapper =
@@ -104,10 +107,10 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 if (propertyId == null)
                 {
                     this.AddError("Invalid property identifier in the PropertyGuids input.");
-                    return;
+                    return false;
                 }
 
-                input.AttributePropertyValues.Add(
+                branchItems.Add(
                     new AttributePropertyValueObj
                     {
                         AttributeId = attributeId,
@@ -119,11 +122,27 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                     });
             }
 
-            SetCadValuesWithErrorMessages(
-                CommandName,
-                input,
-                ToAddOn,
-                da);
+            items = branchItems;
+            return true;
+        }
+
+        // The command refuses the same property of the same attribute given
+        // twice; the branches used to be sent one after the other, so the
+        // last value won.
+        protected override string GetBatchItemKey(
+            AttributePropertyValueObj item)
+        {
+            return $"{item.AttributeId?.Guid?.ToLowerInvariant()}|" +
+                   $"{item.PropertyId?.Guid?.ToLowerInvariant()}";
+        }
+
+        protected override object CreateBatchParameters(
+            List<AttributePropertyValueObj> items)
+        {
+            return new SetPropertyValuesOfAttributesParameters
+            {
+                AttributePropertyValues = items
+            };
         }
 
         protected override System.Drawing.Bitmap Icon =>

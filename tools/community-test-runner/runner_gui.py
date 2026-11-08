@@ -1,7 +1,8 @@
 """'gui': a small window for testers. Lists the open pull requests with their checks, builds and
 last results; tests the selected ones or everything due; tests what is labelled every pollMinutes
 unless paused; shows what happens. Uses the same functions as the command line (tkinter, standard
-library). The runner never touches an Archicad that is open: close it and the next test runs.
+library). Tests never touch an Archicad that is open: close it and the next test runs. Benchmark is
+the one action that uses an open Archicad, and only when its project is empty and untitled.
 """
 from __future__ import annotations
 
@@ -15,6 +16,7 @@ import webbrowser
 from pathlib import Path
 from tkinter import ttk
 
+import runner_bench
 import tapir_test_runner as r
 
 
@@ -24,6 +26,7 @@ class RunnerWindow:
         self.events: queue.Queue = queue.Queue()
         self.busy = False
         self.stop_requested = False
+        self.rows: list[dict] = []
         self.paused = tk.BooleanVar(value=False)
         self.post = tk.BooleanVar(value=True)
         self.every = tk.BooleanVar(value=False)
@@ -60,7 +63,8 @@ class RunnerWindow:
                         ttk.Button(buttons, text="Test everything due", command=self.test_due),
                         ttk.Button(buttons, text="Refresh", command=self.refresh),
                         ttk.Button(buttons, text="Open on GitHub", command=self.open_selected),
-                        ttk.Button(buttons, text="Put my add-on back", command=self.restore)]
+                        ttk.Button(buttons, text="Put my add-on back", command=self.restore),
+                        ttk.Button(buttons, text="Benchmark open Archicad", command=self.benchmark)]
         for button in self.actions:
             button.pack(side="left", padx=(0, 6))
         self.stop_button = ttk.Button(buttons, text="Stop after this test", command=self.request_stop, state="disabled")
@@ -118,6 +122,10 @@ class RunnerWindow:
                 self.status.configure(text=value)
             elif kind == "rows":
                 self.fill(value)
+            elif kind == "row":
+                self.upsert(value)
+            elif kind == "clear":
+                self.table.delete(*self.table.get_children())
             elif kind == "done":
                 self.busy = False
                 self.set_buttons("normal")
@@ -146,23 +154,60 @@ class RunnerWindow:
     def fill(self, rows: list[dict]) -> None:
         self.table.delete(*self.table.get_children())
         for p in rows:
-            builds = "AC" + ",".join(p["builds"]) if p["builds"] else "none yet"
-            self.table.insert("", "end", iid=str(p["number"]), tags=() if p["testable"] else ("untestable",),
-                              values=(f"#{p['number']}", p["title"], p["branch"], p["checks"], builds,
-                                      "; ".join(p["last"]) or "-"))
+            self.upsert(p)
+
+    def upsert(self, p: dict) -> None:
+        """Adds or updates one row; details still being read show as '...'."""
+        if p["builds"] is None:
+            checks, builds, last = "...", "...", "..."
+        else:
+            checks, builds, last = p["checks"], "AC" + ",".join(p["builds"]) if p["builds"] else "none yet", "; ".join(p["last"]) or "-"
+        values = (f"#{p['number']}", p["title"], p["branch"], checks, builds, last)
+        tags = () if p["testable"] else ("untestable",)
+        iid = str(p["number"])
+        if self.table.exists(iid):
+            self.table.item(iid, values=values, tags=tags)
+        else:
+            self.table.insert("", "end", iid=iid, values=values, tags=tags)
+
+    def read_rows(self) -> list[dict]:
+        """Reads the list from GitHub; rows appear at once and fill in as their details arrive."""
+        self.events.put(("clear", None))
+
+        def on_row(row: dict, done: int, total: int) -> None:
+            self.events.put(("row", row))
+            if done:
+                self.events.put(("status", f"Reading pull requests {done}/{total} ..."))
+        return r.pull_rows(self.cfg, on_row=on_row)
+
+    def why_waiting(self, rows: list[dict]) -> str:
+        """One plain sentence on what automatic testing will do, so a quiet window never looks stuck."""
+        label = self.cfg.get("label", "needs-test")
+        due = [p for p in rows if p["testable"] and label in p["labels"].split(",")]
+        open_ = [f"Archicad {a['version']}" for a in self.cfg["archicads"] if r.archicad_running(a["archicadExe"])]
+        text = (f"{len(rows)} open pull request(s), {len(due)} marked '{label}' for you to test"
+                + ("" if due else " - automatic testing has nothing to do until a developer marks one"
+                   " (you can still select a row and click Test selected)"))
+        if open_:
+            text += f". {', '.join(open_)} is open: tests wait until you close it"
+        return text + "."
 
     def refresh(self) -> None:
         def job():
-            rows = r.pull_rows(self.cfg)
-            self.events.put(("rows", rows))
-            self.events.put(("log", f"{len(rows)} open pull request(s); gray ones are in forks you don't trust"))
+            self.rows = self.read_rows()
+            self.events.put(("log", self.why_waiting(self.rows)))
         self.work("Reading pull requests ...", job)
 
     def run(self, numbers: list[int] | None) -> None:
         def job():
-            r.run_pass(self.cfg, self.post.get(), numbers, every=self.every.get(), as_brief=True,
-                       log=lambda text: self.events.put(("log", text)), stop=lambda: self.stop_requested)
-            self.events.put(("rows", r.pull_rows(self.cfg)))
+            results = r.run_pass(self.cfg, self.post.get(), numbers, every=self.every.get(), as_brief=True,
+                                 log=lambda text: self.events.put(("log", text)), stop=lambda: self.stop_requested)
+            tested = [x for x in results if x["state"] == "tested"]
+            self.events.put(("log", f"pass finished: {len(tested)} tested, {len(results) - len(tested)} skipped or stopped"
+                             if results else "pass finished: nothing to test"))
+            if tested or not self.rows:  # re-reading a hundred pull requests every pass would use up GitHub's limit
+                self.rows = self.read_rows()
+            self.events.put(("log", self.why_waiting(self.rows)))
         self.work("Testing ...", job)
 
     def test_selected(self) -> None:
@@ -200,6 +245,18 @@ class RunnerWindow:
                 self.events.put(("log", "nothing to put back: your own add-on is loaded"))
         self.work("Putting your add-on back ...", job)
 
+    def benchmark(self) -> None:
+        """Speed and tokens of the Tapir in the Archicad that is open now, compared with its last run."""
+        def job():
+            port = r.find_port()
+            if port is None:
+                self.events.put(("log", "Benchmark: open Archicad with a new, empty project (do not save it), then click again."))
+                return
+            log = lambda text: self.events.put(("log", text))  # noqa: E731
+            log("Benchmark: a few minutes; it adds up to 5000 elements to the empty project and deletes them again.")
+            path = runner_bench.run_and_save(r.Tapir(port), log=log, stop=lambda: self.stop_requested)
+            webbrowser.open(path.with_suffix(".md").as_uri())
+        self.work("Benchmarking ...", job)
 
 def run(cfg: dict) -> int:
     root = tk.Tk()

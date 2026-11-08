@@ -1,0 +1,17 @@
+{
+  "title": "GetAnalyticalModelCheckTypeId returns a non-null identifier",
+  "minTapir": "1.8.1",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "check type id",
+      "command": "GetAnalyticalModelCheckTypeId",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "modelCheckTypeId.guid", "exists": true },
+        { "path": "modelCheckTypeId.guid", "ne": "00000000-0000-0000-0000-000000000000", "name": "not null" }
+      ]
+    }
+  ]
+}

@@ -5,6 +5,7 @@
 #include "APIEnvir.h"
 #include "ACAPinc.h"
 #include "UvManager.hpp"
+#include "ResourceIds.hpp"
 
 Config::Repository Config::Repository::FromOS (const GS::ObjectState& os) {
     Repository repo;
@@ -16,6 +17,7 @@ Config::Repository Config::Repository::FromOS (const GS::ObjectState& os) {
     os.Get ("excludeFromDownloadPattern", repo.excludeFromDownloadPattern);
     os.Get ("includePattern", repo.includePattern);
     os.Get ("excludePattern", repo.excludePattern);
+    os.Get ("uvProject", repo.uvProject);
     return repo;
 }
 
@@ -28,7 +30,8 @@ GS::ObjectState Config::Repository::ToOS () const {
         "token", token,
         "excludeFromDownloadPattern", excludeFromDownloadPattern,
         "includePattern", includePattern,
-        "excludePattern", excludePattern
+        "excludePattern", excludePattern,
+        "uvProject", uvProject
     };
 }
 
@@ -38,6 +41,7 @@ Config::LocalFolder Config::LocalFolder::FromOS (const GS::ObjectState& os) {
     os.Get ("path", folder.path);
     os.Get ("includePattern", folder.includePattern);
     os.Get ("excludePattern", folder.excludePattern);
+    os.Get ("uvProject", folder.uvProject);
     return folder;
 }
 
@@ -46,7 +50,8 @@ GS::ObjectState Config::LocalFolder::ToOS () const {
         "displayName", displayName,
         "path", path,
         "includePattern", includePattern,
-        "excludePattern", excludePattern
+        "excludePattern", excludePattern,
+        "uvProject", uvProject
     };
 }
 
@@ -93,7 +98,7 @@ void Config::LoadFromFile (IO::File& file)
     file.Close ();
     if (err != NoError || os.IsEmpty ()) {
         ACAPI_WriteReport (
-            "Tapir::Config: Failed to load config file: %T",
+            RSGetIndString (ID_REPORT_STRINGS, ID_REPORT_STRINGS_CONFIG_LOAD_FAILED, ACAPI_GetOwnResModule ()),
             false,
             file.GetLocation().ToDisplayText().ToPrintf()
         );
@@ -149,7 +154,7 @@ void Config::SaveToFile (IO::File& file) const
     file.Close ();
     if (err != NoError) {
         ACAPI_WriteReport (
-            "Tapir::Config: Failed to save config file: %T",
+            RSGetIndString (ID_REPORT_STRINGS, ID_REPORT_STRINGS_CONFIG_SAVE_FAILED, ACAPI_GetOwnResModule ()),
             false,
             file.GetLocation().ToDisplayText().ToPrintf()
         );

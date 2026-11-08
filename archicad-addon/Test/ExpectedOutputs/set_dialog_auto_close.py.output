@@ -1,0 +1,18 @@
+Command: SetDialogAutoClose
+Parameters:
+{
+    "enabled": true
+}
+Response:
+{
+    "success": true
+}
+Command: SetDialogAutoClose
+Parameters:
+{
+    "enabled": false
+}
+Response:
+{
+    "success": true
+}

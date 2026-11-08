@@ -20,5 +20,45 @@ namespace TapirGrasshopperPlugin.Types.Element
             get => filters;
             set => filters = AcceptElementFilters(value);
         }
+
+        // The optional criteria below are sent only when given; an element is
+        // kept when it matches all the given ones (any listed value matches).
+        [JsonProperty(
+            "layerIndices",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public List<int> LayerIndices;
+
+        [JsonProperty(
+            "floorIndices",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public List<int> FloorIndices;
+
+        [JsonProperty(
+            "elementTypes",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> ElementTypes;
+
+        // true keeps only the elements that came in through a placed hotlink,
+        // false only the project's own elements.
+        [JsonProperty(
+            "fromHotlink",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public bool? FromHotlink;
+
+        // The placed hotlink instances (elements of type Hotlink) the kept
+        // elements came in through.
+        [JsonProperty(
+            "hotlinkIds",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public List<ElementGuid> HotlinkIds;
+
+        [JsonIgnore]
+        public bool HasCriteria =>
+            filters != null ||
+            LayerIndices != null ||
+            FloorIndices != null ||
+            ElementTypes != null ||
+            FromHotlink != null ||
+            HotlinkIds != null;
     }
 }

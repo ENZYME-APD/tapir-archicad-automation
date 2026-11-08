@@ -1,0 +1,229 @@
+{
+  "title": "Elements in design options: CanMoveElementsToDesignOptions, MoveElementsToDesignOptions, GetElementsOfDesignOptions and GetDesignOptionForElements",
+  "minTapir": "1.8.1",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "no design option sets yet",
+      "command": "GetDesignOptionSets",
+      "creates": false,
+      "stopOnFail": true,
+      "params": {},
+      "expect": [
+        { "path": "designOptionSets", "len": 0, "name": "the project has no design option sets" }
+      ]
+    },
+    {
+      "id": "create a set",
+      "command": "CreateDesignOptionSets",
+      "creates": false,
+      "params": { "designOptionSets": [ "Tapir check elements set" ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "read the set",
+      "command": "GetDesignOptionSets",
+      "creates": false,
+      "params": {},
+      "save": { "set": "designOptionSets[0].designOptionSetId.guid" },
+      "expect": [
+        { "path": "designOptionSets", "len": 1, "name": "one set" },
+        { "path": "designOptionSets[0].name", "eq": "Tapir check elements set", "name": "the new set" }
+      ]
+    },
+    {
+      "id": "create options E1 and E2",
+      "command": "CreateDesignOptions",
+      "creates": false,
+      "params": {
+        "designOptions": [
+          { "name": "Tapir check elements option 1", "id": "E1", "ownerSetName": "Tapir check elements set" },
+          { "name": "Tapir check elements option 2", "id": "E2", "ownerSetName": "Tapir check elements set" }
+        ]
+      },
+      "save": {
+        "e1": "designOptionIdsOrErrors[0].designOptionId.guid",
+        "e2": "designOptionIdsOrErrors[1].designOptionId.guid"
+      },
+      "expect": [
+        { "path": "designOptionIdsOrErrors", "len": 2, "name": "one id per option" }
+      ]
+    },
+    {
+      "id": "two walls",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 703, "y": 700 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 },
+          { "begCoordinate": { "x": 700, "y": 705 }, "endCoordinate": { "x": 703, "y": 705 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 }
+        ]
+      },
+      "save": {
+        "w1": "elements[0].elementId.guid",
+        "w2": "elements[1].elementId.guid"
+      }
+    },
+    {
+      "id": "new walls are in the main model",
+      "command": "GetDesignOptionForElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ] },
+      "expect": [
+        { "path": "designOptionForElements", "len": 2, "name": "one item per element" },
+        { "path": "designOptionForElements[0].type", "eq": "NotLinkedToAnyDesignOption", "name": "wall 1 in the main model" },
+        { "path": "designOptionForElements[0].designOption", "exists": false, "name": "wall 1 without option" },
+        { "path": "designOptionForElements[1].type", "eq": "NotLinkedToAnyDesignOption", "name": "wall 2 in the main model" }
+      ]
+    },
+    {
+      "id": "can the walls and a missing element be moved",
+      "command": "CanMoveElementsToDesignOptions",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } ] },
+      "expect": [
+        { "path": "canMoveElements", "len": 2, "name": "one item per element, in input order" },
+        { "path": "canMoveElements[0].elementId.guid", "exists": true, "name": "wall: element id given back" },
+        { "path": "canMoveElements[0].canMove", "eq": true, "name": "wall: can be moved" },
+        { "path": "canMoveElements[0].error", "exists": false, "name": "wall: no error" },
+        { "path": "canMoveElements[1].canMove", "eq": false, "name": "missing element: cannot be moved" },
+        { "path": "canMoveElements[1].error.code", "exists": true, "name": "missing element: with the reason" }
+      ]
+    },
+    {
+      "id": "options are empty at first",
+      "command": "GetElementsOfDesignOptions",
+      "creates": false,
+      "params": { "designOptions": [ { "designOptionId": { "guid": "${e1}" } }, { "designOptionId": { "guid": "${e2}" } } ] },
+      "expect": [
+        { "path": "elementsOfDesignOptions", "len": 2, "name": "one item per option" },
+        { "path": "elementsOfDesignOptions[0].elements", "len": 0, "name": "E1 empty" },
+        { "path": "elementsOfDesignOptions[1].elements", "len": 0, "name": "E2 empty" }
+      ]
+    },
+    {
+      "id": "wall 1 into E1, wall 2 into E2",
+      "command": "MoveElementsToDesignOptions",
+      "creates": false,
+      "params": {
+        "elementDesignOptionPairs": [
+          { "elementId": { "guid": "${w1}" }, "designOptionId": { "guid": "${e1}" } },
+          { "elementId": { "guid": "${w2}" }, "designOptionId": { "guid": "${e2}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per pair" },
+        { "path": "executionResults[0].success", "eq": true, "name": "wall 1: success" },
+        { "path": "executionResults[1].success", "eq": true, "name": "wall 2: success" }
+      ]
+    },
+    {
+      "id": "read the option of each wall",
+      "command": "GetDesignOptionForElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } }, { "elementId": { "guid": "${w2}" } } ] },
+      "expect": [
+        { "path": "designOptionForElements[0].type", "eq": "LinkedToDesignOption", "name": "wall 1 in an option" },
+        { "path": "designOptionForElements[0].designOption.id", "eq": "E1", "name": "wall 1 in E1" },
+        { "path": "designOptionForElements[0].designOption.name", "eq": "Tapir check elements option 1", "name": "E1 name" },
+        { "path": "designOptionForElements[0].designOption.ownerSetName", "eq": "Tapir check elements set", "name": "E1 set" },
+        { "path": "designOptionForElements[1].type", "eq": "LinkedToDesignOption", "name": "wall 2 in an option" },
+        { "path": "designOptionForElements[1].designOption.id", "eq": "E2", "name": "wall 2 in E2" }
+      ]
+    },
+    {
+      "id": "read the elements of each option",
+      "command": "GetElementsOfDesignOptions",
+      "creates": false,
+      "params": { "designOptions": [ { "designOptionId": { "guid": "${e1}" } }, { "designOptionId": { "guid": "${e2}" } } ] },
+      "expect": [
+        { "path": "elementsOfDesignOptions[0].designOptionId.guid", "exists": true, "name": "E1 id given back" },
+        { "path": "elementsOfDesignOptions[0].elements", "len": 1, "name": "E1 holds one element" },
+        { "path": "elementsOfDesignOptions[1].elements", "len": 1, "name": "E2 holds one element" }
+      ]
+    },
+    {
+      "id": "a wall inside an option can be moved",
+      "command": "CanMoveElementsToDesignOptions",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w2}" } } ] },
+      "expect": [
+        { "path": "canMoveElements[0].canMove", "eq": true, "name": "wall 2 can be moved" }
+      ]
+    },
+    {
+      "id": "wall 2 into E1",
+      "command": "MoveElementsToDesignOptions",
+      "creates": false,
+      "params": { "elementDesignOptionPairs": [ { "elementId": { "guid": "${w2}" }, "designOptionId": { "guid": "${e1}" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "read: E1 holds both walls",
+      "command": "GetElementsOfDesignOptions",
+      "creates": false,
+      "params": { "designOptions": [ { "designOptionId": { "guid": "${e1}" } }, { "designOptionId": { "guid": "${e2}" } } ] },
+      "expect": [
+        { "path": "elementsOfDesignOptions[0].elements", "len": 2, "name": "E1 holds two elements" },
+        { "path": "elementsOfDesignOptions[1].elements", "len": 0, "name": "E2 is empty" }
+      ]
+    },
+    {
+      "id": "[move wall 1 into an option that does not exist]",
+      "command": "MoveElementsToDesignOptions",
+      "creates": false,
+      "params": { "elementDesignOptionPairs": [ { "elementId": { "guid": "${w1}" }, "designOptionId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "failed" },
+        { "path": "executionResults[0].error.code", "exists": true, "name": "with an error" }
+      ]
+    },
+    {
+      "id": "wall 1 to the main model (null guid)",
+      "command": "MoveElementsToDesignOptions",
+      "creates": false,
+      "params": { "elementDesignOptionPairs": [ { "elementId": { "guid": "${w1}" }, "designOptionId": { "guid": "00000000-0000-0000-0000-000000000000" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "read the option of each wall and of a missing element",
+      "command": "GetDesignOptionForElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${w1}" } },
+          { "elementId": { "guid": "${w2}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "designOptionForElements", "len": 3, "name": "one item per element" },
+        { "path": "designOptionForElements[0].type", "eq": "NotLinkedToAnyDesignOption", "name": "wall 1 back in the main model" },
+        { "path": "designOptionForElements[1].designOption.id", "eq": "E1", "name": "wall 2 in E1" },
+        { "path": "designOptionForElements[2].type", "eq": "NotExistingElement", "name": "missing element" },
+        { "path": "designOptionForElements[2].designOption", "exists": false, "name": "missing element: no option" }
+      ]
+    },
+    {
+      "id": "[elements of an option that does not exist]",
+      "command": "GetElementsOfDesignOptions",
+      "creates": false,
+      "params": { "designOptions": [ { "designOptionId": { "guid": "${e1}" } }, { "designOptionId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } ] },
+      "expect": [
+        { "path": "elementsOfDesignOptions", "len": 2, "name": "one item per option" },
+        { "path": "elementsOfDesignOptions[0].elements", "len": 1, "name": "E1 holds wall 2 only" },
+        { "path": "elementsOfDesignOptions[1].error.code", "exists": true, "name": "an error for the missing option" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteDesignOptions", "params": { "designOptions": [ { "designOptionId": { "guid": "${e1}" } } ] } },
+    { "command": "DeleteDesignOptions", "params": { "designOptions": [ { "designOptionId": { "guid": "${e2}" } } ] } },
+    { "command": "DeleteDesignOptionSets", "params": { "designOptionSets": [ { "designOptionSetId": { "guid": "${set}" } } ] } }
+  ]
+}

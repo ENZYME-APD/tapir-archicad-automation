@@ -1,0 +1,223 @@
+{
+  "title": "CreateLibraryPartFromElements makes an object of a drawn circle, GetLibraryPart2DPrimitives reads its symbol back and InterpretGDLScript3D runs its 3D script (#1950)",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [ "Circle" ],
+  "steps": [
+    {
+      "id": "circle to copy",
+      "command": "CreateCircles",
+      "params": {
+        "circlesData": [
+          { "origin": { "x": 0.5, "y": 0.5 }, "radius": 0.3 }
+        ]
+      },
+      "save": { "circle": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "circle created" }
+      ]
+    },
+    {
+      "id": "library part of the circle",
+      "command": "CreateLibraryPartFromElements",
+      "creates": false,
+      "params": {
+        "name": "TapirCheck Symbol 1950",
+        "elements": [ { "elementId": { "guid": "${circle}" } } ],
+        "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+        "folder": "TapirCheck1950",
+        "overwrite": true,
+        "placeable": true,
+        "scripts": { "3D": "BLOCK A, B, 0.5" },
+        "comment": "TapirCheck",
+        "keywords": "TapirCheck"
+      },
+      "save": { "partName": "name", "fileName": "fileName" },
+      "expect": [
+        { "path": "error", "exists": false, "name": "no error" },
+        { "path": "name", "eq": "TapirCheck Symbol 1950", "name": "the given name (overwrite keeps it)" },
+        { "path": "fileName", "eq": "TapirCheck Symbol 1950.gsm" },
+        { "path": "index", "gt": 0, "name": "loaded" },
+        { "path": "unId", "contains": "}-{", "name": "unique ID" },
+        { "path": "a", "approx": 0.6, "tol": 0.001, "name": "A is the width of the circle" },
+        { "path": "b", "approx": 0.6, "tol": 0.001, "name": "B is the depth of the circle" }
+      ]
+    },
+    {
+      "id": "the circle itself is unchanged",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": {
+        "elementType": "Circle"
+      },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "one circle, the copy went into the symbol" }
+      ]
+    },
+    {
+      "id": "symbol of the new part",
+      "command": "GetLibraryPart2DPrimitives",
+      "creates": false,
+      "params": {
+        "name": "${partName}",
+        "gdlContext": 2
+      },
+      "expect": [
+        { "path": "primitives", "len": 1, "name": "only the circle (hotspots are not returned)" },
+        { "path": "primitives[0].type", "eq": "Arc" },
+        { "path": "primitives[0].isWhole", "eq": true, "name": "full circle" },
+        { "path": "primitives[0].radius", "approx": 0.3, "tol": 0.001 },
+        { "path": "primitives[0].origin.x", "approx": 0.5, "tol": 0.001, "name": "plan coordinates kept" },
+        { "path": "primitives[0].origin.y", "approx": 0.5, "tol": 0.001, "name": "plan coordinates kept (y)" }
+      ]
+    },
+    {
+      "id": "symbol by file name with extension",
+      "command": "GetLibraryPart2DPrimitives",
+      "creates": false,
+      "params": {
+        "name": "${fileName}"
+      },
+      "expect": [
+        { "path": "primitives", "len": 1, "name": "a trailing .gsm is accepted" }
+      ]
+    },
+    {
+      "id": "symbol of a missing part",
+      "command": "GetLibraryPart2DPrimitives",
+      "creates": false,
+      "params": {
+        "name": "TapirCheck No Such Part 1950"
+      },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "missing part refused" },
+        { "path": "primitives", "exists": false }
+      ]
+    },
+    {
+      "id": "3D script of the new part with its defaults",
+      "command": "InterpretGDLScript3D",
+      "creates": false,
+      "params": {
+        "libraryPartName": "${partName}"
+      },
+      "expect": [
+        { "path": "success", "eq": true },
+        { "path": "elementCount", "gt": 0 },
+        { "path": "boundingBox3D.xMin", "approx": 0.0, "tol": 0.001 },
+        { "path": "boundingBox3D.xMax", "approx": 0.6, "tol": 0.001, "name": "BLOCK A wide, A = 0.6" },
+        { "path": "boundingBox3D.yMax", "approx": 0.6, "tol": 0.001, "name": "BLOCK B deep, B = 0.6" },
+        { "path": "boundingBox3D.zMax", "approx": 0.5, "tol": 0.001, "name": "BLOCK 0.5 high" }
+      ]
+    },
+    {
+      "id": "3D script given as text",
+      "command": "InterpretGDLScript3D",
+      "creates": false,
+      "params": {
+        "script": "BLOCK 1, 2, 3"
+      },
+      "expect": [
+        { "path": "success", "eq": true },
+        { "path": "elementCount", "gt": 0 },
+        { "path": "boundingBox3D.xMax", "approx": 1.0, "tol": 0.001 },
+        { "path": "boundingBox3D.yMax", "approx": 2.0, "tol": 0.001 },
+        { "path": "boundingBox3D.zMax", "approx": 3.0, "tol": 0.001 }
+      ]
+    },
+    {
+      "id": "script given as text with the part's parameters",
+      "command": "InterpretGDLScript3D",
+      "creates": false,
+      "params": {
+        "script": "BLOCK A, B, 2",
+        "libraryPartName": "${fileName}"
+      },
+      "expect": [
+        { "path": "success", "eq": true },
+        { "path": "boundingBox3D.xMax", "approx": 0.6, "tol": 0.001, "name": "A of the part, found by file name" },
+        { "path": "boundingBox3D.zMax", "approx": 2.0, "tol": 0.001, "name": "the given script, not the part's" }
+      ]
+    },
+    {
+      "id": "script without 3D model",
+      "command": "InterpretGDLScript3D",
+      "creates": false,
+      "params": {
+        "script": "x = 1"
+      },
+      "expect": [
+        { "path": "success", "eq": true },
+        { "path": "elementCount", "eq": 0 },
+        { "path": "boundingBox3D", "exists": false }
+      ]
+    },
+    {
+      "id": "script with a GDL error",
+      "command": "InterpretGDLScript3D",
+      "creates": false,
+      "params": {
+        "script": "BLOCK 1, 1"
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "BLOCK with two of its three arguments fails" },
+        { "path": "error.code", "exists": true }
+      ]
+    },
+    {
+      "id": "3D script of a missing part",
+      "command": "InterpretGDLScript3D",
+      "creates": false,
+      "params": {
+        "libraryPartName": "TapirCheck No Such Part 1950"
+      },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "missing part refused" }
+      ]
+    },
+    {
+      "id": "neither script nor part",
+      "command": "InterpretGDLScript3D",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "error.code", "exists": true }
+      ]
+    },
+    {
+      "id": "library part of an element that does not exist",
+      "command": "CreateLibraryPartFromElements",
+      "creates": false,
+      "params": {
+        "name": "TapirCheck Bad Symbol 1950",
+        "elements": [ { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } ],
+        "parentId": "F938E33A-329D-4A36-BE3E-85E126820996",
+        "folder": "TapirCheck1950"
+      },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "refused" },
+        { "path": "unId", "exists": false, "name": "nothing created" }
+      ]
+    },
+    {
+      "id": "the refused part is not loaded",
+      "command": "GetLibraryPart2DPrimitives",
+      "creates": false,
+      "params": {
+        "name": "TapirCheck Bad Symbol 1950"
+      },
+      "expect": [
+        { "path": "error.code", "exists": true }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteEmbeddedLibraryItems",
+      "params": {
+        "embeddedLibraryItems": [
+          { "path": "TapirCheck1950" }
+        ]
+      }
+    }
+  ]
+}

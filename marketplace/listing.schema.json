@@ -1,0 +1,123 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/marketplace/listing.schema.json",
+    "title": "Tapir script marketplace listing",
+    "description": "The listing.json of one shared script in marketplace/<slug>/. See marketplace/README.md.",
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["slug", "name", "summary", "category", "tags", "author", "license", "entry", "versions"],
+    "properties": {
+        "slug": {
+            "description": "The name of the script's folder in marketplace/: lowercase letters, digits and single hyphens.",
+            "type": "string",
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+            "maxLength": 60
+        },
+        "name": {
+            "description": "The script's name as shown on the site and in the palette.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+        },
+        "summary": {
+            "description": "What the script does, in one or two plain sentences.",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 160
+        },
+        "category": {
+            "type": "string",
+            "enum": [
+                "documentation-layouts",
+                "element-data-properties",
+                "modeling-geometry",
+                "zones-areas",
+                "import-export",
+                "quality-assurance",
+                "quantities-scheduling",
+                "libraries-objects",
+                "navigator-views",
+                "classification-attributes",
+                "batch-automation",
+                "utilities"
+            ]
+        },
+        "tags": {
+            "type": "array",
+            "maxItems": 8,
+            "uniqueItems": true,
+            "items": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+                "maxLength": 30
+            }
+        },
+        "author": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name"],
+            "properties": {
+                "name": {
+                    "description": "The name the author wants to be credited with.",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "github": {
+                    "description": "The author's GitHub login, without @.",
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$"
+                },
+                "discord": {
+                    "description": "The author's Discord user name.",
+                    "type": "string",
+                    "minLength": 1
+                }
+            }
+        },
+        "license": {
+            "description": "The SPDX identifier of an OSI-approved licence. MIT unless the author chose another.",
+            "type": "string",
+            "default": "MIT",
+            "minLength": 1
+        },
+        "entry": {
+            "description": "The file in the script's folder that the palette runs.",
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_-]*\\.py$"
+        },
+        "versions": {
+            "description": "The released versions of the script, newest first.",
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["version", "archicadVersions", "minTapirVersion", "changelog"],
+                "properties": {
+                    "version": {
+                        "description": "The script's own version, MAJOR.MINOR.PATCH.",
+                        "type": "string",
+                        "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+                    },
+                    "archicadVersions": {
+                        "description": "The Archicad versions the script was tried in or is known to work in.",
+                        "type": "array",
+                        "minItems": 1,
+                        "uniqueItems": true,
+                        "items": { "type": "integer", "minimum": 25 }
+                    },
+                    "minTapirVersion": {
+                        "description": "The oldest Tapir Add-On version that has every command the script uses.",
+                        "type": "string",
+                        "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+                    },
+                    "changelog": {
+                        "description": "What changed in this version, in plain words.",
+                        "type": "string",
+                        "minLength": 1
+                    }
+                }
+            }
+        }
+    }
+}

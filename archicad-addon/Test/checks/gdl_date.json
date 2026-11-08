@@ -1,0 +1,160 @@
+{
+  "title": "SetGDLDate changes the date GetGDLDate reads, and the date read can be set back (#1950)",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "date before",
+      "command": "GetGDLDate",
+      "creates": false,
+      "params": {},
+      "save": {
+        "originalDate": "date",
+        "originalYear": "date.year",
+        "originalMonth": "date.month",
+        "originalDay": "date.day",
+        "originalHour": "date.hour",
+        "originalMinute": "date.minute",
+        "originalSecond": "date.second"
+      },
+      "expect": [
+        { "path": "date.year", "exists": true },
+        { "path": "date.second", "exists": true },
+        { "path": "error", "exists": false }
+      ]
+    },
+    {
+      "id": "set a date",
+      "command": "SetGDLDate",
+      "creates": false,
+      "params": {
+        "date": { "year": 2030, "month": 4, "day": 15, "hour": 9, "minute": 30, "second": 45 }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the date",
+      "command": "GetGDLDate",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "date", "eq": { "year": 2030, "month": 4, "day": 15, "hour": 9, "minute": 30, "second": 45 }, "name": "the date set is read back" }
+      ]
+    },
+    {
+      "id": "set another date",
+      "command": "SetGDLDate",
+      "creates": false,
+      "params": {
+        "date": { "year": 2031, "month": 12, "day": 31, "hour": 23, "minute": 59, "second": 0 }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the other date",
+      "command": "GetGDLDate",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "date", "eq": { "year": 2031, "month": 12, "day": 31, "hour": 23, "minute": 59, "second": 0 }, "name": "the date changed" }
+      ]
+    },
+    {
+      "id": "set the date read first back",
+      "command": "SetGDLDate",
+      "creates": false,
+      "params": {
+        "date": "${originalDate}"
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "the first date is back",
+      "command": "GetGDLDate",
+      "creates": false,
+      "params": {},
+      "save": {
+        "restoredYear": "date.year",
+        "restoredMonth": "date.month",
+        "restoredDay": "date.day",
+        "restoredHour": "date.hour",
+        "restoredMinute": "date.minute",
+        "restoredSecond": "date.second"
+      },
+      "expect": [
+        { "expr": "${restoredYear} - ${originalYear}", "eq": 0, "name": "year restored" },
+        { "expr": "${restoredMonth} - ${originalMonth}", "eq": 0, "name": "month restored" },
+        { "expr": "${restoredDay} - ${originalDay}", "eq": 0, "name": "day restored" },
+        { "expr": "${restoredHour} - ${originalHour}", "eq": 0, "name": "hour restored" },
+        { "expr": "${restoredMinute} - ${originalMinute}", "eq": 0, "name": "minute restored" },
+        { "expr": "${restoredSecond} - ${originalSecond}", "eq": 0, "name": "second restored" }
+      ]
+    },
+    {
+      "id": "date that is a single integer",
+      "command": "SetGDLDate",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "date": 2030
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the input schema" }
+      ]
+    },
+    {
+      "id": "date without a second",
+      "command": "SetGDLDate",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "date": { "year": 2030, "month": 4, "day": 15, "hour": 9, "minute": 30 }
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the input schema" }
+      ]
+    },
+    {
+      "id": "month out of range",
+      "command": "SetGDLDate",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "date": { "year": 2030, "month": 13, "day": 15, "hour": 9, "minute": 30, "second": 0 }
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the input schema" }
+      ]
+    },
+    {
+      "id": "the refused dates changed nothing",
+      "command": "GetGDLDate",
+      "creates": false,
+      "params": {},
+      "save": {
+        "afterRefusedYear": "date.year",
+        "afterRefusedMonth": "date.month",
+        "afterRefusedSecond": "date.second"
+      },
+      "expect": [
+        { "expr": "${afterRefusedYear} - ${originalYear}", "eq": 0, "name": "year unchanged" },
+        { "expr": "${afterRefusedMonth} - ${originalMonth}", "eq": 0, "name": "month unchanged" },
+        { "expr": "${afterRefusedSecond} - ${originalSecond}", "eq": 0, "name": "second unchanged" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "SetGDLDate",
+      "params": {
+        "date": "${originalDate}"
+      }
+    }
+  ]
+}

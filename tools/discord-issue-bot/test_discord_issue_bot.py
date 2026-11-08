@@ -130,22 +130,22 @@ class CandidateTests(NoSleepTestCase):
     def test_attachment_exempts_short_caption(self):
         message = {"type": 0, "content": "crash on export",
                    "attachments": [{"id": "a"}], "author": {"username": "u"}}
-        self.assertTrue(bot.is_candidate(message, self.Config))
+        self.assertIsNone(bot.skip_reason(message, self.Config))
 
     def test_captionless_attachment_is_not_a_candidate(self):
         message = {"type": 0, "content": " ",
                    "attachments": [{"id": "a"}], "author": {"username": "u"}}
-        self.assertFalse(bot.is_candidate(message, self.Config))
+        self.assertIsNotNone(bot.skip_reason(message, self.Config))
 
     def test_short_plain_message_is_not_a_candidate(self):
         message = {"type": 0, "content": "crash on export",
                    "attachments": [], "author": {"username": "u"}}
-        self.assertFalse(bot.is_candidate(message, self.Config))
+        self.assertIsNotNone(bot.skip_reason(message, self.Config))
 
     def test_bots_are_never_candidates(self):
         message = {"type": 0, "content": "x" * 40,
                    "author": {"username": "u", "bot": True}}
-        self.assertFalse(bot.is_candidate(message, self.Config))
+        self.assertIsNotNone(bot.skip_reason(message, self.Config))
 
 
 class DedupeSearchTests(NoSleepTestCase):
@@ -622,6 +622,35 @@ class CheckpointTests(NoSleepTestCase):
         discord, classifier, _ = self.run_channel(messages)
         self.assertEqual(classifier.classified, ["1"])
         self.assertEqual(discord.seen(), ["1"])
+
+    def test_a_short_message_moves_the_checkpoint_unclassified(self):
+        messages = [self.message("1", "a", seen=True), self.message("2", "b"),
+                    self.message("3", "c", content="ok")]
+        discord, classifier, _ = self.run_channel(messages)
+        self.assertEqual(classifier.classified, ["2"])
+        self.assertEqual(discord.seen(), ["3"])
+        self.assertTrue(any("message 3: skipped, shorter than" in line
+                            for line in self.logged))
+
+    def test_a_short_message_does_not_pass_an_unclassified_one(self):
+        messages = [self.message("1", "a"), self.message("2", "b", content="ok")]
+        discord, classifier, _ = self.run_channel(messages, {"1": "fail"})
+        self.assertEqual(classifier.classified, ["1"])
+        self.assertEqual(discord.seen(), [])
+
+    def test_every_skip_is_logged(self):
+        bot_message = self.message("2", "x")
+        bot_message["author"]["bot"] = True
+        messages = [self.message("1", "a", seen=True), bot_message,
+                    self.message("3", "b", minutes_ago=2)]
+        discord, classifier, _ = self.run_channel(messages)
+        self.assertEqual(classifier.classified, [])
+        self.assertEqual(discord.seen(), ["1"])
+        self.assertTrue(any("2 after the" in line for line in self.logged))
+        self.assertTrue(any("message 2: skipped, posted by a bot" in line
+                            for line in self.logged))
+        self.assertTrue(any("message 3: left for the next run" in line
+                            for line in self.logged))
 
     def test_filed_group_is_not_classified_again(self):
         messages = [self.message("1", "a"), self.message("2", "b")]

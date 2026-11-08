@@ -1,0 +1,18 @@
+{
+    "slug": "story-setup",
+    "name": "Story Setup",
+    "summary": "Sets up the stories of the project from a pasted table or a CSV file, shows what changes first, and refuses to delete a story with elements on it.",
+    "category": "utilities",
+    "tags": ["stories", "levels", "csv", "excel", "setup"],
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
+    "license": "MIT",
+    "entry": "StorySetup.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "First version in the marketplace, the same as the built-in script of the same name."
+        }
+    ]
+}

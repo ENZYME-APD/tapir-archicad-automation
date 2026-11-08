@@ -1,5 +1,6 @@
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
@@ -25,12 +26,24 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             InGenerics(
                 "PropertyGuids",
                 "Identifiers of the property definitions to delete.");
+
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "DryRun",
+                "If true, nothing is deleted: ErrorMessages says what the deletion would do for each " +
+                "property definition, from the check made before deleting (the property exists). Archicad " +
+                "can still refuse to delete a property that exists, for example a built-in property. Default " +
+                "is false.",
+                false);
+
+            SetOptionality(1);
         }
 
         protected override void AddOutputs()
         {
             OutErrorMessages(
-                "Error message of each property definition (empty when it succeeded).");
+                "Error message of each property definition (empty when it was deleted, or with DryRun when " +
+                "it would be deleted).");
         }
 
         protected override void Solve(
@@ -61,9 +74,17 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                     new PropertyGuidWrapper { PropertyId = id });
             }
 
+            var parameters = JObject.FromObject(input);
+
+            // Only sent when it differs from the command's default.
+            if (da.GetOptional(1, false))
+            {
+                parameters["dryRun"] = true;
+            }
+
             SetCadValuesWithErrorMessages(
                 CommandName,
-                input,
+                parameters,
                 ToAddOn,
                 da);
         }

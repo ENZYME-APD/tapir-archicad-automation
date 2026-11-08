@@ -1,0 +1,18 @@
+{
+    "slug": "copy-settings-to-selection",
+    "name": "Copy Settings to Selection",
+    "summary": "Copies the settings of one element to the selected elements of the same type, keeping their geometry, ID and the sizes you choose.",
+    "category": "element-data-properties",
+    "tags": ["settings", "favorites", "eyedropper", "selection"],
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
+    "license": "MIT",
+    "entry": "CopySettingsToSelection.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "First version in the marketplace, the same as the built-in script of the same name."
+        }
+    ]
+}

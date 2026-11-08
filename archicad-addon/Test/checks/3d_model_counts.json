@@ -1,0 +1,51 @@
+{
+  "title": "Get3DModelCounts counts every component type of the 3D model, which holds at least a wall's box",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "free-standing basic wall, 6 m x 0.2 m x 3 m",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 706, "y": 700 }, "floorIndex": 0, "zCoordinate": 0,
+            "height": 3.0, "thickness": 0.2, "structureType": "Basic", "referenceLineLocation": "Center", "offset": 0.0 }
+        ]
+      },
+      "save": { "w1": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "build the wall's 3D model",
+      "command": "Get3DGeometryOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${w1}" } } ] },
+      "expect": [
+        { "path": "geometries3D[0].bodies", "len": 1, "name": "the wall has its body" }
+      ]
+    },
+    {
+      "id": "counts",
+      "command": "Get3DModelCounts",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "counts", "len": 8, "name": "one item per component type" },
+        { "path": "counts[0].componentType", "eq": "Body", "name": "1st: bodies" },
+        { "path": "counts[1].componentType", "eq": "Pgon", "name": "2nd: polygons" },
+        { "path": "counts[2].componentType", "eq": "Pedg", "name": "3rd: polygon edges" },
+        { "path": "counts[3].componentType", "eq": "Edge", "name": "4th: edges" },
+        { "path": "counts[4].componentType", "eq": "Vert", "name": "5th: vertices" },
+        { "path": "counts[5].componentType", "eq": "Vect", "name": "6th: normal vectors" },
+        { "path": "counts[6].componentType", "eq": "Umat", "name": "7th: materials" },
+        { "path": "counts[7].componentType", "eq": "Lght", "name": "8th: lights" },
+        { "path": "counts[0].count", "gt": 0, "name": "at least the wall's body" },
+        { "path": "counts[1].count", "gt": 5, "name": "at least the wall's 6 faces" },
+        { "path": "counts[2].count", "gt": 23, "name": "at least the wall's 24 polygon edges" },
+        { "path": "counts[3].count", "gt": 11, "name": "at least the wall's 12 edges" },
+        { "path": "counts[4].count", "gt": 7, "name": "at least the wall's 8 vertices" },
+        { "path": "counts[6].count", "gt": 0, "name": "at least one material" },
+        { "path": "counts[7].count", "gt": -1, "name": "lights are counted (0 or more)" }
+      ]
+    }
+  ]
+}

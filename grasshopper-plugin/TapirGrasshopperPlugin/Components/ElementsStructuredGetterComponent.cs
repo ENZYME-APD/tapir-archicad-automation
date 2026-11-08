@@ -37,6 +37,16 @@ namespace TapirGrasshopperPlugin.Components
                 "Identifiers of the elements to query.");
         }
 
+        // Adds the command's further parameters, read from the inputs after
+        // ElementGuids, to the parameters holding the elements. False (with
+        // an error) stops the component.
+        protected virtual bool TryAddParameters(
+            IGH_DataAccess da,
+            JObject parameters)
+        {
+            return true;
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
@@ -47,9 +57,17 @@ namespace TapirGrasshopperPlugin.Components
                 return;
             }
 
+            var parameters = JObject.FromObject(elements);
+            if (!TryAddParameters(
+                    da,
+                    parameters))
+            {
+                return;
+            }
+
             if (!TryGetCadResponse(
                     CommandName,
-                    JObject.FromObject(elements),
+                    parameters,
                     ToAddOn,
                     out JObject response))
             {

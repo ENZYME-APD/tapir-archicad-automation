@@ -18,26 +18,30 @@ on:
         default: release-signing
 
 jobs:
-  # When adding or removing an Archicad version in the matrices below, or an
-  # installer job, also update EXPECTED_ASSETS in weekly_release.yml - it is
-  # the number of release assets (Win + Mac per version, plus the Win + Mac
-  # installer executables) the weekly release waits for before publishing.
+  # The Archicad versions to build, from archicad-addon/devkits.json (the one
+  # list of supported versions; tools/devkits.py validates it). weekly_release.yml
+  # counts the release assets from the same list: Win + Mac per version, plus
+  # the Win + Mac installer executables, each under its fixed and its versioned
+  # name - update it when adding an installer job or asset.
+  devkits:
+    runs-on: ubuntu-latest
+    outputs:
+      win: ${{ steps.list.outputs.win }}
+      mac: ${{ steps.list.outputs.mac }}
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+    - name: Read the DevKit list
+      id: list
+      run: |
+        echo "win=$(python3 tools/devkits.py matrix WIN)" >> "$GITHUB_OUTPUT"
+        echo "mac=$(python3 tools/devkits.py matrix MAC)" >> "$GITHUB_OUTPUT"
+
   build_win:
+    needs: devkits
     strategy:
       matrix:
-        params:
-          - acVersion: 25
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/25.3002/API.Development.Kit.WIN.25.3002.zip
-          - acVersion: 26
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/26.3000/API.Development.Kit.WIN.26.3000.zip
-          - acVersion: 27
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/27.3001/API.Development.Kit.WIN.27.3001.zip
-          - acVersion: 28
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/28.3001/API.Development.Kit.WIN.28.3001.zip
-          - acVersion: 29
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/29.3000/API.Development.Kit.WIN.29.3000.zip
-          - acVersion: 30
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/30.3000/API.Development.Kit.WIN.30.3000.zip
+        params: ${{ fromJSON(needs.devkits.outputs.win) }}
     runs-on: [ windows-2022 ]
     steps:
     - name: Checkout Repo
@@ -73,21 +77,10 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
 
   build_mac:
+    needs: devkits
     strategy:
       matrix:
-        params:
-          - acVersion: 25
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/25.3002/API.Development.Kit.MAC.25.3002.zip
-          - acVersion: 26
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/26.3000/API.Development.Kit.MAC.26.3000.zip
-          - acVersion: 27
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/27.3001/API.Development.Kit.MAC.27.3001.zip
-          - acVersion: 28
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/28.3001/API.Development.Kit.MAC.28.3001.zip
-          - acVersion: 29
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/29.3000/API.Development.Kit.MAC.29.3000.zip
-          - acVersion: 30
-            devKitUrl: https://github.com/GRAPHISOFT/archicad-api-devkit/releases/download/30.3000/API.Development.Kit.MAC.30.3000.zip
+        params: ${{ fromJSON(needs.devkits.outputs.mac) }}
     runs-on: ${{ matrix.params.acVersion < 26 && 'macos-15-intel' || 'macos-latest' }}
     steps:
     - name: Checkout repo
@@ -154,6 +147,7 @@ jobs:
     outputs:
       signing-policy: ${{ steps.signing.outputs.policy }}
       signed: ${{ steps.result.outputs.signed }}
+      version: ${{ steps.version.outputs.version }}
     env:
       # None of these are secret. The API token is the SIGNPATH_API_TOKEN
       # secret, of a SignPath CI user that is a submitter on both policies.
@@ -334,7 +328,8 @@ jobs:
 
   # Attaches the Windows installer to the draft release on a tag, under the
   # unchanged asset name TapirInstaller_Win.exe (the Add-On, the legacy update
-  # script and README.md download it by that name): the release-signed file
+  # script and README.md download it by that name) and, the same file, under
+  # TapirInstaller_Win_<version>.exe (#1646): the release-signed file
   # when signing succeeded, otherwise the unsigned build. A test-signed file
   # is never attached. Forks have no SignPath access and release the unsigned
   # build.
@@ -352,10 +347,22 @@ jobs:
       with:
         name: ${{ needs.build_installer_win.outputs.signed == 'true' && 'Tapir Installer Win Signed (release-signing)' || 'Tapir Installer Win' }}
         path: dist
+    # Copying keeps the embedded Authenticode signature.
+    - name: Add Versioned Copy
+      env:
+        VERSION: ${{ needs.build_installer_win.outputs.version }}
+      run: |
+        set -eu
+        if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "::error::Unexpected installer version '$VERSION'."
+          exit 1
+        fi
+        cp dist/TapirInstaller_Win.exe "dist/TapirInstaller_Win_$VERSION.exe"
+        echo "VERSIONED_INSTALLER=dist/TapirInstaller_Win_$VERSION.exe" >> "$GITHUB_ENV"
     - name: Create Release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: dist/TapirInstaller_Win.exe
+        artifacts: dist/TapirInstaller_Win.exe,${{ env.VERSIONED_INSTALLER }}
         artifactErrorsFailBuild: true
         draft: true
         allowUpdates: true
@@ -452,11 +459,24 @@ jobs:
       with:
         name: Tapir Installer Mac
         path: dist/TapirInstaller_Mac.zip
+    # The same zip under TapirInstaller_Mac_<version>.zip as well (#1646), next
+    # to the unchanged name the Add-On and README.md download.
+    - name: Add Versioned Copy
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        set -eu
+        version=$(python3 -c "import json; print(json.load(open('tools/package_info.json'))['version'])")
+        if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+          echo "::error::Unexpected version '$version' in tools/package_info.json."
+          exit 1
+        fi
+        cp dist/TapirInstaller_Mac.zip "dist/TapirInstaller_Mac_$version.zip"
+        echo "VERSIONED_INSTALLER=dist/TapirInstaller_Mac_$version.zip" >> "$GITHUB_ENV"
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/')
       uses: ncipollo/release-action@v1
       with:
-        artifacts: dist/TapirInstaller_Mac.zip
+        artifacts: dist/TapirInstaller_Mac.zip,${{ env.VERSIONED_INSTALLER }}
         draft: true
         allowUpdates: true
         # Same guard as the add-on jobs: only drafts may be updated.

@@ -1,0 +1,18 @@
+{
+    "slug": "classification-overview",
+    "name": "Classification Overview",
+    "summary": "Counts the elements classified with each item of a classification system, shows the unclassified ones, highlights or selects them and exports the counts.",
+    "category": "classification-attributes",
+    "tags": ["classification", "audit", "selection", "excel"],
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
+    "license": "MIT",
+    "entry": "ClassificationOverview.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "First version in the marketplace, the same as the built-in script of the same name."
+        }
+    ]
+}

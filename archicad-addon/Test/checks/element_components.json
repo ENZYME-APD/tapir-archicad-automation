@@ -1,0 +1,202 @@
+{
+  "title": "GetComponentsOfElements, GetPropertyDefinitionsOfElementComponents and GetPropertyValuesOfElementComponents read the skins of a composite and a basic slab",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "building materials A and B",
+      "command": "CreateBuildingMaterials",
+      "creates": false,
+      "params": {
+        "buildingMaterialDataArray": [
+          { "name": "TapirCheck component A" },
+          { "name": "TapirCheck component B" }
+        ]
+      },
+      "save": { "bmA": "attributeIds[0].attributeId.guid", "bmB": "attributeIds[1].attributeId.guid" }
+    },
+    {
+      "id": "a line type",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Line" },
+      "save": { "lt": "attributes[0].attributeId.guid" }
+    },
+    {
+      "id": "composite: A 0.05 m, B 0.15 m",
+      "command": "CreateComposites",
+      "creates": false,
+      "params": {
+        "compositeDataArray": [
+          {
+            "name": "TapirCheck components composite",
+            "useWith": [ "Slab" ],
+            "skins": [
+              { "type": "Finish", "buildingMaterialId": { "attributeId": { "guid": "${bmA}" } }, "framePen": 1, "thickness": 0.05 },
+              { "type": "Core", "buildingMaterialId": { "attributeId": { "guid": "${bmB}" } }, "framePen": 1, "thickness": 0.15 }
+            ],
+            "separators": [
+              { "lineTypeId": { "attributeId": { "guid": "${lt}" } }, "linePen": 1 },
+              { "lineTypeId": { "attributeId": { "guid": "${lt}" } }, "linePen": 1 },
+              { "lineTypeId": { "attributeId": { "guid": "${lt}" } }, "linePen": 1 }
+            ]
+          }
+        ]
+      },
+      "save": { "comp": "attributeIds[0].attributeId.guid" }
+    },
+    {
+      "id": "a composite slab and a basic slab of A",
+      "command": "CreateSlabs",
+      "params": {
+        "slabsData": [
+          {
+            "level": 0,
+            "structureType": "Composite",
+            "compositeId": { "guid": "${comp}" },
+            "polygonCoordinates": [ { "x": 700, "y": 700 }, { "x": 703, "y": 700 }, { "x": 703, "y": 703 }, { "x": 700, "y": 703 } ]
+          },
+          {
+            "level": 0,
+            "structureType": "Basic",
+            "buildingMaterialId": { "guid": "${bmA}" },
+            "thickness": 0.2,
+            "polygonCoordinates": [ { "x": 710, "y": 700 }, { "x": 713, "y": 700 }, { "x": 713, "y": 703 }, { "x": 710, "y": 703 } ]
+          }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid", "s2": "elements[1].elementId.guid" }
+    },
+    {
+      "id": "a line, which has no components",
+      "command": "CreateLineElements",
+      "params": {
+        "linesData": [ { "begCoordinate": { "x": 720, "y": 700 }, "endCoordinate": { "x": 723, "y": 700 } } ]
+      },
+      "save": { "line": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "components of the slabs, the line and a bogus element",
+      "command": "GetComponentsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${s1}" } },
+          { "elementId": { "guid": "${s2}" } },
+          { "elementId": { "guid": "${line}" } },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "save": {
+        "c1": "componentsOfElements[0].elementComponents[0].elementComponentId.componentId.guid",
+        "c2": "componentsOfElements[0].elementComponents[1].elementComponentId.componentId.guid",
+        "c3": "componentsOfElements[1].elementComponents[0].elementComponentId.componentId.guid"
+      },
+      "expect": [
+        { "path": "componentsOfElements", "len": 4, "name": "one item per element" },
+        { "path": "componentsOfElements[0].elementComponents", "len": 2, "name": "composite slab: one component per skin" },
+        { "path": "componentsOfElements[1].elementComponents", "len": 1, "name": "basic slab: one component" },
+        { "path": "componentsOfElements[0].elementComponents[0].elementComponentId.elementId.guid", "exists": true, "name": "component id carries the element id" },
+        { "path": "componentsOfElements[2].error", "exists": true, "name": "line: error, it has no components" },
+        { "path": "componentsOfElements[3].error", "exists": true, "name": "bogus element: error, not a crash" }
+      ]
+    },
+    {
+      "id": "built-in definitions of the components",
+      "command": "GetPropertyDefinitionsOfElementComponents",
+      "creates": false,
+      "params": {
+        "elementComponents": [
+          { "elementComponentId": { "elementId": { "guid": "${s1}" }, "componentId": { "guid": "${c1}" } } },
+          { "elementComponentId": { "elementId": { "guid": "${s2}" }, "componentId": { "guid": "${c3}" } } }
+        ],
+        "filter": "BuiltIn"
+      },
+      "expect": [
+        { "path": "propertyDefinitionsOfElementComponents", "len": 2, "name": "one item per component" },
+        { "path": "propertyDefinitionsOfElementComponents[0].propertyDefinitions[0].propertyId.guid", "exists": true, "name": "composite skin has built-in properties" },
+        { "path": "propertyDefinitionsOfElementComponents[0].propertyDefinitions[0].propertyType", "ne": "Custom", "name": "BuiltIn returns no custom property" },
+        { "path": "propertyDefinitionsOfElementComponents[1].propertyDefinitions[0].propertyId.guid", "exists": true, "name": "basic slab component has built-in properties" }
+      ]
+    },
+    {
+      "id": "all definitions of a component (no filter)",
+      "command": "GetPropertyDefinitionsOfElementComponents",
+      "creates": false,
+      "params": {
+        "elementComponents": [
+          { "elementComponentId": { "elementId": { "guid": "${s1}" }, "componentId": { "guid": "${c2}" } } }
+        ]
+      },
+      "expect": [
+        { "path": "propertyDefinitionsOfElementComponents", "len": 1 },
+        { "path": "propertyDefinitionsOfElementComponents[0].propertyDefinitions[0].propertyName", "exists": true, "name": "definitions have names" }
+      ]
+    },
+    {
+      "id": "[line and bogus element]",
+      "command": "GetPropertyDefinitionsOfElementComponents",
+      "creates": false,
+      "params": {
+        "elementComponents": [
+          { "elementComponentId": { "elementId": { "guid": "${line}" }, "componentId": { "guid": "${c1}" } } },
+          { "elementComponentId": { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "componentId": { "guid": "${c1}" } } }
+        ],
+        "filter": "UserDefined"
+      },
+      "expect": [
+        { "path": "propertyDefinitionsOfElementComponents", "len": 2, "name": "one item per component" },
+        { "path": "propertyDefinitionsOfElementComponents[0].error", "exists": true, "name": "line: error, not a crash" },
+        { "path": "propertyDefinitionsOfElementComponents[1].error", "exists": true, "name": "bogus element: error, not a crash" }
+      ]
+    },
+    {
+      "id": "building material name of each component",
+      "command": "GetPropertyValuesOfElementComponents",
+      "creates": false,
+      "params": {
+        "elementComponents": [
+          { "elementComponentId": { "elementId": { "guid": "${s1}" }, "componentId": { "guid": "${c1}" } } },
+          { "elementComponentId": { "elementId": { "guid": "${s1}" }, "componentId": { "guid": "${c2}" } } },
+          { "elementComponentId": { "elementId": { "guid": "${s2}" }, "componentId": { "guid": "${c3}" } } }
+        ],
+        "properties": [ { "propertyId": { "guid": "514C85CB-3FC8-4EDF-A8E9-44E13969CBE7" } } ]
+      },
+      "expect": [
+        { "path": "propertyValuesForElementComponents", "len": 3, "name": "one list per component" },
+        { "path": "propertyValuesForElementComponents[0].propertyValues", "len": 1, "name": "one value per property" },
+        { "path": "propertyValuesForElementComponents[0].propertyValues[0].propertyValue.value", "eq": "TapirCheck component A", "name": "first skin is A" },
+        { "path": "propertyValuesForElementComponents[1].propertyValues[0].propertyValue.value", "eq": "TapirCheck component B", "name": "second skin is B" },
+        { "path": "propertyValuesForElementComponents[2].propertyValues[0].propertyValue.value", "eq": "TapirCheck component A", "name": "basic slab is A" }
+      ]
+    },
+    {
+      "id": "[line and bogus element]",
+      "command": "GetPropertyValuesOfElementComponents",
+      "creates": false,
+      "params": {
+        "elementComponents": [
+          { "elementComponentId": { "elementId": { "guid": "${line}" }, "componentId": { "guid": "${c1}" } } },
+          { "elementComponentId": { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "componentId": { "guid": "${c1}" } } }
+        ],
+        "properties": [ { "propertyId": { "guid": "514C85CB-3FC8-4EDF-A8E9-44E13969CBE7" } } ]
+      },
+      "expect": [
+        { "path": "propertyValuesForElementComponents", "len": 2, "name": "one item per component" },
+        { "path": "propertyValuesForElementComponents[0].error", "exists": true, "name": "line: error, not a crash" },
+        { "path": "propertyValuesForElementComponents[1].error", "exists": true, "name": "bogus element: error, not a crash" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteAttributes", "params": { "attributesToDelete": [ { "attributeType": "Composite", "attributeId": { "attributeId": { "guid": "${comp}" } } } ] } },
+    {
+      "command": "DeleteAttributes",
+      "params": {
+        "attributesToDelete": [
+          { "attributeType": "BuildingMaterial", "attributeId": { "attributeId": { "guid": "${bmA}" } } },
+          { "attributeType": "BuildingMaterial", "attributeId": { "attributeId": { "guid": "${bmB}" } } }
+        ]
+      }
+    }
+  ]
+}

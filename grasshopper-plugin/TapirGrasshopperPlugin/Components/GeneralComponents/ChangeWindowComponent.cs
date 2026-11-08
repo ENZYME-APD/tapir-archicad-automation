@@ -17,7 +17,8 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
                 "ChangeWindow",
                 "Change the current (active) window to the given window. " +
                 "Provide either a NavigatorItemId (activates the view with its saved settings, Archicad 27+) " +
-                "or a WindowType (optionally with a StoryIndex for FloorPlan, or a DatabaseId).",
+                "or a WindowType (optionally with a StoryIndex for FloorPlan, or a DatabaseId), " +
+                "or a DatabaseId on its own (its window type is taken from the database).",
                 GroupNames.General)
         {
         }
@@ -40,7 +41,7 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
 
             InGeneric(
                 "DatabaseId",
-                "Identifier of the database to activate. Must belong to the requested WindowType.");
+                "Identifier of the database to activate. Enough on its own; when WindowType is also given, it must belong to it.");
 
             SetOptionality(new[] { 0, 1, 2, 3 });
         }
@@ -65,18 +66,17 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
             }
             else
             {
-                if (!da.TryGet(
+                var hasWindowType = da.TryGet(
                         0,
-                        out string windowType) ||
-                    string.IsNullOrEmpty(windowType))
+                        out string windowType) &&
+                    !string.IsNullOrEmpty(windowType);
+                if (hasWindowType)
                 {
-                    this.AddError(
-                        "Provide either a NavigatorItemId or a WindowType.");
-                    return;
+                    parameters["windowType"] = windowType;
                 }
-                parameters["windowType"] = windowType;
 
-                if (windowType == "FloorPlan" &&
+                if (hasWindowType &&
+                    windowType == "FloorPlan" &&
                     da.TryGet(
                         1,
                         out int storyIndex))
@@ -96,6 +96,14 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
                         return;
                     }
                     parameters["databaseId"] = new JObject { ["guid"] = dbId.Guid };
+                }
+
+                if (!hasWindowType &&
+                    parameters["databaseId"] == null)
+                {
+                    this.AddError(
+                        "Provide a NavigatorItemId, a WindowType or a DatabaseId.");
+                    return;
                 }
             }
 

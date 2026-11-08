@@ -8,13 +8,18 @@ name: Discord Issue Bot
 # on one message per channel marks the last message checked; each run
 # continues after it.
 #
+# GitHub drops many scheduled runs when it is busy, most of all at the full and
+# half hour, so the schedule runs at :13 and :43. A run that GitHub drops loses
+# nothing: each run scans the last day and continues after the 👀 checkpoint.
+#
 # Setup and tuning: tools/discord-issue-bot/README.md. Until the secrets
 # and the DISCORD_CHANNEL_IDS variable are configured, runs exit quietly
 # without doing anything.
 
 on:
   schedule:
-    - cron: '*/30 * * * *'
+    # Off the full and half hour, which GitHub delays and drops the most.
+    - cron: '13,43 * * * *'
   workflow_dispatch:
     inputs:
       dry_run:
@@ -88,7 +93,7 @@ jobs:
         run: |
           # Classification runs through the Claude Code CLI, authorized by
           # the OAuth token on the Pro/Max subscription. Pinned so a bad CLI
-          # release cannot break every half-hourly run; bump deliberately.
+          # release cannot break every run; bump deliberately.
           # Skipped only in the unconfigured pre-setup state, where the bot
           # exits before classifying anyway.
           if [ "$HAVE_CLAUDE_TOKEN" = "true" ]; then

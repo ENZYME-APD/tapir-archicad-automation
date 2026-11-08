@@ -1,0 +1,196 @@
+{
+  "title": "CreateDetails and CreateWorksheets make databases that GetDatabases lists and GetDatabaseIdFromNavigatorItemId resolves",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [ "Wall", "Slab", "Stair", "Roof", "Zone", "Detail", "Worksheet" ],
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "independent detail",
+      "command": "CreateDetails",
+      "creates": false,
+      "params": {
+        "detailsData": [
+          { "name": "TapirCheck Detail", "referenceId": "TCD-1" }
+        ]
+      },
+      "save": { "dNav": "databases[0].navigatorItemId.guid" },
+      "expect": [
+        { "path": "databases[0].databaseId.guid", "exists": true, "name": "detail created" },
+        { "path": "databases[0].navigatorItemId.guid", "exists": true, "name": "its Project Map item found" }
+      ]
+    },
+    {
+      "id": "independent worksheet",
+      "command": "CreateWorksheets",
+      "creates": false,
+      "params": {
+        "worksheetsData": [
+          { "name": "TapirCheck Worksheet", "referenceId": "TCW-1" }
+        ]
+      },
+      "save": { "wNav": "databases[0].navigatorItemId.guid" },
+      "expect": [
+        { "path": "databases[0].databaseId.guid", "exists": true, "name": "worksheet created" },
+        { "path": "databases[0].navigatorItemId.guid", "exists": true, "name": "its Project Map item found" }
+      ]
+    },
+    {
+      "id": "the detail is listed with its name and ID",
+      "command": "GetDatabases",
+      "creates": false,
+      "params": { "types": [ "Detail" ] },
+      "expect": [
+        { "path": "databases", "len": 1 },
+        { "path": "databases[0].type", "eq": "Detail" },
+        { "path": "databases[0].name", "eq": "TapirCheck Detail" },
+        { "path": "databases[0].referenceId", "eq": "TCD-1" }
+      ]
+    },
+    {
+      "id": "the worksheet is listed with its name and ID",
+      "command": "GetDatabases",
+      "creates": false,
+      "params": { "types": [ "Worksheet" ] },
+      "expect": [
+        { "path": "databases", "len": 1 },
+        { "path": "databases[0].type", "eq": "Worksheet" },
+        { "path": "databases[0].name", "eq": "TapirCheck Worksheet" },
+        { "path": "databases[0].referenceId", "eq": "TCW-1" }
+      ]
+    },
+    {
+      "id": "types in the given order, a repeated type once",
+      "command": "GetDatabases",
+      "creates": false,
+      "params": { "types": [ "Worksheet", "Detail", "Worksheet" ] },
+      "expect": [
+        { "path": "databases", "len": 2 },
+        { "path": "databases[0].type", "eq": "Worksheet" },
+        { "path": "databases[1].type", "eq": "Detail" }
+      ]
+    },
+    {
+      "id": "databases of the two Project Map items, and of a nonexistent one",
+      "command": "GetDatabaseIdFromNavigatorItemId",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [
+          { "navigatorItemId": { "guid": "${dNav}" } },
+          { "navigatorItemId": { "guid": "${wNav}" } },
+          { "navigatorItemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "save": { "dDb": "databases[0].databaseId.guid", "wDb": "databases[1].databaseId.guid" },
+      "expect": [
+        { "path": "databases", "len": 3 },
+        { "path": "databases[0].databaseId.guid", "exists": true },
+        { "path": "databases[1].databaseId.guid", "exists": true },
+        { "path": "databases[2].error.code", "exists": true, "name": "nonexistent item refused" }
+      ]
+    },
+    {
+      "id": "open the database resolved for the detail",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "databaseId": { "guid": "${dDb}" } },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "it is a detail window",
+      "command": "GetCurrentWindowType",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "currentWindowType", "eq": "Details" }
+      ]
+    },
+    {
+      "id": "open the database resolved for the worksheet",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "databaseId": { "guid": "${wDb}" } },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "it is a worksheet window",
+      "command": "GetCurrentWindowType",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "currentWindowType", "eq": "Worksheet" }
+      ]
+    },
+    {
+      "id": "back to the floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "bad input: detail with an empty name",
+      "command": "CreateDetails",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "detailsData": [
+          { "name": "", "referenceId": "TCD-BAD" }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the input schema (name minLength 1)" }
+      ]
+    },
+    {
+      "id": "bad input: worksheet with an empty reference ID",
+      "command": "CreateWorksheets",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "worksheetsData": [
+          { "name": "TapirCheck Worksheet bad", "referenceId": "" }
+        ]
+      },
+      "expect": [
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the input schema (referenceId minLength 1)" }
+      ]
+    },
+    {
+      "id": "nothing more was created",
+      "command": "GetDatabases",
+      "creates": false,
+      "params": { "types": [ "Detail", "Worksheet" ] },
+      "expect": [
+        { "path": "databases", "len": 2 }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "ChangeWindow",
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "command": "DeleteNavigatorItems",
+      "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${dNav}" } } ] }
+    },
+    {
+      "command": "DeleteNavigatorItems",
+      "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${wNav}" } } ] }
+    }
+  ]
+}

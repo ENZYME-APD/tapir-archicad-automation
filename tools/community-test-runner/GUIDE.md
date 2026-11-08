@@ -94,6 +94,10 @@ is happening.
 - **Test everything due:** tests what is marked for testing, now.
 - **Stop after this test:** finishes the current test, then stops.
 - **Put my add-on back:** use this if a test was interrupted (see *If something goes wrong*).
+- **Benchmark open Archicad:** measures how fast your Tapir answers and how big its answers are.
+  Open Archicad with a new, empty project (don't save it) first. It takes a few minutes, adds
+  up to 5000 elements and deletes them again, then opens a report and says what changed since
+  your last benchmark. Nothing is posted.
 - **Post results on GitHub:** untick it to try the runner without posting anything.
 - **Run every check:** also runs the general checks, not only the change's own.
 - **Settings:** asks the setup questions again.
@@ -121,6 +125,12 @@ In the log, and on GitHub:
 ---
 
 ## If something goes wrong
+
+**Nothing seems to happen.** Read the last line of the log. It says how many changes are marked
+for testing and whether Archicad is open. *"0 marked 'needs-test'"* means there is nothing for
+automatic testing to do yet; that's normal, and you can still select a row and click **Test
+selected**. *"Archicad 30 is open"* means tests wait until you close it. While the list is being
+read, the top line counts up (*Reading pull requests 43/100*); that takes about half a minute.
 
 **Archicad shows a question when the runner starts it** (for example *Project Recovery* after an
 earlier crash, or a licence message). The runner can't answer questions for you. Answer it

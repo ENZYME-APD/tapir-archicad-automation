@@ -1,0 +1,18 @@
+{
+    "slug": "door-window-numbering-by-zone",
+    "name": "Door and Window Numbering by Zone",
+    "summary": "Gives every door and window an Element ID built from the zone it opens into, such as 1.04-D1, numbered clockwise within each zone.",
+    "category": "element-data-properties",
+    "tags": ["doors", "windows", "zones", "numbering", "element-id"],
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
+    "license": "MIT",
+    "entry": "DoorWindowNumberingByZone.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "First version in the marketplace, the same as the built-in script of the same name."
+        }
+    ]
+}
