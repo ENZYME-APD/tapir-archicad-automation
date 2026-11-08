@@ -4,7 +4,7 @@
     "summary": "Lists a custom property of every Building Material so the empty values stand out, exports the list and fills in a value for the materials you choose.",
     "category": "classification-attributes",
     "tags": ["building-materials", "properties", "attributes", "audit", "excel"],
-    "author": { "name": "Tapir" },
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
     "license": "MIT",
     "entry": "BuildingMaterialPropertyAudit.py",
     "versions": [

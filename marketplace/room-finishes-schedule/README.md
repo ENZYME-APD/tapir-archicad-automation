@@ -45,4 +45,4 @@ default name is `Room finishes.csv`.
 
 ## Credits
 
-Requested by @parikshit99 in #2014. Written by the Tapir project.
+Requested by @parikshit99 in #2014, written with the Tapir issue bot.

@@ -44,4 +44,4 @@ default name is `Property values <date> <time>.xlsx`.
 
 ## Credits
 
-Requested by @parikshit99 in #2005. Written by the Tapir project.
+Requested by @parikshit99 in #2005, written with the Tapir issue bot.

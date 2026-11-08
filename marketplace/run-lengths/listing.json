@@ -4,7 +4,7 @@
     "summary": "Totals the lengths of MEP pipe, duct and cable runs and of the 2D lines drawn for them, side by side, and saves the table as CSV or Excel.",
     "category": "quantities-scheduling",
     "tags": ["mep", "pipes", "ducts", "cables", "lines", "lengths", "export"],
-    "author": { "name": "Tapir" },
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
     "license": "MIT",
     "entry": "RunLengths.py",
     "versions": [

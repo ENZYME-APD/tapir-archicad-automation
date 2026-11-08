@@ -4,7 +4,7 @@
     "summary": "Renames the views of the View Map, or of one folder, in one go: find and replace, prefix and suffix, or a pattern with a counter.",
     "category": "navigator-views",
     "tags": ["views", "view-map", "renaming", "navigator"],
-    "author": { "name": "Tapir" },
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
     "license": "MIT",
     "entry": "BulkViewRenamer.py",
     "versions": [

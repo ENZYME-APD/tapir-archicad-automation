@@ -43,4 +43,4 @@ window's status line. It writes no files.
 
 ## Credits
 
-Requested by @parikshit99 in #2004. Written by the Tapir project.
+Requested by @parikshit99 in #2004, written with the Tapir issue bot.

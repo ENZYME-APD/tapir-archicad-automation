@@ -4,7 +4,7 @@
     "summary": "Compares the area of every zone with a target area property within a tolerance, and highlights the zones over, under and on target.",
     "category": "zones-areas",
     "tags": ["zones", "areas", "check", "highlight"],
-    "author": { "name": "Tapir" },
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
     "license": "MIT",
     "entry": "ZoneAreaCheck.py",
     "versions": [
