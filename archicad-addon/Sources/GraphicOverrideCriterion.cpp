@@ -1390,6 +1390,25 @@ static const EnumValue kPenReplacementValues[] = { { "None", 1 }, { "ForegroundO
 static const EnumValue kTextAlignments[]       = { { "Left", 0 }, { "Center", 1 }, { "Right", -1 }, { "Justified", 20 } };
 static const EnumValue kTextStyles[]           = { { "Bold", 1 }, { "Italic", 2 }, { "Underline", 4 }, { "Strikethrough", 256 }, { "Superscript", 512 }, { "Subscript", 1024 } };
 static const EnumValue kHatchCategories[]      = { { "Drafting", 1 }, { "Cover", 2 }, { "Cut", 3 }, { "BuildingMaterialCut", 4 }, { "SurfaceColor", 5 }, { "SurfaceCover", 6 }, { "SurfaceTexture", 7 } };
+// The values of the tool enum conditions, see EmitCriterionNode (the reader of part 5 of #1816 names
+// them with these tables, so keep them the same as the writer's).
+static const EnumValue kBeamCrossSections[]    = { { "Rectangular", 0 }, { "Profiled", 1 }, { "Circular", 2 } };
+static const EnumValue kOpeningShapes[]        = { { "Square", 0 }, { "Rectangle", 1 }, { "Circle", 2 }, { "Ellipse", 3 }, { "Polygonal", 4 } };
+static const EnumValue kOpeningLimits[]        = { { "Infinite", 0 }, { "BothSides", 1 }, { "OneSide", 2 } };
+static const EnumValue kOpeningOrientations[]  = { { "Vertical", 0 }, { "Horizontal", 1 }, { "Aligned", 2 }, { "Custom", 3 } };
+static const EnumValue kWallComplexities[]     = { { "Straight", 0 }, { "Slanted", 3 }, { "DoubleSlanted", 5 } };
+static const EnumValue kWallReferenceLinePositions[] = { { "Outside", 0 }, { "Center", 1 }, { "Inside", 2 }, { "CoreOutside", 3 }, { "CoreCenter", 4 }, { "CoreInside", 5 } };
+static const EnumValue kWallGeometryTypes[]    = { { "Uniform", 0 }, { "Trapezoid", 1 }, { "Polygonal", 3 } };
+static const EnumValue kColumnCoatingTypes[]   = { { "Core", 0 }, { "Finish", 1 }, { "Other", 2 } };
+static const EnumValue kColumnCrossSectionTypes[] = { { "Rectangular", 2 }, { "Circular", 1 }, { "Profiled", 3 } };
+static const EnumValue kSlabReferencePlaneLocations[] = { { "Top", 0 }, { "CoreTop", 1 }, { "CoreBottom", 2 }, { "Bottom", 3 } };
+static const EnumValue kSlabEdgeAngles[]       = { { "Vertical", 0 }, { "Custom", 3 } };
+static const EnumValue kRoofCutBodyTypes[]     = { { "ContoursDown", 2 }, { "ReferenceLineDown", 3 } };
+static const EnumValue kRoofEaveOverhangTypes[] = { { "Offset", 1 }, { "Manual", 2 } };
+static const EnumValue kRoofEdgeAngles[]       = { { "Vertical", 0 }, { "Perpendicular", 1 }, { "Custom", 3 } };
+static const EnumValue kRoofGeometryTypes[]    = { { "SinglePanel", 1 }, { "MultiplePanels", 2 } };
+static const EnumValue kShellCutBodyTypes[]    = { { "Editable", 1 }, { "ExtrudeUp", 4 }, { "ExtrudeDown", 5 } };
+static const EnumValue kShellGeometryTypes[]   = { { "Extrude", 1 }, { "Revolved", 2 }, { "Ruled", 3 } };
 
 // An enum stored as a GuidVariant: each name's fixed built-in value guid.
 struct GuidEnumValue {
@@ -3031,11 +3050,6 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
         return true;
     }
 
-    static const EnumValue kBeamCrossSections[]    = { { "Rectangular", 0 }, { "Profiled", 1 }, { "Circular", 2 } };
-    static const EnumValue kOpeningShapes[]        = { { "Square", 0 }, { "Rectangle", 1 }, { "Circle", 2 }, { "Ellipse", 3 }, { "Polygonal", 4 } };
-    static const EnumValue kOpeningLimits[]        = { { "Infinite", 0 }, { "BothSides", 1 }, { "OneSide", 2 } };
-    static const EnumValue kOpeningOrientations[]  = { { "Vertical", 0 }, { "Horizontal", 1 }, { "Aligned", 2 }, { "Custom", 3 } };
-
     // Enum fields stored as a bare IntVariant, "is" and, where the editor offers it, "is not".
     struct BareEnumField {
         const char*      field;
@@ -3628,6 +3642,51 @@ static const BuiltInPropertyField kBuiltInPropertyFields[] = {
     // Surfaces and Materials (part 4 of #1816).
     { "constructionMaterial",   BuiltInFieldKind::AttributeHas, kConstructionMaterialPropertyGuid,   kSurfaceMaterialPropertyGroupGuid, API_BuildingMaterialID, nullptr,   0, true  },
     { "surface",                BuiltInFieldKind::AttributeHas, kSurfacePropertyGuid,                kSurfaceMaterialPropertyGroupGuid, API_MaterialID,     nullptr,        0, true  },
+    // Geometry and tool fields (part 5 of #1816), the rest of which is in kBuiltInValueFields.
+    { "wallHeightReversed",     BuiltInFieldKind::Bool,         kWallHeightReversedPropertyGuid,     kWallGeometryGroupGuid,         API_ZombieAttrID,  nullptr,         0, false },
+    { "stairInvalidHeight",     BuiltInFieldKind::Bool,         kStairInvalidHeightPropertyGuid,     kWallGeometryGroupGuid,         API_ZombieAttrID,  nullptr,         0, false },
+    { "mepOpenConnection",      BuiltInFieldKind::Bool,         kMepOpenConnectionPropertyGuid,      kMepCommonPropertyGroupGuid,    API_ZombieAttrID,  nullptr,         0, false },
+    { "wallComplexity",         BuiltInFieldKind::Enum,         kWallComplexityPropertyGuid,         kConstructionPropertyGroupGuid, API_ZombieAttrID,  kWallComplexities,            3, true  },
+    { "wallReferenceLinePosition", BuiltInFieldKind::Enum,      kWallReferenceLinePositionPropertyGuid, kPositioningPropertyGroupGuid, API_ZombieAttrID, kWallReferenceLinePositions, 6, true  },
+    { "wallGeometryType",       BuiltInFieldKind::Enum,         kWallGeometryTypePropertyGuid,       kWallGeometryGroupGuid,         API_ZombieAttrID,  kWallGeometryTypes,           3, true  },
+    { "columnCoatingType",      BuiltInFieldKind::Enum,         kColumnCoatingTypePropertyGuid,      kConstructionPropertyGroupGuid, API_ZombieAttrID,  kColumnCoatingTypes,          3, true  },
+    { "columnCrossSectionType", BuiltInFieldKind::Enum,         kColumnCrossSectionTypePropertyGuid, kWallGeometryGroupGuid,         API_ZombieAttrID,  kColumnCrossSectionTypes,     3, false },
+    { "beamCrossSectionType",   BuiltInFieldKind::Enum,         kBeamCrossSectionTypePropertyGuid,   kWallGeometryGroupGuid,         API_ZombieAttrID,  kBeamCrossSections,           3, false },
+    { "slabReferencePlaneLocation", BuiltInFieldKind::Enum,     kSlabReferencePlaneLocationPropertyGuid, kPositioningPropertyGroupGuid, API_ZombieAttrID, kSlabReferencePlaneLocations, 4, true  },
+    { "slabEdgeAngle",          BuiltInFieldKind::Enum,         kSlabEdgeAnglePropertyGuid,          kWallGeometryGroupGuid,         API_ZombieAttrID,  kSlabEdgeAngles,              2, true  },
+    { "roofCutBodyType",        BuiltInFieldKind::Enum,         kRoofCutBodyTypePropertyGuid,        kConstructionPropertyGroupGuid, API_ZombieAttrID,  kRoofCutBodyTypes,            2, true  },
+    { "roofEaveOverhangType",   BuiltInFieldKind::Enum,         kRoofEaveOverhangTypePropertyGuid,   kConstructionPropertyGroupGuid, API_ZombieAttrID,  kRoofEaveOverhangTypes,       2, false },
+    { "roofEdgeAngle",          BuiltInFieldKind::Enum,         kRoofEdgeAnglePropertyGuid,          kWallGeometryGroupGuid,         API_ZombieAttrID,  kRoofEdgeAngles,              3, true  },
+    { "roofGeometryType",       BuiltInFieldKind::Enum,         kRoofGeometryTypePropertyGuid,       kWallGeometryGroupGuid,         API_ZombieAttrID,  kRoofGeometryTypes,           2, true  },
+    { "shellCutBodyType",       BuiltInFieldKind::Enum,         kShellCutBodyTypePropertyGuid,       kConstructionPropertyGroupGuid, API_ZombieAttrID,  kShellCutBodyTypes,           3, false },
+    { "shellGeometryType",      BuiltInFieldKind::Enum,         kShellGeometryTypePropertyGuid,      kWallGeometryGroupGuid,         API_ZombieAttrID,  kShellGeometryTypes,          3, false },
+    { "openingShape",           BuiltInFieldKind::Enum,         kOpeningShapePropertyGuid,           kWallGeometryGroupGuid,         API_ZombieAttrID,  kOpeningShapes,               5, true  },
+    { "openingLimits",          BuiltInFieldKind::Enum,         kOpeningLimitsPropertyGuid,          kWallGeometryGroupGuid,         API_ZombieAttrID,  kOpeningLimits,               3, true  },
+    { "openingOrientation",     BuiltInFieldKind::Enum,         kOpeningOrientationPropertyGuid,     kWallGeometryGroupGuid,         API_ZombieAttrID,  kOpeningOrientations,         4, true  },
+    { "wallTopLine",            BuiltInFieldKind::AttributeIs,  kWallTopLinePropertyGuid,            kPlanSectionPropertyGroupGuid,  API_LinetypeID,    nullptr,         0, true  },
+    { "wallCutLine",            BuiltInFieldKind::AttributeIs,  kWallCutLinePropertyGuid,            kPlanSectionPropertyGroupGuid,  API_LinetypeID,    nullptr,         0, true  },
+    { "wallUncutLine",          BuiltInFieldKind::AttributeIs,  kWallUncutLinePropertyGuid,          kPlanSectionPropertyGroupGuid,  API_LinetypeID,    nullptr,         0, true  },
+    { "columnHiddenLineType",   BuiltInFieldKind::AttributeIs,  kColumnHiddenLineTypePropertyGuid,   kPlanSectionPropertyGroupGuid,  API_LinetypeID,    nullptr,         0, true  },
+    { "beamAxisLineType",       BuiltInFieldKind::AttributeIs,  kBeamAxisLineTypePropertyGuid,       kPlanSectionPropertyGroupGuid,  API_LinetypeID,    nullptr,         0, true  },
+    { "curtainWallFrameCutLine", BuiltInFieldKind::AttributeIs, kCurtainWallFrameCutLinePropertyGuid, kPlanSectionPropertyGroupGuid, API_LinetypeID,    nullptr,         0, true  },
+    { "curtainWallPanelCutLine", BuiltInFieldKind::AttributeIs, kCurtainWallPanelCutLinePropertyGuid, kPlanSectionPropertyGroupGuid, API_LinetypeID,    nullptr,         0, true  },
+    { "columnCoveringHatch",    BuiltInFieldKind::AttributeIs,  kColumnCoveringHatchPropertyGuid,    kPlanSectionPropertyGroupGuid,  API_FilltypeID,    nullptr,         0, true  },
+    { "columnCoatingHatch",     BuiltInFieldKind::AttributeIs,  kColumnCoatingHatchPropertyGuid,     kPlanSectionPropertyGroupGuid,  API_FilltypeID,    nullptr,         0, true  },
+    { "slabConstructionMaterialFill", BuiltInFieldKind::AttributeIs, kSlabConstructionMaterialFillPropertyGuid, kPlanSectionPropertyGroupGuid, API_FilltypeID, nullptr, 0, true  },
+    { "wallOutsideSurface",     BuiltInFieldKind::AttributeIs,  kWallOutsideSurfacePropertyGuid,     kSurfaceMaterialPropertyGroupGuid, API_MaterialID, nullptr,         0, true  },
+    { "wallInsideSurface",      BuiltInFieldKind::AttributeIs,  kWallInsideSurfacePropertyGuid,      kSurfaceMaterialPropertyGroupGuid, API_MaterialID, nullptr,         0, true  },
+    { "wallSideSurface",        BuiltInFieldKind::AttributeIs,  kWallSideSurfacePropertyGuid,        kSurfaceMaterialPropertyGroupGuid, API_MaterialID, nullptr,         0, true  },
+    { "columnCoreSurface",      BuiltInFieldKind::AttributeIs,  kColumnCoreSurfacePropertyGuid,      kSurfaceMaterialPropertyGroupGuid, API_MaterialID, nullptr,         0, true  },
+    { "columnCoatingSurface",   BuiltInFieldKind::AttributeIs,  kColumnCoatingSurfacePropertyGuid,   kSurfaceMaterialPropertyGroupGuid, API_MaterialID, nullptr,         0, true  },
+    { "columnExtrusionSurface", BuiltInFieldKind::AttributeIs,  kColumnExtrusionSurfacePropertyGuid, kSurfaceMaterialPropertyGroupGuid, API_MaterialID, nullptr,         0, true  },
+    { "beamEndSurface",         BuiltInFieldKind::AttributeIs,  kBeamEndSurfacePropertyGuid,         kSurfaceMaterialPropertyGroupGuid, API_MaterialID, nullptr,         0, true  },
+    { "beamRightSurface",       BuiltInFieldKind::AttributeIs,  kBeamRightSurfacePropertyGuid,       kSurfaceMaterialPropertyGroupGuid, API_MaterialID, nullptr,         0, true  },
+    { "beamLeftSurface",        BuiltInFieldKind::AttributeIs,  kBeamLeftSurfacePropertyGuid,        kSurfaceMaterialPropertyGroupGuid, API_MaterialID, nullptr,         0, true  },
+    { "beamBottomSurface",      BuiltInFieldKind::AttributeIs,  kBeamBottomSurfacePropertyGuid,      kSurfaceMaterialPropertyGroupGuid, API_MaterialID, nullptr,         0, true  },
+    { "beamTopSurface",         BuiltInFieldKind::AttributeIs,  kBeamTopSurfacePropertyGuid,         kSurfaceMaterialPropertyGroupGuid, API_MaterialID, nullptr,         0, true  },
+    { "openingEndSurface",      BuiltInFieldKind::AttributeIs,  kOpeningEndSurfacePropertyGuid,      kSurfaceMaterialPropertyGroupGuid, API_MaterialID, nullptr,         0, true  },
+    { "openingExtrusionSurface", BuiltInFieldKind::AttributeIs, kOpeningExtrusionSurfacePropertyGuid, kSurfaceMaterialPropertyGroupGuid, API_MaterialID, nullptr,        0, true  },
+    { "meshSkirtSurface",       BuiltInFieldKind::AttributeIs,  kMeshSkirtSurfacePropertyGuid,       kSurfaceMaterialPropertyGroupGuid, API_MaterialID, nullptr,         0, true  },
 };
 
 static bool ReadBuiltInPropertyField (const BuiltInPropertyField& field, const CriterionXmlNode& classGuid, const CriterionXmlNode& leaf, int op, const std::string& valueText, GS::ObjectState& outLeaf)
@@ -3738,10 +3797,12 @@ static bool ReadBuiltInPropertyField (const BuiltInPropertyField& field, const C
 
 // The built-in properties of the Positioning and ID and Categories categories (part 3 of #1816), each
 // written by EmitCriterionNode with the same key, guid, group and operators, and those of the Plan and
-// Section and Surfaces and Materials categories that hold a value (part 4). The fields of one tool
-// (wallLevelOffset, wallParentId, meshEdgePen, ...) are not here.
+// Section and Surfaces and Materials categories that hold a value (part 4), and the geometry and tool
+// fields (wallLevelOffset, wallParentId, meshEdgePen, ..., part 5).
 enum class BuiltInValueKind {
     Number,     // key + "", Not, LessThan, GreaterThan, LessOrEqual, GreaterOrEqual: a number
+    NumList,    // the same, written as a list of one number
+    IntNumber,  // the same, an integer
     Integer,    // key / keyNot (when notAllowed): an integer, "is" / "is not"
     Text,       // key + the suffix of each operator in textOps (kTextOperatorSuffixes): a text
     TextList,   // the same, written as a list of one text
@@ -3752,6 +3813,8 @@ enum class BuiltInValueKind {
     GuidFlag    // key / keyNot: true, "is" / "is not" the one value of values
 };
 
+// The key suffix of each number operator (CriteriaOperatorEnum 0 to 5), as TryEmitNumField reads them.
+static const char* kNumberOperatorSuffixes[] = { "", "Not", "LessThan", "GreaterThan", "LessOrEqual", "GreaterOrEqual" };
 // The key suffix of each text operator, by CriteriaOperatorEnum.
 static const char* kTextOperatorSuffixes[] = { "Is", "IsNot", "LessThan", "GreaterThan", "LessOrEqual", "GreaterOrEqual", "Contains", "NotContains", "StartsWith", "EndsWith" };
 static const unsigned kTextIsOps       = 0x003; // is, is not
@@ -3811,15 +3874,103 @@ static const BuiltInValueField kBuiltInValueFields[] = {
     { "constructionMaterialId",   BuiltInValueKind::TextList, kConstructionMaterialIdPropertyGuid,   kSurfaceMaterialPropertyGroupGuid, kText6Ops, false, nullptr, 0, false },
     { "constructionMaterialName", BuiltInValueKind::TextList, kConstructionMaterialNamePropertyGuid, kSurfaceMaterialPropertyGroupGuid, kText6Ops, false, nullptr, 0, false },
     { "surfaceName",              BuiltInValueKind::TextList, kSurfaceNamePropertyGuid,              kSurfaceMaterialPropertyGroupGuid, kText6Ops, false, nullptr, 0, false },
+    // Geometry and tool fields (part 5 of #1816). Pens are plain pen numbers.
+    { "screedThickness",          BuiltInValueKind::Number,   kScreedThicknessPropertyGuid,          kPositioningPropertyGroupGuid, 0, false, nullptr, 0, false },
+    { "wallLevelOffset",          BuiltInValueKind::Number,   kWallLevelOffsetPropertyGuid,          kPositioningPropertyGroupGuid, 0, false, nullptr, 0, false },
+    { "wallTopOffset",            BuiltInValueKind::Number,   kWallTopOffsetPropertyGuid,            kPositioningPropertyGroupGuid, 0, false, nullptr, 0, false },
+    { "linkedUpperStoryAbsolute", BuiltInValueKind::Integer,  kLinkedUpperStoryAbsolutePropertyGuid, kPositioningPropertyGroupGuid, 0, false, nullptr, 0, false },
+    { "linkedUpperStoryRelative", BuiltInValueKind::Integer,  kLinkedUpperStoryRelativePropertyGuid, kPositioningPropertyGroupGuid, 0, false, nullptr, 0, false },
+    { "wallOutsideAngle",         BuiltInValueKind::Number,   kWallOutsideAnglePropertyGuid,         kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "wallInsideAngle",          BuiltInValueKind::Number,   kWallInsideAnglePropertyGuid,          kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "wallThickness",            BuiltInValueKind::Number,   kWallThicknessPropertyGuid,            kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "wallHeight",               BuiltInValueKind::Number,   kWallHeightPropertyGuid,               kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "wallProfileHeight",        BuiltInValueKind::Number,   kWallProfileHeightPropertyGuid,        kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "wallWidth",                BuiltInValueKind::Number,   kWallWidthPropertyGuid,                kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "wallProfileWidth",         BuiltInValueKind::Number,   kWallProfileWidthPropertyGuid,         kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "objectLength",             BuiltInValueKind::Number,   kObjectLengthPropertyGuid,             kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "columnInclinationAngle",   BuiltInValueKind::Number,   kColumnInclinationAnglePropertyGuid,   kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "columnCoreDiameter",       BuiltInValueKind::Number,   kColumnCoreDiameterPropertyGuid,       kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "columnCoatingThickness",   BuiltInValueKind::Number,   kColumnCoatingThicknessPropertyGuid,   kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "columnBottomCrossSectionHeightCut",           BuiltInValueKind::Number, kColumnBottomCrossSectionHeightCutPropertyGuid,           kWallGeometryGroupGuid, 0, false, nullptr, 0, false },
+    { "columnBottomCrossSectionHeightPerpendicular", BuiltInValueKind::Number, kColumnBottomCrossSectionHeightPerpendicularPropertyGuid, kWallGeometryGroupGuid, 0, false, nullptr, 0, false },
+    { "columnTopCrossSectionHeightCut",              BuiltInValueKind::Number, kColumnTopCrossSectionHeightCutPropertyGuid,              kWallGeometryGroupGuid, 0, false, nullptr, 0, false },
+    { "columnTopCrossSectionHeightPerpendicular",    BuiltInValueKind::Number, kColumnTopCrossSectionHeightPerpendicularPropertyGuid,    kWallGeometryGroupGuid, 0, false, nullptr, 0, false },
+    { "columnProfileCoreHeight",                     BuiltInValueKind::Number, kColumnProfileCoreHeightPropertyGuid,                     kWallGeometryGroupGuid, 0, false, nullptr, 0, false },
+    { "columnCoreHeightDiameterRatio",               BuiltInValueKind::Number, kColumnCoreHeightDiameterRatioPropertyGuid,               kWallGeometryGroupGuid, 0, false, nullptr, 0, false },
+    { "columnBottomCrossSectionWidthCut",            BuiltInValueKind::Number, kColumnBottomCrossSectionWidthCutPropertyGuid,            kWallGeometryGroupGuid, 0, false, nullptr, 0, false },
+    { "columnBottomCrossSectionWidthPerpendicular",  BuiltInValueKind::Number, kColumnBottomCrossSectionWidthPerpendicularPropertyGuid,  kWallGeometryGroupGuid, 0, false, nullptr, 0, false },
+    { "columnTopCrossSectionWidthCut",               BuiltInValueKind::Number, kColumnTopCrossSectionWidthCutPropertyGuid,               kWallGeometryGroupGuid, 0, false, nullptr, 0, false },
+    { "columnTopCrossSectionWidthPerpendicular",     BuiltInValueKind::Number, kColumnTopCrossSectionWidthPerpendicularPropertyGuid,     kWallGeometryGroupGuid, 0, false, nullptr, 0, false },
+    { "columnCoreWidth",          BuiltInValueKind::Number,   kColumnCoreWidthPropertyGuid,          kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "columnProfileCoreWidth",   BuiltInValueKind::Number,   kColumnProfileCoreWidthPropertyGuid,   kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "slabDefaultEdgeAngle",     BuiltInValueKind::Number,   kSlabDefaultEdgeAnglePropertyGuid,     kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "roofEaveOverhang",         BuiltInValueKind::Number,   kRoofEaveOverhangPropertyGuid,         kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "roofPitch",                BuiltInValueKind::NumList,  kRoofPitchPropertyGuid,                kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "roofLevelNumber",          BuiltInValueKind::IntNumber, kRoofLevelNumberPropertyGuid,         kConstructionPropertyGroupGuid, 0, false, nullptr, 0, false },
+    { "shellTiltAngle",           BuiltInValueKind::Number,   kShellTiltAnglePropertyGuid,           kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "jambThickness1",           BuiltInValueKind::Number,   kJambThickness1PropertyGuid,           kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "jambThickness2",           BuiltInValueKind::Number,   kJambThickness2PropertyGuid,           kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "curtainWallPanelOffset",   BuiltInValueKind::Number,   kCurtainWallPanelOffsetPropertyGuid,   kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "stairRiserInclineAngle",   BuiltInValueKind::Number,   kStairRiserInclineAnglePropertyGuid,   kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "stairMinHeadroom",         BuiltInValueKind::Number,   kStairMinHeadroomPropertyGuid,         kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "stairDefaultWidth",        BuiltInValueKind::Number,   kStairDefaultWidthPropertyGuid,        kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "stairSlope",               BuiltInValueKind::Number,   kStairSlopePropertyGuid,               kWallGeometryGroupGuid,        0, false, nullptr, 0, false },
+    { "stairMaxRiserHeight",      BuiltInValueKind::Number,   kStairMaxRiserHeightPropertyGuid,      kStairRulesGroupGuid,          0, false, nullptr, 0, false },
+    { "stairMinRiserHeight",      BuiltInValueKind::Number,   kStairMinRiserHeightPropertyGuid,      kStairRulesGroupGuid,          0, false, nullptr, 0, false },
+    { "stairMaxGoing",            BuiltInValueKind::Number,   kStairMaxGoingPropertyGuid,            kStairRulesGroupGuid,          0, false, nullptr, 0, false },
+    { "stairMinGoing",            BuiltInValueKind::Number,   kStairMinGoingPropertyGuid,            kStairRulesGroupGuid,          0, false, nullptr, 0, false },
+    { "stairRiserCount",          BuiltInValueKind::IntNumber, kStairRiserCountPropertyGuid,         kStairRulesGroupGuid,          0, false, nullptr, 0, false },
+    { "stairStepCount",           BuiltInValueKind::IntNumber, kStairStepCountPropertyGuid,          kStairRulesGroupGuid,          0, false, nullptr, 0, false },
+    { "stairStepCountPerFlight",  BuiltInValueKind::IntListIs, kStairStepCountPerFlightPropertyGuid, kStairRulesGroupGuid,          0, false, nullptr, 0, false },
+    { "stairRisersPerFlight",     BuiltInValueKind::IntListIs, kStairRisersPerFlightPropertyGuid,    kStairRulesGroupGuid,          0, false, nullptr, 0, false },
+    { "wallParentId",             BuiltInValueKind::Text,     kWallParentIdPropertyGuid,             kIdCategoryGroupGuid3,         kText6Ops, false, nullptr, 0, false },
+    { "wallConnectedOpeningIds",  BuiltInValueKind::TextList, kWallConnectedOpeningIdsPropertyGuid,  kIdCategoryGroupGuid3,         kText6Ops, false, nullptr, 0, false },
+    { "wallHatchForegroundPen",   BuiltInValueKind::Integer,  kWallHatchForegroundPenPropertyGuid,   kPlanSectionPropertyGroupGuid, 0, false, nullptr, 0, true  },
+    { "wallContourPen",           BuiltInValueKind::Integer,  kWallContourPenPropertyGuid,           kPlanSectionPropertyGroupGuid, 0, false, nullptr, 0, true  },
+    { "wallTopLinePen",           BuiltInValueKind::Integer,  kWallTopLinePenPropertyGuid,           kPlanSectionPropertyGroupGuid, 0, false, nullptr, 0, true  },
+    { "wallCutHatchBackgroundPen", BuiltInValueKind::Integer, kWallCutHatchBackgroundPenPropertyGuid, kPlanSectionPropertyGroupGuid, 0, false, nullptr, 0, true  },
+    { "wallHatchBackgroundPen",   BuiltInValueKind::Integer,  kWallHatchBackgroundPenPropertyGuid,   kPlanSectionPropertyGroupGuid, 0, false, nullptr, 0, true  },
+    { "wallUncutLinePen",         BuiltInValueKind::Integer,  kWallUncutLinePenPropertyGuid,         kPlanSectionPropertyGroupGuid, 0, false, nullptr, 0, true  },
+    { "columnCoreForegroundPen",  BuiltInValueKind::Integer,  kColumnCoreForegroundPenPropertyGuid,  kPlanSectionPropertyGroupGuid, 0, false, nullptr, 0, true  },
+    { "columnCoatingForegroundPen", BuiltInValueKind::Integer, kColumnCoatingForegroundPenPropertyGuid, kPlanSectionPropertyGroupGuid, 0, false, nullptr, 0, true  },
+    { "columnCoveringHatchForegroundPen", BuiltInValueKind::Integer, kColumnCoveringHatchForegroundPenPropertyGuid, kPlanSectionPropertyGroupGuid, 0, false, nullptr, 0, true  },
+    { "columnCoveringHatchBackgroundPen", BuiltInValueKind::Integer, kColumnCoveringHatchBackgroundPenPropertyGuid, kPlanSectionPropertyGroupGuid, 0, false, nullptr, 0, true  },
+    { "columnCoatingBackgroundPen", BuiltInValueKind::Integer, kColumnCoatingBackgroundPenPropertyGuid, kPlanSectionPropertyGroupGuid, 0, false, nullptr, 0, true  },
+    { "columnCoreBackgroundPen",  BuiltInValueKind::Integer,  kColumnCoreBackgroundPenPropertyGuid,  kPlanSectionPropertyGroupGuid, 0, false, nullptr, 0, true  },
+    { "columnHiddenLinePen",      BuiltInValueKind::Integer,  kColumnHiddenLinePenPropertyGuid,      kPlanSectionPropertyGroupGuid, 0, false, nullptr, 0, true  },
+    { "beamAxisPen",              BuiltInValueKind::Integer,  kBeamAxisPenPropertyGuid,              kPlanSectionPropertyGroupGuid, 0, false, nullptr, 0, true  },
+    { "slabCutLinePen",           BuiltInValueKind::Integer,  kSlabCutLinePenPropertyGuid,           kPlanSectionPropertyGroupGuid, 0, false, nullptr, 0, true  },
+    { "curtainWallFrameCutLinePen", BuiltInValueKind::Integer, kCurtainWallFrameCutLinePenPropertyGuid, kPlanSectionPropertyGroupGuid, 0, false, nullptr, 0, true  },
+    { "curtainWallPanelCutLinePen", BuiltInValueKind::Integer, kCurtainWallPanelCutLinePenPropertyGuid, kPlanSectionPropertyGroupGuid, 0, false, nullptr, 0, true  },
+    { "meshEdgePen",              BuiltInValueKind::Integer,  kMeshEdgePenPropertyGuid,              kPlanSectionPropertyGroupGuid, 0, false, nullptr, 0, false },
+    // MEP (Archicad 29; Archicad 27 drops them).
+    { "mepDiameter",              BuiltInValueKind::Number,   kMepDiameterPropertyGuid,              kMepPropertyGroupGuid,         0, false, nullptr, 0, false },
+    { "mepDiameter2",             BuiltInValueKind::Number,   kMepDiameter2PropertyGuid,             kMepPropertyGroupGuid,         0, false, nullptr, 0, false },
+    { "mepDN",                    BuiltInValueKind::IntNumber, kMepDNPropertyGuid,                   kMepPropertyGroupGuid,         0, false, nullptr, 0, false },
+    { "mepDN2",                   BuiltInValueKind::IntNumber, kMepDN2PropertyGuid,                  kMepPropertyGroupGuid,         0, false, nullptr, 0, false },
+    { "mepHeight",                BuiltInValueKind::Number,   kMepHeightPropertyGuid,                kMepPropertyGroupGuid,         0, false, nullptr, 0, false },
+    { "mepHeight2",               BuiltInValueKind::Number,   kMepHeight2PropertyGuid,               kMepPropertyGroupGuid,         0, false, nullptr, 0, false },
+    { "mepWidth",                 BuiltInValueKind::Number,   kMepWidthPropertyGuid,                 kMepPropertyGroupGuid,         0, false, nullptr, 0, false },
+    { "mepWidth2",                BuiltInValueKind::Number,   kMepWidth2PropertyGuid,                kMepPropertyGroupGuid,         0, false, nullptr, 0, false },
+    { "mepAngle",                 BuiltInValueKind::Number,   kMepAnglePropertyGuid,                 kMepPropertyGroupGuid,         0, false, nullptr, 0, false },
+    { "mepCustomAngle",           BuiltInValueKind::Number,   kMepCustomAnglePropertyGuid,           kMepPropertyGroupGuid,         0, false, nullptr, 0, false },
+    { "mepInsulationThickness",   BuiltInValueKind::Number,   kMepInsulationThicknessPropertyGuid,   kMepPropertyGroupGuid,         0, false, nullptr, 0, false },
+    { "mepLength",                BuiltInValueKind::Number,   kMepLengthPropertyGuid,                kMepPropertyGroupGuid,         0, false, nullptr, 0, false },
+    { "mepDescription",           BuiltInValueKind::Text,     kMepDescriptionPropertyGuid,           kMepPropertyGroupGuid,         kText6Ops, false, nullptr, 0, false },
+    { "mepMaterialName",          BuiltInValueKind::Text,     kMepMaterialNamePropertyGuid,          kMepPropertyGroupGuid,         kText6Ops, false, nullptr, 0, false },
 };
 
 // Whether the generator writes this leaf for generatedXML once its value is written as writtenText:
 // a number is written back with %.15g, which may differ from the digits Archicad wrote. The leaf's
-// shape was checked by ReadPropertyLeaf and ReadSingleVariantValue.
+// shape was checked by ReadPropertyLeaf and ReadSingleVariantValue (for a profile parameter, on the
+// <Value> inside its ProfileParameterValue or ProfileParameterValueList).
 static bool MatchesGeneratedWithValue (const CriterionXmlNode& classGuid, const CriterionXmlNode& leaf, const GS::UniString& generatedXML, const std::string& writtenText)
 {
     CriterionXmlNode written = leaf;
-    CriterionXmlNode& valueNode = written.children[0].children[2];
+    CriterionXmlNode* valueWrapper = &written.children[0].children[2];
+    if (valueWrapper->name == "ProfileParameterValue" || valueWrapper->name == "ProfileParameterValueList")
+        valueWrapper = &valueWrapper->children[0];
+    CriterionXmlNode& valueNode = *valueWrapper;
     CriterionXmlNode& variant = valueNode.name == "Variant" ? valueNode : valueNode.children[0];
     CriterionXmlNode& value = variant.children[1];
     (value.name == "ValueArray" ? value.children[0] : value).text = writtenText;
@@ -3831,16 +3982,28 @@ static bool ReadBuiltInValueField (const BuiltInValueField& field, const Criteri
     const GS::String key (field.key);
     const GS::String notKey = key + "Not";
     switch (field.kind) {
-        case BuiltInValueKind::Number: {
-            static const char* kSuffixes[] = { "", "Not", "LessThan", "GreaterThan", "LessOrEqual", "GreaterOrEqual" };
+        case BuiltInValueKind::Number:
+        case BuiltInValueKind::NumList: {
             double value = 0.0;
             if (op < 0 || op > 5 || !ParseDouble (valueText, value))
                 return false;
-            const GS::UniString generatedXML = NumPropertyCriterionXML (field.propertyGuid, value, op, field.groupGuid);
+            const GS::UniString generatedXML = field.kind == BuiltInValueKind::NumList
+                ? NumListCriterionXML (field.propertyGuid, value, op, field.groupGuid)
+                : NumPropertyCriterionXML (field.propertyGuid, value, op, field.groupGuid);
             if (!MatchesGeneratedWithValue (classGuid, leaf, generatedXML, ToUtf8 (GS::UniString::Printf ("%.15g", value))))
                 return false;
             outLeaf = GS::ObjectState ();
-            outLeaf.Add (key + kSuffixes[op], value);
+            outLeaf.Add (key + kNumberOperatorSuffixes[op], value);
+            return true;
+        }
+        case BuiltInValueKind::IntNumber: {
+            int value = 0;
+            if (op < 0 || op > 5 || !ParseInt (valueText, value))
+                return false;
+            if (!MatchesGenerated (classGuid, leaf, IntPropertyCriterionXML (field.propertyGuid, value, op, field.groupGuid)))
+                return false;
+            outLeaf = GS::ObjectState ();
+            outLeaf.Add (key + kNumberOperatorSuffixes[op], static_cast<Int32> (value));
             return true;
         }
         case BuiltInValueKind::Integer: {
@@ -3938,8 +4101,103 @@ static bool ReadBuiltInPropertyLeaf (const CriterionXmlNode& classGuid, const Cr
     return false;
 }
 
-// Classification and custom property conditions, which are identified by name, and the built-in
-// properties of kBuiltInPropertyFields, identified by guid.
+// The built-in profile modifiers, each written by TryEmitProfileParamField with this key (part 5 of #1816).
+struct ProfileParameterField {
+    const char* key;
+    const char* guid;
+};
+
+static const ProfileParameterField kProfileParameterFields[] = {
+    { "profileStretchHeight", kProfileStretchHeightGuid },
+    { "profileStretchWidth",  kProfileStretchWidthGuid },
+    { "profileNominalHeight", kProfileNominalHeightGuid },
+    { "profileTotalHeight",   kProfileTotalHeightGuid },
+    { "profileTotalWidth",    kProfileTotalWidthGuid },
+    { "profileNominalWidth",  kProfileNominalWidthGuid },
+};
+
+// A profile parameter condition, whose value sits in a ProfileParameterValue (a built-in modifier by
+// guid, or a parameter by name) or a ProfileParameterValueList (a parameter by name, "is" only). Its
+// header is checked by comparing the generated XML.
+static bool ReadProfileParameterLeaf (const CriterionXmlNode& classGuid, const CriterionXmlNode& leaf, const CriterionXmlNode& definition, int op, const CriterionXmlNode& valueWrapper, GS::ObjectState& outLeaf)
+{
+    std::string valueText;
+    double value = 0.0;
+    if (valueWrapper.children.size () != 1 || !ReadSingleVariantValue (valueWrapper.children[0], valueText) || !ParseDouble (valueText, value))
+        return false;
+    const std::string writtenText = ToUtf8 (GS::UniString::Printf ("%.15g", value));
+    const bool isList = valueWrapper.name == "ProfileParameterValueList";
+
+    const CriterionXmlNode* hasGuidId = FindChild (definition, "HasGuidId");
+    if (hasGuidId != nullptr && hasGuidId->text == "true") {
+        const CriterionXmlNode* guidNode = FindChild (definition, "Guid");
+        if (isList || guidNode == nullptr || op < 0 || op > 5)
+            return false;
+        for (const ProfileParameterField& field : kProfileParameterFields) {
+            if (!SameGuid (guidNode->text, field.guid))
+                continue;
+            if (!MatchesGeneratedWithValue (classGuid, leaf, ProfileParameterCriterionXML (ProfileParameterHeaderXML (field.guid), value, op), writtenText))
+                return false;
+            outLeaf = GS::ObjectState ();
+            outLeaf.Add (GS::String (field.key) + kNumberOperatorSuffixes[op], value);
+            return true;
+        }
+        return false;
+    }
+
+    const CriterionXmlNode* nameNode = FindChild (definition, "Name");
+    if (nameNode == nullptr || nameNode->text.empty ())
+        return false;
+    const GS::UniString name = FromUtf8 (nameNode->text);
+    if (isList) {
+        if (op != 0 || !MatchesGeneratedWithValue (classGuid, leaf, ProfileParameterListCriterionXML (name, value), writtenText))
+            return false;
+        outLeaf = GS::ObjectState ("profileParameterList", GS::ObjectState ("name", name, "equals", value));
+        return true;
+    }
+    const char* operatorKey = ComparisonOperatorKey (op);
+    if (operatorKey == nullptr || !MatchesGeneratedWithValue (classGuid, leaf, ProfileParameterCriterionXML (ProfileParameterHeaderByNameXML (name), value, op), writtenText))
+        return false;
+    GS::ObjectState condition ("name", name);
+    condition.Add (operatorKey, value);
+    outLeaf = GS::ObjectState ("profileParameter", condition);
+    return true;
+}
+
+// wallReferenceLineOffset, the one condition kept as a RealCriterion (see RealAttributeCriterionXML).
+static bool ReadRealAttributeLeaf (const CriterionXmlNode& classGuid, const CriterionXmlNode& leaf, GS::ObjectState& outLeaf)
+{
+    if (leaf.children.size () != 3 || leaf.children[0].name != "AttributeCriterion" || leaf.children[1].name != "ClassGuid" || leaf.children[2].name != "RealSimpleCondition")
+        return false;
+    const CriterionXmlNode* attributeGuid = FindChild (leaf.children[0], "AttributeGuid");
+    const CriterionXmlNode& condition = leaf.children[2];
+    if (attributeGuid == nullptr || !SameGuid (attributeGuid->text, kWallReferenceLineOffsetAttrGuid) || condition.children.size () != 2 ||
+        condition.children[0].name != "Type" || condition.children[1].name != "Value" || !condition.children[1].children.empty ())
+        return false;
+    int type = 0;
+    double value = 0.0;
+    if (!ParseInt (condition.children[0].text, type) || !ParseDouble (condition.children[1].text, value))
+        return false;
+    // The Type of each key suffix of kNumberOperatorSuffixes, as TryEmitRealAttributeField writes it.
+    static const int kTypes[] = { 1, 4, 2, 3, 5, 6 };
+    for (int i = 0; i < 6; ++i) {
+        if (kTypes[i] != type)
+            continue;
+        // A number is written back with %.15g, see MatchesGeneratedWithValue.
+        CriterionXmlNode written = leaf;
+        written.children[2].children[1].text = ToUtf8 (GS::UniString::Printf ("%.15g", value));
+        if (!MatchesGenerated (classGuid, written, RealAttributeCriterionXML (kWallReferenceLineOffsetAttrGuid, value, type)))
+            return false;
+        outLeaf = GS::ObjectState ();
+        outLeaf.Add (GS::String ("wallReferenceLineOffset") + kNumberOperatorSuffixes[i], value);
+        return true;
+    }
+    return false;
+}
+
+// Classification and custom property conditions, which are identified by name, the built-in
+// properties of kBuiltInPropertyFields and kBuiltInValueFields, identified by guid, and the profile
+// parameters.
 static bool ReadPropertyLeaf (const CriterionXmlNode& classGuid, const CriterionXmlNode& leaf, GS::ObjectState& outLeaf)
 {
     if (leaf.children.size () != 1 || leaf.children[0].name != "VBEF::ConditionIO")
@@ -3951,6 +4209,10 @@ static bool ReadPropertyLeaf (const CriterionXmlNode& classGuid, const Criterion
     int op = 0;
     if (!ParseInt (condition.children[1].text, op))
         return false;
+
+    const CriterionXmlNode& valueNode = condition.children[2];
+    if (valueNode.name == "ProfileParameterValue" || valueNode.name == "ProfileParameterValueList")
+        return ReadProfileParameterLeaf (classGuid, leaf, definition, op, valueNode, outLeaf);
 
     const CriterionXmlNode* hasGuidId = FindChild (definition, "HasGuidId");
     if (hasGuidId != nullptr && hasGuidId->text == "true")
@@ -3987,6 +4249,9 @@ static GS::ObjectState ReadCriterionLeaf (const CriterionXmlNode& classGuid, con
             return GS::ObjectState (leaf.name == "ModelElementCriterion" ? "all3DTypes" : "all2DTypes", true);
     } else if (SameGuid (classId, kPropertyClassGuid) && leaf.name == "PropertyCriterion") {
         if (ReadPropertyLeaf (classGuid, leaf, result))
+            return result;
+    } else if (SameGuid (classId, kRealCriterionClassGuid) && leaf.name == "RealCriterion") {
+        if (ReadRealAttributeLeaf (classGuid, leaf, result))
             return result;
     }
     return RawCriterionLeaf (classGuid, leaf);
