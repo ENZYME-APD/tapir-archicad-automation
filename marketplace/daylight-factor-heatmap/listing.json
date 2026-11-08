@@ -1,0 +1,18 @@
+{
+    "slug": "daylight-factor-heatmap",
+    "name": "Daylight Factor Heatmap",
+    "summary": "Computes the Daylight Factor of the selected zones with Radiance, checks it against EN 17037, colours the zones and exports to Excel or CSV.",
+    "category": "zones-areas",
+    "tags": ["daylight", "radiance", "en-17037", "zones", "analysis", "excel", "csv"],
+    "author": { "name": "Tapir" },
+    "license": "MIT",
+    "entry": "DaylightFactorHeatmap.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "First version: Daylight Factor per zone under a CIE overcast sky with Radiance, statistics against a target, zones coloured by average DF, Excel and CSV export."
+        }
+    ]
+}
