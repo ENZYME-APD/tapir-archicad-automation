@@ -1382,6 +1382,10 @@ static bool FindEnumValue (const char* fieldName, const GS::UniString& name, con
     return false;
 }
 
+static const EnumValue kMorphBodyTypes[]  = { { "NonSolid", 0 }, { "Solid", 1 } };
+// The values the structureType condition writes, see EmitCriterionNode.
+static const EnumValue kStructureTypes[] = { { "Basic", 1 }, { "Composite", 2 }, { "ComplexProfile", 3 } };
+
 static GS::UniString NumPropertyCriterionXML (const char* propertyGuid, double value, int numOp, const char* groupGuid)
 {
     return GS::UniString ("<ClassGuid>") + kPropertyClassGuid + "</ClassGuid>"
@@ -2998,7 +3002,6 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
         return true;
     }
 
-    static const EnumValue kMorphBodyTypes[]       = { { "NonSolid", 0 }, { "Solid", 1 } };
     static const EnumValue kBeamCrossSections[]    = { { "Rectangular", 0 }, { "Profiled", 1 }, { "Circular", 2 } };
     static const EnumValue kTextAlignments[]       = { { "Left", 0 }, { "Center", 1 }, { "Right", -1 }, { "Justified", 20 } };
     static const EnumValue kTextStyles[]           = { { "Bold", 1 }, { "Italic", 2 }, { "Underline", 4 }, { "Strikethrough", 256 }, { "Superscript", 512 }, { "Subscript", 1024 } };
@@ -3500,8 +3503,181 @@ static bool ReadCustomPropertyLeaf (const CriterionXmlNode& classGuid, const Cri
     return true;
 }
 
-// Classification and custom property conditions, which are identified by name. Built-in properties,
-// identified by guid, are not decoded yet.
+// The text of the one value of a condition: <Value><Variant> or a bare <Variant>, holding a <Value>
+// or a <ValueArray> of one <ValueItem>. Its form is checked by comparing the generated XML.
+static bool ReadSingleVariantValue (const CriterionXmlNode& valueNode, std::string& outText)
+{
+    const CriterionXmlNode* variant = nullptr;
+    if (valueNode.name == "Variant")
+        variant = &valueNode;
+    else if (valueNode.name == "Value" && valueNode.children.size () == 1 && valueNode.children[0].name == "Variant")
+        variant = &valueNode.children[0];
+    if (variant == nullptr || variant->children.size () != 2 || variant->children[0].name != "Status")
+        return false;
+    const CriterionXmlNode& value = variant->children[1];
+    if (value.name == "Value" && value.children.empty ()) {
+        outText = value.text;
+        return true;
+    }
+    if (value.name == "ValueArray" && value.children.size () == 1 && value.children[0].name == "ValueItem" && value.children[0].children.empty ()) {
+        outText = value.children[0].text;
+        return true;
+    }
+    return false;
+}
+
+// The name of the attribute with this index, when the generator resolves that name back to the same
+// index (it takes the first attribute with the name).
+static bool FindAttributeNameByIndex (API_AttrTypeID typeID, Int32 index, GS::UniString& outName)
+{
+    GS::Array<API_Attribute> attrs;
+    ACAPI_Attribute_GetAttributesByType (typeID, attrs);
+    bool found = false;
+    for (API_Attribute& attr : attrs) {
+        if (!found && GetAttributeIndex (attr.header.index) == index) {
+            GS::UniString attrName;
+            API_Attribute named = {};
+            named.header.typeID = attr.header.typeID;
+            named.header.index = attr.header.index;
+            named.header.guid = attr.header.guid;
+            named.header.uniStringNamePtr = &attrName;
+            if (ACAPI_Attribute_Get (&named) == NoError && !attrName.IsEmpty ()) {
+                outName = attrName;
+                found = true;
+            }
+            DisposeAttribute (named);
+        }
+        DisposeAttribute (attr);
+    }
+    Int32 resolvedIndex = 0;
+    return found && FindAttributeIndexByName (typeID, outName, resolvedIndex) && resolvedIndex == index;
+}
+
+// The built-in properties of the Layers, Model View and Construction categories (part 2 of #1816),
+// each written by EmitCriterionNode with the same key, guid and group.
+enum class BuiltInFieldKind {
+    Bool,           // key: true/false, "is"
+    AttributeIs,    // key / keyNot: an attribute name, "is" / "is not"
+    AttributeHas,   // key / keyNot: an attribute name, "contains" / "does not contain"
+    String,         // key + Is, IsNot, Contains, NotContains, StartsWith, EndsWith: a text
+    Enum            // key / keyNot (when notAllowed): an enum name, "is" / "is not"
+};
+
+struct BuiltInPropertyField {
+    const char*      key;
+    BuiltInFieldKind kind;
+    const char*      propertyGuid;
+    const char*      groupGuid;
+    API_AttrTypeID   attributeType;
+    const EnumValue* values;
+    int              valueCount;
+    bool             notAllowed;
+};
+
+static const BuiltInPropertyField kBuiltInPropertyFields[] = {
+    { "missingAttributes",      BuiltInFieldKind::Bool,         kMissingAttributesPropertyGuid,      kModelViewPropertyGroupGuid,    API_ZombieAttrID,  nullptr,         0, false },
+    { "missingLibraryPart",     BuiltInFieldKind::Bool,         kMissingLibraryPartPropertyGuid,     kModelViewPropertyGroupGuid,    API_ZombieAttrID,  nullptr,         0, false },
+    { "layerLocked",            BuiltInFieldKind::Bool,         kLayerLockedPropertyGuid,            kModelViewPropertyGroupGuid,    API_ZombieAttrID,  nullptr,         0, false },
+    { "layerVisible",           BuiltInFieldKind::Bool,         kLayerVisiblePropertyGuid,           kModelViewPropertyGroupGuid,    API_ZombieAttrID,  nullptr,         0, false },
+    { "layer",                  BuiltInFieldKind::AttributeIs,  kLayerPropertyGuid,                  kModelViewPropertyGroupGuid,    API_LayerID,       nullptr,         0, true  },
+    { "layerCombination",       BuiltInFieldKind::AttributeHas, kLayerCombinationPropertyGuid,       kModelViewPropertyGroupGuid,    API_LayerCombID,   nullptr,         0, true  },
+    { "layerName",              BuiltInFieldKind::String,       kLayerNamePropertyGuid,              kModelViewPropertyGroupGuid,    API_ZombieAttrID,  nullptr,         0, false },
+    { "compositeStructure",     BuiltInFieldKind::AttributeIs,  kCompositeStructurePropertyGuid,     kConstructionPropertyGroupGuid, API_CompWallID,    nullptr,         0, true  },
+    { "complexProfile",         BuiltInFieldKind::AttributeIs,  kComplexProfilePropertyGuid,         kConstructionPropertyGroupGuid, API_ProfileID,     nullptr,         0, true  },
+    { "compositeStructureName", BuiltInFieldKind::String,       kCompositeStructureNamePropertyGuid, kConstructionPropertyGroupGuid, API_ZombieAttrID,  nullptr,         0, false },
+    { "complexProfileName",     BuiltInFieldKind::String,       kComplexProfileNamePropertyGuid,     kConstructionPropertyGroupGuid, API_ZombieAttrID,  nullptr,         0, false },
+    { "roofConnected",          BuiltInFieldKind::Bool,         kRoofConnectedPropertyGuid,          kConstructionPropertyGroupGuid, API_ZombieAttrID,  nullptr,         0, false },
+    { "structureType",          BuiltInFieldKind::Enum,         kStructureTypePropertyGuid,          kConstructionPropertyGroupGuid, API_ZombieAttrID,  kStructureTypes, 3, false },
+    { "morphBodyType",          BuiltInFieldKind::Enum,         kMorphBodyTypePropertyGuid,          kConstructionPropertyGroupGuid, API_ZombieAttrID,  kMorphBodyTypes, 2, true  },
+};
+
+static bool ReadBuiltInPropertyField (const BuiltInPropertyField& field, const CriterionXmlNode& classGuid, const CriterionXmlNode& leaf, int op, const std::string& valueText, GS::ObjectState& outLeaf)
+{
+    const GS::String key (field.key);
+    const GS::String notKey = key + "Not";
+    switch (field.kind) {
+        case BuiltInFieldKind::Bool: {
+            if (op != 0 || (valueText != "true" && valueText != "false"))
+                return false;
+            const bool value = valueText == "true";
+            if (!MatchesGenerated (classGuid, leaf, BoolModelViewCriterionXML (field.propertyGuid, value, field.groupGuid)))
+                return false;
+            outLeaf = GS::ObjectState ();
+            outLeaf.Add (key, value);
+            return true;
+        }
+        case BuiltInFieldKind::AttributeIs:
+        case BuiltInFieldKind::AttributeHas: {
+            const bool isHas = field.kind == BuiltInFieldKind::AttributeHas;
+            const int isOp = isHas ? 6 : 0;
+            const int isNotOp = isHas ? 7 : 1;
+            int index = 0;
+            if ((op != isOp && op != isNotOp) || !ParseInt (valueText, index))
+                return false;
+            const bool isNot = op == isNotOp;
+            const GS::UniString generatedXML = isHas
+                ? AttrIndexContainsModelViewCriterionXML (field.propertyGuid, index, isNot, field.groupGuid)
+                : AttrIndexEqualsModelViewCriterionXML (field.propertyGuid, index, isNot, field.groupGuid);
+            GS::UniString name;
+            // An attribute that is not in the project (any more) cannot be named, so it stays raw.
+            if (!MatchesGenerated (classGuid, leaf, generatedXML) || !FindAttributeNameByIndex (field.attributeType, index, name))
+                return false;
+            outLeaf = GS::ObjectState ();
+            outLeaf.Add (isNot ? notKey : key, name);
+            return true;
+        }
+        case BuiltInFieldKind::String: {
+            static const int   kOps[]      = { 0,    1,       6,          7,             8,            9 };
+            static const char* kSuffixes[] = { "Is", "IsNot", "Contains", "NotContains", "StartsWith", "EndsWith" };
+            for (int i = 0; i < 6; ++i) {
+                if (op != kOps[i])
+                    continue;
+                const GS::UniString value = FromUtf8 (valueText);
+                if (!MatchesGenerated (classGuid, leaf, StringModelViewCriterionXML (field.propertyGuid, value, op, field.groupGuid)))
+                    return false;
+                outLeaf = GS::ObjectState ();
+                outLeaf.Add (key + kSuffixes[i], value);
+                return true;
+            }
+            return false;
+        }
+        case BuiltInFieldKind::Enum: {
+            int value = 0;
+            if ((op != 0 && !(op == 1 && field.notAllowed)) || !ParseInt (valueText, value))
+                return false;
+            for (int i = 0; i < field.valueCount; ++i) {
+                if (field.values[i].value != value)
+                    continue;
+                if (!MatchesGenerated (classGuid, leaf, IntEqualsPropertyCriterionXML (field.propertyGuid, value, field.groupGuid, op == 1)))
+                    return false;
+                outLeaf = GS::ObjectState ();
+                outLeaf.Add (op == 1 ? notKey : key, GS::UniString (field.values[i].name));
+                return true;
+            }
+            return false;
+        }
+    }
+    return false;
+}
+
+// Built-in properties, identified by guid. Those of the categories not decoded yet stay raw.
+static bool ReadBuiltInPropertyLeaf (const CriterionXmlNode& classGuid, const CriterionXmlNode& leaf, const CriterionXmlNode& definition, int op, const CriterionXmlNode& valueNode, GS::ObjectState& outLeaf)
+{
+    const CriterionXmlNode* guidNode = FindChild (definition, "Guid");
+    const CriterionXmlNode* groupNode = FindChild (definition, "PropertyDefinitionGroupUserId");
+    const CriterionXmlNode* groupGuidNode = groupNode != nullptr ? FindChild (*groupNode, "Guid") : nullptr;
+    std::string valueText;
+    if (guidNode == nullptr || groupGuidNode == nullptr || !ReadSingleVariantValue (valueNode, valueText))
+        return false;
+    for (const BuiltInPropertyField& field : kBuiltInPropertyFields) {
+        if (SameGuid (guidNode->text, field.propertyGuid) && SameGuid (groupGuidNode->text, field.groupGuid))
+            return ReadBuiltInPropertyField (field, classGuid, leaf, op, valueText, outLeaf);
+    }
+    return false;
+}
+
+// Classification and custom property conditions, which are identified by name, and the built-in
+// properties of kBuiltInPropertyFields, identified by guid.
 static bool ReadPropertyLeaf (const CriterionXmlNode& classGuid, const CriterionXmlNode& leaf, GS::ObjectState& outLeaf)
 {
     if (leaf.children.size () != 1 || leaf.children[0].name != "VBEF::ConditionIO")
@@ -3513,6 +3689,10 @@ static bool ReadPropertyLeaf (const CriterionXmlNode& classGuid, const Criterion
     int op = 0;
     if (!ParseInt (condition.children[1].text, op))
         return false;
+
+    const CriterionXmlNode* hasGuidId = FindChild (definition, "HasGuidId");
+    if (hasGuidId != nullptr && hasGuidId->text == "true")
+        return ReadBuiltInPropertyLeaf (classGuid, leaf, definition, op, condition.children[2], outLeaf);
 
     const CriterionXmlNode* hasNameId = FindChild (definition, "HasNameId");
     const CriterionXmlNode* nameNode = FindChild (definition, "Name");
