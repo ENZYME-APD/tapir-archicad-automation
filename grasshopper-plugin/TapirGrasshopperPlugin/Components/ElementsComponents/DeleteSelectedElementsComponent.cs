@@ -1,6 +1,7 @@
 using Grasshopper.Kernel;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Linq;
 using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
@@ -17,16 +18,59 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
         }
 
+        protected override void AddInputs()
+        {
+            InBoolean(
+                "DryRun",
+                "If true, nothing is deleted: ElementGuids lists the selected elements the deletion would " +
+                "delete (for a marquee, the ones it touches). A real run also deletes the other members of " +
+                "their groups when Suspend Groups is off, and the elements linked to them (labels, " +
+                "dimensions, ...). Default is false.",
+                false);
+
+            SetOptionality(0);
+        }
+
+        protected override void AddOutputs()
+        {
+            OutGenerics(
+                "ElementGuids",
+                "Only with DryRun: the selected elements the deletion would delete.");
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (TryGetCadResponse(
-                    CommandName,
-                    new JObject(),
-                    ToAddOn,
-                    out var response))
+            var parameters = new JObject();
+
+            // Only sent when it differs from the command's default.
+            var dryRun = da.GetOptional(
+                0,
+                false);
+            if (dryRun)
             {
-                this.CheckExecutionResult(response);
+                parameters["dryRun"] = true;
+            }
+
+            if (!TryGetCadResponse(
+                    CommandName,
+                    parameters,
+                    ToAddOn,
+                    out var response) ||
+                !this.CheckExecutionResult(response))
+            {
+                return;
+            }
+
+            if (dryRun)
+            {
+                da.SetDataList(
+                    0,
+                    JsonOutputHelp.Items(
+                            response,
+                            "elements")
+                        .Select(item => ElementsStructuredGetterComponent.ElementIdOf(item))
+                        .ToList());
             }
         }
 

@@ -25,6 +25,7 @@
 #include "ScriptUICommands.hpp"
 #include "DialogCommands.hpp"
 #include "ProjectCommands.hpp"
+#include "NameResolutionCommands.hpp"
 #include "CustomDataCommands.hpp"
 #include "ElementCommands.hpp"
 #include "ElementChangeTrackingCommands.hpp"
@@ -217,6 +218,10 @@ GSErrCode Initialize (void)
             applicationCommands, "1.7.3",
             "Retrieves the main version, release version and build number of the running Archicad, with the caption of its window."
         );
+        err |= RegisterCommand<GetArchicadLicenseInfoCommand> (
+            applicationCommands, "1.8.1",
+            "Retrieves the license the running Archicad runs on: its type (Full, Education, Trial, Demo, Start or BIMcloud Team Client), the raw protection mode with its bits by name, and the highest Software Service Agreement (SSA) level of the license, so a script can warn before it uses a feature the license lacks. The SSA level is not available in Archicad 25."
+        );
         err |= RegisterCommand<GetPrinterInfoCommand> (
             applicationCommands, "1.7.3",
             "Retrieves Archicad's current print settings: the print area, grid, fixed text size and scale (the settings PrintView takes)."
@@ -245,9 +250,25 @@ GSErrCode Initialize (void)
             applicationCommands, "1.7.3",
             "Asks the designer to click an element in the current window and returns its id, its type and the clicked point. A click on empty space or on an element of a type not asked for asks again. Archicad waits for the click or for Escape, and every other JSON command queues behind this one until then; cancelling returns cancelled."
         );
+        err |= RegisterCommand<GetCurrentToolCommand> (
+            applicationCommands, "1.8.1",
+            "Returns the tool active in the Toolbox: its element type, its variation (the subtype, e.g. Door, Skylight or a library part subtype of an add-on) and, for the tools of add-ons, its class id, in the form SetCurrentTool accepts. Nothing is returned when the active tool makes no element, e.g. the Arrow or the Marquee."
+        );
+        err |= RegisterCommand<SetCurrentToolCommand> (
+            applicationCommands, "1.8.1",
+            "Activates a tool in the Toolbox, given as GetCurrentTool or GetToolboxItems returns it; an empty input activates the Arrow. Archicad switches the tool once it processes its events, so GetCurrentTool may still return the previous tool right after this command."
+        );
+        err |= RegisterCommand<GetToolboxItemsCommand> (
+            applicationCommands, "1.8.1",
+            "Lists the tools of the Toolbox, the tools of add-ons included, in the form SetCurrentTool accepts, and the active tool. includeHidden also lists the tools without an icon, e.g. the Slab Accessory."
+        );
         err |= RegisterCommand<GetLineFromUserCommand> (
             applicationCommands, "1.8.0",
             "Waits for the user to input a line in the active Archicad window and returns start and end coordinates."
+        );
+        err |= RegisterCommand<GetArcFromUserCommand> (
+            applicationCommands, "1.8.1",
+            "Asks the designer to draw an arc in the current window - its center, its start point (which sets the radius) and its end point - with a rubber-band circle shown while drawing, and returns its center, radius, start and end angles, the angle it turns through, its direction and its start and end points. Archicad waits for the clicks or for Escape, and every other JSON command queues behind this one until then; cancelling returns cancelled."
         );
         err |= RegisterCommand<GetPolygonFromUserCommand> (
             applicationCommands, "1.8.0",
@@ -296,6 +317,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<ShowAlertCommand>(
             applicationCommands,"1.5.6",
             "Display a dialog with up to three buttons."
+        );
+        err |= RegisterCommand<ShowNotificationBubbleCommand> (
+            applicationCommands, "1.8.1",
+            "Shows a non-blocking notification bubble with a message in the current Archicad window, e.g. to report progress or a result without stopping the user as ShowAlert does. The bubble disappears by itself after the timeout. It is shown at a model coordinate or a pixel position of the current view, by default at the center of the current 2D view. Requires Archicad 29 or later."
         );
         err |= RegisterCommand<GetSpecialFoldersCommand> (
             applicationCommands, "1.5.6",
@@ -608,6 +633,10 @@ GSErrCode Initialize (void)
             projectCommands, "1.8.0",
             "Turns Auto-Intersection on or off. It is a setting of the running Archicad, not of the project; remember to restore the previous state afterwards."
         );
+        err |= RegisterCommand<ResolveNamesCommand> (
+            projectCommands, "1.8.1",
+            "Looks up words or phrases (for example from a user's question) among the names of the open project before they are passed to other commands: stories, layers, layer combinations, building materials, composites, profiles, surfaces, fills, lines, zone categories, element types (by API name and, from Archicad 27, by the name the Archicad interface shows), properties (by name, and by group and name together) and classifications (systems by name and version, items of every system by name and ID). For each name it returns 'found' with the items named exactly so, 'closeMatches' with the nearest names, best first (ranked by differences in case, accents, spacing and separators, shared words, one name containing the other and a few differing characters), or 'notFound' when nothing in the project is close, meaning the project has no such item and it must not be guessed. Each match carries what the other commands take: the story index, the attribute id and index, the elementType, the propertyId (with the property's group, value type and the classification items a custom property is available for), or the classificationSystemId and classificationItemId. Matching is lexical and deterministic. Read only."
+        );
         AddCommandGroup (projectCommands);
     }
 
@@ -904,7 +933,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SplitElementsCommand> (
             elementCommands, "1.8.1",
-            "Splits each given element in two along a line (the infinite line through its begin and end point, like Archicad's Split command). The original element keeps the part from its begin point to the line, a copy of it (Drag a Copy, so it keeps the layer, classifications, properties and every other setting) gets the rest; both are returned. Supports straight walls without doors, windows or openings, straight unslanted single segment beams without holes or openings, and lines (their arrows stay at the original ends). An element the line does not cross is reported as notCut, an unsupported one as an error naming its type. One undo step."
+            "Splits each given element along a line (the infinite line through its begin and end point, like Archicad's Split command). The original element keeps one part, copies of it (Drag a Copy, so they keep the layer, classifications, properties and every other setting) get the others; all are returned, the original first. Supports straight walls without doors, windows or openings, straight unslanted single segment beams without holes or openings, and lines (their arrows stay at the original ends), which are split in two, the original keeping the part from its begin point; and slabs, meshes without level lines or points, fills and single contour polylines, whose polygon (holes and arcs included) or points are cut along the line into one part per piece, the original keeping the largest piece (a polyline: the piece with its begin point). Slab edges keep their trim and side surface, the edges along the line are vertical; the corners a mesh gets on the line take their height from the edge they lie on. An element the line does not cross is reported as notCut, an unsupported one as an error naming its type. One undo step."
         );
         err |= RegisterCommand<CopyElementsToDatabaseCommand> (
             elementCommands, "1.8.1",
@@ -929,6 +958,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<RotateCopyElementsCommand> (
             elementCommands, "1.8.1",
             "Copies elements rotated around a center on the floor plan by an angle in radians, like rotating a copy in Archicad, keeping all their settings. With count, copy n is rotated by n times the angle, which makes a circular array. Returns the new elements of each given element, in the order of the given ones; an element Archicad cannot copy gets an error naming the reason, and the other elements are still copied. All copies are one undo step."
+        );
+        err |= RegisterCommand<ScaleElementsCommand> (
+            elementCommands, "1.8.1",
+            "Scales elements on the floor plan or in the current 2D view by a factor around a center point with Archicad's Resize edit, in one undo step. Resize scales X and Y by the same ratio, so factorY, if given, must equal factor. Supported types: Wall, Column, Beam, Slab, Roof, Mesh, Zone, Line, PolyLine, Arc, Circle, Spline, Hatch and Hotspot. An element of another type (library parts such as objects, lamps, doors and windows, stairs, railings, curtain walls, shells, morphs, texts, subelements, dimensions, labels, ...) or one that cannot be edited gets a failed execution result naming the reason, and the other elements are still scaled."
         );
         err |= RegisterCommand<DeleteElementsCommand> (
             elementCommands, "1.2.1",
@@ -1165,11 +1198,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateObjectsCommand> (
             elementCommands, "1.5.7",
-            "Creates Object elements based on the given parameters."
+            "Creates Object elements based on the given parameters. A library part named in libraryPartName starts from its own default size and GDL parameters, not from those of the part the Object tool holds; the dimensions and the GDL parameters given (by name, in parameters) override them. layerIndex places the element on a layer."
         );
         err |= RegisterCommand<CreateLampsCommand> (
             elementCommands, "1.5.7",
-            "Creates Lamp elements based on the given parameters."
+            "Creates Lamp elements based on the given parameters. A library part named in libraryPartName starts from its own default size and GDL parameters, not from those of the part the Lamp tool holds; the dimensions and the GDL parameters given (by name, in parameters) override them. layerIndex places the element on a layer."
         );
         err |= RegisterCommand<GetGridElementDefaultsCommand> (
             elementCommands, "1.7.2",
@@ -1209,7 +1242,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyBeamsCommand> (
             elementCommands, "1.4.0",
-            "Modifies Beam elements based on the given parameters. CreateBeams takes the same cut fill pens and cover fill. Not written: the surfaces of the beam segments, and the cut fill pens before Archicad 27."
+            "Modifies Beam elements based on the given parameters. CreateBeams takes the same cut fill pens and cover fill, and the same absolute zCoordinate of the reference line (with an optional floorIndex). Not written: the surfaces of the beam segments, and the cut fill pens before Archicad 27."
         );
         err |= RegisterCommand<ModifySlabsCommand> (
             elementCommands, "1.4.0",
@@ -1881,6 +1914,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<ActivateLayerCombinationCommand> (
             attributeCommands, "1.8.1",
             "Activates the given layer combination in the current window, like choosing it in the Quick Layers palette. Saved views are not changed."
+        );
+        err |= RegisterCommand<GetLayerOfElementDefaultsCommand> (
+            attributeCommands, "1.8.1",
+            "Returns the layer of the tool defaults of the given element types: the layer new elements of that type are placed on."
+        );
+        err |= RegisterCommand<SetLayerOfElementDefaultsCommand> (
+            attributeCommands, "1.8.1",
+            "Sets the layer of the tool defaults of the given element types, so new elements of that type are placed on it. Only the layer of the defaults is changed."
+        );
+        err |= RegisterCommand<RenameAttributesCommand> (
+            attributeCommands, "1.8.1",
+            "Renames attributes of any type (layers, layer combinations, composites, surfaces, ...). Each attribute keeps its index, its id and its settings. A new name that another attribute of the same type already has is refused, and so is renaming the attributes Archicad does not allow to change (the built-in Archicad Layer, the Solid and Empty fills)."
         );
         err |= RegisterCommand<GetLinesCommand> (
             attributeCommands, "1.5.4",

@@ -851,6 +851,22 @@ namespace TapirGrasshopperPlugin.Components
                 ExecutionResultsResponse.ErrorMessages(response));
         }
 
+        // A dry run changes nothing, so the items it refuses are reported as
+        // warnings, not as errors.
+        protected void AddDryRunWarnings(
+            IEnumerable<string> errorMessages)
+        {
+            foreach (var message in errorMessages)
+            {
+                if (!string.IsNullOrEmpty(message))
+                {
+                    AddRuntimeMessage(
+                        GH_RuntimeMessageLevel.Warning,
+                        message);
+                }
+            }
+        }
+
         // The creator commands answer with one item per requested item, holding
         // either the identifier of the created item or an error. Hands the
         // identifiers out through one output and the error messages through
