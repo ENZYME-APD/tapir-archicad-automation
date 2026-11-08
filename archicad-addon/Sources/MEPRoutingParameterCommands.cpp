@@ -1,5 +1,6 @@
 #include "MEPRoutingParameterCommands.hpp"
 #include "NotificationCommands.hpp"
+#include "OptionalAPIs.hpp"
 
 #ifdef ServerMainVers_2800
 #include "ACAPI/Result.hpp"
@@ -893,6 +894,9 @@ GS::Optional<GS::UniString> GetMEPRoutingParametersCommand::GetRawResponseSchema
 GS::ObjectState GetMEPRoutingParametersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> elements;
     if (!parameters.Get ("elements", elements)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'elements' parameter.");
@@ -1088,6 +1092,9 @@ GS::Optional<GS::UniString> SetMEPRoutingParametersCommand::GetRawResponseSchema
 GS::ObjectState SetMEPRoutingParametersCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2800
+    if (!IsMEPAPIAvailable ()) {
+        return CreateMEPAPINotAvailableResponse ();
+    }
     GS::Array<GS::ObjectState> elements;
     if (!parameters.Get ("elements", elements)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'elements' parameter.");
