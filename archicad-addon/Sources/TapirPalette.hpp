@@ -9,6 +9,7 @@
 #include "UvManager.hpp"
 #include "ScriptInfo.hpp"
 #include "ResourceIds.hpp"
+#include "ScriptsPanel.hpp"
 
 #include <atomic>
 #include <memory>
@@ -30,6 +31,8 @@ public:
 
     void Show ();
     void Hide ();
+    // The "Scripts Panel" menu item: shows the palette with its scripts panel open.
+    void ShowScriptsPanel ();
 
     bool UpdateAddOn ();
     void SetRunButtonIcon ();   // also called once the VersionChecker's lookup completes
@@ -90,6 +93,7 @@ private:
     DG::IconButton manageShortcutsButton;
     DG::LeftText   installedVersionText;
     DG::IconButton checkForUpdatesButton;
+    ScriptsPanel   scriptsPanel;   // the expand arrow and the controls below the bar
 
     // A script started by the palette, until it ended or was stopped. Any number of scripts run at the same time,
     // but a script at most once: Run, and its shortcut slot, stop it while it runs (issue #1819).
@@ -148,13 +152,28 @@ private:
     GS::Ref<PopUpItemData> GetScriptOfPopUpItem (short item) const;   // nullptr for a separator and "Reload scripts..."
     GS::Ref<PopUpItemData> GetSelectedScript () const;
     ScriptList GetAllScripts () const;   // in the order of the dropdown
+    // The scripts panel's accessor of the script list: every script of the dropdown, in its order, with what the
+    // panel shows of it.
+    GS::Array<ScriptsPanel::Script> GetPanelScripts () const;
+    // What the scripts panel asks of the palette: the script list, and its Run and Stop, which are the palette's own.
+    ScriptsPanel::Actions GetPanelActions ();
+    // The panel's Run: starts the script of the list with this file, as the bar's Run button does, unless it runs.
+    void RunListedScript (const IO::Location& fileLocation);
+    // The panel's Stop: stops the script with the processes it started, as the bar's Run button does while it runs.
+    void StopScript (const IO::Location& fileLocation);
     GS::UniString GetScriptLabel (const PopUpItemData& popUpData) const;   // the label with the "[Shortcut N]" suffix
     bool IsPopUpContainsFile (const IO::Location& fileLocation) const;
     void SaveScriptsToPreferences ();
     bool IsValidLocation (const IO::Location& location);
     short AddScriptsFromPreferences ();
     bool AddNewScript ();
+    // Adds the files to the scripts the user added, as the Add button does; files already listed are skipped.
+    bool AddScriptFiles (const GS::Array<IO::Location>& files);
     void DeleteScriptFromPopUp ();
+    // The scripts panel's Remove: removes the script from the scripts the user added.
+    void RemoveAddedScript (const IO::Location& fileLocation);
+    short FindPopUpItem (const IO::Location& fileLocation) const;   // 0: not in the dropdown
+    static GS::UniString GetScriptWebUrl (const PopUpItemData& popUpItemData);   // its page on GitHub; empty for a local file
     bool IsSelectedScriptFromGitHub () const;
     void SetDeleteScriptButtonStatus ();
     void RefreshScriptListShortcutLabels ();   // appends "  [Shortcut N]" to scripts assigned to a slot
@@ -166,6 +185,7 @@ private:
 
     virtual void PanelCloseRequested (const DG::PanelCloseRequestEvent& ev, bool* accepted) override;
     virtual void PanelOpened (const DG::PanelOpenEvent& ev) override;
+    virtual void PanelResized (const DG::PanelResizeEvent& ev) override;
     virtual void ButtonClicked (const DG::ButtonClickEvent& ev) override;
     virtual void PopUpChanged (const DG::PopUpChangeEvent& ev) override;
     // Overrides the ItemObserver function of both the button and the pop-up observer bases.

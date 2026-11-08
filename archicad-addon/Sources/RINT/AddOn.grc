@@ -19,6 +19,11 @@
 /* [  1] */        "Tapir Palette^E3^ES^EE^EI^ED^EL^EW^ET^EM"
 }
 
+'STR#' ID_ADDON_MENU_FOR_SCRIPTS_PANEL "Add-On Menu" {
+/* [   ] */        "Tapir"
+/* [  1] */        "Scripts Panel^E3^ES^EE^EI^ED^EL^EW^ET^EM"
+}
+
 'STR#' ID_ADDON_MENU_FOR_UPDATE "Add-On Menu" {
 /* [   ] */        "Tapir"
 /* [  1] */        "Check for Updates...^E3^ES^EE^EI^ED^EL^EW^ET^EM^32510"
@@ -94,6 +99,55 @@
 /* [ 32] */ "Failed to start uv process. Ensure it is installed and executable."
 /* [ 33] */ "Failed to execute %T"
 /* [ 34] */ "Unexpected issue while executing %T"
+}
+
+'STR#' ID_SCRIPTS_PANEL_STRINGS "Tapir Scripts Panel Strings" {
+/* [  1] */ "Show scripts panel"
+/* [  2] */ "Hide scripts panel"
+/* [  3] */ "All"
+/* [  4] */ "Documentation / layouts"
+/* [  5] */ "Element data / properties"
+/* [  6] */ "Modeling / geometry"
+/* [  7] */ "Zones / areas"
+/* [  8] */ "Import / export"
+/* [  9] */ "Quality assurance"
+/* [ 10] */ "Quantities / scheduling"
+/* [ 11] */ "Libraries / objects"
+/* [ 12] */ "Navigator / views"
+/* [ 13] */ "Classification / attributes"
+/* [ 14] */ "Batch automation"
+/* [ 15] */ "Utilities"
+/* [ 16] */ "Other"
+/* [ 17] */ "Built-in"
+/* [ 18] */ "Marketplace"
+/* [ 19] */ "My scripts"
+/* [ 20] */ "By %T"
+/* [ 21] */ "Version %T"
+/* [ 22] */ "No script matches the search."
+/* [ 23] */ "Select a script to see what it does."
+/* [ 24] */ "Install uv"
+/* [ 25] */ "Try again"
+/* [ 26] */ "Report a problem"
+/* [ 27] */ "Running..."
+/* [ 28] */ "Finished"
+/* [ 29] */ "Stopped"
+/* [ 30] */ "uv is not installed, so the script cannot run."
+/* [ 31] */ "The script could not be started."
+/* [ 32] */ "Archicad did not answer. It may be busy."
+/* [ 33] */ "The script failed (exit code %d)."
+/* [ 34] */ "Tapir Script Output"
+/* [ 35] */ "The last lines of %T:"
+/* [ 36] */ "The script wrote nothing."
+/* [ 37] */ "Script error: %T"
+/* [ 38] */ "The script **%T** failed when run from the Tapir Palette.\n\n- Tapir: %T\n- Archicad: %d\n\nThe last lines of its output:\n\n```\n%T\n```\n\nWhat I did before it failed:\n"
+/* [ 39] */ "Run"
+/* [ 40] */ "Stop"
+/* [ 41] */ "Assign Shortcut..."
+/* [ 42] */ "Edit"
+/* [ 43] */ "Show in Folder"
+/* [ 44] */ "Open on GitHub"
+/* [ 45] */ "Remove"
+/* [ 46] */ "New to Tapir? Try Project Health Check"
 }
 
 'STR#' ID_AUTOUPDATE_STRINGS "Tapir Update Strings" {
@@ -206,7 +260,7 @@
 4    ""        VersionText
 }
 
-'GDLG' ID_PALETTE Palette | leftCaption | close   0   0  536  28  "Tapir Palette"  {
+'GDLG' ID_PALETTE Palette | leftCaption | close | grow   0   0  564  28  "Tapir Palette"  {
 /* [  1] */ IconButton                 0   0  28  28    ID_TAPIR_LOGO_MINI noFrame
 /* [  2] */ PopupControl              28   3 260  22    80  3
 /* [  3] */ IconButton               288   0  28  28    ID_RUN_BUTTON_ICON noFrame
@@ -216,6 +270,20 @@
 /* [  7] */ IconButton               400   0  28  28    ID_SHORTCUTS_BUTTON_ICON noFrame
 /* [  8] */ LeftText                 434   6  72  16    SmallPlain  vCenter  "Tapir"
 /* [  9] */ IconButton               508   0  28  28    ID_CHECKFORUPDATES_BUTTON_ICON noFrame
+/* [ 10] */ IconButton               536   0  28  28    ID_EXPAND_DOWN_ICON noFrame
+/* [ 11] */ Separator                  0  28 564   2
+/* [ 12] */ TextEdit                   6  36 300  22    SmallPlain  255
+/* [ 13] */ PopupControl             312  36 246  22    80  3
+/* [ 14] */ SingleSelList              6  64 552 300    SmallPlain  PartialItems  18
+/* [ 15] */ LeftText                   6 370 552  20    LargeBold  vCenter | truncEnd  ""
+/* [ 16] */ LeftText                   6 390 552  16    LargePlain  vCenter  ""
+/* [ 17] */ LeftText                   6 408 552  84    SmallPlain  ""
+/* [ 18] */ Button                     6 498  70  24    LargePlain  "Run"
+/* [ 19] */ Button                    80 498  70  24    LargePlain  "Stop"
+/* [ 20] */ LeftText                 158 498 186  24    SmallPlain  vCenter | truncEnd  ""
+/* [ 21] */ Button                   344 498  80  24    LargePlain  "Details"
+/* [ 22] */ Button                   428 498 130  24    LargePlain  "Report a problem"
+/* [ 23] */ Button                     6 528  90  24    LargePlain  "Settings"
 }
 
 'DLGH' ID_PALETTE Tapir_Palette {
@@ -228,6 +296,20 @@
 7    "Manage Shortcuts"    ManageShortcutsButton
 8    "Installed Tapir version"         InstalledVersionText
 9    "Check for Updates"               CheckForUpdatesButton
+10   "Show scripts panel"              ExpandButton
+11   ""                                ScriptsPanelSeparator
+12   "Search the scripts by name, then by what they do"   ScriptsPanelSearch
+13   "Show the scripts of one category"                   ScriptsPanelCategory
+14   ""                                ScriptsPanelList
+15   ""                                ScriptsPanelName
+16   ""                                ScriptsPanelBadge
+17   ""                                ScriptsPanelDetails
+18   "Run the selected script"         ScriptsPanelRunButton
+19   "Stop the selected script and the processes it started"   ScriptsPanelStopButton
+20   ""                                ScriptsPanelResult
+21   "Show the last lines of the script's output"              ScriptsPanelOutputButton
+22   ""                                ScriptsPanelFixButton
+23   "Open the Tapir settings (Documents/Tapir/config.json)"   ScriptsPanelSettingsButton
 }
 
 'GDLG' ID_SCRIPTUI_PALETTE Palette | leftCaption | close | grow   0   0  600  450  "Tapir Script UI"  {
