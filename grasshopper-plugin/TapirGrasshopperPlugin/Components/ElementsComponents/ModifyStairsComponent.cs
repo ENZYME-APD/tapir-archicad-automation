@@ -36,10 +36,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;
 
-        // No ModifyStairs icon exists yet; until one is added to Resources,
-        // the CreateStairs icon marks the component as the stair one.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.CreateStairs;
+            Properties.Resources.ModifyStairs;
 
         public override Guid ComponentGuid =>
             new Guid("49403588-c047-4820-b2e6-4eceeefd1ffb");

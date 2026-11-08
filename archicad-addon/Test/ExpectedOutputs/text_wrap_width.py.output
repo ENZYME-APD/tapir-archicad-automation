@@ -113,7 +113,7 @@ Response:
         }
     ]
 }
-'Replaced' nonBreaking=True width=auto multiline=False bold runs=[False]
+'Replaced' nonBreaking=False width=30.00 multiline=False bold runs=[False]
 'A long line of text that does not fit into a narrow text box' nonBreaking=False width=40.00 multiline=True bold runs=[False]
 'Title\nA long line of text that does not fit into a narrow text box' nonBreaking=False width=50.00 multiline=True bold runs=[True, False]
 Command: ModifyTexts
@@ -138,3 +138,36 @@ Response:
     ]
 }
 'A long line of text that does not fit into a narrow text box' nonBreaking=False width=25.00 multiline=True bold runs=[False]
+Command: ModifyTexts
+Parameters:
+{
+    "textsWithDetails": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "style": {
+                "penIndex": 3
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "width": 0.0
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        },
+        {
+            "success": true
+        }
+    ]
+}
+'Title\nA long line of text that does not fit into a narrow text box' nonBreaking=False width=50.00 multiline=True bold runs=[True, False]
+'A long line of text that does not fit into a narrow text box' nonBreaking=True width=auto multiline=False bold runs=[False]

@@ -160,15 +160,15 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         }
 
         // Settings (Add-On keys) that the geometry inputs define on Create,
-        // e.g. a column's base elevation: they are left out of a new
-        // element's settings, so a JSON read from another element never moves
-        // the new one.
+        // e.g. a column's base elevation: they are left out of the settings of
+        // the elements Create makes or updates, so a JSON read from another
+        // element never moves them.
         protected virtual IEnumerable<string> GeometrySettingKeys => Enumerable.Empty<string>();
 
-        // Lets a tool drop settings (Add-On keys) of a new element that its
-        // geometry inputs define, e.g. a beam's offset to its home story,
-        // which the Z of its reference line sets. Called after PrepareSettings,
-        // only for the elements Create makes (not for the ones it updates).
+        // Lets a tool drop settings (Add-On keys) that its geometry inputs
+        // define, e.g. a beam's offset to its home story, which the Z of its
+        // reference line sets. Called after PrepareSettings, for the elements
+        // Create makes or updates (not on Execute).
         protected virtual void PrepareCreateSettings(
             JObject settings,
             ISet<string> notes)
@@ -812,14 +812,14 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 {
                     continue;
                 }
-                if (existing[i] == null)
+                // The geometry inputs place both the new and the updated
+                // elements, so a setting they define never moves them.
+                foreach (var key in GeometrySettingKeys)
                 {
-                    foreach (var key in GeometrySettingKeys)
-                    {
-                        settings.Remove(key);
-                    }
+                    settings.Remove(key);
                 }
                 PrepareSettings(settings, notes);
+                PrepareCreateSettings(settings, notes);
 
                 if (existing[i] != null)
                 {
@@ -832,7 +832,6 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                     updated++;
                     continue;
                 }
-                PrepareCreateSettings(settings, notes);
 
                 var item = new JObject();
                 var rest = new JObject();

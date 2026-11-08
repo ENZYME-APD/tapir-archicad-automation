@@ -1,5 +1,6 @@
 #include "DesignOptionCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "NotificationCommands.hpp"
 
 #ifdef ServerMainVers_2700
 #include "ACAPI/Result.hpp"
@@ -1456,6 +1457,10 @@ GS::ObjectState MoveElementsToDesignOptionsCommand::Execute (const GS::ObjectSta
         GS::ObjectState response;
         const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+        // The moved elements are reported to the notification clients as changed (#1825).
+        ElementChangeReporter changeReporter;
+        changeReporter.AddElementIdsOf (elementDesignOptionPairs);
+
         ACAPI_CallUndoableCommand ("Create Design Option Sets", [&]() -> GSErrCode {
             for (const GS::ObjectState& elementDesignOptionPair : elementDesignOptionPairs) {
                 API_Guid elemGuid = GetGuidFromElementsArrayItem (elementDesignOptionPair);
@@ -1473,10 +1478,15 @@ GS::ObjectState MoveElementsToDesignOptionsCommand::Execute (const GS::ObjectSta
                     }
                 }
                 auto result = manager.RelinkElementToDesignOption (elemGuid, optionPtr == nullptr ? std::optional<DesignOption>() : *optionPtr);
+                if (result.IsOk ()) {
+                    changeReporter.MarkChanged (elemGuid);
+                }
                 executionResults (result.IsOk () ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (result.UnwrapErr ().kind, "Failed to move element to design option."));
             }
             return NoError;
         });
+
+        changeReporter.Report ();
 
         return response;
     });

@@ -123,7 +123,7 @@ namespace TapirGrasshopperPlugin.Components.LibraryComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.ElemGDLParameters;
+            Properties.Resources.GetGDLParametersOfLibraryParts;
 
         public override Guid ComponentGuid =>
             new Guid("4b1f6e05-674c-429b-a36f-bee75f143468");
