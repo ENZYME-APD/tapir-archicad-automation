@@ -11918,23 +11918,80 @@ void AddScannedReferences (API_AttrTypeID type, const GS::Array<AttributeReferen
     }
 }
 
-// Every attribute reference of an element of the current database: its layer, the fields, memo parts and library
+// The references an element, a tool default or a Favorite holds: its layer, the fields, memo parts and library
 // part parameters the reference scanner of ReindexAttributes reads, and the composite, profile or pen table its
-// structure uses (as GetUnusedAttributes reads them). Returns false when the element cannot be read.
+// structure uses (as GetUnusedAttributes reads them). memo is null when none was read. With ownMemoOnly (a placed
+// element) the memo arrays of the sub-elements that are visited as elements of their own are left out; a tool
+// default or a Favorite has no such elements, so its segments, frames, panels and structures are read from its memo.
+void CollectReferencesOfElement (const API_Element& element, API_ElementMemo* memo, bool ownMemoOnly, GS::Array<ElementReference>& references)
+{
+    const API_ElemTypeID typeID = GetElemTypeId (element.header);
+    references.Push ({ API_LayerID, GetAttributeIndex (element.header.layer), "layer", false });
+    for (const API_AttrTypeID type : FieldScannedAttributeTypes) {
+        std::set<Int32> used;
+        GS::Array<AttributeReference> found;
+        const ReindexJob job = { type, APIInvalidAttributeIndex, APIInvalidAttributeIndex, &used, &found };
+        // Collect mode changes nothing; the copy only lets the const element go through the field table.
+        API_Element fields = element;
+        API_Element mask = {};
+        ACAPI_ELEMENT_MASK_CLEAR (mask);
+        RewriteElementFields (fields, mask, job);
+        const UInt64 memoMask = ownMemoOnly ? GetMemoMaskOfOwnReferences (typeID, type) : GetMemoMaskToRewrite (typeID, type);
+        if (memo != nullptr && memoMask != 0) {
+            RewriteMemo (element, *memo, job);
+        }
+        AddScannedReferences (type, found, references);
+    }
+
+    StructureUsage structure;
+    CollectStructureUsage (element, ownMemoOnly ? nullptr : memo, structure);
+    const char* profileField = "assemblySegmentData.profileAttr";
+    if (typeID == API_WallID) {
+        profileField = "profileAttr";
+    } else if (typeID == API_ColumnID) {
+        profileField = "columnSegments.assemblySegmentData.profileAttr";
+    } else if (typeID == API_BeamID) {
+        profileField = "beamSegments.assemblySegmentData.profileAttr";
+    }
+    for (const Int32 index : structure.composites) {
+        references.Push ({ API_CompWallID, index, "composite", false });
+    }
+    for (const Int32 index : structure.profiles) {
+        references.Push ({ API_ProfileID, index, profileField, false });
+    }
+    for (const Int32 index : structure.penTables) {
+        references.Push ({ API_PenTableID, index, "penTableIndex", false });
+    }
+}
+
+#ifdef ServerMainVers_2900
+// From Archicad 29 an opening's floor plan line types and cover fill are read through ACAPI::Element::Opening, for
+// a placed opening (guid) or for the Opening tool default (no guid).
+void CollectOpeningReferences (const API_Guid* guid, GS::Array<ElementReference>& references)
+{
+    for (const API_AttrTypeID type : { API_LinetypeID, API_FilltypeID }) {
+        std::set<Int32> used;
+        GS::Array<AttributeReference> found;
+        const ReindexJob job = { type, APIInvalidAttributeIndex, APIInvalidAttributeIndex, &used, &found };
+        bool ok = true;
+        if (guid != nullptr) {
+            RewriteOpeningElement (*guid, job, false, ok);
+        } else {
+            RewriteOpeningDefault (job, false, ok);
+        }
+        AddScannedReferences (type, found, references);
+    }
+}
+#endif
+
+// Every attribute reference of an element of the current database. Returns false when the element cannot be read.
 bool CollectElementReferences (const API_Elem_Head& head, GS::Array<ElementReference>& references)
 {
-    references.Push ({ API_LayerID, GetAttributeIndex (head.layer), "layer", false });
     const API_ElemTypeID typeID = GetElemTypeId (head.type);
 #ifdef ServerMainVers_2900
     if (typeID == API_OpeningID) {
-        for (const API_AttrTypeID type : { API_LinetypeID, API_FilltypeID }) {
-            std::set<Int32> used;
-            GS::Array<AttributeReference> found;
-            const ReindexJob job = { type, APIInvalidAttributeIndex, APIInvalidAttributeIndex, &used, &found };
-            bool ok = true;
-            RewriteOpeningElement (head.guid, job, false, ok);
-            AddScannedReferences (type, found, references);
-        }
+        references.Push ({ API_LayerID, GetAttributeIndex (head.layer), "layer", false });
+        CollectOpeningReferences (&head.guid, references);
         return true;
     }
 #endif
@@ -11950,33 +12007,98 @@ bool CollectElementReferences (const API_Elem_Head& head, GS::Array<ElementRefer
     }
     API_ElementMemo memo = {};
     const bool hasMemo = memoMask != 0 && ACAPI_Element_GetMemo (head.guid, &memo, memoMask) == NoError;
-    for (const API_AttrTypeID type : FieldScannedAttributeTypes) {
-        std::set<Int32> used;
-        GS::Array<AttributeReference> found;
-        const ReindexJob job = { type, APIInvalidAttributeIndex, APIInvalidAttributeIndex, &used, &found };
-        API_Element mask = {};
-        ACAPI_ELEMENT_MASK_CLEAR (mask);
-        RewriteElementFields (element, mask, job);
-        if (hasMemo && GetMemoMaskOfOwnReferences (typeID, type) != 0) {
-            RewriteMemo (element, memo, job);
-        }
-        AddScannedReferences (type, found, references);
-    }
+    CollectReferencesOfElement (element, hasMemo ? &memo : nullptr, true, references);
     ACAPI_DisposeElemMemoHdls (&memo);
-
-    StructureUsage structure;
-    CollectStructureUsage (element, nullptr, structure);
-    const char* profileField = typeID == API_WallID ? "profileAttr" : "assemblySegmentData.profileAttr";
-    for (const Int32 index : structure.composites) {
-        references.Push ({ API_CompWallID, index, "composite", false });
-    }
-    for (const Int32 index : structure.profiles) {
-        references.Push ({ API_ProfileID, index, profileField, false });
-    }
-    for (const Int32 index : structure.penTables) {
-        references.Push ({ API_PenTableID, index, "penTableIndex", false });
-    }
     return true;
+}
+
+// A tool default or Favorite that holds references: the element type, and for a Favorite its name and, when the
+// references are those of one of its sub-elements (a stair's structure, ...), the sub-element's type.
+struct SettingsReferences {
+    GS::UniString                source;
+    API_ElemTypeID               typeID;
+    GS::UniString                favoriteName;
+    API_ElemTypeID               subElementTypeID;
+    GS::Array<ElementReference>  references;
+};
+
+// The references of every tool default: ACAPI_Element_GetDefaults for each element type, and from Archicad 29 the
+// Opening tool default.
+GS::Array<SettingsReferences> CollectToolDefaultReferences ()
+{
+    GS::Array<SettingsReferences> result;
+    for (Int32 type = API_FirstElemType; type <= API_LastElemType; ++type) {
+        const API_ElemTypeID typeID = static_cast<API_ElemTypeID> (type);
+        API_Element element = {};
+        API_ElementMemo memo = {};
+        element.header.type = typeID;
+        if (ACAPI_Element_GetDefaults (&element, &memo) == NoError) {
+            SettingsReferences settings = { GS::UniString ("toolDefault"), typeID, GS::UniString (), API_ZombieElemID, {} };
+            CollectReferencesOfElement (element, &memo, false, settings.references);
+            result.Push (settings);
+        }
+        ACAPI_DisposeElemMemoHdls (&memo);
+    }
+#ifdef ServerMainVers_2900
+    // Added to the Opening default ACAPI_Element_GetDefaults read, if it read one, so that it is counted once.
+    SettingsReferences* opening = nullptr;
+    for (SettingsReferences& settings : result) {
+        if (settings.typeID == API_OpeningID) {
+            opening = &settings;
+        }
+    }
+    if (opening == nullptr) {
+        const SettingsReferences openingDefault = { GS::UniString ("toolDefault"), API_OpeningID, GS::UniString (), API_ZombieElemID, {} };
+        result.Push (openingDefault);
+        opening = &result.GetLast ();
+    }
+    CollectOpeningReferences (nullptr, opening->references);
+#endif
+    return result;
+}
+
+// The references of every Favorite, of the Favorite's own settings and of each of its sub-elements, read with
+// ACAPI_Favorite_Get as GetUnusedAttributes reads them.
+GS::Array<SettingsReferences> CollectFavoriteReferences ()
+{
+    GS::Array<SettingsReferences> result;
+    for (Int32 type = API_FirstElemType; type <= API_LastElemType; ++type) {
+        const API_ElemTypeID typeID = static_cast<API_ElemTypeID> (type);
+        GS::Array<GS::UniString> names;
+        if (ACAPI_Favorite_GetNum (typeID, nullptr, nullptr, &names) != NoError) {
+            continue;
+        }
+        for (const GS::UniString& name : names) {
+            API_Favorite favorite (name);
+            favorite.memo.New ();
+            favorite.subElements.New ();   // a curtain wall's frame and panel classes, a stair's structures and markers
+            const GS::OnExit cleanup ([&favorite] () {
+                if (favorite.memo.HasValue ()) {
+                    ACAPI_DisposeElemMemoHdls (favorite.memo.GetPtr ());
+                }
+                if (favorite.subElements.HasValue ()) {
+                    for (API_SubElement& subElement : *favorite.subElements) {
+                        ACAPI_DisposeElemMemoHdls (&subElement.memo);
+                    }
+                }
+            });
+            if (ACAPI_Favorite_Get (&favorite) != NoError) {
+                continue;
+            }
+            const API_ElemTypeID favoriteTypeID = GetElemTypeId (favorite.element.header);
+            SettingsReferences settings = { GS::UniString ("favorite"), favoriteTypeID, name, API_ZombieElemID, {} };
+            CollectReferencesOfElement (favorite.element, favorite.memo.HasValue () ? favorite.memo.GetPtr () : nullptr, false, settings.references);
+            result.Push (settings);
+            if (favorite.subElements.HasValue ()) {
+                for (API_SubElement& subElement : *favorite.subElements) {
+                    SettingsReferences sub = { GS::UniString ("favorite"), favoriteTypeID, name, GetElemTypeId (subElement.subElem.header), {} };
+                    CollectReferencesOfElement (subElement.subElem, &subElement.memo, false, sub.references);
+                    result.Push (sub);
+                }
+            }
+        }
+    }
+    return result;
 }
 
 // The element that owns a sub-element (a curtain wall of its frame, a column of its segment, ...); APINULLGuid
@@ -12031,6 +12153,20 @@ void AddElementLocation (GS::ObjectState& entry, const API_DatabaseInfo& databas
     }
 }
 
+// Whether the reference is to an index of a checked type that no attribute has. Index 0 and below stand for no
+// attribute (a GDL parameter left empty, an unset field).
+bool IsMissingReference (const ElementReference& reference, const std::map<API_AttrTypeID, std::set<Int32>>& existingIndices)
+{
+    const auto existing = existingIndices.find (reference.type);
+    return existing != existingIndices.end () && reference.index >= 1 && existing->second.count (reference.index) == 0;
+}
+
+// requestedSources is empty when the sources input was omitted: every source is checked then.
+bool IsSourceRequested (const GS::Array<GS::UniString>& requestedSources, const char* source)
+{
+    return requestedSources.IsEmpty () || requestedSources.Contains (GS::UniString (source));
+}
+
 }
 
 #endif
@@ -12058,6 +12194,15 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetInputParametersSchem
                     "enum": ["layer", "fill", "surface", "buildingMaterial", "composite", "profile", "lineType", "penTable", "zoneCategory"]
                 },
                 "minItems": 1
+            },
+            "sources": {
+                "type": "array",
+                "description": "What to check: the placed elements (element), the tool default settings (toolDefault) and the Favorites (favorite). All of them when omitted.",
+                "items": {
+                    "type": "string",
+                    "enum": ["element", "toolDefault", "favorite"]
+                },
+                "minItems": 1
             }
         },
         "additionalProperties": false
@@ -12071,21 +12216,30 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetRawResponseSchema ()
         "properties": {
             "missingAttributes": {
                 "type": "array",
-                "description": "One item per reference to an attribute index that has no attribute in the project, in the order the elements were found (the floor plan first, then the views and layouts).",
+                "description": "One item per reference to an attribute index that has no attribute in the project: first the placed elements in the order they were found (the floor plan first, then the views and layouts), then the tool defaults, then the Favorites.",
                 "items": {
                     "type": "object",
                     "properties": {
                         "source": {
                             "type": "string",
-                            "enum": ["element"],
-                            "description": "What refers to the missing attribute: a placed element."
+                            "enum": ["element", "toolDefault", "favorite"],
+                            "description": "What refers to the missing attribute: a placed element, the default settings of a tool, or a Favorite."
                         },
                         "elementId": {
-                            "$ref": "#/ElementId"
+                            "$ref": "#/ElementId",
+                            "description": "The placed element. Only for source element."
                         },
                         "elementType": {
                             "type": "string",
-                            "description": "The element's type, as GetElementsByType names it."
+                            "description": "The element's type, as GetElementsByType names it: for a tool default or a Favorite the type of its tool."
+                        },
+                        "favoriteName": {
+                            "type": "string",
+                            "description": "The name of the Favorite. Only for source favorite."
+                        },
+                        "subElementType": {
+                            "type": "string",
+                            "description": "When the reference is in a sub-element the Favorite keeps apart (e.g. a stair's structure), the type of that sub-element. Missing otherwise."
                         },
                         "parentElementId": {
                             "$ref": "#/ElementId",
@@ -12096,11 +12250,11 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetRawResponseSchema ()
                         },
                         "databaseId": {
                             "$ref": "#/DatabaseId",
-                            "description": "The database the element is in, the same id GetDatabases returns."
+                            "description": "The database the element is in, the same id GetDatabases returns. Only for source element."
                         },
                         "databaseType": {
                             "type": "string",
-                            "description": "The type of that database, e.g. FloorPlan, Worksheet, Details, Section, Layout."
+                            "description": "The type of that database, e.g. FloorPlan, Worksheet, Details, Section, Layout. Only for source element."
                         },
                         "storyIndex": {
                             "type": "integer",
@@ -12128,7 +12282,7 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetRawResponseSchema ()
                         },
                         "index": {
                             "type": "integer",
-                            "description": "The attribute index the element refers to, which no attribute of attributeType has."
+                            "description": "The attribute index the element, tool default or Favorite refers to, which no attribute of attributeType has."
                         },
                         "field": {
                             "type": "string",
@@ -12140,12 +12294,20 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetRawResponseSchema ()
                         }
                     },
                     "additionalProperties": false,
-                    "required": ["source", "elementId", "elementType", "databaseId", "databaseType", "attributeType", "index"]
+                    "required": ["source", "elementType", "attributeType", "index"]
                 }
             },
             "checkedElementCount": {
                 "type": "integer",
-                "description": "The number of elements checked."
+                "description": "The number of placed elements checked; 0 when the elements were not checked."
+            },
+            "checkedToolDefaultCount": {
+                "type": "integer",
+                "description": "The number of tool defaults checked. Missing when the tool defaults were not checked."
+            },
+            "checkedFavoriteCount": {
+                "type": "integer",
+                "description": "The number of Favorites checked. Missing when the Favorites were not checked."
             },
             "warnings": {
                 "type": "array",
@@ -12167,6 +12329,11 @@ GS::ObjectState GetMissingAttributesCommand::Execute (const GS::ObjectState& par
     const bool allTypes = !parameters.Contains ("attributeTypes");
     if (!allTypes) {
         parameters.Get ("attributeTypes", requestedTypes);
+    }
+    // Empty: every source.
+    GS::Array<GS::UniString> requestedSources;
+    if (parameters.Contains ("sources")) {
+        parameters.Get ("sources", requestedSources);
     }
 
     API_DatabaseInfo startingDatabase = {};
@@ -12206,6 +12373,9 @@ GS::ObjectState GetMissingAttributesCommand::Execute (const GS::ObjectState& par
     GS::ObjectState response;
     const auto& missingAttributes = response.AddList<GS::ObjectState> ("missingAttributes");
     Int32 checkedElementCount = 0;
+    if (!IsSourceRequested (requestedSources, "element")) {
+        databases.Clear ();
+    }
     for (const API_DatabaseInfo& database : databases) {
         API_DatabaseInfo current = database;
         if (ACAPI_Database_ChangeCurrentDatabase (&current) != NoError) {
@@ -12234,9 +12404,7 @@ GS::ObjectState GetMissingAttributesCommand::Execute (const GS::ObjectState& par
             bool parentRead = false;
             API_Guid parentGuid = APINULLGuid;
             for (const ElementReference& reference : references) {
-                const auto existing = existingIndices.find (reference.type);
-                // Index 0 and below stand for no attribute (a GDL parameter left empty, an unset field).
-                if (existing == existingIndices.end () || reference.index < 1 || existing->second.count (reference.index) > 0) {
+                if (!IsMissingReference (reference, existingIndices)) {
                     continue;
                 }
                 if (!parentRead) {
@@ -12266,9 +12434,51 @@ GS::ObjectState GetMissingAttributesCommand::Execute (const GS::ObjectState& par
             }
         }
     }
-
     ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
     response.Add ("checkedElementCount", checkedElementCount);
+
+    // The tool defaults and the Favorites: one item per missing reference, named by the tool, the Favorite and the
+    // sub-element the reference is in.
+    const auto addSettingsReferences = [&] (const GS::Array<SettingsReferences>& settingsList) {
+        for (const SettingsReferences& settings : settingsList) {
+            for (const ElementReference& reference : settings.references) {
+                if (!IsMissingReference (reference, existingIndices)) {
+                    continue;
+                }
+                GS::ObjectState entry;
+                entry.Add ("source", settings.source);
+                entry.Add ("elementType", GetElementTypeNonLocalizedName (settings.typeID));
+                if (!settings.favoriteName.IsEmpty ()) {
+                    entry.Add ("favoriteName", settings.favoriteName);
+                }
+                if (settings.subElementTypeID != API_ZombieElemID) {
+                    entry.Add ("subElementType", GetElementTypeNonLocalizedName (settings.subElementTypeID));
+                }
+                entry.Add ("attributeType", typeNames[reference.type]);
+                entry.Add ("index", reference.index);
+                entry.Add (reference.gdlParameter ? "gdlParameter" : "field", reference.field);
+                missingAttributes (entry);
+            }
+        }
+    };
+    if (IsSourceRequested (requestedSources, "toolDefault")) {
+        const GS::Array<SettingsReferences> toolDefaults = CollectToolDefaultReferences ();
+        addSettingsReferences (toolDefaults);
+        response.Add ("checkedToolDefaultCount", static_cast<Int32> (toolDefaults.GetSize ()));
+    }
+    if (IsSourceRequested (requestedSources, "favorite")) {
+        const GS::Array<SettingsReferences> favorites = CollectFavoriteReferences ();
+        addSettingsReferences (favorites);
+        // A Favorite with sub-elements is listed once per sub-element as well: count the Favorites themselves.
+        Int32 favoriteCount = 0;
+        for (const SettingsReferences& favorite : favorites) {
+            if (favorite.subElementTypeID == API_ZombieElemID) {
+                ++favoriteCount;
+            }
+        }
+        response.Add ("checkedFavoriteCount", favoriteCount);
+    }
+
     if (!warnings.IsEmpty ()) {
         response.Add ("warnings", warnings);
     }

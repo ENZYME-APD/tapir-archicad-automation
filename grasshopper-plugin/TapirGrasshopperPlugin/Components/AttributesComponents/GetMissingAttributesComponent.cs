@@ -15,12 +15,13 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         public GetMissingAttributesComponent()
             : base(
                 "GetMissingAttributes",
-                "Lists the references of placed elements to layers, fills, surfaces, building materials, " +
-                "composites, profiles, line types, pen tables and zone categories that do not exist in the " +
-                "project, like the missing attributes report of the GDL palette: one item per reference, with " +
-                "the element, where it sits, the attribute type, the missing index and the field or GDL " +
-                "parameter that holds it. Tool defaults, Favorites, Model View Options and graphic override " +
-                "rules are not checked yet. Read only. Available from Archicad 27.",
+                "Lists the references of placed elements, tool defaults and Favorites to layers, fills, " +
+                "surfaces, building materials, composites, profiles, line types, pen tables and zone " +
+                "categories that do not exist in the project, like the missing attributes report of the GDL " +
+                "palette: one item per reference, with the source, the element and where it sits (or the tool " +
+                "or Favorite), the attribute type, the missing index and the field or GDL parameter that holds " +
+                "it. Model View Options and graphic override rules are not checked yet. Read only. Available " +
+                "from Archicad 27.",
                 GroupNames.Attributes)
         {
         }
@@ -31,14 +32,18 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 "Types",
                 GetUnusedAttributesComponent.TypesDescription);
 
-            SetOptionality(0);
+            InTexts(
+                "Sources",
+                "What to check: element, toolDefault, favorite. All of them when empty.");
+
+            SetOptionality(new[] { 0, 1 });
         }
 
         protected override void AddOutputs()
         {
             OutGenerics(
                 "ElementGuids",
-                "The element of each missing reference.");
+                "The element of each missing reference; null for a tool default or Favorite.");
 
             OutTexts(
                 "ElementTypes",
@@ -81,6 +86,26 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             OutTexts(
                 "Warnings",
                 "What could not be checked.");
+
+            OutTexts(
+                "Sources",
+                "What holds each missing reference: element, toolDefault or favorite.");
+
+            OutTexts(
+                "FavoriteNames",
+                "The Favorite that holds it; null for an element or a tool default.");
+
+            OutTexts(
+                "SubElementTypes",
+                "The Favorite's sub-element that holds it (e.g. a stair's structure); null otherwise.");
+
+            OutInteger(
+                "CheckedToolDefaultCount",
+                "The number of tool defaults checked.");
+
+            OutInteger(
+                "CheckedFavoriteCount",
+                "The number of Favorites checked.");
         }
 
         protected override void Solve(
@@ -91,6 +116,20 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             if (types.Count > 0)
             {
                 parameters["attributeTypes"] = types;
+            }
+
+            var sources = new JArray();
+            foreach (var source in da.GetOptionals<string>(1))
+            {
+                if (!string.IsNullOrWhiteSpace(source))
+                {
+                    sources.Add(source.Trim());
+                }
+            }
+
+            if (sources.Count > 0)
+            {
+                parameters["sources"] = sources;
             }
 
             if (!TryGetCadResponse(
@@ -111,6 +150,9 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             var indices = new List<object>();
             var usedBy = new List<string>();
             var isGdlParameter = new List<bool>();
+            var sourceList = new List<string>();
+            var favoriteNames = new List<string>();
+            var subElementTypes = new List<string>();
 
             foreach (var item in JsonOutputHelp.Items(response, "missingAttributes"))
             {
@@ -127,6 +169,9 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 var gdlParameter = item["gdlParameter"]?.ToString();
                 usedBy.Add(gdlParameter ?? item["field"]?.ToString());
                 isGdlParameter.Add(gdlParameter != null);
+                sourceList.Add(item["source"]?.ToString());
+                favoriteNames.Add(item["favoriteName"]?.ToString());
+                subElementTypes.Add(item["subElementType"]?.ToString());
             }
 
             da.SetDataList(0, elementGuids);
@@ -140,6 +185,11 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             da.SetDataList(8, isGdlParameter);
             da.SetData(9, JsonOutputHelp.Scalar(response, "checkedElementCount"));
             da.SetDataList(10, GetUnusedAttributesComponent.Warnings(response));
+            da.SetDataList(11, sourceList);
+            da.SetDataList(12, favoriteNames);
+            da.SetDataList(13, subElementTypes);
+            da.SetData(14, JsonOutputHelp.Scalar(response, "checkedToolDefaultCount"));
+            da.SetData(15, JsonOutputHelp.Scalar(response, "checkedFavoriteCount"));
         }
 
         protected override System.Drawing.Bitmap Icon =>
