@@ -7,7 +7,11 @@ using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class SetDetailsOfWallsComponent : ArchicadExecutorComponent
+    // Sends one SetDetailsOfElements request for every branch of the inputs,
+    // so a tree input makes one undo step in Archicad (#203). It has no
+    // ErrorMessages output: a failed element is reported as an error.
+    public class SetDetailsOfWallsComponent
+        : BatchedExecutorComponent<TypedElementWithDetailsObj<SetWallDetails>>
     {
         public override string CommandName => "SetDetailsOfElements";
 
@@ -32,35 +36,40 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             InNumbers("Heights");
         }
 
-        protected override void Solve(
-            IGH_DataAccess da)
+        protected override int ErrorMessagesOutputIndex => -1;
+
+        protected override bool TryGetBatchItems(
+            IGH_DataAccess da,
+            out List<TypedElementWithDetailsObj<SetWallDetails>> items)
         {
+            items = null;
+
             if (!da.TryCreateFromList(
                     0,
                     out ElementsObject inputs))
             {
-                return;
+                return false;
             }
 
             if (!da.TryGetList(
                     1,
                     out List<Point3D> startCoords))
             {
-                return;
+                return false;
             }
 
             if (!da.TryGetList(
                     2,
                     out List<Point3D> endCoords))
             {
-                return;
+                return false;
             }
 
             if (!da.TryGetList(
                     3,
                     out List<double> heights))
             {
-                return;
+                return false;
             }
 
             if (startCoords.Count != 1 &&
@@ -68,7 +77,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             {
                 this.AddError(
                     "The count of BegCoords must be 1 or the same as the count of ElementGuids.");
-                return;
+                return false;
             }
 
             if (endCoords.Count != 1 &&
@@ -76,26 +85,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             {
                 this.AddError(
                     "The count of EndCoords must be 1 or the same as the count of ElementGuids.");
-                return;
+                return false;
             }
 
             if (heights.Count != 1 && inputs.Elements.Count != heights.Count)
             {
                 this.AddError(
                     "The count of Heights must be 1 or the same as the count of ElementGuids.");
-                return;
+                return false;
             }
 
-            if (inputs.Elements.Count == 0)
-            {
-                return;
-            }
-
-            var obj = new TypedElementsWithDetailsObj<SetWallDetails>
-            {
-                ElementsWithDetails =
-                    new List<TypedElementWithDetailsObj<SetWallDetails>>()
-            };
+            items = new List<TypedElementWithDetailsObj<SetWallDetails>>();
 
             for (int i = 0; i < inputs.Elements.Count; i++)
             {
@@ -120,30 +120,35 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                             }
                         }
                     };
-                obj.ElementsWithDetails.Add(elementWithDetails);
+                items.Add(elementWithDetails);
             }
 
-            if (!TryGetConvertedCadValues(
-                    CommandName,
-                    obj,
-                    ToAddOn,
-                    ExecutionResultsResponse.Deserialize,
-                    out ExecutionResultsResponse response))
-            {
-                return;
-            }
+            return true;
+        }
 
-            for (int i = 0; i < response.ExecutionResults.Count; i++)
+        protected override object CreateBatchParameters(
+            List<TypedElementWithDetailsObj<SetWallDetails>> items)
+        {
+            return new TypedElementsWithDetailsObj<SetWallDetails>
             {
-                ExecutionResult eResult = response.ExecutionResults[i];
-                if (eResult.Success)
+                ElementsWithDetails = items
+            };
+        }
+
+        protected override void ReportBatchErrors(
+            List<TypedElementWithDetailsObj<SetWallDetails>> sentItems,
+            List<string> messages)
+        {
+            for (int i = 0; i < messages.Count; i++)
+            {
+                if (string.IsNullOrEmpty(messages[i]))
                 {
                     continue;
                 }
 
                 this.AddError(
-                    eResult.Message() + " [NewElementId " +
-                    inputs.Elements[i].ToString() + "]");
+                    messages[i] + " [ElementId " +
+                    sentItems[i].ElementId?.Guid + "]");
             }
         }
 
@@ -154,7 +159,11 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             new Guid("0ff1fd36-fd8b-4c9d-9db1-111cf9a9efa4");
     }
 
-    public class SetDetailsOfTextsComponent : ArchicadExecutorComponent
+    // Sends one SetDetailsOfElements request for every branch of the inputs,
+    // so a tree input makes one undo step in Archicad (#203). It has no
+    // ErrorMessages output: a failed element is reported as an error.
+    public class SetDetailsOfTextsComponent
+        : BatchedExecutorComponent<TypedElementWithDetailsObj<SetTextDetails>>
     {
         public override string CommandName => "SetDetailsOfElements";
 
@@ -177,40 +186,36 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "The new text contents. Newlines create multiple lines.");
         }
 
-        protected override void Solve(
-            IGH_DataAccess da)
+        protected override int ErrorMessagesOutputIndex => -1;
+
+        protected override bool TryGetBatchItems(
+            IGH_DataAccess da,
+            out List<TypedElementWithDetailsObj<SetTextDetails>> items)
         {
+            items = null;
+
             if (!da.TryCreateFromList(
                     0,
                     out ElementsObject inputs))
             {
-                return;
+                return false;
             }
 
             if (!da.TryGetList(
                     1,
                     out List<string> texts))
             {
-                return;
+                return false;
             }
 
             if (texts.Count != 1 && inputs.Elements.Count != texts.Count)
             {
                 this.AddError(
                     "The count of Texts must be 1 or the same as the count of ElementGuids.");
-                return;
+                return false;
             }
 
-            if (inputs.Elements.Count == 0)
-            {
-                return;
-            }
-
-            var obj = new TypedElementsWithDetailsObj<SetTextDetails>
-            {
-                ElementsWithDetails =
-                    new List<TypedElementWithDetailsObj<SetTextDetails>>()
-            };
+            items = new List<TypedElementWithDetailsObj<SetTextDetails>>();
 
             for (int i = 0; i < inputs.Elements.Count; i++)
             {
@@ -226,30 +231,35 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                             }
                         }
                     };
-                obj.ElementsWithDetails.Add(elementWithDetails);
+                items.Add(elementWithDetails);
             }
 
-            if (!TryGetConvertedCadValues(
-                    CommandName,
-                    obj,
-                    ToAddOn,
-                    ExecutionResultsResponse.Deserialize,
-                    out ExecutionResultsResponse response))
-            {
-                return;
-            }
+            return true;
+        }
 
-            for (int i = 0; i < response.ExecutionResults.Count; i++)
+        protected override object CreateBatchParameters(
+            List<TypedElementWithDetailsObj<SetTextDetails>> items)
+        {
+            return new TypedElementsWithDetailsObj<SetTextDetails>
             {
-                ExecutionResult eResult = response.ExecutionResults[i];
-                if (eResult.Success)
+                ElementsWithDetails = items
+            };
+        }
+
+        protected override void ReportBatchErrors(
+            List<TypedElementWithDetailsObj<SetTextDetails>> sentItems,
+            List<string> messages)
+        {
+            for (int i = 0; i < messages.Count; i++)
+            {
+                if (string.IsNullOrEmpty(messages[i]))
                 {
                     continue;
                 }
 
                 this.AddError(
-                    eResult.Message() + " [ElementId " +
-                    inputs.Elements[i].ToString() + "]");
+                    messages[i] + " [ElementId " +
+                    sentItems[i].ElementId?.Guid + "]");
             }
         }
 

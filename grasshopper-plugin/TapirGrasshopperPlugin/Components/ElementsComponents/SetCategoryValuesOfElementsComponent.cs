@@ -8,8 +8,10 @@ using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
+    // Sends one SetCategoryValuesOfElements request for every branch of the
+    // inputs, so a tree input makes one undo step in Archicad (#203).
     public class SetCategoryValuesOfElementsComponent
-        : ArchicadExecutorComponent
+        : BatchedExecutorComponent<JObject>
     {
         public override string CommandName => "SetCategoryValuesOfElements";
 
@@ -73,9 +75,21 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "(type, categoryId, categoryValueId, name); null for the other items and without DryRun.");
         }
 
-        protected override void Solve(
-            IGH_DataAccess da)
+        protected override int DryRunInputIndex => 3;
+
+        protected override int OldValuesOutputIndex => 1;
+
+        protected override int NewValuesOutputIndex => 2;
+
+        // Items are sent in order, so of an element and category given in
+        // several branches the last branch wins, like with the requests per
+        // branch.
+        protected override bool TryGetBatchItems(
+            IGH_DataAccess da,
+            out List<JObject> items)
         {
+            items = null;
+
             if (!da.TryGetList(
                     0,
                     out List<GH_ObjectWrapper> elementWrappers) ||
@@ -86,7 +100,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     2,
                     out List<string> valueGuids))
             {
-                return;
+                return false;
             }
 
             var elementIds = ElementInputHelp.ElementGuids(
@@ -105,10 +119,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     elementIds.Count,
                     "CategoryValueGuids"))
             {
-                return;
+                return false;
             }
 
-            var items = new JArray();
+            items = new List<JObject>();
             for (var i = 0; i < elementIds.Count; i++)
             {
                 items.Add(
@@ -127,45 +141,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     });
             }
 
-            var parameters = new JObject { ["elementCategoryValues"] = items };
+            return true;
+        }
 
-            // Only sent when it differs from the command's default.
-            var dryRun = da.GetOptional(
-                3,
-                false);
-            if (dryRun)
-            {
-                parameters["dryRun"] = true;
-            }
-
-            if (!TryGetCadResponse(
-                    CommandName,
-                    parameters,
-                    ToAddOn,
-                    out JObject response))
-            {
-                return;
-            }
-
-            var messages = ExecutionResultsResponse.ErrorMessages(response);
-            if (dryRun)
-            {
-                AddDryRunWarnings(messages);
-            }
-
-            da.SetDataList(
-                0,
-                messages);
-            da.SetDataList(
-                1,
-                ExecutionResultsResponse.WouldChangeValues(
-                    response,
-                    "oldValue"));
-            da.SetDataList(
-                2,
-                ExecutionResultsResponse.WouldChangeValues(
-                    response,
-                    "newValue"));
+        protected override object CreateBatchParameters(
+            List<JObject> items)
+        {
+            return new JObject { ["elementCategoryValues"] = new JArray(items) };
         }
 
         protected override System.Drawing.Bitmap Icon =>
