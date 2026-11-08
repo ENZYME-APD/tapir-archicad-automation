@@ -1,0 +1,18 @@
+{
+    "slug": "place-symbols-in-rooms",
+    "name": "Place Symbols in Rooms",
+    "summary": "Places an object or lamp in the chosen zones, along the boundary (sockets) or in a grid (lights), with a preview before anything is placed.",
+    "category": "modeling-geometry",
+    "tags": ["zones", "objects", "lamps", "electrical", "placement", "grid"],
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
+    "license": "MIT",
+    "entry": "PlaceSymbolsInRooms.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.1",
+            "changelog": "First version in the marketplace, the same as the built-in script of the same name."
+        }
+    ]
+}

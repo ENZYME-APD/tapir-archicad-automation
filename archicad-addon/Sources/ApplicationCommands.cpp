@@ -7,8 +7,11 @@
 #include "Folder.hpp"
 #include "Base64Converter.hpp"
 
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <optional>
+#include <utility>
 
 static ULong GenerateProjectLocationHashValue (const IO::Location& projectLocation)
 {
@@ -78,6 +81,13 @@ static IO::Location GetProjectPreviewsFolder (const IO::Location& projectLocatio
 #if defined (ServerMainVers_2800) && __has_include ("ACAPI/CuttingPlane.hpp")
 #include "ACAPI/CuttingPlane.hpp"
 #define TAPIR_HAS_CUTTING_PLANE
+#endif
+
+#if defined (ServerMainVers_2900) && __has_include ("ACAPI/UI/NotificationBubble/NotificationBubbleManager.hpp")
+#include "ACAPI/UI/NotificationBubble/NotificationBubbleManager.hpp"
+#include "ACAPI/UI/NotificationBubble/NotificationBubble.hpp"
+#include "DGUtility.hpp"
+#define TAPIR_HAS_NOTIFICATION_BUBBLE
 #endif
 
 GetAddOnVersionCommand::GetAddOnVersionCommand () :
@@ -209,6 +219,176 @@ GS::ObjectState GetArchicadReleaseInfoCommand::Execute (const GS::ObjectState& /
     if (ACAPI_ProjectOperation_GetMiscAppInfo (&miscAppInfo) == NoError) {
         response.Add ("caption", GS::UniString (miscAppInfo.caption));
     }
+
+    return response;
+}
+
+GetArchicadLicenseInfoCommand::GetArchicadLicenseInfoCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetArchicadLicenseInfoCommand::GetName () const
+{
+    return "GetArchicadLicenseInfo";
+}
+
+GS::Optional<GS::UniString> GetArchicadLicenseInfoCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "licenseType": {
+                "type": "string",
+                "enum": [
+                    "Full",
+                    "Education",
+                    "Trial",
+                    "Demo",
+                    "Start",
+                    "BIMcloudTeamClient"
+                ],
+                "description": "The kind of license Archicad runs on, read from protectionMode: Trial, Demo, Education (an education license with or without a key), BIMcloudTeamClient, Start (the Start edition), otherwise Full."
+            },
+            "protectionMode": {
+                "type": "integer",
+                "description": "The raw protection mode bit mask reported by Archicad (the APIPROT_*_MASK bits of the Archicad API)."
+            },
+            "licenseFlags": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "enum": [
+                        "Site",
+                        "NotForResale",
+                        "School",
+                        "PayPerUse",
+                        "Network",
+                        "Teamwork",
+                        "Education",
+                        "Start",
+                        "Solo",
+                        "LiveSubscription",
+                        "OEM",
+                        "SSA",
+                        "EducationWithoutKey",
+                        "Demo",
+                        "Trial",
+                        "BIMcloudTeamClient"
+                    ]
+                },
+                "description": "The bits set in protectionMode, by name: Site (more licenses), NotForResale, School, PayPerUse, Network (network licensing), Teamwork (Teamwork functionality is on), Education (education key), Start (Start edition), Solo (SOLO edition), LiveSubscription, OEM (Archicad 27 or later), SSA (SSA license, Archicad 25 only), and without a hardware or software key EducationWithoutKey, Demo, Trial and BIMcloudTeamClient."
+            },
+            "ssaLevel": {
+                "type": "string",
+                "enum": [
+                    "NoSSA",
+                    "SSA",
+                    "Forward"
+                ],
+                "description": "The highest Software Service Agreement (SSA) level the license has: NoSSA, SSA or Forward. A script needing a level checks that this is at least that level, in this order. Missing in Archicad 25, which cannot report it."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "licenseType",
+            "protectionMode",
+            "licenseFlags"
+        ]
+    })";
+}
+
+static UInt32 GetArchicadProtectionMode ()
+{
+#if defined (ServerMainVers_2700)
+    return ACAPI_Licensing_GetProtectionMode ();
+#elif defined (ServerMainVers_2600)
+    return ACAPI_Protection_GetProtectionMode ();
+#else
+    API_ProtectionInfo protectionInfo;
+    GS::UniString configurationNumber;
+    if (ACAPI_Environment (APIEnv_ProtectionDataID, &protectionInfo, &configurationNumber) != NoError) {
+        return 0;
+    }
+    return protectionInfo.protMode;
+#endif
+}
+
+#if defined (ServerMainVers_2600)
+static bool IsArchicadSSALevelAtLeast (API_SSALevel level)
+{
+#if defined (ServerMainVers_2700)
+    return ACAPI_Licensing_IsSSALevelAtLeast (level);
+#else
+    return ACAPI_Protection_IsSSALevelAtLeast (level);
+#endif
+}
+#endif
+
+GS::ObjectState GetArchicadLicenseInfoCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    const UInt32 protectionMode = GetArchicadProtectionMode ();
+
+    GS::UniString licenseType = "Full";
+    if ((protectionMode & APIPROT_TRIAL_MASK) != 0) {
+        licenseType = "Trial";
+    } else if ((protectionMode & APIPROT_DEMO_MASK) != 0) {
+        licenseType = "Demo";
+    } else if ((protectionMode & (APIPROT_EDU_MASK | APIPROT_PROTEDU_MASK)) != 0) {
+        licenseType = "Education";
+    } else if ((protectionMode & APIPROT_BTC_MASK) != 0) {
+        licenseType = "BIMcloudTeamClient";
+    } else if ((protectionMode & APIPROT_START_MASK) != 0) {
+        licenseType = "Start";
+    }
+
+    const struct {
+        UInt32      mask;
+        const char* name;
+    } flagNames[] = {
+        { APIPROT_SITE_MASK, "Site" },
+        { APIPROT_NFR_MASK, "NotForResale" },
+        { APIPROT_SCHOOL_MASK, "School" },
+        { APIPROT_PPU_MASK, "PayPerUse" },
+        { APIPROT_NET_MASK, "Network" },
+        { APIPROT_TW_MASK, "Teamwork" },
+        { APIPROT_PROTEDU_MASK, "Education" },
+        { APIPROT_START_MASK, "Start" },
+        { APIPROT_SOLO_MASK, "Solo" },
+        { APIPROT_LIVE_MASK, "LiveSubscription" },
+#ifdef APIPROT_OEM_MASK
+        { APIPROT_OEM_MASK, "OEM" },
+#endif
+#ifdef APIPROT_SSA_MASK
+        { APIPROT_SSA_MASK, "SSA" },
+#endif
+        { APIPROT_EDU_MASK, "EducationWithoutKey" },
+        { APIPROT_DEMO_MASK, "Demo" },
+        { APIPROT_TRIAL_MASK, "Trial" },
+        { APIPROT_BTC_MASK, "BIMcloudTeamClient" },
+    };
+
+    GS::Array<GS::UniString> licenseFlags;
+    for (const auto& flag : flagNames) {
+        if ((protectionMode & flag.mask) != 0) {
+            licenseFlags.Push (flag.name);
+        }
+    }
+
+    GS::ObjectState response;
+    response.Add ("licenseType", licenseType);
+    response.Add ("protectionMode", static_cast<Int64> (protectionMode));
+    response.Add ("licenseFlags", licenseFlags);
+
+#if defined (ServerMainVers_2600)
+    GS::UniString ssaLevel = "NoSSA";
+    if (IsArchicadSSALevelAtLeast (API_SSALevels::Forward)) {
+        ssaLevel = "Forward";
+    } else if (IsArchicadSSALevelAtLeast (API_SSALevels::SSA)) {
+        ssaLevel = "SSA";
+    }
+    response.Add ("ssaLevel", ssaLevel);
+#endif
 
     return response;
 }
@@ -1277,6 +1457,354 @@ GS::ObjectState ShowAlertCommand::Execute (const GS::ObjectState& parameters, GS
     return GS::ObjectState ("clickedButton", static_cast<Int32> (clicked));
 }
 
+ShowNotificationBubbleCommand::ShowNotificationBubbleCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ShowNotificationBubbleCommand::GetName () const
+{
+    return "ShowNotificationBubble";
+}
+
+GS::Optional<GS::UniString> ShowNotificationBubbleCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "message": {
+                "type": "string",
+                "description": "The text of the notification bubble.",
+                "minLength": 1
+            },
+            "icon": {
+                "type": "string",
+                "enum": ["none", "information", "warning", "error"],
+                "description": "The icon shown in the bubble. Default: information."
+            },
+            "timeoutMilliseconds": {
+                "type": "integer",
+                "description": "How long the bubble stays, in milliseconds. Default: Archicad's default, 1000 (1 second).",
+                "minimum": 1,
+                "maximum": 4294967295
+            },
+            "coordinate": {
+                "$ref": "#/Coordinate3D",
+                "description": "The model coordinate in the current database (meters) where the bubble is shown, converted like ModelToScreen does: in a 3D window it is projected with the current camera, in other windows z is disregarded. Do not give it together with screenPoint. When neither is given, the bubble is shown at the center of the current view in 2D windows and at the project's local origin otherwise."
+            },
+            "screenPoint": {
+                "type": "object",
+                "description": "The pixel position local to the current Archicad view window (not global desktop coordinates) where the bubble is shown, e.g. a point returned by ModelToScreen. Do not give it together with coordinate.",
+                "properties": {
+                    "h": {
+                        "type": "integer",
+                        "description": "Horizontal pixel position from the left edge of the view window.",
+                        "minimum": -32768,
+                        "maximum": 32767
+                    },
+                    "v": {
+                        "type": "integer",
+                        "description": "Vertical pixel position from the top edge of the view window.",
+                        "minimum": -32768,
+                        "maximum": 32767
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "h",
+                    "v"
+                ]
+            },
+            "offset": {
+                "type": "object",
+                "description": "Moves the bubble from its position by this many pixels.",
+                "properties": {
+                    "h": {
+                        "type": "integer",
+                        "description": "Horizontal offset in pixels, positive to the right.",
+                        "minimum": -32768,
+                        "maximum": 32767
+                    },
+                    "v": {
+                        "type": "integer",
+                        "description": "Vertical offset in pixels, positive downwards.",
+                        "minimum": -32768,
+                        "maximum": 32767
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "h",
+                    "v"
+                ]
+            },
+            "largeIcon": {
+                "type": "string",
+                "enum": ["information", "warning", "error"],
+                "description": "The icon shown instead of icon when the \"Use large alert cues\" option is on in Work Environment. Not set by default."
+            },
+            "redrawCountLimit": {
+                "type": "integer",
+                "description": "Shows the bubble at most this many times. After that it does not appear again, for any later ShowNotificationBubble call, until the user runs the 'Enable all informational messages' command in Archicad. Not set by default.",
+                "minimum": 1,
+                "maximum": 4294967295
+            },
+            "disabled": {
+                "type": "boolean",
+                "description": "True turns the bubble off instead of showing it: it does not appear again, for any later ShowNotificationBubble call, until the user runs the 'Enable all informational messages' command in Archicad. False (the default) changes nothing."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "message"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ShowNotificationBubbleCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "description": "The settings of the bubble after the call, read back from Archicad.",
+        "properties": {
+            "text": {
+                "type": "string",
+                "description": "The text of the bubble. Missing when it has none."
+            },
+            "icon": {
+                "type": "string",
+                "enum": ["none", "information", "warning", "error", "other"],
+                "description": "The icon of the bubble."
+            },
+            "largeIcon": {
+                "type": "string",
+                "enum": ["none", "information", "warning", "error", "other"],
+                "description": "The icon shown when the \"Use large alert cues\" option is on in Work Environment."
+            },
+            "offset": {
+                "type": "object",
+                "description": "The offset of the bubble from its position, in pixels.",
+                "properties": {
+                    "h": {
+                        "type": "integer"
+                    },
+                    "v": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "h",
+                    "v"
+                ]
+            },
+            "timeoutMilliseconds": {
+                "type": "integer",
+                "description": "How long the bubble stays, in milliseconds."
+            },
+            "redrawCountLimit": {
+                "type": "integer",
+                "description": "How many times the bubble is shown at most. Missing when it has no limit."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "icon",
+            "largeIcon",
+            "offset",
+            "timeoutMilliseconds"
+        ]
+    })";
+}
+
+#ifdef TAPIR_HAS_NOTIFICATION_BUBBLE
+// One bubble of Tapir's own; showing it again replaces its text and settings.
+static constexpr const char* TapirNotificationBubbleGuid = "8D3B6F1E-5C2A-4E7B-9A41-2F6C0D8E7B53";
+
+static GSErrCode GetIconIdFromString (const GS::UniString& iconStr, std::optional<short>& iconId)
+{
+    if (iconStr == "information") {
+        iconId = DG::Icon::Information;
+    } else if (iconStr == "warning") {
+        iconId = DG::Icon::Warning;
+    } else if (iconStr == "error") {
+        iconId = DG::Icon::Error;
+    } else if (iconStr == "none") {
+        iconId.reset ();
+    } else {
+        return APIERR_BADPARS;
+    }
+    return NoError;
+}
+
+static GS::UniString GetIconString (const std::optional<DG::Icon>& icon)
+{
+    if (!icon.has_value () || icon->IsEmpty ()) {
+        return "none";
+    }
+    // ShowNotificationBubble only sets these system icons.
+    switch (icon->GetResourceId ()) {
+        case DG::Icon::Information: return "information";
+        case DG::Icon::Warning:     return "warning";
+        case DG::Icon::Error:       return "error";
+        default:                    return "other";
+    }
+}
+
+static API_Point GetPointFromObjectState (const GS::ObjectState& os)
+{
+    Int32 h = 0;
+    Int32 v = 0;
+    os.Get ("h", h);
+    os.Get ("v", v);
+    API_Point point = {};
+    point.h = static_cast<short> (h);
+    point.v = static_cast<short> (v);
+    return point;
+}
+
+static GSErrCode GetModelCoordinateScreenPoint (const API_Coord3D& coord3D, API_Point& point)
+{
+    API_Coord coord = {};
+    GSErrCode err = ACAPI_View_ModelToScreen (coord3D, coord);
+    if (err != NoError) {
+        return err;
+    }
+    return ACAPI_View_CoordToPoint (&coord, &point);
+}
+#endif
+
+GS::ObjectState ShowNotificationBubbleCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef TAPIR_HAS_NOTIFICATION_BUBBLE
+    GS::UniString message;
+    parameters.Get ("message", message);
+    if (message.IsEmpty ()) {
+        return CreateErrorResponse (APIERR_BADPARS, "message must not be empty.");
+    }
+
+    GS::UniString iconStr = "information";
+    parameters.Get ("icon", iconStr);
+    std::optional<short> iconId;
+    if (GetIconIdFromString (iconStr, iconId) != NoError) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Unknown icon: ") + iconStr + ".");
+    }
+
+    std::optional<short> largeIconId;
+    GS::UniString largeIconStr;
+    if (parameters.Get ("largeIcon", largeIconStr)) {
+        if (largeIconStr == "none" || GetIconIdFromString (largeIconStr, largeIconId) != NoError) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Unknown largeIcon: ") + largeIconStr + ".");
+        }
+    }
+
+    GS::Int64 redrawCountLimit = 0;
+    const bool hasRedrawCountLimit = parameters.Get ("redrawCountLimit", redrawCountLimit);
+    if (hasRedrawCountLimit && (redrawCountLimit < 1 || redrawCountLimit > 4294967295LL)) {
+        return CreateErrorResponse (APIERR_BADPARS, "redrawCountLimit must be between 1 and 4294967295.");
+    }
+
+    bool disabled = false;
+    parameters.Get ("disabled", disabled);
+
+    const GS::ObjectState* coordinateOS = parameters.Get ("coordinate");
+    const GS::ObjectState* screenPointOS = parameters.Get ("screenPoint");
+    if (coordinateOS != nullptr && screenPointOS != nullptr) {
+        return CreateErrorResponse (APIERR_BADPARS, "Give either coordinate or screenPoint, not both.");
+    }
+
+    API_Point point = {};
+    if (screenPointOS != nullptr) {
+        point = GetPointFromObjectState (*screenPointOS);
+    } else if (coordinateOS != nullptr) {
+        const GSErrCode err = GetModelCoordinateScreenPoint (Get3DCoordinateFromObjectState (*coordinateOS), point);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to convert the coordinate to a screen point of the current view.");
+        }
+    } else {
+        // The center of the visible area of a 2D window; ACAPI_View_GetZoom fails in
+        // other windows (e.g. 3D), where the local origin is used as in the DevKit example.
+        API_Box zoomBox = {};
+        GSErrCode err = ACAPI_View_GetZoom (&zoomBox);
+        if (err == NoError) {
+            API_Coord center = {};
+            center.x = (zoomBox.xMin + zoomBox.xMax) / 2.0;
+            center.y = (zoomBox.yMin + zoomBox.yMax) / 2.0;
+            err = ACAPI_View_CoordToPoint (&center, &point);
+        } else {
+            API_Coord3D localOrigin = {};
+            err = ACAPI_Database_GetLocOrigo (&localOrigin);
+            if (err == NoError) {
+                err = GetModelCoordinateScreenPoint (localOrigin, point);
+            }
+        }
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to find a position in the current view; give coordinate or screenPoint.");
+        }
+    }
+
+    auto notificationBubble = ACAPI::UI::Notification::CreateNotificationBubbleManager ().CreateNotificationBubble (APIGuidFromString (TapirNotificationBubbleGuid));
+
+    notificationBubble.SetText (message);
+    if (iconId.has_value ()) {
+        notificationBubble.SetIcon (DG::Icon (SysResModule, *iconId));
+    }
+
+    GS::Int64 timeoutMilliseconds = 0;
+    if (parameters.Get ("timeoutMilliseconds", timeoutMilliseconds) && timeoutMilliseconds > 0) {
+        notificationBubble.SetTimeout (static_cast<UInt32> (timeoutMilliseconds));
+    }
+
+    const GS::ObjectState* offsetOS = parameters.Get ("offset");
+    if (offsetOS != nullptr) {
+        notificationBubble.SetOffset (GetPointFromObjectState (*offsetOS));
+    }
+
+    if (largeIconId.has_value ()) {
+        notificationBubble.SetLargeIcon (DG::Icon (SysResModule, *largeIconId));
+    }
+
+    if (hasRedrawCountLimit) {
+        notificationBubble.SetRedrawCountLimit (static_cast<UInt32> (redrawCountLimit));
+    }
+
+    if (disabled) {
+        notificationBubble.SetDisabled ();
+    } else {
+        notificationBubble.Show (point);
+    }
+
+    GS::ObjectState response;
+    const std::optional<GS::UniString> text = notificationBubble.GetText ();
+    if (text.has_value ()) {
+        response.Add ("text", *text);
+    }
+    response.Add ("icon", GetIconString (notificationBubble.GetIcon ()));
+    response.Add ("largeIcon", GetIconString (notificationBubble.GetLargeIcon ()));
+    const API_Point offset = notificationBubble.GetOffset ();
+    GS::ObjectState offsetResponse;
+    offsetResponse.Add ("h", static_cast<Int32> (offset.h));
+    offsetResponse.Add ("v", static_cast<Int32> (offset.v));
+    response.Add ("offset", offsetResponse);
+    response.Add ("timeoutMilliseconds", static_cast<GS::Int64> (notificationBubble.GetTimeout ()));
+    const std::optional<UInt32> effectiveRedrawCountLimit = notificationBubble.GetRedrawCountLimit ();
+    if (effectiveRedrawCountLimit.has_value ()) {
+        response.Add ("redrawCountLimit", static_cast<GS::Int64> (*effectiveRedrawCountLimit));
+    }
+    return response;
+#else
+    (void) parameters;
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "ShowNotificationBubble requires Archicad 29 or later.");
+#endif
+}
+
+void RegisterTapirNotificationBubble ()
+{
+#ifdef TAPIR_HAS_NOTIFICATION_BUBBLE
+    ACAPI::UI::Notification::CreateNotificationBubbleManager ().RegisterNotificationBubble (APIGuidFromString (TapirNotificationBubbleGuid));
+#endif
+}
+
 GetSpecialFoldersCommand::GetSpecialFoldersCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -2137,6 +2665,228 @@ GS::ObjectState Set3DCutawayStatusCommand::Execute (const GS::ObjectState& param
 }
 
 // ---------------------------------------------------------------------------
+// Snap filter of the Get...FromUser commands (#/SnapFilter)
+// ---------------------------------------------------------------------------
+
+// The #/SnapType names. Every API_NeigID here exists in Archicad 25 to 30.
+static const std::pair<const char*, API_NeigID> SnapTypeNames[] = {
+    { "Wall",          APINeig_Wall },
+    { "WallOn",        APINeig_WallOn },
+    { "Column",        APINeig_Colu },
+    { "ColumnOn",      APINeig_ColuOn },
+    { "Beam",          APINeig_Beam },
+    { "BeamOn",        APINeig_BeamOn },
+    { "Window",        APINeig_Wind },
+    { "WindowOn",      APINeig_WindOn },
+    { "Door",          APINeig_Door },
+    { "DoorOn",        APINeig_DoorOn },
+    { "Object",        APINeig_Symb },
+    { "ObjectOn",      APINeig_SymbOn },
+    { "Slab",          APINeig_Ceil },
+    { "SlabOn",        APINeig_CeilOn },
+    { "Roof",          APINeig_Roof },
+    { "RoofOn",        APINeig_RoofOn },
+    { "Mesh",          APINeig_Mesh },
+    { "MeshOn",        APINeig_MeshOn },
+    { "Shell",         APINeig_Shell },
+    { "ShellOn",       APINeig_ShellOn },
+    { "Morph",         APINeig_Morph },
+    { "MorphOn",       APINeig_MorphOn },
+    { "Skylight",      APINeig_Skylight },
+    { "SkylightOn",    APINeig_SkylightOn },
+    { "CurtainWall",   APINeig_CurtainWall },
+    { "CurtainWallOn", APINeig_CurtainWallOn },
+    { "Stair",         APINeig_Stair },
+    { "StairOn",       APINeig_StairOn },
+    { "Railing",       APINeig_Railing },
+    { "RailingOn",     APINeig_RailingOn },
+    { "Zone",          APINeig_Room },
+    { "ZoneOn",        APINeig_RoomOn },
+    { "Hatch",         APINeig_Hatch },
+    { "HatchOn",       APINeig_HatchOn },
+    { "Line",          APINeig_Line },
+    { "LineOn",        APINeig_LineOn },
+    { "PolyLine",      APINeig_PolyLine },
+    { "PolyLineOn",    APINeig_PolyLineOn },
+    { "Arc",           APINeig_Arc },
+    { "ArcOn",         APINeig_ArcOn },
+    { "Circle",        APINeig_Circ },
+    { "CircleOn",      APINeig_CircOn },
+    { "Spline",        APINeig_Spline },
+    { "SplineOn",      APINeig_SplineOn },
+    { "Hotspot",       APINeig_Hot },
+    { "Text",          APINeig_Word },
+    { "Label",         APINeig_Label },
+    { "Dimension",     APINeig_DimPt },
+    { "DimensionOn",   APINeig_DimOn }
+};
+
+static bool GetSnapTypeFromName (const GS::UniString& name, API_NeigID& neigID)
+{
+    for (const auto& snapType : SnapTypeNames) {
+        if (name == snapType.first) {
+            neigID = snapType.second;
+            return true;
+        }
+    }
+    return false;
+}
+
+static GSErrCode ReadSnapTypes (const GS::ObjectState& snapFilter, const char* key, GS::Array<API_NeigID>& neigIDs, GS::UniString& errorMessage)
+{
+    GS::Array<GS::UniString> names;
+    snapFilter.Get (key, names);
+    for (const GS::UniString& name : names) {
+        API_NeigID neigID = APINeig_None;
+        if (!GetSnapTypeFromName (name, neigID)) {
+            errorMessage = GS::UniString ("Unknown snap type in snapFilter.") + GS::UniString (key) + GS::UniString (": ") + name;
+            return APIERR_BADPARS;
+        }
+        neigIDs.Push (neigID);
+    }
+    return NoError;
+}
+
+// Reads the optional snapFilter parameter into the filter of a point or line input.
+// changeFilter stays false when the parameter is not given, so Archicad snaps as usual.
+static GSErrCode ReadSnapFilter (const GS::ObjectState& parameters, bool& changeFilter, API_NeigFilter& filter, GS::UniString& errorMessage)
+{
+    changeFilter = false;
+    const GS::ObjectState* snapFilter = parameters.Get ("snapFilter");
+    if (snapFilter == nullptr) {
+        return NoError;
+    }
+
+    GS::Array<API_NeigID> include;
+    GS::Array<API_NeigID> exclude;
+    GSErrCode err = ReadSnapTypes (*snapFilter, "include", include, errorMessage);
+    if (err == NoError) {
+        err = ReadSnapTypes (*snapFilter, "exclude", exclude, errorMessage);
+    }
+    if (err != NoError) {
+        return err;
+    }
+
+    GS::UniString base = include.IsEmpty () ? "All" : "None";
+    snapFilter->Get ("base", base);
+    API_InitNeigFilterID initNeigFilterID = APIInitNeigFilter_Full;
+    if (base == "All") {
+        initNeigFilterID = APIInitNeigFilter_Full;
+    } else if (base == "None") {
+        initNeigFilterID = APIInitNeigFilter_Empty;
+    } else if (base == "Edges") {
+        initNeigFilterID = APIInitNeigFilter_On;
+    } else if (base == "Nodes") {
+        initNeigFilterID = APIInitNeigFilter_Node;
+    } else {
+        errorMessage = GS::UniString ("Unknown snapFilter.base: ") + base;
+        return APIERR_BADPARS;
+    }
+
+    err = ACAPI_UserInput_InitNeigFilter (&filter, initNeigFilterID);
+    for (UIndex i = 0; i < include.GetSize () && err == NoError; ++i) {
+        err = ACAPI_UserInput_SetNeigFilter (&filter, include[i]);
+    }
+    for (UIndex i = 0; i < exclude.GetSize () && err == NoError; ++i) {
+        err = ACAPI_UserInput_ClearNeigFilter (&filter, exclude[i]);
+    }
+    if (err != NoError) {
+        errorMessage = "Failed to set up the snap filter.";
+        return err;
+    }
+
+    changeFilter = true;
+    return NoError;
+}
+
+// ---------------------------------------------------------------------------
+// Drawing constraint of the Get...FromUser commands (#/InputConstraint)
+// ---------------------------------------------------------------------------
+
+// Reads the optional constraint parameter. hasConstraint stays false when it is not given,
+// so the input is not constrained.
+static GSErrCode ReadInputConstraint (const GS::ObjectState& parameters, bool& hasConstraint, API_ConstraintPars& constraintPars, GS::UniString& errorMessage)
+{
+    hasConstraint = false;
+    const GS::ObjectState* constraint = parameters.Get ("constraint");
+    if (constraint == nullptr) {
+        return NoError;
+    }
+
+    GS::UniString type;
+    double value = 0.0;
+    if (!constraint->Get ("type", type) || !constraint->Get ("value", value)) {
+        errorMessage = "The constraint needs a type and a value.";
+        return APIERR_BADPARS;
+    }
+
+    constraintPars = {};
+    if (type == "X") {
+        constraintPars.constType = APIConst_X;
+    } else if (type == "Y") {
+        constraintPars.constType = APIConst_Y;
+    } else if (type == "Z") {
+        constraintPars.constType = APIConst_Z;
+    } else if (type == "Angle") {
+        constraintPars.constType = APIConst_A;
+    } else if (type == "Distance") {
+        constraintPars.constType = APIConst_R;
+    } else {
+        errorMessage = GS::UniString ("Unknown constraint.type: ") + type;
+        return APIERR_BADPARS;
+    }
+    constraintPars.constValue = value;
+
+    bool fromLastPoint = false;
+    constraint->Get ("fromLastPoint", fromLastPoint);
+    constraintPars.useLocOrigo = fromLastPoint;
+
+    hasConstraint = true;
+    return NoError;
+}
+
+// Sets Archicad's drawing constraint for the input that follows, and dissolves it when it goes
+// out of scope, so the constraint never outlives the command (also on Escape and on errors).
+class InputConstraintScope {
+public:
+    InputConstraintScope (bool hasConstraintIn, const API_ConstraintPars& constraintParsIn) :
+        hasConstraint (hasConstraintIn),
+        constraintPars (constraintParsIn),
+        isSet (false)
+    {
+    }
+
+    InputConstraintScope (const InputConstraintScope&) = delete;
+    InputConstraintScope& operator= (const InputConstraintScope&) = delete;
+
+    ~InputConstraintScope ()
+    {
+        if (isSet) {
+            ACAPI_UserInput_ResetConstraint ();
+        }
+    }
+
+    // Called just before each ACAPI_UserInput_Get... call it should constrain.
+    GSErrCode Set ()
+    {
+        if (!hasConstraint) {
+            return NoError;
+        }
+        API_ConstraintPars pars = constraintPars;
+        const GSErrCode err = ACAPI_UserInput_SetConstraint (&pars);
+        if (err == NoError) {
+            isSet = true;
+        }
+        return err;
+    }
+
+private:
+    const bool hasConstraint;
+    const API_ConstraintPars constraintPars;
+    bool isSet;
+};
+
+// ---------------------------------------------------------------------------
 // GetPointFromUser
 // ---------------------------------------------------------------------------
 
@@ -2158,6 +2908,14 @@ GS::Optional<GS::UniString> GetPointFromUserCommand::GetInputParametersSchema ()
             "prompt": {
                 "type": "string",
                 "description": "Shown in the control box while Archicad waits for the click. Single-byte text: the box takes a char field. Archicad's main thread waits for the click or for Escape, and every other JSON command queues behind this one until then."
+            },
+            "snapFilter": {
+                "$ref": "#/SnapFilter",
+                "description": "Which points and lines of the elements the cursor snaps to. Default: Archicad's usual snapping."
+            },
+            "constraint": {
+                "$ref": "#/InputConstraint",
+                "description": "Constrains the click, for example to a fixed X coordinate or to a direction. Default: no constraint."
             }
         },
         "additionalProperties": false,
@@ -2194,7 +2952,27 @@ GS::ObjectState GetPointFromUserCommand::Execute (const GS::ObjectState& paramet
     CHTruncate (prompt.ToCStr ().Get (), pointInfo.prompt, sizeof (pointInfo.prompt));
     pointInfo.enableQuickSelection = true;
 
-    const GSErrCode err = ACAPI_UserInput_GetPoint (&pointInfo);
+    GS::UniString snapFilterError;
+    GSErrCode err = ReadSnapFilter (parameters, pointInfo.changeFilter, pointInfo.filter, snapFilterError);
+    if (err != NoError) {
+        return CreateErrorResponse (err, snapFilterError);
+    }
+
+    bool hasConstraint = false;
+    API_ConstraintPars constraintPars = {};
+    GS::UniString constraintError;
+    err = ReadInputConstraint (parameters, hasConstraint, constraintPars, constraintError);
+    if (err != NoError) {
+        return CreateErrorResponse (err, constraintError);
+    }
+
+    InputConstraintScope constraintScope (hasConstraint, constraintPars);
+    err = constraintScope.Set ();
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to set the constraint.");
+    }
+
+    err = ACAPI_UserInput_GetPoint (&pointInfo);
     if (err != NoError) {
         return CreateErrorResponse (err, "No point was given - the input was cancelled or could not start (a modal dialog or a non-model window).");
     }
@@ -2263,6 +3041,14 @@ GS::Optional<GS::UniString> GetLineFromUserCommand::GetInputParametersSchema () 
                 "type": "boolean",
                 "description": "If true, draws a unit-square rubber feedback around the cursor while input is active.",
                 "default": true
+            },
+            "snapFilter": {
+                "$ref": "#/SnapFilter",
+                "description": "Which points and lines of the elements the cursor snaps to, for both points. Default: Archicad's usual snapping."
+            },
+            "constraint": {
+                "$ref": "#/InputConstraint",
+                "description": "Constrains the end point, for example to a direction from the start point (type Angle with fromLastPoint). The start point is not constrained. Default: no constraint."
             }
         },
         "additionalProperties": false
@@ -2304,7 +3090,22 @@ GS::ObjectState GetLineFromUserCommand::Execute (const GS::ObjectState& paramete
     API_GetPointType pointInfo = {};
     CHTruncate (startPromptStr.ToCStr ().Get (), pointInfo.prompt, sizeof (pointInfo.prompt));
 
-    GSErrCode err = ACAPI_UserInput_GetPoint (&pointInfo);
+    GS::UniString snapFilterError;
+    GSErrCode err = ReadSnapFilter (parameters, pointInfo.changeFilter, pointInfo.filter, snapFilterError);
+    if (err != NoError) {
+        return CreateErrorResponse (err, snapFilterError);
+    }
+
+    bool hasConstraint = false;
+    API_ConstraintPars constraintPars = {};
+    GS::UniString constraintError;
+    err = ReadInputConstraint (parameters, hasConstraint, constraintPars, constraintError);
+    if (err != NoError) {
+        return CreateErrorResponse (err, constraintError);
+    }
+    InputConstraintScope constraintScope (hasConstraint, constraintPars);
+
+    err = ACAPI_UserInput_GetPoint (&pointInfo);
 
     if (err == APIERR_CANCEL) {
         return GS::ObjectState ("cancelled", true);
@@ -2317,6 +3118,15 @@ GS::ObjectState GetLineFromUserCommand::Execute (const GS::ObjectState& paramete
     API_GetLineType lineInfo = {};
     lineInfo.startCoord = pointInfo.pos;
     CHTruncate (endPromptStr.ToCStr ().Get (), lineInfo.prompt, sizeof (lineInfo.prompt));
+    lineInfo.changeFilter = pointInfo.changeFilter;
+    std::memcpy (lineInfo.filter, pointInfo.filter, sizeof (lineInfo.filter));
+
+    // The constraint applies to the end point only, so a direction measured from
+    // the last clicked point (fromLastPoint) is measured from the start point.
+    err = constraintScope.Set ();
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to set the constraint.");
+    }
 
     err = showRubberLineFeedback
         ? ACAPI_UserInput_GetLine (&lineInfo, RubberLineCallBack)
@@ -2335,6 +3145,280 @@ GS::ObjectState GetLineFromUserCommand::Execute (const GS::ObjectState& paramete
         "startPoint", Create3DCoordinateObjectState (lineInfo.startCoord),
         "endPoint", Create3DCoordinateObjectState (lineInfo.pos)
     );
+}
+
+// ---------------------------------------------------------------------------
+// GetArcFromUser
+// ---------------------------------------------------------------------------
+
+static constexpr double ArcInputTwoPi = 6.283185307179586;
+
+// The rubber callbacks are plain function pointers, so the arc input keeps its
+// center (and, once the start point is given, its radius) here. The input is modal
+// on Archicad's main thread, so only one arc input uses them at a time.
+static API_Coord3D arcInputCenter = {};
+static double arcInputRadius = 0.0;
+static bool arcInputRadiusFixed = false;
+
+static void RubberArcCallBack (const API_RubberLineInfo* info)
+{
+    // Draws the whole circle the arc lies on: while the start point is chosen its
+    // radius follows the cursor, while the end point is chosen it stays fixed.
+    double radius = arcInputRadius;
+    if (!arcInputRadiusFixed) {
+        radius = std::hypot (info->actCoord.x - arcInputCenter.x, info->actCoord.y - arcInputCenter.y);
+    }
+    if (radius < 1e-6) {
+        return;
+    }
+
+    API_RubberArcType rubberArc = {};
+    rubberArc.origC = arcInputCenter;
+    rubberArc.radii = false;
+    rubberArc.lineThick = APIRubberLine_Simple;
+    rubberArc.arcType = APIRubberArc_OrigoAngles;
+    rubberArc.arc2D.r = radius;
+    rubberArc.arc2D.angle = 0.0;
+    rubberArc.arc2D.ratio = 1.0;
+    rubberArc.arc2D.begAng = 0.0;
+    rubberArc.arc2D.endAng = ArcInputTwoPi;
+    ACAPI_UserInput_DrawRubberArc (&rubberArc);
+}
+
+GetArcFromUserCommand::GetArcFromUserCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetArcFromUserCommand::GetName () const
+{
+    return "GetArcFromUser";
+}
+
+GS::Optional<GS::UniString> GetArcFromUserCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "centerPrompt": {
+                "type": "string",
+                "description": "Prompt for clicking the center of the arc. Single-byte text: the control box takes a char field.",
+                "default": "Click the center of the arc"
+            },
+            "startPrompt": {
+                "type": "string",
+                "description": "Prompt for clicking the start point of the arc, which also sets its radius.",
+                "default": "Click the start point of the arc"
+            },
+            "endPrompt": {
+                "type": "string",
+                "description": "Prompt for clicking the end point of the arc. Archicad draws the arc while the cursor moves; the direction the cursor goes around the center decides whether the arc is clockwise.",
+                "default": "Click the end point of the arc"
+            },
+            "showRubberArcFeedback": {
+                "type": "boolean",
+                "description": "If true, also draws the whole circle of the arc while the start and end points are chosen: its radius follows the cursor until the start point is clicked. Drawn in 2D windows only; the 3D window shows Archicad's default feedback.",
+                "default": true
+            },
+            "snapFilter": {
+                "$ref": "#/SnapFilter",
+                "description": "Which points and lines of the elements the cursor snaps to for the center and the start point. Archicad's arc input has no snap filter, so the end point snaps as usual. Default: Archicad's usual snapping."
+            },
+            "constraint": {
+                "$ref": "#/InputConstraint",
+                "description": "Constrains every click: the center, the start point and the end point. With fromLastPoint the start point is measured from the center (type Distance fixes the radius, type Angle the direction of the start point) and the end point from the start point. Default: no constraint."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> GetArcFromUserCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "cancelled": {
+                "type": "boolean",
+                "description": "True if the user cancelled the input (Escape); no other field is returned then."
+            },
+            "center": {
+                "$ref": "#/Coordinate3D",
+                "description": "The center of the arc."
+            },
+            "radius": {
+                "type": "number",
+                "description": "The radius of the arc: the distance of the start point from the center in the x-y plane."
+            },
+            "startAngle": {
+                "type": "number",
+                "description": "The direction of the start point from the center, in radians from the x axis, counterclockwise, between -pi and pi."
+            },
+            "endAngle": {
+                "type": "number",
+                "description": "The direction of the end point from the center, in radians from the x axis, counterclockwise, between -pi and pi."
+            },
+            "arcAngle": {
+                "type": "number",
+                "description": "The angle the arc turns through from its start to its end, in radians: positive (up to 2*pi) for a counterclockwise arc, negative (down to -2*pi) for a clockwise one."
+            },
+            "clockwise": {
+                "type": "boolean",
+                "description": "True if the arc was drawn clockwise from its start to its end."
+            },
+            "startPoint": {
+                "$ref": "#/Coordinate3D",
+                "description": "The start point of the arc, as clicked."
+            },
+            "endPoint": {
+                "$ref": "#/Coordinate3D",
+                "description": "The end point of the arc: the point of its circle in the direction of the third click (its z is the clicked z)."
+            }
+        },
+        "required": ["cancelled"]
+    })";
+}
+
+GS::ObjectState GetArcFromUserCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    // The usual Archicad arc input: a click for the center, a line from it to the
+    // start point (the radius), then the arc to its end point.
+    GS::UniString centerPromptStr = "Click the center of the arc";
+    parameters.Get ("centerPrompt", centerPromptStr);
+
+    GS::UniString startPromptStr = "Click the start point of the arc";
+    parameters.Get ("startPrompt", startPromptStr);
+
+    GS::UniString endPromptStr = "Click the end point of the arc";
+    parameters.Get ("endPrompt", endPromptStr);
+
+    bool showRubberArcFeedback = true;
+    parameters.Get ("showRubberArcFeedback", showRubberArcFeedback);
+
+    // The rubber arc is defined by angles, which the API documents for 2D only.
+    API_WindowInfo windowInfo = {};
+    if (ACAPI_Window_GetCurrentWindow (&windowInfo) != NoError || windowInfo.typeID == APIWind_3DModelID) {
+        showRubberArcFeedback = false;
+    }
+
+    API_GetPointType pointInfo = {};
+    CHTruncate (centerPromptStr.ToCStr ().Get (), pointInfo.prompt, sizeof (pointInfo.prompt));
+
+    GS::UniString snapFilterError;
+    GSErrCode err = ReadSnapFilter (parameters, pointInfo.changeFilter, pointInfo.filter, snapFilterError);
+    if (err != NoError) {
+        return CreateErrorResponse (err, snapFilterError);
+    }
+
+    bool hasConstraint = false;
+    API_ConstraintPars constraintPars = {};
+    GS::UniString constraintError;
+    err = ReadInputConstraint (parameters, hasConstraint, constraintPars, constraintError);
+    if (err != NoError) {
+        return CreateErrorResponse (err, constraintError);
+    }
+
+    // The constraint applies to every click, so it is set before each input.
+    InputConstraintScope constraintScope (hasConstraint, constraintPars);
+    err = constraintScope.Set ();
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to set the constraint.");
+    }
+
+    err = ACAPI_UserInput_GetPoint (&pointInfo);
+    if (err == APIERR_CANCEL) {
+        return GS::ObjectState ("cancelled", true);
+    }
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve the center of the arc");
+    }
+
+    arcInputCenter = pointInfo.pos;
+    arcInputRadius = 0.0;
+    arcInputRadiusFixed = false;
+
+    API_GetLineType lineInfo = {};
+    lineInfo.startCoord = pointInfo.pos;
+    CHTruncate (startPromptStr.ToCStr ().Get (), lineInfo.prompt, sizeof (lineInfo.prompt));
+    lineInfo.changeFilter = pointInfo.changeFilter;
+    std::memcpy (lineInfo.filter, pointInfo.filter, sizeof (lineInfo.filter));
+
+    err = constraintScope.Set ();
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to set the constraint.");
+    }
+
+    err = showRubberArcFeedback
+        ? ACAPI_UserInput_GetLine (&lineInfo, RubberArcCallBack)
+        : ACAPI_UserInput_GetLine (&lineInfo);
+    if (err == APIERR_CANCEL) {
+        return GS::ObjectState ("cancelled", true);
+    }
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve the start point of the arc");
+    }
+
+    const API_Coord3D center = lineInfo.startCoord;
+    const double radius = std::hypot (lineInfo.pos.x - center.x, lineInfo.pos.y - center.y);
+    if (radius < 1e-6) {
+        return CreateErrorResponse (APIERR_BADPARS, "The start point of the arc is at its center: the radius is zero.");
+    }
+
+    arcInputCenter = center;
+    arcInputRadius = radius;
+    arcInputRadiusFixed = true;
+
+    API_GetArcType arcInfo = {};
+    arcInfo.origo = center;
+    arcInfo.startCoord = lineInfo.pos;
+    arcInfo.startCoordGiven = true;
+    CHTruncate (endPromptStr.ToCStr ().Get (), arcInfo.prompt, sizeof (arcInfo.prompt));
+
+    // API_GetArcType has no snap filter, so only the constraint applies to the end point.
+    err = constraintScope.Set ();
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to set the constraint.");
+    }
+
+    err = showRubberArcFeedback
+        ? ACAPI_UserInput_GetArc (&arcInfo, RubberArcCallBack)
+        : ACAPI_UserInput_GetArc (&arcInfo);
+    if (err == APIERR_CANCEL) {
+        return GS::ObjectState ("cancelled", true);
+    }
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve the end point of the arc");
+    }
+
+    const API_Coord3D startPoint = arcInfo.startCoord;
+    const double startAngle = std::atan2 (startPoint.y - center.y, startPoint.x - center.x);
+    const double endAngle = std::atan2 (arcInfo.pos.y - center.y, arcInfo.pos.x - center.x);
+    const bool clockwise = arcInfo.negArc;
+
+    double arcAngle = endAngle - startAngle;
+    if (clockwise) {
+        while (arcAngle >= 0.0) {
+            arcAngle -= ArcInputTwoPi;
+        }
+    } else {
+        while (arcAngle <= 0.0) {
+            arcAngle += ArcInputTwoPi;
+        }
+    }
+
+    API_Coord3D endPoint = arcInfo.pos;
+    endPoint.x = center.x + radius * std::cos (endAngle);
+    endPoint.y = center.y + radius * std::sin (endAngle);
+
+    GS::ObjectState response ("cancelled", false);
+    response.Add ("center", Create3DCoordinateObjectState (center));
+    response.Add ("radius", radius);
+    response.Add ("startAngle", startAngle);
+    response.Add ("endAngle", endAngle);
+    response.Add ("arcAngle", arcAngle);
+    response.Add ("clockwise", clockwise);
+    response.Add ("startPoint", Create3DCoordinateObjectState (startPoint));
+    response.Add ("endPoint", Create3DCoordinateObjectState (endPoint));
+    return response;
 }
 
 // ---------------------------------------------------------------------------
@@ -2386,6 +3470,14 @@ GS::Optional<GS::UniString> GetPolygonFromUserCommand::GetInputParametersSchema 
                 "description": "Polygon input method. 'General' = free polygon, 'Rect' = axis-aligned rectangle, 'RotRect' = rotated rectangle, 'Polyline' = open polyline.",
                 "enum": ["General", "Rect", "RotRect", "Polyline"],
                 "default": "General"
+            },
+            "snapFilter": {
+                "$ref": "#/SnapFilter",
+                "description": "Which points and lines of the elements the cursor snaps to for the start point. Archicad's polygon input has no snap filter, so the other nodes snap as usual. Default: Archicad's usual snapping."
+            },
+            "constraint": {
+                "$ref": "#/InputConstraint",
+                "description": "Constrains the nodes after the start point, for example to a direction from the previous node (type Angle with fromLastPoint). The start point is not constrained. Default: no constraint."
             }
         },
         "additionalProperties": false
@@ -2441,7 +3533,22 @@ GS::ObjectState GetPolygonFromUserCommand::Execute (const GS::ObjectState& param
         API_GetPointType startPointInfo = {};
         CHTruncate (startPromptStr.ToCStr ().Get (), startPointInfo.prompt, sizeof (startPointInfo.prompt));
 
-        GSErrCode err = ACAPI_UserInput_GetPoint (&startPointInfo);
+        GS::UniString snapFilterError;
+        GSErrCode err = ReadSnapFilter (parameters, startPointInfo.changeFilter, startPointInfo.filter, snapFilterError);
+        if (err != NoError) {
+            return CreateErrorResponse (err, snapFilterError);
+        }
+
+        bool hasConstraint = false;
+        API_ConstraintPars constraintPars = {};
+        GS::UniString constraintError;
+        err = ReadInputConstraint (parameters, hasConstraint, constraintPars, constraintError);
+        if (err != NoError) {
+            return CreateErrorResponse (err, constraintError);
+        }
+        InputConstraintScope constraintScope (hasConstraint, constraintPars);
+
+        err = ACAPI_UserInput_GetPoint (&startPointInfo);
         if (err == APIERR_CANCEL) {
             return GS::ObjectState ("cancelled", true);
         }
@@ -2453,6 +3560,12 @@ GS::ObjectState GetPolygonFromUserCommand::Execute (const GS::ObjectState& param
         polyInfo.startCoord = startPointInfo.pos;
         polyInfo.method = polyMethod;
         CHTruncate (promptStr.ToCStr ().Get (), polyInfo.prompt, sizeof (polyInfo.prompt));
+
+        // The constraint applies to the nodes after the start point.
+        err = constraintScope.Set ();
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to set the constraint.");
+        }
 
         err = ACAPI_UserInput_GetPoly (&polyInfo);
 
@@ -2521,6 +3634,107 @@ GS::ObjectState GetPolygonFromUserCommand::Execute (const GS::ObjectState& param
     } catch (...) {
         return CreateErrorResponse (APIERR_GENERAL, "Unexpected exception while processing polygon input.");
     }
+}
+
+// ---------------------------------------------------------------------------
+// GetMagicWandSettings
+// ---------------------------------------------------------------------------
+
+GetMagicWandSettingsCommand::GetMagicWandSettingsCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetMagicWandSettingsCommand::GetName () const
+{
+    return "GetMagicWandSettings";
+}
+
+GS::Optional<GS::UniString> GetMagicWandSettingsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "curveApproximation": {
+                "type": "string",
+                "enum": [
+                    "SegmentsAlongArcs",
+                    "SegmentsAlongCircles",
+                    "DeviationFromCurves",
+                    "SegmentLength",
+                    "Unknown"
+                ],
+                "description": "How the Magic Wand approximates curves with straight segments: a fixed number of segments along arcs or along full circles (segmentCount), segments that deviate from the curve by at most maxDeviation, or segments of segmentLength. Unknown for a mode this version of Tapir does not know."
+            },
+            "segmentCount": {
+                "type": "integer",
+                "description": "The number of segments along an arc or circle, used by SegmentsAlongArcs and SegmentsAlongCircles."
+            },
+            "maxDeviation": {
+                "type": "number",
+                "description": "The largest distance of the segments from the curve, in meters, used by DeviationFromCurves."
+            },
+            "segmentLength": {
+                "type": "number",
+                "description": "The length of the segments, in meters, used by SegmentLength."
+            },
+            "traceMethod": {
+                "type": "string",
+                "enum": [
+                    "Linear",
+                    "BestMatch",
+                    "Unknown"
+                ],
+                "description": "How curves are traced: Linear traces them with straight segments as set above, BestMatch with the curves that match them best. Unknown for a method this version of Tapir does not know."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "curveApproximation",
+            "segmentCount",
+            "maxDeviation",
+            "segmentLength",
+            "traceMethod"
+        ]
+    })";
+}
+
+static GS::UniString ConvertMagicWandDivArcModeToString (short divArcMode)
+{
+    switch (divArcMode) {
+        case API_ArcDiv_DivArc:     return "SegmentsAlongArcs";
+        case API_ArcDiv_DivCircle:  return "SegmentsAlongCircles";
+        case API_ArcDiv_DiffArc:    return "DeviationFromCurves";
+        case API_ArcDiv_PartLength: return "SegmentLength";
+        default:                    return "Unknown";
+    }
+}
+
+static GS::UniString ConvertMagicWandTraceMethodToString (short traceMethod)
+{
+    switch (traceMethod) {
+        case API_ArcTrace_Linear:    return "Linear";
+        case API_ArcTrace_BestMatch: return "BestMatch";
+        default:                     return "Unknown";
+    }
+}
+
+GS::ObjectState GetMagicWandSettingsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    // The settings of the Magic Wand Settings dialog, read only.
+    API_MagicWandInfo magicWandInfo = {};
+    const GSErrCode err = ACAPI_UserInput_GetMagicWandSets (&magicWandInfo);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the Magic Wand settings.");
+    }
+
+    GS::ObjectState response;
+    response.Add ("curveApproximation", ConvertMagicWandDivArcModeToString (magicWandInfo.divArcMode));
+    response.Add ("segmentCount", static_cast<Int32> (magicWandInfo.arcSegNumb));
+    response.Add ("maxDeviation", magicWandInfo.arcDiff);
+    response.Add ("segmentLength", magicWandInfo.partLength);
+    response.Add ("traceMethod", ConvertMagicWandTraceMethodToString (magicWandInfo.traceMethod));
+    return response;
 }
 
 
@@ -2776,6 +3990,14 @@ GS::Optional<GS::UniString> GetElementFromUserCommand::GetInputParametersSchema 
                 "items": {
                     "$ref": "#/ElementType"
                 }
+            },
+            "snapFilter": {
+                "$ref": "#/SnapFilter",
+                "description": "Which points and lines of the elements the cursor snaps to, for example only the points and edges of the element types asked for. Default: Archicad's usual snapping."
+            },
+            "constraint": {
+                "$ref": "#/InputConstraint",
+                "description": "Constrains every click, for example to a fixed X coordinate or to a direction. Default: no constraint."
             }
         },
         "additionalProperties": false,
@@ -2832,10 +4054,35 @@ GS::ObjectState GetElementFromUserCommand::Execute (const GS::ObjectState& param
         elementTypes.Push (elementType);
     }
 
+    bool changeFilter = false;
+    API_NeigFilter filter = {};
+    GS::UniString snapFilterError;
+    const GSErrCode snapFilterErr = ReadSnapFilter (parameters, changeFilter, filter, snapFilterError);
+    if (snapFilterErr != NoError) {
+        return CreateErrorResponse (snapFilterErr, snapFilterError);
+    }
+
+    bool hasConstraint = false;
+    API_ConstraintPars constraintPars = {};
+    GS::UniString constraintError;
+    const GSErrCode constraintErr = ReadInputConstraint (parameters, hasConstraint, constraintPars, constraintError);
+    if (constraintErr != NoError) {
+        return CreateErrorResponse (constraintErr, constraintError);
+    }
+    InputConstraintScope constraintScope (hasConstraint, constraintPars);
+
     for (;;) {
         API_GetPointType pointInfo = {};
         CHTruncate (prompt.ToCStr ().Get (), pointInfo.prompt, sizeof (pointInfo.prompt));
         pointInfo.enableQuickSelection = true;
+        pointInfo.changeFilter = changeFilter;
+        std::memcpy (pointInfo.filter, filter, sizeof (pointInfo.filter));
+
+        // Set again before every click, also the ones repeated after a miss.
+        const GSErrCode constraintSetErr = constraintScope.Set ();
+        if (constraintSetErr != NoError) {
+            return CreateErrorResponse (constraintSetErr, "Failed to set the constraint.");
+        }
 
         const GSErrCode err = ACAPI_UserInput_GetPoint (&pointInfo);
         if (err == APIERR_CANCEL) {
@@ -2874,6 +4121,329 @@ GS::ObjectState GetElementFromUserCommand::Execute (const GS::ObjectState& param
         }
         return response;
     }
+}
+
+// ---------------------------------------------------------------------------
+// Toolbox: GetCurrentTool, SetCurrentTool, GetToolboxItems
+// ---------------------------------------------------------------------------
+
+// The JSON form of a Toolbox item, shared by GetCurrentTool, SetCurrentTool and GetToolboxItems:
+// elementType, plus variation (the four-character subtype, e.g. DOOR, SKYL or the signature of an
+// add-on's library part subtype) when it is not generic, plus classId for the tools of add-ons
+// (Archicad 26 and later). The Arrow and the Marquee have no element type and give an empty object.
+static const char* ToolDescriptionPropertiesSchema = R"(
+            "elementType": {
+                "$ref": "#/ElementType",
+                "description": "The element type of the tool. Unknown for the tools of add-ons, which classId identifies."
+            },
+            "variation": {
+                "type": "string",
+                "description": "The four-character subtype of the tool, e.g. DOOR, SKYL, CRWD, or the signature of a library part subtype registered by an add-on. Missing for the generic tool of the element type.",
+                "minLength": 1,
+                "maxLength": 4
+            },
+            "classId": {
+                "type": "string",
+                "description": "The class id (a guid) of the tool of an add-on, whose elementType is Unknown. Archicad 26 and later.",
+                "format": "uuid",
+                "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+            })";
+
+static GS::UniString ToolVariationToString (API_ElemVariationID variationID)
+{
+    const UInt32 v = static_cast<UInt32> (variationID);
+    char s[5] = {
+        (char) ((v >> 24) & 0xFF),
+        (char) ((v >> 16) & 0xFF),
+        (char) ((v >> 8) & 0xFF),
+        (char) (v & 0xFF),
+        0
+    };
+    return GS::UniString (s);
+}
+
+// The reverse of ToolVariationToString: 'DOOR' is "DOOR"; a shorter string fills the high bytes.
+static bool ToolVariationFromString (const GS::UniString& str, API_ElemVariationID& variationID)
+{
+    if (str.IsEmpty () || str.GetLength () > 4) {
+        return false;
+    }
+    UInt32 v = 0;
+    for (UIndex i = 0; i < 4; ++i) {
+        UInt32 c = 0;
+        if (i < str.GetLength ()) {
+            const GS::UniChar::Layout ch = static_cast<GS::UniChar::Layout> (str[i]);
+            if (ch < 0x20 || ch > 0x7E) {
+                return false;
+            }
+            c = static_cast<UInt32> (ch);
+        }
+        v = (v << 8) | c;
+    }
+    variationID = static_cast<API_ElemVariationID> (v);
+    return true;
+}
+
+static GS::ObjectState ToolBoxItemToObjectState (const API_ToolBoxItem& toolBoxItem)
+{
+#ifdef ServerMainVers_2600
+    const API_ElemTypeID typeID = toolBoxItem.type.typeID;
+    const API_ElemVariationID variationID = toolBoxItem.type.variationID;
+#else
+    const API_ElemTypeID typeID = toolBoxItem.typeID;
+    const API_ElemVariationID variationID = toolBoxItem.variationID;
+#endif
+
+    GS::ObjectState os;
+    // The Arrow and the Marquee have no element type (API_ZombieElemID).
+    if (typeID == API_ZombieElemID) {
+        return os;
+    }
+    os.Add ("elementType", GetElementTypeNonLocalizedName (typeID));
+    if (variationID != APIVarId_Generic) {
+        os.Add ("variation", ToolVariationToString (variationID));
+    }
+#ifdef ServerMainVers_2600
+    if (typeID == API_ExternalElemID && toolBoxItem.type.classID != APINULLGuid) {
+        os.Add ("classId", APIGuidToString (toolBoxItem.type.classID));
+    }
+#endif
+    return os;
+}
+
+// Reads a tool description into toolBoxItem. An empty description is the Arrow.
+static GS::Optional<GS::UniString> ToolBoxItemFromObjectState (const GS::ObjectState& os, API_ToolBoxItem& toolBoxItem)
+{
+    API_ElemTypeID typeID = API_ZombieElemID;
+    API_ElemVariationID variationID = APIVarId_Generic;
+
+    GS::UniString variationStr;
+    if (os.Get ("variation", variationStr) && !ToolVariationFromString (variationStr, variationID)) {
+        return GS::UniString::Printf ("Invalid variation '%T': it must be 1 to 4 ASCII characters.", variationStr.ToPrintf ());
+    }
+
+    GS::UniString classIdStr;
+    if (os.Get ("classId", classIdStr)) {
+#ifdef ServerMainVers_2600
+        const API_Guid classID = APIGuidFromString (classIdStr.ToCStr ());
+        if (classID == APINULLGuid) {
+            return GS::UniString::Printf ("Invalid classId '%T'.", classIdStr.ToPrintf ());
+        }
+        toolBoxItem = {};
+        toolBoxItem.type = API_ElemType (classID);
+        toolBoxItem.type.variationID = variationID;
+        return {};
+#else
+        return GS::UniString ("classId needs Archicad 26 or later.");
+#endif
+    }
+
+    GS::UniString elementTypeStr;
+    if (os.Get ("elementType", elementTypeStr)) {
+        typeID = GetElementTypeFromNonLocalizedName (elementTypeStr);
+        // SetToolBoxMode silently switches to the Arrow for an unknown type, so refuse it here.
+        if (typeID == API_ZombieElemID) {
+            return GS::UniString::Printf ("Invalid elementType '%T'. The tools of add-ons are given by classId.", elementTypeStr.ToPrintf ());
+        }
+    } else if (variationID != APIVarId_Generic) {
+        return GS::UniString ("A variation needs an elementType.");
+    }
+
+    toolBoxItem = {};
+#ifdef ServerMainVers_2600
+    toolBoxItem.type = API_ElemType (typeID, variationID);
+#else
+    toolBoxItem.typeID = typeID;
+    toolBoxItem.variationID = variationID;
+#endif
+    return {};
+}
+
+GetCurrentToolCommand::GetCurrentToolCommand () :
+    CommandBase (CommonSchema::NotUsed)
+{
+}
+
+GS::String GetCurrentToolCommand::GetName () const
+{
+    return "GetCurrentTool";
+}
+
+GS::Optional<GS::UniString> GetCurrentToolCommand::GetRawResponseSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "description": "The tool active in the Toolbox, in the form SetCurrentTool accepts. Empty when the active tool makes no element, e.g. the Arrow or the Marquee.",
+        "properties": {)") + ToolDescriptionPropertiesSchema + R"(
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::ObjectState GetCurrentToolCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+    API_ToolBoxItem toolBoxItem = {};
+#ifdef ServerMainVers_2700
+    const GSErrCode err = ACAPI_Toolbox_GetToolBoxMode (&toolBoxItem);
+#else
+    const GSErrCode err = ACAPI_Environment (APIEnv_GetToolBoxModeID, &toolBoxItem);
+#endif
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the active tool.");
+    }
+
+    return ToolBoxItemToObjectState (toolBoxItem);
+}
+
+// ---------------------------------------------------------------------------
+// SetCurrentTool
+// ---------------------------------------------------------------------------
+
+SetCurrentToolCommand::SetCurrentToolCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetCurrentToolCommand::GetName () const
+{
+    return "SetCurrentTool";
+}
+
+GS::Optional<GS::UniString> SetCurrentToolCommand::GetInputParametersSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "description": "The tool to activate, in the form GetCurrentTool and GetToolboxItems return. An empty object activates the Arrow.",
+        "properties": {)") + ToolDescriptionPropertiesSchema + R"(
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> SetCurrentToolCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+GS::ObjectState SetCurrentToolCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_ToolBoxItem toolBoxItem = {};
+    const GS::Optional<GS::UniString> error = ToolBoxItemFromObjectState (parameters, toolBoxItem);
+    if (error.HasValue ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, *error);
+    }
+
+#ifdef ServerMainVers_2700
+    const GSErrCode err = ACAPI_Toolbox_SetToolBoxMode (&toolBoxItem);
+#else
+    const GSErrCode err = ACAPI_Environment (APIEnv_SetToolBoxModeID, &toolBoxItem);
+#endif
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to activate the tool. Check that the variation belongs to the element type (GetToolboxItems lists the tools).");
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
+// ---------------------------------------------------------------------------
+// GetToolboxItems
+// ---------------------------------------------------------------------------
+
+GetToolboxItemsCommand::GetToolboxItemsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetToolboxItemsCommand::GetName () const
+{
+    return "GetToolboxItems";
+}
+
+GS::Optional<GS::UniString> GetToolboxItemsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "includeHidden": {
+                "type": "boolean",
+                "description": "Also list the tools that have no icon in the Toolbox but can be active, e.g. the Slab Accessory. Default: false."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
+GS::Optional<GS::UniString> GetToolboxItemsCommand::GetRawResponseSchema () const
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "properties": {
+            "toolboxItems": {
+                "type": "array",
+                "description": "The tools installed in the Toolbox, the tools of add-ons included, each in the form SetCurrentTool accepts.",
+                "items": {
+                    "type": "object",
+                    "properties": {)") + ToolDescriptionPropertiesSchema + R"(
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementType"
+                    ]
+                }
+            },
+            "currentTool": {
+                "type": "object",
+                "description": "The tool active in the Toolbox, as GetCurrentTool returns it. Empty for the Arrow and the Marquee.",
+                "properties": {)" + ToolDescriptionPropertiesSchema + R"(
+                },
+                "additionalProperties": false,
+                "required": []
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "toolboxItems",
+            "currentTool"
+        ]
+    })";
+}
+
+GS::ObjectState GetToolboxItemsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    bool includeHidden = false;
+    parameters.Get ("includeHidden", includeHidden);
+
+    API_ToolBoxInfo toolBoxInfo = {};
+#ifdef ServerMainVers_2700
+    const GSErrCode err = ACAPI_Toolbox_GetToolBoxInfo (&toolBoxInfo, includeHidden);
+#else
+    const GSErrCode err = ACAPI_Environment (APIEnv_GetToolBoxInfoID, &toolBoxInfo, reinterpret_cast<void*> (static_cast<GS::IntPtr> (includeHidden)));
+#endif
+    if (err != NoError) {
+        BMKillHandle ((GSHandle*) &toolBoxInfo.data);
+        return CreateErrorResponse (err, "Failed to get the Toolbox items.");
+    }
+
+    GS::ObjectState response;
+    const auto& toolboxItems = response.AddList<GS::ObjectState> ("toolboxItems");
+    if (toolBoxInfo.data != nullptr) {
+        for (Int32 i = 0; i < toolBoxInfo.nTools; ++i) {
+            const GS::ObjectState item = ToolBoxItemToObjectState ((*toolBoxInfo.data)[i]);
+            // An item without an element type would mean the Arrow, which SetCurrentTool gets from {}.
+            if (item.Contains ("elementType")) {
+                toolboxItems (item);
+            }
+        }
+    }
+    response.Add ("currentTool", ToolBoxItemToObjectState (toolBoxInfo.activeTool));
+
+    BMKillHandle ((GSHandle*) &toolBoxInfo.data);
+    return response;
 }
 
 GetDialogAutoCloseCommand::GetDialogAutoCloseCommand () :

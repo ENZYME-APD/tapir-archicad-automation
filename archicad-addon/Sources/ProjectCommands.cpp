@@ -43,7 +43,7 @@ GS::Optional<GS::UniString> GetProjectInfoCommand::GetRawResponseSchema () const
             },
             "projectLocation": {
                 "type": "string",
-                "description": "The location of the project in the filesystem or a BIMcloud project reference.",
+                "description": "The location of the project in the filesystem or a BIMcloud project reference. A BIMcloud project reference is returned without the user name and login token.",
                 "minLength": 1
             },
             "projectPath": {
@@ -65,6 +65,34 @@ GS::Optional<GS::UniString> GetProjectInfoCommand::GetRawResponseSchema () const
     })";
 }
 
+// A Teamwork location reads as teamwork://<user>:<token>@<server>/<project>. The user name and
+// the BIMcloud login token must not leave the add-on, so the user info is removed: everything up to
+// the last '@' before the first '/' after an '@'. So a user name with '@' (an e-mail address) and a
+// token with an unencoded '/' are removed as a whole; a location without '@' is returned as it is.
+static GS::UniString RemoveUserInfoFromUrl (const GS::UniString& url)
+{
+    const UIndex schemeEnd = url.FindFirst (GS::UniString ("://"));
+    if (schemeEnd == MaxUIndex) {
+        return url;
+    }
+
+    const UIndex authorityStart = schemeEnd + 3;
+    const UIndex firstAt = url.FindFirst (GS::UniChar ('@'), authorityStart);
+    if (firstAt == MaxUIndex) {
+        return url;
+    }
+
+    UIndex pathStart = url.FindFirst (GS::UniChar ('/'), firstAt);
+    if (pathStart == MaxUIndex) {
+        pathStart = url.GetLength ();
+    }
+
+    // Holds firstAt, so it has an '@'.
+    const GS::UniString userInfoAndHost (url.GetSubstring (authorityStart, pathStart - authorityStart));
+    const UIndex hostStart = authorityStart + userInfoAndHost.FindLast (GS::UniChar ('@')) + 1;
+    return GS::UniString (url.GetSubstring (0, authorityStart)) + GS::UniString (url.GetSubstring (hostStart, url.GetLength () - hostStart));
+}
+
 GS::ObjectState GetProjectInfoCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
     API_ProjectInfo projectInfo = {};
@@ -77,8 +105,11 @@ GS::ObjectState GetProjectInfoCommand::Execute (const GS::ObjectState& /*paramet
     response.Add ("isUntitled", projectInfo.untitled);
     response.Add ("isTeamwork", projectInfo.teamwork);
     if (!projectInfo.untitled) {
-        if (projectInfo.location) {
-            response.Add ("projectLocation", projectInfo.location->ToDisplayText ());
+        // A Teamwork project has its location in location_team (as in GetSpecialFolders).
+        const IO::Location* projectLocation = projectInfo.teamwork ? projectInfo.location_team : projectInfo.location;
+        if (projectLocation != nullptr) {
+            const GS::UniString locationText = projectLocation->ToDisplayText ();
+            response.Add ("projectLocation", projectInfo.teamwork ? RemoveUserInfoFromUrl (locationText) : locationText);
         }
         if (projectInfo.projectPath) {
             response.Add ("projectPath", *projectInfo.projectPath);
@@ -2114,8 +2145,13 @@ static GS::Optional<GS::UniString> GetLocationOfHotlink (const API_Guid& hotlink
     return hotlinkNode.sourceLocation->ToDisplayText ();
 }
 
+// `path` holds the nodes from the root down to the current one. A module placed in itself (or in
+// one of its own modules) makes the node tree cyclic once its cache is updated: the node then
+// shows up again among its own descendants. Such a node is listed, but its children are not
+// walked again, otherwise the recursion never ends and Archicad crashes on a stack overflow.
 static GS::ObjectState DumpHotlinkWithChildren (const API_Guid& hotlinkGuid,
-    GS::HashTable<API_Guid, GS::Array<API_Guid>>& hotlinkTree)
+    GS::HashTable<API_Guid, GS::Array<API_Guid>>& hotlinkTree,
+    GS::HashSet<API_Guid>& path)
 {
     GS::ObjectState hotlinkNodeOS;
 
@@ -2146,12 +2182,18 @@ static GS::ObjectState DumpHotlinkWithChildren (const API_Guid& hotlinkGuid,
         }
     }
 
+    if (path.Contains (hotlinkGuid)) {
+        return hotlinkNodeOS;
+    }
+
     const auto& children = hotlinkTree.Retrieve (hotlinkGuid);
     if (!children.IsEmpty ()) {
+        path.Add (hotlinkGuid);
         const auto& listAdder = hotlinkNodeOS.AddList<GS::ObjectState> ("children");
-        for (const API_Guid& childNodeGuid : hotlinkTree.Retrieve (hotlinkGuid)) {
-            listAdder (DumpHotlinkWithChildren (childNodeGuid, hotlinkTree));
+        for (const API_Guid& childNodeGuid : children) {
+            listAdder (DumpHotlinkWithChildren (childNodeGuid, hotlinkTree, path));
         }
+        path.Delete (hotlinkGuid);
     }
 
     return hotlinkNodeOS;
@@ -2167,8 +2209,9 @@ GS::ObjectState GetHotlinksCommand::Execute (const GS::ObjectState& /*parameters
         if (ACAPI_Hotlink_GetHotlinkRootNodeGuid (&type, &hotlinkRootNodeGuid) == NoError) {
             GS::HashTable<API_Guid, GS::Array<API_Guid>> hotlinkTree;
             if (ACAPI_Hotlink_GetHotlinkNodeTree (&hotlinkRootNodeGuid, &hotlinkTree) == NoError) {
+                GS::HashSet<API_Guid> path;
                 for (const API_Guid& childNodeGuid : hotlinkTree.Retrieve (hotlinkRootNodeGuid)) {
-                    listAdder (DumpHotlinkWithChildren (childNodeGuid, hotlinkTree));
+                    listAdder (DumpHotlinkWithChildren (childNodeGuid, hotlinkTree, path));
                 }
             }
         }

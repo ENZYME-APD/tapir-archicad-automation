@@ -1,4 +1,15 @@
+// GDLDefs.h MUST be included before LibraryCommands.hpp/ACAPinc.h: included afterward it fails to
+// parse ("no member named 'GS' in namespace 'GS'"), as ExtendedElementCommands.cpp notes for MeshBody.hpp.
+// The standard headers come first: GSRoot.hpp, pulled in by GDLDefs.h, redefines realloc as GS_realloc,
+// which breaks libc++'s <locale> (reached through <functional>) when it is parsed afterward (AC27 Mac).
+#include <functional>
+#include <locale>
+#include <vector>
+
+#include "GDLDefs.h"
+
 #include "LibraryCommands.hpp"
+#include "LibraryPartCreationCommands.hpp"
 #include "ElementGDLParameterCommands.hpp"
 #include "ObjectState.hpp"
 #include "MigrationHelper.hpp"
@@ -901,6 +912,20 @@ struct ScriptSection {
     GS::UniString      script;
 };
 
+// Writes an empty section of the library part under creation, streamed the way the
+// DevKit's LibPart_Test example writes its empty master script.
+static GSErrCode WriteEmptyLibPartSection (const API_LibPartSection& section)
+{
+    const char emptyText[] = "";
+    GSErrCode err = NewLibPartSection (&section);
+    if (err != NoError) {
+        return err;
+    }
+    err = WriteLibPartSection (0, emptyText);
+    const GSErrCode endErr = EndLibPartSection ();
+    return err != NoError ? err : endErr;
+}
+
 // Creates one library part in the embedded library; on success fills result with its
 // identifiers, otherwise returns the error.
 static GS::Optional<GS::ObjectState> CreateLibraryPart (const GS::ObjectState& libraryPartData,
@@ -955,10 +980,13 @@ static GS::Optional<GS::ObjectState> CreateLibraryPart (const GS::ObjectState& l
     GetNumberField (libraryPartData, "a", a);
     GetNumberField (libraryPartData, "b", b);
 
+    // The master script section is always written, empty when not given, as the DevKit's
+    // LibPart_Test example and CreateLibraryPartFromElements do; the others only when given.
     GS::Array<ScriptSection> scripts;
     for (const ScriptSectionField& scriptSectionField : scriptSectionFields) {
         GS::UniString script;
-        if (libraryPartData.Get (scriptSectionField.fieldName, script) && !script.IsEmpty ()) {
+        const bool hasScript = libraryPartData.Get (scriptSectionField.fieldName, script) && !script.IsEmpty ();
+        if (hasScript || scriptSectionField.sectType == API_Sect1DScript) {
             scripts.Push (ScriptSection { scriptSectionField.sectType, script });
         }
     }
@@ -1009,8 +1037,12 @@ static GS::Optional<GS::ObjectState> CreateLibraryPart (const GS::ObjectState& l
     for (const ScriptSection& script : scripts) {
         API_LibPartSection section = {};
         section.sectType = script.sectType;
-        GS::UniString scriptText = script.script;
-        err = ACAPI_LibraryPart_AddSection (&section, nullptr, &scriptText);
+        if (script.script.IsEmpty ()) {
+            err = WriteEmptyLibPartSection (section);
+        } else {
+            GS::UniString scriptText = script.script;
+            err = ACAPI_LibraryPart_AddSection (&section, nullptr, &scriptText);
+        }
         if (err != NoError) {
             failedStep = "Failed to write a script section of the library part.";
             break;
@@ -1018,30 +1050,60 @@ static GS::Optional<GS::ObjectState> CreateLibraryPart (const GS::ObjectState& l
     }
 
     if (err == NoError) {
+        // Without parameters of its own the list is passed as nullptr, as the DevKit's
+        // LibPart_Test example does, not as an empty handle.
+        API_AddParType** ownParameters = (addPars != nullptr && BMGetHandleSize (reinterpret_cast<GSConstHandle> (addPars)) > 0) ? addPars : nullptr;
         GSHandle parameterSection = nullptr;
-        err = ACAPI_LibraryPart_GetSect_ParamDef (&libPart, addPars, &a, &b, nullptr, &parameterSection);
-        if (err == NoError) {
-            API_LibPartSection section = {};
-            section.sectType = API_SectParamDef;
-            err = ACAPI_LibraryPart_AddSection (&section, parameterSection, nullptr);
-        }
-        BMKillHandle (&parameterSection);
+        err = ACAPI_LibraryPart_GetSect_ParamDef (&libPart, ownParameters, &a, &b, nullptr, &parameterSection);
         if (err != NoError) {
-            failedStep = "Failed to write the parameter section of the library part.";
+            failedStep = "Failed to prepare the parameter section of the library part (ACAPI_LibraryPart_GetSect_ParamDef).";
+        } else if (parameterSection == nullptr) {
+            err = APIERR_GENERAL;
+            failedStep = "Failed to prepare the parameter section of the library part: the API returned no section.";
+        } else {
+            // The details are set on the parameter section before it is added, as the
+            // DevKit's LibPart_Test example and CreateLibraryPartFromElements do.
+            API_LibPartDetails details = {};
+            details.object.autoHotspot = false;
+            err = SetLibPartDetails (&libPart, parameterSection, &details);
+            if (err != NoError) {
+                failedStep = "Failed to set the details of the parameter section of the library part (ACAPI_LibraryPart_SetDetails_ParamDef).";
+            } else {
+                API_LibPartSection section = {};
+                section.sectType = API_SectParamDef;
+                err = ACAPI_LibraryPart_AddSection (&section, parameterSection, nullptr);
+                if (err != NoError) {
+                    failedStep = "Failed to write the parameter section of the library part (ACAPI_LibraryPart_AddSection).";
+                }
+            }
+        }
+        if (parameterSection != nullptr) {
+            BMKillHandle (&parameterSection);
         }
     }
 
     // Save ends the creation even after a failed section, so a later call does not
-    // find a library part still under creation. The part is then in the library
-    // without the failed section; the error item says so.
+    // find a library part still under creation.
     const GSErrCode saveErr = ACAPI_LibraryPart_Save (&libPart);
 
     if (err != NoError) {
-        if (saveErr == NoError) {
-            failedStep += GS::UniString::Printf (" The library part was still saved to '%T' in the embedded library without that section: create it again with overwriteExisting to replace it, or delete it with DeleteEmbeddedLibraryItems.", relativePath.ToPrintf ());
-        } else {
+        if (saveErr != NoError) {
             failedStep += " Saving the incomplete library part failed too.";
+            return CreateErrorResponse (err, failedStep);
         }
+#ifdef ServerMainVers_2700
+        // The saved part lacks the failed section and is unusable (a part without its
+        // parameter section has no parameters at all), so it is deleted again.
+        const bool keepGSMFile = false;
+        const bool silentMode = true;
+        if (ACAPI_LibraryManagement_DeleteEmbeddedLibItem (&outputFileLoc, keepGSMFile, silentMode) == NoError) {
+            failedStep += " The incomplete library part was not kept.";
+        } else {
+            failedStep += GS::UniString::Printf (" The library part was still saved to '%T' in the embedded library without that section, and deleting it failed: delete it with DeleteEmbeddedLibraryItems.", relativePath.ToPrintf ());
+        }
+#else
+        failedStep += GS::UniString::Printf (" The library part was still saved to '%T' in the embedded library without that section.", relativePath.ToPrintf ());
+#endif
         return CreateErrorResponse (err, failedStep);
     }
     if (saveErr != NoError) {
@@ -1856,6 +1918,58 @@ GS::ObjectState ReloadLibrariesCommand::Execute (const GS::ObjectState& /*parame
     return CreateSuccessfulExecutionResult ();
 }
 
+// ACAPI_LibraryManagement_GetGDLDate and ChangeGDLDate read and write an Int32 array of six:
+// year, month, day, hour, minute and second.
+static const char* GDLDateComponentNames[] = { "year", "month", "day", "hour", "minute", "second" };
+static const USize GDLDateComponentCount = 6;
+
+static GS::UniString GetGDLDateSchema (const char* description)
+{
+    return GS::UniString (R"({
+        "type": "object",
+        "description": ")") + description + R"(",
+        "properties": {
+            "year": {
+                "type": "integer"
+            },
+            "month": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 12
+            },
+            "day": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 31
+            },
+            "hour": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 23
+            },
+            "minute": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 59
+            },
+            "second": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 59
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "year",
+            "month",
+            "day",
+            "hour",
+            "minute",
+            "second"
+        ]
+    })";
+}
+
 GetGDLDateCommand::GetGDLDateCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1868,13 +1982,10 @@ GS::String GetGDLDateCommand::GetName () const
 
 GS::Optional<GS::UniString> GetGDLDateCommand::GetRawResponseSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
-            "date": {
-                "type": "integer",
-                "description": "The date GDL scripts see, as the Int32 value of ACAPI_LibraryManagement_GetGDLDate."
-            }
+            "date": )") + GetGDLDateSchema ("The date GDL scripts see.") + R"(
         },
         "additionalProperties": false,
         "required": [
@@ -1885,13 +1996,18 @@ GS::Optional<GS::UniString> GetGDLDateCommand::GetRawResponseSchema () const
 
 GS::ObjectState GetGDLDateCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
-    Int32 date = 0;
-    GSErrCode err = ACAPI_LibraryManagement_GetGDLDate (&date);
+    Int32 date[GDLDateComponentCount] = {};
+    GSErrCode err = ACAPI_LibraryManagement_GetGDLDate (date);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to get the GDL date.");
     }
 
-    return GS::ObjectState ("date", date);
+    GS::ObjectState dateOs;
+    for (USize i = 0; i < GDLDateComponentCount; ++i) {
+        dateOs.Add (GDLDateComponentNames[i], date[i]);
+    }
+
+    return GS::ObjectState ("date", dateOs);
 }
 
 SetGDLDateCommand::SetGDLDateCommand () :
@@ -1906,13 +2022,10 @@ GS::String SetGDLDateCommand::GetName () const
 
 GS::Optional<GS::UniString> SetGDLDateCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
-            "date": {
-                "type": "integer",
-                "description": "The date GDL scripts should see, in the same Int32 format GetGDLDate returns."
-            }
+            "date": )") + GetGDLDateSchema ("The date GDL scripts should see, in the format GetGDLDate returns.") + R"(
         },
         "additionalProperties": false,
         "required": [
@@ -1930,12 +2043,19 @@ GS::Optional<GS::UniString> SetGDLDateCommand::GetRawResponseSchema () const
 
 GS::ObjectState SetGDLDateCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    Int32 date = 0;
-    if (!parameters.Get ("date", date)) {
+    GS::ObjectState dateOs;
+    if (!parameters.Get ("date", dateOs)) {
         return CreateFailedExecutionResult (APIERR_BADPARS, "The date parameter is missing.");
     }
 
-    GSErrCode err = ACAPI_LibraryManagement_ChangeGDLDate (&date);
+    Int32 date[GDLDateComponentCount] = {};
+    for (USize i = 0; i < GDLDateComponentCount; ++i) {
+        if (!dateOs.Get (GDLDateComponentNames[i], date[i])) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString ("The date has no ") + GDLDateComponentNames[i] + ".");
+        }
+    }
+
+    GSErrCode err = ACAPI_LibraryManagement_ChangeGDLDate (date);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to set the GDL date.");
     }
@@ -2912,7 +3032,495 @@ GS::ObjectState GetMissingLibPartNamesCommand::Execute (const GS::ObjectState& p
     return response;
 }
 
+GetUnusedLibraryPartsCommand::GetUnusedLibraryPartsCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String GetUnusedLibraryPartsCommand::GetName () const
+{
+    return "GetUnusedLibraryParts";
+}
+
+GS::Optional<GS::UniString> GetUnusedLibraryPartsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "filterByTypeId": {
+                "$ref": "#/LibraryPartType",
+                "description": "Optional. Only list the unused library parts of this type (the typeId of GetAvailableLibraryParts)."
+            },
+            "includeNotPlaceable": {
+                "type": "boolean",
+                "description": "Also list the library parts that cannot be placed (macros, pictures, property objects, list schemes and the like), which are never placed on their own. Default: false."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> GetUnusedLibraryPartsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "unusedLibraryParts": {
+                "type": "array",
+                "description": "The loaded library parts that no element of the project is placed from, in index order.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "guid": { "type": "string" },
+                        "index": { "type": "integer" },
+                        "documentName": { "type": "string" },
+                        "fileName": { "type": "string" },
+                        "typeId": { "$ref": "#/LibraryPartType" },
+                        "isPlaceable": { "type": "boolean" }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "guid",
+                        "index",
+                        "documentName",
+                        "fileName",
+                        "typeId",
+                        "isPlaceable"
+                    ]
+                }
+            },
+            "usedLibraryPartCount": {
+                "type": "integer",
+                "description": "The number of different loaded library parts that are placed in the project."
+            },
+            "scannedElementCount": {
+                "type": "integer",
+                "description": "The number of elements checked, in the floor plan and every view and layout database."
+            },
+            "complete": {
+                "type": "boolean",
+                "description": "False when a view or layout database or a library part could not be read (see warnings): then a listed library part may still be used."
+            },
+            "warnings": {
+                "type": "array",
+                "items": { "type": "string" }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "unusedLibraryParts",
+            "usedLibraryPartCount",
+            "scannedElementCount",
+            "complete",
+            "warnings"
+        ]
+    })";
+}
+
+// The library part the element itself is placed from, 0 when it has none: objects, lamps, windows, doors,
+// skylights, zone stamps, symbol labels, drawing titles and curtain wall parts.
+static Int32 GetPlacedLibIndOfElement (const API_Element& element)
+{
+    switch (GetElemTypeId (element.header)) {
+        case API_ObjectID:                return element.object.libInd;
+        case API_LampID:                  return element.lamp.libInd;
+        case API_WindowID:                return element.window.openingBase.libInd;
+        case API_DoorID:                  return element.door.openingBase.libInd;
+        case API_SkylightID:              return element.skylight.openingBase.libInd;
+        case API_ZoneID:                  return element.zone.libInd;
+        // u.symbol shares its storage with u.text, so libInd is only meaningful for a symbol label.
+        case API_LabelID:                 return element.label.labelClass == APILblClass_Symbol ? element.label.u.symbol.libInd : 0;
+        case API_DrawingID:               return element.drawing.title.libInd;
+        case API_CurtainWallFrameID:      return element.cwFrame.libInd;
+        case API_CurtainWallPanelID:      return element.cwPanel.libInd;
+        case API_CurtainWallJunctionID:   return element.cwJunction.libInd;
+        case API_CurtainWallAccessoryID:  return element.cwAccessory.libInd;
+        default:                          return 0;
+    }
+}
+
+// The marker elements of the element (openings, sections, elevations, details and worksheets): each is an object
+// element placed from the marker's library part.
+static void GetMarkerGuidsOfElement (const API_Element& element, GS::Array<API_Guid>& markerGuids)
+{
+    switch (GetElemTypeId (element.header)) {
+        case API_WindowID:      markerGuids.Push (element.window.openingBase.markGuid); break;
+        case API_DoorID:        markerGuids.Push (element.door.openingBase.markGuid); break;
+        case API_SkylightID:    markerGuids.Push (element.skylight.openingBase.markGuid); break;
+        case API_CutPlaneID:
+            markerGuids.Push (element.cutPlane.segment.begMarkerId);
+            markerGuids.Push (element.cutPlane.segment.midMarkerId);
+            markerGuids.Push (element.cutPlane.segment.endMarkerId);
+            break;
+        case API_ElevationID:
+            markerGuids.Push (element.elevation.segment.begMarkerId);
+            markerGuids.Push (element.elevation.segment.midMarkerId);
+            markerGuids.Push (element.elevation.segment.endMarkerId);
+            break;
+        case API_DetailID:      markerGuids.Push (element.detail.markId); break;
+        case API_WorksheetID:   markerGuids.Push (element.worksheet.markId); break;
+        default:                break;
+    }
+}
+
+static bool MayUseLibraryPart (API_ElemTypeID typeId)
+{
+    switch (typeId) {
+        case API_ObjectID:
+        case API_LampID:
+        case API_WindowID:
+        case API_DoorID:
+        case API_SkylightID:
+        case API_ZoneID:
+        case API_LabelID:
+        case API_DrawingID:
+        case API_CurtainWallFrameID:
+        case API_CurtainWallPanelID:
+        case API_CurtainWallJunctionID:
+        case API_CurtainWallAccessoryID:
+        case API_CutPlaneID:
+        case API_ElevationID:
+        case API_DetailID:
+        case API_WorksheetID:
+            return true;
+        default:
+            return false;
+    }
+}
+
+// The floor plan and the databases of every view and layout, which together hold every placed element.
+static void GetDatabasesOfPlacedElements (GS::Array<API_DatabaseInfo>& databases, GS::Array<GS::UniString>& warnings)
+{
+    API_DatabaseInfo floorPlan = {};
+    floorPlan.typeID = APIWind_FloorPlanID;
+    if (ACAPI_Window_GetDatabaseInfo (&floorPlan) == NoError) {
+        databases.Push (floorPlan);
+    } else {
+        warnings.Push ("The floor plan database could not be read.");
+    }
+
+    const struct {
+        API_WindowTypeID typeID;
+        const char*      name;
+    } databaseTypes[] = {
+        { APIWind_SectionID,           "section" },
+        { APIWind_ElevationID,         "elevation" },
+        { APIWind_InteriorElevationID, "interior elevation" },
+        { APIWind_DetailID,            "detail" },
+        { APIWind_WorksheetID,         "worksheet" },
+        { APIWind_DocumentFrom3DID,    "3D document" },
+        { APIWind_LayoutID,            "layout" },
+        { APIWind_MasterLayoutID,      "master layout" }
+    };
+    for (const auto& databaseType : databaseTypes) {
+        GS::Array<API_DatabaseUnId> databaseUnIds;
+        GSErrCode err = NoError;
+        switch (databaseType.typeID) {
+            case APIWind_SectionID:           err = ACAPI_Database_GetSectionDatabases (nullptr, &databaseUnIds); break;
+            case APIWind_ElevationID:         err = ACAPI_Database_GetElevationDatabases (nullptr, &databaseUnIds); break;
+            case APIWind_InteriorElevationID: err = ACAPI_Database_GetInteriorElevationDatabases (nullptr, &databaseUnIds); break;
+            case APIWind_DetailID:            err = ACAPI_Database_GetDetailDatabases (nullptr, &databaseUnIds); break;
+            case APIWind_WorksheetID:         err = ACAPI_Database_GetWorksheetDatabases (nullptr, &databaseUnIds); break;
+            case APIWind_DocumentFrom3DID:    err = ACAPI_Database_GetDocumentFrom3DDatabases (nullptr, &databaseUnIds); break;
+            case APIWind_LayoutID:            err = ACAPI_Database_GetLayoutDatabases (nullptr, &databaseUnIds); break;
+            case APIWind_MasterLayoutID:      err = ACAPI_Database_GetMasterLayoutDatabases (nullptr, &databaseUnIds); break;
+            default:                          break;
+        }
+        if (err != NoError) {
+            warnings.Push (GS::UniString::Printf ("The %s databases could not be listed (error %d).", databaseType.name, (int) err));
+            continue;
+        }
+        for (const API_DatabaseUnId& databaseUnId : databaseUnIds) {
+            API_DatabaseInfo database = {};
+            database.typeID = databaseType.typeID;
+            database.databaseUnId = databaseUnId;
+            if (ACAPI_Window_GetDatabaseInfo (&database) != NoError) {
+                warnings.Push (GS::UniString::Printf ("A %s database could not be read.", databaseType.name));
+                continue;
+            }
+            databases.Push (database);
+        }
+    }
+}
+
+GS::ObjectState GetUnusedLibraryPartsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    API_LibTypeID filterTypeId = API_ZombieLibID;
+    GS::UniString filterTypeIdStr;
+    if (parameters.Get ("filterByTypeId", filterTypeIdStr) && !LibPartTypeIdFromString (filterTypeIdStr, filterTypeId)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Library part type '" + filterTypeIdStr + "' cannot be filtered by.");
+    }
+    bool includeNotPlaceable = false;
+    parameters.Get ("includeNotPlaceable", includeNotPlaceable);
+
+    Int32 partCount = 0;
+    GSErrCode err = ACAPI_LibraryPart_GetNum (&partCount);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to enumerate library parts.");
+    }
+
+    API_DatabaseInfo startingDatabase = {};
+    err = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to get the current database.");
+    }
+
+    GS::Array<GS::UniString> warnings;
+    GS::Array<API_DatabaseInfo> databases;
+    GetDatabasesOfPlacedElements (databases, warnings);
+
+    GS::HashSet<Int32> usedLibInds;
+    Int32 scannedElementCount = 0;
+    for (const API_DatabaseInfo& database : databases) {
+        API_DatabaseInfo current = database;
+        if (ACAPI_Database_ChangeCurrentDatabase (&current) != NoError) {
+            warnings.Push ("The view or layout database '" + GS::UniString (database.name) + "' could not be opened, so its elements were not checked.");
+            continue;
+        }
+        GS::Array<API_Guid> guids;
+        if (ACAPI_Element_GetElemList (API_ZombieElemID, &guids) != NoError) {
+            warnings.Push ("The elements of the database '" + GS::UniString (database.name) + "' could not be listed.");
+            continue;
+        }
+        for (const API_Guid& guid : guids) {
+            ++scannedElementCount;
+            API_Elem_Head head = {};
+            head.guid = guid;
+            if (ACAPI_Element_GetHeader (&head) != NoError || !MayUseLibraryPart (GetElemTypeId (head))) {
+                continue;
+            }
+            API_Element element = {};
+            element.header.guid = guid;
+            if (ACAPI_Element_Get (&element) != NoError) {
+                continue;
+            }
+            const Int32 libInd = GetPlacedLibIndOfElement (element);
+            if (libInd > 0) {
+                usedLibInds.Add (libInd);
+            }
+            GS::Array<API_Guid> markerGuids;
+            GetMarkerGuidsOfElement (element, markerGuids);
+            for (const API_Guid& markerGuid : markerGuids) {
+                if (markerGuid == APINULLGuid) {
+                    continue;
+                }
+                API_Element marker = {};
+                marker.header.guid = markerGuid;
+                if (ACAPI_Element_Get (&marker) == NoError) {
+                    const Int32 markerLibInd = GetPlacedLibIndOfElement (marker);
+                    if (markerLibInd > 0) {
+                        usedLibInds.Add (markerLibInd);
+                    }
+                }
+            }
+        }
+    }
+
+    err = ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
+    if (err != NoError) {
+        warnings.Push ("The database that was current before the command could not be made current again.");
+    }
+
+    GS::ObjectState response;
+    const auto& unusedAdder = response.AddList<GS::ObjectState> ("unusedLibraryParts");
+    Int32 usedLibraryPartCount = 0;
+    Int32 unreadCount = 0;
+    for (Int32 i = 1; i <= partCount; ++i) {
+        API_LibPart libPart = {};
+        libPart.index = i;
+        if (ACAPI_LibraryPart_Get (&libPart) != NoError) {
+            // libPart.location is not allocated on failure.
+            ++unreadCount;
+            continue;
+        }
+        const bool isPlaceable = libPart.isPlaceable;
+        const bool isMissing = libPart.missingDef;
+        GS::ObjectState entry;
+        entry.Add ("guid", GS::UnID (libPart.ownUnID).GetMainGuid ().ToUniString ());
+        entry.Add ("index", static_cast<Int32> (libPart.index));
+        entry.Add ("documentName", GS::UniString (libPart.docu_UName));
+        entry.Add ("fileName", GS::UniString (libPart.file_UName));
+        entry.Add ("typeId", LibPartTypeIdToString (libPart.typeID));
+        entry.Add ("isPlaceable", isPlaceable);
+        const API_LibTypeID typeId = libPart.typeID;
+        // ACAPI_LibraryPart_Get allocates libPart.location.
+        delete libPart.location;
+        libPart.location = nullptr;
+
+        if (usedLibInds.Contains (i)) {
+            ++usedLibraryPartCount;
+            continue;
+        }
+        if (isMissing || (!includeNotPlaceable && !isPlaceable) || (filterTypeId != API_ZombieLibID && typeId != filterTypeId)) {
+            continue;
+        }
+        unusedAdder (entry);
+    }
+    if (unreadCount > 0) {
+        warnings.Push (GS::UniString::Printf ("%d library parts could not be read, so they were not checked.", (int) unreadCount));
+    }
+
+    response.Add ("usedLibraryPartCount", usedLibraryPartCount);
+    response.Add ("scannedElementCount", scannedElementCount);
+    response.Add ("complete", warnings.IsEmpty ());
+    const auto& warningAdder = response.AddList<GS::UniString> ("warnings");
+    for (const GS::UniString& warning : warnings) {
+        warningAdder (warning);
+    }
+    return response;
+}
+
 #ifdef ServerMainVers_2800
+
+namespace {
+
+// Which getter of GDL::Parameters reads a value of the type, and its JSON form.
+enum class LibPartParameterValueKind {
+    None,
+    Integer,
+    Number,
+    OnOff,
+    Boolean,
+    String
+};
+
+}
+
+// The type name is the one GetGDLParametersOfElements uses.
+static LibPartParameterValueKind GetLibPartParameterValueKind (short type, const char** typeName)
+{
+    // GetVarType returns the ParT_ codes of GDLDefs.h, which differ from API_AddParID.
+    switch (type) {
+        case ParT_Integer:          *typeName = "Integer";          return LibPartParameterValueKind::Integer;
+        case ParT_Length:           *typeName = "Length";           return LibPartParameterValueKind::Number;
+        case ParT_Angle:            *typeName = "Angle";            return LibPartParameterValueKind::Number;
+        case ParT_RealNum:          *typeName = "RealNumber";       return LibPartParameterValueKind::Number;
+        case ParT_LightSw:          *typeName = "LightSwitch";      return LibPartParameterValueKind::OnOff;
+        case ParT_ColRGB:           *typeName = "RGBColor";         return LibPartParameterValueKind::Number;
+        case ParT_Intens:           *typeName = "Intensity";        return LibPartParameterValueKind::Number;
+        case ParT_LineTyp:          *typeName = "LineType";         return LibPartParameterValueKind::Integer;
+        case ParT_Mater:            *typeName = "Material";         return LibPartParameterValueKind::Integer;
+        case ParT_FillPat:          *typeName = "FillPattern";      return LibPartParameterValueKind::Integer;
+        case ParT_PenCol:           *typeName = "PenColor";         return LibPartParameterValueKind::Integer;
+        case ParT_CString:          *typeName = "String";           return LibPartParameterValueKind::String;
+        case ParT_Boolean:          *typeName = "Boolean";          return LibPartParameterValueKind::Boolean;
+        case ParT_BuildingMaterial: *typeName = "BuildingMaterial"; return LibPartParameterValueKind::Integer;
+        case ParT_Profile:          *typeName = "Profile";          return LibPartParameterValueKind::Integer;
+        default:                    *typeName = nullptr;            return LibPartParameterValueKind::None;
+    }
+}
+
+// The parameters of the list in the format of GetGDLParametersOfElements: name, type, value and,
+// for an array, dimension1 and dimension2 with its items as a flat list, the first index outer.
+// Separators, titles and dictionaries have no value read this way, so they are left out.
+// The description is the one of the same index in `descriptions`, when there is one.
+static GS::Array<GS::ObjectState> LibPartParametersToObjectStates (const GDL::Parameters& gdlParameters, const std::vector<GS::UniString>& descriptions)
+{
+    GS::Array<GS::ObjectState> result;
+    const Int32 varNumber = gdlParameters.GetVarNumber ();
+    for (Int32 index = 0; index < varNumber; ++index) {
+        bool isArray = false;
+        Int32 dim1 = 0;
+        Int32 dim2 = 0;
+        const short type = gdlParameters.GetVarType (index, &isArray, &dim1, &dim2);
+        const char* typeName = nullptr;
+        const LibPartParameterValueKind kind = GetLibPartParameterValueKind (type, &typeName);
+        const char* name = gdlParameters.GetVarNameRef (index);
+        if (kind == LibPartParameterValueKind::None || name == nullptr) {
+            continue;
+        }
+
+        GS::ObjectState parameter;
+        parameter.Add ("name", GS::String (name));
+        parameter.Add ("type", GS::String (typeName));
+
+        if (!isArray) {
+            switch (kind) {
+                case LibPartParameterValueKind::Integer:
+                    parameter.Add ("value", gdlParameters.GetIntVar (index));
+                    break;
+                case LibPartParameterValueKind::Number:
+                    parameter.Add ("value", gdlParameters.GetNumVar (index));
+                    break;
+                case LibPartParameterValueKind::OnOff:
+                    parameter.Add ("value", GS::String (gdlParameters.GetNumVar (index) == 0.0 ? "Off" : "On"));
+                    break;
+                case LibPartParameterValueKind::Boolean:
+                    parameter.Add ("value", gdlParameters.GetBoolVar (index));
+                    break;
+                case LibPartParameterValueKind::String: {
+                    GS::UniString value;
+                    gdlParameters.GetUStrVar (index, value);
+                    parameter.Add ("value", value);
+                    break;
+                }
+                default:
+                    break;
+            }
+        } else {
+            // A one-dimensional array has no second dimension; its items are read as the first column.
+            const Int32 columns = dim2 > 0 ? dim2 : 1;
+            parameter.Add ("dimension1", dim1);
+            parameter.Add ("dimension2", columns);
+            switch (kind) {
+                case LibPartParameterValueKind::Integer: {
+                    const auto& itemAdder = parameter.AddList<Int32> ("value");
+                    for (Int32 i1 = 1; i1 <= dim1; ++i1) {
+                        for (Int32 i2 = 1; i2 <= columns; ++i2) {
+                            itemAdder (gdlParameters.GetIntArrayVal (index, i1, i2));
+                        }
+                    }
+                    break;
+                }
+                case LibPartParameterValueKind::Number: {
+                    const auto& itemAdder = parameter.AddList<double> ("value");
+                    for (Int32 i1 = 1; i1 <= dim1; ++i1) {
+                        for (Int32 i2 = 1; i2 <= columns; ++i2) {
+                            itemAdder (gdlParameters.GetNumArrayVal (index, i1, i2));
+                        }
+                    }
+                    break;
+                }
+                case LibPartParameterValueKind::OnOff: {
+                    const auto& itemAdder = parameter.AddList<GS::String> ("value");
+                    for (Int32 i1 = 1; i1 <= dim1; ++i1) {
+                        for (Int32 i2 = 1; i2 <= columns; ++i2) {
+                            itemAdder (GS::String (gdlParameters.GetNumArrayVal (index, i1, i2) == 0.0 ? "Off" : "On"));
+                        }
+                    }
+                    break;
+                }
+                case LibPartParameterValueKind::Boolean: {
+                    const auto& itemAdder = parameter.AddList<bool> ("value");
+                    for (Int32 i1 = 1; i1 <= dim1; ++i1) {
+                        for (Int32 i2 = 1; i2 <= columns; ++i2) {
+                            itemAdder (gdlParameters.GetBoolArrayVal (index, i1, i2));
+                        }
+                    }
+                    break;
+                }
+                case LibPartParameterValueKind::String: {
+                    const auto& itemAdder = parameter.AddList<GS::UniString> ("value");
+                    for (Int32 i1 = 1; i1 <= dim1; ++i1) {
+                        for (Int32 i2 = 1; i2 <= columns; ++i2) {
+                            GS::UniString value;
+                            gdlParameters.GetUStrArrayVal (index, i1, i2, value);
+                            itemAdder (value);
+                        }
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+
+        if (static_cast<size_t> (index) < descriptions.size ()) {
+            parameter.Add ("description", descriptions[static_cast<size_t> (index)]);
+        }
+        result.Push (parameter);
+    }
+    return result;
+}
 
 static GS::Array<GS::UniString> ToUniStringArray (const std::vector<GS::UniString>& strings)
 {
@@ -5827,6 +6435,186 @@ GS::Optional<GS::UniString> GetLibraryPartIdentitiesCommand::GetRawResponseSchem
             "identities"
         ]
     })";
+}
+
+GetLibraryPartParameterValuesCommand::GetLibraryPartParameterValuesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetLibraryPartParameterValuesCommand::GetName () const
+{
+    return "GetLibraryPartParameterValues";
+}
+
+GS::Optional<GS::UniString> GetLibraryPartParameterValuesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "The library parts to read.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm')."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "name"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetLibraryPartParameterValuesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "libraryParts": {
+                "type": "array",
+                "description": "The default parameters of each given library part, in the order of the input, or an error for a library part that could not be read.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "The name of the library part, as given."
+                                },
+                                "parameters": {
+                                    "type": "array",
+                                    "description": "The parameters of the library part with their default values, in the format of GetGDLParametersOfElements. Separators, titles and dictionary parameters have no value here and are left out.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "name": {
+                                                "type": "string",
+                                                "description": "The name of the parameter."
+                                            },
+                                            "type": {
+                                                "type": "string",
+                                                "enum": ["Integer", "Length", "Angle", "RealNumber", "LightSwitch", "RGBColor", "Intensity", "LineType", "Material", "FillPattern", "PenColor", "String", "Boolean", "BuildingMaterial", "Profile"],
+                                                "description": "The type of the parameter."
+                                            },
+                                            "dimension1": {
+                                                "type": "integer",
+                                                "description": "The 1st dimension of an array parameter."
+                                            },
+                                            "dimension2": {
+                                                "type": "integer",
+                                                "description": "The 2nd dimension of an array parameter, 1 for a one-dimensional array."
+                                            },
+                                            "value": {
+                                                "description": "The default value of the parameter: a number, a boolean, a string, or 'On' or 'Off' for a LightSwitch. Angles are in radians. For an array parameter, a list of its dimension1 x dimension2 items, the first index outer."
+                                            },
+                                            "description": {
+                                                "type": "string",
+                                                "description": "The description of the parameter, the text shown for it in the settings dialog. Missing when Archicad gives no description for it."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "name",
+                                            "type",
+                                            "value"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "name",
+                                "parameters"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryParts"
+        ]
+    })";
+}
+
+GS::ObjectState GetLibraryPartParameterValuesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> libraryParts;
+    if (!parameters.Get ("libraryParts", libraryParts)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'libraryParts' parameter.");
+    }
+
+    auto libraryManager = ACAPI::Library::GetLibraryManager ();
+    if (libraryManager.IsErr ()) {
+        return CreateErrorResponse (libraryManager.UnwrapErr ().kind, "Failed to get the Library Manager.");
+    }
+
+    GS::ObjectState response;
+    const auto& libraryPartsAdder = response.AddList<GS::ObjectState> ("libraryParts");
+    for (const GS::ObjectState& libraryPart : libraryParts) {
+        GS::UniString name;
+        if (!libraryPart.Get ("name", name) || name.IsEmpty ()) {
+            libraryPartsAdder (CreateErrorResponse (APIERR_BADPARS, "Missing 'name' parameter."));
+            continue;
+        }
+
+        auto libPart = libraryManager->GetLibPartByName (name);
+        if (libPart.IsErr ()) {
+            libraryPartsAdder (CreateErrorResponse (libPart.UnwrapErr ().kind, "No loaded library part with the name '" + name + "'. Use the fileName (with extension) returned by GetAvailableLibraryParts."));
+            continue;
+        }
+
+        auto gsmObject = libraryManager->GetGSMObjectOfLibPart (libPart.Unwrap ());
+        if (gsmObject.IsErr ()) {
+            libraryPartsAdder (CreateErrorResponse (gsmObject.UnwrapErr ().kind, "Failed to get the GSM object of the library part '" + name + "'."));
+            continue;
+        }
+
+        auto gdlParameters = gsmObject->GetParameters ();
+        if (gdlParameters.IsErr ()) {
+            libraryPartsAdder (CreateErrorResponse (gdlParameters.UnwrapErr ().kind, "Failed to get the parameters of the library part '" + name + "'."));
+            continue;
+        }
+
+        // The parameters are still returned when their descriptions cannot be read, only without them.
+        std::vector<GS::UniString> descriptions;
+        auto parameterDescriptions = gsmObject->GetParameterDescriptions ();
+        if (parameterDescriptions.IsOk ()) {
+            descriptions = parameterDescriptions.Unwrap ();
+        }
+
+        GS::ObjectState libraryPartOs ("name", name);
+        const auto& parametersAdder = libraryPartOs.AddList<GS::ObjectState> ("parameters");
+        for (const GS::ObjectState& parameter : LibPartParametersToObjectStates (gdlParameters.Unwrap (), descriptions)) {
+            parametersAdder (parameter);
+        }
+        libraryPartsAdder (libraryPartOs);
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
 }
 
 GS::ObjectState GetLibraryPartIdentitiesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const

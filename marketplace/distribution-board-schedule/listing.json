@@ -1,0 +1,18 @@
+{
+    "slug": "distribution-board-schedule",
+    "name": "Distribution Board Schedule",
+    "summary": "Lists the circuits of every distribution board with their loads and phase balance, flags overloads, and saves the schedule as CSV or Excel.",
+    "category": "quantities-scheduling",
+    "tags": ["electrical", "mep", "circuits", "loads", "schedule", "export"],
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
+    "license": "MIT",
+    "entry": "DistributionBoardSchedule.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "First version in the marketplace, the same as the built-in script of the same name."
+        }
+    ]
+}

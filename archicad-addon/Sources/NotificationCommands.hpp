@@ -32,25 +32,56 @@ public:
     struct Client {
         Client(
             const IO::URI::URI& url,
-            bool onNew, bool onMod, bool onResChanges, bool onSelChange, bool onWindowChange, bool onProjectEvents, bool onAttrReplacement)
+            bool onNew, bool onMod, bool onResChanges, bool onSelChange, bool onWindowChange, bool onProjectEvents, bool onAttrReplacement,
+            bool onToolChange, bool onViewEvents, bool onLockableResChanges, bool onToolDefaultChanges,
+            bool onAttributeChanges, bool onClassificationChanges, bool onPropertyDefinitionChanges, bool onMarqueeChange, bool on3DSettingsChanges,
+            const std::set<API_ElemTypeID>& typesToObserve)
             : url(url), notifyOnNew(onNew), notifyOnModification(onMod), notifyOnReservationChanges(onResChanges), notifyOnSelectionChange(onSelChange),
-              notifyOnWindowChange(onWindowChange), notifyOnProjectEvents(onProjectEvents), notifyOnAttributeReplacement(onAttrReplacement) {}
+              notifyOnWindowChange(onWindowChange), notifyOnProjectEvents(onProjectEvents), notifyOnAttributeReplacement(onAttrReplacement),
+              notifyOnToolChange(onToolChange), notifyOnViewEvents(onViewEvents), notifyOnLockableReservationChanges(onLockableResChanges),
+              notifyOnToolDefaultChanges(onToolDefaultChanges),
+              notifyOnAttributeChanges(onAttributeChanges), notifyOnClassificationChanges(onClassificationChanges),
+              notifyOnPropertyDefinitionChanges(onPropertyDefinitionChanges), notifyOnMarqueeChange(onMarqueeChange),
+              notifyOn3DSettingsChanges(on3DSettingsChanges),
+              elementTypesToObserve(typesToObserve) {}
 
-        IO::URI::URI url;
-        bool         notifyOnNew;
-        bool         notifyOnModification;
-        bool         notifyOnReservationChanges;
-        bool         notifyOnSelectionChange;
-        bool         notifyOnWindowChange;
-        bool         notifyOnProjectEvents;
-        bool         notifyOnAttributeReplacement;
+        IO::URI::URI             url;
+        bool                     notifyOnNew;
+        bool                     notifyOnModification;
+        bool                     notifyOnReservationChanges;
+        bool                     notifyOnSelectionChange;
+        bool                     notifyOnWindowChange;
+        bool                     notifyOnProjectEvents;
+        bool                     notifyOnAttributeReplacement;
+        bool                     notifyOnToolChange;
+        bool                     notifyOnViewEvents;
+        bool                     notifyOnLockableReservationChanges;
+        bool                     notifyOnToolDefaultChanges;
+        // The events of the Archicad 26+ event handlers (ACAPI_Notification_RegisterEventHandler).
+        bool                     notifyOnAttributeChanges;
+        bool                     notifyOnClassificationChanges;
+        bool                     notifyOnPropertyDefinitionChanges;
+        bool                     notifyOnMarqueeChange;
+        bool                     notifyOn3DSettingsChanges;
+        // The element types whose modifications this client is notified of; empty means every type.
+        std::set<API_ElemTypeID> elementTypesToObserve;
 
-        bool acceptsNotificationsForEventType (ElementEventType eventType) const
+        bool acceptsNotificationsForEventType (ElementEventType eventType, const GS::ObjectState& event) const
         {
             if (eventType == ElementEventType::New) {
                 return notifyOnNew;
             } else if (eventType == ElementEventType::Changed || eventType == ElementEventType::Deleted) {
-                return notifyOnModification;
+                if (!notifyOnModification) {
+                    return false;
+                }
+                if (elementTypesToObserve.empty ()) {
+                    return true;
+                }
+                // Another client may observe more types; the event of an element of a
+                // type this client did not ask for is not sent to it.
+                GS::UniString elementTypeName;
+                event.Get ("elementType", elementTypeName);
+                return elementTypesToObserve.count (GetElementTypeFromNonLocalizedName (elementTypeName)) > 0;
             } else if (eventType == ElementEventType::Reserved || eventType == ElementEventType::Released) {
                 return notifyOnReservationChanges;
             }
@@ -67,7 +98,8 @@ public:
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 
-    static void DetachElementObserversIfNotNeeded ();
+    static void UpdateElementObservers ();
+    static bool IsObservedElementType (API_ElemTypeID typeID);
     static void UninstallSelectionChangeHandlerIfNotNeeded ();
     static void SendEventToNotificationClient (ElementEventType eventType, const GS::ObjectState& os);
     static void SendQueuedEventsToNotificationClient ();
@@ -85,6 +117,19 @@ public:
     // Archicad 25 has no attribute replacement notification.
     static GSErrCode AttributeReplacementHandler (const API_AttributeReplaceIndexTable& table);
 #endif
+    static void UninstallToolChangeHandlerIfNotNeeded ();
+    static GSErrCode ToolChangeHandler (const API_ToolBoxItem* newToolMode);
+    static void UninstallViewEventHandlerIfNotNeeded ();
+    static GSErrCode ViewEventHandler (const API_NotifyViewEventType* viewEvent);
+    static void UninstallLockableReservationChangeHandlerIfNotNeeded ();
+    static GSErrCode LockableReservationChangeHandler (const API_Guid& objectId, short ownerId);
+    static void UninstallToolDefaultChangeHandlerIfNotNeeded ();
+    static GSErrCode ToolDefaultChangeHandler (const API_ToolBoxItem* defElemType);
+    // Registers the Archicad 26+ event handlers (ACAPI_Notification_RegisterEventHandler) the clients
+    // need and unregisters the ones no client needs any more.
+    static void UpdateEventHandlers ();
+    // Sends the message at once to every client whose given notifyOn... option is set.
+    static void SendMessageToClients (bool Client::* wantsMessage, const GS::ObjectState& message);
     // Called by the add-on's one project event handler (ProjectEventHandler.cpp) on every project
     // event it catches; sends the window, floor and project events to the clients that asked for them.
     static void ProjectEventHandler (API_NotifyEventID notifID, Int32 param);
@@ -95,9 +140,16 @@ private:
     static std::map<GS::UniString, Client> clients;
     static bool hasClientToNotifyOnNew;
     static bool hasClientToNotifyOnModification;
+    // The element types whose elements have an observer attached while
+    // hasClientToNotifyOnModification is set; empty means every element.
+    static std::set<API_ElemTypeID> observedElementTypes;
     static bool hasClientToNotifyOnReservationChanges;
     static bool hasClientToNotifyOnSelectionChange;
     static bool hasClientToNotifyOnAttributeReplacement;
+    static bool hasClientToNotifyOnToolChange;
+    static bool hasClientToNotifyOnViewEvents;
+    static bool hasClientToNotifyOnLockableReservationChanges;
+    static bool hasClientToNotifyOnToolDefaultChanges;
 
     using EventQueue = std::map<ElementEventType, std::vector<GS::ObjectState>>;
     static std::unique_ptr<EventQueue> queuedEvents;
@@ -124,6 +176,8 @@ public:
     // Adds the "elementId" of each item (the items of a Modify<Tool> command); items without one are skipped.
     void AddElementIdsOf (const GS::Array<GS::ObjectState>& items);
     void MarkChanged (const API_Guid& element);
+    // Marks the "elementId" of item as changed when executionResult is a successful execution result.
+    void MarkChangedIfSucceeded (const GS::ObjectState& item, const GS::ObjectState& executionResult);
     void Report () const;
 
 private:

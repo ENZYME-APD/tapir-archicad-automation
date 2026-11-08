@@ -2,7 +2,7 @@
 
 One short Python script per Tapir command, in one folder per command group:
 `Examples/<GroupFolder>/<CommandName>.py`, e.g. `Application/GetAddOnVersion.py` or
-`MEP/GetMEPPorts.py`. The [command reference](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon)
+`MEP/GetMEPPorts.py`. The [command reference](https://archicad-api.com/archicad-addon/)
 shows each command's script in its *Example* popdown, loaded from this folder on `main`.
 
 The folder is the group name as the command reference lists it, without the trailing
@@ -26,6 +26,35 @@ prints by itself (only errors), so an example prints what it shows, usually with
 parameters.
 `--port <port>` talks to another Archicad than the one on 19723. The `aclib.py` in each group
 folder only loads `../aclib/`, so the scripts run from any working directory.
+
+### Errors, timeout and finding Archicad
+
+- When no Archicad answers (not running, no project open, wrong port, or no answer in time),
+  `aclib` raises `TapirConnectionError`; when Archicad answers but the Tapir Add-On is not loaded,
+  `TapirNotInstalledError`. Left uncaught, both print only what to do, without a traceback.
+- A command that fails prints `Error:` and returns `None` (or the response holding the error),
+  and the script carries on. **For new scripts set `aclib.raiseOnError = True`** at the top: a
+  failed command then raises `TapirCommandError` (with `.command`, `.code`, `.message`), so the
+  script stops at the first failure instead of working on with a wrong result.
+  `RunTapirCommand` and `RunCommand` also take `raiseOnError = True/False` per call. An
+  `executionResults` list with a failed item is not a failed command; check its items.
+- `aclib.timeout` (seconds, default `None`: no limit, as some commands run long) and a per-call
+  `timeout = ...`; a timeout raises `TapirConnectionError`.
+- `aclib.FindArchicadPorts ()` lists the running Archicads, e.g.
+  `[{'port': 19723, 'tapirVersion': '1.8.1'}, {'port': 19724, 'tapirVersion': None}]`
+  (`None`: that Archicad has no Tapir). Set `aclib.port` to talk to one of them.
+- `aclib.RequireTapir ('1.8.0')` stops a script with "needs Tapir 1.8.0, you have …" when the
+  installed Add-On is older, and returns the installed version.
+
+```python
+import aclib
+
+aclib.raiseOnError = True
+aclib.RequireTapir ('1.8.0')
+aclib.PrintJson (aclib.RunTapirCommand ('GetProjectInfo'))
+```
+
+`Test/test_aclib.py` tests these without Archicad: `python archicad-addon/Test/test_aclib.py`.
 
 ## Writing an example
 

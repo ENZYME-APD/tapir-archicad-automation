@@ -11,6 +11,15 @@ GS::Optional<GS::UniString> BuildMeshPolyMemoFromGeometry (
     const GS::Array<GS::ObjectState>& polygonArcs,
     const GS::Array<GS::ObjectState>& holes);
 
+// Gives an existing slab a new outline and holes (in the format of ModifySlabs), keeping the trim
+// and side surface of every edge that lies on an old edge. Used by SplitElements.
+GS::Optional<GS::UniString> ChangeSlabPolygonKeepingEdges (
+    const API_Element& slab,
+    GS::Array<GS::ObjectState>& polygonOutline,
+    const GS::Array<GS::ObjectState>& polygonArcs,
+    const GS::Array<GS::ObjectState>& holes,
+    GSErrCode& err);
+
 void BuildMeshSublinesMemoFromGeometry (
     API_Element& elem,
     API_ElementMemo& memo,
@@ -24,6 +33,18 @@ GS::Optional<GS::UniString> ApplySlabStructure (
     API_Element* mask,
     const GS::ObjectState& details,
     bool& changed);
+
+// The surface, cut fill and cover fill settings each Create and Modify pair shares (#2220): the
+// schema fragment ends the item schema of both commands, and the function writes the given keys
+// into the element and its mask (the Create commands discard the mask). Returns an error text,
+// before anything is written, when a given surface or fill attribute does not exist.
+extern const char* ColumnSurfaceAndFillSchemaProperties;
+extern const char* BeamSurfaceAndFillSchemaProperties;
+extern const char* SlabSurfaceAndFillSchemaProperties;
+
+GS::Optional<GS::UniString> ApplyColumnSurfaceAndFillSettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed);
+GS::Optional<GS::UniString> ApplyBeamSurfaceAndFillSettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed);
+GS::Optional<GS::UniString> ApplySlabSurfaceAndFillSettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed);
 
 // The extrusion body of an Opening element, in world coordinates: the outline lies in the plane through
 // anchorPoint spanned by xAxis and yAxis, as a box from profileXMin to profileXMax along xAxis and from
@@ -73,6 +94,14 @@ class CreateShellsCommand : public CreateElementsCommandBase
 {
 public:
     CreateShellsCommand ();
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
+class CreateSkylightsCommand : public CreateElementsCommandBase
+{
+public:
+    CreateSkylightsCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
 };
@@ -307,6 +336,16 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class ModifySkylightsCommand : public CommandBase
+{
+public:
+    ModifySkylightsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class ModifyOpeningsCommand : public CommandBase
 {
 public:
@@ -346,6 +385,20 @@ public:
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
+
+class ModifyAssociativeDimensionsCommand : public CommandBase
+{
+public:
+    ModifyAssociativeDimensionsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// Adds the settings of a linear dimension (API_DimensionID) to the details GetDetailsOfElements
+// returns, with the keys ModifyAssociativeDimensions takes.
+void AddDimensionDetails (GS::ObjectState& details, const API_Element& element);
 
 class GetDimensionDataCommand : public CommandBase
 {

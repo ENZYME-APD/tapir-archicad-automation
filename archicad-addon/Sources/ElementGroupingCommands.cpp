@@ -2,6 +2,7 @@
 #include "MigrationHelper.hpp"
 #include "Base64Converter.hpp"
 #include "UserDataPairs.hpp"
+#include "NotificationCommands.hpp"
 
 #ifdef ServerMainVers_2600
 static GS::UniString GetGroupCreationErrorMessage(const GS::Array<API_Guid>& elemGuids, GSErrCode /*originalErr*/)
@@ -81,6 +82,9 @@ GS::ObjectState CreateGroupsCommand::Execute(const GS::ObjectState& parameters, 
 
 #ifdef ServerMainVers_2600
 
+    // The grouped elements are reported to the notification clients as changed (#1825).
+    ElementChangeReporter changeReporter;
+
     ACAPI_CallUndoableCommand("Create Element Groups", [&]() -> GSErrCode {
         for (const GS::ObjectState& groupParam : elementGroups) {
 
@@ -106,6 +110,10 @@ GS::ObjectState CreateGroupsCommand::Execute(const GS::ObjectState& parameters, 
                 parentGroupGuid = GetGuidFromObjectState(*parentGroupId);
             }
 
+            for (const API_Guid& elemGuid : elemGuids) {
+                changeReporter.Add(elemGuid);
+            }
+
             API_Guid newGroupGuid = APINULLGuid;
             GSErrCode err = ACAPI_Grouping_CreateGroup(
                 elemGuids,
@@ -118,6 +126,9 @@ GS::ObjectState CreateGroupsCommand::Execute(const GS::ObjectState& parameters, 
                 groupGuids(CreateErrorResponse(err, errorMsg));
             }
             else {
+                for (const API_Guid& elemGuid : elemGuids) {
+                    changeReporter.MarkChanged(elemGuid);
+                }
                 GS::ObjectState successResult;
                 successResult.Add("groupId", CreateGuidObjectState(newGroupGuid));
                 groupGuids(successResult);
@@ -125,6 +136,8 @@ GS::ObjectState CreateGroupsCommand::Execute(const GS::ObjectState& parameters, 
         }
         return NoError;
         });
+
+    changeReporter.Report();
 #else
     GS::UniString notSupportedMsg = "The Create Groups command is not supported in Archicad 25 or older.";
     groupGuids (CreateErrorResponse (APIERR_NOTSUPPORTED, notSupportedMsg));
@@ -188,6 +201,9 @@ GS::ObjectState UngroupElementsCommand::Execute(const GS::ObjectState& parameter
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState>("executionResults");
 
+    // The members of the dissolved groups are reported to the notification clients as changed (#1825).
+    ElementChangeReporter changeReporter;
+
     ACAPI_CallUndoableCommand("Ungroup Elements", [&]() -> GSErrCode {
         for (const GS::ObjectState& group : groups) {
             const GS::ObjectState* groupId = group.Get("groupId");
@@ -226,6 +242,10 @@ GS::ObjectState UngroupElementsCommand::Execute(const GS::ObjectState& parameter
                 continue;
             }
 
+            for (const API_Guid& elemGuid : elemGuids) {
+                changeReporter.Add(elemGuid);
+            }
+
             err = ACAPI_Grouping_Tool(elemGuids, APITool_Ungroup, nullptr);
             if (err != NoError) {
                 executionResults(CreateFailedExecutionResult(err, "Failed to ungroup the elements of the group."));
@@ -241,10 +261,15 @@ GS::ObjectState UngroupElementsCommand::Execute(const GS::ObjectState& parameter
                 continue;
             }
 
+            for (const API_Guid& elemGuid : elemGuids) {
+                changeReporter.MarkChanged(elemGuid);
+            }
             executionResults(CreateSuccessfulExecutionResult());
         }
         return NoError;
     });
+
+    changeReporter.Report();
 
     return response;
 }
@@ -331,6 +356,54 @@ GS::ObjectState GetGroupsOfElementsCommand::Execute(const GS::ObjectState& param
     return response;
 }
 
+// Shared by the commands that list the guids belonging to each given item
+// (the elements of a group, the element sets of an element): reads the input
+// list, checks each item's id and writes one list of ids, or an error, per
+// item. getGuids fills the guids of one item; on failure it returns the error
+// code and sets the error message.
+static GS::ObjectState GetGuidsOfEachItem (
+    const GS::ObjectState& parameters,
+    const char* inputListName,
+    const char* inputIdName,
+    const char* outputListName,
+    const char* outputItemListName,
+    const char* outputIdName,
+    const std::function<GSErrCode (const API_Guid&, GS::Array<API_Guid>&, GS::UniString&)>& getGuids)
+{
+    GS::Array<GS::ObjectState> items;
+    if (!parameters.Get (inputListName, items)) {
+        return CreateErrorResponse (APIERR_BADPARS, GS::UniString ("Invalid or missing '") + inputListName + "' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& outputList = response.AddList<GS::ObjectState> (outputListName);
+
+    for (const GS::ObjectState& item : items) {
+        const GS::ObjectState* id = item.Get (inputIdName);
+        if (id == nullptr) {
+            outputList (CreateErrorResponse (APIERR_BADPARS, GS::UniString (inputIdName) + " is missing"));
+            continue;
+        }
+
+        GS::Array<API_Guid> guids;
+        GS::UniString errorMessage;
+        const GSErrCode err = getGuids (GetGuidFromObjectState (*id), guids, errorMessage);
+        if (err != NoError) {
+            outputList (CreateErrorResponse (err, errorMessage));
+            continue;
+        }
+
+        GS::ObjectState outputItem;
+        const auto& outputIds = outputItem.AddList<GS::ObjectState> (outputItemListName);
+        for (const API_Guid& guid : guids) {
+            outputIds (CreateIdObjectState (outputIdName, guid));
+        }
+        outputList (outputItem);
+    }
+
+    return response;
+}
+
 GetElementsOfGroupsCommand::GetElementsOfGroupsCommand() :
     CommandBase(CommonSchema::Used)
 {
@@ -383,37 +456,14 @@ GS::Optional<GS::UniString> GetElementsOfGroupsCommand::GetRawResponseSchema() c
 
 GS::ObjectState GetElementsOfGroupsCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> groups;
-    if (!parameters.Get("groups", groups)) {
-        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'groups' parameter.");
-    }
-
-    GS::ObjectState response;
-    const auto& elementsOfGroups = response.AddList<GS::ObjectState>("elementsOfGroups");
-
-    for (const GS::ObjectState& group : groups) {
-        const GS::ObjectState* groupId = group.Get("groupId");
-        if (groupId == nullptr) {
-            elementsOfGroups(CreateErrorResponse(APIERR_BADPARS, "groupId is missing"));
-            continue;
-        }
-
-        GS::Array<API_Guid> elemGuids;
-        const GSErrCode err = ACAPI_Grouping_GetGroupedElems(GetGuidFromObjectState(*groupId), &elemGuids);
-        if (err != NoError) {
-            elementsOfGroups(CreateErrorResponse(err, "Failed to get the elements of the group."));
-            continue;
-        }
-
-        GS::ObjectState elementsItem;
-        const auto& elements = elementsItem.AddList<GS::ObjectState>("elements");
-        for (const API_Guid& elemGuid : elemGuids) {
-            elements(CreateElementIdObjectState(elemGuid));
-        }
-        elementsOfGroups(elementsItem);
-    }
-
-    return response;
+    return GetGuidsOfEachItem (parameters, "groups", "groupId", "elementsOfGroups", "elements", "elementId",
+        [] (const API_Guid& groupGuid, GS::Array<API_Guid>& elemGuids, GS::UniString& errorMessage) -> GSErrCode {
+            const GSErrCode err = ACAPI_Grouping_GetGroupedElems (groupGuid, &elemGuids);
+            if (err != NoError) {
+                errorMessage = "Failed to get the elements of the group.";
+            }
+            return err;
+        });
 }
 
 static GSErrCode GetMainGroupGuid(const API_Guid& groupGuid, API_Guid& mainGroupGuid)
@@ -579,37 +629,14 @@ GS::Optional<GS::UniString> GetAllElementsOfGroupsCommand::GetRawResponseSchema(
 
 GS::ObjectState GetAllElementsOfGroupsCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> groups;
-    if (!parameters.Get("groups", groups)) {
-        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'groups' parameter.");
-    }
-
-    GS::ObjectState response;
-    const auto& elementsOfGroups = response.AddList<GS::ObjectState>("elementsOfGroups");
-
-    for (const GS::ObjectState& group : groups) {
-        const GS::ObjectState* groupId = group.Get("groupId");
-        if (groupId == nullptr) {
-            elementsOfGroups(CreateErrorResponse(APIERR_BADPARS, "groupId is missing"));
-            continue;
-        }
-
-        GS::Array<API_Guid> elemGuids;
-        const GSErrCode err = ACAPI_Grouping_GetAllGroupedElems(GetGuidFromObjectState(*groupId), &elemGuids);
-        if (err != NoError) {
-            elementsOfGroups(CreateErrorResponse(err, "Failed to get all the elements of the group."));
-            continue;
-        }
-
-        GS::ObjectState elementsItem;
-        const auto& elements = elementsItem.AddList<GS::ObjectState>("elements");
-        for (const API_Guid& elemGuid : elemGuids) {
-            elements(CreateElementIdObjectState(elemGuid));
-        }
-        elementsOfGroups(elementsItem);
-    }
-
-    return response;
+    return GetGuidsOfEachItem (parameters, "groups", "groupId", "elementsOfGroups", "elements", "elementId",
+        [] (const API_Guid& groupGuid, GS::Array<API_Guid>& elemGuids, GS::UniString& errorMessage) -> GSErrCode {
+            const GSErrCode err = ACAPI_Grouping_GetAllGroupedElems (groupGuid, &elemGuids);
+            if (err != NoError) {
+                errorMessage = "Failed to get all the elements of the group.";
+            }
+            return err;
+        });
 }
 
 GetAutoGroupModeCommand::GetAutoGroupModeCommand() :
@@ -1399,6 +1426,9 @@ GS::Optional<GS::UniString> DeleteElementSetsCommand::GetInputParametersSchema()
                         "elementSetId"
                     ]
                 }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -1413,8 +1443,12 @@ GS::Optional<GS::UniString> DeleteElementSetsCommand::GetRawResponseSchema() con
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input element set, in the order of the input. On a dry run an element set that exists and was created by the Tapir Add-On gets wouldDelete."
             }
         },
         "additionalProperties": false,
@@ -1431,10 +1465,13 @@ GS::ObjectState DeleteElementSetsCommand::Execute(const GS::ObjectState& paramet
         return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'elementSets' parameter.");
     }
 
+    const bool dryRun = IsDryRun(parameters);
+
     GS::ObjectState response;
+    AddDryRunField(response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState>("executionResults");
 
-    const GSErrCode undoErr = ACAPI_CallUndoableCommand("Delete Element Sets", [&]() -> GSErrCode {
+    const auto deleteElementSets = [&]() -> GSErrCode {
         for (const GS::ObjectState& elementSet : elementSets) {
             const GS::ObjectState* elementSetId = elementSet.Get("elementSetId");
             if (elementSetId == nullptr) {
@@ -1448,10 +1485,13 @@ GS::ObjectState DeleteElementSetsCommand::Execute(const GS::ObjectState& paramet
                 continue;
             }
 
-            const GSErrCode err = ACAPI_ElementSet_Delete(setGuid);
+            // A dry run reads the set instead of deleting it: ACAPI_ElementSet_GetData answers the
+            // same errors as ACAPI_ElementSet_Delete for a set that does not exist, is already
+            // deleted or was created by another add-on.
+            const GSErrCode err = dryRun ? ACAPI_ElementSet_GetData(setGuid, nullptr, nullptr) : ACAPI_ElementSet_Delete(setGuid);
             switch (err) {
                 case NoError:
-                    executionResults(CreateSuccessfulExecutionResult());
+                    executionResults(dryRun ? CreateDryRunExecutionResult("wouldDelete") : CreateSuccessfulExecutionResult());
                     break;
                 case APIERR_NOTMINE:
                     executionResults(CreateFailedExecutionResult(err, "The element set was not created by the Tapir Add-On, so it cannot be deleted."));
@@ -1468,8 +1508,14 @@ GS::ObjectState DeleteElementSetsCommand::Execute(const GS::ObjectState& paramet
             }
         }
         return NoError;
-    });
+    };
 
+    if (dryRun) {
+        deleteElementSets();
+        return response;
+    }
+
+    const GSErrCode undoErr = ACAPI_CallUndoableCommand("Delete Element Sets", deleteElementSets);
     if (undoErr != NoError) {
         return CreateErrorResponse(undoErr, "Failed to delete the element sets.");
     }
@@ -1533,43 +1579,19 @@ GS::Optional<GS::UniString> GetElementSetsOfElementsCommand::GetRawResponseSchem
 
 GS::ObjectState GetElementSetsOfElementsCommand::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> elements;
-    if (!parameters.Get("elements", elements)) {
-        return CreateErrorResponse(APIERR_BADPARS, "Invalid or missing 'elements' parameter.");
-    }
+    return GetGuidsOfEachItem (parameters, "elements", "elementId", "elementSetsOfElements", "elementSets", "elementSetId",
+        [] (const API_Guid& elemGuid, GS::Array<API_Guid>& setGuids, GS::UniString& errorMessage) -> GSErrCode {
+            // The null GUID would make the API return every element set of the
+            // add-on, which is not what an element lookup should do.
+            if (elemGuid == APINULLGuid) {
+                errorMessage = "Invalid element identifier.";
+                return APIERR_BADPARS;
+            }
 
-    GS::ObjectState response;
-    const auto& elementSetsOfElements = response.AddList<GS::ObjectState>("elementSetsOfElements");
-
-    for (const GS::ObjectState& element : elements) {
-        const GS::ObjectState* elementId = element.Get("elementId");
-        if (elementId == nullptr) {
-            elementSetsOfElements(CreateErrorResponse(APIERR_BADPARS, "elementId is missing"));
-            continue;
-        }
-
-        // The null GUID would make the API return every element set of the
-        // add-on, which is not what an element lookup should do.
-        const API_Guid elemGuid = GetGuidFromObjectState(*elementId);
-        if (elemGuid == APINULLGuid) {
-            elementSetsOfElements(CreateErrorResponse(APIERR_BADPARS, "Invalid element identifier."));
-            continue;
-        }
-
-        GS::Array<API_Guid> setGuids;
-        const GSErrCode err = ACAPI_ElementSet_Identify(elemGuid, &setGuids);
-        if (err != NoError) {
-            elementSetsOfElements(CreateErrorResponse(err, "Failed to get the element sets of the element."));
-            continue;
-        }
-
-        GS::ObjectState elementSetsItem;
-        const auto& elementSets = elementSetsItem.AddList<GS::ObjectState>("elementSets");
-        for (const API_Guid& setGuid : setGuids) {
-            elementSets(CreateIdObjectState("elementSetId", setGuid));
-        }
-        elementSetsOfElements(elementSetsItem);
-    }
-
-    return response;
+            const GSErrCode err = ACAPI_ElementSet_Identify (elemGuid, &setGuids);
+            if (err != NoError) {
+                errorMessage = "Failed to get the element sets of the element.";
+            }
+            return err;
+        });
 }

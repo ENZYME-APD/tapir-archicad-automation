@@ -1,0 +1,36 @@
+{
+    "slug": "room-finishes-from-zones",
+    "name": "Room Finishes from Zones",
+    "summary": "Adds the floor finish, the ceiling with an optional cove and the wall finishes of the selected zones from favorites or materials; a re-run replaces them.",
+    "category": "modeling-geometry",
+    "tags": ["zones", "finishes", "slabs", "walls", "ceilings", "floors", "coves", "interiors"],
+    "author": { "name": "Jorge Beneitez", "github": "JBENEITEZ" },
+    "license": "MIT",
+    "entry": "RoomFinishesFromZones.py",
+    "versions": [
+        {
+            "version": "1.3.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "Cove: an optional Beam or Wall favorite along every straight room edge, standing on the ceiling's bottom, with the ceiling moved off the room edge by the offset typed in the window so that the cove sits in the gap."
+        },
+        {
+            "version": "1.2.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "Doors, windows and openings kept clear: each wall finish gets an opening, cutting only the finish, for every door, window and opening behind it, with a margin for frames (Archicad 29 and later). The summary lists them per zone and gives the wall finish area with the openings deducted."
+        },
+        {
+            "version": "1.1.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "Wall finishes: a wall along every part of a zone edge with a wall behind it, growing into the room from the floor finish's top to the ceiling's bottom (Archicad 28 and later)."
+        },
+        {
+            "version": "1.0.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "First version: floor finishes and ceilings."
+        }
+    ]
+}

@@ -5,9 +5,11 @@
   "commands": {
     "get": "GetDetailsOfElements",
     "getSchema": "LevelDimensionDetails",
-    "create": "CreateLevelDimensionsCommand"
+    "create": "CreateLevelDimensionsCommand",
+    "modify": "ModifyLevelDimensionsCommand"
   },
   "plainKeys": [
+    "elementId",
     "favoriteName",
     "id",
     "layerIndex"

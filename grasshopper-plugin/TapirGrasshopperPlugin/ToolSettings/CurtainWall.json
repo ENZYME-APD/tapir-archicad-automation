@@ -5,10 +5,13 @@
   "commands": {
     "get": "GetDetailsOfElements",
     "getSchema": "CurtainWallDetails",
-    "create": "CreateCurtainWallsCommand"
+    "create": "CreateCurtainWallsCommand",
+    "modify": "ModifyCurtainWallsCommand"
   },
   "plainKeys": [
-    "favoriteName"
+    "favoriteName",
+    "id",
+    "elementId"
   ],
   "sources": {
     "help": [
@@ -20,7 +23,7 @@
   },
   "fields": [
     {
-      "get": null,
+      "get": "referenceLine",
       "set": "coordinates",
       "apiMember": "API_ElementMemo::coords",
       "apiDescription": "Coordinate array (used for polygons, spline coordinates, etc.). Each pair of consecutive coordinates is one segment of the curtain wall (API_CurtainWallType::nSegments).",
@@ -41,9 +44,9 @@
       "subgroup": null
     },
     {
-      "get": null,
+      "get": "zCoordinate",
       "set": "zCoordinate",
-      "apiMember": null,
+      "apiMember": "API_CurtainWallType::planeOffset",
       "apiDescription": "Absolute Z of the curtain wall bottom (sets the home story and API_CurtainWallType::planeOffset).",
       "label": "Bottom Elevation",
       "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-175.htm (text \"Bottom Elevation [to Reference level]\")",
@@ -58,6 +61,16 @@
       "label": "Curtain Wall Height",
       "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-175.htm (text \"Curtain Wall Height\")",
       "group": "Geometry and Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "actualHeight",
+      "set": null,
+      "apiMember": null,
+      "apiDescription": "The height of the curtain wall as calculated by Archicad (ACAPI_CurtainWall_GetCWHeight).",
+      "label": null,
+      "labelSource": null,
+      "group": null,
       "subgroup": null
     },
     {

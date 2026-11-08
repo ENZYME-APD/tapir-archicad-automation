@@ -1,0 +1,285 @@
+{
+  "title": "View Map: CreateViewMapFolder, CloneProjectMapItemToViewMap and CreateViewsInViewMap put their items in the given folder, SetViewSettings changes what GetViewSettings reads",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "a story of the Project Map",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "stopOnFail": true,
+      "params": {
+        "navigatorMapId": "ProjectMap"
+      },
+      "save": {
+        "story": "navigatorItemTree.children[0].navigatorItem.children[0].navigatorItem.navigatorItemId.guid"
+      },
+      "expect": [
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[0].navigatorItem.type", "eq": "StoryItem", "name": "first item of the first Project Map group is a story" }
+      ]
+    },
+    {
+      "id": "folder at the View Map root",
+      "command": "CreateViewMapFolder",
+      "creates": false,
+      "params": {
+        "folderName": "TapirCheck view map folder"
+      },
+      "save": {
+        "folder": "navigatorItemId.guid"
+      },
+      "expect": [
+        { "path": "navigatorItemId.guid", "exists": true, "name": "folder created" }
+      ]
+    },
+    {
+      "id": "folder in the folder",
+      "command": "CreateViewMapFolder",
+      "creates": false,
+      "params": {
+        "folderName": "TapirCheck view map subfolder",
+        "parentNavigatorItemId": { "guid": "${folder}" }
+      },
+      "save": {
+        "subfolder": "navigatorItemId.guid"
+      },
+      "expect": [
+        { "path": "navigatorItemId.guid", "exists": true, "name": "subfolder created" }
+      ]
+    },
+    {
+      "id": "folder with an empty name",
+      "command": "CreateViewMapFolder",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "folderName": ""
+      },
+      "expect": [
+        { "path": "navigatorItemId", "exists": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "clone the story into the folder",
+      "command": "CloneProjectMapItemToViewMap",
+      "creates": false,
+      "params": {
+        "viewsData": [
+          { "navigatorItemId": { "guid": "${story}" }, "parentNavigatorItemId": { "guid": "${folder}" } }
+        ]
+      },
+      "save": {
+        "clone": "navigatorItems[0].navigatorItemId.guid"
+      },
+      "expect": [
+        { "path": "navigatorItems", "len": 1, "name": "one item per input" },
+        { "path": "navigatorItems[0].navigatorItemId.guid", "exists": true, "name": "clone created" }
+      ]
+    },
+    {
+      "id": "clone a source that does not exist",
+      "command": "CloneProjectMapItemToViewMap",
+      "creates": false,
+      "params": {
+        "viewsData": [
+          { "navigatorItemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "parentNavigatorItemId": { "guid": "${folder}" } }
+        ]
+      },
+      "expect": [
+        { "path": "navigatorItems[0].error", "exists": true, "name": "error item" },
+        { "path": "navigatorItems[0].navigatorItemId", "exists": false, "name": "no clone" }
+      ]
+    },
+    {
+      "id": "independent view of the story in the folder",
+      "command": "CreateViewsInViewMap",
+      "creates": false,
+      "params": {
+        "viewsData": [
+          { "navigatorItemId": { "guid": "${story}" }, "parentNavigatorItemId": { "guid": "${folder}" }, "name": "TapirCheck view" }
+        ]
+      },
+      "save": {
+        "view": "navigatorItems[0].navigatorItemId.guid"
+      },
+      "expect": [
+        { "path": "navigatorItems", "len": 1, "name": "one item per input" },
+        { "path": "navigatorItems[0].navigatorItemId.guid", "exists": true, "name": "view created" }
+      ]
+    },
+    {
+      "id": "view of a source that does not exist",
+      "command": "CreateViewsInViewMap",
+      "creates": false,
+      "params": {
+        "viewsData": [
+          { "navigatorItemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "parentNavigatorItemId": { "guid": "${folder}" }, "name": "TapirCheck no view" }
+        ]
+      },
+      "expect": [
+        { "path": "navigatorItems[0].error", "exists": true, "name": "error item" },
+        { "path": "navigatorItems[0].navigatorItemId", "exists": false, "name": "no view" }
+      ]
+    },
+    {
+      "id": "parents of the new items",
+      "command": "GetNavigatorParentItems",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [
+          { "navigatorItemId": { "guid": "${subfolder}" } },
+          { "navigatorItemId": { "guid": "${clone}" } },
+          { "navigatorItemId": { "guid": "${view}" } },
+          { "navigatorItemId": { "guid": "${folder}" } }
+        ]
+      },
+      "expect": [
+        { "path": "parentItems[0].name", "eq": "TapirCheck view map folder", "name": "subfolder is in the named folder" },
+        { "path": "parentItems[1].name", "eq": "TapirCheck view map folder", "name": "clone is in the folder" },
+        { "path": "parentItems[2].name", "eq": "TapirCheck view map folder", "name": "view is in the folder" },
+        { "path": "parentItems[3].navigatorItemId.guid", "exists": true, "name": "folder has a parent (the View Map root)" }
+      ]
+    },
+    {
+      "id": "view settings of the new view and of the folder",
+      "command": "GetViewSettings",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [
+          { "navigatorItemId": { "guid": "${view}" } },
+          { "navigatorItemId": { "guid": "${folder}" } }
+        ]
+      },
+      "expect": [
+        { "path": "viewSettings", "len": 2, "name": "one item per input" },
+        { "path": "viewSettings[0].saveFlags", "exists": true, "name": "the view has view settings" },
+        { "path": "viewSettings[1].error", "exists": true, "name": "a folder is not a view" }
+      ]
+    },
+    {
+      "id": "set scale, rotation and structure display",
+      "command": "SetViewSettings",
+      "creates": false,
+      "params": {
+        "navigatorItemIdsWithViewSettings": [
+          {
+            "navigatorItemId": { "guid": "${view}" },
+            "viewSettings": {
+              "drawingScale": 50,
+              "rotation": 0.5235987755982988,
+              "structureDisplay": "CoreOnly"
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per input" },
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the scale, rotation and structure display back",
+      "command": "GetViewSettings",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [
+          { "navigatorItemId": { "guid": "${view}" } }
+        ]
+      },
+      "expect": [
+        { "path": "viewSettings[0].drawingScale", "eq": 50, "name": "drawing scale 1:50" },
+        { "path": "viewSettings[0].saveFlags.drawingScale", "eq": true, "name": "drawing scale stored in the view" },
+        { "path": "viewSettings[0].rotation", "approx": 0.5235987755982988, "tol": 1e-6, "name": "rotated by 30 degrees" },
+        { "path": "viewSettings[0].structureDisplay", "eq": "CoreOnly" },
+        { "path": "viewSettings[0].saveFlags.structureDisplay", "eq": true, "name": "structure display stored in the view" }
+      ]
+    },
+    {
+      "id": "set the scale only",
+      "command": "SetViewSettings",
+      "creates": false,
+      "params": {
+        "navigatorItemIdsWithViewSettings": [
+          {
+            "navigatorItemId": { "guid": "${view}" },
+            "viewSettings": {
+              "drawingScale": 200
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "the scale changed, the rest kept",
+      "command": "GetViewSettings",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [
+          { "navigatorItemId": { "guid": "${view}" } }
+        ]
+      },
+      "expect": [
+        { "path": "viewSettings[0].drawingScale", "eq": 200, "name": "drawing scale 1:200" },
+        { "path": "viewSettings[0].rotation", "approx": 0.5235987755982988, "tol": 1e-6, "name": "rotation kept" },
+        { "path": "viewSettings[0].structureDisplay", "eq": "CoreOnly", "name": "structure display kept" }
+      ]
+    },
+    {
+      "id": "settings of a view that does not exist",
+      "command": "SetViewSettings",
+      "creates": false,
+      "params": {
+        "navigatorItemIdsWithViewSettings": [
+          {
+            "navigatorItemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+            "viewSettings": {
+              "drawingScale": 100
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result per input" },
+        { "path": "executionResults[0].success", "eq": false, "name": "failed" }
+      ]
+    },
+    {
+      "id": "settings of a folder",
+      "command": "SetViewSettings",
+      "creates": false,
+      "params": {
+        "navigatorItemIdsWithViewSettings": [
+          {
+            "navigatorItemId": { "guid": "${subfolder}" },
+            "viewSettings": {
+              "drawingScale": 100
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "a folder is not a view" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteNavigatorItems",
+      "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${view}" } } ] }
+    },
+    {
+      "command": "DeleteNavigatorItems",
+      "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${clone}" } } ] }
+    },
+    {
+      "command": "DeleteNavigatorItems",
+      "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${subfolder}" } } ] }
+    },
+    {
+      "command": "DeleteNavigatorItems",
+      "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${folder}" } } ] }
+    }
+  ]
+}

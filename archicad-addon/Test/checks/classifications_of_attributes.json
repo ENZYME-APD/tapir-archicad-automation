@@ -1,0 +1,242 @@
+{
+  "title": "Classifications of attributes: SetClassificationsOfAttributes, GetClassificationsOfAttributes and GetClassificationOfAttributesInSystem on a new Building Material",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "create a system",
+      "command": "CreateClassificationSystems",
+      "creates": false,
+      "params": {
+        "classificationSystemsWithItems": [
+          {
+            "classificationSystem": { "name": "Tapir check attributes system", "description": "", "source": "", "version": "1", "date": "2026-01-01" },
+            "classificationItems": []
+          }
+        ]
+      },
+      "save": { "sys": "classificationSystemIds[0].classificationSystemId.guid" },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "system created" }
+      ]
+    },
+    {
+      "id": "create T1 and T2",
+      "command": "CreateClassificationItems",
+      "creates": false,
+      "params": {
+        "newClassificationItems": [
+          { "classificationSystemId": { "guid": "${sys}" }, "classificationItemDetails": { "id": "T1", "name": "Tapir check item T1", "description": "" } },
+          { "classificationSystemId": { "guid": "${sys}" }, "classificationItemDetails": { "id": "T2", "name": "Tapir check item T2", "description": "" } }
+        ]
+      },
+      "save": {
+        "t1": "classificationItemIds[0].classificationItemId.guid",
+        "t2": "classificationItemIds[1].classificationItemId.guid"
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "T1 created" },
+        { "path": "executionResults[1].success", "eq": true, "name": "T2 created" }
+      ]
+    },
+    {
+      "id": "create a Building Material",
+      "command": "CreateBuildingMaterials",
+      "creates": false,
+      "params": {
+        "buildingMaterialDataArray": [ { "name": "Tapir check classified material", "id": "TCM" } ],
+        "overwriteExisting": false
+      },
+      "save": { "bm": "attributeIds[0].attributeId.guid" }
+    },
+    {
+      "id": "GetClassificationItemVisibility [material, bogus attribute] x [T1]",
+      "command": "GetClassificationItemVisibility",
+      "creates": false,
+      "params": {
+        "targets": [
+          { "attributeId": { "guid": "${bm}" } },
+          { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ],
+        "classificationItemIds": [ { "classificationItemId": { "guid": "${t1}" } } ]
+      },
+      "expect": [
+        { "path": "classificationItemVisibilities", "len": 2, "name": "one entry per target" },
+        { "path": "classificationItemVisibilities[0].visibilities[0].isVisible", "eq": true, "name": "a new item is offered for the material" },
+        { "path": "classificationItemVisibilities[1].error", "exists": true, "name": "bogus attribute: error" }
+      ]
+    },
+    {
+      "id": "unclassified at first (GetClassificationOfAttributesInSystem)",
+      "command": "GetClassificationOfAttributesInSystem",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${bm}" } },
+          { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ],
+        "classificationSystemId": { "guid": "${sys}" }
+      },
+      "expect": [
+        { "path": "attributeClassifications", "len": 2, "name": "one entry per attribute" },
+        { "path": "attributeClassifications[0].classificationId.classificationSystemId.guid", "exists": true, "name": "the system is listed" },
+        { "path": "attributeClassifications[0].classificationId.classificationItemId", "exists": false, "name": "no item (unclassified)" },
+        { "path": "attributeClassifications[1].error", "exists": true, "name": "bogus attribute: error" }
+      ]
+    },
+    {
+      "id": "unclassified at first (GetClassificationsOfAttributes)",
+      "command": "GetClassificationsOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeIds": [
+          { "attributeId": { "guid": "${bm}" } },
+          { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "attributeClassifications", "len": 2, "name": "one entry per attribute" },
+        { "path": "attributeClassifications[0].classificationIds", "len": 0, "name": "a new material is classified nowhere" },
+        { "path": "attributeClassifications[1].error", "exists": true, "name": "bogus attribute: error" }
+      ]
+    },
+    {
+      "id": "SetClassificationsOfAttributes [material to T1, bogus attribute]",
+      "command": "SetClassificationsOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeClassifications": [
+          { "attributeId": { "guid": "${bm}" }, "classificationId": { "classificationSystemId": { "guid": "${sys}" }, "classificationItemId": { "guid": "${t1}" } } },
+          { "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "classificationId": { "classificationSystemId": { "guid": "${sys}" }, "classificationItemId": { "guid": "${t1}" } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per input" },
+        { "path": "executionResults[0].success", "eq": true, "name": "material: success" },
+        { "path": "executionResults[1].success", "eq": false, "name": "bogus attribute: failed" }
+      ]
+    },
+    {
+      "id": "the material is T1",
+      "command": "GetClassificationOfAttributesInSystem",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${bm}" } } ],
+        "classificationSystemId": { "guid": "${sys}" }
+      },
+      "save": { "firstItem": "attributeClassifications[0].classificationId.classificationItemId.guid" }
+    },
+    {
+      "id": "T1 indeed",
+      "command": "API.GetDetailsOfClassificationItems",
+      "creates": false,
+      "params": { "classificationItemIds": [ { "classificationItemId": { "guid": "${firstItem}" } } ] },
+      "expect": [
+        { "path": "classificationItems[0].classificationItem.id", "eq": "T1", "name": "T1" }
+      ]
+    },
+    {
+      "id": "SetClassificationsOfAttributes [material to T2, replacing T1]",
+      "command": "SetClassificationsOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeClassifications": [
+          { "attributeId": { "guid": "${bm}" }, "classificationId": { "classificationSystemId": { "guid": "${sys}" }, "classificationItemId": { "guid": "${t2}" } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "GetClassificationsOfAttributes: one item in the system",
+      "command": "GetClassificationsOfAttributes",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${bm}" } } ] },
+      "save": { "allItem": "attributeClassifications[0].classificationIds[0].classificationItemId.guid" },
+      "expect": [
+        { "path": "attributeClassifications[0].classificationIds", "len": 1, "name": "T2 replaced T1" },
+        { "path": "attributeClassifications[0].classificationIds[0].classificationSystemId.guid", "exists": true, "name": "with its system" }
+      ]
+    },
+    {
+      "id": "GetClassificationOfAttributesInSystem after the replace",
+      "command": "GetClassificationOfAttributesInSystem",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${bm}" } } ],
+        "classificationSystemId": { "guid": "${sys}" }
+      },
+      "save": { "inSystemItem": "attributeClassifications[0].classificationId.classificationItemId.guid" }
+    },
+    {
+      "id": "both read T2",
+      "command": "API.GetDetailsOfClassificationItems",
+      "creates": false,
+      "params": {
+        "classificationItemIds": [
+          { "classificationItemId": { "guid": "${allItem}" } },
+          { "classificationItemId": { "guid": "${inSystemItem}" } }
+        ]
+      },
+      "expect": [
+        { "path": "classificationItems[0].classificationItem.id", "eq": "T2", "name": "GetClassificationsOfAttributes: T2" },
+        { "path": "classificationItems[1].classificationItem.id", "eq": "T2", "name": "GetClassificationOfAttributesInSystem: T2" }
+      ]
+    },
+    {
+      "id": "SetClassificationsOfAttributes [material unclassified]",
+      "command": "SetClassificationsOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeClassifications": [
+          { "attributeId": { "guid": "${bm}" }, "classificationId": { "classificationSystemId": { "guid": "${sys}" } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "success" }
+      ]
+    },
+    {
+      "id": "the material is unclassified (GetClassificationOfAttributesInSystem)",
+      "command": "GetClassificationOfAttributesInSystem",
+      "creates": false,
+      "params": {
+        "attributeIds": [ { "attributeId": { "guid": "${bm}" } } ],
+        "classificationSystemId": { "guid": "${sys}" }
+      },
+      "expect": [
+        { "path": "attributeClassifications[0].classificationId.classificationItemId", "exists": false, "name": "no item" }
+      ]
+    },
+    {
+      "id": "the material is unclassified (GetClassificationsOfAttributes)",
+      "command": "GetClassificationsOfAttributes",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${bm}" } } ] },
+      "expect": [
+        { "path": "attributeClassifications[0].classificationIds", "len": 0, "name": "classified nowhere" }
+      ]
+    },
+    {
+      "id": "SetClassificationsOfAttributes [unclassified material unclassified again]",
+      "command": "SetClassificationsOfAttributes",
+      "creates": false,
+      "params": {
+        "attributeClassifications": [
+          { "attributeId": { "guid": "${bm}" }, "classificationId": { "classificationSystemId": { "guid": "${sys}" } } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "success, nothing to remove" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "BuildingMaterial", "attributeId": { "attributeId": { "guid": "${bm}" } } } ] }
+    },
+    { "command": "DeleteClassificationSystems", "params": { "classificationSystemIds": [ { "classificationSystemId": { "guid": "${sys}" } } ] } }
+  ]
+}

@@ -1,0 +1,476 @@
+{
+  "title": "Design option combinations: create, set, activate, deactivate, rename, duplicate and delete them, and set the combination of a view",
+  "minTapir": "1.8.1",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "no design option sets yet",
+      "command": "GetDesignOptionSets",
+      "creates": false,
+      "params": {},
+      "stopOnFail": true,
+      "expect": [
+        { "path": "designOptionSets", "len": 0 }
+      ]
+    },
+    {
+      "id": "no combinations yet",
+      "command": "GetDesignOptionCombinations",
+      "creates": false,
+      "params": {},
+      "stopOnFail": true,
+      "expect": [
+        { "path": "designOptionCombinations", "len": 0 }
+      ]
+    },
+    {
+      "id": "two sets",
+      "command": "CreateDesignOptionSets",
+      "creates": false,
+      "params": {
+        "designOptionSets": ["TapirCheck set A", "TapirCheck set B"]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[1].success", "eq": true }
+      ]
+    },
+    {
+      "id": "options A1 and A2 in set A, B1 in set B",
+      "command": "CreateDesignOptions",
+      "creates": false,
+      "params": {
+        "designOptions": [
+          { "name": "TapirCheck A1", "id": "TC-A1", "ownerSetName": "TapirCheck set A" },
+          { "name": "TapirCheck A2", "id": "TC-A2", "ownerSetName": "TapirCheck set A" },
+          { "name": "TapirCheck B1", "id": "TC-B1", "ownerSetName": "TapirCheck set B" }
+        ]
+      },
+      "save": {
+        "a1": "designOptionIdsOrErrors[0].designOptionId.guid",
+        "a2": "designOptionIdsOrErrors[1].designOptionId.guid",
+        "b1": "designOptionIdsOrErrors[2].designOptionId.guid"
+      }
+    },
+    {
+      "id": "read the sets",
+      "command": "GetDesignOptionSets",
+      "creates": false,
+      "params": {},
+      "save": {
+        "setA": "designOptionSets[0].designOptionSetId.guid",
+        "setB": "designOptionSets[1].designOptionSetId.guid"
+      },
+      "expect": [
+        { "path": "designOptionSets", "len": 2 },
+        { "path": "designOptionSets[0].name", "eq": "TapirCheck set A" },
+        { "path": "designOptionSets[0].designOptions", "len": 2 },
+        { "path": "designOptionSets[1].name", "eq": "TapirCheck set B" },
+        { "path": "designOptionSets[1].designOptions", "len": 1 }
+      ]
+    },
+    {
+      "id": "combo 1 with A1 and B1, combo 2 empty, one with an unknown option",
+      "command": "CreateDesignOptionCombinations",
+      "creates": false,
+      "params": {
+        "designOptionCombinations": [
+          {
+            "name": "TapirCheck combo 1",
+            "activeDesignOptions": [
+              { "designOptionId": { "guid": "${a1}" } },
+              { "designOptionId": { "guid": "${b1}" } }
+            ]
+          },
+          {
+            "name": "TapirCheck combo 2",
+            "activeDesignOptions": []
+          },
+          {
+            "name": "TapirCheck combo bad",
+            "activeDesignOptions": [
+              { "designOptionId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "c1": "designOptionCombinationIdsOrErrors[0].designOptionCombinationId.guid",
+        "c2": "designOptionCombinationIdsOrErrors[1].designOptionCombinationId.guid"
+      },
+      "expect": [
+        { "path": "designOptionCombinationIdsOrErrors[2].error.code", "exists": true, "name": "unknown option rejected" }
+      ]
+    },
+    {
+      "id": "read the new combinations",
+      "command": "GetDesignOptionCombinations",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "designOptionCombinations", "len": 2, "name": "the rejected one was not created" },
+        { "path": "designOptionCombinations[0].name", "eq": "TapirCheck combo 1" },
+        { "path": "designOptionCombinations[0].activeDesignOptions", "len": 2 },
+        { "path": "designOptionCombinations[0].isEditable", "eq": true },
+        { "path": "designOptionCombinations[1].name", "eq": "TapirCheck combo 2" },
+        { "path": "designOptionCombinations[1].activeDesignOptions", "len": 0 }
+      ]
+    },
+    {
+      "id": "set A2 and B1 in combo 2, an unknown option in combo 1",
+      "command": "SetActiveDesignOptionsInCombinations",
+      "creates": false,
+      "params": {
+        "activeDesignOptionsInCombinations": [
+          {
+            "designOptionCombinationId": { "guid": "${c2}" },
+            "activeDesignOptions": [
+              { "designOptionId": { "guid": "${a2}" } },
+              { "designOptionId": { "guid": "${b1}" } }
+            ]
+          },
+          {
+            "designOptionCombinationId": { "guid": "${c1}" },
+            "activeDesignOptions": [
+              { "designOptionId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[1].success", "eq": false, "name": "unknown option rejected" }
+      ]
+    },
+    {
+      "id": "read after setting",
+      "command": "GetDesignOptionCombinations",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "designOptionCombinations[0].activeDesignOptions", "len": 2, "name": "combo 1 unchanged by the rejected input" },
+        { "path": "designOptionCombinations[1].activeDesignOptions", "len": 2, "name": "combo 2 has A2 and B1" }
+      ]
+    },
+    {
+      "id": "deactivate A1 in combo 1 and A2 in combo 2, B1 with an unknown option in combo 2",
+      "command": "DeactivateDesignOptionsInCombinations",
+      "creates": false,
+      "params": {
+        "deactivatedDesignOptionsInCombinations": [
+          {
+            "designOptionCombinationId": { "guid": "${c1}" },
+            "designOptions": [ { "designOptionId": { "guid": "${a1}" } } ]
+          },
+          {
+            "designOptionCombinationId": { "guid": "${c2}" },
+            "designOptions": [ { "designOptionId": { "guid": "${a2}" } } ]
+          },
+          {
+            "designOptionCombinationId": { "guid": "${c2}" },
+            "designOptions": [
+              { "designOptionId": { "guid": "${b1}" } },
+              { "designOptionId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[1].success", "eq": true },
+        { "path": "executionResults[2].success", "eq": false, "name": "unknown option rejected" }
+      ]
+    },
+    {
+      "id": "read after deactivating",
+      "command": "GetDesignOptionCombinations",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "designOptionCombinations[0].activeDesignOptions", "len": 1, "name": "combo 1 has only B1: A1 was active" },
+        { "path": "designOptionCombinations[1].activeDesignOptions", "len": 1, "name": "combo 2 has only B1: A2 was active, B1 kept by the rejected input" }
+      ]
+    },
+    {
+      "id": "activate A2 in combo 1 and A1 in combo 2, an unknown option in combo 1",
+      "command": "ActivateDesignOptionsInCombinations",
+      "creates": false,
+      "params": {
+        "designOptionsToActivate": [
+          { "designOptionCombinationId": { "guid": "${c1}" }, "designOptionId": { "guid": "${a2}" } },
+          { "designOptionCombinationId": { "guid": "${c2}" }, "designOptionId": { "guid": "${a1}" } },
+          { "designOptionCombinationId": { "guid": "${c1}" }, "designOptionId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[1].success", "eq": true },
+        { "path": "executionResults[2].success", "eq": false, "name": "unknown option rejected" }
+      ]
+    },
+    {
+      "id": "read after activating",
+      "command": "GetDesignOptionCombinations",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "designOptionCombinations[0].activeDesignOptions", "len": 2, "name": "combo 1 has B1 and one more" },
+        { "path": "designOptionCombinations[1].activeDesignOptions", "len": 2, "name": "combo 2 has B1 and one more" }
+      ]
+    },
+    {
+      "id": "deactivate A2 and B1 in combo 1, A1 in combo 2",
+      "command": "DeactivateDesignOptionsInCombinations",
+      "creates": false,
+      "params": {
+        "deactivatedDesignOptionsInCombinations": [
+          {
+            "designOptionCombinationId": { "guid": "${c1}" },
+            "designOptions": [
+              { "designOptionId": { "guid": "${a2}" } },
+              { "designOptionId": { "guid": "${b1}" } }
+            ]
+          },
+          {
+            "designOptionCombinationId": { "guid": "${c2}" },
+            "designOptions": [ { "designOptionId": { "guid": "${a1}" } } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[1].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read: the activated options were the ones given",
+      "command": "GetDesignOptionCombinations",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "designOptionCombinations[0].activeDesignOptions", "len": 0, "name": "combo 1 empty: A2 had been activated" },
+        { "path": "designOptionCombinations[1].activeDesignOptions", "len": 1, "name": "combo 2 has B1: A1 had been activated" }
+      ]
+    },
+    {
+      "id": "rename combo 1, and an unknown combination",
+      "command": "RenameDesignOptionCombinations",
+      "creates": false,
+      "params": {
+        "designOptionCombinations": [
+          { "designOptionCombinationId": { "guid": "${c1}" }, "name": "TapirCheck combo 1 renamed" },
+          { "designOptionCombinationId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "name": "TapirCheck combo unknown" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[1].success", "eq": false, "name": "unknown combination rejected" }
+      ]
+    },
+    {
+      "id": "read the new name",
+      "command": "GetDesignOptionCombinations",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "designOptionCombinations[0].name", "eq": "TapirCheck combo 1 renamed" },
+        { "path": "designOptionCombinations[1].name", "eq": "TapirCheck combo 2", "name": "combo 2 kept its name" }
+      ]
+    },
+    {
+      "id": "duplicate combo 2, and an unknown combination",
+      "command": "DuplicateDesignOptionCombinations",
+      "creates": false,
+      "params": {
+        "designOptionCombinations": [
+          { "designOptionCombinationId": { "guid": "${c2}" } },
+          { "designOptionCombinationId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "save": {
+        "c3": "designOptionCombinationIdsOrErrors[0].designOptionCombinationId.guid"
+      },
+      "expect": [
+        { "path": "designOptionCombinationIdsOrErrors[1].error.code", "exists": true, "name": "unknown combination rejected" }
+      ]
+    },
+    {
+      "id": "read the duplicate",
+      "command": "GetDesignOptionCombinations",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "designOptionCombinations", "len": 3, "name": "one duplicate only" },
+        { "path": "designOptionCombinations[2].activeDesignOptions", "len": 1, "name": "the duplicate has B1 like combo 2" }
+      ]
+    },
+    {
+      "id": "Project Map story",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": { "navigatorMapId": "ProjectMap" },
+      "stopOnFail": true,
+      "save": {
+        "story": "navigatorItemTree.children[0].navigatorItem.children[0].navigatorItem.navigatorItemId.guid"
+      },
+      "expect": [
+        { "path": "navigatorItemTree.children[0].navigatorItem.children[0].navigatorItem.type", "eq": "StoryItem" }
+      ]
+    },
+    {
+      "id": "View Map folder",
+      "command": "CreateViewMapFolder",
+      "creates": false,
+      "params": { "folderName": "TapirCheck design option views" },
+      "save": { "folder": "navigatorItemId.guid" }
+    },
+    {
+      "id": "view of the story",
+      "command": "CreateViewsInViewMap",
+      "creates": false,
+      "params": {
+        "viewsData": [
+          {
+            "navigatorItemId": { "guid": "${story}" },
+            "parentNavigatorItemId": { "guid": "${folder}" },
+            "name": "TapirCheck design option view"
+          }
+        ]
+      },
+      "save": { "view": "navigatorItems[0].navigatorItemId.guid" }
+    },
+    {
+      "id": "show combo 1 in the view, and an unknown combination",
+      "command": "SetDesignOptionCombinationOfViews",
+      "creates": false,
+      "params": {
+        "navigatorItemIdsWithCombination": [
+          { "navigatorItemId": { "guid": "${view}" }, "designOptionCombinationId": { "guid": "${c1}" } },
+          { "navigatorItemId": { "guid": "${view}" }, "designOptionCombinationId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[1].success", "eq": false, "name": "unknown combination rejected" }
+      ]
+    },
+    {
+      "id": "read the view's combination, and an unknown navigator item",
+      "command": "GetDesignOptionCombinationOfViews",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [
+          { "navigatorItemId": { "guid": "${view}" } },
+          { "navigatorItemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "designOptionCombinationOfViews[0].status", "eq": "Standard", "name": "combo 1 kept: the rejected input changed nothing" },
+        { "path": "designOptionCombinationOfViews[0].name", "eq": "TapirCheck combo 1 renamed" },
+        { "path": "designOptionCombinationOfViews[0].designOptionCombinationId.guid", "exists": true, "name": "the name is unique, so the combination is given" },
+        { "path": "designOptionCombinationOfViews[1].error.code", "exists": true, "name": "unknown navigator item rejected" }
+      ]
+    },
+    {
+      "id": "main model only",
+      "command": "SetDesignOptionCombinationOfViews",
+      "creates": false,
+      "params": {
+        "navigatorItemIdsWithCombination": [
+          { "navigatorItemId": { "guid": "${view}" }, "mainModelOnly": true }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read main model only",
+      "command": "GetDesignOptionCombinationOfViews",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [ { "navigatorItemId": { "guid": "${view}" } } ]
+      },
+      "expect": [
+        { "path": "designOptionCombinationOfViews[0].status", "eq": "MainModelOnly" },
+        { "path": "designOptionCombinationOfViews[0].designOptionCombinationId", "exists": false }
+      ]
+    },
+    {
+      "id": "show the duplicate in the view",
+      "command": "SetDesignOptionCombinationOfViews",
+      "creates": false,
+      "params": {
+        "navigatorItemIdsWithCombination": [
+          { "navigatorItemId": { "guid": "${view}" }, "designOptionCombinationId": { "guid": "${c3}" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the duplicate in the view",
+      "command": "GetDesignOptionCombinationOfViews",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [ { "navigatorItemId": { "guid": "${view}" } } ]
+      },
+      "expect": [
+        { "path": "designOptionCombinationOfViews[0].status", "eq": "Standard" },
+        { "path": "designOptionCombinationOfViews[0].name", "ne": "TapirCheck combo 1 renamed" }
+      ]
+    },
+    {
+      "id": "delete the three combinations, and an unknown one",
+      "command": "DeleteDesignOptionCombinations",
+      "creates": false,
+      "params": {
+        "designOptionCombinations": [
+          { "designOptionCombinationId": { "guid": "${c1}" } },
+          { "designOptionCombinationId": { "guid": "${c2}" } },
+          { "designOptionCombinationId": { "guid": "${c3}" } },
+          { "designOptionCombinationId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[1].success", "eq": true },
+        { "path": "executionResults[2].success", "eq": true, "name": "the one a view shows too" },
+        { "path": "executionResults[3].success", "eq": false, "name": "unknown combination rejected" }
+      ]
+    },
+    {
+      "id": "read: none left",
+      "command": "GetDesignOptionCombinations",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "designOptionCombinations", "len": 0 }
+      ]
+    },
+    {
+      "id": "the view's combination was deleted",
+      "command": "GetDesignOptionCombinationOfViews",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [ { "navigatorItemId": { "guid": "${view}" } } ]
+      },
+      "expect": [
+        { "path": "designOptionCombinationOfViews[0].status", "eq": "Missing" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${view}" } } ] } },
+    { "command": "DeleteNavigatorItems", "params": { "navigatorItemIds": [ { "navigatorItemId": { "guid": "${folder}" } } ] } },
+    { "command": "DeleteDesignOptionCombinations", "params": { "designOptionCombinations": [ { "designOptionCombinationId": { "guid": "${c1}" } } ] } },
+    { "command": "DeleteDesignOptionCombinations", "params": { "designOptionCombinations": [ { "designOptionCombinationId": { "guid": "${c2}" } } ] } },
+    { "command": "DeleteDesignOptionCombinations", "params": { "designOptionCombinations": [ { "designOptionCombinationId": { "guid": "${c3}" } } ] } },
+    { "command": "DeleteDesignOptions", "params": { "designOptions": [ { "designOptionId": { "guid": "${a1}" } } ] } },
+    { "command": "DeleteDesignOptions", "params": { "designOptions": [ { "designOptionId": { "guid": "${a2}" } } ] } },
+    { "command": "DeleteDesignOptions", "params": { "designOptions": [ { "designOptionId": { "guid": "${b1}" } } ] } },
+    { "command": "DeleteDesignOptionSets", "params": { "designOptionSets": [ { "designOptionSetId": { "guid": "${setA}" } } ] } },
+    { "command": "DeleteDesignOptionSets", "params": { "designOptionSets": [ { "designOptionSetId": { "guid": "${setB}" } } ] } }
+  ]
+}

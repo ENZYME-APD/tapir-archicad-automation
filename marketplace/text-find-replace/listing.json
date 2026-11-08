@@ -1,0 +1,18 @@
+{
+    "slug": "text-find-replace",
+    "name": "Find and Replace in Texts",
+    "summary": "Finds a word in the Texts and text Labels and replaces it in the matches you check, keeping the styles and autotexts of the rest of the text.",
+    "category": "documentation-layouts",
+    "tags": ["texts", "labels", "find-replace", "annotation"],
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
+    "license": "MIT",
+    "entry": "TextFindReplace.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "First version in the marketplace, the same as the built-in script of the same name."
+        }
+    ]
+}

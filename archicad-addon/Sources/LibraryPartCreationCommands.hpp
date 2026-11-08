@@ -2,6 +2,12 @@
 
 #include "CommandBase.hpp"
 
+// Version-independent wrappers of the library part creation calls, for a library part under creation.
+GSErrCode NewLibPartSection (const API_LibPartSection* section);
+GSErrCode WriteLibPartSection (Int32 nByte, GSConstPtr data);
+GSErrCode EndLibPartSection ();
+GSErrCode SetLibPartDetails (const API_LibPart* libPart, GSHandle paramHdl, const API_LibPartDetails* details);
+
 class CreateLibraryPartFromElementsCommand : public CommandBase
 {
 public:

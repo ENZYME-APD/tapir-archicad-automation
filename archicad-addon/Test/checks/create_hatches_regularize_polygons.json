@@ -1,0 +1,233 @@
+{
+  "title": "RegularizePolygons feeds CreateHatches; CreateHatches keeps the outline, holes, arcs, pens, colors, story, layer and id, and refuses bad items",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [ "Hatch" ],
+  "steps": [
+    {
+      "id": "regularize a square with a repeated point and a hole, a bow tie, a flat polygon and one with a bad arc",
+      "command": "RegularizePolygons",
+      "creates": false,
+      "params": {
+        "polygons": [
+          {
+            "polygonCoordinates": [
+              { "x": 800.0, "y": 700.0 },
+              { "x": 804.0, "y": 700.0 },
+              { "x": 804.0, "y": 700.0 },
+              { "x": 804.0, "y": 704.0 },
+              { "x": 800.0, "y": 704.0 },
+              { "x": 800.0, "y": 700.0 }
+            ],
+            "holes": [
+              {
+                "polygonOutline": [
+                  { "x": 801.0, "y": 701.0 },
+                  { "x": 801.0, "y": 702.0 },
+                  { "x": 802.0, "y": 702.0 },
+                  { "x": 802.0, "y": 701.0 }
+                ]
+              }
+            ]
+          },
+          {
+            "polygonCoordinates": [
+              { "x": 810.0, "y": 700.0 },
+              { "x": 814.0, "y": 704.0 },
+              { "x": 814.0, "y": 700.0 },
+              { "x": 810.0, "y": 704.0 }
+            ]
+          },
+          {
+            "polygonCoordinates": [
+              { "x": 800.0, "y": 720.0 },
+              { "x": 801.0, "y": 720.0 },
+              { "x": 802.0, "y": 720.0 }
+            ]
+          },
+          {
+            "polygonCoordinates": [
+              { "x": 800.0, "y": 730.0 },
+              { "x": 804.0, "y": 730.0 },
+              { "x": 804.0, "y": 733.0 }
+            ],
+            "polygonArcs": [ { "begIndex": 1, "endIndex": 9, "arcAngle": 0.5 } ]
+          }
+        ],
+        "withAncestry": true
+      },
+      "save": {
+        "ro": "results[0].polygons[0].polygonCoordinates",
+        "rh": "results[0].polygons[0].holes",
+        "o0x": "results[0].polygons[0].polygonCoordinates[0].x",
+        "o0y": "results[0].polygons[0].polygonCoordinates[0].y",
+        "o2x": "results[0].polygons[0].polygonCoordinates[2].x",
+        "o2y": "results[0].polygons[0].polygonCoordinates[2].y",
+        "h0x": "results[0].polygons[0].holes[0].polygonOutline[0].x",
+        "h0y": "results[0].polygons[0].holes[0].polygonOutline[0].y",
+        "h2x": "results[0].polygons[0].holes[0].polygonOutline[2].x",
+        "h2y": "results[0].polygons[0].holes[0].polygonOutline[2].y"
+      },
+      "expect": [
+        { "path": "results[0].polygons", "len": 1, "name": "the square stays one polygon" },
+        { "path": "results[0].polygons[0].polygonCoordinates", "len": 4, "name": "repeated and closing points removed" },
+        { "expr": "${o0x} + ${o2x}", "approx": 1604.0, "name": "opposite corners of the square kept (x)" },
+        { "expr": "${o0y} + ${o2y}", "approx": 1404.0, "name": "opposite corners of the square kept (y)" },
+        { "path": "results[0].polygons[0].holes", "len": 1, "name": "hole kept" },
+        { "path": "results[0].polygons[0].holes[0].polygonOutline", "len": 4, "name": "hole has four points" },
+        { "expr": "${h0x} + ${h2x}", "approx": 1603.0, "name": "opposite corners of the hole kept (x)" },
+        { "expr": "${h0y} + ${h2y}", "approx": 1403.0, "name": "opposite corners of the hole kept (y)" },
+        { "path": "results[0].polygons[0].ancestry.contours", "len": 2, "name": "ancestry of the outline and the hole" },
+        { "path": "results[1].polygons", "len": 2, "name": "self-intersecting bow tie split in two" },
+        { "path": "results[1].polygons[0].polygonCoordinates", "len": 3, "name": "first half of the bow tie is a triangle" },
+        { "path": "results[1].polygons[1].polygonCoordinates", "len": 3, "name": "second half of the bow tie is a triangle" },
+        { "path": "results[2].polygons", "len": 0, "name": "nothing valid left of a polygon whose points are on one line" },
+        { "path": "results[3].error.code", "exists": true, "name": "arc index past the last point refused" }
+      ]
+    },
+    {
+      "id": "two hatches, the first one regularized",
+      "command": "CreateHatches",
+      "params": {
+        "hatchesData": [
+          {
+            "coordinates": "${ro}",
+            "holes": "${rh}",
+            "floorInd": 0,
+            "layerIndex": 1,
+            "contourPenIndex": 5,
+            "fillPenIndex": 7,
+            "fillBackgroundPenIndex": 3,
+            "roomSpecial": 50,
+            "showArea": false,
+            "id": "CHK-HATCH-1"
+          },
+          {
+            "coordinates": [
+              { "x": 820.0, "y": 700.0 },
+              { "x": 824.0, "y": 700.0 },
+              { "x": 824.0, "y": 703.0 },
+              { "x": 820.0, "y": 703.0 }
+            ],
+            "arcs": [ { "begIndex": 1, "endIndex": 2, "arcAngle": 0.5 } ],
+            "floorInd": 1,
+            "layerIndex": 1,
+            "contourPenIndex": 6,
+            "fillPenIndex": 4,
+            "foregroundColor": { "red": 0.2, "green": 0.4, "blue": 0.6 },
+            "backgroundColor": { "red": 1.0, "green": 1.0, "blue": 0.0 },
+            "roomSpecial": -1,
+            "showArea": true
+          }
+        ]
+      },
+      "save": { "t1": "elements[0].elementId.guid", "t2": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "hatch with a hole created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "hatch with an arc created" }
+      ]
+    },
+    {
+      "id": "read the hatches back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${t1}" } }, { "elementId": { "guid": "${t2}" } } ]
+      },
+      "save": {
+        "c0x": "detailsOfElements[0].details.coordinates[0].x",
+        "c0y": "detailsOfElements[0].details.coordinates[0].y",
+        "c2x": "detailsOfElements[0].details.coordinates[2].x",
+        "c2y": "detailsOfElements[0].details.coordinates[2].y",
+        "c4x": "detailsOfElements[0].details.coordinates[4].x",
+        "c4y": "detailsOfElements[0].details.coordinates[4].y",
+        "k0x": "detailsOfElements[0].details.holes[0].polygonOutline[0].x",
+        "k0y": "detailsOfElements[0].details.holes[0].polygonOutline[0].y",
+        "k2x": "detailsOfElements[0].details.holes[0].polygonOutline[2].x",
+        "k2y": "detailsOfElements[0].details.holes[0].polygonOutline[2].y"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Hatch" },
+        { "path": "detailsOfElements[0].details.coordinates", "len": 5, "name": "four outline points and the closing point" },
+        { "expr": "${c0x} - ${o0x}", "approx": 0.0, "name": "first outline point kept (x)" },
+        { "expr": "${c0y} - ${o0y}", "approx": 0.0, "name": "first outline point kept (y)" },
+        { "expr": "${c2x} - ${o2x}", "approx": 0.0, "name": "third outline point kept (x)" },
+        { "expr": "${c2y} - ${o2y}", "approx": 0.0, "name": "third outline point kept (y)" },
+        { "expr": "${c4x} - ${c0x}", "approx": 0.0, "name": "outline closed on its first point (x)" },
+        { "expr": "${c4y} - ${c0y}", "approx": 0.0, "name": "outline closed on its first point (y)" },
+        { "path": "detailsOfElements[0].details.holes", "len": 1, "name": "hole kept" },
+        { "path": "detailsOfElements[0].details.holes[0].polygonOutline", "len": 5, "name": "four hole points and the closing point" },
+        { "expr": "${k0x} - ${h0x}", "approx": 0.0, "name": "first hole point kept (x)" },
+        { "expr": "${k0y} - ${h0y}", "approx": 0.0, "name": "first hole point kept (y)" },
+        { "expr": "${k2x} - ${h2x}", "approx": 0.0, "name": "third hole point kept (x)" },
+        { "expr": "${k2y} - ${h2y}", "approx": 0.0, "name": "third hole point kept (y)" },
+        { "path": "detailsOfElements[0].details.contourPenIndex", "eq": 5, "name": "contour pen 5 applied" },
+        { "path": "detailsOfElements[0].details.fillPenIndex", "eq": 7, "name": "fill pen 7 applied" },
+        { "path": "detailsOfElements[0].details.fillBackgroundPenIndex", "eq": 3, "name": "fill background pen 3 applied" },
+        { "path": "detailsOfElements[0].details.foregroundColor", "exists": false, "name": "fill pen not overridden by a color" },
+        { "path": "detailsOfElements[0].details.backgroundColor", "exists": false, "name": "background pen not overridden by a color" },
+        { "path": "detailsOfElements[0].details.roomSpecial", "eq": 50, "name": "roomSpecial 50 applied" },
+        { "path": "detailsOfElements[0].details.showArea", "eq": false, "name": "showArea false applied" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "floorInd 0 applied" },
+        { "path": "detailsOfElements[0].layerIndex", "eq": 1, "name": "layerIndex applied" },
+        { "path": "detailsOfElements[0].id", "eq": "CHK-HATCH-1", "name": "id applied" },
+        { "path": "detailsOfElements[1].details.coordinates", "len": 5, "name": "second hatch: four points and the closing point" },
+        { "path": "detailsOfElements[1].details.coordinates[1].x", "approx": 824.0, "name": "second point x kept" },
+        { "path": "detailsOfElements[1].details.coordinates[2].y", "approx": 703.0, "name": "third point y kept" },
+        { "path": "detailsOfElements[1].details.holes", "len": 0, "name": "no hole" },
+        { "path": "detailsOfElements[1].details.arcs", "len": 1, "name": "arc kept" },
+        { "path": "detailsOfElements[1].details.arcs[0].begIndex", "eq": 1, "name": "arc begin index kept" },
+        { "path": "detailsOfElements[1].details.arcs[0].endIndex", "eq": 2, "name": "arc end index kept" },
+        { "path": "detailsOfElements[1].details.arcs[0].arcAngle", "approx": 0.5, "name": "arc angle kept" },
+        { "path": "detailsOfElements[1].details.contourPenIndex", "eq": 6, "name": "contour pen 6 applied" },
+        { "path": "detailsOfElements[1].details.foregroundColor.red", "approx": 0.2, "name": "foreground color applied (red)" },
+        { "path": "detailsOfElements[1].details.foregroundColor.green", "approx": 0.4, "name": "foreground color applied (green)" },
+        { "path": "detailsOfElements[1].details.foregroundColor.blue", "approx": 0.6, "name": "foreground color applied (blue)" },
+        { "path": "detailsOfElements[1].details.backgroundColor.red", "approx": 1.0, "name": "background color applied (red)" },
+        { "path": "detailsOfElements[1].details.backgroundColor.blue", "approx": 0.0, "name": "background color applied (blue)" },
+        { "path": "detailsOfElements[1].details.roomSpecial", "eq": -1, "name": "roomSpecial off applied" },
+        { "path": "detailsOfElements[1].details.showArea", "eq": true, "name": "showArea true applied" },
+        { "path": "detailsOfElements[1].floorIndex", "eq": 1, "name": "floorInd 1 applied" }
+      ]
+    },
+    {
+      "id": "hatch with an unknown favorite",
+      "command": "CreateHatches",
+      "params": {
+        "hatchesData": [
+          {
+            "coordinates": [ { "x": 800.0, "y": 740.0 }, { "x": 804.0, "y": 740.0 }, { "x": 804.0, "y": 743.0 } ],
+            "favoriteName": "Tapir check: no such favorite"
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "hatch with an unknown favorite refused" }
+      ]
+    },
+    {
+      "id": "hatch with a hole of only two different points",
+      "command": "CreateHatches",
+      "params": {
+        "hatchesData": [
+          {
+            "coordinates": [ { "x": 800.0, "y": 750.0 }, { "x": 804.0, "y": 750.0 }, { "x": 804.0, "y": 754.0 }, { "x": 800.0, "y": 754.0 } ],
+            "holes": [
+              { "polygonOutline": [ { "x": 801.0, "y": 751.0 }, { "x": 802.0, "y": 751.0 }, { "x": 801.0, "y": 751.0 } ] }
+            ],
+            "floorInd": 0
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements[0].error.code", "exists": true, "name": "hole with fewer than three points refused" }
+      ]
+    },
+    {
+      "id": "only the valid hatches were created",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Hatch" },
+      "expect": [ { "path": "elements", "len": 2 } ]
+    }
+  ]
+}

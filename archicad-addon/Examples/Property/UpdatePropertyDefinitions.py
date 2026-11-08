@@ -1,4 +1,4 @@
-"""Creates a temporary custom property and changes its name, description and default value with UpdatePropertyDefinitions.
+"""Creates a temporary custom property and changes its name, description, default value and editability with UpdatePropertyDefinitions.
 
 The property keeps its guid. The script deletes the property and its group again at the end.
 """
@@ -21,6 +21,7 @@ aclib.PrintJson (aclib.RunTapirCommand ('UpdatePropertyDefinitions', {
         'propertyId': propertyId['propertyId'],
         'name': 'Tapir Example Property Renamed',
         'description': 'Updated by a Tapir example',
+        'isEditable': False,
         'defaultValue': {'basicDefaultValue': {'type': 'string', 'status': 'normal', 'value': 'n/a'}}
     }]
 }))

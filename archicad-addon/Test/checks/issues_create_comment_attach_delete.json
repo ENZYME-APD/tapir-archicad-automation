@@ -1,0 +1,334 @@
+{
+  "title": "Issues: CreateIssue, AddCommentToIssue, AttachElementsToIssue, DetachElementsFromIssue and DeleteIssue change what GetIssues, GetCommentsFromIssue and GetElementsAttachedToIssue read back",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "project starts without issues",
+      "command": "GetIssues",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "issues", "len": 0, "name": "no issues in the empty project" }
+      ]
+    },
+    {
+      "id": "create issue A",
+      "command": "CreateIssue",
+      "creates": false,
+      "params": {
+        "name": "Tapir check issue A",
+        "tagText": "TAPIR-CHECK-A"
+      },
+      "save": {
+        "issueA": "issueId.guid"
+      },
+      "expect": [
+        { "path": "issueId.guid", "exists": true, "name": "id of the new issue" },
+        { "path": "error", "exists": false, "name": "no error" }
+      ]
+    },
+    {
+      "id": "read issue A",
+      "command": "GetIssues",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "issues", "len": 1, "name": "one issue" },
+        { "path": "issues[0].name", "eq": "Tapir check issue A", "name": "name" },
+        { "path": "issues[0].tagText", "eq": "TAPIR-CHECK-A", "name": "tag text" },
+        { "path": "issues[0].parentIssueId.guid", "eq": "00000000-0000-0000-0000-000000000000", "name": "no parent" },
+        { "path": "issues[0].creaTime", "gt": 0, "name": "creation time set" }
+      ]
+    },
+    {
+      "id": "create issue B under A",
+      "command": "CreateIssue",
+      "creates": false,
+      "params": {
+        "name": "Tapir check issue B",
+        "parentIssueId": { "guid": "${issueA}" }
+      },
+      "save": {
+        "issueB": "issueId.guid"
+      },
+      "expect": [
+        { "path": "issueId.guid", "exists": true, "name": "id of the new issue" }
+      ]
+    },
+    {
+      "id": "read issue B",
+      "command": "GetIssues",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "issues", "len": 2, "name": "two issues" },
+        { "path": "issues[1].name", "eq": "Tapir check issue B", "name": "B listed after A" },
+        { "path": "issues[1].parentIssueId.guid", "ne": "00000000-0000-0000-0000-000000000000", "name": "B has a parent" },
+        { "path": "issues[1].tagText", "eq": "", "name": "no tag text given: empty" }
+      ]
+    },
+    {
+      "id": "[issue under a parent that does not exist]",
+      "command": "CreateIssue",
+      "creates": false,
+      "params": {
+        "name": "Tapir check issue with a missing parent",
+        "parentIssueId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }
+      },
+      "expect": [
+        { "path": "error", "exists": true, "name": "failed" },
+        { "path": "issueId", "exists": false, "name": "no id" }
+      ]
+    },
+    {
+      "id": "no issue added by the failed create",
+      "command": "GetIssues",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "issues", "len": 2, "name": "still two issues" }
+      ]
+    },
+    {
+      "id": "comment on A",
+      "command": "AddCommentToIssue",
+      "creates": false,
+      "params": {
+        "issueId": { "guid": "${issueA}" },
+        "author": "Tapir check",
+        "status": "Warning",
+        "text": "Tapir check comment"
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the comment",
+      "command": "GetCommentsFromIssue",
+      "creates": false,
+      "params": {
+        "issueId": { "guid": "${issueA}" }
+      },
+      "expect": [
+        { "path": "comments", "len": 1, "name": "one comment" },
+        { "path": "comments[0].author", "eq": "Tapir check", "name": "author" },
+        { "path": "comments[0].text", "eq": "Tapir check comment", "name": "text" },
+        { "path": "comments[0].status", "eq": "Warning", "name": "status" },
+        { "path": "comments[0].guid", "exists": true, "name": "comment id" }
+      ]
+    },
+    {
+      "id": "B has no comments",
+      "command": "GetCommentsFromIssue",
+      "creates": false,
+      "params": {
+        "issueId": { "guid": "${issueB}" }
+      },
+      "expect": [
+        { "path": "comments", "len": 0, "name": "comment only on A" }
+      ]
+    },
+    {
+      "id": "[comment on an issue that does not exist]",
+      "command": "AddCommentToIssue",
+      "creates": false,
+      "params": {
+        "issueId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+        "author": "Tapir check",
+        "status": "Info",
+        "text": "Tapir check comment on nothing"
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "failed" }
+      ]
+    },
+    {
+      "id": "walls to attach",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 700, "y": 700 }, "endCoordinate": { "x": 703, "y": 700 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 },
+          { "begCoordinate": { "x": 700, "y": 702 }, "endCoordinate": { "x": 703, "y": 702 }, "zCoordinate": 0, "height": 2.5, "thickness": 0.2 }
+        ]
+      },
+      "save": {
+        "w1": "elements[0].elementId.guid",
+        "w2": "elements[1].elementId.guid"
+      }
+    },
+    {
+      "id": "attach wall 1 as Highlight",
+      "command": "AttachElementsToIssue",
+      "creates": false,
+      "params": {
+        "issueId": { "guid": "${issueA}" },
+        "elements": [ { "elementId": { "guid": "${w1}" } } ],
+        "type": "Highlight"
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "attach wall 2 as Modification",
+      "command": "AttachElementsToIssue",
+      "creates": false,
+      "params": {
+        "issueId": { "guid": "${issueA}" },
+        "elements": [ { "elementId": { "guid": "${w2}" } } ],
+        "type": "Modification"
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the Highlight elements",
+      "command": "GetElementsAttachedToIssue",
+      "creates": false,
+      "params": {
+        "issueId": { "guid": "${issueA}" },
+        "type": "Highlight"
+      },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "wall 1 only" }
+      ]
+    },
+    {
+      "id": "read the Modification elements",
+      "command": "GetElementsAttachedToIssue",
+      "creates": false,
+      "params": {
+        "issueId": { "guid": "${issueA}" },
+        "type": "Modification"
+      },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "wall 2 only" }
+      ]
+    },
+    {
+      "id": "nothing attached to B",
+      "command": "GetElementsAttachedToIssue",
+      "creates": false,
+      "params": {
+        "issueId": { "guid": "${issueB}" },
+        "type": "Highlight"
+      },
+      "expect": [
+        { "path": "elements", "len": 0, "name": "attached only to A" }
+      ]
+    },
+    {
+      "id": "[attach to an issue that does not exist]",
+      "command": "AttachElementsToIssue",
+      "creates": false,
+      "params": {
+        "issueId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+        "elements": [ { "elementId": { "guid": "${w1}" } } ],
+        "type": "Highlight"
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "failed" }
+      ]
+    },
+    {
+      "id": "detach wall 1",
+      "command": "DetachElementsFromIssue",
+      "creates": false,
+      "params": {
+        "issueId": { "guid": "${issueA}" },
+        "elements": [ { "elementId": { "guid": "${w1}" } } ]
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "Highlight elements after the detach",
+      "command": "GetElementsAttachedToIssue",
+      "creates": false,
+      "params": {
+        "issueId": { "guid": "${issueA}" },
+        "type": "Highlight"
+      },
+      "expect": [
+        { "path": "elements", "len": 0, "name": "wall 1 detached" }
+      ]
+    },
+    {
+      "id": "Modification elements after the detach",
+      "command": "GetElementsAttachedToIssue",
+      "creates": false,
+      "params": {
+        "issueId": { "guid": "${issueA}" },
+        "type": "Modification"
+      },
+      "expect": [
+        { "path": "elements", "len": 1, "name": "wall 2 still attached" }
+      ]
+    },
+    {
+      "id": "[detach from an issue that does not exist]",
+      "command": "DetachElementsFromIssue",
+      "creates": false,
+      "params": {
+        "issueId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+        "elements": [ { "elementId": { "guid": "${w2}" } } ]
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "failed" }
+      ]
+    },
+    {
+      "id": "delete issue B",
+      "command": "DeleteIssue",
+      "creates": false,
+      "params": {
+        "issueId": { "guid": "${issueB}" },
+        "acceptAllElements": false
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "B is gone",
+      "command": "GetIssues",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "issues", "len": 1, "name": "one issue left" },
+        { "path": "issues[0].name", "eq": "Tapir check issue A", "name": "A kept" }
+      ]
+    },
+    {
+      "id": "[delete an issue that does not exist]",
+      "command": "DeleteIssue",
+      "creates": false,
+      "params": {
+        "issueId": { "guid": "00000000-0000-0000-0000-00000000BEEF" },
+        "acceptAllElements": false
+      },
+      "expect": [
+        { "path": "success", "eq": false, "name": "failed" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteIssue",
+      "params": {
+        "issueId": { "guid": "${issueB}" },
+        "acceptAllElements": false
+      }
+    },
+    {
+      "command": "DeleteIssue",
+      "params": {
+        "issueId": { "guid": "${issueA}" },
+        "acceptAllElements": false
+      }
+    }
+  ]
+}

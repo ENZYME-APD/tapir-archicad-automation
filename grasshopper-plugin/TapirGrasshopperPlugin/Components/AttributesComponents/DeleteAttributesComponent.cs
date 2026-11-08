@@ -29,12 +29,23 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             InGenerics(
                 "AttributeGuids",
                 "Identifiers of the attributes to delete.");
+
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "DryRun",
+                "If true, nothing is deleted: ErrorMessages says what the deletion would do for each " +
+                "attribute, from the checks made before deleting (invalid attribute type, attribute not " +
+                "found). Archicad can still refuse to delete an attribute that passes them. Default is false.",
+                false);
+
+            SetOptionality(2);
         }
 
         protected override void AddOutputs()
         {
             OutErrorMessages(
-                "Error message of each attribute (empty when it succeeded).");
+                "Error message of each attribute (empty when it was deleted, or with DryRun when it " +
+                "would be deleted).");
         }
 
         protected override void Solve(
@@ -56,7 +67,8 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
             var input = new DeleteAttributesParameters
             {
-                AttributesToDelete = new List<AttributeToDelete>()
+                AttributesToDelete = new List<AttributeToDelete>(),
+                DryRun = da.GetOptional(2, false) ? true : (bool?)null
             };
 
             foreach (var wrapper in attributeWrappers)

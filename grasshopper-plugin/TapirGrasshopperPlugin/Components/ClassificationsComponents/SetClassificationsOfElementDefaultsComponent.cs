@@ -8,8 +8,10 @@ using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
+    // Sends one SetClassificationsOfElementDefaults request for every branch
+    // of the inputs, so a tree input makes one undo step in Archicad (#203).
     public class SetClassificationsOfElementDefaultsComponent
-        : ArchicadExecutorComponent
+        : BatchedExecutorComponent<ElementDefaultClassificationObj>
     {
         public override string CommandName =>
             "SetClassificationsOfElementDefaults";
@@ -62,14 +64,17 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 "Error message of each element type (empty when it succeeded).");
         }
 
-        protected override void Solve(
-            IGH_DataAccess da)
+        protected override bool TryGetBatchItems(
+            IGH_DataAccess da,
+            out List<ElementDefaultClassificationObj> items)
         {
+            items = null;
+
             if (!da.TryCreate(
                     0,
                     out ClassificationGuid systemId))
             {
-                return;
+                return false;
             }
 
             da.TryGetList(
@@ -85,7 +90,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 {
                     this.AddError(
                         "Invalid classification item identifier in the ClassificationItemGuids input.");
-                    return;
+                    return false;
                 }
                 guids.Add(itemId);
             }
@@ -94,21 +99,17 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                     2,
                     out List<string> elementTypes))
             {
-                return;
+                return false;
             }
 
             if (guids.Count > 1 && elementTypes.Count != guids.Count)
             {
                 this.AddError(
                     "The count of ClassificationItemGuids must be 0, 1 or the same as the count of ElementTypes.");
-                return;
+                return false;
             }
 
-            var input = new SetClassificationsOfElementDefaultsParameters
-            {
-                ElementDefaultClassifications =
-                    new List<ElementDefaultClassificationObj>()
-            };
+            items = new List<ElementDefaultClassificationObj>();
 
             for (var i = 0; i < elementTypes.Count; i++)
             {
@@ -118,7 +119,7 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                         ? guids[0]
                         : guids[i];
 
-                input.ElementDefaultClassifications.Add(
+                items.Add(
                     new ElementDefaultClassificationObj
                     {
                         ElementType = elementTypes[i],
@@ -134,11 +135,26 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                     });
             }
 
-            SetCadValuesWithErrorMessages(
-                CommandName,
-                input,
-                ToAddOn,
-                da);
+            return true;
+        }
+
+        // The defaults of an element type have one item per classification
+        // system; the branches used to be sent one after the other, so the
+        // last one won.
+        protected override string GetBatchItemKey(
+            ElementDefaultClassificationObj item)
+        {
+            return $"{item.ElementType}|" +
+                   $"{item.Classification?.ClassificationSystemId?.Guid?.ToLowerInvariant()}";
+        }
+
+        protected override object CreateBatchParameters(
+            List<ElementDefaultClassificationObj> items)
+        {
+            return new SetClassificationsOfElementDefaultsParameters
+            {
+                ElementDefaultClassifications = items
+            };
         }
 
         protected override System.Drawing.Bitmap Icon =>

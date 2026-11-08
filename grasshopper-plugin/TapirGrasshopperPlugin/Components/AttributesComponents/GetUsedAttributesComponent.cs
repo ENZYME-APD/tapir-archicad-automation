@@ -12,9 +12,9 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         public GetUsedAttributesComponent()
             : base(
                 "GetUsedAttributes",
-                "Gets the attributes in use, as Archicad reports them for the usedAttributes JSON query: parsed into " +
-                "UsedAttributes when the report is a JSON object, otherwise as text in Raw. Helps to find the " +
-                "attributes DeleteAttributes can remove before a handover. Available from Archicad 27.",
+                "Gets how many attributes of each type are in use (layers, lines, fills, composites, surfaces, ...), " +
+                "as Archicad reports them for the usedAttributes JSON query: the counts in UsedAttributes, the report " +
+                "as text in Raw. Available from Archicad 27.",
                 GroupNames.Attributes)
         {
         }
@@ -23,12 +23,12 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         {
             OutText(
                 "UsedAttributes",
-                "The report as JSON text, when Archicad answered with a JSON object. Its layout is not documented by " +
-                "the Archicad API.");
+                "The number of attributes in use per attribute type, as JSON text, e.g. {\"Layer\": 16, \"Line\": 9}. " +
+                "Empty when the report could not be read.");
 
             OutText(
                 "Raw",
-                "The report as text, when it is not a JSON object.");
+                "The report as Archicad wrote it, e.g. Layer: 16, LineType: 9.");
         }
 
         protected override void Solve(

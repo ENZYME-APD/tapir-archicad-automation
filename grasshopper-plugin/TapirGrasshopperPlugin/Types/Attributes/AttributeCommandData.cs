@@ -16,6 +16,12 @@ namespace TapirGrasshopperPlugin.Types.Attributes
     {
         [JsonProperty("attributesToDelete")]
         public List<AttributeToDelete> AttributesToDelete;
+
+        // Only set when true; false is the command's default.
+        [JsonProperty(
+            "dryRun",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public bool? DryRun;
     }
 
     public class BuildingMaterialPhysicalProperties

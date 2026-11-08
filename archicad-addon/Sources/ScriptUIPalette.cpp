@@ -2,8 +2,21 @@
 #include "ResourceIds.hpp"
 #include "MigrationHelper.hpp"
 
-const GS::Guid                  ScriptUIPalette::paletteGuid ("{6E3B7F0A-6C7A-4B0E-9A0D-5B6E3F2C9A11}");
-GS::Ref<ScriptUIPalette>        ScriptUIPalette::instance;
+// The first GUID is the one of the single Script UI palette before #1819, so Archicad keeps its
+// saved position for the first window. Never change or reorder them.
+const GS::Guid                  ScriptUIPalette::paletteGuids[ScriptUIPalette::SlotCount] = {
+    GS::Guid ("{6E3B7F0A-6C7A-4B0E-9A0D-5B6E3F2C9A11}"),
+    GS::Guid ("{3A9C51D2-8E47-4F06-B1D3-7C2E94A0F512}"),
+    GS::Guid ("{B47E2F90-15C6-4D8A-9E3B-60F1A7C2D813}"),
+    GS::Guid ("{0D6F83A4-C2B9-4E71-8A05-D93E1B4F7C14}"),
+    GS::Guid ("{E2581C7B-4A3D-4B9F-A6E0-1F7D58C9B315}"),
+    GS::Guid ("{7F14B3E6-9D02-4C85-B7A1-E4C603D2A916}"),
+    GS::Guid ("{51C9E0A8-6B7F-4A23-8D94-2B0E7F1C6A17}"),
+    GS::Guid ("{C83D4A15-F0E6-4197-95B2-A7D1E6083F18}")
+};
+GS::Ref<ScriptUIPalette>        ScriptUIPalette::instances[ScriptUIPalette::SlotCount];
+GS::UniString                   ScriptUIPalette::slotOwners[ScriptUIPalette::SlotCount];
+GS::HashTable<GS::UniString, GS::UniString> ScriptUIPalette::scriptNames;
 
 // Zoom control, SetAllowSelfSignedCertificates, and the context-menu mode enum do not exist at
 // all on DG::Browser before Archicad 27 (context menu can only be toggled on/off pre-27, no
@@ -132,10 +145,15 @@ static GS::UniString InjectPageLoadedScript (const GS::UniString& htmlContent)
     return InjectScriptBeforeBodyEnd (htmlContent, pageLoadedScript);
 }
 
-ScriptUIPalette::ScriptUIPalette ()
-    : DG::Palette (ACAPI_GetOwnResModule (), ID_SCRIPTUI_PALETTE, ACAPI_GetOwnResModule (), paletteGuid)
+ScriptUIPalette::ScriptUIPalette (Int32 _slotIndex)
+    : DG::Palette (ACAPI_GetOwnResModule (), ID_SCRIPTUI_PALETTE, ACAPI_GetOwnResModule (), paletteGuids[_slotIndex])
+    , slotIndex (_slotIndex)
     , browser (GetReference (), 1)
 {
+    if (slotIndex > 0) {
+        SetTitle (GS::UniString::Printf ("%T %d", GetTitle ().ToPrintf (), (int) (slotIndex + 1)));   // "Tapir Script UI 2"
+    }
+    defaultTitle = GetTitle ();
     Attach (*this);
     BeginEventProcessing ();
     RegisterACAPIJavaScriptObject ();
@@ -146,22 +164,113 @@ ScriptUIPalette::~ScriptUIPalette ()
     EndEventProcessing ();
 }
 
-bool ScriptUIPalette::HasInstance ()
+bool ScriptUIPalette::HasInstance (Int32 slotIndex)
 {
-    return instance != nullptr;
+    return slotIndex >= 0 && slotIndex < SlotCount && instances[slotIndex] != nullptr;
 }
 
-ScriptUIPalette& ScriptUIPalette::Instance ()
+ScriptUIPalette& ScriptUIPalette::Instance (Int32 slotIndex)
 {
-    if (!HasInstance ()) {
-        instance = new ScriptUIPalette ();
+    if (!HasInstance (slotIndex)) {
+        instances[slotIndex] = new ScriptUIPalette (slotIndex);
     }
-    return *instance;
+    return *instances[slotIndex];
+}
+
+Int32 ScriptUIPalette::FindSlotOfScript (const GS::UniString& scriptId)
+{
+    if (scriptId.IsEmpty ()) {
+        return -1;
+    }
+    for (Int32 i = 0; i < SlotCount; ++i) {
+        if (slotOwners[i] == scriptId) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+Int32 ScriptUIPalette::AcquireSlotForScript (const GS::UniString& scriptId)
+{
+    const Int32 ownSlot = FindSlotOfScript (scriptId);
+    if (ownSlot >= 0 || scriptId.IsEmpty ()) {
+        return ownSlot;
+    }
+
+    // A closed window is free whoever owned it: its script already got isOpen false for it, and a
+    // later ShowScriptUI of that script gets a window again. The first window comes last in each
+    // round, as the callers that cannot be identified use it.
+    for (Int32 round = 0; round < 2; ++round) {
+        for (Int32 n = 1; n <= SlotCount; ++n) {
+            const Int32 i = n % SlotCount;
+            const bool isFree = (round == 0)
+                ? (!HasInstance (i) || !Instance (i).IsOpen ())
+                : slotOwners[i].IsEmpty ();
+            if (isFree) {
+                slotOwners[i] = scriptId;
+                return i;
+            }
+        }
+    }
+    return -1;
+}
+
+void ScriptUIPalette::ReleaseScript (const GS::UniString& scriptId)
+{
+    const Int32 slot = FindSlotOfScript (scriptId);
+    if (slot >= 0) {
+        slotOwners[slot] = GS::EmptyUniString;
+    }
+    if (scriptNames.ContainsKey (scriptId)) {
+        scriptNames.Delete (scriptId);
+    }
+}
+
+void ScriptUIPalette::SetScriptName (const GS::UniString& scriptId, const GS::UniString& scriptName)
+{
+    if (!scriptId.IsEmpty ()) {
+        scriptNames.Put (scriptId, scriptName);
+    }
 }
 
 void ScriptUIPalette::Release ()
 {
-    instance = nullptr;
+    for (Int32 i = 0; i < SlotCount; ++i) {
+        instances[i] = nullptr;
+        slotOwners[i] = GS::EmptyUniString;
+    }
+    scriptNames.Clear ();
+}
+
+void ScriptUIPalette::UpdateTitle (const GS::UniString& newPageTitle)
+{
+    const GS::UniString& owner = slotOwners[slotIndex];
+    if (owner != titleOwner) {
+        pageTitle = GS::EmptyUniString;   // the title another script gave
+        titleOwner = owner;
+    }
+    if (!newPageTitle.IsEmpty ()) {
+        pageTitle = newPageTitle;
+    }
+
+    const GS::UniString* scriptName = owner.IsEmpty () ? nullptr : scriptNames.GetPtr (owner);
+    if (scriptName == nullptr || scriptName->IsEmpty ()) {
+        SetTitle (pageTitle.IsEmpty () ? defaultTitle : pageTitle);
+    } else if (pageTitle.IsEmpty () || pageTitle == *scriptName) {
+        SetTitle (*scriptName);
+    } else {
+        SetTitle (pageTitle + " - " + *scriptName);   // "Choose a layer - LayerTool.py"
+    }
+}
+
+Int32 ScriptUIPalette::GetSlotOfPaletteId (Int32 paletteId)
+{
+    for (Int32 i = 0; i < SlotCount; ++i) {
+        if (paletteId == (Int32) GS::CalculateHashValue (paletteGuids[i])) {
+            return i;
+        }
+    }
+    return -1;
 }
 
 void ScriptUIPalette::Show ()
@@ -185,9 +294,7 @@ void ScriptUIPalette::ShowWithHTML (const GS::UniString& htmlContent, const Scri
     if (options.width > 0 && options.height > 0) {
         SetClientSize (options.width, options.height);
     }
-    if (!options.title.IsEmpty ()) {
-        SetTitle (options.title);
-    }
+    UpdateTitle (options.title);
 
     TAPIR_Browser_SetZoomEnabled (browser, options.zoomEnabled);
     if (options.hasZoomLevel) {
@@ -253,31 +360,32 @@ void ScriptUIPalette::PanelResized (const DG::PanelResizeEvent& ev)
 void ScriptUIPalette::RegisterACAPIJavaScriptObject ()
 {
     JS::Object* jsACAPI = new JS::Object ("ACAPI");
+    const Int32 slot = slotIndex;   // the window the page runs in
 
-    jsACAPI->AddItem (new JS::Function ("SubmitResult", [] (GS::Ref<JS::Base> param) {
+    jsACAPI->AddItem (new JS::Function ("SubmitResult", [slot] (GS::Ref<JS::Base> param) {
         GS::Ref<JS::Value> jsValue = GS::DynamicCast<JS::Value> (param);
         GS::UniString content = (jsValue != nullptr && jsValue->GetType () == JS::Value::STRING) ? jsValue->GetString () : GS::EmptyUniString;
-        if (ScriptUIPalette::HasInstance ()) {
-            ScriptUIPalette& palette = ScriptUIPalette::Instance ();
+        if (ScriptUIPalette::HasInstance (slot)) {
+            ScriptUIPalette& palette = ScriptUIPalette::Instance (slot);
             palette.pendingResult = content;
             palette.hasPendingResult = true;
         }
         return GS::Ref<JS::Base> (new JS::Value (true));
     }));
 
-    jsACAPI->AddItem (new JS::Function ("ClosePalette", [] (GS::Ref<JS::Base>) {
-        if (ScriptUIPalette::HasInstance ()) {
-            ScriptUIPalette& palette = ScriptUIPalette::Instance ();
+    jsACAPI->AddItem (new JS::Function ("ClosePalette", [slot] (GS::Ref<JS::Base>) {
+        if (ScriptUIPalette::HasInstance (slot)) {
+            ScriptUIPalette& palette = ScriptUIPalette::Instance (slot);
             palette.hiddenByForcedHideBegin = false;
             palette.Hide ();
         }
         return GS::Ref<JS::Base> (new JS::Value (true));
     }));
 
-    jsACAPI->AddItem (new JS::Function ("ReportContentHeight", [] (GS::Ref<JS::Base> param) {
+    jsACAPI->AddItem (new JS::Function ("ReportContentHeight", [slot] (GS::Ref<JS::Base> param) {
         GS::Ref<JS::Value> jsValue = GS::DynamicCast<JS::Value> (param);
-        if (ScriptUIPalette::HasInstance () && jsValue != nullptr) {
-            ScriptUIPalette& palette = ScriptUIPalette::Instance ();
+        if (ScriptUIPalette::HasInstance (slot) && jsValue != nullptr) {
+            ScriptUIPalette& palette = ScriptUIPalette::Instance (slot);
             if (palette.autoHeightEnabled) {
                 const Int32 pixelHeight = (jsValue->GetType () == JS::Value::DOUBLE) ? (Int32) jsValue->GetDouble () : jsValue->GetInteger ();
                 palette.SetClientHeight ((short) pixelHeight);
@@ -286,9 +394,9 @@ void ScriptUIPalette::RegisterACAPIJavaScriptObject ()
         return GS::Ref<JS::Base> (new JS::Value (true));
     }));
 
-    jsACAPI->AddItem (new JS::Function ("NotifyPageLoaded", [] (GS::Ref<JS::Base>) {
-        if (ScriptUIPalette::HasInstance ()) {
-            ScriptUIPalette& palette = ScriptUIPalette::Instance ();
+    jsACAPI->AddItem (new JS::Function ("NotifyPageLoaded", [slot] (GS::Ref<JS::Base>) {
+        if (ScriptUIPalette::HasInstance (slot)) {
+            ScriptUIPalette& palette = ScriptUIPalette::Instance (slot);
             if (palette.navigationDisableRequested) {
                 palette.browser.DisableNavigation (true);
             }
@@ -299,28 +407,30 @@ void ScriptUIPalette::RegisterACAPIJavaScriptObject ()
     browser.RegisterAsynchJSObject (jsACAPI);
 }
 
-GSErrCode ScriptUIPalette::PaletteControlCallBack (Int32, API_PaletteMessageID messageID, GS::IntPtr param)
+GSErrCode ScriptUIPalette::PaletteControlCallBack (Int32 paletteId, API_PaletteMessageID messageID, GS::IntPtr param)
 {
+    const Int32 slot = GetSlotOfPaletteId (paletteId);
+
     switch (messageID) {
         case APIPalMsg_OpenPalette:
             // Archicad restores the palette when it was open at the last quit, but the page and the
             // script that showed it are gone by then: only reopen a page shown in this session, so
             // Archicad does not start with an empty palette. The instance only exists once
             // ShowWithHTML ran.
-            if (!HasInstance ())
+            if (!HasInstance (slot))
                 break;
-            Instance ().Show ();
+            Instance (slot).Show ();
             break;
 
         case APIPalMsg_ClosePalette:
-            if (!HasInstance ())
+            if (!HasInstance (slot))
                 break;
-            Instance ().Hide ();
+            Instance (slot).Hide ();
             break;
 
         case APIPalMsg_HidePalette_Begin:
-            if (HasInstance ()) {
-                ScriptUIPalette& palette = Instance ();
+            if (HasInstance (slot)) {
+                ScriptUIPalette& palette = Instance (slot);
                 palette.hiddenByForcedHideBegin = palette.IsVisible ();
                 if (palette.hiddenByForcedHideBegin)
                     palette.Hide ();
@@ -328,8 +438,8 @@ GSErrCode ScriptUIPalette::PaletteControlCallBack (Int32, API_PaletteMessageID m
             break;
 
         case APIPalMsg_HidePalette_End:
-            if (HasInstance ()) {
-                ScriptUIPalette& palette = Instance ();
+            if (HasInstance (slot)) {
+                ScriptUIPalette& palette = Instance (slot);
                 if (palette.hiddenByForcedHideBegin)
                     palette.Show ();
                 palette.hiddenByForcedHideBegin = false;
@@ -337,7 +447,7 @@ GSErrCode ScriptUIPalette::PaletteControlCallBack (Int32, API_PaletteMessageID m
             break;
 
         case APIPalMsg_IsPaletteVisible:
-            *(reinterpret_cast<bool*> (param)) = HasInstance () && Instance ().IsVisible ();
+            *(reinterpret_cast<bool*> (param)) = HasInstance (slot) && Instance (slot).IsVisible ();
             break;
 
         default:
@@ -349,11 +459,15 @@ GSErrCode ScriptUIPalette::PaletteControlCallBack (Int32, API_PaletteMessageID m
 
 GSErrCode ScriptUIPalette::RegisterPaletteControlCallBack ()
 {
-    return ACAPI_RegisterModelessWindow (
-                    GS::CalculateHashValue (paletteGuid),
+    GSErrCode err = NoError;
+    for (Int32 i = 0; i < SlotCount; ++i) {
+        err |= ACAPI_RegisterModelessWindow (
+                    GS::CalculateHashValue (paletteGuids[i]),
                     PaletteControlCallBack,
                     API_PalEnabled_FloorPlan + API_PalEnabled_Section + API_PalEnabled_Elevation +
                     API_PalEnabled_InteriorElevation + API_PalEnabled_3D + API_PalEnabled_Detail +
                     API_PalEnabled_Worksheet + API_PalEnabled_Layout + API_PalEnabled_DocumentFrom3D,
-                    GSGuid2APIGuid (paletteGuid));
+                    GSGuid2APIGuid (paletteGuids[i]));
+    }
+    return err;
 }

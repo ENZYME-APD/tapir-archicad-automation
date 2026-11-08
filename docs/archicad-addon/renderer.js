@@ -214,7 +214,15 @@ function RenderCommandContent(parentElement, groupName, command, schemaDefinitio
     let commandContent = CreateElement(parentElement, 'div', 'command_content', null);
     CreateElement(commandContent, 'div', 'command_description', command.description);
     if (!gGroupsWithoutExamples.includes(groupName)) {
-        RenderExample(commandContent, ExamplePath(groupName, command.name));
+        let examplePath = ExamplePath(groupName, command.name);
+        // A plain link to the file, which works even when the example cannot be fetched.
+        let exampleFile = CreateTextElement(commandContent, 'div', 'command_example_file', 'Example file: ');
+        let exampleLink = CreateTextElement(exampleFile, 'a', null,
+            'archicad-addon/Examples/' + ExampleFolder(groupName) + '/' + command.name + '.py');
+        exampleLink.href = gExampleViewBaseUrl + examplePath;
+        exampleLink.target = '_blank';
+        exampleLink.rel = 'noopener';
+        RenderExample(commandContent, examplePath);
     }
     try {
         CreateSchemaElement(commandContent, 'Input parameters', command.inputScheme, schemaDefinitions);
@@ -399,7 +407,8 @@ function RenderCommands(parentElement, commands, schemaDefinitions) {
     for (let group of commands) {
         let section = CreateElement(parentElement, 'section', 'group', null);
         section.id = GroupId(group);
-        let heading = CreateElement(section, 'div', 'group_name', null);
+        // A heading inside the "All commands" section: the reference pages' fixed size (site.css).
+        let heading = CreateElement(section, 'h3', 'group_name ref-sub', null);
         CreateTextElement(heading, 'span', null, group.name);
         let count = CreateTextElement(heading, 'span', 'group_count', String(group.commands.length));
         let entries = [];

@@ -105,6 +105,50 @@ GS::ObjectState CreateSuccessfulExecutionResult ()
         "success", true);
 }
 
+bool IsDryRun (const GS::ObjectState& parameters)
+{
+    bool dryRun = false;
+    parameters.Get ("dryRun", dryRun);
+    return dryRun;
+}
+
+GSErrCode CallUndoableCommandUnlessDryRun (bool dryRun, const GS::UniString& undoString, const std::function<GSErrCode ()>& write)
+{
+    if (dryRun) {
+        return NoError;
+    }
+    return ACAPI_CallUndoableCommand (undoString, write);
+}
+
+void AddDryRunField (GS::ObjectState& response, bool dryRun)
+{
+    if (dryRun) {
+        response.Add ("dryRun", true);
+    }
+}
+
+GS::ObjectState CreateDryRunExecutionResult (const char* wouldKey)
+{
+    return GS::ObjectState (
+        "success", true,
+        wouldKey, true);
+}
+
+GSErrCode CallUndoableCommandOrDryRun (bool dryRun, const GS::UniString& undoString, const std::function<GSErrCode ()>& body)
+{
+    if (dryRun) {
+        return body ();
+    }
+    return ACAPI_CallUndoableCommand (undoString, body);
+}
+
+GS::ObjectState CreateWouldChangeExecutionResult (const GS::ObjectState& wouldChange)
+{
+    return GS::ObjectState (
+        "success", true,
+        "wouldChange", wouldChange);
+}
+
 GS::UniString GetOverwriteRefusal (const GS::ObjectState& parameters, const IO::Location& location)
 {
     bool overwrite = true;
@@ -1274,6 +1318,26 @@ API_Guid GetParentElemOfSectElem (const API_Guid& elemGuid)
     return element.sectElem.parentGuid;
 }
 
+GS::Array<GSIndex> GetPivotEdgeIndices (const API_ElementMemo& memo)
+{
+    GS::Array<GSIndex> indices;
+    if (memo.pivotPolyEdges == nullptr || memo.additionalPolyCoords == nullptr) {
+        return indices;
+    }
+    const GSSize nCoords = BMhGetSize (reinterpret_cast<GSHandle> (memo.additionalPolyCoords)) / sizeof (API_Coord);
+    const GSSize nEdges = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.pivotPolyEdges)) / sizeof (API_PivotPolyEdgeData);
+    const GSSize nPends = memo.additionalPolyPends == nullptr ? 0 : BMhGetSize (reinterpret_cast<GSHandle> (memo.additionalPolyPends)) / sizeof (Int32);
+    GSIndex iPend = 1;
+    for (GSIndex i = 1; i < nCoords - 1 && i < nEdges; ++i) {
+        if (iPend < nPends && (*memo.additionalPolyPends)[iPend] == i) {
+            ++iPend;
+            continue;
+        }
+        indices.Push (i);
+    }
+    return indices;
+}
+
 short ParseAnchorPointString (const GS::UniString& anchorPoint)
 {
     return static_cast<short> (AnchorIdFromString (anchorPoint));
@@ -1541,15 +1605,17 @@ GS::ObjectState ExecuteForEachIdInList (
     const char* listFieldName,
     const char* idFieldName,
     const GS::UniString& undoName,
-    const std::function<GS::ObjectState (const API_Guid&)>& perItem)
+    const std::function<GS::ObjectState (const API_Guid&)>& perItem,
+    bool dryRun)
 {
     GS::Array<GS::ObjectState> items;
     parameters.Get (listFieldName, items);
 
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
-    ACAPI_CallUndoableCommand (undoName, [&] () -> GSErrCode {
+    const auto forEachItem = [&] () -> GSErrCode {
         for (const GS::ObjectState& item : items) {
             const GS::ObjectState* id = item.Get (idFieldName);
             if (id == nullptr) {
@@ -1561,7 +1627,15 @@ GS::ObjectState ExecuteForEachIdInList (
         }
 
         return NoError;
-    });
+    };
+
+    // A dry run makes the same checks item by item, but outside an undoable command, so nothing
+    // can be written and no undo step is made; perItem itself must not write on a dry run.
+    if (dryRun) {
+        forEachItem ();
+    } else {
+        ACAPI_CallUndoableCommand (undoName, forEachItem);
+    }
 
     return response;
 }

@@ -19,7 +19,8 @@ name: Weekly Release
 #      in the "introduced in" version of the commands registered with the
 #      skipped version (AddOnMain.cpp), and push it to main.
 #   3. Regenerate docs/archicad-addon from the Add-On sources
-#      (tools/generate_addon_docs.py, no Archicad needed) and push the
+#      (tools/generate_addon_docs.py, no Archicad needed) and the copies of
+#      the site for AI assistants (tools/generate_llm_files.py), and push the
 #      result to main when it changed, so the release tags current docs.
 #   4. Tag HEAD with the release version.
 #   5. Start the two existing release pipelines (Add-On build + release,
@@ -62,7 +63,7 @@ on:
         options: [auto, patch, minor, major]
         default: auto
       skip_docs_update:
-        description: Release without regenerating docs/archicad-addon (only when the generator fails)
+        description: Release without regenerating docs/archicad-addon and the LLM files (only when generate_addon_docs.py fails)
         type: boolean
         default: false
       allow_early_release:
@@ -346,26 +347,41 @@ jobs:
           # guessed docs - fix the generator (or dispatch this workflow with
           # 'skip_docs_update') in that case.
           python3 tools/generate_addon_docs.py
-          if git diff --quiet -- docs/archicad-addon; then
-            echo "docs/archicad-addon is up to date."
+          # Then the copies of the site for AI assistants (llms.txt, llms-full.txt,
+          # commands.json/.md, the pages as Markdown, sitemap.xml, robots.txt),
+          # from those docs and the pages. They never hold up a release: when
+          # the script fails, the files from the last release stay. Only docs/
+          # is staged.
+          if ! python3 tools/generate_llm_files.py; then
+            echo "::warning::tools/generate_llm_files.py failed; the LLM files were not updated."
+            # Undo everything it wrote, tracked or new, but keep the
+            # docs/archicad-addon the step above regenerated.
+            git checkout -- docs ':!docs/archicad-addon'
+            git clean -fdq -- docs ':!docs/archicad-addon'
+          fi
+          git add -A -- docs
+          if git diff --cached --quiet -- docs; then
+            echo "docs/archicad-addon and the LLM files are up to date."
             exit 0
           fi
-          git diff --stat -- docs/archicad-addon
+          git diff --cached --stat -- docs
           if [ '${{ inputs.dry_run }}' = 'true' ]; then
-            echo "DRY RUN: docs/archicad-addon would be regenerated and pushed to main." >> "$GITHUB_STEP_SUMMARY"
-            git checkout -- docs/archicad-addon
+            echo "DRY RUN: the docs would be regenerated and pushed to main." >> "$GITHUB_STEP_SUMMARY"
+            git reset -q -- docs
+            git checkout -- docs
+            git clean -fdq -- docs
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m "Regenerate the Add-On docs" -- docs/archicad-addon
+          git commit -m "Regenerate the Add-On docs and the LLM files" -- docs
           # No rebase here: the tag goes on HEAD next, and a rebase would
           # pull in commits the plan step above never looked at.
           if ! git push origin HEAD:main; then
             echo "::error::main moved while the docs were regenerated - re-run this workflow."
             exit 1
           fi
-          echo "Regenerated docs/archicad-addon and pushed it to main." >> "$GITHUB_STEP_SUMMARY"
+          echo "Regenerated docs/archicad-addon and the LLM files and pushed them to main." >> "$GITHUB_STEP_SUMMARY"
 
       - name: Report the dry run
         if: steps.plan.outputs.release == 'true' && inputs.dry_run == true

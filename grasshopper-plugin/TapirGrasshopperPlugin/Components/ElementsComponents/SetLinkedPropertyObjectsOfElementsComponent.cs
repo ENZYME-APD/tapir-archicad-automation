@@ -7,7 +7,10 @@ using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class SetLinkedPropertyObjectsOfElementsComponent : ArchicadExecutorComponent
+    // Sends one SetLinkedPropertyObjectsOfElements request for every branch
+    // of the inputs, so a tree input makes one undo step in Archicad (#203).
+    public class SetLinkedPropertyObjectsOfElementsComponent
+        : BatchedExecutorComponent<JObject>
     {
         public override string CommandName => "SetLinkedPropertyObjectsOfElements";
 
@@ -59,9 +62,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 1);
         }
 
-        protected override void Solve(
-            IGH_DataAccess da)
+        // Items are sent in order, so of an element or element type given in
+        // several branches the last branch wins, like with the requests per
+        // branch.
+        protected override bool TryGetBatchItems(
+            IGH_DataAccess da,
+            out List<JObject> items)
         {
+            items = null;
+
             var elementWrappers = da.OptionalList<GH_ObjectWrapper>(0);
             var elementTypes = da.OptionalList<string>(1);
             var linkByCriteria = da.OptionalList<bool>(2);
@@ -72,7 +81,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     "ElementGuids",
                     out var elementIds))
             {
-                return;
+                return false;
             }
 
             var count = elementIds.Count + elementTypes.Count;
@@ -83,10 +92,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     ("LinkByCriteria", linkByCriteria.Count),
                     ("IndividualLibraryPartIndices", individualIndices.Count)))
             {
-                return;
+                return false;
             }
 
-            var items = new JArray();
+            items = new List<JObject>();
             for (var i = 0; i < count; i++)
             {
                 var item = i < elementIds.Count
@@ -106,11 +115,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 items.Add(item);
             }
 
-            SetCadValuesWithErrorMessages(
-                CommandName,
-                new JObject { ["elementsWithLinkedPropertyObjects"] = items },
-                ToAddOn,
-                da);
+            return true;
+        }
+
+        protected override object CreateBatchParameters(
+            List<JObject> items)
+        {
+            return new JObject { ["elementsWithLinkedPropertyObjects"] = new JArray(items) };
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -1,0 +1,30 @@
+{
+    "slug": "zones-to-walls-and-slabs",
+    "name": "Zones to Walls and Slabs",
+    "summary": "Turns selected zones into walls and slabs: partitions on shared edges, external walls elsewhere, a slab per story, and balustrades around the terraces.",
+    "category": "modeling-geometry",
+    "tags": ["zones", "walls", "slabs", "massing", "early-design", "partitions", "terraces", "railings"],
+    "author": { "name": "Jorge Beneitez", "github": "JBENEITEZ" },
+    "license": "MIT",
+    "entry": "ZonesToWallsAndSlabs.py",
+    "versions": [
+        {
+            "version": "0.3.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "Terraces and balustrades: the part of a story's slab over a setback is a terrace, and its edges that no zone of the story stands on get a balustrade, made with the Railing tool or as a low wall, with its own favorite."
+        },
+        {
+            "version": "0.2.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "The slabs: a floor slab under each story's zones, extended over the setbacks of the story below, and a roof slab over the highest zones, with their layer and thickness or a Slab favorite."
+        },
+        {
+            "version": "0.1.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "First version: the walls. The slabs follow in the next version."
+        }
+    ]
+}

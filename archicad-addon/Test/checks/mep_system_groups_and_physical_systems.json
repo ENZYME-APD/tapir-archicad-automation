@@ -1,0 +1,381 @@
+{
+  "title": "MEP system groups and physical systems: CreateMEPSystemGroups, CreateMEPPhysicalSystems, ModifyMEPPhysicalSystems, ModifyMEPSystemGroups and DeleteMEPPhysicalSystems change what GetMEPSystemGroups, GetMEPPhysicalSystemsOfElements and GetMEPDistributionSystems read, and refuse ids that are not theirs",
+  "minTapir": "1.8.1",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 }
+    },
+    {
+      "id": "two piping MEP Systems",
+      "command": "CreateMEPSystems",
+      "creates": false,
+      "params": {
+        "mepSystemDataArray": [
+          { "name": "Tapir Check Flow System", "domain": "Piping" },
+          { "name": "Tapir Check Return System", "domain": "Piping" }
+        ]
+      },
+      "save": {
+        "sysA": "attributeIds[0].attributeId.guid",
+        "sysB": "attributeIds[1].attributeId.guid"
+      }
+    },
+    {
+      "id": "pipe route in the flow system",
+      "command": "CreateMEPRoutingElements",
+      "params": {
+        "routingElementsData": [
+          {
+            "domain": "Piping",
+            "mepSystemId": { "guid": "${sysA}" },
+            "nodeCoordinates": [
+              { "x": 0.0, "y": -20.0, "z": 3.0 },
+              { "x": 4.0, "y": -20.0, "z": 3.0 }
+            ]
+          }
+        ]
+      },
+      "save": { "pipe": "elements[0].elementId.guid" }
+    },
+    {
+      "id": "create a system group",
+      "command": "CreateMEPSystemGroups",
+      "creates": false,
+      "params": { "systemGroupsData": [ { "name": "Tapir Check Group" } ] },
+      "save": { "grp": "systemGroups[0].systemGroupId.guid" },
+      "expect": [
+        { "path": "systemGroups[0].systemGroupId.guid", "exists": true, "name": "created" }
+      ]
+    },
+    {
+      "id": "read the group",
+      "command": "GetMEPSystemGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "systemGroups", "len": 1, "name": "only the check's group (the template has none)" },
+        { "path": "systemGroups[0].name", "eq": "Tapir Check Group" },
+        { "path": "systemGroups[0].physicalSystems", "len": 0, "name": "no physical system yet" }
+      ]
+    },
+    {
+      "id": "create two physical systems and one in a group that does not exist",
+      "command": "CreateMEPPhysicalSystems",
+      "creates": false,
+      "params": {
+        "physicalSystemsData": [
+          { "systemGroupId": { "guid": "${grp}" }, "name": "Tapir Check Flow", "mepSystemId": { "guid": "${sysA}" } },
+          { "systemGroupId": { "guid": "${grp}" }, "name": "Tapir Check Spare" },
+          { "systemGroupId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "name": "Tapir Check Nowhere" }
+        ]
+      },
+      "save": {
+        "ps1": "physicalSystems[0].physicalSystemId.guid",
+        "ps2": "physicalSystems[1].physicalSystemId.guid"
+      },
+      "expect": [
+        { "path": "physicalSystems[0].physicalSystemId.guid", "exists": true, "name": "first created" },
+        { "path": "physicalSystems[1].physicalSystemId.guid", "exists": true, "name": "second created" },
+        { "path": "physicalSystems[2].error", "exists": true, "name": "unknown group refused" },
+        { "path": "physicalSystems[2].physicalSystemId", "exists": false, "name": "nothing created for it" }
+      ]
+    },
+    {
+      "id": "read the physical systems",
+      "command": "GetMEPSystemGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "systemGroups", "len": 1, "name": "no group for the refused one" },
+        { "path": "systemGroups[0].physicalSystems", "len": 2, "name": "both in the group" },
+        { "path": "systemGroups[0].physicalSystems[0].name", "eq": "Tapir Check Flow" },
+        { "path": "systemGroups[0].physicalSystems[0].mepSystemId.guid", "exists": true, "name": "category set" },
+        { "path": "systemGroups[0].physicalSystems[0].rootElementId", "exists": false, "name": "no root given" },
+        { "path": "systemGroups[0].physicalSystems[1].name", "eq": "Tapir Check Spare" }
+      ]
+    },
+    {
+      "id": "the pipe is in no physical system yet",
+      "command": "GetMEPPhysicalSystemsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${pipe}" } } ] },
+      "expect": [
+        { "path": "physicalSystemsOfElements", "len": 1, "name": "one item per element" },
+        { "path": "physicalSystemsOfElements[0].physicalSystemIds", "len": 0 }
+      ]
+    },
+    {
+      "id": "rename, root and recategorize the first, and a physical system that does not exist",
+      "command": "ModifyMEPPhysicalSystems",
+      "creates": false,
+      "params": {
+        "physicalSystemsData": [
+          {
+            "physicalSystemId": { "guid": "${ps1}" },
+            "name": "Tapir Check Flow 2",
+            "rootElementId": { "guid": "${pipe}" },
+            "mepSystemId": { "guid": "${sysB}" }
+          },
+          { "physicalSystemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "name": "Tapir Check Nothing" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[1].success", "eq": false, "name": "unknown physical system refused" }
+      ]
+    },
+    {
+      "id": "read the modified physical system",
+      "command": "GetMEPSystemGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "systemGroups[0].physicalSystems", "len": 2, "name": "nothing added" },
+        { "path": "systemGroups[0].physicalSystems[0].name", "eq": "Tapir Check Flow 2", "name": "renamed" },
+        { "path": "systemGroups[0].physicalSystems[0].rootElementId.guid", "exists": true, "name": "root set" },
+        { "path": "systemGroups[0].physicalSystems[0].mepSystemId.guid", "exists": true, "name": "category kept" },
+        { "path": "systemGroups[0].physicalSystems[1].name", "eq": "Tapir Check Spare", "name": "the other one unchanged" }
+      ]
+    },
+    {
+      "id": "the pipe is in the rooted physical system",
+      "command": "GetMEPPhysicalSystemsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${pipe}" } } ] },
+      "expect": [
+        { "path": "physicalSystemsOfElements[0].physicalSystemIds", "len": 1 }
+      ]
+    },
+    {
+      "id": "the distribution system of the pipe",
+      "command": "GetMEPDistributionSystems",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": { "includeTree": true },
+      "expect": [
+        { "path": "distributionSystems", "len": 1, "name": "only the pipe's" },
+        { "path": "distributionSystems[0].domain", "eq": "Piping" },
+        { "path": "distributionSystems[0].mepSystemId.guid", "exists": true, "name": "mepSystemId as documented (AttributeId)" },
+        { "path": "distributionSystems[0].elements", "exists": true },
+        { "path": "distributionSystems[0].physicalSystemIds", "len": 1, "name": "the rooted physical system" },
+        { "path": "distributionSystems[0].tree", "exists": true, "name": "tree when asked for" }
+      ]
+    },
+    {
+      "id": "rename the group, and a group that does not exist",
+      "command": "ModifyMEPSystemGroups",
+      "creates": false,
+      "params": {
+        "systemGroupsData": [
+          { "systemGroupId": { "guid": "${grp}" }, "name": "Tapir Check Group 2" },
+          { "systemGroupId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "name": "Tapir Check Nothing" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[1].success", "eq": false, "name": "unknown group refused" }
+      ]
+    },
+    {
+      "id": "read the renamed group",
+      "command": "GetMEPSystemGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "systemGroups", "len": 1, "name": "no group added" },
+        { "path": "systemGroups[0].name", "eq": "Tapir Check Group 2", "name": "renamed" },
+        { "path": "systemGroups[0].physicalSystems", "len": 2, "name": "its physical systems kept" }
+      ]
+    },
+    {
+      "id": "delete the spare one, and a physical system that does not exist",
+      "command": "DeleteMEPPhysicalSystems",
+      "creates": false,
+      "params": {
+        "physicalSystems": [
+          { "physicalSystemId": { "guid": "${ps2}" } },
+          { "physicalSystemId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true },
+        { "path": "executionResults[1].success", "eq": false, "name": "unknown physical system refused" }
+      ]
+    },
+    {
+      "id": "only the rooted one is left",
+      "command": "GetMEPSystemGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "systemGroups[0].physicalSystems", "len": 1, "name": "spare removed" },
+        { "path": "systemGroups[0].physicalSystems[0].name", "eq": "Tapir Check Flow 2", "name": "the other one kept" }
+      ]
+    },
+    {
+      "id": "the pipe is still in it",
+      "command": "GetMEPPhysicalSystemsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${pipe}" } } ] },
+      "expect": [
+        { "path": "physicalSystemsOfElements[0].physicalSystemIds", "len": 1 }
+      ]
+    },
+    {
+      "id": "its root and category",
+      "command": "GetMEPSystemGroups",
+      "creates": false,
+      "params": {},
+      "save": {
+        "psRoot": "systemGroups[0].physicalSystems[0].rootElementId.guid",
+        "psCategory": "systemGroups[0].physicalSystems[0].mepSystemId.guid"
+      }
+    },
+    {
+      "id": "the root is the pipe",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${psRoot}" } } ] },
+      "expect": [
+        { "path": "routingElements[0].domain", "eq": "Piping" },
+        { "path": "routingElements[0].polyline[0].y", "approx": -20.0, "name": "at the pipe's place" }
+      ]
+    },
+    {
+      "id": "the category is the return system",
+      "command": "GetMEPSystems",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${psCategory}" } } ] },
+      "expect": [
+        { "path": "mepSystems[0].name", "eq": "Tapir Check Return System", "name": "changed by ModifyMEPPhysicalSystems" }
+      ]
+    },
+    {
+      "id": "delete the rooted one",
+      "command": "DeleteMEPPhysicalSystems",
+      "creates": false,
+      "params": { "physicalSystems": [ { "physicalSystemId": { "guid": "${ps1}" } } ] },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "the group is empty",
+      "command": "GetMEPSystemGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "systemGroups[0].physicalSystems", "len": 0 }
+      ]
+    },
+    {
+      "id": "the pipe is in no physical system",
+      "command": "GetMEPPhysicalSystemsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${pipe}" } } ] },
+      "expect": [
+        { "path": "physicalSystemsOfElements[0].physicalSystemIds", "len": 0 }
+      ]
+    },
+    {
+      "id": "the pipe itself is kept",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${pipe}" } } ] },
+      "expect": [
+        { "path": "routingElements[0].domain", "eq": "Piping", "name": "member element not deleted" }
+      ]
+    },
+    {
+      "id": "create one with its root and category",
+      "command": "CreateMEPPhysicalSystems",
+      "creates": false,
+      "params": {
+        "physicalSystemsData": [
+          {
+            "systemGroupId": { "guid": "${grp}" },
+            "name": "Tapir Check Rooted",
+            "rootElementId": { "guid": "${pipe}" },
+            "mepSystemId": { "guid": "${sysA}" }
+          }
+        ]
+      },
+      "save": { "ps3": "physicalSystems[0].physicalSystemId.guid" },
+      "expect": [
+        { "path": "physicalSystems[0].physicalSystemId.guid", "exists": true, "name": "created" }
+      ]
+    },
+    {
+      "id": "read it",
+      "command": "GetMEPSystemGroups",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "systemGroups[0].physicalSystems", "len": 1 },
+        { "path": "systemGroups[0].physicalSystems[0].name", "eq": "Tapir Check Rooted" },
+        { "path": "systemGroups[0].physicalSystems[0].rootElementId.guid", "exists": true, "name": "root set on create" },
+        { "path": "systemGroups[0].physicalSystems[0].mepSystemId.guid", "exists": true, "name": "category set on create" }
+      ]
+    },
+    {
+      "id": "the pipe is in it",
+      "command": "GetMEPPhysicalSystemsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${pipe}" } } ] },
+      "expect": [
+        { "path": "physicalSystemsOfElements[0].physicalSystemIds", "len": 1 }
+      ]
+    },
+    {
+      "id": "a system group without a name",
+      "command": "CreateMEPSystemGroups",
+      "creates": false,
+      "params": { "systemGroupsData": [ { "name": "" } ] },
+      "expect": [
+        { "path": "systemGroups[0].error", "exists": true, "name": "refused, as ModifyMEPSystemGroups refuses an empty name" }
+      ]
+    },
+    {
+      "id": "the MEP system of the distribution system",
+      "command": "GetMEPDistributionSystems",
+      "creates": false,
+      "params": {},
+      "save": { "dsSystem": "distributionSystems[0].mepSystemId.guid" }
+    },
+    {
+      "id": "is the pipe's",
+      "command": "GetMEPSystems",
+      "creates": false,
+      "params": { "attributeIds": [ { "attributeId": { "guid": "${dsSystem}" } } ] },
+      "expect": [
+        { "path": "mepSystems[0].name", "eq": "Tapir Check Flow System" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteMEPPhysicalSystems",
+      "params": { "physicalSystems": [ { "physicalSystemId": { "guid": "${ps1}" } } ] }
+    },
+    {
+      "command": "DeleteMEPPhysicalSystems",
+      "params": { "physicalSystems": [ { "physicalSystemId": { "guid": "${ps2}" } } ] }
+    },
+    {
+      "command": "DeleteMEPPhysicalSystems",
+      "params": { "physicalSystems": [ { "physicalSystemId": { "guid": "${ps3}" } } ] }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "MEPSystem", "attributeId": { "attributeId": { "guid": "${sysA}" } } } ] }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": { "attributesToDelete": [ { "attributeType": "MEPSystem", "attributeId": { "attributeId": { "guid": "${sysB}" } } } ] }
+    }
+  ]
+}

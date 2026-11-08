@@ -180,6 +180,87 @@ public:
     virtual API_AngleTypeID GetAngleType () const { return API_AngleTypeID::DecimalDegree; }
 };
 
+// ACAPI_Property_SetPropertyValueFromString reads only '.' as the decimal separator and
+// stops without an error at the first character it does not expect. "11,5" became 11, and
+// "1.234,500", the way GetPropertyValuesOfElements shows 1234.5 in a German Archicad,
+// became 1.234. The number at the start of the text is rewritten to that form first:
+// - when both '.' and ',' appear, the last one is the decimal separator
+// - a separator that appears more than once groups the thousands
+// - a single separator is the decimal separator
+// - spaces and apostrophes between digits are dropped
+// Anything after the number, such as a unit, is kept. Text that does not start with a
+// number, or mixes the separators in another way, is passed on unchanged.
+static GS::UniString NormalizeRealNumberText (const GS::UniString& text)
+{
+    using Char = GS::UniChar::Layout;
+    const auto isDigit = [] (Char c) { return c >= '0' && c <= '9'; };
+    const auto isGroupSpace = [] (Char c) { return c == ' ' || c == '\'' || c == 0x00A0 || c == 0x202F; };
+
+    const USize length = text.GetLength ();
+    UIndex numberStart = 0;
+    while (numberStart < length && (static_cast<Char> (text[numberStart]) == ' ' || static_cast<Char> (text[numberStart]) == '\t')) {
+        ++numberStart;
+    }
+    if (numberStart < length && (static_cast<Char> (text[numberStart]) == '-' || static_cast<Char> (text[numberStart]) == '+')) {
+        ++numberStart;
+    }
+    if (numberStart >= length || !isDigit (text[numberStart])) {
+        return text;
+    }
+
+    UIndex numberEnd = numberStart;
+    USize dots = 0, commas = 0;
+    UIndex lastDot = 0, lastComma = 0;
+    while (numberEnd < length) {
+        const Char c = text[numberEnd];
+        if (c == '.') {
+            ++dots;
+            lastDot = numberEnd;
+        } else if (c == ',') {
+            ++commas;
+            lastComma = numberEnd;
+        } else if (!isDigit (c) && !(isGroupSpace (c) && numberEnd + 1 < length && isDigit (text[numberEnd - 1]) && isDigit (text[numberEnd + 1]))) {
+            break;
+        }
+        ++numberEnd;
+    }
+
+    Char decimal = 0;
+    if (dots > 0 && commas > 0) {
+        decimal = lastComma > lastDot ? ',' : '.';
+        if ((decimal == ',' && commas > 1) || (decimal == '.' && dots > 1)) {
+            return text;
+        }
+    } else if (commas == 1) {
+        decimal = ',';
+    } else if (dots == 1) {
+        decimal = '.';
+    }
+
+    GS::UniString result;
+    result.Append (text, 0, numberStart);
+    for (UIndex i = numberStart; i < numberEnd; ++i) {
+        const Char c = text[i];
+        if (isDigit (c)) {
+            result.Append (GS::UniChar (c));
+        } else if (c == decimal) {
+            result.Append (GS::UniChar (static_cast<Char> ('.')));
+        }
+    }
+    result.Append (text, numberEnd, length - numberEnd);
+    return result;
+}
+
+static GSErrCode SetPropertyValueFromText (const GS::UniString& text, const API_PropertyConversionUtilsInterface& conversionUtils, API_Property* property)
+{
+    if (property != nullptr &&
+        property->definition.collectionType == API_PropertySingleCollectionType &&
+        property->definition.valueType == API_PropertyRealValueType) {
+        return ACAPI_Property_SetPropertyValueFromString (NormalizeRealNumberText (text), conversionUtils, property);
+    }
+    return ACAPI_Property_SetPropertyValueFromString (text, conversionUtils, property);
+}
+
 constexpr uint32_t PackTypes (API_PropertyCollectionType colType, API_VariantType valType)
 {
     return (static_cast<uint32_t> (colType) << 16) | static_cast<uint32_t> (valType);
@@ -1151,7 +1232,10 @@ GS::Optional<GS::UniString> SetPropertyValuesOfElementsCommand::GetInputParamete
         "properties": {
             "elementPropertyValues": {
                 "$ref": "#/ElementPropertyValues",
-                "description": "Unitless real and integer lists accept semicolon-separated numbers; an empty string sets an empty list. Invalid items reject the entire property write."
+                "description": "A single real value accepts '.' or ',' as the decimal separator, so the value strings GetPropertyValuesOfElements returns can be written back: when both appear the last one is the decimal separator, a separator that appears more than once groups thousands, and a single separator is the decimal one. Unitless real and integer lists accept semicolon-separated numbers; an empty string sets an empty list. Invalid items reject the entire property write."
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -1166,8 +1250,12 @@ GS::Optional<GS::UniString> SetPropertyValuesOfElementsCommand::GetRawResponseSc
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/ChangeExecutionResults",
+                "description": "One result for each item of elementPropertyValues, in the order of the input. On a dry run an item that passes every check made before writing (the property values of the element can be read, the value is editable for the element and converts to the property's type) gets wouldChange: oldValue is the element's value now as GetPropertyValuesOfElements gives it (left out when the property is not available or not evaluated for the element), newValue the value that would be written in the same format (left out for valueStatus Default). Archicad can still refuse a value that passes them."
             }
         },
         "additionalProperties": false,
@@ -1181,8 +1269,10 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
 {
     GS::Array<GS::ObjectState> elementPropertyValues;
     parameters.Get ("elementPropertyValues", elementPropertyValues);
+    const bool dryRun = IsDryRun (parameters);
 
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
     GS::Array<GS::ObjectState> results (elementPropertyValues.GetSize ());
@@ -1253,7 +1343,9 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
 #endif
     }
 
-    ACAPI_CallUndoableCommand ("SetPropertyValuesOfElementsCommand", [&]() -> GSErrCode {
+    // On a dry run the same checks and conversions are made, outside an undo scope, and each value
+    // that would be written is reported with the element's value now instead of being written.
+    CallUndoableCommandOrDryRun (dryRun, "SetPropertyValuesOfElementsCommand", [&]() -> GSErrCode {
         for (const auto& kv : propertiesForElements) {
 #ifdef ServerMainVers_2800
             const API_Guid& elemGuid = kv.key;
@@ -1289,6 +1381,15 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
                     continue;
                 }
 
+                // The element's value now, as GetPropertyValuesOfElements gives it, read before it is changed below.
+                GS::ObjectState wouldChange;
+                if (dryRun && propertyValue.status != API_Property_NotAvailable && propertyValue.status != API_Property_NotEvaluated) {
+                    GS::UniString oldValueString;
+                    if (GetPropertyValueString (propertyValue, oldValueString) == NoError) {
+                        wouldChange.Add ("oldValue", oldValueString);
+                    }
+                }
+
                 const bool isNumericList = definition.collectionType == API_PropertyListCollectionType &&
                     definition.measureType == API_PropertyDefaultMeasureType &&
                     (definition.valueType == API_PropertyRealValueType || definition.valueType == API_PropertyIntegerValueType);
@@ -1303,11 +1404,22 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
                 } else if (isNumericList) {
                     err = SetNumericListPropertyValueFromString (propertyValuesForElements[guidPair], propertyValue);
                 } else {
-                    err = ACAPI_Property_SetPropertyValueFromString (propertyValuesForElements[guidPair], conversionUtils, &propertyValue);
+                    err = SetPropertyValueFromText (propertyValuesForElements[guidPair], conversionUtils, &propertyValue);
                 }
 
                 if (err != NoError) {
                     result = CreateFailedExecutionResult (err, "Failed to set property value for element");
+                    continue;
+                }
+
+                if (dryRun) {
+                    // A value set back to Default shows the default value or expression, which is
+                    // only evaluated once written, so its newValue is left out.
+                    GS::UniString newValueString;
+                    if (valueStatus != "Default" && GetPropertyValueString (propertyValue, newValueString) == NoError) {
+                        wouldChange.Add ("newValue", newValueString);
+                    }
+                    result = CreateWouldChangeExecutionResult (wouldChange);
                     continue;
                 }
 
@@ -1343,7 +1455,9 @@ GS::ObjectState SetPropertyValuesOfElementsCommand::Execute (const GS::ObjectSta
         return NoError;
     });
 
-    changeReporter.Report ();
+    if (!dryRun) {
+        changeReporter.Report ();
+    }
 
     for (const GS::ObjectState& result : results) {
         executionResults (result);
@@ -1542,7 +1656,7 @@ GS::ObjectState SetPropertyValuesOfElementDefaultsCommand::Execute (const GS::Ob
             }
 
             API_Property& property = propertyValues[0];
-            err = ACAPI_Property_SetPropertyValueFromString (propertyValueDisplayString, conversionUtils, &property);
+            err = SetPropertyValueFromText (propertyValueDisplayString, conversionUtils, &property);
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to set property value for the element defaults"));
                 continue;
@@ -1896,7 +2010,7 @@ GS::ObjectState SetPropertyValuesOfAttributesCommand::Execute (const GS::ObjectS
                 }
 
                 GS::ObjectState& result = results[resultIndices[guidPair]];
-                GSErrCode err = ACAPI_Property_SetPropertyValueFromString (propertyValuesForAttributes[guidPair], conversionUtils, &propertyValue);
+                GSErrCode err = SetPropertyValueFromText (propertyValuesForAttributes[guidPair], conversionUtils, &propertyValue);
                 if (err != NoError) {
                     result = CreateFailedExecutionResult (err, "Failed to set property value for attribute");
                     continue;
@@ -2115,7 +2229,7 @@ GS::ObjectState SetBuiltInPropertyValuesOfAttributesCommand::Execute (const GS::
                     continue;
                 }
 
-                const GSErrCode err = ACAPI_Property_SetPropertyValueFromString (valueToSet.value, conversionUtils, &propertyValue);
+                const GSErrCode err = SetPropertyValueFromText (valueToSet.value, conversionUtils, &propertyValue);
                 if (err != NoError) {
                     result = CreateFailedExecutionResult (err, "Failed to convert the property value");
                     continue;
@@ -2238,7 +2352,7 @@ GS::ObjectState SetPropertyValueOfAttributesCommand::Execute (const GS::ObjectSt
     property.value.variantStatus = API_VariantStatusNormal;
 
     PropertyConversionUtils conversionUtils;
-    err = ACAPI_Property_SetPropertyValueFromString (propertyValueDisplayString, conversionUtils, &property);
+    err = SetPropertyValueFromText (propertyValueDisplayString, conversionUtils, &property);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "the value cannot be converted to the type of the property");
     }
@@ -2691,6 +2805,9 @@ GS::Optional<GS::UniString> RemovePropertyFromAttributesCommand::GetInputParamet
             "attributeIds": {
                 "$ref": "#/AttributeIds",
                 "description": "The attributes (for example Building Materials) to make the property unavailable for."
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -2704,18 +2821,46 @@ GS::Optional<GS::UniString> RemovePropertyFromAttributesCommand::GetInputParamet
 GS::Optional<GS::UniString> RemovePropertyFromAttributesCommand::GetRawResponseSchema () const
 {
     return R"({
-        "$ref": "#/ExecutionResult"
+        "type": "object",
+        "description": "The result of the execution: success, with error when it failed. A dry run also answers dryRun, and wouldDelete when the property and every attribute exist.",
+        "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
+            "success": {
+                "type": "boolean"
+            },
+            "error": {
+                "$ref": "#/Error"
+            },
+            "wouldDelete": {
+                "type": "boolean",
+                "enum": [ true ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "success"
+        ]
     })";
 }
 
 GS::ObjectState RemovePropertyFromAttributesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    const bool dryRun = IsDryRun (parameters);
 #ifndef ServerMainVers_2800
     GS::Array<API_Attr_Head> attrHeads;
     API_PropertyDefinition definition;
     GS::ObjectState failedResult;
     if (!GetPropertyOfAttributesParameters (parameters, attrHeads, definition, failedResult)) {
+        AddDryRunField (failedResult, dryRun);
         return failedResult;
+    }
+
+    if (dryRun) {
+        GS::ObjectState result = CreateDryRunExecutionResult ("wouldDelete");
+        AddDryRunField (result, true);
+        return result;
     }
 
     GSErrCode err = ACAPI_CallUndoableCommand ("RemovePropertyFromAttributesCommand", [&]() -> GSErrCode {
@@ -2730,8 +2875,9 @@ GS::ObjectState RemovePropertyFromAttributesCommand::Execute (const GS::ObjectSt
         ? CreateSuccessfulExecutionResult ()
         : CreateFailedExecutionResult (err, "Failed to remove the property from the given attributes.");
 #else
-    UNUSED_PARAMETER (parameters);
-    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command is available only in Archicad 25, 26 and 27. The Archicad API of later versions has no function to remove a property from attributes directly.");
+    GS::ObjectState result = CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "This command is available only in Archicad 25, 26 and 27. The Archicad API of later versions has no function to remove a property from attributes directly.");
+    AddDryRunField (result, dryRun);
+    return result;
 #endif
 }
 
@@ -2844,6 +2990,9 @@ GS::Optional<GS::UniString> DeletePropertyGroupsCommand::GetInputParametersSchem
                 "items": {
                     "$ref": "#/PropertyGroupIdArrayItem"
                 }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -2858,8 +3007,12 @@ GS::Optional<GS::UniString> DeletePropertyGroupsCommand::GetRawResponseSchema ()
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input property group, in the order of the input. On a dry run a property group that exists gets wouldDelete; Archicad can still refuse to delete one that exists (for example a built-in group)."
             }
         },
         "additionalProperties": false,
@@ -2871,13 +3024,23 @@ GS::Optional<GS::UniString> DeletePropertyGroupsCommand::GetRawResponseSchema ()
 
 GS::ObjectState DeletePropertyGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    return ExecuteForEachIdInList (parameters, "propertyGroupIds", "propertyGroupId", "DeletePropertyGroups", [] (const API_Guid& propertyGroupGuid) {
+    const bool dryRun = IsDryRun (parameters);
+    return ExecuteForEachIdInList (parameters, "propertyGroupIds", "propertyGroupId", "DeletePropertyGroups", [dryRun] (const API_Guid& propertyGroupGuid) {
+        if (dryRun) {
+            API_PropertyGroup group;
+            group.guid = propertyGroupGuid;
+            const GSErrCode getErr = ACAPI_Property_GetPropertyGroup (group);
+            if (getErr != NoError) {
+                return CreateFailedExecutionResult (getErr, "failed to delete property group");
+            }
+            return CreateDryRunExecutionResult ("wouldDelete");
+        }
         const GSErrCode err = ACAPI_Property_DeletePropertyGroup (propertyGroupGuid);
         if (err != NoError) {
             return CreateFailedExecutionResult (err, "failed to delete property group");
         }
         return CreateSuccessfulExecutionResult ();
-    });
+    }, dryRun);
 }
 
 // Fills definition.defaultValue from a PropertyDefaultValue object: {expressions: [...]}
@@ -3257,6 +3420,9 @@ GS::Optional<GS::UniString> DeletePropertyDefinitionsCommand::GetInputParameters
                 "items": {
                     "$ref": "#/PropertyIdArrayItem"
                 }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -3271,8 +3437,12 @@ GS::Optional<GS::UniString> DeletePropertyDefinitionsCommand::GetRawResponseSche
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input property, in the order of the input. On a dry run a property that exists gets wouldDelete; Archicad can still refuse to delete one that exists (for example a built-in property)."
             }
         },
         "additionalProperties": false,
@@ -3284,13 +3454,23 @@ GS::Optional<GS::UniString> DeletePropertyDefinitionsCommand::GetRawResponseSche
 
 GS::ObjectState DeletePropertyDefinitionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    return ExecuteForEachIdInList (parameters, "propertyIds", "propertyId", "DeletePropertyDefinitions", [] (const API_Guid& propertyGuid) {
+    const bool dryRun = IsDryRun (parameters);
+    return ExecuteForEachIdInList (parameters, "propertyIds", "propertyId", "DeletePropertyDefinitions", [dryRun] (const API_Guid& propertyGuid) {
+        if (dryRun) {
+            API_PropertyDefinition definition;
+            definition.guid = propertyGuid;
+            const GSErrCode getErr = ACAPI_Property_GetPropertyDefinition (definition);
+            if (getErr != NoError) {
+                return CreateFailedExecutionResult (getErr, "failed to delete property");
+            }
+            return CreateDryRunExecutionResult ("wouldDelete");
+        }
         const GSErrCode err = ACAPI_Property_DeletePropertyDefinition (propertyGuid);
         if (err != NoError) {
             return CreateFailedExecutionResult (err, "failed to delete property");
         }
         return CreateSuccessfulExecutionResult ();
-    });
+    }, dryRun);
 }
 
 static bool ApplyEnumEdits (const GS::ObjectState& item, API_PropertyDefinition& definition, GS::UniString& error)
@@ -3543,6 +3723,9 @@ GS::ObjectState UpdatePropertyDefinitionsCommand::Execute (const GS::ObjectState
 
             item.Get ("name", definition.name);
             item.Get ("description", definition.description);
+            // Whether users may edit the value of the property on elements (Property Manager:
+            // "Editable"). Left as it is when not given.
+            item.Get ("isEditable", definition.canValueBeEditable);
             const GS::ObjectState* groupId = item.Get ("groupId");
             if (groupId != nullptr) {
                 definition.groupGuid = GetGuidFromObjectState (*groupId);
@@ -3978,10 +4161,14 @@ GS::ObjectState ModifyPropertyValueOfElementsCommand::Execute (const GS::ObjectS
     property.value.variantStatus = API_VariantStatusNormal;
 
     PropertyConversionUtils conversionUtils;
-    err = ACAPI_Property_SetPropertyValueFromString (propertyValueDisplayString, conversionUtils, &property);
+    err = SetPropertyValueFromText (propertyValueDisplayString, conversionUtils, &property);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "the value cannot be converted to the type of the property");
     }
+
+    // The value is set on every element or on none, so all of them are marked changed for the
+    // notification clients when it succeeds.
+    ElementChangeReporter changeReporter (elemGuids);
 
     err = ACAPI_CallUndoableCommand ("ModifyPropertyValueOfElementsCommand", [&]() -> GSErrCode {
 #ifdef ServerMainVers_2700
@@ -3990,6 +4177,13 @@ GS::ObjectState ModifyPropertyValueOfElementsCommand::Execute (const GS::ObjectS
         return ACAPI_ElementList_ModifyPropertyValue (property, elemGuids);
 #endif
     });
+
+    if (err == NoError) {
+        for (const API_Guid& elemGuid : elemGuids) {
+            changeReporter.MarkChanged (elemGuid);
+        }
+    }
+    changeReporter.Report ();
 
     return err == NoError
         ? CreateSuccessfulExecutionResult ()
@@ -4216,7 +4410,7 @@ GS::ObjectState CheckPropertyValuesCommand::Execute (const GS::ObjectState& para
         property.status = API_Property_HasValue;
         property.value.variantStatus = API_VariantStatusNormal;
 
-        err = ACAPI_Property_SetPropertyValueFromString (propertyValueDisplayString, conversionUtils, &property);
+        err = SetPropertyValueFromText (propertyValueDisplayString, conversionUtils, &property);
         if (err != NoError) {
             GS::ObjectState result = CreateErrorResponse (err, "the value cannot be converted to the type of the property");
             result.Add ("isValid", false);

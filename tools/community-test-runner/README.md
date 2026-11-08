@@ -15,16 +15,18 @@ python tapir_test_runner.py setup
 python tapir_test_runner.py gui
 ```
 
-`setup` asks a few questions and changes nothing in Program Files:
+`setup` asks a few questions and changes nothing in Program Files (or Applications on macOS):
 
 - finds every installed Archicad and its stock template (Archicad opens a template as a new,
   untitled project, which is where checks run), and shows which Tapir each one loads now;
 - asks which versions to test;
 - opens GitHub's page for a token (classic, only the `public_repo` scope), checks the token you
-  paste and keeps it in Windows Credential Manager, so no environment variable is needed;
+  paste and keeps it in Windows Credential Manager (the login keychain on macOS), so no environment
+  variable is needed;
 - suggests trusting your own fork, so your own pull requests are tested too;
-- writes the configuration to `%LOCALAPPDATA%\TapirRunner\runner.json`;
-- optionally opens the runner's window at every logon, and installs the Claude Code skill.
+- writes the configuration to `%LOCALAPPDATA%\TapirRunner\runner.json` (`~/.local/share/TapirRunner/runner.json`
+  on macOS);
+- optionally opens the runner's window at every logon (Windows), and installs the Claude Code skill.
 
 Run `setup` again at any time to change the answers. `setup --yes` asks nothing.
 
@@ -35,6 +37,12 @@ fork you don't trust). **Test selected**, **Test everything due**, **Pause autom
 
 The runner only works while the Archicad it tests is closed, and never touches an open one: close
 Archicad and the next pass runs.
+
+**Testing while you work.** With `"hidden": true` (`setup` asks on Windows, and suggests it) the runner starts
+Archicad on a Windows desktop of its own, which is never shown: the test Archicad takes no focus
+and covers nothing, even while you work in another Archicad version. If it stops at a dialog
+there (licence, project recovery), its message says so; `show` switches the screen to that
+desktop, with a small window to switch back.
 
 ## What a test does
 
@@ -63,6 +71,19 @@ first, so after a crash or a power cut the next run, or `restore`, puts them bac
 with an `addonFile` (written by hand for the first version of the runner) still swap that file
 instead.
 
+**On macOS** the same two lists are in Archicad's preferences, the domain
+`com.graphisoft.AC-ARM <version> <language> v1` (`~/Library/Preferences`) under `Add-On Manager`,
+with `lan.null2:///` URLs. The runner reads and writes them with `defaults` (a plist edited directly
+can be overwritten by the preferences daemon's cached copy), copies the build to
+`~/.local/share/TapirRunner/builds`, and leaves the tester's Tapir out of the list. A Tapir in the
+Archicad folder's `Add-Ons` is swapped instead, on every version: switched off there, it keeps the
+build from loading too, as on Windows up to Archicad 28 (#1150), so `setup` sets `addonFile` for it.
+The runner swaps that `.bundle` with `ditto`, which keeps its signature and extended
+attributes, and keeps the original in `~/.local/share/TapirRunner/originals` meanwhile: a copy
+left in `Add-Ons` would load next to the build. Archicad is started with `open -n -a` and brought
+to the front through System Events (macOS asks once to let the terminal control it): started in
+the background, it can wait on its splash screen without an API port until it is activated.
+
 **Archicad 25-28 with Tapir in the `Add-Ons` folder** (where the Tapir Installer puts it): these
 versions do not load an add-on from the list while the same add-on is switched off at its usual
 place; they say some add-ons could not be loaded and load neither (#1150). `setup` then sets
@@ -75,7 +96,7 @@ Archicad version and finds the right port itself. It never kills Archicad. If Ar
 quit (a dialog, for instance), the runner stops and leaves the test build loaded; close Archicad
 and use **Put my add-on back** (or `restore`). A dialog during the start (project recovery,
 licence, add-ons that could not be loaded) stops it within seconds, naming the dialog, instead of
-waiting out `startTimeout`.
+waiting out `startTimeout` (Windows; on macOS the runner does not see dialogs yet and waits).
 
 ## Command line
 
@@ -85,9 +106,10 @@ waiting out `startTimeout`.
 | `test` | what is labelled `needs-test`; `test 869 870` those; `test --all` every open non-draft one |
 | | `--ac 30` (repeatable), `--every-check`, `--no-post`, `--retest`, `--brief` |
 | `check [files]` | run checks against an Archicad that is open with an empty, untitled project (default: this checkout's `archicad-addon/Test/checks`); finds the port itself |
-| `trial --ac 30 --build x.apx [files]` | the whole load, start, check, quit, restore cycle with a build of your own, no GitHub |
+| `trial --ac 30 --build x.apx [files]` | the whole load, start, check, quit, restore cycle with a build of your own (an `.apx`, or a `.bundle` on macOS), no GitHub |
 | `record --out x.json` | write a check from the commands you send through it (below) |
 | `restore` | put your add-on back after a test that did not finish |
+| `show` | (Windows) switch to the runner's own desktop, to answer a dialog of a hidden Archicad |
 | `bench` | speed and token benchmark of the open Archicad (below); `bench-compare old.json new.json` compares two runs |
 | `once`, `poll` | one pass, or a pass every `pollMinutes`, over what is labelled (for a scheduled task) |
 
@@ -203,9 +225,9 @@ The runner installs native code from a pull request. Hence:
 - only builds made by this repository's own build check are installed;
 - checks are data. The runner itself is the only code that runs; a check can send Tapir
   commands to an untitled, empty project and nothing else. Expressions allow `+ - * /` only;
-- the token is kept in Windows Credential Manager for your Windows user; `TAPIR_RUNNER_TOKEN`
-  still overrides it;
-- use a separate Windows account for the runner if you can.
+- the token is kept in Windows Credential Manager for your Windows user (on macOS in your login
+  keychain); `TAPIR_RUNNER_TOKEN` still overrides it;
+- use a separate user account for the runner if you can.
 
 ## Verified so far (Windows)
 
@@ -224,8 +246,29 @@ The runner installs native code from a pull request. Hence:
   Archicad 30 on that machine crashed on every quit, with or without checks; the report shows it
   as a warning line and the add-on is still put back.
 
+## Verified so far (macOS)
+
+- 2026-11-04, Archicad 29 INT on Apple silicon, without starting Archicad: `setup --yes` found
+  Archicad 29, its stock template and the Tapir in its `Add-Ons` folder, and wrote the
+  configuration. `prs` lists the build check's Mac builds, and the runner downloads one (#1757) and
+  unpacks the `.bundle` from the zip in the artifact. The token is saved in, read from and deleted
+  from the login keychain. Archicad 29 keeps the add-on list in its preferences as described above.
+- 2026-11-04, Archicad 29 INT, with Archicad: through the add-on list, with the `Add-Ons` Tapir
+  switched off, Archicad 29 mapped that switched-off Tapir, registered no Tapir command and did not
+  load the listed build; the run stopped after `startTimeout`, and `restore` put the lists back
+  exactly. Hence the swap on macOS. With `addonFile`: `trial` with #1757's build gave
+  `AC29 INT FAIL 112/114 build local tapir 1.8.1`, and `test 1757 --ac 29 --every-check --brief
+  --no-post` gave `#1757 AC29 INT FAIL 112/114 build 50069df tapir 1.8.1` (the 2 failures are
+  `create_windows_doors_keep_marker.json`, which fails the same way with the release build: the
+  template's window and door get no marker there). A trial killed once Archicad answered, then that
+  Archicad quit and `restore` run, put the `.bundle` back identical (same files and extended
+  attributes). Every start got past the splash screen through the activation, and the Add-On
+  Manager lists were identical after each run.
+
 ## Not verified yet
 
 - `once`/`poll`/`test` posting end to end: no pull request carries the `needs-test` label yet,
   and bot pull requests get no build today; the build check has to be dispatched for them.
-- macOS (`setup` and the add-on list are Windows only; `check` and `record` work anywhere).
+- macOS: only Archicad 29 was tried; the add-on list with a tester's Tapir that is only in the list
+  (a dev build), posting, and start-up dialogs (the runner does not see them on macOS). The window (`gui`, which needs Python with tkinter) is not tried on macOS; the start at
+  logon and the double-click start are Windows only.

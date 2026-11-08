@@ -1,0 +1,64 @@
+{
+  "title": "Set3DProjectionSettings sets the sun of an axonometry by date and time and by angles, keeping the values not given",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "3D window",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "3DModel"
+      }
+    },
+    {
+      "id": "sun by date and time",
+      "command": "Set3DProjectionSettings",
+      "creates": false,
+      "params": {
+        "axonometry": {
+          "projectionType": "Isometric",
+          "sun": { "sunPositionOption": "DateAndTime", "year": 2026, "month": 6, "day": 21, "hour": 13, "minute": 30, "second": 0, "summerTime": false }
+        }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the date and time",
+      "command": "Get3DProjectionSettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "axonometric.sun.sunPositionOption", "eq": "DateAndTime" },
+        { "path": "axonometric.sun.month", "eq": 6 },
+        { "path": "axonometric.sun.day", "eq": 21 },
+        { "path": "axonometric.sun.hour", "eq": 13 },
+        { "path": "axonometric.sun.minute", "eq": 30 }
+      ]
+    },
+    {
+      "id": "sun by angles, only the option changed",
+      "command": "Set3DProjectionSettings",
+      "creates": false,
+      "params": {
+        "axonometry": {
+          "sun": { "sunPositionOption": "Angles" }
+        }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the angles option, date kept",
+      "command": "Get3DProjectionSettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "axonometric.sun.sunPositionOption", "eq": "Angles" },
+        { "path": "axonometric.sun.month", "eq": 6, "name": "date kept" }
+      ]
+    }
+  ]
+}

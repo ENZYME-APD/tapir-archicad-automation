@@ -48,6 +48,12 @@ namespace TapirGrasshopperPlugin.Types.ToolSettings
         private readonly Dictionary<string, ToolSettingsField> _byKey =
             new Dictionary<string, ToolSettingsField>(StringComparer.OrdinalIgnoreCase);
 
+        // The same keys, case-sensitive. A label may equal another field's API
+        // name but for its case (a door's "Reveal" label of revealDepthOffset
+        // and the reveal flag), so the exact key is looked up first.
+        private readonly Dictionary<string, ToolSettingsField> _byExactKey =
+            new Dictionary<string, ToolSettingsField>(StringComparer.Ordinal);
+
         public static ToolSettingsTable Load(
             string tool)
         {
@@ -99,9 +105,17 @@ namespace TapirGrasshopperPlugin.Types.ToolSettings
             {
                 foreach (var key in new[] { field.Label, field.Set, field.Get })
                 {
-                    if (!string.IsNullOrEmpty(key) && !table._byKey.ContainsKey(key))
+                    if (string.IsNullOrEmpty(key))
+                    {
+                        continue;
+                    }
+                    if (!table._byKey.ContainsKey(key))
                     {
                         table._byKey[key] = field;
+                    }
+                    if (!table._byExactKey.ContainsKey(key))
+                    {
+                        table._byExactKey[key] = field;
                     }
                 }
             }
@@ -112,7 +126,15 @@ namespace TapirGrasshopperPlugin.Types.ToolSettings
         public ToolSettingsField Find(
             string key)
         {
-            return key != null && _byKey.TryGetValue(key, out var field) ? field : null;
+            if (key == null)
+            {
+                return null;
+            }
+            if (_byExactKey.TryGetValue(key, out var exact))
+            {
+                return exact;
+            }
+            return _byKey.TryGetValue(key, out var field) ? field : null;
         }
 
         private static readonly Dictionary<string, ToolSettingsTable> LoadedTables =

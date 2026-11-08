@@ -1,0 +1,65 @@
+/* The scripts pages (/scripts/, one script at /scripts/?s=<slug>, and /scripts/share/), on top of
+   ../assets/site.css, which has the schedule, the pills, the chips and the .detail/.spec layout. */
+
+/* The built-in scripts, above the "Opening soon" box until the marketplace has listings */
+#builtin-scripts { margin-bottom: 40px }
+
+/* The schedule's filters */
+.script-search { flex: 1 1 320px; max-width: 520px; padding: 9px 16px; font-size: 14.5px }
+.script-search:hover { background: transparent }
+#version-chips { margin-top: -4px }
+/* The Filters button and the applied filters, only below 720 px wide; wider, the chips show as they are. */
+.filters-toggle, .active-filters { display: none }
+.filters-toggle { white-space: nowrap; flex: none }
+.filters-toggle[aria-expanded="true"] { background: var(--fg); color: var(--bg) }
+.active-filter { display: inline-flex; align-items: center; gap: 6px; background: var(--fg); color: var(--bg); padding: 4px 10px 4px 12px; font-size: 12.5px }
+.active-filter:hover { background: var(--fg); opacity: .85 }
+.active-filter span { font-size: 15px; line-height: 1 }
+@media (max-width: 719.98px) {
+    .filters-toggle { display: inline-block }
+    .active-filters { display: flex; margin-top: -6px }
+    .script-search { flex: 1 1 0; max-width: none }
+    .filters-panel { display: none }
+    .filters-panel.open { display: block }
+}
+.script-count { margin: 4px 0 14px; color: var(--muted); font-size: 14.5px }
+.schedule .cell-script { min-width: 240px }
+
+/* One script */
+.detail h2 { font-size: 34px; margin-bottom: 12px }
+.script-section + .script-section { margin-top: 12px }
+/* minmax(0, 1fr): without it a grid column is as wide as its widest child (a long line of code
+   or a table), and so is every paragraph of the README, and the page scrolls sideways. */
+.readme { max-width: 46em; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; overflow-wrap: anywhere }
+.readme p, .readme li { color: var(--muted) }
+.readme h3 { margin-top: 12px }
+.readme h4, .readme h5, .readme h6 { margin-top: 8px; font-size: 17px }
+.readme ul, .readme ol { padding-left: 22px; margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px }
+.readme img { max-width: 100%; height: auto }
+.readme pre { overflow-wrap: normal }
+/* README tables look like the schedule, and become one card per row on phones. */
+.readme .readme-table { font-size: 14px }
+.readme .readme-table th { white-space: nowrap }
+.readme .readme-table td { padding: 10px 16px; overflow-wrap: break-word }
+.readme .readme-table td:first-child { font-weight: 600 }
+.readme .readme-table tbody tr:hover { background: none }
+@media (max-width: 720px) {
+    .readme table.readme-table, .readme .readme-table tbody, .readme .readme-table tr, .readme .readme-table td { display: block }
+    .readme .readme-table thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0) }
+    .readme .readme-table tr { padding: 12px 16px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px }
+    .readme .readme-table tbody tr:last-child { border-bottom: 0 }
+    .readme .readme-table td { padding: 0; border: 0; min-width: 0 }
+    .readme .readme-table td[data-label]::before { content: attr(data-label); display: block; font: 700 10.5px/1.6 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
+}
+.screenshots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px }
+.screenshots a { display: block; border: 1.5px solid var(--fg); border-radius: 4px; overflow: hidden; background: var(--surface) }
+.screenshots img { display: block; width: 100%; height: auto }
+.shot a { display: block }
+.script-versions { list-style: none; margin: 0; padding: 0; border: 1.5px solid var(--fg); background: var(--surface) }
+.script-versions li { padding: 14px 16px; border-bottom: 1px solid var(--line) }
+.script-versions li:last-child { border-bottom: 0 }
+.script-versions .version-head { font: 700 17px/1.3 var(--display) }
+.script-versions .version-changelog { margin-top: 4px; color: var(--muted) }
+.script-section .term pre { max-height: 560px }
+.spec .install ol { font-size: 14px }
+.spec .install #detail-report { font-weight: 700 }

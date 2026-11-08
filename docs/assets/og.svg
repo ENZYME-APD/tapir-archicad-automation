@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <!-- The source of og.png, the link preview image (1200 x 630) of every page: the moss page head
+       of site.css with its 48 px drafting grid, the cream mark, "Tapir" in Fraunces and the tagline
+       in Inter. Export it to og.png at 1200 x 630 with both fonts installed. The pages do not point
+       to og.png yet: once it is added, add after og:url (og:description on 404.html) of every page
+       og:image (https://archicad-api.com/assets/og.png), og:image:width 1200, og:image:height 630,
+       og:image:alt "Tapir - Automation for Archicad", and set twitter:card to summary_large_image. -->
+  <defs>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M0,0.5H48M0.5,0V48" fill="none" stroke="#F4F1EA" stroke-opacity=".06" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="#2D3A30"/>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+  <rect x="0" y="606" width="1200" height="24" fill="#BD8D53"/>
+  <g transform="translate(120 198) scale(6.25)" fill="#F4F1EA">
+    <circle cx="14.9" cy="14.9" r="1.1"/>
+    <path d="M15.9,0C9,0,3,4.5,0.8,10.7c0.7,0,1.2-0.1,1.5-0.2c1.2-0.5,2.5-0.8,3.9-1c0.3-1,0.8-1.8,1.8-1.8c1,0.1,1,0.7,0.7,1.6c7.4-0.2,16.3,3.2,19.6,10.6c0.2,0.5-0.9,0.8-1.4,1.2s-3.5-2.4-3.7-2.2c-0.2,0.3-7.2,3.5-13.7,3.7C6.2,22.7,4.4,24,3,25.5c2.9,4,7.6,6.5,12.9,6.5c8.8,0,16-7.2,16-16C31.9,7.2,24.8,0,15.9,0z"/>
+  </g>
+  <text x="372" y="318" fill="#F4F1EA" font-family="Fraunces, Georgia, 'Times New Roman', serif" font-weight="900" font-size="176" letter-spacing="-3.5">Tapir</text>
+  <text x="378" y="404" fill="#F4F1EA" fill-opacity=".86" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-weight="500" font-size="48">Automation for Archicad</text>
+  <text x="120" y="528" fill="#D4A876" font-family="'JetBrains Mono', Menlo, Consolas, monospace" font-weight="500" font-size="26">archicad-api.com</text>
+</svg>
