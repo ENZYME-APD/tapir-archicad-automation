@@ -27,12 +27,23 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             InGenerics(
                 "ElementSetGuids",
                 "Identifiers of the element sets to delete, as CreateElementSets or GetElementSetsOfElements returns them.");
+
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "DryRun",
+                "If true, nothing is deleted: ErrorMessages says what the deletion would do for each element " +
+                "set, from the checks made before deleting (the element set exists and was created by the " +
+                "Tapir Add-On). Default is false.",
+                false);
+
+            SetOptionality(1);
         }
 
         protected override void AddOutputs()
         {
             OutErrorMessages(
-                "Error message for each element set (empty when it was deleted).");
+                "Error message for each element set (empty when it was deleted, or with DryRun when it would " +
+                "be deleted).");
         }
 
         protected override void Solve(
@@ -61,9 +72,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     });
             }
 
+            var parameters = new JObject { ["elementSets"] = elementSets };
+
+            // Only sent when it differs from the command's default.
+            if (da.GetOptional(1, false))
+            {
+                parameters["dryRun"] = true;
+            }
+
             SetCadValuesWithErrorMessages(
                 CommandName,
-                new JObject { ["elementSets"] = elementSets },
+                parameters,
                 ToAddOn,
                 da);
         }

@@ -1,4 +1,5 @@
 #include "MEPCommands.hpp"
+#include "NotificationCommands.hpp"
 #include <cmath>
 #include <functional>
 #include <limits>
@@ -3097,6 +3098,10 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    // The modified routes are reported to the notification clients as changed (#1825).
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (routingElementsData);
+
     for (const GS::ObjectState& routingElementData : routingElementsData) {
         const GS::ObjectState* elementId = routingElementData.Get ("elementId");
         if (elementId == nullptr) {
@@ -3329,10 +3334,15 @@ GS::ObjectState ModifyMEPRoutingElementsCommand::Execute (const GS::ObjectState&
             }
         }
 
+        if (success) {
+            changeReporter.MarkChanged (GetGuidFromObjectState (*elementId));
+        }
         executionResults (success
             ? CreateSuccessfulExecutionResult ()
             : CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify the routing element."));
     }
+
+    changeReporter.Report ();
 
     return response;
 #else
@@ -3428,6 +3438,10 @@ GS::ObjectState ModifyMEPPortsCommand::Execute (const GS::ObjectState& parameter
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    // A port is not an element, so the element owning a modified port is reported to the
+    // notification clients as changed (#1825).
+    ElementChangeReporter changeReporter;
+
     for (const GS::ObjectState& portData : portsData) {
         GS::UniString portIdStr;
         if (!portData.Get ("portId", portIdStr)) {
@@ -3476,6 +3490,9 @@ GS::ObjectState ModifyMEPPortsCommand::Execute (const GS::ObjectState& parameter
             executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "'flowDirection' needs a piping or ventilation port, 'outerDiameter' and 'nominalSize' need a piping port."));
             continue;
         }
+
+        const API_Guid ownerElementGuid = MEPUniqueIDToAPIGuid (port->GetMEPElementId ());
+        changeReporter.Add (ownerElementGuid);
 
         bool success = true;
 
@@ -3541,10 +3558,15 @@ GS::ObjectState ModifyMEPPortsCommand::Execute (const GS::ObjectState& parameter
             }
         }
 
+        if (success) {
+            changeReporter.MarkChanged (ownerElementGuid);
+        }
         executionResults (success
             ? CreateSuccessfulExecutionResult ()
             : CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify the MEP port."));
     }
+
+    changeReporter.Report ();
 
     return response;
 #else
@@ -3654,6 +3676,10 @@ GS::ObjectState ConnectMEPElementsCommand::Execute (const GS::ObjectState& param
     GS::ObjectState response;
     const auto& connectionResults = response.AddList<GS::ObjectState> ("connectionResults");
 
+    // The connected routes are reported to the notification clients as changed (#1825), the
+    // elements they connect to when their modification stamp changed or they were deleted.
+    ElementChangeReporter changeReporter;
+
     for (const GS::ObjectState& connectionData : connectionsData) {
         const GS::ObjectState* routingElementId = connectionData.Get ("routingElementId");
         const GS::ObjectState* connectToId = connectionData.Get ("connectToId");
@@ -3667,6 +3693,9 @@ GS::ObjectState ConnectMEPElementsCommand::Execute (const GS::ObjectState& param
             connectionResults (CreateErrorResponse (routingElement.UnwrapErr ().kind, "Failed to get the routing element."));
             continue;
         }
+
+        changeReporter.Add (GetGuidFromObjectState (*routingElementId));
+        changeReporter.Add (GetGuidFromObjectState (*connectToId));
 
         std::optional<RouteConnectionResult> connectionResult;
         std::optional<ACAPI::Error> connectionError;
@@ -3698,8 +3727,11 @@ GS::ObjectState ConnectMEPElementsCommand::Execute (const GS::ObjectState& param
         if (connectionResult->createdBranchId.has_value ()) {
             connectionResultOs.Add ("createdBranchId", CreateGuidObjectState (MEPUniqueIDToAPIGuid (connectionResult->createdBranchId.value ())));
         }
+        changeReporter.MarkChanged (GetGuidFromObjectState (*routingElementId));
         connectionResults (connectionResultOs);
     }
+
+    changeReporter.Report ();
 
     return response;
 #elif defined (ServerMainVers_2700)
@@ -3710,6 +3742,10 @@ GS::ObjectState ConnectMEPElementsCommand::Execute (const GS::ObjectState& param
 
     GS::ObjectState response;
     const auto& connectionResults = response.AddList<GS::ObjectState> ("connectionResults");
+
+    // The connected routes are reported to the notification clients as changed (#1825), the
+    // elements they connect to when their modification stamp changed or they were deleted.
+    ElementChangeReporter changeReporter;
 
     for (const GS::ObjectState& connectionData : connectionsData) {
         const GS::ObjectState* routingElementId = connectionData.Get ("routingElementId");
@@ -3724,6 +3760,9 @@ GS::ObjectState ConnectMEPElementsCommand::Execute (const GS::ObjectState& param
             connectionResults (CreateErrorResponse (routingElement.UnwrapErr ().kind, "Failed to get the routing element."));
             continue;
         }
+
+        changeReporter.Add (GetGuidFromObjectState (*routingElementId));
+        changeReporter.Add (GetGuidFromObjectState (*connectToId));
 
         // Archicad 27 connects through RoutingElement::Modifier::Connect, which reports no result.
         std::optional<ACAPI::Error> connectionError;
@@ -3743,8 +3782,11 @@ GS::ObjectState ConnectMEPElementsCommand::Execute (const GS::ObjectState& param
             continue;
         }
 
+        changeReporter.MarkChanged (GetGuidFromObjectState (*routingElementId));
         connectionResults (GS::ObjectState ());
     }
+
+    changeReporter.Report ();
 
     return response;
 #else
@@ -5847,6 +5889,11 @@ static GS::ObjectState ModifyElectricalElements (const GS::ObjectState& paramete
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    // The modified elements are reported to the notification clients as changed (#1825), also
+    // when only the library part or the size was not applied: the other changes were made.
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (elementsData);
+
     for (const GS::ObjectState& elementData : elementsData) {
         const GS::ObjectState* elementId = elementData.Get ("elementId");
         if (elementId == nullptr) {
@@ -5877,6 +5924,7 @@ static GS::ObjectState ModifyElectricalElements (const GS::ObjectState& paramete
         } else if (!placementSuccess) {
             executionResults (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString ("Failed to set the size of the ") + elementName + "."));
         } else {
+            changeReporter.MarkChanged (GetGuidFromObjectState (*elementId));
             ACAPI::Result<ElementT> modified = ElementT::Get (Adapter::UniqueID (GetGuidFromObjectState (*elementId)));
             if (modified.IsOk () && !IsRequestedLibraryPartUsed (modified->GetObjectId (), elementData)) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADID, GS::UniString (LibraryPartNotFound) + " The other changes were made."));
@@ -5887,6 +5935,8 @@ static GS::ObjectState ModifyElectricalElements (const GS::ObjectState& paramete
             }
         }
     }
+
+    changeReporter.Report ();
 
     return response;
 }
@@ -6954,6 +7004,10 @@ GS::ObjectState ConnectToElectricalCircuitsCommand::Execute (const GS::ObjectSta
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    // The connected devices and panels are reported to the notification clients as changed (#1825).
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (connectionsData);
+
     for (const GS::ObjectState& connectionData : connectionsData) {
         const GS::ObjectState* elementId = connectionData.Get ("elementId");
         const GS::ObjectState* circuitIdOs = connectionData.Get ("circuitId");
@@ -6985,10 +7039,15 @@ GS::ObjectState ConnectToElectricalCircuitsCommand::Execute (const GS::ObjectSta
             return { panel.UnwrapErr (), panel.Token () };
         } ();
 
+        if (!modifyResult.IsErr ()) {
+            changeReporter.MarkChanged (GetGuidFromObjectState (*elementId));
+        }
         executionResults (modifyResult.IsErr ()
             ? CreateFailedExecutionResult (modifyResult.UnwrapErr ().kind, "Failed to connect the element to the circuit. The element must be an electrical device or panel.")
             : CreateSuccessfulExecutionResult ());
     }
+
+    changeReporter.Report ();
 
     return response;
 #else
@@ -9355,12 +9414,20 @@ GS::ObjectState ModifyMEPElementsCommand::Execute (const GS::ObjectState& parame
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    // The modified elements are reported to the notification clients as changed (#1825).
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (elements);
+
     ACAPI_CallUndoableCommand ("Modify MEP Elements", [&]() -> GSErrCode {
         for (const GS::ObjectState& elementData : elements) {
-            executionResults (ModifyMEPElement (elementData));
+            const GS::ObjectState result = ModifyMEPElement (elementData);
+            changeReporter.MarkChangedIfSucceeded (elementData, result);
+            executionResults (result);
         }
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 #else

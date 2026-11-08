@@ -11,6 +11,15 @@ GS::Optional<GS::UniString> BuildMeshPolyMemoFromGeometry (
     const GS::Array<GS::ObjectState>& polygonArcs,
     const GS::Array<GS::ObjectState>& holes);
 
+// Gives an existing slab a new outline and holes (in the format of ModifySlabs), keeping the trim
+// and side surface of every edge that lies on an old edge. Used by SplitElements.
+GS::Optional<GS::UniString> ChangeSlabPolygonKeepingEdges (
+    const API_Element& slab,
+    GS::Array<GS::ObjectState>& polygonOutline,
+    const GS::Array<GS::ObjectState>& polygonArcs,
+    const GS::Array<GS::ObjectState>& holes,
+    GSErrCode& err);
+
 void BuildMeshSublinesMemoFromGeometry (
     API_Element& elem,
     API_ElementMemo& memo,
