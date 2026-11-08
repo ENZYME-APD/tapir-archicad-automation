@@ -805,6 +805,45 @@
       ]
     },
     {
+      "slug": "symbol-legend",
+      "name": "Symbol Legend",
+      "summary": "Draws a legend of the objects and lamps placed on a story in a new worksheet: one symbol each, with its name or description and optionally its count.",
+      "category": "documentation-layouts",
+      "tags": [
+        "legend",
+        "symbols",
+        "electrical",
+        "plumbing",
+        "worksheet",
+        "objects",
+        "lamps",
+        "count"
+      ],
+      "author": {
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
+      },
+      "license": "MIT",
+      "entry": "SymbolLegend.py",
+      "changes": "model",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.1",
+          "changelog": "First version.",
+          "commit": "979628f3e8a1d68899be167aac4f828eb7164588",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/979628f3e8a1d68899be167aac4f828eb7164588/marketplace/symbol-legend/SymbolLegend.py",
+          "sha256": "e31dba2f819199e5ac60f25c52d03ca12250d1a351f7b87017013af7b8c62333"
+        }
+      ]
+    },
+    {
       "slug": "symbol-numbering-by-circuit-and-zone",
       "name": "Electrical and Plumbing Symbol Numbering",
       "summary": "Numbers electrical and plumbing symbols by board, circuit and zone, such as DB1.3-04, writes the numbers to the Element ID or a parameter and can label them.",
