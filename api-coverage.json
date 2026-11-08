@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 07:47 UTC",
+ "generatedAt": "2026-11-08 08:51 UTC",
  "versions": [
   25,
   26,
@@ -2910,6 +2910,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2338,
+     "title": "[4/5] Graphic override rules: read Plan and Section and Surfaces and Materials criteria by name"
+    },
+    {
+     "number": 2337,
+     "title": "[3/5] Read Positioning and ID and Categories graphic override criteria by name"
+    },
+    {
+     "number": 2336,
+     "title": "[2/5] Read Layers, Model View and Construction criteria back by name (includeCriterion)"
+    },
+    {
      "number": 2329,
      "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
     }
@@ -2933,6 +2945,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2338,
+     "title": "[4/5] Graphic override rules: read Plan and Section and Surfaces and Materials criteria by name"
+    },
+    {
+     "number": 2337,
+     "title": "[3/5] Read Positioning and ID and Categories graphic override criteria by name"
+    },
+    {
+     "number": 2336,
+     "title": "[2/5] Read Layers, Model View and Construction criteria back by name (includeCriterion)"
+    },
     {
      "number": 2329,
      "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
@@ -17727,12 +17751,7 @@
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
     }
    ],
-   "issues": [
-    {
-     "number": 314,
-     "title": "Bug: ChangeSelectionOfElements is really slow"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Selection_SetMarquee",
@@ -20575,6 +20594,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2340,
+     "title": "Pin the uv version Tapir installs; explain uv exit code 134 on macOS"
+    },
     {
      "number": 2326,
      "title": "Add-On: translatable user interface (#2119)"
@@ -25644,6 +25667,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2338,
+     "title": "[4/5] Graphic override rules: read Plan and Section and Surfaces and Materials criteria by name"
+    },
+    {
+     "number": 2337,
+     "title": "[3/5] Read Positioning and ID and Categories graphic override criteria by name"
+    },
+    {
+     "number": 2336,
+     "title": "[2/5] Read Layers, Model View and Construction criteria back by name (includeCriterion)"
+    },
     {
      "number": 2334,
      "title": "[1/5] Read graphic override criteria back as structured conditions (includeCriterion)"
@@ -38583,6 +38618,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2338,
+     "title": "[4/5] Graphic override rules: read Plan and Section and Surfaces and Materials criteria by name"
+    },
+    {
+     "number": 2337,
+     "title": "[3/5] Read Positioning and ID and Categories graphic override criteria by name"
+    },
+    {
+     "number": 2336,
+     "title": "[2/5] Read Layers, Model View and Construction criteria back by name (includeCriterion)"
+    },
     {
      "number": 2334,
      "title": "[1/5] Read graphic override criteria back as structured conditions (includeCriterion)"
