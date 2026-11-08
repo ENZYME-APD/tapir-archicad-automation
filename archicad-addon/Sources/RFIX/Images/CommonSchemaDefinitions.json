@@ -15424,9 +15424,9 @@
             "penIndex": { "type": "integer", "description": "Pen attribute index. Optional; defaults to the style's penIndex." },
             "fontIndex": { "type": "integer", "description": "Font attribute index. Optional; defaults to the style's fontIndex." },
             "fontName": { "type": "string", "description": "Name of the font for this run only, resolved like the style's fontName (and taking precedence over the run's fontIndex). Optional; defaults to the style's font. Read back as the name of the font the run's fontIndex refers to, absent when no loaded font has that index." },
-            "bold": { "type": "boolean" },
-            "italic": { "type": "boolean" },
-            "underline": { "type": "boolean" },
+            "bold": { "type": "boolean", "description": "Optional; defaults to the style's bold." },
+            "italic": { "type": "boolean", "description": "Optional; defaults to the style's italic." },
+            "underline": { "type": "boolean", "description": "Optional; defaults to the style's underline." },
             "heightOverride": { "type": "number", "description": "Character height in mm for this run only. Optional; defaults to the style's height." },
             "effectStrikeout": { "type": "boolean", "description": "Optional; defaults to the style's effectStrikeout." },
             "effectSuperscript": { "type": "boolean", "description": "Optional; defaults to the style's effectSuperscript." },
@@ -21764,6 +21764,158 @@
             "unit",
             "accuracy",
             "decimals"
+        ]
+    },
+    "NameKind": {
+        "type": "string",
+        "description": "The kind of an item of the project that ResolveNames looks a name up among: a story, an attribute of the given type, an element type (matched by its API name and, from Archicad 27, by the name the Archicad interface shows), a property (built-in or custom; matched by its name and by its group and name together), or a classification (a classification system, matched by its name and by its name and version together, or an item of any system at any depth, matched by its name, by its ID and by both together).",
+        "enum": [
+            "Story",
+            "Layer",
+            "LayerCombination",
+            "BuildingMaterial",
+            "Composite",
+            "Profile",
+            "Surface",
+            "Fill",
+            "Line",
+            "ZoneCategory",
+            "ElementType",
+            "Property",
+            "Classification"
+        ]
+    },
+    "NameMatch": {
+        "type": "object",
+        "description": "An item of the project that a name matches, as ResolveNames returns it.",
+        "properties": {
+            "kind": {
+                "$ref": "#/NameKind"
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the item in the project. For an element type, the name the Archicad interface shows (from Archicad 27; the API name before). For a classification item, its name, or its ID when it has no name."
+            },
+            "match": {
+                "type": "string",
+                "description": "How the name matches. exact: the same characters. normalized: the same except for case, accents, spacing and separators (FireRating, fire_rating, Fire Rating). words: every word of one is a word of the other, or at least half of their words are shared. contains: one contains the other. similar: a few characters differ.",
+                "enum": [
+                    "exact",
+                    "normalized",
+                    "words",
+                    "contains",
+                    "similar"
+                ]
+            },
+            "score": {
+                "type": "number",
+                "description": "How close the match is, from 0.6 to 1 (1 for exact and normalized matches)."
+            },
+            "storyIndex": {
+                "type": "integer",
+                "description": "The index of the story (the floor index the commands take). Only for a story."
+            },
+            "level": {
+                "type": "number",
+                "description": "The level of the story, in meters. Only for a story."
+            },
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            },
+            "attributeIndex": {
+                "type": "integer",
+                "description": "The index of the attribute. Only for an attribute."
+            },
+            "elementType": {
+                "$ref": "#/ElementType"
+            },
+            "propertyId": {
+                "$ref": "#/PropertyId",
+                "description": "The property, as GetPropertyValuesOfElements and SetPropertyValuesOfElements take it. Only for a property."
+            },
+            "propertyGroupId": {
+                "$ref": "#/PropertyGroupId",
+                "description": "The group of the property. Only for a property."
+            },
+            "propertyGroupName": {
+                "type": "string",
+                "description": "The name of the group of the property. Only for a property."
+            },
+            "propertyType": {
+                "type": "string",
+                "description": "Whether the property is built in or custom. Only for a property.",
+                "enum": [
+                    "StaticBuiltIn",
+                    "DynamicBuiltIn",
+                    "Custom"
+                ]
+            },
+            "propertyCollectionType": {
+                "type": "string",
+                "description": "Whether the property holds one value, a list, or one or more choices of a list of options. Only for a property.",
+                "enum": [
+                    "Undefined",
+                    "Single",
+                    "List",
+                    "SingleChoiceEnumeration",
+                    "MultipleChoiceEnumeration"
+                ]
+            },
+            "propertyValueType": {
+                "type": "string",
+                "description": "The type of the values of the property. Only for a property.",
+                "enum": [
+                    "Undefined",
+                    "Integer",
+                    "Real",
+                    "String",
+                    "Boolean",
+                    "Guid"
+                ]
+            },
+            "propertyMeasureType": {
+                "type": "string",
+                "description": "What a number value of the property measures. Only for a property; left out for the attribute index types of some built-in properties.",
+                "enum": [
+                    "Undefined",
+                    "Default",
+                    "Length",
+                    "Area",
+                    "Volume",
+                    "Angle"
+                ]
+            },
+            "propertyIsEditable": {
+                "type": "boolean",
+                "description": "Whether the value of the property can be set. Only for a property."
+            },
+            "availability": {
+                "$ref": "#/ClassificationItemIds",
+                "description": "The classification items the property is available for: an element has the property only when it is classified as one of them. Only for a custom property; built-in properties have no such list."
+            },
+            "classificationSystemId": {
+                "$ref": "#/ClassificationSystemId",
+                "description": "The classification system, or the system of the classification item. Only for a classification."
+            },
+            "classificationSystemName": {
+                "type": "string",
+                "description": "The name of the classification system. Only for a classification."
+            },
+            "classificationItemId": {
+                "$ref": "#/ClassificationItemId",
+                "description": "The classification item. Only for a classification item, not for a classification system."
+            },
+            "classificationItemCode": {
+                "type": "string",
+                "description": "The ID of the classification item, as Archicad shows it (for example Ss_25_10). Only for a classification item."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "kind",
+            "name",
+            "match",
+            "score"
         ]
     }
 }

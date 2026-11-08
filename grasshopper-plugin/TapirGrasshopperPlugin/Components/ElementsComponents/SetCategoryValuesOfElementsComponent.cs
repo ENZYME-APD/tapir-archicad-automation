@@ -41,12 +41,36 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "CategoryValueGuids",
                 "A value of the category of each item, as GetElementCategories lists them (input only 1 " +
                 "to use the same value for all).");
+
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "DryRun",
+                "If true, nothing is changed and no undo step is created: ErrorMessages says what setting " +
+                "the value would do for each item, from the checks made before writing (the element does " +
+                "not exist, it does not have the category), and OldValues and NewValues show the change. " +
+                "Default is false.",
+                false);
+
+            SetOptionality(3);
         }
 
         protected override void AddOutputs()
         {
             OutErrorMessages(
-                "Error message of each item (empty when the value was set).");
+                "Error message of each item (empty when the value was set, or with DryRun when it would be " +
+                "set).");
+
+            // Appended after the original output, so saved definitions keep their wiring.
+            OutTexts(
+                "OldValues",
+                "With DryRun, the element's value in the category now, for each item that passed the checks, " +
+                "as JSON (type, categoryId, and categoryValueId and name when it has a value); null for the " +
+                "other items and without DryRun.");
+
+            OutTexts(
+                "NewValues",
+                "With DryRun, the value a real run would set, for each item that passed the checks, as JSON " +
+                "(type, categoryId, categoryValueId, name); null for the other items and without DryRun.");
         }
 
         protected override void Solve(
@@ -103,11 +127,45 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     });
             }
 
-            SetCadValuesWithErrorMessages(
-                CommandName,
-                new JObject { ["elementCategoryValues"] = items },
-                ToAddOn,
-                da);
+            var parameters = new JObject { ["elementCategoryValues"] = items };
+
+            // Only sent when it differs from the command's default.
+            var dryRun = da.GetOptional(
+                3,
+                false);
+            if (dryRun)
+            {
+                parameters["dryRun"] = true;
+            }
+
+            if (!TryGetCadResponse(
+                    CommandName,
+                    parameters,
+                    ToAddOn,
+                    out JObject response))
+            {
+                return;
+            }
+
+            var messages = ExecutionResultsResponse.ErrorMessages(response);
+            if (dryRun)
+            {
+                AddDryRunWarnings(messages);
+            }
+
+            da.SetDataList(
+                0,
+                messages);
+            da.SetDataList(
+                1,
+                ExecutionResultsResponse.WouldChangeValues(
+                    response,
+                    "oldValue"));
+            da.SetDataList(
+                2,
+                ExecutionResultsResponse.WouldChangeValues(
+                    response,
+                    "newValue"));
         }
 
         protected override System.Drawing.Bitmap Icon =>

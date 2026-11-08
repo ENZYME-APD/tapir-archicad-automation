@@ -5954,5 +5954,309 @@ namespace TapirGrasshopperPlugin.Properties
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
+
+        internal static System.Drawing.Bitmap AlignElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("AlignElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CheckPropertyValues
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CheckPropertyValues", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CopyElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CopyElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CopyLibraryParts
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CopyLibraryParts", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateShells
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateShells", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap CreateSkylights
+        {
+            get {
+                object obj = ResourceManager.GetObject ("CreateSkylights", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DeleteAndReplaceAttributes
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DeleteAndReplaceAttributes", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap DistributeElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("DistributeElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAllAutoTextKeys
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAllAutoTextKeys", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetAttributeIndexes
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetAttributeIndexes", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetCameras
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetCameras", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetCommands
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetCommands", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetComponentsOfElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetComponentsOfElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetGDLParametersOfLibraryParts
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetGDLParametersOfLibraryParts", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetLibrariesOfLibParts
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetLibrariesOfLibParts", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetLibraryPart2DPrimitives
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetLibraryPart2DPrimitives", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetLibraryPartFileInfo
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetLibraryPartFileInfo", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetLibraryPartSection
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetLibraryPartSection", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetLibraryPartSections
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetLibraryPartSections", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetLibraryPartTypeDetails
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetLibraryPartTypeDetails", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetModelExtent
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetModelExtent", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetPropertyDefinitionsOfElementComponents
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetPropertyDefinitionsOfElementComponents", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetPropertyValuesOfElementComponents
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetPropertyValuesOfElementComponents", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetSchedules
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetSchedules", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap InterpretAutoTexts
+        {
+            get {
+                object obj = ResourceManager.GetObject ("InterpretAutoTexts", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap IsLibraryPartSubtypeOf
+        {
+            get {
+                object obj = ResourceManager.GetObject ("IsLibraryPartSubtypeOf", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyAssociativeDimensions
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyAssociativeDimensions", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyCurtainWallFrames
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyCurtainWallFrames", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifySkylights
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifySkylights", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ModifyStairs
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ModifyStairs", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap RotateCopyElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RotateCopyElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SearchLibraryParts
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SearchLibraryParts", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetLibraryPartParameters
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetLibraryPartParameters", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetLibraryPartPictureImages
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetLibraryPartPictureImages", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap UpdateLibraryPartSections
+        {
+            get {
+                object obj = ResourceManager.GetObject ("UpdateLibraryPartSections", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SplitElements
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SplitElements", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetUnusedAttributes
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetUnusedAttributes", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetUnusedLibraryParts
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetUnusedLibraryParts", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
     }
 }

@@ -1,9 +1,11 @@
 ﻿using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Element;
+using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
@@ -36,6 +38,17 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
             InGenerics(
                 "ElementGuids",
                 "Elements Guids to set the classification for.");
+
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "DryRun",
+                "If true, nothing is changed and no undo step is created: ErrorMessages says what setting " +
+                "the classification would do for each element, from the checks made before writing (the " +
+                "element or the classification item does not exist), and OldValues and NewValues show the " +
+                "change. Default is false.",
+                false);
+
+            SetOptionality(3);
         }
 
         public override void AddedToDocument(
@@ -49,7 +62,21 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
         protected override void AddOutputs()
         {
             OutErrorMessages(
-                "Error message of each element (empty when it succeeded).");
+                "Error message of each element (empty when it succeeded, or with DryRun when it would " +
+                "succeed).");
+
+            // Appended after the original output, so saved definitions keep their wiring.
+            OutTexts(
+                "OldValues",
+                "With DryRun, the element's classification in the system now, for each element that passed " +
+                "the checks, as JSON (classificationSystemId, and classificationItemId when it is " +
+                "classified); null for the other elements and without DryRun.");
+
+            OutTexts(
+                "NewValues",
+                "With DryRun, the classification a real run would set, for each element that passed the " +
+                "checks, as JSON (classificationSystemId, and classificationItemId unless it would be " +
+                "unclassified); null for the other elements and without DryRun.");
         }
 
         protected override void Solve(
@@ -121,11 +148,45 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 elementClassifications.Add(elementClassification);
             }
 
-            SetCadValuesWithErrorMessages(
-                CommandName,
-                new { elementClassifications },
-                ToAddOn,
-                da);
+            var parameters = JObject.FromObject(new { elementClassifications });
+
+            // Only sent when it differs from the command's default.
+            var dryRun = da.GetOptional(
+                3,
+                false);
+            if (dryRun)
+            {
+                parameters["dryRun"] = true;
+            }
+
+            if (!TryGetCadResponse(
+                    CommandName,
+                    parameters,
+                    ToAddOn,
+                    out JObject response))
+            {
+                return;
+            }
+
+            var messages = ExecutionResultsResponse.ErrorMessages(response);
+            if (dryRun)
+            {
+                AddDryRunWarnings(messages);
+            }
+
+            da.SetDataList(
+                0,
+                messages);
+            da.SetDataList(
+                1,
+                ExecutionResultsResponse.WouldChangeValues(
+                    response,
+                    "oldValue"));
+            da.SetDataList(
+                2,
+                ExecutionResultsResponse.WouldChangeValues(
+                    response,
+                    "newValue"));
         }
 
         protected override System.Drawing.Bitmap Icon =>

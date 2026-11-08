@@ -117,10 +117,8 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             da.SetDataList(2, errors);
         }
 
-        // No icon of its own yet; the icon of the subelements of hierarchical
-        // elements is the closest.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.Subelems;
+            Properties.Resources.GetComponentsOfElements;
 
         public override Guid ComponentGuid =>
             new Guid("4445e03a-876e-4de7-8458-1ca3a94b75f9");

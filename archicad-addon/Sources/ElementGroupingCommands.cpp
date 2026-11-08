@@ -2,6 +2,7 @@
 #include "MigrationHelper.hpp"
 #include "Base64Converter.hpp"
 #include "UserDataPairs.hpp"
+#include "NotificationCommands.hpp"
 
 #ifdef ServerMainVers_2600
 static GS::UniString GetGroupCreationErrorMessage(const GS::Array<API_Guid>& elemGuids, GSErrCode /*originalErr*/)
@@ -81,6 +82,9 @@ GS::ObjectState CreateGroupsCommand::Execute(const GS::ObjectState& parameters, 
 
 #ifdef ServerMainVers_2600
 
+    // The grouped elements are reported to the notification clients as changed (#1825).
+    ElementChangeReporter changeReporter;
+
     ACAPI_CallUndoableCommand("Create Element Groups", [&]() -> GSErrCode {
         for (const GS::ObjectState& groupParam : elementGroups) {
 
@@ -106,6 +110,10 @@ GS::ObjectState CreateGroupsCommand::Execute(const GS::ObjectState& parameters, 
                 parentGroupGuid = GetGuidFromObjectState(*parentGroupId);
             }
 
+            for (const API_Guid& elemGuid : elemGuids) {
+                changeReporter.Add(elemGuid);
+            }
+
             API_Guid newGroupGuid = APINULLGuid;
             GSErrCode err = ACAPI_Grouping_CreateGroup(
                 elemGuids,
@@ -118,6 +126,9 @@ GS::ObjectState CreateGroupsCommand::Execute(const GS::ObjectState& parameters, 
                 groupGuids(CreateErrorResponse(err, errorMsg));
             }
             else {
+                for (const API_Guid& elemGuid : elemGuids) {
+                    changeReporter.MarkChanged(elemGuid);
+                }
                 GS::ObjectState successResult;
                 successResult.Add("groupId", CreateGuidObjectState(newGroupGuid));
                 groupGuids(successResult);
@@ -125,6 +136,8 @@ GS::ObjectState CreateGroupsCommand::Execute(const GS::ObjectState& parameters, 
         }
         return NoError;
         });
+
+    changeReporter.Report();
 #else
     GS::UniString notSupportedMsg = "The Create Groups command is not supported in Archicad 25 or older.";
     groupGuids (CreateErrorResponse (APIERR_NOTSUPPORTED, notSupportedMsg));
@@ -188,6 +201,9 @@ GS::ObjectState UngroupElementsCommand::Execute(const GS::ObjectState& parameter
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState>("executionResults");
 
+    // The members of the dissolved groups are reported to the notification clients as changed (#1825).
+    ElementChangeReporter changeReporter;
+
     ACAPI_CallUndoableCommand("Ungroup Elements", [&]() -> GSErrCode {
         for (const GS::ObjectState& group : groups) {
             const GS::ObjectState* groupId = group.Get("groupId");
@@ -226,6 +242,10 @@ GS::ObjectState UngroupElementsCommand::Execute(const GS::ObjectState& parameter
                 continue;
             }
 
+            for (const API_Guid& elemGuid : elemGuids) {
+                changeReporter.Add(elemGuid);
+            }
+
             err = ACAPI_Grouping_Tool(elemGuids, APITool_Ungroup, nullptr);
             if (err != NoError) {
                 executionResults(CreateFailedExecutionResult(err, "Failed to ungroup the elements of the group."));
@@ -241,10 +261,15 @@ GS::ObjectState UngroupElementsCommand::Execute(const GS::ObjectState& parameter
                 continue;
             }
 
+            for (const API_Guid& elemGuid : elemGuids) {
+                changeReporter.MarkChanged(elemGuid);
+            }
             executionResults(CreateSuccessfulExecutionResult());
         }
         return NoError;
     });
+
+    changeReporter.Report();
 
     return response;
 }
