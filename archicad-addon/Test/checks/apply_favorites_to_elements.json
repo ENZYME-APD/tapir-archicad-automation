@@ -1,6 +1,6 @@
 {
   "title": "ApplyFavoritesToElements command",
-  "minTapir": "1.7.3",
+  "minTapir": "1.8.1",
   "steps": [
     {
       "id": "create test wall",
@@ -66,6 +66,21 @@
           "path": "error.message",
           "contains": "Give 'elements' or 'filter'",
           "name": "whole-project apply refused"
+        }
+      ]
+    },
+    {
+      "id": "neither favoritesToApply nor favorite is rejected",
+      "command": "ApplyFavoritesToElements",
+      "creates": false,
+      "params": {
+        "applyProperties": false
+      },
+      "expect": [
+        {
+          "path": "error.message",
+          "contains": "Give 'favoritesToApply'",
+          "name": "nothing to apply refused"
         }
       ]
     }

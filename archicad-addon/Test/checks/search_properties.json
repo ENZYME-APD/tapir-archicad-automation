@@ -1,6 +1,6 @@
 {
   "title": "SearchProperties command",
-  "minTapir": "1.7.3",
+  "minTapir": "1.8.1",
   "steps": [
     {
       "id": "search properties by query",

@@ -1,6 +1,6 @@
 {
   "title": "Server-side filtering: typed property criteria in GetElementsByCriteria, filter and fields in GetDetailsOfElements",
-  "minTapir": "1.7.3",
+  "minTapir": "1.8.1",
   "steps": [
     {
       "id": "thickness property id",
@@ -47,6 +47,9 @@
           }
         ]
       },
+      "save": {
+        "thinWallId": "elements[0].elementId.guid"
+      },
       "expect": [
         {
           "path": "elements",
@@ -72,6 +75,9 @@
             ]
           }
         ]
+      },
+      "save": {
+        "slabId": "elements[0].elementId.guid"
       },
       "expect": [
         {
@@ -179,6 +185,24 @@
       },
       "expect": [
         { "path": "detailsOfElements", "len": 1, "name": "only the slab" }
+      ]
+    },
+    {
+      "id": "GetDetailsOfElements elements and filter: a listed element the filter leaves out keeps its place",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${thinWallId}" } },
+          { "elementId": { "guid": "${slabId}" } }
+        ],
+        "filter": { "types": ["Wall"] },
+        "fields": ["elementId", "type"]
+      },
+      "expect": [
+        { "path": "detailsOfElements", "len": 2, "name": "one entry per listed element" },
+        { "path": "detailsOfElements[0].type", "eq": "Wall", "name": "the wall matches" },
+        { "path": "detailsOfElements[1].error.message", "contains": "does not match the filter", "name": "the slab gets an error in its place" }
       ]
     }
   ]

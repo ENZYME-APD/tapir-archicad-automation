@@ -1,6 +1,6 @@
 {
   "title": "GetElementsByCriteria command",
-  "minTapir": "1.7.3",
+  "minTapir": "1.8.1",
   "steps": [
     {
       "id": "create test wall",
