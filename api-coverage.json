@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 18:44 UTC",
+ "generatedAt": "2026-11-08 19:01 UTC",
  "versions": [
   25,
   26,
@@ -9648,6 +9648,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2417,
+     "title": "[2/5] Script Manager: Install, Remove and the Installed tab"
+    },
+    {
+     "number": 2416,
+     "title": "[3/5] Tapir Palette: the scripts panel's list, search, categories and details"
+    },
+    {
+     "number": 2415,
+     "title": "[2/2] Share a script from Archicad: Your shares, with status, answers and Confirm"
+    },
+    {
      "number": 2414,
      "title": "[1/5] Tapir Script Manager: the window, the catalogue and browsing"
     },
@@ -13089,6 +13101,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2417,
+     "title": "[2/5] Script Manager: Install, Remove and the Installed tab"
+    },
+    {
+     "number": 2416,
+     "title": "[3/5] Tapir Palette: the scripts panel's list, search, categories and details"
+    },
+    {
+     "number": 2415,
+     "title": "[2/2] Share a script from Archicad: Your shares, with status, answers and Confirm"
+    },
+    {
      "number": 2414,
      "title": "[1/5] Tapir Script Manager: the window, the catalogue and browsing"
     },
@@ -13120,6 +13144,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2417,
+     "title": "[2/5] Script Manager: Install, Remove and the Installed tab"
+    },
+    {
+     "number": 2416,
+     "title": "[3/5] Tapir Palette: the scripts panel's list, search, categories and details"
+    },
+    {
+     "number": 2415,
+     "title": "[2/2] Share a script from Archicad: Your shares, with status, answers and Confirm"
+    },
     {
      "number": 2414,
      "title": "[1/5] Tapir Script Manager: the window, the catalogue and browsing"
@@ -16598,6 +16634,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2417,
+     "title": "[2/5] Script Manager: Install, Remove and the Installed tab"
+    },
+    {
      "number": 2414,
      "title": "[1/5] Tapir Script Manager: the window, the catalogue and browsing"
     }
@@ -20065,6 +20105,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2417,
+     "title": "[2/5] Script Manager: Install, Remove and the Installed tab"
+    },
+    {
+     "number": 2415,
+     "title": "[2/2] Share a script from Archicad: Your shares, with status, answers and Confirm"
+    },
     {
      "number": 2414,
      "title": "[1/5] Tapir Script Manager: the window, the catalogue and browsing"
