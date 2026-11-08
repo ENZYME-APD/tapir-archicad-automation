@@ -19,6 +19,17 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         {
         }
 
+        protected override void AddInputs()
+        {
+            InBoolean(
+                "IncludeCriterion",
+                "Also return each rule's criterion as structured conditions (Criteria output), in the shape the " +
+                "Criteria input of CreateGraphicOverrideRules and ModifyGraphicOverrideRules takes. Default is false.",
+                false);
+
+            SetOptionality(0);
+        }
+
         protected override void AddOutputs()
         {
             OutGenerics(
@@ -42,14 +53,27 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 "Styles",
                 "Style of each rule as JSON, in the shape the Styles input of CreateGraphicOverrideRules takes. " +
                 GraphicOverrideHelp.StyleKeysDoc);
+
+            // Appended after the original outputs, so saved definitions keep their wiring.
+            OutTexts(
+                "Criteria",
+                "Criterion of each rule as structured conditions (JSON), in the shape the Criteria input of " +
+                "CreateGraphicOverrideRules and ModifyGraphicOverrideRules takes. Only with IncludeCriterion; " +
+                "null when the criterion XML is not in the format Archicad keeps rules in.");
         }
 
         protected override void Solve(
             IGH_DataAccess da)
         {
+            var parameters = new JObject();
+            if (da.GetOptional(0, false))
+            {
+                parameters["includeCriterion"] = true;
+            }
+
             if (!TryGetCadResponse(
                     CommandName,
-                    new JObject(),
+                    parameters,
                     ToAddOn,
                     out JObject response))
             {
@@ -68,6 +92,10 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 da,
                 0,
                 false);
+
+            da.SetDataList(
+                5,
+                outputs.Criteria);
         }
 
         protected override System.Drawing.Bitmap Icon =>

@@ -220,6 +220,9 @@ GS::Optional<GS::UniString> SetClassificationsOfElementsCommand::GetInputParamet
         "properties": {
             "elementClassifications": {
                 "$ref": "#/ElementClassifications"
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -234,8 +237,12 @@ GS::Optional<GS::UniString> SetClassificationsOfElementsCommand::GetRawResponseS
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults"
+                "$ref": "#/ChangeExecutionResults",
+                "description": "One result for each item of elementClassifications, in the order of the input. On a dry run an item that passes every check made before writing (the classification item and its system exist, the element's classification in that system can be read) gets wouldChange: oldValue is the element's classificationId in the system now and newValue the one a real run would set, both as GetClassificationsOfElements gives them (without classificationItemId when the element is or would be unclassified in the system). Archicad can still refuse an item that passes them."
             }
         },
         "additionalProperties": false,
@@ -245,12 +252,24 @@ GS::Optional<GS::UniString> SetClassificationsOfElementsCommand::GetRawResponseS
     })";
 }
 
+// A classificationId as GetClassificationsOfElements gives it: without classificationItemId when itemGuid is APINULLGuid (unclassified).
+static GS::ObjectState CreateClassificationIdObjectState (const API_Guid& systemGuid, const API_Guid& itemGuid)
+{
+    GS::ObjectState classificationId ("classificationSystemId", GS::ObjectState ("guid", APIGuidToString (systemGuid)));
+    if (itemGuid != APINULLGuid) {
+        classificationId.Add ("classificationItemId", GS::ObjectState ("guid", APIGuidToString (itemGuid)));
+    }
+    return classificationId;
+}
+
 GS::ObjectState SetClassificationsOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> elementClassifications;
     parameters.Get ("elementClassifications", elementClassifications);
+    const bool dryRun = IsDryRun (parameters);
 
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
     // A classification change may leave the element's modification stamp as it was, so the
@@ -263,7 +282,9 @@ GS::ObjectState SetClassificationsOfElementsCommand::Execute (const GS::ObjectSt
         }
     }
 
-    ACAPI_CallUndoableCommand ("SetClassificationsOfElementsCommand", [&] () -> GSErrCode {
+    // On a dry run the same checks are made, outside an undo scope, and each classification that
+    // would be set is reported with the element's classification in that system now.
+    CallUndoableCommandOrDryRun (dryRun, "SetClassificationsOfElementsCommand", [&] () -> GSErrCode {
         for (const GS::ObjectState& elementClassification : elementClassifications) {
             const GS::ObjectState* elementId = elementClassification.Get ("elementId");
             if (elementId == nullptr) {
@@ -282,6 +303,25 @@ GS::ObjectState SetClassificationsOfElementsCommand::Execute (const GS::ObjectSt
             const GS::ObjectState* classificationItemId = classificationId->Get ("classificationItemId");
             if (classificationItemId != nullptr) {
                 const API_Guid classificationItemGuid = GetGuidFromObjectState (*classificationItemId);
+
+                if (dryRun) {
+                    // ACAPI_Element_AddClassificationItem fails on an item or element that does not
+                    // exist; reading the item's system and the element's classification in it fails the same way.
+                    API_ClassificationSystem system;
+                    GSErrCode err = ACAPI_Classification_GetClassificationItemSystem (classificationItemGuid, system);
+                    API_ClassificationItem oldItem;
+                    if (err == NoError) {
+                        err = ACAPI_Element_GetClassificationInSystem (elemGuid, system.guid, oldItem);
+                    }
+                    if (err != NoError) {
+                        executionResults (CreateFailedExecutionResult (err, "Failed to set classification item for element"));
+                        continue;
+                    }
+                    executionResults (CreateWouldChangeExecutionResult (GS::ObjectState (
+                        "oldValue", CreateClassificationIdObjectState (system.guid, oldItem.guid),
+                        "newValue", CreateClassificationIdObjectState (system.guid, classificationItemGuid))));
+                    continue;
+                }
 
                 const GSErrCode err = ACAPI_Element_AddClassificationItem (elemGuid, classificationItemGuid);
                 if (err != NoError) {
@@ -304,6 +344,13 @@ GS::ObjectState SetClassificationsOfElementsCommand::Execute (const GS::ObjectSt
                     continue;
                 }
 
+                if (dryRun) {
+                    executionResults (CreateWouldChangeExecutionResult (GS::ObjectState (
+                        "oldValue", CreateClassificationIdObjectState (classificationSystemGuid, item.guid),
+                        "newValue", CreateClassificationIdObjectState (classificationSystemGuid, APINULLGuid))));
+                    continue;
+                }
+
                 if (item.guid != APINULLGuid) {
                     err = ACAPI_Element_RemoveClassificationItem (elemGuid, item.guid);
                     if (err != NoError) {
@@ -320,7 +367,9 @@ GS::ObjectState SetClassificationsOfElementsCommand::Execute (const GS::ObjectSt
         return NoError;
     });
 
-    changeReporter.Report ();
+    if (!dryRun) {
+        changeReporter.Report ();
+    }
 
     return response;
 }

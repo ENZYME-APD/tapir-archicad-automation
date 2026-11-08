@@ -30,8 +30,13 @@ expectedOutputsFolder = os.path.join (testFolder, 'ExpectedOutputs')
 # TestProject.pla. QuitArchicad is not here: it runs last, as the quit script always has.
 EXAMPLES_NOT_SMOKE_TESTED = {
     # Wait for the user to click, draw or answer in Archicad.
-    'GetPointFromUser', 'GetLineFromUser', 'GetPolygonFromUser', 'GetElementFromUser',
-    'ShowAlert', 'ShowScriptUI', 'GetScriptUIResult',
+    'GetPointFromUser', 'GetLineFromUser', 'GetArcFromUser', 'GetPolygonFromUser', 'GetElementFromUser',
+    'ShowAlert', 'ShowScriptUI', 'GetScriptUIResult', 'OpenSettingsDialog',
+    'PickLibraryPart',
+    'PickLibraryPartFile', 'PickPictureFile', 'PickZoneStampOrLabelFile', 'PickLibraryPartSaveLocation',
+    'PickLibraryFolder',
+    'ShowIFCExportSettings',
+    'PickAttribute', 'PickAttributeFolder',
     # Open, close, create or write the project, or switch to another one.
     'OpenProject', 'CloseProject', 'NewProject', 'SaveProject', 'SaveProjectAsArchive',
     # Print, publish or render: send jobs to devices or run for minutes.

@@ -1969,19 +1969,24 @@ void AddAdditionalPolyToMemo (
     }
 }
 
-GS::Optional<GS::UniString> BuildRoofMemoFromGeometry (
-    API_Element& element,
-    API_ElementMemo& memo,
-    GS::Array<GS::ObjectState>& polygonOutline,
-    const GS::Array<GS::ObjectState>& polygonArcs,
-    const GS::Array<GS::ObjectState>& holes)
+// Shared first half of the roof, plane roof and mesh memo builders: checks the outline
+// (named 'outlineKey' in the error message) and the holes, drops a closing coordinate
+// equal to the first one, and counts the coordinates, sub-polygons and arcs of the
+// outline and its holes into 'poly'. The memo handles are sized and filled by each
+// builder, because they differ per element.
+GS::Optional<GS::UniString> PreparePolygonWithHoles (
+    const char*                       outlineKey,
+    GS::Array<GS::ObjectState>&       outline,
+    const GS::Array<GS::ObjectState>& arcs,
+    const GS::Array<GS::ObjectState>& holes,
+    API_Polygon&                      poly)
 {
-    if (polygonOutline.GetSize () < 3) {
-        return "'polygonOutline' must contain at least 3 coordinates.";
+    if (outline.GetSize () < 3) {
+        return GS::UniString::Printf ("'%s' must contain at least 3 coordinates.", outlineKey);
     }
 
-    if (IsSame2DCoordinate (polygonOutline.GetFirst (), polygonOutline.GetLast ())) {
-        polygonOutline.Pop ();
+    if (IsSame2DCoordinate (outline.GetFirst (), outline.GetLast ())) {
+        outline.Pop ();
     }
 
     auto holesError = ValidateHoles (holes);
@@ -1989,18 +1994,33 @@ GS::Optional<GS::UniString> BuildRoofMemoFromGeometry (
         return holesError;
     }
 
-    element.roof.u.polyRoof.pivotPolygon.nCoords = polygonOutline.GetSize () + 1;
-    element.roof.u.polyRoof.pivotPolygon.nSubPolys = 1;
-    element.roof.u.polyRoof.pivotPolygon.nArcs = polygonArcs.GetSize ();
+    poly.nCoords = outline.GetSize () + 1;
+    poly.nSubPolys = 1;
+    poly.nArcs = arcs.GetSize ();
 
     for (const GS::ObjectState& hole : holes) {
-        GS::Array<GS::ObjectState> holePolygonOutline;
-        GS::Array<GS::ObjectState> holePolygonArcs;
-        if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
-            element.roof.u.polyRoof.pivotPolygon.nCoords += holePolygonOutline.GetSize () + 1;
-            ++element.roof.u.polyRoof.pivotPolygon.nSubPolys;
-            element.roof.u.polyRoof.pivotPolygon.nArcs += holePolygonArcs.GetSize ();
+        GS::Array<GS::ObjectState> holeOutline;
+        GS::Array<GS::ObjectState> holeArcs;
+        if (GetHoleGeometry (hole, holeOutline, holeArcs)) {
+            poly.nCoords += holeOutline.GetSize () + 1;
+            ++poly.nSubPolys;
+            poly.nArcs += holeArcs.GetSize ();
         }
+    }
+
+    return {};
+}
+
+GS::Optional<GS::UniString> BuildRoofMemoFromGeometry (
+    API_Element& element,
+    API_ElementMemo& memo,
+    GS::Array<GS::ObjectState>& polygonOutline,
+    const GS::Array<GS::ObjectState>& polygonArcs,
+    const GS::Array<GS::ObjectState>& holes)
+{
+    auto polygonError = PreparePolygonWithHoles ("polygonOutline", polygonOutline, polygonArcs, holes, element.roof.u.polyRoof.pivotPolygon);
+    if (polygonError.HasValue ()) {
+        return polygonError;
     }
 
     // GetDefaults typically leaves the roof pivot-polygon memo handles null, and
@@ -2054,31 +2074,9 @@ GS::Optional<GS::UniString> BuildPlaneRoofMemoFromGeometry (
     const GS::Array<GS::ObjectState>& polygonArcs,
     const GS::Array<GS::ObjectState>& holes)
 {
-    if (polygonOutline.GetSize () < 3) {
-        return "'polygonOutline' must contain at least 3 coordinates.";
-    }
-
-    if (IsSame2DCoordinate (polygonOutline.GetFirst (), polygonOutline.GetLast ())) {
-        polygonOutline.Pop ();
-    }
-
-    auto holesError = ValidateHoles (holes);
-    if (holesError.HasValue ()) {
-        return holesError;
-    }
-
-    element.roof.u.planeRoof.poly.nCoords = polygonOutline.GetSize () + 1;
-    element.roof.u.planeRoof.poly.nSubPolys = 1;
-    element.roof.u.planeRoof.poly.nArcs = polygonArcs.GetSize ();
-
-    for (const GS::ObjectState& hole : holes) {
-        GS::Array<GS::ObjectState> holePolygonOutline;
-        GS::Array<GS::ObjectState> holePolygonArcs;
-        if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
-            element.roof.u.planeRoof.poly.nCoords += holePolygonOutline.GetSize () + 1;
-            ++element.roof.u.planeRoof.poly.nSubPolys;
-            element.roof.u.planeRoof.poly.nArcs += holePolygonArcs.GetSize ();
-        }
+    auto polygonError = PreparePolygonWithHoles ("polygonOutline", polygonOutline, polygonArcs, holes, element.roof.u.planeRoof.poly);
+    if (polygonError.HasValue ()) {
+        return polygonError;
     }
 
     // GetDefaults typically leaves the roof polygon memo handles null; BMReallocHandle
@@ -2191,9 +2189,14 @@ GS::Optional<GS::UniString> ApplyWallStructure (
     return {};
 }
 
-// Roofs and shells share API_ShellBaseType, so CreateShells takes the same structure fields.
-GS::Optional<GS::UniString> ApplyShellBaseStructure (
-    API_ShellBaseType& shellBase,
+// The structure (basic or composite, no profile) of roofs, shells and slabs (#1889). They keep it
+// in different places (roof.shellBase, shell.shellBase, slab), so the caller passes the three
+// fields; it also sets its own mask bits, as each element type has its own ACAPI_ELEMENT_MASK_SET.
+// applied is false when the details name no structure.
+GS::Optional<GS::UniString> ApplyBasicOrCompositeStructure (
+    API_ModelElemStructureType& modelElemStructureType,
+    API_AttributeIndex& buildingMaterial,
+    API_AttributeIndex& composite,
     const GS::ObjectState& details,
     bool& applied)
 {
@@ -2206,16 +2209,16 @@ GS::Optional<GS::UniString> ApplyShellBaseStructure (
 
     switch (selection.kind) {
         case StructureSelectionKind::Basic:
-            shellBase.modelElemStructureType = API_BasicStructure;
+            modelElemStructureType = API_BasicStructure;
             if (selection.buildingMaterial != APIInvalidAttributeIndex) {
-                shellBase.buildingMaterial = selection.buildingMaterial;
+                buildingMaterial = selection.buildingMaterial;
             }
-            shellBase.composite = APIInvalidAttributeIndex;
+            composite = APIInvalidAttributeIndex;
             break;
         case StructureSelectionKind::Composite:
-            shellBase.modelElemStructureType = API_CompositeStructure;
+            modelElemStructureType = API_CompositeStructure;
             if (selection.composite != APIInvalidAttributeIndex) {
-                shellBase.composite = selection.composite;
+                composite = selection.composite;
             }
             break;
         case StructureSelectionKind::Profile:
@@ -2225,6 +2228,15 @@ GS::Optional<GS::UniString> ApplyShellBaseStructure (
 
     applied = true;
     return {};
+}
+
+// Roofs and shells share API_ShellBaseType, so CreateShells takes the same structure fields.
+GS::Optional<GS::UniString> ApplyShellBaseStructure (
+    API_ShellBaseType& shellBase,
+    const GS::ObjectState& details,
+    bool& applied)
+{
+    return ApplyBasicOrCompositeStructure (shellBase.modelElemStructureType, shellBase.buildingMaterial, shellBase.composite, details, applied);
 }
 
 GS::Optional<GS::UniString> ApplyRoofStructure (
@@ -2259,33 +2271,14 @@ GS::Optional<GS::UniString> ApplyShellStructure (
     const GS::ObjectState& details,
     bool& changed)
 {
-    StructureSelection selection;
-    auto error = ParseStructureSelection (details, true, false, selection);
+    bool applied = false;
+    auto error = ApplyShellBaseStructure (element.shell.shellBase, details, applied);
     if (error.HasValue ()) {
         return error;
     }
 
-    if (selection.kind == StructureSelectionKind::Unspecified) {
+    if (!applied) {
         return {};
-    }
-
-    switch (selection.kind) {
-        case StructureSelectionKind::Basic:
-            element.shell.shellBase.modelElemStructureType = API_BasicStructure;
-            if (selection.buildingMaterial != APIInvalidAttributeIndex) {
-                element.shell.shellBase.buildingMaterial = selection.buildingMaterial;
-            }
-            element.shell.shellBase.composite = APIInvalidAttributeIndex;
-            break;
-        case StructureSelectionKind::Composite:
-            element.shell.shellBase.modelElemStructureType = API_CompositeStructure;
-            if (selection.composite != APIInvalidAttributeIndex) {
-                element.shell.shellBase.composite = selection.composite;
-            }
-            break;
-        case StructureSelectionKind::Profile:
-        case StructureSelectionKind::Unspecified:
-            break;
     }
 
     if (mask != nullptr) {
@@ -2309,33 +2302,14 @@ GS::Optional<GS::UniString> ApplySlabStructure (
     const GS::ObjectState& details,
     bool& changed)
 {
-    StructureSelection selection;
-    auto error = ParseStructureSelection (details, true, false, selection);
+    bool applied = false;
+    auto error = ApplyBasicOrCompositeStructure (element.slab.modelElemStructureType, element.slab.buildingMaterial, element.slab.composite, details, applied);
     if (error.HasValue ()) {
         return error;
     }
 
-    if (selection.kind == StructureSelectionKind::Unspecified) {
+    if (!applied) {
         return {};
-    }
-
-    switch (selection.kind) {
-        case StructureSelectionKind::Basic:
-            element.slab.modelElemStructureType = API_BasicStructure;
-            if (selection.buildingMaterial != APIInvalidAttributeIndex) {
-                element.slab.buildingMaterial = selection.buildingMaterial;
-            }
-            element.slab.composite = APIInvalidAttributeIndex;
-            break;
-        case StructureSelectionKind::Composite:
-            element.slab.modelElemStructureType = API_CompositeStructure;
-            if (selection.composite != APIInvalidAttributeIndex) {
-                element.slab.composite = selection.composite;
-            }
-            break;
-        case StructureSelectionKind::Profile:
-        case StructureSelectionKind::Unspecified:
-            break;
     }
 
     if (mask != nullptr) {
@@ -3116,7 +3090,7 @@ bool ApplyColumnDetails (API_Element& element, API_Element& mask, const GS::Obje
     return changed;
 }
 
-bool ApplyBeamDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details)
+bool ApplyBeamDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details, const Stories& stories)
 {
     bool changed = false;
     auto begCoordinate = GetOptionalCoordinate2D (details, "begCoordinate");
@@ -3129,6 +3103,23 @@ bool ApplyBeamDetails (API_Element& element, API_Element& mask, const GS::Object
     if (endCoordinate.HasValue ()) {
         element.beam.endC = endCoordinate.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, endC);
+        changed = true;
+    }
+    // The absolute elevation of the reference line, resolved as in CreateBeams (#521); an
+    // explicit level below is applied after it, as bottomOffset is for columns.
+    auto zCoordinate = GetOptionalDouble (details, "zCoordinate");
+    short floorIndex = 0;
+    const bool hasFloorIndex = details.Get ("floorIndex", floorIndex);
+    if (zCoordinate.HasValue ()) {
+        const auto floorIndexAndOffset = ResolveFloorIndexAndOffset (details, "floorIndex", zCoordinate.Get (), stories);
+        element.header.floorInd = floorIndexAndOffset.first;
+        element.beam.level = floorIndexAndOffset.second;
+        ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+        ACAPI_ELEMENT_MASK_SET (mask, API_BeamType, level);
+        changed = true;
+    } else if (hasFloorIndex) {
+        element.header.floorInd = floorIndex;
+        ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
         changed = true;
     }
     auto level = GetOptionalDouble (details, "level");
@@ -6956,10 +6947,18 @@ static GSErrCode ApplyWindowOrDoorLibraryPart (Int32 libInd, API_Element& elemen
     return NoError;
 }
 
-GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+// The shared body of CreateWindows and CreateDoors (#1889): typeID is API_WindowID or
+// API_DoorID, dataKey the input array ("windowsData"/"doorsData"), undoName the undo step and
+// noun the element's name in the messages ("window"/"door"). Both write through element.window,
+// the door being the same struct.
+static GS::ObjectState CreateWindowsOrDoors (const GS::ObjectState& parameters,
+    API_ElemTypeID typeID,
+    const char* dataKey,
+    const GS::String& undoName,
+    const char* noun)
 {
-    GS::Array<GS::ObjectState> windowsData;
-    auto error = GetElementArray (parameters, "windowsData", windowsData);
+    GS::Array<GS::ObjectState> elementsData;
+    auto error = GetElementArray (parameters, dataKey, elementsData);
     if (error.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
@@ -6977,11 +6976,11 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
     });
     if (databaseErr != NoError) {
         return CreateErrorResponse (databaseErr,
-            "Failed to activate the floor plan database, which is needed to create a window. Activate the floor plan in Archicad and run the command again.");
+            GS::UniString ("Failed to activate the floor plan database, which is needed to create a ") + noun + ". Activate the floor plan in Archicad and run the command again.");
     }
 
-    return ExecuteCreateWithElements ("Create Windows", [&](GS::Array<GS::ObjectState>& elements) {
-        for (const auto& data : windowsData) {
+    return ExecuteCreateWithElements (undoName, [&](GS::Array<GS::ObjectState>& elements) {
+        for (const auto& data : elementsData) {
             if (data.Get ("ownerWallId") == nullptr) {
                 elements.Push (CreateErrorResponse (APIERR_BADPARS, "Missing required 'ownerWallId' field."));
                 continue;
@@ -6993,7 +6992,7 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
             }
             if (IsPolygonalWall (wallGuid)) {
                 elements.Push (CreateErrorResponse (APIERR_BADPARS,
-                    "The owner wall is polygonal, and Archicad cannot place a window in one."));
+                    GS::UniString ("The owner wall is polygonal, and Archicad cannot place a ") + noun + " in one."));
                 continue;
             }
 
@@ -7005,28 +7004,28 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
                 ACAPI_DisposeElemMemoHdls (&marker.memo);
             });
 
-            // Apply the favorite to the Window tool defaults FIRST so
+            // Apply the favorite to the Window/Door tool defaults FIRST so
             // that PrepareWindowOrDoorDefaults clones the favorite-applied
             // libpart and builds a matching marker. Calling
             // PrepareWindowOrDoorDefaults first and applying the favorite
             // after leaves the marker pointing at the previous libpart,
             // causing CreateExt to fail with -2130313110.
-            GSErrCode err = ApplyWindowOrDoorFavoriteToDefaults (data, API_WindowID);
+            GSErrCode err = ApplyWindowOrDoorFavoriteToDefaults (data, typeID);
             if (err != NoError) {
-                elements.Push (CreateErrorResponse (err, "Failed to resolve `favoriteName` for window."));
+                elements.Push (CreateErrorResponse (err, GS::UniString ("Failed to resolve `favoriteName` for ") + noun + "."));
                 continue;
             }
             Int32 libInd = 0;
-            err = FindWindowOrDoorLibraryPart (data, API_WindowID, libInd);
+            err = FindWindowOrDoorLibraryPart (data, typeID, libInd);
             if (err != NoError) {
-                elements.Push (CreateErrorResponse (err, "Failed to resolve `libraryPartName`: no window library part with that name."));
+                elements.Push (CreateErrorResponse (err, GS::UniString ("Failed to resolve `libraryPartName`: no ") + noun + " library part with that name."));
                 continue;
             }
 
             bool withMarker = true;
-            err = PrepareWindowOrDoorDefaults (API_WindowID, element, memo, marker, withMarker);
+            err = PrepareWindowOrDoorDefaults (typeID, element, memo, marker, withMarker);
             if (err != NoError) {
-                elements.Push (CreateErrorResponse (err, "Failed to prepare window defaults."));
+                elements.Push (CreateErrorResponse (err, GS::UniString ("Failed to prepare ") + noun + " defaults."));
                 continue;
             }
 
@@ -7034,7 +7033,7 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
             data.Get ("centerOffset", centerOffset);
             element.window.owner = wallGuid;
             element.window.objLoc = centerOffset;
-            // The same keys ModifyWindows writes; the mask is not used by the create.
+            // The same keys ModifyWindows and ModifyDoors write; the mask is not used by the create.
             API_Element unusedMask = {};
             bool detailsGiven = false;
             const GS::Optional<GS::UniString> detailsError = ApplyWindowOrDoorDetails (element, unusedMask, data, detailsGiven);
@@ -7057,9 +7056,9 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
                 // The switch above should have ruled this one out, but say what it means
                 // if Archicad still refuses the database - #532 was reported for a year as
                 // a parameter problem because the message named none of this.
-                GS::UniString errorMessage = "Failed to create window.";
+                GS::UniString errorMessage = GS::UniString ("Failed to create ") + noun + ".";
                 if (err == APIERR_BADDATABASE) {
-                    errorMessage = "Failed to create window: Archicad refused the current database. A window can only be created while the floor plan is the current database.";
+                    errorMessage = GS::UniString ("Failed to create ") + noun + ": Archicad refused the current database. A " + noun + " can only be created while the floor plan is the current database.";
                 }
                 elements.Push (CreateErrorResponse (err, errorMessage));
                 continue;
@@ -7067,6 +7066,11 @@ GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters
             elements.Push (CreateElementIdObjectState (element.header.guid));
         }
     });
+}
+
+GS::ObjectState CreateWindowsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
+{
+    return CreateWindowsOrDoors (parameters, API_WindowID, "windowsData", "Create Windows", "window");
 }
 
 CreateDoorsCommand::CreateDoorsCommand () :
@@ -7125,113 +7129,7 @@ GS::Optional<GS::UniString> CreateDoorsCommand::GetRawResponseSchema () const
 
 GS::ObjectState CreateDoorsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
-    GS::Array<GS::ObjectState> doorsData;
-    auto error = GetElementArray (parameters, "doorsData", doorsData);
-    if (error.HasValue ()) {
-        return CreateErrorResponse (APIERR_BADPARS, error.Get ());
-    }
-
-    // The create needs the floor plan as the current database - see
-    // SwitchCurrentDatabaseToFloorPlan. The previous database is restored after the
-    // undoable command has finished, on every exit path.
-    API_DatabaseInfo previousDatabase = {};
-    bool databaseSwitched = false;
-    const GSErrCode databaseErr = SwitchCurrentDatabaseToFloorPlan (previousDatabase, databaseSwitched);
-    const GS::OnExit restoreDatabase ([&]() {
-        if (databaseSwitched) {
-            ACAPI_Database_ChangeCurrentDatabase (&previousDatabase);
-        }
-    });
-    if (databaseErr != NoError) {
-        return CreateErrorResponse (databaseErr,
-            "Failed to activate the floor plan database, which is needed to create a door. Activate the floor plan in Archicad and run the command again.");
-    }
-
-    return ExecuteCreateWithElements ("Create Doors", [&](GS::Array<GS::ObjectState>& elements) {
-        for (const auto& data : doorsData) {
-            if (data.Get ("ownerWallId") == nullptr) {
-                elements.Push (CreateErrorResponse (APIERR_BADPARS, "Missing required 'ownerWallId' field."));
-                continue;
-            }
-            const API_Guid wallGuid = GetGuidFromObjectState (*data.Get ("ownerWallId"));
-            if (!DoesWallExist (wallGuid)) {
-                elements.Push (CreateErrorResponse (APIERR_BADID, "Failed to load owner wall."));
-                continue;
-            }
-            if (IsPolygonalWall (wallGuid)) {
-                elements.Push (CreateErrorResponse (APIERR_BADPARS,
-                    "The owner wall is polygonal, and Archicad cannot place a door in one."));
-                continue;
-            }
-
-            API_Element element = {};
-            API_ElementMemo memo = {};
-            API_SubElement marker = {};
-            const GS::OnExit cleanup ([&]() {
-                ACAPI_DisposeElemMemoHdls (&memo);
-                ACAPI_DisposeElemMemoHdls (&marker.memo);
-            });
-
-            // Apply the favorite to the Door tool defaults FIRST so
-            // that PrepareWindowOrDoorDefaults clones the favorite-applied
-            // libpart and builds a matching marker. Calling
-            // PrepareWindowOrDoorDefaults first and applying the favorite
-            // after leaves the marker pointing at the previous libpart,
-            // causing CreateExt to fail with -2130313110.
-            GSErrCode err = ApplyWindowOrDoorFavoriteToDefaults (data, API_DoorID);
-            if (err != NoError) {
-                elements.Push (CreateErrorResponse (err, "Failed to resolve `favoriteName` for door."));
-                continue;
-            }
-            Int32 libInd = 0;
-            err = FindWindowOrDoorLibraryPart (data, API_DoorID, libInd);
-            if (err != NoError) {
-                elements.Push (CreateErrorResponse (err, "Failed to resolve `libraryPartName`: no door library part with that name."));
-                continue;
-            }
-
-            bool withMarker = true;
-            err = PrepareWindowOrDoorDefaults (API_DoorID, element, memo, marker, withMarker);
-            if (err != NoError) {
-                elements.Push (CreateErrorResponse (err, "Failed to prepare door defaults."));
-                continue;
-            }
-
-            double centerOffset = 0.0;
-            data.Get ("centerOffset", centerOffset);
-            element.window.owner = wallGuid;
-            element.window.objLoc = centerOffset;
-            // The same keys ModifyDoors writes; the mask is not used by the create.
-            API_Element unusedMask = {};
-            bool detailsGiven = false;
-            const GS::Optional<GS::UniString> detailsError = ApplyWindowOrDoorDetails (element, unusedMask, data, detailsGiven);
-            if (detailsError.HasValue ()) {
-                elements.Push (CreateErrorResponse (APIERR_BADPARS, detailsError.Get ()));
-                continue;
-            }
-            if (libInd > 0) {
-                err = ApplyWindowOrDoorLibraryPart (libInd, element, memo);
-                if (err != NoError) {
-                    elements.Push (CreateErrorResponse (err, "Failed to read the parameters of the `libraryPartName` library part."));
-                    continue;
-                }
-            }
-
-            err = withMarker
-                ? ACAPI_Element_CreateExt (&element, &memo, 1UL, &marker)
-                : ACAPI_Element_Create (&element, &memo);
-            if (err != NoError) {
-                // See the same spot in CreateWindowsCommand::Execute.
-                GS::UniString errorMessage = "Failed to create door.";
-                if (err == APIERR_BADDATABASE) {
-                    errorMessage = "Failed to create door: Archicad refused the current database. A door can only be created while the floor plan is the current database.";
-                }
-                elements.Push (CreateErrorResponse (err, errorMessage));
-                continue;
-            }
-            elements.Push (CreateElementIdObjectState (element.header.guid));
-        }
-    });
+    return CreateWindowsOrDoors (parameters, API_DoorID, "doorsData", "Create Doors", "door");
 }
 
 CreateOpeningsCommand::CreateOpeningsCommand () :
@@ -9773,7 +9671,9 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
                         "elementId": { "$ref": "#/ElementId" },
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
-                        "level": { "type": "number" },
+                        "zCoordinate": { "type": "number", "description": "Absolute Z of the beam's reference line, as in CreateBeams. The home story is derived from it unless floorIndex is given; level, when given too, is applied after it." },
+                        "floorIndex": { "type": "integer", "description": "Optional home story index (as returned by GetStories). With zCoordinate it pins the story the Z is resolved against; alone it only changes the home story (combine with level to set the offset relative to it)." },
+                        "level": { "type": "number", "description": "Elevation of the reference line relative to the home story." },
                         "offset": { "type": "number" },
                         "slantAngle": { "type": "number" },
                         "arcAngle": { "type": "number" },
@@ -9820,6 +9720,8 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
         return CreateErrorResponse (APIERR_BADPARS, error.Get ());
     }
 
+    const Stories stories = GetStories ();
+
     return ExecuteModifyWithResults ("Modify Beams", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
             if (item.Get ("elementId") == nullptr) {
@@ -9836,7 +9738,7 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
 
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
-            bool changed = ApplyBeamDetails (element, mask, item);
+            bool changed = ApplyBeamDetails (element, mask, item, stories);
             const GS::Optional<GS::UniString> settingsError = ApplyBeamSurfaceAndFillSettings (element, mask, item, changed);
             if (settingsError.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, settingsError.Get ()));
@@ -10893,6 +10795,77 @@ static void RestoreRoofPolygonEdges (API_ElementMemo& memo, const GS::Array<Roof
     }
 }
 
+// Writes the given "edgeTrims" (see ModifyRoofs) into memo.edgeTrims, one item per edge in the
+// order of GetPolygonEdgeIndices, which is the order GetDetailsOfElements reports them in (#2363).
+// Only the given fields of an item change. Changes nothing on an error.
+static GS::Optional<GS::UniString> ApplyRoofEdgeTrims (API_ElementMemo& memo, const GS::Array<GS::ObjectState>& edgeTrims)
+{
+    const GS::Array<Int32> edgeIndices = GetPolygonEdgeIndices (memo);
+    if (edgeIndices.IsEmpty ()) {
+        return GS::UniString ("Failed to read the edges of the roof's polygon.");
+    }
+    if (edgeTrims.GetSize () != edgeIndices.GetSize ()) {
+        return GS::UniString::Printf ("'edgeTrims' must have one item per edge of the roof's polygon (%u).", (unsigned) edgeIndices.GetSize ());
+    }
+    for (UIndex k = 0; k < edgeTrims.GetSize (); ++k) {
+        GS::UniString trimType;
+        if (edgeTrims[k].Get ("trimType", trimType) && trimType != "Vertical" && trimType != "Perpendicular" && trimType != "Horizontal" && trimType != "CustomAngle") {
+            return "Unknown trimType '" + trimType + GS::UniString::Printf ("' in 'edgeTrims' item %u: use Vertical, Perpendicular, Horizontal or CustomAngle.", (unsigned) k);
+        }
+    }
+
+    const Int32 nCoords = (Int32) (BMGetHandleSize ((GSHandle) memo.coords) / sizeof (API_Coord)) - 1;
+    const GSSize nTrims = memo.edgeTrims == nullptr ? 0 : BMGetHandleSize ((GSHandle) memo.edgeTrims) / sizeof (API_EdgeTrim);
+    if (nTrims < nCoords + 1) {
+        // A roof that never had a custom edge cut may have no edge trims: its edges are Vertical,
+        // as GetRoofPolygonEdges reads them. The trims it has are kept.
+        API_EdgeTrim** trims = reinterpret_cast<API_EdgeTrim**> (BMAllocateHandle ((nCoords + 1) * sizeof (API_EdgeTrim), ALLOCATE_CLEAR, 0));
+        if (trims == nullptr) {
+            return GS::UniString ("Failed to allocate the edge trims of the roof.");
+        }
+        for (Int32 i = 0; i <= nCoords; ++i) {
+            (*trims)[i].sideType = APIEdgeTrim_Vertical;
+            (*trims)[i].sideAngle = HalfTurn / 2.0;
+            if (i < nTrims) {
+                (*trims)[i] = (*memo.edgeTrims)[i];
+            }
+        }
+        if (memo.edgeTrims != nullptr) {
+            BMKillHandle (reinterpret_cast<GSHandle*> (&memo.edgeTrims));
+        }
+        memo.edgeTrims = trims;
+    }
+
+    for (UIndex k = 0; k < edgeTrims.GetSize (); ++k) {
+        API_EdgeTrim& trim = (*memo.edgeTrims)[edgeIndices[k]];
+        GS::UniString trimType;
+        if (edgeTrims[k].Get ("trimType", trimType)) {
+            if (trimType == "Perpendicular") {
+                trim.sideType = APIEdgeTrim_Perpendicular;
+            } else if (trimType == "Horizontal") {
+                trim.sideType = APIEdgeTrim_Horizontal;
+            } else if (trimType == "CustomAngle") {
+                trim.sideType = APIEdgeTrim_CustomAngle;
+            } else {
+                trim.sideType = APIEdgeTrim_Vertical;
+            }
+        }
+        edgeTrims[k].Get ("angle", trim.sideAngle);
+    }
+
+    // The closing vertex of each contour repeats the data of its first vertex, as AddPolyToMemo
+    // (ElementCreationCommands.cpp) writes it.
+    const Int32 nSubPolys = (Int32) (BMGetHandleSize ((GSHandle) memo.pends) / sizeof (Int32)) - 1;
+    for (Int32 subPoly = 1; subPoly <= nSubPolys; ++subPoly) {
+        const Int32 first = (*memo.pends)[subPoly - 1] + 1;
+        const Int32 closing = (*memo.pends)[subPoly];
+        if (closing <= nCoords && first < closing) {
+            (*memo.edgeTrims)[closing] = (*memo.edgeTrims)[first];
+        }
+    }
+    return {};
+}
+
 static GS::Array<Int32> GetContourPointCounts (const API_ElementMemo& memo)
 {
     GS::Array<Int32> counts;
@@ -10904,6 +10877,41 @@ static GS::Array<Int32> GetContourPointCounts (const API_ElementMemo& memo)
         counts.Push ((*memo.pends)[subPoly] - (*memo.pends)[subPoly - 1]);
     }
     return counts;
+}
+
+GS::Optional<GS::UniString> ChangeSlabPolygonKeepingEdges (
+    const API_Element&                slab,
+    GS::Array<GS::ObjectState>&       polygonOutline,
+    const GS::Array<GS::ObjectState>& polygonArcs,
+    const GS::Array<GS::ObjectState>& holes,
+    GSErrCode&                        err)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit cleanup ([&memo] () {
+        ACAPI_DisposeElemMemoHdls (&memo);
+    });
+    err = ACAPI_Element_GetMemo (slab.header.guid, &memo);
+    if (err != NoError) {
+        return GS::UniString ("Failed to read the polygon of the slab.");
+    }
+
+    // Edited in place as ModifySlabs does it (see ApplySlabPolygonChange), then each new edge
+    // gets back the trim and side surface of the old edge it lies on, as ModifyRoofs does it.
+    // The edges along the split line get the defaults: vertical, with the slab's side surface.
+    const GS::Array<RoofPolygonEdge> oldEdges = GetRoofPolygonEdges (memo);
+    const GS::Optional<GS::UniString> error = ApplySlabPolygonChange (memo, slab.slab.sideMat, polygonOutline, polygonArcs, holes);
+    if (error.HasValue ()) {
+        err = APIERR_BADPARS;
+        return error;
+    }
+    RestoreRoofPolygonEdges (memo, oldEdges, false, false);
+
+    API_Guid slabGuid = slab.header.guid;
+    err = ACAPI_Element_ChangeMemo (slabGuid, APIMemoMask_Polygon | APIMemoMask_SideMaterials | APIMemoMask_EdgeTrims, &memo);
+    if (err != NoError) {
+        return GS::UniString ("Failed to change the polygon of the slab.");
+    }
+    return {};
 }
 
 ModifyRoofsCommand::ModifyRoofsCommand () :
@@ -10979,6 +10987,25 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                             },
                             "additionalProperties": false
                         },
+                        "edgeTrims": {
+                            "type": "array",
+                            "description": "Single-plane roofs only: the cut of each edge of the roof's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeTrims (the outline, then each hole). Only the given fields change; an empty item keeps its edge. Cannot be combined with polygonOutline.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "trimType": {
+                                        "type": "string",
+                                        "enum": [ "Vertical", "Perpendicular", "Horizontal", "CustomAngle" ],
+                                        "description": "Vertical, Perpendicular to the roof plane, Horizontal, or at 'angle' (CustomAngle)."
+                                    },
+                                    "angle": {
+                                        "type": "number",
+                                        "description": "The angle of the edge cut in radians, as GetDetailsOfElements reports it. Only CustomAngle uses it."
+                                    }
+                                },
+                                "additionalProperties": false
+                            }
+                        },
                         "pivotEdges": {
                             "type": "array",
                             "description": "Multi-plane roofs only: the roof planes of each edge of the pivot polygon, one item per edge in the order GetDetailsOfElements reports them (the outline, then each hole). Only the given fields change; an item without levels keeps its edge. Cannot be combined with polygonOutline.",
@@ -11052,8 +11079,12 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'levels', 'eavesOverhang' and 'pivotEdges' are only valid for multi-plane roofs."));
                 continue;
             }
-            if (!isPlaneRoof && (item.Contains ("angle") || item.Contains ("pivotLine"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'angle' and 'pivotLine' are only valid for single-plane roofs."));
+            if (!isPlaneRoof && (item.Contains ("angle") || item.Contains ("pivotLine") || item.Contains ("edgeTrims"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'angle', 'pivotLine' and 'edgeTrims' are only valid for single-plane roofs."));
+                continue;
+            }
+            if (item.Contains ("edgeTrims") && item.Contains ("polygonOutline")) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTrims' cannot be combined with 'polygonOutline', which makes new edges."));
                 continue;
             }
 
@@ -11103,6 +11134,53 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 }
                 err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AdditionalPolygon, true);
                 results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the roof planes of the edges."));
+                continue;
+            }
+
+            GS::Array<GS::ObjectState> edgeTrims;
+            if (item.Get ("edgeTrims", edgeTrims)) {
+                API_ElementMemo memo = {};
+                const GS::OnExit cleanup ([&]() {
+                    ACAPI_DisposeElemMemoHdls (&memo);
+                });
+                err = ACAPI_Element_GetMemo (element.header.guid, &memo);
+                if (err != NoError || memo.coords == nullptr || memo.pends == nullptr) {
+                    results.Push (CreateFailedExecutionResult (err != NoError ? err : APIERR_GENERAL, "Failed to read the polygon of the roof."));
+                    continue;
+                }
+                auto trimError = ApplyRoofEdgeTrims (memo, edgeTrims);
+                if (trimError.HasValue ()) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, trimError.Get ()));
+                    continue;
+                }
+                if (changed) {
+                    err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+                    if (err != NoError) {
+                        results.Push (CreateFailedExecutionResult (err, "Failed to modify roof."));
+                        continue;
+                    }
+                }
+                // Passed as the polygon edit below passes it: only the polygon handles and the edge
+                // data, unchanged but for the trims, so the side surfaces and edge types stay.
+                API_ElementMemo polygonMemo = {};
+                polygonMemo.coords = memo.coords;
+                polygonMemo.pends = memo.pends;
+                polygonMemo.parcs = memo.parcs;
+                polygonMemo.vertexIDs = memo.vertexIDs;
+                polygonMemo.edgeIDs = memo.edgeIDs;
+                polygonMemo.edgeTrims = memo.edgeTrims;
+                polygonMemo.sideMaterials = memo.sideMaterials;
+                polygonMemo.roofEdgeTypes = memo.roofEdgeTypes;
+                polygonMemo.contourIDs = memo.contourIDs;
+                UInt64 memoMask = APIMemoMask_Polygon | APIMemoMask_EdgeTrims;
+                if (memo.sideMaterials != nullptr) {
+                    memoMask |= APIMemoMask_SideMaterials;
+                }
+                if (memo.roofEdgeTypes != nullptr) {
+                    memoMask |= APIMemoMask_RoofEdgeTypes;
+                }
+                err = ACAPI_Element_ChangeMemo (element.header.guid, memoMask, &polygonMemo);
+                results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the edge trims of the roof."));
                 continue;
             }
 
@@ -12949,30 +13027,9 @@ GS::Optional<GS::UniString> BuildMeshPolyMemoFromGeometry (
     const GS::Array<GS::ObjectState>&  polygonArcs,
     const GS::Array<GS::ObjectState>&  holes)
 {
-    if (polygonCoordinates.GetSize () < 3) {
-        return "'polygonCoordinates' must contain at least 3 coordinates.";
-    }
-    if (IsSame2DCoordinate (polygonCoordinates.GetFirst (), polygonCoordinates.GetLast ())) {
-        polygonCoordinates.Pop ();
-    }
-
-    auto holesError = ValidateHoles (holes);
-    if (holesError.HasValue ()) {
-        return holesError;
-    }
-
-    elem.mesh.poly.nCoords   = polygonCoordinates.GetSize () + 1;
-    elem.mesh.poly.nSubPolys = 1;
-    elem.mesh.poly.nArcs     = polygonArcs.GetSize ();
-
-    for (const GS::ObjectState& hole : holes) {
-        GS::Array<GS::ObjectState> holeCoords;
-        GS::Array<GS::ObjectState> holeArcs;
-        if (GetHoleGeometry (hole, holeCoords, holeArcs)) {
-            elem.mesh.poly.nCoords += holeCoords.GetSize () + 1;
-            ++elem.mesh.poly.nSubPolys;
-            elem.mesh.poly.nArcs += holeArcs.GetSize ();
-        }
+    auto polygonError = PreparePolygonWithHoles ("polygonCoordinates", polygonCoordinates, polygonArcs, holes, elem.mesh.poly);
+    if (polygonError.HasValue ()) {
+        return polygonError;
     }
 
     const Int32 nCoords   = elem.mesh.poly.nCoords;

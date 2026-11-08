@@ -96,7 +96,7 @@ these parts, in this order:
    `changes`. A [marketplace](#sharing-your-script) script also needs `category` (one of the
    [marketplace's categories](../marketplace/README.md#categories)), `archicad-versions` (the
    Archicad versions it works in) and `min-tapir-version` (the newest of the versions the
-   [command reference](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon) shows
+   [command reference](https://archicad-api.com/archicad-addon/) shows
    for the Tapir commands it uses). [marketplace/README.md](../marketplace/README.md#the-scripts-headers)
    defines these keys.
 3. **A docstring** with the script's name alone on its first line, a blank line, then one paragraph
@@ -118,7 +118,7 @@ these parts, in this order:
      Archicad answers.
 6. **The Archicad calls**, through [utilities/archicad.py](utilities/archicad.py). These raise
    `ArchicadError`, which the window shows in its status line:
-   - `run_tapir(command, parameters)` runs a [Tapir command](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon),
+   - `run_tapir(command, parameters)` runs a [Tapir command](https://archicad-api.com/archicad-addon/),
      `run_command(command, parameters)` an official one (`API.` is added when missing).
    - `get_details_of_elements(elements, fields)`, `get_elements(scope, element_types, filters)`
      (`scope` is `selection`, `story` or `project`), `get_story_names()`,

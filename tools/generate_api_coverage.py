@@ -22,6 +22,9 @@ it, so the page's "claim" link can put them into the issue it opens.
 Status of an item: done (used on main), merged (used on main but not in the
 latest release), in progress (added by an open pull request), claimed (named
 by an open issue), open, not applicable or skipped (both with a reason).
+An item Tapir uses is done or merged even when a rule covers its group or a
+pattern. The rules file's `applicable` section names the items that stay
+applicable whatever the `skip` and `notApplicable` sections say about them.
 A pull request adds a C++ member when its added lines call it in a file that
 uses its class, the file's lines on main included - the same test as on main.
 
@@ -489,6 +492,11 @@ def build (args):
         return found
 
     def rule_for (item_id, group):
+        # An item in the `applicable` section is judged one by one: no other
+        # section rules it out, not by its group, a pattern or by naming it.
+        data = rules.get ('applicable', {})
+        if item_id in data.get ('items', {}) or any (re.search (p, item_id) for p in data.get ('patterns', {})):
+            return None, None
         for section in ('skip', 'notApplicable'):
             data = rules.get (section, {})
             reason = data.get ('items', {}).get (item_id) or data.get ('groups', {}).get (group)
@@ -501,7 +509,8 @@ def build (args):
     items = []
 
     def add (item_id, kind, group, brief, item_versions, names, is_used, was_released, search_names, source, cpp_named=()):
-        status, reason = rule_for (item_id, group)
+        # What Tapir calls is used, whatever a rule says about its group or pattern.
+        status, reason = (None, None) if is_used else rule_for (item_id, group)
         prs = mentioned (search_names, pr_text)
         if cpp_named:
             found = {pr['number'] for pr in prs}

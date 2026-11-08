@@ -1,9 +1,9 @@
 /* हिन्दी: the Scripts page (scripts/index.html), with the texts scripts.js shows from it. See ../README.md.
    The scripts' own names, summaries and READMEs stay as their authors wrote them. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Scripts - Tapir': 'Scripts - Tapir',
-    'Scripts shared by architects for the Tapir palette in Archicad, each one reviewed and adapted to work in any office before it is listed.':
-        'Archicad में Tapir palette के लिए आर्किटेक्ट्स द्वारा शेयर की गई scripts, हर एक सूची में आने से पहले जाँची गई और किसी भी ऑफ़िस में काम करने के लिए ढाली गई।',
+    'Free Archicad Python scripts | Tapir': 'मुफ़्त Archicad Python scripts | Tapir',
+    'Free Python scripts for the Tapir palette in Archicad, shared by architects, each one reviewed and adapted to work in any office before it is listed.':
+        'Archicad में Tapir palette के लिए मुफ़्त Python scripts, आर्किटेक्ट्स द्वारा शेयर की गई, हर एक सूची में आने से पहले जाँची गई और किसी भी ऑफ़िस में काम करने के लिए ढाली गई।',
     '<a href="../">Tapir</a> / Scripts': '<a href="../">Tapir</a> / Scripts',
     'The script <em>schedule.</em>': 'Scripts की <em>सूची।</em>',
     'Scripts shared by architects. Each one is checked for safety and adapted to work in any office and any Archicad language before it is listed.':
@@ -40,6 +40,9 @@
     'All': 'सभी',
     'Archicad version': 'Archicad संस्करण',
     'Any Archicad': 'कोई भी Archicad',
+    'Filters': 'फ़िल्टर',
+    'Active filters': 'लागू फ़िल्टर',
+    'Remove filter: {name}': 'फ़िल्टर हटाएँ: {name}',
     '1 script': '1 script',
     '{count} scripts': '{count} scripts',
     'No script matches. Try fewer words or another filter.': 'कोई script मेल नहीं खाती। कम शब्द या कोई दूसरा filter आज़माएँ।',

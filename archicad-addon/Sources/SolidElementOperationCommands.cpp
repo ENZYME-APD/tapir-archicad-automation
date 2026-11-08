@@ -2,6 +2,7 @@
 
 #include "HashSet.hpp"
 #include "MigrationHelper.hpp"
+#include "NotificationCommands.hpp"
 
 static API_SolidOperationID OperationFromString (const GS::UniString& str)
 {
@@ -147,6 +148,10 @@ GS::ObjectState CreateSolidElementLinksCommand::Execute (const GS::ObjectState& 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    // The targets of the new links are reported to the notification clients as changed (#1825),
+    // the operators when their modification stamp changed.
+    ElementChangeReporter changeReporter;
+
     ACAPI_CallUndoableCommand ("CreateSolidElementLinks", [&] () -> GSErrCode {
         for (const GS::ObjectState& link : solidLinks) {
             GS::ObjectState targetIdOs, operatorIdOs;
@@ -168,15 +173,21 @@ GS::ObjectState CreateSolidElementLinksCommand::Execute (const GS::ObjectState& 
                 flags = FlagsFromObjectState (flagsOs);
             }
 
+            changeReporter.Add (targetGuid);
+            changeReporter.Add (operatorGuid);
+
             const GSErrCode err = ACAPI_Element_SolidLink_Create (targetGuid, operatorGuid, operation, flags);
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, SolidLinkCreateErrorMessage (err)));
             } else {
+                changeReporter.MarkChanged (targetGuid);
                 executionResults (CreateSuccessfulExecutionResult ());
             }
         }
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 }
@@ -258,6 +269,10 @@ GS::ObjectState RemoveSolidElementLinksCommand::Execute (const GS::ObjectState& 
         }
     });
 
+    // The targets of the removed links are reported to the notification clients as changed (#1825),
+    // the operators when their modification stamp changed.
+    ElementChangeReporter changeReporter;
+
     const auto removeLinks = [&] () -> GSErrCode {
         for (const GS::ObjectState& link : solidLinks) {
             GS::ObjectState targetIdOs, operatorIdOs;
@@ -277,13 +292,18 @@ GS::ObjectState RemoveSolidElementLinksCommand::Execute (const GS::ObjectState& 
                 continue;
             }
 
+            changeReporter.Add (targetGuid);
+            changeReporter.Add (operatorGuid);
+
             const GSErrCode err = ACAPI_Element_SolidLink_Remove (targetGuid, operatorGuid);
             if (err != NoError && existedBefore && !SolidLinkExists (targetGuid, operatorGuid)) {
                 // The API reported an error but the link is gone: report what happened.
+                changeReporter.MarkChanged (targetGuid);
                 executionResults (CreateSuccessfulExecutionResult ());
             } else if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to remove solid element link."));
             } else {
+                changeReporter.MarkChanged (targetGuid);
                 executionResults (CreateSuccessfulExecutionResult ());
             }
         }
@@ -294,6 +314,7 @@ GS::ObjectState RemoveSolidElementLinksCommand::Execute (const GS::ObjectState& 
         removeLinks ();
     } else {
         ACAPI_CallUndoableCommand ("RemoveSolidElementLinks", removeLinks);
+        changeReporter.Report ();
     }
 
     return response;
@@ -403,6 +424,10 @@ GS::ObjectState CreateSolidOperationsCommand::Execute (const GS::ObjectState& pa
     GS::ObjectState response;
     const auto& results = response.AddList<GS::ObjectState> ("results");
 
+    // The results are new elements; the target and operator morphs are reported to the notification
+    // clients (#1825) when the operation changed or deleted them.
+    ElementChangeReporter changeReporter;
+
     const GSErrCode undoErr = ACAPI_CallUndoableCommand ("CreateSolidOperations", [&] () -> GSErrCode {
         for (const GS::ObjectState& operationOs : operations) {
             GS::ObjectState targetIdOs, operatorIdOs;
@@ -431,6 +456,9 @@ GS::ObjectState CreateSolidOperationsCommand::Execute (const GS::ObjectState& pa
                 continue;
             }
 
+            changeReporter.Add (targetGuid);
+            changeReporter.Add (operatorGuid);
+
             GS::Array<API_Guid> resultGuids;
             const GSErrCode err = ACAPI_Element_SolidOperation_Create (targetGuid, operatorGuid, operation, &resultGuids);
             if (err != NoError) {
@@ -447,6 +475,8 @@ GS::ObjectState CreateSolidOperationsCommand::Execute (const GS::ObjectState& pa
         }
         return NoError;
     });
+
+    changeReporter.Report ();
 
     if (undoErr != NoError) {
         return CreateErrorResponse (undoErr, "Failed to run the solid operations.");
@@ -610,11 +640,11 @@ GS::Optional<GS::UniString> TrimElementsCommand::GetInputParametersSchema () con
         "properties": {
             "elements": {
                 "$ref": "#/Elements",
-                "description": "The construction elements to trim. Without trimmingElement the roofs and shells among them do the trimming."
+                "description": "The construction elements to trim. Without trimmingElement the roofs and shells among them do the trimming: Archicad decides which roof or shell trims which element and with which trim type, and may trim the roofs and shells with each other, so not every element is necessarily trimmed by every roof or shell. The call reports no result per pair; read them back with GetElementTrims. For a known result, use trimmingElement and call the command once per roof or shell."
             },
             "trimmingElement": {
                 "$ref": "#/ElementId",
-                "description": "Optional. The roof or shell that trims every element in the list."
+                "description": "Optional. The roof or shell that trims every element in the list, with trimType."
             },
             "trimType": {
                 "$ref": "#/TrimType",
@@ -650,6 +680,13 @@ GS::ObjectState TrimElementsCommand::Execute (const GS::ObjectState& parameters,
     }
     const API_TrimTypeID trimType = TrimTypeFromString (trimTypeStr);
 
+    // The trimmed elements are reported to the notification clients as changed (#1825), the
+    // trimming element when its modification stamp changed.
+    ElementChangeReporter changeReporter (guids);
+    if (withElement) {
+        changeReporter.Add (GetGuidFromObjectState (trimmingOs));
+    }
+
     GSErrCode err = NoError;
     const GSErrCode undoErr = ACAPI_CallUndoableCommand ("TrimElements", [&] () -> GSErrCode {
         err = withElement
@@ -661,6 +698,12 @@ GS::ObjectState TrimElementsCommand::Execute (const GS::ObjectState& parameters,
         // The undo scope did not open (nested undoable command, teamwork state): the lambda never ran.
         err = undoErr;
     }
+    if (err == NoError) {
+        for (const API_Guid& guid : guids) {
+            changeReporter.MarkChanged (guid);
+        }
+    }
+    changeReporter.Report ();
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to trim the elements: every element must be a construction element and at least one roof or shell must take part.");
     }
@@ -684,7 +727,7 @@ GS::Optional<GS::UniString> RemoveElementTrimsCommand::GetInputParametersSchema 
         "properties": {
             "elementPairs": {
                 "type": "array",
-                "description": "The trimmed element and the roof or shell trimming it, per pair.",
+                "description": "The trimmed element and the roof or shell trimming it, per pair. The trimming connection between the two is removed: when they trim each other, both directions are removed.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -741,6 +784,9 @@ GS::ObjectState RemoveElementTrimsCommand::Execute (const GS::ObjectState& param
     GS::ObjectState response;
     AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    // The elements whose trim was removed are reported to the notification clients as changed
+    // (#1825), the trimming elements when their modification stamp changed.
+    ElementChangeReporter changeReporter;
     const auto removeTrims = [&] () -> GSErrCode {
         for (const GS::ObjectState& pair : pairs) {
             GS::ObjectState elementOs, trimmingOs;
@@ -763,10 +809,13 @@ GS::ObjectState RemoveElementTrimsCommand::Execute (const GS::ObjectState& param
                 }
                 continue;
             }
+            changeReporter.Add (elementGuid);
+            changeReporter.Add (trimmingGuid);
             const GSErrCode err = ACAPI_Element_Trim_Remove (elementGuid, trimmingGuid);
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to remove the trim."));
             } else {
+                changeReporter.MarkChanged (elementGuid);
                 executionResults (CreateSuccessfulExecutionResult ());
             }
         }
@@ -777,6 +826,7 @@ GS::ObjectState RemoveElementTrimsCommand::Execute (const GS::ObjectState& param
         return response;
     }
     const GSErrCode undoErr = ACAPI_CallUndoableCommand ("RemoveElementTrims", removeTrims);
+    changeReporter.Report ();
     if (undoErr != NoError) {
         // The undo scope did not open, so no pair was tried: say so once per pair,
         // keeping one result per input as the schema promises.
@@ -936,6 +986,10 @@ GS::ObjectState MergeElementsCommand::Execute (const GS::ObjectState& parameters
 
     // The element types are not filtered here: the API reports the ones it cannot merge
     // (APIERR_BADELEMENTTYPE), and which types it accepts is not documented.
+    // The merged elements are reported to the notification clients as changed (#1825), the
+    // others when their modification stamp changed.
+    ElementChangeReporter changeReporter (guids);
+
     GSErrCode err = NoError;
     const GSErrCode undoErr = ACAPI_CallUndoableCommand ("MergeElements", [&] () -> GSErrCode {
         err = ACAPI_Element_Merge_Elements (guids);
@@ -946,6 +1000,7 @@ GS::ObjectState MergeElementsCommand::Execute (const GS::ObjectState& parameters
         err = undoErr;
     }
     if (err != NoError) {
+        changeReporter.Report ();
         return CreateFailedExecutionResult (err, "Failed to merge the elements: every element must be an existing construction element of the current database.");
     }
 
@@ -960,13 +1015,12 @@ GS::ObjectState MergeElementsCommand::Execute (const GS::ObjectState& parameters
         for (const API_Guid& m : merged) {
             if (m != guid && guids.Contains (m)) {
                 anyMerged = true;
+                changeReporter.MarkChanged (guid);
                 break;
             }
         }
-        if (anyMerged) {
-            break;
-        }
     }
+    changeReporter.Report ();
     if (!anyMerged) {
         return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad reported no error, but no merge was established between the given elements (GetMergedElements reads none). Archicad decides which elements and type combinations it merges.");
     }
@@ -1038,6 +1092,8 @@ GS::ObjectState UnmergeElementsCommand::Execute (const GS::ObjectState& paramete
     parameters.Get ("elementPairs", pairs);
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+    // The separated elements are reported to the notification clients as changed (#1825).
+    ElementChangeReporter changeReporter;
     const GSErrCode undoErr = ACAPI_CallUndoableCommand ("UnmergeElements", [&] () -> GSErrCode {
         for (const GS::ObjectState& pair : pairs) {
             GS::ObjectState element1Os, element2Os;
@@ -1045,15 +1101,22 @@ GS::ObjectState UnmergeElementsCommand::Execute (const GS::ObjectState& paramete
                 executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "elementId1 or elementId2 is missing."));
                 continue;
             }
-            const GSErrCode err = ACAPI_Element_Merge_Remove (GetGuidFromObjectState (element1Os), GetGuidFromObjectState (element2Os));
+            const API_Guid element1Guid = GetGuidFromObjectState (element1Os);
+            const API_Guid element2Guid = GetGuidFromObjectState (element2Os);
+            changeReporter.Add (element1Guid);
+            changeReporter.Add (element2Guid);
+            const GSErrCode err = ACAPI_Element_Merge_Remove (element1Guid, element2Guid);
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to remove the merge between the elements."));
             } else {
+                changeReporter.MarkChanged (element1Guid);
+                changeReporter.MarkChanged (element2Guid);
                 executionResults (CreateSuccessfulExecutionResult ());
             }
         }
         return NoError;
     });
+    changeReporter.Report ();
     if (undoErr != NoError) {
         // The undo scope did not open, so no pair was tried: say so once per pair,
         // keeping one result per input as the schema promises.

@@ -3,14 +3,29 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title data-i18n>Scripts - Tapir</title>
-<meta name="description" data-i18n-attrs="content" content="Scripts shared by architects for the Tapir palette in Archicad, each one reviewed and adapted to work in any office before it is listed.">
+<title data-i18n>Free Archicad Python scripts | Tapir</title>
+<!-- scripts.js sets the description, the canonical address, the og: tags and the breadcrumb to
+     the script shown with ?s=<slug>, adds its SoftwareSourceCode block, and on "Script not found"
+     points the canonical address back here and adds a robots noindex. -->
+<meta name="description" id="meta-description" data-i18n-attrs="content" content="Free Python scripts for the Tapir palette in Archicad, shared by architects, each one reviewed and adapted to work in any office before it is listed.">
+<link rel="canonical" id="canonical" href="https://archicad-api.com/scripts/">
+<!-- search engines: the page's place in the site, as the crumb above its heading shows it -->
+<script type="application/ld+json" id="breadcrumb-data">
+{
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Tapir", "item": "https://archicad-api.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Scripts", "item": "https://archicad-api.com/scripts/" }
+    ]
+}
+</script>
 <!-- link-preview: the preview of a link to this page shared on Discord, WhatsApp and the like -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Tapir">
-<meta property="og:title" content="Scripts - Tapir">
-<meta property="og:description" content="Scripts shared by architects for the Tapir palette in Archicad, each one reviewed and adapted to work in any office before it is listed.">
-<meta property="og:url" content="https://archicad-api.com/scripts/">
+<meta property="og:title" id="og-title" content="Free Archicad Python scripts | Tapir">
+<meta property="og:description" id="og-description" content="Free Python scripts for the Tapir palette in Archicad, shared by architects, each one reviewed and adapted to work in any office before it is listed.">
+<meta property="og:url" id="og-url" content="https://archicad-api.com/scripts/">
 <meta name="twitter:card" content="summary">
 <!-- site-assets -->
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
@@ -127,9 +142,14 @@
                 <form class="filters" role="search" id="script-filters">
                     <label class="visually-hidden" for="script-search" data-i18n>Search scripts</label>
                     <input class="chip script-search" type="search" id="script-search" placeholder="Search: name, task or author" data-i18n-attrs="placeholder" autocomplete="off">
+                    <!-- Below 720 px wide the chip groups are behind this button (scripts.css). -->
+                    <button class="chip filters-toggle" type="button" id="filters-toggle" aria-expanded="false" aria-controls="filters-panel"><span data-i18n>Filters</span><span id="filters-count"></span></button>
                 </form>
-                <div class="filters" role="group" aria-label="Category" id="category-chips" data-all="All" data-i18n-attrs="aria-label data-all"></div>
-                <div class="filters" role="group" aria-label="Archicad version" id="version-chips" data-all="Any Archicad" data-option="Archicad {version}" data-i18n-attrs="aria-label data-all"></div>
+                <div class="filters active-filters" role="group" aria-label="Active filters" id="active-filters" data-remove="Remove filter: {name}" data-i18n-attrs="aria-label data-remove" hidden></div>
+                <div class="filters-panel" id="filters-panel">
+                    <div class="filters" role="group" aria-label="Category" id="category-chips" data-all="All" data-i18n-attrs="aria-label data-all"></div>
+                    <div class="filters" role="group" aria-label="Archicad version" id="version-chips" data-all="Any Archicad" data-option="Archicad {version}" data-i18n-attrs="aria-label data-all"></div>
+                </div>
                 <p class="script-count" id="script-count" aria-live="polite"
                    data-one="1 script" data-many="{count} scripts" data-none="No script matches. Try fewer words or another filter."
                    data-i18n-attrs="data-one data-many data-none"></p>
@@ -189,7 +209,7 @@
         <div class="page-head">
             <div class="wrap">
                 <p class="crumb" data-i18n><a href="../">Tapir</a> / <a href="./">Scripts</a> / Not found</p>
-                <h1 data-i18n>Script not <em>found.</em></h1>
+                <h2 class="h1" data-i18n>Script not <em>found.</em></h2>
                 <p data-i18n>There is no script with this name on the list, or the list could not be read just now.</p>
             </div>
         </div>
@@ -205,7 +225,7 @@
         <div class="page-head">
             <div class="wrap">
                 <p class="crumb" data-i18n><a href="../">Tapir</a> / <a href="./">Scripts</a> / <span id="detail-crumb"></span></p>
-                <h1 id="detail-name"></h1>
+                <h2 class="h1" id="detail-name"></h2>
                 <p id="detail-summary"></p>
             </div>
         </div>

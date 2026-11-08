@@ -1,6 +1,6 @@
 /* Deutsch: the Docs page (docs/index.html). See ../README.md. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Docs - Tapir': 'Doku - Tapir',
+    'Archicad automation docs | Tapir': 'Dokumentation zur Archicad-Automatisierung | Tapir',
     'Tapir\'s documentation: every JSON command, the Grasshopper guide, the Archicad API coverage and the Grasshopper coverage, and how a call to Tapir works.':
         'Die Dokumentation von Tapir: jeder JSON-Befehl, die Grasshopper-Anleitung, die Abdeckung der Archicad-API und von Grasshopper, und wie ein Aufruf an Tapir funktioniert.',
     '<a href="../">Tapir</a> / Docs': '<a href="../">Tapir</a> / Doku',
@@ -26,6 +26,11 @@
     'Components': 'Komponenten',
     'Which Tapir commands have a Grasshopper component, and which inputs each component still lacks.':
         'Welche Tapir-Befehle eine Grasshopper-Komponente haben und welche Eingänge jeder Komponente noch fehlen.',
+
+    // The API limits teaser (its title is in common.js)
+    'What the Archicad API can\'t do, such as undo, the clipboard or the rows of a schedule, with what to do instead and the DevKit evidence.':
+        'Was die Archicad-API nicht kann, etwa Rückgängig, die Zwischenablage oder die Zeilen einer Liste, mit dem, was Sie stattdessen tun können, und dem Nachweis im DevKit.',
+    'See the limits': 'Zu den Grenzen',
 
     // How it works
     'How it works': 'So funktioniert es',

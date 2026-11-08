@@ -25,11 +25,16 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
 
         private const int FirstBooleanOptionIndex = 5;
 
+        // The window inputs come after the boolean options, so saved
+        // definitions keep finding the older inputs by position (#1819).
+        private static readonly int UiIdIndex = FirstBooleanOptionIndex + BooleanOptions.Length;
+        private static readonly int ScriptIdIndex = UiIdIndex + 1;
+
         public ShowScriptUIComponent()
             : base(
                 "ShowScriptUI",
-                "Shows the given HTML content in a native Archicad palette (a tkinter alternative for Python scripts). " +
-                "Read what the page submits with GetScriptUIResult.",
+                "Shows the given HTML content in a native Archicad palette (a tkinter alternative for Python scripts) " +
+                "and outputs the UiId of its window. Read what the page submits with GetScriptUIResult and that UiId.",
                 GroupNames.General)
         {
         }
@@ -74,10 +79,31 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
                     GH_ParamAccess.item);
             }
 
-            for (var i = 1; i < FirstBooleanOptionIndex + BooleanOptions.Length; i++)
+            inManager.AddIntegerParameter(
+                "UiId",
+                "UiId",
+                ("The Script UI window to show the page in (1 to 8), as output by an earlier ShowScriptUI. " +
+                 "Takes precedence over ScriptId. Optional; without UiId and ScriptId the first window is used.")
+                    .WithTypeName("integerItem"),
+                GH_ParamAccess.item);
+
+            InText(
+                "ScriptId",
+                "Any text that identifies this definition, so it uses its own window: the first ShowScriptUI " +
+                "with a new ScriptId gets a free window. Optional.");
+
+            for (var i = 1; i <= ScriptIdIndex; i++)
             {
                 SetOptionality(i);
             }
+        }
+
+        protected override void AddOutputs()
+        {
+            OutInteger(
+                "UiId",
+                "The Script UI window the page is shown in (1 to 8). Pass it to GetScriptUIResult, " +
+                "or to a later ShowScriptUI to replace the page.");
         }
 
         protected override void Solve(
@@ -136,6 +162,21 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
                 }
             }
 
+            if (da.TryGet(
+                    UiIdIndex,
+                    out int uiId))
+            {
+                parameters["uiId"] = uiId;
+            }
+
+            if (da.TryGet(
+                    ScriptIdIndex,
+                    out string scriptId) &&
+                !string.IsNullOrEmpty(scriptId))
+            {
+                parameters["scriptId"] = scriptId;
+            }
+
             if (!TryGetCadResponse(
                     CommandName,
                     parameters,
@@ -150,7 +191,12 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
                 this.AddError(
                     response?["error"]?["message"]?.ToString() ??
                     "Failed to show the Script UI palette.");
+                return;
             }
+
+            da.SetData(
+                0,
+                (int?)response["uiId"]);
         }
 
         protected override System.Drawing.Bitmap Icon =>

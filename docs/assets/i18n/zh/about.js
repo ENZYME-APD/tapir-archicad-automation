@@ -1,9 +1,9 @@
 /* 中文 (简体): the About page (about/index.html). See ../README.md.
    The names of the people stay as they are. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'About Tapir - Tapir': '关于 Tapir - Tapir',
-    'Why Tapir exists, how it grew from Enzyme\'s R&D and Tibor Lorántfy\'s JSON template into an open-source project, the people behind it and how to support it.':
-        'Tapir 为何存在，它如何从 Enzyme 的研发和 Tibor Lorántfy 的 JSON 模板成长为一个开源项目，背后的人们，以及如何支持它。',
+    'About Tapir – open-source Archicad add-on': '关于 Tapir – 开源 Archicad 插件',
+    'Why the open-source Archicad add-on Tapir exists, how it grew from Enzyme\'s R&D and Tibor Lorántfy\'s JSON template, who builds it and how to support it.':
+        '开源 Archicad 插件 Tapir 为何存在，它如何从 Enzyme 的研发和 Tibor Lorántfy 的 JSON 模板成长起来，由谁开发，以及如何支持它。',
     '<a href="../">Tapir</a> / About': '<a href="../">Tapir</a> / 关于',
     'About <em>Tapir.</em>': '关于 <em>Tapir。</em>',
     'An open-source project that makes Archicad scriptable for architects, not only for programmers. Started in 2022, released every week since.':

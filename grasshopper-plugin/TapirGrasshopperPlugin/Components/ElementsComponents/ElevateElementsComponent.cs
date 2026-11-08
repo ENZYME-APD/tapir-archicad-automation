@@ -6,7 +6,12 @@ using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class ElevateElementsComponent : ArchicadExecutorComponent
+    // Sends one ElevateElements request for every branch of the inputs, so a
+    // tree input makes one undo step in Archicad (#203). The add-on edits the
+    // items one after the other, so an element given in several branches is
+    // still elevated once for each of them, as with one request per branch.
+    public class ElevateElementsComponent
+        : BatchedExecutorComponent<ElementWithElevationParameters>
     {
         public override string CommandName => "ElevateElements";
 
@@ -40,21 +45,24 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Error message of each element (empty when it succeeded).");
         }
 
-        protected override void Solve(
-            IGH_DataAccess da)
+        protected override bool TryGetBatchItems(
+            IGH_DataAccess da,
+            out List<ElementWithElevationParameters> items)
         {
+            items = null;
+
             if (!da.TryCreateFromList(
                     0,
                     out ElementsObject elements))
             {
-                return;
+                return false;
             }
 
             if (!da.TryGetList(
                     1,
                     out List<double> elevations))
             {
-                return;
+                return false;
             }
 
             if (elevations.Count != 1 &&
@@ -62,28 +70,24 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             {
                 this.AddError(
                     "The size of the input Elevations must be 1 or equal to the size of the input ElementGuids.");
-                return;
+                return false;
             }
 
             if (!da.TryGet(
                     2,
                     out bool copy))
             {
-                return;
+                return false;
             }
 
-            var input = new ElevateElementsParameters
-            {
-                ElementsWithElevations =
-                    new List<ElementWithElevationParameters>()
-            };
+            items = new List<ElementWithElevationParameters>();
 
             for (var i = 0; i < elements.Elements.Count; i++)
             {
                 var element = elements.Elements[i];
                 var elevation = elevations[elevations.Count == 1 ? 0 : i];
 
-                input.ElementsWithElevations.Add(
+                items.Add(
                     new ElementWithElevationParameters()
                     {
                         Element = element.ElementId,
@@ -92,11 +96,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     });
             }
 
-            SetCadValuesWithErrorMessages(
-                CommandName,
-                input,
-                ToAddOn,
-                da);
+            return true;
+        }
+
+        protected override object CreateBatchParameters(
+            List<ElementWithElevationParameters> items)
+        {
+            return new ElevateElementsParameters
+            {
+                ElementsWithElevations = items
+            };
         }
 
         protected override System.Drawing.Bitmap Icon =>

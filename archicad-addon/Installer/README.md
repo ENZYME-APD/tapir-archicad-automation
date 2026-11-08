@@ -55,6 +55,7 @@ like an existing one:
 | `--archicadPort <port>` | Update mode: once the download succeeded, quit the Archicad whose Tapir JSON API listens on this port, replace the add-on, then start Archicad again (also when replacing failed). |
 | `--archicadPid <pid>` | Update mode, with `--archicadPort`: once the port has closed, also wait (up to 60 s) until this Archicad process has exited before replacing the add-on and starting Archicad again. On Windows the installer also lets this process bring its save prompt to the front. |
 | `--noRestart` | Update mode: do not start Archicad again after the update (for testing). |
+| `--language <code>` | The language of the texts: a code of the Add-On's language versions (`INT`, `GER`, `FRA`, ...) or a language tag (`de-DE`). Default: the language of the operating system; English (`INT`) for a language without translation. Only English ships for now; see [LOCALIZATION.md](../Sources/LOCALIZATION.md#translating-the-tapir-installer). |
 
 ### Update mode
 

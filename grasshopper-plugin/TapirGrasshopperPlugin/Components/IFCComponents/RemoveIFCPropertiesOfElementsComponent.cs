@@ -9,7 +9,11 @@ using TapirGrasshopperPlugin.Types.GuidObjects;
 
 namespace TapirGrasshopperPlugin.Components.IFCComponents
 {
-    public class RemoveIFCPropertiesOfElementsComponent : ArchicadExecutorComponent
+    // Sends one RemoveIFCPropertiesOfElements request for every branch of the
+    // inputs, so a tree input makes one undo step in Archicad (#203). The
+    // branches with DryRun on go in a second request with dryRun set.
+    public class RemoveIFCPropertiesOfElementsComponent
+        : BatchedExecutorComponent<JObject>
     {
         public override string CommandName => "RemoveIFCPropertiesOfElements";
 
@@ -35,22 +39,38 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
             InTexts(
                 "PropertyNames",
                 "Name of the property, for example FireRating (input only 1 to use the same value for all).");
+
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "DryRun",
+                "If true, nothing is removed: ErrorMessages says what the removal would do for each element, " +
+                "from the check made before removing (the element has the local IFC property). Default is " +
+                "false.",
+                false);
+
+            SetOptionality(3);
         }
 
         protected override void AddOutputs()
         {
             OutErrorMessages(
-                "Error message of each element (empty when it succeeded).");
+                "Error message of each element (empty when it succeeded, or with DryRun when the property " +
+                "would be removed).");
         }
 
-        protected override void Solve(
-            IGH_DataAccess da)
+        protected override int DryRunInputIndex => 3;
+
+        protected override bool TryGetBatchItems(
+            IGH_DataAccess da,
+            out List<JObject> items)
         {
+            items = null;
+
             if (!da.TryGetList(
                     0,
                     out List<GH_ObjectWrapper> elementWrappers))
             {
-                return;
+                return false;
             }
 
             if (!TryGetTexts(
@@ -60,7 +80,7 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                     elementWrappers.Count,
                     out List<string> propertySetNames))
             {
-                return;
+                return false;
             }
 
             if (!TryGetTexts(
@@ -70,20 +90,20 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                     elementWrappers.Count,
                     out List<string> propertyNames))
             {
-                return;
+                return false;
             }
 
-            var items = new JArray();
+            var properties = new List<JObject>();
             for (var i = 0; i < elementWrappers.Count; i++)
             {
                 var elementId = GuidObject<ElementGuid>.CreateFromWrapper(elementWrappers[i]);
                 if (elementId == null)
                 {
                     this.AddError("Invalid element identifier in the ElementGuids input.");
-                    return;
+                    return false;
                 }
 
-                items.Add(
+                properties.Add(
                     new JObject
                     {
                         ["elementId"] = new JObject { ["guid"] = elementId.Guid },
@@ -92,11 +112,26 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                     });
             }
 
-            SetCadValuesWithErrorMessages(
-                CommandName,
-                new JObject { ["elementIFCProperties"] = items },
-                ToAddOn,
-                da);
+            items = properties;
+            return true;
+        }
+
+        // The command checks every item before removing any, so a property
+        // given in two branches would pass the check twice and fail the
+        // second removal; the branches used to be sent one after the other.
+        // It is sent once and both branches get its result.
+        protected override string GetBatchItemKey(
+            JObject item)
+        {
+            return $"{((string)item["elementId"]?["guid"])?.ToLowerInvariant()}|" +
+                   $"{(string)item["propertySetName"]}|" +
+                   $"{(string)item["propertyName"]}";
+        }
+
+        protected override object CreateBatchParameters(
+            List<JObject> items)
+        {
+            return new JObject { ["elementIFCProperties"] = new JArray(items) };
         }
 
         // Reads a text list input that holds 0 (only when optional), 1 (the

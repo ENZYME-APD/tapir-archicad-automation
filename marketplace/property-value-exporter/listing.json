@@ -4,7 +4,7 @@
     "summary": "Writes the values of the properties you choose into an Excel or CSV file, one row per element, with its Element ID, type and story.",
     "category": "import-export",
     "tags": ["properties", "excel", "csv", "export"],
-    "author": { "name": "Tapir" },
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
     "license": "MIT",
     "entry": "PropertyValueExporter.py",
     "versions": [

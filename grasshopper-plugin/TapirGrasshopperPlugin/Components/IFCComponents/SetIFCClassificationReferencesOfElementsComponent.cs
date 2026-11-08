@@ -9,7 +9,11 @@ using TapirGrasshopperPlugin.Types.GuidObjects;
 
 namespace TapirGrasshopperPlugin.Components.IFCComponents
 {
-    public class SetIFCClassificationReferencesOfElementsComponent : ArchicadExecutorComponent
+    // Sends one SetIFCClassificationReferencesOfElements request for every
+    // branch of the inputs, so a tree input makes one undo step in Archicad
+    // (#203).
+    public class SetIFCClassificationReferencesOfElementsComponent
+        : BatchedExecutorComponent<JObject>
     {
         public override string CommandName => "SetIFCClassificationReferencesOfElements";
 
@@ -81,14 +85,17 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                 "Error message of each element (empty when it succeeded).");
         }
 
-        protected override void Solve(
-            IGH_DataAccess da)
+        protected override bool TryGetBatchItems(
+            IGH_DataAccess da,
+            out List<JObject> items)
         {
+            items = null;
+
             if (!da.TryGetList(
                     0,
                     out List<GH_ObjectWrapper> elementWrappers))
             {
-                return;
+                return false;
             }
 
             if (!TryGetTexts(
@@ -98,7 +105,7 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                     elementWrappers.Count,
                     out List<string> identifications))
             {
-                return;
+                return false;
             }
 
             if (!TryGetTexts(
@@ -108,7 +115,7 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                     elementWrappers.Count,
                     out List<string> names))
             {
-                return;
+                return false;
             }
 
             if (!TryGetTexts(
@@ -118,7 +125,7 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                     elementWrappers.Count,
                     out List<string> locations))
             {
-                return;
+                return false;
             }
 
             if (!TryGetTexts(
@@ -128,7 +135,7 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                     elementWrappers.Count,
                     out List<string> classificationNames))
             {
-                return;
+                return false;
             }
 
             if (!TryGetTexts(
@@ -138,7 +145,7 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                     elementWrappers.Count,
                     out List<string> editions))
             {
-                return;
+                return false;
             }
 
             if (!TryGetTexts(
@@ -148,7 +155,7 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                     elementWrappers.Count,
                     out List<string> editionDates))
             {
-                return;
+                return false;
             }
 
             if (!TryGetTexts(
@@ -158,7 +165,7 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                     elementWrappers.Count,
                     out List<string> descriptions))
             {
-                return;
+                return false;
             }
 
             if (!TryGetTexts(
@@ -168,17 +175,17 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                     elementWrappers.Count,
                     out List<string> classificationLocations))
             {
-                return;
+                return false;
             }
 
-            var items = new JArray();
+            var references = new List<JObject>();
             for (var i = 0; i < elementWrappers.Count; i++)
             {
                 var elementId = GuidObject<ElementGuid>.CreateFromWrapper(elementWrappers[i]);
                 if (elementId == null)
                 {
                     this.AddError("Invalid element identifier in the ElementGuids input.");
-                    return;
+                    return false;
                 }
 
                 var referencedSource = new JObject
@@ -198,14 +205,17 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                 AddIfGiven(item, "name", Pick(names, i));
                 AddIfGiven(item, "location", Pick(locations, i));
                 item["referencedSource"] = referencedSource;
-                items.Add(item);
+                references.Add(item);
             }
 
-            SetCadValuesWithErrorMessages(
-                CommandName,
-                new JObject { ["elementIFCClassificationReferences"] = items },
-                ToAddOn,
-                da);
+            items = references;
+            return true;
+        }
+
+        protected override object CreateBatchParameters(
+            List<JObject> items)
+        {
+            return new JObject { ["elementIFCClassificationReferences"] = new JArray(items) };
         }
 
         // Reads a text list input that holds 0 (only when optional), 1 (the

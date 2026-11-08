@@ -94,9 +94,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 da);
         }
 
-        // Reuses the MoveElements icon until AlignElements gets its own
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.MoveElements;
+            Properties.Resources.AlignElements;
 
         public override Guid ComponentGuid =>
             new Guid("3f8a6c21-5d9e-4b07-a2c4-8e1d6f0b9a53");

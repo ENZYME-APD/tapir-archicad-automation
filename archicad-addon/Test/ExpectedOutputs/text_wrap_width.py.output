@@ -1,0 +1,173 @@
+Command: CreateTexts
+Parameters:
+{
+    "textsData": [
+        {
+            "coordinate": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "text": "A long line of text that does not fit into a narrow text box",
+            "height": 2.5,
+            "justification": "Left",
+            "style": {
+                "bold": false
+            },
+            "width": 30.0
+        },
+        {
+            "coordinate": {
+                "x": 0.0,
+                "y": -5.0,
+                "z": 0.0
+            },
+            "text": "A long line of text that does not fit into a narrow text box",
+            "height": 2.5,
+            "justification": "Left",
+            "style": {
+                "bold": false
+            }
+        },
+        {
+            "coordinate": {
+                "x": 0.0,
+                "y": -10.0,
+                "z": 0.0
+            },
+            "runs": [
+                {
+                    "text": "Title\n",
+                    "bold": true
+                },
+                {
+                    "text": "A long line of text that does not fit into a narrow text box",
+                    "bold": false
+                }
+            ],
+            "style": {
+                "height": 2.5,
+                "justification": "Left"
+            }
+        }
+    ]
+}
+Response:
+{
+    "elements": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            }
+        }
+    ]
+}
+'A long line of text that does not fit into a narrow text box' nonBreaking=False width=30.00 multiline=True bold runs=[False]
+'A long line of text that does not fit into a narrow text box' nonBreaking=True width=auto multiline=False bold runs=[False]
+'Title\nA long line of text that does not fit into a narrow text box' nonBreaking=True width=auto multiline=True bold runs=[True, False]
+Command: ModifyTexts
+Parameters:
+{
+    "textsWithDetails": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "width": 40.0
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "width": 50.0
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "text": "Replaced"
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        },
+        {
+            "success": true
+        },
+        {
+            "success": true
+        }
+    ]
+}
+'Replaced' nonBreaking=False width=30.00 multiline=False bold runs=[False]
+'A long line of text that does not fit into a narrow text box' nonBreaking=False width=40.00 multiline=True bold runs=[False]
+'Title\nA long line of text that does not fit into a narrow text box' nonBreaking=False width=50.00 multiline=True bold runs=[True, False]
+Command: ModifyTexts
+Parameters:
+{
+    "textsWithDetails": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "text": "A long line of text that does not fit into a narrow text box",
+            "width": 25.0
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        }
+    ]
+}
+'A long line of text that does not fit into a narrow text box' nonBreaking=False width=25.00 multiline=True bold runs=[False]
+Command: ModifyTexts
+Parameters:
+{
+    "textsWithDetails": [
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "style": {
+                "penIndex": 3
+            }
+        },
+        {
+            "elementId": {
+                "guid": "<GUID>"
+            },
+            "width": 0.0
+        }
+    ]
+}
+Response:
+{
+    "executionResults": [
+        {
+            "success": true
+        },
+        {
+            "success": true
+        }
+    ]
+}
+'Title\nA long line of text that does not fit into a narrow text box' nonBreaking=False width=50.00 multiline=True bold runs=[True, False]
+'A long line of text that does not fit into a narrow text box' nonBreaking=True width=auto multiline=False bold runs=[False]

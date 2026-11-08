@@ -46,4 +46,4 @@ says so; delete it by hand. It writes no files.
 
 ## Credits
 
-Requested by @parikshit99 in #2008. Written by the Tapir project.
+Requested by @parikshit99 in #2008, written with the Tapir issue bot.

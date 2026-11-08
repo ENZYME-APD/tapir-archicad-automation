@@ -4,7 +4,7 @@
     "summary": "Sets up the stories of the project from a pasted table or a CSV file, shows what changes first, and refuses to delete a story with elements on it.",
     "category": "utilities",
     "tags": ["stories", "levels", "csv", "excel", "setup"],
-    "author": { "name": "Tapir" },
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
     "license": "MIT",
     "entry": "StorySetup.py",
     "versions": [

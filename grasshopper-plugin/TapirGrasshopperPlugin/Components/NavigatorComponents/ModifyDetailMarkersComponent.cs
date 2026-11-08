@@ -17,7 +17,8 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
         public ModifyDetailMarkersComponent()
             : base(
                 "ModifyDetailMarkers",
-                "Change the name, the reference ID and the clip polygon of Detail and Worksheet markers.",
+                "Change the name, the reference ID, the clip polygon, the boundary pen and line type and the marker " +
+                "symbol's rotation, orientation and pen of Detail and Worksheet markers.",
                 GroupNames.Navigator)
         {
         }
@@ -43,6 +44,29 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 GH_ParamAccess.list);
 
             SetOptionality(new[] { 1, 2, 3 });
+
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InIntegers(
+                "PenIndexes",
+                "New pen of the boundary of each marker (input only 1 to use the same pen for all). Optional, the pen is kept without it.");
+
+            InIntegers(
+                "LineTypeIndexes",
+                "Attribute index of the new line type of the boundary of each marker (input only 1 to use the same line type for all). Optional, the line type is kept without it.");
+
+            InNumbers(
+                "Angles",
+                "New rotation of each marker symbol, in radians (input only 1 to use the same angle for all). Optional, the angle is kept without it.");
+
+            InBooleans(
+                "HorizontalMarkers",
+                "Whether each marker symbol is always horizontal (input only 1 to use the same value for all). Optional, the setting is kept without it.");
+
+            InIntegers(
+                "MarkerPenIndexes",
+                "New pen of each marker symbol, the library part placed as the marker (input only 1 to use the same pen for all). Optional, the pen is kept without it.");
+
+            SetOptionality(new[] { 4, 5, 6, 7, 8 });
         }
 
         protected override void AddOutputs()
@@ -67,12 +91,27 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             ids = ids ?? new List<string>();
             var curves = new List<Curve>();
             da.GetDataList(3, curves);
+            var penIndexes = new List<int>();
+            da.GetDataList(4, penIndexes);
+            var lineTypeIndexes = new List<int>();
+            da.GetDataList(5, lineTypeIndexes);
+            var angles = new List<double>();
+            da.GetDataList(6, angles);
+            var horizontalMarkers = new List<bool>();
+            da.GetDataList(7, horizontalMarkers);
+            var markerPenIndexes = new List<int>();
+            da.GetDataList(8, markerPenIndexes);
 
             foreach (var pair in new (string Name, int Count)[]
                      {
                          ("Names", names.Count),
                          ("IDs", ids.Count),
-                         ("ClipPolygons", curves.Count)
+                         ("ClipPolygons", curves.Count),
+                         ("PenIndexes", penIndexes.Count),
+                         ("LineTypeIndexes", lineTypeIndexes.Count),
+                         ("Angles", angles.Count),
+                         ("HorizontalMarkers", horizontalMarkers.Count),
+                         ("MarkerPenIndexes", markerPenIndexes.Count)
                      })
             {
                 if (pair.Count > 1 &&
@@ -128,6 +167,31 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                     {
                         item["polygonArcs"] = polygon.Arcs.DeepClone();
                     }
+                }
+
+                if (penIndexes.Count > 0)
+                {
+                    item["penIndex"] = penIndexes[penIndexes.Count == 1 ? 0 : i];
+                }
+
+                if (lineTypeIndexes.Count > 0)
+                {
+                    item["lineTypeIndex"] = lineTypeIndexes[lineTypeIndexes.Count == 1 ? 0 : i];
+                }
+
+                if (angles.Count > 0)
+                {
+                    item["angle"] = angles[angles.Count == 1 ? 0 : i];
+                }
+
+                if (horizontalMarkers.Count > 0)
+                {
+                    item["isHorizontalMarker"] = horizontalMarkers[horizontalMarkers.Count == 1 ? 0 : i];
+                }
+
+                if (markerPenIndexes.Count > 0)
+                {
+                    item["markerPenIndex"] = markerPenIndexes[markerPenIndexes.Count == 1 ? 0 : i];
                 }
 
                 items.Add(item);

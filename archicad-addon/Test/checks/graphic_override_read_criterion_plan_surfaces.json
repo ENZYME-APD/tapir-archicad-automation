@@ -1,0 +1,130 @@
+{
+  "title": "Graphic override rules: includeCriterion reads the Plan and Section and Surfaces and Materials conditions by name",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "create rules",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck read plan text",
+            "ruleGroupName": "TapirCheck read plan and surfaces",
+            "criterion": {
+              "and": [
+                { "elementType": "Text" },
+                { "textPenIs": 3 },
+                { "textAlignment": "Right" },
+                { "textStyle": [ "Bold", "Italic" ] },
+                { "textLineSpacing": 150 }
+              ]
+            },
+            "style": {
+              "lineMarkerTextPen": 20
+            }
+          },
+          {
+            "name": "TapirCheck read plan wall",
+            "ruleGroupName": "TapirCheck read plan and surfaces",
+            "criterion": {
+              "and": [
+                { "elementType": "Wall" },
+                { "penReplacementNot": "None" },
+                {
+                  "or": [
+                    { "linePenContains": 5 },
+                    { "hatchContourPenNot": 7 }
+                  ]
+                },
+                { "constructionMaterialNameContains": "Tapir & Co" },
+                { "surfaceNameStartsWith": "Tapir" }
+              ]
+            },
+            "style": {
+              "lineMarkerTextPen": 20
+            }
+          },
+          {
+            "name": "TapirCheck read plan dimension",
+            "ruleGroupName": "TapirCheck read plan and surfaces",
+            "criterion": {
+              "and": [
+                { "elementType": "Dimension" },
+                { "dimensionMarkerSizeGreaterOrEqual": 2.5 },
+                { "dimensionMarkerPenContains": 4 },
+                { "dimensionPointerPenContains": 6 }
+              ]
+            },
+            "style": {
+              "lineMarkerTextPen": 20
+            }
+          },
+          {
+            "name": "TapirCheck read plan hatch",
+            "ruleGroupName": "TapirCheck read plan and surfaces",
+            "criterion": {
+              "and": [
+                { "elementType": "Hatch" },
+                { "hatchCategory": "Cut" }
+              ]
+            },
+            "style": {
+              "lineMarkerTextPen": 20
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid", "exists": true, "name": "text rule created" },
+        { "path": "graphicOverrideRuleIds[1].graphicOverrideRuleId.guid", "exists": true, "name": "wall rule created" },
+        { "path": "graphicOverrideRuleIds[2].graphicOverrideRuleId.guid", "exists": true, "name": "dimension rule created" },
+        { "path": "graphicOverrideRuleIds[3].graphicOverrideRuleId.guid", "exists": true, "name": "hatch rule created" }
+      ]
+    },
+    {
+      "id": "read criteria",
+      "command": "GetGraphicOverrideRulesByName",
+      "params": {
+        "graphicOverrideRules": [
+          { "name": "TapirCheck read plan text", "ruleGroupName": "TapirCheck read plan and surfaces" },
+          { "name": "TapirCheck read plan wall", "ruleGroupName": "TapirCheck read plan and surfaces" },
+          { "name": "TapirCheck read plan dimension", "ruleGroupName": "TapirCheck read plan and surfaces" },
+          { "name": "TapirCheck read plan hatch", "ruleGroupName": "TapirCheck read plan and surfaces" }
+        ],
+        "includeCriterion": true
+      },
+      "expect": [
+        { "path": "graphicOverrideRules[0].criterion.and[0].elementType", "eq": "Text", "name": "text: element type" },
+        { "path": "graphicOverrideRules[0].criterion.and[1].textPenIs", "eq": 3, "name": "text pen is" },
+        { "path": "graphicOverrideRules[0].criterion.and[2].textAlignment", "eq": "Right", "name": "text alignment" },
+        { "path": "graphicOverrideRules[0].criterion.and[3].textStyle", "eq": [ "Bold", "Italic" ], "name": "text style" },
+        { "path": "graphicOverrideRules[0].criterion.and[4].textLineSpacing", "eq": 150, "name": "text line spacing" },
+        { "path": "graphicOverrideRules[1].criterion.and[0].elementType", "eq": "Wall", "name": "wall: element type" },
+        { "path": "graphicOverrideRules[1].criterion.and[1].penReplacementNot", "eq": "None", "name": "pen replacement is not" },
+        { "path": "graphicOverrideRules[1].criterion.and[2].or[0].linePenContains", "eq": 5, "name": "line pen contains" },
+        { "path": "graphicOverrideRules[1].criterion.and[2].or[1].hatchContourPenNot", "eq": 7, "name": "hatch contour pen is not" },
+        { "path": "graphicOverrideRules[1].criterion.and[3].constructionMaterialNameContains", "eq": "Tapir & Co", "name": "building material name contains" },
+        { "path": "graphicOverrideRules[1].criterion.and[4].surfaceNameStartsWith", "eq": "Tapir", "name": "surface name starts with" },
+        { "path": "graphicOverrideRules[2].criterion.and[0].elementType", "eq": "Dimension", "name": "dimension: element type" },
+        { "path": "graphicOverrideRules[2].criterion.and[1].dimensionMarkerSizeGreaterOrEqual", "eq": 2.5, "name": "marker size greater or equal" },
+        { "path": "graphicOverrideRules[2].criterion.and[2].dimensionMarkerPenContains", "eq": 4, "name": "marker pen contains" },
+        { "path": "graphicOverrideRules[2].criterion.and[3].dimensionPointerPenContains", "eq": 6, "name": "pointer pen contains" },
+        { "path": "graphicOverrideRules[3].criterion.and[0].elementType", "eq": "Hatch", "name": "hatch: element type" },
+        { "path": "graphicOverrideRules[3].criterion.and[1].hatchCategory", "eq": "Cut", "name": "hatch category" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteGraphicOverrideRuleGroups",
+      "params": {
+        "ruleGroupNames": [
+          "TapirCheck read plan and surfaces"
+        ],
+        "deleteRules": true
+      }
+    }
+  ]
+}

@@ -1,9 +1,9 @@
 /* 中文 (简体): the Community page (community/index.html, with the texts community/community.js reads
    from it). See ../README.md. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Community - Tapir': '社区 - Tapir',
-    'Ask on Discord, report a bug, test a fix: how Tapir\'s community and its bots turn a report into a release.':
-        '在 Discord 上提问、报告 bug、测试修复：Tapir 的社区和它的机器人如何把一份报告变成一次发布。',
+    'Community – Archicad automation with Tapir': '社区 – 用 Tapir 实现 Archicad 自动化',
+    'Ask on Discord, report a bug, test a fix in your Archicad: how Tapir\'s community and its bots turn a report into a release, and how the project grew.':
+        '在 Discord 上提问、报告 bug、在你的 Archicad 中测试修复：Tapir 的社区和它的机器人如何把一份报告变成一次发布，以及这个项目如何成长。',
     '<a href="../">Tapir</a> / Community': '<a href="../">Tapir</a> / 社区',
     'Ask. Report. <em>Test.</em>': '提问。报告。<em>测试。</em>',
     'Architects, developers and the maintainers in one place. Bugs and ideas become fixes that someone with your Archicad version tests before they ship.':

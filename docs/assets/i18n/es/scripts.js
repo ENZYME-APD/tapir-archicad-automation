@@ -1,9 +1,9 @@
 /* Español: the Scripts page (scripts/index.html), with the texts scripts.js shows from it. See ../README.md.
    The scripts' own names, summaries and READMEs stay as their authors wrote them. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Scripts - Tapir': 'Scripts - Tapir',
-    'Scripts shared by architects for the Tapir palette in Archicad, each one reviewed and adapted to work in any office before it is listed.':
-        'Scripts compartidos por arquitectos para la paleta de Tapir en Archicad, cada uno revisado y adaptado para funcionar en cualquier estudio antes de publicarse.',
+    'Free Archicad Python scripts | Tapir': 'Scripts de Python gratuitos para Archicad | Tapir',
+    'Free Python scripts for the Tapir palette in Archicad, shared by architects, each one reviewed and adapted to work in any office before it is listed.':
+        'Scripts de Python gratuitos para la paleta de Tapir en Archicad, compartidos por arquitectos, cada uno revisado y adaptado para funcionar en cualquier estudio antes de publicarse.',
     '<a href="../">Tapir</a> / Scripts': '<a href="../">Tapir</a> / Scripts',
     'The script <em>schedule.</em>': 'El catálogo de <em>scripts.</em>',
     'Scripts shared by architects. Each one is checked for safety and adapted to work in any office and any Archicad language before it is listed.':
@@ -40,6 +40,9 @@
     'All': 'Todas',
     'Archicad version': 'Versión de Archicad',
     'Any Archicad': 'Cualquier Archicad',
+    'Filters': 'Filtros',
+    'Active filters': 'Filtros activos',
+    'Remove filter: {name}': 'Quitar el filtro: {name}',
     '1 script': '1 script',
     '{count} scripts': '{count} scripts',
     'No script matches. Try fewer words or another filter.': 'Ningún script coincide. Prueba con menos palabras u otro filtro.',
