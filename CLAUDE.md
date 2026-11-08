@@ -75,6 +75,7 @@ docs/                    Generated docs (archicad-addon command reference),
                          never hand-edited); .nojekyll, so Pages serves the files as they are
 tools/                   Version bump scripts (update_version.py), package_info.json,
                          Add-On docs generator (generate_addon_docs.py),
+                         expanded-schema dump and compare (expand_schemas.py),
                          command scaffolder (new_command.py),
                          one-example-per-command checker (check_examples.py),
                          Grasshopper GUI label table checker (check_tool_settings.py),
@@ -127,8 +128,11 @@ sandbox/                 Experiments / scratch
   - Only parameters that are specific to one command (its own flags, a one-off option object)
     stay inline. Name definitions in PascalCase after what they describe (`WallDetails`,
     `Hole2D`), and keep their descriptions as complete as the inline text was.
-  - The docs show definitions expanded, so check a moved schema with `python
-    tools/generate_addon_docs.py`: the command's expanded schema must keep every field it had.
+  - Moving a schema into a definition must not change what the command accepts or returns. Check
+    it with `python tools/generate_addon_docs.py` and then `python tools/expand_schemas.py --out`
+    before and after the change, and `python tools/expand_schemas.py --compare before.json after.json`:
+    the expanded schemas must be the same (the generator writes the `$ref`s as they are; only
+    `expand_schemas.py` and the docs page in the browser expand them).
 - **UI:** the Add-On adds a menu + palette ([TapirPalette](archicad-addon/Sources/TapirPalette.cpp)),
   an About dialog, and an auto-update/version check ([VersionChecker](archicad-addon/Sources/VersionChecker.cpp)).
 - **Auto-update:** the update is done by the Tapir Installer (see Installation). The
