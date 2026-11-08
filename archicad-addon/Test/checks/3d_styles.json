@@ -108,7 +108,8 @@
         "styleName": "TapirCheck style A"
       },
       "expect": [
-        { "path": "success", "eq": false, "name": "refused: Archicad's function crashes Archicad 29" }
+        { "path": "success", "eq": false, "name": "refused: Archicad's function crashes Archicad 29" },
+        { "path": "error.message", "contains": "not available", "name": "the refusal, not an unknown name" }
       ]
     },
     {
@@ -117,7 +118,7 @@
       "creates": false,
       "params": {},
       "expect": [
-        { "path": "currentStyleName", "ne": "TapirCheck style A" }
+        { "path": "currentStyleName", "eq": "${current0}", "name": "the style of before" }
       ]
     },
     {
@@ -189,7 +190,7 @@
       "creates": false,
       "params": {},
       "expect": [
-        { "path": "currentStyleName", "ne": "TapirCheck style A" }
+        { "path": "currentStyleName", "eq": "${current0}", "name": "the style of before" }
       ]
     }
   ]
