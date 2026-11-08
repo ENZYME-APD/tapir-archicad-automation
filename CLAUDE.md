@@ -164,10 +164,11 @@ sandbox/                 Experiments / scratch
 
 ### Adding or changing a command
 
-[tools/new_command.py](tools/new_command.py) writes the repetitive part of steps 1–4 for new
+[tools/new_command.py](tools/new_command.py) writes the repetitive part of steps 1–5 for new
 commands from a short spec (format in its docstring): the class, schemas, an `Execute` skeleton,
-the registration and a starter example. The Archicad API calls in `Execute` and any
-`Test/ExpectedOutputs/` are still written by hand.
+the registration, a starter example and a starter check. The Archicad API calls in `Execute`,
+the check's real parameters and expectations, and any `Test/ExpectedOutputs/` are still written
+by hand.
 
 1. Add/modify the command class in the appropriate `Sources/*Commands.{cpp,hpp}`
    (or create a new group file and include it in `AddOnMain.cpp`).
@@ -183,11 +184,19 @@ the registration and a starter example. The Archicad API calls in `Execute` and 
    and `python tools/check_examples.py` checks them. A script that tests behaviour goes to
    `archicad-addon/Test/Scripts/` (with its golden under `Test/ExpectedOutputs/` if
    `test_examples.py` should compare it), a multi-command task to `archicad-addon/Workflows/`.
-5. Docs at <https://archicad-api.com/...> are generated from the registered
+5. Add or update a **check** for every command you add or whose behaviour you change:
+   `archicad-addon/Test/checks/<snake_case command>.json`, the commands the
+   [community test runner](tools/community-test-runner/) sends to an empty, untitled Archicad
+   project and the answers they must give (format: its README, "Writing checks"). It is how a
+   pull request gets run in real Archicad before it is merged: testers' runners test what is
+   labelled `needs-test`, which the bot PR steward sets on a bot pull request once its builds are
+   green and it has a check (see CI). Make the elements it needs in its own steps, and make the
+   expectations catch the bug or prove the feature, not only that the command answers.
+6. Docs at <https://archicad-api.com/...> are generated from the registered
    descriptions and schemas by `python tools/generate_addon_docs.py` (no Archicad
    needed; same output as the `GenerateDocumentation` developer command). The weekly
    release regenerates them automatically; run it yourself to update them earlier.
-6. Bump the version consistently (see Versioning below) when releasing.
+7. Bump the version consistently (see Versioning below) when releasing.
 
 ## Building the Add-On
 
@@ -242,7 +251,10 @@ python test_examples.py
   [tools/community-test-runner/](tools/community-test-runner/) (JSON checks in
   `archicad-addon/Test/checks/`). Use its `--brief` output (`prs`, `test … --brief --no-post`,
   `trial … --brief`, `check --brief`) rather than reading reports or its source; its skill is
-  `tools/community-test-runner/claude-skill/tapir-pr-test/SKILL.md`.
+  `tools/community-test-runner/claude-skill/tapir-pr-test/SKILL.md`. Runners test what is
+  labelled `needs-test`: a person sets it on a PR, and the bot PR steward sets it by itself on a
+  bot PR with a check once its builds are green, so testers' runners install those bot builds
+  without a person looking first (see `claude_bot_pr_steward.yml` under CI).
 
 ## Grasshopper plugin
 
@@ -463,7 +475,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   maintainer (their `GITHUB_TOKEN` pushes start no runs): an hourly sweep, also
   started by the issue bot and the review, dispatches the build checks and the
   review on each new head, links the built add-on in a comment asking the
-  issue's author to test it in Archicad, and starts a `fix` run on a failed build,
+  issue's author to test it in Archicad, labels it `needs-test` when it has a check
+  file (for the community test runner, see below), and starts a `fix` run on a failed build,
   a blocking review or a conflict with `main`, at most
   `BOT_PR_MAX_FIX_ROUNDS` (default 6) times, on at most `BOT_PR_SWEEP_BATCH`
   (default 15) PRs per sweep. Then
@@ -484,6 +497,18 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   twice per PR), `waits-for:#N` parks the PR without a label (commit status
   `steward-fix` pending) until PR #N is merged; `merge-blocked`, `stuck` or no
   marker hands it over at once.
+  The `needs-test` label is set by the sweep, which runs no model, only on the
+  bot's own PRs (`claude/` branches of this repository, opened by the Actions bot),
+  only once every build check of the head is green, and only when the PR adds or
+  changes a file in `archicad-addon/Test/checks/`. It is never removed by the
+  steward. That label is what testers' community test runners poll, and they
+  install the PR's built add-on on their own machines: so a bot PR's native code,
+  written by a model from public issue text, reaches testers' Archicads with no
+  person looking at it first, also for every later head the bot pushes and the
+  build check builds. The maintainers chose this (#1138) so bot PRs get tested
+  before they are merged; a person takes a PR out of it by removing the label
+  (the next green head sets it again unless the PR is also labelled
+  `needs-maintainer` or `do-not-merge`, or is a draft).
 - Model tiers of these three Claude workflows, from repository variables
   (aliases, so each tier follows new models): `CLAUDE_LIGHT_MODEL` (default
   `sonnet`) for issue replies and PR re-reviews, `CLAUDE_MODEL` (default `opus`)

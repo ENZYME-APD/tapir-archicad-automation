@@ -22,6 +22,15 @@ name: Claude Issue Triage
 # (see the bot gates in that file's header, which keep the release critical
 # paths for a person). Everything below about what an injected issue could
 # reach therefore reaches main too, unless the review catches it in time.
+# It reaches testers' machines even sooner: once its builds are green and it
+# adds or changes a check in archicad-addon/Test/checks/ (which the prompts
+# below ask for), the steward labels the pull request `needs-test`, and the
+# community test runners (tools/community-test-runner) that testers run
+# install its built add-on in their Archicad - native code a model wrote from
+# public issue text, with no person looking at it first, and again for every
+# later head that builds green. The maintainer's decision (#1138), so bot pull
+# requests get tried in Archicad before they are merged; see the steward's
+# header for exactly when the label is set.
 #
 # What does NOT bound it, and must be set in the repository settings before
 # this is merged: the tool allowlist is NOT a security boundary on its own.
@@ -359,7 +368,19 @@ jobs:
             archicad-addon/Examples/<GroupFolder>/<CommandName>.py (a module
             docstring first, then short aclib code; archicad-addon/Examples/
             README.md names the group folders, and tools/check_examples.py,
-            which the build check runs, checks it). Then post one comment on the issue linking the pull
+            which the build check runs, checks it). For every command you add or
+            whose behaviour you change, also add or update a check file
+            archicad-addon/Test/checks/<snake_case command>.json: the commands
+            the community test runner sends to an empty, untitled Archicad
+            project, and the answers they must give. Write it by hand: copy the
+            layout of an existing file in archicad-addon/Test/checks/ (the
+            format is in tools/community-test-runner/README.md, "Writing
+            checks"). Testers run it on real Archicad once the build is green,
+            so it is how your change gets tried before it is merged: write the
+            expectations from what the command must return, make every element
+            it needs in its own steps (well away from the origin), and set
+            "creates": false on steps that make nothing. Then post one comment
+            on the issue linking the pull
             request and saying what you changed. Start that comment by tagging
             the person who opened the issue (@<their login>) - unless the
             issue was filed by a bot (the Discord issue bot files as the
@@ -458,7 +479,8 @@ jobs:
             - You cannot run Archicad or build the add-on here; the build
               checks build it after you push, but nothing runs it in Archicad.
               State plainly in the pull request that the change is untested in
-              Archicad, and say what to run there to verify it.
+              Archicad, and say what to run there to verify it (the check
+              file is that, for the community test runner).
             - Never push to main; push to a new branch and open a pull request.
               Never modify .github/, archicad-addon/Tools/ or tools/ - those run
               with repository credentials, and a change there is a release
@@ -883,7 +905,20 @@ jobs:
                archicad-addon/Examples/<GroupFolder>/<CommandName>.py (a module
                docstring first, then short aclib code; archicad-addon/Examples/
                README.md names the group folders, and tools/check_examples.py,
-               which the build check runs, checks it). Then post one comment on the issue linking
+               which the build check runs, checks it). For every command you add
+               or whose behaviour you change, also add or update a check file
+               archicad-addon/Test/checks/<snake_case command>.json: the
+               commands the community test runner sends to an empty, untitled
+               Archicad project, and the answers they must give. Write it by
+               hand: copy the layout of an existing file in
+               archicad-addon/Test/checks/ (the format is in
+               tools/community-test-runner/README.md, "Writing checks"). Testers
+               run it on real Archicad once the build is green, so it is how
+               your change gets tried before it is merged: write the
+               expectations from what the command must return, make every
+               element it needs in its own steps (well away from the origin),
+               and set "creates": false on steps that make nothing. Then post
+               one comment on the issue linking
                the pull request and saying what you changed. Start it by
                tagging the person who opened the issue (@<their login>) -
                unless a bot filed it (the Discord issue bot files as the
