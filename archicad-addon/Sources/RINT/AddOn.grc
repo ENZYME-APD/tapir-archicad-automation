@@ -116,7 +116,7 @@
 /* [  9] */ "Check for Updates"
 /* [ 10] */ "Update to %T"
 /* [ 11] */ "Update Tapir to %T..."
-/* [ 12] */ "Tapir %s"
+/* [ 12] */ "%s"
 /* [ 13] */ "Tapir Update"
 /* [ 14] */ "OK"
 /* [ 15] */ "Tapir is still checking GitHub for the latest release."
@@ -216,16 +216,16 @@
 
 'GDLG' ID_PALETTE Palette | leftCaption | close   0   0  592  28  "Tapir Palette"  {
 /* [  1] */ IconButton                 0   0  28  28    ID_TAPIR_LOGO_MINI noFrame
-/* [  2] */ PopupControl              56   3 260  22    80  3
-/* [  3] */ IconButton               316   0  28  28    ID_RUN_BUTTON_ICON noFrame
-/* [  4] */ IconButton               372   0  28  28    ID_OPENSCRIPT_BUTTON_ICON noFrame
-/* [  5] */ IconButton               400   0  28  28    ID_ADDSCRIPT_BUTTON_ICON noFrame
-/* [  6] */ IconButton               428   0  28  28    ID_DELSCRIPT_BUTTON_ICON noFrame
-/* [  7] */ IconButton               456   0  28  28    ID_SHORTCUTS_BUTTON_ICON noFrame
-/* [  8] */ LeftText                 520   6  72  16    SmallPlain  vCenter  "Tapir"
-/* [  9] */ IconButton               488   0  28  28    ID_CHECKFORUPDATES_BUTTON_ICON noFrame
+/* [  2] */ PopupControl              56   3 320  22    80  3
+/* [  3] */ IconButton               376   0  28  28    ID_RUN_BUTTON_ICON noFrame
+/* [  4] */ IconButton               376   0  28  28    ID_OPENSCRIPT_BUTTON_ICON noFrame
+/* [  5] */ IconButton               432   0  28  28    ID_ADDSCRIPT_BUTTON_ICON noFrame
+/* [  6] */ IconButton               460   0  28  28    ID_DELSCRIPT_BUTTON_ICON noFrame
+/* [  7] */ IconButton               488   0  28  28    ID_SHORTCUTS_BUTTON_ICON noFrame
+/* [  8] */ LeftText                 552   6  40  16    SmallPlain  vCenter  ""
+/* [  9] */ IconButton               520   0  28  28    ID_CHECKFORUPDATES_BUTTON_ICON noFrame
 /* [ 10] */ TextEdit                  56   3 120  22    SmallPlain  noDelay  255
-/* [ 11] */ IconButton               344   0  28  28    ID_STAR_BUTTON_ICON noFrame
+/* [ 11] */ IconButton               404   0  28  28    ID_STAR_BUTTON_ICON noFrame
 /* [ 12] */ IconButton                28   0  28  28    ID_SEARCH_BUTTON_ICON noFrame
 }
 

@@ -496,6 +496,9 @@ TapirPalette::TapirPalette ()
 
     // The search field opens with the search button, in the left part of the dropdown's place (SetSearchOpen)
     searchEdit.Hide ();
+    // The bar has no Open in Browser button any more; its dialog item stays, hidden, so that the items after it
+    // keep their numbers, and its room went to the dropdown.
+    openScriptButton.Hide ();
 
     paletteState.Load ();
     LoadScriptsToPopUp ();
