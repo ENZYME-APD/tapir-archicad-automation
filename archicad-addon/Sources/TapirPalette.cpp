@@ -1463,6 +1463,7 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
     class UIUpdaterThread : public GS::Runnable
     {
         GS::Process& process;
+        const bool runWithUv;
 
         class IconUpdateTask : public GS::Runnable {
         public:
@@ -1519,7 +1520,7 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
         }
 
     public:
-        explicit UIUpdaterThread (GS::Process& p) : process(p)
+        UIUpdaterThread (GS::Process& p, bool _runWithUv) : process(p), runWithUv(_runWithUv)
         {
         }
         GS::UniString ReadFromChannel (GS::IBinaryChannel& channel)
@@ -1565,6 +1566,13 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
 
             Post (new IconUpdateTask ());
             Post (new OutputUpdateTask (DG_INFORMATION, "ExitCode: " + GS::ValueToUniString (exitCode)));
+#if defined (macintosh)
+            // Exit code 134 is an abort (SIGABRT). uv builds that need a newer macOS than the one running
+            // abort at start with "macOS <x> or later required" (issue #392).
+            if (runWithUv && exitCode == 134) {
+                Post (new OutputUpdateTask (DG_ERROR, UvManager::GetAbortedUvHint ()));
+            }
+#endif
         }
     };
 
@@ -1624,7 +1632,7 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
             WriteReport (DG_ERROR, "Failed to start uv process. Ensure it is installed and executable.");
         }
 
-        executor.Execute (new UIUpdaterThread (process));
+        executor.Execute (new UIUpdaterThread (process, filePath.EndsWith (".py")));
     } catch (const GS::ProcessException&) {
         WriteReport (DG_ERROR, "Failed to execute %T", filePath.ToPrintf ());
     } catch (...) {

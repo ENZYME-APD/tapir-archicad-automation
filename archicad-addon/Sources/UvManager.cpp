@@ -12,6 +12,13 @@
 #include <string>
 #include <regex>
 
+// The uv version Tapir's installer installs. It is fixed rather than the latest release because
+// newer uv builds abort at start on macOS 15.0-15.6 with "macOS 15 (1507) or later required"
+// (exit code 134, issue #392). It is bumped by hand: before raising it, check that the new
+// version runs on the oldest supported macOS and Windows. A uv the user already has (0.7.0 or
+// newer) is used as it is; this version only matters when Tapir installs uv.
+static const char* const PinnedUvVersion = "0.8.17";
+
 
 static void OpenWebpage (const GS::UniString& webpage)
 {
@@ -232,14 +239,25 @@ GS::Array<GS::UniString> UvManager::GetPythonSelectionArgs ()
     return { "--python", pythonLocationFromConfigFile };
 }
 
+GS::UniString UvManager::GetAbortedUvHint ()
+{
+    return GS::UniString::Printf (
+        "'uv' aborted (exit code 134). If the output above says \"macOS ... or later required\", this 'uv' build "
+        "needs a newer macOS than the one running. Install a uv version that runs on this macOS, e.g.\n"
+        "curl -LsSf https://astral.sh/uv/%s/install.sh | sh\n"
+        "and point Tapir to it with \"uvLocation\" in Documents/Tapir/config.json, e.g.\n"
+        "{ \"uvLocation\": \"/Users/<you>/.local/bin/uv\" }",
+        PinnedUvVersion);
+}
+
 bool UvManager::AttemptAutomaticInstallation ()
 {
-    ACAPI_WriteReport ("----- Tapir Script Execution Report -----\n" "INFO: Attempting to run the official uv installer script...", false);
+    ACAPI_WriteReport ("----- Tapir Script Execution Report -----\n" "INFO: Attempting to run the official uv installer script of uv %s...", false, PinnedUvVersion);
 
 #ifdef WINDOWS
-    const GS::UniString command = "powershell -ExecutionPolicy ByPass -c \"irm https://astral.sh/uv/install.ps1 | iex\"";
+    const GS::UniString command = GS::UniString::Printf ("powershell -ExecutionPolicy ByPass -c \"irm https://astral.sh/uv/%s/install.ps1 | iex\"", PinnedUvVersion);
 #else
-    const GS::UniString command = "curl -LsSf https://astral.sh/uv/install.sh | sh";
+    const GS::UniString command = GS::UniString::Printf ("curl -LsSf https://astral.sh/uv/%s/install.sh | sh", PinnedUvVersion);
 #endif
 
     int result = system (command.ToCStr ().Get ());
