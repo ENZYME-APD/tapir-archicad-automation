@@ -125,6 +125,21 @@
 /* [ 21] */ "Version %T"
 /* [ 22] */ "No script matches the search."
 /* [ 23] */ "Select a script to see what it does."
+/* [ 24] */ "Install uv"
+/* [ 25] */ "Try again"
+/* [ 26] */ "Report a problem"
+/* [ 27] */ "Running..."
+/* [ 28] */ "Finished"
+/* [ 29] */ "Stopped"
+/* [ 30] */ "uv is not installed, so the script cannot run."
+/* [ 31] */ "The script could not be started."
+/* [ 32] */ "Archicad did not answer. It may be busy."
+/* [ 33] */ "The script failed (exit code %d)."
+/* [ 34] */ "Tapir Script Output"
+/* [ 35] */ "The last lines of %T:"
+/* [ 36] */ "The script wrote nothing."
+/* [ 37] */ "Script error: %T"
+/* [ 38] */ "The script **%T** failed when run from the Tapir Palette.\n\n- Tapir: %T\n- Archicad: %d\n\nThe last lines of its output:\n\n```\n%T\n```\n\nWhat I did before it failed:\n"
 }
 
 'STR#' ID_AUTOUPDATE_STRINGS "Tapir Update Strings" {
@@ -254,7 +269,12 @@
 /* [ 14] */ SingleSelList              6  64 552 300    SmallPlain  PartialItems  18
 /* [ 15] */ LeftText                   6 370 552  20    LargeBold  vCenter | truncEnd  ""
 /* [ 16] */ LeftText                   6 390 552  16    LargePlain  vCenter  ""
-/* [ 17] */ LeftText                   6 408 552 106    SmallPlain  ""
+/* [ 17] */ LeftText                   6 408 552  84    SmallPlain  ""
+/* [ 18] */ Button                     6 498  70  24    LargePlain  "Run"
+/* [ 19] */ Button                    80 498  70  24    LargePlain  "Stop"
+/* [ 20] */ LeftText                 158 498 186  24    SmallPlain  vCenter | truncEnd  ""
+/* [ 21] */ Button                   344 498  80  24    LargePlain  "Details"
+/* [ 22] */ Button                   428 498 130  24    LargePlain  "Report a problem"
 }
 
 'DLGH' ID_PALETTE Tapir_Palette {
@@ -275,6 +295,11 @@
 15   ""                                ScriptsPanelName
 16   ""                                ScriptsPanelBadge
 17   ""                                ScriptsPanelDetails
+18   "Run the selected script"         ScriptsPanelRunButton
+19   "Stop the selected script and the processes it started"   ScriptsPanelStopButton
+20   ""                                ScriptsPanelResult
+21   "Show the last lines of the script's output"              ScriptsPanelOutputButton
+22   ""                                ScriptsPanelFixButton
 }
 
 'GDLG' ID_SCRIPTUI_PALETTE Palette | leftCaption | close | grow   0   0  600  450  "Tapir Script UI"  {

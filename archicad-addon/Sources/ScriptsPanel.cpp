@@ -5,8 +5,11 @@
 #include "File.hpp"
 #include "FileSystem.hpp"
 #include "ObjectStateJSONConversion.hpp"
+#include "AddOnVersion.hpp"
+#include "VersionChecker.hpp"
 
 #include <initializer_list>
+#include <string>
 
 // The texts of the panel, from the localized resources (RINT/AddOn.grc, see LOCALIZATION.md)
 static GS::UniString PanelText (Int32 index)
@@ -46,7 +49,12 @@ static constexpr short ListTop = SearchTop + SearchHeight + 6;
 static constexpr short NameHeight = 20;
 static constexpr short BadgeHeight = 16;
 static constexpr short DetailsHeight = 84;
-static constexpr short DetailsBlockHeight = Margin + NameHeight + 2 + BadgeHeight + 2 + DetailsHeight + Margin;
+// The run row under the details: Run, Stop, the result, Details and the fix button.
+static constexpr short RunRowHeight = 24;
+static constexpr short RunButtonWidth = 70;
+static constexpr short OutputButtonWidth = 80;
+static constexpr short FixButtonWidth = 130;
+static constexpr short DetailsBlockHeight = Margin + NameHeight + 2 + BadgeHeight + 2 + DetailsHeight + Margin + RunRowHeight + Margin;
 static constexpr short MinListHeight = 40;
 static constexpr short ListScrollBarWidth = 18;
 static constexpr short SourceColumnWidth = 120;
@@ -78,7 +86,7 @@ static GS::UniString LowerCased (const GS::UniString& text)
     return result;
 }
 
-ScriptsPanel::ScriptsPanel (DG::Palette& _palette, short expandButtonItem, short firstPanelItem, const ScriptsGetter& _getScripts)
+ScriptsPanel::ScriptsPanel (DG::Palette& _palette, short expandButtonItem, short firstPanelItem, const Actions& _actions)
     : palette (_palette)
     , expandButton (_palette.GetReference (), expandButtonItem)
     , separator (_palette.GetReference (), firstPanelItem)
@@ -88,7 +96,12 @@ ScriptsPanel::ScriptsPanel (DG::Palette& _palette, short expandButtonItem, short
     , nameText (_palette.GetReference (), static_cast<short> (firstPanelItem + 4))
     , badgeText (_palette.GetReference (), static_cast<short> (firstPanelItem + 5))
     , detailsText (_palette.GetReference (), static_cast<short> (firstPanelItem + 6))
-    , getScripts (_getScripts)
+    , runButton (_palette.GetReference (), static_cast<short> (firstPanelItem + 7))
+    , stopButton (_palette.GetReference (), static_cast<short> (firstPanelItem + 8))
+    , resultText (_palette.GetReference (), static_cast<short> (firstPanelItem + 9))
+    , outputButton (_palette.GetReference (), static_cast<short> (firstPanelItem + 10))
+    , fixButton (_palette.GetReference (), static_cast<short> (firstPanelItem + 11))
+    , actions (_actions)
 {
     // Never narrower than the bar's controls, never lower than the bar.
     palette.SetMinClientSize (palette.GetOriginalClientWidth (), BarHeight);
@@ -99,6 +112,8 @@ ScriptsPanel::ScriptsPanel (DG::Palette& _palette, short expandButtonItem, short
     searchEdit.Attach (*this);
     categoryPopUp.Attach (*this);
     scriptList.Attach (*this);
+
+    ShowResult ();   // Run and Stop stay disabled until a script is selected
 }
 
 ScriptsPanel::~ScriptsPanel ()
@@ -145,6 +160,15 @@ void ScriptsPanel::Layout ()
     const short nameTop = static_cast<short> (ListTop + listHeight + Margin);
     const short badgeTop = static_cast<short> (nameTop + NameHeight + 2);
     const short detailsTop = static_cast<short> (badgeTop + BadgeHeight + 2);
+    const short runRowTop = static_cast<short> (detailsTop + DetailsHeight + Margin);
+    const short stopLeft = static_cast<short> (Margin + RunButtonWidth + 4);
+    const short resultLeft = static_cast<short> (stopLeft + RunButtonWidth + 8);
+    const short fixLeft = static_cast<short> (width - Margin - FixButtonWidth);
+    const short outputLeft = static_cast<short> (fixLeft - 4 - OutputButtonWidth);
+    short resultWidth = static_cast<short> (outputLeft - 4 - resultLeft);
+    if (resultWidth < 40) {
+        resultWidth = 40;
+    }
 
     palette.BeginMoveResizeItems ();
     expandButton.SetPosition (static_cast<short> (width - BarHeight), 0);
@@ -162,6 +186,16 @@ void ScriptsPanel::Layout ()
     badgeText.SetSize (innerWidth, BadgeHeight);
     detailsText.SetPosition (Margin, detailsTop);
     detailsText.SetSize (innerWidth, DetailsHeight);
+    runButton.SetPosition (Margin, runRowTop);
+    runButton.SetSize (RunButtonWidth, RunRowHeight);
+    stopButton.SetPosition (stopLeft, runRowTop);
+    stopButton.SetSize (RunButtonWidth, RunRowHeight);
+    resultText.SetPosition (resultLeft, runRowTop);
+    resultText.SetSize (resultWidth, RunRowHeight);
+    outputButton.SetPosition (outputLeft, runRowTop);
+    outputButton.SetSize (OutputButtonWidth, RunRowHeight);
+    fixButton.SetPosition (fixLeft, runRowTop);
+    fixButton.SetSize (FixButtonWidth, RunRowHeight);
     palette.EndMoveResizeItems ();
 
     // The columns: the name about a third of the list, the source at the right, what the script does between them.
@@ -179,6 +213,11 @@ void ScriptsPanel::Layout ()
     nameText.SetVisibility (open);
     badgeText.SetVisibility (open);
     detailsText.SetVisibility (open);
+    runButton.SetVisibility (open);
+    stopButton.SetVisibility (open);
+    resultText.SetVisibility (open);
+    outputButton.SetVisibility (open && outputButtonShown);
+    fixButton.SetVisibility (open && fixButtonShown);
     SetExpandButtonIcon (open);
 }
 
@@ -198,7 +237,7 @@ void ScriptsPanel::FillCategoryPopUp ()
 
 void ScriptsPanel::ScriptListChanged ()
 {
-    scripts = getScripts ();
+    scripts = actions.getScripts ();
     FillList ();
 }
 
@@ -291,6 +330,8 @@ const ScriptsPanel::Script* ScriptsPanel::GetSelectedScript () const
 // tooltip.
 void ScriptsPanel::ShowDetails ()
 {
+    ShowResult ();
+
     const Script* script = GetSelectedScript ();
     if (script == nullptr) {
         nameText.SetText (GS::EmptyUniString);
@@ -377,11 +418,334 @@ void ScriptsPanel::SetExpandButtonIcon (bool open)
 
 bool ScriptsPanel::ButtonClicked (const DG::ButtonClickEvent& ev)
 {
-    if (ev.GetSource () != &expandButton) {
+    if (ev.GetSource () == &expandButton) {
+        SetOpen (!IsOpen ());
+        return true;
+    }
+
+    const bool isRunButton = ev.GetSource () == &runButton;
+    const bool isStopButton = ev.GetSource () == &stopButton;
+    const bool isOutputButton = ev.GetSource () == &outputButton;
+    const bool isFixButton = ev.GetSource () == &fixButton;
+    if (!isRunButton && !isStopButton && !isOutputButton && !isFixButton) {
         return false;
     }
-    SetOpen (!IsOpen ());
+
+    const Script* script = GetSelectedScript ();
+    if (script == nullptr) {
+        return true;
+    }
+    // A copy: running or stopping the script changes the results and may refill the list.
+    const IO::Location fileLocation = script->fileLocation;
+    const bool isRunning = actions.isRunning (fileLocation);
+
+    if (isRunButton) {
+        if (!isRunning) {
+            actions.run (fileLocation);
+        }
+    } else if (isStopButton) {
+        if (isRunning) {
+            actions.stop (fileLocation);
+        }
+    } else {
+        const RunResult* result = FindResult (fileLocation);
+        if (result == nullptr) {
+            return true;
+        }
+        if (isOutputButton) {
+            ShowOutputDetails (*result);
+        } else {
+            switch (result->failure) {
+                case Failure::UvMissing:
+                    actions.openWebpage ("https://docs.astral.sh/uv/getting-started/installation/");
+                    break;
+                case Failure::ConnectionBusy:
+                    if (!isRunning) {
+                        actions.run (fileLocation);
+                    }
+                    break;
+                case Failure::NotStarted:
+                case Failure::ScriptError:
+                    ReportProblem (*result);
+                    break;
+                case Failure::None:
+                    break;
+            }
+        }
+    }
+    ShowResult ();
     return true;
+}
+
+// ---- Running and the result ----
+
+ScriptsPanel::RunResult* ScriptsPanel::FindResult (const IO::Location& fileLocation)
+{
+    for (RunResult& result : results) {
+        if (result.fileLocation == fileLocation) {
+            return &result;
+        }
+    }
+    return nullptr;
+}
+
+const ScriptsPanel::RunResult* ScriptsPanel::FindResult (const IO::Location& fileLocation) const
+{
+    for (const RunResult& result : results) {
+        if (result.fileLocation == fileLocation) {
+            return &result;
+        }
+    }
+    return nullptr;
+}
+
+ScriptsPanel::RunResult& ScriptsPanel::ResetResult (const IO::Location& fileLocation, const GS::UniString& scriptName)
+{
+    RunResult* result = FindResult (fileLocation);
+    if (result == nullptr) {
+        results.Push (RunResult ());
+        result = &results.GetLast ();
+    } else {
+        *result = RunResult ();
+    }
+    result->fileLocation = fileLocation;
+    result->scriptName = scriptName;
+    return *result;
+}
+
+void ScriptsPanel::ScriptStarted (const IO::Location& fileLocation, const GS::UniString& scriptName)
+{
+    ResetResult (fileLocation, scriptName);
+    ShowResult ();
+}
+
+void ScriptsPanel::ScriptNotStarted (const IO::Location& fileLocation, const GS::UniString& scriptName, bool uvMissing)
+{
+    RunResult& result = ResetResult (fileLocation, scriptName);
+    result.state = RunState::Failed;
+    result.failure = uvMissing ? Failure::UvMissing : Failure::NotStarted;
+    ShowResult ();
+}
+
+// What a failed connection to Archicad leaves in the output of a script that uses aclib or the archicad package:
+// urllib's and http.client's exceptions, in lower case.
+static bool ShowsConnectionError (const GS::UniString& lowerCasedText)
+{
+    static const char* const markers[] = {
+        "connectionrefusederror",
+        "connectionreseterror",
+        "connectionabortederror",
+        "remotedisconnected",
+        "urlopen error",
+        "timed out",
+        "timeouterror"
+    };
+    for (const char* marker : markers) {
+        if (lowerCasedText.Contains (GS::UniString (marker))) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static constexpr USize MaxOutputLineLength = 300;
+
+void ScriptsPanel::AddOutputLine (RunResult& result, const GS::UniString& line)
+{
+    GS::UniString shortLine = line;
+    if (shortLine.EndsWith (GS::UniString ("\r"))) {
+        shortLine = GS::UniString (shortLine.GetSubstring (0, shortLine.GetLength () - 1));
+    }
+    if (shortLine.GetLength () > MaxOutputLineLength) {
+        shortLine = GS::UniString (shortLine.GetSubstring (0, MaxOutputLineLength)) + "...";
+    }
+    result.lastLines.Push (shortLine);
+    while (result.lastLines.GetSize () > OutputLineCount) {
+        result.lastLines.Delete (0);
+    }
+}
+
+void ScriptsPanel::ScriptOutput (const IO::Location& fileLocation, const GS::UniString& text)
+{
+    RunResult* result = FindResult (fileLocation);
+    if (result == nullptr || text.IsEmpty ()) {
+        return;
+    }
+    if (ShowsConnectionError (LowerCased (text))) {
+        result->sawConnectionError = true;
+    }
+
+    // Only whole lines are kept; the rest waits for the next part of the output.
+    const GS::UniString output = result->partialLine + text;
+    const USize length = output.GetLength ();
+    UIndex lineStart = 0;
+    for (UIndex i = 0; i < length; ++i) {
+        if (output[i] == '\n') {
+            AddOutputLine (*result, GS::UniString (output.GetSubstring (lineStart, i - lineStart)));
+            lineStart = i + 1;
+        }
+    }
+    result->partialLine = lineStart < length ? GS::UniString (output.GetSubstring (lineStart, length - lineStart)) : GS::EmptyUniString;
+    if (result->partialLine.GetLength () > 4 * MaxOutputLineLength) {
+        AddOutputLine (*result, result->partialLine);
+        result->partialLine.Clear ();
+    }
+}
+
+void ScriptsPanel::ScriptStopRequested (const IO::Location& fileLocation)
+{
+    RunResult* result = FindResult (fileLocation);
+    if (result != nullptr && result->state == RunState::Running) {
+        result->stopRequested = true;
+    }
+}
+
+void ScriptsPanel::ScriptEnded (const IO::Location& fileLocation, int exitCode)
+{
+    RunResult* result = FindResult (fileLocation);
+    if (result == nullptr || result->state != RunState::Running) {
+        return;
+    }
+    if (!result->partialLine.IsEmpty ()) {
+        AddOutputLine (*result, result->partialLine);
+        result->partialLine.Clear ();
+    }
+    result->exitCode = exitCode;
+    if (result->stopRequested) {
+        result->state = RunState::Stopped;
+    } else if (exitCode == 0) {
+        result->state = RunState::Finished;
+    } else {
+        result->state = RunState::Failed;
+        result->failure = result->sawConnectionError ? Failure::ConnectionBusy : Failure::ScriptError;
+    }
+    ShowResult ();
+}
+
+GS::UniString ScriptsPanel::GetLastLines (const RunResult& result, UIndex skippedLines)
+{
+    GS::UniString text;
+    for (UIndex i = skippedLines; i < result.lastLines.GetSize (); ++i) {
+        if (!text.IsEmpty ()) {
+            text += "\n";
+        }
+        text += result.lastLines[i];
+    }
+    return text;
+}
+
+void ScriptsPanel::ShowResult ()
+{
+    const Script* script = GetSelectedScript ();
+    const bool isRunning = script != nullptr && actions.isRunning (script->fileLocation);
+    runButton.SetStatus (script != nullptr && !isRunning);
+    stopButton.SetStatus (isRunning);
+
+    GS::UniString text;
+    bool showOutputButton = false;
+    Int32 fixTextIndex = 0;
+    const RunResult* result = script != nullptr ? FindResult (script->fileLocation) : nullptr;
+    if (result != nullptr) {
+        switch (result->state) {
+            case RunState::Running:
+                text = PanelText (ID_SCRIPTS_PANEL_STRINGS_RUNNING);
+                break;
+            case RunState::Finished:
+                text = PanelText (ID_SCRIPTS_PANEL_STRINGS_FINISHED);
+                break;
+            case RunState::Stopped:
+                text = PanelText (ID_SCRIPTS_PANEL_STRINGS_STOPPED);
+                break;
+            case RunState::Failed:
+                switch (result->failure) {
+                    case Failure::UvMissing:
+                        text = PanelText (ID_SCRIPTS_PANEL_STRINGS_ERROR_UV_MISSING);
+                        fixTextIndex = ID_SCRIPTS_PANEL_STRINGS_INSTALL_UV;
+                        break;
+                    case Failure::NotStarted:
+                        text = PanelText (ID_SCRIPTS_PANEL_STRINGS_ERROR_NOT_STARTED);
+                        fixTextIndex = ID_SCRIPTS_PANEL_STRINGS_REPORT_PROBLEM;
+                        break;
+                    case Failure::ConnectionBusy:
+                        text = PanelText (ID_SCRIPTS_PANEL_STRINGS_ERROR_CONNECTION_BUSY);
+                        showOutputButton = true;
+                        fixTextIndex = ID_SCRIPTS_PANEL_STRINGS_TRY_AGAIN;
+                        break;
+                    case Failure::ScriptError:
+                    case Failure::None:
+                        text = GS::UniString::Printf (PanelText (ID_SCRIPTS_PANEL_STRINGS_ERROR_EXIT_CODE), result->exitCode);
+                        showOutputButton = true;
+                        fixTextIndex = ID_SCRIPTS_PANEL_STRINGS_REPORT_PROBLEM;
+                        break;
+                }
+                break;
+        }
+    }
+
+    resultText.SetText (text);
+    if (fixTextIndex != 0) {
+        fixButton.SetText (PanelText (fixTextIndex));
+    }
+    // Try again starts the script, so it is offered only while the script does not run.
+    if (isRunning && fixTextIndex == ID_SCRIPTS_PANEL_STRINGS_TRY_AGAIN) {
+        fixTextIndex = 0;
+    }
+    outputButtonShown = showOutputButton;
+    fixButtonShown = fixTextIndex != 0;
+    const bool open = IsOpen ();
+    outputButton.SetVisibility (open && outputButtonShown);
+    fixButton.SetVisibility (open && fixButtonShown);
+}
+
+void ScriptsPanel::ShowOutputDetails (const RunResult& result) const
+{
+    const GS::UniString lines = GetLastLines (result);
+    DGAlert (DG_INFORMATION,
+        PanelText (ID_SCRIPTS_PANEL_STRINGS_OUTPUT_TITLE),
+        GS::UniString::Printf (PanelText (ID_SCRIPTS_PANEL_STRINGS_OUTPUT_HEADER), result.scriptName.ToPrintf ()),
+        lines.IsEmpty () ? PanelText (ID_SCRIPTS_PANEL_STRINGS_OUTPUT_EMPTY) : lines,
+        RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_OK, ACAPI_GetOwnResModule ()));
+}
+
+// The text percent-encoded as UTF-8 for a URL's query, every byte but the unreserved characters encoded.
+static GS::UniString PercentEncoded (const GS::UniString& text)
+{
+    static const char hexDigits[] = "0123456789ABCDEF";
+    const std::string bytes (text.ToCStr (CC_UTF8).Get ());
+    std::string encoded;
+    for (const char c : bytes) {
+        const unsigned char byte = static_cast<unsigned char> (c);
+        if ((byte >= 'A' && byte <= 'Z') || (byte >= 'a' && byte <= 'z') || (byte >= '0' && byte <= '9') ||
+            byte == '-' || byte == '_' || byte == '.' || byte == '~') {
+            encoded += static_cast<char> (byte);
+        } else {
+            encoded += '%';
+            encoded += hexDigits[byte >> 4];
+            encoded += hexDigits[byte & 0x0F];
+        }
+    }
+    return GS::UniString (encoded.c_str ());
+}
+
+// Opens a new issue of this repository with the script's name, the Tapir and Archicad versions and the last lines of
+// its output filled in. The oldest lines are left out when the address would be too long for the browser or GitHub.
+void ScriptsPanel::ReportProblem (const RunResult& result) const
+{
+    static constexpr USize MaxEncodedBodyLength = 6000;
+    const GS::UniString title = GS::UniString::Printf (PanelText (ID_SCRIPTS_PANEL_STRINGS_ISSUE_TITLE), result.scriptName.ToPrintf ());
+    const GS::UniString tapirVersion (ADDON_VERSION);
+    GS::UniString encodedBody;
+    for (UIndex skippedLines = 0; skippedLines <= result.lastLines.GetSize (); ++skippedLines) {
+        const GS::UniString body = GS::UniString::Printf (PanelText (ID_SCRIPTS_PANEL_STRINGS_ISSUE_BODY),
+            result.scriptName.ToPrintf (), tapirVersion.ToPrintf (), static_cast<int> (VersionChecker::ArchicadMainVersion ()),
+            GetLastLines (result, skippedLines).ToPrintf ());
+        encodedBody = PercentEncoded (body);
+        if (encodedBody.GetLength () <= MaxEncodedBodyLength) {
+            break;
+        }
+    }
+    actions.openWebpage ("https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new?title=" +
+        PercentEncoded (title) + "&body=" + encodedBody);
 }
 
 bool ScriptsPanel::ToolTipRequested (const DG::ItemHelpEvent& ev, GS::UniString* toolTipText) const

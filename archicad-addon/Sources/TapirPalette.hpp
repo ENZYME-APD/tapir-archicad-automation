@@ -152,6 +152,12 @@ private:
     // The scripts panel's accessor of the script list: every script of the dropdown, in its order, with what the
     // panel shows of it.
     GS::Array<ScriptsPanel::Script> GetPanelScripts () const;
+    // What the scripts panel asks of the palette: the script list, and its Run and Stop, which are the palette's own.
+    ScriptsPanel::Actions GetPanelActions ();
+    // The panel's Run: starts the script of the list with this file, as the bar's Run button does, unless it runs.
+    void RunListedScript (const IO::Location& fileLocation);
+    // The panel's Stop: stops the script with the processes it started, as the bar's Run button does while it runs.
+    void StopScript (const IO::Location& fileLocation);
     GS::UniString GetScriptLabel (const PopUpItemData& popUpData) const;   // the label with the "[Shortcut N]" suffix
     bool IsPopUpContainsFile (const IO::Location& fileLocation) const;
     void SaveScriptsToPreferences ();

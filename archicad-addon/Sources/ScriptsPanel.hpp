@@ -14,11 +14,16 @@
 // position with the palette's guid.
 //
 // The panel lists the scripts of the bar's dropdown, grouped by the category of their `# /// tapir` header, with a
-// search field and a category filter above the list and the selected script's details below it.
+// search field and a category filter above the list and the selected script's details below it. Under the details,
+// Run and Stop start and stop the selected script through the palette's own run and stop functions, so a script
+// started here is the same run as one started from the bar, and the result of its last run shows next to them:
+// "Running...", "Finished", "Stopped", or an error in plain words with Details (the last lines of its output) and a
+// button that offers a fix (Install uv, Try again, or Report a problem).
 //
 // The panel's controls are the items of ID_PALETTE below y BarHeight. TapirPalette creates the panel, forwards its
-// resize and the button and tooltip events to it, and gives it the script list through a function (GetScripts). The
-// panel observes its search field, category filter and list itself.
+// resize and the button and tooltip events to it, gives it the script list and its run and stop functions (Actions),
+// and tells it when a script starts, writes output, is stopped and ends. The panel observes its search field,
+// category filter and list itself.
 class ScriptsPanel : public DG::TextEditBaseObserver,
     public DG::PopUpObserver,
     public DG::ListBoxObserver
@@ -45,9 +50,19 @@ public:
     };
     using ScriptsGetter = std::function<GS::Array<Script> ()>;
 
+    // What the panel asks of the palette.
+    struct Actions
+    {
+        ScriptsGetter                               getScripts;
+        std::function<bool (const IO::Location&)>   isRunning;     // the script runs now
+        std::function<void (const IO::Location&)>   run;           // starts it, as the bar's Run button does
+        std::function<void (const IO::Location&)>   stop;          // stops it with the processes it started
+        std::function<void (const GS::UniString&)>  openWebpage;   // opens the URL in the browser
+    };
+
     // The item numbers of the expand arrow and of the panel's controls in ID_PALETTE, in their order there:
-    // separator, search field, category filter, list, name, badge, details.
-    ScriptsPanel (DG::Palette& palette, short expandButtonItem, short firstPanelItem, const ScriptsGetter& getScripts);
+    // separator, search field, category filter, list, name, badge, details, Run, Stop, result, Details, fix button.
+    ScriptsPanel (DG::Palette& palette, short expandButtonItem, short firstPanelItem, const Actions& actions);
     ~ScriptsPanel ();
 
     bool IsOpen () const;
@@ -67,7 +82,48 @@ public:
     bool ButtonClicked (const DG::ButtonClickEvent& ev);
     bool ToolTipRequested (const DG::ItemHelpEvent& ev, GS::UniString* toolTipText) const;
 
+    // What the palette tells the panel about the scripts it runs, wherever they were started (the bar, a shortcut or
+    // the panel). All of them are called on the main thread.
+    void ScriptStarted (const IO::Location& fileLocation, const GS::UniString& scriptName);
+    // The script could not be started; uvMissing: because uv is not installed or could not be started.
+    void ScriptNotStarted (const IO::Location& fileLocation, const GS::UniString& scriptName, bool uvMissing);
+    // A part of what the script wrote to its standard output or error, as it was read.
+    void ScriptOutput (const IO::Location& fileLocation, const GS::UniString& text);
+    // Stop was used on the script: its exit code then means that it was stopped, not that it failed.
+    void ScriptStopRequested (const IO::Location& fileLocation);
+    void ScriptEnded (const IO::Location& fileLocation, int exitCode);
+
+    // The number of output lines Details shows and a problem report includes.
+    static constexpr UIndex OutputLineCount = 20;
+
 private:
+    enum class RunState { Running, Finished, Stopped, Failed };
+    enum class Failure { None, UvMissing, NotStarted, ConnectionBusy, ScriptError };
+
+    // The last run of a script since Archicad started.
+    struct RunResult
+    {
+        IO::Location             fileLocation;
+        GS::UniString            scriptName;
+        RunState                 state = RunState::Running;
+        Failure                  failure = Failure::None;
+        int                      exitCode = 0;
+        bool                     stopRequested = false;
+        bool                     sawConnectionError = false;   // the output shows that the connection to Archicad failed
+        GS::Array<GS::UniString> lastLines;                    // at most OutputLineCount complete lines
+        GS::UniString            partialLine;                  // the output after its last line break
+    };
+
+    RunResult* FindResult (const IO::Location& fileLocation);
+    const RunResult* FindResult (const IO::Location& fileLocation) const;
+    RunResult& ResetResult (const IO::Location& fileLocation, const GS::UniString& scriptName);
+    static void AddOutputLine (RunResult& result, const GS::UniString& line);
+    static GS::UniString GetLastLines (const RunResult& result, UIndex skippedLines = 0);
+    // Shows the selected script's last result with the buttons it offers, and enables Run and Stop for the script.
+    void ShowResult ();
+    void ShowOutputDetails (const RunResult& result) const;
+    void ReportProblem (const RunResult& result) const;
+
     void SetExpandButtonIcon (bool open);
     void SaveState ();
     static IO::Location GetStateFileLocation ();
@@ -90,8 +146,16 @@ private:
     DG::LeftText         nameText;
     DG::LeftText         badgeText;
     DG::LeftText         detailsText;
+    DG::Button           runButton;
+    DG::Button           stopButton;
+    DG::LeftText         resultText;
+    DG::Button           outputButton;   // Details: the last lines of the script's output
+    DG::Button           fixButton;      // Install uv, Try again or Report a problem
 
-    ScriptsGetter        getScripts;
+    Actions              actions;
+    GS::Array<RunResult> results;
+    bool                 outputButtonShown = false;
+    bool                 fixButtonShown = false;
     GS::Array<Script>    scripts;              // as GetScripts returned them last; a list row's value is its index + 1
     IO::Location         selectedLocation;     // the selected script, kept when the list is refilled
 
