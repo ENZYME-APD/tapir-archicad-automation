@@ -1,6 +1,7 @@
 using Grasshopper.Kernel;
 using Newtonsoft.Json.Linq;
 using System;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.GeneralComponents
 {
@@ -11,11 +12,30 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
         public GetScriptUIResultComponent()
             : base(
                 "GetScriptUIResult",
-                "Retrieves and clears the result last submitted from the Script UI palette's page " +
-                "(via window.ACAPI.SubmitResult), if any, and reports whether the palette is still open, " +
-                "so a waiting definition can stop when the user closes it. Each refresh clears the result.",
+                "Retrieves and clears the result last submitted from a Script UI window's page " +
+                "(via window.ACAPI.SubmitResult), if any, and reports whether the window is still open, " +
+                "so a waiting definition can stop when the user closes it. Each refresh clears the result. " +
+                "The window is picked by UiId or ScriptId; without them the first window is used.",
                 GroupNames.General)
         {
+        }
+
+        protected override void AddInputs()
+        {
+            inManager.AddIntegerParameter(
+                "UiId",
+                "UiId",
+                ("The Script UI window to read (1 to 8), as output by ShowScriptUI. Takes precedence over ScriptId. " +
+                 "Optional; without UiId and ScriptId the first window is read.")
+                    .WithTypeName("integerItem"),
+                GH_ParamAccess.item);
+
+            InText(
+                "ScriptId",
+                "The ScriptId given to ShowScriptUI, to read that definition's own window. Optional.");
+
+            SetOptionality(0);
+            SetOptionality(1);
         }
 
         protected override void AddOutputs()
@@ -30,15 +50,37 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
 
             OutBoolean(
                 "IsOpen",
-                "True while the Script UI palette is open.");
+                "True while the Script UI window is open.");
+
+            OutInteger(
+                "UiId",
+                "The Script UI window the result was read from (1 to 8). Empty when ScriptId was given " +
+                "and that definition has no window.");
         }
 
         protected override void Solve(
             IGH_DataAccess da)
         {
+            var parameters = new JObject();
+
+            if (da.TryGet(
+                    0,
+                    out int uiId))
+            {
+                parameters["uiId"] = uiId;
+            }
+
+            if (da.TryGet(
+                    1,
+                    out string scriptId) &&
+                !string.IsNullOrEmpty(scriptId))
+            {
+                parameters["scriptId"] = scriptId;
+            }
+
             if (!TryGetCadResponse(
                     CommandName,
-                    new JObject(),
+                    parameters,
                     ToAddOn,
                     out JObject response))
             {
@@ -56,6 +98,10 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
             da.SetData(
                 2,
                 (bool?)response["isOpen"]);
+
+            da.SetData(
+                3,
+                (int?)response["uiId"]);
         }
 
         protected override System.Drawing.Bitmap Icon =>
