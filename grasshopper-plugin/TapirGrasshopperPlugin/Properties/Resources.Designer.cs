@@ -6258,5 +6258,141 @@ namespace TapirGrasshopperPlugin.Properties
                 return ((System.Drawing.Bitmap) (obj));
             }
         }
+
+        internal static System.Drawing.Bitmap GetArchicadLicenseInfo
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetArchicadLicenseInfo", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetMagicWandSettings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetMagicWandSettings", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ShowNotificationBubble
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ShowNotificationBubble", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ResolveNames
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ResolveNames", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap GetLayerOfElementDefaults
+        {
+            get {
+                object obj = ResourceManager.GetObject ("GetLayerOfElementDefaults", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap SetLayerOfElementDefaults
+        {
+            get {
+                object obj = ResourceManager.GetObject ("SetLayerOfElementDefaults", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap RenameAttributes
+        {
+            get {
+                object obj = ResourceManager.GetObject ("RenameAttributes", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap OpenSettingsDialog
+        {
+            get {
+                object obj = ResourceManager.GetObject ("OpenSettingsDialog", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap PickLibraryPart
+        {
+            get {
+                object obj = ResourceManager.GetObject ("PickLibraryPart", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap PickLibraryPartFile
+        {
+            get {
+                object obj = ResourceManager.GetObject ("PickLibraryPartFile", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap PickPictureFile
+        {
+            get {
+                object obj = ResourceManager.GetObject ("PickPictureFile", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap PickZoneStampOrLabelFile
+        {
+            get {
+                object obj = ResourceManager.GetObject ("PickZoneStampOrLabelFile", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap PickLibraryPartSaveLocation
+        {
+            get {
+                object obj = ResourceManager.GetObject ("PickLibraryPartSaveLocation", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap PickLibraryFolder
+        {
+            get {
+                object obj = ResourceManager.GetObject ("PickLibraryFolder", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap ShowIFCExportSettings
+        {
+            get {
+                object obj = ResourceManager.GetObject ("ShowIFCExportSettings", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap PickAttribute
+        {
+            get {
+                object obj = ResourceManager.GetObject ("PickAttribute", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
+
+        internal static System.Drawing.Bitmap PickAttributeFolder
+        {
+            get {
+                object obj = ResourceManager.GetObject ("PickAttributeFolder", resourceCulture);
+                return ((System.Drawing.Bitmap) (obj));
+            }
+        }
     }
 }
