@@ -7,8 +7,10 @@ using TapirGrasshopperPlugin.Types.Properties;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
+    // Sends one SetPropertyValuesOfElementDefaults request for every branch
+    // of the inputs, so a tree input makes one undo step in Archicad (#203).
     public class SetPropertyValuesOfElementDefaultsComponent
-        : ArchicadExecutorComponent
+        : BatchedExecutorComponent<ElementDefaultPropertyValueObj>
     {
         public override string CommandName =>
             "SetPropertyValuesOfElementDefaults";
@@ -51,46 +53,45 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 1);
         }
 
-        protected override void Solve(
-            IGH_DataAccess da)
+        protected override bool TryGetBatchItems(
+            IGH_DataAccess da,
+            out List<ElementDefaultPropertyValueObj> items)
         {
+            items = null;
+
             if (!da.TryCreate(
                     0,
                     out PropertyGuidObject propertyId))
             {
-                return;
+                return false;
             }
 
             if (!da.TryGetList(
                     1,
                     out List<string> elementTypes))
             {
-                return;
+                return false;
             }
 
             if (!da.TryGetList(
                     2,
                     out List<string> values))
             {
-                return;
+                return false;
             }
 
             if (values.Count != 1 && elementTypes.Count != values.Count)
             {
                 this.AddError(
                     "The count of Values must be 1 or the same as the count of ElementTypes.");
-                return;
+                return false;
             }
 
-            var input = new SetPropertyValuesOfElementDefaultsParameters
-            {
-                ElementDefaultPropertyValues =
-                    new List<ElementDefaultPropertyValueObj>()
-            };
+            items = new List<ElementDefaultPropertyValueObj>();
 
             for (var i = 0; i < elementTypes.Count; i++)
             {
-                input.ElementDefaultPropertyValues.Add(
+                items.Add(
                     new ElementDefaultPropertyValueObj
                     {
                         ElementType = elementTypes[i],
@@ -104,11 +105,25 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                     });
             }
 
-            SetCadValuesWithErrorMessages(
-                CommandName,
-                input,
-                ToAddOn,
-                da);
+            return true;
+        }
+
+        // The branches used to be sent one after the other, so the last value
+        // of an element type and property won.
+        protected override string GetBatchItemKey(
+            ElementDefaultPropertyValueObj item)
+        {
+            return $"{item.ElementType}|" +
+                   $"{item.PropertyId?.Guid?.ToLowerInvariant()}";
+        }
+
+        protected override object CreateBatchParameters(
+            List<ElementDefaultPropertyValueObj> items)
+        {
+            return new SetPropertyValuesOfElementDefaultsParameters
+            {
+                ElementDefaultPropertyValues = items
+            };
         }
 
         protected override System.Drawing.Bitmap Icon =>
