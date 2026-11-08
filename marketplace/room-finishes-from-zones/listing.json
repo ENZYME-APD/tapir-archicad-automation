@@ -4,7 +4,7 @@
     "summary": "Adds the floor finish, the ceiling with an optional cove and the wall finishes of the selected zones from favorites or materials; a re-run replaces them.",
     "category": "modeling-geometry",
     "tags": ["zones", "finishes", "slabs", "walls", "ceilings", "floors", "coves", "interiors"],
-    "author": { "name": "Tapir" },
+    "author": { "name": "Jorge Beneitez", "github": "JBENEITEZ" },
     "license": "MIT",
     "entry": "RoomFinishesFromZones.py",
     "versions": [

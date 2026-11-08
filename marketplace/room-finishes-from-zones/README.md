@@ -204,4 +204,4 @@ zones. It writes no files.
 
 ## Credits
 
-Requested by @JBENEITEZ in #2292. Written by the Tapir project.
+Requested by @JBENEITEZ in #2292, written with the Tapir issue bot.
