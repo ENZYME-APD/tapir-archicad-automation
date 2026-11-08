@@ -1,6 +1,7 @@
 """Shows a small HTML page with a button in an Archicad palette with ShowScriptUI.
 
-The page sends its result with window.ACAPI.SubmitResult; read it with GetScriptUIResult.
+The response names the window (uiId). The page sends its result with window.ACAPI.SubmitResult;
+read it with GetScriptUIResult and that uiId.
 """
 import aclib
 

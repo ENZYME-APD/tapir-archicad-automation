@@ -3476,11 +3476,11 @@ GSErrCode Initialize (void)
         CommandGroup scriptUICommands ("Script UI Commands");
         err |= RegisterCommand<ShowScriptUICommand> (
             scriptUICommands, "1.5.4",
-            "Shows the given HTML content in a native Archicad palette (a tkinter alternative for Python scripts)."
+            "Shows the given HTML content in a native Archicad palette (a tkinter alternative for Python scripts) and returns the uiId of its window. Each script can have its own window, picked by uiId or scriptId; without them the first window is used."
         );
         err |= RegisterCommand<GetScriptUIResultCommand> (
             scriptUICommands, "1.5.4",
-            "Retrieves and clears the result last submitted from the Script UI palette's page (via window.ACAPI.SubmitResult), if any, and reports whether the palette is still open, so a waiting script can stop when the user closes it."
+            "Retrieves and clears the result last submitted from a Script UI window's page (via window.ACAPI.SubmitResult), if any, and reports whether the window is still open, so a waiting script can stop when the user closes it. The window is picked by uiId or scriptId; without them the first window is used."
         );
         err |= RegisterCommand<OpenSettingsDialogCommand> (
             scriptUICommands, "1.8.1",

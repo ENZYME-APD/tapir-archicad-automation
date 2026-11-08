@@ -1,6 +1,6 @@
 """Shows a palette with two buttons and waits for the user's choice with GetScriptUIResult.
 
-Polls until a button is clicked or the palette is closed.
+Polls the window ShowScriptUI returned (its uiId) until a button is clicked or the palette is closed.
 """
 import time
 import aclib
@@ -13,10 +13,10 @@ html = """<!DOCTYPE html>
     <button onclick="ACAPI.SubmitResult ('no')">No</button>
 </body>
 </html>"""
-aclib.RunTapirCommand ('ShowScriptUI', {'htmlContent': html, 'title': 'Tapir', 'width': 300, 'height': 150})
+shown = aclib.RunTapirCommand ('ShowScriptUI', {'htmlContent': html, 'title': 'Tapir', 'width': 300, 'height': 150})
 
 while True:
-    response = aclib.RunTapirCommand ('GetScriptUIResult')
+    response = aclib.RunTapirCommand ('GetScriptUIResult', {'uiId': shown['uiId']})
     if response['hasResult'] or not response['isOpen']:
         break
     time.sleep (0.5)
