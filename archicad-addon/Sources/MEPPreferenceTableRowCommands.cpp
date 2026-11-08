@@ -11,11 +11,21 @@
 #include "ACAPI/MEPDuctCircularSegmentPreferenceTable.hpp"
 #include "ACAPI/MEPDuctRectangularSegmentPreferenceTable.hpp"
 #include "ACAPI/MEPCableCarrierSegmentPreferenceTable.hpp"
+#include "ACAPI/MEPPipeElbowPreferenceTableContainer.hpp"
+#include "ACAPI/MEPPipeBranchPreferenceTableContainer.hpp"
+#include "ACAPI/MEPDuctElbowPreferenceTableContainer.hpp"
+#include "ACAPI/MEPDuctBranchPreferenceTableContainer.hpp"
+#include "ACAPI/MEPPipeSegmentPreferenceTableContainer.hpp"
+#include "ACAPI/MEPDuctSegmentPreferenceTableContainer.hpp"
+#include "ACAPI/MEPCableCarrierSegmentPreferenceTableContainer.hpp"
 #ifdef ServerMainVers_2900
 #include "ACAPI/MEPPipeTransitionPreferenceTable.hpp"
 #include "ACAPI/MEPDuctTransitionPreferenceTable.hpp"
+#include "ACAPI/MEPPipeTransitionPreferenceTableContainer.hpp"
+#include "ACAPI/MEPDuctTransitionPreferenceTableContainer.hpp"
 #endif
 
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 #include <optional>
@@ -562,6 +572,20 @@ static GS::ObjectState CreateFailedPreferenceTableRowResults (UIndex count, GSEr
     return response;
 }
 
+// Whether the preference table container lists the id. TableT::Get with the id of a table of another container, or of no
+// table, stops Archicad 29 ("Object doesn't exist in Database!", then the fatal "Loading of the object failed"), so the
+// container is asked first. Within a container a table of the other type is fine: Get answers an error (circular and
+// rectangular duct segment tables share a container).
+template <typename ContainerResultT>
+static bool ListsPreferenceTable (const ContainerResultT& container, const ACAPI::MEP::UniqueID& id)
+{
+    if (container.IsErr ()) {
+        return false;
+    }
+    const auto tableIds = container->GetPreferenceTables ();
+    return std::any_of (tableIds.begin (), tableIds.end (), [&] (const auto& tableId) { return tableId.GetGuid () == id.GetGuid (); });
+}
+
 // Calls func with the preference table of the tableId parameter.
 template <typename FuncT>
 static GS::ObjectState WithRowPreferenceTable (const GS::ObjectState& parameters, const FuncT& func)
@@ -570,38 +594,56 @@ static GS::ObjectState WithRowPreferenceTable (const GS::ObjectState& parameters
     parameters.Get ("tableId", tableIdData);
     const auto id = Adapter::UniqueID (GetGuidFromObjectState (tableIdData));
 
-    if (auto table = PipeBranchPreferenceTable::Get (id); table.IsOk ()) {
-        return func (*table);
+    if (ListsPreferenceTable (GetPipeBranchPreferenceTableContainer (), id)) {
+        if (auto table = PipeBranchPreferenceTable::Get (id); table.IsOk ()) {
+            return func (*table);
+        }
     }
-    if (auto table = DuctBranchPreferenceTable::Get (id); table.IsOk ()) {
-        return func (*table);
+    if (ListsPreferenceTable (GetDuctBranchPreferenceTableContainer (), id)) {
+        if (auto table = DuctBranchPreferenceTable::Get (id); table.IsOk ()) {
+            return func (*table);
+        }
     }
-    if (auto table = PipeElbowPreferenceTable::Get (id); table.IsOk ()) {
-        return func (*table);
+    if (ListsPreferenceTable (GetPipeElbowPreferenceTableContainer (), id)) {
+        if (auto table = PipeElbowPreferenceTable::Get (id); table.IsOk ()) {
+            return func (*table);
+        }
     }
-    if (auto table = DuctElbowPreferenceTable::Get (id); table.IsOk ()) {
-        return func (*table);
+    if (ListsPreferenceTable (GetDuctElbowPreferenceTableContainer (), id)) {
+        if (auto table = DuctElbowPreferenceTable::Get (id); table.IsOk ()) {
+            return func (*table);
+        }
     }
-    if (auto table = PipeSegmentPreferenceTable::Get (id); table.IsOk ()) {
-        return func (*table);
+    if (ListsPreferenceTable (GetPipeSegmentPreferenceTableContainer (), id)) {
+        if (auto table = PipeSegmentPreferenceTable::Get (id); table.IsOk ()) {
+            return func (*table);
+        }
     }
-    if (auto table = DuctCircularSegmentPreferenceTable::Get (id); table.IsOk ()) {
-        return func (*table);
+    if (ListsPreferenceTable (GetDuctSegmentPreferenceTableContainer (), id)) {
+        if (auto table = DuctCircularSegmentPreferenceTable::Get (id); table.IsOk ()) {
+            return func (*table);
+        }
+        // The rectangular tables are in the same container as the circular ones; their Get picks them.
+        if (auto table = DuctRectangularSegmentPreferenceTable::Get (id); table.IsOk ()) {
+            return func (*table);
+        }
     }
 #ifdef ServerMainVers_2900
-    if (auto table = PipeTransitionPreferenceTable::Get (id); table.IsOk ()) {
-        return func (*table);
+    if (ListsPreferenceTable (GetPipeTransitionPreferenceTableContainer (), id)) {
+        if (auto table = PipeTransitionPreferenceTable::Get (id); table.IsOk ()) {
+            return func (*table);
+        }
     }
-    if (auto table = DuctTransitionPreferenceTable::Get (id); table.IsOk ()) {
-        return func (*table);
+    if (ListsPreferenceTable (GetDuctTransitionPreferenceTableContainer (), id)) {
+        if (auto table = DuctTransitionPreferenceTable::Get (id); table.IsOk ()) {
+            return func (*table);
+        }
     }
 #endif
-    // The rectangular tables are in the same container as the circular ones; their Get picks them.
-    if (auto table = DuctRectangularSegmentPreferenceTable::Get (id); table.IsOk ()) {
-        return func (*table);
-    }
-    if (auto table = CableCarrierSegmentPreferenceTable::Get (id); table.IsOk ()) {
-        return func (*table);
+    if (ListsPreferenceTable (GetCableCarrierSegmentPreferenceTableContainer (), id)) {
+        if (auto table = CableCarrierSegmentPreferenceTable::Get (id); table.IsOk ()) {
+            return func (*table);
+        }
     }
     return CreateErrorResponse (APIERR_BADID, "The tableId is not a segment, branch, elbow or transition preference table.");
 }
