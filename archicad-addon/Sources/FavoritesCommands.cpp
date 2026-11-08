@@ -332,101 +332,7 @@ GS::Optional<GS::UniString> GetFavoriteDetailsCommand::GetRawResponseSchema () c
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "favorite": {
-                                    "type": "string",
-                                    "description": "The name of the favorite."
-                                },
-                                "elementType": {
-                                    "type": "string",
-                                    "description": "The element type of the favorite, as in GetFavoritesByType."
-                                },
-                                "classifications": {
-                                    "type": "array",
-                                    "description": "The classifications the favorite applies, one per classification system.",
-                                    "items": {
-                                        "$ref": "#/ClassificationIdArrayItem"
-                                    }
-                                },
-                                "properties": {
-                                    "type": "array",
-                                    "description": "The property values stored in the favorite.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "propertyId": {
-                                                "$ref": "#/PropertyId"
-                                            },
-                                            "propertyName": {
-                                                "type": "string"
-                                            },
-                                            "status": {
-                                                "type": "string",
-                                                "enum": [
-                                                    "HasValue",
-                                                    "NotEvaluated",
-                                                    "NotAvailable"
-                                                ],
-                                                "description": "The evaluation status of the value. propertyValue is only present for HasValue."
-                                            },
-                                            "isDefault": {
-                                                "type": "boolean",
-                                                "description": "True if the value is the default value of the property."
-                                            },
-                                            "propertyValue": {
-                                                "$ref": "#/PropertyValue"
-                                            },
-                                            "error": {
-                                                "$ref": "#/Error"
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "propertyId",
-                                            "propertyName",
-                                            "status",
-                                            "isDefault"
-                                        ]
-                                    }
-                                },
-                                "categoryValues": {
-                                    "type": "array",
-                                    "description": "The element category values (e.g. Structural Function, Position, Renovation Status) stored in the favorite.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "categoryId": {
-                                                "$ref": "#/GuidId"
-                                            },
-                                            "categoryName": {
-                                                "type": "string"
-                                            },
-                                            "categoryValueId": {
-                                                "$ref": "#/GuidId"
-                                            },
-                                            "categoryValueName": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "categoryId",
-                                            "categoryName",
-                                            "categoryValueId",
-                                            "categoryValueName"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "favorite",
-                                "elementType",
-                                "classifications",
-                                "properties",
-                                "categoryValues"
-                            ]
+                            "$ref": "#/FavoriteDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -749,26 +655,7 @@ GS::Optional<GS::UniString> CreateFavoritesFromElementsCommand::GetInputParamete
             "favoritesFromElements": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "description": "The identifier of the element and the name of the new favorite.",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "favorite": {
-                            "type": "string"
-                        },
-                        "folder": {
-                            "type": "array",
-                            "description": "Optional folder hierarchy in the Favorites palette to place the new favorite under. Empty/omitted = root.",
-                            "items": { "type": "string" }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "favorite"
-                    ]
+                    "$ref": "#/FavoriteFromElement"
                 }
             }
         },
@@ -1180,9 +1067,7 @@ GS::Optional<GS::UniString> ImportFavoritesCommand::GetInputParametersSchema () 
                 "description": "Absolute path on the AC host. With the prefs format: a Favorites file (.prefs) or folder. With the xml format: the folder of Favorite files, as ExportFavorites writes it. With the legacyPRF format: the .prf file."
             },
             "format": {
-                "type": "string",
-                "enum": ["prefs", "xml", "legacyPRF"],
-                "description": "The format to import from, the counterpart of the format of ExportFavorites. prefs (the default) works in every Archicad version. xml imports Favorite files from a folder, and legacyPRF a Favorites file of earlier Archicad versions; these two require Archicad 29 or newer."
+                "$ref": "#/FavoriteImportFormat"
             },
             "fileNames": {
                 "type": "array",
@@ -1199,9 +1084,7 @@ GS::Optional<GS::UniString> ImportFavoritesCommand::GetInputParametersSchema () 
                 "description": "Only with the prefs format: if true and `path` is a folder, the folder structure is preserved."
             },
             "conflictPolicy": {
-                "type": "string",
-                "enum": ["Error", "Skip", "Overwrite", "Append", "OverwriteExisting", "RenameNew"],
-                "description": "How to resolve name conflicts. The prefs format takes Error, Skip, Overwrite or Append, default Overwrite. The xml and legacyPRF formats take Error, Skip, OverwriteExisting or RenameNew, default Error."
+                "$ref": "#/FavoriteImportConflictPolicy"
             }
         },
         "required": ["path"],
@@ -1761,21 +1644,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
             "favoritesToApply": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "description": "The identifier of the element and the name of the Favorite to apply to it.",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "favorite": {
-                            "type": "string"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "favorite"
-                    ]
+                    "$ref": "#/FavoriteToApply"
                 }
             },
             "applySettings": {
@@ -2455,83 +2324,7 @@ GS::Optional<GS::UniString> GetFavoriteContentsCommand::GetRawResponseSchema () 
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "name": {
-                                    "type": "string",
-                                    "description": "The name of the Favorite."
-                                },
-                                "folderPath": {
-                                    "type": "array",
-                                    "description": "The path of the folder the Favorite is in, as Archicad gives it. Empty for the root folder.",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "classifications": {
-                                    "$ref": "#/ClassificationIdsOrErrors",
-                                    "description": "The classifications stored with the Favorite, in the format of GetClassificationsOfElements."
-                                },
-                                "categoryValues": {
-                                    "type": "array",
-                                    "description": "The element category values stored with the Favorite, in the format of GetCategoryValuesOfElements.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "type": {
-                                                "$ref": "#/ElementCategoryType"
-                                            },
-                                            "categoryId": {
-                                                "$ref": "#/ElementCategoryId"
-                                            },
-                                            "categoryValueId": {
-                                                "$ref": "#/ElementCategoryValueId"
-                                            },
-                                            "name": {
-                                                "type": "string",
-                                                "description": "The localized name of the value, for display only."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "type",
-                                            "categoryId",
-                                            "categoryValueId",
-                                            "name"
-                                        ]
-                                    }
-                                },
-                                "properties": {
-                                    "type": "array",
-                                    "description": "The property values stored with the Favorite. Each has propertyValue, in the format of GetPropertyValuesOfElements, or an error when its value cannot be read.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "propertyId": {
-                                                "$ref": "#/PropertyId"
-                                            },
-                                            "propertyValue": {
-                                                "$ref": "#/PropertyValue"
-                                            },
-                                            "error": {
-                                                "$ref": "#/Error"
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "propertyId"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "name",
-                                "folderPath",
-                                "classifications",
-                                "categoryValues",
-                                "properties"
-                            ]
+                            "$ref": "#/FavoriteContents"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -2629,24 +2422,7 @@ GS::Optional<GS::UniString> DeleteFavoritesWithManagerCommand::GetInputParameter
                 "type": "array",
                 "description": "The Favorites to delete.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the Favorite."
-                        },
-                        "folderPath": {
-                            "type": "array",
-                            "description": "The folder the Favorite is in, the folder names from the root of the Favorites palette down, in the format GetFavoriteContents returns. When given, the Favorite is only looked for directly in that folder. Omit it to find the Favorite by name anywhere.",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name"
-                    ]
+                    "$ref": "#/FavoriteNameAndFolder"
                 }
             }
         },
@@ -3095,27 +2871,7 @@ GS::Optional<GS::UniString> ReadFavoritesFileCommand::GetRawResponseSchema () co
             "favorites": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the Favorite."
-                        },
-                        "elementType": {
-                            "$ref": "#/ElementType"
-                        },
-                        "folder": {
-                            "type": "array",
-                            "items": { "type": "string" },
-                            "description": "The folder hierarchy of the Favorite in the file or folder. Empty = root."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "elementType",
-                        "folder"
-                    ]
+                    "$ref": "#/FavoriteFileEntry"
                 }
             }
         },
@@ -3374,25 +3130,10 @@ GS::Optional<GS::UniString> CreateFavoriteCommand::GetInputParametersSchema () c
                 "description": "The folder of the Favorites palette to create the Favorite in, as the folder names from the root down. The folder must exist. Empty or omitted = root."
             },
             "source": {
-                "type": "object",
-                "description": "Where the settings of the new Favorite come from: exactly one of favoriteName and toolDefault.",
-                "properties": {
-                    "favoriteName": {
-                        "type": "string",
-                        "description": "Take the settings of this Favorite."
-                    },
-                    "toolDefault": {
-                        "type": "string",
-                        "enum": ["Opening"],
-                        "description": "Take the current settings of this tool."
-                    }
-                },
-                "additionalProperties": false
+                "$ref": "#/FavoriteSettingsSource"
             },
             "conflictPolicy": {
-                "type": "string",
-                "enum": ["Error", "Skip", "OverwriteExisting", "RenameNew"],
-                "description": "What to do when a Favorite with this name already exists: Error fails, Skip leaves the existing Favorite unchanged, OverwriteExisting gives the existing Favorite the new settings (its folder does not change), RenameNew creates the Favorite with ' (2)', ' (3)', ... appended to the name. Default Error."
+                "$ref": "#/FavoriteCreationConflictPolicy"
             }
         },
         "additionalProperties": false,
@@ -3418,9 +3159,7 @@ GS::Optional<GS::UniString> CreateFavoriteCommand::GetRawResponseSchema () const
                 "description": "The folder of the Favorite, as the folder names from the root down. Empty for the root. Missing when Archicad cannot read it."
             },
             "outcome": {
-                "type": "string",
-                "enum": ["Created", "Skipped", "Overwritten"],
-                "description": "Created for a new Favorite (also with RenameNew), Skipped or Overwritten when a Favorite with the name already existed."
+                "$ref": "#/FavoriteCreationOutcome"
             }
         },
         "additionalProperties": false,
@@ -4101,146 +3840,7 @@ GS::Optional<GS::UniString> GetFavoriteDefaultsCommand::GetRawResponseSchema () 
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "favorite": {
-                                    "type": "string",
-                                    "description": "The name of the Favorite."
-                                },
-                                "elementType": {
-                                    "$ref": "#/ElementType"
-                                },
-                                "layerIndex": {
-                                    "type": "integer",
-                                    "description": "The index of the layer the Favorite places its elements on."
-                                },
-                                "elementId": {
-                                    "type": "string",
-                                    "description": "The element ID stored with the Favorite. Absent when it is empty."
-                                },
-                                "folder": {
-                                    "type": "array",
-                                    "description": "The folder hierarchy of the Favorite in the Favorites palette, outermost folder first. Empty for the root.",
-                                    "items": {
-                                        "type": "string"
-                                    }
-                                },
-                                "libPart": {
-                                    "$ref": "#/LibPartDetails",
-                                    "description": "The library part of the Favorite, for the library part based types (Object, Lamp, Window, Door, Skylight, Zone). Absent otherwise or when it could not be read."
-                                },
-                                "parameters": {
-                                    "type": "array",
-                                    "description": "The GDL parameters stored with the Favorite. Empty for the types without GDL parameters.",
-                                    "items": {
-                                        "$ref": "#/StoredGDLParameter"
-                                    }
-                                },
-                                "marker": {
-                                    "type": "object",
-                                    "description": "The marker stored with the Favorite, for the element types that have one. Absent when the Favorite has no marker - that is not an error.",
-                                    "properties": {
-                                        "elementType": {
-                                            "$ref": "#/ElementType"
-                                        },
-                                        "libPart": {
-                                            "$ref": "#/LibPartDetails",
-                                            "description": "The library part of the marker. Absent when it could not be read."
-                                        },
-                                        "parameters": {
-                                            "type": "array",
-                                            "description": "The GDL parameters of the marker.",
-                                            "items": {
-                                                "$ref": "#/StoredGDLParameter"
-                                            }
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "elementType",
-                                        "parameters"
-                                    ]
-                                },
-                                "subElements": {
-                                    "type": "array",
-                                    "description": "The sub-elements stored with the Favorite, for example the frames and panels of a Curtain Wall.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "elementType": {
-                                                "$ref": "#/ElementType"
-                                            },
-                                            "libPart": {
-                                                "$ref": "#/LibPartDetails",
-                                                "description": "The library part of the sub-element. Absent when it has none or it could not be read."
-                                            },
-                                            "parameters": {
-                                                "type": "array",
-                                                "description": "The GDL parameters of the sub-element.",
-                                                "items": {
-                                                    "$ref": "#/StoredGDLParameter"
-                                                }
-                                            },
-                                            "subTypes": {
-                                                "type": "array",
-                                                "description": "The kinds of the sub-element: the API_SubElementType flags set on it, without their APISubElement_ prefix.",
-                                                "items": {
-                                                    "type": "string",
-                                                    "enum": [
-                                                        "MainMarker",
-                                                        "SHMarker",
-                                                        "CommonMarker",
-                                                        "CWFrameClass",
-                                                        "CWPanelClass",
-                                                        "CWJunction",
-                                                        "CWAccessory",
-                                                        "StairRiser",
-                                                        "StairTread",
-                                                        "StairStructure",
-                                                        "StairFPDMarker",
-                                                        "StairRCPDMarker",
-                                                        "RailingNode",
-                                                        "RailingSegment",
-                                                        "RailingPost",
-                                                        "RailingInnerPost",
-                                                        "RailingRail",
-                                                        "RailingHandrail",
-                                                        "RailingToprail",
-                                                        "RailingPanel",
-                                                        "RailingBaluster",
-                                                        "RailingPattern",
-                                                        "RailingBalusterSet",
-                                                        "RailingRailEnd",
-                                                        "RailingHandrailEnd",
-                                                        "RailingToprailEnd",
-                                                        "RailingRailConnection",
-                                                        "RailingHandrailConnection",
-                                                        "RailingToprailConnection",
-                                                        "RailingFinish",
-                                                        "CWTag",
-                                                        "NoElem",
-                                                        "NoParams"
-                                                    ]
-                                                }
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "elementType",
-                                            "parameters",
-                                            "subTypes"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "favorite",
-                                "elementType",
-                                "layerIndex",
-                                "parameters",
-                                "subElements"
-                            ]
+                            "$ref": "#/FavoriteDefaults"
                         },
                         {
                             "$ref": "#/ErrorItem"
