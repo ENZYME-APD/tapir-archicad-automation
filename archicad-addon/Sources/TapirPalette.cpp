@@ -63,6 +63,22 @@ static bool isHiddenByArchicad = false;
 // a connection that GitHub accepts but never answers kept Archicad from starting or opening a project (#798).
 static constexpr int RepositoryRequestTimeoutMs = 15 * 1000;
 
+// The texts of the user interface, from the localized resources (RINT/AddOn.grc, see LOCALIZATION.md)
+static GS::UniString PaletteText (Int32 index)
+{
+    return RSGetIndString (ID_PALETTE_STRINGS, index, ACAPI_GetOwnResModule ());
+}
+
+static GS::UniString UpdateText (Int32 index)
+{
+    return RSGetIndString (ID_AUTOUPDATE_STRINGS, index, ACAPI_GetOwnResModule ());
+}
+
+static GS::UniString ReportText (Int32 index)
+{
+    return RSGetIndString (ID_REPORT_STRINGS, index, ACAPI_GetOwnResModule ());
+}
+
 static UShort GetConnectionPort ()
 {
     UShort portNumber;
@@ -289,7 +305,7 @@ static DownloadResult DownloadBinaryFile (const GS::UniString& fileDownloadUrl, 
             GS::UniString origin;
             GS::UniString pathAndQuery;
             if (!SplitUrl (url, origin, pathAndQuery)) {
-                error = "Invalid download URL: " + url;
+                error = GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_ERROR_INVALID_URL), url.ToPrintf ());
                 return DownloadResult::Failed;
             }
             // Lets the user cancel before every connection, the redirect hops included
@@ -324,14 +340,14 @@ static DownloadResult DownloadBinaryFile (const GS::UniString& fileDownloadUrl, 
                 clientConnection.Close (false);
                 abortConnection.Deactivate ();
                 if (location.IsEmpty ()) {
-                    error = "Redirect without a location from " + origin;
+                    error = GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_ERROR_REDIRECT_NO_LOCATION), origin.ToPrintf ());
                     return DownloadResult::Failed;
                 }
                 url = ResolveRedirectLocation (location, origin, pathAndQuery);
                 continue;
             }
             if (statusCode != 200) {
-                error = GS::UniString::Printf ("HTTP status %d from %T", statusCode, origin.ToPrintf ());
+                error = GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_ERROR_HTTP_STATUS), statusCode, origin.ToPrintf ());
                 return DownloadResult::Failed;
             }
 
@@ -346,7 +362,7 @@ static DownloadResult DownloadBinaryFile (const GS::UniString& fileDownloadUrl, 
                 if (file.GetStatus () != NoError || file.Open (IO::File::WriteEmptyMode) != NoError) {
                     GS::UniString filePath;
                     fileLoc.ToPath (&filePath);
-                    error = "Cannot write " + filePath;
+                    error = GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_ERROR_CANNOT_WRITE), filePath.ToPrintf ());
                     return DownloadResult::Failed;
                 }
 
@@ -354,7 +370,7 @@ static DownloadResult DownloadBinaryFile (const GS::UniString& fileDownloadUrl, 
                 USize readSize = ReadBodyChunk (body, buffer.data (), static_cast<USize> (buffer.size ()), hasContentLength, readError);
                 while (readSize > 0) {
                     if (file.WriteBin (buffer.data (), readSize) != NoError) {
-                        error = "Failed to write the downloaded file.";
+                        error = UpdateText (ID_AUTOUPDATE_ERROR_WRITE_FAILED);
                         return DownloadResult::Failed;
                     }
                     writtenSize += readSize;
@@ -364,20 +380,20 @@ static DownloadResult DownloadBinaryFile (const GS::UniString& fileDownloadUrl, 
                     readSize = ReadBodyChunk (body, buffer.data (), static_cast<USize> (buffer.size ()), hasContentLength, readError);
                 }
                 if (file.Close () != NoError) {
-                    error = "Failed to write the downloaded file.";
+                    error = UpdateText (ID_AUTOUPDATE_ERROR_WRITE_FAILED);
                     return DownloadResult::Failed;
                 }
             }
 
             if (hasContentLength && contentLength != writtenSize) {
-                error = "The download is incomplete.";
+                error = UpdateText (ID_AUTOUPDATE_ERROR_INCOMPLETE);
                 if (!readError.IsEmpty ()) {
                     error += " " + readError;
                 }
                 return DownloadResult::Failed;
             }
             if (writtenSize == 0) {
-                error = "The downloaded file is empty.";
+                error = UpdateText (ID_AUTOUPDATE_ERROR_EMPTY);
                 return DownloadResult::Failed;
             }
 
@@ -390,11 +406,11 @@ static DownloadResult DownloadBinaryFile (const GS::UniString& fileDownloadUrl, 
             }
             return DownloadResult::Succeeded;
         }
-        error = "Too many redirects.";
+        error = UpdateText (ID_AUTOUPDATE_ERROR_TOO_MANY_REDIRECTS);
     } catch (const GS::Exception& e) {
         error = GetExceptionText (e);
     } catch (...) {
-        error = "Unexpected error while downloading.";
+        error = UpdateText (ID_AUTOUPDATE_ERROR_UNEXPECTED);
     }
 
     return DownloadResult::Failed;
@@ -445,9 +461,10 @@ static std::map<GS::UniString, GS::UniString> GetFilesFromGitHubInRelativeLocati
 
         clientConnection.Close (false);
     } catch (const GS::Exception& e) {
-        ACAPI_WriteReport ("Tapir: Failed to list " + repository.repoOwner + "/" + repository.repoName + " on GitHub: " + GetExceptionText (e), false);
+        ACAPI_WriteReport (ReportText (ID_REPORT_STRINGS_LIST_FAILED_WITH_ERROR), false,
+            repository.repoOwner.ToPrintf (), repository.repoName.ToPrintf (), GetExceptionText (e).ToPrintf ());
     } catch (...) {
-        ACAPI_WriteReport ("Tapir: Failed to list " + repository.repoOwner + "/" + repository.repoName + " on GitHub.", false);
+        ACAPI_WriteReport (ReportText (ID_REPORT_STRINGS_LIST_FAILED), false, repository.repoOwner.ToPrintf (), repository.repoName.ToPrintf ());
     }
 
     return files;
@@ -471,7 +488,7 @@ TapirPalette::TapirPalette ()
     LoadScriptsToPopUp ();
 
     installedVersionText.SetText (GS::UniString::Printf (
-        RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_INSTALLED_VERSION_TEXT, ACAPI_GetOwnResModule ()), ADDON_VERSION));
+        UpdateText (ID_AUTOUPDATE_INSTALLED_VERSION_TEXT), ADDON_VERSION));
     SetRunButtonIcon ();
     SetUpdateButtonText ();
 
@@ -717,7 +734,7 @@ GS::UniString TapirPalette::GetScriptLabel (const PopUpItemData& popUpData) cons
     GS::UniString label = popUpData.baseDisplayText;
     for (short slot = 0; slot < ScriptShortcutSlotCount; ++slot) {
         if (!scriptShortcutSlots[slot].IsEmpty () && scriptShortcutSlots[slot] == popUpData.fileLocation) {
-            label += GS::UniString::Printf ("   [Shortcut %d]", (int) (slot + 1));
+            label += "   " + GS::UniString::Printf (PaletteText (ID_PALETTE_STRINGS_SHORTCUT_SUFFIX), (int) (slot + 1));
             break;
         }
     }
@@ -746,7 +763,7 @@ void TapirPalette::RebuildScriptPopUp (short itemToSelect)
 
     scriptSelectionPopUp.AppendSeparator ();
     scriptSelectionPopUp.AppendItem ();
-    scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, "Reload scripts...");
+    scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, PaletteText (ID_PALETTE_STRINGS_RELOAD_SCRIPTS));
 
     if (itemToSelect <= 0 || scriptSelectionPopUp.IsSeparator (itemToSelect) || scriptSelectionPopUp.GetItemCount () - 1 <= itemToSelect) {
         itemToSelect = DG::PopUp::TopItem;
@@ -808,11 +825,11 @@ GS::UniString TapirPalette::GetScriptDescription (const ScriptInfo& info)
 {
     GS::UniString badge;
     if (info.ChangesModel ()) {
-        badge = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_BADGE_CHANGES_MODEL, ACAPI_GetOwnResModule ());
+        badge = PaletteText (ID_PALETTE_STRINGS_BADGE_CHANGES_MODEL);
     } else if (info.WritesFiles ()) {
-        badge = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_BADGE_WRITES_FILES, ACAPI_GetOwnResModule ());
+        badge = PaletteText (ID_PALETTE_STRINGS_BADGE_WRITES_FILES);
     } else if (info.IsReadOnly ()) {
-        badge = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_BADGE_READ_ONLY, ACAPI_GetOwnResModule ());
+        badge = PaletteText (ID_PALETTE_STRINGS_BADGE_READ_ONLY);
     }
 
     GS::UniString description = info.summary;
@@ -831,11 +848,11 @@ GS::UniString TapirPalette::GetScriptDescription (const ScriptInfo& info)
     // satisfy it. A key that is absent or malformed shows nothing.
     switch (CheckMinTapirVersion (info)) {
         case ScriptRequirements::MinTapirVersionResult::Satisfied:
-            addLine (GS::UniString::Printf (RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_NEEDS_TAPIR, ACAPI_GetOwnResModule ()),
+            addLine (GS::UniString::Printf (PaletteText (ID_PALETTE_STRINGS_NEEDS_TAPIR),
                 info.minTapirVersion.ToPrintf ()));
             break;
         case ScriptRequirements::MinTapirVersionResult::TooOld:
-            addLine (GS::UniString::Printf (RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_NEEDS_TAPIR_NOT_MET, ACAPI_GetOwnResModule ()),
+            addLine (GS::UniString::Printf (PaletteText (ID_PALETTE_STRINGS_NEEDS_TAPIR_NOT_MET),
                 info.minTapirVersion.ToPrintf (), ADDON_VERSION));
             break;
         default:
@@ -844,10 +861,10 @@ GS::UniString TapirPalette::GetScriptDescription (const ScriptInfo& info)
     if (!info.archicadVersions.IsEmpty ()) {
         const GS::UniString versionList = JoinArchicadVersions (info.archicadVersions);
         if (IsRunningArchicadListed (info)) {
-            addLine (GS::UniString::Printf (RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_TESTED_ON_AC, ACAPI_GetOwnResModule ()),
+            addLine (GS::UniString::Printf (PaletteText (ID_PALETTE_STRINGS_TESTED_ON_AC),
                 versionList.ToPrintf ()));
         } else {
-            addLine (GS::UniString::Printf (RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_TESTED_ON_AC_NOT_MET, ACAPI_GetOwnResModule ()),
+            addLine (GS::UniString::Printf (PaletteText (ID_PALETTE_STRINGS_TESTED_ON_AC_NOT_MET),
                 versionList.ToPrintf (), static_cast<int> (VersionChecker::ArchicadMainVersion ())));
         }
     }
@@ -865,21 +882,21 @@ bool TapirPalette::ConfirmScriptRequirements (const PopUpItemData& popUpItemData
     if (popUpItemData.fileLocation.GetLastLocalName (&name) == NoError) {
         scriptName = name.ToString ();
     }
-    const GS::UniString title = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_REQUIREMENT_TITLE, ACAPI_GetOwnResModule ());
+    const GS::UniString title = PaletteText (ID_PALETTE_STRINGS_REQUIREMENT_TITLE);
 
     switch (CheckMinTapirVersion (info)) {
         case ScriptRequirements::MinTapirVersionResult::Malformed:
-            WriteReport (DG_WARNING, "%T: ignored min-tapir-version \"%T\", it is not a version like 1.8.1.",
+            WriteReport (DG_WARNING, PaletteText (ID_PALETTE_STRINGS_MIN_TAPIR_MALFORMED),
                 scriptName.ToPrintf (), info.minTapirVersion.ToPrintf ());
             break;
         case ScriptRequirements::MinTapirVersionResult::TooOld:
             {
                 const short response = DGAlert (DG_WARNING, title,
-                    GS::UniString::Printf (RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_TAPIR_TOO_OLD_TEXT, ACAPI_GetOwnResModule ()),
+                    GS::UniString::Printf (PaletteText (ID_PALETTE_STRINGS_TAPIR_TOO_OLD_TEXT),
                         scriptName.ToPrintf (), info.minTapirVersion.ToPrintf (), ADDON_VERSION),
                     GS::EmptyUniString,
-                    RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_CHECK_FOR_UPDATES, ACAPI_GetOwnResModule ()),
-                    RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_CANCEL, ACAPI_GetOwnResModule ()));
+                    PaletteText (ID_PALETTE_STRINGS_CHECK_FOR_UPDATES),
+                    PaletteText (ID_PALETTE_STRINGS_CANCEL));
                 if (response == DG_OK) {
                     CheckForUpdates ();
                 }
@@ -891,11 +908,11 @@ bool TapirPalette::ConfirmScriptRequirements (const PopUpItemData& popUpItemData
 
     if (!IsRunningArchicadListed (info)) {
         const short response = DGAlert (DG_WARNING, title,
-            GS::UniString::Printf (RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_AC_NOT_LISTED_TEXT1, ACAPI_GetOwnResModule ()),
+            GS::UniString::Printf (PaletteText (ID_PALETTE_STRINGS_AC_NOT_LISTED_TEXT1),
                 scriptName.ToPrintf (), JoinArchicadVersions (info.archicadVersions).ToPrintf (), static_cast<int> (VersionChecker::ArchicadMainVersion ())),
-            RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_AC_NOT_LISTED_TEXT2, ACAPI_GetOwnResModule ()),
-            RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_RUN_ANYWAY, ACAPI_GetOwnResModule ()),
-            RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_CANCEL, ACAPI_GetOwnResModule ()));
+            PaletteText (ID_PALETTE_STRINGS_AC_NOT_LISTED_TEXT2),
+            PaletteText (ID_PALETTE_STRINGS_RUN_ANYWAY),
+            PaletteText (ID_PALETTE_STRINGS_CANCEL));
         if (response != DG_OK) {
             return false;
         }
@@ -923,7 +940,7 @@ void TapirPalette::ItemToolTipRequested (const DG::ItemHelpEvent& ev, GS::UniStr
         return;
     }
     if (isRunButton) {
-        *toolTipText = RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_RUN_SCRIPT, ACAPI_GetOwnResModule ()) + "\n" + description;
+        *toolTipText = PaletteText (ID_PALETTE_STRINGS_RUN_SCRIPT) + "\n" + description;
     } else {
         *toolTipText = description;
     }
@@ -935,11 +952,11 @@ void TapirPalette::RunShortcutSlot (short slotIndex)
     // path here on purpose: a keyboard-shortcut-triggered action needs to be impossible to miss —
     // a report-log-only warning looks identical to "nothing happened" if the Report window isn't open.
     if (slotIndex < 0 || slotIndex >= ScriptShortcutSlotCount || scriptShortcutSlots[slotIndex].IsEmpty ()) {
-        WriteReport (DG_ERROR, "No script assigned to shortcut slot %d.", (int) (slotIndex + 1));
+        WriteReport (DG_ERROR, PaletteText (ID_PALETTE_STRINGS_SLOT_EMPTY), (int) (slotIndex + 1));
         return;
     }
     if (IsProcessRunning ()) {
-        WriteReport (DG_ERROR, "A script is already running - wait for it to finish before using a shortcut slot.");
+        WriteReport (DG_ERROR, PaletteText (ID_PALETTE_STRINGS_SLOT_SCRIPT_RUNNING));
         return;
     }
     if (isUpdatingAddOn) {
@@ -956,7 +973,7 @@ void TapirPalette::RunShortcutSlot (short slotIndex)
             return;
         }
     }
-    WriteReport (DG_ERROR, "Script assigned to shortcut slot %d could not be found (%d scripts currently listed).",
+    WriteReport (DG_ERROR, PaletteText (ID_PALETTE_STRINGS_SLOT_SCRIPT_NOT_FOUND),
         (int) (slotIndex + 1), (int) scripts.GetSize ());
 }
 
@@ -1042,7 +1059,7 @@ void TapirPalette::ApplyShortcutMenuItemText (short slotIndex)
 
     GS::UniString label = scriptShortcutLabels[slotIndex];
     if (label.IsEmpty ()) {
-        label = GS::UniString::Printf ("Run Script Shortcut %d", (int) (slotIndex + 1));
+        label = GS::UniString::Printf (PaletteText (ID_PALETTE_STRINGS_SHORTCUT_DEFAULT_LABEL), (int) (slotIndex + 1));
     }
 
     API_MenuItemRef itemRef = {};
@@ -1144,7 +1161,7 @@ private:
     void BuildRowItems (DG::PopUp& popUp)
     {
         popUp.AppendItem ();
-        popUp.SetItemText (DG::PopUp::BottomItem, "(unassigned)");
+        popUp.SetItemText (DG::PopUp::BottomItem, PaletteText (ID_PALETTE_STRINGS_UNASSIGNED));
         for (const auto& script : scripts) {
             popUp.AppendItem ();
             popUp.SetItemText (DG::PopUp::BottomItem, script.first);
@@ -1168,7 +1185,7 @@ private:
 
             GS::UniString label = TapirPalette::Instance ().GetShortcutLabel (row);
             if (label.IsEmpty ()) {
-                label = GS::UniString::Printf ("Run Script Shortcut %d", (int) (row + 1));
+                label = GS::UniString::Printf (PaletteText (ID_PALETTE_STRINGS_SHORTCUT_DEFAULT_LABEL), (int) (row + 1));
             }
             labelEdits[row]->SetText (label);
         }
@@ -1498,7 +1515,7 @@ void TapirPalette::KillRunningProcess ()
     const bool found = FindDescendantsOfStartedProcess (runningCommand, childProcessIdsBeforeStart, descendants);
     process.Kill ();
     if (!found) {
-        WriteReport (DG_WARNING, "Could not find the processes the script started, they may keep running.");
+        WriteReport (DG_WARNING, PaletteText (ID_PALETTE_STRINGS_PROCESSES_NOT_FOUND));
     }
     for (const ProcessId descendant : descendants) {
         KillProcess (descendant);
@@ -1537,6 +1554,19 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
             {
                 ForgetPostedTask (this);
                 TapirPalette::Instance ().WriteReport (type, text);
+            }
+        };
+        // The text is read from the resources in Run, on the main thread, not on the reader thread.
+        class ExitCodeReportTask : public GS::Runnable {
+            int exitCode;
+        public:
+            explicit ExitCodeReportTask (int _exitCode) : exitCode(_exitCode)
+            {}
+            virtual void Run ()
+            {
+                ForgetPostedTask (this);
+                TapirPalette::Instance ().WriteReport (DG_INFORMATION,
+                    PaletteText (ID_PALETTE_STRINGS_EXIT_CODE), exitCode);
             }
         };
 
@@ -1618,12 +1648,12 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
             process = {}; // Reset the process to an invalid state
 
             Post (new IconUpdateTask ());
-            Post (new OutputUpdateTask (DG_INFORMATION, "ExitCode: " + GS::ValueToUniString (exitCode)));
+            Post (new ExitCodeReportTask (exitCode));
         }
     };
 
     try {
-        WriteReport (DG_INFORMATION, "Executing %T with uv", filePath.ToPrintf ());
+        WriteReport (DG_INFORMATION, PaletteText (ID_PALETTE_STRINGS_EXECUTING_WITH_UV), filePath.ToPrintf ());
 
         GS::UniString command;
         GS::Array<GS::UniString> argv;
@@ -1675,14 +1705,14 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
             process = GS::Process::Create (command, argv, GS::Process::CreateNoWindow, redirectStandardOutput, redirectStandardInput, redirectStandardError);
         }
         if (!process.IsValid ()) {
-            WriteReport (DG_ERROR, "Failed to start uv process. Ensure it is installed and executable.");
+            WriteReport (DG_ERROR, PaletteText (ID_PALETTE_STRINGS_UV_START_FAILED));
         }
 
         executor.Execute (new UIUpdaterThread (process));
     } catch (const GS::ProcessException&) {
-        WriteReport (DG_ERROR, "Failed to execute %T", filePath.ToPrintf ());
+        WriteReport (DG_ERROR, PaletteText (ID_PALETTE_STRINGS_EXECUTE_FAILED), filePath.ToPrintf ());
     } catch (...) {
-        WriteReport (DG_ERROR, "Unexpected issue while executing %T", filePath.ToPrintf ());
+        WriteReport (DG_ERROR, PaletteText (ID_PALETTE_STRINGS_EXECUTE_UNEXPECTED), filePath.ToPrintf ());
     }
 }
 
@@ -1743,7 +1773,7 @@ static GS::UniString GetUvProjectPath (const IO::Location& baseFolderLoc, const 
             continue;
         }
         if (name == "..") {
-            ACAPI_WriteReport ("Tapir: uvProject must not leave the repository or folder, ignoring it: " + uvProject, false);
+            ACAPI_WriteReport (ReportText (ID_REPORT_STRINGS_UV_PROJECT_OUTSIDE), false, uvProject.ToPrintf ());
             return GS::EmptyUniString;
         }
         projectLoc.AppendToLocal (IO::Name (name));
@@ -1784,11 +1814,11 @@ void TapirPalette::AddScriptsFromRepositories ()
         if (!repo.token.IsEmpty ()) {
             headers.emplace ("Authorization", "Bearer " + repo.token);
         }
-        ACAPI_WriteReport ("Tapir is downloading content from GitHub repository: " + repo.repoOwner + "/" + repo.repoName, false);
+        ACAPI_WriteReport (ReportText (ID_REPORT_STRINGS_DOWNLOADING_REPOSITORY), false, repo.repoOwner.ToPrintf (), repo.repoName.ToPrintf ());
         for (auto kv : GetFilesFromGitHubInRelativeLocation (repo)) {
             const GS::UniString repoLoc = repo.repoOwner + "/" + repo.repoName + "/" + kv.first;
             if (excludeFromDownloadRegex && std::regex_match (repoLoc.ToCStr ().Get (), *excludeFromDownloadRegex)) {
-                ACAPI_WriteReport ("Skipping download of " + repoLoc + " due to exclude pattern", false);
+                ACAPI_WriteReport (ReportText (ID_REPORT_STRINGS_SKIP_DOWNLOAD_EXCLUDED), false, repoLoc.ToPrintf ());
                 continue;
             }
             // A failed download (e.g. the timeout) skips this file only: an exception here used to abort the
@@ -1797,24 +1827,24 @@ void TapirPalette::AddScriptsFromRepositories ()
             try {
                 content = DownloadFileContent (kv.second, headers);
             } catch (const GS::Exception& e) {
-                ACAPI_WriteReport ("Tapir: Failed to download " + repoLoc + ": " + GetExceptionText (e), false);
+                ACAPI_WriteReport (ReportText (ID_REPORT_STRINGS_DOWNLOAD_FAILED_WITH_ERROR), false, repoLoc.ToPrintf (), GetExceptionText (e).ToPrintf ());
                 continue;
             } catch (...) {
-                ACAPI_WriteReport ("Tapir: Failed to download " + repoLoc, false);
+                ACAPI_WriteReport (ReportText (ID_REPORT_STRINGS_DOWNLOAD_FAILED), false, repoLoc.ToPrintf ());
                 continue;
             }
             IO::RelativeLocation relLoc = repoRelativeLoc;
             relLoc.Append (IO::RelativeLocation (kv.first));
             const IO::Location fileLoc = SaveBuiltInScript (tapirTempFolder, relLoc, content);
-            ACAPI_WriteReport ("Downloaded " + repoLoc, false);
+            ACAPI_WriteReport (ReportText (ID_REPORT_STRINGS_DOWNLOADED), false, repoLoc.ToPrintf ());
             if (excludeRegex) {
                 if (std::regex_match (kv.first.ToCStr ().Get (), *excludeRegex)) {
-                    ACAPI_WriteReport ("Skipping use of " + repoLoc + " due to exclude pattern", false);
+                    ACAPI_WriteReport (ReportText (ID_REPORT_STRINGS_SKIP_USE_EXCLUDED), false, repoLoc.ToPrintf ());
                     continue;
                 }
             } else if (includeRegex) {
                 if (!std::regex_match (kv.first.ToCStr ().Get (), *includeRegex)) {
-                    ACAPI_WriteReport ("Skipping use of " + repoLoc + " due to include pattern", false);
+                    ACAPI_WriteReport (ReportText (ID_REPORT_STRINGS_SKIP_USE_NOT_INCLUDED), false, repoLoc.ToPrintf ());
                     continue;
                 }
             } else {
@@ -1829,7 +1859,7 @@ void TapirPalette::AddScriptsFromRepositories ()
                     continue;
                 }
             }
-            ACAPI_WriteReport ("Added to the popup: " + repoLoc, false);
+            ACAPI_WriteReport (ReportText (ID_REPORT_STRINGS_ADDED_TO_POPUP), false, repoLoc.ToPrintf ());
             GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (fileLoc, kv.first, &repo);
             popUpItemData->uvProjectPath = uvProjectPath;
             if (PrepareScript (*popUpItemData)) {
@@ -1869,7 +1899,7 @@ void TapirPalette::AddScriptsFromLocalFolders ()
 
         const IO::Location folderLoc (localFolder.path);
         if (!IsValidLocation (folderLoc)) {
-            ACAPI_WriteReport ("Tapir: Local script folder not found, skipping it: " + localFolder.path, false);
+            ACAPI_WriteReport (ReportText (ID_REPORT_STRINGS_LOCAL_FOLDER_NOT_FOUND), false, localFolder.path.ToPrintf ());
             continue;
         }
 
@@ -1883,18 +1913,18 @@ void TapirPalette::AddScriptsFromLocalFolders ()
 
         const GS::UniString uvProjectPath = GetUvProjectPath (folderLoc, localFolder.uvProject);
 
-        ACAPI_WriteReport ("Tapir is loading scripts from local folder: " + localFolder.path, false);
+        ACAPI_WriteReport (ReportText (ID_REPORT_STRINGS_LOADING_LOCAL_FOLDER), false, localFolder.path.ToPrintf ());
         std::map<GS::UniString, IO::Location> files;
         CollectFilesInFolder (folderLoc, GS::EmptyUniString, files);
         for (const auto& kv : files) {
             if (excludeRegex) {
                 if (std::regex_match (kv.first.ToCStr ().Get (), *excludeRegex)) {
-                    ACAPI_WriteReport ("Skipping use of " + kv.first + " due to exclude pattern", false);
+                    ACAPI_WriteReport (ReportText (ID_REPORT_STRINGS_SKIP_USE_EXCLUDED), false, kv.first.ToPrintf ());
                     continue;
                 }
             } else if (includeRegex) {
                 if (!std::regex_match (kv.first.ToCStr ().Get (), *includeRegex)) {
-                    ACAPI_WriteReport ("Skipping use of " + kv.first + " due to include pattern", false);
+                    ACAPI_WriteReport (ReportText (ID_REPORT_STRINGS_SKIP_USE_NOT_INCLUDED), false, kv.first.ToPrintf ());
                     continue;
                 }
             } else {
@@ -1910,7 +1940,7 @@ void TapirPalette::AddScriptsFromLocalFolders ()
                     continue;
                 }
             }
-            ACAPI_WriteReport ("Added to the popup: " + kv.first + " (" + sourceName + ")", false);
+            ACAPI_WriteReport (ReportText (ID_REPORT_STRINGS_ADDED_TO_POPUP_FROM), false, kv.first.ToPrintf (), sourceName.ToPrintf ());
             GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (kv.second);
             popUpItemData->sourceName = sourceName;
             popUpItemData->uvProjectPath = uvProjectPath;
@@ -1980,10 +2010,10 @@ void TapirPalette::SetRunButtonIcon ()
 void TapirPalette::SetUpdateButtonText ()
 {
     if (VersionChecker::IsUsingLatestVersion ()) {
-        checkForUpdatesButton.SetText (RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_CHECK_BUTTON_TEXT, ACAPI_GetOwnResModule ()));
+        checkForUpdatesButton.SetText (UpdateText (ID_AUTOUPDATE_CHECK_BUTTON_TEXT));
     } else {
         checkForUpdatesButton.SetText (GS::UniString::Printf (
-            RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_UPDATE_BUTTON_TEXT, ACAPI_GetOwnResModule ()),
+            UpdateText (ID_AUTOUPDATE_UPDATE_BUTTON_TEXT),
             VersionChecker::LatestVersion ().ToPrintf ()));
     }
 }
@@ -1997,7 +2027,7 @@ void TapirPalette::ApplyUpdateMenuItemState ()
     // The text from the resource ("Check for Updates...") stays until a newer version is found.
     if (!VersionChecker::IsUsingLatestVersion ()) {
         GS::UniString label = GS::UniString::Printf (
-            RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_UPDATE_MENU_TEXT, ACAPI_GetOwnResModule ()),
+            UpdateText (ID_AUTOUPDATE_UPDATE_MENU_TEXT),
             VersionChecker::LatestVersion ().ToPrintf ());
         ACAPI_MenuItem_SetMenuItemText (&itemRef, nullptr, &label);
     }
@@ -2015,24 +2045,24 @@ void TapirPalette::ApplyUpdateMenuItemState ()
 void TapirPalette::CheckForUpdates ()
 {
     if (!VersionChecker::IsCheckCompleted ()) {
-        DGAlert (DG_INFORMATION, "Tapir Update",
-            "Tapir is still checking GitHub for the latest release.",
-            "Please try again in a moment.",
-            "OK");
+        DGAlert (DG_INFORMATION, UpdateText (ID_AUTOUPDATE_ALERT_TITLE),
+            UpdateText (ID_AUTOUPDATE_STILL_CHECKING_TEXT1),
+            UpdateText (ID_AUTOUPDATE_STILL_CHECKING_TEXT2),
+            UpdateText (ID_AUTOUPDATE_OK_BUTTON));
     } else if (!VersionChecker::IsUsingLatestVersion ()) {
         UpdateAddOn ();
     } else if (VersionChecker::IsNewerVersionWithoutAddOn ()) {
-        DGAlert (DG_INFORMATION, "Tapir Update",
-            GS::UniString::Printf ("Tapir %T is available, but not yet for Archicad %d.",
+        DGAlert (DG_INFORMATION, UpdateText (ID_AUTOUPDATE_ALERT_TITLE),
+            GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_NOT_YET_FOR_AC_TEXT1),
                 VersionChecker::LatestVersion ().ToPrintf (), static_cast<int> (VersionChecker::ArchicadMainVersion ())),
-            GS::UniString::Printf ("You are using Tapir %s.", ADDON_VERSION),
-            "OK");
+            GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_NOT_YET_FOR_AC_TEXT2), ADDON_VERSION),
+            UpdateText (ID_AUTOUPDATE_OK_BUTTON));
     } else {
         DGAlert (DG_INFORMATION,
-            RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_TITLE, ACAPI_GetOwnResModule ()),
-            GS::UniString::Printf (RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_TEXT, ACAPI_GetOwnResModule ()), ADDON_VERSION),
+            UpdateText (ID_AUTOUPDATE_LATESTVERSION_ALERT_TITLE),
+            GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_LATESTVERSION_ALERT_TEXT), ADDON_VERSION),
             GS::EmptyUniString,
-            RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_LATESTVERSION_ALERT_BUTTON, ACAPI_GetOwnResModule ()));
+            UpdateText (ID_AUTOUPDATE_LATESTVERSION_ALERT_BUTTON));
     }
 }
 
@@ -2173,7 +2203,7 @@ static bool StartInstaller (const IO::Location& installerFile, const IO::Locatio
         }
     }
 
-    error = "Windows error code " + GS::ValueToUniString (static_cast<GS::UInt32> (lastError));
+    error = GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_ERROR_WINDOWS_CODE), GS::ValueToUniString (static_cast<GS::UInt32> (lastError)).ToPrintf ());
     return false;
 }
 
@@ -2278,7 +2308,7 @@ static bool StartInstaller (const IO::Location& installerFile, const IO::Locatio
     bool installerAppExists = false;
     if (!RunAndWait ("/usr/bin/ditto", { "-x", "-k", installerPath, installerFolderPath }) ||
         IO::fileSystem.Contains (installerApp, &installerAppExists) != NoError || !installerAppExists) {
-        error = "Failed to extract " + installerPath;
+        error = GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_ERROR_EXTRACT_FAILED), installerPath.ToPrintf ());
         return false;
     }
 
@@ -2289,7 +2319,7 @@ static bool StartInstaller (const IO::Location& installerFile, const IO::Locatio
     installerExecutable.AppendToLocal (IO::Name ("MacOS"));
     installerExecutable.AppendToLocal (IO::Name ("TapirInstaller"));
     if (!IsAppleSiliconMac () && LacksIntelCode (installerExecutable)) {
-        error = "This Tapir Installer does not run on Macs with an Intel processor.";
+        error = UpdateText (ID_AUTOUPDATE_ERROR_NO_INTEL_CODE);
         return false;
     }
 
@@ -2297,7 +2327,7 @@ static bool StartInstaller (const IO::Location& installerFile, const IO::Locatio
     GS::Array<GS::UniString> openArguments = { "-n", installerAppPath, "--args" };
     openArguments.Append (arguments);
     if (!RunAndWait ("/usr/bin/open", openArguments)) {
-        error = "Failed to open " + installerAppPath;
+        error = GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_ERROR_OPEN_FAILED), installerAppPath.ToPrintf ());
         return false;
     }
 
@@ -2342,7 +2372,7 @@ static bool CreateInstallerFolder (const GS::UniString& processIdStr, IO::Locati
     if (IO::fileSystem.CreateFolderTree (installerFolder) != NoError) {
         GS::UniString installerFolderPath;
         installerFolder.ToPath (&installerFolderPath);
-        error = "Cannot create " + installerFolderPath;
+        error = GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_ERROR_CANNOT_CREATE), installerFolderPath.ToPrintf ());
         return false;
     }
 
@@ -2416,12 +2446,12 @@ bool TapirPalette::UpdateAddOn ()
     }
 
     short response = DGAlert (DG_WARNING,
-        RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_NEWVERSION_ALERT_TITLE, ACAPI_GetOwnResModule ()),
-        GS::UniString::Printf (RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_NEWVERSION_ALERT_TEXT1, ACAPI_GetOwnResModule ()),
+        UpdateText (ID_AUTOUPDATE_NEWVERSION_ALERT_TITLE),
+        GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_NEWVERSION_ALERT_TEXT1),
             ADDON_VERSION, VersionChecker::LatestVersion ().ToPrintf ()),
-        RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_NEWVERSION_ALERT_TEXT2, ACAPI_GetOwnResModule ()),
-        RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_NEWVERSION_ALERT_BUTTON1, ACAPI_GetOwnResModule ()),
-        RSGetIndString (ID_AUTOUPDATE_STRINGS, ID_AUTOUPDATE_NEWVERSION_ALERT_BUTTON2, ACAPI_GetOwnResModule ()));
+        UpdateText (ID_AUTOUPDATE_NEWVERSION_ALERT_TEXT2),
+        UpdateText (ID_AUTOUPDATE_NEWVERSION_ALERT_BUTTON1),
+        UpdateText (ID_AUTOUPDATE_NEWVERSION_ALERT_BUTTON2));
 
     if (response != DG_OK) {
         return false;
@@ -2429,8 +2459,8 @@ bool TapirPalette::UpdateAddOn ()
 
     const GS::UniString& installerDownloadUrl = VersionChecker::LatestInstallerDownloadUrl ();
     if (installerDownloadUrl.IsEmpty ()) {
-        DGAlert (DG_ERROR, "Tapir Update", "The Tapir Installer is missing from the latest release.",
-            "Download the update from https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest", "OK");
+        DGAlert (DG_ERROR, UpdateText (ID_AUTOUPDATE_ALERT_TITLE), UpdateText (ID_AUTOUPDATE_INSTALLER_MISSING_TEXT1),
+            UpdateText (ID_AUTOUPDATE_INSTALLER_MISSING_TEXT2), UpdateText (ID_AUTOUPDATE_OK_BUTTON));
         return false;
     }
 
@@ -2444,7 +2474,7 @@ bool TapirPalette::UpdateAddOn ()
     GS::UniString error;
     IO::Location installerFolder;
     if (!CreateInstallerFolder (processIdStr, installerFolder, error)) {
-        DGAlert (DG_ERROR, "Tapir Update", "Failed to download the Tapir Installer.", error, "OK");
+        DGAlert (DG_ERROR, UpdateText (ID_AUTOUPDATE_ALERT_TITLE), UpdateText (ID_AUTOUPDATE_DOWNLOAD_FAILED), error, UpdateText (ID_AUTOUPDATE_OK_BUTTON));
         return false;
     }
 
@@ -2457,7 +2487,7 @@ bool TapirPalette::UpdateAddOn ()
 
     DownloadResult downloadResult = DownloadResult::Failed;
     {
-        DownloadProcessWindow processWindow ("Tapir Update", "Downloading the Tapir Installer...");
+        DownloadProcessWindow processWindow (UpdateText (ID_AUTOUPDATE_ALERT_TITLE), UpdateText (ID_AUTOUPDATE_DOWNLOADING));
         downloadResult = DownloadBinaryFile (installerDownloadUrl, installerFile, [&processWindow] (GS::UInt64 downloadedSize, GS::UInt64 totalSize) {
             return processWindow.SetProgress (downloadedSize, totalSize);
         }, error);
@@ -2466,7 +2496,7 @@ bool TapirPalette::UpdateAddOn ()
         return false;
     }
     if (downloadResult != DownloadResult::Succeeded) {
-        DGAlert (DG_ERROR, "Tapir Update", "Failed to download the Tapir Installer.", error, "OK");
+        DGAlert (DG_ERROR, UpdateText (ID_AUTOUPDATE_ALERT_TITLE), UpdateText (ID_AUTOUPDATE_DOWNLOAD_FAILED), error, UpdateText (ID_AUTOUPDATE_OK_BUTTON));
         return false;
     }
 
@@ -2482,13 +2512,13 @@ bool TapirPalette::UpdateAddOn ()
         "--archicadPort", GS::ValueToUniString (GetConnectionPort ()),
         "--archicadPid", processIdStr };
     if (!StartInstaller (installerFile, addOnLocation, installerArguments, error)) {
-        const GS::UniString manualUpdateText = "You can also download the new version from https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest and replace the Add-On manually.";
+        const GS::UniString manualUpdateText = UpdateText (ID_AUTOUPDATE_MANUAL_UPDATE);
         if (error.IsEmpty ()) {
             // No error (Windows only): the user declined the administrator prompt, which the Add-On's folder needs.
-            DGAlert (DG_INFORMATION, "Tapir Update", "The update was cancelled.",
-                "The Tapir Add-On is in a folder that only an administrator can change. " + manualUpdateText, "OK");
+            DGAlert (DG_INFORMATION, UpdateText (ID_AUTOUPDATE_ALERT_TITLE), UpdateText (ID_AUTOUPDATE_CANCELLED),
+                UpdateText (ID_AUTOUPDATE_NEEDS_ADMINISTRATOR) + " " + manualUpdateText, UpdateText (ID_AUTOUPDATE_OK_BUTTON));
         } else {
-            DGAlert (DG_ERROR, "Tapir Update", "Failed to start the Tapir Installer.", error + "\n\n" + manualUpdateText, "OK");
+            DGAlert (DG_ERROR, UpdateText (ID_AUTOUPDATE_ALERT_TITLE), UpdateText (ID_AUTOUPDATE_INSTALLER_START_FAILED), error + "\n\n" + manualUpdateText, UpdateText (ID_AUTOUPDATE_OK_BUTTON));
         }
         return false;
     }
@@ -2622,8 +2652,8 @@ bool TapirPalette::AddNewScript ()
     ftMan.AddType (FTM::FileType ("Python Script", "py", '    ', '    ', 0), gid);
     DG::FileDialog dlg (DG::FileDialog::OpenMultiFile);
     dlg.AddFilter (gid);
-    dlg.SetHeader (RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_SELECT_SCRIPTS_TITLE, ACAPI_GetOwnResModule ()));
-    dlg.SetOKButtonText (RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_SELECT_SCRIPTS_BUTTON, ACAPI_GetOwnResModule ()));
+    dlg.SetHeader (PaletteText (ID_PALETTE_STRINGS_SELECT_SCRIPTS_TITLE));
+    dlg.SetOKButtonText (PaletteText (ID_PALETTE_STRINGS_SELECT_SCRIPTS_BUTTON));
     if (!dlg.Invoke ()) {
         return false;
     }

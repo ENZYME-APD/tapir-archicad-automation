@@ -3,6 +3,8 @@
 Give any loaded lamp library part name in libraryPartName, e.g. one listed by GetAvailableLibraryParts.
 The lamp starts from the library part's own default size and parameters; GDL 'parameters' given by
 name override them, and 'layerIndex' puts it on a layer (here the first layer of the project).
+A top-level 'databaseId' (e.g. the one CreateWorksheets returns) places the lamps in that database
+instead of the current one, as in the CreateObjects example.
 """
 import aclib
 

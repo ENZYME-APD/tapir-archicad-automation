@@ -134,6 +134,21 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             int firstOutputIndex,
             List<JObject> details);
 
+        // Lets a tool write some of its geometry inputs on Execute too (e.g.
+        // the position of a door along its wall): one JObject of Add-On keys
+        // per element in ElementGuid (null where nothing is written), or a
+        // null list for none. They win over the JSON, as on Create. False
+        // (with an error added) when the inputs are invalid.
+        protected virtual bool TryGetExecuteGeometry(
+            IGH_DataAccess da,
+            int firstInputIndex,
+            int count,
+            out List<JObject> geometry)
+        {
+            geometry = null;
+            return true;
+        }
+
         // The dialog panels that get a JSON input and output, in the dialog's
         // order. Saved definitions find parameters by position, so this list
         // is append-only: never reorder or remove a panel, and add new ones at
@@ -627,6 +642,11 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 return;
             }
 
+            if (!TryGetExecuteGeometry(da, FirstGeometryIndex, count, out var executeGeometry))
+            {
+                return;
+            }
+
             var errors = guids.Select(g => g == null ? "Invalid element GUID." : "").ToList();
 
             // The Modify commands write the tool's fields into whatever element
@@ -644,7 +664,8 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                     continue;
                 }
                 PrepareSettings(settings, notes);
-                AddWriteItems(inputs, i, guids[i], settings, null, createOnly, notes, modifyItems, detailItems);
+                AddWriteItems(
+                    inputs, i, guids[i], settings, executeGeometry?[i], createOnly, notes, modifyItems, detailItems);
             }
 
             AddDetailsTypeKey(targets, detailItems, errors);

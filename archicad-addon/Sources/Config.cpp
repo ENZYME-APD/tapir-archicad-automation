@@ -5,6 +5,7 @@
 #include "APIEnvir.h"
 #include "ACAPinc.h"
 #include "UvManager.hpp"
+#include "ResourceIds.hpp"
 
 Config::Repository Config::Repository::FromOS (const GS::ObjectState& os) {
     Repository repo;
@@ -97,7 +98,7 @@ void Config::LoadFromFile (IO::File& file)
     file.Close ();
     if (err != NoError || os.IsEmpty ()) {
         ACAPI_WriteReport (
-            "Tapir::Config: Failed to load config file: %T",
+            RSGetIndString (ID_REPORT_STRINGS, ID_REPORT_STRINGS_CONFIG_LOAD_FAILED, ACAPI_GetOwnResModule ()),
             false,
             file.GetLocation().ToDisplayText().ToPrintf()
         );
@@ -153,7 +154,7 @@ void Config::SaveToFile (IO::File& file) const
     file.Close ();
     if (err != NoError) {
         ACAPI_WriteReport (
-            "Tapir::Config: Failed to save config file: %T",
+            RSGetIndString (ID_REPORT_STRINGS, ID_REPORT_STRINGS_CONFIG_SAVE_FAILED, ACAPI_GetOwnResModule ()),
             false,
             file.GetLocation().ToDisplayText().ToPrintf()
         );

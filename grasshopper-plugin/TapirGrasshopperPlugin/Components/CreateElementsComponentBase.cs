@@ -11,6 +11,7 @@ using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Attributes;
 using TapirGrasshopperPlugin.Types.Element;
 using TapirGrasshopperPlugin.Types.GuidObjects;
+using TapirGrasshopperPlugin.Types.Navigator;
 
 namespace TapirGrasshopperPlugin.Components
 {
@@ -69,7 +70,11 @@ namespace TapirGrasshopperPlugin.Components
             // for all), written as a JSON array. Unlike the point trees they
             // can follow the first field. A null item is written as null.
             NumbersTree,
-            IntegersTree
+            IntegersTree,
+            // A single database identifier (e.g. the DatabaseId output of
+            // CreateWorksheets), written as the command's top-level JsonKey,
+            // not into the items. Only supported in TrailingFields.
+            DatabaseId
         }
 
         protected sealed class Field
@@ -223,7 +228,7 @@ namespace TapirGrasshopperPlugin.Components
 
                 foreach (var field in TrailingFields)
                 {
-                    var description = field.Kind == FieldKind.AdditionalSettings
+                    var description = field.Kind == FieldKind.AdditionalSettings || field.Kind == FieldKind.DatabaseId
                         ? field.Description
                         : field.Description + " Input only 1 to use the same value for all elements. Optional.";
                     descriptors.Add(
@@ -275,6 +280,9 @@ namespace TapirGrasshopperPlugin.Components
                 case FieldKind.AttributeGuid:
                     return NewInputParam(
                         new Param_GenericObject(), field.InputName, description, "genericList", GH_ParamAccess.list, optional);
+                case FieldKind.DatabaseId:
+                    return NewInputParam(
+                        new Param_GenericObject(), field.InputName, description, "genericItem", GH_ParamAccess.item, optional);
                 case FieldKind.PointsTree2D:
                 case FieldKind.PointsTree3D:
                     return NewInputParam(
@@ -937,7 +945,8 @@ namespace TapirGrasshopperPlugin.Components
             }
             foreach (var trailingField in TrailingFields)
             {
-                if (trailingField.Kind != FieldKind.AdditionalSettings)
+                if (trailingField.Kind != FieldKind.AdditionalSettings &&
+                    trailingField.Kind != FieldKind.DatabaseId)
                 {
                     typedInputs.Add(trailingField);
                 }
@@ -1033,6 +1042,29 @@ namespace TapirGrasshopperPlugin.Components
                 itemsArray.Add(item);
             }
             var parameters = new JObject { [ArrayKey] = itemsArray };
+
+            // The top-level database inputs; a hidden or unconnected one is left out.
+            foreach (var field in TrailingFields)
+            {
+                if (field.Kind != FieldKind.DatabaseId)
+                {
+                    continue;
+                }
+                var inputIndex = IndexOfInput(field.InputName);
+                if (inputIndex < 0 ||
+                    !da.TryGet(inputIndex, out GH_ObjectWrapper databaseWrapper) ||
+                    databaseWrapper?.Value == null)
+                {
+                    continue;
+                }
+                var databaseId = GuidObject<DatabaseGuidObject>.CreateFromWrapper(databaseWrapper);
+                if (databaseId == null)
+                {
+                    this.AddError($"Invalid value in the {field.InputName} input.");
+                    return;
+                }
+                parameters[field.JsonKey] = new JObject { ["guid"] = databaseId.Guid };
+            }
 
             var embedMetadata = false;
             var replaceExisting = false;

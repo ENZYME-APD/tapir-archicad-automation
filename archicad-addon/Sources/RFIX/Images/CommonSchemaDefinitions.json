@@ -17288,26 +17288,45 @@
             "Skylight", "CornerWindow", "WallEnd",
             "DuctBranch", "DuctTerminal", "DuctAccessory", "DuctFitting", "DuctFlexibleSegment",
             "CableCarrierBranch", "CableCarrierFitting",
-            "PipeBranch", "PipeTerminal", "PipeAccessory", "PipeFitting", "Equipment"
+            "PipeBranch", "PipeTerminal", "PipeAccessory", "PipeFitting", "Equipment",
+            "AllTypes"
         ]
     },
     "GraphicOverrideCriterion": {
         "type": "object",
-        "description": "Structured conditions of a graphic override rule, turned into Archicad's criterion XML (an alternative to criterionXML). Give exactly one property. 'and'/'or' combine a flat list of other conditions (no nesting, see their description). 'elementType' filters by the tool an element was created with; 'all3DTypes'/'all2DTypes' match every 3D or 2D element. The other properties are conditions of Archicad's criteria editor: classification, layer and Model View, Construction, Positioning, Plan and Section, Surfaces and Materials, ID and Categories, Geometry, custom properties, and fields of the Wall, Column, Beam, Slab, Roof, Shell, Object/Lamp, Door/Window, Opening, Curtain Wall and Stair tools. Their identifiers were captured from rules made in the criteria editor of Archicad 29; Archicad 27 keeps the generated rules as well. Not available: text content, the line pen of a dimension, hotlinked modules and Xrefs, and the MEP system (their stored format is not decoded yet).",
+        "description": "Structured conditions of a graphic override rule, turned into Archicad's criterion XML (an alternative to criterionXML). Give exactly one property (classificationSystem and libraryPartSubtype go next to the condition they belong to). 'and'/'or' combine other conditions, nested at most three levels like the rows of the criteria editor (see their description). GetGraphicOverrideRules returns this shape with includeCriterion. 'elementType' filters by the tool an element was created with; 'all3DTypes'/'all2DTypes' match every 3D or 2D element. The other properties are conditions of Archicad's criteria editor: classification, layer and Model View, Construction, Positioning, Plan and Section, Surfaces and Materials, ID and Categories, Geometry, custom properties, and fields of the Wall, Column, Beam, Slab, Roof, Shell, Object/Lamp, Door/Window, Opening, Curtain Wall and Stair tools. Their identifiers were captured from rules made in the criteria editor of Archicad 29; Archicad 27 keeps the generated rules as well. Not available: text content, the line pen of a dimension, hotlinked modules and Xrefs, and the MEP system (their stored format is not decoded yet).",
         "properties": {
             "and": {
                 "type": "array",
-                "description": "Matches if all of the nested criteria match. The nested criteria must all be leaves (elementType, classification, layer*, ...) - an 'and'/'or' nested inside this array is rejected, ArchiCAD's criteria editor does not reliably support that depth of nesting.",
+                "description": "Matches if all of the nested criteria match. Nesting follows the criteria editor's table, at most three levels: the top 'and' holds the rows, a row with several values is an 'or' (values joined with 'or') or an 'and' (joined with 'and'), and values joined with 'and' within an 'or' row are one more 'and'. A deeper 'and'/'or' is rejected.",
                 "items": { "$ref": "#/GraphicOverrideCriterion" }
             },
             "or": {
                 "type": "array",
-                "description": "Matches if any of the nested criteria match. The nested criteria must all be leaves (elementType, classification, layer*, ...) - an 'and'/'or' nested inside this array is rejected, ArchiCAD's criteria editor does not reliably support that depth of nesting.",
+                "description": "Matches if any of the nested criteria match. As a row of the criteria editor's table: the values of one condition joined with 'or'. Nested at most three levels, see 'and'.",
                 "items": { "$ref": "#/GraphicOverrideCriterion" }
+            },
+            "criterionXML": {
+                "type": "string",
+                "description": "One condition in Archicad's criterion XML: a <ClassGuid> followed by the condition's element, as GetGraphicOverrideRules returns a condition it does not decode. Written into the criterion unchanged."
             },
             "elementType": {
                 "$ref": "#/GraphicOverrideElementType",
-                "description": "Matches elements created with this tool."
+                "description": "Matches elements created with this tool. 'AllTypes' matches elements of every type."
+            },
+            "elementTypeNot": {
+                "$ref": "#/GraphicOverrideElementType",
+                "description": "Matches elements not created with this tool (the criteria editor's 'is not'). 'AllTypes' is not allowed here."
+            },
+            "libraryPartSubtype": {
+                "type": "object",
+                "description": "Narrows elementType or elementTypeNot to a library part subtype of the tool, as the criteria editor stores it: the subtype's main and revision guid. GetGraphicOverrideRules returns it for the tools it decodes.",
+                "properties": {
+                    "mainGuid": { "type": "string" },
+                    "revGuid": { "type": "string" }
+                },
+                "additionalProperties": false,
+                "required": [ "mainGuid", "revGuid" ]
             },
             "classification": {
                 "type": "string",
@@ -18387,6 +18406,10 @@
             "criterionXML": {
                 "type": "string",
                 "description": "The criterion of the rule, in the XML format Archicad saves override rules in. Change its values and pass it to CreateGraphicOverrideRules or ModifyGraphicOverrideRules to make similar rules."
+            },
+            "criterion": {
+                "$ref": "#/GraphicOverrideCriterion",
+                "description": "The criterion as structured conditions, returned with includeCriterion. It can be passed to CreateGraphicOverrideRules or ModifyGraphicOverrideRules as it is. The top 'and' holds the rows of the criteria editor's table; a row with several values is an 'or' or 'and' of them, and values joined with 'and' within an 'or' row are one more 'and'. A condition that is not decoded yet is a {\"criterionXML\": ...} leaf, written back unchanged. Left out when criterionXML is not in the format Archicad keeps rules in."
             },
             "style": {
                 "$ref": "#/GraphicOverrideStyle"
