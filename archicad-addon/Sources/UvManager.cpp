@@ -8,10 +8,17 @@
 #include "FileSystem.hpp"
 #include "Folder.hpp"
 #include "Config.hpp"
+#include "ResourceIds.hpp"
 #include <vector>
 #include <string>
 #include <regex>
 
+
+// The texts of the user interface, from the localized resources (RINT/AddOn.grc, see LOCALIZATION.md)
+static GS::UniString UvText (Int32 index)
+{
+    return RSGetIndString (ID_UV_STRINGS, index, ACAPI_GetOwnResModule ());
+}
 
 static void OpenWebpage (const GS::UniString& webpage)
 {
@@ -99,10 +106,10 @@ static GS::UniString GetValidPathIfSufficient (const GS::UniString& executablePa
     }
 
     if (IsVersionSufficient (ParseVersionString (versionOutput))) {
-        ACAPI_WriteReport ("Tapir found a valid 'uv' executable at: %T (Version: %T)", false, executablePath.ToPrintf (), versionOutput.ToPrintf ());
+        ACAPI_WriteReport (UvText (ID_UV_STRINGS_FOUND_VALID), false, executablePath.ToPrintf (), versionOutput.ToPrintf ());
         return executablePath;
     } else {
-        ACAPI_WriteReport ("Tapir found an outdated 'uv' at: %T (Version: %T). Ignoring.", false, executablePath.ToPrintf (), versionOutput.ToPrintf ());
+        ACAPI_WriteReport (UvText (ID_UV_STRINGS_FOUND_OUTDATED), false, executablePath.ToPrintf (), versionOutput.ToPrintf ());
         return GS::EmptyUniString;
     }
 }
@@ -151,7 +158,7 @@ static GS::UniString FindValidUvExecutablePath ()
         }
     }
 
-    ACAPI_WriteReport ("Tapir could not find a 'uv' installation with version 0.7.0 or newer.", true);
+    ACAPI_WriteReport (UvText (ID_UV_STRINGS_NOT_FOUND_REPORT), true);
     return GS::EmptyUniString;
 }
 
@@ -165,12 +172,9 @@ GS::UniString UvManager::GetUvExecutablePath ()
         } else {
             static bool alertOnce = true;
             if (alertOnce) {
-                DGAlert (DG_WARNING, "Configured 'uv' Executable Invalid",
-                    GS::UniString::Printf (
-                        "'uv' executable path configured in Tapir settings is invalid or points to an outdated version:\n\n%T\n\n"
-                        "Tapir will attempt to find a valid 'uv' installation automatically.",
-                        uvLocationFromConfigFile.ToPrintf ()),
-                    "", "OK");
+                DGAlert (DG_WARNING, UvText (ID_UV_STRINGS_CONFIGURED_INVALID_TITLE),
+                    GS::UniString::Printf (UvText (ID_UV_STRINGS_CONFIGURED_INVALID_TEXT), uvLocationFromConfigFile.ToPrintf ()),
+                    "", UvText (ID_UV_STRINGS_OK));
                 alertOnce = false;
             }
         }
@@ -181,10 +185,10 @@ GS::UniString UvManager::GetUvExecutablePath ()
         return uvPath;
     }
 
-    short response = DGAlert (DG_INFORMATION, "Dependency Missing: 'uv'",
-        "'uv' (version 0.7.0 or newer) is required to run Python scripts but it was not found on your system.",
-        "How would you like to proceed?",
-        "Install for me", "Open Instructions", "Cancel");
+    short response = DGAlert (DG_INFORMATION, UvText (ID_UV_STRINGS_MISSING_TITLE),
+        UvText (ID_UV_STRINGS_MISSING_TEXT1),
+        UvText (ID_UV_STRINGS_MISSING_TEXT2),
+        UvText (ID_UV_STRINGS_INSTALL_FOR_ME), UvText (ID_UV_STRINGS_OPEN_INSTRUCTIONS), UvText (ID_UV_STRINGS_CANCEL));
 
     if (response == 1) { // "Install for me"
         if (AttemptAutomaticInstallation ()) {
@@ -216,25 +220,30 @@ GS::Array<GS::UniString> UvManager::GetPythonSelectionArgs ()
         if (IO::fileSystem.Contains (IO::Location (pythonLocationFromConfigFile), &exists) != NoError || !exists) {
             static bool alertOnce = true;
             if (alertOnce) {
-                DGAlert (DG_WARNING, "Configured Python Interpreter Not Found",
-                    GS::UniString::Printf (
-                        "The Python interpreter path configured in Tapir settings does not exist:\n\n%T\n\n"
-                        "'uv' will select a Python interpreter automatically.",
-                        pythonLocationFromConfigFile.ToPrintf ()),
-                    "", "OK");
+                DGAlert (DG_WARNING, UvText (ID_UV_STRINGS_PYTHON_NOT_FOUND_TITLE),
+                    GS::UniString::Printf (UvText (ID_UV_STRINGS_PYTHON_NOT_FOUND_TEXT), pythonLocationFromConfigFile.ToPrintf ()),
+                    "", UvText (ID_UV_STRINGS_OK));
                 alertOnce = false;
             }
             return {};
         }
     }
 
-    ACAPI_WriteReport ("Tapir runs Python scripts with the configured interpreter: %T", false, pythonLocationFromConfigFile.ToPrintf ());
+    ACAPI_WriteReport (UvText (ID_UV_STRINGS_USING_PYTHON), false, pythonLocationFromConfigFile.ToPrintf ());
     return { "--python", pythonLocationFromConfigFile };
+}
+
+// "<the report header>\n<prefix> <message>", the way TapirPalette::WriteReport writes into the Report window
+static GS::UniString GetScriptReportText (Int32 prefixIndex, Int32 messageIndex)
+{
+    return RSGetIndString (ID_REPORT_STRINGS, ID_REPORT_STRINGS_SCRIPT_REPORT_HEADER, ACAPI_GetOwnResModule ()) + "\n" +
+        RSGetIndString (ID_REPORT_STRINGS, prefixIndex, ACAPI_GetOwnResModule ()) + " " +
+        UvText (messageIndex);
 }
 
 bool UvManager::AttemptAutomaticInstallation ()
 {
-    ACAPI_WriteReport ("----- Tapir Script Execution Report -----\n" "INFO: Attempting to run the official uv installer script...", false);
+    ACAPI_WriteReport (GetScriptReportText (ID_REPORT_STRINGS_INFO_PREFIX, ID_UV_STRINGS_INSTALL_STARTING), false);
 
 #ifdef WINDOWS
     const GS::UniString command = "powershell -ExecutionPolicy ByPass -c \"irm https://astral.sh/uv/install.ps1 | iex\"";
@@ -245,21 +254,19 @@ bool UvManager::AttemptAutomaticInstallation ()
     int result = system (command.ToCStr ().Get ());
 
     if (result == 0) {
-        ACAPI_WriteReport ("----- Tapir Script Execution Report -----\n" "INFO: uv installer script finished successfully.", false);
+        ACAPI_WriteReport (GetScriptReportText (ID_REPORT_STRINGS_INFO_PREFIX, ID_UV_STRINGS_INSTALL_FINISHED), false);
         if (!FindValidUvExecutablePath ().IsEmpty ()) {
-            DGAlert (DG_INFORMATION, "Installation Successful", "'uv' has been installed and is ready to use.", "", "OK");
+            DGAlert (DG_INFORMATION, UvText (ID_UV_STRINGS_INSTALL_SUCCESS_TITLE), UvText (ID_UV_STRINGS_INSTALL_SUCCESS_TEXT), "", UvText (ID_UV_STRINGS_OK));
             return true;
         } else {
-            DGAlert (DG_WARNING, "Installation May Require a Restart",
-                    "'uv' was installed, but it's not yet available in the system's PATH.\n\n"
-                    "Please restart Archicad for the changes to take effect.", "", "OK");
+            DGAlert (DG_WARNING, UvText (ID_UV_STRINGS_INSTALL_RESTART_TITLE),
+                    UvText (ID_UV_STRINGS_INSTALL_RESTART_TEXT), "", UvText (ID_UV_STRINGS_OK));
             return false;
         }
     } else {
-        ACAPI_WriteReport ("----- Tapir Script Execution Report -----\n" "ERROR: uv installer script failed with exit code: %d", false, result);
-        short response = DGAlert (DG_ERROR, "Installation Failed",
-                "The automatic installation failed. Please check the Report window for details.\n\n"
-                "You can try installing it manually from the official website.", "", "Go to uv website", "OK");
+        ACAPI_WriteReport (GetScriptReportText (ID_REPORT_STRINGS_ERROR_PREFIX, ID_UV_STRINGS_INSTALL_FAILED_REPORT), false, result);
+        short response = DGAlert (DG_ERROR, UvText (ID_UV_STRINGS_INSTALL_FAILED_TITLE),
+                UvText (ID_UV_STRINGS_INSTALL_FAILED_TEXT), "", UvText (ID_UV_STRINGS_GO_TO_UV_WEBSITE), UvText (ID_UV_STRINGS_OK));
         if (response == 1) { // "Go to uv website"
             OpenWebpage ("https://docs.astral.sh/uv/getting-started/installation/");
         }

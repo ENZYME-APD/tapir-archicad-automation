@@ -88,7 +88,7 @@ GSErrCode RegisterCommand (CommandGroup& group, const GS::UniString& version, co
         // Initialize only ORs the results together, so without this line nothing tells which
         // command failed. A failed registration can make Archicad crash later, at the first
         // command call through the JSON interface, far from its cause.
-        ACAPI_WriteReport ("Tapir: the %s command could not be registered (error %d).", false, commandName.ToCStr (), static_cast<int> (err));
+        ACAPI_WriteReport (RSGetIndString (ID_REPORT_STRINGS, ID_REPORT_STRINGS_COMMAND_NOT_REGISTERED, ACAPI_GetOwnResModule ()), false, commandName.ToCStr (), static_cast<int> (err));
         return err;
     }
     return NoError;

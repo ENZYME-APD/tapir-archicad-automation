@@ -8,6 +8,7 @@
 #include "Config.hpp"
 #include "UvManager.hpp"
 #include "ScriptInfo.hpp"
+#include "ResourceIds.hpp"
 
 #include <atomic>
 #include <mutex>
@@ -154,16 +155,21 @@ void TapirPalette::WriteReport (short type, const GS::UniString& format, Args&&.
     GS::UniString typeStr;
     switch (type) {
         case DG_ERROR: {
-                typeStr = "ERROR: ";
-                DGAlert (DG_ERROR, "Tapir Script Execution", "Error", GS::UniString::Printf (format, std::forward<Args> (args)...), "OK");
+                typeStr = RSGetIndString (ID_REPORT_STRINGS, ID_REPORT_STRINGS_ERROR_PREFIX, ACAPI_GetOwnResModule ()) + " ";
+                DGAlert (DG_ERROR,
+                    RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_EXECUTION_ERROR_TITLE, ACAPI_GetOwnResModule ()),
+                    RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_EXECUTION_ERROR_TEXT, ACAPI_GetOwnResModule ()),
+                    GS::UniString::Printf (format, std::forward<Args> (args)...),
+                    RSGetIndString (ID_PALETTE_STRINGS, ID_PALETTE_STRINGS_OK, ACAPI_GetOwnResModule ()));
             } break;
         case DG_WARNING:
-            typeStr = "WARNING: ";
+            typeStr = RSGetIndString (ID_REPORT_STRINGS, ID_REPORT_STRINGS_WARNING_PREFIX, ACAPI_GetOwnResModule ()) + " ";
             break;
         default:
             break;
     }
 
     constexpr bool withDial = false;
-    ACAPI_WriteReport ("----- Tapir Script Execution Report -----\n" + typeStr + format, withDial, std::forward<Args> (args)...);
+    ACAPI_WriteReport (RSGetIndString (ID_REPORT_STRINGS, ID_REPORT_STRINGS_SCRIPT_REPORT_HEADER, ACAPI_GetOwnResModule ()) + "\n" + typeStr + format,
+        withDial, std::forward<Args> (args)...);
 }
