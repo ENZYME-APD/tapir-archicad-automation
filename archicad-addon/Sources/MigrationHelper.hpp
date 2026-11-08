@@ -173,6 +173,13 @@ inline GSErrCode ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (const AP
 #define ACAPI_Notification_CatchSelectionChange ACAPI_Notify_CatchSelectionChange
 // Archicad 26 only, Archicad 25 has no attribute replacement notification.
 #define ACAPI_Notification_CatchAttributeReplacement ACAPI_Notify_CatchAttributeReplacement
+#define ACAPI_Notification_CatchToolChange ACAPI_Notify_CatchToolChange
+#define ACAPI_Notification_CatchViewEvent ACAPI_Notify_CatchViewEvent
+#define ACAPI_Notification_CatchLockableReservationChange ACAPI_Notify_CatchLockableReservationChange
+#define ACAPI_Element_CatchChangeDefaults ACAPI_Notify_CatchChangeDefaults
+// Archicad 26 only, Archicad 25 has no event handlers.
+#define ACAPI_Notification_RegisterEventHandler ACAPI_Notify_RegisterEventHandler
+#define ACAPI_Notification_UnregisterEventHandler ACAPI_Notify_UnregisterEventHandler
 
 #define ACAPI_ModelAccess_Get3DInfo ACAPI_Element_Get3DInfo
 #define ACAPI_ModelAccess_GetComponent ACAPI_3D_GetComponent
@@ -734,6 +741,18 @@ inline GSErrCode ACAPI_UserInput_GetPoly (API_GetPolyType* polyInfo, API_RubberP
 inline GSErrCode ACAPI_UserInput_DrawRubberLine (API_RubberLineType* rubberLine)
 {
     return ACAPI_Interface (APIIo_DrawRubberLineID, rubberLine);
+}
+
+// APIIo_GetArcID         par1: API_GetArcType*     par2: [RubberLineInfoProc*]
+// APIIo_DrawRubberArcID  par1: API_RubberArcType*
+inline GSErrCode ACAPI_UserInput_GetArc (API_GetArcType* arcInfo, RubberLineInfoProc* rubberLineInfoProc = nullptr)
+{
+    return ACAPI_Interface (APIIo_GetArcID, arcInfo, (void*) rubberLineInfoProc);
+}
+
+inline GSErrCode ACAPI_UserInput_DrawRubberArc (API_RubberArcType* rubberArc)
+{
+    return ACAPI_Interface (APIIo_DrawRubberArcID, rubberArc);
 }
 
 // APIEnv_GetMagicWandSetsID par1: API_MagicWandInfo* (APIdefs_Environment.h)
