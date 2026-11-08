@@ -1,0 +1,200 @@
+{
+  "title": "ModifyRoofs adds and removes holes, with or without polygonOutline, on multi-plane and single-plane roofs (#2398)",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [ "Roof" ],
+  "steps": [
+    {
+      "id": "a multi-plane hip roof and a single-plane roof without holes",
+      "command": "CreateRoofs",
+      "params": {
+        "roofsData": [
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "polygonCoordinates": [
+              { "x": 900.0, "y": 900.0 },
+              { "x": 912.0, "y": 900.0 },
+              { "x": 912.0, "y": 906.0 },
+              { "x": 900.0, "y": 906.0 }
+            ],
+            "eavesOverhang": 0.6,
+            "levels": [ { "levelHeight": 10.0, "levelAngle": 0.5235987755982988 } ]
+          },
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "polygonCoordinates": [
+              { "x": 930.0, "y": 900.0 },
+              { "x": 936.0, "y": 900.0 },
+              { "x": 936.0, "y": 904.0 },
+              { "x": 930.0, "y": 904.0 }
+            ],
+            "pivotLine": {
+              "begCoordinate": { "x": 930.0, "y": 900.0 },
+              "endCoordinate": { "x": 936.0, "y": 900.0 }
+            },
+            "angle": 0.5
+          }
+        ]
+      },
+      "save": {
+        "multi": "elements[0].elementId.guid",
+        "plane": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "multi-plane roof created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "single-plane roof created" }
+      ]
+    },
+    {
+      "id": "read the new roofs",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${multi}" } }, { "elementId": { "guid": "${plane}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.roofClass", "eq": "MultiPlane" },
+        { "path": "detailsOfElements[0].details.pivotEdges", "len": 4, "name": "four pivot edges, no hole" },
+        { "path": "detailsOfElements[1].details.roofClass", "eq": "SinglePlane" },
+        { "path": "detailsOfElements[1].details.holes", "len": 0, "name": "plane roof has no hole" }
+      ]
+    },
+    {
+      "id": "holes only, on both roofs; pivotEdges with holes refused",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": {
+        "roofsWithDetails": [
+          {
+            "elementId": { "guid": "${multi}" },
+            "holes": [
+              {
+                "polygonOutline": [
+                  { "x": 903.0, "y": 902.0 },
+                  { "x": 903.0, "y": 904.0 },
+                  { "x": 905.0, "y": 904.0 },
+                  { "x": 905.0, "y": 902.0 },
+                  { "x": 903.0, "y": 902.0 }
+                ]
+              }
+            ]
+          },
+          {
+            "elementId": { "guid": "${plane}" },
+            "holes": [
+              {
+                "polygonOutline": [
+                  { "x": 932.0, "y": 901.0 },
+                  { "x": 934.0, "y": 901.0 },
+                  { "x": 934.0, "y": 903.0 },
+                  { "x": 932.0, "y": 903.0 }
+                ]
+              }
+            ]
+          },
+          {
+            "elementId": { "guid": "${multi}" },
+            "pivotEdges": [ {}, {}, {}, {} ],
+            "holes": []
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "hole added to the multi-plane roof" },
+        { "path": "executionResults[1].success", "eq": true, "name": "hole added to the single-plane roof" },
+        { "path": "executionResults[2].success", "eq": false, "name": "pivotEdges with holes refused" }
+      ]
+    },
+    {
+      "id": "the roofs have their holes and keep their outlines",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${multi}" } }, { "elementId": { "guid": "${plane}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.roofClass", "eq": "MultiPlane", "name": "still multi-plane" },
+        { "path": "detailsOfElements[0].details.pivotEdges", "len": 8, "name": "four outline edges and four hole edges" },
+        { "path": "detailsOfElements[0].details.pivotPolygonOutline", "len": 5, "name": "pivot outline kept" },
+        { "path": "detailsOfElements[0].details.pivotPolygonOutline[2].x", "approx": 912.0, "name": "pivot corner kept (x)" },
+        { "path": "detailsOfElements[0].details.pivotPolygonOutline[2].y", "approx": 906.0, "name": "pivot corner kept (y)" },
+        { "path": "detailsOfElements[0].details.levels", "len": 1, "name": "roof levels kept" },
+        { "path": "detailsOfElements[0].details.eavesOverhang", "approx": 0.6, "name": "eaves overhang kept" },
+        { "path": "detailsOfElements[1].details.holes", "len": 1, "name": "plane roof has the hole" },
+        { "path": "detailsOfElements[1].details.polygonOutline", "len": 5, "name": "plane roof outline kept" },
+        { "path": "detailsOfElements[1].details.polygonOutline[2].x", "approx": 936.0, "name": "plane roof corner kept (x)" },
+        { "path": "detailsOfElements[1].details.polygonOutline[2].y", "approx": 904.0, "name": "plane roof corner kept (y)" },
+        { "path": "detailsOfElements[1].details.angle", "approx": 0.5, "name": "plane roof angle kept" }
+      ]
+    },
+    {
+      "id": "an empty holes array removes the holes",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": {
+        "roofsWithDetails": [
+          { "elementId": { "guid": "${multi}" }, "holes": [] },
+          { "elementId": { "guid": "${plane}" }, "holes": [] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "multi-plane roof hole removed" },
+        { "path": "executionResults[1].success", "eq": true, "name": "single-plane roof hole removed" }
+      ]
+    },
+    {
+      "id": "the roofs have no holes again",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${multi}" } }, { "elementId": { "guid": "${plane}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.pivotEdges", "len": 4, "name": "four pivot edges again" },
+        { "path": "detailsOfElements[0].details.pivotPolygonOutline", "len": 5, "name": "pivot outline still kept" },
+        { "path": "detailsOfElements[1].details.holes", "len": 0, "name": "plane roof hole removed" }
+      ]
+    },
+    {
+      "id": "the pivot outline, closed, together with a hole",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": {
+        "roofsWithDetails": [
+          {
+            "elementId": { "guid": "${multi}" },
+            "polygonOutline": [
+              { "x": 900.0, "y": 900.0 },
+              { "x": 912.0, "y": 900.0 },
+              { "x": 912.0, "y": 906.0 },
+              { "x": 900.0, "y": 906.0 },
+              { "x": 900.0, "y": 900.0 }
+            ],
+            "holes": [
+              {
+                "polygonOutline": [
+                  { "x": 903.0, "y": 902.0 },
+                  { "x": 903.0, "y": 904.0 },
+                  { "x": 905.0, "y": 904.0 },
+                  { "x": 905.0, "y": 902.0 },
+                  { "x": 903.0, "y": 902.0 }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "outline with a hole written" }
+      ]
+    },
+    {
+      "id": "the multi-plane roof has the hole",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${multi}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.pivotEdges", "len": 8, "name": "outline edges and hole edges" },
+        { "path": "detailsOfElements[0].details.pivotPolygonOutline", "len": 5, "name": "pivot outline as given" },
+        { "path": "detailsOfElements[0].details.pivotPolygonOutline[1].x", "approx": 912.0 },
+        { "path": "detailsOfElements[0].details.pivotPolygonOutline[1].y", "approx": 900.0 }
+      ]
+    }
+  ]
+}
