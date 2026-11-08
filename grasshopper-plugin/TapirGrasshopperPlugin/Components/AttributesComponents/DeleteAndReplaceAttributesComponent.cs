@@ -291,7 +291,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.DeleteAttributes;
+            Properties.Resources.DeleteAndReplaceAttributes;
 
         public override Guid ComponentGuid =>
             new Guid("3d14db40-dc08-4ee1-a9cc-2d7c317489f2");

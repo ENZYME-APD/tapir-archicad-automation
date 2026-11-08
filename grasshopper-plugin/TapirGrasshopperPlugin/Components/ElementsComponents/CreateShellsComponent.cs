@@ -65,10 +65,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             return null;
         }
 
-        // No CreateShells icon exists yet; until one is added to Resources,
-        // the ModifyShells icon marks the component as the shell one.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.ModifyShells;
+            Properties.Resources.CreateShells;
 
         public override Guid ComponentGuid =>
             new Guid("a78a746c-b821-4035-a6d2-4e4b67f2e7d6");

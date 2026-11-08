@@ -1,4 +1,5 @@
-"""Creates a beam, then changes its cross section and adds a round hole with ModifyBeams.
+"""Creates a beam, then changes its cross section and adds a round hole with ModifyBeams,
+and moves it: a new reference line and its absolute elevation (zCoordinate, as in CreateBeams).
 
 Only the given fields change; holes replaces every hole of the beam.
 """
@@ -16,5 +17,12 @@ aclib.PrintJson (aclib.RunTapirCommand ('ModifyBeams', {'beamsWithDetails': [{
     'width': 0.3,
     'height': 0.6,
     'holes': [{'type': 'Circular', 'centerX': 3.0, 'centerZ': 0.3, 'width': 0.15}]
+}]}))
+
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyBeams', {'beamsWithDetails': [{
+    'elementId': beam['elementId'],
+    'begCoordinate': {'x': 1.0, 'y': 2.0},
+    'endCoordinate': {'x': 7.0, 'y': 2.0},
+    'zCoordinate': 2.5
 }]}))
 aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': [beam], 'fields': ['details']})

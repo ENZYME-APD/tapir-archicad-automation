@@ -1,4 +1,5 @@
 using Grasshopper.Kernel;
+using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Issues;
@@ -28,7 +29,14 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 "Accept all new/deleted Elements.",
                 true);
 
-            SetOptionality(1);
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "DryRun",
+                "If true, nothing is deleted: the component only checks that the issue exists, and reports " +
+                "an error when it does not. Default is false.",
+                false);
+
+            SetOptionality(new[] { 1, 2 });
         }
 
         protected override void Solve(
@@ -45,9 +53,27 @@ namespace TapirGrasshopperPlugin.Components.IssuesComponents
                 1,
                 true);
 
+            var parameters = JObject.FromObject(new { issueId, acceptAllElements });
+
+            // Only sent when it differs from the command's default. A dry
+            // run answers with its result only, so it is checked here.
+            if (da.GetOptional(2, false))
+            {
+                parameters["dryRun"] = true;
+                if (TryGetCadResponse(
+                        CommandName,
+                        parameters,
+                        ToAddOn,
+                        out var response))
+                {
+                    this.CheckExecutionResult(response);
+                }
+                return;
+            }
+
             SetCadValues(
                 CommandName,
-                new { issueId, acceptAllElements },
+                parameters,
                 ToAddOn);
         }
 
