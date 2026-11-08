@@ -16043,6 +16043,26 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetInputParametersSchema () c
                         "floorIndex": {
                             "type": "integer",
                             "description": "The new home story index (as returned by GetStories). The bottom offset is kept, or set from bottomOffset when that is given too, so the railing moves with the story."
+                        },
+                        "visibility": {
+                            "$ref": "#/StoryVisibility",
+                            "description": "The stories the railing is shown on (API_RailingType::visibility), as GetDetailsOfElements returns it. Setting it without isAutoOnStoryVisibility also turns isAutoOnStoryVisibility off, as Archicad would otherwise recompute it from the elevation of the railing. The fields not given are false or 0. A combination Archicad does not take is reported as a failure."
+                        },
+                        "isAutoOnStoryVisibility": {
+                            "type": "boolean",
+                            "description": "When true, Archicad recomputes 'visibility' automatically from the actual elevation of the railing (API_RailingType::isAutoOnStoryVisibility) and ignores a visibility given together with it."
+                        },
+                        "referenceLinePen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "The new pen index of the railing's reference line (API_RailingType::referenceLinePen)."
+                        },
+                        "contourPen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "The new pen index of the railing's contour line (API_RailingType::contourPen)."
                         }
                     },
                     "additionalProperties": false,
@@ -16064,9 +16084,9 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetRawResponseSchema () const
     return ModifyWallsCommand ().GetRawResponseSchema ();
 }
 
-// Only fields of the railing element itself are changed, never its memo: the reference line, nodes,
-// segments, posts and rails stay as they are. The height goes to defSegment.height, as the DevKit's
-// Element_Test (Do_Railing_Edit) changes it. The railing is read back afterwards, so a value Archicad
+// Only fields of the railing element itself are changed (heights, home story, story visibility and the
+// floor plan pens), never its memo: the reference line, nodes, segments, posts and rails stay as they
+// are. The height goes to defSegment.height, as the DevKit's Element_Test (Do_Railing_Edit) changes it. The railing is read back afterwards, so a value Archicad
 // did not take (for example a base it derives from the elevations of the reference line vertices,
 // memo.polyZCoords) is reported as a failure instead of a success.
 GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -16112,7 +16132,20 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("floorIndex %d is not a story of the project; see GetStories for the valid story indices.", static_cast<int> (floorIndex))));
                 continue;
             }
-            if (!hasHeight && !hasBottomOffset && !hasFloorIndex) {
+            GS::ObjectState visibilityOs;
+            const bool hasVisibility = item.Get ("visibility", visibilityOs);
+            bool isAutoOnStoryVisibility = false;
+            const bool hasIsAutoOnStoryVisibility = item.Get ("isAutoOnStoryVisibility", isAutoOnStoryVisibility);
+            Int32 referenceLinePen = 0;
+            const bool hasReferenceLinePen = item.Get ("referenceLinePen", referenceLinePen);
+            Int32 contourPen = 0;
+            const bool hasContourPen = item.Get ("contourPen", contourPen);
+            if ((hasReferenceLinePen && (referenceLinePen < 1 || referenceLinePen > 255)) ||
+                (hasContourPen && (contourPen < 1 || contourPen > 255))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "A pen index must be between 1 and 255."));
+                continue;
+            }
+            if (!hasHeight && !hasBottomOffset && !hasFloorIndex && !hasVisibility && !hasIsAutoOnStoryVisibility && !hasReferenceLinePen && !hasContourPen) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No railing fields to modify."));
                 continue;
             }
@@ -16130,6 +16163,28 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
             if (hasFloorIndex) {
                 element.header.floorInd = floorIndex;
                 ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+            }
+            if (hasVisibility) {
+                element.railing.visibility = GetStoryVisibilityFromObjectState (visibilityOs);
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, visibility);
+                if (!hasIsAutoOnStoryVisibility) {
+                    // As on walls: while isAutoOnStoryVisibility is on, Archicad recomputes the
+                    // visibility from the elevation of the railing and drops the one given here.
+                    element.railing.isAutoOnStoryVisibility = false;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, isAutoOnStoryVisibility);
+                }
+            }
+            if (hasIsAutoOnStoryVisibility) {
+                element.railing.isAutoOnStoryVisibility = isAutoOnStoryVisibility;
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, isAutoOnStoryVisibility);
+            }
+            if (hasReferenceLinePen) {
+                element.railing.referenceLinePen = (short) referenceLinePen;
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, referenceLinePen);
+            }
+            if (hasContourPen) {
+                element.railing.contourPen = (short) contourPen;
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, contourPen);
             }
 
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
@@ -16152,6 +16207,27 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
             }
             if (std::abs (changed.railing.bottomOffset - element.railing.bottomOffset) > tolerance) {
                 notApplied += GS::UniString::Printf (" bottomOffset is %.4f instead of %.4f.", changed.railing.bottomOffset, element.railing.bottomOffset);
+            }
+            if ((hasIsAutoOnStoryVisibility || hasVisibility) && changed.railing.isAutoOnStoryVisibility != element.railing.isAutoOnStoryVisibility) {
+                notApplied += GS::UniString::Printf (" isAutoOnStoryVisibility is %s.", changed.railing.isAutoOnStoryVisibility ? "true" : "false");
+            }
+            // A visibility given together with isAutoOnStoryVisibility true is recomputed by Archicad,
+            // so it is only compared when the automatic visibility is off.
+            if (hasVisibility && !element.railing.isAutoOnStoryVisibility) {
+                const API_StoryVisibility& want = element.railing.visibility;
+                const API_StoryVisibility& got = changed.railing.visibility;
+                if (got.showOnHome != want.showOnHome || got.showAllAbove != want.showAllAbove || got.showAllBelow != want.showAllBelow ||
+                    got.showRelAbove != want.showRelAbove || got.showRelBelow != want.showRelBelow) {
+                    notApplied += GS::UniString::Printf (" visibility is showOnHome %s, showAllAbove %s, showAllBelow %s, showRelAbove %d, showRelBelow %d.",
+                        got.showOnHome ? "true" : "false", got.showAllAbove ? "true" : "false", got.showAllBelow ? "true" : "false",
+                        static_cast<int> (got.showRelAbove), static_cast<int> (got.showRelBelow));
+                }
+            }
+            if (hasReferenceLinePen && changed.railing.referenceLinePen != referenceLinePen) {
+                notApplied += GS::UniString::Printf (" referenceLinePen is %d.", static_cast<int> (changed.railing.referenceLinePen));
+            }
+            if (hasContourPen && changed.railing.contourPen != contourPen) {
+                notApplied += GS::UniString::Printf (" contourPen is %d.", static_cast<int> (changed.railing.contourPen));
             }
             if (hasHeight) {
                 API_ElementMemo memo = {};

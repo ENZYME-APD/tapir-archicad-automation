@@ -86,7 +86,7 @@
     },
     {
       "get": "visibility",
-      "set": null,
+      "set": "visibility",
       "apiMember": "API_RailingType::visibility",
       "apiDescription": "The story visibility of the element.",
       "label": null,
@@ -96,7 +96,7 @@
     },
     {
       "get": "isAutoOnStoryVisibility",
-      "set": null,
+      "set": "isAutoOnStoryVisibility",
       "apiMember": "API_RailingType::isAutoOnStoryVisibility",
       "apiDescription": "Recalculate the story visibility automatically according to the actual elevation of the railing.",
       "label": null,
@@ -106,7 +106,7 @@
     },
     {
       "get": "referenceLinePen",
-      "set": null,
+      "set": "referenceLinePen",
       "apiMember": "API_RailingType::referenceLinePen",
       "apiDescription": "The pen index of the Railing's reference line.",
       "label": null,
@@ -116,7 +116,7 @@
     },
     {
       "get": "contourPen",
-      "set": null,
+      "set": "contourPen",
       "apiMember": "API_RailingType::contourPen",
       "apiDescription": "The pen index of the Railing's contour line.",
       "label": null,
