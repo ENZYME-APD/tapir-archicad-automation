@@ -7,8 +7,10 @@ using TapirGrasshopperPlugin.Types.Properties;
 
 namespace TapirGrasshopperPlugin.Components.PropertiesComponents
 {
+    // Sends one SetPropertyValuesOfElements request for every branch of the
+    // inputs, so a tree input makes one undo step in Archicad (#203).
     public class SetPropertyValuesOfElementsComponent
-        : ArchicadExecutorComponent
+        : BatchedExecutorComponent<ElementPropertyValueObj>
     {
         public override string CommandName => "SetPropertyValuesOfElements";
 
@@ -50,21 +52,24 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 "Error message of each property value (empty when it succeeded).");
         }
 
-        protected override void Solve(
-            IGH_DataAccess da)
+        protected override bool TryGetBatchItems(
+            IGH_DataAccess da,
+            out List<ElementPropertyValueObj> items)
         {
+            items = null;
+
             if (!da.TryCreate(
                     0,
                     out PropertyGuidObject propertyId))
             {
-                return;
+                return false;
             }
 
             if (!da.TryCreateFromList(
                     1,
                     out ElementsObject elements))
             {
-                return;
+                return false;
             }
 
             da.TryGetList(
@@ -81,7 +86,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             {
                 this.AddError(
                     "The count of ValueStatuses must be 0, 1 or the same as the count of ElementGuids.");
-                return;
+                return false;
             }
 
             var statusOfElements = new List<string>();
@@ -101,7 +106,7 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                 {
                     this.AddError(
                         "ValueStatuses must be Value, Default or UserUndefined.");
-                    return;
+                    return false;
                 }
 
                 statusOfElements.Add(status);
@@ -112,13 +117,10 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             {
                 this.AddError(
                     "The count of Values must be 1 or the same as the count of ElementGuids.");
-                return;
+                return false;
             }
 
-            var input = new ElementPropertyValuesObj
-            {
-                ElementPropertyValues = new List<ElementPropertyValueObj>()
-            };
+            items = new List<ElementPropertyValueObj>();
 
             for (var i = 0; i < elementCount; i++)
             {
@@ -143,14 +145,29 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
                     elemPropertyValue.ValueStatus = statusOfElements[i];
                 }
 
-                input.ElementPropertyValues.Add(elemPropertyValue);
+                items.Add(elemPropertyValue);
             }
 
-            SetCadValuesWithErrorMessages(
-                CommandName,
-                input,
-                ToAddOn,
-                da);
+            return true;
+        }
+
+        // The command keeps the first value of an element and property given
+        // twice; the branches used to be sent one after the other, so the
+        // last one won.
+        protected override string GetBatchItemKey(
+            ElementPropertyValueObj item)
+        {
+            return $"{item.ElementId?.Guid?.ToLowerInvariant()}|" +
+                   $"{item.PropertyId?.Guid?.ToLowerInvariant()}";
+        }
+
+        protected override object CreateBatchParameters(
+            List<ElementPropertyValueObj> items)
+        {
+            return new ElementPropertyValuesObj
+            {
+                ElementPropertyValues = items
+            };
         }
 
         protected override System.Drawing.Bitmap Icon =>
