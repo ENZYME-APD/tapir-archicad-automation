@@ -587,6 +587,22 @@
       "changes": "model",
       "versions": [
         {
+          "version": "1.2.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "Doors, windows and openings kept clear: each wall finish gets an opening, cutting only the finish, for every door, window and opening behind it, with a margin for frames (Archicad 29 and later). The summary lists them per zone and gives the wall finish area with the openings deducted.",
+          "commit": "b1f6e476693a72638bc2a5b9cc1486999f74c10b",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/b1f6e476693a72638bc2a5b9cc1486999f74c10b/marketplace/room-finishes-from-zones/RoomFinishesFromZones.py",
+          "sha256": "9b32cc7b599f1adea2b79d1b7ab2f56e01781f1c465769def86fe49519959260"
+        },
+        {
           "version": "1.1.0",
           "archicadVersions": [
             25,
