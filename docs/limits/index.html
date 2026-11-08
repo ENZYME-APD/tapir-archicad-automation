@@ -91,6 +91,13 @@
                             <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_CameraType</code> holds only <code>head</code>, <code>camSetGuid</code> and <code>perspCam</code> (<code>API_PerspCamPars</code>); only <code>API_CamSetType</code> has a <code>name</code> (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30).</td>
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2192">#2192</a></td>
                         </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Remove one direction of a trim between two roofs or shells that trim each other</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill chg" data-i18n>Workaround</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Remove the trim with <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a>, which removes both directions, then trim the other direction again with <a href="../archicad-addon/#TrimElements">TrimElements</a>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">The only removal function, <code>ACAPI_Element_Trim_Remove (guid_Element1, guid_Element2)</code> (<code>ACAPinc.h</code>, AC25&ndash;AC30), &ldquo;removes trimming connection between the elements&rdquo; and takes no direction or trim type.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2365">#2365</a></td>
+                        </tr>
 
                         <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Navigator and views</th></tr>
                         <tr>
