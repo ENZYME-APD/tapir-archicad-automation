@@ -741,7 +741,7 @@ class WaitingModeTests (UpdateModeTestBase):
         resultText = tapir_installer.UpdateAddOn (self.CreateWaitingTarget (process.pid, markerPath, mockArchicad.port), self.releaseInfo, False, statusTexts.append)
         self.assertGreater (time.monotonic () - startTime, processSeconds - 0.5)
         self.assertEqual (resultText, 'Tapir was updated to {0}. Archicad was not started again.'.format (RELEASE_TAG))
-        self.assertIn ('Waiting for Archicad to close...', statusTexts)
+        self.assertIn ('Waiting for Archicad...', statusTexts)
         # Archicad is never contacted, and never started.
         self.assertEqual (mockArchicad.receivedCommands, [])
         self.assertFalse (mockArchicad.isStopped)
@@ -757,6 +757,41 @@ class WaitingModeTests (UpdateModeTestBase):
             tapir_installer.UpdateAddOn (updateTarget, self.releaseInfo, False, cancelEvent = cancelEvent)
         self.assertIsNone (process.poll ())
         self.AssertAddOnIsOld ()
+
+    def testCancelThroughTheWaitingCallback (self):
+        # The GUI enables its Cancel button (and closing its window) only
+        # while waitingCallback (True) is in effect, so the waiting mode
+        # reports the wait through it; the button then sets cancelEvent.
+        process = self.StartProcess (60)
+        markerPath = self.CreateMarker ()
+        cancelEvent = threading.Event ()
+        waitingStates = []
+        def waitingCallback (isWaiting):
+            waitingStates.append (isWaiting)
+            if isWaiting:
+                threading.Timer (0.5, cancelEvent.set).start ()
+        with self.assertRaises (tapir_installer.UpdateCancelledError):
+            tapir_installer.UpdateAddOn (self.CreateWaitingTarget (process.pid, markerPath), self.releaseInfo, False,
+                cancelEvent = cancelEvent, waitingCallback = waitingCallback)
+        self.assertEqual (waitingStates, [True, False])
+        self.assertIsNone (process.poll ())
+        self.assertFalse (os.path.exists (markerPath))
+        self.AssertAddOnIsOld ()
+
+    def testPreparesOnlyAfterTheWait (self):
+        # The copy next to the add-on is shared with a regular update, which
+        # may run while this one waits: it is made only once Archicad exited.
+        process = self.StartProcess (1)
+        events = []
+        prepare = tapir_installer.PrepareAddOnUpdate
+        def PrepareAddOnUpdate (*arguments):
+            events.append (('prepare', process.poll () is not None))
+            return prepare (*arguments)
+        self.Patch (tapir_installer, 'PrepareAddOnUpdate', PrepareAddOnUpdate)
+        tapir_installer.UpdateAddOn (self.CreateWaitingTarget (process.pid), self.releaseInfo, False,
+            waitingCallback = lambda isWaiting : events.append (('waiting', isWaiting)))
+        self.assertEqual (events, [('waiting', True), ('waiting', False), ('prepare', True)])
+        self.AssertAddOnIsNew ()
 
     def testAlreadyExitedProcessUpdatesAtOnce (self):
         process = self.StartProcess (0)
@@ -777,8 +812,8 @@ class WaitingModeTests (UpdateModeTestBase):
         self.Patch (tapir_installer, 'ReplaceAddOn', replace)
         with self.assertRaises (tapir_installer.InstallerError) as context:
             tapir_installer.UpdateAddOn (self.CreateWaitingTarget (process.pid, markerPath), self.releaseInfo, False)
-        # Tried once, without waiting for the file lock.
-        replace.assert_called_once_with (unittest.mock.ANY, self.targetPath, 0)
+        # Tried once, retrying the file lock only briefly.
+        replace.assert_called_once_with (unittest.mock.ANY, self.targetPath, tapir_installer.WAITING_REPLACE_RETRY_TIMEOUT_SECONDS)
         self.assertIn ('The file is locked.', str (context.exception))
         self.assertIn ('offers the update again', str (context.exception))
         self.assertEqual (self.startedArchicadLocations, [])

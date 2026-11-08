@@ -95,6 +95,10 @@ ARCHICAD_QUIT_NOTICE_SECONDS = 5
 ARCHICAD_PROCESS_EXIT_TIMEOUT_SECONDS = 60
 ARCHICAD_POLL_INTERVAL_SECONDS = 1.0
 REPLACE_RETRY_TIMEOUT_SECONDS = 60
+# The waiting mode replaces the add-on once its Archicad process has exited:
+# a file still locked a few seconds later is held by another Archicad (or
+# for a moment by an antivirus scanner), so it gives up soon.
+WAITING_REPLACE_RETRY_TIMEOUT_SECONDS = 5
 # How long the lock of another update is waited for: the legacy update script
 # holds it while it starts the installer, and releases it right after.
 UPDATE_LOCK_WAIT_SECONDS = 3
@@ -176,7 +180,7 @@ TEXTS = {
         'notAnAddOnBundle' : 'Not an add-on bundle: {0}',
         'notAnAddOnFile' : 'Not an add-on file (.apx): {0}',
         # The update when Archicad closes (--waitForArchicadExit)
-        'statusWaitingForArchicadToClose' : 'Waiting for Archicad to close...',
+        'waitingForArchicadExitHint' : 'Tapir is updated when Archicad closes. You can keep working in Archicad.',
         'waitingCancelled' : 'The update was cancelled. Tapir is not updated; start the update again from Archicad.',
         'waitingReplaceFailed' : ('Tapir was not updated: {0} Archicad was not started again. '
             'The next Archicad start offers the update again.'),
@@ -1437,7 +1441,8 @@ def UpdateAddOn (updateTarget, releaseInfo, dryRun, statusCallback = None, progr
         if isWaitingMode:
             if dryRun:
                 return GetText ('dryRunWaiting', updateTarget.archicadPid, targetPath, asset['name'])
-            return UpdateAddOnWhenArchicadExits (updateTarget, releaseInfo, downloadedFilePath, workFolderPath, ReportStatus, cancelEvent)
+            return UpdateAddOnWhenArchicadExits (updateTarget, releaseInfo, downloadedFilePath, workFolderPath, ReportStatus, cancelEvent,
+                OnWaitingForArchicad)
         if dryRun:
             steps = [GetText ('dryRunReplace', targetPath, asset['name'])]
             if archicadPort is not None:
@@ -1496,29 +1501,36 @@ def UpdateAddOn (updateTarget, releaseInfo, dryRun, statusCallback = None, progr
             RemovePendingMarker (updateTarget)
 
 
-def UpdateAddOnWhenArchicadExits (updateTarget, releaseInfo, downloadedFilePath, workFolderPath, reportStatus, cancelEvent):
+def UpdateAddOnWhenArchicadExits (updateTarget, releaseInfo, downloadedFilePath, workFolderPath, reportStatus, cancelEvent,
+        onWaitingForArchicad):
     # Waiting mode of UpdateAddOn, after the download. Archicad is neither
-    # asked to quit nor started again. The replacement is tried once, right
-    # after the process exited (no retries): if the add-on file is still
-    # locked, another Archicad runs it, and the update is given up.
+    # asked to quit nor started again. onWaitingForArchicad (True) while it
+    # waits makes the GUI's Cancel button (and closing its window) cancel
+    # the wait. The add-on is prepared only after the wait, inside the lock:
+    # its copy next to the add-on (<add-on>.new on Windows) is the one a
+    # regular update of the same add-on uses too, which may run meanwhile.
+    # The replacement is retried only briefly: the process has exited, so if
+    # the add-on file stays locked, another Archicad runs it, and the update
+    # is given up.
     targetPath = updateTarget.addOnFilePath
+    onWaitingForArchicad (True)
     try:
-        preparedPath = PrepareAddOnUpdate (downloadedFilePath, targetPath, workFolderPath)
-        reportStatus (GetText ('statusWaitingForArchicadToClose'))
         WaitForArchicadExit (updateTarget, cancelEvent)
-        reportStatus (GetText ('statusInstalling'))
-        try:
-            # One update per Archicad, held only while the add-on is replaced.
-            with UpdateLock (updateTarget, False, isForReplacement = True):
-                replaceWarningText = ReplaceAddOn (preparedPath, targetPath, 0)
-        except UpdateRunningError as e:
-            raise InstallerError (GetText ('waitingReplaceFailed', str (e)))
-        except InstallerError as e:
-            raise InstallerError (GetText ('waitingReplaceFailed', str (e)))
-        except Exception as e:
-            raise InstallerError (GetText ('waitingReplaceFailed', GetText ('replaceFailed', targetPath, e)))
     finally:
-        RemoveNewAddOnCopy (targetPath)
+        onWaitingForArchicad (False)
+    reportStatus (GetText ('statusInstalling'))
+    try:
+        # One update per Archicad, held only while the add-on is replaced.
+        with UpdateLock (updateTarget, False, isForReplacement = True):
+            try:
+                preparedPath = PrepareAddOnUpdate (downloadedFilePath, targetPath, workFolderPath)
+                replaceWarningText = ReplaceAddOn (preparedPath, targetPath, WAITING_REPLACE_RETRY_TIMEOUT_SECONDS)
+            finally:
+                RemoveNewAddOnCopy (targetPath)
+    except (UpdateRunningError, InstallerError) as e:
+        raise InstallerError (GetText ('waitingReplaceFailed', str (e)))
+    except Exception as e:
+        raise InstallerError (GetText ('waitingReplaceFailed', GetText ('replaceFailed', targetPath, e)))
     resultText = GetText ('updated', GetReleaseName (releaseInfo)) + ' ' + GetText ('archicadNotStartedAgain')
     if replaceWarningText is not None:
         raise InstallerWarning (resultText + ' ' + replaceWarningText)
@@ -2071,7 +2083,9 @@ def RunGuiInstaller (args):
         def ShowWaitingForArchicad (self, isWaiting):
             self.isWaitingForArchicad = isWaiting
             if isWaiting:
-                self.ShowResult (GetText ('waitingForArchicadHint'), 'busy')
+                # The waiting mode waits for Archicad to close by itself.
+                isWaitingForExit = isUpdateMode and len (self.rows) > 0 and self.rows[0].installation.waitForArchicadExit
+                self.ShowResult (GetText ('waitingForArchicadExitHint' if isWaitingForExit else 'waitingForArchicadHint'), 'busy')
             else:
                 self.resultLabel.pack_forget ()
             self.UpdateButtonStates ()
