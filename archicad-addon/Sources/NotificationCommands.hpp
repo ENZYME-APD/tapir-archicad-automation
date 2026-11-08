@@ -33,11 +33,11 @@ public:
         Client(
             const IO::URI::URI& url,
             bool onNew, bool onMod, bool onResChanges, bool onSelChange, bool onWindowChange, bool onProjectEvents, bool onAttrReplacement,
-            bool onToolChange, bool onViewEvents,
+            bool onToolChange, bool onViewEvents, bool onLockableResChanges,
             const std::set<API_ElemTypeID>& typesToObserve)
             : url(url), notifyOnNew(onNew), notifyOnModification(onMod), notifyOnReservationChanges(onResChanges), notifyOnSelectionChange(onSelChange),
               notifyOnWindowChange(onWindowChange), notifyOnProjectEvents(onProjectEvents), notifyOnAttributeReplacement(onAttrReplacement),
-              notifyOnToolChange(onToolChange), notifyOnViewEvents(onViewEvents),
+              notifyOnToolChange(onToolChange), notifyOnViewEvents(onViewEvents), notifyOnLockableReservationChanges(onLockableResChanges),
               elementTypesToObserve(typesToObserve) {}
 
         IO::URI::URI             url;
@@ -50,6 +50,7 @@ public:
         bool                     notifyOnAttributeReplacement;
         bool                     notifyOnToolChange;
         bool                     notifyOnViewEvents;
+        bool                     notifyOnLockableReservationChanges;
         // The element types whose modifications this client is notified of; empty means every type.
         std::set<API_ElemTypeID> elementTypesToObserve;
 
@@ -108,6 +109,8 @@ public:
     static GSErrCode ToolChangeHandler (const API_ToolBoxItem* newToolMode);
     static void UninstallViewEventHandlerIfNotNeeded ();
     static GSErrCode ViewEventHandler (const API_NotifyViewEventType* viewEvent);
+    static void UninstallLockableReservationChangeHandlerIfNotNeeded ();
+    static GSErrCode LockableReservationChangeHandler (const API_Guid& objectId, short ownerId);
     // Called by the add-on's one project event handler (ProjectEventHandler.cpp) on every project
     // event it catches; sends the window, floor and project events to the clients that asked for them.
     static void ProjectEventHandler (API_NotifyEventID notifID, Int32 param);
@@ -126,6 +129,7 @@ private:
     static bool hasClientToNotifyOnAttributeReplacement;
     static bool hasClientToNotifyOnToolChange;
     static bool hasClientToNotifyOnViewEvents;
+    static bool hasClientToNotifyOnLockableReservationChanges;
 
     using EventQueue = std::map<ElementEventType, std::vector<GS::ObjectState>>;
     static std::unique_ptr<EventQueue> queuedEvents;

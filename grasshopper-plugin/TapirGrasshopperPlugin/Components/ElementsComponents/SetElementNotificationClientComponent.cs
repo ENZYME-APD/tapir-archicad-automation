@@ -14,7 +14,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "SetElementNotificationClient",
                 "Sets up a new notification client to receive element events: Archicad posts the new, changed, " +
                 "deleted, reserved and released elements, and on request the selection, window, project, " +
-                "attribute replacement, tool change and Navigator item events, as JSON to " +
+                "attribute replacement, tool change, Navigator item and Teamwork lockable object set reservation " +
+                "events, as JSON to " +
                 "http://<Host>:<Port>/element_notification. " +
                 "Setting up the same client again changes which events it gets. The client (an HTTP server) is " +
                 "not part of this component; remove it with RemoveElementNotificationClient.",
@@ -109,7 +110,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     .WithTypeName("booleanItem"),
                 GH_ParamAccess.item);
 
-            SetOptionality(new[] { 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 });
+            inManager.AddBooleanParameter(
+                "NotifyOnLockableReservationChanges",
+                "NotifyOnLockableReservationChanges",
+                "Notify when a Teamwork lockable object set (attributes of a type, favorites, model view options, project info, ...) is reserved or released, as lockableReservationChanged with the object set's guid and name and who reserved it. Defaults to false. Optional."
+                    .WithTypeName("booleanItem"),
+                GH_ParamAccess.item);
+
+            SetOptionality(new[] { 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 });
         }
 
         protected override void Solve(
@@ -189,6 +197,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (da.GetData(11, ref notifyOnViewEvents))
             {
                 parameters["notifyOnViewEvents"] = notifyOnViewEvents;
+            }
+
+            var notifyOnLockableReservationChanges = false;
+            if (da.GetData(12, ref notifyOnLockableReservationChanges))
+            {
+                parameters["notifyOnLockableReservationChanges"] = notifyOnLockableReservationChanges;
             }
 
             if (TryGetCadResponse(

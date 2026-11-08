@@ -84,6 +84,7 @@ bool AddElementNotificationClientCommand::hasClientToNotifyOnSelectionChange = f
 bool AddElementNotificationClientCommand::hasClientToNotifyOnAttributeReplacement = false;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnToolChange = false;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnViewEvents = false;
+bool AddElementNotificationClientCommand::hasClientToNotifyOnLockableReservationChanges = false;
 std::unique_ptr<AddElementNotificationClientCommand::EventQueue> AddElementNotificationClientCommand::queuedEvents;
 GS::Thread AddElementNotificationClientCommand::messageSenderThread;
 
@@ -167,6 +168,10 @@ GS::Optional<GS::UniString> AddElementNotificationClientCommand::GetInputParamet
             "notifyOnViewEvents": {
                 "type": "boolean",
                 "description": "Notify when an item of the Project Navigator or the Organizer is inserted (for example a view is saved or a layout is created), modified (for example renamed), deleted or opened. The message is {\"viewEvent\": {\"event\": ..., \"navigatorMapId\": ..., \"navigatorItemId\": {\"guid\": ...}}}: event is one of \"Inserted\", \"Modified\", \"Deleted\" and \"Opened\", navigatorMapId is the navigator map of the item, one of \"ProjectMap\", \"PublicViewMap\", \"MyViewMap\", \"LayoutBook\" and \"PublisherSets\" (as navigatorMapId of GetNavigatorItemTree), and navigatorItemId is the guid of the navigator item, as in the response of GetNavigatorItemTree (a deleted item no longer exists). Optional parameter, by default false."
+            },
+            "notifyOnLockableReservationChanges": {
+                "type": "boolean",
+                "description": "Notify when a Teamwork lockable object set (the non-element things Teamwork reserves: the attributes of a type, favorites, model view options, project info, project preferences, ...) is reserved or released, by anyone, including the current user. The message is {\"lockableReservationChanged\": {\"event\": ..., \"objectSetId\": {\"guid\": ...}, \"objectSetName\": ..., \"reservedBy\": ..., \"reservedByUserId\": ...}}: event is \"Reserved\" or \"Released\", objectSetId is the guid of the object set, objectSetName its name as objectSetName of ReserveLockableObjectSet (for example \"Composites\", \"LayerSettingsDialog\" or \"Favorites\"), missing when it is not one of the documented sets, and reservedBy and reservedByUserId are the name and the Teamwork user id of the member who reserved it, only for \"Reserved\". Element reservations are notified by notifyOnReservationChanges. Optional parameter, by default false."
             }
         },
         "additionalProperties": false,
@@ -232,6 +237,9 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
     bool notifyOnViewEvents = false;
     parameters.Get ("notifyOnViewEvents", notifyOnViewEvents);
 
+    bool notifyOnLockableReservationChanges = false;
+    parameters.Get ("notifyOnLockableReservationChanges", notifyOnLockableReservationChanges);
+
     std::set<API_ElemTypeID> elementTypesToObserve;
     GS::Array<GS::UniString> elementTypeNames;
     if (parameters.Get ("elementTypesToObserve", elementTypeNames)) {
@@ -249,7 +257,7 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
 
     const GS::UniString connectionUrlStr = GS::UniString::Printf ("http://%T:%d/", host.ToPrintf (), port);
     const IO::URI::URI connectionUrl (connectionUrlStr);
-    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges, notifyOnSelectionChange, notifyOnWindowChange, notifyOnProjectEvents, notifyOnAttributeReplacement, notifyOnToolChange, notifyOnViewEvents, elementTypesToObserve));
+    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges, notifyOnSelectionChange, notifyOnWindowChange, notifyOnProjectEvents, notifyOnAttributeReplacement, notifyOnToolChange, notifyOnViewEvents, notifyOnLockableReservationChanges, elementTypesToObserve));
     if (!result.second) {
         result.first->second.notifyOnNew = notifyOnNew;
         result.first->second.notifyOnModification = notifyOnModification;
@@ -260,6 +268,7 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
         result.first->second.notifyOnAttributeReplacement = notifyOnAttributeReplacement;
         result.first->second.notifyOnToolChange = notifyOnToolChange;
         result.first->second.notifyOnViewEvents = notifyOnViewEvents;
+        result.first->second.notifyOnLockableReservationChanges = notifyOnLockableReservationChanges;
         result.first->second.elementTypesToObserve = elementTypesToObserve;
         // A client registered again without these notifications may have been the
         // last one that wanted them; uninstall the handlers in that case, as
@@ -269,6 +278,7 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
         UninstallAttributeReplacementHandlerIfNotNeeded ();
         UninstallToolChangeHandlerIfNotNeeded ();
         UninstallViewEventHandlerIfNotNeeded ();
+        UninstallLockableReservationChangeHandlerIfNotNeeded ();
     }
 
     if (notifyOnNew && !hasClientToNotifyOnNew) {
@@ -306,6 +316,11 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
     if (notifyOnViewEvents && !hasClientToNotifyOnViewEvents) {
         CatchViewEvents (ViewEventHandler);
         hasClientToNotifyOnViewEvents = true;
+    }
+
+    if (notifyOnLockableReservationChanges && !hasClientToNotifyOnLockableReservationChanges) {
+        ACAPI_Notification_CatchLockableReservationChange (LockableReservationChangeHandler);
+        hasClientToNotifyOnLockableReservationChanges = true;
     }
 
     ACAPI_Element_InstallElementObserver (ElementEventHandlerProc);
@@ -676,6 +691,101 @@ AddElementNotificationClientCommand::ViewEventHandler (const API_NotifyViewEvent
     for (auto& kv : clients) {
         auto& client = kv.second;
         if (!client.notifyOnViewEvents) {
+            continue;
+        }
+
+        SendMessageToNotificationClient (client, message);
+    }
+
+    return NoError;
+}
+
+// The lockable object sets the DevKit documents for ACAPI_Teamwork_FindLockableObjectSet (the
+// names of ReserveLockableObjectSet), and IssueTags of the DevKit's Notification_Manager example.
+static const char* const LockableObjectSetNames[] = {
+    "BuildingMaterials",
+    "Cities",
+    "Composites",
+    "Favorites",
+    "FillTypes",
+    "LayerSettingsDialog",
+    "LineTypes",
+    "MarkupStyles",
+    "MEPSystems",
+    "ModelViewOptions",
+    "OperationProfiles",
+    "PenTables",
+    "Profiles",
+    "ProjectInfo",
+    "GeoLocation",
+    "PreferencesDialog",
+    "GraphicOverrides",
+    "Surfaces",
+    "ZoneCategories",
+    "IssueTags"
+};
+
+// The name of the lockable object set, looked up each time (as the Notification_Manager example
+// does once) because the guids belong to the open project.
+static GS::Optional<GS::UniString> FindLockableObjectSetName (const API_Guid& objectSetId)
+{
+    for (const char* name : LockableObjectSetNames) {
+        const GS::UniString objectSetName (name);
+        if (ACAPI_Teamwork_FindLockableObjectSet (objectSetName) == objectSetId) {
+            return objectSetName;
+        }
+    }
+    return GS::NoValue;
+}
+
+void
+AddElementNotificationClientCommand::UninstallLockableReservationChangeHandlerIfNotNeeded ()
+{
+    if (!hasClientToNotifyOnLockableReservationChanges) {
+        return;
+    }
+
+    for (const auto& kv : clients) {
+        if (kv.second.notifyOnLockableReservationChanges) {
+            return;
+        }
+    }
+
+    ACAPI_Notification_CatchLockableReservationChange (nullptr);
+    hasClientToNotifyOnLockableReservationChanges = false;
+}
+
+GSErrCode
+AddElementNotificationClientCommand::LockableReservationChangeHandler (const API_Guid& objectId, short ownerId)
+{
+    if (objectId == APINULLGuid) {
+        return NoError;
+    }
+
+    // ownerId is the member who obtained the reservation, 0 when the object set was released.
+    const bool reserved = (ownerId != 0);
+    GS::ObjectState lockableReservationChanged (
+        "event", GS::UniString (reserved ? "Reserved" : "Released"),
+        "objectSetId", CreateGuidObjectState (objectId));
+
+    const GS::Optional<GS::UniString> objectSetName = FindLockableObjectSetName (objectId);
+    if (objectSetName.HasValue ()) {
+        lockableReservationChanged.Add ("objectSetName", objectSetName.Get ());
+    }
+
+    if (reserved) {
+        GS::UniString userName;
+        ACAPI_Teamwork_GetUsernameFromId (ownerId, &userName);
+        lockableReservationChanged.Add ("reservedBy", userName);
+        lockableReservationChanged.Add ("reservedByUserId", static_cast<Int32> (ownerId));
+    }
+
+    const GS::ObjectState message ("lockableReservationChanged", lockableReservationChanged);
+
+    // Sent at once, like the selection: the reservation of a lockable object set is not an element event.
+    for (auto& kv : clients) {
+        auto& client = kv.second;
+        if (!client.notifyOnLockableReservationChanges) {
             continue;
         }
 
@@ -1122,6 +1232,7 @@ GS::ObjectState RemoveElementNotificationClientCommand::Execute (const GS::Objec
     AddElementNotificationClientCommand::UninstallAttributeReplacementHandlerIfNotNeeded ();
     AddElementNotificationClientCommand::UninstallToolChangeHandlerIfNotNeeded ();
     AddElementNotificationClientCommand::UninstallViewEventHandlerIfNotNeeded ();
+    AddElementNotificationClientCommand::UninstallLockableReservationChangeHandlerIfNotNeeded ();
 
     return CreateSuccessfulExecutionResult ();
 }
