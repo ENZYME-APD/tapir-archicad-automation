@@ -4,6 +4,7 @@
 # ///
 
 # /// tapir
+# category = "documentation-layouts"
 # changes = "model"
 # ///
 
