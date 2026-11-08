@@ -4,6 +4,7 @@
 # ///
 
 # /// tapir
+# category = "classification-attributes"
 # changes = "model"
 # ///
 
