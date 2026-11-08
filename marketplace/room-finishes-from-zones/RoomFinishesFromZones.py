@@ -23,7 +23,12 @@ Adds the finishes of each selected zone:
   edge that has a wall behind it (from GetZoneBoundaries), with its reference
   line on the room edge and its thickness growing into the room, from the floor
   finish's top to the ceiling's bottom. Edges without a wall get none; the
-  pieces of two edges meet at the corner.
+  pieces of two edges meet at the corner;
+- an opening in the wall finish (Archicad 29 and later) for every door, window
+  and opening behind it: its width and height plus a margin for the frame, from
+  the finish's bottom for a door and from the sill for a window. It is a finite
+  opening as deep as the finish and cuts the finish only, never the structural
+  wall or a slab.
 
 Each kind is made from a favorite of its tool or, without one, from a layer, a
 building material, composite (or, for walls, complex profile) and a thickness.
@@ -43,7 +48,7 @@ import tkinter as tk
 from tkinter import ttk
 
 from utilities.archicad import (ArchicadError, batched, get_details_of_elements, get_elements, get_story_names,
-                                item_errors, run_tapir, select_elements)
+                                item_errors, run_command, run_tapir, select_elements)
 from utilities.ui import ScriptWindow, make_tree, require_archicad
 
 SCRIPT_NAME = "Room Finishes from Zones"
@@ -51,6 +56,9 @@ EPSILON = 1e-6
 LENGTH_TOLERANCE = 0.001
 BOUNDARY_TOLERANCE = 0.02
 MIN_WALL_PIECE = 0.05
+OPENING_EXTRA_DEPTH = 0.005
+OPENINGS_MIN_VERSION = 29
+OPENING_KINDS = ("Door", "Window")
 TAG_PREFIX = "FIN"
 WALL_ID_PATTERN = re.compile(r"^FIN-(.+)-wall-\d+$")
 KINDS = [("floor", "Floor finish"), ("ceiling", "Ceiling"), ("wall", "Wall finish")]
@@ -63,6 +71,7 @@ DEFAULT_MATERIAL = "(the tool's building material)"
 BASIC_PREFIX = "Building material: "
 COMPOSITE_PREFIX = "Composite: "
 PROFILE_PREFIX = "Complex profile: "
+DEFAULT_MARGIN = "0.00"
 DEFAULT_THICKNESS = {"floor": "0.05", "ceiling": "0.02", "wall": "0.015"}
 OVERLAP_GRID = 16
 DIMMED_COLOR = [200, 200, 200, 160]
@@ -333,6 +342,212 @@ def wall_data(zone: dict, piece: dict, number: int, settings: dict) -> dict:
     return item
 
 
+def piece_frame(piece: dict) -> tuple[tuple[float, float], tuple[float, float], float]:
+    """ The beg point, the unit direction and the length of a wall finish piece. """
+    (bx, by), (ex, ey) = piece["beg"], piece["end"]
+    length = math.hypot(ex - bx, ey - by)
+    if length < EPSILON:
+        return (bx, by), (1.0, 0.0), 0.0
+    return (bx, by), ((ex - bx) / length, (ey - by) / length), length
+
+
+def door_window_points(owner_beg, owner_end, center_offset: float, width: float) -> list[tuple[float, float]]:
+    """ The plan points of the two sides of a door or window: its centre is centerOffset along
+    the owner wall's reference line from its beg point, and it is width wide along the wall. """
+    length = math.hypot(owner_end[0] - owner_beg[0], owner_end[1] - owner_beg[1])
+    if length < EPSILON:
+        return []
+    ux, uy = (owner_end[0] - owner_beg[0]) / length, (owner_end[1] - owner_beg[1]) / length
+    cx, cy = owner_beg[0] + ux * center_offset, owner_beg[1] + uy * center_offset
+    return [(cx - ux * width / 2, cy - uy * width / 2), (cx + ux * width / 2, cy + uy * width / 2)]
+
+
+def _anchor_offsets(anchor: str, width: float, height: float) -> tuple[float, float]:
+    """ How far the anchor point of an opening is from the low corner of the box around its
+    outline, along xAxis and yAxis (as the add-on's GetAnchorOffset). """
+    anchor = anchor or ""
+    x = width if anchor.endswith("Right") else width / 2.0 if anchor.endswith("Center") or anchor == "Center" else 0.0
+    y = height if anchor.startswith("Top") else height / 2.0 if anchor.startswith("Middle") or anchor == "Center" else 0.0
+    return x, y
+
+
+def opening_world_points(geometry: dict, extrusion: dict | None = None) -> list[tuple[float, float, float]]:
+    """ The corners of an Opening element's outline in world coordinates, from GetOpeningDetails'
+    geometry and extrusionParameters. The outline is in the plane of xAxis and yAxis through the
+    anchor point, and the box around it sits on the anchor point where its anchor says. A polygonal
+    opening's outline is its polygon (only its size counts for where it sits); a rectangular or
+    circular one, which has no polygon, is the width x height box (a circle's bounding square). """
+    extrusion = extrusion or {}
+    try:
+        ax, ay, az = _plan_xyz(geometry["anchorPoint"])
+        xx, xy, xz = _plan_xyz(geometry["xAxis"])
+        yx, yy, yz = _plan_xyz(geometry["yAxis"])
+        polygon = [(float(p["x"]), float(p["y"])) for p in geometry.get("polygon") or []]
+        if len(polygon) >= 3:
+            x_min, y_min = min(p[0] for p in polygon), min(p[1] for p in polygon)
+            width, height = max(p[0] for p in polygon) - x_min, max(p[1] for p in polygon) - y_min
+            outline = [(x - x_min, y - y_min) for x, y in polygon]
+        else:
+            if extrusion.get("width") is None:
+                return []
+            width = float(extrusion["width"])
+            height = float(extrusion["height"]) if extrusion.get("height") is not None else width
+            if width <= EPSILON or height <= EPSILON:
+                return []
+            outline = [(0.0, 0.0), (width, 0.0), (width, height), (0.0, height)]
+        off_x, off_y = _anchor_offsets(str(extrusion.get("anchor") or ""), width, height)
+        outline = [(x - off_x, y - off_y) for x, y in outline]
+        return [(ax + x * xx + y * yx, ay + x * xy + y * yy, az + x * xz + y * yz) for x, y in outline]
+    except (KeyError, TypeError, ValueError):
+        return []
+
+
+def opening_cut(piece: dict, element: dict, finish_bottom: float, finish_top: float, margin: float = 0.0,
+                tolerance: float = BOUNDARY_TOLERANCE) -> dict | None:
+    """ The opening a door, window or opening (element: {"kind", "points" in plan, "bottom",
+    "top", "maxDistance"}) needs in a wall finish piece, as distances along the piece ("from",
+    "to") and absolute heights ("bottom", "top"); None when the element is not behind the piece.
+
+    The element is behind the piece when it lies along it, on the wall's side (left of beg ->
+    end, the room being on the right) and no farther from the room edge than maxDistance (the
+    thickness of the wall it is in). The opening is the element's size plus the margin on each
+    side and at the top; a door's opening reaches the finish's bottom (sill 0), a window's starts
+    the margin below its sill. Both are clipped to the piece. """
+    (bx, by), (ux, uy), length = piece_frame(piece)
+    points = element.get("points") or []
+    if length < EPSILON or not points:
+        return None
+    along, across = [], []
+    for x, y in points:
+        dx, dy = x - bx, y - by
+        along.append(dx * ux + dy * uy)
+        across.append(dy * ux - dx * uy)
+    distance = sum(across) / len(across)
+    if distance < -tolerance or distance > element["maxDistance"] + tolerance:
+        return None
+    # An element that does not run along the piece (one in a wall at a corner) has no width on it.
+    if max(along) - min(along) <= LENGTH_TOLERANCE:
+        return None
+    t0, t1 = max(0.0, min(along) - margin), min(length, max(along) + margin)
+    if t1 - t0 <= LENGTH_TOLERANCE:
+        return None
+    if element["top"] <= finish_bottom + LENGTH_TOLERANCE or element["bottom"] >= finish_top - LENGTH_TOLERANCE:
+        return None
+    bottom = finish_bottom if element["kind"] == "Door" else max(finish_bottom, element["bottom"] - margin)
+    top = min(finish_top, element["top"] + margin)
+    if top - bottom <= LENGTH_TOLERANCE:
+        return None
+    return {"guid": element["guid"], "kind": element["kind"], "label": element["label"], "from": t0, "to": t1,
+            "bottom": bottom, "top": top}
+
+
+def zone_cuts(pieces: list[dict], elements: list[dict], finish_bottom: float, finish_top: float,
+              margin: float = 0.0) -> list[dict]:
+    """ Every opening the wall finish pieces of a zone need, each with the index of its piece. """
+    cuts = []
+    for index, piece in enumerate(pieces):
+        for element in elements:
+            cut = opening_cut(piece, element, finish_bottom, finish_top, margin)
+            if cut:
+                cut["piece"] = index
+                cuts.append(cut)
+    return cuts
+
+
+def rectangles_area(rectangles: list[tuple[float, float, float, float]]) -> float:
+    """ The area the rectangles (x0, x1, y0, y1) cover together; an overlap counts once. """
+    xs = sorted({x for r in rectangles for x in r[:2]})
+    area = 0.0
+    for x0, x1 in zip(xs, xs[1:]):
+        spans = sorted((r[2], r[3]) for r in rectangles if r[0] <= x0 + EPSILON and r[1] >= x1 - EPSILON)
+        covered, reach = 0.0, None
+        for y0, y1 in spans:
+            if reach is None or y0 > reach:
+                covered += y1 - y0
+                reach = y1
+            elif y1 > reach:
+                covered += y1 - reach
+                reach = y1
+        area += (x1 - x0) * covered
+    return area
+
+
+def wall_finish_area(pieces: list[dict], cuts: list[dict], height: float) -> float:
+    """ The area of the wall finishes' room faces with every opening deducted. """
+    area = sum(p["length"] for p in pieces) * height
+    for index in range(len(pieces)):
+        area -= rectangles_area([(c["from"], c["to"], c["bottom"], c["top"]) for c in cuts if c["piece"] == index])
+    return area
+
+
+def opening_point(piece: dict, cut: dict, thickness: float) -> dict:
+    """ Where the opening of a cut is placed: the middle of its bottom edge on the finish's room
+    face (the room edge moved by the finish's thickness into the room, to the right of the piece). """
+    (bx, by), (ux, uy), _ = piece_frame(piece)
+    t = (cut["from"] + cut["to"]) / 2
+    return {"x": bx + ux * t + uy * thickness, "y": by + uy * t - ux * thickness, "z": cut["bottom"]}
+
+
+def opening_data(wall_id: dict, piece: dict, cut: dict, thickness: float) -> dict:
+    """ The PlaceOpenings item of a cut: a rectangular opening of the cut's size, anchored at the
+    middle of its bottom edge, aligned with the finish's face and extruded only through the finish
+    (a finite body a little deeper than the finish, so it cuts it cleanly). """
+    return {
+        "parentElementId": wall_id["elementId"],
+        "point": opening_point(piece, cut, thickness),
+        "extrusionParameters": {
+            "constraint": "Aligned",
+            "limitType": "Finite",
+            "linkedStatus": "NotLinked",
+            "shapeType": "Rectangular",
+            "width": cut["to"] - cut["from"],
+            "height": cut["top"] - cut["bottom"],
+            "anchor": "BottomCenter",
+            "extrusionStartOffset": -OPENING_EXTRA_DEPTH,
+            "finiteBodyLength": thickness + 2 * OPENING_EXTRA_DEPTH,
+        },
+    }
+
+
+def opening_correction(details: dict, wall_guid: str, piece: dict, point: dict, thickness: float) -> tuple[dict, str | None]:
+    """ The SetOpeningDetails changes (without elementId) that make a placed opening what
+    opening_data asked for: its anchor moved onto the point, its finite body starting on the
+    finish's room face and reaching through the finish towards the wall, and cutting the finish
+    wall only (an opening may also cut what it touches, such as the structural wall behind or a
+    slab). Also a warning when the opening is not square to the finish. """
+    change: dict = {}
+    warning = None
+    geometry = details.get("geometry") or {}
+    try:
+        ax, ay, az = _plan_xyz(geometry["anchorPoint"])
+        move = (point["x"] - ax, point["y"] - ay, point["z"] - az)
+        if max(abs(m) for m in move) > LENGTH_TOLERANCE:
+            change["transformation"] = [1.0, 0.0, 0.0, move[0], 0.0, 1.0, 0.0, move[1], 0.0, 0.0, 1.0, move[2]]
+    except (KeyError, TypeError, ValueError):
+        warning = "Archicad gave no anchor point to check its position"
+    _, (ux, uy), _ = piece_frame(piece)
+    try:
+        dx, dy, dz = _plan_xyz(geometry["extrusionDirection"])
+    except (KeyError, TypeError, ValueError):
+        dx = dy = dz = 0.0
+    norm = math.sqrt(dx * dx + dy * dy + dz * dz)
+    # The wall is to the left of the piece: the normal (-uy, ux) points from the room into it.
+    toward_wall = (dx * -uy + dy * ux) / norm if norm > EPSILON else 0.0
+    if abs(toward_wall) < 0.9:
+        warning = "it is not square to the finish's face"
+    start = -OPENING_EXTRA_DEPTH if toward_wall >= 0 else -(thickness + OPENING_EXTRA_DEPTH)
+    current = (details.get("extrusionParameters") or {}).get("extrusionStartOffset")
+    if current is None or abs(float(current) - start) > EPSILON:
+        change["extrusionParameters"] = {"extrusionStartOffset": start}
+    cut = [str((e.get("elementId") or {}).get("guid", "")) for e in details.get("cutElements") or []]
+    others = [{"elementId": {"guid": guid}} for guid in cut if guid and guid.lower() != wall_guid.lower()]
+    if others:
+        change["removeCutElements"] = others
+    if not any(guid.lower() == wall_guid.lower() for guid in cut):
+        change["addCutElements"] = [{"elementId": {"guid": wall_guid}}]
+    return change, warning
+
+
 def zone_tag(number: str, guid: str) -> str:
     """ The zone's part of the Element ID: its number with spaces made underscores, or the start
     of its guid when it has no number. """
@@ -391,18 +606,22 @@ def known_thickness(kind_settings: dict) -> float | None:
 
 def story_summary(zones: list[dict]) -> list[dict]:
     """ Per story, in story order: the zones, the finishes of each kind to create ("planned"; for
-    walls the number of pieces), the zones' area and the length of the wall finishes. """
+    walls the number of pieces), the zones' area, the length of the wall finishes, their area
+    with the openings deducted and the doors, windows and openings kept clear. """
     rows: dict[int, dict] = {}
     for zone in zones:
         row = rows.setdefault(zone["floorIndex"], {"floorIndex": zone["floorIndex"], "story": zone["story"],
                                                   "zones": 0, "floor": 0, "ceiling": 0, "wall": 0, "area": 0.0,
-                                                  "wallLength": 0.0, "clashes": 0})
+                                                  "wallLength": 0.0, "wallArea": 0.0, "keptClear": 0, "clashes": 0})
         row["zones"] += 1
         for kind in zone["planned"]:
             if kind == "wall":
                 pieces = zone.get("wallPieces", [])
+                cuts = zone.get("cuts", [])
                 row["wall"] += len(pieces)
                 row["wallLength"] += sum(p["length"] for p in pieces)
+                row["wallArea"] += wall_finish_area(pieces, cuts, zone.get("roomHeight", 0.0))
+                row["keptClear"] += len({c["guid"] for c in cuts})
             else:
                 row[kind] += 1
         row["area"] += zone["area"]
@@ -418,7 +637,8 @@ class RoomFinishesFromZones:
             SCRIPT_NAME,
             "Adds the finishes of each selected zone: a floor finish and a ceiling, as slabs with the zone's polygon "
             "(the floor finish's top at the zone's base, the ceiling's bottom at the room height), and a wall finish "
-            "along every edge with a wall behind it, growing into the room. Press Preview to check them, then Create.",
+            "along every edge with a wall behind it, growing into the room, with an opening for each door, window and "
+            "opening behind it. Press Preview to check them, then Create.",
             min_width=1080, min_height=800)
         self.favorites: dict[str, list[str]] = {}
         self.layers: dict[str, int] = {}
@@ -486,11 +706,21 @@ class RoomFinishesFromZones:
         self.check_clashes = tk.BooleanVar(value=True)
         ttk.Checkbutton(options, text="Warn about structural slabs that overlap a finish (nothing is moved)",
                         variable=self.check_clashes).grid(row=2, column=0, columnspan=3, sticky="w", pady=(2, 0))
+        self.keep_clear = tk.BooleanVar(value=True)
+        ttk.Checkbutton(options, text="Cut an opening in the wall finishes for every door, window and opening behind "
+                                      "them (Archicad 29 and later)",
+                        variable=self.keep_clear).grid(row=3, column=0, columnspan=3, sticky="w", pady=(2, 0))
+        ttk.Label(options, text="Margin around them, for frames and linings (m):").grid(
+            row=4, column=0, columnspan=2, sticky="w", padx=(20, 0), pady=(2, 0))
+        self.margin = tk.StringVar(value=DEFAULT_MARGIN)
+        ttk.Entry(options, textvariable=self.margin, width=8).grid(row=4, column=2, sticky="w", padx=(6, 0), pady=(2, 0))
 
         self.summary_tree = make_tree(body, [("story", "Story", 200, "w"), ("zones", "Zones", 60, "e"),
                                              ("floor", "Floor finishes", 100, "e"), ("ceiling", "Ceilings", 80, "e"),
                                              ("wall", "Wall finishes", 90, "e"),
                                              ("wallLength", "Wall finish length (m)", 140, "e"),
+                                             ("wallArea", "Wall finish area, openings deducted (m²)", 230, "e"),
+                                             ("keptClear", "Kept clear", 80, "e"),
                                              ("area", "Area (m²)", 90, "e"), ("clashes", "Clashes", 70, "e")], height=4)
         self.summary_tree.container.grid(row=2, column=0, sticky="ew", pady=(8, 0))
 
@@ -577,7 +807,15 @@ class RoomFinishesFromZones:
     def _settings(self) -> dict | None:
         """ The window's settings, or None after showing what is wrong. """
         settings = {"replace": self.replace.get(), "checkClashes": self.check_clashes.get(),
-                    "heightSource": self.height_source.get(), "typedHeight": None}
+                    "heightSource": self.height_source.get(), "typedHeight": None,
+                    "keepClear": self.keep_clear.get(), "margin": 0.0}
+        if settings["keepClear"]:
+            margin = parse_length(self.margin.get())
+            if margin is None or margin < 0:
+                self.window.set_status("The margin around doors and windows must be 0 or a positive number of metres.",
+                                       "warning")
+                return None
+            settings["margin"] = margin
         if settings["heightSource"] == "typed":
             height = parse_length(self.typed_height.get())
             if height is None or height <= EPSILON:
@@ -675,6 +913,8 @@ class RoomFinishesFromZones:
                 "existing": set(),
                 "planned": [],
                 "wallPieces": [],
+                "cuts": [],
+                "covered": [],
             })
         # Two selected zones with the same number on one story would get the same Element ID.
         seen: dict[tuple, int] = {}
@@ -739,11 +979,14 @@ class RoomFinishesFromZones:
                                                      if isinstance(item, dict) and "error" not in item else None)
         return result
 
-    def _plan_wall_finishes(self, zones: list[dict], settings: dict, replaced: list[dict]) -> str | None:
-        """ Fills each zone's wallPieces from its boundaries and adds the earlier wall finishes to
-        replace to replaced. Returns why no wall finish can be made at all, or None. """
+    def _plan_wall_finishes(self, zones: list[dict], settings: dict, replaced: list[dict],
+                            finish_guids: set[str]) -> str | None:
+        """ Fills each zone's wallPieces from its boundaries, adds the earlier wall finishes to
+        replace to replaced and the guids of every wall finish of an earlier run to finish_guids.
+        Returns why no wall finish can be made at all, or None. """
         self.window.set_status("Reading the walls and the zone boundaries...")
         wall_guids, earlier = self._read_walls()
+        finish_guids.update(w["elementId"]["guid"] for old in earlier.values() for w in old)
         try:
             boundaries = self._read_boundaries(zones)
         except ArchicadError as e:
@@ -787,6 +1030,128 @@ class RoomFinishesFromZones:
             zone["planned"].append("wall")
         return None
 
+    @staticmethod
+    def _archicad_version() -> int | None:
+        try:
+            return int(run_command("GetProductInfo").get("version"))
+        except (ArchicadError, TypeError, ValueError):
+            return None
+
+    @staticmethod
+    def _read_doors_and_windows() -> list[dict]:
+        """ The doors and windows in straight walls, as opening_cut takes them: the plan points of
+        their two sides, their bottom and top (absolute heights) and the thickness of their wall. """
+        elements, items = [], []
+        for kind in OPENING_KINDS:
+            try:
+                ids = run_tapir("GetElementsByType", {"elementType": kind}).get("elements", [])
+            except ArchicadError as e:
+                print(f"The {kind.lower()}s cannot be read: {e}")
+                continue
+            details = get_details_of_elements(ids, ["id", "details"]) if ids else []
+            items += [(kind, i, d) for i, d in zip(ids, details)]
+        owner_guids = sorted({str(((d.get("details") or {}).get("ownerElementId") or {}).get("guid", ""))
+                              for _, _, d in items} - {""})
+        owner_details = get_details_of_elements([{"elementId": {"guid": g}} for g in owner_guids], ["details"]) \
+            if owner_guids else []
+        owners = {g: o.get("details") or {} for g, o in zip(owner_guids, owner_details)}
+        for kind, element_id, detail in items:
+            d = detail.get("details") or {}
+            owner = owners.get(str((d.get("ownerElementId") or {}).get("guid", "")))
+            try:
+                width, height = float(d["width"]), float(d["height"])
+                points = door_window_points(_xy(owner["begCoordinate"]), _xy(owner["endCoordinate"]),
+                                            float(d["centerOffset"]), width)
+                # The sill height is measured from the bottom of the wall.
+                bottom = float(owner["zCoordinate"]) + float(d.get("sillHeight", 0.0))
+                thickness = max(float(owner.get("begThickness") or 0.0), float(owner.get("endThickness") or 0.0))
+            except (KeyError, TypeError, ValueError):
+                continue
+            if not points or owner.get("geometryType", "Straight") != "Straight" or \
+                    abs(float(owner.get("arcAngle") or 0.0)) > EPSILON:
+                continue
+            label = str(detail.get("id", "") or "") or (d.get("libPart") or {}).get("name", "") or kind
+            elements.append({"guid": element_id["elementId"]["guid"], "kind": kind, "label": f"{kind} {label}",
+                             "points": points, "bottom": bottom, "top": bottom + height, "maxDistance": thickness})
+        return elements
+
+    @staticmethod
+    def _read_openings(finish_guids: set[str]) -> tuple[list[dict], list[dict]]:
+        """ The Opening elements (Archicad 29 and later) as opening_cut takes them, without those in
+        the wall finishes of an earlier run, which are returned on their own ({"elementId",
+        "parent"}). Raises ArchicadError where they cannot be read. """
+        ids = run_tapir("GetElementsByType", {"elementType": "Opening"}).get("elements", [])
+        if not ids:
+            return [], []
+        details = []
+        for chunk in batched(ids, 500):
+            details += run_tapir("GetOpeningDetails", {"elements": chunk}).get("openings", [])
+        parent_guids = sorted({str((d.get("parentElementId") or {}).get("guid", "")) for d in details
+                               if isinstance(d, dict)} - {""} - finish_guids)
+        parent_details = get_details_of_elements([{"elementId": {"guid": g}} for g in parent_guids],
+                                                 ["type", "details"]) if parent_guids else []
+        walls = {g: p.get("details") or {} for g, p in zip(parent_guids, parent_details) if p.get("type") == "Wall"}
+        openings, earlier = [], []
+        for element_id, d in zip(ids, details):
+            if not isinstance(d, dict) or "error" in d or d.get("exists") is False:
+                continue
+            parent = str((d.get("parentElementId") or {}).get("guid", ""))
+            if parent in finish_guids:
+                earlier.append({"elementId": element_id["elementId"], "parent": parent})
+                continue
+            wall = walls.get(parent)
+            points = opening_world_points(d.get("geometry") or {}, d.get("extrusionParameters") or {})
+            if wall is None or len(points) < 3:
+                continue
+            thickness = max(float(wall.get("begThickness") or 0.0), float(wall.get("endThickness") or 0.0))
+            zs = [p[2] for p in points]
+            openings.append({"guid": element_id["elementId"]["guid"], "kind": "Opening",
+                             "label": f"Opening {element_id['elementId']['guid'][:8]}",
+                             "points": [(p[0], p[1]) for p in points], "bottom": min(zs), "top": max(zs),
+                             "maxDistance": thickness})
+        return openings, earlier
+
+    def _plan_openings(self, zones: list[dict], settings: dict, replaced: list[dict],
+                       finish_guids: set[str]) -> str | None:
+        """ Fills each zone's cuts (the openings its wall finishes need) and puts the openings of
+        the earlier wall finishes that are replaced before them in replaced. Returns why no
+        opening can be cut, or None. """
+        walled = [z for z in zones if "wall" in z["planned"]]
+        replaced_guids = {r["elementId"]["guid"] for r in replaced}
+        if not (walled and settings["keepClear"]) and not (replaced_guids & finish_guids):
+            return None
+        self.window.set_status("Reading the doors, windows and openings...")
+        version = self._archicad_version()
+        possible = version is None or version >= OPENINGS_MIN_VERSION
+        elements = []
+        if possible:
+            try:
+                elements, earlier = self._read_openings(finish_guids)
+                replaced[:0] = [{"elementId": o["elementId"]} for o in earlier if o["parent"] in replaced_guids]
+            except ArchicadError as e:
+                print(f"The openings cannot be read: {e}")
+                if version is None:
+                    possible = False
+        if not (walled and settings["keepClear"]):
+            return None
+        elements += self._read_doors_and_windows()
+        for zone in walled:
+            cuts = zone_cuts(zone["wallPieces"], elements, zone["baseZ"], zone["baseZ"] + zone["roomHeight"],
+                             settings["margin"])
+            labels = list(dict.fromkeys(c["label"] for c in cuts))
+            if possible:
+                zone["cuts"] = cuts
+                if labels:
+                    zone["notes"].append("kept clear: " + ", ".join(labels))
+            else:
+                zone["covered"] = labels
+                if labels:
+                    zone["notes"].append("covers: " + ", ".join(labels))
+        if not possible and any(z["covered"] for z in walled):
+            return (f"the wall finishes cover the doors and windows behind them: cutting openings needs Archicad "
+                    f"{OPENINGS_MIN_VERSION} or later (PlaceOpenings)")
+        return None
+
     def make_preview(self) -> bool:
         settings = self._settings()
         if settings is None:
@@ -818,7 +1183,12 @@ class RoomFinishesFromZones:
                             zone["clashes"].append({"kind": kind, "slab": slab})
                 if zone["clashes"]:
                     zone["notes"].append(f"{len(zone['clashes'])} clash(es) with structural slabs")
-            no_walls = self._plan_wall_finishes(zones, settings, replaced) if settings["wall"]["enabled"] else None
+            no_walls = no_openings = None
+            if settings["wall"]["enabled"]:
+                finish_guids: set[str] = set()
+                no_walls = self._plan_wall_finishes(zones, settings, replaced, finish_guids)
+                if not no_walls:
+                    no_openings = self._plan_openings(zones, settings, replaced, finish_guids)
         self.preview = {"snapshot": self._snapshot(settings), "settings": settings, "zones": zones,
                         "replaced": replaced, "structural": structural}
         self.created = []
@@ -827,16 +1197,22 @@ class RoomFinishesFromZones:
         slabs = sum(1 for _, kind in self._planned() if kind in SLAB_KINDS)
         walls = sum(len(z["wallPieces"]) for z in zones if "wall" in z["planned"])
         clashes = sum(len(z["clashes"]) for z in zones)
+        cuts = sum(len(z["cuts"]) for z in zones if "wall" in z["planned"])
         message = f"Preview: {slabs} finish slab(s) and {walls} wall finish(es) for {len(zones)} zone(s)"
+        if cuts:
+            message += f", with {cuts} opening(s) for the doors, windows and openings behind them"
         if replaced:
-            message += f", replacing {len(replaced)} of an earlier run"
+            message += f", replacing {len(replaced)} element(s) of an earlier run"
         message += "."
         if no_walls:
             message += f" No wall finishes: {no_walls}."
+        if no_openings:
+            message += f" Note: {no_openings}."
         if clashes:
             message += (f" {clashes} clash(es) with structural slabs: lower their top to the zone's base minus the "
                         "floor finish's thickness, or check the ceiling's height.")
-        self.window.set_status(message + " Check it, then press Create.", "warning" if clashes or no_walls else "ok")
+        self.window.set_status(message + " Check it, then press Create.",
+                               "warning" if clashes or no_walls or no_openings else "ok")
         return True
 
     def _planned(self) -> list[tuple[dict, str]]:
@@ -850,7 +1226,7 @@ class RoomFinishesFromZones:
         for index, row in enumerate(story_summary(self.preview["zones"])):
             self.summary_tree.insert("", "end", iid=str(index), values=(
                 row["story"], row["zones"], row["floor"], row["ceiling"], row["wall"], f"{row['wallLength']:.2f}",
-                f"{row['area']:.2f}", row["clashes"]))
+                f"{row['wallArea']:.2f}", row["keptClear"], f"{row['area']:.2f}", row["clashes"]))
         self.zone_tree.delete(*self.zone_tree.get_children())
         for index, zone in enumerate(self.preview["zones"]):
             floor = f"{zone['levels']['floor'][1]:.3f}" if "floor" in zone["planned"] else "-"
@@ -894,7 +1270,7 @@ class RoomFinishesFromZones:
                                            fill="white")
         if "wall" in zone["planned"]:
             # Each wall finish as a thick line, moved a little to its right (into the room).
-            for piece in zone["wallPieces"]:
+            for index, piece in enumerate(zone["wallPieces"]):
                 (bx, by), (ex, ey) = to_canvas(piece["beg"]), to_canvas(piece["end"])
                 length = math.hypot(ex - bx, ey - by)
                 if length < 1:
@@ -902,6 +1278,14 @@ class RoomFinishesFromZones:
                 # The canvas's y axis points down, so the plan's right-hand normal is (-dy, dx) there.
                 nx, ny = (ey - by) / length * -3, (ex - bx) / length * 3
                 self.canvas.create_line(bx + nx, by + ny, ex + nx, ey + ny, fill="#0082c8", width=4)
+                # The openings cut into it, in orange.
+                for cut in zone["cuts"]:
+                    if cut["piece"] != index or piece["length"] < EPSILON:
+                        continue
+                    f0, f1 = cut["from"] / piece["length"], cut["to"] / piece["length"]
+                    self.canvas.create_line(bx + (ex - bx) * f0 + nx, by + (ey - by) * f0 + ny,
+                                            bx + (ex - bx) * f1 + nx, by + (ey - by) * f1 + ny,
+                                            fill="#e68c00", width=6)
         lines = [f"Zone base {zone['baseZ']:.3f} m, room height {zone['roomHeight']:.3f} m"]
         if "floor" in zone["planned"]:
             bottom, top = zone["levels"]["floor"]
@@ -915,6 +1299,9 @@ class RoomFinishesFromZones:
             length = sum(p["length"] for p in zone["wallPieces"])
             lines.append(f"Wall finishes (blue): {len(zone['wallPieces'])}, {length:.2f} m long, from "
                          f"{zone['baseZ']:.3f} to {zone['baseZ'] + zone['roomHeight']:.3f}")
+            if zone["cuts"]:
+                area = wall_finish_area(zone["wallPieces"], zone["cuts"], zone["roomHeight"])
+                lines.append(f"Openings (orange): {len(zone['cuts'])}; finish area {area:.2f} m² with them deducted")
         self.canvas.create_text(8, plan_height + 4, anchor="nw", text="\n".join(lines), fill="#333333")
 
     def _highlight(self, zones: list[dict]) -> None:
@@ -947,9 +1334,10 @@ class RoomFinishesFromZones:
             self.window.set_status("These finishes are already created. Press Preview to create them again.", "warning")
             return
         slab_items = [slab_data(zone, kind, settings) for zone, kind in self._planned() if kind in SLAB_KINDS]
-        wall_items = [wall_data(zone, piece, number, settings)
-                      for zone, kind in self._planned() if kind == "wall"
-                      for number, piece in enumerate(zone["wallPieces"], start=1)]
+        wall_pieces = [(zone, index) for zone, kind in self._planned() if kind == "wall"
+                       for index in range(len(zone["wallPieces"]))]
+        wall_items = [wall_data(zone, zone["wallPieces"][index], index + 1, settings) for zone, index in wall_pieces]
+        cut_count = sum(1 for zone, index in wall_pieces for c in zone["cuts"] if c["piece"] == index)
         total = len(slab_items) + len(wall_items)
         if not total:
             self.window.set_status("There is nothing to create.", "warning")
@@ -957,13 +1345,17 @@ class RoomFinishesFromZones:
         replaced = self.preview["replaced"]
         lines = [f"Create {len(slab_items)} finish slab(s) and {len(wall_items)} wall finish(es) for "
                  f"{len(self.preview['zones'])} zone(s)?"]
+        if cut_count:
+            lines.append(f"The wall finishes get {cut_count} opening(s) for the doors, windows and openings behind "
+                         "them (each one its own Undo step, and one more to fit them to the finishes).")
         for kind, label in KINDS:
             kind_settings = settings[kind]
             if kind_settings["enabled"]:
                 source = kind_settings["favorite"] or self.kind_vars[kind]["structure"].get()
                 lines.append(f"{label}: {source}")
         if replaced:
-            lines.append(f"\n{len(replaced)} finish(es) of an earlier run are deleted first (a separate Undo step).")
+            lines.append(f"\n{len(replaced)} finish(es) and their openings of an earlier run are deleted first (a "
+                         "separate Undo step).")
         if not self.window.ask_ok_cancel(SCRIPT_NAME, "\n".join(lines)):
             return
 
@@ -982,13 +1374,24 @@ class RoomFinishesFromZones:
                                            f"(the first: {delete_errors[0]}), so nothing is created. Reserve or unlock "
                                            "them, then press Preview again.", "error")
                     return
-            for command, key, items, created in [("CreateSlabs", "slabsData", slab_items, created_slabs),
-                                                 ("CreateWalls", "wallsData", wall_items, created_walls)]:
-                for chunk in batched(items, 500):
-                    result = run_tapir(command, {key: chunk}).get("elements", [])
-                    created += [{"elementId": e["elementId"]} for e in result
-                                if isinstance(e, dict) and "elementId" in e]
-                    errors += item_errors(result)
+            for chunk in batched(slab_items, 500):
+                result = run_tapir("CreateSlabs", {"slabsData": chunk}).get("elements", [])
+                created_slabs += [{"elementId": e["elementId"]} for e in result if isinstance(e, dict) and "elementId" in e]
+                errors += item_errors(result)
+            walls_with_cuts = []
+            for start in range(0, len(wall_items), 500):
+                result = run_tapir("CreateWalls", {"wallsData": wall_items[start:start + 500]}).get("elements", [])
+                for (zone, index), element in zip(wall_pieces[start:start + 500], result):
+                    if isinstance(element, dict) and "elementId" in element:
+                        created_walls.append({"elementId": element["elementId"]})
+                        cuts = [c for c in zone["cuts"] if c["piece"] == index]
+                        if cuts:
+                            walls_with_cuts.append((zone, zone["wallPieces"][index], cuts, created_walls[-1]))
+                errors += item_errors(result)
+            created_openings, kept_clear, opening_warnings = [], {}, []
+            if walls_with_cuts:
+                self.window.set_status(f"Cutting {cut_count} opening(s) into the wall finishes...")
+                created_openings, kept_clear, opening_warnings = self._cut_openings(walls_with_cuts, errors)
             clashes = self._check_created(created_slabs) if created_slabs and settings["checkClashes"] else []
 
         created = created_slabs + created_walls
@@ -1003,9 +1406,19 @@ class RoomFinishesFromZones:
             print(f"Error: {error}")
         for clash in clashes[:50]:
             print(f"Clash: {clash}")
+        for label, kept in kept_clear.items():
+            print(f"{label}: kept clear {', '.join(kept)}")
+        for warning in opening_warnings[:50]:
+            print(f"Check: {warning}")
         message = (f"Created {len(created_slabs)} of {len(slab_items)} finish slab(s) and {len(created_walls)} of "
                    f"{len(wall_items)} wall finish(es); they are highlighted in blue.")
+        if cut_count:
+            message += (f" Cut {len(created_openings)} of {cut_count} opening(s) for the doors, windows and "
+                        "openings, listed per zone in the palette's output.")
         kind = "ok"
+        if opening_warnings:
+            message += f" Check {len(opening_warnings)} opening(s) in 3D, listed in the palette's output."
+            kind = "warning"
         if clashes:
             message += f" {len(clashes)} overlap(s) with structural slabs, listed in the palette's output."
             kind = "warning"
@@ -1013,6 +1426,63 @@ class RoomFinishesFromZones:
             message += f" {len(errors)} error(s), the first: {errors[0]}"
             kind = "error" if not created else "warning"
         self.window.set_status(message, kind)
+
+    @staticmethod
+    def _cut_openings(walls: list[tuple[dict, dict, list[dict], dict]],
+                      errors: list[str]) -> tuple[list[dict], dict[str, list[str]], list[str]]:
+        """ Places the openings of the cuts in the new wall finishes ((zone, piece, cuts, wall id)),
+        then corrects each one with SetOpeningDetails (see opening_correction). Returns the new
+        openings, the labels of the elements kept clear per zone and what to check by eye; adds
+        the failures to errors. """
+        details = get_details_of_elements([w[3] for w in walls], ["details"])
+        items, meta = [], []
+        for (zone, piece, cuts, wall_id), detail in zip(walls, details):
+            d = detail.get("details") or {}
+            thickness = max(float(d.get("begThickness") or 0.0), float(d.get("endThickness") or 0.0))
+            if thickness <= EPSILON:
+                errors.append(f"{zone['label']}: the thickness of a wall finish is not known, so its "
+                              f"{len(cuts)} opening(s) are not cut")
+                continue
+            for cut in cuts:
+                item = opening_data(wall_id, piece, cut, thickness)
+                items.append(item)
+                meta.append((zone, piece, cut, wall_id["elementId"]["guid"], item["point"], thickness))
+        placed = []
+        for start in range(0, len(items), 200):
+            result = run_tapir("PlaceOpenings", {"openingsData": items[start:start + 200]}).get("elements", [])
+            for info, element in zip(meta[start:start + 200], result):
+                if isinstance(element, dict) and "elementId" in element:
+                    placed.append((info, {"elementId": element["elementId"]}))
+                elif isinstance(element, dict) and "error" in element:
+                    errors.append(f"{info[0]['label']}, {info[2]['label']}: {item_errors([element])[0]}")
+        warnings, changes, kept_clear = [], [], {}
+        for start in range(0, len(placed), 200):
+            chunk = placed[start:start + 200]
+            result = run_tapir("GetOpeningDetails", {"elements": [p[1] for p in chunk]}).get("openings", [])
+            for ((zone, piece, cut, wall_guid, point, thickness), opening), d in zip(chunk, result):
+                name = f"{zone['label']}, {cut['label']}"
+                if not isinstance(d, dict) or "error" in d:
+                    warnings.append(f"{name}: the opening cannot be read back, so its position and the elements "
+                                    "it cuts are not checked")
+                    continue
+                change, warning = opening_correction(d, wall_guid, piece, point, thickness)
+                if warning:
+                    warnings.append(f"{name}: {warning}")
+                if change:
+                    changes.append((name, {"elementId": opening["elementId"], **change}))
+        for start in range(0, len(changes), 200):
+            chunk = changes[start:start + 200]
+            result = run_tapir("SetOpeningDetails", {"openingsWithDetails": [c[1] for c in chunk]}).get(
+                "executionResults", [])
+            for (name, _), outcome in zip(chunk, result):
+                if isinstance(outcome, dict) and outcome.get("success") is False:
+                    errors.append(f"{name}: the opening could not be corrected: "
+                                  f"{item_errors([outcome])[0] if 'error' in outcome else 'unknown error'}")
+        for (zone, _, cut, _, _, _), _ in placed:
+            labels = kept_clear.setdefault(zone["label"], [])
+            if cut["label"] not in labels:
+                labels.append(cut["label"])
+        return [p[1] for p in placed], kept_clear, warnings
 
     def _check_created(self, created: list[dict]) -> list[str]:
         """ Checks the new slabs, now with their real thickness, against the structural slabs. """
