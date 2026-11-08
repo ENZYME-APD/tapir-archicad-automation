@@ -10917,6 +10917,47 @@ GS::Optional<GS::UniString> ChangeSlabPolygonKeepingEdges (
     return {};
 }
 
+static bool IsSameOverriddenMaterial (const API_OverriddenAttribute& a, const API_OverriddenAttribute& b)
+{
+#ifdef ServerMainVers_2700
+    return a.hasValue == b.hasValue && (!a.hasValue || a.value == b.value);
+#else
+    return a.overridden == b.overridden && (!a.overridden || a.attributeIndex == b.attributeIndex);
+#endif
+}
+
+// Changing the pivot polygon of a multi-plane roof makes Archicad turn on the roof's top and
+// bottom surface overrides (#2374), although ModifyRoofs does not write them. Writes the
+// surfaces the roof had before back when the change altered them.
+static GSErrCode RestoreRoofSurfaces (const API_Guid& roofGuid, const API_ShellBaseType& oldShellBase)
+{
+    API_Element roof = {};
+    roof.header.guid = roofGuid;
+    GSErrCode err = ACAPI_Element_Get (&roof);
+    if (err != NoError) {
+        return err;
+    }
+    API_ShellBaseType& shellBase = roof.roof.shellBase;
+    if (IsSameOverriddenMaterial (shellBase.topMat, oldShellBase.topMat) &&
+        IsSameOverriddenMaterial (shellBase.sidMat, oldShellBase.sidMat) &&
+        IsSameOverriddenMaterial (shellBase.botMat, oldShellBase.botMat) &&
+        shellBase.materialsChained == oldShellBase.materialsChained) {
+        return NoError;
+    }
+
+    shellBase.topMat = oldShellBase.topMat;
+    shellBase.sidMat = oldShellBase.sidMat;
+    shellBase.botMat = oldShellBase.botMat;
+    shellBase.materialsChained = oldShellBase.materialsChained;
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_RoofType, shellBase.topMat);
+    ACAPI_ELEMENT_MASK_SET (mask, API_RoofType, shellBase.sidMat);
+    ACAPI_ELEMENT_MASK_SET (mask, API_RoofType, shellBase.botMat);
+    ACAPI_ELEMENT_MASK_SET (mask, API_RoofType, shellBase.materialsChained);
+    return ACAPI_Element_Change (&roof, &mask, nullptr, 0, true);
+}
+
 ModifyRoofsCommand::ModifyRoofsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -11245,6 +11286,7 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     continue;
                 }
 
+                const API_ShellBaseType oldShellBase = element.roof.shellBase;
                 auto error = BuildRoofMemoFromGeometry (element, memo, polygonOutline, polygonArcs, holes);
                 if (error.HasValue ()) {
                     results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
@@ -11252,7 +11294,12 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 }
 
                 err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_AdditionalPolygon, true);
-                results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify roof geometry."));
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, "Failed to modify roof geometry."));
+                    continue;
+                }
+                err = RestoreRoofSurfaces (element.header.guid, oldShellBase);
+                results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Modified the roof geometry, but failed to restore the roof's surface overrides."));
                 continue;
             }
 
