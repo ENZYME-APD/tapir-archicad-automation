@@ -1286,7 +1286,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyShellsCommand> (
             elementCommands, "1.8.0",
-            "Modifies the structure (Basic or Composite, building material or composite) of Shell elements based on the given parameters."
+            "Modifies the structure (Basic or Composite, building material or composite), the clipping contour and the holes (each with its polygon, plane and depth) of Shell elements based on the given parameters. The element keeps its GUID and its profile."
         );
         err |= RegisterCommand<ModifyMeshesCommand> (
             elementCommands, "1.5.4",

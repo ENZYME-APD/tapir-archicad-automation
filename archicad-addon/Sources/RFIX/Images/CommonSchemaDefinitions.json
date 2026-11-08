@@ -10456,6 +10456,17 @@
             },
             "floorFill": {
                 "$ref": "#/ShellBaseFloorFill"
+            },
+            "contour": {
+                "$ref": "#/ShellCutPolygon",
+                "description": "The clipping contour of the shell, when it has one: only the part inside this polygon, seen along the Z axis of its plane, is kept. The polygon and its plane are in the coordinates of the shell's base plane, as CreateShells and ModifyShells take them."
+            },
+            "holes": {
+                "type": "array",
+                "description": "The holes of the shell, each with its polygon, its plane (in the coordinates of the shell's base plane) and the depth its cutting body is extruded along the Z axis of that plane. Empty when the shell has no hole.",
+                "items": {
+                    "$ref": "#/ShellCutPolygon"
+                }
             }
         },
         "additionalProperties": false,
