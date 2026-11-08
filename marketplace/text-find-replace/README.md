@@ -42,4 +42,4 @@ writes no files.
 
 ## Credits
 
-Requested by @parikshit99 in #2002. Written by the Tapir project.
+Requested by @parikshit99 in #2002, written with the Tapir issue bot.

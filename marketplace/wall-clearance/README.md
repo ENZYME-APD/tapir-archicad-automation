@@ -57,5 +57,5 @@ table writes the margins and the table to a file you choose (default name
 
 ## Credits
 
-Requested by @parikshit99 in #2146. Written by the Tapir project. Measuring doors and windows by
+Requested by @parikshit99 in #2146, written with the Tapir issue bot. Measuring doors and windows by
 their opening in the wall comes from @Cri5chan's pull request #2158.

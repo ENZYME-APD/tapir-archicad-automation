@@ -23,6 +23,7 @@
 
 #include "ApplicationCommands.hpp"
 #include "ScriptUICommands.hpp"
+#include "DialogCommands.hpp"
 #include "ProjectCommands.hpp"
 #include "NameResolutionCommands.hpp"
 #include "CustomDataCommands.hpp"
@@ -272,6 +273,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetPolygonFromUserCommand> (
             applicationCommands, "1.8.0",
             "Waits for the user to input a polygon in the active Archicad window and returns its points and arcs."
+        );
+        err |= RegisterCommand<GetMagicWandSettingsCommand> (
+            applicationCommands, "1.8.1",
+            "Returns the settings of Archicad's Magic Wand Settings dialog: how curves are approximated with straight segments (a number of segments along arcs or circles, a largest deviation from the curve, or a segment length) and the trace method. Useful to know how the Magic Wand will trace a curve. Changes nothing in the project."
         );
         err |= RegisterCommand<ConvertImagesCommand> (
             applicationCommands, "1.8.1",
@@ -3468,6 +3473,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetScriptUIResultCommand> (
             scriptUICommands, "1.5.4",
             "Retrieves and clears the result last submitted from the Script UI palette's page (via window.ACAPI.SubmitResult), if any, and reports whether the palette is still open, so a waiting script can stop when the user closes it."
+        );
+        err |= RegisterCommand<OpenSettingsDialogCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens Archicad's settings dialog of the selected elements or the current tool (Archicad 28 and later), or the default settings dialog of the given element type, waits for the user and reports whether the dialog was closed with OK or Cancel."
         );
         AddCommandGroup (scriptUICommands);
     }

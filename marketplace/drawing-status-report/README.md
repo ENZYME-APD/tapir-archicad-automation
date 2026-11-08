@@ -44,5 +44,5 @@ nothing in the project.
 
 ## Credits
 
-Requested by @parikshit99 in #1992. Written by the Tapir project, based on the
+Requested by @parikshit99 in #1992, written with the Tapir issue bot, based on the
 `get_drawing_manager_data.py` workflow example.

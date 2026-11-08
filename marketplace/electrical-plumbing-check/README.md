@@ -54,4 +54,4 @@ lists; the highlight is cleared when the window closes.
 
 ## Credits
 
-Requested by @parikshit99 in #2021. Written by the Tapir project.
+Requested by @parikshit99 in #2021, written with the Tapir issue bot.

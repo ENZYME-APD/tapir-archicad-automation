@@ -3,12 +3,12 @@
 Adds the finishes of the selected zones: a floor finish and a ceiling for each zone, as slabs
 with the zone's polygon, and a wall finish along every edge with a wall behind it. Each kind is
 made from a favorite of its tool, or from a layer, a building material or composite (or, for
-the wall finishes, a complex profile) and a thickness. A second run on the same zones replaces
-the finishes of the first one.
+the wall finishes, a complex profile) and a thickness. Every wall finish gets an opening for each
+door, window and opening behind it. A second run on the same zones replaces the finishes of the
+first one.
 
-This version makes the floor finishes, the ceilings and the wall finishes. Openings kept clear
-for doors and windows, and the cove, are coming in the next versions (#2292). Until then a wall
-finish covers the doors and windows behind it.
+This version makes the floor finishes, the ceilings and the wall finishes with their openings.
+The cove is coming in the next version (#2292).
 
 ## How to use it
 
@@ -18,16 +18,21 @@ finish covers the doors and windows behind it.
    building material, a composite or, for walls, a complex profile) and a *Thickness*. Choose a
    *Layer* if the finish should not be on the favorite's or the tool's layer. Untick *Create the
    floor finishes*, *Create the ceilings* or *Create the wall finishes* to leave that kind out.
-3. Under *Room height*, choose *The zone's height* or type a height.
+3. Under *Room height*, choose *The zone's height* or type a height. Leave *Cut an opening in
+   the wall finishes for every door, window and opening behind them* ticked, and type a
+   *Margin around them* if their frames or linings stand proud of the wall (see below).
 4. Press *Preview*. The table at the top sums up each story: the zones, the finishes to create,
-   the number and total length of the wall finishes, the area and the clashes. The list below
+   the number and total length of the wall finishes, their area with every opening deducted, the
+   number of doors, windows and openings kept clear, the area and the clashes. The list below
    gives each zone's floor finish top and ceiling bottom (absolute heights in metres), its number
-   of wall finishes and notes. Select a zone to draw it with its levels and its wall finishes (in
-   blue, on the room side of the edge); double-click it to select it in Archicad. The zones are
+   of wall finishes and notes, among them every door, window and opening it keeps clear. Select a
+   zone to draw it with its levels and its wall finishes (in blue, on the room side of the edge,
+   with the openings in orange); double-click it to select it in Archicad. The zones are
    highlighted in Archicad: green, or orange when a structural slab clashes with one of its
    finishes.
-5. Press *Create* and confirm. The new slabs and walls are highlighted in blue. *Clear
-   highlight*, or closing the window, ends the highlight.
+5. Press *Create* and confirm. The new slabs and walls are highlighted in blue. The palette's
+   output lists, per zone, the doors, windows and openings kept clear. *Clear highlight*, or
+   closing the window, ends the highlight.
 
 ## Where the finishes go
 
@@ -49,6 +54,40 @@ finish covers the doors and windows behind it.
   says. A complex profile has no reference line location: Archicad puts the profile's origin on
   the room edge, so which side the profile goes to depends on how it is drawn. Check it in a
   section after the first run.
+
+### Doors, windows and openings
+
+With *Cut an opening in the wall finishes…* ticked (the default), the wall finish runs on along
+the edge and gets an opening for every door, window and opening (made with the Opening tool) in
+the wall behind it (Archicad 29 and later):
+
+- **Size:** the door's or window's width and height in its settings, or the size of the
+  opening's polygon, plus the *Margin* on each side and at the top. Door frames and linings often
+  stand proud of the wall face into the room; the width and height Archicad gives are those of
+  the wall opening, so type the frame's width as the margin (default 0).
+- **Height:** a door's opening starts at the finish's bottom (sill 0) and reaches the door's head
+  plus the margin; a window's starts the margin below its sill. No opening reaches above the
+  finish.
+- **It cuts only the finish:** it is a finite opening as deep as the finish (5 mm more on each
+  face), placed on the finish's room face, and after it is placed the script takes every other
+  element it cuts (the structural wall behind, a slab) off its list, so the structural wall,
+  which already has its door or window, and the slabs are unchanged.
+- **Which ones:** the doors and windows of straight walls, and the openings of walls, that lie
+  along a wall finish, in the wall right behind it (no farther from the room edge than that wall
+  is thick) and between the finish's bottom and top. Doors and windows in curved or polygonal
+  walls are not found.
+- **It does not follow the door.** If a door or window is moved or resized later, the finish's
+  opening stays where it was. Run the script again on the zone: it replaces the wall finishes,
+  with their openings, and cuts them where the doors and windows are now.
+- **Quantities:** Archicad deducts openings from wall areas by the project's calculation rules
+  (some leave out small openings), so the wall finish's area in a schedule can differ from the
+  *Wall finish area, openings deducted* in the summary, which deducts every opening.
+- In Archicad 25 to 28, which cannot place such openings (PlaceOpenings needs Archicad 29), the
+  wall finishes are still made, but they cover the doors and windows behind them; the preview
+  says so and lists them per zone (*covers:*).
+
+After *Create*, an opening that is not square to the finish's face, or that Archicad could not
+read back, is listed under *Check:* in the palette's output: look at it in 3D.
 
 ### Structural slabs
 
@@ -74,7 +113,7 @@ schedule.
 
 With *Replace the finishes an earlier run made for these zones* ticked (the default), *Create*
 first deletes the finishes with the same Element ID on the zone's story (for walls: every
-`FIN-<zone number>-wall-…`), then creates the new ones. Unticked, a zone that already has a
+`FIN-<zone number>-wall-…`, with the openings in them), then creates the new ones. Unticked, a zone that already has a
 finish of that kind keeps it and gets no second one. Only the kinds you create are replaced:
 with *Create the ceilings* unticked, the ceilings of an earlier run stay.
 
@@ -94,13 +133,15 @@ again from the structural walls, delete the wall finishes, update the zone and r
   own thickness).
 - *Room height*: the zone's height; the typed height is 2.60 m.
 - *Replace the finishes an earlier run made*: on. *Warn about structural slabs*: on.
+- *Cut an opening in the wall finishes…*: on. *Margin around them*: 0 m.
 
 ## What it changes
 
 Nothing until you press *Create* and confirm: then it deletes the finishes of an earlier run
 for the selected zones (when *Replace* is on), in one Undo step, and creates the new slabs, in
-one more Undo step, and the new walls, in a third. *Preview* only highlights the zones. It writes
-no files.
+one more Undo step, and the new walls, in a third. Each opening in a wall finish is placed in an
+Undo step of its own, and one more fits them to the finishes. *Preview* only highlights the
+zones. It writes no files.
 
 ## Limits
 
@@ -115,13 +156,14 @@ no files.
 - In Teamwork, or on a locked layer, the finishes of an earlier run may not be deletable. Then
   nothing is created (that would add a second finish next to the old one) and the error is
   shown; reserve or unlock them and press *Preview* again.
-- A wall finish covers the doors, windows and openings behind it, for now (#2292).
+- The openings in the wall finishes need Archicad 29 or later; before it a wall finish covers
+  the doors, windows and openings behind it.
 - The zone's boundaries are those Archicad gives for the zone as it is: an automatic zone that
   was not updated after its walls moved can give edges with no wall behind them.
 - Works in Archicad 25 to 30 with Tapir 1.8.0 or later, which sets the Element ID and the layer of
   the new slabs and walls. The wall finishes need Archicad 28 or later (the zone boundaries come
   from Archicad's API there); in Archicad 25 to 27 the preview says so and makes only the floor
-  finishes and ceilings.
+  finishes and ceilings. The openings in the wall finishes need Archicad 29 or later.
 - It needs the `utilities/` and `aclib/` folders of
   [`builtin-scripts/`](../../builtin-scripts/) next to it (see
   [The helpers `utilities` and `aclib`](../README.md#the-helpers-utilities-and-aclib)).

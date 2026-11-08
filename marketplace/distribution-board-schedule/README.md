@@ -52,4 +52,4 @@ default name is `Distribution boards <date> <time>.csv`.
 
 ## Credits
 
-Requested by @parikshit99 in #2019. Written by the Tapir project.
+Requested by @parikshit99 in #2019, written with the Tapir issue bot.

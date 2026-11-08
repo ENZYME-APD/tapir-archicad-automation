@@ -4,7 +4,7 @@
     "summary": "Totals the volume and projected area of every building material of walls, columns, beams, slabs, roofs and shells, per story, for Excel or CSV.",
     "category": "quantities-scheduling",
     "tags": ["building-materials", "quantities", "volume", "take-off", "export"],
-    "author": { "name": "Tapir" },
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
     "license": "MIT",
     "entry": "MaterialTakeOff.py",
     "versions": [

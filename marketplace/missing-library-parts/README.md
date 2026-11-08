@@ -45,4 +45,4 @@ in Archicad* only changes the selection. It writes no files.
 
 ## Credits
 
-Requested by @parikshit99 in #2010. Written by the Tapir project.
+Requested by @parikshit99 in #2010, written with the Tapir issue bot.
