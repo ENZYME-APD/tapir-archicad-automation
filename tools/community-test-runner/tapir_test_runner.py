@@ -407,11 +407,18 @@ def archicad_running(exe: str) -> bool:
     return bool(archicad_pids(exe))
 
 
-def crash_reporter_running(exe: str) -> bool:
-    """GSReport.exe next to Archicad.exe; on macOS GSReport.app inside the Archicad .app's MacOS folder."""
+def crash_reporters(exe: str) -> set[int]:
+    """The open crash reporters of this Archicad: GSReport.exe next to Archicad.exe; on macOS
+    GSReport.app inside the Archicad .app's MacOS folder."""
     folder = str(Path(exe).parent).lower()
-    return any(Path(path).name.lower() in ("gsreport.exe", "gsreport") and path.lower().startswith(folder)
-               for path in processes().values())
+    return {pid for pid, path in processes().items()
+            if Path(path).name.lower() in ("gsreport.exe", "gsreport") and path.lower().startswith(folder)}
+
+
+def crash_reporter_running(exe: str, before: set[int] = frozenset()) -> bool:
+    """A crash reporter opened since 'before' was taken. One still open from an earlier crash, that
+    nobody closed, is not a crash of this run."""
+    return bool(crash_reporters(exe) - before)
 
 
 def ports_of(exe: str) -> set[int]:
@@ -587,6 +594,7 @@ def run_installed(ac: dict, build: Path, checks: list[Path]) -> tuple[list[dict]
     install = Installation(ac)
     install.install(build)
     exe = ac["archicadExe"]
+    reporters = crash_reporters(exe)  # open from earlier crashes; only new ones belong to this run
     try:
         tapir = install.start()
         label = archicad_label(tapir)
@@ -598,11 +606,11 @@ def run_installed(ac: dict, build: Path, checks: list[Path]) -> tuple[list[dict]
             rows.append({"check": "Archicad", "step": "-", "what": "connection", "ok": False, "detail": str(exc)})
         if not archicad_running(exe):
             rows.append({"check": "Archicad", "step": "-", "what": "crash", "ok": False,
-                         "detail": "Archicad closed during the checks" + (" (crash report open)" if crash_reporter_running(exe) else "")})
+                         "detail": "Archicad closed during the checks" + (" (crash report open)" if crash_reporter_running(exe, reporters) else "")})
         else:
             try:
                 install.quit(tapir)
-                if crash_reporter_running(exe):  # reported, not scored: some setups crash on every quit
+                if crash_reporter_running(exe, reporters):  # reported, not scored: some setups crash on every quit
                     rows.append({"check": "Archicad", "step": "-", "what": "quit", "ok": None,
                                  "detail": "warning: Archicad crashed while quitting (crash report open)"})
             except RuntimeError as exc:
