@@ -30,6 +30,10 @@
     'A camera with a name of its own, or an axonometric camera': 'अपने नाम वाला camera, या axonometric camera',
     'Name the Camera Set the camera is in. For an axonometric view, set the 3D window with <a href="../archicad-addon/#Set3DProjectionSettings">Set3DProjectionSettings</a>.':
         'जिस Camera Set में camera है, उसका नाम रखें। Axonometric view के लिए <a href="../archicad-addon/#Set3DProjectionSettings">Set3DProjectionSettings</a> से 3D window सेट करें।',
+    'Remove one direction of a trim between two roofs or shells that trim each other':
+        'एक-दूसरे को trim करने वाली दो roofs या shells के बीच trim की केवल एक दिशा हटाना',
+    'Remove the trim with <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a>, which removes both directions, then trim the other direction again with <a href="../archicad-addon/#TrimElements">TrimElements</a>.':
+        '<a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a> से trim हटाएँ, जो दोनों दिशाएँ हटाता है, फिर दूसरी दिशा को <a href="../archicad-addon/#TrimElements">TrimElements</a> से दोबारा trim करें।',
 
     // Navigator and views
     'Navigator and views': 'Navigator और views',

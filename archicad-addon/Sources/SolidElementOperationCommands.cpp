@@ -727,7 +727,7 @@ GS::Optional<GS::UniString> RemoveElementTrimsCommand::GetInputParametersSchema 
         "properties": {
             "elementPairs": {
                 "type": "array",
-                "description": "The trimmed element and the roof or shell trimming it, per pair.",
+                "description": "The trimmed element and the roof or shell trimming it, per pair. The trimming connection between the two is removed: when they trim each other, both directions are removed.",
                 "items": {
                     "type": "object",
                     "properties": {

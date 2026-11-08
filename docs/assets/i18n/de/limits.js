@@ -30,6 +30,10 @@
     'A camera with a name of its own, or an axonometric camera': 'Eine Kamera mit eigenem Namen oder eine axonometrische Kamera',
     'Name the Camera Set the camera is in. For an axonometric view, set the 3D window with <a href="../archicad-addon/#Set3DProjectionSettings">Set3DProjectionSettings</a>.':
         'Benennen Sie das Camera Set, in dem die Kamera liegt. Für eine axonometrische Ansicht stellen Sie das 3D-Fenster mit <a href="../archicad-addon/#Set3DProjectionSettings">Set3DProjectionSettings</a> ein.',
+    'Remove one direction of a trim between two roofs or shells that trim each other':
+        'Eine Richtung eines Trimms zwischen zwei Dächern oder Schalen entfernen, die sich gegenseitig trimmen',
+    'Remove the trim with <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a>, which removes both directions, then trim the other direction again with <a href="../archicad-addon/#TrimElements">TrimElements</a>.':
+        'Entfernen Sie den Trimm mit <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a>, das beide Richtungen entfernt, und trimmen Sie die andere Richtung danach erneut mit <a href="../archicad-addon/#TrimElements">TrimElements</a>.',
 
     // Navigator and views
     'Navigator and views': 'Navigator und Ansichten',

@@ -30,6 +30,10 @@
     'A camera with a name of its own, or an axonometric camera': '有自己名称的相机，或轴测相机',
     'Name the Camera Set the camera is in. For an axonometric view, set the 3D window with <a href="../archicad-addon/#Set3DProjectionSettings">Set3DProjectionSettings</a>.':
         '为相机所在的 Camera Set 命名。要得到轴测视图，请用 <a href="../archicad-addon/#Set3DProjectionSettings">Set3DProjectionSettings</a> 设置 3D 窗口。',
+    'Remove one direction of a trim between two roofs or shells that trim each other':
+        '只删除两个相互修剪的屋顶或壳体之间修剪的一个方向',
+    'Remove the trim with <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a>, which removes both directions, then trim the other direction again with <a href="../archicad-addon/#TrimElements">TrimElements</a>.':
+        '用 <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a> 删除修剪（会删除两个方向），然后用 <a href="../archicad-addon/#TrimElements">TrimElements</a> 重新修剪另一个方向。',
 
     // Navigator and views
     'Navigator and views': '导航器与视图',
