@@ -3308,7 +3308,7 @@ GS::Optional<GS::UniString> ModifyTextsCommand::GetInputParametersSchema () cons
         "properties": {
             "textsWithDetails": {
                 "type": "array",
-                "description": "Array of Text elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content as one paragraph, as SetDetailsOfElements does, which makes the element auto-width (word wrap off) unless the same item gives a width, and on a multi-run text applies that style to every run; the other style fields and a width leave the content as it is.",
+                "description": "Array of Text elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content as one paragraph, as SetDetailsOfElements does, and on a multi-run text applies that style to every run; a text that wraps keeps its wrap width through the rebuild unless the same item gives a width. The other style fields and a width leave the content as it is.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -3330,8 +3330,8 @@ GS::Optional<GS::UniString> ModifyTextsCommand::GetInputParametersSchema () cons
                         "style": { "$ref": "#/TextStyleSettableDetails" },
                         "width": {
                             "type": "number",
-                            "exclusiveMinimum": 0.0,
-                            "description": "Optional box width in mm (paper size, like height). Turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). Given alone it leaves the content and its runs (and any autotext in them) as they are. When the content is rebuilt in the same item, the width is applied after the rebuild, so the text keeps wrapping. When omitted, the current wrap setting is kept, unless the content is rebuilt. Read back by GetDetailsOfElements as style.boxWidth, with style.nonBreaking false."
+                            "minimum": 0.0,
+                            "description": "Optional box width in mm (paper size, like height). Greater than 0 turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). 0 turns word wrap off: the text is auto-width and grows with its content; on a wrapped text this rebuilds the content, so like a pen change it is refused for content with an autotext run. Given alone it leaves the content and its runs (and any autotext in them) as they are. When the content is rebuilt in the same item, the width is applied after the rebuild. When omitted, the current wrap setting is kept, also through a rebuild of the content. Read back by GetDetailsOfElements as style.boxWidth, with style.nonBreaking false."
                         }
                     },
                     "additionalProperties": false,
@@ -3399,10 +3399,13 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
 
             double wrapWidth = 0.0;
             const bool hasWrapWidth = item.Get ("width", wrapWidth);
-            if (hasWrapWidth && wrapWidth <= 0.0) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "width must be greater than 0 (the box width of the wrapped text in mm). Omit it to keep the current wrap setting."));
+            if (hasWrapWidth && wrapWidth < 0.0) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "width must be 0 (word wrap off) or greater (the box width of the wrapped text in mm). Omit it to keep the current wrap setting."));
                 continue;
             }
+            // The wrap the text has now, kept through a content rebuild when the item gives no width.
+            const bool wasWrapped = !element.text.nonBreaking && element.text.width > 0.0;
+            const double currentWrapWidth = element.text.width;
 
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
@@ -3446,7 +3449,10 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
             GS::UniString explicitContentTextCheck;
             GS::Array<GS::ObjectState> explicitContentRunsCheck;
             const bool explicitContent = item.Get ("text", explicitContentTextCheck) || item.Get ("runs", explicitContentRunsCheck);
-            if (explicitContent || styleChanged) {
+            // Width 0 on a wrapped text: the line ends Archicad wrapped stay in the content when only
+            // nonBreaking changes, so the content is rebuilt from its read-back, as for a style change.
+            const bool unwrap = hasWrapWidth && wrapWidth <= 0.0 && wasWrapped;
+            if (explicitContent || styleChanged || unwrap) {
                 // Start from a BLANK memo, not one fetched via ACAPI_Element_GetMemo first: confirmed
                 // live on Archicad 28 (by cross-checking against Archicad's own official fix, commit
                 // a2a111b/54cbd36 upstream) that ACAPI_Element_Change only persists memo-based text
@@ -3455,11 +3461,11 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
                 // correctly. The memo mask is version dependent, see TextContentMemoMask.
                 GS::ObjectState contentParams = item;
                 if (!explicitContent) {
-                    // Style-only change on an existing multistyle element: re-fetch the current
+                    // Style-only change (or width 0) on an existing multistyle element: re-fetch the current
                     // content (every run of it, so multi-run content is not collapsed) with the
                     // given style merged into the runs, and rebuild from that so the new style
                     // actually applies. A failed read must not turn into an empty rebuild.
-                    auto readErr = TextLabelDetails::ReadContentForStyleOnlyModify (element.header.guid, *styleOS, contentParams);
+                    auto readErr = TextLabelDetails::ReadContentForStyleOnlyModify (element.header.guid, styleOS != nullptr ? *styleOS : GS::ObjectState (), contentParams);
                     if (readErr.HasValue ()) {
                         executionResults (CreateFailedExecutionResult (*readErr));
                         continue;
@@ -3487,21 +3493,25 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
 
             // Without a content rebuild the width goes into this change, which carries no memo,
             // so the content is kept. A rebuild makes the text auto-width (see ApplyTextContent),
-            // so then the width is written after it, by SetTextWrapWidth.
+            // so then the wrap width is written after it, by SetTextWrapWidth: the given one, or
+            // the one the text had, so that changing a pen or the content does not undo the wrap.
             if (hasWrapWidth && !contentChanged) {
-                element.text.nonBreaking = false;
-                element.text.width = wrapWidth;
+                element.text.nonBreaking = wrapWidth <= 0.0;
                 ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nonBreaking);
-                ACAPI_ELEMENT_MASK_SET (mask, API_TextType, width);
+                if (wrapWidth > 0.0) {
+                    element.text.width = wrapWidth;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_TextType, width);
+                }
             }
+            const double widthAfterRebuild = hasWrapWidth ? wrapWidth : (wasWrapped ? currentWrapWidth : 0.0);
 
             // withdel=false was tried and made things WORSE (even the style fields stopped
             // applying) - confirmed live. withdel=true is required here.
             err = ACAPI_Element_Change (&element, &mask, contentChanged ? &memo : nullptr, contentChanged ? TextContentMemoMask : 0, true);
             if (err == NoError && contentChanged) {
                 err = TextLabelDetails::KeepTextFactors (element.header.guid, widthFactor, charSpaceFactor);
-                if (err == NoError && hasWrapWidth) {
-                    err = TextLabelDetails::SetTextWrapWidth (element.header.guid, wrapWidth);
+                if (err == NoError && widthAfterRebuild > 0.0) {
+                    err = TextLabelDetails::SetTextWrapWidth (element.header.guid, widthAfterRebuild);
                 }
             }
             if (err == NoError) {
