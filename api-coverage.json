@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 12:08 UTC",
+ "generatedAt": "2026-11-08 12:49 UTC",
  "versions": [
   25,
   26,
@@ -12,9 +12,8 @@
   "not applicable": 569,
   "done": 1908,
   "skipped": 29,
-  "merged": 362,
-  "claimed": 1,
-  "in progress": 10
+  "merged": 372,
+  "open": 1
  },
  "items": [
   {
@@ -5591,12 +5590,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2345,
-     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_DifferenceGenerator_GenerateDifference",
@@ -9721,10 +9715,6 @@
     {
      "number": 2352,
      "title": "[2/4] Palette and aclib: TAPIR_SCRIPT_ID picks each script's Script UI window"
-    },
-    {
-     "number": 2351,
-     "title": "[1/4] Script UI: one window per script (uiId, scriptId)"
     },
     {
      "number": 2185,
@@ -16659,10 +16649,6 @@
     {
      "number": 2352,
      "title": "[2/4] Palette and aclib: TAPIR_SCRIPT_ID picks each script's Script UI window"
-    },
-    {
-     "number": 2351,
-     "title": "[1/4] Script UI: one window per script (uiId, scriptId)"
     }
    ],
    "issues": []
@@ -18640,12 +18626,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2346,
-     "title": "GetArcFromUser: optional snapFilter and constraint inputs"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18692,12 +18673,7 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2344,
-     "title": "GetArcFromUser: snap filter and constraint options like the other Get…FromUser commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_UserInput_ResetConstraint",
@@ -22495,15 +22471,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2345,
-     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "APIIo_Set3DCutawayStatusID",
@@ -30556,12 +30527,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2347,
-     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37259,10 +37225,6 @@
     {
      "number": 2352,
      "title": "[2/4] Palette and aclib: TAPIR_SCRIPT_ID picks each script's Script UI window"
-    },
-    {
-     "number": 2351,
-     "title": "[1/4] Script UI: one window per script (uiId, scriptId)"
     },
     {
      "number": 1292,
@@ -52780,12 +52742,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2347,
-     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -52800,20 +52757,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2347,
-     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2345,
-     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::GetLargeIcon",
@@ -52827,20 +52774,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2347,
-     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2345,
-     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::GetOffset",
@@ -52854,20 +52791,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2347,
-     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2345,
-     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::GetRedrawCountLimit",
@@ -52881,20 +52808,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2347,
-     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2345,
-     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::GetText",
@@ -52908,20 +52825,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2347,
-     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2345,
-     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::GetTimeout",
@@ -52935,20 +52842,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2347,
-     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2345,
-     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::SetDisabled",
@@ -52962,20 +52859,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2347,
-     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2345,
-     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::SetIcon",
@@ -53006,20 +52893,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2347,
-     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2345,
-     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::SetOffset",
@@ -53050,20 +52927,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2347,
-     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2345,
-     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::SetText",
@@ -53113,12 +52980,7 @@
    "olderNames": [],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2347,
-     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -53150,20 +53012,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2347,
-     "title": "ShowNotificationBubble: large icon, redraw count limit, disabled, read-back response"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2345,
-     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::UniqueID::GetGuid",

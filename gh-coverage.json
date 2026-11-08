@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 12:08 UTC",
+ "generatedAt": "2026-11-08 12:49 UTC",
  "counts": {
   "done": 568,
   "merged": 197,
@@ -7,9 +7,9 @@
   "not applicable": 1
  },
  "parameters": {
-  "all": 726,
+  "all": 724,
   "json": 37,
-  "partial": 2
+  "partial": 4
  },
  "items": [
   {
@@ -194,12 +194,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2344,
-     "title": "GetArcFromUser: snap filter and constraint options like the other Get…FromUser commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ModelToScreen",
@@ -362,12 +357,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2344,
-     "title": "GetArcFromUser: snap filter and constraint options like the other Get…FromUser commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetArcFromUser",
@@ -383,21 +373,18 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 4,
+   "parameterCount": 6,
    "coveredParameters": [
     "centerPrompt",
+    "constraint",
     "endPrompt",
     "showRubberArcFeedback",
+    "snapFilter",
     "startPrompt"
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2344,
-     "title": "GetArcFromUser: snap filter and constraint options like the other Get…FromUser commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetPolygonFromUser",
@@ -423,12 +410,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2344,
-     "title": "GetArcFromUser: snap filter and constraint options like the other Get…FromUser commands"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetMagicWandSettings",
@@ -703,12 +685,12 @@
    "id": "ShowNotificationBubble",
    "group": "Application Commands",
    "version": "1.8.1",
-   "brief": "Shows a non-blocking notification bubble with a message in the current Archicad window, e.g. to report progress or a result without stopping the user as ShowAlert does. The bubble disappears by itself after the timeout. It is shown at a model coordinate or a pixel position of the current view, by default at the center of the current 2D view. Requires Archicad 29 or later.",
+   "brief": "Shows a non-blocking notification bubble with a message in the current Archicad window, e.g. to report progress or a result without stopping the user as ShowAlert does. The bubble disappears by itself after the timeout. It is shown at a model coordinate or a pixel position of the current view, by default at the center of the current 2D view. Optionally it gets a large icon, is shown at most a given number of times, or is turned off, until the user runs 'Enable all informational messages'. Returns the bubble's settings read back from Archicad. Requires Archicad 29 or later.",
    "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
-   "parameterCount": 8,
+   "parameterCount": 11,
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [
@@ -717,12 +699,7 @@
      "title": "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters"
     }
    ],
-   "issues": [
-    {
-     "number": 2345,
-     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetSpecialFolders",
@@ -20171,7 +20148,7 @@
    "id": "ShowScriptUI",
    "group": "Script UI Commands",
    "version": "1.5.4",
-   "brief": "Shows the given HTML content in a native Archicad palette (a tkinter alternative for Python scripts).",
+   "brief": "Shows the given HTML content in a native Archicad palette (a tkinter alternative for Python scripts) and returns the uiId of its window. Each script can have its own window, picked by uiId or scriptId; without them the first window is used.",
    "status": "done",
    "reason": "",
    "components": [
@@ -20180,8 +20157,8 @@
      "path": "Components/GeneralComponents/ShowScriptUIComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 13,
+   "parameters": "partial",
+   "parameterCount": 15,
    "coveredParameters": [
     "allowSelfSignedCertificates",
     "autoHeight",
@@ -20197,7 +20174,10 @@
     "zoomEnabled",
     "zoomLevel"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "scriptId",
+    "uiId"
+   ],
    "pullRequests": [],
    "issues": [
     {
@@ -20210,7 +20190,7 @@
    "id": "GetScriptUIResult",
    "group": "Script UI Commands",
    "version": "1.5.4",
-   "brief": "Retrieves and clears the result last submitted from the Script UI palette's page (via window.ACAPI.SubmitResult), if any, and reports whether the palette is still open, so a waiting script can stop when the user closes it.",
+   "brief": "Retrieves and clears the result last submitted from a Script UI window's page (via window.ACAPI.SubmitResult), if any, and reports whether the window is still open, so a waiting script can stop when the user closes it. The window is picked by uiId or scriptId; without them the first window is used.",
    "status": "done",
    "reason": "",
    "components": [
@@ -20219,10 +20199,13 @@
      "path": "Components/GeneralComponents/GetScriptUIResultComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 0,
+   "parameters": "partial",
+   "parameterCount": 2,
    "coveredParameters": [],
-   "missingParameters": [],
+   "missingParameters": [
+    "scriptId",
+    "uiId"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -20244,12 +20227,7 @@
      "title": "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters"
     }
    ],
-   "issues": [
-    {
-     "number": 2345,
-     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "PickLibraryPart",

@@ -4,7 +4,7 @@ Every JSON command of the Tapir Add-On, whether a Grasshopper component calls it
 
 **765 of 782** applicable Tapir commands have a Grasshopper component (97 %): ✅ 568 done, 🔀 197 merged, 🚧 17 in progress, ➖ 1 not applicable.
 
-Parameters of the 765 used commands: 🟢 726 every parameter has an input, 🟡 37 the rest through a JSON input, 🟠 2 some parameters missing.
+Parameters of the 765 used commands: 🟢 724 every parameter has an input, 🟡 37 the rest through a JSON input, 🟠 4 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -31,10 +31,10 @@ Parameters of the 765 used commands: 🟢 726 every parameter has an input, 🟡
 | MEP Commands (extended) | 100 % | 6 | 6 |  |  |  |  |  |  | 6 |  |  |
 | Analytical Commands | 100 % | 35 | 19 | 16 |  |  |  |  |  | 35 |  |  |
 | Solid Element Operation Commands | 100 % | 10 | 10 |  |  |  |  |  |  | 10 |  |  |
-| Script UI Commands | 16 % | 12 | 2 |  | 10 |  |  |  |  | 2 |  |  |
+| Script UI Commands | 16 % | 12 | 2 |  | 10 |  |  |  |  |  |  | 2 |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-08 12:08 UTC.
+Updated 2026-11-08 12:49 UTC.
 
 | | Status |
 |---|---|
@@ -61,16 +61,16 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `GetPrinterInfo` 🟢 0/0 parameters – `GetPrinterInfoComponent`
 - ✅ `GetPrinterAndPlotterInfo` 🟢 0/0 parameters – `GetPrinterAndPlotterInfoComponent`
 - ✅ `QuitArchicad` 🟢 0/0 parameters – `QuitArchicadComponent`
-- ✅ `GetPointFromUser` 🟢 3/3 parameters – `GetPointFromUserComponent` — [#2344](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2344 "GetArcFromUser: snap filter and constraint options like the other Get…FromUser commands")
+- ✅ `GetPointFromUser` 🟢 3/3 parameters – `GetPointFromUserComponent`
 - 🔀 `ModelToScreen` 🟢 1/1 parameters – `ModelToScreenComponent`
 - 🔀 `ScreenToModel` 🟢 3/3 parameters – `ScreenToModelComponent`
 - ✅ `GetElementFromUser` 🟢 4/4 parameters – `GetElementFromUserComponent`
 - 🔀 `GetCurrentTool` 🟢 0/0 parameters – `GetCurrentToolComponent`
 - 🔀 `SetCurrentTool` 🟢 3/3 parameters – `SetCurrentToolComponent`
 - 🔀 `GetToolboxItems` 🟢 1/1 parameters – `GetToolboxItemsComponent`
-- ✅ `GetLineFromUser` 🟢 5/5 parameters – `GetLineFromUserComponent` — [#2344](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2344 "GetArcFromUser: snap filter and constraint options like the other Get…FromUser commands")
-- 🔀 `GetArcFromUser` 🟢 4/4 parameters – `GetArcFromUserComponent` — [#2344](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2344 "GetArcFromUser: snap filter and constraint options like the other Get…FromUser commands")
-- ✅ `GetPolygonFromUser` 🟢 5/5 parameters – `GetPolygonFromUserComponent` — [#2344](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2344 "GetArcFromUser: snap filter and constraint options like the other Get…FromUser commands")
+- ✅ `GetLineFromUser` 🟢 5/5 parameters – `GetLineFromUserComponent`
+- 🔀 `GetArcFromUser` 🟢 6/6 parameters – `GetArcFromUserComponent`
+- ✅ `GetPolygonFromUser` 🟢 5/5 parameters – `GetPolygonFromUserComponent`
 - 🚧 `GetMagicWandSettings` — [#2349](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2349 "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters")
 - 🔀 `ConvertImages` 🟢 4/4 parameters – `ConvertImagesComponent`
 - ✅ `GetCurrentWindowType` 🟢 0/0 parameters – `GetCurrentWindowTypeComponent`
@@ -83,7 +83,7 @@ A parameter counts as covered when the component's code names it (a static check
 - 🔀 `DeleteGhostRecords` 🟢 1/1 parameters – `DeleteGhostRecordsComponent`
 - ✅ `GetUserGSID` 🟢 0/0 parameters – `GetUserGSIDComponent`
 - ✅ `ShowAlert` 🟢 7/7 parameters – `ShowAlertComponent` — [#2237](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2237 "audit what Tapir leaves out of the Archicad API")
-- 🚧 `ShowNotificationBubble` — [#2349](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2349 "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters"), [#2345](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2345 "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)")
+- 🚧 `ShowNotificationBubble` — [#2349](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2349 "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters")
 - ✅ `GetSpecialFolders` 🟢 1/1 parameters – `GetSpecialFoldersComponent`
 - ✅ `GetEditModeState` 🟢 0/0 parameters – `GetEditModeStateComponent`
 - 🔀 `GetArchicadVisibility` 🟢 0/0 parameters – `GetArchicadVisibilityComponent`
@@ -892,9 +892,9 @@ A parameter counts as covered when the component's code names it (a static check
 
 ## Script UI Commands
 
-- ✅ `ShowScriptUI` 🟢 13/13 parameters – `ShowScriptUIComponent` — [#2237](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2237 "audit what Tapir leaves out of the Archicad API")
-- ✅ `GetScriptUIResult` 🟢 0/0 parameters – `GetScriptUIResultComponent`
-- 🚧 `OpenSettingsDialog` — [#2349](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2349 "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters"), [#2345](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2345 "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)")
+- ✅ `ShowScriptUI` 🟠 13/15 parameters – `ShowScriptUIComponent` — [#2237](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2237 "audit what Tapir leaves out of the Archicad API")<br><sub>no input: `scriptId`, `uiId`</sub>
+- ✅ `GetScriptUIResult` 🟠 0/2 parameters – `GetScriptUIResultComponent`<br><sub>no input: `scriptId`, `uiId`</sub>
+- 🚧 `OpenSettingsDialog` — [#2349](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2349 "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters")
 - 🚧 `PickLibraryPart` — [#2349](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2349 "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters")
 - 🚧 `PickLibraryPartFile` — [#2349](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2349 "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters")
 - 🚧 `PickPictureFile` — [#2349](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2349 "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters")
