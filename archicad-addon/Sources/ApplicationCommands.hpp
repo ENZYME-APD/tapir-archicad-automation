@@ -275,6 +275,10 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+// Registers ShowNotificationBubble's bubble; called from RegisterInterface, as the DevKit asks for a
+// bubble with a redraw count limit. Does nothing before Archicad 29.
+void RegisterTapirNotificationBubble ();
+
 class GetSpecialFoldersCommand : public CommandBase
 {
 public:
