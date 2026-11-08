@@ -63,9 +63,9 @@ private:
         const GS::UniString repoRelLoc;
         const Config::Repository* repo = nullptr;
         GS::UniString sourceName;        // shown after the file name for scripts from a configured local folder; empty for repository and user-added scripts
-        GS::UniString baseDisplayText;   // label as computed by AddScriptToPopUp, before any shortcut-slot suffix
+        GS::UniString baseDisplayText;   // label as computed by PrepareScript, before any shortcut-slot suffix
         GS::UniString uvProjectPath;     // the folder of the uv project (uvProject in the config) the script runs in; empty: run it with --script
-        ScriptInfo info;                 // the script's docstring summary and `# /// tapir` header, read by AddScriptToPopUp
+        ScriptInfo info;                 // the script's docstring summary and `# /// tapir` header, read by PrepareScript
 
         explicit PopUpItemData (
             const IO::Location& _fileLocation,
@@ -88,8 +88,15 @@ private:
     GS::UniString runningCommand;   // the command process was started with, to find the process among the child processes of Archicad
     GS::Array<GS::UInt64> childProcessIdsBeforeStart;   // the child processes of Archicad that ran before process was started, so are not it
     GS::ThreadedExecutor executor;
-    bool hasCustomScript = false;
-    bool hasAddedScript = false;
+    // The script list. scriptSelectionPopUp only shows it (RebuildScriptPopUp), in this order: the scripts the user
+    // added, a separator when hasAddedScript, the scripts of the custom-scripts folder, a separator when
+    // hasCustomScript, the scripts of the local folders and repositories, a separator and "Reload scripts...".
+    using ScriptList = GS::Array<GS::Ref<PopUpItemData>>;
+    ScriptList addedScripts;    // added with the Add button, saved in the preferences; the newest first
+    ScriptList customScripts;   // Documents/Tapir/custom-scripts
+    ScriptList listedScripts;   // localFolders and repositories of the config
+    bool hasCustomScript = false;   // the custom-scripts section and its separator are shown
+    bool hasAddedScript = false;    // the added section and its separator are shown
     UvManager uvManager;
     IO::Location scriptShortcutSlots[ScriptShortcutSlotCount];    // empty = unassigned
     GS::UniString scriptShortcutLabels[ScriptShortcutSlotCount];  // empty = using the default menu text
@@ -98,11 +105,16 @@ private:
     void ExecuteScript (const PopUpItemData& popUpItemData);   // every path that starts a script calls this
     bool ConfirmScriptRequirements (const PopUpItemData& popUpItemData);   // min-tapir-version and archicad-versions; false: do not run
     void KillRunningProcess ();   // ends the running process together with the processes it started
-    bool AddScriptToPopUp (GS::Ref<PopUpItemData> popUpData, short index = DG::PopUp::TopItem);
+    bool PrepareScript (PopUpItemData& popUpData);   // sets its label and reads its info; false: the file cannot be listed
     void AddScriptsFromRepositories ();
     void AddScriptsFromLocalFolders ();
     void AddScriptsFromCustomScriptsFolder ();
     void LoadScriptsToPopUp ();
+    void RebuildScriptPopUp (short itemToSelect);   // fills scriptSelectionPopUp from the script list
+    GS::Ref<PopUpItemData> GetScriptOfPopUpItem (short item) const;   // nullptr for a separator and "Reload scripts..."
+    GS::Ref<PopUpItemData> GetSelectedScript () const;
+    ScriptList GetAllScripts () const;   // in the order of the dropdown
+    GS::UniString GetScriptLabel (const PopUpItemData& popUpData) const;   // the label with the "[Shortcut N]" suffix
     bool IsPopUpContainsFile (const IO::Location& fileLocation) const;
     void SaveScriptsToPreferences ();
     bool IsValidLocation (const IO::Location& location);
