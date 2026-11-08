@@ -61,6 +61,14 @@
     "ScriptNotRunning"
 }
 
+'GICN' ID_STAR_BUTTON_ICON "Star" {
+    "Star"
+}
+
+'GICN' ID_STARFILLED_BUTTON_ICON "StarFilled" {
+    "StarFilled"
+}
+
 'FILE' ID_COMMON_SCHEMA_DEFINITIONS_FILE "" {
     "CommonSchemaDefinitions.json"
 }

@@ -21,6 +21,7 @@ class TapirPalette final : public DG::Palette,
     public DG::PanelObserver,
     public DG::ButtonItemObserver,
     public DG::PopUpObserver,
+    public DG::TextEditBaseObserver,
     public DG::CompoundItemObserver
 {
 public:
@@ -88,6 +89,14 @@ private:
     DG::IconButton manageShortcutsButton;
     DG::LeftText   installedVersionText;
     DG::IconButton checkForUpdatesButton;
+    DG::TextEdit   searchEdit;        // filters the dropdown (BuildVisibleItems)
+    DG::IconButton favouriteButton;   // the star: adds the selected script to the favourites or removes it
+
+    // Up, Down, Return and Enter, registered only while searchEdit has the focus (0: not registered)
+    short upHotKey = 0;
+    short downHotKey = 0;
+    short returnHotKey = 0;
+    short enterHotKey = 0;
 
     // A script started by the palette, until it ended or was stopped. Any number of scripts run at the same time,
     // but a script at most once: Run, and its shortcut slot, stop it while it runs (issue #1819).
@@ -108,9 +117,10 @@ private:
 
     std::vector<std::unique_ptr<RunningScript>> runningScripts;   // touched on the main thread only
     GS::UInt32 startedScriptCount = 0;   // numbers the TAPIR_SCRIPT_ID of each started script
-    // The script list. scriptSelectionPopUp only shows it (RebuildScriptPopUp), in this order: the scripts the user
-    // added, a separator when hasAddedScript, the scripts of the custom-scripts folder, a separator when
-    // hasCustomScript, the scripts of the local folders and repositories, a separator and "Reload scripts...".
+    // The script list. scriptSelectionPopUp only shows it (RebuildScriptPopUp), in this order: the favourites and a
+    // separator when there is one, the scripts the user added, a separator when hasAddedScript, the scripts of the
+    // custom-scripts folder, a separator when hasCustomScript, the scripts of the local folders and repositories, a
+    // separator and "Reload scripts...". A search shows only the scripts that match it (BuildVisibleItems).
     using ScriptList = GS::Array<GS::Ref<PopUpItemData>>;
     ScriptList addedScripts;    // added with the Add button, saved in the preferences; the newest first
     ScriptList customScripts;   // Documents/Tapir/custom-scripts
@@ -122,7 +132,7 @@ private:
     // dropdown is visibleItems[i - 1], so nothing counts sections and separators to find a script.
     struct VisibleItem
     {
-        enum class Kind { Script, Separator, Reload };
+        enum class Kind { Script, Separator, Reload, NoMatch };   // NoMatch: "No matching scripts", disabled
         Kind kind = Kind::Separator;
         GS::Ref<PopUpItemData> script;   // set for Kind::Script only
 
@@ -156,8 +166,10 @@ private:
     void AddScriptsFromLocalFolders ();
     void AddScriptsFromCustomScriptsFolder ();
     void LoadScriptsToPopUp ();
-    // The dropdown's items for the script list, in the order of the script list
-    VisibleItemList BuildVisibleItems () const;
+    // The dropdown's items for the script list. forDropdown: the favourites first, and only the scripts that match
+    // the search, those whose name matches before those whose summary does. Otherwise the layout every Tapir version
+    // builds, without favourites or search, which the item index in the preferences counts in.
+    VisibleItemList BuildVisibleItems (bool forDropdown) const;
     // Fills scriptSelectionPopUp and visibleItems from the script list and selects scriptToSelect (SelectScript).
     void RebuildScriptPopUp (const GS::Ref<PopUpItemData>& scriptToSelect);
     // Selects the item of the script with the same file, else the first script, else the first item that is no
@@ -169,6 +181,11 @@ private:
     GS::Ref<PopUpItemData> GetScriptOfPopUpItem (short item) const;   // nullptr for a separator and "Reload scripts..."
     GS::Ref<PopUpItemData> GetSelectedScript () const;
     bool IsAddedScript (const GS::Ref<PopUpItemData>& script) const;   // one of addedScripts
+    void SelectedScriptChanged ();   // saves the selection and updates the buttons that depend on it
+    void MoveSelection (bool down);  // to the next or previous script of the dropdown, skipping the other items
+    void ToggleFavourite ();         // the star
+    void SetFavouriteButtonIcon ();  // StarFilled when the selected script is a favourite, else Star
+    void SetSearchHotKeys (bool registered);
     ScriptList GetAllScripts () const;   // in the order of the dropdown
     GS::UniString GetScriptLabel (const PopUpItemData& popUpData) const;   // the label with the "[Shortcut N]" suffix
     bool IsPopUpContainsFile (const IO::Location& fileLocation) const;
@@ -197,8 +214,12 @@ private:
     virtual void PanelOpened (const DG::PanelOpenEvent& ev) override;
     virtual void ButtonClicked (const DG::ButtonClickEvent& ev) override;
     virtual void PopUpChanged (const DG::PopUpChangeEvent& ev) override;
-    // Overrides the ItemObserver function of both the button and the pop-up observer bases.
+    virtual void TextEditChanged (const DG::TextEditChangeEvent& ev) override;
+    virtual void PanelHotkeyPressed (const DG::PanelHotKeyEvent& ev, bool* processed) override;
+    // These override the ItemObserver functions of the button, pop-up and text edit observer bases.
     virtual void ItemToolTipRequested (const DG::ItemHelpEvent& ev, GS::UniString* toolTipText) override;
+    virtual void ItemFocusGained (const DG::ItemFocusEvent& ev) override;
+    virtual void ItemFocusLost (const DG::ItemFocusEvent& ev) override;
 
     static GS::UniString GetScriptDescription (const ScriptInfo& info);   // the summary, the badge and the requirements, one per line
 
