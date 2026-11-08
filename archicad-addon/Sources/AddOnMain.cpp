@@ -1286,7 +1286,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyShellsCommand> (
             elementCommands, "1.8.0",
-            "Modifies the structure (Basic or Composite, building material or composite) of Shell elements, and the extrusion vector or length of extruded Shells (keeping their profile, base plane and extrusion start), based on the given parameters."
+            "Modifies the structure (Basic or Composite, building material or composite) of Shell elements, and the extrusion vector or length and the profile of extruded Shells (keeping their GUID, base plane and extrusion start), based on the given parameters."
         );
         err |= RegisterCommand<ModifyMeshesCommand> (
             elementCommands, "1.5.4",
