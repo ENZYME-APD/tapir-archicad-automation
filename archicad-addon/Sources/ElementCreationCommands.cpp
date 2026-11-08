@@ -347,7 +347,7 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                         },
                         "width": {
                             "type": "number",
-                            "description": "Cross section width of the column. Applied to all segments.",
+                            "description": "Cross section width of the column, the diameter of a round one. Applied to all segments.",
                             "exclusiveMinimum": 0.0
                         },
                         "depth": {
@@ -364,7 +364,7 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                         },
                         "isWidthAndHeightLinked": {
                             "type": "boolean",
-                            "description": "When true (the default), Archicad keeps width and depth equal and setting one changes the other - set to false to give width/depth independent values. Applied to all segments."
+                            "description": "When true, width and depth are kept equal (a round cross section too): a width, or else a depth, given alone sets both. A width and a depth given together with different values make them independent, unless this is given too. When omitted, the tool default (or favoriteName) is used. Applied to all segments."
                         },
                         "buildingMaterialId": {
                             "$ref": "#/AttributeId",
@@ -473,15 +473,7 @@ GS::Optional<GS::ObjectState> CreateColumnsCommand::SetTypeSpecificParameters (A
                 }
             }
             API_AssemblySegmentData& segment = memo.columnSegments[i].assemblySegmentData;
-            if (hasIsWidthAndHeightLinked) {
-                segment.isWidthAndHeightLinked = isWidthAndHeightLinked;
-            }
-            if (hasWidth) {
-                segment.nominalWidth = width;
-            }
-            if (hasDepth) {
-                segment.nominalHeight = depth;
-            }
+            ApplySectionSize (segment, hasWidth ? GS::Optional<double> (width) : GS::Optional<double> (), hasDepth ? GS::Optional<double> (depth) : GS::Optional<double> (), hasIsWidthAndHeightLinked, isWidthAndHeightLinked);
             if (hasCircleBased) {
                 segment.circleBased = circleBased;
             }
