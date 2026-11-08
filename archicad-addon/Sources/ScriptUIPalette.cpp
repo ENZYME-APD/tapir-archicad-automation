@@ -16,6 +16,7 @@ const GS::Guid                  ScriptUIPalette::paletteGuids[ScriptUIPalette::S
 };
 GS::Ref<ScriptUIPalette>        ScriptUIPalette::instances[ScriptUIPalette::SlotCount];
 GS::UniString                   ScriptUIPalette::slotOwners[ScriptUIPalette::SlotCount];
+GS::HashTable<GS::UniString, GS::UniString> ScriptUIPalette::scriptNames;
 
 // Zoom control, SetAllowSelfSignedCertificates, and the context-menu mode enum do not exist at
 // all on DG::Browser before Archicad 27 (context menu can only be toggled on/off pre-27, no
@@ -152,6 +153,7 @@ ScriptUIPalette::ScriptUIPalette (Int32 _slotIndex)
     if (slotIndex > 0) {
         SetTitle (GS::UniString::Printf ("%T %d", GetTitle ().ToPrintf (), (int) (slotIndex + 1)));   // "Tapir Script UI 2"
     }
+    defaultTitle = GetTitle ();
     Attach (*this);
     BeginEventProcessing ();
     RegisterACAPIJavaScriptObject ();
@@ -219,6 +221,16 @@ void ScriptUIPalette::ReleaseScript (const GS::UniString& scriptId)
     if (slot >= 0) {
         slotOwners[slot] = GS::EmptyUniString;
     }
+    if (scriptNames.ContainsKey (scriptId)) {
+        scriptNames.Delete (scriptId);
+    }
+}
+
+void ScriptUIPalette::SetScriptName (const GS::UniString& scriptId, const GS::UniString& scriptName)
+{
+    if (!scriptId.IsEmpty ()) {
+        scriptNames.Put (scriptId, scriptName);
+    }
 }
 
 void ScriptUIPalette::Release ()
@@ -226,6 +238,28 @@ void ScriptUIPalette::Release ()
     for (Int32 i = 0; i < SlotCount; ++i) {
         instances[i] = nullptr;
         slotOwners[i] = GS::EmptyUniString;
+    }
+    scriptNames.Clear ();
+}
+
+void ScriptUIPalette::UpdateTitle (const GS::UniString& newPageTitle)
+{
+    const GS::UniString& owner = slotOwners[slotIndex];
+    if (owner != titleOwner) {
+        pageTitle = GS::EmptyUniString;   // the title another script gave
+        titleOwner = owner;
+    }
+    if (!newPageTitle.IsEmpty ()) {
+        pageTitle = newPageTitle;
+    }
+
+    const GS::UniString* scriptName = owner.IsEmpty () ? nullptr : scriptNames.GetPtr (owner);
+    if (scriptName == nullptr || scriptName->IsEmpty ()) {
+        SetTitle (pageTitle.IsEmpty () ? defaultTitle : pageTitle);
+    } else if (pageTitle.IsEmpty () || pageTitle == *scriptName) {
+        SetTitle (*scriptName);
+    } else {
+        SetTitle (pageTitle + " - " + *scriptName);   // "Choose a layer - LayerTool.py"
     }
 }
 
@@ -260,9 +294,7 @@ void ScriptUIPalette::ShowWithHTML (const GS::UniString& htmlContent, const Scri
     if (options.width > 0 && options.height > 0) {
         SetClientSize (options.width, options.height);
     }
-    if (!options.title.IsEmpty ()) {
-        SetTitle (options.title);
-    }
+    UpdateTitle (options.title);
 
     TAPIR_Browser_SetZoomEnabled (browser, options.zoomEnabled);
     if (options.hasZoomLevel) {

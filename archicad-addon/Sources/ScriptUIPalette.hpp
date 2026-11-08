@@ -4,6 +4,7 @@
 #include "ACAPinc.h"
 #include "DGModule.hpp"
 #include "DGBrowser.hpp"
+#include "HashTable.hpp"
 
 // Archicad < 27's browser JS bridge used DG::JSObject/JSFunction/JSValue/JSBase/JSArray (same
 // shape as JS::Object/Function/Value/Base/Array from the JavascriptEngine module introduced in
@@ -68,9 +69,12 @@ public:
     // then one whose script has ended (no owner), the first window last, as it is also the window
     // of the callers that cannot be identified. -1 when every window is open for another script.
     static Int32 AcquireSlotForScript (const GS::UniString& scriptId);
-    // Frees the window of the script once it ended or was stopped. Its page stays shown until
-    // another script takes the window.
+    // Frees the window of the script once it ended or was stopped, and forgets its name. Its page
+    // stays shown until another script takes the window.
     static void  ReleaseScript (const GS::UniString& scriptId);
+    // The name shown in the title of the script's window, given by the Tapir palette for the
+    // scripts it starts (their scriptId is the TAPIR_SCRIPT_ID environment variable it sets).
+    static void  SetScriptName (const GS::UniString& scriptId, const GS::UniString& scriptName);
 
     // Explicitly tears down the browser controls while Archicad's own environment (including its
     // CEF/browser subsystem) is still fully alive - must be called from FreeData, not left to run
@@ -103,6 +107,15 @@ private:
 
     GS::UniString pendingResult;
     bool          hasPendingResult = false;
+
+    // The title: defaultTitle ("Tapir Script UI 2") until a script gives one (pageTitle), followed
+    // by the name of the script that owns the window, when the Tapir palette started it. pageTitle
+    // belongs to titleOwner, the owner of the window when it was given, and is dropped when
+    // another script takes the window.
+    GS::UniString defaultTitle;
+    GS::UniString pageTitle;
+    GS::UniString titleOwner;
+    void UpdateTitle (const GS::UniString& newPageTitle);
 
     // Guards the ReportContentHeight JS bridge function: only resizes when the currently shown
     // page was opened with options.autoHeight = true (and therefore has the auto-height observer
@@ -137,6 +150,7 @@ private:
     static const GS::Guid             paletteGuids[SlotCount];
     static GS::Ref<ScriptUIPalette>   instances[SlotCount];
     static GS::UniString              slotOwners[SlotCount];   // the scriptId owning each window; empty: none
+    static GS::HashTable<GS::UniString, GS::UniString> scriptNames;   // scriptId -> name, see SetScriptName
 
     explicit ScriptUIPalette (Int32 slotIndex);
 };
