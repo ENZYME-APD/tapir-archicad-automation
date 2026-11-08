@@ -15,13 +15,13 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
         public GetMissingAttributesComponent()
             : base(
                 "GetMissingAttributes",
-                "Lists the references of placed elements, tool defaults, Favorites and graphic override rules " +
-                "to layers, fills, surfaces, building materials, composites, profiles, line types, pen tables " +
-                "and zone categories that do not exist in the project, like the missing attributes report of " +
-                "the GDL palette: one item per reference, with the source, the element and where it sits (or " +
-                "the tool, Favorite or rule), the attribute type, the missing index and the field or GDL " +
-                "parameter that holds it. Model View Options are not checked yet. Read only. Available from " +
-                "Archicad 27.",
+                "Lists the references of placed elements, tool defaults, Favorites, graphic override rules " +
+                "and Model View Options to layers, fills, surfaces, building materials, composites, profiles, " +
+                "line types, pen tables and zone categories that do not exist in the project, like the missing " +
+                "attributes report of the GDL palette: one item per reference, with the source, the element " +
+                "and where it sits (or the tool, Favorite, rule or Model View Options combination), the " +
+                "attribute type, the missing index and the field or GDL parameter that holds it. Read only. " +
+                "Available from Archicad 27.",
                 GroupNames.Attributes)
         {
         }
@@ -34,7 +34,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
             InTexts(
                 "Sources",
-                "What to check: element, toolDefault, favorite, overrideRule. All of them when empty.");
+                "What to check: element, toolDefault, favorite, overrideRule, modelViewOption. All of them when empty.");
 
             SetOptionality(new[] { 0, 1 });
         }
@@ -89,7 +89,7 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
             OutTexts(
                 "Sources",
-                "What holds each missing reference: element, toolDefault, favorite or overrideRule.");
+                "What holds each missing reference: element, toolDefault, favorite, overrideRule or modelViewOption.");
 
             OutTexts(
                 "FavoriteNames",
@@ -114,6 +114,18 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             OutInteger(
                 "CheckedOverrideRuleCount",
                 "The number of graphic override rules checked.");
+
+            OutTexts(
+                "ModelViewOptionNames",
+                "The Model View Options combination that holds it; null for anything else.");
+
+            OutTexts(
+                "GdlOptionsNames",
+                "The library part option set of that combination whose GDL parameter holds it; null otherwise.");
+
+            OutInteger(
+                "CheckedModelViewOptionCount",
+                "The number of Model View Options combinations checked.");
         }
 
         protected override void Solve(
@@ -162,6 +174,8 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             var favoriteNames = new List<string>();
             var subElementTypes = new List<string>();
             var overrideRuleNames = new List<string>();
+            var modelViewOptionNames = new List<string>();
+            var gdlOptionsNames = new List<string>();
 
             foreach (var item in JsonOutputHelp.Items(response, "missingAttributes"))
             {
@@ -182,6 +196,8 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 favoriteNames.Add(item["favoriteName"]?.ToString());
                 subElementTypes.Add(item["subElementType"]?.ToString());
                 overrideRuleNames.Add(item["overrideRuleName"]?.ToString());
+                modelViewOptionNames.Add(item["modelViewOptionName"]?.ToString());
+                gdlOptionsNames.Add(item["gdlOptionsName"]?.ToString());
             }
 
             da.SetDataList(0, elementGuids);
@@ -202,6 +218,9 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
             da.SetData(15, JsonOutputHelp.Scalar(response, "checkedFavoriteCount"));
             da.SetDataList(16, overrideRuleNames);
             da.SetData(17, JsonOutputHelp.Scalar(response, "checkedOverrideRuleCount"));
+            da.SetDataList(18, modelViewOptionNames);
+            da.SetDataList(19, gdlOptionsNames);
+            da.SetData(20, JsonOutputHelp.Scalar(response, "checkedModelViewOptionCount"));
         }
 
         protected override System.Drawing.Bitmap Icon =>
