@@ -155,6 +155,7 @@
 #define ID_UV_STRINGS_INSTALL_FAILED_TITLE      23
 #define ID_UV_STRINGS_INSTALL_FAILED_TEXT       24
 #define ID_UV_STRINGS_GO_TO_UV_WEBSITE          25
+#define ID_UV_STRINGS_ABORTED_HINT              26
 
 // The messages the add-on writes to the Report window
 #define ID_REPORT_STRINGS               32013

@@ -1669,6 +1669,7 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
         GS::Process& process;
         const GS::UniString scriptId;
         const GS::UniString scriptName;
+        const bool runWithUv;
 
         // The script's Script UI window is free for other scripts once it ended or was stopped, and the palette
         // forgets the script, so its Run button and shortcut slot start it again.
@@ -1722,6 +1723,20 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
                 TapirPalette::Instance ().WriteReport (DG_INFORMATION, "%T", PrefixLines (scriptName, text).ToPrintf ());
             }
         };
+#if defined (macintosh)
+        // The hint for a uv that aborted (exit code 134), also read from the resources on the main thread.
+        class AbortedUvHintTask : public GS::Runnable {
+            GS::UniString scriptName;
+        public:
+            explicit AbortedUvHintTask (const GS::UniString& _scriptName) : scriptName(_scriptName)
+            {}
+            virtual void Run ()
+            {
+                ForgetPostedTask (this);
+                TapirPalette::Instance ().WriteReport (DG_ERROR, "%T", PrefixLines (scriptName, UvManager::GetAbortedUvHint ()).ToPrintf ());
+            }
+        };
+#endif
 
         void ProcessStderrBlock (const GS::UniString& stderrContent)
         {
@@ -1757,8 +1772,8 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
         }
 
     public:
-        explicit UIUpdaterThread (RunningScript& _script)
-            : script(_script), process(_script.process), scriptId(_script.scriptId), scriptName(_script.scriptName)
+        UIUpdaterThread (RunningScript& _script, bool _runWithUv)
+            : script(_script), process(_script.process), scriptId(_script.scriptId), scriptName(_script.scriptName), runWithUv(_runWithUv)
         {
         }
         GS::UniString ReadFromChannel (GS::IBinaryChannel& channel)
@@ -1803,6 +1818,13 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
             script.ended = true;   // no longer running; the last thing done with script
 
             Post (new ExitCodeReportTask (scriptName, exitCode));
+#if defined (macintosh)
+            // Exit code 134 is an abort (SIGABRT). uv builds that need a newer macOS than the one running
+            // abort at start with "macOS <x> or later required" (issue #392).
+            if (runWithUv && exitCode == 134) {
+                Post (new AbortedUvHintTask (scriptName));
+            }
+#endif
             Post (new ScriptEndedTask (scriptId));   // last: it removes the script once this has returned
         }
     };
@@ -1901,7 +1923,7 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
 
         RunningScript& startedScript = *script;
         runningScripts.push_back (std::move (script));
-        startedScript.executor.Execute (new UIUpdaterThread (startedScript));
+        startedScript.executor.Execute (new UIUpdaterThread (startedScript, filePath.EndsWith (".py")));
     } catch (const GS::ProcessException&) {
         if (!scriptId.IsEmpty ()) {
             ScriptUIPalette::ReleaseScript (scriptId);
