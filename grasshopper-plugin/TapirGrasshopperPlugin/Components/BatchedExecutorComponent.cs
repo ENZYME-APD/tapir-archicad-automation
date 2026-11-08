@@ -43,7 +43,8 @@ namespace TapirGrasshopperPlugin.Components
         private readonly List<Iteration> _iterations = new List<Iteration>();
 
         // The output the per-item error messages are written to (added with
-        // OutErrorMessages).
+        // OutErrorMessages), or -1 for a component without that output, which
+        // reports the failed items in ReportBatchErrors instead.
         protected virtual int ErrorMessagesOutputIndex => 0;
 
         // The optional DryRun boolean input, or -1 when there is none.
@@ -96,6 +97,15 @@ namespace TapirGrasshopperPlugin.Components
             return ExecutionResultsResponse.ErrorMessages(response);
         }
 
+        // Called with the items sent and the error message of each (empty
+        // when it succeeded), for components that report failed items as
+        // runtime messages rather than through an output.
+        protected virtual void ReportBatchErrors(
+            List<T> sentItems,
+            List<string> messages)
+        {
+        }
+
         protected override void BeforeSolveInstance()
         {
             base.BeforeSolveInstance();
@@ -115,7 +125,9 @@ namespace TapirGrasshopperPlugin.Components
             _iterations.Add(
                 new Iteration
                 {
-                    Path = da.ParameterTargetPath(ErrorMessagesOutputIndex),
+                    Path = ErrorMessagesOutputIndex >= 0
+                        ? da.ParameterTargetPath(ErrorMessagesOutputIndex)
+                        : null,
                     Items = items ?? new List<T>(),
                     DryRun = DryRunInputIndex >= 0 &&
                              da.GetOptional(
@@ -229,11 +241,18 @@ namespace TapirGrasshopperPlugin.Components
                     ExecutionResultsResponse.ErrorMessages(response));
             }
 
-            WriteSlices(
-                iterations,
-                resultIndexOfItem,
-                ErrorMessagesOutputIndex,
+            ReportBatchErrors(
+                sentItems,
                 messages);
+
+            if (ErrorMessagesOutputIndex >= 0)
+            {
+                WriteSlices(
+                    iterations,
+                    resultIndexOfItem,
+                    ErrorMessagesOutputIndex,
+                    messages);
+            }
 
             if (OldValuesOutputIndex >= 0)
             {

@@ -7,7 +7,10 @@ using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class SetURLReferencesOfElementsComponent : ArchicadExecutorComponent
+    // Sends one SetURLReferencesOfElements request for every branch of the
+    // inputs, so a tree input makes one undo step in Archicad (#203).
+    public class SetURLReferencesOfElementsComponent
+        : BatchedExecutorComponent<JObject>
     {
         public override string CommandName => "SetURLReferencesOfElements";
 
@@ -46,9 +49,15 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Error message of each element (empty when its link was set).");
         }
 
-        protected override void Solve(
-            IGH_DataAccess da)
+        // An element given in several branches is sent several times, in
+        // order, like the requests per branch were: the first one sets the
+        // link and the later ones fail because the element already holds one.
+        protected override bool TryGetBatchItems(
+            IGH_DataAccess da,
+            out List<JObject> items)
         {
+            items = null;
+
             if (!da.TryGetList(
                     0,
                     out List<GH_ObjectWrapper> elementWrappers) ||
@@ -57,7 +66,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     "ElementGuids",
                     out var elementIds))
             {
-                return;
+                return false;
             }
 
             if (!da.TryGetList(
@@ -69,7 +78,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     elementIds.Count,
                     "URLs"))
             {
-                return;
+                return false;
             }
 
             var descriptions = da.OptionalList<string>(2);
@@ -78,10 +87,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     "ElementGuids",
                     ("Descriptions", descriptions.Count)))
             {
-                return;
+                return false;
             }
 
-            var items = new JArray();
+            items = new List<JObject>();
             for (var i = 0; i < elementIds.Count; i++)
             {
                 var item = new JObject
@@ -98,11 +107,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 items.Add(item);
             }
 
-            SetCadValuesWithErrorMessages(
-                CommandName,
-                new JObject { ["elementsWithURLReferences"] = items },
-                ToAddOn,
-                da);
+            return true;
+        }
+
+        protected override object CreateBatchParameters(
+            List<JObject> items)
+        {
+            return new JObject { ["elementsWithURLReferences"] = new JArray(items) };
         }
 
         protected override System.Drawing.Bitmap Icon =>
