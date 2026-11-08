@@ -12198,6 +12198,128 @@ Int32 CollectModelViewOptionReferences (GS::Array<ModelViewOptionReferences>& re
     return readCount;
 }
 
+// An attribute that refers to other attributes (a composite to building materials, ...): its type as the
+// attributeTypes input names it (mepSystem for an MEP system), guid and name.
+struct AttributeOwnerReferences {
+    GS::UniString                typeName;
+    API_Guid                     guid;
+    GS::UniString                name;
+    GS::Array<ElementReference>  references;
+};
+
+// Reads every attribute of the type and adds the references collect finds in it. collect returns false when
+// the attribute's extended definition cannot be read. readCount counts the attributes read.
+template <typename Collect>
+void CollectReferencesOfAttributes (API_AttrTypeID typeID, const char* typeName, GS::Array<AttributeOwnerReferences>& result, Int32& readCount, GS::Array<GS::UniString>& warnings, Collect&& collect)
+{
+    GS::Array<API_Attribute> attributes;
+    if (ACAPI_Attribute_GetAttributesByType (typeID, attributes) != NoError) {
+        warnings.Push (GS::UniString::Printf ("The attributes of type %s could not be listed, so the attributes they refer to were not checked.", typeName));
+        return;
+    }
+    for (API_Attribute& listed : attributes) {
+        API_Attribute attribute = {};
+        attribute.header.typeID = typeID;
+        attribute.header.index = listed.header.index;
+        DisposeAttribute (listed);
+        if (ACAPI_Attribute_Get (&attribute) != NoError) {
+            warnings.Push (GS::UniString::Printf ("An attribute of type %s could not be read.", typeName));
+            continue;
+        }
+        AttributeOwnerReferences owner = { GS::UniString (typeName), attribute.header.guid, GetAttributeName (attribute.header), {} };
+        if (collect (attribute, owner.references)) {
+            ++readCount;
+            result.Push (owner);
+        } else {
+            warnings.Push (GS::UniString::Printf ("The %s '%T' could not be read.", typeName, owner.name.ToPrintf ()));
+        }
+        DisposeAttribute (attribute);
+    }
+}
+
+// The references of the attributes that refer to other attributes, the ones ScanAttributes rewrites for
+// ReindexAttributes, named as the attribute details commands name them (GetComposites, GetProfiles, ...):
+// - a composite: the building material of every skin and the line type of every separator;
+// - a building material: its cut fill and cut surface;
+// - a surface: the fill of its vectorial hatching;
+// - an MEP system: its fill, center line type, body surface and insulation surface;
+// - a profile: per skin, its building material, surface or fill (each only when the skin is that kind of
+//   hatch), its contour and cut end line types, and the line type of each edge. An edge's own material is not
+//   checked: the DevKit does not say which attribute type ProfileEdgeData::material is.
+// Returns the number of attributes read.
+Int32 CollectAttributeOwnerReferences (GS::Array<AttributeOwnerReferences>& result, GS::Array<GS::UniString>& warnings)
+{
+    Int32 readCount = 0;
+    CollectReferencesOfAttributes (API_CompWallID, "composite", result, readCount, warnings, [] (const API_Attribute& composite, GS::Array<ElementReference>& references) {
+        API_AttributeDefExt defs = {};
+        if (ACAPI_Attribute_GetDefExt (API_CompWallID, composite.header.index, &defs) != NoError) {
+            return false;
+        }
+        const Int32 skinCount = composite.compWall.nComps;
+        for (Int32 i = 0; i < skinCount && defs.cwall_compItems != nullptr; ++i) {
+            references.Push ({ API_BuildingMaterialID, GetAttributeIndex ((*defs.cwall_compItems)[i].buildingMaterial), GS::UniString::Printf ("skins[%d].buildingMaterialId", (int) i), false });
+        }
+        for (Int32 i = 0; i <= skinCount && defs.cwall_compLItems != nullptr; ++i) {
+            references.Push ({ API_LinetypeID, GetAttributeIndex ((*defs.cwall_compLItems)[i].ltypeInd), GS::UniString::Printf ("separators[%d].lineTypeId", (int) i), false });
+        }
+        ACAPI_DisposeAttrDefsHdlsExt (&defs);
+        return true;
+    });
+    CollectReferencesOfAttributes (API_BuildingMaterialID, "buildingMaterial", result, readCount, warnings, [] (const API_Attribute& buildingMaterial, GS::Array<ElementReference>& references) {
+        references.Push ({ API_FilltypeID, GetAttributeIndex (buildingMaterial.buildingMaterial.cutFill), "cutFillIndex", false });
+        references.Push ({ API_MaterialID, GetAttributeIndex (buildingMaterial.buildingMaterial.cutMaterial), "cutSurfaceIndex", false });
+        return true;
+    });
+    CollectReferencesOfAttributes (API_MaterialID, "surface", result, readCount, warnings, [] (const API_Attribute& surface, GS::Array<ElementReference>& references) {
+        references.Push ({ API_FilltypeID, GetAttributeIndex (surface.material.ifill), "fillId", false });
+        return true;
+    });
+    CollectReferencesOfAttributes (API_MEPSystemID, "mepSystem", result, readCount, warnings, [] (const API_Attribute& mepSystem, GS::Array<ElementReference>& references) {
+        references.Push ({ API_FilltypeID, GetAttributeIndex (mepSystem.mepSystem.fillInd), "fillId", false });
+        references.Push ({ API_LinetypeID, GetAttributeIndex (mepSystem.mepSystem.centerLTypeInd), "centerLineTypeId", false });
+        references.Push ({ API_MaterialID, GetAttributeIndex (mepSystem.mepSystem.materialInd), "materialId", false });
+        references.Push ({ API_MaterialID, GetAttributeIndex (mepSystem.mepSystem.insulationMatInd), "insulationMaterialId", false });
+        return true;
+    });
+    CollectReferencesOfAttributes (API_ProfileID, "profile", result, readCount, warnings, [] (const API_Attribute& profile, GS::Array<ElementReference>& references) {
+        API_AttributeDefExt defs = {};
+        if (ACAPI_Attribute_GetDefExt (API_ProfileID, profile.header.index, &defs) != NoError) {
+            return false;
+        }
+        if (defs.profile_vectorImageItems != nullptr) {
+            // The skins in the order GetProfiles lists them.
+            const ProfileVectorImage& pvi = *defs.profile_vectorImageItems;
+            const GS::HashTable<GS::Guid, HatchObject>& hatches = pvi.GetConstHatchObjects ();
+            Int32 skin = 0;
+            hatches.EnumerateValuesConst ([&] (const HatchObject& hatch) {
+                const GS::UniString prefix = GS::UniString::Printf ("skins[%d].", (int) skin);
+                if (hatch.IsBuildingMaterialHatch ()) {
+                    references.Push ({ API_BuildingMaterialID, ToPlainAttrIndex (hatch.GetBuildMatIdx ()), prefix + "buildingMaterialId", false });
+                }
+                if (hatch.IsSurfaceHatch ()) {
+                    references.Push ({ API_MaterialID, ToPlainAttrIndex (hatch.GetSurfaceIdx ()), prefix + "surfaceId", false });
+                }
+                if (hatch.IsFillHatch ()) {
+                    references.Push ({ API_FilltypeID, ToPlainAttrIndex (hatch.GetFillIdx ()), prefix + "fillId", false });
+                }
+                references.Push ({ API_LinetypeID, ToPlainAttrIndex (hatch.GetContLType ()), prefix + "contourLineTypeId", false });
+                if (HatchHasProfileInfo (hatch)) {
+                    references.Push ({ API_LinetypeID, ToPlainAttrIndex (GetHatchProfileItem (hatch).GetCutEndLineType ()), prefix + "cutEndLineTypeId", false });
+                    Int32 edge = 0;
+                    ForEachProfileEdge (hatch, [&] (const ProfileEdgeData& edgeData) {
+                        references.Push ({ API_LinetypeID, ToPlainAttrIndex (edgeData.GetLineType ()), prefix + GS::UniString::Printf ("edges[%d].lineTypeId", (int) edge), false });
+                        ++edge;
+                    });
+                }
+                ++skin;
+            });
+        }
+        ACAPI_DisposeAttrDefsHdlsExt (&defs);
+        return true;
+    });
+    return readCount;
+}
+
 // The element that owns a sub-element (a curtain wall of its frame, a column of its segment, ...); APINULLGuid
 // for an element that is not part of another one.
 API_Guid GetParentElementGuid (const API_Guid& guid)
@@ -12294,10 +12416,10 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetInputParametersSchem
             },
             "sources": {
                 "type": "array",
-                "description": "What to check: the placed elements (element), the tool default settings (toolDefault), the Favorites (favorite), the graphic override rules (overrideRule) and the Model View Options combinations (modelViewOption). All of them when omitted.",
+                "description": "What to check: the placed elements (element), the tool default settings (toolDefault), the Favorites (favorite), the graphic override rules (overrideRule), the Model View Options combinations (modelViewOption) and the attributes that refer to other attributes (attribute: composites, building materials, surfaces, MEP systems and profiles). All of them when omitted.",
                 "items": {
                     "type": "string",
-                    "enum": ["element", "toolDefault", "favorite", "overrideRule", "modelViewOption"]
+                    "enum": ["element", "toolDefault", "favorite", "overrideRule", "modelViewOption", "attribute"]
                 },
                 "minItems": 1
             }
@@ -12313,14 +12435,14 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetRawResponseSchema ()
         "properties": {
             "missingAttributes": {
                 "type": "array",
-                "description": "One item per reference to an attribute index that has no attribute in the project: first the placed elements in the order they were found (the floor plan first, then the views and layouts), then the tool defaults, then the Favorites, then the graphic override rules, then the Model View Options combinations.",
+                "description": "One item per reference to an attribute index that has no attribute in the project: first the placed elements in the order they were found (the floor plan first, then the views and layouts), then the tool defaults, then the Favorites, then the graphic override rules, then the Model View Options combinations, then the attributes that refer to other attributes.",
                 "items": {
                     "type": "object",
                     "properties": {
                         "source": {
                             "type": "string",
-                            "enum": ["element", "toolDefault", "favorite", "overrideRule", "modelViewOption"],
-                            "description": "What refers to the missing attribute: a placed element, the default settings of a tool, a Favorite, a graphic override rule, or a Model View Options combination."
+                            "enum": ["element", "toolDefault", "favorite", "overrideRule", "modelViewOption", "attribute"],
+                            "description": "What refers to the missing attribute: a placed element, the default settings of a tool, a Favorite, a graphic override rule, a Model View Options combination, or another attribute."
                         },
                         "elementId": {
                             "$ref": "#/ElementId",
@@ -12328,7 +12450,7 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetRawResponseSchema ()
                         },
                         "elementType": {
                             "type": "string",
-                            "description": "The element's type, as GetElementsByType names it: for a tool default or a Favorite the type of its tool. Missing for a graphic override rule and a Model View Options combination."
+                            "description": "The element's type, as GetElementsByType names it: for a tool default or a Favorite the type of its tool. Missing for a graphic override rule, a Model View Options combination and an attribute."
                         },
                         "overrideRuleId": {
                             "type": "object",
@@ -12363,6 +12485,19 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetRawResponseSchema ()
                         "gdlOptionsName": {
                             "type": "string",
                             "description": "When the reference is a GDL parameter of the library part settings of a Model View Options combination, the name of that option set (the gdlOptions name GetModelViewOptionDetails returns). Missing otherwise."
+                        },
+                        "ownerAttributeType": {
+                            "type": "string",
+                            "enum": ["composite", "buildingMaterial", "surface", "mepSystem", "profile"],
+                            "description": "The type of the attribute that refers to the missing one. Only for source attribute."
+                        },
+                        "ownerAttributeId": {
+                            "$ref": "#/AttributeId",
+                            "description": "The attribute that refers to the missing one. Only for source attribute."
+                        },
+                        "ownerAttributeName": {
+                            "type": "string",
+                            "description": "The name of that attribute. Only for source attribute."
                         },
                         "favoriteName": {
                             "type": "string",
@@ -12413,11 +12548,11 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetRawResponseSchema ()
                         },
                         "index": {
                             "type": "integer",
-                            "description": "The attribute index the element, tool default, Favorite, graphic override rule or Model View Options combination refers to, which no attribute of attributeType has."
+                            "description": "The attribute index the element, tool default, Favorite, graphic override rule, Model View Options combination or attribute refers to, which no attribute of attributeType has."
                         },
                         "field": {
                             "type": "string",
-                            "description": "The element's setting that holds the index, named as in the Archicad API (e.g. layer, contLtype, cWallFrameDefaults.material); for a graphic override rule lineType, fillOverride or surfaceOverride; for a Model View Options combination the field as GetModelViewOptionDetails names it (e.g. stair.stairSchemeSurfaceIndex). Missing when gdlParameter is given."
+                            "description": "The element's setting that holds the index, named as in the Archicad API (e.g. layer, contLtype, cWallFrameDefaults.material); for a graphic override rule lineType, fillOverride or surfaceOverride; for a Model View Options combination the field as GetModelViewOptionDetails names it (e.g. stair.stairSchemeSurfaceIndex); for an attribute the field as GetComposites, GetBuildingMaterials, GetSurfaces, GetMEPSystems or GetProfiles names it (e.g. skins[0].buildingMaterialId, cutFillIndex). Missing when gdlParameter is given."
                         },
                         "gdlParameter": {
                             "type": "string",
@@ -12447,6 +12582,10 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetRawResponseSchema ()
             "checkedModelViewOptionCount": {
                 "type": "integer",
                 "description": "The number of Model View Options combinations checked. Missing when they were not checked."
+            },
+            "checkedAttributeCount": {
+                "type": "integer",
+                "description": "The number of composites, building materials, surfaces, MEP systems and profiles checked for references to other attributes. Missing when they were not checked."
             },
             "warnings": {
                 "type": "array",
@@ -12662,6 +12801,27 @@ GS::ObjectState GetMissingAttributesCommand::Execute (const GS::ObjectState& par
             }
         }
         response.Add ("checkedModelViewOptionCount", modelViewOptionCount);
+    }
+    if (IsSourceRequested (requestedSources, "attribute")) {
+        GS::Array<AttributeOwnerReferences> owners;
+        const Int32 attributeCount = CollectAttributeOwnerReferences (owners, warnings);
+        for (const AttributeOwnerReferences& owner : owners) {
+            for (const ElementReference& reference : owner.references) {
+                if (!IsMissingReference (reference, existingIndices)) {
+                    continue;
+                }
+                GS::ObjectState entry;
+                entry.Add ("source", GS::UniString ("attribute"));
+                entry.Add ("ownerAttributeType", owner.typeName);
+                entry.Add ("ownerAttributeId", CreateGuidObjectState (owner.guid));
+                entry.Add ("ownerAttributeName", owner.name);
+                entry.Add ("attributeType", typeNames[reference.type]);
+                entry.Add ("index", reference.index);
+                entry.Add ("field", reference.field);
+                missingAttributes (entry);
+            }
+        }
+        response.Add ("checkedAttributeCount", attributeCount);
     }
 
     if (!warnings.IsEmpty ()) {
