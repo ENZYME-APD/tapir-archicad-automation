@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 15:18 UTC",
+ "generatedAt": "2026-11-08 16:17 UTC",
  "versions": [
   25,
   26,
@@ -4016,12 +4016,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2380,
-     "title": "Report failed creation transactions instead of returning element results (supersedes #1470)"
-    },
-    {
-     "number": 1470,
-     "title": "Report failed creation transactions instead of returning element results"
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
     },
     {
      "number": 1292,
@@ -4608,7 +4604,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2382,
+     "title": "[1/6] Move the inline Element schemas into shared definitions"
+    }
+   ],
    "issues": []
   },
   {
@@ -4765,6 +4766,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2385,
+     "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes (supersedes #995)"
+    },
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
@@ -5766,6 +5771,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
+    {
+     "number": 2385,
+     "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes (supersedes #995)"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -6538,6 +6551,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -6731,8 +6748,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2375,
-     "title": "ModifyRoofs: keep a multi-plane roof's surface overrides when its outline changes"
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
+    {
+     "number": 2385,
+     "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes (supersedes #995)"
     },
     {
      "number": 995,
@@ -6939,6 +6960,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -6990,6 +7015,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2385,
+     "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes (supersedes #995)"
+    },
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
@@ -7239,8 +7268,12 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2375,
-     "title": "ModifyRoofs: keep a multi-plane roof's surface overrides when its outline changes"
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
+    {
+     "number": 2385,
+     "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes (supersedes #995)"
     },
     {
      "number": 1292,
@@ -7495,6 +7528,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2385,
+     "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes (supersedes #995)"
+    },
+    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -7569,6 +7606,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -7756,6 +7797,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -7801,7 +7846,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    }
+   ],
    "issues": [
     {
      "number": 1914,
@@ -8017,6 +8067,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -8741,6 +8795,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -9252,6 +9310,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -9277,6 +9339,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -16316,6 +16382,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -16341,6 +16411,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -16411,6 +16485,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -19817,6 +19895,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2385,
+     "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes (supersedes #995)"
+    },
+    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -19936,6 +20018,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2385,
+     "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes (supersedes #995)"
+    },
     {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
@@ -20104,12 +20190,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2340,
-     "title": "Pin the uv version Tapir installs; explain uv exit code 134 on macOS"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25170,6 +25251,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
+    {
+     "number": 2385,
+     "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes (supersedes #995)"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -26601,6 +26690,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -26741,6 +26834,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -30764,6 +30861,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
+    {
+     "number": 2385,
+     "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes (supersedes #995)"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -37200,6 +37305,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
+    {
+     "number": 2385,
+     "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes (supersedes #995)"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -43819,6 +43932,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
+    {
+     "number": 2385,
+     "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes (supersedes #995)"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -46913,6 +47034,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
+    {
+     "number": 2385,
+     "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes (supersedes #995)"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -53404,6 +53533,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
+    {
+     "number": 2385,
+     "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes (supersedes #995)"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -54378,6 +54515,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2386,
+     "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253) (supersedes #1292)"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
