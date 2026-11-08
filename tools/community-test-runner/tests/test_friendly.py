@@ -148,11 +148,12 @@ class AddOnListTest(unittest.TestCase):
         elsewhere.mkdir(parents=True)
         (elsewhere / "Archicad.exe").write_bytes(b"")
         programs = [("Archicad 29 R1 INT", str(elsewhere)), ("Archicad 30 R1 INT", str(Path(self.tmp.name) / "removed")),
-                    ("Archicad Licensing", "")]
+                    ("Archicad Licensing", ""), ("ARCHICAD 24 INT", str(elsewhere))]
         with unittest.mock.patch.object(rw, "installed_programs", return_value=programs), \
              unittest.mock.patch.object(rw, "graphisoft_folder", return_value=[]):
             found = rw.find_archicads()
-        self.assertEqual([(a["version"], a["archicadExe"]) for a in found], [("29", str(elsewhere / "Archicad.exe"))])
+        self.assertEqual([(a["version"], a["archicadExe"]) for a in found], [("29", str(elsewhere / "Archicad.exe")),
+                                                                        ("24", str(elsewhere / "Archicad.exe"))])
 
     def test_listening_ports_in_a_localized_netstat(self):
         out = ("  TCP    0.0.0.0:19723          0.0.0.0:0              ABHÖREN         45264\n"

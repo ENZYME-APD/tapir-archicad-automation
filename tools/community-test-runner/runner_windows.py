@@ -72,7 +72,7 @@ def archicad_folders() -> list[tuple[str, Path]]:
     """(version, folder) of every Archicad: from the installed programs, then <drive>:\\Program Files\\Graphisoft."""
     folders = []
     for name, location in installed_programs():
-        match = re.match(r"Archicad (\d+)\b", name)  # "Archicad 29 R1 INT"
+        match = re.match(r"Archicad (\d+)\b", name, re.IGNORECASE)  # "Archicad 29 R1 INT", or "ARCHICAD 24 ..." before
         if match and location:
             folders.append((match.group(1), Path(location)))
     for drive in (f"{letter}:\\" for letter in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"):
