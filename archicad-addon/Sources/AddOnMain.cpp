@@ -3506,6 +3506,14 @@ GSErrCode Initialize (void)
             scriptUICommands, "1.8.1",
             "Opens Archicad's IFC export settings dialog, where the user picks a view and an IFC export translator, waits for the user and returns the chosen view and translator, or cancelled. Available from Archicad 28."
         );
+        err |= RegisterCommand<PickAttributeCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens a small dialog with Archicad's attribute picker for the given attribute type (layer, building material, composite, profile or surface; fill and line from Archicad 27), waits for the user and returns the chosen attribute, or cancelled. Available from Archicad 26."
+        );
+        err |= RegisterCommand<PickAttributeFolderCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens a small dialog with Archicad's attribute folder picker for the given attribute type, waits for the user and returns the chosen folder as its path from the root folder, or cancelled. Available from Archicad 26."
+        );
         AddCommandGroup (scriptUICommands);
     }
 

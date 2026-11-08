@@ -36,6 +36,7 @@ EXAMPLES_NOT_SMOKE_TESTED = {
     'PickLibraryPartFile', 'PickPictureFile', 'PickZoneStampOrLabelFile', 'PickLibraryPartSaveLocation',
     'PickLibraryFolder',
     'ShowIFCExportSettings',
+    'PickAttribute', 'PickAttributeFolder',
     # Open, close, create or write the project, or switch to another one.
     'OpenProject', 'CloseProject', 'NewProject', 'SaveProject', 'SaveProjectAsArchive',
     # Print, publish or render: send jobs to devices or run for minutes.
