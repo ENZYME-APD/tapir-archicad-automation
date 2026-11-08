@@ -36,7 +36,18 @@
       },
       "expect": [
         { "path": "libraryParts", "len": 1, "name": "one answer" },
-        { "path": "libraryParts[0].path", "exists": true, "name": "library part created" }
+        { "path": "libraryParts[0].path", "exists": true, "name": "library part created" },
+        { "path": "libraryParts[0].name", "eq": "Tapir Check Script Sets Back 2396", "name": "registered under the name CreateObjects looks for" }
+      ],
+      "stopOnFail": true
+    },
+    {
+      "id": "reload the libraries, so the new part can be placed",
+      "command": "ReloadLibraries",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "success", "eq": true, "name": "libraries reloaded" }
       ],
       "stopOnFail": true
     },
