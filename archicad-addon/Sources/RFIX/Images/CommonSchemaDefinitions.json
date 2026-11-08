@@ -1121,6 +1121,455 @@
             "guid"
         ]
     },
+    "PrinterInfo": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the selected printer."
+            },
+            "portrait": {
+                "type": "boolean",
+                "description": "The selected orientation: true for portrait, false for landscape."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "portrait"
+        ]
+    },
+    "PlotterInfo": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The name of the selected plotter."
+            },
+            "model": {
+                "type": "string",
+                "description": "The model of the selected plotter."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "model"
+        ]
+    },
+    "WindowToClose": {
+        "type": "object",
+        "properties": {
+            "databaseId": {
+                "$ref": "#/DatabaseId",
+                "description": "The database shown in the window, as GetDatabases, GetContainingDatabases or GetDatabaseIdFromNavigatorItemId return it."
+            },
+            "windowType": {
+                "$ref": "#/WindowType",
+                "description": "Optional. When given, the window is only closed when its database is of this type."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "databaseId"
+        ]
+    },
+    "ActionCenterCheck": {
+        "type": "string",
+        "enum": ["Hotlinks", "All", "Libraries", "Drawings", "Licenses"]
+    },
+    "ProductDomain": {
+        "type": "string",
+        "enum": ["Architecture", "MEP"]
+    },
+    "PolygonInputMethod": {
+        "type": "string",
+        "description": "Polygon input method. 'General' = free polygon, 'Rect' = axis-aligned rectangle, 'RotRect' = rotated rectangle, 'Polyline' = open polyline.",
+        "enum": ["General", "Rect", "RotRect", "Polyline"],
+        "default": "General"
+    },
+    "ScreenPoint": {
+        "type": "object",
+        "properties": {
+            "h": {
+                "type": "integer",
+                "description": "Horizontal pixel position from the left edge of the view window."
+            },
+            "v": {
+                "type": "integer",
+                "description": "Vertical pixel position from the top edge of the view window."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "h",
+            "v"
+        ]
+    },
+    "ScreenPointInput": {
+        "type": "object",
+        "properties": {
+            "h": {
+                "type": "integer",
+                "description": "Horizontal pixel position from the left edge of the view window.",
+                "minimum": -32768,
+                "maximum": 32767
+            },
+            "v": {
+                "type": "integer",
+                "description": "Vertical pixel position from the top edge of the view window.",
+                "minimum": -32768,
+                "maximum": 32767
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "h",
+            "v"
+        ]
+    },
+    "ModelViewOptionId": {
+        "type": "object",
+        "description": "The identifier of the model view option combination.",
+        "properties": {
+            "guid": {
+                "$ref": "#/Guid"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "guid"
+        ]
+    },
+    "ViewOptions": {
+        "type": "object",
+        "description": "The model view options and the on-screen view options, every field by its API_ViewOptions name. Values are the numeric API constants; attribute indices are plain integers.",
+        "properties": {
+            "modelViewOptions": {
+                "type": "object",
+                "description": "Fields of API_ModelViewOptions, with the curtainWall, stair and railing parts as nested objects.",
+                "additionalProperties": true
+            },
+            "onScreenViewOptions": {
+                "type": "object",
+                "description": "Fields of API_OnScreenViewOptions.",
+                "additionalProperties": true
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "modelViewOptions",
+            "onScreenViewOptions"
+        ]
+    },
+    "ViewOptionsUpdate": {
+        "type": "object",
+        "description": "The fields to change, named as in the response of GetViewOptions. Fields not given keep their current value. Without an index, the window then uses Custom model view options (index 0), also when only on-screen view options are given. To keep the combination, give its index as well.",
+        "properties": {
+            "modelViewOptions": {
+                "type": "object",
+                "additionalProperties": true
+            },
+            "onScreenViewOptions": {
+                "type": "object",
+                "additionalProperties": true
+            }
+        },
+        "additionalProperties": false
+    },
+    "RenovationFilterDetails": {
+        "type": "object",
+        "properties": {
+            "renovationFilterId": {
+                "$ref": "#/GuidId",
+                "description": "Identifier of the renovation filter. The same identifier is the renovationFilterGuid of GetViewSettings and SetViewSettings."
+            },
+            "name": {
+                "type": "string",
+                "description": "Name of the renovation filter."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "renovationFilterId",
+            "name"
+        ]
+    },
+    "AddOnViewpointDetails": {
+        "type": "object",
+        "properties": {
+            "viewpointId": {
+                "type": "object",
+                "description": "The identifier of the add-on viewpoint item.",
+                "properties": {
+                    "guid": { "$ref": "#/Guid" }
+                },
+                "additionalProperties": false,
+                "required": ["guid"]
+            },
+            "parentViewpointId": {
+                "type": "object",
+                "description": "The identifier of the root or group the item is in. Missing when Archicad reports no parent, as for a root.",
+                "properties": {
+                    "guid": { "$ref": "#/Guid" }
+                },
+                "additionalProperties": false,
+                "required": ["guid"]
+            },
+            "itemType": {
+                "type": "string",
+                "description": "Whether the item is a root, a group or a leaf node.",
+                "enum": ["Root", "Group", "Leaf", "Undefined"]
+            },
+            "displayId": {
+                "type": "string",
+                "description": "The ID shown for the item in the Project Map."
+            },
+            "displayName": {
+                "type": "string",
+                "description": "The name shown for the item in the Project Map."
+            },
+            "viewSettingsFlags": {
+                "type": "integer",
+                "description": "The view settings flags of the item, as Archicad stores them (a bit field)."
+            },
+            "data": {
+                "type": "string",
+                "description": "The data the add-on attached to the item, base64 encoded. Empty when there is none."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["viewpointId", "itemType", "displayId", "displayName", "viewSettingsFlags", "data"]
+    },
+    "AddOnViewpointType": {
+        "type": "string",
+        "description": "Whether to create a root, a group or a leaf node. Roots and groups can't be created in a Teamwork project.",
+        "enum": ["Root", "Group", "Leaf"]
+    },
+    "AddOnViewpointModificationData": {
+        "type": "object",
+        "properties": {
+            "viewpointId": {
+                "type": "object",
+                "description": "The identifier of the add-on viewpoint item to change.",
+                "properties": {
+                    "guid": { "$ref": "#/Guid" }
+                },
+                "additionalProperties": false,
+                "required": ["guid"]
+            },
+            "displayId": {
+                "type": "string",
+                "description": "The ID shown for the item in the Project Map."
+            },
+            "displayName": {
+                "type": "string",
+                "description": "The name shown for the item in the Project Map."
+            },
+            "viewSettingsFlags": {
+                "type": "integer",
+                "description": "The view settings flags of the item, as Archicad stores them (a bit field).",
+                "minimum": 0,
+                "maximum": 4294967295
+            },
+            "data": {
+                "type": "string",
+                "description": "Data to attach to the item, base64 encoded. It replaces the attached data; an empty string removes it."
+            }
+        },
+        "additionalProperties": false,
+        "required": ["viewpointId"]
+    },
+    "PlaceSettingsUpdate": {
+        "type": "object",
+        "description": "The place settings to change (API_PlaceInfo), with its field names. Only the given keys are changed; an empty object changes nothing and returns the current settings.",
+        "properties": {
+            "longitude": { "type": "number", "description": "Longitude in degrees." },
+            "latitude": { "type": "number", "description": "Latitude in degrees." },
+            "altitude": { "type": "number", "description": "Altitude in meters." },
+            "north": { "type": "number", "description": "The north direction in radians." },
+            "year": { "type": "integer", "minimum": 0, "maximum": 65535 },
+            "month": { "type": "integer", "minimum": 1, "maximum": 12 },
+            "day": { "type": "integer", "minimum": 1, "maximum": 31 },
+            "hour": { "type": "integer", "minimum": 0, "maximum": 23 },
+            "minute": { "type": "integer", "minimum": 0, "maximum": 59 },
+            "second": { "type": "integer", "minimum": 0, "maximum": 59 },
+            "sumTime": { "type": "boolean", "description": "Whether summer time (+1 hour) is on." },
+            "timeZoneInMinutes": { "type": "integer", "description": "The time zone, in minutes from Greenwich." },
+            "timeZoneOffset": { "type": "integer", "description": "Tells apart time zones with the same timeZoneInMinutes." }
+        },
+        "additionalProperties": false
+    },
+    "NoteAutotextDetails": {
+        "type": "object",
+        "properties": {
+            "autotextId": {
+                "type": "integer",
+                "description": "The numeric value of the autotext's API_NoteAutotextID in the Archicad API."
+            },
+            "elementTypes": {
+                "type": "array",
+                "description": "The element types the autotext is available for.",
+                "items": {
+                    "$ref": "#/ElementType"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "autotextId",
+            "elementTypes"
+        ]
+    },
+    "ProjectInfoGroupRename": {
+        "type": "object",
+        "properties": {
+            "projectInfoGroupId": {
+                "$ref": "#/ProjectInfoGroupId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The new name of the group. It must not be used by another group.",
+                "minLength": 1
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoGroupId",
+            "name"
+        ]
+    },
+    "ProjectInfoGroupMove": {
+        "type": "object",
+        "properties": {
+            "projectInfoGroupId": {
+                "$ref": "#/ProjectInfoGroupId"
+            },
+            "beforeProjectInfoGroupId": {
+                "$ref": "#/ProjectInfoGroupId",
+                "description": "The group to move the group before. When omitted, the group is moved to the end of the group list."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "projectInfoGroupId"
+        ]
+    },
+    "HotlinkSourceReference": {
+        "type": "object",
+        "properties": {
+            "location": {
+                "type": "string",
+                "description": "Absolute path of the hotlink's source file."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "location"
+        ]
+    },
+    "HotlinkSourceStatusResult": {
+        "type": "object",
+        "properties": {
+            "status": {
+                "type": "string",
+                "enum": [
+                    "AuthCanceld",
+                    "SourceMissing",
+                    "SourceAvailable",
+                    "SourceNotAccessible",
+                    "SourceIncompatible",
+                    "SourceOffline"
+                ],
+                "description": "The API_HotlinkSourceStatus value without its prefix (AuthCanceld is spelled as in the API)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "status"
+        ]
+    },
+    "UnitValueConversionData": {
+        "type": "object",
+        "properties": {
+            "value": {
+                "type": "number",
+                "description": "The value to convert, in meters, square meters, cubic meters or radians, matching the kind of the preference."
+            },
+            "preference": {
+                "type": "string",
+                "description": "The Project Preference whose unit and rounding are applied: WorkModel, WorkLayout and WorkAngle are the Working Units; the Dim ones are the Dimensions (DimDoorWindow the door, window and skylight dimensions, DimParapet the sill height, DimArea the area calculations); the Calc ones are the Calculation Units & Rules.",
+                "enum": [
+                    "WorkModel",
+                    "WorkLayout",
+                    "WorkAngle",
+                    "DimLinear",
+                    "DimAngle",
+                    "DimRadial",
+                    "DimLevel",
+                    "DimElevation",
+                    "DimDoorWindow",
+                    "DimParapet",
+                    "DimArea",
+                    "CalcLength",
+                    "CalcArea",
+                    "CalcVolume",
+                    "CalcAngle"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "value",
+            "preference"
+        ]
+    },
+    "ConvertedUnitValue": {
+        "type": "object",
+        "properties": {
+            "convertedValue": {
+                "type": "string",
+                "description": "The value as Archicad shows it in the unit of the preference, without the extra accuracy decimals. It may contain the unit."
+            },
+            "extraAccuracy": {
+                "type": "string",
+                "description": "The extra accuracy decimals, if any (at most two). Empty when there are none."
+            },
+            "unit": {
+                "type": "string",
+                "description": "The unit of the preference. It may be empty."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "convertedValue",
+            "extraAccuracy",
+            "unit"
+        ]
+    },
+    "RenovationStatusName": {
+        "type": "object",
+        "properties": {
+            "status": {
+                "type": "string",
+                "description": "The renovation status.",
+                "enum": [
+                    "Existing",
+                    "New",
+                    "Demolished"
+                ]
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the status as the running Archicad shows it (localized)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "status",
+            "name"
+        ]
+    },
     "ProjectInfoGroupIdArrayItem": {
         "type": "object",
         "properties": {
