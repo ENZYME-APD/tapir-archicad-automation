@@ -10962,6 +10962,8 @@ static GSErrCode RestoreRoofSurfaces (const API_Guid& roofGuid, const API_ShellB
 // API_ShellBaseType::cutBodyType) into cutBodyType. Only the given allowed values are
 // accepted: roofs offer ContoursDown and PivotLinesDown, shells UpwardsExtrusion and
 // DownwardsExtrusion (Editable needs an editable trimming body, which is not written here).
+// The input schemas' enums already refuse any other value for the whole call before
+// Execute runs; the checks here only guard against a schema that is loosened later.
 static GS::Optional<GS::UniString> GetShellBaseCutBodyType (
     const GS::ObjectState& details,
     const GS::Array<API_ShellBaseCutBodyTypeID>& allowed,
