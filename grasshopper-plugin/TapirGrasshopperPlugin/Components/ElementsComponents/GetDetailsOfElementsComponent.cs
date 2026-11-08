@@ -1,6 +1,7 @@
 using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
 using Newtonsoft.Json;
 using Rhino.Geometry;
 using System;
@@ -37,19 +38,32 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "ElementsGuids of the Elements to get the details of.");
         }
 
+        // The parameters of the command, from the inputs; false when there is
+        // nothing to ask for.
+        protected virtual bool TryGetParameters(
+            IGH_DataAccess da,
+            out object parameters)
+        {
+            var success = da.TryCreateFromList(
+                0,
+                out inputs);
+            parameters = inputs;
+            return success;
+        }
+
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryCreateFromList(
-                    0,
-                    out inputs))
+            if (!TryGetParameters(
+                    da,
+                    out var parameters))
             {
                 return;
             }
 
             if (!TryGetConvertedCadValues(
                     CommandName,
-                    inputs,
+                    parameters,
                     ToAddOn,
                     JHelp.Deserialize<DetailsOfElementsObj>,
                     out response))
@@ -71,6 +85,84 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public GetDetailsOfElementsComponent()
             : base("ElementDetails")
         {
+        }
+
+        protected override void AddInputs()
+        {
+            base.AddInputs();
+
+            // Added after ElementGuids, so saved definitions keep their wiring.
+            InTexts(
+                "ElementTypes",
+                "Optional filter: keep only the elements of one of these types (connect an ElementsType value list).");
+
+            InIntegers(
+                "FloorIndices",
+                "Optional filter: keep only the elements whose home story has one of these indices.");
+
+            InIntegers(
+                "LayerIndices",
+                "Optional filter: keep only the elements on one of these layers (layer attribute indices).");
+
+            // Without ElementGuids the filter alone picks the elements: every
+            // element of the current database that matches it.
+            SetOptionality(
+                new[]
+                {
+                    0,
+                    1,
+                    2,
+                    3
+                });
+        }
+
+        protected override bool TryGetParameters(
+            IGH_DataAccess da,
+            out object parameters)
+        {
+            parameters = null;
+            inputs = null;
+
+            da.TryGetList(
+                1,
+                out List<string> types);
+            da.TryGetList(
+                2,
+                out List<int> floorIndices);
+            da.TryGetList(
+                3,
+                out List<int> layerIndices);
+            var filter = ElementTypeFloorLayerFilter.FromLists(
+                types,
+                floorIndices,
+                layerIndices);
+
+            da.TryGetList(
+                0,
+                out List<GH_ObjectWrapper> elementWrappers);
+            if (elementWrappers.Count > 0)
+            {
+                if (!elementWrappers.TryBuildObject(out inputs))
+                {
+                    return false;
+                }
+            }
+            else if (filter == null)
+            {
+                // Neither elements nor a filter: nothing to get, rather than
+                // the details of the whole project.
+                AddRuntimeMessage(
+                    GH_RuntimeMessageLevel.Warning,
+                    "Connect ElementGuids, or a filter (ElementTypes, FloorIndices, LayerIndices).");
+                return false;
+            }
+
+            parameters = new GetDetailsOfElementsParameters
+            {
+                Elements = inputs?.Elements,
+                Filter = filter
+            };
+            return true;
         }
 
         protected override void AddOutputs()
@@ -209,10 +301,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     continue;
                 }
 
+                // Without ElementGuids the filter picked the elements, and
+                // each entry names its own.
                 validElements.Add(
                     new ElementGuidWrapper
                     {
-                        ElementId = inputs.Elements[i].ElementId
+                        ElementId = inputs != null
+                            ? inputs.Elements[i].ElementId
+                            : detailsOfElement.ElementId
                     });
                 elemTypes.Add(detailsOfElement.Type);
                 elementIDs.Add(detailsOfElement.ElementID);
