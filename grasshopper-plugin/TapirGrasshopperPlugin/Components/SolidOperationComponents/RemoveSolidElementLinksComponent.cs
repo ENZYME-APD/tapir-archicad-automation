@@ -1,5 +1,6 @@
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using TapirGrasshopperPlugin.Helps;
@@ -30,12 +31,23 @@ namespace TapirGrasshopperPlugin.Components.SolidOperationComponents
             InGenerics(
                 "OperatorGuids",
                 "Identifiers of the operator elements.");
+
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "DryRun",
+                "If true, nothing is removed: ErrorMessages says what the removal would do for each " +
+                "operation, from the check made before removing (the operator is linked to the target). " +
+                "Default is false.",
+                false);
+
+            SetOptionality(2);
         }
 
         protected override void AddOutputs()
         {
             OutErrorMessages(
-                "Error message of each operation (empty when it succeeded).");
+                "Error message of each operation (empty when it succeeded, or with DryRun when the link " +
+                "would be removed).");
         }
 
         protected override void Solve(
@@ -83,9 +95,17 @@ namespace TapirGrasshopperPlugin.Components.SolidOperationComponents
                     });
             }
 
+            var parameters = JObject.FromObject(input);
+
+            // Only sent when it differs from the command's default.
+            if (da.GetOptional(2, false))
+            {
+                parameters["dryRun"] = true;
+            }
+
             SetCadValuesWithErrorMessages(
                 CommandName,
-                input,
+                parameters,
                 ToAddOn,
                 da);
         }
