@@ -85,6 +85,7 @@ bool AddElementNotificationClientCommand::hasClientToNotifyOnAttributeReplacemen
 bool AddElementNotificationClientCommand::hasClientToNotifyOnToolChange = false;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnViewEvents = false;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnLockableReservationChanges = false;
+bool AddElementNotificationClientCommand::hasClientToNotifyOnToolDefaultChanges = false;
 std::unique_ptr<AddElementNotificationClientCommand::EventQueue> AddElementNotificationClientCommand::queuedEvents;
 GS::Thread AddElementNotificationClientCommand::messageSenderThread;
 
@@ -172,6 +173,10 @@ GS::Optional<GS::UniString> AddElementNotificationClientCommand::GetInputParamet
             "notifyOnLockableReservationChanges": {
                 "type": "boolean",
                 "description": "Notify when a Teamwork lockable object set (the non-element things Teamwork reserves: the attributes of a type, favorites, model view options, project info, project preferences, ...) is reserved or released, by anyone, including the current user. The message is {\"lockableReservationChanged\": {\"event\": ..., \"objectSetId\": {\"guid\": ...}, \"objectSetName\": ..., \"reservedBy\": ..., \"reservedByUserId\": ...}}: event is \"Reserved\" or \"Released\", objectSetId is the guid of the object set, objectSetName its name as objectSetName of ReserveLockableObjectSet (for example \"Composites\", \"LayerSettingsDialog\" or \"Favorites\"), missing when it is not one of the documented sets, and reservedBy and reservedByUserId are the name and the Teamwork user id of the member who reserved it, only for \"Reserved\". Element reservations are notified by notifyOnReservationChanges. Optional parameter, by default false."
+            },
+            "notifyOnToolDefaultChanges": {
+                "type": "boolean",
+                "description": "Notify when the default settings of a tool change (for example the user changes the settings of the Wall tool with no wall selected), so a client can read the new defaults. The message is {\"toolDefaultsChanged\": {\"elementType\": ...}}: elementType is the element type whose defaults changed, as in elementTypesToObserve (for example \"Wall\" or \"Column\"), and \"Unknown\" for a type Tapir has no type name for. Optional parameter, by default false."
             }
         },
         "additionalProperties": false,
@@ -240,6 +245,9 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
     bool notifyOnLockableReservationChanges = false;
     parameters.Get ("notifyOnLockableReservationChanges", notifyOnLockableReservationChanges);
 
+    bool notifyOnToolDefaultChanges = false;
+    parameters.Get ("notifyOnToolDefaultChanges", notifyOnToolDefaultChanges);
+
     std::set<API_ElemTypeID> elementTypesToObserve;
     GS::Array<GS::UniString> elementTypeNames;
     if (parameters.Get ("elementTypesToObserve", elementTypeNames)) {
@@ -257,7 +265,7 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
 
     const GS::UniString connectionUrlStr = GS::UniString::Printf ("http://%T:%d/", host.ToPrintf (), port);
     const IO::URI::URI connectionUrl (connectionUrlStr);
-    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges, notifyOnSelectionChange, notifyOnWindowChange, notifyOnProjectEvents, notifyOnAttributeReplacement, notifyOnToolChange, notifyOnViewEvents, notifyOnLockableReservationChanges, elementTypesToObserve));
+    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges, notifyOnSelectionChange, notifyOnWindowChange, notifyOnProjectEvents, notifyOnAttributeReplacement, notifyOnToolChange, notifyOnViewEvents, notifyOnLockableReservationChanges, notifyOnToolDefaultChanges, elementTypesToObserve));
     if (!result.second) {
         result.first->second.notifyOnNew = notifyOnNew;
         result.first->second.notifyOnModification = notifyOnModification;
@@ -269,6 +277,7 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
         result.first->second.notifyOnToolChange = notifyOnToolChange;
         result.first->second.notifyOnViewEvents = notifyOnViewEvents;
         result.first->second.notifyOnLockableReservationChanges = notifyOnLockableReservationChanges;
+        result.first->second.notifyOnToolDefaultChanges = notifyOnToolDefaultChanges;
         result.first->second.elementTypesToObserve = elementTypesToObserve;
         // A client registered again without these notifications may have been the
         // last one that wanted them; uninstall the handlers in that case, as
@@ -279,6 +288,7 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
         UninstallToolChangeHandlerIfNotNeeded ();
         UninstallViewEventHandlerIfNotNeeded ();
         UninstallLockableReservationChangeHandlerIfNotNeeded ();
+        UninstallToolDefaultChangeHandlerIfNotNeeded ();
     }
 
     if (notifyOnNew && !hasClientToNotifyOnNew) {
@@ -321,6 +331,12 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
     if (notifyOnLockableReservationChanges && !hasClientToNotifyOnLockableReservationChanges) {
         ACAPI_Notification_CatchLockableReservationChange (LockableReservationChangeHandler);
         hasClientToNotifyOnLockableReservationChanges = true;
+    }
+
+    if (notifyOnToolDefaultChanges && !hasClientToNotifyOnToolDefaultChanges) {
+        // nullptr: the defaults of every element type, as in the DevKit's Notification_Manager example.
+        ACAPI_Element_CatchChangeDefaults (nullptr, ToolDefaultChangeHandler);
+        hasClientToNotifyOnToolDefaultChanges = true;
     }
 
     ACAPI_Element_InstallElementObserver (ElementEventHandlerProc);
@@ -795,6 +811,50 @@ AddElementNotificationClientCommand::LockableReservationChangeHandler (const API
     return NoError;
 }
 
+void
+AddElementNotificationClientCommand::UninstallToolDefaultChangeHandlerIfNotNeeded ()
+{
+    if (!hasClientToNotifyOnToolDefaultChanges) {
+        return;
+    }
+
+    for (const auto& kv : clients) {
+        if (kv.second.notifyOnToolDefaultChanges) {
+            return;
+        }
+    }
+
+    ACAPI_Element_CatchChangeDefaults (nullptr, nullptr);
+    hasClientToNotifyOnToolDefaultChanges = false;
+}
+
+GSErrCode
+AddElementNotificationClientCommand::ToolDefaultChangeHandler (const API_ToolBoxItem* defElemType)
+{
+    if (defElemType == nullptr) {
+        return NoError;
+    }
+
+#ifdef ServerMainVers_2600
+    const API_ElemTypeID typeID = defElemType->type.typeID;
+#else
+    const API_ElemTypeID typeID = defElemType->typeID;
+#endif
+    const GS::ObjectState message ("toolDefaultsChanged", GS::ObjectState ("elementType", GetElementTypeNonLocalizedName (typeID)));
+
+    // Sent at once, like the tool change: a change of the defaults is not an element event.
+    for (auto& kv : clients) {
+        auto& client = kv.second;
+        if (!client.notifyOnToolDefaultChanges) {
+            continue;
+        }
+
+        SendMessageToNotificationClient (client, message);
+    }
+
+    return NoError;
+}
+
 static GS::Optional<GS::UniString> ProjectEventToString (API_NotifyEventID notifID)
 {
     switch (notifID) {
@@ -1233,6 +1293,7 @@ GS::ObjectState RemoveElementNotificationClientCommand::Execute (const GS::Objec
     AddElementNotificationClientCommand::UninstallToolChangeHandlerIfNotNeeded ();
     AddElementNotificationClientCommand::UninstallViewEventHandlerIfNotNeeded ();
     AddElementNotificationClientCommand::UninstallLockableReservationChangeHandlerIfNotNeeded ();
+    AddElementNotificationClientCommand::UninstallToolDefaultChangeHandlerIfNotNeeded ();
 
     return CreateSuccessfulExecutionResult ();
 }
