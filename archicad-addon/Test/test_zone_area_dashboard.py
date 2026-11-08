@@ -155,6 +155,79 @@ class TestTables (unittest.TestCase):
         self.assertEqual (rows[3][2], NO_VALUE)
 
 
+class TestCharts (unittest.TestCase):
+
+    def test_donut_slices_go_round_once_in_the_groups_order (self):
+        groups = dashboard.group_zones (ZONES, 'category', 'area')
+        slices = dashboard.donut_slices (groups)
+        # Storage has no area, so no slice
+        self.assertEqual ([s['value'] for s in slices], ['Office', 'Circulation', NO_VALUE])
+        self.assertAlmostEqual (sum (s['extent'] for s in slices), 360.0)
+        self.assertAlmostEqual (sum (s['share'] for s in slices), 1.0)
+        # clockwise from 12 o'clock, each slice starting where the previous one ends
+        self.assertAlmostEqual (slices[0]['start'] + slices[0]['extent'], 90.0)
+        for previous, current in zip (slices, slices[1:]):
+            self.assertAlmostEqual (current['start'] + current['extent'], previous['start'])
+        self.assertAlmostEqual (slices[0]['extent'], 50.0 / 80.0 * 360.0)
+        self.assertEqual (dashboard.donut_slices (dashboard.group_zones (ZONES, 'category', 'netArea')), [])
+
+    def test_story_stack_adds_up (self):
+        order = {'Ground Floor': 0, '1st Floor': 1, '2nd Floor': 2}
+        stack = dashboard.story_stack (ZONES, 'area', 'category', order)
+        self.assertEqual ([e['story'] for e in stack], ['Ground Floor', '1st Floor', '2nd Floor'])
+        self.assertAlmostEqual (sum (e['area'] for e in stack), dashboard.totals (ZONES, 'area')['area'])
+        self.assertEqual (sum (e['count'] for e in stack), len (ZONES))
+        for entry in stack:
+            self.assertAlmostEqual (sum (p['area'] for p in entry['parts']), entry['area'])
+            self.assertEqual (sum (len (p['zones']) for p in entry['parts']), entry['count'])
+        # the parts in the values' order, "(no value)" last
+        self.assertEqual ([p['value'] for p in stack[1]['parts']], ['Office', NO_VALUE])
+        # a zone without area is still in its story
+        self.assertEqual ([p['value'] for p in stack[2]['parts']], ['Storage', NO_VALUE])
+        self.assertEqual (stack[2]['parts'][0]['area'], 0.0)
+
+    def test_story_table_has_totals (self):
+        stack = dashboard.story_stack (ZONES, 'area', 'category', {'Ground Floor': 0, '1st Floor': 1, '2nd Floor': 2})
+        headers, rows = dashboard.story_table (stack, 'Zone category', 'Measured area (m²)', 1.0)
+        self.assertEqual (headers[1:], ['Circulation', 'Office', 'Storage', NO_VALUE, 'Total'])
+        self.assertEqual ([r[0] for r in rows], ['Ground Floor', '1st Floor', '2nd Floor', 'Total'])
+        self.assertEqual (rows[0][1:], [15.5, 20.0, 0.0, 0.0, 35.5])
+        for row in rows:
+            self.assertAlmostEqual (sum (row[1:-1]), row[-1])
+        self.assertAlmostEqual (rows[-1][-1], 80.0)
+        for column in range (1, len (headers)):
+            self.assertAlmostEqual (sum (r[column] for r in rows[:-1]), rows[-1][column])
+
+    def test_squarify_fills_the_box_in_proportion (self):
+        sizes = [6, 6, 4, 3, 2, 2, 1, 0, -1]
+        rects = dashboard.squarify (sizes, 10, 20, 600, 400)
+        self.assertEqual (len (rects), len (sizes))
+        total = sum (s for s in sizes if s > 0)
+        for size, (x, y, width, height) in zip (sizes, rects):
+            if size <= 0:
+                self.assertEqual ((width, height), (0.0, 0.0))
+                continue
+            self.assertAlmostEqual (width * height, size / total * 600 * 400, places = 6)
+            self.assertGreaterEqual (x, 10 - 1e-6)
+            self.assertGreaterEqual (y, 20 - 1e-6)
+            self.assertLessEqual (x + width, 610 + 1e-6)
+            self.assertLessEqual (y + height, 420 + 1e-6)
+        # no two rectangles overlap
+        boxes = [r for s, r in zip (sizes, rects) if s > 0]
+        for i, (ax, ay, aw, ah) in enumerate (boxes):
+            for bx, by, bw, bh in boxes[i + 1:]:
+                overlap = max (0, min (ax + aw, bx + bw) - max (ax, bx)) * max (0, min (ay + ah, by + bh) - max (ay, by))
+                self.assertLess (overlap, 1e-6)
+        self.assertEqual (dashboard.squarify ([], 0, 0, 10, 10), [])
+        self.assertEqual (dashboard.squarify ([1, 2], 0, 0, 0, 10), [(0, 0, 0.0, 0.0)] * 2)
+
+    def test_text_and_faded_colours (self):
+        self.assertEqual (dashboard.text_color ((240, 228, 66)), '#000000')
+        self.assertEqual (dashboard.text_color ((0, 114, 178)), '#ffffff')
+        self.assertEqual (dashboard.faded ((0, 0, 0), 0.5), (128, 128, 128))
+        self.assertEqual (dashboard.faded ((255, 255, 255)), (255, 255, 255))
+
+
 class TestWorkbook (unittest.TestCase):
 
     def _read (self, path):
