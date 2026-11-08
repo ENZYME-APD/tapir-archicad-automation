@@ -3224,6 +3224,9 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 } else {
                     typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, base.buildingMaterial)));
                 }
+                // The surfaces, as the roof's: top and bottom are the two faces of the
+                // shell, side its edges (#2433). ModifyShells writes them.
+                AddShellBaseSurfaces (base, typeSpecificDetails);
                 AddShellBaseFloorPlanAndSection (base, typeSpecificDetails);
             } break;
 

@@ -1,0 +1,133 @@
+{
+  "title": "GetDetailsOfElements reads and ModifyShells sets and clears the top, side and bottom surfaces of a shell, and keeps the rest (#2433)",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [ "Shell" ],
+  "steps": [
+    {
+      "id": "two surfaces of the project",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Surface" },
+      "save": {
+        "surfA": "attributes[0].attributeId.guid",
+        "surfB": "attributes[1].attributeId.guid"
+      },
+      "expect": [
+        { "path": "attributes[1].attributeId.guid", "exists": true, "name": "the project has two surfaces" }
+      ]
+    },
+    {
+      "id": "an extruded shell",
+      "command": "CreateShells",
+      "params": {
+        "shellsData": [
+          {
+            "shellClass": "Extruded",
+            "floorIndex": 0,
+            "thickness": 0.2,
+            "basePlane": { "origin": { "x": 950.0, "y": 900.0, "z": 0.0 } },
+            "profile": {
+              "coordinates": [ { "x": -3.0, "y": 0.0 }, { "x": 3.0, "y": 0.0 } ],
+              "arcs": [ { "begIndex": 0, "endIndex": 1, "arcAngle": -1.5707963267948966 } ]
+            },
+            "extrusionVector": { "x": 0.0, "y": 8.0, "z": 0.0 }
+          }
+        ]
+      },
+      "save": { "s1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "shell created" }
+      ]
+    },
+    {
+      "id": "the new shell's surfaces are read back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.shellClass", "eq": "Extruded" },
+        { "path": "detailsOfElements[0].details.topMaterial.overridden", "exists": true, "name": "top surface read back" },
+        { "path": "detailsOfElements[0].details.sideMaterial.overridden", "exists": true, "name": "side surface read back" },
+        { "path": "detailsOfElements[0].details.bottomMaterial.overridden", "exists": true, "name": "bottom surface read back" },
+        { "path": "detailsOfElements[0].details.materialsChained", "exists": true, "name": "chaining read back" }
+      ]
+    },
+    {
+      "id": "set the three surfaces; refused items",
+      "command": "ModifyShells",
+      "creates": false,
+      "params": {
+        "shellsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "materialsChained": false,
+            "topMaterial": { "overridden": true, "attributeId": { "guid": "${surfA}" } },
+            "sideMaterial": { "overridden": true, "attributeId": { "guid": "${surfB}" } },
+            "bottomMaterial": { "overridden": true, "attributeId": { "guid": "${surfB}" } }
+          },
+          {
+            "elementId": { "guid": "${s1}" },
+            "topMaterial": { "overridden": true }
+          },
+          {
+            "elementId": { "guid": "${s1}" },
+            "bottomMaterial": { "overridden": true, "attributeId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "surfaces written" },
+        { "path": "executionResults[1].success", "eq": false, "name": "overridden surface without attributeId refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "unknown surface refused" }
+      ]
+    },
+    {
+      "id": "read the surfaces",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.materialsChained", "eq": false, "name": "not chained" },
+        { "path": "detailsOfElements[0].details.topMaterial.overridden", "eq": true, "name": "top surface overridden" },
+        { "path": "detailsOfElements[0].details.topMaterial.attributeId.guid", "eq": "${surfA}", "name": "top surface (refused items changed nothing)" },
+        { "path": "detailsOfElements[0].details.sideMaterial.overridden", "eq": true, "name": "side surface overridden" },
+        { "path": "detailsOfElements[0].details.sideMaterial.attributeId.guid", "eq": "${surfB}", "name": "side surface (refused items changed nothing)" },
+        { "path": "detailsOfElements[0].details.bottomMaterial.overridden", "eq": true, "name": "bottom surface overridden" },
+        { "path": "detailsOfElements[0].details.bottomMaterial.attributeId.guid", "eq": "${surfB}", "name": "bottom surface (refused items changed nothing)" },
+        { "path": "detailsOfElements[0].details.shellClass", "eq": "Extruded", "name": "shell class kept" },
+        { "path": "detailsOfElements[0].details.thickness", "approx": 0.2, "name": "thickness kept" }
+      ]
+    },
+    {
+      "id": "clear the top surface only",
+      "command": "ModifyShells",
+      "creates": false,
+      "params": {
+        "shellsWithDetails": [
+          {
+            "elementId": { "guid": "${s1}" },
+            "topMaterial": { "overridden": false }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "top override cleared" }
+      ]
+    },
+    {
+      "id": "read the cleared surface and the others",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.topMaterial.overridden", "eq": false, "name": "top surface override cleared" },
+        { "path": "detailsOfElements[0].details.sideMaterial.overridden", "eq": true, "name": "side surface kept overridden" },
+        { "path": "detailsOfElements[0].details.sideMaterial.attributeId.guid", "eq": "${surfB}", "name": "side surface kept" },
+        { "path": "detailsOfElements[0].details.bottomMaterial.overridden", "eq": true, "name": "bottom surface kept overridden" },
+        { "path": "detailsOfElements[0].details.bottomMaterial.attributeId.guid", "eq": "${surfB}", "name": "bottom surface kept" },
+        { "path": "detailsOfElements[0].details.materialsChained", "eq": false, "name": "chaining kept" }
+      ]
+    }
+  ]
+}
