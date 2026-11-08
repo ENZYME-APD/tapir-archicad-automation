@@ -249,9 +249,25 @@ GSErrCode Initialize (void)
             applicationCommands, "1.7.3",
             "Asks the designer to click an element in the current window and returns its id, its type and the clicked point. A click on empty space or on an element of a type not asked for asks again. Archicad waits for the click or for Escape, and every other JSON command queues behind this one until then; cancelling returns cancelled."
         );
+        err |= RegisterCommand<GetCurrentToolCommand> (
+            applicationCommands, "1.8.1",
+            "Returns the tool active in the Toolbox: its element type, its variation (the subtype, e.g. Door, Skylight or a library part subtype of an add-on) and, for the tools of add-ons, its class id, in the form SetCurrentTool accepts. Nothing is returned when the active tool makes no element, e.g. the Arrow or the Marquee."
+        );
+        err |= RegisterCommand<SetCurrentToolCommand> (
+            applicationCommands, "1.8.1",
+            "Activates a tool in the Toolbox, given as GetCurrentTool or GetToolboxItems returns it; an empty input activates the Arrow. Archicad switches the tool once it processes its events, so GetCurrentTool may still return the previous tool right after this command."
+        );
+        err |= RegisterCommand<GetToolboxItemsCommand> (
+            applicationCommands, "1.8.1",
+            "Lists the tools of the Toolbox, the tools of add-ons included, in the form SetCurrentTool accepts, and the active tool. includeHidden also lists the tools without an icon, e.g. the Slab Accessory."
+        );
         err |= RegisterCommand<GetLineFromUserCommand> (
             applicationCommands, "1.8.0",
             "Waits for the user to input a line in the active Archicad window and returns start and end coordinates."
+        );
+        err |= RegisterCommand<GetArcFromUserCommand> (
+            applicationCommands, "1.8.1",
+            "Asks the designer to draw an arc in the current window - its center, its start point (which sets the radius) and its end point - with a rubber-band circle shown while drawing, and returns its center, radius, start and end angles, the angle it turns through, its direction and its start and end points. Archicad waits for the clicks or for Escape, and every other JSON command queues behind this one until then; cancelling returns cancelled."
         );
         err |= RegisterCommand<GetPolygonFromUserCommand> (
             applicationCommands, "1.8.0",
@@ -1897,6 +1913,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<ActivateLayerCombinationCommand> (
             attributeCommands, "1.8.1",
             "Activates the given layer combination in the current window, like choosing it in the Quick Layers palette. Saved views are not changed."
+        );
+        err |= RegisterCommand<GetLayerOfElementDefaultsCommand> (
+            attributeCommands, "1.8.1",
+            "Returns the layer of the tool defaults of the given element types: the layer new elements of that type are placed on."
+        );
+        err |= RegisterCommand<SetLayerOfElementDefaultsCommand> (
+            attributeCommands, "1.8.1",
+            "Sets the layer of the tool defaults of the given element types, so new elements of that type are placed on it. Only the layer of the defaults is changed."
+        );
+        err |= RegisterCommand<RenameAttributesCommand> (
+            attributeCommands, "1.8.1",
+            "Renames attributes of any type (layers, layer combinations, composites, surfaces, ...). Each attribute keeps its index, its id and its settings. A new name that another attribute of the same type already has is refused, and so is renaming the attributes Archicad does not allow to change (the built-in Archicad Layer, the Solid and Empty fills)."
         );
         err |= RegisterCommand<GetLinesCommand> (
             attributeCommands, "1.5.4",
