@@ -7,7 +7,12 @@ using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class MirrorElementsComponent : ArchicadExecutorComponent
+    // Sends one MirrorElements request for every branch of the inputs, so a
+    // tree input makes one undo step in Archicad (#203). The add-on edits the
+    // items one after the other, so an element given in several branches is
+    // still mirrored once for each of them, as with one request per branch.
+    public class MirrorElementsComponent
+        : BatchedExecutorComponent<ElementWithMirrorAxisParameters>
     {
         public override string CommandName => "MirrorElements";
 
@@ -45,28 +50,31 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Error message of each element (empty when it succeeded).");
         }
 
-        protected override void Solve(
-            IGH_DataAccess da)
+        protected override bool TryGetBatchItems(
+            IGH_DataAccess da,
+            out List<ElementWithMirrorAxisParameters> items)
         {
+            items = null;
+
             if (!da.TryCreateFromList(
                     0,
                     out ElementsObject elements))
             {
-                return;
+                return false;
             }
 
             if (!da.TryGetList(
                     1,
                     out List<Point2D> beginPoints))
             {
-                return;
+                return false;
             }
 
             if (!da.TryGetList(
                     2,
                     out List<Point2D> endPoints))
             {
-                return;
+                return false;
             }
 
             if (beginPoints.Count != 1 &&
@@ -74,7 +82,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             {
                 this.AddError(
                     "The count of BeginPoints must be 1 or equal to the count of ElementGuids.");
-                return;
+                return false;
             }
 
             if (endPoints.Count != 1 &&
@@ -82,20 +90,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             {
                 this.AddError(
                     "The count of EndPoints must be 1 or equal to the count of ElementGuids.");
-                return;
+                return false;
             }
 
             if (!da.TryGet(
                     3,
                     out bool copy))
             {
-                return;
+                return false;
             }
 
-            var input = new MirrorElementsParameters
-            {
-                ElementsWithMirrorAxes = new List<ElementWithMirrorAxisParameters>()
-            };
+            items = new List<ElementWithMirrorAxisParameters>();
 
             for (var i = 0; i < elements.Elements.Count; i++)
             {
@@ -103,7 +108,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 var beginPoint = beginPoints[beginPoints.Count == 1 ? 0 : i];
                 var endPoint = endPoints[endPoints.Count == 1 ? 0 : i];
 
-                input.ElementsWithMirrorAxes.Add(
+                items.Add(
                     new ElementWithMirrorAxisParameters()
                     {
                         Element = element.ElementId,
@@ -116,11 +121,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     });
             }
 
-            SetCadValuesWithErrorMessages(
-                CommandName,
-                input,
-                ToAddOn,
-                da);
+            return true;
+        }
+
+        protected override object CreateBatchParameters(
+            List<ElementWithMirrorAxisParameters> items)
+        {
+            return new MirrorElementsParameters
+            {
+                ElementsWithMirrorAxes = items
+            };
         }
 
         // Reuses the MoveElements icon until MirrorElements gets its own
