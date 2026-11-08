@@ -1,18 +1,18 @@
-**760 of 763** applicable Tapir commands have a Grasshopper component (99 %): ✅ 568 done, 🔀 192 merged, ⬜ 3 open, ➖ 1 not applicable.
+**763 of 770** applicable Tapir commands have a Grasshopper component (99 %): ✅ 568 done, 🔀 195 merged, 🚧 1 in progress, ⬜ 6 open, ➖ 1 not applicable.
 
-Parameters of the 760 used commands: 🟢 719 every parameter has an input, 🟡 37 the rest through a JSON input, 🟠 4 some parameters missing.
+Parameters of the 763 used commands: 🟢 726 every parameter has an input, 🟡 37 the rest through a JSON input, 🟠 0 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Application Commands | 94 % | 37 | 25 | 10 |  |  | 2 |  |  | 35 |  |  |
+| Application Commands | 92 % | 41 | 25 | 13 | 1 |  | 2 |  |  | 38 |  |  |
 | Project Commands | 98 % | 66 | 50 | 15 |  |  | 1 |  |  | 65 |  |  |
 | Custom Data Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
-| Element Commands | 100 % | 173 | 130 | 43 |  |  |  |  |  | 147 | 23 | 3 |
+| Element Commands | 100 % | 173 | 130 | 43 |  |  |  |  |  | 150 | 23 |  |
 | Element grouping Commands | 100 % | 15 | 11 | 4 |  |  |  |  |  | 15 |  |  |
 | Favorites Commands | 100 % | 26 | 18 | 8 |  |  |  |  |  | 26 |  |  |
 | Property Commands | 100 % | 30 | 21 | 9 |  |  |  |  |  | 29 | 1 |  |
-| Classification Commands | 100 % | 19 | 17 | 2 |  |  |  |  |  | 18 |  | 1 |
-| Attribute Commands | 100 % | 65 | 55 | 10 |  |  |  |  |  | 56 | 9 |  |
+| Classification Commands | 100 % | 19 | 17 | 2 |  |  |  |  |  | 19 |  |  |
+| Attribute Commands | 95 % | 68 | 55 | 10 |  |  | 3 |  |  | 56 | 9 |  |
 | IFC Commands | 100 % | 15 | 13 | 2 |  |  |  |  |  | 15 |  |  |
 | Library Commands | 100 % | 51 | 18 | 33 |  |  |  |  |  | 51 |  |  |
 | Teamwork Commands | 100 % | 18 | 15 | 3 |  |  |  |  |  | 18 |  |  |
@@ -30,4 +30,4 @@ Parameters of the 760 used commands: 🟢 719 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-08 01:35 UTC.
+Updated 2026-11-08 02:35 UTC.

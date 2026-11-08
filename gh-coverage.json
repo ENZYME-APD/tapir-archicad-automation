@@ -1,15 +1,15 @@
 {
- "generatedAt": "2026-11-08 01:35 UTC",
+ "generatedAt": "2026-11-08 02:35 UTC",
  "counts": {
   "done": 568,
-  "merged": 192,
-  "open": 3,
+  "merged": 195,
+  "open": 6,
+  "in progress": 1,
   "not applicable": 1
  },
  "parameters": {
-  "all": 719,
-  "json": 37,
-  "partial": 4
+  "all": 726,
+  "json": 37
  },
  "items": [
   {
@@ -264,6 +264,82 @@
    "issues": []
   },
   {
+   "id": "GetCurrentTool",
+   "group": "Application Commands",
+   "version": "1.8.1",
+   "brief": "Returns the tool active in the Toolbox: its element type, its variation (the subtype, e.g. Door, Skylight or a library part subtype of an add-on) and, for the tools of add-ons, its class id, in the form SetCurrentTool accepts. Nothing is returned when the active tool makes no element, e.g. the Arrow or the Marquee.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "GetCurrentToolComponent",
+     "path": "Components/GeneralComponents/GetCurrentToolComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": [
+    {
+     "number": 2266,
+     "title": "Expose the Toolbox: GetActiveTool, SetActiveTool, GetToolboxItems"
+    }
+   ]
+  },
+  {
+   "id": "SetCurrentTool",
+   "group": "Application Commands",
+   "version": "1.8.1",
+   "brief": "Activates a tool in the Toolbox, given as GetCurrentTool or GetToolboxItems returns it; an empty input activates the Arrow. Archicad switches the tool once it processes its events, so GetCurrentTool may still return the previous tool right after this command.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "SetCurrentToolComponent",
+     "path": "Components/GeneralComponents/SetCurrentToolComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "classId",
+    "elementType",
+    "variation"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetToolboxItems",
+   "group": "Application Commands",
+   "version": "1.8.1",
+   "brief": "Lists the tools of the Toolbox, the tools of add-ons included, in the form SetCurrentTool accepts, and the active tool. includeHidden also lists the tools without an icon, e.g. the Slab Accessory.",
+   "status": "merged",
+   "reason": "",
+   "components": [
+    {
+     "name": "GetToolboxItemsComponent",
+     "path": "Components/GeneralComponents/GetToolboxItemsComponent.cs"
+    }
+   ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "includeHidden"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": [
+    {
+     "number": 2266,
+     "title": "Expose the Toolbox: GetActiveTool, SetActiveTool, GetToolboxItems"
+    }
+   ]
+  },
+  {
    "id": "GetLineFromUser",
    "group": "Application Commands",
    "version": "1.8.0",
@@ -285,6 +361,31 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
+   "issues": [
+    {
+     "number": 2268,
+     "title": "User input: GetArcFromUser, snap filter and constraint options"
+    }
+   ]
+  },
+  {
+   "id": "GetArcFromUser",
+   "group": "Application Commands",
+   "version": "1.8.1",
+   "brief": "Asks the designer to draw an arc in the current window - its center, its start point (which sets the radius) and its end point - with a rubber-band circle shown while drawing, and returns its center, radius, start and end angles, the angle it turns through, its direction and its start and end points. Archicad waits for the clicks or for Escape, and every other JSON command queues behind this one until then; cancelling returns cancelled.",
+   "status": "in progress",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 4,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [
+    {
+     "number": 2295,
+     "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
+    }
+   ],
    "issues": [
     {
      "number": 2268,
@@ -3125,14 +3226,13 @@
      "path": "Components/ElementsComponents/SetCategoryValuesOfElementsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
+    "dryRun",
     "elementCategoryValues"
    ],
-   "missingParameters": [
-    "dryRun"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -4471,16 +4571,15 @@
      "path": "Components/ElementsComponents/ScaleElementsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 4,
    "coveredParameters": [
     "center",
     "elements",
-    "factor"
-   ],
-   "missingParameters": [
+    "factor",
     "factorY"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": [
     {
@@ -4640,16 +4739,15 @@
      "path": "Components/ElementsComponents/SetGDLParametersComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 4,
    "coveredParameters": [
+    "dryRun",
     "elementsWithGDLParameters",
     "elementsWithGDLParameters.elementId",
     "elementsWithGDLParameters.gdlParameters"
    ],
-   "missingParameters": [
-    "dryRun"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -7926,17 +8024,25 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 11,
+   "parameterCount": 19,
    "coveredParameters": [
     "elementTypesToObserve",
     "host",
+    "notifyOn3DSettingsChanges",
+    "notifyOnAttributeChanges",
     "notifyOnAttributeReplacement",
+    "notifyOnClassificationChanges",
+    "notifyOnLockableReservationChanges",
+    "notifyOnMarqueeChange",
     "notifyOnModificationOfAnElement",
     "notifyOnNewElement",
     "notifyOnProjectEvents",
+    "notifyOnPropertyDefinitionChanges",
     "notifyOnReservationChanges",
     "notifyOnSelectionChange",
     "notifyOnToolChange",
+    "notifyOnToolDefaultChanges",
+    "notifyOnViewEvents",
     "notifyOnWindowChange",
     "port"
    ],
@@ -9873,14 +9979,13 @@
      "path": "Components/ClassificationsComponents/SetClassificationsOfElementsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
+    "dryRun",
     "elementClassifications"
    ],
-   "missingParameters": [
-    "dryRun"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -11142,6 +11247,51 @@
    "coveredParameters": [
     "attributeId"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetLayerOfElementDefaults",
+   "group": "Attribute Commands",
+   "version": "1.8.1",
+   "brief": "Returns the layer of the tool defaults of the given element types: the layer new elements of that type are placed on.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "SetLayerOfElementDefaults",
+   "group": "Attribute Commands",
+   "version": "1.8.1",
+   "brief": "Sets the layer of the tool defaults of the given element types, so new elements of that type are placed on it. Only the layer of the defaults is changed.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "RenameAttributes",
+   "group": "Attribute Commands",
+   "version": "1.8.1",
+   "brief": "Renames attributes of any type (layers, layer combinations, composites, surfaces, ...). Each attribute keeps its index, its id and its settings. A new name that another attribute of the same type already has is refused, and so is renaming the attributes Archicad does not allow to change (the built-in Archicad Layer, the Solid and Empty fills).",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 3,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []

@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 01:35 UTC",
+ "generatedAt": "2026-11-08 02:35 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,8 @@
   "not applicable": 569,
   "done": 1908,
   "skipped": 29,
-  "merged": 335,
-  "in progress": 27,
+  "merged": 345,
+  "in progress": 17,
   "claimed": 1,
   "open": 10
  },
@@ -2914,20 +2914,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2282,
-     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2278,
-     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2258,
-     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3110,20 +3097,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2282,
-     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2278,
-     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2258,
-     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3435,20 +3409,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2282,
-     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2278,
-     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2258,
-     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3469,20 +3430,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2282,
-     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2278,
-     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2258,
-     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3602,20 +3550,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2282,
-     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2278,
-     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2258,
-     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5875,20 +5810,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2282,
-     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2278,
-     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2258,
-     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6865,20 +6787,12 @@
    "olderNames": [
     "ACAPI_Notify_CatchChangeDefaults"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 2293,
      "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
-    },
-    {
-     "number": 2289,
-     "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
-    },
-    {
-     "number": 2285,
-     "title": "[4/6] Notification clients: tool default changes (notifyOnToolDefaultChanges)"
     }
    ],
    "issues": [
@@ -6940,12 +6854,7 @@
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
    ],
-   "issues": [
-    {
-     "number": 371,
-     "title": "Lessons learned building a Tapir-based automation toolkit (AC29)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_ChangeContent",
@@ -6988,20 +6897,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2282,
-     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2278,
-     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2258,
-     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1914,
@@ -7051,12 +6947,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 371,
-     "title": "Lessons learned building a Tapir-based automation toolkit (AC29)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_ChangeExt",
@@ -7687,20 +7578,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2282,
-     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2278,
-     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2258,
-     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1914,
@@ -14738,24 +14616,12 @@
    "olderNames": [
     "ACAPI_Notify_CatchLockableReservationChange"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 2293,
      "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
-    },
-    {
-     "number": 2289,
-     "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
-    },
-    {
-     "number": 2285,
-     "title": "[4/6] Notification clients: tool default changes (notifyOnToolDefaultChanges)"
-    },
-    {
-     "number": 2284,
-     "title": "[3/6] Notification clients: Teamwork lockable object set reservation changes"
     }
    ],
    "issues": [
@@ -14812,22 +14678,6 @@
     {
      "number": 2293,
      "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
-    },
-    {
-     "number": 2289,
-     "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
-    },
-    {
-     "number": 2285,
-     "title": "[4/6] Notification clients: tool default changes (notifyOnToolDefaultChanges)"
-    },
-    {
-     "number": 2284,
-     "title": "[3/6] Notification clients: Teamwork lockable object set reservation changes"
-    },
-    {
-     "number": 2279,
-     "title": "[2/6] Notification clients: Project Navigator item events (notifyOnViewEvents)"
     }
    ],
    "issues": [
@@ -14855,28 +14705,12 @@
    "olderNames": [
     "ACAPI_Notify_CatchViewEvent"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 2293,
      "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
-    },
-    {
-     "number": 2289,
-     "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
-    },
-    {
-     "number": 2285,
-     "title": "[4/6] Notification clients: tool default changes (notifyOnToolDefaultChanges)"
-    },
-    {
-     "number": 2284,
-     "title": "[3/6] Notification clients: Teamwork lockable object set reservation changes"
-    },
-    {
-     "number": 2279,
-     "title": "[2/6] Notification clients: Project Navigator item events (notifyOnViewEvents)"
     }
    ],
    "issues": [
@@ -15033,16 +14867,12 @@
    "olderNames": [
     "ACAPI_Notify_RegisterEventHandler"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 2293,
      "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
-    },
-    {
-     "number": 2289,
-     "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
     }
    ],
    "issues": [
@@ -15069,16 +14899,12 @@
    "olderNames": [
     "ACAPI_Notify_UnregisterEventHandler"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 2293,
      "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
-    },
-    {
-     "number": 2289,
-     "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
     }
    ],
    "issues": [
@@ -18082,18 +17908,6 @@
     {
      "number": 2293,
      "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
-    },
-    {
-     "number": 2289,
-     "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
-    },
-    {
-     "number": 2285,
-     "title": "[4/6] Notification clients: tool default changes (notifyOnToolDefaultChanges)"
-    },
-    {
-     "number": 2284,
-     "title": "[3/6] Notification clients: Teamwork lockable object set reservation changes"
     }
    ],
    "issues": []
@@ -18237,18 +18051,6 @@
     {
      "number": 2293,
      "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
-    },
-    {
-     "number": 2289,
-     "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
-    },
-    {
-     "number": 2285,
-     "title": "[4/6] Notification clients: tool default changes (notifyOnToolDefaultChanges)"
-    },
-    {
-     "number": 2284,
-     "title": "[3/6] Notification clients: Teamwork lockable object set reservation changes"
     }
    ],
    "issues": []
@@ -18673,18 +18475,9 @@
    "olderNames": [
     "APIEnv_GetToolBoxInfoID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2282,
-     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2278,
-     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2266,
@@ -18710,7 +18503,7 @@
    "olderNames": [
     "APIEnv_GetToolBoxModeID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -18730,24 +18523,12 @@
      "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
     },
     {
-     "number": 2282,
-     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
-    },
-    {
      "number": 2281,
      "title": "[2/6] Add PickLibraryPart: Archicad's Object Settings dialog as a library part picker"
     },
     {
-     "number": 2278,
-     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
-    },
-    {
      "number": 2277,
      "title": "[1/6] Add OpenSettingsDialog command"
-    },
-    {
-     "number": 2258,
-     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
     }
    ],
    "issues": [
@@ -18775,18 +18556,9 @@
    "olderNames": [
     "APIEnv_SetToolBoxModeID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2282,
-     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2278,
-     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2266,
@@ -19024,16 +18796,12 @@
    "olderNames": [
     "APIIo_DrawRubberArcID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 2295,
      "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
-    },
-    {
-     "number": 2276,
-     "title": "[1/5] GetArcFromUser command"
     }
    ],
    "issues": [
@@ -19084,16 +18852,12 @@
    "olderNames": [
     "APIIo_GetArcID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
      "number": 2295,
      "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
-    },
-    {
-     "number": 2276,
-     "title": "[1/5] GetArcFromUser command"
     }
    ],
    "issues": [
@@ -19127,10 +18891,6 @@
     {
      "number": 2295,
      "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
-    },
-    {
-     "number": 2276,
-     "title": "[1/5] GetArcFromUser command"
     }
    ],
    "issues": []
@@ -19200,10 +18960,6 @@
     {
      "number": 2280,
      "title": "[2/5] Snap filter option on the Get...FromUser commands"
-    },
-    {
-     "number": 2276,
-     "title": "[1/5] GetArcFromUser command"
     }
    ],
    "issues": []
@@ -20573,10 +20329,6 @@
     {
      "number": 2295,
      "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
-    },
-    {
-     "number": 2276,
-     "title": "[1/5] GetArcFromUser command"
     }
    ],
    "issues": []
@@ -21103,12 +20855,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 371,
-     "title": "Lessons learned building a Tapir-based automation toolkit (AC29)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_ElemComponent_GetPropertyDefinitions",
@@ -21610,24 +21357,12 @@
      "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
     },
     {
-     "number": 2282,
-     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
-    },
-    {
      "number": 2281,
      "title": "[2/6] Add PickLibraryPart: Archicad's Object Settings dialog as a library part picker"
     },
     {
-     "number": 2278,
-     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
-    },
-    {
      "number": 2277,
      "title": "[1/6] Add OpenSettingsDialog command"
-    },
-    {
-     "number": 2258,
-     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
     }
    ],
    "issues": []
@@ -22223,10 +21958,6 @@
     {
      "number": 2277,
      "title": "[1/6] Add OpenSettingsDialog command"
-    },
-    {
-     "number": 2276,
-     "title": "[1/5] GetArcFromUser command"
     }
    ],
    "issues": []
@@ -25923,18 +25654,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2282,
-     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2278,
-     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2258,
-     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -27365,18 +27084,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2282,
-     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2278,
-     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2258,
-     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -30263,18 +29970,6 @@
     {
      "number": 2287,
      "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
-    },
-    {
-     "number": 2282,
-     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2278,
-     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2258,
-     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
     }
    ],
    "issues": []
@@ -31313,12 +31008,16 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2282,
-     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
+     "number": 2295,
+     "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
     },
     {
-     "number": 2278,
-     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
+     "number": 2286,
+     "title": "[3/5] Constraint option on the Get...FromUser commands"
+    },
+    {
+     "number": 2280,
+     "title": "[2/5] Snap filter option on the Get...FromUser commands"
     }
    ],
    "issues": []
@@ -31571,18 +31270,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2282,
-     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2278,
-     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2258,
-     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
-    },
     {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
@@ -38028,30 +37715,6 @@
      "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
     },
     {
-     "number": 2289,
-     "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
-    },
-    {
-     "number": 2285,
-     "title": "[4/6] Notification clients: tool default changes (notifyOnToolDefaultChanges)"
-    },
-    {
-     "number": 2284,
-     "title": "[3/6] Notification clients: Teamwork lockable object set reservation changes"
-    },
-    {
-     "number": 2282,
-     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2278,
-     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2258,
-     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
-    },
-    {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
     },
@@ -43630,22 +43293,6 @@
     {
      "number": 2293,
      "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
-    },
-    {
-     "number": 2289,
-     "title": "[5/6] Notification clients: attribute, classification, property definition, marquee and 3D settings events"
-    },
-    {
-     "number": 2285,
-     "title": "[4/6] Notification clients: tool default changes (notifyOnToolDefaultChanges)"
-    },
-    {
-     "number": 2284,
-     "title": "[3/6] Notification clients: Teamwork lockable object set reservation changes"
-    },
-    {
-     "number": 2279,
-     "title": "[2/6] Notification clients: Project Navigator item events (notifyOnViewEvents)"
     }
    ],
    "issues": []
@@ -44694,18 +44341,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2282,
-     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2278,
-     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2258,
-     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
-    },
     {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
@@ -47805,18 +47440,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2282,
-     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2278,
-     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2258,
-     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
-    },
     {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
@@ -54314,18 +53937,6 @@
     {
      "number": 2298,
      "title": "[6/6] Add PickAttribute and PickAttributeFolder commands"
-    },
-    {
-     "number": 2282,
-     "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2278,
-     "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
-    },
-    {
-     "number": 2258,
-     "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
     },
     {
      "number": 1292,
