@@ -3,6 +3,7 @@
 #include "APIEnvir.h"
 #include "ACAPinc.h"
 #include "DGModule.hpp"
+#include "DGBrowser.hpp"
 #include "MarketplaceInstalls.hpp"
 
 #include <ctime>
@@ -25,9 +26,9 @@
 // The enabled installed scripts are listed in the Tapir Palette's Marketplace section, with "(update available)" after
 // the name of one that has an update (NotifyPalette).
 //
-// Parts 1 to 4 of the plan in #2408 are done: the window, the catalogue, search, categories, the three tabs, the
-// details, Install, Remove, Enabled, Update, Update all and the palette's Marketplace section. The README and
-// screenshots (part 5) come next.
+// The details end with the script's README, as plain text, and its screenshots, in one scrollable browser control. The
+// page fetches them itself from the folder of the newest version's url (raw.githubusercontent.com at its pinned
+// commit), so selecting a script never keeps Archicad waiting for the network.
 class ScriptManager final : public DG::Palette,
     public DG::PanelObserver,
     public DG::ButtonItemObserver,
@@ -80,6 +81,10 @@ public:
 
     static GSErrCode RegisterPaletteControlCallBack ();
 
+    // Tears the window and its browser control down. Called from FreeData, while Archicad's browser subsystem is
+    // still alive (see ScriptUIPalette::Release).
+    static void Release ();
+
 private:
     enum class Tab {
         Available,
@@ -117,6 +122,7 @@ private:
     DG::Button           removeButton;
     DG::Button           updateButton;
     DG::Button           updateAllButton;
+    DG::Browser          readmeBrowser;
 
     std::vector<Script> scripts;            // the catalogue, in its order (by slug), then the installed scripts it lacks
     bool                hasCatalogue = false;
@@ -125,6 +131,7 @@ private:
     GS::UniString       selectedSlug;       // the script selected last, selected again when the list is rebuilt
     bool                hiddenByArchicad = false;
     MarketplaceInstalls::State installs;     // installed.json
+    GS::UniString       shownReadmeFolder;  // the folder whose README the browser shows; empty: none
 
     // Fetches the catalogue (falling back to the cached copy, see the top of the class) and fills the window.
     void LoadCatalogue ();
@@ -163,6 +170,8 @@ private:
     void RefreshCategoryList ();
     void RefreshScriptList ();
     void RefreshDetails ();
+    // Shows the README and screenshots of the script in the browser; hides it when the catalogue gives no url.
+    void RefreshReadme (const Script* script);
     void SetupScriptListColumns ();
     void LayoutScriptListColumns ();
 

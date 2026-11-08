@@ -214,6 +214,7 @@
 #define ID_SCRIPT_MANAGER_REMOVE                 28
 #define ID_SCRIPT_MANAGER_UPDATE                 29
 #define ID_SCRIPT_MANAGER_UPDATE_ALL             30
+#define ID_SCRIPT_MANAGER_README                 31   // a browser: the README and the screenshots
 
 #define ID_SCRIPT_MANAGER_STRINGS            32121
 // "All categories", then the display names of the 12 categories in the order of CategoryKeys in ScriptManager.cpp
@@ -259,6 +260,9 @@
 #define ID_SCRIPT_MANAGER_STRINGS_UPDATED_REPORT 52
 #define ID_SCRIPT_MANAGER_STRINGS_PALETTE_SECTION 53   // the Tapir Palette's Marketplace section (#2408)
 #define ID_SCRIPT_MANAGER_STRINGS_UPDATE_AVAILABLE 54  // after a marketplace script's name in the Tapir Palette
+#define ID_SCRIPT_MANAGER_STRINGS_README_LOADING 55
+#define ID_SCRIPT_MANAGER_STRINGS_README_FAILED  56
+#define ID_SCRIPT_MANAGER_STRINGS_SCREENSHOTS    57
 
 #define ID_ADDON_MENU_FOR_SCRIPT_MANAGER     32122
 #define ID_ADDON_MENU_SCRIPT_MANAGER              1

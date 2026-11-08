@@ -3611,6 +3611,8 @@ GSErrCode FreeData (void)
     // ScriptUIPalette::Release for why (real macOS crash on quit, EXC_BAD_ACCESS tearing down the
     // browser control after Archicad's own environment had already begun shutting down).
     ScriptUIPalette::Release ();
+    // The Script Manager has a browser control (its README) too, so it goes here for the same reason.
+    ScriptManager::Release ();
     // Deletes the files of the states CaptureElementState still holds.
     ReleaseAllElementStates ();
     return NoError;

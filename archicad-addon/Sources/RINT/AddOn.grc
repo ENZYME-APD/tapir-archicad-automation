@@ -199,6 +199,9 @@
 /* [ 52] */ "Tapir: %T was updated from %T to %T in %T"
 /* [ 53] */ "Marketplace"
 /* [ 54] */ "%T (update available)"
+/* [ 55] */ "Loading the README..."
+/* [ 56] */ "The README could not be loaded. It is on https://archicad-api.com/scripts/ too."
+/* [ 57] */ "Screenshots"
 }
 
 'STR#' ID_UV_STRINGS "Tapir uv Strings" {
@@ -316,7 +319,7 @@
 /* [ 19] */ LeftText                 640 212 100  18    SmallPlain  vCenter  "Licence"
 /* [ 20] */ LeftText                 745 212 185  18    SmallPlain  vCenter  ""
 /* [ 21] */ LeftText                 640 238 290  18    LargeBold   vCenter  ""
-/* [ 22] */ LeftText                 640 258 290 180    SmallPlain  ""
+/* [ 22] */ LeftText                 640 258 290  48    SmallPlain  ""
 /* [ 23] */ Button                    10 500 140  24    LargePlain  "Share a script..."
 /* [ 24] */ Button                   160 500 200  24    LargePlain  "Open the Scripts page"
 /* [ 25] */ Button                   830 500 100  24    LargePlain  "Close"
@@ -325,6 +328,7 @@
 /* [ 28] */ Button                   830 466 100  24    LargePlain  "Remove"
 /* [ 29] */ Button                   720 466 100  24    LargePlain  "Update"
 /* [ 30] */ Button                   510 500 120  24    LargePlain  "Update all"
+/* [ 31] */ Browser                  640 312 290 126
 }
 
 'DLGH' ID_SCRIPT_MANAGER Tapir_Script_Manager {
@@ -358,6 +362,7 @@
 28   "Delete the installed script" RemoveButton
 29   "Download the newest version made for this Archicad and Tapir, check it and replace the installed one" UpdateButton
 30   "Update every script listed" UpdateAllButton
+31   ""                                ReadmeBrowser
 }
 
 'GDLG' ID_SCRIPTUI_PALETTE Palette | leftCaption | close | grow   0   0  600  450  "Tapir Script UI"  {

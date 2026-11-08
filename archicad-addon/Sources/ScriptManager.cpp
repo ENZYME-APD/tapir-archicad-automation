@@ -14,6 +14,7 @@
 #include "FileSystem.hpp"
 #include "File.hpp"
 
+#include <cstdio>
 #include <cstdlib>
 #include <string>
 #include <utility>
@@ -472,6 +473,98 @@ static void ReplaceShortcutSlotsIn (const IO::Location& folder, const IO::Locati
     }
 }
 
+// text as a JavaScript string literal that is safe inside an HTML <script> element: besides the quote, the backslash
+// and the control characters, <, > and & are escaped (so the text can never close the element) and so are U+2028
+// and U+2029 (line terminators in older JavaScript).
+static std::string ToJavaScriptString (const GS::UniString& text)
+{
+    const std::string utf8 = text.ToCStr (CC_UTF8).Get ();
+    std::string result = "\"";
+    for (size_t i = 0; i < utf8.size (); ++i) {
+        const unsigned char c = static_cast<unsigned char> (utf8[i]);
+        if (c == 0xE2 && i + 2 < utf8.size () && static_cast<unsigned char> (utf8[i + 1]) == 0x80 &&
+            (static_cast<unsigned char> (utf8[i + 2]) == 0xA8 || static_cast<unsigned char> (utf8[i + 2]) == 0xA9))
+        {
+            result += (static_cast<unsigned char> (utf8[i + 2]) == 0xA8) ? "\\u2028" : "\\u2029";
+            i += 2;
+        } else if (c == '"' || c == '\\') {
+            result += '\\';
+            result += static_cast<char> (c);
+        } else if (c < 0x20 || c == '<' || c == '>' || c == '&') {
+            char escaped[8] = {};
+            std::snprintf (escaped, sizeof (escaped), "\\u%04x", static_cast<unsigned int> (c));
+            result += escaped;
+        } else {
+            result += static_cast<char> (c);
+        }
+    }
+    result += "\"";
+    return result;
+}
+
+// The folder of a version's entry file on the web: its url up to the last slash, which tools/generate_catalogue.py
+// writes as https://raw.githubusercontent.com/<repo>/<commit>/marketplace/<slug>/<entry>. The README.md and the
+// screenshots/ of the script are in the same folder at the same commit. Empty when the url is not https.
+static GS::UniString GetVersionWebFolder (const ScriptManager::ScriptVersion& version)
+{
+    if (!version.url.BeginsWith (GS::UniString ("https://"))) {
+        return GS::EmptyUniString;
+    }
+    const UIndex lastSlash = version.url.FindLast (GS::UniChar ('/'));
+    if (lastSlash == MaxUIndex || lastSlash < 8) {
+        return GS::EmptyUniString;
+    }
+    return GS::UniString (version.url.GetSubstring (0, lastSlash));
+}
+
+// The page of the README browser: the README as plain text, then the screenshots. The page fetches them itself, so
+// the window never waits for them. Every text from the catalogue reaches the page as an escaped string and is
+// shown with textContent or as an image address, never as HTML.
+static GS::UniString BuildReadmePage (const GS::UniString& folder, const GS::Array<GS::UniString>& screenshots)
+{
+    std::string shots = "[";
+    for (UIndex i = 0; i < screenshots.GetSize (); ++i) {
+        if (i > 0) {
+            shots += ",";
+        }
+        shots += ToJavaScriptString (screenshots[i]);
+    }
+    shots += "]";
+
+    std::string page =
+        "<!DOCTYPE html><html><head><meta charset=\"utf-8\"><style>"
+        "html,body{margin:0;padding:0;background:#fff;color:#263238;}"
+        "body{font:12px -apple-system,'Segoe UI',Helvetica,Arial,sans-serif;padding:6px;}"
+        "pre{white-space:pre-wrap;word-wrap:break-word;font:12px -apple-system,'Segoe UI',Helvetica,Arial,sans-serif;margin:0 0 8px 0;}"
+        "h4{margin:8px 0 4px 0;font-size:12px;}"
+        "img{display:block;max-width:100%;height:auto;margin:0 0 8px 0;border:1px solid #cfd8dc;}"
+        "</style></head><body><pre id=\"readme\"></pre><div id=\"shots\"></div><script>(function () {"
+        "var folder = " + ToJavaScriptString (folder) + ";"
+        "var screenshots = " + shots + ";"
+        "var readme = document.getElementById ('readme');"
+        "readme.textContent = " + ToJavaScriptString (ManagerText (ID_SCRIPT_MANAGER_STRINGS_README_LOADING)) + ";"
+        "var failed = " + ToJavaScriptString (ManagerText (ID_SCRIPT_MANAGER_STRINGS_README_FAILED)) + ";"
+        "var request = new XMLHttpRequest ();"
+        "request.onload = function () { readme.textContent = (request.status === 200) ? request.responseText : failed; };"
+        "request.onerror = function () { readme.textContent = failed; };"
+        "request.open ('GET', folder + '/README.md');"
+        "request.send ();"
+        "var shotsElement = document.getElementById ('shots');"
+        "if (screenshots.length > 0) {"
+        "  var heading = document.createElement ('h4');"
+        "  heading.textContent = " + ToJavaScriptString (ManagerText (ID_SCRIPT_MANAGER_STRINGS_SCREENSHOTS)) + ";"
+        "  shotsElement.appendChild (heading);"
+        "}"
+        "for (var i = 0; i < screenshots.length; ++i) {"
+        "  var image = document.createElement ('img');"
+        "  image.alt = screenshots[i];"
+        "  image.src = folder + '/screenshots/' + encodeURIComponent (screenshots[i]);"
+        "  shotsElement.appendChild (image);"
+        "}"
+        "}) ();</script></body></html>";
+    return GS::UniString (page.c_str (), CC_UTF8);
+}
+
 // Who is allowed once for all their scripts: the GitHub login when the listing has one, else the name.
 static GS::UniString AuthorKey (const ScriptManager::Script& script)
 {
@@ -513,6 +606,7 @@ ScriptManager::ScriptManager ()
     , removeButton (GetReference (), ID_SCRIPT_MANAGER_REMOVE)
     , updateButton (GetReference (), ID_SCRIPT_MANAGER_UPDATE)
     , updateAllButton (GetReference (), ID_SCRIPT_MANAGER_UPDATE_ALL)
+    , readmeBrowser (GetReference (), ID_SCRIPT_MANAGER_README)
 {
     SetGrowType (DG::Dialog::HVGrow);
     SetMinClientSize (GetOriginalClientWidth (), GetOriginalClientHeight ());
@@ -585,6 +679,11 @@ ScriptManager::~ScriptManager ()
 bool ScriptManager::HasInstance ()
 {
     return instance != nullptr;
+}
+
+void ScriptManager::Release ()
+{
+    instance = nullptr;
 }
 
 ScriptManager& ScriptManager::Instance ()
@@ -1015,6 +1114,7 @@ void ScriptManager::RefreshDetails ()
     for (DG::Item* item : detailItems) {
         item->SetVisibility (script != nullptr);
     }
+    RefreshReadme (script);
     // Update all, under the list of the Updates tab.
     updateAllButton.SetVisibility (GetCurrentTab () == Tab::Updates);
     updateAllButton.SetStatus (!shownScripts.empty ());
@@ -1087,6 +1187,20 @@ void ScriptManager::RefreshDetails ()
     }
     whatIsNewTitle.SetText (GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_WHAT_IS_NEW), newest.version.ToPrintf ()));
     changelogText.SetText (changelog);
+}
+
+void ScriptManager::RefreshReadme (const Script* script)
+{
+    // The README and the screenshots at the commit of the newest version: the catalogue's screenshots are the ones
+    // of that commit, the newest of the script's folder (see tools/generate_catalogue.py).
+    const GS::UniString folder = (script != nullptr && script->inCatalogue) ? GetVersionWebFolder (script->versions.front ()) : GS::EmptyUniString;
+    readmeBrowser.SetVisibility (!folder.IsEmpty ());
+    // The page is only loaded again for another script: the details are refreshed on every key typed in the search.
+    if (folder == shownReadmeFolder) {
+        return;
+    }
+    shownReadmeFolder = folder;
+    readmeBrowser.LoadHTML (folder.IsEmpty () ? GS::UniString ("<!DOCTYPE html><html><body></body></html>") : BuildReadmePage (folder, script->screenshots));
 }
 
 void ScriptManager::ShowInstallError (const Script& script, bool isUpdate, const GS::UniString& reason) const
@@ -1323,19 +1437,19 @@ void ScriptManager::PanelResized (const DG::PanelResizeEvent& ev)
 
     BeginMoveResizeItems ();
     // The top bar's right end, the list in the middle and the details on the right follow the window's width; the
-    // lists and the change log follow its height, the buttons at the bottom stay at the bottom.
+    // lists and the README follow its height, the buttons at the bottom stay at the bottom.
     catalogueTimeText.Move (h, 0);
     refreshButton.Move (h, 0);
     categoryList.Resize (0, v);
     scriptList.Resize (h, v);
     DG::Item* const detailItems[] = {
         &nameText, &bylineText, &summaryText, &changesLabel, &changesValue, &archicadLabel, &archicadValue,
-        &tapirLabel, &tapirValue, &licenceLabel, &licenceValue, &whatIsNewTitle
+        &tapirLabel, &tapirValue, &licenceLabel, &licenceValue, &whatIsNewTitle, &changelogText
     };
     for (DG::Item* item : detailItems) {
         item->Move (h, 0);
     }
-    changelogText.MoveAndResize (h, 0, 0, v);
+    readmeBrowser.MoveAndResize (h, 0, 0, v);
     shareButton.Move (0, v);
     scriptsPageButton.Move (0, v);
     closeButton.Move (h, v);
