@@ -3502,6 +3502,10 @@ GSErrCode Initialize (void)
             scriptUICommands, "1.8.1",
             "Opens Archicad's dialog for choosing or creating a library folder, waits for the user and returns the location of the folder, or reports that the user cancelled. The folder is not added to the libraries of the project."
         );
+        err |= RegisterCommand<ShowIFCExportSettingsCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens Archicad's IFC export settings dialog, where the user picks a view and an IFC export translator, waits for the user and returns the chosen view and translator, or cancelled. Available from Archicad 28."
+        );
         AddCommandGroup (scriptUICommands);
     }
 
