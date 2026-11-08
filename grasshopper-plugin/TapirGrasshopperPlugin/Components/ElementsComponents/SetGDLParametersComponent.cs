@@ -1,4 +1,5 @@
 using Grasshopper.Kernel;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +35,18 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             InGeneric(
                 "Value",
                 "Value to set the parameter to.");
+
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "DryRun",
+                "If true, no element is changed and no undo step is created: the parameter is written to " +
+                "each element's parameter list and its Parameter Script runs as in a real run, " +
+                "ExecutionResults says what the change would do for each element, from the checks made " +
+                "before changing it, and OldValues and NewValues list the parameters a real run would " +
+                "change. Default is false.",
+                false);
+
+            SetOptionality(3);
         }
 
         protected override void AddOutputs()
@@ -41,6 +54,20 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             OutTexts(
                 nameof(ExecutionResultsResponse.ExecutionResults),
                 ExecutionResult.Doc);
+
+            // Appended after the original output, so saved definitions keep their wiring.
+            OutTexts(
+                "OldValues",
+                "With DryRun, for each element that passed the checks, the parameters a real run would " +
+                "change (the given one and the ones the Parameter Script changes with it) with their values " +
+                "now, as a JSON array in the format of GetGDLParametersOfElements; null for the other " +
+                "elements and without DryRun.");
+
+            OutTexts(
+                "NewValues",
+                "With DryRun, for each element that passed the checks, the same parameters with the values " +
+                "a real run would give them, as a JSON array in the format of GetGDLParametersOfElements; " +
+                "null for the other elements and without DryRun.");
         }
 
         protected override void Solve(
@@ -157,19 +184,59 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     GdlParameterList.Add(setParametersInput);
             }
 
-            if (!TryGetConvertedCadValues(
+            var dryRun = da.GetOptional(
+                3,
+                false);
+            if (!dryRun)
+            {
+                if (!TryGetConvertedCadValues(
+                        CommandName,
+                        input,
+                        ToAddOn,
+                        ExecutionResultsResponse.Deserialize,
+                        out ExecutionResultsResponse response))
+                {
+                    return;
+                }
+
+                da.SetDataList(
+                    0,
+                    response.ExecutionResults.Select(x => x.Message()));
+                return;
+            }
+
+            // Only sent when it differs from the command's default.
+            var parameters = JObject.FromObject(input);
+            parameters["dryRun"] = true;
+
+            if (!TryGetCadResponse(
                     CommandName,
-                    input,
+                    parameters,
                     ToAddOn,
-                    ExecutionResultsResponse.Deserialize,
-                    out ExecutionResultsResponse response))
+                    out JObject dryRunResponse))
             {
                 return;
             }
 
+            // A dry run changes nothing, so its refusals are reported, not
+            // failed.
+            AddDryRunWarnings(
+                ExecutionResultsResponse.ErrorMessages(dryRunResponse));
+
             da.SetDataList(
                 0,
-                response.ExecutionResults.Select(x => x.Message()));
+                ExecutionResultsResponse.Deserialize(dryRunResponse).
+                    ExecutionResults.Select(x => x.Message()));
+            da.SetDataList(
+                1,
+                ExecutionResultsResponse.WouldChangeValues(
+                    dryRunResponse,
+                    "oldValue"));
+            da.SetDataList(
+                2,
+                ExecutionResultsResponse.WouldChangeValues(
+                    dryRunResponse,
+                    "newValue"));
         }
 
         protected override System.Drawing.Bitmap Icon =>

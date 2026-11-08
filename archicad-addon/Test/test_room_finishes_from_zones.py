@@ -254,6 +254,176 @@ class SummaryTests(unittest.TestCase):
         self.assertEqual((rows[0]["zones"], rows[0]["floor"], rows[0]["ceiling"]), (1, 1, 1))
 
 
+def _face(a, b, bottom=0.0, top=2.6):
+    """ A vertical boundary face along a-b, as GetZoneBoundaries gives it (closed, 3D). """
+    return [{"x": a[0], "y": a[1], "z": bottom}, {"x": b[0], "y": b[1], "z": bottom},
+            {"x": b[0], "y": b[1], "z": top}, {"x": a[0], "y": a[1], "z": top},
+            {"x": a[0], "y": a[1], "z": bottom}]
+
+
+def _wall_segments(points, skip=()):
+    """ The boundary segments of walls behind every edge of the polygon except the skipped ones. """
+    return [rf.boundary_segment(_face(a, b)) for i, a, b in rf.edges(points) if i not in skip]
+
+
+def _right_of(piece, distance=0.01):
+    """ A point just right of the piece's middle, where its thickness goes. """
+    (bx, by), (ex, ey) = piece["beg"], piece["end"]
+    length = ((ex - bx) ** 2 + (ey - by) ** 2) ** 0.5
+    return ((bx + ex) / 2 + (ey - by) / length * distance, (by + ey) / 2 - (ex - bx) / length * distance)
+
+
+class BoundaryTests(unittest.TestCase):
+    def test_vertical_face_gives_its_plan_trace(self):
+        a, b = rf.boundary_segment(_face((0.0, 0.0), (4.0, 0.0)))
+        self.assertEqual({a, b}, {(0.0, 0.0), (4.0, 0.0)})
+
+    def test_floor_face_is_not_a_segment(self):
+        floor = [{"x": x, "y": y, "z": 0.0} for x, y in RECTANGLE]
+        self.assertIsNone(rf.boundary_segment(floor))
+
+    def test_sloped_face_is_not_a_segment(self):
+        sloped = [{"x": 0.0, "y": 0.0, "z": 0.0}, {"x": 4.0, "y": 0.0, "z": 0.0}, {"x": 4.0, "y": 1.0, "z": 1.0},
+                  {"x": 0.0, "y": 1.0, "z": 1.0}]
+        self.assertIsNone(rf.boundary_segment(sloped))
+
+    def test_partial_cover_of_an_edge(self):
+        parts = rf.covered_intervals((0.0, 0.0), (4.0, 0.0), [((1.0, 0.0), (2.5, 0.0)), ((2.5, 0.0), (3.0, 0.0))])
+        self.assertEqual(len(parts), 1)
+        self.assertAlmostEqual(parts[0][0], 1.0)
+        self.assertAlmostEqual(parts[0][1], 3.0)
+
+    def test_segment_of_another_edge_does_not_count(self):
+        self.assertEqual(rf.covered_intervals((0.0, 0.0), (4.0, 0.0), [((4.0, 0.0), (4.0, 3.0))]), [])
+
+    def test_near_corner_snaps_to_it(self):
+        parts = rf.covered_intervals((0.0, 0.0), (4.0, 0.0), [((0.01, 0.005), (3.995, 0.0))])
+        self.assertEqual(parts, [(0.0, 4.0)])
+
+
+class WallFinishTests(unittest.TestCase):
+    def _check_chain(self, points, pieces):
+        """ Every piece has the room on its right, and each one ends where the next begins. """
+        for piece in pieces:
+            self.assertTrue(rf.inside(_right_of(piece), points), piece)
+        ends = {piece["end"] for piece in pieces}
+        begs = {piece["beg"] for piece in pieces}
+        self.assertEqual(ends, begs)
+        self.assertEqual(ends, set(points))
+
+    def test_rectangle_counter_clockwise(self):
+        pieces = rf.finish_pieces(rf.read_contour(_coords(RECTANGLE), None), [], _wall_segments(RECTANGLE))
+        self.assertEqual(len(pieces), 4)
+        self.assertAlmostEqual(sum(p["length"] for p in pieces), 14.0)
+        self._check_chain(RECTANGLE, pieces)
+
+    def test_rectangle_clockwise(self):
+        clockwise = list(reversed(RECTANGLE))
+        pieces = rf.finish_pieces(rf.read_contour(_coords(clockwise), None), [], _wall_segments(clockwise))
+        self.assertEqual(len(pieces), 4)
+        self._check_chain(clockwise, pieces)
+
+    def test_l_shaped_room(self):
+        pieces = rf.finish_pieces(rf.read_contour(_coords(L_SHAPE), None), [], _wall_segments(L_SHAPE))
+        self.assertEqual(len(pieces), 6)
+        self.assertAlmostEqual(sum(p["length"] for p in pieces), 20.0)
+        self._check_chain(L_SHAPE, pieces)
+
+    def test_virtual_boundary_gets_no_finish(self):
+        # The edge from (4, 0) to (4, 3) opens to the next zone: no wall behind it.
+        pieces = rf.finish_pieces(rf.read_contour(_coords(RECTANGLE), None), [], _wall_segments(RECTANGLE, skip={1}))
+        self.assertEqual(sorted(p["edge"] for p in pieces), [0, 2, 3])
+        self.assertAlmostEqual(sum(p["length"] for p in pieces), 11.0)
+        for piece in pieces:
+            self.assertFalse(abs(piece["beg"][0] - 4.0) < 1e-9 and abs(piece["end"][0] - 4.0) < 1e-9)
+
+    def test_wall_behind_part_of_an_edge(self):
+        segments = _wall_segments(RECTANGLE, skip={0}) + [rf.boundary_segment(_face((0.0, 0.0), (1.5, 0.0)))]
+        pieces = [p for p in rf.finish_pieces(rf.read_contour(_coords(RECTANGLE), None), [], segments)
+                  if p["edge"] == 0]
+        self.assertEqual(len(pieces), 1)
+        self.assertAlmostEqual(pieces[0]["length"], 1.5)
+
+    def test_curved_edge_is_left_out(self):
+        contour = rf.read_contour(_coords(RECTANGLE), [{"begIndex": 1, "endIndex": 2, "arcAngle": 0.5}])
+        pieces = rf.finish_pieces(contour, [], _wall_segments(RECTANGLE))
+        self.assertEqual(sorted(p["edge"] for p in pieces), [0, 2, 3])
+
+    def test_hole_finish_faces_the_room(self):
+        outline = [(0.0, 0.0), (10.0, 0.0), (10.0, 10.0), (0.0, 10.0)]
+        hole = [(4.0, 4.0), (6.0, 4.0), (6.0, 6.0), (4.0, 6.0)]
+        pieces = rf.finish_pieces(rf.read_contour(_coords(outline), None), [rf.read_contour(_coords(hole), None)],
+                                  _wall_segments(hole))
+        self.assertEqual(len(pieces), 4)
+        for piece in pieces:
+            self.assertTrue(piece["hole"])
+            self.assertFalse(rf.inside(_right_of(piece), hole))
+
+    def test_short_piece_is_left_out(self):
+        pieces = rf.finish_pieces(rf.read_contour(_coords(RECTANGLE), None), [],
+                                  [rf.boundary_segment(_face((1.0, 0.0), (1.03, 0.0)))])
+        self.assertEqual(pieces, [])
+
+    def test_wall_finish_ids(self):
+        self.assertEqual(rf.wall_finish_id("101", 3), "FIN-101-wall-3")
+        self.assertEqual(rf.wall_finish_tag("FIN-101-wall-3"), "101")
+        self.assertEqual(rf.wall_finish_tag("FIN-101-0A1B2C3D-wall-12"), "101-0A1B2C3D")
+        self.assertIsNone(rf.wall_finish_tag("FIN-101-floor"))
+        self.assertIsNone(rf.wall_finish_tag("W-001"))
+
+
+class WallDataTests(unittest.TestCase):
+    def _settings(self, **wall):
+        base = {"enabled": True, "favorite": None, "layerIndex": None, "buildingMaterialId": None,
+                "compositeId": None, "profileId": None, "thickness": 0.015}
+        return {"wall": {**base, **wall}}
+
+    def _zone(self):
+        return {"tag": "101", "floorIndex": 1, "bottomOffset": 0.1, "roomHeight": 2.6}
+
+    def test_basic_wall_finish(self):
+        piece = {"beg": (4.0, 0.0), "end": (0.0, 0.0), "length": 4.0}
+        item = rf.wall_data(self._zone(), piece, 1, self._settings(layerIndex=5))
+        self.assertEqual(item, {
+            "id": "FIN-101-wall-1",
+            "floorIndex": 1,
+            "begCoordinate": {"x": 4.0, "y": 0.0},
+            "endCoordinate": {"x": 0.0, "y": 0.0},
+            "zCoordinate": 0.1,
+            "height": 2.6,
+            "referenceLineLocation": "Outside",
+            "offset": 0.0,
+            "flipped": False,
+            "layerIndex": 5,
+            "structureType": "Basic",
+            "thickness": 0.015,
+        })
+
+    def test_favorite_composite_and_profile(self):
+        piece = {"beg": (0.0, 0.0), "end": (1.0, 0.0), "length": 1.0}
+        item = rf.wall_data(self._zone(), piece, 2, self._settings(favorite="Plaster 15"))
+        self.assertEqual(item["favoriteName"], "Plaster 15")
+        self.assertNotIn("structureType", item)
+        self.assertEqual(item["referenceLineLocation"], "Outside")
+        composite = {"guid": "11111111-2222-3333-4444-555555555555"}
+        item = rf.wall_data(self._zone(), piece, 2, self._settings(compositeId=composite))
+        self.assertEqual((item["structureType"], item["compositeId"]), ("Composite", composite))
+        self.assertNotIn("thickness", item)
+        profile = {"guid": "77777777-2222-3333-4444-555555555555"}
+        item = rf.wall_data(self._zone(), piece, 2, self._settings(profileId=profile))
+        self.assertEqual((item["structureType"], item["profileId"]), ("Profile", profile))
+        self.assertIsNone(rf.known_thickness({"enabled": True, "profileId": profile, "thickness": 0.015}))
+
+
+class WallSummaryTests(unittest.TestCase):
+    def test_wall_pieces_per_story(self):
+        zone = _zone(planned=("floor", "wall"))
+        zone["wallPieces"] = [{"length": 4.0}, {"length": 3.0}]
+        row = rf.story_summary([zone])[0]
+        self.assertEqual((row["floor"], row["ceiling"], row["wall"]), (1, 0, 2))
+        self.assertAlmostEqual(row["wallLength"], 7.0)
+
+
 class ParseTests(unittest.TestCase):
     def test_lengths(self):
         self.assertAlmostEqual(rf.parse_length("0,05"), 0.05)

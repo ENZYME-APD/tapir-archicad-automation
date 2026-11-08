@@ -13,6 +13,8 @@
 #include "ApplicationCommands.hpp"
 #include "MigrationHelper.hpp"
 
+static void CatchViewEvents (APIViewEventHandlerProc* handlerProc);
+
 static
 GS::String ElementEventTypeToString (AddElementNotificationClientCommand::ElementEventType eventType)
 {
@@ -81,6 +83,9 @@ bool AddElementNotificationClientCommand::hasClientToNotifyOnReservationChanges 
 bool AddElementNotificationClientCommand::hasClientToNotifyOnSelectionChange = false;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnAttributeReplacement = false;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnToolChange = false;
+bool AddElementNotificationClientCommand::hasClientToNotifyOnViewEvents = false;
+bool AddElementNotificationClientCommand::hasClientToNotifyOnLockableReservationChanges = false;
+bool AddElementNotificationClientCommand::hasClientToNotifyOnToolDefaultChanges = false;
 std::unique_ptr<AddElementNotificationClientCommand::EventQueue> AddElementNotificationClientCommand::queuedEvents;
 GS::Thread AddElementNotificationClientCommand::messageSenderThread;
 
@@ -160,6 +165,38 @@ GS::Optional<GS::UniString> AddElementNotificationClientCommand::GetInputParamet
             "notifyOnToolChange": {
                 "type": "boolean",
                 "description": "Notify when the user switches to another tool in the Toolbox. The message is {\"toolChanged\": {\"elementType\": ...}}: elementType is the element type of the new tool, as in elementTypesToObserve (for example \"Wall\" or \"Column\"), \"None\" for the Arrow and the Marquee, and \"Unknown\" for a tool Tapir has no type name for. Optional parameter, by default false."
+            },
+            "notifyOnViewEvents": {
+                "type": "boolean",
+                "description": "Notify when an item of the Project Navigator or the Organizer is inserted (for example a view is saved or a layout is created), modified (for example renamed), deleted or opened. The message is {\"viewEvent\": {\"event\": ..., \"navigatorMapId\": ..., \"navigatorItemId\": {\"guid\": ...}}}: event is one of \"Inserted\", \"Modified\", \"Deleted\" and \"Opened\", navigatorMapId is the navigator map of the item, one of \"ProjectMap\", \"PublicViewMap\", \"MyViewMap\", \"LayoutBook\" and \"PublisherSets\" (as navigatorMapId of GetNavigatorItemTree), and navigatorItemId is the guid of the navigator item, as in the response of GetNavigatorItemTree (a deleted item no longer exists). Optional parameter, by default false."
+            },
+            "notifyOnLockableReservationChanges": {
+                "type": "boolean",
+                "description": "Notify when a Teamwork lockable object set (the non-element things Teamwork reserves: the attributes of a type, favorites, model view options, project info, project preferences, ...) is reserved or released, by anyone, including the current user. The message is {\"lockableReservationChanged\": {\"event\": ..., \"objectSetId\": {\"guid\": ...}, \"objectSetName\": ..., \"reservedBy\": ..., \"reservedByUserId\": ...}}: event is \"Reserved\" or \"Released\", objectSetId is the guid of the object set, objectSetName its name as objectSetName of ReserveLockableObjectSet (for example \"Composites\", \"LayerSettingsDialog\" or \"Favorites\"), missing when it is not one of the documented sets, and reservedBy and reservedByUserId are the name and the Teamwork user id of the member who reserved it, only for \"Reserved\". Element reservations are notified by notifyOnReservationChanges. Optional parameter, by default false."
+            },
+            "notifyOnToolDefaultChanges": {
+                "type": "boolean",
+                "description": "Notify when the default settings of a tool change (for example the user changes the settings of the Wall tool with no wall selected), so a client can read the new defaults. The message is {\"toolDefaultsChanged\": {\"elementType\": ...}}: elementType is the element type whose defaults changed, as in elementTypesToObserve (for example \"Wall\" or \"Column\"), and \"Unknown\" for a type Tapir has no type name for. Optional parameter, by default false."
+            },
+            "notifyOnAttributeChanges": {
+                "type": "boolean",
+                "description": "Notify when attributes (layers, fills, composites, surfaces, building materials, ...) are created, modified or deleted. The message is {\"attributesChanged\": {\"event\": ..., \"attributeIds\": [{\"attributeId\": {\"guid\": ...}}, ...]}}: event is \"Created\", \"Modified\" or \"Deleted\", and attributeIds are the attributes, as in the response of GetAttributesByType (a deleted attribute no longer exists). Not available in Archicad 25: setting it to true there fails. Optional parameter, by default false."
+            },
+            "notifyOnClassificationChanges": {
+                "type": "boolean",
+                "description": "Notify when classification systems or classification items are created, modified or deleted. The messages are {\"classificationSystemsChanged\": {\"event\": ..., \"classificationSystemIds\": [{\"classificationSystemId\": {\"guid\": ...}}, ...]}} and {\"classificationItemsChanged\": {\"event\": ..., \"classificationItemIds\": [{\"classificationItemId\": {\"guid\": ...}}, ...]}}: event is \"Created\", \"Modified\" or \"Deleted\", and the ids are as in the response of GetAllClassificationSystems and GetAllClassificationsInSystem. Not available in Archicad 25: setting it to true there fails. Optional parameter, by default false."
+            },
+            "notifyOnPropertyDefinitionChanges": {
+                "type": "boolean",
+                "description": "Notify when property groups or property definitions are created, modified or deleted (property values of elements are notified as changedElements by notifyOnModificationOfAnElement). The messages are {\"propertyGroupsChanged\": {\"event\": ..., \"propertyGroupIds\": [{\"propertyGroupId\": {\"guid\": ...}}, ...]}} and {\"propertyDefinitionsChanged\": {\"event\": ..., \"propertyIds\": [{\"propertyId\": {\"guid\": ...}}, ...]}}: event is \"Created\", \"Modified\" or \"Deleted\", and the ids are as in the response of GetAllProperties. Not available in Archicad 25: setting it to true there fails. Optional parameter, by default false."
+            },
+            "notifyOnMarqueeChange": {
+                "type": "boolean",
+                "description": "Notify when the marquee is drawn, changed or removed. The message is {\"marqueeChanged\": {\"type\": ..., \"multiStory\": ...}}: type is \"rectangle\", \"rotatedRectangle\", \"polygon\" or, when the marquee was removed, \"none\", as type of GetMarquee, which returns the shape of the marquee; multiStory is missing for \"none\". Available from Archicad 27: setting it to true in an earlier version fails. Optional parameter, by default false."
+            },
+            "notifyOn3DSettingsChanges": {
+                "type": "boolean",
+                "description": "Notify when the settings of the 3D window change (projection, Filter and Cut Elements in 3D, 3D window settings). The message is {\"view3DSettingsChanged\": {}}; read the new settings with the commands of the 3D window. The changes made while navigating in 3D are not notified. Available from Archicad 30: setting it to true in an earlier version fails. Optional parameter, by default false."
             }
         },
         "additionalProperties": false,
@@ -222,6 +259,47 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
     bool notifyOnToolChange = false;
     parameters.Get ("notifyOnToolChange", notifyOnToolChange);
 
+    bool notifyOnViewEvents = false;
+    parameters.Get ("notifyOnViewEvents", notifyOnViewEvents);
+
+    bool notifyOnLockableReservationChanges = false;
+    parameters.Get ("notifyOnLockableReservationChanges", notifyOnLockableReservationChanges);
+
+    bool notifyOnToolDefaultChanges = false;
+    parameters.Get ("notifyOnToolDefaultChanges", notifyOnToolDefaultChanges);
+
+    // The events of the Archicad 26+ event handlers; refused, like notifyOnAttributeReplacement,
+    // before the client is registered or changed in the versions that do not have them.
+    bool notifyOnAttributeChanges = false;
+    parameters.Get ("notifyOnAttributeChanges", notifyOnAttributeChanges);
+
+    bool notifyOnClassificationChanges = false;
+    parameters.Get ("notifyOnClassificationChanges", notifyOnClassificationChanges);
+
+    bool notifyOnPropertyDefinitionChanges = false;
+    parameters.Get ("notifyOnPropertyDefinitionChanges", notifyOnPropertyDefinitionChanges);
+#ifndef ServerMainVers_2600
+    if (notifyOnAttributeChanges || notifyOnClassificationChanges || notifyOnPropertyDefinitionChanges) {
+        return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "notifyOnAttributeChanges, notifyOnClassificationChanges and notifyOnPropertyDefinitionChanges are not available in Archicad 25.");
+    }
+#endif
+
+    bool notifyOnMarqueeChange = false;
+    parameters.Get ("notifyOnMarqueeChange", notifyOnMarqueeChange);
+#ifndef ServerMainVers_2700
+    if (notifyOnMarqueeChange) {
+        return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "notifyOnMarqueeChange is available from Archicad 27.");
+    }
+#endif
+
+    bool notifyOn3DSettingsChanges = false;
+    parameters.Get ("notifyOn3DSettingsChanges", notifyOn3DSettingsChanges);
+#ifndef ServerMainVers_3000
+    if (notifyOn3DSettingsChanges) {
+        return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "notifyOn3DSettingsChanges is available from Archicad 30.");
+    }
+#endif
+
     std::set<API_ElemTypeID> elementTypesToObserve;
     GS::Array<GS::UniString> elementTypeNames;
     if (parameters.Get ("elementTypesToObserve", elementTypeNames)) {
@@ -239,7 +317,7 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
 
     const GS::UniString connectionUrlStr = GS::UniString::Printf ("http://%T:%d/", host.ToPrintf (), port);
     const IO::URI::URI connectionUrl (connectionUrlStr);
-    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges, notifyOnSelectionChange, notifyOnWindowChange, notifyOnProjectEvents, notifyOnAttributeReplacement, notifyOnToolChange, elementTypesToObserve));
+    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges, notifyOnSelectionChange, notifyOnWindowChange, notifyOnProjectEvents, notifyOnAttributeReplacement, notifyOnToolChange, notifyOnViewEvents, notifyOnLockableReservationChanges, notifyOnToolDefaultChanges, notifyOnAttributeChanges, notifyOnClassificationChanges, notifyOnPropertyDefinitionChanges, notifyOnMarqueeChange, notifyOn3DSettingsChanges, elementTypesToObserve));
     if (!result.second) {
         result.first->second.notifyOnNew = notifyOnNew;
         result.first->second.notifyOnModification = notifyOnModification;
@@ -249,6 +327,14 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
         result.first->second.notifyOnProjectEvents = notifyOnProjectEvents;
         result.first->second.notifyOnAttributeReplacement = notifyOnAttributeReplacement;
         result.first->second.notifyOnToolChange = notifyOnToolChange;
+        result.first->second.notifyOnViewEvents = notifyOnViewEvents;
+        result.first->second.notifyOnLockableReservationChanges = notifyOnLockableReservationChanges;
+        result.first->second.notifyOnToolDefaultChanges = notifyOnToolDefaultChanges;
+        result.first->second.notifyOnAttributeChanges = notifyOnAttributeChanges;
+        result.first->second.notifyOnClassificationChanges = notifyOnClassificationChanges;
+        result.first->second.notifyOnPropertyDefinitionChanges = notifyOnPropertyDefinitionChanges;
+        result.first->second.notifyOnMarqueeChange = notifyOnMarqueeChange;
+        result.first->second.notifyOn3DSettingsChanges = notifyOn3DSettingsChanges;
         result.first->second.elementTypesToObserve = elementTypesToObserve;
         // A client registered again without these notifications may have been the
         // last one that wanted them; uninstall the handlers in that case, as
@@ -257,6 +343,9 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
         UninstallSelectionChangeHandlerIfNotNeeded ();
         UninstallAttributeReplacementHandlerIfNotNeeded ();
         UninstallToolChangeHandlerIfNotNeeded ();
+        UninstallViewEventHandlerIfNotNeeded ();
+        UninstallLockableReservationChangeHandlerIfNotNeeded ();
+        UninstallToolDefaultChangeHandlerIfNotNeeded ();
     }
 
     if (notifyOnNew && !hasClientToNotifyOnNew) {
@@ -290,6 +379,26 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
         ACAPI_Notification_CatchToolChange (ToolChangeHandler);
         hasClientToNotifyOnToolChange = true;
     }
+
+    if (notifyOnViewEvents && !hasClientToNotifyOnViewEvents) {
+        CatchViewEvents (ViewEventHandler);
+        hasClientToNotifyOnViewEvents = true;
+    }
+
+    if (notifyOnLockableReservationChanges && !hasClientToNotifyOnLockableReservationChanges) {
+        ACAPI_Notification_CatchLockableReservationChange (LockableReservationChangeHandler);
+        hasClientToNotifyOnLockableReservationChanges = true;
+    }
+
+    if (notifyOnToolDefaultChanges && !hasClientToNotifyOnToolDefaultChanges) {
+        // nullptr: the defaults of every element type, as in the DevKit's Notification_Manager example.
+        ACAPI_Element_CatchChangeDefaults (nullptr, ToolDefaultChangeHandler);
+        hasClientToNotifyOnToolDefaultChanges = true;
+    }
+
+    // Registers the event handlers this client needs and, when it was registered again without
+    // some of them, unregisters the ones no client needs any more.
+    UpdateEventHandlers ();
 
     ACAPI_Element_InstallElementObserver (ElementEventHandlerProc);
 
@@ -578,6 +687,435 @@ AddElementNotificationClientCommand::ToolChangeHandler (const API_ToolBoxItem* n
     }
 
     return NoError;
+}
+
+// The navigator maps whose item events are reported, with the names navigatorMapId of
+// GetNavigatorItemTree uses (MyViewMap is not one of those, it has the API's name).
+static const std::pair<API_NavigatorMapID, const char*> ObservedNavigatorMaps[] = {
+    { API_ProjectMap,       "ProjectMap" },
+    { API_PublicViewMap,    "PublicViewMap" },
+    { API_MyViewMap,        "MyViewMap" },
+    { API_LayoutMap,        "LayoutBook" },
+    { API_PublisherSets,    "PublisherSets" }
+};
+
+static GS::UniString NavigatorMapIdToString (API_NavigatorMapID mapId)
+{
+    for (const auto& map : ObservedNavigatorMaps) {
+        if (map.first == mapId) {
+            return map.second;
+        }
+    }
+    return "Unknown";
+}
+
+static GS::Optional<GS::UniString> ViewEventToString (API_NotifyViewEventID notifID)
+{
+    switch (notifID) {
+        case APINotifyView_Inserted:    return GS::UniString ("Inserted");
+        case APINotifyView_Modified:    return GS::UniString ("Modified");
+        case APINotifyView_Deleted:     return GS::UniString ("Deleted");
+        case APINotifyView_Opened:      return GS::UniString ("Opened");
+        default:                        return GS::NoValue;
+    }
+}
+
+// Installs the handler for every observed navigator map, or removes it with nullptr.
+static void CatchViewEvents (APIViewEventHandlerProc* handlerProc)
+{
+    // Begin and End only frame the other events, so they are not asked for.
+    const GSFlags eventTypes = APINotifyView_Inserted | APINotifyView_Modified | APINotifyView_Deleted | APINotifyView_Opened;
+    for (const auto& map : ObservedNavigatorMaps) {
+        ACAPI_Notification_CatchViewEvent (eventTypes, map.first, handlerProc);
+    }
+}
+
+void
+AddElementNotificationClientCommand::UninstallViewEventHandlerIfNotNeeded ()
+{
+    if (!hasClientToNotifyOnViewEvents) {
+        return;
+    }
+
+    for (const auto& kv : clients) {
+        if (kv.second.notifyOnViewEvents) {
+            return;
+        }
+    }
+
+    CatchViewEvents (nullptr);
+    hasClientToNotifyOnViewEvents = false;
+}
+
+GSErrCode
+AddElementNotificationClientCommand::ViewEventHandler (const API_NotifyViewEventType* viewEvent)
+{
+    if (viewEvent == nullptr) {
+        return NoError;
+    }
+
+    const GS::Optional<GS::UniString> event = ViewEventToString (viewEvent->notifID);
+    if (!event.HasValue ()) {
+        return NoError;
+    }
+
+    const GS::ObjectState message ("viewEvent", GS::ObjectState (
+        "event", event.Get (),
+        "navigatorMapId", NavigatorMapIdToString (viewEvent->mapId),
+        "navigatorItemId", CreateGuidObjectState (viewEvent->itemGuid)));
+
+    // Sent at once, like the selection: a navigator item event is not an element event.
+    for (auto& kv : clients) {
+        auto& client = kv.second;
+        if (!client.notifyOnViewEvents) {
+            continue;
+        }
+
+        SendMessageToNotificationClient (client, message);
+    }
+
+    return NoError;
+}
+
+// The lockable object sets the DevKit documents for ACAPI_Teamwork_FindLockableObjectSet (the
+// names of ReserveLockableObjectSet), and IssueTags of the DevKit's Notification_Manager example.
+static const char* const LockableObjectSetNames[] = {
+    "BuildingMaterials",
+    "Cities",
+    "Composites",
+    "Favorites",
+    "FillTypes",
+    "LayerSettingsDialog",
+    "LineTypes",
+    "MarkupStyles",
+    "MEPSystems",
+    "ModelViewOptions",
+    "OperationProfiles",
+    "PenTables",
+    "Profiles",
+    "ProjectInfo",
+    "GeoLocation",
+    "PreferencesDialog",
+    "GraphicOverrides",
+    "Surfaces",
+    "ZoneCategories",
+    "IssueTags"
+};
+
+// The name of the lockable object set, looked up each time (as the Notification_Manager example
+// does once) because the guids belong to the open project.
+static GS::Optional<GS::UniString> FindLockableObjectSetName (const API_Guid& objectSetId)
+{
+    for (const char* name : LockableObjectSetNames) {
+        const GS::UniString objectSetName (name);
+        if (ACAPI_Teamwork_FindLockableObjectSet (objectSetName) == objectSetId) {
+            return objectSetName;
+        }
+    }
+    return GS::NoValue;
+}
+
+void
+AddElementNotificationClientCommand::UninstallLockableReservationChangeHandlerIfNotNeeded ()
+{
+    if (!hasClientToNotifyOnLockableReservationChanges) {
+        return;
+    }
+
+    for (const auto& kv : clients) {
+        if (kv.second.notifyOnLockableReservationChanges) {
+            return;
+        }
+    }
+
+    ACAPI_Notification_CatchLockableReservationChange (nullptr);
+    hasClientToNotifyOnLockableReservationChanges = false;
+}
+
+GSErrCode
+AddElementNotificationClientCommand::LockableReservationChangeHandler (const API_Guid& objectId, short ownerId)
+{
+    if (objectId == APINULLGuid) {
+        return NoError;
+    }
+
+    // ownerId is the member who obtained the reservation, 0 when the object set was released.
+    const bool reserved = (ownerId != 0);
+    GS::ObjectState lockableReservationChanged (
+        "event", GS::UniString (reserved ? "Reserved" : "Released"),
+        "objectSetId", CreateGuidObjectState (objectId));
+
+    const GS::Optional<GS::UniString> objectSetName = FindLockableObjectSetName (objectId);
+    if (objectSetName.HasValue ()) {
+        lockableReservationChanged.Add ("objectSetName", objectSetName.Get ());
+    }
+
+    if (reserved) {
+        GS::UniString userName;
+        ACAPI_Teamwork_GetUsernameFromId (ownerId, &userName);
+        lockableReservationChanged.Add ("reservedBy", userName);
+        lockableReservationChanged.Add ("reservedByUserId", static_cast<Int32> (ownerId));
+    }
+
+    const GS::ObjectState message ("lockableReservationChanged", lockableReservationChanged);
+
+    // Sent at once, like the selection: the reservation of a lockable object set is not an element event.
+    for (auto& kv : clients) {
+        auto& client = kv.second;
+        if (!client.notifyOnLockableReservationChanges) {
+            continue;
+        }
+
+        SendMessageToNotificationClient (client, message);
+    }
+
+    return NoError;
+}
+
+void
+AddElementNotificationClientCommand::UninstallToolDefaultChangeHandlerIfNotNeeded ()
+{
+    if (!hasClientToNotifyOnToolDefaultChanges) {
+        return;
+    }
+
+    for (const auto& kv : clients) {
+        if (kv.second.notifyOnToolDefaultChanges) {
+            return;
+        }
+    }
+
+    ACAPI_Element_CatchChangeDefaults (nullptr, nullptr);
+    hasClientToNotifyOnToolDefaultChanges = false;
+}
+
+GSErrCode
+AddElementNotificationClientCommand::ToolDefaultChangeHandler (const API_ToolBoxItem* defElemType)
+{
+    if (defElemType == nullptr) {
+        return NoError;
+    }
+
+#ifdef ServerMainVers_2600
+    const API_ElemTypeID typeID = defElemType->type.typeID;
+#else
+    const API_ElemTypeID typeID = defElemType->typeID;
+#endif
+    const GS::ObjectState message ("toolDefaultsChanged", GS::ObjectState ("elementType", GetElementTypeNonLocalizedName (typeID)));
+
+    // Sent at once, like the tool change: a change of the defaults is not an element event.
+    for (auto& kv : clients) {
+        auto& client = kv.second;
+        if (!client.notifyOnToolDefaultChanges) {
+            continue;
+        }
+
+        SendMessageToNotificationClient (client, message);
+    }
+
+    return NoError;
+}
+
+void
+AddElementNotificationClientCommand::SendMessageToClients (bool Client::* wantsMessage, const GS::ObjectState& message)
+{
+    for (auto& kv : clients) {
+        auto& client = kv.second;
+        if (!(client.*wantsMessage)) {
+            continue;
+        }
+
+        SendMessageToNotificationClient (client, message);
+    }
+}
+
+#ifdef ServerMainVers_2600
+
+using NotificationClient = AddElementNotificationClientCommand::Client;
+
+// Reports the objects an event handler of the API_IObjectEventHandler kind is told were created,
+// modified or deleted as {messageName: {"event": ..., idsName: [{idName: {"guid": ...}}, ...]}},
+// at once, like the selection: these are not element events.
+template <typename EventHandlerBase>
+class TapirObjectEventHandler : public EventHandlerBase {
+public:
+    TapirObjectEventHandler (bool NotificationClient::* wants, const char* message, const char* idListName, const char* idFieldName) :
+        wantsMessage (wants),
+        messageName (message),
+        idsName (idListName),
+        idName (idFieldName)
+    {
+    }
+
+    virtual void OnCreated (const GS::HashSet<API_Guid>& ids) const override
+    {
+        Send ("Created", ids);
+    }
+
+    virtual void OnModified (const GS::HashSet<API_Guid>& ids) const override
+    {
+        Send ("Modified", ids);
+    }
+
+    virtual void OnDeleted (const GS::HashSet<API_Guid>& ids) const override
+    {
+        Send ("Deleted", ids);
+    }
+
+private:
+    void Send (const char* event, const GS::HashSet<API_Guid>& ids) const
+    {
+        if (ids.IsEmpty ()) {
+            return;
+        }
+
+        GS::ObjectState details ("event", GS::UniString (event));
+        const auto& idList = details.AddList<GS::ObjectState> (idsName);
+        for (const API_Guid& id : ids) {
+            idList (CreateIdObjectState (idName, id));
+        }
+
+        AddElementNotificationClientCommand::SendMessageToClients (wantsMessage, GS::ObjectState (messageName, details));
+    }
+
+    bool NotificationClient::*  wantsMessage;
+    const char*                 messageName;
+    const char*                 idsName;
+    const char*                 idName;
+};
+
+#ifdef ServerMainVers_2700
+
+// Archicad 26 has no marquee event handler.
+class TapirMarqueeEventHandler : public API_IMarqueeEventHandler {
+public:
+    virtual void OnMarqueeChanged (const API_SelectionInfo& selectionInfo) const override
+    {
+        // The type names of GetMarquee; the handler does not own the marquee polygon handle.
+        const char* type = nullptr;
+        switch (selectionInfo.typeID) {
+            case API_MarqueeHorBox: type = "rectangle"; break;
+            case API_MarqueeRotBox: type = "rotatedRectangle"; break;
+            case API_MarqueePoly:   type = "polygon"; break;
+            default:                break;
+        }
+
+        GS::ObjectState marqueeChanged ("type", GS::UniString (type != nullptr ? type : "none"));
+        if (type != nullptr) {
+            marqueeChanged.Add ("multiStory", selectionInfo.multiStory);
+        }
+
+        AddElementNotificationClientCommand::SendMessageToClients (&NotificationClient::notifyOnMarqueeChange, GS::ObjectState ("marqueeChanged", marqueeChanged));
+    }
+};
+
+#endif
+
+#ifdef ServerMainVers_3000
+
+// Archicad 29 and earlier have no 3D settings event handler.
+class TapirView3DSettingsEventHandler : public API_IView3DSettingsEventHandler {
+public:
+    virtual void View3DSettingsChanged () const override
+    {
+        AddElementNotificationClientCommand::SendMessageToClients (&NotificationClient::notifyOn3DSettingsChanges, GS::ObjectState ("view3DSettingsChanged", GS::ObjectState ()));
+    }
+
+    virtual void View3DSettingsChangedInNavigation () const override
+    {
+        // Called continuously while the user navigates in 3D; a message to every client each
+        // time would slow the navigation down, so these changes are not notified.
+    }
+};
+
+#endif
+
+// The ids of the registered event handlers of each option, empty while no client wants it.
+static std::vector<API_Guid> attributeEventHandlerIds;
+static std::vector<API_Guid> classificationEventHandlerIds;
+static std::vector<API_Guid> propertyDefinitionEventHandlerIds;
+#ifdef ServerMainVers_2700
+static std::vector<API_Guid> marqueeEventHandlerIds;
+#endif
+#ifdef ServerMainVers_3000
+static std::vector<API_Guid> view3DSettingsEventHandlerIds;
+#endif
+
+template <typename EventHandler, typename... Args>
+static void RegisterEventHandler (std::vector<API_Guid>& ids, Args&&... args)
+{
+    API_Guid id = APINULLGuid;
+    if (ACAPI_Notification_RegisterEventHandler (GS::NewOwned<EventHandler> (std::forward<Args> (args)...), id) == NoError) {
+        ids.push_back (id);
+    }
+}
+
+static void UnregisterEventHandlers (std::vector<API_Guid>& ids)
+{
+    for (const API_Guid& id : ids) {
+        ACAPI_Notification_UnregisterEventHandler (id);
+    }
+    ids.clear ();
+}
+
+#endif
+
+void
+AddElementNotificationClientCommand::UpdateEventHandlers ()
+{
+#ifdef ServerMainVers_2600
+    const auto anyClientWants = [] (bool Client::* wants) {
+        for (const auto& kv : clients) {
+            if (kv.second.*wants) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    // A handler that failed to register leaves its ids empty, so the next registration of a
+    // client that wants it tries again.
+    if (!anyClientWants (&Client::notifyOnAttributeChanges)) {
+        UnregisterEventHandlers (attributeEventHandlerIds);
+    } else if (attributeEventHandlerIds.empty ()) {
+        RegisterEventHandler<TapirObjectEventHandler<API_IAttributeEventHandler>> (attributeEventHandlerIds,
+            &Client::notifyOnAttributeChanges, "attributesChanged", "attributeIds", "attributeId");
+    }
+
+    if (!anyClientWants (&Client::notifyOnClassificationChanges)) {
+        UnregisterEventHandlers (classificationEventHandlerIds);
+    } else if (classificationEventHandlerIds.empty ()) {
+        RegisterEventHandler<TapirObjectEventHandler<API_IClassificationSystemEventHandler>> (classificationEventHandlerIds,
+            &Client::notifyOnClassificationChanges, "classificationSystemsChanged", "classificationSystemIds", "classificationSystemId");
+        RegisterEventHandler<TapirObjectEventHandler<API_IClassificationItemEventHandler>> (classificationEventHandlerIds,
+            &Client::notifyOnClassificationChanges, "classificationItemsChanged", "classificationItemIds", "classificationItemId");
+    }
+
+    if (!anyClientWants (&Client::notifyOnPropertyDefinitionChanges)) {
+        UnregisterEventHandlers (propertyDefinitionEventHandlerIds);
+    } else if (propertyDefinitionEventHandlerIds.empty ()) {
+        RegisterEventHandler<TapirObjectEventHandler<API_IPropertyGroupEventHandler>> (propertyDefinitionEventHandlerIds,
+            &Client::notifyOnPropertyDefinitionChanges, "propertyGroupsChanged", "propertyGroupIds", "propertyGroupId");
+        RegisterEventHandler<TapirObjectEventHandler<API_IPropertyDefinitionEventHandler>> (propertyDefinitionEventHandlerIds,
+            &Client::notifyOnPropertyDefinitionChanges, "propertyDefinitionsChanged", "propertyIds", "propertyId");
+    }
+
+#ifdef ServerMainVers_2700
+    if (!anyClientWants (&Client::notifyOnMarqueeChange)) {
+        UnregisterEventHandlers (marqueeEventHandlerIds);
+    } else if (marqueeEventHandlerIds.empty ()) {
+        RegisterEventHandler<TapirMarqueeEventHandler> (marqueeEventHandlerIds);
+    }
+#endif
+
+#ifdef ServerMainVers_3000
+    if (!anyClientWants (&Client::notifyOn3DSettingsChanges)) {
+        UnregisterEventHandlers (view3DSettingsEventHandlerIds);
+    } else if (view3DSettingsEventHandlerIds.empty ()) {
+        RegisterEventHandler<TapirView3DSettingsEventHandler> (view3DSettingsEventHandlerIds);
+    }
+#endif
+#endif
 }
 
 static GS::Optional<GS::UniString> ProjectEventToString (API_NotifyEventID notifID)
@@ -1016,6 +1554,10 @@ GS::ObjectState RemoveElementNotificationClientCommand::Execute (const GS::Objec
     AddElementNotificationClientCommand::UninstallSelectionChangeHandlerIfNotNeeded ();
     AddElementNotificationClientCommand::UninstallAttributeReplacementHandlerIfNotNeeded ();
     AddElementNotificationClientCommand::UninstallToolChangeHandlerIfNotNeeded ();
+    AddElementNotificationClientCommand::UninstallViewEventHandlerIfNotNeeded ();
+    AddElementNotificationClientCommand::UninstallLockableReservationChangeHandlerIfNotNeeded ();
+    AddElementNotificationClientCommand::UninstallToolDefaultChangeHandlerIfNotNeeded ();
+    AddElementNotificationClientCommand::UpdateEventHandlers ();
 
     return CreateSuccessfulExecutionResult ();
 }

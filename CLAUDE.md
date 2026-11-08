@@ -310,7 +310,8 @@ the script does, listing every change in plain words and asking the author to co
 A new script *requested* in an issue also goes to `marketplace/<slug>/` (listing `author` the
 person who opened the issue: `name` their GitHub profile name, else their login, and `github` their
 login; README "Requested by @<login> in #<n>, written with the Tapir issue bot."; an issue a bot
-opened keeps `author` `Tapir` and the README names the Discord user); `builtin-scripts/` gets a new script only when a maintainer
+opened keeps `author` `Tapir` and the README names the Discord user), always in one pull request with
+the whole script, never split into parts, because it is tested in Archicad as a whole; `builtin-scripts/` gets a new script only when a maintainer
 asks for it in the issue. A marketplace script may import `utilities`/`aclib` of `builtin-scripts/`,
 which are copied next to it when it is installed, so keep those helpers backward compatible.
 `python tools/check_marketplace.py` checks every folder against marketplace/README.md (the add-on
@@ -399,7 +400,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   opened) and its PR body says `Reported by @<login>`, so the reporter is
   credited when the PR is merged. An issue too large for
   one PR gets a split plan (`<!-- claude-split-plan: parts=N -->`, at most six
-  parts) and one PR per part, opened one run at a time (`next-part` job) on
+  parts; never for a `marketplace/` script, which is always one PR) and one PR per
+  part, opened one run at a time (`next-part` job) on
   `claude/issue-<n>-part<k>-…` branches with `Part <k> of <N> of #<n>`. No label
   is needed; applying `claude-fix` re-runs `fix` on an existing issue, and a
   `workflow_dispatch` with an `issue_number` runs it on that issue. Its header
