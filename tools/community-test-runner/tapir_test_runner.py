@@ -592,9 +592,9 @@ def run_installed(ac: dict, build: Path, checks: list[Path]) -> tuple[list[dict]
     ("28 GER"). A crash, or an Archicad that does not quit, becomes a failed row of the report (a
     crash is a result too); only a failure to start or to restore raises."""
     install = Installation(ac)
-    install.install(build)
     exe = ac["archicadExe"]
     reporters = crash_reporters(exe)  # open from earlier crashes; only new ones belong to this run
+    install.install(build)
     try:
         tapir = install.start()
         label = archicad_label(tapir)
