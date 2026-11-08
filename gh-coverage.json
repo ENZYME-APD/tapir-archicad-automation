@@ -1,16 +1,14 @@
 {
- "generatedAt": "2026-11-07 23:31 UTC",
+ "generatedAt": "2026-11-07 23:58 UTC",
  "counts": {
   "done": 568,
-  "merged": 182,
-  "in progress": 9,
-  "skipped": 1,
+  "merged": 192,
   "not applicable": 1
  },
  "parameters": {
-  "all": 696,
-  "json": 34,
-  "partial": 20
+  "all": 719,
+  "json": 37,
+  "partial": 4
  },
  "items": [
   {
@@ -50,12 +48,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1169,12 +1162,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -1197,12 +1185,7 @@
     "elementId"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3548,14 +3531,13 @@
      "path": "Components/ElementsComponents/DeleteUserDataOfElementsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
+    "dryRun",
     "elements"
    ],
-   "missingParameters": [
-    "dryRun"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -4209,12 +4191,7 @@
     "reference"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2188,
@@ -4243,12 +4220,7 @@
     "mode"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2188,
@@ -4260,20 +4232,25 @@
    "id": "SplitElements",
    "group": "Element Commands",
    "version": "1.8.1",
-   "brief": "Splits each given element in two along a line (the infinite line through its begin and end point, like Archicad's Split command). The original element keeps the part from its begin point to the line, a copy of it (Drag a Copy, so it keeps the layer, classifications, properties and every other setting) gets the rest; both are returned. Supports straight walls without doors, windows or openings, straight unslanted single segment beams without holes or openings, and lines (their arrows stay at the original ends). An element the line does not cross is reported as notCut, an unsupported one as an error naming its type. One undo step.",
-   "status": "in progress",
+   "brief": "Splits each given element along a line (the infinite line through its begin and end point, like Archicad's Split command). The original element keeps one part, copies of it (Drag a Copy, so they keep the layer, classifications, properties and every other setting) get the others; all are returned, the original first. Supports straight walls without doors, windows or openings, straight unslanted single segment beams without holes or openings, and lines (their arrows stay at the original ends), which are split in two, the original keeping the part from its begin point; and slabs, meshes without level lines or points, fills and single contour polylines, whose polygon (holes and arcs included) or points are cut along the line into one part per piece, the original keeping the largest piece (a polyline: the piece with its begin point). Slab edges keep their trim and side surface, the edges along the line are vertical; the corners a mesh gets on the line take their height from the edge they lie on. An element the line does not cross is reported as notCut, an unsupported one as an error naming its type. One undo step.",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 4,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
+     "name": "SplitElementsComponent",
+     "path": "Components/ElementsComponents/SplitElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "elements",
+    "line",
+    "line.begin",
+    "line.end"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2191,
@@ -4386,19 +4363,23 @@
    "group": "Element Commands",
    "version": "1.8.1",
    "brief": "Copies elements by an offset, like dragging a copy in Archicad, keeping all their settings. With count, copy n is moved by n times the offset, which makes a linear array. Returns the new elements of each given element, in the order of the given ones; an element Archicad cannot copy (a part of a curtain wall, stair or railing, a locked element or one on a hidden or locked layer, ...) gets an error naming the reason, and the other elements are still copied. All copies are one undo step.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
+     "name": "CopyElementsComponent",
+     "path": "Components/ElementsComponents/CopyElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "count",
+    "elements",
+    "offset"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4406,19 +4387,24 @@
    "group": "Element Commands",
    "version": "1.8.1",
    "brief": "Copies elements rotated around a center on the floor plan by an angle in radians, like rotating a copy in Archicad, keeping all their settings. With count, copy n is rotated by n times the angle, which makes a circular array. Returns the new elements of each given element, in the order of the given ones; an element Archicad cannot copy gets an error naming the reason, and the other elements are still copied. All copies are one undo step.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 4,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
+     "name": "RotateCopyElementsComponent",
+     "path": "Components/ElementsComponents/RotateCopyElementsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "angle",
+    "center",
+    "count",
+    "elements"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4492,12 +4478,12 @@
      "path": "Components/ElementsComponents/DeleteSelectedElementsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [
+   "coveredParameters": [
     "dryRun"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -5781,12 +5767,7 @@
     "shellsData.segmentsByCircle",
     "shellsData.shapePlaneTilt"
    ],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5794,19 +5775,51 @@
    "group": "Element Commands",
    "version": "1.8.1",
    "brief": "Creates Skylight elements with a roof or shell owner and a floor plan anchor position. It takes the same settings as ModifySkylights (anchor point, fix mode, width, height, azimuth and elevation angles, mirroring, floor plan display, pens, line types, section fill, surface and the library part flags) and optionally a library part; the settings not given come from the Skylight tool defaults or a favorite. Surface placement is handled by Archicad and has not yet been verified for this command.",
-   "status": "skipped",
-   "reason": "Grasshopper component deferred to a follow-up; this PR adds the Add-On command and Python example",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 30,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "status": "merged",
+   "reason": "",
+   "components": [
     {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
+     "name": "CreateSkylightsComponent",
+     "path": "Components/ElementsComponents/CreateSkylightsComponent.cs"
     }
    ],
+   "parameters": "json",
+   "parameterCount": 30,
+   "coveredParameters": [
+    "skylightsData",
+    "skylightsData.anchorPoint",
+    "skylightsData.anchorPosition",
+    "skylightsData.azimuthAngle",
+    "skylightsData.elevationAngle",
+    "skylightsData.favoriteName",
+    "skylightsData.fixMode",
+    "skylightsData.height",
+    "skylightsData.libraryPartName",
+    "skylightsData.ownerId",
+    "skylightsData.pen",
+    "skylightsData.reflected",
+    "skylightsData.width"
+   ],
+   "missingParameters": [
+    "skylightsData.aboveViewLinePen",
+    "skylightsData.aboveViewLineTypeId",
+    "skylightsData.belowViewLinePen",
+    "skylightsData.belowViewLineTypeId",
+    "skylightsData.cutLineTypeId",
+    "skylightsData.displayOption",
+    "skylightsData.id",
+    "skylightsData.lineTypeId",
+    "skylightsData.sectionContourPen",
+    "skylightsData.sectionFillBackgroundPen",
+    "skylightsData.sectionFillId",
+    "skylightsData.sectionFillPen",
+    "skylightsData.surfaceId",
+    "skylightsData.useObjectLineTypes",
+    "skylightsData.useObjectMaterials",
+    "skylightsData.useObjectPens",
+    "skylightsData.useObjectSectionAttributes"
+   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5814,19 +5827,48 @@
    "group": "Element Commands",
    "version": "1.8.1",
    "brief": "Modifies Skylight elements: anchor position and anchor point, fix mode, width, height, azimuth and elevation angles, mirroring, floor plan display option, pens, line types, section fill and pens, surface and the use-the-library-part's-settings flags - the same settings CreateSkylights takes and GetDetailsOfElements returns. Only the given settings change. Not written by this command: the owner roof or shell, the anchor level and the vertical link (Archicad places the skylight on its owner), the plane of a multi-plane roof it sits on, the dimension marker (a separate element) and the library part's own parameters (use SetGDLParametersOfElements). Archicad may set the elevation angle again from the owner.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 27,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
+     "name": "ModifySkylightsComponent",
+     "path": "Components/ElementsComponents/ModifySkylightsComponent.cs"
     }
    ],
+   "parameters": "json",
+   "parameterCount": 27,
+   "coveredParameters": [
+    "skylightsWithDetails",
+    "skylightsWithDetails.anchorPoint",
+    "skylightsWithDetails.anchorPosition",
+    "skylightsWithDetails.azimuthAngle",
+    "skylightsWithDetails.elementId",
+    "skylightsWithDetails.elevationAngle",
+    "skylightsWithDetails.fixMode",
+    "skylightsWithDetails.height",
+    "skylightsWithDetails.pen",
+    "skylightsWithDetails.reflected",
+    "skylightsWithDetails.width"
+   ],
+   "missingParameters": [
+    "skylightsWithDetails.aboveViewLinePen",
+    "skylightsWithDetails.aboveViewLineTypeId",
+    "skylightsWithDetails.belowViewLinePen",
+    "skylightsWithDetails.belowViewLineTypeId",
+    "skylightsWithDetails.cutLineTypeId",
+    "skylightsWithDetails.displayOption",
+    "skylightsWithDetails.lineTypeId",
+    "skylightsWithDetails.sectionContourPen",
+    "skylightsWithDetails.sectionFillBackgroundPen",
+    "skylightsWithDetails.sectionFillId",
+    "skylightsWithDetails.sectionFillPen",
+    "skylightsWithDetails.surfaceId",
+    "skylightsWithDetails.useObjectLineTypes",
+    "skylightsWithDetails.useObjectMaterials",
+    "skylightsWithDetails.useObjectPens",
+    "skylightsWithDetails.useObjectSectionAttributes"
+   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6049,19 +6091,34 @@
    "group": "Element Commands",
    "version": "1.8.1",
    "brief": "Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin, the line pen, the marker type and pen, the text height, pen and frame and the witness line form and value, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. Not written: the witness points, the dimension line position and direction (use MoveElements), the marker size, the text content and position, the witness extension line, the layout and the hole and composite wall dimensioning settings.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 13,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
+     "name": "ModifyAssociativeDimensionsComponent",
+     "path": "Components/ElementsComponents/ModifyAssociativeDimensionsComponent.cs"
     }
    ],
+   "parameters": "json",
+   "parameterCount": 13,
+   "coveredParameters": [
+    "dimensionsWithDetails",
+    "dimensionsWithDetails.appearance",
+    "dimensionsWithDetails.defaultWitnessForm",
+    "dimensionsWithDetails.defaultWitnessVal",
+    "dimensionsWithDetails.elementId",
+    "dimensionsWithDetails.linePen",
+    "dimensionsWithDetails.marker",
+    "dimensionsWithDetails.marker.pen",
+    "dimensionsWithDetails.marker.type",
+    "dimensionsWithDetails.textFrame",
+    "dimensionsWithDetails.textHeight",
+    "dimensionsWithDetails.textPen"
+   ],
+   "missingParameters": [
+    "dimensionsWithDetails.elevationOrigin"
+   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6424,7 +6481,7 @@
    "id": "CreateObjects",
    "group": "Element Commands",
    "version": "1.5.7",
-   "brief": "Creates Object elements based on the given parameters.",
+   "brief": "Creates Object elements based on the given parameters. A library part named in libraryPartName starts from its own default size and GDL parameters, not from those of the part the Object tool holds; the dimensions and the GDL parameters given (by name, in parameters) override them. layerIndex places the element on a layer.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6438,7 +6495,7 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 27,
+   "parameterCount": 31,
    "coveredParameters": [
     "objectsData",
     "objectsData.angle",
@@ -6449,10 +6506,14 @@
     "objectsData.floorIndex",
     "objectsData.id",
     "objectsData.isAutoOnStoryVisibility",
+    "objectsData.layerIndex",
     "objectsData.libraryPartName",
     "objectsData.lineTypeId",
     "objectsData.linkToSettings",
     "objectsData.offset",
+    "objectsData.parameters",
+    "objectsData.parameters.name",
+    "objectsData.parameters.value",
     "objectsData.pen",
     "objectsData.reflected",
     "objectsData.sectionContourPen",
@@ -6476,7 +6537,7 @@
    "id": "CreateLamps",
    "group": "Element Commands",
    "version": "1.5.7",
-   "brief": "Creates Lamp elements based on the given parameters.",
+   "brief": "Creates Lamp elements based on the given parameters. A library part named in libraryPartName starts from its own default size and GDL parameters, not from those of the part the Lamp tool holds; the dimensions and the GDL parameters given (by name, in parameters) override them. layerIndex places the element on a layer.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6490,7 +6551,7 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 29,
+   "parameterCount": 33,
    "coveredParameters": [
     "lampsData",
     "lampsData.angle",
@@ -6501,12 +6562,16 @@
     "lampsData.floorIndex",
     "lampsData.id",
     "lampsData.isAutoOnStoryVisibility",
+    "lampsData.layerIndex",
     "lampsData.libraryPartName",
     "lampsData.lightColor",
     "lampsData.lightIsOn",
     "lampsData.lineTypeId",
     "lampsData.linkToSettings",
     "lampsData.offset",
+    "lampsData.parameters",
+    "lampsData.parameters.name",
+    "lampsData.parameters.value",
     "lampsData.pen",
     "lampsData.reflected",
     "lampsData.sectionContourPen",
@@ -7561,12 +7626,7 @@
     "framesWithDetails.type"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7625,12 +7685,7 @@
     "stairsWithDetails.walkingLineOffset",
     "stairsWithDetails.walkingLinePosition"
    ],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7801,12 +7856,7 @@
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8239,16 +8289,15 @@
      "path": "Components/ElementsComponents/DeleteElementSetsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 4,
    "coveredParameters": [
+    "dryRun",
     "elementSets",
     "elementSets.elementSetId",
     "elementSets.elementSetId.guid"
    ],
-   "missingParameters": [
-    "dryRun"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -9096,12 +9145,7 @@
     "elements"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9124,12 +9168,7 @@
     "filter"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9152,12 +9191,7 @@
     "properties"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9364,15 +9398,14 @@
      "path": "Components/PropertiesComponents/RemovePropertyFromAttributesComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 3,
    "coveredParameters": [
     "attributeIds",
+    "dryRun",
     "propertyId"
    ],
-   "missingParameters": [
-    "dryRun"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -9415,14 +9448,13 @@
      "path": "Components/PropertiesComponents/DeletePropertyGroupsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
+    "dryRun",
     "propertyGroupIds"
    ],
-   "missingParameters": [
-    "dryRun"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -9465,14 +9497,13 @@
      "path": "Components/PropertiesComponents/DeletePropertyDefinitionsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
+    "dryRun",
     "propertyIds"
    ],
-   "missingParameters": [
-    "dryRun"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -9633,12 +9664,7 @@
     "propertyValues.propertyValue"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10017,14 +10043,13 @@
      "path": "Components/ClassificationsComponents/DeleteClassificationSystemsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
-    "classificationSystemIds"
-   ],
-   "missingParameters": [
+    "classificationSystemIds",
     "dryRun"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -10041,14 +10066,13 @@
      "path": "Components/ClassificationsComponents/DeleteClassificationItemsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
-    "classificationItemIds"
-   ],
-   "missingParameters": [
+    "classificationItemIds",
     "dryRun"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -10213,12 +10237,7 @@
     "attributeTypes"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10391,14 +10410,13 @@
      "path": "Components/AttributesComponents/DeleteAttributeFoldersComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
-    "attributeFolders"
-   ],
-   "missingParameters": [
+    "attributeFolders",
     "dryRun"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -10524,12 +10542,7 @@
     "dryRun"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10537,19 +10550,21 @@
    "group": "Attribute Commands",
    "version": "1.8.1",
    "brief": "Lists the unused layers, fills, surfaces, building materials, composites, profiles, line types, pen tables and zone categories (index, id and name), for the given types or all of them. The Archicad API has no function that tells which attributes are unused (only how many per type), so every reference is collected: the elements of the floor plan and of every view and layout (hotlinked ones too), with their library part parameters and memo data, the tool defaults, the Favorites, the other attributes (composites, building materials, surfaces, profiles, MEP systems) and the graphic override rules, the way ReindexAttributes finds them; for layers the layer of each element, tool default and Favorite; for composites and profiles the walls, slabs, roofs, shells, column and beam segments whose structure type uses them; for pen tables the current pen table and the drawings set to a pen table of their own. An attribute that only an unused attribute refers to counts as used. Indices typed into GDL scripts and the pen tables saved with views are not found. Each type also reports Archicad's own count of the attributes in use (archicadUsedCount, see GetUsedAttributes), so a difference shows. Read only. Available from Archicad 27.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
+     "name": "GetUnusedAttributesComponent",
+     "path": "Components/AttributesComponents/GetUnusedAttributesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "types"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11817,14 +11832,13 @@
      "path": "Components/AttributesComponents/DeleteUserDataOfAttributesComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
-    "attributeIds"
-   ],
-   "missingParameters": [
+    "attributeIds",
     "dryRun"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -12102,18 +12116,17 @@
      "path": "Components/IFCComponents/RemoveIFCClassificationReferencesOfElementsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 6,
    "coveredParameters": [
+    "dryRun",
     "elementIFCClassificationReferences",
     "elementIFCClassificationReferences.elementId",
     "elementIFCClassificationReferences.identification",
     "elementIFCClassificationReferences.referencedSource",
     "elementIFCClassificationReferences.referencedSource.name"
    ],
-   "missingParameters": [
-    "dryRun"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -12130,14 +12143,13 @@
      "path": "Components/IFCComponents/RemoveIFCPropertiesOfElementsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
+    "dryRun",
     "elementIFCProperties"
    ],
-   "missingParameters": [
-    "dryRun"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -12442,12 +12454,7 @@
     "libraryParts.password"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12472,12 +12479,7 @@
     "subIdent"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12501,12 +12503,7 @@
     "libraryParts.name"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12528,12 +12525,7 @@
     "libraryParts"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12557,12 +12549,7 @@
     "matchAncestorByMainId"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12585,12 +12572,7 @@
     "libraryParts.libraryPartName"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12620,19 +12602,22 @@
    "group": "Library Commands",
    "version": "1.8.1",
    "brief": "Lists the loaded library parts that no element of the project is placed from. Read only. The Archicad API does not tell which library parts are used, so every element of the floor plan and of every view and layout is checked: objects, lamps, doors, windows, skylights, zone stamps, symbol labels, drawing titles, curtain wall parts, and the markers of doors, windows, skylights, sections, elevations, details and worksheets. A library part used only in another way (called as a macro, linked as a property object, as an interior elevation marker, in stairs and railings, in the tool defaults or in Favorites) is listed as unused. Library parts that cannot be placed (e.g. macros) are only listed with includeNotPlaceable.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
+     "name": "GetUnusedLibraryPartsComponent",
+     "path": "Components/LibraryComponents/GetUnusedLibraryPartsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "filterByTypeId",
+    "includeNotPlaceable"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13103,12 +13088,7 @@
     "sections.type"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13132,12 +13112,7 @@
     "name"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13163,12 +13138,7 @@
     "previewPicture"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13197,12 +13167,7 @@
     "libraryParts.parameters.value"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13252,12 +13217,7 @@
     "scripts"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13284,12 +13244,7 @@
     "libraryParts.targetFolder"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13379,12 +13334,7 @@
     "pattern"
    ],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14137,7 +14087,7 @@
      "path": "Components/NavigatorComponents/ModifyDetailMarkersComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 11,
    "coveredParameters": [
     "detailMarkersWithDetails",
@@ -14145,15 +14095,14 @@
     "detailMarkersWithDetails.clipPolygon",
     "detailMarkersWithDetails.elementId",
     "detailMarkersWithDetails.id",
-    "detailMarkersWithDetails.name",
-    "detailMarkersWithDetails.polygonArcs"
-   ],
-   "missingParameters": [
     "detailMarkersWithDetails.isHorizontalMarker",
     "detailMarkersWithDetails.lineTypeIndex",
     "detailMarkersWithDetails.markerPenIndex",
-    "detailMarkersWithDetails.penIndex"
+    "detailMarkersWithDetails.name",
+    "detailMarkersWithDetails.penIndex",
+    "detailMarkersWithDetails.polygonArcs"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -15035,19 +14984,19 @@
    "group": "Navigator Commands",
    "version": "1.8.1",
    "brief": "Gets the Camera Sets (camera paths) of the project with their name, whether the set is the active one, its current camera, and its cameras in path order. Each camera has its element id, whether it is active in the path, and its perspective: camera and target position, distance, azimuth, view cone, roll angle, two-point perspective and sun, in the shape Set3DProjectionSettings accepts, so passing a camera's perspective there shows its view in the 3D window. Archicad cameras are always perspective; they have no name of their own.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetCamerasComponent",
+     "path": "Components/NavigatorComponents/GetCamerasComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -15771,19 +15720,19 @@
    "group": "Navigator Commands",
    "version": "1.8.1",
    "brief": "Returns the Interactive Schedules of the Project Map: navigator item id, name, ID and the folders they are in. Archicad's API does not give the rows of a schedule nor export it; to export one, put it in a publisher set with a spreadsheet format in Archicad and run PublishPublisherSet.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetSchedulesComponent",
+     "path": "Components/NavigatorComponents/GetSchedulesComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2252,
-     "title": "Grasshopper: 100% command coverage (new components, dryRun inputs) and Archicad-style icons for the recent components"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16113,15 +16062,14 @@
      "path": "Components/IssuesComponents/DeleteIssueComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 3,
    "coveredParameters": [
     "acceptAllElements",
+    "dryRun",
     "issueId"
    ],
-   "missingParameters": [
-    "dryRun"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -19722,14 +19670,13 @@
      "path": "Components/SolidOperationComponents/RemoveSolidElementLinksComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
+    "dryRun",
     "solidLinks"
    ],
-   "missingParameters": [
-    "dryRun"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -19822,16 +19769,15 @@
      "path": "Components/SolidOperationComponents/RemoveElementTrimsComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 4,
    "coveredParameters": [
+    "dryRun",
     "elementPairs",
     "elementPairs.elementId",
     "elementPairs.trimmingElementId"
    ],
-   "missingParameters": [
-    "dryRun"
-   ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },

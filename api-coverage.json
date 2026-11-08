@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-07 23:31 UTC",
+ "generatedAt": "2026-11-07 23:58 UTC",
  "versions": [
   25,
   26,
@@ -13,8 +13,8 @@
   "done": 1908,
   "skipped": 29,
   "merged": 324,
-  "claimed": 13,
-  "in progress": 35
+  "in progress": 37,
+  "claimed": 11
  },
  "items": [
   {
@@ -2758,9 +2758,14 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2298,
+     "title": "[6/6] Add PickAttribute and PickAttributeFolder commands"
+    }
+   ],
    "issues": [
     {
      "number": 2269,
@@ -2932,10 +2937,6 @@
     {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
-    },
-    {
-     "number": 1395,
-     "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
     }
    ],
    "issues": []
@@ -3185,7 +3186,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2298,
+     "title": "[6/6] Add PickAttribute and PickAttributeFolder commands"
+    }
+   ],
    "issues": []
   },
   {
@@ -5531,9 +5537,14 @@
    "olderNames": [
     "ACAPI_Interface_CreateAttributePicker"
    ],
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2298,
+     "title": "[6/6] Add PickAttribute and PickAttributeFolder commands"
+    }
+   ],
    "issues": [
     {
      "number": 2269,
@@ -5774,6 +5785,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2298,
+     "title": "[6/6] Add PickAttribute and PickAttributeFolder commands"
+    },
+    {
      "number": 2294,
      "title": "[5/6] Add ShowIFCExportSettings command"
     },
@@ -5869,14 +5884,6 @@
     {
      "number": 2281,
      "title": "[2/6] Add PickLibraryPart: Archicad's Object Settings dialog as a library part picker"
-    },
-    {
-     "number": 2251,
-     "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex (supersedes #1395)"
-    },
-    {
-     "number": 1395,
-     "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
     }
    ],
    "issues": []
@@ -5997,10 +6004,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2212,
-     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -6980,10 +6983,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2212,
-     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    },
-    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -7150,12 +7149,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2212,
-     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7318,12 +7312,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2212,
-     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7409,12 +7398,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2212,
-     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7525,10 +7509,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2212,
-     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -8126,12 +8106,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2212,
-     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 1914,
@@ -10050,6 +10025,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2298,
+     "title": "[6/6] Add PickAttribute and PickAttributeFolder commands"
+    },
     {
      "number": 2185,
      "title": "[2/2] Add-On: \"Update when Archicad closes\" choice, pending marker and README (#2182)"
@@ -12501,16 +12480,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2251,
-     "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex (supersedes #1395)"
-    },
-    {
-     "number": 1395,
-     "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18866,6 +18836,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2298,
+     "title": "[6/6] Add PickAttribute and PickAttributeFolder commands"
+    },
+    {
      "number": 2294,
      "title": "[5/6] Add ShowIFCExportSettings command"
     },
@@ -21753,6 +21727,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2298,
+     "title": "[6/6] Add PickAttribute and PickAttributeFolder commands"
+    },
+    {
      "number": 2294,
      "title": "[5/6] Add ShowIFCExportSettings command"
     },
@@ -22351,6 +22329,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2298,
+     "title": "[6/6] Add PickAttribute and PickAttributeFolder commands"
+    },
     {
      "number": 2295,
      "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
@@ -31756,10 +31738,6 @@
      "title": "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"
     },
     {
-     "number": 2212,
-     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    },
-    {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
     },
@@ -31788,12 +31766,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2212,
-     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32437,12 +32410,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2212,
-     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35782,12 +35750,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2212,
-     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38247,20 +38210,8 @@
      "title": "Columns and Beams: Create updates the elements the component created before"
     },
     {
-     "number": 2251,
-     "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex (supersedes #1395)"
-    },
-    {
-     "number": 2212,
-     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    },
-    {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
-    },
-    {
-     "number": 1395,
-     "title": "CreateObjects, CreateLamps: start from the library part's own defaults; take parameters and layerIndex"
     },
     {
      "number": 1292,
@@ -44628,12 +44579,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2212,
-     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44773,12 +44719,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2212,
-     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44941,10 +44882,6 @@
      "title": "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"
     },
     {
-     "number": 2212,
-     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    },
-    {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
     },
@@ -44974,12 +44911,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2212,
-     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -48063,10 +47995,6 @@
     {
      "number": 2255,
      "title": "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"
-    },
-    {
-     "number": 2212,
-     "title": "[2/5] SplitElements: split slabs, meshes, fills and polylines"
     },
     {
      "number": 2148,
@@ -54682,6 +54610,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2298,
+     "title": "[6/6] Add PickAttribute and PickAttributeFolder commands"
+    },
     {
      "number": 2282,
      "title": "[2/2] Grasshopper components GetCurrentTool, SetCurrentTool and GetToolboxItems"
