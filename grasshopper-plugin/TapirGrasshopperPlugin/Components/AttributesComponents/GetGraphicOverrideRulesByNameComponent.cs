@@ -32,7 +32,14 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 "Rule group to search each rule in (input only 1 to use the same group for all). " +
                 "Optional: without it every rule group is searched.");
 
-            SetOptionality(1);
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "IncludeCriterion",
+                "Also return each rule's criterion as structured conditions (Criteria output), in the shape the " +
+                "Criteria input of CreateGraphicOverrideRules and ModifyGraphicOverrideRules takes. Default is false.",
+                false);
+
+            SetOptionality(new[] { 1, 2 });
         }
 
         protected override void AddOutputs()
@@ -60,6 +67,13 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
 
             OutErrorMessages(
                 "Error message of each name (empty when the rule was found).");
+
+            // Appended after the original outputs, so saved definitions keep their wiring.
+            OutTexts(
+                "Criteria",
+                "Criterion of each found rule as structured conditions (JSON), in the shape the Criteria input of " +
+                "CreateGraphicOverrideRules and ModifyGraphicOverrideRules takes. Only with IncludeCriterion; " +
+                "null when the criterion XML is not in the format Archicad keeps rules in.");
         }
 
         protected override void Solve(
@@ -99,9 +113,15 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 rules.Add(rule);
             }
 
+            var parameters = new JObject { ["graphicOverrideRules"] = rules };
+            if (da.GetOptional(2, false))
+            {
+                parameters["includeCriterion"] = true;
+            }
+
             if (!TryGetCadResponse(
                     CommandName,
-                    new JObject { ["graphicOverrideRules"] = rules },
+                    parameters,
                     ToAddOn,
                     out JObject response))
             {
@@ -120,6 +140,10 @@ namespace TapirGrasshopperPlugin.Components.AttributesComponents
                 da,
                 0,
                 true);
+
+            da.SetDataList(
+                6,
+                outputs.Criteria);
         }
 
         protected override System.Drawing.Bitmap Icon =>
