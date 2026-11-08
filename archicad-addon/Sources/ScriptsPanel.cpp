@@ -23,12 +23,19 @@ ScriptsPanel::ScriptsPanel (DG::Palette& _palette, short expandButtonItem, short
 
 bool ScriptsPanel::IsOpen () const
 {
+    return isOpen;
+}
+
+bool ScriptsPanel::IsTallerThanBar () const
+{
     return palette.GetClientHeight () >= BarHeight + MinOpenGrowth;
 }
 
 void ScriptsPanel::SetOpen (bool open)
 {
-    if (open != IsOpen ()) {
+    // The requested state counts, not the height read back at once: the palette's client height may only follow
+    // the resize later (its PanelResized event then syncs the state with Resized).
+    if (open != isOpen) {
         if (open) {
             palette.SetClientHeight (openHeight);
         } else {
@@ -38,15 +45,22 @@ void ScriptsPanel::SetOpen (bool open)
             }
             palette.SetClientHeight (BarHeight);
         }
+        isOpen = open;
     }
     Layout ();
     SaveState ();
 }
 
+void ScriptsPanel::SyncWithSize ()
+{
+    isOpen = IsTallerThanBar ();
+    Layout ();
+}
+
 void ScriptsPanel::Layout ()
 {
     const short width = palette.GetClientWidth ();
-    const bool open = IsOpen ();
+    const bool open = isOpen;
 
     palette.BeginMoveResizeItems ();
     expandButton.SetPosition (static_cast<short> (width - BarHeight), 0);
@@ -60,9 +74,9 @@ void ScriptsPanel::Layout ()
 
 void ScriptsPanel::Resized ()
 {
-    Layout ();
+    SyncWithSize ();
     const short height = palette.GetClientHeight ();
-    if (IsOpen () && height >= MinRememberedOpenHeight) {
+    if (isOpen && height >= MinRememberedOpenHeight) {
         openHeight = height;
     }
     SaveState ();
@@ -82,7 +96,7 @@ bool ScriptsPanel::ButtonClicked (const DG::ButtonClickEvent& ev)
     if (ev.GetSource () != &expandButton) {
         return false;
     }
-    SetOpen (!IsOpen ());
+    SetOpen (!isOpen);
     return true;
 }
 
@@ -140,6 +154,7 @@ void ScriptsPanel::RestoreState ()
             const short newWidth = (width > minWidth && width <= 4000) ? static_cast<short> (width) : minWidth;
             const short newHeight = open ? openHeight : static_cast<short> (BarHeight);
             palette.SetClientSize (newWidth, newHeight);
+            isOpen = open;
         }
     }
     Layout ();
@@ -147,13 +162,13 @@ void ScriptsPanel::RestoreState ()
     hasSavedState = true;
     savedWidth = palette.GetClientWidth ();
     savedOpenHeight = openHeight;
-    savedOpen = IsOpen ();
+    savedOpen = isOpen;
 }
 
 void ScriptsPanel::SaveState ()
 {
     const short width = palette.GetClientWidth ();
-    const bool open = IsOpen ();
+    const bool open = isOpen;
     if (hasSavedState && width == savedWidth && openHeight == savedOpenHeight && open == savedOpen) {
         return;
     }

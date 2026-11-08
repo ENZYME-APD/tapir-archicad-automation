@@ -626,7 +626,7 @@ void TapirPalette::PanelOpened (const DG::PanelOpenEvent&)
     RefreshScriptListShortcutLabels ();
     SetRunButtonIcon ();
     // Archicad may give the palette the size it had when it was last closed: place the panel's controls for it.
-    scriptsPanel.Layout ();
+    scriptsPanel.SyncWithSize ();
 }
 
 void TapirPalette::PanelResized (const DG::PanelResizeEvent&)

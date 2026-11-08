@@ -31,9 +31,12 @@ public:
     void SetOpen (bool open);
     // Applies the saved size and open state. The palette calls it once, from its constructor.
     void RestoreState ();
-    // Places the arrow and the panel's controls for the palette's current size, and shows the controls when the
+    // Places the arrow and the panel's controls for the palette's current width, and shows the controls when the
     // panel is open.
     void Layout ();
+    // When Archicad or the user gave the palette a size (it opened, or was resized): takes whether the panel is open
+    // from the palette's height, then Layout.
+    void SyncWithSize ();
     // After the palette was resized: Layout, and remember the size.
     void Resized ();
 
@@ -42,6 +45,7 @@ public:
     bool ToolTipRequested (const DG::ItemHelpEvent& ev, GS::UniString* toolTipText) const;
 
 private:
+    bool IsTallerThanBar () const;
     void SetExpandButtonIcon (bool open);
     void SaveState ();
     static IO::Location GetStateFileLocation ();
@@ -51,6 +55,7 @@ private:
     DG::Separator  separator;
 
     short openHeight = DefaultOpenHeight;   // the client height the arrow opens the panel at
+    bool  isOpen = false;                   // set by SetOpen and RestoreState, synced from the height by SyncWithSize
     bool  expandButtonShowsOpen = false;    // the arrow's icon is the up chevron
 
     // What SaveState wrote last, so that a resize that changed nothing writes nothing.
