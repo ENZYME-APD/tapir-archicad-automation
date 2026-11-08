@@ -14,7 +14,8 @@
         "excel"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
       },
       "license": "MIT",
       "entry": "BuildingMaterialPropertyAudit.py",
@@ -32,8 +33,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
-          "commit": "53c35b357860e25169b10ed10135ec4ab7190c73",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/53c35b357860e25169b10ed10135ec4ab7190c73/marketplace/building-material-property-audit/BuildingMaterialPropertyAudit.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/building-material-property-audit/BuildingMaterialPropertyAudit.py",
           "sha256": "be5b86d6c4d1f88083bc8ae332d9c98191bf3d9de2a88e834c94b38fb26bd856"
         }
       ]
@@ -50,7 +51,8 @@
         "navigator"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
       },
       "license": "MIT",
       "entry": "BulkViewRenamer.py",
@@ -68,8 +70,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
-          "commit": "7254bb3f5a03319efaa1dffbb38fbcb7ebe0d773",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7254bb3f5a03319efaa1dffbb38fbcb7ebe0d773/marketplace/bulk-view-renamer/BulkViewRenamer.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/bulk-view-renamer/BulkViewRenamer.py",
           "sha256": "f4b22e49db56d8819fbe3fcc8aa351982a4b868f31beb09856fea6dba11220d0"
         }
       ]
@@ -86,7 +88,8 @@
         "excel"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
       },
       "license": "MIT",
       "entry": "ClassificationOverview.py",
@@ -104,8 +107,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
-          "commit": "53c35b357860e25169b10ed10135ec4ab7190c73",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/53c35b357860e25169b10ed10135ec4ab7190c73/marketplace/classification-overview/ClassificationOverview.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/classification-overview/ClassificationOverview.py",
           "sha256": "e24f5c29f4fe53616e69bdc13681e3eff3435bde479a6e064485cf3dddec952b"
         }
       ]
@@ -154,7 +157,8 @@
         "selection"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
       },
       "license": "MIT",
       "entry": "CopySettingsToSelection.py",
@@ -172,8 +176,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
-          "commit": "7254bb3f5a03319efaa1dffbb38fbcb7ebe0d773",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7254bb3f5a03319efaa1dffbb38fbcb7ebe0d773/marketplace/copy-settings-to-selection/CopySettingsToSelection.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/copy-settings-to-selection/CopySettingsToSelection.py",
           "sha256": "c6b55bd66429a7a558307623864035c00a3f95cb9e3da5445a59a16ed56532a8"
         }
       ]
@@ -192,7 +196,8 @@
         "export"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
       },
       "license": "MIT",
       "entry": "DistributionBoardSchedule.py",
@@ -210,8 +215,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
-          "commit": "7c52a5572ebfd780389890238227cd99c04b812c",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7c52a5572ebfd780389890238227cd99c04b812c/marketplace/distribution-board-schedule/DistributionBoardSchedule.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/distribution-board-schedule/DistributionBoardSchedule.py",
           "sha256": "179b3b22df0c78dd321fbef8e7631a0796930f90e3debee4000ca0f76c20d764"
         }
       ]
@@ -229,7 +234,8 @@
         "element-id"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
       },
       "license": "MIT",
       "entry": "DoorWindowNumberingByZone.py",
@@ -246,8 +252,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
-          "commit": "53c35b357860e25169b10ed10135ec4ab7190c73",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/53c35b357860e25169b10ed10135ec4ab7190c73/marketplace/door-window-numbering-by-zone/DoorWindowNumberingByZone.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/door-window-numbering-by-zone/DoorWindowNumberingByZone.py",
           "sha256": "91ee830fc203a2fd3371413e25b00e63907d6bc3611715d69cf5a8502027a7e6"
         }
       ]
@@ -264,7 +270,8 @@
         "excel"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
       },
       "license": "MIT",
       "entry": "DrawingStatusReport.py",
@@ -282,8 +289,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
-          "commit": "53c35b357860e25169b10ed10135ec4ab7190c73",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/53c35b357860e25169b10ed10135ec4ab7190c73/marketplace/drawing-status-report/DrawingStatusReport.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/drawing-status-report/DrawingStatusReport.py",
           "sha256": "73e42f65d084c86c38d85e014591ffef64183be318133bc307907a4937a72dc4"
         }
       ]
@@ -302,7 +309,8 @@
         "check"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
       },
       "license": "MIT",
       "entry": "ElectricalPlumbingCheck.py",
@@ -320,8 +328,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
-          "commit": "4152bff61ed5223f8ce68577ebdb763e5325171b",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/4152bff61ed5223f8ce68577ebdb763e5325171b/marketplace/electrical-plumbing-check/ElectricalPlumbingCheck.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/electrical-plumbing-check/ElectricalPlumbingCheck.py",
           "sha256": "a815d98b75a6f3fd1055202c519ebe222dfbbffc637a6bc537445ff716111487"
         }
       ]
@@ -339,7 +347,8 @@
         "export"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
       },
       "license": "MIT",
       "entry": "MaterialTakeOff.py",
@@ -357,8 +366,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
-          "commit": "262460913fbedd34d8f67a6383ff6ac1e33a5884",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/262460913fbedd34d8f67a6383ff6ac1e33a5884/marketplace/material-take-off/MaterialTakeOff.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/material-take-off/MaterialTakeOff.py",
           "sha256": "d9af986db576de67d99eafdd0aabc2f3eb7c88ba520e068d7547a318f41641e1"
         }
       ]
@@ -377,7 +386,8 @@
         "migration"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
       },
       "license": "MIT",
       "entry": "MissingLibraryParts.py",
@@ -395,8 +405,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
-          "commit": "262460913fbedd34d8f67a6383ff6ac1e33a5884",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/262460913fbedd34d8f67a6383ff6ac1e33a5884/marketplace/missing-library-parts/MissingLibraryParts.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/missing-library-parts/MissingLibraryParts.py",
           "sha256": "39fb5b4034f4cc4cbbdf4b652b2e3ca31ef3ae87170d741dcfcc506713d49ea5"
         }
       ]
@@ -417,7 +427,8 @@
         "export"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
       },
       "license": "MIT",
       "entry": "ObjectCounter.py",
@@ -435,8 +446,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
-          "commit": "7c52a5572ebfd780389890238227cd99c04b812c",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7c52a5572ebfd780389890238227cd99c04b812c/marketplace/object-counter/ObjectCounter.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/object-counter/ObjectCounter.py",
           "sha256": "37c718f5c2f74c7d5be7bc5e693a893e9825f06bece0b76a646efec468ebfa49"
         }
       ]
@@ -455,7 +466,8 @@
         "grid"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
       },
       "license": "MIT",
       "entry": "PlaceSymbolsInRooms.py",
@@ -473,8 +485,8 @@
           ],
           "minTapirVersion": "1.8.1",
           "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
-          "commit": "7c52a5572ebfd780389890238227cd99c04b812c",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7c52a5572ebfd780389890238227cd99c04b812c/marketplace/place-symbols-in-rooms/PlaceSymbolsInRooms.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/place-symbols-in-rooms/PlaceSymbolsInRooms.py",
           "sha256": "1d1c593fb4c42fab77769dd0325b0b7c45e11db7a94d78cb3b2ac37d252e07b8"
         }
       ]
@@ -491,7 +503,8 @@
         "export"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
       },
       "license": "MIT",
       "entry": "PropertyValueExporter.py",
@@ -509,8 +522,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
-          "commit": "7254bb3f5a03319efaa1dffbb38fbcb7ebe0d773",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7254bb3f5a03319efaa1dffbb38fbcb7ebe0d773/marketplace/property-value-exporter/PropertyValueExporter.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/property-value-exporter/PropertyValueExporter.py",
           "sha256": "e2d28f13db4cf1a5ad212f16424fc7ae03f4b794fa589f59264d032dd9170778"
         }
       ]
@@ -527,7 +540,8 @@
         "import"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
       },
       "license": "MIT",
       "entry": "PropertyValueImporter.py",
@@ -545,8 +559,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "First version.",
-          "commit": "c5194a815f45b4a913d260f2da332f62d1e48685",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/c5194a815f45b4a913d260f2da332f62d1e48685/marketplace/property-value-importer/PropertyValueImporter.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/property-value-importer/PropertyValueImporter.py",
           "sha256": "c6ff5aaf15a9934d41a164fffc4b360d7df5362aea6626485c8784b9058057d5"
         }
       ]
@@ -617,7 +631,8 @@
         "export"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
       },
       "license": "MIT",
       "entry": "RoomFinishesSchedule.py",
@@ -634,8 +649,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
-          "commit": "262460913fbedd34d8f67a6383ff6ac1e33a5884",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/262460913fbedd34d8f67a6383ff6ac1e33a5884/marketplace/room-finishes-schedule/RoomFinishesSchedule.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/room-finishes-schedule/RoomFinishesSchedule.py",
           "sha256": "eab8e22e2500066370c540d6b9237d3669ceff5026d3a2aad073bbb3d2c64f74"
         }
       ]
@@ -655,7 +670,8 @@
         "export"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
       },
       "license": "MIT",
       "entry": "RunLengths.py",
@@ -673,8 +689,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
-          "commit": "7c52a5572ebfd780389890238227cd99c04b812c",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7c52a5572ebfd780389890238227cd99c04b812c/marketplace/run-lengths/RunLengths.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/run-lengths/RunLengths.py",
           "sha256": "d3206b916fff8f2d7715ee4d9e74ec719a7972340940d9dc6b61f1ae364d0c63"
         }
       ]
@@ -691,7 +707,8 @@
         "excel"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
       },
       "license": "MIT",
       "entry": "SheetIndexExport.py",
@@ -709,8 +726,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
-          "commit": "7254bb3f5a03319efaa1dffbb38fbcb7ebe0d773",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7254bb3f5a03319efaa1dffbb38fbcb7ebe0d773/marketplace/sheet-index-export/SheetIndexExport.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/sheet-index-export/SheetIndexExport.py",
           "sha256": "aded883a79a77fb740100d121d46f1fdb259d924f8ce8dc664655f7333894856"
         }
       ]
@@ -728,7 +745,8 @@
         "setup"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
       },
       "license": "MIT",
       "entry": "StorySetup.py",
@@ -746,8 +764,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
-          "commit": "262460913fbedd34d8f67a6383ff6ac1e33a5884",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/262460913fbedd34d8f67a6383ff6ac1e33a5884/marketplace/story-setup/StorySetup.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/story-setup/StorySetup.py",
           "sha256": "adb64da536891b6d5f2b24eafa7656ff21b7a5389b4e0ee5011ed2c99e7dbaab"
         }
       ]
@@ -764,7 +782,8 @@
         "annotation"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
       },
       "license": "MIT",
       "entry": "TextFindReplace.py",
@@ -782,8 +801,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
-          "commit": "53c35b357860e25169b10ed10135ec4ab7190c73",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/53c35b357860e25169b10ed10135ec4ab7190c73/marketplace/text-find-replace/TextFindReplace.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/text-find-replace/TextFindReplace.py",
           "sha256": "6b064247d3b51c613f398100fb8ffef60a3d7a4224a20d70d4b6554c8187d566"
         }
       ]
@@ -802,7 +821,8 @@
         "check"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
       },
       "license": "MIT",
       "entry": "WallClearance.py",
@@ -820,8 +840,8 @@
           ],
           "minTapirVersion": "1.8.1",
           "changelog": "First version in the marketplace, the same as the built-in script of the same name, with doors and windows measured by their opening in the wall.",
-          "commit": "4152bff61ed5223f8ce68577ebdb763e5325171b",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/4152bff61ed5223f8ce68577ebdb763e5325171b/marketplace/wall-clearance/WallClearance.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/wall-clearance/WallClearance.py",
           "sha256": "b50ac0699ae14ba3aae5b5eeed362acf2cfd89c5ea30a91e3089dbfe54896e48"
         }
       ]
@@ -838,7 +858,8 @@
         "highlight"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
       },
       "license": "MIT",
       "entry": "ZoneAreaCheck.py",
@@ -856,8 +877,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "First version in the marketplace, the same as the built-in script of the same name.",
-          "commit": "7254bb3f5a03319efaa1dffbb38fbcb7ebe0d773",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7254bb3f5a03319efaa1dffbb38fbcb7ebe0d773/marketplace/zone-area-check/ZoneAreaCheck.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/zone-area-check/ZoneAreaCheck.py",
           "sha256": "8f0bba3365688af844e2ee6e62e6e0d3dae2c451d8d78e1c68dea10ce402c3e4"
         }
       ]
@@ -877,7 +898,8 @@
         "csv"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Jorge Beneitez",
+        "github": "JBENEITEZ"
       },
       "license": "MIT",
       "entry": "ZoneAreaDashboard.py",
@@ -895,8 +917,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "Charts: a donut of the share per group, a bar chart of the area per group, the area per story split by the colour-by value and a treemap of the zones, with legends; a click highlights their zones in Archicad. The Excel export adds the area per story as a sheet.",
-          "commit": "ba12d7f6898559db52d1ddd914e915ba8f76a9f2",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/ba12d7f6898559db52d1ddd914e915ba8f76a9f2/marketplace/zone-area-dashboard/ZoneAreaDashboard.py",
+          "commit": "2917ff739b9823ec96e257163e783a687b46708a",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/2917ff739b9823ec96e257163e783a687b46708a/marketplace/zone-area-dashboard/ZoneAreaDashboard.py",
           "sha256": "f4506d711f2f337e2c2899cd8ba608f15ed562d04180039eb9d9fc7362ad622d"
         },
         {
@@ -911,8 +933,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "First version: summary cards, a grouped table, highlight and colour by parameter in Archicad, Excel and CSV export.",
-          "commit": "06feac76e9da24ff97fb3f5b2b6952a1a8092ecd",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/06feac76e9da24ff97fb3f5b2b6952a1a8092ecd/marketplace/zone-area-dashboard/ZoneAreaDashboard.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/zone-area-dashboard/ZoneAreaDashboard.py",
           "sha256": "a7759d58b8dc1e54deb63eb8ff872c701fa3ca64830532b58e7e666c544bbfef"
         }
       ]
@@ -933,7 +955,8 @@
         "railings"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Jorge Beneitez",
+        "github": "JBENEITEZ"
       },
       "license": "MIT",
       "entry": "ZonesToWallsAndSlabs.py",
@@ -951,8 +974,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "Terraces and balustrades: the part of a story's slab over a setback is a terrace, and its edges that no zone of the story stands on get a balustrade, made with the Railing tool or as a low wall, with its own favorite.",
-          "commit": "0d9b298912991c266a3e61f21c7234121a25ce01",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/0d9b298912991c266a3e61f21c7234121a25ce01/marketplace/zones-to-walls-and-slabs/ZonesToWallsAndSlabs.py",
+          "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/zones-to-walls-and-slabs/ZonesToWallsAndSlabs.py",
           "sha256": "da51670bf941d3c30bbc9f2bb40a9cf8b0cec4af6141cb2acfb5839333d9ec23"
         },
         {
