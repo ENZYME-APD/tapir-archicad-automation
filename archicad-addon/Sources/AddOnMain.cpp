@@ -1202,11 +1202,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateObjectsCommand> (
             elementCommands, "1.5.7",
-            "Creates Object elements based on the given parameters. A library part named in libraryPartName starts from its own default size and GDL parameters, not from those of the part the Object tool holds; the dimensions and the GDL parameters given (by name, in parameters) override them. layerIndex places the element on a layer."
+            "Creates Object elements based on the given parameters. A library part named in libraryPartName starts from its own default size and GDL parameters, not from those of the part the Object tool holds; the dimensions and the GDL parameters given (by name, in parameters) override them. layerIndex places the element on a layer. With databaseId the objects are placed in that database, e.g. a worksheet, instead of the current one."
         );
         err |= RegisterCommand<CreateLampsCommand> (
             elementCommands, "1.5.7",
-            "Creates Lamp elements based on the given parameters. A library part named in libraryPartName starts from its own default size and GDL parameters, not from those of the part the Lamp tool holds; the dimensions and the GDL parameters given (by name, in parameters) override them. layerIndex places the element on a layer."
+            "Creates Lamp elements based on the given parameters. A library part named in libraryPartName starts from its own default size and GDL parameters, not from those of the part the Lamp tool holds; the dimensions and the GDL parameters given (by name, in parameters) override them. layerIndex places the element on a layer. With databaseId the lamps are placed in that database, e.g. a worksheet, instead of the current one."
         );
         err |= RegisterCommand<GetGridElementDefaultsCommand> (
             elementCommands, "1.7.2",

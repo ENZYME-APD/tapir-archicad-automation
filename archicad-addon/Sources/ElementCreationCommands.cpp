@@ -52,7 +52,8 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
     const GS::UniString elemTypeName = GetElementTypeNonLocalizedName (elemTypeID);
     const Stories stories = GetStories ();
 
-    // Optional top-level "databaseId" of the 2D Create* commands (#1602): the elements are
+    // Optional top-level "databaseId" of the 2D Create* commands (#1602) and of CreateObjects
+    // and CreateLamps (#2018, e.g. a legend of symbols in a worksheet): the elements are
     // created in that database (a worksheet, a detail, a layout, ...) instead of the current
     // one, and the current database is switched back afterwards, so the front window stays.
     // Only the commands whose schema names it receive it. The switch happens inside the
@@ -2652,6 +2653,10 @@ static GS::UniString BuildLibraryPartBasedSchema (const char* arrayFieldName,
                         "coordinates"
                     ]
                 }
+            },
+            "databaseId": {
+                "$ref": "#/DatabaseId",
+                "description": "Optional database to place the elements in, e.g. a worksheet or a detail (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return), for a legend of symbols. The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are placed in the current database. If Archicad cannot switch to it, nothing is created and the call fails."
             }
         },
         "additionalProperties": false,
