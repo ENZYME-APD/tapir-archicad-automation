@@ -112,6 +112,7 @@ private:
         virtual DG::EventHandlerResultType KeyPressed (const DG::Key::Code& code, DG::Item** item) override;
     };
     SearchKeyHandler searchKeyHandler { *this };
+    bool             searchKeyHandlerInstalled = false;
 
     // A script started by the palette, until it ended or was stopped. Any number of scripts run at the same time,
     // but a script at most once: Run, and its shortcut slot, stop it while it runs (issue #1819).

@@ -809,8 +809,9 @@ void TapirPalette::SetSearchHotKeys (bool registered)
                 *hotKey = 0;
             }
         }
-        if (DG::LowLevelKeyboardHandler::IsHandlerInstalled (searchKeyHandler)) {
+        if (searchKeyHandlerInstalled) {
             DG::LowLevelKeyboardHandler::RemoveHandler (searchKeyHandler);
+            searchKeyHandlerInstalled = false;
         }
         return;
     }
@@ -823,8 +824,10 @@ void TapirPalette::SetSearchHotKeys (bool registered)
     if (escapeHotKey == 0) {
         escapeHotKey = RegisterHotKey (DG::Key::Escape);
     }
-    if (!DG::LowLevelKeyboardHandler::IsHandlerInstalled (searchKeyHandler)) {
+    // Tracked here: DG::LowLevelKeyboardHandler::IsHandlerInstalled exists only from Archicad 28.
+    if (!searchKeyHandlerInstalled) {
         DG::LowLevelKeyboardHandler::InstallHandler (searchKeyHandler);
+        searchKeyHandlerInstalled = true;
     }
 }
 
