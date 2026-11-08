@@ -45,6 +45,12 @@ jobs:
     # the docs show it in the command's Example popdown.
     - name: Check the examples
       run: python3 tools/check_examples.py
+    # Every marketplace/<slug>/ folder against marketplace/README.md; the
+    # Scripts page only lists folders that pass (tools/generate_catalogue.py).
+    - name: Check the marketplace scripts
+      run: |
+        python3 tools/check_marketplace.py
+        python3 tools/generate_catalogue.py --self-test
 
   # Whether this change needs the builds below (see the top of this file).
   # If it fails, they build (`changes` outputs nothing, which is not 'false').

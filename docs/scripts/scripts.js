@@ -195,22 +195,39 @@
 
     // ---- The schedule ----
 
+    // Returns a function that presses the chip of a value (as when a filter is removed elsewhere).
     function makeChips (container, options, selected, onChange) {
         var buttons = [];
+        function select (value) {
+            buttons.forEach (function (button, index) {
+                button.setAttribute ('aria-pressed', String (options[index].value === value));
+            });
+        }
         options.forEach (function (option) {
             var button = document.createElement ('button');
             button.type = 'button';
             button.className = 'chip';
             button.textContent = option.label;
-            button.setAttribute ('aria-pressed', String (option.value === selected));
             button.addEventListener ('click', function () {
-                buttons.forEach (function (other) {
-                    other.setAttribute ('aria-pressed', String (other === button));
-                });
+                select (option.value);
                 onChange (option.value);
             });
             buttons.push (button);
             container.appendChild (button);
+        });
+        select (selected);
+        return select;
+    }
+
+    // Below 720 px wide (scripts.css) the chip groups are behind the Filters button, which opens and
+    // closes them; the page always opens with them closed, also from a shared link with filters.
+    function setUpFiltersToggle () {
+        var toggle = byId ('filters-toggle');
+        var panel = byId ('filters-panel');
+        toggle.addEventListener ('click', function () {
+            var open = toggle.getAttribute ('aria-expanded') !== 'true';
+            toggle.setAttribute ('aria-expanded', String (open));
+            panel.classList.toggle ('open', open);
         });
     }
 
@@ -262,19 +279,58 @@
         var wantedVersion = params.get ('archicad') && usedVersions[params.get ('archicad')] ? Number (params.get ('archicad')) : null;
         search.value = params.get ('q') || '';
 
-        makeChips (categoryChips, [{ value: '', label: categoryChips.getAttribute ('data-all') }].concat (
+        var selectCategory = makeChips (categoryChips, [{ value: '', label: categoryChips.getAttribute ('data-all') }].concat (
             Object.keys (categories).filter (function (key) { return usedCategories[key]; }).map (function (key) {
                 return { value: key, label: categories[key].name };
             })), wantedCategory, function (value) { wantedCategory = value; update (); });
         var versions = Object.keys (usedVersions).map (Number).sort (function (a, b) { return b - a; });
-        makeChips (versionChips, [{ value: null, label: versionChips.getAttribute ('data-all') }].concat (
-            versions.map (function (v) { return { value: v, label: format (versionChips.getAttribute ('data-option'), { version: v }) }; })),
+        var versionLabel = function (v) { return format (versionChips.getAttribute ('data-option'), { version: v }); };
+        var selectVersion = makeChips (versionChips, [{ value: null, label: versionChips.getAttribute ('data-all') }].concat (
+            versions.map (function (v) { return { value: v, label: versionLabel (v) }; })),
             wantedVersion, function (value) { wantedVersion = value; update (); });
         if (versions.length < 2) {
             versionChips.hidden = true;
         }
+        setUpFiltersToggle ();
+
+        // The applied filters, as chips with a × that removes them, and their number on the Filters
+        // button, so they stay visible while the chip groups are closed (shown below 720 px only).
+        var activeFilters = byId ('active-filters');
+        var filtersCount = byId ('filters-count');
+        function showActiveFilters () {
+            var active = [];
+            if (wantedCategory) {
+                active.push ({ label: categories[wantedCategory].name, remove: function () { wantedCategory = ''; selectCategory (''); } });
+            }
+            if (wantedVersion !== null) {
+                active.push ({ label: versionLabel (wantedVersion), remove: function () { wantedVersion = null; selectVersion (null); } });
+            }
+            activeFilters.textContent = '';
+            active.forEach (function (filter) {
+                var button = document.createElement ('button');
+                button.type = 'button';
+                button.className = 'chip active-filter';
+                button.setAttribute ('aria-label', format (activeFilters.getAttribute ('data-remove'), { name: filter.label }));
+                button.appendChild (document.createTextNode (filter.label));
+                var cross = document.createElement ('span');
+                cross.setAttribute ('aria-hidden', 'true');
+                cross.textContent = '×';
+                button.appendChild (cross);
+                button.addEventListener ('click', function () {
+                    filter.remove ();
+                    update ();
+                    // The removed chip is gone: keep the keyboard focus in the filters.
+                    var next = activeFilters.querySelector ('button') || byId ('filters-toggle');
+                    next.focus ();
+                });
+                activeFilters.appendChild (button);
+            });
+            activeFilters.hidden = active.length === 0;
+            filtersCount.textContent = active.length ? ' · ' + active.length : '';
+        }
 
         function update () {
+            showActiveFilters ();
             var words = search.value.toLowerCase ().split (/\s+/).filter (Boolean);
             var shown = 0;
             rowsBody.textContent = '';
@@ -373,6 +429,77 @@
         }
     }
 
+    function splitTableRow (line) {
+        // The cells of "| a | b |": a | inside `code` or written as \| does not end a cell.
+        var text = line.trim ().replace (/^\|/, '');
+        var cells = [];
+        var cell = '';
+        var inCode = false;
+        for (var c = 0; c < text.length; c++) {
+            var ch = text.charAt (c);
+            if (ch === '\\' && text.charAt (c + 1) === '|') {
+                cell += '|';
+                c++;
+            } else if (ch === '`') {
+                inCode = !inCode;
+                cell += ch;
+            } else if (ch === '|' && !inCode) {
+                cells.push (cell.trim ());
+                cell = '';
+            } else {
+                cell += ch;
+            }
+        }
+        if (cell.trim () !== '') {
+            cells.push (cell.trim ());
+        }
+        return cells;
+    }
+
+    function renderTable (tableLines, links) {
+        // A Markdown table as a table; on phones each row is a card, its header cells the labels.
+        var separator = /^\s*\|[\s:|-]+\|\s*$/;
+        var labels = [];
+        var bodyLines = tableLines;
+        var table = document.createElement ('table');
+        table.className = 'schedule readme-table';
+        if (tableLines.length > 1 && separator.test (tableLines[1])) {
+            var headRow = document.createElement ('tr');
+            splitTableRow (tableLines[0]).forEach (function (text) {
+                var th = document.createElement ('th');
+                th.scope = 'col';
+                appendInline (th, text, links);
+                labels.push (th.textContent);
+                headRow.appendChild (th);
+            });
+            var thead = document.createElement ('thead');
+            thead.appendChild (headRow);
+            table.appendChild (thead);
+            bodyLines = tableLines.slice (2);
+        }
+        var tbody = document.createElement ('tbody');
+        bodyLines.forEach (function (rowLine) {
+            if (separator.test (rowLine)) {
+                return;
+            }
+            var tr = document.createElement ('tr');
+            splitTableRow (rowLine).forEach (function (text, index) {
+                var td = document.createElement ('td');
+                if (labels[index]) {
+                    td.setAttribute ('data-label', labels[index]);
+                }
+                appendInline (td, text, links);
+                tr.appendChild (td);
+            });
+            tbody.appendChild (tr);
+        });
+        table.appendChild (tbody);
+        var wrap = document.createElement ('div');
+        wrap.className = 'schedule-wrap readme-table-wrap';
+        wrap.appendChild (table);
+        return wrap;
+    }
+
     function renderMarkdown (container, markdown, links) {
         var lines = markdown.replace (/\r\n?/g, '\n').split ('\n');
         var i = 0;
@@ -438,19 +565,14 @@
                 continue;
             }
             if (/^\s*\|.*\|\s*$/.test (line)) {
-                // Tables are shown as their text, which stays readable.
                 flushParagraph ();
                 closeList ();
-                var rows = [];
+                var tableLines = [];
                 while (i < lines.length && /^\s*\|.*\|\s*$/.test (lines[i])) {
-                    if (!/^\s*\|[\s:|-]+\|\s*$/.test (lines[i])) {
-                        rows.push (lines[i].trim ());
-                    }
+                    tableLines.push (lines[i]);
                     i++;
                 }
-                var table = document.createElement ('pre');
-                table.textContent = rows.join ('\n');
-                container.appendChild (table);
+                container.appendChild (renderTable (tableLines, links));
                 continue;
             }
             if (line.trim () === '' || /^\s*([-*_])(\s*\1){2,}\s*$/.test (line)) {
