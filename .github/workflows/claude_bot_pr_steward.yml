@@ -28,41 +28,26 @@ name: Claude Bot PR Steward
 # The bot's pushes are made with GITHUB_TOKEN, which starts no push or
 # pull_request run; the workflow_dispatch this workflow sends with the same
 # token does run, so every build, review and fix here is started explicitly.
-# The exception is a merge of main pushed with the App token (below): that
-# push starts the build checks' pull_request runs itself, so the sweep counts
-# runs already queued on a head as started and dispatches no second one, and
-# claude_pr_review.yml skips the pull_request_target run a bot's push starts
-# on these pull requests (the sweep dispatches the review once the builds are
-# green, as for every other head).
+# The exception is a push by a person (Update branch, see "Merging main"):
+# it starts the build checks' pull_request runs itself, so the sweep counts
+# runs already queued on a head as started and dispatches no second one.
 #
 # Merging main. GITHUB_TOKEN may not push a commit that brings in changes
-# under .github/workflows, and main has them more often than not, so a merge
-# of main made by the model could not be pushed. With a GitHub App configured
-# (the secrets TAPIR_BOT_APP_ID and TAPIR_BOT_APP_PRIVATE_KEY), fix merges
-# main in a step that runs no model, before the model, and a separate job,
-# push-merge, pushes it with an installation token of the App (contents and
-# workflows write). A clean merge needs no model run. On conflicts the model
-# only resolves them in the working tree; push-merge, on a fresh runner that
-# never ran the model (which may have written any file on its own runner,
-# e.g. through git's --output), merges the same two commits again in a new
-# clone, takes only the conflicted files from the model's working tree
-# (handed over as an artifact, as data), refuses when a conflict marker is
-# left, and commits and pushes with git's hooks and fsmonitor off. A conflict
+# under .github/workflows, and main has them more often than not. There is no
+# GitHub App to push such a merge: the maintainers dropped that path (#1623) -
+# its secrets never worked, a token that may push workflow changes would be
+# one more thing to guard, and the hand-over below costs a person one click.
+# So when a pull request conflicts with main, fix first checks the merge in a
+# step that runs no model, before the model, and hands the pull request over
+# at once, without running the model, when main brings changes under
+# .github/ (which the bot's token may not push) or when the merge conflicts
 # under .github/, tools/, archicad-addon/Tools/ or archicad-addon/Installer/
-# is never given to the model, so those folders are always what git's merge
-# made of them. The App token exists only in push-merge, on the command line
-# of its fetch and push, never in a git configuration file or on the model's
-# runner. The sweep also starts fix (merge only) on a branch whose
-# build checks refuse a dispatch because it predates their trigger.
-# Without the App secrets, the model merges main itself as before when main
-# brings no workflow changes; when it does, fix hands the pull request over
-# without running the model, asking for an Update branch.
-# Setting up the App (once, by a maintainer): create a GitHub App owned by the
-# organization with the repository permissions Contents: Read and write,
-# Workflows: Read and write (Metadata: Read is implied), no webhook; install it
-# on this repository only; store its App ID as the secret TAPIR_BOT_APP_ID and
-# a generated private key (the whole .pem) as TAPIR_BOT_APP_PRIVATE_KEY. If a
-# ruleset restricts pushes to claude/ branches, the App needs to be allowed.
+# (which the model never resolves): a person merges main into it with Update
+# branch or by hand, then removes the `needs-maintainer` label. Otherwise the
+# model merges main itself, resolves the conflicts and pushes the merge with
+# GITHUB_TOKEN. A branch whose build checks refuse a dispatch because it
+# predates their trigger is handed over the same way: merging main brings
+# that trigger, under .github/.
 #
 # Runs that push nothing. A fix run that pushes nothing ends its comment with
 # `<!-- steward-fix-outcome: <outcome> <nonce> -->` (the nonce is the run's
@@ -115,7 +100,7 @@ name: Claude Bot PR Steward
 # - Only `fix` runs a model, with the same tool restrictions as the issue bot
 #   (claude_issue_triage.yml, whose header describes what they do and do not
 #   bound). The jobs that hold actions: write or statuses: write run plain
-#   shell, and so do the steps that hold the App token.
+#   shell.
 #
 # Models (#991): fix rounds run on the repository variable CLAUDE_MODEL
 # (default `opus`). The last round before the hand-over, which only a pull
@@ -141,10 +126,6 @@ on:
         default: ''
       escalate:
         description: Run the fix on CLAUDE_ESCALATION_MODEL instead of CLAUDE_MODEL (the sweep sets it for the last round)
-        type: boolean
-        default: false
-      merge_main:
-        description: Merge main into the branch first even without a conflict (the sweep sets it for a branch that predates the build checks' trigger)
         type: boolean
         default: false
 
@@ -174,8 +155,6 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       REPO: ${{ github.repository }}
-      # Only whether the App is set up (see the header), never its key.
-      APP_CONFIGURED: ${{ secrets.TAPIR_BOT_APP_ID != '' && secrets.TAPIR_BOT_APP_PRIVATE_KEY != '' }}
       MAX_ROUNDS: ${{ vars.BOT_PR_MAX_FIX_ROUNDS || '6' }}
       # An empty review is a fault of the review run, not of the pull
       # request (they ran at about one in three), so it takes many of them
@@ -246,7 +225,6 @@ jobs:
           # Starts fix round $3 + 1 on the pull request. The last round before
           # the hand-over runs on the escalation model: the earlier rounds,
           # on the regular one, did not get it right.
-          # $4 = true merges main in first even without a conflict.
           startFix() {
             local escalate=false
             if [ $(($3 + 1)) -ge "$MAX_ROUNDS" ]; then
@@ -254,13 +232,13 @@ jobs:
               echo "the last round: on the escalation model"
             fi
             gh workflow run claude_bot_pr_steward.yml --repo "$REPO" --ref main \
-              -f pr_number="$1" -f head_sha="$2" -f escalate="$escalate" -f merge_main="${4:-false}" || echo "::warning::could not start it for #$1"
+              -f pr_number="$1" -f head_sha="$2" -f escalate="$escalate" || echo "::warning::could not start it for #$1"
           }
 
           # Starts the next fix round on the current pull request ($pr,
           # $head, $fixTitle, $since, $failSince of the loop below) within the
           # bounds: $1 ends the hand-over text after "N fix rounds", $2 says
-          # what for, $3 is startFix's merge_main.
+          # what for.
           tryFix() {
             local rounds failed
             rounds=$(countRuns claude_bot_pr_steward.yml "$fixTitle" "$since" success)
@@ -272,7 +250,7 @@ jobs:
             elif failedRecently claude_bot_pr_steward.yml "$fixTitle"; then
               echo "the last fix run failed less than 50 minutes ago - waiting"
             else
-              startFix "$pr" "$head" "$rounds" "${3:-false}"
+              startFix "$pr" "$head" "$rounds"
               echo "started fix round $((rounds + 1)) ($2)"
               busy=$((busy + 1))
             fi
@@ -433,11 +411,11 @@ jobs:
             # 1. Builds that have not run on this head. A dispatch runs the
             # workflow as the branch has it; a branch older than the build
             # checks' workflow_dispatch trigger refuses it, and needs main
-            # merged in: by fix with the App token, or by a person (the bot's
-            # own token cannot push the workflow changes such a merge brings).
+            # merged in by a person (the bot's own token cannot push the
+            # workflow changes such a merge brings).
             # A build run already queued or running on this head - also one
-            # that a push with the App token started by itself (pull_request),
-            # whose check runs may not exist yet - counts as started.
+            # that a person's push started by itself (pull_request), whose
+            # check runs may not exist yet - counts as started.
             activeRuns=$(gh api "repos/$REPO/actions/runs?head_sha=$head&per_page=100" \
               --jq '[.workflow_runs[] | select(.status != "completed") | .path | sub("^.*/"; "")]') || activeRuns='[]'
             started=0 queued=0 dispatchFailed=0
@@ -454,11 +432,7 @@ jobs:
             if ! jq -e 'any(.[]; .name == "build")' <<<"$checks" >/dev/null || wasCancelled '^build$'; then dispatch grasshopper_plugin_build_check.yml; fi
             if ! has build_installer || wasCancelled '^build_installer'; then dispatch installer_build_check.yml; fi
             if [ "$dispatchFailed" -eq 1 ]; then
-              if [ "$APP_CONFIGURED" = true ]; then
-                tryFix "did not get main merged into its branch" "merge main: the build checks cannot be started on its branch" true
-              else
-                handOver "$pr" "the build checks cannot be started on its branch, which predates their workflow_dispatch trigger - merge main into it (Update branch)"
-              fi
+              handOver "$pr" "the build checks cannot be started on its branch, which predates their workflow_dispatch trigger - merge main into it with Update branch or by hand, then remove the label"
               echo "::endgroup::"; continue
             fi
             if [ "$started" -eq 1 ]; then
@@ -543,16 +517,11 @@ jobs:
       actions: read          # the failed build logs
       checks: read
       statuses: read
-    # What push-merge pushes, and what restart acts on when nothing was
-    # pushed (see the header). branch, head, main and mode come from steps
-    # that ran before the model.
+    # What restart acts on when nothing was pushed (see the header). head
+    # and reason come from steps that ran before the model.
     outputs:
       ran: ${{ steps.outcome.outputs.ran }}
-      branch: ${{ steps.pr.outputs.branch }}
       head: ${{ steps.pr.outputs.head }}
-      main: ${{ steps.merge.outputs.main }}
-      mode: ${{ steps.merge.outputs.mode }}
-      push: ${{ steps.outcome.outputs.push }}
       outcome: ${{ steps.outcome.outputs.outcome }}
       reason: ${{ steps.merge.outputs.reason }}
     env:
@@ -647,87 +616,64 @@ jobs:
           ref: ${{ steps.pr.outputs.branch }}
           fetch-depth: 0
 
-      # Merges main in before the model runs, when the branch conflicts with
-      # it or the sweep asked for it (see "Merging main" in the header). Sets
-      # `mode`:
-      #   clean     - merged without a conflict; push-merge pushes it, no
-      #               model run
-      #   conflicts - the merge stopped on conflicts, which the model resolves
-      #               in the working tree; push-merge commits and pushes it
-      #   blocked   - nothing for the model to do; `reason` says why
-      #   model     - no App: the model merges main itself, as before
+      # Checks the merge of main before the model runs, when the branch
+      # conflicts with it (see "Merging main" in the header). Sets `mode`:
+      #   blocked - a person has to merge main in; `reason` says why
+      #   model   - the model merges main itself
       - name: Merge main
         id: merge
         if: >
           steps.pr.outputs.superseded != 'true' &&
-          (steps.pr.outputs.mergeable == 'CONFLICTING' || inputs.merge_main)
-        env:
-          APP_CONFIGURED: ${{ secrets.TAPIR_BOT_APP_ID != '' && secrets.TAPIR_BOT_APP_PRIVATE_KEY != '' }}
+          steps.pr.outputs.mergeable == 'CONFLICTING'
         run: |
           set -euo pipefail
-          # What the model never resolves, and what it must leave as the
-          # merge made it.
+          # What the model never resolves.
           PROTECTED='^(\.github|tools|archicad-addon/Tools|archicad-addon/Installer)/'
           git fetch --no-tags origin main
-          main=$(git rev-parse origin/main)
-          echo "main=$main" >> "$GITHUB_OUTPUT"
           if git merge-base --is-ancestor origin/main HEAD; then
             {
               echo "mode=blocked"
-              echo "reason=fix was asked to merge main into it, but its branch contains main already"
+              echo "reason=fix was to merge main into it, but its branch contains main already"
             } >> "$GITHUB_OUTPUT"
             exit 0
           fi
           brings=$(git diff --name-only "$(git merge-base HEAD origin/main)" origin/main -- .github)
-          if [ "$APP_CONFIGURED" != true ]; then
-            if [ -n "$brings" ]; then
-              echo "No App configured and main brings workflow changes - handing over."
-              {
-                echo "mode=blocked"
-                echo "reason=merging main into it brings changes under .github/, which the bot's token may not push - merge main into it with Update branch (or set up the steward's GitHub App, see the header of claude_bot_pr_steward.yml, so that it does this itself)"
-              } >> "$GITHUB_OUTPUT"
-            else
-              echo "mode=model" >> "$GITHUB_OUTPUT"
-            fi
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          if git merge --no-ff --no-edit origin/main; then
-            echo "Merged main ${main:0:7} without a conflict."
-            echo "mode=clean" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          conflicted=$(git diff --name-only --diff-filter=U)
-          if [ -z "$conflicted" ]; then
-            echo "::error::git merge failed without a conflict."
-            exit 1
-          fi
-          echo "Conflicts:"; sed 's/^/  /' <<<"$conflicted"
-          if grep -Eq "$PROTECTED" <<<"$conflicted"; then
-            git merge --abort
+          if [ -n "$brings" ]; then
+            echo "Main brings workflow changes - handing over."
             {
               echo "mode=blocked"
-              echo "reason=its merge with main conflicts in $(grep -E "$PROTECTED" <<<"$conflicted" | head -n 3 | tr '\n' ' ')- files the bot never resolves - merge main into it with Update branch and resolve them"
+              echo "reason=merging main into it brings changes under .github/, which the bot's token may not push - merge main into it with Update branch or by hand, then remove the label"
             } >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          # The files whose resolution push-merge takes from the model - as a
-          # step output, written before the model runs.
-          delim="EOF_$(openssl rand -hex 8)"
-          {
-            echo "conflicted<<$delim"
-            printf '%s\n' "$conflicted"
-            echo "$delim"
-            echo "mode=conflicts"
-          } >> "$GITHUB_OUTPUT"
+          # The merge, made in git's object store only (the working tree
+          # stays as it is): exit status 1 means conflicts, listed after the
+          # tree's id.
+          status=0
+          out=$(git merge-tree --write-tree --name-only --no-messages HEAD origin/main) || status=$?
+          case "$status" in
+            0) conflicted="" ;;
+            1) conflicted=$(tail -n +2 <<<"$out") ;;
+            *) echo "::error::git merge-tree failed ($status)."; exit 1 ;;
+          esac
+          if [ -n "$conflicted" ]; then
+            echo "Conflicts:"; sed 's/^/  /' <<<"$conflicted"
+          fi
+          if grep -Eq "$PROTECTED" <<<"$conflicted"; then
+            {
+              echo "mode=blocked"
+              echo "reason=its merge with main conflicts in $(grep -E "$PROTECTED" <<<"$conflicted" | head -n 3 | tr '\n' ' ')- files the bot never resolves - merge main into it with Update branch or by hand, resolve them, then remove the label"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "mode=model" >> "$GITHUB_OUTPUT"
 
       # The DevKit headers (#976), with the action from this workflow's own
       # commit, never the pull request's (see the action's header).
       - name: Checkout the DevKit download action
         if: >
           steps.pr.outputs.superseded != 'true' &&
-          steps.merge.outputs.mode != 'clean' && steps.merge.outputs.mode != 'blocked'
+          steps.merge.outputs.mode != 'blocked'
         uses: actions/checkout@v6
         with:
           ref: ${{ github.workflow_sha }}
@@ -740,7 +686,7 @@ jobs:
       - name: Download the DevKit headers
         if: >
           steps.pr.outputs.superseded != 'true' &&
-          steps.merge.outputs.mode != 'clean' && steps.merge.outputs.mode != 'blocked'
+          steps.merge.outputs.mode != 'blocked'
         uses: ./archicad-addon/Build/workflow-actions/.github/actions/download-devkits
 
       # Holds the model call back while CLAUDE_MAX_RUNS or more Claude runs
@@ -748,7 +694,7 @@ jobs:
       - name: Wait for a model slot
         if: >
           steps.pr.outputs.superseded != 'true' &&
-          steps.merge.outputs.mode != 'clean' && steps.merge.outputs.mode != 'blocked'
+          steps.merge.outputs.mode != 'blocked'
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -783,7 +729,7 @@ jobs:
       - name: Fix the pull request
         if: >
           steps.pr.outputs.superseded != 'true' &&
-          steps.merge.outputs.mode != 'clean' && steps.merge.outputs.mode != 'blocked'
+          steps.merge.outputs.mode != 'blocked'
         id: fix
         uses: anthropics/claude-code-action@v1
         with:
@@ -819,23 +765,7 @@ jobs:
             Read the change itself with `gh pr diff ${{ inputs.pr_number }}`
             and the pull request with `gh pr view ${{ inputs.pr_number }}`.
 
-            If MERGE is `conflicts`, this run only resolves a merge: the
-            workflow has run `git merge origin/main`, which stopped on the
-            conflicts `git diff --name-only --diff-filter=U` lists. Resolve
-            every one so that both main's change and this pull request's
-            intent survive - usually both sides are kept (two registrations,
-            two commands, two includes) - remove every conflict marker, and
-            stage each file with `git add <file>` (or `git rm <file>` when
-            deleting it is the resolution). Change nothing else: no other
-            fixes in this run, they follow on the merged code. Do not commit
-            and do not push - the workflow redoes the merge after you, takes
-            only the conflicted files from your working tree (changes to any
-            other file are dropped), refuses if a conflict marker is left,
-            and commits and pushes the merge. Then post the comment below,
-            saying how you resolved each file, with the outcome `fixed`; if the two sides cannot both
-            survive, leave the conflicts, say why, and use `merge-blocked`.
-
-            Otherwise:
+            Then:
             - If it conflicts with main (MERGEABLE WITH MAIN is CONFLICTING,
               MERGE is `model`), do this first: `git merge origin/main`,
               resolve every conflict so that both main's change and this
@@ -864,8 +794,7 @@ jobs:
 
             End that comment with this line, on its own:
             <!-- steward-fix-outcome: OUTCOME ${{ steps.pr.outputs.nonce }} -->
-            where OUTCOME is `fixed` when you pushed a fix (or, if MERGE is
-            `conflicts`, resolved every conflict), and otherwise says why
+            where OUTCOME is `fixed` when you pushed a fix, and otherwise says why
             nothing needs to or can be pushed - the workflow acts on it:
             - `transient-ci`: every failed build failed for a reason outside
               this change (an HTTP error downloading a DevKit or a package, a
@@ -912,7 +841,7 @@ jobs:
           claude_args: |
             --max-turns 120
             --model ${{ inputs.escalate && (vars.CLAUDE_ESCALATION_MODEL || 'best') || (vars.CLAUDE_MODEL || 'opus') }}
-            --allowedTools "${{ steps.merge.outputs.mode == 'conflicts' && format('Read,Grep,Glob,Edit,Write,Bash(git add:*),Bash(git rm:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(gh pr view {0}:*),Bash(gh pr diff {0}:*),Bash(gh pr comment {0}:*)', inputs.pr_number) || format('Read,Grep,Glob,Edit,Write,Bash(git add:*),Bash(git commit:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git fetch origin:*),Bash(git merge origin/main),Bash(git merge --abort),Bash(git push origin {0}),Bash(gh pr view {1}:*),Bash(gh pr diff {1}:*),Bash(gh pr comment {1}:*)', steps.pr.outputs.branch, inputs.pr_number) }}"
+            --allowedTools "${{ format('Read,Grep,Glob,Edit,Write,Bash(git add:*),Bash(git commit:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git fetch origin:*),Bash(git merge origin/main),Bash(git merge --abort),Bash(git push origin {0}),Bash(gh pr view {1}:*),Bash(gh pr diff {1}:*),Bash(gh pr comment {1}:*)', steps.pr.outputs.branch, inputs.pr_number) }}"
             --disallowedTools "Edit(./.git/**),Edit(./.github/**),Edit(./archicad-addon/Tools/**),Edit(./archicad-addon/Installer/**),Edit(./tools/**)"
 
       # What the run came to, in the job summary: the result message of its
@@ -960,22 +889,19 @@ jobs:
 
       # The outcome the model gave (see "Runs that push nothing" in the
       # header): only a comment of this run carrying this run's nonce counts,
-      # and anything but a known outcome reads as `stuck`. Also says whether
-      # a merge is to be pushed with the App token.
+      # and anything but a known outcome reads as `stuck`.
       - name: Read the outcome
         id: outcome
         if: >
           steps.pr.outputs.superseded != 'true' &&
-          (steps.fix.outcome == 'success' || steps.merge.outputs.mode == 'clean' || steps.merge.outputs.mode == 'blocked')
+          (steps.fix.outcome == 'success' || steps.merge.outputs.mode == 'blocked')
         env:
           MODE: ${{ steps.merge.outputs.mode }}
           NONCE: ${{ steps.pr.outputs.nonce }}
           STARTED_AT: ${{ steps.pr.outputs.started_at }}
         run: |
           set -euo pipefail
-          push=false
           case "$MODE" in
-            clean)   outcome=fixed; push=true ;;
             blocked) outcome=merge-blocked ;;
             *)
               bodies=$(gh api --paginate "repos/$REPO/issues/$PR_NUMBER/comments" \
@@ -985,161 +911,13 @@ jobs:
                 echo "No valid outcome marker of this run (got '${outcome}') - stuck."
                 outcome=stuck
               fi
-              if [ "$MODE" = conflicts ] && [ "$outcome" = fixed ]; then push=true; fi
               ;;
           esac
-          echo "Outcome: $outcome, push the merge: $push"
+          echo "Outcome: $outcome"
           {
             echo "ran=true"
             echo "outcome=$outcome"
-            echo "push=$push"
           } >> "$GITHUB_OUTPUT"
-
-      # The model's resolution, as data for push-merge: each conflicted file
-      # as it is in the working tree now, and which of them it deleted. This
-      # runner ran the model, which may have written any file here (git's
-      # --output takes any path), so nothing that holds the App token runs
-      # on it - push-merge redoes the merge on a fresh runner and takes only
-      # these files from here, after checking them.
-      - name: Collect the resolution
-        if: steps.outcome.outputs.push == 'true' && steps.merge.outputs.mode == 'conflicts'
-        env:
-          CONFLICTED: ${{ steps.merge.outputs.conflicted }}
-          OUT: ${{ runner.temp }}/resolution
-        run: |
-          set -euo pipefail
-          rm -rf "$OUT"; mkdir -p "$OUT/files"
-          : > "$OUT/deleted.txt"
-          while IFS= read -r f; do
-            [ -n "$f" ] || continue
-            if [ -e "$f" ] || [ -L "$f" ]; then
-              mkdir -p "$OUT/files/$(dirname -- "$f")"
-              cp -P -- "$f" "$OUT/files/$f"
-            else
-              printf '%s\n' "$f" >> "$OUT/deleted.txt"
-            fi
-          done <<<"$CONFLICTED"
-          find "$OUT" -type f | sed "s|^$OUT/||"
-
-      - name: Upload the resolution
-        if: steps.outcome.outputs.push == 'true' && steps.merge.outputs.mode == 'conflicts'
-        uses: actions/upload-artifact@v4
-        with:
-          name: merge-resolution
-          path: ${{ runner.temp }}/resolution
-          include-hidden-files: true
-          if-no-files-found: error
-          retention-days: 1
-
-  # ------------------------------------------------------------ push-merge --
-  # Pushes fix's merge of main with the App token (see "Merging main" in the
-  # header), on a fresh runner that never ran the model: it merges the seen
-  # head with main's commit again in a new clone (the same merge, so the same
-  # conflicts), takes for each conflicted file the model's resolution from
-  # the artifact - plain file contents, checked - and commits and pushes
-  # with git's hooks and fsmonitor off. Only conflicted files come from the
-  # model, and a conflict under .github/, tools/, archicad-addon/Tools/ or
-  # archicad-addon/Installer/ is refused, so those folders are always what
-  # git's merge made of them. The App token exists only in this job. A
-  # refusal is no failure: restart hands the pull request over with the
-  # reason.
-  push-merge:
-    needs: fix
-    if: needs.fix.result == 'success' && needs.fix.outputs.push == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    permissions:
-      contents: read
-      actions: read          # the artifact
-    outputs:
-      refused: ${{ steps.push.outputs.refused }}
-    steps:
-      - name: Download the resolution
-        if: needs.fix.outputs.mode == 'conflicts'
-        uses: actions/download-artifact@v4
-        with:
-          name: merge-resolution
-          path: ${{ runner.temp }}/resolution
-
-      - name: Create the App token
-        id: app-token
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ secrets.TAPIR_BOT_APP_ID }}
-          private-key: ${{ secrets.TAPIR_BOT_APP_PRIVATE_KEY }}
-          repositories: ${{ github.event.repository.name }}
-          permission-contents: write
-          permission-workflows: write
-
-      - name: Merge main and push
-        id: push
-        env:
-          APP_TOKEN: ${{ steps.app-token.outputs.token }}
-          REPO: ${{ github.repository }}
-          BRANCH: ${{ needs.fix.outputs.branch }}
-          HEAD: ${{ needs.fix.outputs.head }}
-          MAIN: ${{ needs.fix.outputs.main }}
-          MODE: ${{ needs.fix.outputs.mode }}
-          RESOLUTION: ${{ runner.temp }}/resolution
-          W: ${{ runner.temp }}/merge
-        run: |
-          set -euo pipefail
-          refuse() {
-            echo "::warning::not pushed: $1"
-            echo "refused=$1" >> "$GITHUB_OUTPUT"
-            exit 0
-          }
-          PROTECTED='^(\.github|tools|archicad-addon/Tools|archicad-addon/Installer)/'
-          if ! [[ "$HEAD" =~ ^[0-9a-f]{40}$ && "$MAIN" =~ ^[0-9a-f]{40}$ && "$BRANCH" =~ ^claude/[A-Za-z0-9._/-]+$ ]]; then
-            refuse "fix gave no head, main commit or branch to merge"
-          fi
-          auth=$(printf 'x-access-token:%s' "$APP_TOKEN" | base64 -w0)
-          g() {
-            git -C "$W" -c core.hooksPath=/dev/null -c core.fsmonitor=false \
-              -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" "$@"
-          }
-          # The token only on the command line of the two git commands that
-          # talk to GitHub, never in a configuration file.
-          remote() { g -c http.https://github.com/.extraheader="AUTHORIZATION: basic $auth" "$@"; }
-          git init -q "$W"
-          remote fetch -q --no-tags "https://github.com/$REPO.git" "$HEAD" "$MAIN"
-          g checkout -q --detach "$HEAD"
-          if g merge -q --no-ff -m "Merge branch 'main' into $BRANCH" "$MAIN"; then
-            echo "Merged main ${MAIN:0:7} without a conflict."
-          else
-            [ "$MODE" = conflicts ] || refuse "merging main conflicted, though fix had merged it cleanly"
-            unmerged=$(g diff --name-only --diff-filter=U)
-            [ -n "$unmerged" ] || refuse "git merge failed without a conflict"
-            if grep -Eq "$PROTECTED" <<<"$unmerged"; then
-              refuse "its merge with main conflicts in files the bot never resolves - merge main into it with Update branch and resolve them"
-            fi
-            while IFS= read -r f; do
-              src="$RESOLUTION/files/$f"
-              if grep -qxF -- "$f" "$RESOLUTION/deleted.txt"; then
-                g rm -q -- "$f"
-              elif [ -f "$src" ] && [ ! -L "$src" ]; then
-                if grep -qE '^(<<<<<<<|>>>>>>>|\|\|\|\|\|\|\|)( |$)' "$src"; then
-                  refuse "its fix run left conflict markers in $f - merge main into it with Update branch and resolve them"
-                fi
-                rm -f -- "$W/$f"
-                cp -- "$src" "$W/$f"
-                g add -- "$f"
-              else
-                refuse "its fix run left no resolution of $f - merge main into it with Update branch and resolve the conflicts"
-              fi
-            done <<<"$unmerged"
-            [ -z "$(g diff --name-only --diff-filter=U)" ] || refuse "conflicts with main were left unresolved"
-            g commit -q --no-edit
-          fi
-          # Exactly one merge commit of the seen head and main's commit.
-          if [ "$(g rev-parse HEAD^1)" != "$HEAD" ] || [ "$(g rev-parse HEAD^2)" != "$MAIN" ] ||
-             g rev-parse -q --verify HEAD^3 >/dev/null; then
-            refuse "the merge commit was not the seen head merged with main"
-          fi
-          # Never forced: a branch that moved meanwhile refuses the push, and
-          # the run fails (no hand-over: the next sweep sees the new head).
-          remote push -q "https://github.com/$REPO.git" "HEAD:refs/heads/$BRANCH"
-          echo "Pushed the merge of main $(g rev-parse --short HEAD) with the App token."
 
   # --------------------------------------------------------------- restart --
   # After a fix run that pushed nothing, acts on the outcome it gave (see
@@ -1147,7 +925,7 @@ jobs:
   # and reviews the new head (or counts the round and decides what is next).
   # Plain shell, no model.
   restart:
-    needs: [fix, push-merge]
+    needs: fix
     if: always() && needs.fix.result != 'skipped'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -1164,16 +942,11 @@ jobs:
       PR_NUMBER: ${{ inputs.pr_number }}
     steps:
       - name: Act on a run that pushed nothing
-        # A push-merge that failed (a push refused because the branch moved,
-        # an API error) is left to the next sweep, like a failed fix run.
-        if: >
-          needs.fix.result == 'success' && needs.fix.outputs.ran == 'true' &&
-          needs.push-merge.result != 'failure' && needs.push-merge.result != 'cancelled'
+        if: needs.fix.result == 'success' && needs.fix.outputs.ran == 'true'
         env:
           HEAD: ${{ needs.fix.outputs.head }}
           OUTCOME: ${{ needs.fix.outputs.outcome }}
-          REASON: ${{ needs.push-merge.outputs.refused || needs.fix.outputs.reason }}
-          APP_CONFIGURED: ${{ secrets.TAPIR_BOT_APP_ID != '' && secrets.TAPIR_BOT_APP_PRIVATE_KEY != '' }}
+          REASON: ${{ needs.fix.outputs.reason }}
         run: |
           set -euo pipefail
           # How often a transient-ci or review-disputed outcome may be acted
@@ -1279,11 +1052,7 @@ jobs:
               esac
               ;;
             merge-blocked)
-              if [ "$APP_CONFIGURED" = true ]; then
-                handOver "its fix run could not resolve its conflicts with main (see its comment above) - merge main into it with Update branch and resolve them"
-              else
-                handOver "its fix run could not merge main into it (see its comment above) - merge main into it with Update branch"
-              fi
+              handOver "its fix run could not merge main into it (see its comment above) - merge main into it with Update branch or by hand, then remove the label"
               ;;
             *)
               handOver "its fix run pushed nothing (see its comment above for why)"

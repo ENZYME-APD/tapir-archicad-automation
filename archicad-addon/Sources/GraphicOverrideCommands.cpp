@@ -117,8 +117,9 @@ GS::ObjectState CreateStyleObjectState (const API_OverrideRuleStyle& style)
     return os;
 }
 
-// A rule does not name its group; the group is given when it is known.
-GS::ObjectState CreateRuleObjectState (const API_OverrideRule& rule, const GS::Optional<GS::UniString>& ruleGroupName)
+// A rule does not name its group; the group is given when it is known. With includeCriterion the
+// criterion is also given as structured conditions, when its XML is in the format Archicad keeps.
+GS::ObjectState CreateRuleObjectState (const API_OverrideRule& rule, const GS::Optional<GS::UniString>& ruleGroupName, bool includeCriterion)
 {
     GS::ObjectState ruleOs (
         "graphicOverrideRuleId", CreateGuidObjectState (rule.guid),
@@ -127,6 +128,10 @@ GS::ObjectState CreateRuleObjectState (const API_OverrideRule& rule, const GS::O
         "style", CreateStyleObjectState (rule.style));
     if (ruleGroupName.HasValue ()) {
         ruleOs.Add ("ruleGroupName", ruleGroupName.Get ());
+    }
+    GS::ObjectState criterion;
+    if (includeCriterion && GraphicOverrideCriterionFromXML (rule.criterionXML, criterion)) {
+        ruleOs.Add ("criterion", criterion);
     }
     return ruleOs;
 }
@@ -322,6 +327,20 @@ GS::String GetGraphicOverrideRulesCommand::GetName () const
     return "GetGraphicOverrideRules";
 }
 
+GS::Optional<GS::UniString> GetGraphicOverrideRulesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "includeCriterion": {
+                "type": "boolean",
+                "description": "Also return each rule's criterion as structured conditions ('criterion'), in the shape CreateGraphicOverrideRules and ModifyGraphicOverrideRules take. Default: false."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
 GS::Optional<GS::UniString> GetGraphicOverrideRulesCommand::GetRawResponseSchema () const
 {
     return R"({
@@ -342,9 +361,12 @@ GS::Optional<GS::UniString> GetGraphicOverrideRulesCommand::GetRawResponseSchema
     })";
 }
 
-GS::ObjectState GetGraphicOverrideRulesCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState GetGraphicOverrideRulesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 #ifdef ServerMainVers_2700
+    bool includeCriterion = false;
+    parameters.Get ("includeCriterion", includeCriterion);
+
     GS::Array<API_Guid> ruleIds;
     GSErrCode err = ACAPI_GraphicalOverride_GetOverrideRuleList (ruleIds);
     if (err != NoError) {
@@ -378,11 +400,12 @@ GS::ObjectState GetGraphicOverrideRulesCommand::Execute (const GS::ObjectState& 
         if (ruleGroupNames.ContainsKey (ruleId)) {
             ruleGroupName = ruleGroupNames[ruleId];
         }
-        graphicOverrideRulesList (CreateRuleObjectState (rule, ruleGroupName));
+        graphicOverrideRulesList (CreateRuleObjectState (rule, ruleGroupName, includeCriterion));
     }
 
     return response;
 #else
+    UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
 #endif
 }
@@ -408,6 +431,10 @@ GS::Optional<GS::UniString> GetGraphicOverrideRulesByNameCommand::GetInputParame
                 "items": {
                     "$ref": "#/GraphicOverrideRuleReference"
                 }
+            },
+            "includeCriterion": {
+                "type": "boolean",
+                "description": "Also return each rule's criterion as structured conditions ('criterion'), in the shape CreateGraphicOverrideRules and ModifyGraphicOverrideRules take. Default: false."
             }
         },
         "additionalProperties": false,
@@ -444,6 +471,8 @@ GS::ObjectState GetGraphicOverrideRulesByNameCommand::Execute (const GS::ObjectS
     if (!parameters.Get ("graphicOverrideRules", graphicOverrideRules)) {
         return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'graphicOverrideRules' parameter.");
     }
+    bool includeCriterion = false;
+    parameters.Get ("includeCriterion", includeCriterion);
 
     // ACAPI_GraphicalOverride_GetOverrideRuleByName searches one rule group, so the groups are
     // listed once: a rule is looked up in the group named in its item, or in every group in turn.
@@ -482,7 +511,7 @@ GS::ObjectState GetGraphicOverrideRulesByNameCommand::Execute (const GS::ObjectS
             API_OverrideRule rule = {};
             rule.name = name;
             if (ACAPI_GraphicalOverride_GetOverrideRuleByName (rule, ruleGroup.guid) == NoError && rule.guid != APINULLGuid) {
-                graphicOverrideRulesList (CreateRuleObjectState (rule, ruleGroup.name));
+                graphicOverrideRulesList (CreateRuleObjectState (rule, ruleGroup.name, includeCriterion));
                 ruleFound = true;
                 break;
             }

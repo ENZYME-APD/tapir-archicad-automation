@@ -46,4 +46,4 @@ default name is `RunLengths.csv`.
 
 ## Credits
 
-Requested by @parikshit99 in #2016. Written by the Tapir project.
+Requested by @parikshit99 in #2016, written with the Tapir issue bot.

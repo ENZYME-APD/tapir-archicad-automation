@@ -3,13 +3,26 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title data-i18n>Tapir and AI - Tapir</title>
-<meta name="description" data-i18n-attrs="content" content="Use Tapir from Claude and other AI tools: Tapir MCP servers, a prompt to start with, and how to let an AI write a script that sends Tapir commands.">
+<title data-i18n>Control Archicad with AI assistants (MCP) | Tapir</title>
+<meta name="description" data-i18n-attrs="content" content="Control Archicad with Claude and other AI assistants through Tapir: the Tapir MCP servers, a prompt to start with, and how to let an AI write a script.">
+<link rel="canonical" href="https://archicad-api.com/ai/">
+<!-- search engines: the page's place in the site, as the crumb above its heading shows it -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Tapir", "item": "https://archicad-api.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Docs", "item": "https://archicad-api.com/docs/" },
+        { "@type": "ListItem", "position": 3, "name": "AI", "item": "https://archicad-api.com/ai/" }
+    ]
+}
+</script>
 <!-- link-preview: the preview of a link to this page shared on Discord, WhatsApp and the like -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Tapir">
-<meta property="og:title" content="Tapir and AI - Tapir">
-<meta property="og:description" content="Use Tapir from Claude and other AI tools: Tapir MCP servers, a prompt to start with, and how to let an AI write a script that sends Tapir commands.">
+<meta property="og:title" content="Control Archicad with AI assistants (MCP) | Tapir">
+<meta property="og:description" content="Control Archicad with Claude and other AI assistants through Tapir: the Tapir MCP servers, a prompt to start with, and how to let an AI write a script.">
 <meta property="og:url" content="https://archicad-api.com/ai/">
 <meta name="twitter:card" content="summary">
 <!-- site-assets -->
@@ -135,6 +148,55 @@ Do not change anything; only read.
 2. Count the walls, slabs, columns, doors and windows on each story.
 3. Show the result as one table, one row per story.
 Tell me which Tapir commands you used.</code></pre>
+            </div>
+        </section>
+
+        <div class="dim" aria-hidden="true"><i></i><span data-i18n>Check the names first</span><i></i></div>
+        <section aria-labelledby="names">
+            <div class="sec-head">
+                <h2 id="names" data-i18n>Check names, <em>don't guess.</em></h2>
+                <p data-i18n>
+                    Your words rarely match the names in the project: "fire rating" may be a property called
+                    <span class="mono">FireRating</span> in one template and <span class="mono">Feuerwiderstand</span> in another,
+                    and "level 2" may be the story "02 First Floor". An AI that guesses the name still gets an answer, only a wrong one:
+                    no values found, so "no doors have a fire rating".
+                </p>
+            </div>
+            <div class="flow flow-3">
+                <div data-i18n><b>01</b><strong>Look the words up first</strong><span>Before a command whose parameters come from your words (a story, property, classification, layer, building material, composite, surface, zone category or element type), the AI sends those words to <a href="../archicad-addon/#ResolveNames">ResolveNames</a>, with the kind of each when it knows it. It only reads.</span></div>
+                <div data-i18n><b>02</b><strong>Use what it returns</strong><span><span class="mono">found</span>: the item named exactly so, with the ids the other commands take (story index, attribute id, elementType, propertyId, classification ids). <span class="mono">closeMatches</span>: only similar names, best first; the AI asks you which one you meant instead of picking one itself.</span></div>
+                <div data-i18n><b>03</b><strong>Say "not in this project"</strong><span><span class="mono">notFound</span>: nothing in the project is close, so the project has no such item. The AI says "this project has no X" instead of guessing a name or reporting an empty result as the answer.</span></div>
+            </div>
+            <div class="two" style="margin-top: 32px">
+                <div class="prose">
+                    <p data-i18n>
+                        Add these lines to your prompt, or to the instructions of your MCP server, so the AI checks the names
+                        every time. They work the same when the AI writes a script: the script sends
+                        <span class="mono">ResolveNames</span> first and stops with a message on <span class="mono">notFound</span>.
+                    </p>
+                    <p data-i18n>
+                        Before a change, ask for a preview. The commands that delete or replace, such as
+                        <a href="../archicad-addon/#DeleteElements">DeleteElements</a>,
+                        <a href="../archicad-addon/#DeleteAttributes">DeleteAttributes</a> and
+                        <a href="../archicad-addon/#DeleteAndReplaceAttributes">DeleteAndReplaceAttributes</a>, take
+                        <span class="mono">"dryRun": true</span>: nothing changes, and the response lists what would. The command reference
+                        says which commands have it.
+                    </p>
+                </div>
+                <div class="term">
+                    <div class="bar"><span data-i18n>prompt</span><span data-i18n>add to any request</span></div>
+<pre><code data-i18n>Before you use a name taken from my words (a story,
+property, classification, layer, building material,
+composite, surface, zone category or element type),
+check it with the Tapir command ResolveNames.
+- found: use the ids it returns.
+- closeMatches: ask me which one I mean.
+- notFound: tell me this project has no such item.
+  Never guess a name.
+Before a command that deletes or replaces, run it with
+"dryRun": true if it has that input, and show me what
+it would change.</code></pre>
+                </div>
             </div>
         </section>
 

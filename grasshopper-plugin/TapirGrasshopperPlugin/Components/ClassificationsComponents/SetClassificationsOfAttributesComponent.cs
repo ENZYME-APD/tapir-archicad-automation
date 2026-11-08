@@ -9,8 +9,10 @@ using TapirGrasshopperPlugin.Types.GuidObjects;
 
 namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
 {
+    // Sends one SetClassificationsOfAttributes request for every branch of
+    // the inputs, so a tree input makes one undo step in Archicad (#203).
     public class SetClassificationsOfAttributesComponent
-        : ArchicadExecutorComponent
+        : BatchedExecutorComponent<AttributeClassificationObj>
     {
         public override string CommandName => "SetClassificationsOfAttributes";
 
@@ -54,21 +56,24 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 "Error message of each attribute (empty when it succeeded).");
         }
 
-        protected override void Solve(
-            IGH_DataAccess da)
+        protected override bool TryGetBatchItems(
+            IGH_DataAccess da,
+            out List<AttributeClassificationObj> items)
         {
+            items = null;
+
             if (!da.TryCreate(
                     0,
                     out ClassificationGuid systemId))
             {
-                return;
+                return false;
             }
 
             if (!da.TryGetList(
                     1,
                     out List<GH_ObjectWrapper> itemWrappers))
             {
-                return;
+                return false;
             }
 
             var itemIds = new List<ClassificationGuid>();
@@ -86,20 +91,17 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                     2,
                     out List<GH_ObjectWrapper> attributeWrappers))
             {
-                return;
+                return false;
             }
 
             if (itemIds.Count != 1 && attributeWrappers.Count != itemIds.Count)
             {
                 this.AddError(
                     "The size of the input ClassificationItemGuids must be 1 or equal to the size of the input AttributeGuids.");
-                return;
+                return false;
             }
 
-            var input = new SetClassificationsOfAttributesParameters
-            {
-                AttributeClassifications = new List<AttributeClassificationObj>()
-            };
+            items = new List<AttributeClassificationObj>();
 
             for (var i = 0; i < attributeWrappers.Count; i++)
             {
@@ -108,12 +110,13 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                 if (attributeId == null)
                 {
                     this.AddError("Invalid attribute identifier in the AttributeGuids input.");
-                    return;
+                    items = null;
+                    return false;
                 }
 
                 var itemId = itemIds[itemIds.Count == 1 ? 0 : i];
 
-                input.AttributeClassifications.Add(
+                items.Add(
                     new AttributeClassificationObj
                     {
                         AttributeId = attributeId,
@@ -127,11 +130,25 @@ namespace TapirGrasshopperPlugin.Components.ClassificationsComponents
                     });
             }
 
-            SetCadValuesWithErrorMessages(
-                CommandName,
-                input,
-                ToAddOn,
-                da);
+            return true;
+        }
+
+        // An attribute has one item per classification system; the branches
+        // used to be sent one after the other, so the last one won.
+        protected override string GetBatchItemKey(
+            AttributeClassificationObj item)
+        {
+            return $"{item.AttributeId?.Guid?.ToLowerInvariant()}|" +
+                   $"{item.Classification?.ClassificationSystemId?.Guid?.ToLowerInvariant()}";
+        }
+
+        protected override object CreateBatchParameters(
+            List<AttributeClassificationObj> items)
+        {
+            return new SetClassificationsOfAttributesParameters
+            {
+                AttributeClassifications = items
+            };
         }
 
         // Shares the icon of SetClassificationsOfElements.

@@ -29,6 +29,7 @@
     'Commands': '命令',
     'API coverage': 'API 覆盖率',
     'Grasshopper coverage': 'Grasshopper 覆盖率',
+    'API limits': 'API 限制',
     'Tutorials': '教程',
     'How fixes happen': '问题如何被修复',
     'Roadmap': '路线图',

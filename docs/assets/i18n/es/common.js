@@ -29,6 +29,7 @@
     'Commands': 'Comandos',
     'API coverage': 'Cobertura de la API',
     'Grasshopper coverage': 'Cobertura de Grasshopper',
+    'API limits': 'Límites de la API',
     'Tutorials': 'Tutoriales',
     'How fixes happen': 'Cómo se corrigen los errores',
     'Roadmap': 'Hoja de ruta',

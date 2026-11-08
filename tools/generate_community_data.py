@@ -16,6 +16,12 @@ Sources, each optional: a series that cannot be read is left out of every month,
 hides it instead of drawing it wrong.
   - commits per month and per author: `git log` of the checkout (needs the full history),
     without merge commits and without bots (Claude, github-actions and names ending in [bot]).
+    A person who committed under several names or addresses counts once, under the name of most
+    of their commits: names that differ only in case, accents, punctuation or word order, and
+    names with a shared address (a GitHub no-reply address by its account) are one person.
+    The top contributors and participants also count the people in a commit's Co-authored-by
+    trailers (bots and AI assistants left out), so the issue bot's commits credit the reporter;
+    a co-author who also committed is the same person, by the same rules.
   - issues opened and pull requests merged per month: the GitHub REST API (GITHUB_TOKEN).
   - Discord messages per month (people, not bots): the history of every text and announcement
     channel the bot can read, and of the threads in them and in forum channels. Discord members
@@ -45,6 +51,7 @@ import re
 import subprocess
 import sys
 import time
+import unicodedata
 import urllib.error
 import urllib.request
 
@@ -88,16 +95,117 @@ def request_json (url, headers, retries=5):
 
 # ---- git ----
 
+# A co-author that is a bot or an AI assistant. Claude adds itself as a co-author under several
+# names ("Claude", "Claude Opus 5.5", ...) but always with an @anthropic.com address, so it is
+# known by its address: a person whose name starts with Claude still counts.
+BOT_COAUTHOR = re.compile (r'(\[bot\]|^github-actions\b|^dependabot|@anthropic\.com>?$)', re.I)
+
+
+# A GitHub no-reply address, old (login@...) or new (id+login@...): the same account either way.
+NOREPLY_EMAIL = re.compile (r'^(?:\d+\+)?([^@]+)@users\.noreply\.github\.com$', re.I)
+# Addresses that many people share, so they never tie two names together.
+SHARED_EMAILS = {'', 'none', 'noreply@github.com', 'you@example.com', 'root@localhost'}
+
+
+def email_key (email):
+    """The account an author address stands for, or None for an address many people share."""
+    email = email.strip ().lower ()
+    if email in SHARED_EMAILS or '@' not in email:
+        return None
+    noreply = NOREPLY_EMAIL.match (email)
+    return 'github:' + noreply.group (1) if noreply else 'email:' + email
+
+
+def name_key (name):
+    """A name with case, accents, punctuation and word order left out: "Barancsuk Ádám" is "Ádám Barancsuk"."""
+    plain = ''.join (c for c in unicodedata.normalize ('NFKD', name.casefold ()) if not unicodedata.combining (c))
+    words = re.findall (r'[a-z0-9]+', plain)
+    return 'name:' + ' '.join (sorted (words)) if words else None
+
+
+def group_authors (authors, coauthors=()):
+    """{(name, email): display name}: one name for every name and address that belong to one person.
+
+    authors is (date, name, email) per commit, coauthors the same per Co-authored-by trailer. Two
+    entries are one person when they share an address (a GitHub no-reply address counts by its
+    account) or a name, the same up to case, accents, punctuation and word order. The person is
+    shown under the name they made most commits with, the newer one on a tie; a person who never
+    committed, under the name of most of their trailers. .mailmap still wins for commit authors:
+    git log has applied it already."""
+    parent = {}
+
+    def find (key):
+        parent.setdefault (key, key)
+        while parent[key] != key:
+            parent[key] = parent[parent[key]]
+            key = parent[key]
+        return key
+
+    def group_of (name, email):
+        return find (name_key (name) or email_key (email) or 'raw:' + name)
+
+    entries = list (authors) + list (coauthors)
+    for _, name, email in entries:
+        keys = [key for key in (name_key (name), email_key (email)) if key]
+        for key in keys[1:]:
+            parent[find (key)] = find (keys[0])
+
+    def names_by_group (source):
+        counts = collections.defaultdict (collections.Counter)
+        newest = {}
+        for date, name, email in source:
+            group = group_of (name, email)
+            counts[group][name] += 1
+            newest[(group, name)] = max (date, newest.get ((group, name), ''))
+        return {group: max (names, key=lambda name: (names[name], newest[(group, name)])) for group, names in counts.items ()}
+
+    shown = names_by_group (coauthors)
+    shown.update (names_by_group (authors))
+    return {(name, email): shown[group_of (name, email)] for _, name, email in entries}
+
+
 def read_commits ():
-    """(date, author) of every commit of the checkout by a person: merges and bots are left out."""
-    output = subprocess.run (['git', 'log', '--no-merges', '--format=%aI%x09%aN'], capture_output=True, text=True, check=True).stdout
-    commits = []
-    for line in output.splitlines ():
-        date, _, author = line.partition ('\t')
-        author = author.strip ()
-        if date and author and not BOT_NAME.search (author):
-            commits.append ((date, author))
-    return commits
+    """The commits of the checkout: (commits, credits).
+
+    commits is (date, author) of every commit by a person, merges and bots left out. credits is
+    (date, name) of everyone a commit credits: its author when a person, and each person in its
+    Co-authored-by trailers, so a commit the issue bot made for someone's issue credits the
+    person who reported it. The commit counts use commits; the contributors use credits.
+    Each person is counted once, under one name, whatever names and addresses their commits and
+    trailers carry (see group_authors), so nobody needs a .mailmap line to be counted once."""
+    output = subprocess.run (['git', 'log', '--no-merges',
+                              '--format=%aI%x09%aN%x09%aE%x09%(trailers:key=Co-authored-by,valueonly,separator=%x1f)%x1e'],
+                             capture_output=True, text=True, check=True).stdout
+    records = []
+    for record in output.split ('\x1e'):
+        date, _, rest = record.strip ('\n').partition ('\t')
+        name, _, rest = rest.partition ('\t')
+        email, _, trailers = rest.partition ('\t')
+        if not date:
+            continue
+        name = name.strip ()
+        author = (date, name, email.strip ()) if name and not BOT_NAME.search (name) else None
+        coauthors = []
+        for value in trailers.split ('\x1f'):
+            value = value.strip ()
+            co_name, _, co_email = value.partition ('<')
+            co_name = co_name.strip ()
+            if co_name and not BOT_COAUTHOR.search (value):
+                coauthors.append ((date, co_name, co_email.rstrip ('>').strip ()))
+        records.append ((author, coauthors))
+
+    shown = group_authors ([author for author, _ in records if author],
+                           [coauthor for _, coauthors in records for coauthor in coauthors])
+    commits, credits = [], []
+    for author, coauthors in records:
+        names = []
+        if author:
+            commits.append ((author[0], shown[author[1:]]))
+        for date, name, email in ([author] if author else []) + coauthors:
+            if shown[(name, email)] not in names:
+                names.append (shown[(name, email)])
+                credits.append ((date, shown[(name, email)]))
+    return commits, credits
 
 
 # ---- GitHub ----
@@ -260,13 +368,14 @@ def main ():
     series = collections.defaultdict (collections.Counter)
     totals, people = {}, set ()
 
-    commits = read_commits ()
+    commits, credits = read_commits ()
     for date, author in commits:
         series['commits'][month_of (date)] += 1
+    for date, name in credits:
         if date >= year_ago:
-            people.add ('git:' + author.lower ())
+            people.add ('git:' + name.lower ())
     totals['commits'] = len (commits)
-    authors = collections.Counter (author for _, author in commits)
+    authors = collections.Counter (name for _, name in credits)
     top = [{'name': name, 'commits': count} for name, count in authors.most_common (40)]
 
     try:

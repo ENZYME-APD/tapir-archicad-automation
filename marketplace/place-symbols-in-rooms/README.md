@@ -49,4 +49,4 @@ their layer and the changed parameters. *Preview* only highlights the zones. It 
 
 ## Credits
 
-Requested by @parikshit99 in #2020. Written by the Tapir project.
+Requested by @parikshit99 in #2020, written with the Tapir issue bot.

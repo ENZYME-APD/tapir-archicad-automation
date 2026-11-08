@@ -1,9 +1,9 @@
 /* 中文 (简体): the Scripts page (scripts/index.html), with the texts scripts.js shows from it. See ../README.md.
    The scripts' own names, summaries and READMEs stay as their authors wrote them. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Scripts - Tapir': '脚本 - Tapir',
-    'Scripts shared by architects for the Tapir palette in Archicad, each one reviewed and adapted to work in any office before it is listed.':
-        '建筑师分享的 Archicad Tapir 面板脚本，每个脚本在上架前都经过审查，并调整为可在任何事务所使用。',
+    'Free Archicad Python scripts | Tapir': '免费的 Archicad Python 脚本 | Tapir',
+    'Free Python scripts for the Tapir palette in Archicad, shared by architects, each one reviewed and adapted to work in any office before it is listed.':
+        '用于 Archicad Tapir 面板的免费 Python 脚本，由建筑师分享，每个脚本在上架前都经过审查，并调整为可在任何事务所使用。',
     '<a href="../">Tapir</a> / Scripts': '<a href="../">Tapir</a> / 脚本',
     'The script <em>schedule.</em>': '脚本<em>清单。</em>',
     'Scripts shared by architects. Each one is checked for safety and adapted to work in any office and any Archicad language before it is listed.':
@@ -40,6 +40,9 @@
     'All': '全部',
     'Archicad version': 'Archicad 版本',
     'Any Archicad': '任意 Archicad',
+    'Filters': '筛选',
+    'Active filters': '已应用的筛选',
+    'Remove filter: {name}': '移除筛选：{name}',
     '1 script': '1 个脚本',
     '{count} scripts': '{count} 个脚本',
     'No script matches. Try fewer words or another filter.': '没有匹配的脚本。请减少关键词或换一个筛选条件。',

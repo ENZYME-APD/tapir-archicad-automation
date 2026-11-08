@@ -3119,6 +3119,124 @@
             "arcAngle"
         ]
     },
+    "SnapFilter": {
+        "type": "object",
+        "description": "Which points and lines of the elements the cursor snaps to while the designer clicks (Archicad's neig filter). Without it, the cursor snaps as usual.",
+        "properties": {
+            "base": {
+                "type": "string",
+                "description": "What the cursor snaps to before include and exclude are applied: All = everything, None = nothing, Edges = only the lines and edges of the elements, Nodes = only their points (end points, vertices, hotspots). Default: None when include is given, otherwise All.",
+                "enum": [
+                    "All",
+                    "None",
+                    "Edges",
+                    "Nodes"
+                ]
+            },
+            "include": {
+                "type": "array",
+                "description": "The cursor also snaps to these.",
+                "items": {
+                    "$ref": "#/SnapType"
+                }
+            },
+            "exclude": {
+                "type": "array",
+                "description": "The cursor does not snap to these. Applied after include.",
+                "items": {
+                    "$ref": "#/SnapType"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    },
+    "SnapType": {
+        "type": "string",
+        "description": "A kind of point or line the cursor can snap to. An element type name means the element's points (end points, vertices, corners, hotspots); with On it means its lines and edges (for walls the reference line). Hotspot is a hotspot element, Text the corners of a text, Label the points of a label, Dimension a dimension point and DimensionOn the dimension line.",
+        "enum": [
+            "Wall",
+            "WallOn",
+            "Column",
+            "ColumnOn",
+            "Beam",
+            "BeamOn",
+            "Window",
+            "WindowOn",
+            "Door",
+            "DoorOn",
+            "Object",
+            "ObjectOn",
+            "Slab",
+            "SlabOn",
+            "Roof",
+            "RoofOn",
+            "Mesh",
+            "MeshOn",
+            "Shell",
+            "ShellOn",
+            "Morph",
+            "MorphOn",
+            "Skylight",
+            "SkylightOn",
+            "CurtainWall",
+            "CurtainWallOn",
+            "Stair",
+            "StairOn",
+            "Railing",
+            "RailingOn",
+            "Zone",
+            "ZoneOn",
+            "Hatch",
+            "HatchOn",
+            "Line",
+            "LineOn",
+            "PolyLine",
+            "PolyLineOn",
+            "Arc",
+            "ArcOn",
+            "Circle",
+            "CircleOn",
+            "Spline",
+            "SplineOn",
+            "Hotspot",
+            "Text",
+            "Label",
+            "Dimension",
+            "DimensionOn"
+        ]
+    },
+    "InputConstraint": {
+        "type": "object",
+        "description": "Archicad's drawing constraint for the clicks of a Get...FromUser command: the cursor can only move along it, as when a coordinate is locked in the Tracker. It is dissolved when the command returns, also on Escape and on errors.",
+        "properties": {
+            "type": {
+                "type": "string",
+                "description": "What is fixed: X = the X coordinate, Y = the Y coordinate, Z = the Z coordinate (3D window), Angle = the direction from the reference point (the cursor moves along a line), Distance = the distance from the reference point (the cursor moves along a circle).",
+                "enum": [
+                    "X",
+                    "Y",
+                    "Z",
+                    "Angle",
+                    "Distance"
+                ]
+            },
+            "value": {
+                "type": "number",
+                "description": "The fixed value: a coordinate or distance in meters, or for Angle an angle in radians, counterclockwise from the X axis."
+            },
+            "fromLastPoint": {
+                "type": "boolean",
+                "description": "If true, the value is measured from the last clicked point (Archicad's local origin), otherwise from the project origin.",
+                "default": false
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type",
+            "value"
+        ]
+    },
     "Coordinate2D": {
         "type": "object",
         "description": "2D coordinate.",
@@ -3203,6 +3321,22 @@
         "required": [
             "trimType"
         ]
+    },
+    "RoofEdgeTrim": {
+        "type": "object",
+        "description": "How an edge of a single-plane roof's polygon is cut (the edge's cut in the roof's settings).",
+        "properties": {
+            "trimType": {
+                "type": "string",
+                "enum": ["Vertical", "Perpendicular", "Horizontal", "CustomAngle", "AlignWithCut"],
+                "description": "Vertical, Perpendicular to the roof plane, Horizontal, or at 'angle' (CustomAngle). AlignWithCut is only reported, for shell edges; it cannot be written to a roof."
+            },
+            "angle": {
+                "type": "number",
+                "description": "The angle of the edge cut in radians, as Archicad stores it. Only CustomAngle uses it."
+            }
+        },
+        "additionalProperties": false
     },
     "ShellProfile": {
         "type": "object",
@@ -3664,6 +3798,59 @@
         "description": "A list of deletion results.",
         "items": {
             "$ref": "#/DeletionExecutionResult"
+        }
+    },
+    "WouldChange": {
+        "type": "object",
+        "description": "What a real run would change on a target. Each command says what its oldValue and newValue are; either is left out when it cannot be told cheaply.",
+        "properties": {
+            "oldValue": {
+                "description": "The target's value now, before the change."
+            },
+            "newValue": {
+                "description": "The value a real run would write."
+            }
+        },
+        "additionalProperties": false
+    },
+    "WouldChangeExecutionResult": {
+        "type": "object",
+        "description": "The result of a dry run for a target that passed every check: a real run would change it as wouldChange says.",
+        "properties": {
+            "success": {
+                "type": "boolean",
+                "enum": [ true ]
+            },
+            "wouldChange": {
+                "$ref": "#/WouldChange"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "success",
+            "wouldChange"
+        ]
+    },
+    "ChangeExecutionResult": {
+        "type": "object",
+        "description": "The result of a change for one target. On a dry run a target that passed every check gets wouldChange instead of being changed.",
+        "oneOf": [
+            {
+                "$ref": "#/SuccessfulExecutionResult"
+            },
+            {
+                "$ref": "#/WouldChangeExecutionResult"
+            },
+            {
+                "$ref": "#/FailedExecutionResult"
+            }
+        ]
+    },
+    "ChangeExecutionResults": {
+        "type": "array",
+        "description": "A list of change results.",
+        "items": {
+            "$ref": "#/ChangeExecutionResult"
         }
     },
     "ElementCategoryType": {
@@ -9182,6 +9369,13 @@
                 "description": "The custom side surface of each edge of the roof's polygon: the edges of polygonOutline first, then those of each hole in order, the item i of a polygon belonging to its edge from vertex i to vertex i + 1.",
                 "items": {
                     "$ref": "#/OverriddenMaterial"
+                }
+            },
+            "edgeTrims": {
+                "type": "array",
+                "description": "Single-plane roofs only: the cut of each edge of the roof's polygon, in the order of edgeSideMaterials. ModifyRoofs takes the same list.",
+                "items": {
+                    "$ref": "#/RoofEdgeTrim"
                 }
             },
             "pivotEdges": {
@@ -15284,9 +15478,9 @@
             "penIndex": { "type": "integer", "description": "Pen attribute index. Optional; defaults to the style's penIndex." },
             "fontIndex": { "type": "integer", "description": "Font attribute index. Optional; defaults to the style's fontIndex." },
             "fontName": { "type": "string", "description": "Name of the font for this run only, resolved like the style's fontName (and taking precedence over the run's fontIndex). Optional; defaults to the style's font. Read back as the name of the font the run's fontIndex refers to, absent when no loaded font has that index." },
-            "bold": { "type": "boolean" },
-            "italic": { "type": "boolean" },
-            "underline": { "type": "boolean" },
+            "bold": { "type": "boolean", "description": "Optional; defaults to the style's bold." },
+            "italic": { "type": "boolean", "description": "Optional; defaults to the style's italic." },
+            "underline": { "type": "boolean", "description": "Optional; defaults to the style's underline." },
             "heightOverride": { "type": "number", "description": "Character height in mm for this run only. Optional; defaults to the style's height." },
             "effectStrikeout": { "type": "boolean", "description": "Optional; defaults to the style's effectStrikeout." },
             "effectSuperscript": { "type": "boolean", "description": "Optional; defaults to the style's effectSuperscript." },
@@ -15334,7 +15528,7 @@
     },
     "TextStyleDetails": {
         "type": "object",
-        "description": "Full readable style state of a Text or text-class Label: every field of TextStyleSettableDetails plus the read-only ones (lineCount, boxWidth, boxHeight).",
+        "description": "Full readable style state of a Text or text-class Label: every field of TextStyleSettableDetails plus the read-only ones (lineCount, boxWidth, boxHeight, and nonBreaking for a standalone Text).",
         "properties": {
             "penIndex": { "type": "integer", "description": "Pen attribute index." },
             "fontIndex": { "type": "integer", "description": "Font attribute index." },
@@ -15366,8 +15560,9 @@
             "textFrameFixedWidth": { "type": "number", "description": "Frame width in mm, when textFrameSizeFixed is true. Between 1 and 1000. Available from Archicad 28; earlier versions ignore it and read it back as 0." },
             "textFrameFixedHeight": { "type": "number", "description": "Frame height in mm, when textFrameSizeFixed is true (ignored for Circle, which uses fixedWidth as diameter). Between 1 and 1000. Available from Archicad 28; earlier versions ignore it and read it back as 0." },
             "lineCount": { "type": "integer", "description": "Read-only: number of text lines (API_TextType::nLine)." },
-            "boxWidth": { "type": "number", "description": "Read-only: horizontal size of the text box in mm, auto-computed by Archicad." },
-            "boxHeight": { "type": "number", "description": "Read-only: vertical size of the text box in mm, auto-computed by Archicad." }
+            "boxWidth": { "type": "number", "description": "Read-only here: horizontal size of the text box in mm. For a Text with word wrap on (nonBreaking false) the wrap width, as CreateTexts and ModifyTexts set it with width; otherwise auto-computed by Archicad from the content." },
+            "boxHeight": { "type": "number", "description": "Read-only: vertical size of the text box in mm, auto-computed by Archicad." },
+            "nonBreaking": { "type": "boolean", "description": "Read-only here, standalone Texts only: true when word wrap is off ('Wrap Text' turned off), so the text box grows with the content; false when the text wraps within boxWidth. CreateTexts and ModifyTexts set it to false with their width." }
         },
         "additionalProperties": false
     },
@@ -17116,26 +17311,45 @@
             "Skylight", "CornerWindow", "WallEnd",
             "DuctBranch", "DuctTerminal", "DuctAccessory", "DuctFitting", "DuctFlexibleSegment",
             "CableCarrierBranch", "CableCarrierFitting",
-            "PipeBranch", "PipeTerminal", "PipeAccessory", "PipeFitting", "Equipment"
+            "PipeBranch", "PipeTerminal", "PipeAccessory", "PipeFitting", "Equipment",
+            "AllTypes"
         ]
     },
     "GraphicOverrideCriterion": {
         "type": "object",
-        "description": "Structured conditions of a graphic override rule, turned into Archicad's criterion XML (an alternative to criterionXML). Give exactly one property. 'and'/'or' combine a flat list of other conditions (no nesting, see their description). 'elementType' filters by the tool an element was created with; 'all3DTypes'/'all2DTypes' match every 3D or 2D element. The other properties are conditions of Archicad's criteria editor: classification, layer and Model View, Construction, Positioning, Plan and Section, Surfaces and Materials, ID and Categories, Geometry, custom properties, and fields of the Wall, Column, Beam, Slab, Roof, Shell, Object/Lamp, Door/Window, Opening, Curtain Wall and Stair tools. Their identifiers were captured from rules made in the criteria editor of Archicad 29; Archicad 27 keeps the generated rules as well. Not available: text content, the line pen of a dimension, hotlinked modules and Xrefs, and the MEP system (their stored format is not decoded yet).",
+        "description": "Structured conditions of a graphic override rule, turned into Archicad's criterion XML (an alternative to criterionXML). Give exactly one property (classificationSystem and libraryPartSubtype go next to the condition they belong to). 'and'/'or' combine other conditions, nested at most three levels like the rows of the criteria editor (see their description). GetGraphicOverrideRules returns this shape with includeCriterion. 'elementType' filters by the tool an element was created with; 'all3DTypes'/'all2DTypes' match every 3D or 2D element. The other properties are conditions of Archicad's criteria editor: classification, layer and Model View, Construction, Positioning, Plan and Section, Surfaces and Materials, ID and Categories, Geometry, custom properties, and fields of the Wall, Column, Beam, Slab, Roof, Shell, Object/Lamp, Door/Window, Opening, Curtain Wall and Stair tools. Their identifiers were captured from rules made in the criteria editor of Archicad 29; Archicad 27 keeps the generated rules as well. Not available: text content, the line pen of a dimension, hotlinked modules and Xrefs, and the MEP system (their stored format is not decoded yet).",
         "properties": {
             "and": {
                 "type": "array",
-                "description": "Matches if all of the nested criteria match. The nested criteria must all be leaves (elementType, classification, layer*, ...) - an 'and'/'or' nested inside this array is rejected, ArchiCAD's criteria editor does not reliably support that depth of nesting.",
+                "description": "Matches if all of the nested criteria match. Nesting follows the criteria editor's table, at most three levels: the top 'and' holds the rows, a row with several values is an 'or' (values joined with 'or') or an 'and' (joined with 'and'), and values joined with 'and' within an 'or' row are one more 'and'. A deeper 'and'/'or' is rejected.",
                 "items": { "$ref": "#/GraphicOverrideCriterion" }
             },
             "or": {
                 "type": "array",
-                "description": "Matches if any of the nested criteria match. The nested criteria must all be leaves (elementType, classification, layer*, ...) - an 'and'/'or' nested inside this array is rejected, ArchiCAD's criteria editor does not reliably support that depth of nesting.",
+                "description": "Matches if any of the nested criteria match. As a row of the criteria editor's table: the values of one condition joined with 'or'. Nested at most three levels, see 'and'.",
                 "items": { "$ref": "#/GraphicOverrideCriterion" }
+            },
+            "criterionXML": {
+                "type": "string",
+                "description": "One condition in Archicad's criterion XML: a <ClassGuid> followed by the condition's element, as GetGraphicOverrideRules returns a condition it does not decode. Written into the criterion unchanged."
             },
             "elementType": {
                 "$ref": "#/GraphicOverrideElementType",
-                "description": "Matches elements created with this tool."
+                "description": "Matches elements created with this tool. 'AllTypes' matches elements of every type."
+            },
+            "elementTypeNot": {
+                "$ref": "#/GraphicOverrideElementType",
+                "description": "Matches elements not created with this tool (the criteria editor's 'is not'). 'AllTypes' is not allowed here."
+            },
+            "libraryPartSubtype": {
+                "type": "object",
+                "description": "Narrows elementType or elementTypeNot to a library part subtype of the tool, as the criteria editor stores it: the subtype's main and revision guid. GetGraphicOverrideRules returns it for the tools it decodes.",
+                "properties": {
+                    "mainGuid": { "type": "string" },
+                    "revGuid": { "type": "string" }
+                },
+                "additionalProperties": false,
+                "required": [ "mainGuid", "revGuid" ]
             },
             "classification": {
                 "type": "string",
@@ -18215,6 +18429,10 @@
             "criterionXML": {
                 "type": "string",
                 "description": "The criterion of the rule, in the XML format Archicad saves override rules in. Change its values and pass it to CreateGraphicOverrideRules or ModifyGraphicOverrideRules to make similar rules."
+            },
+            "criterion": {
+                "$ref": "#/GraphicOverrideCriterion",
+                "description": "The criterion as structured conditions, returned with includeCriterion. It can be passed to CreateGraphicOverrideRules or ModifyGraphicOverrideRules as it is. The top 'and' holds the rows of the criteria editor's table; a row with several values is an 'or' or 'and' of them, and values joined with 'and' within an 'or' row are one more 'and'. A condition that is not decoded yet is a {\"criterionXML\": ...} leaf, written back unchanged. Left out when criterionXML is not in the format Archicad keeps rules in."
             },
             "style": {
                 "$ref": "#/GraphicOverrideStyle"
@@ -21623,6 +21841,158 @@
             "unit",
             "accuracy",
             "decimals"
+        ]
+    },
+    "NameKind": {
+        "type": "string",
+        "description": "The kind of an item of the project that ResolveNames looks a name up among: a story, an attribute of the given type, an element type (matched by its API name and, from Archicad 27, by the name the Archicad interface shows), a property (built-in or custom; matched by its name and by its group and name together), or a classification (a classification system, matched by its name and by its name and version together, or an item of any system at any depth, matched by its name, by its ID and by both together).",
+        "enum": [
+            "Story",
+            "Layer",
+            "LayerCombination",
+            "BuildingMaterial",
+            "Composite",
+            "Profile",
+            "Surface",
+            "Fill",
+            "Line",
+            "ZoneCategory",
+            "ElementType",
+            "Property",
+            "Classification"
+        ]
+    },
+    "NameMatch": {
+        "type": "object",
+        "description": "An item of the project that a name matches, as ResolveNames returns it.",
+        "properties": {
+            "kind": {
+                "$ref": "#/NameKind"
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the item in the project. For an element type, the name the Archicad interface shows (from Archicad 27; the API name before). For a classification item, its name, or its ID when it has no name."
+            },
+            "match": {
+                "type": "string",
+                "description": "How the name matches. exact: the same characters. normalized: the same except for case, accents, spacing and separators (FireRating, fire_rating, Fire Rating). words: every word of one is a word of the other, or at least half of their words are shared. contains: one contains the other. similar: a few characters differ.",
+                "enum": [
+                    "exact",
+                    "normalized",
+                    "words",
+                    "contains",
+                    "similar"
+                ]
+            },
+            "score": {
+                "type": "number",
+                "description": "How close the match is, from 0.6 to 1 (1 for exact and normalized matches)."
+            },
+            "storyIndex": {
+                "type": "integer",
+                "description": "The index of the story (the floor index the commands take). Only for a story."
+            },
+            "level": {
+                "type": "number",
+                "description": "The level of the story, in meters. Only for a story."
+            },
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            },
+            "attributeIndex": {
+                "type": "integer",
+                "description": "The index of the attribute. Only for an attribute."
+            },
+            "elementType": {
+                "$ref": "#/ElementType"
+            },
+            "propertyId": {
+                "$ref": "#/PropertyId",
+                "description": "The property, as GetPropertyValuesOfElements and SetPropertyValuesOfElements take it. Only for a property."
+            },
+            "propertyGroupId": {
+                "$ref": "#/PropertyGroupId",
+                "description": "The group of the property. Only for a property."
+            },
+            "propertyGroupName": {
+                "type": "string",
+                "description": "The name of the group of the property. Only for a property."
+            },
+            "propertyType": {
+                "type": "string",
+                "description": "Whether the property is built in or custom. Only for a property.",
+                "enum": [
+                    "StaticBuiltIn",
+                    "DynamicBuiltIn",
+                    "Custom"
+                ]
+            },
+            "propertyCollectionType": {
+                "type": "string",
+                "description": "Whether the property holds one value, a list, or one or more choices of a list of options. Only for a property.",
+                "enum": [
+                    "Undefined",
+                    "Single",
+                    "List",
+                    "SingleChoiceEnumeration",
+                    "MultipleChoiceEnumeration"
+                ]
+            },
+            "propertyValueType": {
+                "type": "string",
+                "description": "The type of the values of the property. Only for a property.",
+                "enum": [
+                    "Undefined",
+                    "Integer",
+                    "Real",
+                    "String",
+                    "Boolean",
+                    "Guid"
+                ]
+            },
+            "propertyMeasureType": {
+                "type": "string",
+                "description": "What a number value of the property measures. Only for a property; left out for the attribute index types of some built-in properties.",
+                "enum": [
+                    "Undefined",
+                    "Default",
+                    "Length",
+                    "Area",
+                    "Volume",
+                    "Angle"
+                ]
+            },
+            "propertyIsEditable": {
+                "type": "boolean",
+                "description": "Whether the value of the property can be set. Only for a property."
+            },
+            "availability": {
+                "$ref": "#/ClassificationItemIds",
+                "description": "The classification items the property is available for: an element has the property only when it is classified as one of them. Only for a custom property; built-in properties have no such list."
+            },
+            "classificationSystemId": {
+                "$ref": "#/ClassificationSystemId",
+                "description": "The classification system, or the system of the classification item. Only for a classification."
+            },
+            "classificationSystemName": {
+                "type": "string",
+                "description": "The name of the classification system. Only for a classification."
+            },
+            "classificationItemId": {
+                "$ref": "#/ClassificationItemId",
+                "description": "The classification item. Only for a classification item, not for a classification system."
+            },
+            "classificationItemCode": {
+                "type": "string",
+                "description": "The ID of the classification item, as Archicad shows it (for example Ss_25_10). Only for a classification item."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "kind",
+            "name",
+            "match",
+            "score"
         ]
     }
 }

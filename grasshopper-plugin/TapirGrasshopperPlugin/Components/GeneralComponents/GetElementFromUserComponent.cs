@@ -32,6 +32,8 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
                 "Only an element of one of these types is accepted (e.g. Wall, Slab). Optional; default: any element.");
 
             SetOptionality(new[] { 0, 1 });
+
+            UserInputOptions.AddInputs(this);
         }
 
         protected override void AddOutputs()
@@ -94,6 +96,11 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
             {
                 parameters["elementTypes"] = new JArray(elementTypes);
             }
+
+            UserInputOptions.AddParameters(
+                da,
+                2,
+                parameters);
 
             if (!TryGetCadResponse(
                     CommandName,

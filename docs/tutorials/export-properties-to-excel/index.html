@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en" data-copy="Copy" data-copied="Copied">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n>Export Archicad element properties to Excel with Python | Tapir</title>
+<meta name="description" data-i18n-attrs="content" content="Write the property values of Archicad elements into an Excel or CSV file, one row per element, with a Tapir script; edit them in Excel and read them back.">
+<link rel="canonical" href="https://archicad-api.com/tutorials/export-properties-to-excel/">
+<!-- link-preview: the preview of a link to this page shared on Discord, WhatsApp and the like -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tapir">
+<meta property="og:title" content="Export Archicad element properties to Excel with Python | Tapir">
+<meta property="og:description" content="Write the property values of Archicad elements into an Excel or CSV file, one row per element, with a Tapir script; edit them in Excel and read them back.">
+<meta property="og:url" content="https://archicad-api.com/tutorials/export-properties-to-excel/">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Tapir", "item": "https://archicad-api.com/"},
+        {"@type": "ListItem", "position": 2, "name": "Tutorials", "item": "https://archicad-api.com/tutorials/"},
+        {"@type": "ListItem", "position": 3, "name": "Export Archicad element properties to Excel with Python", "item": "https://archicad-api.com/tutorials/export-properties-to-excel/"}
+    ]
+}
+</script>
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Export Archicad element properties to Excel with Python",
+    "description": "Write the property values of Archicad elements into an Excel or CSV file, one row per element, with a Tapir script; edit them in Excel and read them back.",
+    "url": "https://archicad-api.com/tutorials/export-properties-to-excel/",
+    "inLanguage": "en",
+    "isPartOf": {"@type": "WebSite", "name": "Tapir", "url": "https://archicad-api.com/"},
+    "publisher": {"@type": "Organization", "name": "Enzyme APD", "url": "https://archicad-api.com/"},
+    "about": {"@type": "SoftwareApplication", "name": "Tapir", "applicationCategory": "DesignApplication"}
+}
+</script>
+<!-- site-assets -->
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#2D3A30" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#2D3A30">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
+<script>try { var l = /[?&]lang=([A-Za-z]{2})(?:[&#]|$)/.exec (location.search); l = l ? l[1].toLowerCase () : localStorage.getItem ('tapir-lang') || (navigator.language || '').slice (0, 2).toLowerCase (); if (l && l !== 'en') { document.documentElement.setAttribute ('data-i18n-loading', ''); setTimeout (function () { document.documentElement.removeAttribute ('data-i18n-loading'); }, 2000); } } catch (e) {}</script>
+<script src="../../assets/site.js" defer></script>
+<link rel="stylesheet" href="../../assets/motion.css"><script src="../../assets/motion.js" defer></script>
+<script>try { if ((!sessionStorage.getItem ('tapir-splash') || /[?&]splash/.test (location.search)) && !/nomotion/.test (location.search + location.hash) && 'IntersectionObserver' in window && !matchMedia ('(prefers-reduced-motion: reduce)').matches) { var h = document.documentElement; h.classList.add ('m-splash'); var f = function () { h.classList.add ('m-font'); }; setTimeout (f, 2500); if (document.fonts && document.fonts.load) document.fonts.load ('900 56px Fraunces').then (f, f); else f (); } } catch (e) {}</script>
+<!-- /site-assets -->
+</head>
+<body>
+<!-- site-header -->
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+    <div class="wrap nav">
+        <a class="brand" href="../../"><img src="../../assets/tapir_mark_cream.svg" alt="" width="30" height="30">Tapir</a>
+        <nav class="site-nav" aria-label="Site"><ul>
+            <li><a href="../../start/">Get started</a></li>
+            <li><a href="../../docs/">Docs</a></li>
+            <li><a href="../../scripts/">Scripts</a></li>
+            <li><a href="../../scripts/share/">Share</a></li>
+            <li><a href="../../community/" aria-current="true">Community</a></li>
+            <li><a href="../../about/">About</a></li>
+        </ul></nav>
+        <div class="right">
+            <button class="toggle" id="theme-toggle" type="button" data-dark="Dark" data-light="Light" hidden><span class="toggle-word">Dark</span><span class="visually-hidden"> mode</span></button>
+            <a class="btn btn-primary btn-sm" href="../../start/#install">Download</a>
+        </div>
+    </div>
+</header>
+<!-- /site-header -->
+
+<main id="main">
+    <div class="page-head">
+        <div class="wrap">
+            <p class="crumb" data-i18n><a href="../../">Tapir</a> / <a href="../">Tutorials</a> / Export properties to Excel</p>
+            <h1 data-i18n>Export Archicad element properties to Excel with <em>Python.</em></h1>
+            <p data-i18n>Tapir comes with a script for it: Property Value Exporter writes the values of the properties you choose into an Excel workbook or a CSV file, one row per element, without an Interactive Schedule. Property Value Importer reads the edited file back.</p>
+        </div>
+    </div>
+
+    <div class="wrap page-body">
+        <section>
+            <ol class="timeline">
+                <li>
+                    <span class="n" aria-hidden="true">1</span>
+                    <div class="body">
+                        <h2 id="open" data-i18n>Open the script</h2>
+                        <p data-i18n>Install the Tapir Add-On with the Tapir Installer, as <a href="../../start/#install">Get started</a> shows, and start Archicad with a project open. Choose <em>Tapir Palette</em> from the <em>Tapir</em> menu.</p>
+                        <p data-i18n>Property Value Exporter is a built-in script, so it is in the palette from the start: pick <em>PropertyValueExporter</em> in the palette's list and click <em>Run Script</em>. It reads every property of the project and opens its window. It is also on the Scripts page as <a href="../../scripts/?s=property-value-exporter">Property Value Exporter</a>.</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="n" aria-hidden="true">2</span>
+                    <div class="body">
+                        <h2 id="choose" data-i18n>Choose the elements and the properties</h2>
+                        <ul>
+                            <li data-i18n>Under <em>Elements</em>, choose <em>Selection</em>, <em>Current story</em> or <em>Whole project</em>, and if you want <em>Only elements on visible layers</em>.</li>
+                            <li data-i18n>Tick the element types to export. <em>All types</em> and <em>No types</em> tick or untick every one.</li>
+                            <li data-i18n>Under <em>Properties</em>, find properties with <em>Search</em> and move them to the <em>Exported</em> list with <em>Add &rarr;</em> or a double-click. <em>Up</em> and <em>Down</em> set the order of the columns; <em>&larr; Remove</em> takes one out again.</li>
+                            <li data-i18n>Tick <em>Precise numbers</em> to export numbers in SI units (m, m², m³, degrees) instead of the values as Archicad displays them. Leave it off for a file you want to read back in.</li>
+                        </ul>
+                    </div>
+                </li>
+                <li>
+                    <span class="n" aria-hidden="true">3</span>
+                    <div class="body">
+                        <h2 id="export" data-i18n>Export</h2>
+                        <p data-i18n>Press <em>Export...</em> and choose the file. Its default name is <code>Property values &lt;date&gt; &lt;time&gt;.xlsx</code>; give it a <code>.csv</code> name for a CSV file. Nothing in the project changes.</p>
+                        <p data-i18n>The file has the columns <em>GUID</em>, <em>Element ID</em>, <em>Type</em> and <em>Story</em>, then one column per property, headed <code>&lt;group&gt;: &lt;name&gt;</code>. Rows are sorted by type, story from the bottom up and Element ID. A property an element does not have gives an empty cell. The file cannot be written while it is open in Excel.</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="n" aria-hidden="true">4</span>
+                    <div class="body">
+                        <h2 id="import" data-i18n>Bring the edited values back</h2>
+                        <p data-i18n>Edit the values in Excel, then run <a href="../../scripts/?s=property-value-importer">Property Value Importer</a>. It is not built in: download it from the Scripts page into a folder of your own, with copies of the <code>utilities/</code> and <code>aclib/</code> folders of <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/tree/main/builtin-scripts"><code>builtin-scripts/</code></a> next to it. Add that folder to <code>localFolders</code> in <code>Documents/Tapir/config.json</code>, as <a href="../../start/#marketplace">Get started</a> shows, then choose <em>Reload scripts...</em> at the bottom of the palette's script list.</p>
+                        <ul>
+                            <li data-i18n>Press <em>Open file...</em> and choose the <code>.xlsx</code> or <code>.csv</code> file. A row is matched to its element by its GUID, or by its Element ID when it has no GUID.</li>
+                            <li data-i18n>The list shows each value that would change as <em>Current</em> &rarr; <em>New</em>, and in red what cannot be written, with the reason. An empty cell leaves the value as it is.</li>
+                            <li data-i18n>Press <em>Write to Archicad</em> and confirm. The values are written in one Undo step, and the <em>Result</em> column says <em>Written</em> or why a value was refused, for example because the property is read-only for that element.</li>
+                        </ul>
+                    </div>
+                </li>
+            </ol>
+        </section>
+
+        <section aria-labelledby="commands">
+            <div class="sec-head">
+                <h2 id="commands" data-i18n>The commands <em>behind it.</em></h2>
+            </div>
+            <p data-i18n>Both scripts are Python that sends Tapir commands to Archicad. The exporter lists the properties with <a href="../../archicad-addon/#GetAllProperties"><code>GetAllProperties</code></a>, finds the elements with <a href="../../archicad-addon/#GetElementsByType"><code>GetElementsByType</code></a> or <a href="../../archicad-addon/#GetSelectedElements"><code>GetSelectedElements</code></a>, reads their ID, type and story with <a href="../../archicad-addon/#GetDetailsOfElements"><code>GetDetailsOfElements</code></a> and their values with <a href="../../archicad-addon/#GetPropertyValuesOfElements"><code>GetPropertyValuesOfElements</code></a>. The importer writes the values with <a href="../../archicad-addon/#SetPropertyValuesOfElements"><code>SetPropertyValuesOfElements</code></a>.</p>
+            <p data-i18n>Their code is <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/PropertyValueExporter.py"><code>builtin-scripts/PropertyValueExporter.py</code></a> and <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/marketplace/property-value-importer/PropertyValueImporter.py"><code>marketplace/property-value-importer/PropertyValueImporter.py</code></a>. Both work in Archicad 25 to 30 with Tapir 1.8.0 or later.</p>
+        </section>
+
+        <div class="dim" aria-hidden="true"><i></i><span data-i18n>Next tutorial</span><i></i></div>
+        <section>
+            <div class="teasers">
+                <a class="teaser dark" href="../connect-grasshopper-to-archicad/">
+                    <span class="tagline">Grasshopper</span>
+                    <h3 data-i18n>Connect Grasshopper to Archicad</h3>
+                    <p data-i18n>Install the tapir package, read a wall and change its height.</p>
+                    <span class="go" data-i18n>Read it</span>
+                </a>
+                <a class="teaser" href="../">
+                    <span class="tagline" data-i18n>Tutorials</span>
+                    <h3 data-i18n>All tutorials</h3>
+                    <p data-i18n>The written tutorials and the videos.</p>
+                    <span class="go" data-i18n>See them all</span>
+                </a>
+                <a class="teaser" href="https://discord.gg/NAnSennmpY">
+                    <span class="tagline" data-i18n>Stuck?</span>
+                    <h3 data-i18n>Ask on Discord</h3>
+                    <p data-i18n>Architects, developers and the maintainers answer there. Or open an issue on GitHub.</p>
+                    <span class="go" data-i18n>Join Discord</span>
+                </a>
+            </div>
+        </section>
+    </div>
+</main>
+
+<!-- site-footer -->
+<footer class="site-footer">
+    <div class="wrap">
+        <div class="tblock">
+            <div>
+                <span class="lab">Project</span>
+                <span class="proj">Tapir</span>
+                <p class="note">Open-source automation for Archicad. 100% free and open source (MIT). Maintained by Enzyme APD and the community.</p>
+                <p class="note">Contact: <span class="nowrap">tapir@weareenzyme.com</span></p>
+            </div>
+            <div>
+                <span class="lab">Product</span>
+                <ul>
+                    <li><a href="../../start/">Get started</a></li>
+                    <li><a href="../../scripts/">Scripts</a></li>
+                    <li><a href="../../scripts/share/">Share a script</a></li>
+                    <li><a href="../../grasshopper/">Grasshopper</a></li>
+                    <li><a href="../../ai/">Tapir and AI</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Docs</span>
+                <ul>
+                    <li><a href="../../docs/">All docs</a></li>
+                    <li><a href="../../archicad-addon/">Commands</a></li>
+                    <li><a href="../../api-coverage/">API coverage</a></li>
+                    <li><a href="../../gh-coverage/">Grasshopper coverage</a></li>
+                    <li><a href="../../limits/">API limits</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Community</span>
+                <ul>
+                    <li><a href="https://discord.gg/NAnSennmpY">Discord</a></li>
+                    <li><a href="https://github.com/ENZYME-APD/tapir-archicad-automation">GitHub</a></li>
+                    <li><a href="../../tutorials/">Tutorials</a></li>
+                    <li><a href="../../community/#bots">How fixes happen</a></li>
+                    <li><a href="../../roadmap/">Roadmap</a></li>
+                    <li><a href="../../about/">About Tapir</a></li>
+                </ul>
+            </div>
+            <div>
+                <div class="rev" data-live="release" hidden>
+                    <span class="lab">Revision</span>
+                    <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest" data-live-value="release"></a>
+                </div>
+                <span class="lab">Licence</span>
+                <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/LICENSE">MIT</a>
+            </div>
+        </div>
+        <p class="fine">Not affiliated with Graphisoft. Archicad is a trademark of Graphisoft SE.</p>
+    </div>
+</footer>
+<!-- /site-footer -->
+</body>
+</html>

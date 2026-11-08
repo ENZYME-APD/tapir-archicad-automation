@@ -4,7 +4,7 @@
     "summary": "Lists every layout of the Layout Book with its subset, number, name, paper size and current revision, and saves it as Excel or CSV.",
     "category": "documentation-layouts",
     "tags": ["layouts", "sheet-index", "revisions", "excel"],
-    "author": { "name": "Tapir" },
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
     "license": "MIT",
     "entry": "SheetIndexExport.py",
     "versions": [

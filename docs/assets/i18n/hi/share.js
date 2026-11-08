@@ -1,7 +1,7 @@
 /* हिन्दी: the Share page (scripts/share/index.html). See ../README.md.
    Channel, label, file and code names, and the palette's Share command, stay English. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Share a script - Tapir': 'अपनी script शेयर करें - Tapir',
+    'Share an Archicad script | Tapir': 'अपनी Archicad script शेयर करें | Tapir',
     'Share an Archicad script you wrote: send it on Discord or as a pull request, and it is checked, adapted to work in any office and listed with your name.':
         'अपनी लिखी Archicad script शेयर करें: उसे Discord पर या pull request के रूप में भेजें, और वह जाँची जाती है, किसी भी ऑफ़िस में काम करने के लिए ढाली जाती है और आपके नाम के साथ सूची में आती है।',
     '<a href="../../">Tapir</a> / <a href="../">Scripts</a> / Share': '<a href="../../">Tapir</a> / <a href="../">Scripts</a> / शेयर करें',

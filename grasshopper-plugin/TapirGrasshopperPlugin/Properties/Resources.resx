@@ -2220,4 +2220,169 @@
   <data name="GetLibraryPartParameterValues" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\GetLibraryPartParameterValues.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="AlignElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\AlignElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CheckPropertyValues" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CheckPropertyValues.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CopyElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CopyElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CopyLibraryParts" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CopyLibraryParts.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateShells" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateShells.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="CreateSkylights" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\CreateSkylights.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="DeleteAndReplaceAttributes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DeleteAndReplaceAttributes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="DistributeElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DistributeElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetAllAutoTextKeys" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetAllAutoTextKeys.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetAttributeIndexes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetAttributeIndexes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetCameras" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetCameras.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetCommands" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetCommands.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetComponentsOfElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetComponentsOfElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetGDLParametersOfLibraryParts" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetGDLParametersOfLibraryParts.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetLibrariesOfLibParts" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetLibrariesOfLibParts.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetLibraryPart2DPrimitives" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetLibraryPart2DPrimitives.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetLibraryPartFileInfo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetLibraryPartFileInfo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetLibraryPartSection" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetLibraryPartSection.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetLibraryPartSections" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetLibraryPartSections.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetLibraryPartTypeDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetLibraryPartTypeDetails.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetModelExtent" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetModelExtent.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetPropertyDefinitionsOfElementComponents" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetPropertyDefinitionsOfElementComponents.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetPropertyValuesOfElementComponents" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetPropertyValuesOfElementComponents.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetSchedules" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetSchedules.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="InterpretAutoTexts" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\InterpretAutoTexts.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="IsLibraryPartSubtypeOf" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\IsLibraryPartSubtypeOf.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ModifyAssociativeDimensions" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifyAssociativeDimensions.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ModifyCurtainWallFrames" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifyCurtainWallFrames.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ModifySkylights" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifySkylights.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ModifyStairs" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ModifyStairs.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="RotateCopyElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RotateCopyElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SearchLibraryParts" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SearchLibraryParts.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SetLibraryPartParameters" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetLibraryPartParameters.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SetLibraryPartPictureImages" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetLibraryPartPictureImages.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="UpdateLibraryPartSections" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\UpdateLibraryPartSections.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SplitElements" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SplitElements.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetUnusedAttributes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetUnusedAttributes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetUnusedLibraryParts" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetUnusedLibraryParts.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetArchicadLicenseInfo" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetArchicadLicenseInfo.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetMagicWandSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetMagicWandSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ShowNotificationBubble" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ShowNotificationBubble.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ResolveNames" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ResolveNames.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="GetLayerOfElementDefaults" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GetLayerOfElementDefaults.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SetLayerOfElementDefaults" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\SetLayerOfElementDefaults.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="RenameAttributes" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\RenameAttributes.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="OpenSettingsDialog" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\OpenSettingsDialog.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PickLibraryPart" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PickLibraryPart.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PickLibraryPartFile" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PickLibraryPartFile.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PickPictureFile" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PickPictureFile.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PickZoneStampOrLabelFile" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PickZoneStampOrLabelFile.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PickLibraryPartSaveLocation" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PickLibraryPartSaveLocation.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PickLibraryFolder" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PickLibraryFolder.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="ShowIFCExportSettings" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ShowIFCExportSettings.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PickAttribute" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PickAttribute.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="PickAttributeFolder" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\PickAttributeFolder.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

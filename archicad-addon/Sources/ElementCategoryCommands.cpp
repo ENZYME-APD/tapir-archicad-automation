@@ -453,6 +453,9 @@ GS::Optional<GS::UniString> SetCategoryValuesOfElementsCommand::GetInputParamete
                 "items": {
                     "$ref": "#/ElementCategoryValueData"
                 }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
             }
         },
         "additionalProperties": false,
@@ -467,9 +470,12 @@ GS::Optional<GS::UniString> SetCategoryValuesOfElementsCommand::GetRawResponseSc
     return R"({
         "type": "object",
         "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
             "executionResults": {
-                "$ref": "#/ExecutionResults",
-                "description": "One result per item of the input, in the same order."
+                "$ref": "#/ChangeExecutionResults",
+                "description": "One result per item of the input, in the same order. On a dry run an item that passes every check made before writing (the category and the value exist, the element exists and has the category) gets wouldChange: oldValue is the element's value in the category now and newValue the value a real run would set, both as GetCategoryValuesOfElements gives them (type, categoryId, categoryValueId and name; oldValue has only type and categoryId when the element has no value in the category). Archicad can still refuse an item that passes them."
             }
         },
         "additionalProperties": false,
@@ -483,6 +489,7 @@ GS::ObjectState SetCategoryValuesOfElementsCommand::Execute (const GS::ObjectSta
 {
     GS::Array<GS::ObjectState> elementCategoryValues;
     parameters.Get ("elementCategoryValues", elementCategoryValues);
+    const bool dryRun = IsDryRun (parameters);
 
     GS::Array<API_ElemCategory> categories;
     const GSErrCode err = TAPIR_GetElementCategories (categories);
@@ -495,6 +502,7 @@ GS::ObjectState SetCategoryValuesOfElementsCommand::Execute (const GS::ObjectSta
     std::map<API_ElemCategoryID, GS::Array<API_ElemCategoryValue>> valuesOfCategories;
 
     GS::ObjectState response;
+    AddDryRunField (response, dryRun);
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
     // A category value change may leave the element's modification stamp as it was, so the
@@ -507,7 +515,9 @@ GS::ObjectState SetCategoryValuesOfElementsCommand::Execute (const GS::ObjectSta
         }
     }
 
-    ACAPI_CallUndoableCommand ("SetCategoryValuesOfElements", [&] () -> GSErrCode {
+    // On a dry run the same checks are made, outside an undo scope, and each value that would be
+    // set is reported with the element's value in the category now.
+    CallUndoableCommandOrDryRun (dryRun, "SetCategoryValuesOfElements", [&] () -> GSErrCode {
         for (const GS::ObjectState& item : elementCategoryValues) {
             const GS::ObjectState* elementId = item.Get ("elementId");
             if (elementId == nullptr) {
@@ -565,6 +575,24 @@ GS::ObjectState SetCategoryValuesOfElementsCommand::Execute (const GS::ObjectSta
                 continue;
             }
 
+            if (dryRun) {
+                // Setting the category fails on an element type without it; reading the element's
+                // value in the category fails the same way.
+                API_ElemCategoryValue oldValue = {};
+                const GSErrCode getErr = TAPIR_Element_GetCategoryValue (elemGuid, *category, oldValue);
+                if (getErr != NoError) {
+                    executionResults (CreateFailedExecutionResult (getErr, GS::UniString::Printf ("Failed to set the %T category of the element. Elements of this type may not have this category.", categoryType.ToPrintf ())));
+                    continue;
+                }
+                const GS::ObjectState oldValueObject = oldValue.guid == APINULLGuid
+                    ? GS::ObjectState ("type", GS::UniString (CategoryTypeToString (category->categoryID)), "categoryId", CreateGuidObjectState (category->guid))
+                    : CreateCategoryValueObjectState (*category, oldValue);
+                executionResults (CreateWouldChangeExecutionResult (GS::ObjectState (
+                    "oldValue", oldValueObject,
+                    "newValue", CreateCategoryValueObjectState (*category, *value))));
+                continue;
+            }
+
             API_ElemCategoryValue valueToSet = *value;
             valueToSet.category = *category;
             const GSErrCode setErr = TAPIR_Element_SetCategoryValue (elemGuid, valueToSet);
@@ -580,7 +608,9 @@ GS::ObjectState SetCategoryValuesOfElementsCommand::Execute (const GS::ObjectSta
         return NoError;
     });
 
-    changeReporter.Report ();
+    if (!dryRun) {
+        changeReporter.Report ();
+    }
 
     return response;
 }

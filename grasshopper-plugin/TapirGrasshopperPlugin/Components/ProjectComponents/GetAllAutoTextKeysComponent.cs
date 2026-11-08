@@ -64,7 +64,7 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
         }
 
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetAutoTextKeys;
+            Properties.Resources.GetAllAutoTextKeys;
 
         public override Guid ComponentGuid =>
             new Guid("dab6e2ea-a217-44a3-8289-d68cbbd72b94");

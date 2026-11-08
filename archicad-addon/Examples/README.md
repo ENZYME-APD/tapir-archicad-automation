@@ -2,7 +2,7 @@
 
 One short Python script per Tapir command, in one folder per command group:
 `Examples/<GroupFolder>/<CommandName>.py`, e.g. `Application/GetAddOnVersion.py` or
-`MEP/GetMEPPorts.py`. The [command reference](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon)
+`MEP/GetMEPPorts.py`. The [command reference](https://archicad-api.com/archicad-addon/)
 shows each command's script in its *Example* popdown, loaded from this folder on `main`.
 
 The folder is the group name as the command reference lists it, without the trailing

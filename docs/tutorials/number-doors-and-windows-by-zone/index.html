@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en" data-copy="Copy" data-copied="Copied">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n>Number doors and windows by room in Archicad | Tapir</title>
+<meta name="description" data-i18n-attrs="content" content="Give every Archicad door and window an Element ID from the zone it opens into, such as 1.04-D1, numbered within each zone, with a Tapir script.">
+<link rel="canonical" href="https://archicad-api.com/tutorials/number-doors-and-windows-by-zone/">
+<!-- link-preview: the preview of a link to this page shared on Discord, WhatsApp and the like -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tapir">
+<meta property="og:title" content="Number doors and windows by room in Archicad | Tapir">
+<meta property="og:description" content="Give every Archicad door and window an Element ID from the zone it opens into, such as 1.04-D1, numbered within each zone, with a Tapir script.">
+<meta property="og:url" content="https://archicad-api.com/tutorials/number-doors-and-windows-by-zone/">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        {"@type": "ListItem", "position": 1, "name": "Tapir", "item": "https://archicad-api.com/"},
+        {"@type": "ListItem", "position": 2, "name": "Tutorials", "item": "https://archicad-api.com/tutorials/"},
+        {"@type": "ListItem", "position": 3, "name": "Number doors and windows by room in Archicad", "item": "https://archicad-api.com/tutorials/number-doors-and-windows-by-zone/"}
+    ]
+}
+</script>
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    "headline": "Number doors and windows by room in Archicad",
+    "description": "Give every Archicad door and window an Element ID from the zone it opens into, such as 1.04-D1, numbered within each zone, with a Tapir script.",
+    "url": "https://archicad-api.com/tutorials/number-doors-and-windows-by-zone/",
+    "inLanguage": "en",
+    "isPartOf": {"@type": "WebSite", "name": "Tapir", "url": "https://archicad-api.com/"},
+    "publisher": {"@type": "Organization", "name": "Enzyme APD", "url": "https://archicad-api.com/"},
+    "about": {"@type": "SoftwareApplication", "name": "Tapir", "applicationCategory": "DesignApplication"}
+}
+</script>
+<!-- site-assets -->
+<link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#2D3A30" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#2D3A30">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="../../assets/site.css">
+<script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
+<script>try { var l = /[?&]lang=([A-Za-z]{2})(?:[&#]|$)/.exec (location.search); l = l ? l[1].toLowerCase () : localStorage.getItem ('tapir-lang') || (navigator.language || '').slice (0, 2).toLowerCase (); if (l && l !== 'en') { document.documentElement.setAttribute ('data-i18n-loading', ''); setTimeout (function () { document.documentElement.removeAttribute ('data-i18n-loading'); }, 2000); } } catch (e) {}</script>
+<script src="../../assets/site.js" defer></script>
+<link rel="stylesheet" href="../../assets/motion.css"><script src="../../assets/motion.js" defer></script>
+<script>try { if ((!sessionStorage.getItem ('tapir-splash') || /[?&]splash/.test (location.search)) && !/nomotion/.test (location.search + location.hash) && 'IntersectionObserver' in window && !matchMedia ('(prefers-reduced-motion: reduce)').matches) { var h = document.documentElement; h.classList.add ('m-splash'); var f = function () { h.classList.add ('m-font'); }; setTimeout (f, 2500); if (document.fonts && document.fonts.load) document.fonts.load ('900 56px Fraunces').then (f, f); else f (); } } catch (e) {}</script>
+<!-- /site-assets -->
+</head>
+<body>
+<!-- site-header -->
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+    <div class="wrap nav">
+        <a class="brand" href="../../"><img src="../../assets/tapir_mark_cream.svg" alt="" width="30" height="30">Tapir</a>
+        <nav class="site-nav" aria-label="Site"><ul>
+            <li><a href="../../start/">Get started</a></li>
+            <li><a href="../../docs/">Docs</a></li>
+            <li><a href="../../scripts/">Scripts</a></li>
+            <li><a href="../../scripts/share/">Share</a></li>
+            <li><a href="../../community/" aria-current="true">Community</a></li>
+            <li><a href="../../about/">About</a></li>
+        </ul></nav>
+        <div class="right">
+            <button class="toggle" id="theme-toggle" type="button" data-dark="Dark" data-light="Light" hidden><span class="toggle-word">Dark</span><span class="visually-hidden"> mode</span></button>
+            <a class="btn btn-primary btn-sm" href="../../start/#install">Download</a>
+        </div>
+    </div>
+</header>
+<!-- /site-header -->
+
+<main id="main">
+    <div class="page-head">
+        <div class="wrap">
+            <p class="crumb" data-i18n><a href="../../">Tapir</a> / <a href="../">Tutorials</a> / Number doors and windows</p>
+            <h1 data-i18n>Number doors and windows by room in <em>Archicad.</em></h1>
+            <p data-i18n>Door and Window Numbering by Zone, a script that comes with Tapir, gives every door and window an Element ID built from the zone it opens into, such as <code>1.04-D1</code> or <code>1.04-W2</code>, numbered within each zone.</p>
+        </div>
+    </div>
+
+    <div class="wrap page-body">
+        <section>
+            <ol class="timeline">
+                <li>
+                    <span class="n" aria-hidden="true">1</span>
+                    <div class="body">
+                        <h2 id="open" data-i18n>Open the script</h2>
+                        <p data-i18n>Install the Tapir Add-On with the Tapir Installer, as <a href="../../start/#install">Get started</a> shows, and start Archicad with a project open. Choose <em>Tapir Palette</em> from the <em>Tapir</em> menu.</p>
+                        <p data-i18n>Door and Window Numbering by Zone is a built-in script: open the floor plan, pick <em>DoorWindowNumberingByZone</em> in the palette's list and click <em>Run Script</em>. It reads the doors and windows of the current story and shows the new IDs next to the current ones; nothing is changed yet. It is also on the Scripts page as <a href="../../scripts/?s=door-window-numbering-by-zone">Door and Window Numbering by Zone</a>.</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="n" aria-hidden="true">2</span>
+                    <div class="body">
+                        <h2 id="elements" data-i18n>Choose the elements</h2>
+                        <p data-i18n>In <em>Elements</em>, choose <em>Selection</em>, <em>Current story</em> or <em>Whole project</em>, then press <em>Read elements</em>.</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="n" aria-hidden="true">3</span>
+                    <div class="body">
+                        <h2 id="patterns" data-i18n>Set the patterns</h2>
+                        <p data-i18n>The list of new IDs updates as you type.</p>
+                        <ul>
+                            <li data-i18n><em>Doors</em> and <em>Windows</em> are the patterns of the IDs, <code>{zone}-D{n}</code> and <code>{zone}-W{n}</code> at first. <code>{zone}</code> is the zone number, <code>{name}</code> the zone name (also used for <code>{zone}</code> when the zone has no number) and <code>{n}</code> the running number within the zone.</li>
+                            <li data-i18n><em>Start at</em> is the first number in each zone, 1 at first.</li>
+                            <li data-i18n><em>Digits</em> is the least number of digits of <code>{n}</code>, padded with zeros: 2 gives <code>01</code>.</li>
+                        </ul>
+                        <p data-i18n>The script warns when new IDs repeat.</p>
+                    </div>
+                </li>
+                <li>
+                    <span class="n" aria-hidden="true">4</span>
+                    <div class="body">
+                        <h2 id="rename" data-i18n>Rename</h2>
+                        <p data-i18n>Press <em>Rename</em> and confirm. The script changes the Element ID of each door and window whose new ID differs from the current one, and you can undo it in Archicad. The status column shows the elements that could not be changed and why. In a Teamwork project, an element you have not reserved may not be changed.</p>
+                    </div>
+                </li>
+            </ol>
+        </section>
+
+        <section aria-labelledby="zone">
+            <div class="sec-head">
+                <h2 id="zone" data-i18n>How it finds the <em>zone.</em></h2>
+            </div>
+            <p data-i18n>Each door or window belongs to the zone on its "to" side, or to the zone on its "from" side when there is none. Within a zone they are numbered clockwise around the zone stamp, starting from the north. Zones with the same number continue one count, from north to south. Doors and windows without a zone are listed separately, with the reason, and are not renamed. Skylights and curtain wall panels are not numbered.</p>
+            <p data-i18n>The script reads the zones of the doors and windows with <a href="../../archicad-addon/#GetRelationsOfElements"><code>GetRelationsOfElements</code></a> and their positions with <a href="../../archicad-addon/#Get3DBoundingBoxes"><code>Get3DBoundingBoxes</code></a>, and writes the IDs with <a href="../../archicad-addon/#SetElementInfoStrings"><code>SetElementInfoStrings</code></a>. Its code is <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/DoorWindowNumberingByZone.py"><code>builtin-scripts/DoorWindowNumberingByZone.py</code></a>. It works in Archicad 26 to 30 with Tapir 1.8.0 or later; Archicad 25 cannot tell which zone a door or window opens into.</p>
+        </section>
+
+        <div class="dim" aria-hidden="true"><i></i><span data-i18n>Next tutorial</span><i></i></div>
+        <section>
+            <div class="teasers">
+                <a class="teaser dark" href="../first-python-script/">
+                    <span class="tagline">Python</span>
+                    <h3 data-i18n>Your first Archicad Python script</h3>
+                    <p data-i18n>A few lines that call one Tapir command, run from the palette.</p>
+                    <span class="go" data-i18n>Read it</span>
+                </a>
+                <a class="teaser" href="../">
+                    <span class="tagline" data-i18n>Tutorials</span>
+                    <h3 data-i18n>All tutorials</h3>
+                    <p data-i18n>The written tutorials and the videos.</p>
+                    <span class="go" data-i18n>See them all</span>
+                </a>
+                <a class="teaser" href="https://discord.gg/NAnSennmpY">
+                    <span class="tagline" data-i18n>Stuck?</span>
+                    <h3 data-i18n>Ask on Discord</h3>
+                    <p data-i18n>Architects, developers and the maintainers answer there. Or open an issue on GitHub.</p>
+                    <span class="go" data-i18n>Join Discord</span>
+                </a>
+            </div>
+        </section>
+    </div>
+</main>
+
+<!-- site-footer -->
+<footer class="site-footer">
+    <div class="wrap">
+        <div class="tblock">
+            <div>
+                <span class="lab">Project</span>
+                <span class="proj">Tapir</span>
+                <p class="note">Open-source automation for Archicad. 100% free and open source (MIT). Maintained by Enzyme APD and the community.</p>
+                <p class="note">Contact: <span class="nowrap">tapir@weareenzyme.com</span></p>
+            </div>
+            <div>
+                <span class="lab">Product</span>
+                <ul>
+                    <li><a href="../../start/">Get started</a></li>
+                    <li><a href="../../scripts/">Scripts</a></li>
+                    <li><a href="../../scripts/share/">Share a script</a></li>
+                    <li><a href="../../grasshopper/">Grasshopper</a></li>
+                    <li><a href="../../ai/">Tapir and AI</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Docs</span>
+                <ul>
+                    <li><a href="../../docs/">All docs</a></li>
+                    <li><a href="../../archicad-addon/">Commands</a></li>
+                    <li><a href="../../api-coverage/">API coverage</a></li>
+                    <li><a href="../../gh-coverage/">Grasshopper coverage</a></li>
+                    <li><a href="../../limits/">API limits</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Community</span>
+                <ul>
+                    <li><a href="https://discord.gg/NAnSennmpY">Discord</a></li>
+                    <li><a href="https://github.com/ENZYME-APD/tapir-archicad-automation">GitHub</a></li>
+                    <li><a href="../../tutorials/">Tutorials</a></li>
+                    <li><a href="../../community/#bots">How fixes happen</a></li>
+                    <li><a href="../../roadmap/">Roadmap</a></li>
+                    <li><a href="../../about/">About Tapir</a></li>
+                </ul>
+            </div>
+            <div>
+                <div class="rev" data-live="release" hidden>
+                    <span class="lab">Revision</span>
+                    <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest" data-live-value="release"></a>
+                </div>
+                <span class="lab">Licence</span>
+                <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/LICENSE">MIT</a>
+            </div>
+        </div>
+        <p class="fine">Not affiliated with Graphisoft. Archicad is a trademark of Graphisoft SE.</p>
+    </div>
+</footer>
+<!-- /site-footer -->
+</body>
+</html>

@@ -1,9 +1,9 @@
 /* Français: the Roadmap page (roadmap/index.html). See ../README.md.
    Command names, the label enhancement and the names of the issue form and of the old list stay English. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Roadmap - Tapir': 'Feuille de route - Tapir',
-    'How to ask for a feature in Tapir, what is being asked for now, and what shipped recently.':
-        'Comment demander une fonctionnalité dans Tapir, ce qui est demandé en ce moment et ce qui est sorti récemment.',
+    'Tapir roadmap – Archicad automation': 'Feuille de route de Tapir – automatisation d\'Archicad',
+    'How to ask for a feature in Tapir, the Archicad add-on, what people are asking for now, what shipped from the old list and which ideas are still open.':
+        'Comment demander une fonctionnalité dans Tapir, l\'add-on Archicad, ce que l\'on demande en ce moment, ce qui est sorti de l\'ancienne liste et quelles idées sont encore ouvertes.',
     '<a href="../">Tapir</a> / <a href="../community/">Community</a> / Roadmap':
         '<a href="../">Tapir</a> / <a href="../community/">Communauté</a> / Feuille de route',
     'What\'s <em>next.</em>': 'La <em>suite.</em>',

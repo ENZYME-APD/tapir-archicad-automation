@@ -1,7 +1,7 @@
 /* Español: the Get started page (start/index.html). See ../README.md.
    The menu, palette and button names of Archicad and Tapir stay English, as the add-on shows them. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Get started - Tapir': 'Empezar - Tapir',
+    'Automate Archicad with Python – get started | Tapir': 'Automatizar Archicad con Python – primeros pasos | Tapir',
     'Install Tapir, run a script from the Tapir palette in Archicad, add more scripts, write a first Python script and install the Grasshopper plugin.':
         'Instalar Tapir, ejecutar un script desde la paleta de Tapir en Archicad, añadir más scripts, escribir un primer script en Python e instalar el plugin de Grasshopper.',
     '<a href="../">Tapir</a> / Get started': '<a href="../">Tapir</a> / Empezar',

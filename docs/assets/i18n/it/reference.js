@@ -2,15 +2,15 @@
    gh-coverage/), which stay mostly English (data-i18n-partial). See ../README.md. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
     // The command reference (archicad-addon/)
-    'Tapir commands - Tapir documentation': 'Comandi di Tapir - Documentazione di Tapir',
-    'Every JSON command of the Tapir add-on for Archicad, with its parameters, its response and an example.':
-        'Ogni comando JSON dell\'add-on Tapir per Archicad, con i suoi parametri, la sua risposta e un esempio.',
+    'Archicad JSON API commands reference | Tapir': 'Riferimento dei comandi JSON API di Archicad | Tapir',
+    'Every JSON command the Tapir add-on adds to Archicad, with its parameters, its response and a Python example, and how to call one from Python.':
+        'Ogni comando JSON che l\'add-on Tapir aggiunge ad Archicad, con i suoi parametri, la sua risposta e un esempio Python, e come chiamarne uno da Python.',
     '<a href="../">Tapir</a> / <a href="../docs/">Docs</a> / Commands': '<a href="../">Tapir</a> / <a href="../docs/">Docs</a> / Comandi',
     'Tapir <em>commands.</em>': 'Comandi di <em>Tapir.</em>',
     'The JSON commands the Tapir add-on registers in Archicad, in the <code>TapirCommand</code> namespace, next to Graphisoft\'s official commands. Each command shows its parameters, its response and an example.':
         'I comandi JSON che l\'add-on Tapir registra in Archicad, nel namespace <code>TapirCommand</code>, accanto ai comandi ufficiali di Graphisoft. Ogni comando mostra i suoi parametri, la sua risposta e un esempio.',
-    'New to Tapir? <a href="../start/">Get started</a> shows how to install it and run a first script.':
-        'Nuovo su Tapir? <a href="../start/">Inizia</a> mostra come installarlo ed eseguire un primo script.',
+    'New to Tapir? <a href="../start/">Get started</a> shows how to install it and run a first script. Looking for something no command does? <a href="../limits/">What the Archicad API can\'t do</a> lists what Graphisoft\'s API does not offer, with what to do instead.':
+        'Nuovo su Tapir? <a href="../start/">Inizia</a> mostra come installarlo ed eseguire un primo script. Cerchi qualcosa che nessun comando fa? <a href="../limits/">Cosa non può fare l’API di Archicad</a> elenca ciò che l’API di Graphisoft non offre, con cosa fare invece.',
     'Calling a <em>command.</em>': 'Chiamare un <em>comando.</em>',
     'Archicad answers JSON commands on <code>http://127.0.0.1:19723</code> while a project is open (the next Archicads opened use 19724, 19725 and so on). A Tapir command is sent through Archicad\'s <code>API.ExecuteAddOnCommand</code> command.':
         'Archicad risponde ai comandi JSON su <code>http://127.0.0.1:19723</code> mentre un progetto è aperto (gli Archicad aperti dopo usano 19724, 19725 e così via). Un comando di Tapir si invia tramite il comando <code>API.ExecuteAddOnCommand</code> di Archicad.',
@@ -27,9 +27,9 @@
     'Checklist': 'Checklist',
 
     // The Archicad API coverage (api-coverage/)
-    'Archicad API coverage - Tapir documentation': 'Copertura dell\'API di Archicad - Documentazione di Tapir',
-    'Which parts of the Archicad API the Tapir add-on uses, kept up to date from every issue, pull request and push.':
-        'Quali parti dell\'API di Archicad usa l\'add-on Tapir, aggiornato a ogni issue, pull request e push.',
+    'Archicad API coverage checklist | Tapir': 'Checklist della copertura dell\'API di Archicad | Tapir',
+    'Which parts of Graphisoft\'s Archicad API the Tapir add-on uses, item by item, kept up to date from every issue, pull request and push to the repository.':
+        'Quali parti dell\'API di Archicad di Graphisoft usa l\'add-on Tapir, voce per voce, aggiornato a ogni issue, pull request e push nel repository.',
     '<a href="../">Tapir</a> / <a href="../docs/">Docs</a> / API coverage': '<a href="../">Tapir</a> / <a href="../docs/">Docs</a> / Copertura dell’API',
     'Archicad API <em>coverage.</em>': 'Copertura dell\'<em>API di Archicad.</em>',
     'What Tapir covers of Graphisoft\'s Archicad API, item by item.': 'Cosa copre Tapir dell\'API di Archicad di Graphisoft, voce per voce.',
@@ -38,9 +38,9 @@
     'By part of the API': 'Per parte dell\'API',
 
     // The Grasshopper coverage (gh-coverage/)
-    'Grasshopper coverage - Tapir documentation': 'Copertura Grasshopper - Documentazione di Tapir',
-    'Which Tapir commands the components of the Tapir Grasshopper plugin call, and whether they cover the commands\' parameters.':
-        'Quali comandi di Tapir chiamano i componenti del plugin Grasshopper di Tapir, e se coprono i parametri dei comandi.',
+    'Grasshopper coverage of the Tapir commands | Tapir': 'Copertura Grasshopper dei comandi di Tapir | Tapir',
+    'Which Tapir commands for Archicad the components of the Tapir Grasshopper plugin call, and whether they cover each command\'s parameters or still miss some.':
+        'Quali comandi di Tapir per Archicad chiamano i componenti del plugin Grasshopper di Tapir, e se coprono i parametri di ogni comando o se ne manca ancora qualcuno.',
     '<a href="../">Tapir</a> / <a href="../docs/">Docs</a> / Grasshopper coverage': '<a href="../">Tapir</a> / <a href="../docs/">Docs</a> / Copertura Grasshopper',
     'Grasshopper <em>coverage.</em>': 'Copertura <em>Grasshopper.</em>',
     'Which Tapir commands the Grasshopper components call, and the parameters they still miss.':

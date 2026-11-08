@@ -1,6 +1,6 @@
 /* 日本語: the Docs page (docs/index.html). See ../README.md. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Docs - Tapir': 'ドキュメント - Tapir',
+    'Archicad automation docs | Tapir': 'Archicad 自動化ドキュメント | Tapir',
     'Tapir\'s documentation: every JSON command, the Grasshopper guide, the Archicad API coverage and the Grasshopper coverage, and how a call to Tapir works.':
         'Tapir のドキュメント：すべての JSON コマンド、Grasshopper ガイド、Archicad API と Grasshopper のカバー状況、そして Tapir の呼び出しの仕組み。',
     '<a href="../">Tapir</a> / Docs': '<a href="../">Tapir</a> / ドキュメント',
@@ -26,6 +26,11 @@
     'Components': 'コンポーネント',
     'Which Tapir commands have a Grasshopper component, and which inputs each component still lacks.':
         'どの Tapir コマンドに Grasshopper コンポーネントがあり、各コンポーネントにどの入力がまだ足りないか。',
+
+    // The API limits teaser (its title is in common.js)
+    'What the Archicad API can\'t do, such as undo, the clipboard or the rows of a schedule, with what to do instead and the DevKit evidence.':
+        '元に戻す、クリップボード、一覧表の行など、Archicad API にできないことを、代わりにできることと DevKit での根拠とともにまとめています。',
+    'See the limits': '限界を見る',
 
     // How it works
     'How it works': '仕組み',

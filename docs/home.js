@@ -62,7 +62,7 @@
                 if (!box || !text || !text.getComputedTextLength) {
                     return;
                 }
-                var width = Math.ceil (text.getComputedTextLength ()) + 16;
+                var width = Math.ceil (text.getComputedTextLength ()) + 18;
                 var x = Number (label.getAttribute ('data-x'));
                 var left = label.getAttribute ('data-side') === 'left' ? x - width : x;
                 left = Math.max (4, Math.min (left, 556 - width));
@@ -99,6 +99,11 @@
             legend.style.display = kind === 'heat' ? '' : 'none';
             if (kind === 'check') {
                 fitLabels ();
+                // Measured again once the web fonts are in: until then the text is set in a
+                // narrower fallback font, and the box would come out too short (seen on phones).
+                if (document.fonts && document.fonts.ready) {
+                    document.fonts.ready.then (fitLabels);
+                }
             }
 
             if (reducedMotion ()) {
@@ -138,6 +143,13 @@
                 run (option);
             }
         });
+        if (document.fonts && document.fonts.addEventListener) {
+            document.fonts.addEventListener ('loadingdone', function () {
+                if (check.style.display !== 'none') {
+                    fitLabels ();
+                }
+            });
+        }
         bar.hidden = false;
     }
 

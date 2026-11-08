@@ -21,6 +21,7 @@ import itertools
 import json
 import os
 import pathlib
+import re
 import shlex
 import shutil
 import socket
@@ -166,6 +167,9 @@ class UpdateModeTestBase (unittest.TestCase):
         self.Patch (tapir_installer, 'ARCHICAD_ANSWER_TIMEOUT_SECONDS', 0.3)
         self.Patch (tapir_installer, 'REPLACE_RETRY_TIMEOUT_SECONDS', 3)
         self.Patch (tapir_installer, 'UPDATE_LOCK_WAIT_SECONDS', 0.5)
+        # The texts are compared in English, whatever the system's language.
+        self.Patch (tapir_installer, 'LANGUAGE', tapir_installer.DEFAULT_LANGUAGE)
+        self.Patch (tapir_installer, 'GetSystemLanguageTags', lambda : [])
         # The update lock files, and the downloads, go to the test folder.
         self.Patch (tempfile, 'tempdir', self.tempFolderPath)
         self.startedArchicadLocations = []
@@ -737,7 +741,7 @@ class WaitingModeTests (UpdateModeTestBase):
         resultText = tapir_installer.UpdateAddOn (self.CreateWaitingTarget (process.pid, markerPath, mockArchicad.port), self.releaseInfo, False, statusTexts.append)
         self.assertGreater (time.monotonic () - startTime, processSeconds - 0.5)
         self.assertEqual (resultText, 'Tapir was updated to {0}. Archicad was not started again.'.format (RELEASE_TAG))
-        self.assertIn ('Waiting for Archicad to close...', statusTexts)
+        self.assertIn ('Waiting for Archicad...', statusTexts)
         # Archicad is never contacted, and never started.
         self.assertEqual (mockArchicad.receivedCommands, [])
         self.assertFalse (mockArchicad.isStopped)
@@ -753,6 +757,41 @@ class WaitingModeTests (UpdateModeTestBase):
             tapir_installer.UpdateAddOn (updateTarget, self.releaseInfo, False, cancelEvent = cancelEvent)
         self.assertIsNone (process.poll ())
         self.AssertAddOnIsOld ()
+
+    def testCancelThroughTheWaitingCallback (self):
+        # The GUI enables its Cancel button (and closing its window) only
+        # while waitingCallback (True) is in effect, so the waiting mode
+        # reports the wait through it; the button then sets cancelEvent.
+        process = self.StartProcess (60)
+        markerPath = self.CreateMarker ()
+        cancelEvent = threading.Event ()
+        waitingStates = []
+        def waitingCallback (isWaiting):
+            waitingStates.append (isWaiting)
+            if isWaiting:
+                threading.Timer (0.5, cancelEvent.set).start ()
+        with self.assertRaises (tapir_installer.UpdateCancelledError):
+            tapir_installer.UpdateAddOn (self.CreateWaitingTarget (process.pid, markerPath), self.releaseInfo, False,
+                cancelEvent = cancelEvent, waitingCallback = waitingCallback)
+        self.assertEqual (waitingStates, [True, False])
+        self.assertIsNone (process.poll ())
+        self.assertFalse (os.path.exists (markerPath))
+        self.AssertAddOnIsOld ()
+
+    def testPreparesOnlyAfterTheWait (self):
+        # The copy next to the add-on is shared with a regular update, which
+        # may run while this one waits: it is made only once Archicad exited.
+        process = self.StartProcess (1)
+        events = []
+        prepare = tapir_installer.PrepareAddOnUpdate
+        def PrepareAddOnUpdate (*arguments):
+            events.append (('prepare', process.poll () is not None))
+            return prepare (*arguments)
+        self.Patch (tapir_installer, 'PrepareAddOnUpdate', PrepareAddOnUpdate)
+        tapir_installer.UpdateAddOn (self.CreateWaitingTarget (process.pid), self.releaseInfo, False,
+            waitingCallback = lambda isWaiting : events.append (('waiting', isWaiting)))
+        self.assertEqual (events, [('waiting', True), ('waiting', False), ('prepare', True)])
+        self.AssertAddOnIsNew ()
 
     def testAlreadyExitedProcessUpdatesAtOnce (self):
         process = self.StartProcess (0)
@@ -773,8 +812,8 @@ class WaitingModeTests (UpdateModeTestBase):
         self.Patch (tapir_installer, 'ReplaceAddOn', replace)
         with self.assertRaises (tapir_installer.InstallerError) as context:
             tapir_installer.UpdateAddOn (self.CreateWaitingTarget (process.pid, markerPath), self.releaseInfo, False)
-        # Tried once, without waiting for the file lock.
-        replace.assert_called_once_with (unittest.mock.ANY, self.targetPath, 0)
+        # Tried once, retrying the file lock only briefly.
+        replace.assert_called_once_with (unittest.mock.ANY, self.targetPath, tapir_installer.WAITING_REPLACE_RETRY_TIMEOUT_SECONDS)
         self.assertIn ('The file is locked.', str (context.exception))
         self.assertIn ('offers the update again', str (context.exception))
         self.assertEqual (self.startedArchicadLocations, [])
@@ -1642,6 +1681,83 @@ class ArgumentTests (UpdateModeTestBase):
                 del calledModes[:]
                 self.RunMain (arguments)
                 self.assertEqual (calledModes, [expectedMode])
+
+    def testLanguageOption (self):
+        languages = []
+        self.Patch (tapir_installer, 'RunConsoleInstaller', lambda args : languages.append (tapir_installer.LANGUAGE) or 0)
+        self.RunMain (['--console', '--language', 'GER'])
+        self.RunMain (['--console', '--language', 'fr-FR'])
+        self.RunMain (['--console'])
+        self.assertEqual (languages, ['GER', 'FRA', 'INT'])
+
+
+class LanguageTests (unittest.TestCase):
+    def setUp (self):
+        patcher = unittest.mock.patch.object (tapir_installer, 'LANGUAGE', tapir_installer.DEFAULT_LANGUAGE)
+        patcher.start ()
+        self.addCleanup (patcher.stop)
+
+    def testEveryTextIsInTheEnglishTable (self):
+        with open (tapir_installer.__file__, encoding = 'utf-8') as sourceFile:
+            source = sourceFile.read ()
+        usedKeys = set (re.findall (r"GetText \('(\w+)'", source))
+        usedKeys.update (re.findall (r"GetText \('\w+' if [^']*? else '(\w+)'\)", source))
+        self.assertGreater (len (usedKeys), 50)
+        self.assertEqual (sorted (usedKeys - set (tapir_installer.TEXTS['INT'])), [])
+
+    def testTranslationsKeepThePlaceholders (self):
+        # A translator keeps every {0}, {1}, ... of the English text.
+        def GetPlaceholders (text):
+            return sorted (re.findall (r'\{\d+\}', text))
+        englishTexts = tapir_installer.TEXTS['INT']
+        for language, texts in tapir_installer.TEXTS.items ():
+            self.assertIn (language, tapir_installer.ARCHICAD_LANGUAGE_CODES)
+            for key, text in texts.items ():
+                with self.subTest (language = language, key = key):
+                    self.assertIn (key, englishTexts)
+                    self.assertEqual (GetPlaceholders (text), GetPlaceholders (englishTexts[key]))
+
+    def testProtocolTextsAreTheEnglishOnes (self):
+        texts = tapir_installer.TEXTS['INT']
+        self.assertEqual (texts['updateRunning'], tapir_installer.UPDATE_RUNNING_TEXT)
+        self.assertEqual (texts['updateWaitingForQuit'], tapir_installer.UPDATE_WAITING_FOR_QUIT_TEXT)
+        self.assertEqual (tapir_installer.GetText ('updateRunning'), tapir_installer.UPDATE_RUNNING_TEXT)
+
+    def testLanguageCodes (self):
+        cases = [
+            ('GER', 'GER'), ('ger', 'GER'), ('USA', 'USA'), ('INT', 'INT'),
+            ('de', 'GER'), ('de-DE', 'GER'), ('de_AT.UTF-8', 'GER'), ('fr_CA', 'FRA'), ('ja-JP', 'JPN'),
+            ('pt-PT', 'POR'), ('pt_BR', 'BRA'), ('zh-Hans-CN', 'CHI'), ('zh_CN', 'CHI'), ('zh-Hant-TW', 'TAI'), ('zh_TW', 'TAI'),
+            ('nb-NO', 'NOR'), ('en-US', 'INT'), ('en_GB.UTF-8', 'INT'), ('xx', 'INT'), ('', 'INT'), ('C', 'INT'),
+        ]
+        for languageTag, expectedCode in cases:
+            with self.subTest (languageTag = languageTag):
+                self.assertEqual (tapir_installer.GetRequestedLanguage (languageTag), expectedCode)
+
+    def testSystemLanguage (self):
+        # The first tag that names a language counts, also an English one.
+        cases = [
+            (['de_DE'], 'GER'),
+            ([None, 'C', 'POSIX', 'it_IT.UTF-8', 'de_DE'], 'ITA'),
+            (['en_US', 'de_DE'], 'INT'),
+            ([], 'INT'),
+        ]
+        for languageTags, expectedCode in cases:
+            with self.subTest (languageTags = languageTags):
+                with unittest.mock.patch.object (tapir_installer, 'GetSystemLanguageTags', lambda : languageTags):
+                    self.assertEqual (tapir_installer.GetRequestedLanguage (), expectedCode)
+
+    def testMissingTranslationIsEnglish (self):
+        translatedTexts = { 'buttonClose' : 'Schließen', 'latestRelease' : 'Neueste Tapir-Version: {0}', 'updated' : 'Kaputt {1}' }
+        with unittest.mock.patch.dict (tapir_installer.TEXTS, { 'GER' : translatedTexts }):
+            tapir_installer.SetLanguage ('GER')
+            self.assertEqual (tapir_installer.GetText ('buttonClose'), 'Schließen')
+            self.assertEqual (tapir_installer.GetText ('latestRelease', '1.2.3'), 'Neueste Tapir-Version: 1.2.3')
+            self.assertEqual (tapir_installer.GetText ('buttonCancel'), 'Cancel')
+            # A wrong placeholder does not break the message.
+            self.assertEqual (tapir_installer.GetText ('updated', '1.2.3'), 'Tapir was updated to 1.2.3.')
+            tapir_installer.SetLanguage ('AUT')
+            self.assertEqual (tapir_installer.GetText ('buttonClose'), 'Close')
 
 
 if __name__ == '__main__':

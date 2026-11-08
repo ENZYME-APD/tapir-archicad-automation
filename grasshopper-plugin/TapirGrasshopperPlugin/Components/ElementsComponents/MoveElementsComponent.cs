@@ -7,7 +7,12 @@ using TapirGrasshopperPlugin.Types.Element;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
-    public class MoveElementsComponent : ArchicadExecutorComponent
+    // Sends one MoveElements request for every branch of the inputs, so a
+    // tree input makes one undo step in Archicad (#203). The add-on edits the
+    // items one after the other, so an element given in several branches is
+    // still moved once for each of them, as with one request per branch.
+    public class MoveElementsComponent
+        : BatchedExecutorComponent<ElementWithMoveParameters>
     {
         public override string CommandName => "MoveElements";
 
@@ -41,21 +46,24 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "Error message of each element (empty when it succeeded).");
         }
 
-        protected override void Solve(
-            IGH_DataAccess da)
+        protected override bool TryGetBatchItems(
+            IGH_DataAccess da,
+            out List<ElementWithMoveParameters> items)
         {
+            items = null;
+
             if (!da.TryCreateFromList(
                     0,
                     out ElementsObject elements))
             {
-                return;
+                return false;
             }
 
             if (!da.TryGetList(
                     1,
                     out List<Vector3d> moveVectors))
             {
-                return;
+                return false;
             }
 
             if (moveVectors.Count != 1 &&
@@ -63,28 +71,24 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             {
                 this.AddError(
                     "The size of the input MoveVectors must be 1 or equal to the size of the input ElementGuids.");
-                return;
+                return false;
             }
 
             if (!da.TryGet(
                     2,
                     out bool copy))
             {
-                return;
+                return false;
             }
 
-            var input = new MoveElementsParameters
-            {
-                ElementsWithMoveParameters =
-                    new List<ElementWithMoveParameters>()
-            };
+            items = new List<ElementWithMoveParameters>();
 
             for (var i = 0; i < elements.Elements.Count; i++)
             {
                 var element = elements.Elements[i];
                 var moveVector = moveVectors[moveVectors.Count == 1 ? 0 : i];
 
-                input.ElementsWithMoveParameters.Add(
+                items.Add(
                     new ElementWithMoveParameters()
                     {
                         Element = element.ElementId,
@@ -98,11 +102,16 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     });
             }
 
-            SetCadValuesWithErrorMessages(
-                CommandName,
-                input,
-                ToAddOn,
-                da);
+            return true;
+        }
+
+        protected override object CreateBatchParameters(
+            List<ElementWithMoveParameters> items)
+        {
+            return new MoveElementsParameters
+            {
+                ElementsWithMoveParameters = items
+            };
         }
 
         protected override System.Drawing.Bitmap Icon =>

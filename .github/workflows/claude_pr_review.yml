@@ -72,11 +72,11 @@ name: Claude PR Review
 # Pull requests opened by the issue bot (claude_issue_triage.yml) are reviewed
 # too, through workflow_dispatch: the bot pushes with GITHUB_TOKEN, which starts
 # no pull_request_target run, so claude_bot_pr_steward.yml dispatches this
-# workflow for them. The steward pushes a merge of main with its GitHub App
-# token, which does start one; that run is skipped (a bot's push to a bot pull
-# request), since the steward dispatches the review once the builds of the new
-# head are green. A person's push to such a pull request is still reviewed
-# here. For those pull requests the review ends with a verdict for
+# workflow for them. A push by another bot to such a pull request (one whose
+# token does start a run) is skipped here too, since the steward dispatches
+# the review once the builds of the new head are green. A person's push to
+# such a pull request (an Update branch the steward asked for) is still
+# reviewed here. For those pull requests the review ends with a verdict for
 # the reviewed commit, which the `verdict` job records as the commit status
 # `claude-review` (success = nothing blocking, failure = something to fix).
 # claude_bot_pr_steward.yml acts on a failure; claude_auto_merge.yml requires a
@@ -118,8 +118,8 @@ jobs:
     # the archicad-test/AC<version> status instead (archicad_test_status.yml,
     # #1577), and the review runs again on every new head anyway.
     # Pull requests of the Claude GitHub App (claude[bot]) stay excluded.
-    # A bot's push to the issue bot's pull request (the steward's merge of
-    # main, see the header) starts no review here: the steward starts it.
+    # A bot's push to the issue bot's pull request starts no review here
+    # (see the header): the steward starts it.
     if: >
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'pull_request_target' &&

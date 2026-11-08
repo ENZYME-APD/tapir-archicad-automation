@@ -1,9 +1,9 @@
 /* 日本語: the Scripts page (scripts/index.html), with the texts scripts.js shows from it. See ../README.md.
    The scripts' own names, summaries and READMEs stay as their authors wrote them. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Scripts - Tapir': 'スクリプト - Tapir',
-    'Scripts shared by architects for the Tapir palette in Archicad, each one reviewed and adapted to work in any office before it is listed.':
-        '建築家が共有した、Archicad の Tapir パレット用スクリプト。掲載前にそれぞれ審査され、どの事務所でも動くように調整されています。',
+    'Free Archicad Python scripts | Tapir': '無料の Archicad Python スクリプト | Tapir',
+    'Free Python scripts for the Tapir palette in Archicad, shared by architects, each one reviewed and adapted to work in any office before it is listed.':
+        '建築家が共有した、Archicad の Tapir パレット用の無料 Python スクリプト。掲載前にそれぞれ審査され、どの事務所でも動くように調整されています。',
     '<a href="../">Tapir</a> / Scripts': '<a href="../">Tapir</a> / スクリプト',
     'The script <em>schedule.</em>': 'スクリプト<em>一覧。</em>',
     'Scripts shared by architects. Each one is checked for safety and adapted to work in any office and any Archicad language before it is listed.':
@@ -40,6 +40,9 @@
     'All': 'すべて',
     'Archicad version': 'Archicad のバージョン',
     'Any Archicad': 'すべての Archicad',
+    'Filters': '絞り込み',
+    'Active filters': '適用中の絞り込み',
+    'Remove filter: {name}': '絞り込みを解除: {name}',
     '1 script': '1 件のスクリプト',
     '{count} scripts': '{count} 件のスクリプト',
     'No script matches. Try fewer words or another filter.': '該当するスクリプトはありません。語句を減らすか、別の絞り込みをお試しください。',

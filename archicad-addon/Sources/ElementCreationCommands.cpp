@@ -1,11 +1,14 @@
 #include "ElementCreationCommands.hpp"
 #include "ExtendedElementCommands.hpp"
+#include "LibraryPartParameters.hpp"
 #include "ObjectState.hpp"
 #include "MigrationHelper.hpp"
 #include "NotificationCommands.hpp"
 
 #include <algorithm>
+#include <cctype>
 #include <cmath>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -49,7 +52,8 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
     const GS::UniString elemTypeName = GetElementTypeNonLocalizedName (elemTypeID);
     const Stories stories = GetStories ();
 
-    // Optional top-level "databaseId" of the 2D Create* commands (#1602): the elements are
+    // Optional top-level "databaseId" of the 2D Create* commands (#1602) and of CreateObjects
+    // and CreateLamps (#2018, e.g. a legend of symbols in a worksheet): the elements are
     // created in that database (a worksheet, a detail, a layout, ...) instead of the current
     // one, and the current database is switched back afterwards, so the front window stays.
     // Only the commands whose schema names it receive it. The switch happens inside the
@@ -192,7 +196,7 @@ GS::ObjectState	CreateElementsCommandBase::Execute (const GS::ObjectState& param
             }
 
             // As for the id below, a new element that could not be finished is deleted again.
-            err = AfterCreate (requestedElement, element.header.guid);
+            err = AfterCreate (requestedElement, element.header.guid, data);
             if (err != NoError) {
                 ACAPI_Element_Delete ({ element.header.guid });
                 elements (CreateErrorResponse (err, "Failed to finish the new " + elemTypeName + ", so it was not created"));
@@ -2623,6 +2627,24 @@ static GS::UniString BuildLibraryPartBasedSchema (const char* arrayFieldName,
                         "id": {
                             "type": "string",
                             "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
+                        },
+                        "parameters": {
+                            "type": "array",
+                            "description": "Optional GDL parameters to set by name, after dimensions. The value is a number, a boolean or a string; array parameters are not supported. A or B also set the size. An unknown name or a value of the wrong type fails the item, and nothing is created for it.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "name": { "type": "string" },
+                                    "value": { "description": "A number or a boolean for a numeric parameter, a string for a String or Title parameter." }
+                                },
+                                "additionalProperties": false,
+                                "required": ["name", "value"]
+                            }
+                        },
+                        "layerIndex": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults."
                         }
                     },
                     "additionalProperties": false,
@@ -2631,6 +2653,10 @@ static GS::UniString BuildLibraryPartBasedSchema (const char* arrayFieldName,
                         "coordinates"
                     ]
                 }
+            },
+            "databaseId": {
+                "$ref": "#/DatabaseId",
+                "description": "Optional database to place the elements in, e.g. a worksheet or a detail (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return), for a legend of symbols. The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are placed in the current database. If Archicad cannot switch to it, nothing is created and the call fails."
             }
         },
         "additionalProperties": false,
@@ -2702,8 +2728,13 @@ static void ChangeParams (API_AddParType**& params, const GS::HashTable<GS::Stri
 	for (GSIndex ii = 0; ii < nParams; ++ii) {
 		API_AddParType& actParam = (*params)[ii];
 
-		const GS::String name(actParam.name);
-		const auto* value = changeParamsDictionary.GetPtr (name);
+		// Keys in upper case: GDL matches names without case, and a part's own parameter list
+		// may spell them in lower case (Bed Double 01 has zzyzx). Parameter names are ASCII; the
+		// standard library is used because GS::UniString renamed its case functions in Archicad 30.
+		std::string upperName (actParam.name);
+		std::transform (upperName.begin (), upperName.end (), upperName.begin (),
+						[] (unsigned char c) { return static_cast<char> (std::toupper (c)); });
+		const auto* value = changeParamsDictionary.GetPtr (GS::String (upperName.c_str ()));
 		if (value == nullptr)
 			continue;
 
@@ -2772,29 +2803,6 @@ static bool ResolveAttributeIndex (const GS::ObjectState& attributeId, API_AttrT
     return true;
 }
 
-// The library part's own A and B; a and b are left as they are when it has none to divide by.
-static GSErrCode GetLibraryPartSize (Int32 libInd, double& a, double& b)
-{
-    double libraryPartA = 0.0;
-    double libraryPartB = 0.0;
-    Int32 addParNum = 0;
-    API_AddParType** addPars = nullptr;
-    const GSErrCode err = ACAPI_LibraryPart_GetParams (libInd, &libraryPartA, &libraryPartB, &addParNum, &addPars);
-    if (addPars != nullptr) {
-        ACAPI_DisposeAddParHdl (&addPars);
-    }
-    if (err != NoError) {
-        return err;
-    }
-    if (libraryPartA > 1e-6) {
-        a = libraryPartA;
-    }
-    if (libraryPartB > 1e-6) {
-        b = libraryPartB;
-    }
-    return NoError;
-}
-
 // Applies every optional API_ObjectType field beyond the library part itself - coordinates,
 // dimensions, angle, pen/line type/surface/section attributes, fixed-size/angle behavior,
 // per-story visibility, link-to-story, and (Lamp only) light color/on-off - shared by
@@ -2836,7 +2844,7 @@ static GS::Optional<GS::ObjectState> ApplyObjectLampDetails (
         double libraryPartA = 1.0;
         double libraryPartB = 1.0;
         if (!useFixSize) {
-            const GSErrCode err = GetLibraryPartSize (element.object.libInd, libraryPartA, libraryPartB);
+            const GSErrCode err = GetLibraryPartOwnSize (element.object.libInd, libraryPartA, libraryPartB);
             if (err != NoError) {
                 return CreateErrorResponse (err, "Failed to read the library part's own A and B, which 'dimensions' are converted with.");
             }
@@ -3003,13 +3011,87 @@ static GS::Optional<GS::ObjectState> ApplyObjectLampDetails (
     return {};
 }
 
-GS::Optional<GS::ObjectState> CreateObjectsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
+// parameters and layerIndex, which only creation takes. A parameter that cannot be set fails the
+// item: the response has no room for warnings, and a value quietly left out is worse than an error.
+static GS::Optional<GS::ObjectState> ApplyCreationOnlyFields (API_Element& element, API_ElementMemo& memo, const GS::ObjectState& parameters)
 {
+    GS::Array<GS::ObjectState> gdlParameters;
+    if (parameters.Get ("parameters", gdlParameters)) {
+        GS::Array<GS::UniString> warnings;
+        bool sizeChanged = false;
+        for (const GS::ObjectState& p : gdlParameters) {
+            GS::UniString name;
+            p.Get ("name", name);
+            if (ApplyParameter (memo.params, p, warnings) &&
+                (CHEqualCStringsInsensitive (name.ToCStr (), "A") || CHEqualCStringsInsensitive (name.ToCStr (), "B"))) {
+                sizeChanged = true;
+            }
+        }
+        if (!warnings.IsEmpty ()) {
+            GS::UniString message ("Failed to set the GDL parameters: ");
+            for (UIndex ii = 0; ii < warnings.GetSize (); ++ii) {
+                message += (ii > 0 ? "; " : "") + warnings[ii];
+            }
+            return CreateErrorResponse (APIERR_BADPARS, message + ".");
+        }
+        // As for dimensions: xRatio/yRatio have to agree with A and B in the memo.
+        if (sizeChanged) {
+            double libraryPartA = 1.0;
+            double libraryPartB = 1.0;
+            if (!element.object.useXYFixSize) {
+                const GSErrCode err = GetLibraryPartOwnSize (element.object.libInd, libraryPartA, libraryPartB);
+                if (err != NoError) {
+                    return CreateErrorResponse (err, "Failed to read the library part's own A and B, which A and B in 'parameters' are converted with.");
+                }
+            }
+            double a = 0.0;
+            double b = 0.0;
+            if (GetNumericParameter (memo.params, "A", a)) {
+                element.object.xRatio = a / libraryPartA;
+            }
+            if (GetNumericParameter (memo.params, "B", b)) {
+                element.object.yRatio = b / libraryPartB;
+            }
+        }
+    }
+
+    return ApplyLayerIndexFromParameters (parameters, element);
+}
+
+// The create path shared by CreateObjects and CreateLamps. The element and memo arrive as the tool
+// defaults (or a favorite applied to them), so when libraryPartName names another part they still
+// hold the size and parameter values of the part the defaults hold, which Archicad keeps on create
+// wherever the names agree (live 21.10.2026: a Bed Double 01 came out 5.4 m wide and 0.2 m high,
+// the Object tool's leftovers). The part's own defaults are loaded then, as the Object Settings
+// dialog does when another part is picked; the same part keeps the settings it has.
+static GS::Optional<GS::ObjectState> PrepareLibraryPartElement (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters)
+{
+    const Int32 defaultsLibInd = element.object.libInd;
     auto err = ResolveLibraryPartName (element, parameters);
     if (err.HasValue ()) {
         return err;
     }
-    return ApplyObjectLampDetails (element, memo, nullptr, stories, parameters);
+    if (element.object.libInd != defaultsLibInd) {
+        // The part's own size goes into xRatio/yRatio as the size itself or as a ratio of 1,
+        // depending on useXYFixSize, so take the flag the element ends up with.
+        bool useFixSize = element.object.useXYFixSize;
+        parameters.Get ("useFixSize", useFixSize);
+        element.object.useXYFixSize = useFixSize;
+        const GSErrCode loadErr = LoadLibraryPartDefaults (element, memo);
+        if (loadErr != NoError) {
+            return CreateErrorResponse (loadErr, "Failed to read the default parameters of the library part.");
+        }
+    }
+    auto detailsErr = ApplyObjectLampDetails (element, memo, nullptr, stories, parameters);
+    if (detailsErr.HasValue ()) {
+        return detailsErr;
+    }
+    return ApplyCreationOnlyFields (element, memo, parameters);
+}
+
+GS::Optional<GS::ObjectState> CreateObjectsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
+{
+    return PrepareLibraryPartElement (element, memo, stories, parameters);
 }
 
 // CreateLamps — parallel to CreateObjects but for AC subtype Lamp.
@@ -3030,11 +3112,7 @@ GS::Optional<GS::UniString> CreateLampsCommand::GetInputParametersSchema () cons
 
 GS::Optional<GS::ObjectState> CreateLampsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const
 {
-    auto err = ResolveLibraryPartName (element, parameters);
-    if (err.HasValue ()) {
-        return err;
-    }
-    return ApplyObjectLampDetails (element, memo, nullptr, stories, parameters);
+    return PrepareLibraryPartElement (element, memo, stories, parameters);
 }
 
 // Shared Modify schema builder for ModifyObjects/ModifyLamps, mirroring
@@ -3235,7 +3313,7 @@ GS::Optional<GS::UniString> ModifyTextsCommand::GetInputParametersSchema () cons
         "properties": {
             "textsWithDetails": {
                 "type": "array",
-                "description": "Array of Text elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content as one paragraph, which makes the element auto-width (word wrap off), as SetDetailsOfElements does, and on a multi-run text applies that style to every run; the other style fields leave the content as it is.",
+                "description": "Array of Text elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content as one paragraph, as SetDetailsOfElements does, and on a multi-run text applies that style to every run; a text that wraps keeps its wrap width through the rebuild unless the same item gives a width. The other style fields and a width leave the content as it is.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -3254,7 +3332,12 @@ GS::Optional<GS::UniString> ModifyTextsCommand::GetInputParametersSchema () cons
                             "items": { "$ref": "#/TextRunDetails" },
                             "minItems": 1
                         },
-                        "style": { "$ref": "#/TextStyleSettableDetails" }
+                        "style": { "$ref": "#/TextStyleSettableDetails" },
+                        "width": {
+                            "type": "number",
+                            "minimum": 0.0,
+                            "description": "Optional box width in mm (paper size, like height). Greater than 0 turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). 0 turns word wrap off: the text is auto-width and grows with its content; on a wrapped text this rebuilds the content, so like a pen change it is refused for content with an autotext run. Given alone it leaves the content and its runs (and any autotext in them) as they are. When the content is rebuilt in the same item, the width is applied after the rebuild. When omitted, the current wrap setting is kept, also through a rebuild of the content. Read back by GetDetailsOfElements as style.boxWidth, with style.nonBreaking false."
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -3319,6 +3402,16 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
                 continue;
             }
 
+            double wrapWidth = 0.0;
+            const bool hasWrapWidth = item.Get ("width", wrapWidth);
+            if (hasWrapWidth && wrapWidth < 0.0) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "width must be 0 (word wrap off) or greater (the box width of the wrapped text in mm). Omit it to keep the current wrap setting."));
+                continue;
+            }
+            // The wrap the text has now, kept through a content rebuild when the item gives no width.
+            const bool wasWrapped = !element.text.nonBreaking && element.text.width > 0.0;
+            const double currentWrapWidth = element.text.width;
+
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
 
@@ -3361,7 +3454,10 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
             GS::UniString explicitContentTextCheck;
             GS::Array<GS::ObjectState> explicitContentRunsCheck;
             const bool explicitContent = item.Get ("text", explicitContentTextCheck) || item.Get ("runs", explicitContentRunsCheck);
-            if (explicitContent || styleChanged) {
+            // Width 0 on a wrapped text: the line ends Archicad wrapped stay in the content when only
+            // nonBreaking changes, so the content is rebuilt from its read-back, as for a style change.
+            const bool unwrap = hasWrapWidth && wrapWidth <= 0.0 && wasWrapped;
+            if (explicitContent || styleChanged || unwrap) {
                 // Start from a BLANK memo, not one fetched via ACAPI_Element_GetMemo first: confirmed
                 // live on Archicad 28 (by cross-checking against Archicad's own official fix, commit
                 // a2a111b/54cbd36 upstream) that ACAPI_Element_Change only persists memo-based text
@@ -3370,11 +3466,11 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
                 // correctly. The memo mask is version dependent, see TextContentMemoMask.
                 GS::ObjectState contentParams = item;
                 if (!explicitContent) {
-                    // Style-only change on an existing multistyle element: re-fetch the current
+                    // Style-only change (or width 0) on an existing multistyle element: re-fetch the current
                     // content (every run of it, so multi-run content is not collapsed) with the
                     // given style merged into the runs, and rebuild from that so the new style
                     // actually applies. A failed read must not turn into an empty rebuild.
-                    auto readErr = TextLabelDetails::ReadContentForStyleOnlyModify (element.header.guid, *styleOS, contentParams);
+                    auto readErr = TextLabelDetails::ReadContentForStyleOnlyModify (element.header.guid, styleOS != nullptr ? *styleOS : GS::ObjectState (), contentParams);
                     if (readErr.HasValue ()) {
                         executionResults (CreateFailedExecutionResult (*readErr));
                         continue;
@@ -3400,11 +3496,28 @@ GS::ObjectState ModifyTextsCommand::Execute (const GS::ObjectState& parameters, 
             const double widthFactor = element.text.widthFactor;
             const double charSpaceFactor = element.text.charSpaceFactor;
 
+            // Without a content rebuild the width goes into this change, which carries no memo,
+            // so the content is kept. A rebuild makes the text auto-width (see ApplyTextContent),
+            // so then the wrap width is written after it, by SetTextWrapWidth: the given one, or
+            // the one the text had, so that changing a pen or the content does not undo the wrap.
+            if (hasWrapWidth && !contentChanged) {
+                element.text.nonBreaking = wrapWidth <= 0.0;
+                ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nonBreaking);
+                if (wrapWidth > 0.0) {
+                    element.text.width = wrapWidth;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_TextType, width);
+                }
+            }
+            const double widthAfterRebuild = hasWrapWidth ? wrapWidth : (wasWrapped ? currentWrapWidth : 0.0);
+
             // withdel=false was tried and made things WORSE (even the style fields stopped
             // applying) - confirmed live. withdel=true is required here.
             err = ACAPI_Element_Change (&element, &mask, contentChanged ? &memo : nullptr, contentChanged ? TextContentMemoMask : 0, true);
             if (err == NoError && contentChanged) {
                 err = TextLabelDetails::KeepTextFactors (element.header.guid, widthFactor, charSpaceFactor);
+                if (err == NoError && widthAfterRebuild > 0.0) {
+                    err = TextLabelDetails::SetTextWrapWidth (element.header.guid, widthAfterRebuild);
+                }
             }
             if (err == NoError) {
                 changeReporter.MarkChanged (element.header.guid);
@@ -5401,6 +5514,8 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
         SetEOL (memo.paragraphs, 0, eolIndex, offset);
     }
 
+    // Auto-width: the line ends are the ones set above. A wrap width of CreateTexts/ModifyTexts
+    // is written after the content, without a memo (TextLabelDetails::SetTextWrapWidth).
     textData.width = 0;
     textData.height = 0;
     textData.nonBreaking = true;
@@ -5661,6 +5776,28 @@ GSErrCode KeepTextFactors (const API_Guid& elemGuid, double widthFactor, double 
     text->widthFactor = widthFactor;
     text->charSpaceFactor = charSpaceFactor;
     // No memo: a change of these two fields alone is kept (#1585), see the declaration.
+    return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+}
+
+GSErrCode SetTextWrapWidth (const API_Guid& elemGuid, double width)
+{
+    API_Element element = {};
+    element.header.guid = elemGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+    if (GetElemTypeId (element.header) != API_TextID) {
+        return APIERR_BADID;
+    }
+
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    element.text.nonBreaking = false;
+    element.text.width = width;
+    ACAPI_ELEMENT_MASK_SET (mask, API_TextType, nonBreaking);
+    ACAPI_ELEMENT_MASK_SET (mask, API_TextType, width);
+    // No memo, as in KeepTextFactors: the content and its runs (and any autotext in them) are kept.
     return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
 }
 
@@ -6052,7 +6189,7 @@ GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (AP
     return {};
 }
 
-GSErrCode CreateLabelsCommand::AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid) const
+GSErrCode CreateLabelsCommand::AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& /*parameters*/) const
 {
     if (requestedElement.label.labelClass != APILblClass_Text) {
         return NoError;
@@ -6119,6 +6256,11 @@ GS::Optional<GS::UniString> CreateTextsCommand::GetInputParametersSchema () cons
                     "style": {
                         "$ref": "#/TextStyleSettableDetails",
                         "description": "height/pen/angle/justification above take precedence over the same fields here if both are given."
+                    },
+                    "width": {
+                        "type": "number",
+                        "exclusiveMinimum": 0.0,
+                        "description": "Optional box width in mm (paper size, like height). Turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). When omitted the text is auto-width (word wrap off) and grows with its content. Read back by GetDetailsOfElements as style.boxWidth, with style.nonBreaking false."
                     },
                     "floorIndex": {
                         "type": "integer",
@@ -6193,6 +6335,12 @@ GS::Optional<GS::ObjectState> CreateTextsCommand::SetTypeSpecificParameters (API
         element.text.just = ParseJustificationString (justification);
     }
 
+    // Checked before the create; AfterCreate applies it to the new text.
+    double width = 0.0;
+    if (parameters.Get ("width", width) && width <= 0.0) {
+        return CreateErrorResponse (APIERR_BADPARS, "width must be greater than 0 (the box width of the wrapped text in mm). Omit it for an auto-width text.");
+    }
+
     auto err = TextLabelDetails::ApplyTextContent (memo, element.text, parameters);
     if (err.HasValue ()) {
         return err;
@@ -6201,10 +6349,17 @@ GS::Optional<GS::ObjectState> CreateTextsCommand::SetTypeSpecificParameters (API
     return {};
 }
 
-GSErrCode CreateTextsCommand::AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid) const
+GSErrCode CreateTextsCommand::AfterCreate (const API_Element& requestedElement, const API_Guid& newElementGuid, const GS::ObjectState& parameters) const
 {
     // See CreateLabelsCommand::AfterCreate.
-    return TextLabelDetails::KeepTextFactors (newElementGuid, requestedElement.text.widthFactor, requestedElement.text.charSpaceFactor);
+    GSErrCode err = TextLabelDetails::KeepTextFactors (newElementGuid, requestedElement.text.widthFactor, requestedElement.text.charSpaceFactor);
+    double width = 0.0;
+    if (err == NoError && parameters.Get ("width", width)) {
+        // The text is created auto-width, as without a width (see ApplyTextContent); word wrap
+        // is turned on afterwards, the same way ModifyTexts does it for a width alone.
+        err = TextLabelDetails::SetTextWrapWidth (newElementGuid, width);
+    }
+    return err;
 }
 
 const char* DimensionOriginToString (API_DimOriginID origin)

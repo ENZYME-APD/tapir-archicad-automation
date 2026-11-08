@@ -8,8 +8,10 @@ using TapirGrasshopperPlugin.Types.Generic;
 
 namespace TapirGrasshopperPlugin.Components.ElementsComponents
 {
+    // Sends one SetCategoryValuesOfElements request for every branch of the
+    // inputs, so a tree input makes one undo step in Archicad (#203).
     public class SetCategoryValuesOfElementsComponent
-        : ArchicadExecutorComponent
+        : BatchedExecutorComponent<JObject>
     {
         public override string CommandName => "SetCategoryValuesOfElements";
 
@@ -41,17 +43,53 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "CategoryValueGuids",
                 "A value of the category of each item, as GetElementCategories lists them (input only 1 " +
                 "to use the same value for all).");
+
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "DryRun",
+                "If true, nothing is changed and no undo step is created: ErrorMessages says what setting " +
+                "the value would do for each item, from the checks made before writing (the element does " +
+                "not exist, it does not have the category), and OldValues and NewValues show the change. " +
+                "Default is false.",
+                false);
+
+            SetOptionality(3);
         }
 
         protected override void AddOutputs()
         {
             OutErrorMessages(
-                "Error message of each item (empty when the value was set).");
+                "Error message of each item (empty when the value was set, or with DryRun when it would be " +
+                "set).");
+
+            // Appended after the original output, so saved definitions keep their wiring.
+            OutTexts(
+                "OldValues",
+                "With DryRun, the element's value in the category now, for each item that passed the checks, " +
+                "as JSON (type, categoryId, and categoryValueId and name when it has a value); null for the " +
+                "other items and without DryRun.");
+
+            OutTexts(
+                "NewValues",
+                "With DryRun, the value a real run would set, for each item that passed the checks, as JSON " +
+                "(type, categoryId, categoryValueId, name); null for the other items and without DryRun.");
         }
 
-        protected override void Solve(
-            IGH_DataAccess da)
+        protected override int DryRunInputIndex => 3;
+
+        protected override int OldValuesOutputIndex => 1;
+
+        protected override int NewValuesOutputIndex => 2;
+
+        // Items are sent in order, so of an element and category given in
+        // several branches the last branch wins, like with the requests per
+        // branch.
+        protected override bool TryGetBatchItems(
+            IGH_DataAccess da,
+            out List<JObject> items)
         {
+            items = null;
+
             if (!da.TryGetList(
                     0,
                     out List<GH_ObjectWrapper> elementWrappers) ||
@@ -62,7 +100,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     2,
                     out List<string> valueGuids))
             {
-                return;
+                return false;
             }
 
             var elementIds = ElementInputHelp.ElementGuids(
@@ -81,10 +119,10 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     elementIds.Count,
                     "CategoryValueGuids"))
             {
-                return;
+                return false;
             }
 
-            var items = new JArray();
+            items = new List<JObject>();
             for (var i = 0; i < elementIds.Count; i++)
             {
                 items.Add(
@@ -103,11 +141,13 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     });
             }
 
-            SetCadValuesWithErrorMessages(
-                CommandName,
-                new JObject { ["elementCategoryValues"] = items },
-                ToAddOn,
-                da);
+            return true;
+        }
+
+        protected override object CreateBatchParameters(
+            List<JObject> items)
+        {
+            return new JObject { ["elementCategoryValues"] = new JArray(items) };
         }
 
         protected override System.Drawing.Bitmap Icon =>

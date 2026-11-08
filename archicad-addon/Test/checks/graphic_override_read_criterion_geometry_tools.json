@@ -1,0 +1,109 @@
+{
+  "title": "Graphic override rules: includeCriterion reads the geometry and tool conditions by name",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "create rules",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck read wall fields",
+            "ruleGroupName": "TapirCheck read geometry and tools",
+            "criterion": {
+              "and": [
+                { "elementType": "Wall" },
+                { "wallThicknessGreaterThan": 0.25 },
+                { "wallComplexityNot": "Straight" },
+                { "wallContourPenNot": 3 },
+                { "wallHeightReversed": false },
+                { "wallParentIdContains": "Tapir" },
+                { "wallReferenceLineOffsetLessOrEqual": 0.5 }
+              ]
+            },
+            "style": {
+              "lineMarkerTextPen": 20
+            }
+          },
+          {
+            "name": "TapirCheck read stair fields",
+            "ruleGroupName": "TapirCheck read geometry and tools",
+            "criterion": {
+              "and": [
+                { "elementType": "Stair" },
+                { "stairRiserCountGreaterOrEqual": 12 },
+                { "stairMaxRiserHeight": 0.175 },
+                { "stairStepCountPerFlight": 8 }
+              ]
+            },
+            "style": {
+              "lineMarkerTextPen": 20
+            }
+          },
+          {
+            "name": "TapirCheck read roof fields",
+            "ruleGroupName": "TapirCheck read geometry and tools",
+            "criterion": {
+              "and": [
+                { "elementType": "Roof" },
+                { "roofPitchLessThan": 45 },
+                { "roofGeometryType": "SinglePanel" },
+                { "profileStretchHeightGreaterThan": 1.5 }
+              ]
+            },
+            "style": {
+              "lineMarkerTextPen": 20
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid", "exists": true, "name": "wall rule created" },
+        { "path": "graphicOverrideRuleIds[1].graphicOverrideRuleId.guid", "exists": true, "name": "stair rule created" },
+        { "path": "graphicOverrideRuleIds[2].graphicOverrideRuleId.guid", "exists": true, "name": "roof rule created" }
+      ]
+    },
+    {
+      "id": "read criteria",
+      "command": "GetGraphicOverrideRulesByName",
+      "params": {
+        "graphicOverrideRules": [
+          { "name": "TapirCheck read wall fields", "ruleGroupName": "TapirCheck read geometry and tools" },
+          { "name": "TapirCheck read stair fields", "ruleGroupName": "TapirCheck read geometry and tools" },
+          { "name": "TapirCheck read roof fields", "ruleGroupName": "TapirCheck read geometry and tools" }
+        ],
+        "includeCriterion": true
+      },
+      "expect": [
+        { "path": "graphicOverrideRules[0].criterion.and[0].elementType", "eq": "Wall", "name": "wall: element type" },
+        { "path": "graphicOverrideRules[0].criterion.and[1].wallThicknessGreaterThan", "eq": 0.25, "name": "wall thickness greater than" },
+        { "path": "graphicOverrideRules[0].criterion.and[2].wallComplexityNot", "eq": "Straight", "name": "wall complexity is not" },
+        { "path": "graphicOverrideRules[0].criterion.and[3].wallContourPenNot", "eq": 3, "name": "wall contour pen is not" },
+        { "path": "graphicOverrideRules[0].criterion.and[4].wallHeightReversed", "eq": false, "name": "wall height reversed" },
+        { "path": "graphicOverrideRules[0].criterion.and[5].wallParentIdContains", "eq": "Tapir", "name": "wall parent ID contains" },
+        { "path": "graphicOverrideRules[0].criterion.and[6].wallReferenceLineOffsetLessOrEqual", "eq": 0.5, "name": "reference line offset less or equal" },
+        { "path": "graphicOverrideRules[1].criterion.and[0].elementType", "eq": "Stair", "name": "stair: element type" },
+        { "path": "graphicOverrideRules[1].criterion.and[1].stairRiserCountGreaterOrEqual", "eq": 12, "name": "riser count greater or equal" },
+        { "path": "graphicOverrideRules[1].criterion.and[2].stairMaxRiserHeight", "eq": 0.175, "name": "max riser height" },
+        { "path": "graphicOverrideRules[1].criterion.and[3].stairStepCountPerFlight", "eq": 8, "name": "steps per flight" },
+        { "path": "graphicOverrideRules[2].criterion.and[0].elementType", "eq": "Roof", "name": "roof: element type" },
+        { "path": "graphicOverrideRules[2].criterion.and[1].roofPitchLessThan", "eq": 45, "name": "roof pitch less than" },
+        { "path": "graphicOverrideRules[2].criterion.and[2].roofGeometryType", "eq": "SinglePanel", "name": "roof geometry type" },
+        { "path": "graphicOverrideRules[2].criterion.and[3].profileStretchHeightGreaterThan", "eq": 1.5, "name": "profile stretch height greater than" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteGraphicOverrideRuleGroups",
+      "params": {
+        "ruleGroupNames": [
+          "TapirCheck read geometry and tools"
+        ],
+        "deleteRules": true
+      }
+    }
+  ]
+}

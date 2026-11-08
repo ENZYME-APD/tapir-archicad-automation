@@ -4,7 +4,7 @@
     "summary": "Lists the circuits of every distribution board with their loads and phase balance, flags overloads, and saves the schedule as CSV or Excel.",
     "category": "quantities-scheduling",
     "tags": ["electrical", "mep", "circuits", "loads", "schedule", "export"],
-    "author": { "name": "Tapir" },
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
     "license": "MIT",
     "entry": "DistributionBoardSchedule.py",
     "versions": [

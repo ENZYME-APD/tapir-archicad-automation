@@ -3,13 +3,26 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title data-i18n>Grasshopper coverage - Tapir documentation</title>
-<meta name="description" data-i18n-attrs="content" content="Which Tapir commands the components of the Tapir Grasshopper plugin call, and whether they cover the commands' parameters.">
+<title data-i18n>Grasshopper coverage of the Tapir commands | Tapir</title>
+<meta name="description" data-i18n-attrs="content" content="Which Tapir commands for Archicad the components of the Tapir Grasshopper plugin call, and whether they cover each command's parameters or still miss some.">
+<link rel="canonical" href="https://archicad-api.com/gh-coverage/">
+<!-- search engines: the page's place in the site, as the crumb above its heading shows it -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Tapir", "item": "https://archicad-api.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Docs", "item": "https://archicad-api.com/docs/" },
+        { "@type": "ListItem", "position": 3, "name": "Grasshopper coverage", "item": "https://archicad-api.com/gh-coverage/" }
+    ]
+}
+</script>
 <!-- link-preview: the preview of a link to this page shared on Discord, WhatsApp and the like -->
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Tapir">
-<meta property="og:title" content="Grasshopper coverage - Tapir documentation">
-<meta property="og:description" content="Which Tapir commands the components of the Tapir Grasshopper plugin call, and whether they cover the commands' parameters.">
+<meta property="og:title" content="Grasshopper coverage of the Tapir commands | Tapir">
+<meta property="og:description" content="Which Tapir commands for Archicad the components of the Tapir Grasshopper plugin call, and whether they cover each command's parameters or still miss some.">
 <meta property="og:url" content="https://archicad-api.com/gh-coverage/">
 <meta name="twitter:card" content="summary">
 <!-- site-assets -->
@@ -239,7 +252,7 @@ function claimBody (item) {
         `Add a Grasshopper component that calls the Tapir command \`${item.id}\` (${item.group}` +
             (item.brief ? `: ${item.brief}` : '') + ').', '',
         'Its inputs and outputs follow the command\'s parameters and response (see the ' +
-            `[command reference](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon/)), ` +
+            `[command reference](https://archicad-api.com/archicad-addon/)), ` +
             'named after the Archicad GUI as CLAUDE.md describes.', '',
         '<!-- Add what you would use it for, and anything the component should do around it. -->',
     ].join ('\n');

@@ -78,7 +78,8 @@ a:hover { color: var(--link-hover) }
 img, svg { max-width: 100% }
 .wrap { max-width: 1200px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
 h1, h2, h3, h4 { font-family: var(--display); line-height: 1.02; text-wrap: balance; margin: 0; letter-spacing: -.01em; color: inherit }
-h1 { font-size: clamp(40px, 6vw, 72px); font-weight: 900 }
+/* .h1: a heading that looks like the page's h1 but is not one (a page has one h1) */
+h1, .h1 { font-size: clamp(40px, 6vw, 72px); font-weight: 900 }
 h2 { font-size: clamp(34px, 5.4vw, 64px); font-weight: 700 }
 h1 em, h2 em, h3 em { font-style: italic; font-weight: 500 }
 h3 { font-size: 22px; font-weight: 700; line-height: 1.15 }
@@ -252,13 +253,13 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
     background-image: linear-gradient(rgba(244, 241, 234, .06) 1px, transparent 1px), linear-gradient(90deg, rgba(244, 241, 234, .06) 1px, transparent 1px);
     background-size: 48px 48px }
 .page-head .wrap { padding-block: 56px 48px; display: grid; gap: 16px }
-.page-head h1 { font-size: clamp(44px, 7vw, 88px); font-weight: 900; line-height: .95; letter-spacing: -.02em }
-.page-head h1 em { color: var(--ochre-light); font-weight: 500 }
+.page-head h1, .page-head .h1 { font-size: clamp(44px, 7vw, 88px); font-weight: 900; line-height: .95; letter-spacing: -.02em }
+.page-head h1 em, .page-head .h1 em { color: var(--ochre-light); font-weight: 500 }
 .page-head p { font-size: 19px; color: rgba(244, 241, 234, .86); max-width: 36em }
 .page-head p a { color: var(--ochre-light) }
 .crumb { font: 500 12.5px var(--mono); color: rgba(244, 241, 234, .72) } .page-head .crumb { font-size: 12.5px } .crumb a { color: var(--ochre-light) }
 .page-head.ochre { background-color: var(--ochre); color: #1C1E1F; --focus: #1C1E1F; background-image: repeating-linear-gradient(45deg, rgba(28, 30, 31, .12) 0 1px, transparent 1px 12px) }
-.page-head.ochre p { color: #1C1E1F } .page-head.ochre h1 em { color: #1C1E1F }
+.page-head.ochre p { color: #1C1E1F } .page-head.ochre h1 em, .page-head.ochre .h1 em { color: #1C1E1F }
 .page-head.ochre .crumb { color: #1C1E1F } .page-head.ochre .crumb a, .page-head.ochre p a { color: #1C1E1F }
 .page-body { padding-block: 56px 24px }
 

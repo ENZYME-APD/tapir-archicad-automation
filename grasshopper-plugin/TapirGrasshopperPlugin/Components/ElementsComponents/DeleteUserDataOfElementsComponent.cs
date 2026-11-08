@@ -1,4 +1,5 @@
 using Grasshopper.Kernel;
+using Newtonsoft.Json.Linq;
 using System;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Element;
@@ -25,12 +26,23 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             InGenerics(
                 "ElementGuids",
                 "Identifiers of the elements to delete the user data of.");
+
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "DryRun",
+                "If true, nothing is deleted: ErrorMessages says what the deletion would do for each " +
+                "element, from the check made before deleting (the element exists). Archicad can still " +
+                "refuse to delete the user data of an element that passes it. Default is false.",
+                false);
+
+            SetOptionality(1);
         }
 
         protected override void AddOutputs()
         {
             OutErrorMessages(
-                "Error message of each element (empty when its user data was deleted).");
+                "Error message of each element (empty when its user data was deleted, or with DryRun when it " +
+                "would be deleted).");
         }
 
         protected override void Solve(
@@ -43,9 +55,17 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 return;
             }
 
+            var parameters = JObject.FromObject(elements);
+
+            // Only sent when it differs from the command's default.
+            if (da.GetOptional(1, false))
+            {
+                parameters["dryRun"] = true;
+            }
+
             SetCadValuesWithErrorMessages(
                 CommandName,
-                elements,
+                parameters,
                 ToAddOn,
                 da);
         }
