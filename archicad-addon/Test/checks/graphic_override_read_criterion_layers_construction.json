@@ -1,0 +1,127 @@
+{
+  "title": "Graphic override rules: includeCriterion reads the Layers, Model View and Construction conditions by name",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "layer for the rule",
+      "command": "CreateLayers",
+      "creates": false,
+      "params": {
+        "layerDataArray": [
+          { "name": "TapirCheck read criterion layer" }
+        ]
+      },
+      "save": { "layer": "attributeIds[0].attributeId.guid" }
+    },
+    {
+      "id": "create rule",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck read layers and construction",
+            "ruleGroupName": "TapirCheck read layers and construction",
+            "criterion": {
+              "and": [
+                {
+                  "or": [
+                    { "layer": "TapirCheck read criterion layer" },
+                    { "layerNameStartsWith": "Tapir & Co" }
+                  ]
+                },
+                { "layerLocked": false },
+                {
+                  "and": [
+                    { "compositeStructureNameContains": "Brick" },
+                    { "structureType": "Composite" }
+                  ]
+                },
+                { "morphBodyTypeNot": "Solid" },
+                { "missingAttributes": false }
+              ]
+            },
+            "style": {
+              "lineMarkerTextPen": 20
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "rule created"
+        }
+      ]
+    },
+    {
+      "id": "read criterion",
+      "command": "GetGraphicOverrideRulesByName",
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck read layers and construction",
+            "ruleGroupName": "TapirCheck read layers and construction"
+          }
+        ],
+        "includeCriterion": true
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRules[0].criterion.and[0].or[0].layer",
+          "eq": "TapirCheck read criterion layer",
+          "name": "layer by name"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[0].or[1].layerNameStartsWith",
+          "eq": "Tapir & Co",
+          "name": "layer name starts with"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[1].layerLocked",
+          "eq": false,
+          "name": "layer not locked"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[2].and[0].compositeStructureNameContains",
+          "eq": "Brick",
+          "name": "composite name contains"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[2].and[1].structureType",
+          "eq": "Composite",
+          "name": "structure type"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[3].morphBodyTypeNot",
+          "eq": "Solid",
+          "name": "morph body type is not"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[4].missingAttributes",
+          "eq": false,
+          "name": "missing attributes"
+        }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteGraphicOverrideRuleGroups",
+      "params": {
+        "ruleGroupNames": [
+          "TapirCheck read layers and construction"
+        ],
+        "deleteRules": true
+      }
+    },
+    {
+      "command": "DeleteAttributes",
+      "params": {
+        "attributesToDelete": [ { "attributeType": "Layer", "attributeId": { "attributeId": { "guid": "${layer}" } } } ]
+      }
+    }
+  ]
+}
