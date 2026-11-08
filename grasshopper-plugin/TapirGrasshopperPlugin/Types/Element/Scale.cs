@@ -13,5 +13,11 @@ namespace TapirGrasshopperPlugin.Types.Element
 
         [JsonProperty("factor")]
         public double Factor;
+
+        // Only sent when given; it must equal Factor.
+        [JsonProperty(
+            "factorY",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public double? FactorY;
     }
 }

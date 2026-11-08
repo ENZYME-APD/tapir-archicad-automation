@@ -308,7 +308,8 @@ Scripts shared by users live in [marketplace/](marketplace/), one `<slug>/` fold
 `script-share` becomes one pull request adding its folder, adapted by those rules, keeping what
 the script does, listing every change in plain words and asking the author to confirm it.
 A new script *requested* in an issue also goes to `marketplace/<slug>/` (listing `author` `Tapir`,
-README "Requested by @<login> in #<n>"); `builtin-scripts/` gets a new script only when a maintainer
+README "Requested by @<login> in #<n>"), always in one pull request with the whole script, never split
+into parts, because it is tested in Archicad as a whole; `builtin-scripts/` gets a new script only when a maintainer
 asks for it in the issue. A marketplace script may import `utilities`/`aclib` of `builtin-scripts/`,
 which are copied next to it when it is installed, so keep those helpers backward compatible.
 `python tools/check_marketplace.py` checks every folder against marketplace/README.md (the add-on
@@ -391,9 +392,14 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   every new human comment on an issue (`reply` job), from anyone, runs Claude with
   write access: it answers, closes verified already-fixed issues, or opens a
   ready-for-review PR on a `claude/issue-<n>-…` branch with `Fixes #<n>`, and asks
-  the issue's author (tagged) to verify it in Archicad. An issue too large for
+  the issue's author (tagged) to verify it in Archicad. Its commits end with a
+  `Co-authored-by:` trailer for the person who opened the issue (their GitHub
+  no-reply address, worked out by a step without a model; none for issues a bot
+  opened) and its PR body says `Reported by @<login>`, so the reporter is
+  credited when the PR is merged. An issue too large for
   one PR gets a split plan (`<!-- claude-split-plan: parts=N -->`, at most six
-  parts) and one PR per part, opened one run at a time (`next-part` job) on
+  parts; never for a `marketplace/` script, which is always one PR) and one PR per
+  part, opened one run at a time (`next-part` job) on
   `claude/issue-<n>-part<k>-…` branches with `Part <k> of <N> of #<n>`. No label
   is needed; applying `claude-fix` re-runs `fix` on an existing issue, and a
   `workflow_dispatch` with an `issue_number` runs it on that issue. Its header
@@ -524,8 +530,9 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   `tools/generate_community_data.py` counts,
   per month, the commits of `main`, the issues opened and pull requests merged, and
   the Discord messages and members of the project's server (only counts, never the
-  text of a message), plus the totals and top contributors (each person once,
-  whatever names and addresses their commits carry), and publishes
+  text of a message), plus the totals and top contributors (commit authors and
+  the people in `Co-authored-by` trailers, bots and AI assistants left out, each
+  person once whatever names and addresses they used), and publishes
   `community.json` to the `site-data` branch (never to `main`), read by
   `docs/community/community.js` (the Momentum figures and the growth chart). The
   Discord bot token is `DISCORD_STATS_TOKEN`, else `DISCORD_BOT_TOKEN`; members per

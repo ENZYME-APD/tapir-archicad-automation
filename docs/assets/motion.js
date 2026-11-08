@@ -23,12 +23,14 @@
 
     var io = new IntersectionObserver (function (entries) {
         entries.forEach (function (e) {
-            if (!e.isIntersecting) return;
+            // 12% of an element, or a quarter of the screen's height of it: 12% of a tall element (the
+            // schedule on a phone, about 7,000 px) never fits in the screen at once.
+            if (!e.isIntersecting || (e.intersectionRatio < 0.12 && e.intersectionRect.height < innerHeight * 0.25)) return;
             e.target.classList.add ('in'); io.unobserve (e.target);
             if (e.target.matches ('.figures > div')) countUp (e.target.querySelector ('strong'));
             if (e.target.matches ('.term')) typeOut (e.target);
         });
-    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.12 });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: [0, 0.05, 0.12] });
     els.forEach (function (el) {
         // Anything already on screen at load shows at once, without a flash.
         var r = el.getBoundingClientRect ();
