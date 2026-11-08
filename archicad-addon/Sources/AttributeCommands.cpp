@@ -12139,6 +12139,65 @@ bool CollectOverrideRuleReferences (GS::Array<OverrideRuleReferences>& result, G
     return true;
 }
 
+// A Model View Options combination that holds references: its guid and name, and when the references are GDL
+// parameters of one of the option sets library parts add to it (the library part settings of the dialog), the
+// name of that option set.
+struct ModelViewOptionReferences {
+    API_Guid                     guid;
+    GS::UniString                name;
+    GS::UniString                gdlOptionsName;
+    GS::Array<ElementReference>  references;
+};
+
+// The references of every Model View Options combination, read by index as GetModelViewOptionDetails reads them:
+// the surface and the cut and uncut line types of the stair and railing schemes, and the GDL parameters of
+// attribute types of each library part option set. Returns the number of combinations read.
+Int32 CollectModelViewOptionReferences (GS::Array<ModelViewOptionReferences>& result, GS::Array<GS::UniString>& warnings)
+{
+    Int32 readCount = 0;
+    UInt32 count = 0;
+    ACAPI_Navigator_ModelViewOptions_GetNum (count);
+    for (UInt32 i = 1; i <= count; ++i) {
+        GS::UniString name;
+        API_ModelViewOptionsType modelViewOption = {};
+        modelViewOption.head.index = i;
+        modelViewOption.head.uniStringNamePtr = &name;
+        if (ACAPI_Navigator_ModelViewOptions_Get (&modelViewOption) != NoError) {
+            warnings.Push (GS::UniString::Printf ("The Model View Options combination %d could not be read.", (int) i));
+            continue;
+        }
+        ++readCount;
+        const API_ModelViewOptions& options = modelViewOption.modelViewOpt;
+        const API_StairModelViewOptions& stair = options.stairModelViewOptions;
+        const API_RailingModelViewOptions& railing = options.railingModelViewOptions;
+        ModelViewOptionReferences own = { modelViewOption.head.guid, name, GS::UniString (), {} };
+        own.references.Push ({ API_MaterialID, GetAttributeIndex (stair.stairSchemeSurfaceIndex), "stair.stairSchemeSurfaceIndex", false });
+        own.references.Push ({ API_LinetypeID, GetAttributeIndex (stair.stairSchemeCutLineIndex), "stair.stairSchemeCutLineIndex", false });
+        own.references.Push ({ API_LinetypeID, GetAttributeIndex (stair.stairSchemeUncutLineIndex), "stair.stairSchemeUncutLineIndex", false });
+        own.references.Push ({ API_MaterialID, GetAttributeIndex (railing.railingSchemeSurfaceIndex), "railing.railingSchemeSurfaceIndex", false });
+        own.references.Push ({ API_LinetypeID, GetAttributeIndex (railing.railingSchemeCutLineIndex), "railing.railingSchemeCutLineIndex", false });
+        own.references.Push ({ API_LinetypeID, GetAttributeIndex (railing.railingSchemeUncutLineIndex), "railing.railingSchemeUncutLineIndex", false });
+        result.Push (own);
+
+        // The option sets are a GSPtr, sized as GetModelViewOptionDetails sizes them.
+        const API_GDLModelViewOptions* gdlOptions = options.gdlOptions;
+        const GSSize gdlOptionCount = gdlOptions != nullptr ? BMGetPtrSize (reinterpret_cast<GSConstPtr> (gdlOptions)) / sizeof (API_GDLModelViewOptions) : 0;
+        for (GSSize g = 0; g < gdlOptionCount; ++g) {
+            ModelViewOptionReferences gdlReferences = { modelViewOption.head.guid, name, GS::UniString (gdlOptions[g].name), {} };
+            for (const API_AttrTypeID type : { API_LinetypeID, API_FilltypeID, API_MaterialID, API_BuildingMaterialID }) {
+                std::set<Int32> used;
+                GS::Array<AttributeReference> found;
+                const ReindexJob job = { type, APIInvalidAttributeIndex, APIInvalidAttributeIndex, &used, &found };
+                RewriteAddPars (gdlOptions[g].params, job);
+                AddScannedReferences (type, found, gdlReferences.references);
+            }
+            result.Push (gdlReferences);
+        }
+        ACAPI_FreeGDLModelViewOptionsPtr (&modelViewOption.modelViewOpt.gdlOptions);
+    }
+    return readCount;
+}
+
 // The element that owns a sub-element (a curtain wall of its frame, a column of its segment, ...); APINULLGuid
 // for an element that is not part of another one.
 API_Guid GetParentElementGuid (const API_Guid& guid)
@@ -12235,10 +12294,10 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetInputParametersSchem
             },
             "sources": {
                 "type": "array",
-                "description": "What to check: the placed elements (element), the tool default settings (toolDefault), the Favorites (favorite) and the graphic override rules (overrideRule). All of them when omitted.",
+                "description": "What to check: the placed elements (element), the tool default settings (toolDefault), the Favorites (favorite), the graphic override rules (overrideRule) and the Model View Options combinations (modelViewOption). All of them when omitted.",
                 "items": {
                     "type": "string",
-                    "enum": ["element", "toolDefault", "favorite", "overrideRule"]
+                    "enum": ["element", "toolDefault", "favorite", "overrideRule", "modelViewOption"]
                 },
                 "minItems": 1
             }
@@ -12254,14 +12313,14 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetRawResponseSchema ()
         "properties": {
             "missingAttributes": {
                 "type": "array",
-                "description": "One item per reference to an attribute index that has no attribute in the project: first the placed elements in the order they were found (the floor plan first, then the views and layouts), then the tool defaults, then the Favorites, then the graphic override rules.",
+                "description": "One item per reference to an attribute index that has no attribute in the project: first the placed elements in the order they were found (the floor plan first, then the views and layouts), then the tool defaults, then the Favorites, then the graphic override rules, then the Model View Options combinations.",
                 "items": {
                     "type": "object",
                     "properties": {
                         "source": {
                             "type": "string",
-                            "enum": ["element", "toolDefault", "favorite", "overrideRule"],
-                            "description": "What refers to the missing attribute: a placed element, the default settings of a tool, a Favorite, or a graphic override rule."
+                            "enum": ["element", "toolDefault", "favorite", "overrideRule", "modelViewOption"],
+                            "description": "What refers to the missing attribute: a placed element, the default settings of a tool, a Favorite, a graphic override rule, or a Model View Options combination."
                         },
                         "elementId": {
                             "$ref": "#/ElementId",
@@ -12269,7 +12328,7 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetRawResponseSchema ()
                         },
                         "elementType": {
                             "type": "string",
-                            "description": "The element's type, as GetElementsByType names it: for a tool default or a Favorite the type of its tool. Missing for a graphic override rule."
+                            "description": "The element's type, as GetElementsByType names it: for a tool default or a Favorite the type of its tool. Missing for a graphic override rule and a Model View Options combination."
                         },
                         "overrideRuleId": {
                             "type": "object",
@@ -12285,6 +12344,25 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetRawResponseSchema ()
                         "overrideRuleName": {
                             "type": "string",
                             "description": "The name of the graphic override rule. Only for source overrideRule."
+                        },
+                        "modelViewOptionId": {
+                            "type": "object",
+                            "description": "The Model View Options combination, the id GetModelViewOptionDetails returns. Only for source modelViewOption.",
+                            "properties": {
+                                "guid": {
+                                    "$ref": "#/Guid"
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": ["guid"]
+                        },
+                        "modelViewOptionName": {
+                            "type": "string",
+                            "description": "The name of the Model View Options combination. Only for source modelViewOption."
+                        },
+                        "gdlOptionsName": {
+                            "type": "string",
+                            "description": "When the reference is a GDL parameter of the library part settings of a Model View Options combination, the name of that option set (the gdlOptions name GetModelViewOptionDetails returns). Missing otherwise."
                         },
                         "favoriteName": {
                             "type": "string",
@@ -12335,11 +12413,11 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetRawResponseSchema ()
                         },
                         "index": {
                             "type": "integer",
-                            "description": "The attribute index the element, tool default, Favorite or graphic override rule refers to, which no attribute of attributeType has."
+                            "description": "The attribute index the element, tool default, Favorite, graphic override rule or Model View Options combination refers to, which no attribute of attributeType has."
                         },
                         "field": {
                             "type": "string",
-                            "description": "The element's setting that holds the index, named as in the Archicad API (e.g. layer, contLtype, cWallFrameDefaults.material); for a graphic override rule lineType, fillOverride or surfaceOverride. Missing when gdlParameter is given."
+                            "description": "The element's setting that holds the index, named as in the Archicad API (e.g. layer, contLtype, cWallFrameDefaults.material); for a graphic override rule lineType, fillOverride or surfaceOverride; for a Model View Options combination the field as GetModelViewOptionDetails names it (e.g. stair.stairSchemeSurfaceIndex). Missing when gdlParameter is given."
                         },
                         "gdlParameter": {
                             "type": "string",
@@ -12365,6 +12443,10 @@ GS::Optional<GS::UniString> GetMissingAttributesCommand::GetRawResponseSchema ()
             "checkedOverrideRuleCount": {
                 "type": "integer",
                 "description": "The number of graphic override rules checked. Missing when the rules were not checked or could not be listed."
+            },
+            "checkedModelViewOptionCount": {
+                "type": "integer",
+                "description": "The number of Model View Options combinations checked. Missing when they were not checked."
             },
             "warnings": {
                 "type": "array",
@@ -12557,6 +12639,29 @@ GS::ObjectState GetMissingAttributesCommand::Execute (const GS::ObjectState& par
         } else {
             warnings.Push ("The graphic override rules could not be listed, so they were not checked.");
         }
+    }
+    if (IsSourceRequested (requestedSources, "modelViewOption")) {
+        GS::Array<ModelViewOptionReferences> modelViewOptions;
+        const Int32 modelViewOptionCount = CollectModelViewOptionReferences (modelViewOptions, warnings);
+        for (const ModelViewOptionReferences& modelViewOption : modelViewOptions) {
+            for (const ElementReference& reference : modelViewOption.references) {
+                if (!IsMissingReference (reference, existingIndices)) {
+                    continue;
+                }
+                GS::ObjectState entry;
+                entry.Add ("source", GS::UniString ("modelViewOption"));
+                entry.Add ("modelViewOptionId", CreateGuidObjectState (modelViewOption.guid));
+                entry.Add ("modelViewOptionName", modelViewOption.name);
+                if (!modelViewOption.gdlOptionsName.IsEmpty ()) {
+                    entry.Add ("gdlOptionsName", modelViewOption.gdlOptionsName);
+                }
+                entry.Add ("attributeType", typeNames[reference.type]);
+                entry.Add ("index", reference.index);
+                entry.Add (reference.gdlParameter ? "gdlParameter" : "field", reference.field);
+                missingAttributes (entry);
+            }
+        }
+        response.Add ("checkedModelViewOptionCount", modelViewOptionCount);
     }
 
     if (!warnings.IsEmpty ()) {
