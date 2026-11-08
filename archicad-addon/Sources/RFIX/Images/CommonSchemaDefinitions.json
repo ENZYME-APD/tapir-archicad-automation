@@ -10395,6 +10395,10 @@
             "thickness": {
                 "type": "number"
             },
+            "isFlipped": {
+                "type": "boolean",
+                "description": "The side of the shell's reference surface the thickness is applied to (API_ShellType::isFlipped), as CreateShells and ModifyShells take it."
+            },
             "buildingMaterialId": {
                 "$ref": "#/AttributeId"
             },
