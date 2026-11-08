@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 13:26 UTC",
+ "generatedAt": "2026-11-08 13:50 UTC",
  "counts": {
   "done": 568,
   "merged": 214,
@@ -706,7 +706,12 @@
     "redrawCountLimit"
    ],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2361,
+     "title": "Grasshopper: ShowNotificationBubble gets LargeIcon, RedrawCountLimit and Disabled"
+    }
+   ]
   },
   {
    "id": "GetSpecialFolders",

@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 13:26 UTC",
+ "generatedAt": "2026-11-08 13:50 UTC",
  "versions": [
   25,
   26,
@@ -11,9 +11,8 @@
  "counts": {
   "not applicable": 569,
   "done": 1908,
-  "skipped": 29,
-  "merged": 372,
-  "open": 1
+  "skipped": 30,
+  "merged": 372
  },
  "items": [
   {
@@ -5763,6 +5762,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2368,
+     "title": "Read and set per-edge cut angles of single-plane roofs"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -6728,6 +6731,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2368,
+     "title": "Read and set per-edge cut angles of single-plane roofs"
+    },
+    {
      "number": 995,
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
@@ -6871,7 +6878,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2368,
+     "title": "Read and set per-edge cut angles of single-plane roofs"
+    }
+   ],
    "issues": []
   },
   {
@@ -7790,7 +7802,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2368,
+     "title": "Read and set per-edge cut angles of single-plane roofs"
+    }
+   ],
    "issues": [
     {
      "number": 1914,
@@ -22471,8 +22488,8 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
-   "reason": "",
+   "status": "skipped",
+   "reason": "declared only in the Archicad 28-30 headers, where APIIo_ ids can no longer be called (ACAPI_Interface exists only in Archicad 25/26); OpenSettingsDialog uses ACAPI_Dialog_SettingsDialog (#2345)",
    "pullRequests": [],
    "issues": []
   },
@@ -25183,6 +25200,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2368,
+     "title": "Read and set per-edge cut angles of single-plane roofs"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -30778,6 +30799,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2368,
+     "title": "Read and set per-edge cut angles of single-plane roofs"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -37214,6 +37239,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2368,
+     "title": "Read and set per-edge cut angles of single-plane roofs"
+    },
     {
      "number": 2354,
      "title": "[4/4] Palette: run scripts at the same time, each with its own Run/Stop"
@@ -43845,6 +43874,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2368,
+     "title": "Read and set per-edge cut angles of single-plane roofs"
+    },
+    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     },
@@ -46939,6 +46972,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2368,
+     "title": "Read and set per-edge cut angles of single-plane roofs"
+    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"

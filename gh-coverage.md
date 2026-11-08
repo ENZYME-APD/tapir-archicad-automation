@@ -34,7 +34,7 @@ Parameters of the 782 used commands: 🟢 742 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 12 | 2 | 10 |  |  |  |  |  | 10 |  | 2 |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-08 13:26 UTC.
+Updated 2026-11-08 13:50 UTC.
 
 | | Status |
 |---|---|
@@ -83,7 +83,7 @@ A parameter counts as covered when the component's code names it (a static check
 - 🔀 `DeleteGhostRecords` 🟢 1/1 parameters – `DeleteGhostRecordsComponent`
 - ✅ `GetUserGSID` 🟢 0/0 parameters – `GetUserGSIDComponent`
 - ✅ `ShowAlert` 🟢 7/7 parameters – `ShowAlertComponent`
-- 🔀 `ShowNotificationBubble` 🟠 8/11 parameters – `ShowNotificationBubbleComponent`<br><sub>no input: `disabled`, `largeIcon`, `redrawCountLimit`</sub>
+- 🔀 `ShowNotificationBubble` 🟠 8/11 parameters – `ShowNotificationBubbleComponent` — [#2361](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2361 "Grasshopper: ShowNotificationBubble gets LargeIcon, RedrawCountLimit and Disabled")<br><sub>no input: `disabled`, `largeIcon`, `redrawCountLimit`</sub>
 - ✅ `GetSpecialFolders` 🟢 1/1 parameters – `GetSpecialFoldersComponent`
 - ✅ `GetEditModeState` 🟢 0/0 parameters – `GetEditModeStateComponent`
 - 🔀 `GetArchicadVisibility` 🟢 0/0 parameters – `GetArchicadVisibilityComponent`
