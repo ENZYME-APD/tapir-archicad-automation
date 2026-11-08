@@ -552,6 +552,44 @@
       ]
     },
     {
+      "slug": "room-finishes-from-zones",
+      "name": "Room Finishes from Zones",
+      "summary": "Adds the floor finish and the ceiling of the selected zones as slabs from a favorite or a material, and replaces them on a re-run.",
+      "category": "modeling-geometry",
+      "tags": [
+        "zones",
+        "finishes",
+        "slabs",
+        "ceilings",
+        "floors",
+        "interiors"
+      ],
+      "author": {
+        "name": "Tapir"
+      },
+      "license": "MIT",
+      "entry": "RoomFinishesFromZones.py",
+      "changes": "model",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version: floor finishes and ceilings.",
+          "commit": "0b92e42857596bd5cc8e5fe6df786afe229770e7",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/0b92e42857596bd5cc8e5fe6df786afe229770e7/marketplace/room-finishes-from-zones/RoomFinishesFromZones.py",
+          "sha256": "8cf09f67544c3246e9cc9a74ca6dac9c2e25ad119dfc6e00d7c724d3deb49d5c"
+        }
+      ]
+    },
+    {
       "slug": "room-finishes-schedule",
       "name": "Room Finishes Schedule",
       "summary": "Lists the floor, wall and ceiling finish areas of every zone, the walls split by surface, and saves the table as CSV or Excel.",
@@ -813,12 +851,13 @@
     {
       "slug": "zone-area-dashboard",
       "name": "Zone Area Dashboard",
-      "summary": "Shows zone areas grouped by name, number, category, story, property or classification, highlights groups in Archicad and exports to Excel or CSV.",
+      "summary": "Zone areas grouped by name, category, story, property or classification as cards, a table and charts; highlights groups in Archicad, exports to Excel or CSV.",
       "category": "zones-areas",
       "tags": [
         "zones",
         "areas",
         "dashboard",
+        "charts",
         "highlight",
         "excel",
         "csv"
@@ -830,6 +869,22 @@
       "entry": "ZoneAreaDashboard.py",
       "changes": "files",
       "versions": [
+        {
+          "version": "1.1.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "Charts: a donut of the share per group, a bar chart of the area per group, the area per story split by the colour-by value and a treemap of the zones, with legends; a click highlights their zones in Archicad. The Excel export adds the area per story as a sheet.",
+          "commit": "ba12d7f6898559db52d1ddd914e915ba8f76a9f2",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/ba12d7f6898559db52d1ddd914e915ba8f76a9f2/marketplace/zone-area-dashboard/ZoneAreaDashboard.py",
+          "sha256": "f4506d711f2f337e2c2899cd8ba608f15ed562d04180039eb9d9fc7362ad622d"
+        },
         {
           "version": "1.0.0",
           "archicadVersions": [
