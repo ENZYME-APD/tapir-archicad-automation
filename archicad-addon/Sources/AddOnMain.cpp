@@ -3595,10 +3595,13 @@ GSErrCode FreeData (void)
     // A palette script still running at quit kept its output reader thread alive after the add-on was unloaded,
     // and Archicad crashed in that thread (GS::Process::GetStandardErrorChannel on the destroyed palette).
     TapirPalette::StopRunningScriptOnQuit ();
+    // The version lookup may still wait for GitHub when Archicad quits right after starting.
+    VersionChecker::StopOnQuit ();
     // Must run here, not left to the static GS::Ref's destructor at DLL/dylib unload time - see
     // ScriptUIPalette::Release for why (real macOS crash on quit, EXC_BAD_ACCESS tearing down the
     // browser control after Archicad's own environment had already begun shutting down).
     ScriptUIPalette::Release ();
+    TapirPalette::Release ();
     // Deletes the files of the states CaptureElementState still holds.
     ReleaseAllElementStates ();
     return NoError;

@@ -548,6 +548,22 @@ void TapirPalette::StopRunningScriptOnQuit ()
     }
 }
 
+void TapirPalette::Release ()
+{
+    if (!HasInstance ()) {
+        return;
+    }
+    // An output reader that did not stop in StopRunningScriptOnQuit still uses its script and the palette:
+    // keep them alive on purpose (never freed) rather than destroying its executor under the running thread.
+    for (const std::unique_ptr<RunningScript>& script : instance->runningScripts) {
+        if (!script->executor.Wait (GS::Timeout (0, 0, 0, 0))) {
+            new GS::Ref<TapirPalette> (instance);
+            break;
+        }
+    }
+    instance = nullptr;
+}
+
 void TapirPalette::KeepPostedTask (const GS::RunnableTask& task)
 {
     std::lock_guard<std::mutex> lock (postedTasksMutex);
