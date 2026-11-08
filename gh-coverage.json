@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 21:21 UTC",
+ "generatedAt": "2026-11-08 21:46 UTC",
  "counts": {
   "done": 568,
   "merged": 220,
@@ -3187,11 +3187,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 3,
+   "parameterCount": 1,
    "coveredParameters": [
-    "elements",
-    "elements.elementId",
-    "elements.infoString"
+    "elements"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -7907,13 +7905,9 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 5,
+   "parameterCount": 1,
    "coveredParameters": [
-    "contentChanges",
-    "contentChanges.content",
-    "contentChanges.elementId",
-    "contentChanges.from",
-    "contentChanges.range"
+    "contentChanges"
    ],
    "missingParameters": [],
    "pullRequests": [],

@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 21:21 UTC",
+ "generatedAt": "2026-11-08 21:46 UTC",
  "versions": [
   25,
   26,
@@ -4592,12 +4592,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2382,
-     "title": "[1/6] Move the inline Element schemas into shared definitions"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25304,6 +25299,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2459,
+     "title": "Columns and beams: a width given alone also works on a linked cross section"
+    },
+    {
      "number": 2455,
      "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
@@ -37392,6 +37391,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2459,
+     "title": "Columns and beams: a width given alone also works on a linked cross section"
+    },
     {
      "number": 2455,
      "title": "ModifyShells: edit the profile of an existing extruded shell"

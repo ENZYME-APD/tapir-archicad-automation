@@ -34,7 +34,7 @@ Parameters of the 788 used commands: 🟢 750 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 12 | 2 | 10 |  |  |  |  |  | 12 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-08 21:21 UTC.
+Updated 2026-11-08 21:46 UTC.
 
 | | Status |
 |---|---|
@@ -188,7 +188,7 @@ A parameter counts as covered when the component's code names it (a static check
 - 🔀 `GetElementsByCriteria` 🟢 12/12 parameters – `GetElementsByCriteriaComponent` — [#2391](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2391 "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)")
 - ✅ `GetDetailsOfElements` 🟡 3/4 parameters – `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `FillsComponent`, `GetDetailsOfBeamsComponent`, `GetDetailsOfColumnsComponent`, `GetDetailsOfElementsComponent`, `GetDetailsOfLabelsComponent`, `GetDetailsOfPolylinesComponent`, `GetDetailsOfRoofsComponent`, `GetDetailsOfSlabsComponent`, `GetDetailsOfTextsComponent`, `GetDetailsOfWallsComponent`, `GetDetailsOfZonesComponent`, `HotspotsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent` — [#2391](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2391 "Grasshopper: components for the Section/Elevation details and the criteria/search commands (back to 100% coverage)"), [#1791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1791 "Grasshopper: Doors and Windows tool components, with their floor plan parameters")<br><sub>no input: `additionalFields`</sub>
 - ✅ `SetDetailsOfElements` 🟢 8/8 parameters – `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `FillsComponent`, `HotspotsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SetDetailsOfTextsComponent`, `SetDetailsOfWallsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent`
-- 🔀 `SetElementInfoStrings` 🟢 3/3 parameters – `SetElementInfoStringsComponent`
+- 🔀 `SetElementInfoStrings` 🟢 1/1 parameters – `SetElementInfoStringsComponent`
 - ✅ `GetElementCategories` 🟢 0/0 parameters – `GetElementCategoriesComponent`
 - ✅ `GetCategoryValuesOfElements` 🟢 2/2 parameters – `GetCategoryValuesOfElementsComponent`
 - ✅ `GetCategoryValuesOfDefaults` 🟢 2/2 parameters – `GetCategoryValuesOfDefaultsComponent`
@@ -335,7 +335,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `ModifyCurtainWalls` 🟢 9/9 parameters – `CurtainWallsComponent`, `ModifyCurtainWallsComponent`
 - 🔀 `ModifyCurtainWallFrames` 🟢 9/9 parameters – `ModifyCurtainWallFramesComponent`
 - 🔀 `ModifyStairs` 🟡 15/37 parameters – `ModifyStairsComponent`<br><sub>no input: `stairsWithDetails.extraBottomTread`, `stairsWithDetails.extraTopTread`, `stairsWithDetails.inputDirection`, `stairsWithDetails.numberingType`, `stairsWithDetails.risers`, `stairsWithDetails.risers.crossSection`, `stairsWithDetails.structureVisibility`, `stairsWithDetails.structures`, `stairsWithDetails.structures.bottomType`, `stairsWithDetails.structures.horizontalThickness`, `stairsWithDetails.structures.side`, `stairsWithDetails.treads`, `stairsWithDetails.treads.nosingSlant`, `stairsWithDetails.treads.nosingType`, `stairsWithDetails.treads.nosingValue`, `stairsWithDetails.treads.role`, `stairsWithDetails.treads.visible`, `stairsWithDetails.uniformDrainings`, `stairsWithDetails.uniformFinish`, `stairsWithDetails.uniformMonolithAttributes`, `stairsWithDetails.walkingLineOffset`, `stairsWithDetails.walkingLinePosition`</sub>
-- ✅ `ChangeTextContent` 🟢 5/5 parameters – `ChangeTextContentComponent`
+- ✅ `ChangeTextContent` 🟢 1/1 parameters – `ChangeTextContentComponent`
 - 🔀 `ModifyZones` 🟢 15/15 parameters – `ModifyZonesComponent`, `ZonesComponent`
 - ✅ `MeasureTexts` 🟢 10/10 parameters – `MeasureTextsComponent`
 - ✅ `GetElementPreviewImage` 🟢 5/5 parameters – `GetElementPreviewImageComponent`
