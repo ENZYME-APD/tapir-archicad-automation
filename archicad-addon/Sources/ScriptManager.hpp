@@ -102,6 +102,7 @@ private:
     bool                hasCatalogue = false;
     std::time_t         catalogueTime = 0;   // when the shown catalogue was fetched
     std::vector<size_t> shownScripts;       // the index in scripts of each row of scriptList
+    GS::UniString       slugToReselect;     // the script selected before LoadCatalogue replaced scripts
     bool                hiddenByArchicad = false;
 
     // Fetches the catalogue (falling back to the cached copy, see the top of the class) and fills the window.

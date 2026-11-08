@@ -511,6 +511,12 @@ void ScriptManager::Hide ()
 
 void ScriptManager::LoadCatalogue ()
 {
+    // shownScripts holds indices into scripts, which this replaces: note the selected script by its slug
+    // and empty the list first, so nothing reads the old indices of a smaller catalogue.
+    const Script* selectedBefore = GetSelectedScript ();
+    slugToReselect = selectedBefore != nullptr ? selectedBefore->slug : GS::EmptyUniString;
+    shownScripts.clear ();
+
     const GS::UniString& configuredUrl = Config::Instance ().MarketplaceCatalogueUrl ();
     const GS::UniString url = configuredUrl.IsEmpty () ? GS::UniString (DefaultCatalogueUrl) : configuredUrl;
 
@@ -712,7 +718,8 @@ void ScriptManager::RefreshScriptList ()
 {
     // The selected script stays selected when it is still listed.
     const Script* selectedBefore = GetSelectedScript ();
-    const GS::UniString selectedSlug = selectedBefore != nullptr ? selectedBefore->slug : GS::EmptyUniString;
+    const GS::UniString selectedSlug = selectedBefore != nullptr ? selectedBefore->slug : slugToReselect;
+    slugToReselect = GS::EmptyUniString;
 
     const GS::UniString category = GetSelectedCategory ();
     shownScripts.clear ();
@@ -762,7 +769,7 @@ void ScriptManager::RefreshScriptList ()
 const ScriptManager::Script* ScriptManager::GetSelectedScript () const
 {
     const short item = scriptList.GetSelectedItem ();
-    if (item < 1 || static_cast<size_t> (item) > shownScripts.size ()) {
+    if (item < 1 || static_cast<size_t> (item) > shownScripts.size () || shownScripts[static_cast<size_t> (item - 1)] >= scripts.size ()) {
         return nullptr;
     }
     return &scripts[shownScripts[static_cast<size_t> (item - 1)]];
