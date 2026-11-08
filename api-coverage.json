@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 00:43 UTC",
+ "generatedAt": "2026-11-08 01:11 UTC",
  "versions": [
   25,
   26,
@@ -9,12 +9,13 @@
   30
  ],
  "counts": {
-  "not applicable": 570,
+  "not applicable": 569,
   "done": 1908,
   "skipped": 29,
-  "merged": 324,
-  "in progress": 37,
-  "claimed": 11
+  "merged": 335,
+  "in progress": 27,
+  "claimed": 1,
+  "open": 10
  },
  "items": [
   {
@@ -2923,18 +2924,6 @@
      "title": "[1/2] Toolbox: extend GetCurrentTool, add SetCurrentTool and GetToolboxItems"
     },
     {
-     "number": 2263,
-     "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
-    },
-    {
-     "number": 2262,
-     "title": "[2/3] ResolveNames: look up properties and classifications"
-    },
-    {
-     "number": 2260,
-     "title": "[1/3] ResolveNames: check a user's words against the project's names"
-    },
-    {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
     }
@@ -2957,20 +2946,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2263,
-     "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
-    },
-    {
-     "number": 2262,
-     "title": "[2/3] ResolveNames: look up properties and classifications"
-    },
-    {
-     "number": 2260,
-     "title": "[1/3] ResolveNames: check a user's words against the project's names"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4449,16 +4425,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2263,
-     "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
-    },
-    {
-     "number": 2262,
-     "title": "[2/3] ResolveNames: look up properties and classifications"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4542,16 +4509,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2263,
-     "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
-    },
-    {
-     "number": 2262,
-     "title": "[2/3] ResolveNames: look up properties and classifications"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4572,16 +4530,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2263,
-     "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
-    },
-    {
-     "number": 2262,
-     "title": "[2/3] ResolveNames: look up properties and classifications"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5232,12 +5181,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2275,
-     "title": "Add ShowNotificationBubble command (AC29+)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7854,10 +7798,6 @@
      "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
     },
     {
-     "number": 2255,
-     "title": "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -7885,20 +7825,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2263,
-     "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
-    },
-    {
-     "number": 2262,
-     "title": "[2/3] ResolveNames: look up properties and classifications"
-    },
-    {
-     "number": 2260,
-     "title": "[1/3] ResolveNames: check a user's words against the project's names"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -8819,12 +8746,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2255,
-     "title": "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13069,20 +12991,10 @@
    "olderNames": [
     "ACAPI_Protection_GetProtectionMode"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2273,
-     "title": "Add GetArchicadLicenseInfo: Archicad license type and SSA level"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2270,
-     "title": "Expose the Archicad license type and SSA level"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Licensing_GetSerialNumber",
@@ -13145,20 +13057,10 @@
    "olderNames": [
     "ACAPI_Protection_IsSSALevelAtLeast"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2273,
-     "title": "Add GetArchicadLicenseInfo: Archicad license type and SSA level"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2270,
-     "title": "Expose the Archicad license type and SSA level"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI_Markup_AddComment",
@@ -14895,7 +14797,7 @@
    "olderNames": [
     "ACAPI_Notify_CatchToolChange"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -14917,10 +14819,6 @@
     {
      "number": 2279,
      "title": "[2/6] Notification clients: Project Navigator item events (notifyOnViewEvents)"
-    },
-    {
-     "number": 2274,
-     "title": "[1/6] Notify clients of tool changes (notifyOnToolChange)"
     }
    ],
    "issues": [
@@ -16558,20 +16456,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2263,
-     "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
-    },
-    {
-     "number": 2262,
-     "title": "[2/3] ResolveNames: look up properties and classifications"
-    },
-    {
-     "number": 2260,
-     "title": "[1/3] ResolveNames: check a user's words against the project's names"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16840,14 +16725,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2263,
-     "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
-    },
-    {
-     "number": 2262,
-     "title": "[2/3] ResolveNames: look up properties and classifications"
-    },
-    {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
     }
@@ -16917,14 +16794,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2263,
-     "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
-    },
-    {
-     "number": 2262,
-     "title": "[2/3] ResolveNames: look up properties and classifications"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -19781,12 +19650,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2275,
-     "title": "Add ShowNotificationBubble command (AC29+)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20147,12 +20011,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2275,
-     "title": "Add ShowNotificationBubble command (AC29+)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20261,12 +20120,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2275,
-     "title": "Add ShowNotificationBubble command (AC29+)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21763,10 +21617,6 @@
      "title": "[1/6] Add OpenSettingsDialog command"
     },
     {
-     "number": 2273,
-     "title": "Add GetArchicadLicenseInfo: Archicad license type and SSA level"
-    },
-    {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
     }
@@ -23236,14 +23086,9 @@
     25
    ],
    "olderNames": [],
-   "status": "not applicable",
-   "reason": "add-on licensing",
-   "pullRequests": [
-    {
-     "number": 2273,
-     "title": "Add GetArchicadLicenseInfo: Archicad license type and SSA level"
-    }
-   ],
+   "status": "merged",
+   "reason": "",
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -26079,10 +25924,6 @@
     {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
-    },
-    {
-     "number": 2257,
-     "title": "Columns and Beams: Create updates the elements the component created before"
     },
     {
      "number": 1292,
@@ -31732,10 +31573,6 @@
     {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
-    },
-    {
-     "number": 2255,
-     "title": "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"
     },
     {
      "number": 2148,
@@ -38206,10 +38043,6 @@
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
     },
     {
-     "number": 2257,
-     "title": "Columns and Beams: Create updates the elements the component created before"
-    },
-    {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
     },
@@ -43804,14 +43637,6 @@
     {
      "number": 2279,
      "title": "[2/6] Notification clients: Project Navigator item events (notifyOnViewEvents)"
-    },
-    {
-     "number": 2274,
-     "title": "[1/6] Notify clients of tool changes (notifyOnToolChange)"
-    },
-    {
-     "number": 2255,
-     "title": "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"
     }
    ],
    "issues": []
@@ -43959,12 +43784,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2255,
-     "title": "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44876,10 +44696,6 @@
     {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
-    },
-    {
-     "number": 2255,
-     "title": "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"
     },
     {
      "number": 2148,
@@ -47991,10 +47807,6 @@
     {
      "number": 2258,
      "title": "Add GetCurrentTool, Get/SetLayerOfElementDefaults and RenameAttributes"
-    },
-    {
-     "number": 2255,
-     "title": "[4/4] Report changes of grouping, design option, solid, trim, merge and MEP commands to notification clients"
     },
     {
      "number": 2148,
@@ -53801,20 +53613,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2275,
-     "title": "Add ShowNotificationBubble command (AC29+)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2271,
-     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::GetIcon",
@@ -53828,15 +53630,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2271,
-     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::GetLargeIcon",
@@ -53850,15 +53647,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2271,
-     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::GetOffset",
@@ -53872,15 +53664,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2271,
-     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::GetRedrawCountLimit",
@@ -53894,15 +53681,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2271,
-     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::GetText",
@@ -53916,15 +53698,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2271,
-     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::GetTimeout",
@@ -53938,15 +53715,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2271,
-     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::SetDisabled",
@@ -53960,15 +53732,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2271,
-     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::SetIcon",
@@ -53982,20 +53749,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2275,
-     "title": "Add ShowNotificationBubble command (AC29+)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2271,
-     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::SetLargeIcon",
@@ -54009,15 +53766,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2271,
-     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::SetOffset",
@@ -54031,20 +53783,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2275,
-     "title": "Add ShowNotificationBubble command (AC29+)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2271,
-     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::SetRedrawCountLimit",
@@ -54058,15 +53800,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2271,
-     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::SetText",
@@ -54080,20 +53817,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2275,
-     "title": "Add ShowNotificationBubble command (AC29+)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2271,
-     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::SetTimeout",
@@ -54107,20 +53834,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2275,
-     "title": "Add ShowNotificationBubble command (AC29+)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2271,
-     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::Show",
@@ -54134,20 +53851,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2275,
-     "title": "Add ShowNotificationBubble command (AC29+)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2271,
-     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubbleManager::CreateNotificationBubble",
@@ -54161,20 +53868,10 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2275,
-     "title": "Add ShowNotificationBubble command (AC29+)"
-    }
-   ],
-   "issues": [
-    {
-     "number": 2271,
-     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
-    }
-   ]
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubbleManager::RegisterNotificationBubble",
@@ -54188,15 +53885,10 @@
     30
    ],
    "olderNames": [],
-   "status": "claimed",
+   "status": "open",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2271,
-     "title": "ShowNotificationBubble: non-blocking notification bubbles (AC29+)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI::UniqueID::GetGuid",
@@ -54760,16 +54452,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2263,
-     "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
-    },
-    {
-     "number": 2262,
-     "title": "[2/3] ResolveNames: look up properties and classifications"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -55610,14 +55293,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2263,
-     "title": "[3/3] Docs for AI: check names with ResolveNames before guessing (#2259)"
-    },
-    {
-     "number": 2262,
-     "title": "[2/3] ResolveNames: look up properties and classifications"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"

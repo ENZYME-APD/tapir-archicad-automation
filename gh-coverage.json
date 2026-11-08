@@ -1,8 +1,9 @@
 {
- "generatedAt": "2026-11-08 00:43 UTC",
+ "generatedAt": "2026-11-08 01:11 UTC",
  "counts": {
   "done": 568,
   "merged": 192,
+  "open": 3,
   "not applicable": 1
  },
  "parameters": {
@@ -85,6 +86,21 @@
     }
    ],
    "parameters": "all",
+   "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "GetArchicadLicenseInfo",
+   "group": "Application Commands",
+   "version": "1.8.1",
+   "brief": "Retrieves the license the running Archicad runs on: its type (Full, Education, Trial, Demo, Start or BIMcloud Team Client), the raw protection mode with its bits by name, and the highest Software Service Agreement (SSA) level of the license, so a script can warn before it uses a feature the license lacks. The SSA level is not available in Archicad 25.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
@@ -553,6 +569,21 @@
      "title": "audit what Tapir leaves out of the Archicad API"
     }
    ]
+  },
+  {
+   "id": "ShowNotificationBubble",
+   "group": "Application Commands",
+   "version": "1.8.1",
+   "brief": "Shows a non-blocking notification bubble with a message in the current Archicad window, e.g. to report progress or a result without stopping the user as ShowAlert does. The bubble disappears by itself after the timeout. It is shown at a model coordinate or a pixel position of the current view, by default at the center of the current 2D view. Requires Archicad 29 or later.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 8,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
   },
   {
    "id": "GetSpecialFolders",
@@ -2301,6 +2332,21 @@
    "coveredParameters": [
     "isOn"
    ],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "ResolveNames",
+   "group": "Project Commands",
+   "version": "1.8.1",
+   "brief": "Looks up words or phrases (for example from a user's question) among the names of the open project before they are passed to other commands: stories, layers, layer combinations, building materials, composites, profiles, surfaces, fills, lines, zone categories, element types (by API name and, from Archicad 27, by the name the Archicad interface shows), properties (by name, and by group and name together) and classifications (systems by name and version, items of every system by name and ID). For each name it returns 'found' with the items named exactly so, 'closeMatches' with the nearest names, best first (ranked by differences in case, accents, spacing and separators, shared words, one name containing the other and a few differing characters), or 'notFound' when nothing in the project is close, meaning the project has no such item and it must not be guessed. Each match carries what the other commands take: the story index, the attribute id and index, the elementType, the propertyId (with the property's group, value type and the classification items a custom property is available for), or the classificationSystemId and classificationItemId. Matching is lexical and deterministic. Read only.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 4,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": []
@@ -6934,7 +6980,7 @@
    "id": "ModifyBeams",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies Beam elements based on the given parameters. CreateBeams takes the same cut fill pens and cover fill. Not written: the surfaces of the beam segments, and the cut fill pens before Archicad 27.",
+   "brief": "Modifies Beam elements based on the given parameters. CreateBeams takes the same cut fill pens and cover fill, and the same absolute zCoordinate of the reference line (with an optional floorIndex). Not written: the surfaces of the beam segments, and the cut fill pens before Archicad 27.",
    "status": "done",
    "reason": "",
    "components": [
@@ -6948,7 +6994,7 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 24,
+   "parameterCount": 26,
    "coveredParameters": [
     "beamsWithDetails",
     "beamsWithDetails.anchorPoint",
@@ -6962,6 +7008,7 @@
     "beamsWithDetails.cutFillPen",
     "beamsWithDetails.elementId",
     "beamsWithDetails.endCoordinate",
+    "beamsWithDetails.floorIndex",
     "beamsWithDetails.height",
     "beamsWithDetails.holes",
     "beamsWithDetails.isFlipped",
@@ -6973,7 +7020,8 @@
     "beamsWithDetails.profileId",
     "beamsWithDetails.slantAngle",
     "beamsWithDetails.verticalCurveHeight",
-    "beamsWithDetails.width"
+    "beamsWithDetails.width",
+    "beamsWithDetails.zCoordinate"
    ],
    "missingParameters": [],
    "pullRequests": [],
@@ -7873,7 +7921,7 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 10,
+   "parameterCount": 11,
    "coveredParameters": [
     "elementTypesToObserve",
     "host",
@@ -7883,6 +7931,7 @@
     "notifyOnProjectEvents",
     "notifyOnReservationChanges",
     "notifyOnSelectionChange",
+    "notifyOnToolChange",
     "notifyOnWindowChange",
     "port"
    ],
