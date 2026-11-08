@@ -16043,6 +16043,63 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetInputParametersSchema () c
                         "floorIndex": {
                             "type": "integer",
                             "description": "The new home story index (as returned by GetStories). The bottom offset is kept, or set from bottomOffset when that is given too, so the railing moves with the story."
+                        },
+                        "segments": {
+                            "type": "array",
+                            "description": "Changes to single segments of the railing, applied after height. Only the given fields of the given segments change; the other segments, the nodes and the railing's GUID stay as they are.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "index": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "description": "The index of the segment in the segments list GetDetailsOfElements returns (0 is the segment from the first to the second node)."
+                                    },
+                                    "height": {
+                                        "type": "number",
+                                        "exclusiveMinimum": 0.0,
+                                        "description": "The new height of this segment."
+                                    },
+                                    "lateralOffset": {
+                                        "type": "number",
+                                        "description": "The new sideways offset of this segment from the reference line (API_RailingSegmentType::yOffset)."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "index"
+                                ]
+                            }
+                        },
+                        "nodes": {
+                            "type": "array",
+                            "description": "Changes to single nodes of the railing, applied after the segments. Only the given fields of the given nodes change.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "index": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "description": "The index of the node in the nodes list GetDetailsOfElements returns (one node per vertex of the reference line)."
+                                    },
+                                    "postOffset": {
+                                        "type": "number",
+                                        "description": "The new offset of the node's post from the node (API_RailingNodeType::postOffset)."
+                                    },
+                                    "elevation": {
+                                        "type": "number",
+                                        "description": "The new vertical offset of the node (API_RailingNodeType::elevation)."
+                                    },
+                                    "unifyPatterns": {
+                                        "type": "boolean",
+                                        "description": "True continues the pattern of the segments across the node, false crops the segments at it (API_RailingNodeType::unifyPatterns)."
+                                    }
+                                },
+                                "additionalProperties": false,
+                                "required": [
+                                    "index"
+                                ]
+                            }
                         }
                     },
                     "additionalProperties": false,
@@ -16064,11 +16121,161 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetRawResponseSchema () const
     return ModifyWallsCommand ().GetRawResponseSchema ();
 }
 
-// Only fields of the railing element itself are changed, never its memo: the reference line, nodes,
-// segments, posts and rails stay as they are. The height goes to defSegment.height, as the DevKit's
-// Element_Test (Do_Railing_Edit) changes it. The railing is read back afterwards, so a value Archicad
-// did not take (for example a base it derives from the elevations of the reference line vertices,
-// memo.polyZCoords) is reported as a failure instead of a success.
+namespace {
+
+struct RailingSegmentChange {
+    UInt32                  index = 0;
+    std::optional<double>   height;
+    std::optional<double>   lateralOffset;
+};
+
+struct RailingNodeChange {
+    UInt32                  index = 0;
+    std::optional<double>   postOffset;
+    std::optional<double>   elevation;
+    std::optional<bool>     unifyPatterns;
+};
+
+// Reads the "segments" or "nodes" list of a ModifyRailings item. Returns an error text, or nothing.
+GS::Optional<GS::UniString> ReadRailingSegmentChanges (const GS::ObjectState& item, UInt32 nSegments, GS::Array<RailingSegmentChange>& changes)
+{
+    GS::Array<GS::ObjectState> list;
+    if (!item.Get ("segments", list)) {
+        return GS::NoValue;
+    }
+    for (const GS::ObjectState& entry : list) {
+        Int32 index = -1;
+        if (!entry.Get ("index", index) || index < 0 || static_cast<UInt32> (index) >= nSegments) {
+            return GS::UniString::Printf ("segments: index %d is not a segment of the railing, which has %u segments.", static_cast<int> (index), static_cast<unsigned> (nSegments));
+        }
+        RailingSegmentChange change;
+        change.index = static_cast<UInt32> (index);
+        double value = 0.0;
+        if (entry.Get ("height", value)) {
+            if (value <= 0.0) {
+                return GS::UniString::Printf ("segments: the height of segment %d must be positive.", static_cast<int> (index));
+            }
+            change.height = value;
+        }
+        if (entry.Get ("lateralOffset", value)) {
+            change.lateralOffset = value;
+        }
+        if (!change.height.has_value () && !change.lateralOffset.has_value ()) {
+            return GS::UniString::Printf ("segments: no fields to modify for segment %d.", static_cast<int> (index));
+        }
+        changes.Push (change);
+    }
+    return GS::NoValue;
+}
+
+GS::Optional<GS::UniString> ReadRailingNodeChanges (const GS::ObjectState& item, UInt32 nNodes, GS::Array<RailingNodeChange>& changes)
+{
+    GS::Array<GS::ObjectState> list;
+    if (!item.Get ("nodes", list)) {
+        return GS::NoValue;
+    }
+    for (const GS::ObjectState& entry : list) {
+        Int32 index = -1;
+        if (!entry.Get ("index", index) || index < 0 || static_cast<UInt32> (index) >= nNodes) {
+            return GS::UniString::Printf ("nodes: index %d is not a node of the railing, which has %u nodes.", static_cast<int> (index), static_cast<unsigned> (nNodes));
+        }
+        RailingNodeChange change;
+        change.index = static_cast<UInt32> (index);
+        double value = 0.0;
+        if (entry.Get ("postOffset", value)) {
+            change.postOffset = value;
+        }
+        if (entry.Get ("elevation", value)) {
+            change.elevation = value;
+        }
+        bool flag = false;
+        if (entry.Get ("unifyPatterns", flag)) {
+            change.unifyPatterns = flag;
+        }
+        if (!change.postOffset.has_value () && !change.elevation.has_value () && !change.unifyPatterns.has_value ()) {
+            return GS::UniString::Printf ("nodes: no fields to modify for node %d.", static_cast<int> (index));
+        }
+        changes.Push (change);
+    }
+    return GS::NoValue;
+}
+
+// Changes one segment of a railing as a subelement, the way the DevKit's Element_Test
+// (Do_Railing_Elevate_Node) changes a node: its head is taken from the railing's memo, read with
+// ACAPI_Element_Get and changed with a mask of only the given fields. The memo is read again for
+// every change, so a subelement Archicad regenerated after an earlier change is still found.
+GSErrCode ChangeRailingSegment (const API_Guid& railingGuid, const RailingSegmentChange& change)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    GSErrCode err = ACAPI_Element_GetMemo (railingGuid, &memo, APIMemoMask_RailingSegment);
+    if (err != NoError) {
+        return err;
+    }
+    if (memo.railingSegments == nullptr) {
+        return APIERR_GENERAL;
+    }
+    API_Element segment = {};
+    segment.header = memo.railingSegments[change.index].head;
+    err = ACAPI_Element_Get (&segment);
+    if (err != NoError) {
+        return err;
+    }
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    if (change.height.has_value ()) {
+        segment.railingSegment.height = *change.height;
+        ACAPI_ELEMENT_MASK_SET (mask, API_RailingSegmentType, height);
+    }
+    if (change.lateralOffset.has_value ()) {
+        segment.railingSegment.yOffset = *change.lateralOffset;
+        ACAPI_ELEMENT_MASK_SET (mask, API_RailingSegmentType, yOffset);
+    }
+    return ACAPI_Element_Change (&segment, &mask, nullptr, 0, true);
+}
+
+GSErrCode ChangeRailingNode (const API_Guid& railingGuid, const RailingNodeChange& change)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    GSErrCode err = ACAPI_Element_GetMemo (railingGuid, &memo, APIMemoMask_RailingNode);
+    if (err != NoError) {
+        return err;
+    }
+    if (memo.railingNodes == nullptr) {
+        return APIERR_GENERAL;
+    }
+    API_Element node = {};
+    node.header = memo.railingNodes[change.index].head;
+    err = ACAPI_Element_Get (&node);
+    if (err != NoError) {
+        return err;
+    }
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    if (change.postOffset.has_value ()) {
+        node.railingNode.postOffset = *change.postOffset;
+        ACAPI_ELEMENT_MASK_SET (mask, API_RailingNodeType, postOffset);
+    }
+    if (change.elevation.has_value ()) {
+        node.railingNode.elevation = *change.elevation;
+        ACAPI_ELEMENT_MASK_SET (mask, API_RailingNodeType, elevation);
+    }
+    if (change.unifyPatterns.has_value ()) {
+        node.railingNode.unifyPatterns = *change.unifyPatterns;
+        ACAPI_ELEMENT_MASK_SET (mask, API_RailingNodeType, unifyPatterns);
+    }
+    return ACAPI_Element_Change (&node, &mask, nullptr, 0, true);
+}
+
+} // namespace
+
+// The fields of the railing element itself are changed first, without its memo: the reference line,
+// posts and rails stay as they are. The height goes to defSegment.height, as the DevKit's
+// Element_Test (Do_Railing_Edit) changes it. Then single segments and nodes are changed as
+// subelements (ChangeRailingSegment, ChangeRailingNode). The railing is read back afterwards, so a
+// value Archicad did not take (for example a base it derives from the elevations of the reference
+// line vertices, memo.polyZCoords) is reported as a failure instead of a success.
 GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> items;
@@ -16112,29 +16319,64 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("floorIndex %d is not a story of the project; see GetStories for the valid story indices.", static_cast<int> (floorIndex))));
                 continue;
             }
-            if (!hasHeight && !hasBottomOffset && !hasFloorIndex) {
+            GS::Array<RailingSegmentChange> segmentChanges;
+            GS::Optional<GS::UniString> changeError = ReadRailingSegmentChanges (item, element.railing.nSegments, segmentChanges);
+            GS::Array<RailingNodeChange> nodeChanges;
+            if (!changeError.HasValue ()) {
+                changeError = ReadRailingNodeChanges (item, element.railing.nNodes, nodeChanges);
+            }
+            if (changeError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, changeError.Get ()));
+                continue;
+            }
+            if (!hasHeight && !hasBottomOffset && !hasFloorIndex && segmentChanges.IsEmpty () && nodeChanges.IsEmpty ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No railing fields to modify."));
                 continue;
             }
 
-            API_Element mask = {};
-            ACAPI_ELEMENT_MASK_CLEAR (mask);
-            if (hasHeight) {
-                element.railing.defSegment.height = height;
-                ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, defSegment.height);
-            }
-            if (hasBottomOffset) {
-                element.railing.bottomOffset = bottomOffset;
-                ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, bottomOffset);
-            }
-            if (hasFloorIndex) {
-                element.header.floorInd = floorIndex;
-                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+            if (hasHeight || hasBottomOffset || hasFloorIndex) {
+                API_Element mask = {};
+                ACAPI_ELEMENT_MASK_CLEAR (mask);
+                if (hasHeight) {
+                    element.railing.defSegment.height = height;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, defSegment.height);
+                }
+                if (hasBottomOffset) {
+                    element.railing.bottomOffset = bottomOffset;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, bottomOffset);
+                }
+                if (hasFloorIndex) {
+                    element.header.floorInd = floorIndex;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+                }
+
+                err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, "Failed to modify railing."));
+                    continue;
+                }
             }
 
-            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
-            if (err != NoError) {
-                results.Push (CreateFailedExecutionResult (err, "Failed to modify railing."));
+            // Single segments and nodes come after the railing, so a segment's height overrides height.
+            GS::UniString subelementError;
+            for (const RailingSegmentChange& change : segmentChanges) {
+                err = ChangeRailingSegment (element.header.guid, change);
+                if (err != NoError) {
+                    subelementError = GS::UniString::Printf ("Failed to modify segment %u of the railing.", static_cast<unsigned> (change.index));
+                    break;
+                }
+            }
+            if (subelementError.IsEmpty ()) {
+                for (const RailingNodeChange& change : nodeChanges) {
+                    err = ChangeRailingNode (element.header.guid, change);
+                    if (err != NoError) {
+                        subelementError = GS::UniString::Printf ("Failed to modify node %u of the railing.", static_cast<unsigned> (change.index));
+                        break;
+                    }
+                }
+            }
+            if (!subelementError.IsEmpty ()) {
+                results.Push (CreateFailedExecutionResult (err, subelementError));
                 continue;
             }
 
@@ -16153,15 +16395,80 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
             if (std::abs (changed.railing.bottomOffset - element.railing.bottomOffset) > tolerance) {
                 notApplied += GS::UniString::Printf (" bottomOffset is %.4f instead of %.4f.", changed.railing.bottomOffset, element.railing.bottomOffset);
             }
-            if (hasHeight) {
+            if (hasHeight || !segmentChanges.IsEmpty () || !nodeChanges.IsEmpty ()) {
+                // The value each segment and node must have now; the last change given for one wins.
+                std::map<UInt32, double> expectedHeights;
+                std::map<UInt32, double> expectedLateralOffsets;
+                if (hasHeight) {
+                    for (UInt32 i = 0; i < changed.railing.nSegments; ++i) {
+                        expectedHeights[i] = height;
+                    }
+                }
+                for (const RailingSegmentChange& change : segmentChanges) {
+                    if (change.height.has_value ()) {
+                        expectedHeights[change.index] = *change.height;
+                    }
+                    if (change.lateralOffset.has_value ()) {
+                        expectedLateralOffsets[change.index] = *change.lateralOffset;
+                    }
+                }
+                std::map<UInt32, double> expectedPostOffsets;
+                std::map<UInt32, double> expectedElevations;
+                std::map<UInt32, bool> expectedUnifyPatterns;
+                for (const RailingNodeChange& change : nodeChanges) {
+                    if (change.postOffset.has_value ()) {
+                        expectedPostOffsets[change.index] = *change.postOffset;
+                    }
+                    if (change.elevation.has_value ()) {
+                        expectedElevations[change.index] = *change.elevation;
+                    }
+                    if (change.unifyPatterns.has_value ()) {
+                        expectedUnifyPatterns[change.index] = *change.unifyPatterns;
+                    }
+                }
+
                 API_ElementMemo memo = {};
                 const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-                if (ACAPI_Element_GetMemo (changed.header.guid, &memo, APIMemoMask_RailingSegment) == NoError && memo.railingSegments != nullptr) {
-                    for (UInt32 i = 0; i < changed.railing.nSegments; ++i) {
-                        if (std::abs (memo.railingSegments[i].height - height) > tolerance) {
-                            notApplied += GS::UniString::Printf (" The height of segment %u is %.4f.", i, memo.railingSegments[i].height);
-                            break;
-                        }
+                err = ACAPI_Element_GetMemo (changed.header.guid, &memo, APIMemoMask_RailingSegment | APIMemoMask_RailingNode);
+                if (err != NoError) {
+                    results.Push (CreateFailedExecutionResult (err, "Failed to read the segments and nodes of the railing back after the change."));
+                    continue;
+                }
+                const auto hasSegment = [&] (UInt32 index) { return memo.railingSegments != nullptr && index < changed.railing.nSegments; };
+                const auto hasNode = [&] (UInt32 index) { return memo.railingNodes != nullptr && index < changed.railing.nNodes; };
+                for (const auto& expected : expectedHeights) {
+                    if (!hasSegment (expected.first)) {
+                        notApplied += GS::UniString::Printf (" Segment %u is gone.", static_cast<unsigned> (expected.first));
+                    } else if (std::abs (memo.railingSegments[expected.first].height - expected.second) > tolerance) {
+                        notApplied += GS::UniString::Printf (" The height of segment %u is %.4f.", static_cast<unsigned> (expected.first), memo.railingSegments[expected.first].height);
+                    }
+                }
+                for (const auto& expected : expectedLateralOffsets) {
+                    if (!hasSegment (expected.first)) {
+                        notApplied += GS::UniString::Printf (" Segment %u is gone.", static_cast<unsigned> (expected.first));
+                    } else if (std::abs (memo.railingSegments[expected.first].yOffset - expected.second) > tolerance) {
+                        notApplied += GS::UniString::Printf (" The lateral offset of segment %u is %.4f.", static_cast<unsigned> (expected.first), memo.railingSegments[expected.first].yOffset);
+                    }
+                }
+                for (const auto& expected : expectedPostOffsets) {
+                    if (!hasNode (expected.first)) {
+                        notApplied += GS::UniString::Printf (" Node %u is gone.", static_cast<unsigned> (expected.first));
+                    } else if (std::abs (memo.railingNodes[expected.first].postOffset - expected.second) > tolerance) {
+                        notApplied += GS::UniString::Printf (" The post offset of node %u is %.4f.", static_cast<unsigned> (expected.first), memo.railingNodes[expected.first].postOffset);
+                    }
+                }
+                for (const auto& expected : expectedElevations) {
+                    if (!hasNode (expected.first)) {
+                        notApplied += GS::UniString::Printf (" Node %u is gone.", static_cast<unsigned> (expected.first));
+                    } else if (std::abs (memo.railingNodes[expected.first].elevation - expected.second) > tolerance) {
+                        notApplied += GS::UniString::Printf (" The elevation of node %u is %.4f.", static_cast<unsigned> (expected.first), memo.railingNodes[expected.first].elevation);
+                    }
+                }
+                for (const auto& expected : expectedUnifyPatterns) {
+                    if (!hasNode (expected.first)) {
+                        notApplied += GS::UniString::Printf (" Node %u is gone.", static_cast<unsigned> (expected.first));
+                    } else if (memo.railingNodes[expected.first].unifyPatterns != expected.second) {
+                        notApplied += GS::UniString::Printf (" unifyPatterns of node %u is %s.", static_cast<unsigned> (expected.first), memo.railingNodes[expected.first].unifyPatterns ? "true" : "false");
                     }
                 }
             }
