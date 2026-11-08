@@ -402,7 +402,14 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   one PR gets a split plan (`<!-- claude-split-plan: parts=N -->`, at most six
   parts; never for a `marketplace/` script, which is always one PR) and one PR per
   part, opened one run at a time (`next-part` job) on
-  `claude/issue-<n>-part<k>-…` branches with `Part <k> of <N> of #<n>`. No label
+  `claude/issue-<n>-part<k>-…` branches with `Part <k> of <N> of #<n>`; a run
+  that opened its part still starts the next one when it then fails, and one that
+  opened none ends the chain. Merging a part restarts a stopped chain:
+  `claude_split_next_part.yml` (`pull_request_target: closed`, and dispatched by
+  `claude_auto_merge.yml`, whose `GITHUB_TOKEN` merges start no run; no model, no
+  checkout; `CLAUDE_SPLIT_NEXT_PART=false` turns it off) dispatches the issue
+  when it is open, has fewer part PRs than planned and no run queued or in
+  progress (#2145). No label
   is needed; applying `claude-fix` re-runs `fix` on an existing issue, and a
   `workflow_dispatch` with an `issue_number` runs it on that issue. Its header
   documents the security bounds and the repository rulesets they rely on.

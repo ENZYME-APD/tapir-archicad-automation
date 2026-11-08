@@ -1,0 +1,143 @@
+name: Claude Split Next Part
+
+# Starts the issue bot (claude_issue_triage.yml) on a split issue again when
+# one of its parts is merged (#2145). A part that needs an earlier part merged
+# first builds nothing while that part is open, so the chain of next-part
+# dispatches in claude_issue_triage.yml stops there, and before this nothing
+# started it again once the earlier part was merged.
+#
+# On a merged pull request of the issue bot whose head branch is
+# claude/issue-<n>-part<k>-..., it dispatches claude_issue_triage.yml with
+# issue_number=<n> when
+#   - #<n> is an open issue (not a pull request);
+#   - a split plan of the bot's is on it (an Actions bot comment containing
+#     `<!-- claude-split-plan: parts=N -->`, read as the next-part job reads it,
+#     at most six parts) and fewer parts than planned have a pull request of
+#     the bot's, in any state - the count claude_issue_triage.yml makes, so the
+#     run it starts has a part left to build;
+#   - no run of claude_issue_triage.yml for #<n> is queued, waiting or in
+#     progress (its runs are named "Issue #<n>: ..."); such a run continues
+#     the chain itself through its next-part job.
+# Each merge starts at most one run, and a run that opens no part still ends
+# the chain, so this adds at most one run per merged part.
+#
+# Triggers. pull_request_target, so the copy of this file on main runs, never
+# the one in the pull request's branch, and fork pull requests are skipped by
+# the head repository check below. Merges made with GITHUB_TOKEN start no
+# workflow run at all - claude_auto_merge.yml merges the bot's pull requests
+# that way - so it dispatches this workflow (workflow_dispatch, pr_number)
+# after merging a part; a dispatch needs write access to the repository. Both
+# paths read the pull request from the API and apply the same checks.
+#
+# Security: one job, plain shell, no model, no secret but GITHUB_TOKEN, and
+# nothing is checked out - no code of the pull request or of the repository
+# runs. Everything read from GitHub (branch names, comments, run titles) is
+# data: the issue number is taken from the branch name only as digits, and
+# nothing read is evaluated. The token can read issues, pull requests and
+# contents, and its only write is starting a workflow run (actions: write).
+# The repository variable CLAUDE_SPLIT_NEXT_PART set to `false` turns this off.
+
+on:
+  pull_request_target:
+    types: [closed]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Number of the merged part pull request of a split issue
+        type: string
+        required: true
+
+run-name: "Next split part after PR #${{ github.event.pull_request.number || inputs.pr_number }}"
+
+permissions: {}
+
+jobs:
+  next-part:
+    if: >
+      vars.CLAUDE_SPLIT_NEXT_PART != 'false' &&
+      (github.event_name == 'workflow_dispatch' ||
+       (github.event.pull_request.merged == true &&
+        github.event.pull_request.head.repo.full_name == github.repository &&
+        startsWith(github.event.pull_request.head.ref, 'claude/issue-')))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: write         # read the triage runs, dispatch claude_issue_triage.yml
+      issues: read
+      pull-requests: read
+      contents: read
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
+    steps:
+      - name: Start the next part
+        run: |
+          set -euo pipefail
+          case "$PR_NUMBER" in
+            ''|*[!0-9]*) echo "::error::'$PR_NUMBER' is not a pull request number."; exit 1 ;;
+          esac
+
+          # The pull request as GitHub has it now, for both triggers.
+          pr=$(gh api "repos/$REPO/pulls/$PR_NUMBER" \
+            --jq '{merged, ref: .head.ref, repo: (.head.repo.full_name // ""), author: .user.login}')
+          if [ "$(jq -r '.merged' <<<"$pr")" != "true" ]; then
+            echo "PR #$PR_NUMBER is not merged."
+            exit 0
+          fi
+          if [ "$(jq -r '.repo' <<<"$pr")" != "$REPO" ]; then
+            echo "PR #$PR_NUMBER is not from a branch of this repository."
+            exit 0
+          fi
+          if [ "$(jq -r '.author' <<<"$pr")" != "github-actions[bot]" ]; then
+            echo "PR #$PR_NUMBER is not the issue bot's."
+            exit 0
+          fi
+          ref=$(jq -r '.ref' <<<"$pr")
+          if ! [[ "$ref" =~ ^claude/issue-([0-9]+)-part([0-9]+)- ]]; then
+            echo "PR #$PR_NUMBER is not a part of a split issue."
+            exit 0
+          fi
+          issue=${BASH_REMATCH[1]}
+          echo "PR #$PR_NUMBER is part ${BASH_REMATCH[2]} of #$issue."
+
+          if ! gh api "repos/$REPO/issues/$issue" --jq '.state == "open" and .pull_request == null' | grep -qx true; then
+            echo "#$issue is not an open issue."
+            exit 0
+          fi
+
+          # As the next-part job of claude_issue_triage.yml reads the plan and
+          # counts the parts.
+          planned=$(gh api --paginate "repos/$REPO/issues/$issue/comments" \
+            --jq '.[] | select(.user.login == "github-actions[bot]") | .body' \
+            | grep -oE 'claude-split-plan: parts=[0-9]+' | tail -n 1 | grep -oE '[0-9]+$' || true)
+          if [ -z "$planned" ]; then
+            echo "#$issue has no split plan of the bot's."
+            exit 0
+          fi
+          if [ "$planned" -gt 6 ]; then
+            planned=6
+          fi
+          count=$(gh pr list --repo "$REPO" --state all --limit 500 --json headRefName,author \
+            --jq "[.[] | select(.author.login == \"app/github-actions\" or .author.login == \"github-actions[bot]\" or .author.login == \"github-actions\")
+                   | .headRefName | capture(\"^claude/issue-${issue}-part(?<k>[0-9]+)-\") | .k] | unique | length")
+          echo "Planned parts: $planned, with a pull request: $count"
+          if [ "$count" -ge "$planned" ]; then
+            echo "Every part has a pull request."
+            exit 0
+          fi
+
+          # A run for the issue that has not finished continues the chain itself.
+          active=0
+          for status in queued in_progress waiting pending requested; do
+            n=$(gh api "repos/$REPO/actions/workflows/claude_issue_triage.yml/runs?status=$status&per_page=100" \
+              --jq "[.workflow_runs[] | select(.display_title | startswith(\"Issue #${issue}:\"))] | length")
+            active=$((active + n))
+          done
+          if [ "$active" -gt 0 ]; then
+            echo "$active run(s) for #$issue are queued or in progress."
+            exit 0
+          fi
+
+          gh workflow run claude_issue_triage.yml --repo "$REPO" --ref main -f issue_number="$issue"
+          echo "Started the run for part $((count + 1)) of $planned of #$issue."

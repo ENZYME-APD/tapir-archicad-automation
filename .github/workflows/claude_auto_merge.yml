@@ -87,7 +87,7 @@ jobs:
       issues: write          # close a split issue once its last part merged
       checks: read
       statuses: read
-      actions: read          # see whether a newer run is waiting
+      actions: write         # see whether a newer run is waiting; start the next split part
 
     steps:
       - name: Leave the pass to a newer run
@@ -405,6 +405,8 @@ jobs:
             # A part of a split issue (claude_issue_triage.yml) says
             # `Part k of N of #n` instead of `Fixes`, so the issue stays open
             # until every part is in: close it once all N parts are merged.
+            # Otherwise start claude_split_next_part.yml for it: a merge made
+            # with this token starts no pull_request_target run (#2145).
             if [ "$isBot" = "true" ]; then
               part=$(gh pr view "$pr" --repo "$REPO" --json body --jq '.body' \
                 | grep -oE 'Part [0-9]+ of [0-9]+ of #[0-9]+' | head -n 1 || true)
@@ -417,6 +419,9 @@ jobs:
                 if [ "$merged" -ge "$parts" ]; then
                   gh issue close "$issue" --repo "$REPO" --reason completed \
                     --comment "All $parts parts are merged; closing." || echo "::warning::could not close #$issue"
+                else
+                  gh workflow run claude_split_next_part.yml --repo "$REPO" --ref main -f pr_number="$pr" \
+                    || echo "::warning::could not start the next part of #$issue"
                 fi
               fi
             fi
