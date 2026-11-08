@@ -90,6 +90,11 @@ namespace TapirGrasshopperPlugin.Types.Element
 
     public class DetailsOfElementObj
     {
+        // Always returned when no elements are given (the filter alone picks
+        // them), so the element of each entry is known.
+        [JsonProperty("elementId")]
+        public ElementGuid ElementId;
+
         [JsonProperty("type")]
         public string Type;
 

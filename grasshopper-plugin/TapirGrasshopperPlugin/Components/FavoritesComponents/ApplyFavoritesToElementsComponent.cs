@@ -16,7 +16,8 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
         public ApplyFavoritesToElementsComponent()
             : base(
                 "ApplyFavoritesToElements",
-                "Apply the given Favorites to the given elements.",
+                "Apply the given Favorites to the given elements, or one Favorite (FavoriteName) to the given elements " +
+                "and/or to the elements of its type that match a filter.",
                 GroupNames.Favorites)
         {
         }
@@ -25,11 +26,13 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
         {
             InGenerics(
                 "ElementGuids",
-                "Identifiers of the elements to apply the Favorites to.");
+                "Identifiers of the elements to apply the Favorites to. " +
+                "With FavoriteName it is optional: without it the Favorite is applied to every element of its type that matches the filter.");
 
             InTexts(
                 "FavoriteNames",
-                "Names of the Favorites to apply (input only 1 to apply the same Favorite to all elements).");
+                "Names of the Favorites to apply (input only 1 to apply the same Favorite to all elements). " +
+                "Leave it empty when FavoriteName is given.");
 
             InBoolean(
                 "ApplySettings",
@@ -57,39 +60,58 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                 "id, layerIndex, width, height, sillHeight, referenceLineLocation, topOffset, relativeTopStory. " +
                 "A field the element's type does not have is ignored.");
 
-            SetOptionality(6);
+            // The inputs below come after the existing ones, so saved
+            // definitions keep their wiring.
+            InText(
+                "FavoriteName",
+                "Optional. The name of one Favorite to apply, read only once, instead of FavoriteNames: " +
+                "to the elements of ElementGuids, or, without them, to every element of the Favorite's type " +
+                "that matches the filter below. Needs ElementGuids or a filter.");
+
+            InTexts(
+                "ElementTypes",
+                "Optional filter for FavoriteName: apply it only to the elements of one of these types " +
+                "(connect an ElementsType value list).");
+
+            InIntegers(
+                "FloorIndices",
+                "Optional filter for FavoriteName: apply it only to the elements whose home story has one of these indices.");
+
+            InIntegers(
+                "LayerIndices",
+                "Optional filter for FavoriteName: apply it only to the elements on one of these layers (layer attribute indices).");
+
+            SetOptionality(
+                new[]
+                {
+                    0,
+                    1,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10
+                });
         }
 
         protected override void AddOutputs()
         {
             OutErrorMessages(
-                "Error message of each element (empty when it succeeded).");
+                "Error message of each element (empty when it succeeded). With FavoriteName and ElementGuids, " +
+                "one per element of ElementGuids (an element that does not match the filter gets an error); " +
+                "with FavoriteName and the filter alone, one per element the Favorite was applied to.");
         }
 
         protected override void Solve(
             IGH_DataAccess da)
         {
-            if (!da.TryGetList(
-                    0,
-                    out List<GH_ObjectWrapper> elementWrappers))
-            {
-                return;
-            }
+            da.TryGetList(
+                0,
+                out List<GH_ObjectWrapper> elementWrappers);
 
-            if (!da.TryGetList(
-                    1,
-                    out List<string> favoriteNames))
-            {
-                return;
-            }
-
-            if (favoriteNames.Count != 1 &&
-                favoriteNames.Count != elementWrappers.Count)
-            {
-                this.AddError(
-                    "The size of the input FavoriteNames must be 1 or equal to the size of the input ElementGuids.");
-                return;
-            }
+            da.TryGetList(
+                1,
+                out List<string> favoriteNames);
 
             da.TryGet(2, out bool applySettings);
             da.TryGet(3, out bool applyClassifications);
@@ -98,16 +120,16 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
 
             da.TryGetList(6, out List<string> keepFields);
 
-            var input = new ApplyFavoritesToElementsParameters
-            {
-                FavoritesToApply = new List<FavoriteForElement>(),
-                ApplySettings = applySettings,
-                ApplyClassifications = applyClassifications,
-                ApplyCategories = applyCategories,
-                ApplyProperties = applyProperties,
-                KeepFields = keepFields != null && keepFields.Count > 0 ? keepFields : null
-            };
+            da.TryGet(7, out string favoriteName);
+            da.TryGetList(8, out List<string> types);
+            da.TryGetList(9, out List<int> floorIndices);
+            da.TryGetList(10, out List<int> layerIndices);
+            var filter = ElementTypeFloorLayerFilter.FromLists(
+                types,
+                floorIndices,
+                layerIndices);
 
+            var elementIds = new List<ElementGuid>();
             for (var i = 0; i < elementWrappers.Count; i++)
             {
                 var elementId = GuidObject<ElementGuid>.CreateFromWrapper(elementWrappers[i]);
@@ -118,12 +140,85 @@ namespace TapirGrasshopperPlugin.Components.FavoritesComponents
                     return;
                 }
 
-                input.FavoritesToApply.Add(
-                    new FavoriteForElement
+                elementIds.Add(elementId);
+            }
+
+            var input = new ApplyFavoritesToElementsParameters
+            {
+                ApplySettings = applySettings,
+                ApplyClassifications = applyClassifications,
+                ApplyCategories = applyCategories,
+                ApplyProperties = applyProperties,
+                KeepFields = keepFields != null && keepFields.Count > 0 ? keepFields : null
+            };
+
+            if (!string.IsNullOrEmpty(favoriteName))
+            {
+                // One Favorite for many elements.
+                if (favoriteNames.Count > 0)
+                {
+                    this.AddError(
+                        "Give either FavoriteNames or FavoriteName, not both.");
+                    return;
+                }
+
+                if (elementIds.Count == 0 && filter == null)
+                {
+                    this.AddError(
+                        "Give ElementGuids or a filter (ElementTypes, FloorIndices, LayerIndices) with FavoriteName, " +
+                        "so that it is not applied to the whole project by accident.");
+                    return;
+                }
+
+                input.Favorite = favoriteName;
+                input.Filter = filter;
+                if (elementIds.Count > 0)
+                {
+                    input.Elements = new List<ElementGuidWrapper>();
+                    foreach (var elementId in elementIds)
                     {
-                        ElementId = elementId,
-                        Favorite = favoriteNames[favoriteNames.Count == 1 ? 0 : i]
-                    });
+                        input.Elements.Add(
+                            new ElementGuidWrapper
+                            {
+                                ElementId = elementId
+                            });
+                    }
+                }
+            }
+            else
+            {
+                if (filter != null)
+                {
+                    this.AddError(
+                        "The filter (ElementTypes, FloorIndices, LayerIndices) only works with FavoriteName.");
+                    return;
+                }
+
+                if (elementIds.Count == 0 || favoriteNames.Count == 0)
+                {
+                    this.AddError(
+                        "Give ElementGuids and FavoriteNames, or FavoriteName.");
+                    return;
+                }
+
+                if (favoriteNames.Count != 1 &&
+                    favoriteNames.Count != elementIds.Count)
+                {
+                    this.AddError(
+                        "The size of the input FavoriteNames must be 1 or equal to the size of the input ElementGuids.");
+                    return;
+                }
+
+                input.FavoritesToApply = new List<FavoriteForElement>();
+                for (var i = 0; i < elementIds.Count; i++)
+                {
+                    input.FavoritesToApply.Add(
+                        new FavoriteForElement
+                        {
+                            ElementId = elementIds[i],
+                            Favorite = favoriteNames[favoriteNames.Count == 1 ? 0 : i]
+                        });
+                }
             }
 
             SetCadValuesWithErrorMessages(

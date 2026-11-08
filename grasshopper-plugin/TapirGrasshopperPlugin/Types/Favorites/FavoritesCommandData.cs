@@ -15,8 +15,26 @@ namespace TapirGrasshopperPlugin.Types.Favorites
 
     public class ApplyFavoritesToElementsParameters
     {
-        [JsonProperty("favoritesToApply")]
+        // Either favoritesToApply, or favorite with elements and/or filter.
+        [JsonProperty(
+            "favoritesToApply",
+            NullValueHandling = NullValueHandling.Ignore)]
         public List<FavoriteForElement> FavoritesToApply;
+
+        [JsonProperty(
+            "favorite",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string Favorite;
+
+        [JsonProperty(
+            "elements",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public List<ElementGuidWrapper> Elements;
+
+        [JsonProperty(
+            "filter",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public ElementTypeFloorLayerFilter Filter;
 
         [JsonProperty(
             "applySettings",
