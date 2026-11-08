@@ -111,8 +111,24 @@ sandbox/                 Experiments / scratch
   attribute lookup, and `Create*Response`/`Create*ExecutionResult` builders. Reuse these
   helpers when adding commands; match the existing style.
 - **Schemas:** input/response JSON schemas are defined per command
-  (`GetInputParametersSchema` / `GetResponseSchema`) plus shared definitions in
-  [Sources/SchemaDefinitions.cpp](archicad-addon/Sources/SchemaDefinitions.cpp).
+  (`GetInputParametersSchema` / `GetResponseSchema`) plus shared named definitions in
+  [Sources/RFIX/Images/CommonSchemaDefinitions.json](archicad-addon/Sources/RFIX/Images/CommonSchemaDefinitions.json)
+  (loaded by [Sources/SchemaDefinitions.cpp](archicad-addon/Sources/SchemaDefinitions.cpp)), which a
+  schema references with `{"$ref": "#/<Name>"}`. **Shared shapes are named definitions, never inline
+  copies**, so they can't drift apart:
+  - An object shape that more than one command uses, or that describes an element, attribute,
+    view or other Archicad item (its details, settings, a geometry, a status), is a definition in
+    `CommonSchemaDefinitions.json`, and every command that uses it refers to it with `$ref`.
+  - Adding or changing a field of a shared shape changes its definition, so every command that
+    uses it gets the field. Never add the field to one inline copy.
+  - A change that touches an inline schema whose shape already has a definition (or a second
+    command's inline copy of the same shape) replaces it with the `$ref` in the same change. A new
+    command's own object shape becomes a definition as soon as a second command needs it.
+  - Only parameters that are specific to one command (its own flags, a one-off option object)
+    stay inline. Name definitions in PascalCase after what they describe (`WallDetails`,
+    `Hole2D`), and keep their descriptions as complete as the inline text was.
+  - The docs show definitions expanded, so check a moved schema with `python
+    tools/generate_addon_docs.py`: the command's expanded schema must keep every field it had.
 - **UI:** the Add-On adds a menu + palette ([TapirPalette](archicad-addon/Sources/TapirPalette.cpp)),
   an About dialog, and an auto-update/version check ([VersionChecker](archicad-addon/Sources/VersionChecker.cpp)).
 - **Auto-update:** the update is done by the Tapir Installer (see Installation). The
@@ -151,7 +167,8 @@ the registration and a starter example. The Archicad API calls in `Execute` and 
 
 1. Add/modify the command class in the appropriate `Sources/*Commands.{cpp,hpp}`
    (or create a new group file and include it in `AddOnMain.cpp`).
-2. Implement input/response schemas; reuse `SchemaDefinitions` and `CommandBase` helpers.
+2. Implement input/response schemas; reuse the shared definitions (`$ref`, see *Schemas* above,
+   and add one for a shape a second command uses) and the `CommandBase` helpers.
 3. Register it in `AddOnMain.cpp` `Initialize()` with the version it is introduced in
    and a clear description.
 4. Add its example as `archicad-addon/Examples/<GroupFolder>/<CommandName>.py`: a module
