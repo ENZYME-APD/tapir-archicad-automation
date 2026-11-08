@@ -8,6 +8,20 @@
 .script-search { flex: 1 1 320px; max-width: 520px; padding: 9px 16px; font-size: 14.5px }
 .script-search:hover { background: transparent }
 #version-chips { margin-top: -4px }
+/* The Filters button and the applied filters, only below 720 px wide; wider, the chips show as they are. */
+.filters-toggle, .active-filters { display: none }
+.filters-toggle { white-space: nowrap; flex: none }
+.filters-toggle[aria-expanded="true"] { background: var(--fg); color: var(--bg) }
+.active-filter { display: inline-flex; align-items: center; gap: 6px; background: var(--fg); color: var(--bg); padding: 4px 10px 4px 12px; font-size: 12.5px }
+.active-filter:hover { background: var(--fg); opacity: .85 }
+.active-filter span { font-size: 15px; line-height: 1 }
+@media (max-width: 719.98px) {
+    .filters-toggle { display: inline-block }
+    .active-filters { display: flex; margin-top: -6px }
+    .script-search { flex: 1 1 0; max-width: none }
+    .filters-panel { display: none }
+    .filters-panel.open { display: block }
+}
 .script-count { margin: 4px 0 14px; color: var(--muted); font-size: 14.5px }
 .schedule .cell-script { min-width: 240px }
 

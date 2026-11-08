@@ -127,9 +127,14 @@
                 <form class="filters" role="search" id="script-filters">
                     <label class="visually-hidden" for="script-search" data-i18n>Search scripts</label>
                     <input class="chip script-search" type="search" id="script-search" placeholder="Search: name, task or author" data-i18n-attrs="placeholder" autocomplete="off">
+                    <!-- Below 720 px wide the chip groups are behind this button (scripts.css). -->
+                    <button class="chip filters-toggle" type="button" id="filters-toggle" aria-expanded="false" aria-controls="filters-panel"><span data-i18n>Filters</span><span id="filters-count"></span></button>
                 </form>
-                <div class="filters" role="group" aria-label="Category" id="category-chips" data-all="All" data-i18n-attrs="aria-label data-all"></div>
-                <div class="filters" role="group" aria-label="Archicad version" id="version-chips" data-all="Any Archicad" data-option="Archicad {version}" data-i18n-attrs="aria-label data-all"></div>
+                <div class="filters active-filters" role="group" aria-label="Active filters" id="active-filters" data-remove="Remove filter: {name}" data-i18n-attrs="aria-label data-remove" hidden></div>
+                <div class="filters-panel" id="filters-panel">
+                    <div class="filters" role="group" aria-label="Category" id="category-chips" data-all="All" data-i18n-attrs="aria-label data-all"></div>
+                    <div class="filters" role="group" aria-label="Archicad version" id="version-chips" data-all="Any Archicad" data-option="Archicad {version}" data-i18n-attrs="aria-label data-all"></div>
+                </div>
                 <p class="script-count" id="script-count" aria-live="polite"
                    data-one="1 script" data-many="{count} scripts" data-none="No script matches. Try fewer words or another filter."
                    data-i18n-attrs="data-one data-many data-none"></p>
