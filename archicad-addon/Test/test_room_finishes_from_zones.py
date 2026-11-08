@@ -629,6 +629,106 @@ class OpeningPlacementTests(unittest.TestCase):
         self.assertIsNotNone(rf.opening_correction(details, "F1", piece, point, 0.015)[1])
 
 
+class CoveTests(unittest.TestCase):
+    def _assert_points(self, actual, expected):
+        self.assertEqual(len(actual), len(expected))
+        for a, e in zip(actual, expected):
+            self.assertAlmostEqual(a[0], e[0])
+            self.assertAlmostEqual(a[1], e[1])
+
+    def test_ceiling_offset_by_the_cove_width(self):
+        inset = rf.inset_ceiling(rf.read_contour(_coords(RECTANGLE), None), [], 0.1)
+        self._assert_points(inset["outline"], [(0.1, 0.1), (3.9, 0.1), (3.9, 2.9), (0.1, 2.9)])
+        self.assertAlmostEqual(abs(rf.signed_area(inset["outline"])), 3.8 * 2.8)
+        self.assertEqual(inset["holes"], [])
+
+    def test_clockwise_outline_is_moved_into_the_room_too(self):
+        inset = rf.inset_ceiling(rf.read_contour(_coords(list(reversed(RECTANGLE))), None), [], 0.1)
+        self.assertAlmostEqual(abs(rf.signed_area(inset["outline"])), 3.8 * 2.8)
+
+    def test_l_shaped_ceiling(self):
+        inset = rf.inset_ceiling(rf.read_contour(_coords(L_SHAPE), None), [], 0.1)
+        self._assert_points(inset["outline"], [(0.1, 0.1), (5.9, 0.1), (5.9, 1.9), (2.9, 1.9), (2.9, 3.9),
+                                               (0.1, 3.9)])
+
+    def test_hole_grows(self):
+        outline = rf.read_contour(_coords([(0.0, 0.0), (10.0, 0.0), (10.0, 10.0), (0.0, 10.0)]), None)
+        hole = rf.read_contour(_coords([(4.0, 4.0), (6.0, 4.0), (6.0, 6.0), (4.0, 6.0)]), None)
+        inset = rf.inset_ceiling(outline, [hole], 0.2)
+        self.assertAlmostEqual(abs(rf.signed_area(inset["holes"][0])), 2.4 * 2.4)
+        self.assertAlmostEqual(abs(rf.signed_area(inset["outline"])), 9.6 * 9.6)
+
+    def test_offset_too_large_or_curved_edge(self):
+        self.assertIsNone(rf.inset_ceiling(rf.read_contour(_coords(RECTANGLE), None), [], 1.6))
+        curved = rf.read_contour(_coords(RECTANGLE), [{"begIndex": 1, "endIndex": 2, "arcAngle": 0.5}])
+        self.assertIsNone(rf.inset_ceiling(curved, [], 0.1))
+
+    def test_zero_offset_keeps_the_polygon(self):
+        inset = rf.inset_ceiling(rf.read_contour(_coords(RECTANGLE), None), [], 0.0)
+        self._assert_points(inset["outline"], RECTANGLE)
+
+    def test_cove_pieces_go_round_the_room_facing_it(self):
+        for points in (RECTANGLE, list(reversed(RECTANGLE)), L_SHAPE):
+            pieces = rf.cove_pieces(rf.read_contour(_coords(points), None), [])
+            self.assertEqual(len(pieces), len(points))
+            for piece in pieces:
+                self.assertTrue(rf.inside(_right_of(piece), points), piece)
+            self.assertEqual({p["beg"] for p in pieces}, {p["end"] for p in pieces})
+
+    def test_cove_pieces_leave_out_curved_edges(self):
+        contour = rf.read_contour(_coords(RECTANGLE), [{"begIndex": 1, "endIndex": 2, "arcAngle": 0.5}])
+        self.assertEqual(sorted(p["edge"] for p in rf.cove_pieces(contour, [])), [0, 2, 3])
+
+    def test_cove_ids(self):
+        self.assertEqual(rf.cove_id("101", 2), "FIN-101-cove-2")
+        self.assertEqual(rf.cove_tag("FIN-101-cove-2"), "101")
+        self.assertIsNone(rf.cove_tag("FIN-101-wall-2"))
+        self.assertIsNone(rf.wall_finish_tag("FIN-101-cove-2"))
+
+    def _zone(self):
+        return {"tag": "101", "floorIndex": 1, "baseZ": 3.1, "bottomOffset": 0.1, "roomHeight": 2.6}
+
+    def test_beam_cove_stands_on_the_ceiling_bottom(self):
+        piece = {"beg": (4.0, 0.0), "end": (0.0, 0.0), "length": 4.0}
+        settings = {"cove": {"tool": "Beam", "favorite": "Cornice", "layerIndex": 4, "offset": 0.1}}
+        tool, item = rf.cove_data(self._zone(), piece, 1, settings)
+        self.assertEqual(tool, "Beam")
+        self.assertEqual(item["id"], "FIN-101-cove-1")
+        self.assertAlmostEqual(item["zCoordinate"], 5.7)
+        self.assertEqual(item["anchorPoint"], "BottomLeft")
+        self.assertEqual((item["favoriteName"], item["layerIndex"], item["offset"]), ("Cornice", 4, 0.0))
+        self.assertEqual(item["begCoordinate"], {"x": 4.0, "y": 0.0})
+
+    def test_wall_cove_is_relative_to_the_story(self):
+        piece = {"beg": (0.0, 0.0), "end": (1.0, 0.0), "length": 1.0}
+        settings = {"cove": {"tool": "Wall", "favorite": "Cove", "layerIndex": None, "offset": 0.1}}
+        tool, item = rf.cove_data(self._zone(), piece, 3, settings)
+        self.assertEqual(tool, "Wall")
+        self.assertAlmostEqual(item["zCoordinate"], 2.7)
+        self.assertEqual((item["referenceLineLocation"], item["flipped"]), ("Outside", False))
+        self.assertNotIn("layerIndex", item)
+        self.assertNotIn("height", item)
+
+    def test_ceiling_slab_uses_the_inset_polygon(self):
+        zone = _zone()
+        zone["polygonCoordinates"] = _coords(RECTANGLE + RECTANGLE[:1])
+        zone["ceilingInset"] = rf.inset_ceiling(rf.read_contour(zone["polygonCoordinates"], None), [], 0.1)
+        item = rf.slab_data(zone, "ceiling", _settings())
+        self.assertEqual(len(item["polygonCoordinates"]), 5)
+        self.assertEqual(item["polygonCoordinates"][0], item["polygonCoordinates"][-1])
+        self.assertAlmostEqual(item["polygonCoordinates"][0]["x"], 0.1)
+        floor = rf.slab_data(zone, "floor", _settings())
+        self.assertEqual(floor["polygonCoordinates"], zone["polygonCoordinates"])
+
+    def test_summary_counts_the_coves(self):
+        zone = _zone(planned=("ceiling", "cove"))
+        zone["covePieces"] = rf.cove_pieces(rf.read_contour(_coords(RECTANGLE), None), [])
+        row = rf.story_summary([zone])[0]
+        self.assertEqual(row["cove"], 4)
+        self.assertAlmostEqual(row["coveLength"], 14.0)
+        self.assertEqual(row["ceiling"], 1)
+
+
 class ParseTests(unittest.TestCase):
     def test_lengths(self):
         self.assertAlmostEqual(rf.parse_length("0,05"), 0.05)
