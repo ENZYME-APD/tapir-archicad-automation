@@ -217,7 +217,7 @@ static bool UpdateConfig (const std::function<void (JSON::ObjectValue&)>& change
         return false;
     }
 
-    const GS::UniString::CStr utf8 = text.ToCStr (CC_UTF8);
+    const auto utf8 = text.ToCStr (CC_UTF8);
     const GS::USize length = static_cast<GS::USize> (std::strlen (utf8.Get ()));
 
     IO::File file (GetConfigFileLocation (), IO::File::OnNotFound::Create);
@@ -311,7 +311,7 @@ static GS::UniString GetShareServiceUrl ()
 static GS::UniString EncodeUrlComponent (const GS::UniString& text)
 {
     static const char* HexDigits = "0123456789ABCDEF";
-    const GS::UniString::CStr utf8 = text.ToCStr (CC_UTF8);
+    const auto utf8 = text.ToCStr (CC_UTF8);
     GS::UniString encoded;
     for (const char* p = utf8.Get (); *p != '\0'; ++p) {
         const unsigned char c = static_cast<unsigned char> (*p);
@@ -360,7 +360,7 @@ static ServiceCallResult CallShareService (HTTP::MessageHeader::Method::Id metho
         request.GetRequestHeaderFieldCollection ().Add (HTTP::MessageHeader::HeaderFieldName::UserAgent, "Tapir-Archicad-AddOn/" ADDON_VERSION);
         if (requestBody != nullptr) {
             request.GetRequestHeaderFieldCollection ().Add (HTTP::MessageHeader::HeaderFieldName::ContentType, "application/json; charset=utf-8");
-            const GS::UniString::CStr body = requestBody->ToCStr (CC_UTF8);
+            const auto body = requestBody->ToCStr (CC_UTF8);
             clientConnection.Send (request, body.Get (), static_cast<GS::USize> (std::strlen (body.Get ())));
         } else {
             clientConnection.Send (request);
