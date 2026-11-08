@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en" data-copy="Copy" data-copied="Copied" data-i18n-pages="limits">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title data-i18n>What the Archicad API can't do | Tapir</title>
+<meta name="description" data-i18n-attrs="content" content="What people ask for that Graphisoft's Archicad API does not offer, such as undo or the clipboard, each with what to do instead and the DevKit evidence.">
+<link rel="canonical" href="https://archicad-api.com/limits/">
+<!-- search engines: the page's place in the site, as the crumb above its heading shows it -->
+<script type="application/ld+json">
+{
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Tapir", "item": "https://archicad-api.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Docs", "item": "https://archicad-api.com/docs/" },
+        { "@type": "ListItem", "position": 3, "name": "API limits", "item": "https://archicad-api.com/limits/" }
+    ]
+}
+</script>
+<!-- link-preview: the preview of a link to this page shared on Discord, WhatsApp and the like -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Tapir">
+<meta property="og:title" content="What the Archicad API can't do | Tapir">
+<meta property="og:description" content="What people ask for that Graphisoft's Archicad API does not offer, such as undo or the clipboard, each with what to do instead and the DevKit evidence.">
+<meta property="og:url" content="https://archicad-api.com/limits/">
+<meta name="twitter:card" content="summary">
+<!-- site-assets -->
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#2D3A30" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#2D3A30">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="../assets/site.css">
+<script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
+<script>try { var l = /[?&]lang=([A-Za-z]{2})(?:[&#]|$)/.exec (location.search); l = l ? l[1].toLowerCase () : localStorage.getItem ('tapir-lang') || (navigator.language || '').slice (0, 2).toLowerCase (); if (l && l !== 'en') { document.documentElement.setAttribute ('data-i18n-loading', ''); setTimeout (function () { document.documentElement.removeAttribute ('data-i18n-loading'); }, 2000); } } catch (e) {}</script>
+<script src="../assets/site.js" defer></script>
+<link rel="stylesheet" href="../assets/motion.css"><script src="../assets/motion.js" defer></script>
+<script>try { if ((!sessionStorage.getItem ('tapir-splash') || /[?&]splash/.test (location.search)) && !/nomotion/.test (location.search + location.hash) && 'IntersectionObserver' in window && !matchMedia ('(prefers-reduced-motion: reduce)').matches) { var h = document.documentElement; h.classList.add ('m-splash'); var f = function () { h.classList.add ('m-font'); }; setTimeout (f, 2500); if (document.fonts && document.fonts.load) document.fonts.load ('900 56px Fraunces').then (f, f); else f (); } } catch (e) {}</script>
+<!-- /site-assets -->
+</head>
+<body>
+<!-- site-header -->
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header">
+    <div class="wrap nav">
+        <a class="brand" href="../"><img src="../assets/tapir_mark_cream.svg" alt="" width="30" height="30">Tapir</a>
+        <nav class="site-nav" aria-label="Site"><ul>
+            <li><a href="../start/">Get started</a></li>
+            <li><a href="../docs/" aria-current="page">Docs</a></li>
+            <li><a href="../scripts/">Scripts</a></li>
+            <li><a href="../scripts/share/">Share</a></li>
+            <li><a href="../community/">Community</a></li>
+            <li><a href="../about/">About</a></li>
+        </ul></nav>
+        <div class="right">
+            <button class="toggle" id="theme-toggle" type="button" data-dark="Dark" data-light="Light" hidden><span class="toggle-word">Dark</span><span class="visually-hidden"> mode</span></button>
+            <a class="btn btn-primary btn-sm" href="../start/#install">Download</a>
+        </div>
+    </div>
+</header>
+<!-- /site-header -->
+
+<main id="main">
+    <div class="page-head">
+        <div class="wrap">
+            <p class="crumb" data-i18n><a href="../">Tapir</a> / <a href="../docs/">Docs</a> / API limits</p>
+            <h1 data-i18n>What the Archicad API <em>can't do.</em></h1>
+            <p data-i18n>Tapir uses the Archicad API that Graphisoft publishes for add-ons, and covers all of it that can be a JSON command. What that API does not offer, Tapir cannot offer either. This page lists what people ask for that is not in it, with what to do instead.</p>
+        </div>
+    </div>
+
+    <div class="wrap page-body">
+        <section aria-labelledby="the-list">
+            <div class="sec-head">
+                <h2 id="the-list" data-i18n>The <em>list.</em></h2>
+                <p data-i18n>It is also what Tapir would like the Archicad API to offer, and the list Tapir sends to Graphisoft. Every row was checked in the headers of the Archicad API DevKits of Archicad 25 to 30, the versions Tapir is built for; the Evidence column names the headers and functions.</p>
+            </div>
+            <div class="schedule-wrap">
+                <table class="schedule limits">
+                    <thead>
+                        <tr>
+                            <th data-i18n>What people want</th>
+                            <th data-i18n>Status</th>
+                            <th data-i18n>What to do instead</th>
+                            <th data-i18n>Evidence</th>
+                            <th data-i18n>Issue</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Elements</th></tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Explode an element into its parts, as Edit &gt; Reshape &gt; Explode into Current View does</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Nothing yet</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">No explode function in <code>ACAPinc.h</code>, the <code>ACAPI_*.h</code> headers or the <code>ACAPI::</code> modules (AC25&ndash;AC30). <code>APIAttrCreationMethod_Explode</code> (<code>APIdefs_Attributes.h</code>) only tells how an attribute was created.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">A camera with a name of its own, or an axonometric camera</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill" data-i18n>Partly possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Name the Camera Set the camera is in. For an axonometric view, set the 3D window with <a href="../archicad-addon/#Set3DProjectionSettings">Set3DProjectionSettings</a>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_CameraType</code> holds only <code>head</code>, <code>camSetGuid</code> and <code>perspCam</code> (<code>API_PerspCamPars</code>); only <code>API_CamSetType</code> has a <code>name</code> (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2192">#2192</a></td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Remove one direction of a trim between two roofs or shells that trim each other</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill chg" data-i18n>Workaround</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Remove the trim with <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a>, which removes both directions, then trim the other direction again with <a href="../archicad-addon/#TrimElements">TrimElements</a>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">The only removal function, <code>ACAPI_Element_Trim_Remove (guid_Element1, guid_Element2)</code> (<code>ACAPinc.h</code>, AC25&ndash;AC30), &ldquo;removes trimming connection between the elements&rdquo; and takes no direction or trim type.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2365">#2365</a></td>
+                        </tr>
+
+                        <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Navigator and views</th></tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Add an item to a publisher set</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Add the items in Archicad's Organizer, then publish the set with <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">The <code>ACAPI_Navigator_*</code> functions (<code>ACAPI_Navigator.h</code>; <code>APINavigator_*ID</code> in AC25&ndash;AC26) create views and folders on the View Map (<code>ACAPI_Navigator_NewNavigatorView</code>, <code>ACAPI_Navigator_CloneProjectMapItemToViewMap</code>) and layouts (<code>ACAPI_Navigator_CreateLayout</code>); <code>ACAPI_Navigator_SetNavigatorItemPosition</code> moves items on the Layout Book and the View Maps only. None adds to a publisher set.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Change, rename or create a stored Model View Options combination</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill" data-i18n>Partly possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Read the combinations with <a href="../archicad-addon/#GetModelViewOptionDetails">GetModelViewOptionDetails</a>; change the options of the current window with <a href="../archicad-addon/#SetViewOptions">SetViewOptions</a>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>ACAPinc.h</code> has only <code>ACAPI_Navigator_ModelViewOptions_Get</code>, <code>_GetNum</code> and <code>_Search</code> (AC27&ndash;AC30). In AC25&ndash;AC26 the combinations are attributes (<code>API_ModelViewOptionsID</code>); not checked there.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/781">#781</a></td>
+                        </tr>
+
+                        <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Project and files</th></tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Undo or redo, as Edit &gt; Undo does</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Most Tapir commands change the model in an undo step, so the user can undo them in Archicad; the command reference says which cannot be undone. Save the project with <a href="../archicad-addon/#SaveProject">SaveProject</a> before a script that may need to be taken back.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>ACAPI_CallUndoableCommand</code> (<code>ACAPinc.h</code>) only opens an undo step; <code>APINotifyElement_Undo</code> and <code>APINotifyElement_Redo</code> (<code>APIdefs_Callback.h</code>) only notify. No function runs an undo or a redo (AC25&ndash;AC30).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1820">#1820</a></td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Copy and paste through the clipboard</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill chg" data-i18n>Workaround</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">In a project, copy 2D elements to another view with <a href="../archicad-addon/#CopyElementsToDatabase">CopyElementsToDatabase</a>. Between projects, save the elements as a module with <a href="../archicad-addon/#SaveAsModuleFile">SaveAsModuleFile</a>, place it in the other project with <a href="../archicad-addon/#CreateHotlinkNodes">CreateHotlinkNodes</a> and <a href="../archicad-addon/#CreateHotlinkInstances">CreateHotlinkInstances</a>, and, to keep plain elements, <a href="../archicad-addon/#BreakHotlinkNodes">BreakHotlinkNodes</a>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">No clipboard, copy or paste function in <code>ACAPinc.h</code>, the <code>ACAPI_*.h</code> headers or the <code>ACAPI::</code> modules (AC25&ndash;AC30).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Merge a file into the project, as File &gt; Interoperability &gt; Merge does</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill chg" data-i18n>Workaround</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Place the file as a hotlink with <a href="../archicad-addon/#CreateHotlinkNodes">CreateHotlinkNodes</a> and <a href="../archicad-addon/#CreateHotlinkInstances">CreateHotlinkInstances</a>, then <a href="../archicad-addon/#BreakHotlinkNodes">BreakHotlinkNodes</a>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">The project functions (<code>ACAPI_ProjectOperation_*</code>; <code>APIDo_*ID</code> in AC25&ndash;AC26) open, create, save, close, print and publish, but none merges. <code>ACAPI_Element_Merge_Elements</code> is the Merge of construction elements, not of files.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
+                        </tr>
+
+                        <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Documents and publishing</th></tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Read the rows of an Interactive Schedule</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Build the list yourself: find the elements with <a href="../archicad-addon/#GetElementsByType">GetElementsByType</a> and read their values with <a href="../archicad-addon/#GetPropertyValuesOfElements">GetPropertyValuesOfElements</a> or <a href="../archicad-addon/#GetQuantitiesOfElements">GetQuantitiesOfElements</a>. The <a href="../scripts/">built-in scripts</a> Room Finishes Schedule and Material Take-Off build such lists.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">A schedule appears only as a Project Map item (<code>API_ScheduleNavItem</code>, <code>APIdefs_Navigator.h</code>), a view node (<code>API_ViewNodeSchedule</code>) and a window type (<code>APIWind_IESCommonDrawingID</code>, <code>APIdefs_Database.h</code>). No function returns its rows (AC25&ndash;AC30).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Export an Interactive Schedule</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill chg" data-i18n>Workaround</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Put the schedule in a publisher set in Archicad once, then publish that set with <a href="../archicad-addon/#PublishPublisherSet">PublishPublisherSet</a>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">No schedule export function (AC25&ndash;AC30); <code>ACAPI_ProjectOperation_Publish</code> (<code>APIDo_PublishID</code> in AC25&ndash;AC26) publishes a whole publisher set.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
+                        </tr>
+
+                        <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Archicad's interface</th></tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Read the text of the Session Report window</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Open the window for the user with <a href="../archicad-addon/#ChangeWindow">ChangeWindow</a> and windowType 'Report' (from Archicad 26).</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>ACAPI_WriteReport</code> (<code>ACAPinc.h</code>) writes to it and <code>ACAPI_Dialog_ActivateSessionReport</code> (<code>ACAPI_Goodies.h</code>, AC27&ndash;AC30; <code>APIAny_ActivateSessionReportID</code> in AC26) opens it; no function reads it (AC25&ndash;AC30).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1707">#1707</a></td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Get the outcome of an Action Center check</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill" data-i18n>Partly possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Run the check with <a href="../archicad-addon/#RunActionCenterChecks">RunActionCenterChecks</a>; Archicad shows the Action Center when it found an issue. For the hotlink check, read the state of each source with <a href="../archicad-addon/#GetHotlinkSourceStatus">GetHotlinkSourceStatus</a> (from Archicad 27).</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>ACAPI_Window_Check</code> (<code>ACAPinc.h</code>, AC27&ndash;AC30; <code>ACAPI_ActionCenter_Check</code> in AC25&ndash;AC26) returns only an error code; <code>API_ActionCenterItemID</code> (<code>APIdefs_ActionCenter.hpp</code>) has only <code>APIActionCenterItem_Hotlinks</code>.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label">&ndash;</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="lead-out" data-i18n>
+                Found something else the Archicad API cannot do? Say so in an issue, with the DevKit headers you checked, and it is added here.
+                <a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose">Open an issue</a>
+            </p>
+        </section>
+    </div>
+</main>
+
+<!-- site-footer -->
+<footer class="site-footer">
+    <div class="wrap">
+        <div class="tblock">
+            <div>
+                <span class="lab">Project</span>
+                <span class="proj">Tapir</span>
+                <p class="note">Open-source automation for Archicad. 100% free and open source (MIT). Maintained by Enzyme APD and the community.</p>
+                <p class="note">Contact: <span class="nowrap">contact@enzyme-apd.com</span></p>
+            </div>
+            <div>
+                <span class="lab">Product</span>
+                <ul>
+                    <li><a href="../start/">Get started</a></li>
+                    <li><a href="../scripts/">Scripts</a></li>
+                    <li><a href="../scripts/share/">Share a script</a></li>
+                    <li><a href="../grasshopper/">Grasshopper</a></li>
+                    <li><a href="../ai/">Tapir and AI</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Docs</span>
+                <ul>
+                    <li><a href="../docs/">All docs</a></li>
+                    <li><a href="../archicad-addon/">Commands</a></li>
+                    <li><a href="../api-coverage/">API coverage</a></li>
+                    <li><a href="../gh-coverage/">Grasshopper coverage</a></li>
+                    <li><a href="../limits/">API limits</a></li>
+                </ul>
+            </div>
+            <div>
+                <span class="lab">Community</span>
+                <ul>
+                    <li><a href="https://discord.gg/NAnSennmpY">Discord</a></li>
+                    <li><a href="https://github.com/ENZYME-APD/tapir-archicad-automation">GitHub</a></li>
+                    <li><a href="../tutorials/">Tutorials</a></li>
+                    <li><a href="../community/#bots">How fixes happen</a></li>
+                    <li><a href="../roadmap/">Roadmap</a></li>
+                    <li><a href="../about/">About Tapir</a></li>
+                </ul>
+            </div>
+            <div>
+                <div class="rev" data-live="release" hidden>
+                    <span class="lab">Revision</span>
+                    <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/releases/latest" data-live-value="release"></a>
+                </div>
+                <span class="lab">Licence</span>
+                <a class="val" href="https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/LICENSE">MIT</a>
+            </div>
+        </div>
+        <p class="fine">Not affiliated with Graphisoft. Archicad is a trademark of Graphisoft SE.</p>
+    </div>
+</footer>
+<!-- /site-footer -->
+</body>
+</html>

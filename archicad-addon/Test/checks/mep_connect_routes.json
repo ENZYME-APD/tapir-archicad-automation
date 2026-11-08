@@ -1,0 +1,145 @@
+{
+  "title": "ConnectMEPElements makes a tee of a duct route whose first node lies on another route, and refuses routes without a common point",
+  "minTapir": "1.8.1",
+  "minArchicad": "28",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      }
+    },
+    {
+      "id": "main, branch and a distant route",
+      "command": "CreateMEPRoutingElements",
+      "params": {
+        "routingElementsData": [
+          {
+            "domain": "Ventilation",
+            "crossSectionShape": "Rectangular",
+            "crossSectionWidth": 0.3,
+            "crossSectionHeight": 0.2,
+            "nodeCoordinates": [
+              { "x": 0.0, "y": -40.0, "z": 3.0 },
+              { "x": 4.0, "y": -40.0, "z": 3.0 }
+            ]
+          },
+          {
+            "domain": "Ventilation",
+            "crossSectionShape": "Rectangular",
+            "crossSectionWidth": 0.3,
+            "crossSectionHeight": 0.2,
+            "nodeCoordinates": [
+              { "x": 2.0, "y": -40.0, "z": 3.0 },
+              { "x": 2.0, "y": -37.0, "z": 3.0 }
+            ]
+          },
+          {
+            "domain": "Ventilation",
+            "crossSectionShape": "Rectangular",
+            "crossSectionWidth": 0.3,
+            "crossSectionHeight": 0.2,
+            "nodeCoordinates": [
+              { "x": 10.0, "y": -40.0, "z": 3.0 },
+              { "x": 12.0, "y": -40.0, "z": 3.0 }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "main": "elements[0].elementId.guid",
+        "branch": "elements[1].elementId.guid",
+        "distant": "elements[2].elementId.guid"
+      }
+    },
+    {
+      "id": "no branch element yet",
+      "command": "GetMEPElements",
+      "creates": false,
+      "params": {
+        "elementTypes": [ "Branch" ]
+      },
+      "expect": [
+        { "path": "elements", "len": 0 }
+      ]
+    },
+    {
+      "id": "routes without a common point",
+      "command": "ConnectMEPElements",
+      "creates": false,
+      "params": {
+        "connectionsData": [
+          { "routingElementId": { "guid": "${main}" }, "connectToId": { "guid": "${distant}" } }
+        ]
+      },
+      "expect": [
+        { "path": "connectionResults[0].error.code", "exists": true, "name": "refused" },
+        { "path": "connectionResults[0].error.message", "contains": "no common point", "name": "says why" }
+      ]
+    },
+    {
+      "id": "tee",
+      "command": "ConnectMEPElements",
+      "creates": false,
+      "params": {
+        "connectionsData": [
+          { "routingElementId": { "guid": "${main}" }, "connectToId": { "guid": "${branch}" } }
+        ]
+      },
+      "save": {
+        "tee": "connectionResults[0].createdBranchId.guid"
+      },
+      "expect": [
+        { "path": "connectionResults[0].error", "exists": false, "name": "connected" },
+        { "path": "connectionResults[0].createdBranchId.guid", "exists": true, "name": "branch element created" }
+      ]
+    },
+    {
+      "id": "routes and branch elements after the tee (deleted at the end, with the split part of the main route)",
+      "command": "GetMEPElements",
+      "params": {
+        "elementTypes": [ "RoutingElement", "Branch" ]
+      },
+      "expect": [
+        { "path": "elements", "len": 5, "name": "main split in two, branch, distant route and the branch element" }
+      ]
+    },
+    {
+      "id": "the branch element",
+      "command": "GetMEPElementDetails",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${tee}" } } ]
+      },
+      "expect": [
+        { "path": "elementDetails[0].type", "eq": "Branch" },
+        { "path": "elementDetails[0].domain", "eq": "Ventilation" }
+      ]
+    },
+    {
+      "id": "one branch element",
+      "command": "GetMEPElements",
+      "creates": false,
+      "params": {
+        "elementTypes": [ "Branch" ]
+      },
+      "expect": [
+        { "path": "elements", "len": 1 }
+      ]
+    },
+    {
+      "id": "the branch route is connected at its beginning",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${branch}" } } ]
+      },
+      "expect": [
+        { "path": "routingElements[0].logicallyConnectedPortIdAtRouteBegin", "exists": true }
+      ]
+    }
+  ]
+}

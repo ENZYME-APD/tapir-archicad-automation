@@ -1,0 +1,18 @@
+{
+    "slug": "property-value-importer",
+    "name": "Property Value Importer",
+    "summary": "Reads a CSV or Excel file from the Property Value Exporter and writes its values into the elements' properties, after a preview.",
+    "category": "import-export",
+    "tags": ["properties", "excel", "csv", "import"],
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
+    "license": "MIT",
+    "entry": "PropertyValueImporter.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "First version."
+        }
+    ]
+}

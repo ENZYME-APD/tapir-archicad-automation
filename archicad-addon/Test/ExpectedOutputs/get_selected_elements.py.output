@@ -85,7 +85,11 @@ Response:
             "success": true
         },
         {
-            "success": true
+            "error": {
+                "code": -2130313215,
+                "message": "Archicad did not select the element: it is on a hidden layer, hidden by the renovation filter, or the current window does not show it (for example a 2D element in the 3D window)."
+            },
+            "success": false
         }
     ],
     "executionResultsOfRemoveFromSelection": []

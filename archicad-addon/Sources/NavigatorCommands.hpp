@@ -11,6 +11,15 @@ public:
     virtual GS::ObjectState Execute(const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetPublisherSetsCommand : public CommandBase
+{
+public:
+    GetPublisherSetsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class UpdateDrawingsCommand : public CommandBase
 {
 public:
@@ -19,6 +28,16 @@ public:
     virtual GS::Optional<GS::UniString> GetInputParametersSchema() const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema() const override;
     virtual GS::ObjectState Execute(const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetDrawingContentBoxesCommand : public CommandBase
+{
+public:
+    GetDrawingContentBoxesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
 class GetDatabaseIdFromNavigatorItemIdCommand : public CommandBase
@@ -31,12 +50,60 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetDatabasesCommand : public CommandBase
+{
+public:
+    GetDatabasesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class GetModelViewOptionsCommand : public CommandBase
 {
 public:
     GetModelViewOptionsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class FindModelViewOptionCommand : public CommandBase
+{
+public:
+    FindModelViewOptionCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetModelViewOptionDetailsCommand : public CommandBase
+{
+public:
+    GetModelViewOptionDetailsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetViewOptionsCommand : public CommandBase
+{
+public:
+    GetViewOptionsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class SetViewOptionsCommand : public CommandBase
+{
+public:
+    SetViewOptionsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
@@ -54,6 +121,82 @@ class SetViewSettingsCommand : public CommandBase
 {
 public:
     SetViewSettingsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetActiveGraphicalOverrideCombinationCommand : public CommandBase
+{
+public:
+    GetActiveGraphicalOverrideCombinationCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class SetActiveGraphicalOverrideCombinationCommand : public CommandBase
+{
+public:
+    SetActiveGraphicalOverrideCombinationCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetRenovationFiltersCommand : public CommandBase
+{
+public:
+    GetRenovationFiltersCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class SetActiveRenovationFilterCommand : public CommandBase
+{
+public:
+    SetActiveRenovationFilterCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetGhostStorySettingsCommand : public CommandBase
+{
+public:
+    GetGhostStorySettingsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class SetGhostStorySettingsCommand : public CommandBase
+{
+public:
+    SetGhostStorySettingsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetStructureDisplayCommand : public CommandBase
+{
+public:
+    GetStructureDisplayCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class SetStructureDisplayCommand : public CommandBase
+{
+public:
+    SetStructureDisplayCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
@@ -84,6 +227,36 @@ class FitInWindowCommand : public CommandBase
 {
 public:
     FitInWindowCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ZoomToElementsCommand : public CommandBase
+{
+public:
+    ZoomToElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class SetZoomCommand : public CommandBase
+{
+public:
+    SetZoomCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ResetZoomCommand : public CommandBase
+{
+public:
+    ResetZoomCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
@@ -150,10 +323,98 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class ReorderNavigatorItemsCommand : public CommandBase
+{
+public:
+    ReorderNavigatorItemsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class GetNavigatorItemTreeCommand : public CommandBase
 {
 public:
     GetNavigatorItemTreeCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetSchedulesCommand : public CommandBase
+{
+public:
+    GetSchedulesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetNavigatorParentItemsCommand : public CommandBase
+{
+public:
+    GetNavigatorParentItemsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class SetMasterLayoutContextCommand : public CommandBase
+{
+public:
+    SetMasterLayoutContextCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetAddOnViewpointRootsCommand : public CommandBase
+{
+public:
+    GetAddOnViewpointRootsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetAddOnViewpointChildrenCommand : public CommandBase
+{
+public:
+    GetAddOnViewpointChildrenCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetAddOnViewpointsCommand : public CommandBase
+{
+public:
+    GetAddOnViewpointsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class CreateAddOnViewpointsCommand : public CommandBase
+{
+public:
+    CreateAddOnViewpointsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ChangeAddOnViewpointsCommand : public CommandBase
+{
+public:
+    ChangeAddOnViewpointsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;

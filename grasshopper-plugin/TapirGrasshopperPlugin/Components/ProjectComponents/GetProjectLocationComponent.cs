@@ -38,6 +38,12 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
             OutText(nameof(SurveyPointPositionInProject.PositionInProjectX));
             OutText(nameof(SurveyPointPositionInProject.PositionInProjectY));
             OutText(nameof(SurveyPointPositionInProject.PositionInProjectZ));
+            OutBoolean(
+                nameof(SurveyPoint.IsVisible),
+                "Whether the survey point is shown in the project.");
+            OutBoolean(
+                nameof(SurveyPoint.IsLocked),
+                "Whether the survey point is locked, so it cannot be moved. Empty before Archicad 26.");
         }
 
         protected override void Solve(
@@ -112,6 +118,18 @@ namespace TapirGrasshopperPlugin.Components.ProjectComponents
                 da.SetData(
                     18,
                     response.Survey.PositionInProject.PositionInProjectZ);
+            }
+            if (response.Survey.IsVisible.HasValue)
+            {
+                da.SetData(
+                    19,
+                    response.Survey.IsVisible.Value);
+            }
+            if (response.Survey.IsLocked.HasValue)
+            {
+                da.SetData(
+                    20,
+                    response.Survey.IsLocked.Value);
             }
         }
 

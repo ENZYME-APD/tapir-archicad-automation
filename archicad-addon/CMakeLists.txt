@@ -21,4 +21,13 @@ project (${AddOnName})
 
 set (AddOnSourcesFolder Sources)
 set (AddOnResourcesFolder Sources)
-GenerateAddOnProject (AddOn ${AC_VERSION} ${AC_API_DEVKIT_DIR} ${AddOnName} ${AddOnSourcesFolder} ${AddOnResourcesFolder} INT)
+
+# The language of the user interface. As in Graphisoft's DevKit, one build has one language: its
+# texts are compiled from Sources/R<language>/AddOn.grc (INT, international English, is the
+# complete one the releases are built with). See Sources/LOCALIZATION.md.
+set (AC_ADDON_LANGUAGE "INT" CACHE STRING "Add-On language code, the R<code> resource folder in Sources.")
+if (NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/${AddOnResourcesFolder}/R${AC_ADDON_LANGUAGE}/AddOn.grc")
+	message (FATAL_ERROR "AC_ADDON_LANGUAGE ${AC_ADDON_LANGUAGE}: ${AddOnResourcesFolder}/R${AC_ADDON_LANGUAGE}/AddOn.grc does not exist.")
+endif ()
+
+GenerateAddOnProject (AddOn ${AC_VERSION} ${AC_API_DEVKIT_DIR} ${AddOnName} ${AddOnSourcesFolder} ${AddOnResourcesFolder} ${AC_ADDON_LANGUAGE})

@@ -315,6 +315,17 @@ namespace TapirGrasshopperPlugin.Components
                 GH_ParamAccess.list);
         }
 
+        public void InPoint(
+            string name,
+            string description = "")
+        {
+            inManager.AddPointParameter(
+                name,
+                name,
+                description.WithTypeName("pointItem"),
+                GH_ParamAccess.item);
+        }
+
         public void InPoints(
             string name,
             string description = "")
@@ -838,6 +849,22 @@ namespace TapirGrasshopperPlugin.Components
             da.SetDataList(
                 outputIndex,
                 ExecutionResultsResponse.ErrorMessages(response));
+        }
+
+        // A dry run changes nothing, so the items it refuses are reported as
+        // warnings, not as errors.
+        protected void AddDryRunWarnings(
+            IEnumerable<string> errorMessages)
+        {
+            foreach (var message in errorMessages)
+            {
+                if (!string.IsNullOrEmpty(message))
+                {
+                    AddRuntimeMessage(
+                        GH_RuntimeMessageLevel.Warning,
+                        message);
+                }
+            }
         }
 
         // The creator commands answer with one item per requested item, holding

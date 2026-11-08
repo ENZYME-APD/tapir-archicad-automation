@@ -1,0 +1,271 @@
+{
+  "tool": "Beam",
+  "elementType": "Beam",
+  "archicadVersion": 29,
+  "commands": {
+    "get": "GetDetailsOfElements",
+    "getSchema": "BeamDetails",
+    "create": "CreateBeamsCommand",
+    "modify": "ModifyBeamsCommand"
+  },
+  "plainKeys": [
+    "elementId",
+    "favoriteName"
+  ],
+  "sources": {
+    "help": [
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-49.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-39.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-40.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-42.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-51.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-53.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-12.htm",
+      "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-16.htm"
+    ],
+    "devkit": "https://github.com/GRAPHISOFT/archicad-api-devkit/releases/tag/29.3000"
+  },
+  "fields": [
+    {
+      "get": "begCoordinate",
+      "set": "begCoordinate",
+      "apiMember": "API_BeamType::begC",
+      "apiDescription": "The beginning (start) coordinate of the beam.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "endCoordinate",
+      "set": "endCoordinate",
+      "apiMember": "API_BeamType::endC",
+      "apiDescription": "The end coordinate of the beam.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "arcAngle",
+      "set": "arcAngle",
+      "apiMember": "API_BeamType::curveAngle",
+      "apiDescription": "The arc angle of the curved beam between begC and endC (negative value results an arc on the opposite side). This value is always zero for straight beams.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "floorIndex",
+      "set": "floorIndex",
+      "getFrom": "element",
+      "apiMember": "API_Elem_Head::floorInd",
+      "apiDescription": "The element belongs to this floor.",
+      "label": "Home Story",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-49.htm (heading \"Home Story\"; screenshot BeamPositioning.png \"Home Story:\")",
+      "group": "Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "zCoordinate",
+      "set": "zCoordinate",
+      "apiMember": null,
+      "apiDescription": "Absolute Z of the beam's reference axis (derived from the home story and level).",
+      "label": "Reference Line Elevation",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-49.htm (heading \"Reference Line Elevation [to Reference level]\")",
+      "group": "Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "level",
+      "set": "level",
+      "apiMember": "API_BeamType::level",
+      "apiDescription": "The top height of the beam relative to the floor level.",
+      "label": "Offset to Home Story",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-49.htm (heading \"Offset to Home Story\": \"Offset the Beam’s reference axis from the Home Story\")",
+      "group": "Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "isSlanted",
+      "set": "isSlanted",
+      "apiMember": "API_BeamType::isSlanted",
+      "apiDescription": "Defines whether the beam is slanted.",
+      "label": "Horizontal or Slanted",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-49.htm (heading \"Horizontal or Slanted\")",
+      "group": "Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "slantAngle",
+      "set": "slantAngle",
+      "apiMember": "API_BeamType::slantAngle",
+      "apiDescription": "Slant angle.",
+      "label": "Slant Angle",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-39.htm (heading \"Set Slant Angle in Beam Settings\": \"Beam page, Positioning panel\"; screenshot BeamSlantAngle.png)",
+      "group": "Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "beamShape",
+      "set": "beamShape",
+      "apiMember": "API_BeamType::beamShape",
+      "apiDescription": "Type to define if beam is straight, horizontally or vertically curved.",
+      "label": null,
+      "labelSource": null,
+      "group": "Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "verticalCurveHeight",
+      "set": "verticalCurveHeight",
+      "apiMember": "API_BeamType::verticalCurveHeight",
+      "apiDescription": "The height of the vertical curvature of the beam.",
+      "label": "Chord/Arc Height",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-40.htm (text \"Click the Curved icon and define the Chord/Arc Height\"; screenshot CurveBeamVerticallySettings.png)",
+      "group": "Positioning",
+      "subgroup": null
+    },
+    {
+      "get": "anchorPoint",
+      "set": "anchorPoint",
+      "apiMember": "API_BeamType::anchorPoint",
+      "apiDescription": "Anchor point of the beam.",
+      "label": "Reference Axis",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-51.htm (screenshot BeamRefAxisSettings.png \"Reference Axis:\")",
+      "group": "End Cuts and Reference Axis",
+      "subgroup": null
+    },
+    {
+      "get": "offset",
+      "set": "offset",
+      "apiMember": "API_BeamType::offset",
+      "apiDescription": "The offset of beam's reference line from the center.",
+      "label": "Offset",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-51.htm (heading \"Reference Axis Offset\"; screenshot BeamRefAxisSettings.png \"Offset:\")",
+      "group": "End Cuts and Reference Axis",
+      "subgroup": null
+    },
+    {
+      "get": "profileAngle",
+      "set": "profileAngle",
+      "apiMember": "API_BeamType::profileAngle",
+      "apiDescription": "Profile rotating angle around it's center line.",
+      "label": "Axis Rotation",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-51.htm (heading \"Axis Rotation\"; screenshot BeamRefAxisSettings.png \"Axis Rotation:\")",
+      "group": "End Cuts and Reference Axis",
+      "subgroup": null
+    },
+    {
+      "get": "isFlipped",
+      "set": "isFlipped",
+      "apiMember": "API_BeamType::isFlipped",
+      "apiDescription": "Defines whether the beam is mirrored. Applies to profiled beams only.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "width",
+      "set": "width",
+      "apiMember": "API_AssemblySegmentData::nominalWidth",
+      "apiDescription": "Nominal width of segment.",
+      "label": null,
+      "labelSource": null,
+      "group": "Structure",
+      "subgroup": null
+    },
+    {
+      "get": "height",
+      "set": "height",
+      "apiMember": "API_AssemblySegmentData::nominalHeight",
+      "apiDescription": "Nominal height of segment.",
+      "label": null,
+      "labelSource": null,
+      "group": "Structure",
+      "subgroup": null
+    },
+    {
+      "get": "isWidthAndHeightLinked",
+      "set": "isWidthAndHeightLinked",
+      "apiMember": "API_AssemblySegmentData::isWidthAndHeightLinked",
+      "apiDescription": "State of linking between width and height.",
+      "label": null,
+      "labelSource": null,
+      "group": "Structure",
+      "subgroup": null
+    },
+    {
+      "get": "circleBased",
+      "set": "circleBased",
+      "apiMember": "API_AssemblySegmentData::circleBased",
+      "apiDescription": "Defines whether the column is circular (true) or rectangular/profiled (false).",
+      "label": null,
+      "labelSource": null,
+      "group": "Structure",
+      "subgroup": null
+    },
+    {
+      "get": "buildingMaterialId",
+      "set": "buildingMaterialId",
+      "apiMember": "API_AssemblySegmentData::buildingMaterial",
+      "apiDescription": "Building Material index of column's hatch. Used only, if structure type is API_BasicStrucure.",
+      "label": "Building Material",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-42.htm (heading \"Building Material/Profile\": \"Use the pop-up to choose a Building Material or Profile for the Beam or Beam segment\")",
+      "group": "Structure",
+      "subgroup": null
+    },
+    {
+      "get": "profileId",
+      "set": "profileId",
+      "apiMember": "API_AssemblySegmentData::profileAttr",
+      "apiDescription": "Attribute index of the extruded profile.",
+      "label": "Profile",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/040_ElementsVB/040_ElementsVB-42.htm (text \"Use the pop-up to choose a Building Material or Profile for the Beam or Beam segment\"; screenshot BeamProfileChoose.png)",
+      "group": "Structure",
+      "subgroup": null
+    },
+    {
+      "get": "holes",
+      "set": "holes",
+      "apiMember": "API_ElementMemo::beamHoles",
+      "apiDescription": "Beam hole information.",
+      "label": null,
+      "labelSource": null,
+      "group": null,
+      "subgroup": null
+    },
+    {
+      "get": "cutFillPen",
+      "set": "cutFillPen",
+      "apiMember": "API_BeamType::cutFillPen",
+      "apiDescription": "Cut fill pens set in the used structure (building material, complex profile) can be overridden on the element level.",
+      "label": "Cut Fill Foreground Pen",
+      "labelSource": "https://help.graphisoft.com/AC/29/INT/_AC29_Help/050_ViewsVB/050_ViewsVB-16.htm (screenshot SlabCutPenOverride.png \"Cut Fill Foreground Pen\")",
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "cutFillBackgroundPen",
+      "set": "cutFillBackgroundPen",
+      "apiMember": "API_BeamType::cutFillBackgroundPen",
+      "apiDescription": "Cut fill pens set in the used structure (building material, complex profile) can be overridden on the element level.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cut Surfaces"
+    },
+    {
+      "get": "coverFill",
+      "set": "coverFill",
+      "apiMember": null,
+      "apiDescription": "Cover fill settings: API_BeamType::useCoverFill, useCoverFillFromSurface, coverFillOrientationComesFrom3D, coverFillType, coverFillForegroundPen, coverFillBackgroundPen, coverFillTransformationType and coverFillTransformation.",
+      "label": null,
+      "labelSource": null,
+      "group": "Floor Plan and Section",
+      "subgroup": "Cover Fills"
+    }
+  ]
+}

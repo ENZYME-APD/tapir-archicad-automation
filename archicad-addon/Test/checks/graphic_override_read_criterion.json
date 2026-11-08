@@ -1,0 +1,203 @@
+{
+  "title": "Graphic override rules: reading the criterion back as structured conditions (includeCriterion)",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "create nested criterion",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck read criterion",
+            "ruleGroupName": "TapirCheck read criterion",
+            "criterion": {
+              "and": [
+                {
+                  "and": [
+                    { "elementTypeNot": "Wall" },
+                    { "elementType": "Beam" }
+                  ]
+                },
+                {
+                  "or": [
+                    { "elementType": "Slab" },
+                    { "elementType": "Roof" }
+                  ]
+                }
+              ]
+            },
+            "style": {
+              "lineMarkerTextPen": 20
+            }
+          }
+        ]
+      },
+      "save": {
+        "rule": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid"
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "rule created"
+        }
+      ]
+    },
+    {
+      "id": "read nested criterion",
+      "command": "GetGraphicOverrideRulesByName",
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck read criterion",
+            "ruleGroupName": "TapirCheck read criterion"
+          }
+        ],
+        "includeCriterion": true
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRules[0].criterion.and[0].and[0].elementTypeNot",
+          "eq": "Wall",
+          "name": "is not Wall"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[0].and[1].elementType",
+          "eq": "Beam",
+          "name": "and is Beam"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[1].or[0].elementType",
+          "eq": "Slab",
+          "name": "Slab or"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[1].or[1].elementType",
+          "eq": "Roof",
+          "name": "Roof"
+        }
+      ]
+    },
+    {
+      "id": "without includeCriterion",
+      "command": "GetGraphicOverrideRulesByName",
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck read criterion",
+            "ruleGroupName": "TapirCheck read criterion"
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRules[0].criterion",
+          "exists": false,
+          "name": "no criterion by default"
+        }
+      ]
+    },
+    {
+      "id": "modify with a raw leaf",
+      "command": "ModifyGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "graphicOverrideRuleId": {
+              "guid": "${rule}"
+            },
+            "criterion": {
+              "and": [
+                { "criterionXML": "<ClassGuid>2C7FF58A-DE0F-4B5A-82EE-EA6A943E1951</ClassGuid><ModelElementCriterion Mv=\"2\" Sv=\"0\"><LogicalOperator>1</LogicalOperator></ModelElementCriterion>" },
+                { "elementType": "AllTypes" }
+              ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "every rule with includeCriterion",
+      "command": "GetGraphicOverrideRules",
+      "params": {
+        "includeCriterion": true
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRules",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "read modified criterion",
+      "command": "GetGraphicOverrideRulesByName",
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck read criterion",
+            "ruleGroupName": "TapirCheck read criterion"
+          }
+        ],
+        "includeCriterion": true
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRules[0].criterion.and[0].all3DTypes",
+          "eq": true,
+          "name": "raw model element leaf read as all3DTypes"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[1].elementType",
+          "eq": "AllTypes",
+          "name": "All Types"
+        }
+      ]
+    },
+    {
+      "id": "too deep",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck too deep",
+            "ruleGroupName": "TapirCheck read criterion",
+            "criterion": {
+              "and": [
+                { "or": [ { "and": [ { "or": [ { "elementType": "Wall" } ] } ] } ] }
+              ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].error.code",
+          "exists": true,
+          "name": "rejected"
+        }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteGraphicOverrideRuleGroups",
+      "params": {
+        "ruleGroupNames": [
+          "TapirCheck read criterion"
+        ],
+        "deleteRules": true
+      }
+    }
+  ]
+}

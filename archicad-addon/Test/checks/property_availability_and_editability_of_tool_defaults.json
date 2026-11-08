@@ -1,0 +1,95 @@
+{
+  "title": "GetPropertyAvailabilityOfDefaults and GetPropertyEditability of element type defaults",
+  "minTapir": "1.8.1",
+  "minArchicad": "26",
+  "requiresEmpty": [],
+  "steps": [
+    {
+      "id": "built-in Element ID and Width",
+      "command": "API.GetPropertyIds",
+      "creates": false,
+      "params": {
+        "properties": [
+          { "type": "BuiltIn", "nonLocalizedName": "General_ElementID" },
+          { "type": "BuiltIn", "nonLocalizedName": "General_Width" }
+        ]
+      },
+      "save": {
+        "propElementId": "properties[0].propertyId.guid",
+        "propWidth": "properties[1].propertyId.guid"
+      }
+    },
+    {
+      "id": "group",
+      "command": "CreatePropertyGroups",
+      "creates": false,
+      "params": { "propertyGroups": [ { "propertyGroup": { "name": "Tapir check group D", "description": "" } } ] },
+      "save": { "group": "propertyGroupIds[0].propertyGroupId.guid" }
+    },
+    {
+      "id": "custom property available for no classification",
+      "command": "CreatePropertyDefinitions",
+      "creates": false,
+      "params": {
+        "propertyDefinitions": [
+          {
+            "propertyDefinition": {
+              "name": "Tapir check unavailable", "description": "", "type": "string",
+              "isEditable": true, "availability": [],
+              "group": { "propertyGroupId": { "guid": "${group}" } }
+            }
+          }
+        ]
+      },
+      "save": { "propCustom": "propertyIds[0].propertyId.guid" }
+    },
+    {
+      "id": "Wall default: [Element ID, custom without availability, unknown property]",
+      "command": "GetPropertyAvailabilityOfDefaults",
+      "creates": false,
+      "params": {
+        "elementType": "Wall",
+        "properties": [
+          { "propertyId": { "guid": "${propElementId}" } },
+          { "propertyId": { "guid": "${propCustom}" } },
+          { "propertyId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
+      "expect": [
+        { "path": "propertyAvailabilities", "len": 3, "name": "one item per property" },
+        { "path": "propertyAvailabilities[0].available", "eq": true, "name": "Element ID available" },
+        { "path": "propertyAvailabilities[0].visible", "eq": true, "name": "Element ID visible" },
+        { "path": "propertyAvailabilities[1].available", "eq": false, "name": "custom property without availability: unavailable" },
+        { "path": "propertyAvailabilities[2].error", "exists": true, "name": "unknown property is an error, not unavailable" },
+        { "path": "propertyAvailabilities[2].available", "exists": false, "name": "unknown property: no available field" }
+      ]
+    },
+    {
+      "id": "[Element ID, Width, unknown property] x [Wall, Slab] defaults",
+      "command": "GetPropertyEditability",
+      "creates": false,
+      "params": {
+        "properties": [
+          { "propertyId": { "guid": "${propElementId}" } },
+          { "propertyId": { "guid": "${propWidth}" } },
+          { "propertyId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ],
+        "elementTypes": [ "Wall", "Slab" ]
+      },
+      "expect": [
+        { "path": "editabilityOfElementTypeDefaults", "len": 2, "name": "one item per element type" },
+        { "path": "editabilityOfElementTypeDefaults[0].propertyEditabilities", "len": 3, "name": "one item per property" },
+        { "path": "editabilityOfElementTypeDefaults[0].propertyEditabilities[0].editable", "eq": true, "name": "Wall default: Element ID editable" },
+        { "path": "editabilityOfElementTypeDefaults[0].propertyEditabilities[1].editable", "eq": false, "name": "Wall default: Width (calculated) not editable" },
+        { "path": "editabilityOfElementTypeDefaults[0].propertyEditabilities[2].error", "exists": true, "name": "Wall default: unknown property is an error" },
+        { "path": "editabilityOfElementTypeDefaults[1].propertyEditabilities[0].editable", "eq": true, "name": "Slab default: Element ID editable" },
+        { "path": "editabilityOfElements", "exists": false, "name": "elements not asked: no list" },
+        { "path": "editabilityOfPropertyDefinitionDefaults", "exists": false, "name": "definition defaults not asked: no list" }
+      ]
+    }
+  ],
+  "teardown": [
+    { "command": "DeletePropertyDefinitions", "params": { "propertyIds": [ { "propertyId": { "guid": "${propCustom}" } } ] } },
+    { "command": "DeletePropertyGroups", "params": { "propertyGroupIds": [ { "propertyGroupId": { "guid": "${group}" } } ] } }
+  ]
+}

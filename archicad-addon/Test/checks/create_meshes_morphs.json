@@ -1,0 +1,384 @@
+{
+  "title": "CreateMeshes and CreateMorphs keep the outline, holes, sublines, body, settings, story, layer and id, and refuse bad items",
+  "minTapir": "1.8.1",
+  "requiresEmpty": [ "Mesh", "Morph" ],
+  "steps": [
+    {
+      "id": "a mesh with a hole and a subline, and a triangular mesh with an arc and a closing point",
+      "command": "CreateMeshes",
+      "params": {
+        "meshesData": [
+          {
+            "floorIndex": 0,
+            "level": 0.0,
+            "skirtType": "WithSkirt",
+            "skirtLevel": 1.5,
+            "ridges": "AllSharp",
+            "showLines": true,
+            "contourPen": 5,
+            "levelPen": 6,
+            "lineTypeIndex": 1,
+            "id": "CHK-MESH-1",
+            "polygonCoordinates": [
+              { "x": 800.0, "y": 700.0, "z": 0.0 },
+              { "x": 806.0, "y": 700.0, "z": 0.5 },
+              { "x": 806.0, "y": 706.0, "z": 1.0 },
+              { "x": 800.0, "y": 706.0, "z": 0.2 }
+            ],
+            "holes": [
+              {
+                "polygonCoordinates": [
+                  { "x": 802.0, "y": 702.0, "z": 0.3 },
+                  { "x": 803.0, "y": 702.0, "z": 0.3 },
+                  { "x": 803.0, "y": 703.0, "z": 0.3 },
+                  { "x": 802.0, "y": 703.0, "z": 0.3 }
+                ]
+              }
+            ],
+            "sublines": [
+              {
+                "coordinates": [
+                  { "x": 801.0, "y": 704.5, "z": 0.4 },
+                  { "x": 805.0, "y": 704.5, "z": 0.6 }
+                ]
+              }
+            ]
+          },
+          {
+            "floorIndex": 1,
+            "level": 0.25,
+            "skirtType": "SurfaceOnlyWithoutSkirt",
+            "skirtLevel": 0.5,
+            "ridges": "AllSmooth",
+            "showLines": false,
+            "contourPen": 3,
+            "levelPen": 4,
+            "polygonCoordinates": [
+              { "x": 810.0, "y": 700.0, "z": 0.0 },
+              { "x": 814.0, "y": 700.0, "z": 0.0 },
+              { "x": 812.0, "y": 703.0, "z": 0.0 },
+              { "x": 810.0, "y": 700.0, "z": 0.0 }
+            ],
+            "polygonArcs": [ { "begIndex": 0, "endIndex": 1, "arcAngle": 0.5 } ]
+          }
+        ]
+      },
+      "save": { "m1": "elements[0].elementId.guid", "m2": "elements[1].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "mesh with a hole and a subline created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "triangular mesh with an arc created" }
+      ]
+    },
+    {
+      "id": "read the meshes back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${m1}" } }, { "elementId": { "guid": "${m2}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Mesh" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "floorIndex 0 applied" },
+        { "path": "detailsOfElements[0].id", "eq": "CHK-MESH-1", "name": "id applied" },
+        { "path": "detailsOfElements[0].details.level", "approx": 0.0, "name": "level applied" },
+        { "path": "detailsOfElements[0].details.skirtType", "eq": "WithSkirt", "name": "skirt type applied" },
+        { "path": "detailsOfElements[0].details.skirtLevel", "approx": 1.5, "name": "skirt level applied" },
+        { "path": "detailsOfElements[0].details.ridges", "eq": "AllSharp", "name": "sharp ridges applied" },
+        { "path": "detailsOfElements[0].details.showLines", "eq": true, "name": "lines shown" },
+        { "path": "detailsOfElements[0].details.contourPen", "eq": 5, "name": "contour pen applied" },
+        { "path": "detailsOfElements[0].details.levelPen", "eq": 6, "name": "level pen applied" },
+        { "path": "detailsOfElements[0].details.lineTypeIndex", "eq": 1, "name": "line type applied" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates", "len": 5, "name": "four corners and the closing point" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[0].x", "approx": 800.0, "name": "first corner x kept" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[0].y", "approx": 700.0, "name": "first corner y kept" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[1].x", "approx": 806.0, "name": "second corner x kept" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[1].z", "approx": 0.5, "name": "second corner z kept" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[2].y", "approx": 706.0, "name": "third corner y kept" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[2].z", "approx": 1.0, "name": "third corner z kept" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[3].z", "approx": 0.2, "name": "fourth corner z kept" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[4].x", "approx": 800.0, "name": "closing point is the first corner (x)" },
+        { "path": "detailsOfElements[0].details.polygonCoordinates[4].y", "approx": 700.0, "name": "closing point is the first corner (y)" },
+        { "path": "detailsOfElements[0].details.polygonArcs", "exists": false, "name": "no arcs on the first mesh" },
+        { "path": "detailsOfElements[0].details.holes", "len": 1, "name": "hole kept" },
+        { "path": "detailsOfElements[0].details.holes[0].polygonCoordinates", "len": 5, "name": "hole has four corners and the closing point" },
+        { "path": "detailsOfElements[0].details.holes[0].polygonCoordinates[0].x", "approx": 802.0, "name": "hole corner x kept" },
+        { "path": "detailsOfElements[0].details.holes[0].polygonCoordinates[2].y", "approx": 703.0, "name": "hole corner y kept" },
+        { "path": "detailsOfElements[0].details.holes[0].polygonCoordinates[1].z", "approx": 0.3, "name": "hole corner z kept" },
+        { "path": "detailsOfElements[0].details.sublines", "len": 1, "name": "subline kept" },
+        { "path": "detailsOfElements[0].details.sublines[0].coordinates", "len": 2, "name": "subline has two points" },
+        { "path": "detailsOfElements[0].details.sublines[0].coordinates[0].x", "approx": 801.0, "name": "subline start x kept" },
+        { "path": "detailsOfElements[0].details.sublines[0].coordinates[0].z", "approx": 0.4, "name": "subline start z kept" },
+        { "path": "detailsOfElements[0].details.sublines[0].coordinates[1].x", "approx": 805.0, "name": "subline end x kept" },
+        { "path": "detailsOfElements[0].details.sublines[0].coordinates[1].z", "approx": 0.6, "name": "subline end z kept" },
+        { "path": "detailsOfElements[1].type", "eq": "Mesh" },
+        { "path": "detailsOfElements[1].floorIndex", "eq": 1, "name": "floorIndex 1 applied" },
+        { "path": "detailsOfElements[1].details.level", "approx": 0.25, "name": "second level applied" },
+        { "path": "detailsOfElements[1].details.skirtType", "eq": "SurfaceOnlyWithoutSkirt", "name": "surface only applied" },
+        { "path": "detailsOfElements[1].details.skirtLevel", "approx": 0.5, "name": "second skirt level applied" },
+        { "path": "detailsOfElements[1].details.ridges", "eq": "AllSmooth", "name": "smooth ridges applied" },
+        { "path": "detailsOfElements[1].details.showLines", "eq": false, "name": "lines hidden" },
+        { "path": "detailsOfElements[1].details.contourPen", "eq": 3, "name": "second contour pen applied" },
+        { "path": "detailsOfElements[1].details.levelPen", "eq": 4, "name": "second level pen applied" },
+        { "path": "detailsOfElements[1].details.polygonCoordinates", "len": 4, "name": "given closing point not doubled: three corners and one closing point" },
+        { "path": "detailsOfElements[1].details.polygonCoordinates[2].x", "approx": 812.0, "name": "apex x kept" },
+        { "path": "detailsOfElements[1].details.polygonCoordinates[2].y", "approx": 703.0, "name": "apex y kept" },
+        { "path": "detailsOfElements[1].details.polygonArcs", "len": 1, "name": "arc kept" },
+        { "path": "detailsOfElements[1].details.polygonArcs[0].begIndex", "eq": 0, "name": "arc begins where given" },
+        { "path": "detailsOfElements[1].details.polygonArcs[0].endIndex", "eq": 1, "name": "arc ends where given" },
+        { "path": "detailsOfElements[1].details.polygonArcs[0].arcAngle", "approx": 0.5, "name": "arc angle kept" },
+        { "path": "detailsOfElements[1].details.holes", "len": 0, "name": "no holes on the second mesh" },
+        { "path": "detailsOfElements[1].details.sublines", "exists": false, "name": "no sublines on the second mesh" }
+      ]
+    },
+    {
+      "id": "mesh with an unknown favorite",
+      "command": "CreateMeshes",
+      "params": {
+        "meshesData": [
+          {
+            "favoriteName": "Tapir check: no such favorite",
+            "floorIndex": 0,
+            "polygonCoordinates": [
+              { "x": 800.0, "y": 720.0, "z": 0.0 },
+              { "x": 804.0, "y": 720.0, "z": 0.0 },
+              { "x": 804.0, "y": 724.0, "z": 0.0 }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements", "len": 1 },
+        { "path": "elements[0].error.code", "exists": true, "name": "mesh with an unknown favorite refused" }
+      ]
+    },
+    {
+      "id": "mesh whose hole has only two different points",
+      "command": "CreateMeshes",
+      "params": {
+        "meshesData": [
+          {
+            "floorIndex": 0,
+            "polygonCoordinates": [
+              { "x": 810.0, "y": 720.0, "z": 0.0 },
+              { "x": 814.0, "y": 720.0, "z": 0.0 },
+              { "x": 814.0, "y": 724.0, "z": 0.0 },
+              { "x": 810.0, "y": 724.0, "z": 0.0 }
+            ],
+            "holes": [
+              {
+                "polygonCoordinates": [
+                  { "x": 811.0, "y": 721.0, "z": 0.0 },
+                  { "x": 812.0, "y": 721.0, "z": 0.0 },
+                  { "x": 811.0, "y": 721.0, "z": 0.0 }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements", "len": 1 },
+        { "path": "elements[0].error.code", "exists": true, "name": "hole with fewer than three corners refused" }
+      ]
+    },
+    {
+      "id": "a box morph, a frustum morph and a tetrahedron morph",
+      "command": "CreateMorphs",
+      "params": {
+        "morphsData": [
+          {
+            "floorIndex": 0,
+            "layerIndex": 1,
+            "id": "CHK-MORPH-1",
+            "basePoint": { "x": 850.0, "y": 700.0, "z": 0.0 },
+            "size": { "x": 2.0, "y": 3.0, "z": 1.0 },
+            "castShadow": false,
+            "receiveShadow": true,
+            "cutLinePen": 5,
+            "uncutLinePen": 6,
+            "overheadLinePen": 7,
+            "coverFillPen": 8,
+            "coverFillBGPen": 9
+          },
+          {
+            "floorIndex": 0,
+            "layerIndex": 1,
+            "basePoint": { "x": 860.0, "y": 700.0, "z": 0.0 },
+            "size": { "x": 2.0, "y": 2.0, "z": 1.0 },
+            "topExpansion": 0.25,
+            "castShadow": true,
+            "receiveShadow": false
+          },
+          {
+            "floorIndex": 1,
+            "layerIndex": 1,
+            "id": "CHK-MORPH-3",
+            "basePoint": { "x": 870.0, "y": 700.0, "z": 0.5 },
+            "body": {
+              "bodyType": "Solid",
+              "vertices": [
+                { "x": 0.0, "y": 0.0, "z": 0.0 },
+                { "x": 1.0, "y": 0.0, "z": 0.0 },
+                { "x": 0.0, "y": 1.0, "z": 0.0 },
+                { "x": 0.0, "y": 0.0, "z": 1.5 }
+              ],
+              "polygons": [
+                { "vertexIds": [ 0, 2, 1 ] },
+                { "vertexIds": [ 0, 1, 3 ] },
+                { "vertexIds": [ 1, 2, 3 ] },
+                { "vertexIds": [ 2, 0, 3 ] }
+              ]
+            },
+            "cutLinePen": 3
+          }
+        ]
+      },
+      "save": {
+        "p1": "elements[0].elementId.guid",
+        "p2": "elements[1].elementId.guid",
+        "p3": "elements[2].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "box morph created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "frustum morph created" },
+        { "path": "elements[2].elementId.guid", "exists": true, "name": "tetrahedron morph created" }
+      ]
+    },
+    {
+      "id": "read the morphs back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${p1}" } },
+          { "elementId": { "guid": "${p2}" } },
+          { "elementId": { "guid": "${p3}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Morph" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "floorIndex 0 applied" },
+        { "path": "detailsOfElements[0].layerIndex", "eq": 1, "name": "layerIndex applied" },
+        { "path": "detailsOfElements[0].id", "eq": "CHK-MORPH-1", "name": "id applied" },
+        { "path": "detailsOfElements[0].details.origin.x", "approx": 850.0, "name": "base point x kept" },
+        { "path": "detailsOfElements[0].details.origin.y", "approx": 700.0, "name": "base point y kept" },
+        { "path": "detailsOfElements[0].details.origin.z", "approx": 0.0, "name": "base point z kept" },
+        { "path": "detailsOfElements[0].details.xAxis.x", "approx": 1.0, "name": "not turned" },
+        { "path": "detailsOfElements[0].details.zAxis.z", "approx": 1.0, "name": "upright" },
+        { "path": "detailsOfElements[0].details.castShadow", "eq": false, "name": "casts no shadow" },
+        { "path": "detailsOfElements[0].details.receiveShadow", "eq": true, "name": "receives shadow" },
+        { "path": "detailsOfElements[0].details.cutLinePen", "eq": 5, "name": "cut line pen applied" },
+        { "path": "detailsOfElements[0].details.uncutLinePen", "eq": 6, "name": "uncut line pen applied" },
+        { "path": "detailsOfElements[0].details.overheadLinePen", "eq": 7, "name": "overhead line pen applied" },
+        { "path": "detailsOfElements[0].details.coverFillPen", "eq": 8, "name": "cover fill pen applied" },
+        { "path": "detailsOfElements[0].details.coverFillBGPen", "eq": 9, "name": "cover fill background pen applied" },
+        { "path": "detailsOfElements[0].details.body.vertices", "len": 8, "name": "box has 8 vertices" },
+        { "path": "detailsOfElements[0].details.body.polygons", "len": 6, "name": "box has 6 faces" },
+        { "path": "detailsOfElements[0].details.body.isClosed", "eq": true, "name": "box is closed" },
+        { "path": "detailsOfElements[0].details.body.vertices[6].x", "approx": 2.0, "name": "box size x kept" },
+        { "path": "detailsOfElements[0].details.body.vertices[6].y", "approx": 3.0, "name": "box size y kept" },
+        { "path": "detailsOfElements[0].details.body.vertices[6].z", "approx": 1.0, "name": "box size z kept" },
+        { "path": "detailsOfElements[1].details.origin.x", "approx": 860.0, "name": "frustum base point kept" },
+        { "path": "detailsOfElements[1].details.castShadow", "eq": true, "name": "frustum casts shadow" },
+        { "path": "detailsOfElements[1].details.receiveShadow", "eq": false, "name": "frustum receives no shadow" },
+        { "path": "detailsOfElements[1].details.body.vertices", "len": 8, "name": "frustum has 8 vertices" },
+        { "path": "detailsOfElements[1].details.body.vertices[2].x", "approx": 2.0, "name": "frustum bottom corner x not expanded" },
+        { "path": "detailsOfElements[1].details.body.vertices[6].x", "approx": 2.25, "name": "frustum top corner x expanded" },
+        { "path": "detailsOfElements[1].details.body.vertices[6].y", "approx": 2.25, "name": "frustum top corner y expanded" },
+        { "path": "detailsOfElements[1].details.body.vertices[4].x", "approx": -0.25, "name": "frustum opposite top corner expanded" },
+        { "path": "detailsOfElements[1].details.body.vertices[6].z", "approx": 1.0, "name": "frustum height kept" },
+        { "path": "detailsOfElements[2].floorIndex", "eq": 1, "name": "tetrahedron on floorIndex 1" },
+        { "path": "detailsOfElements[2].id", "eq": "CHK-MORPH-3", "name": "tetrahedron id applied" },
+        { "path": "detailsOfElements[2].details.origin.x", "approx": 870.0, "name": "tetrahedron base point x kept" },
+        { "path": "detailsOfElements[2].details.origin.z", "approx": 0.5, "name": "tetrahedron base point z kept" },
+        { "path": "detailsOfElements[2].details.cutLinePen", "eq": 3, "name": "tetrahedron cut line pen applied" },
+        { "path": "detailsOfElements[2].details.body.vertices", "len": 4, "name": "tetrahedron has 4 vertices" },
+        { "path": "detailsOfElements[2].details.body.polygons", "len": 4, "name": "tetrahedron has 4 faces" },
+        { "path": "detailsOfElements[2].details.body.isClosed", "eq": true, "name": "tetrahedron is closed" },
+        { "path": "detailsOfElements[2].details.body.bodyType", "eq": "Solid", "name": "tetrahedron is a solid" },
+        { "path": "detailsOfElements[2].details.body.vertices[3].z", "approx": 1.5, "name": "tetrahedron apex kept" }
+      ]
+    },
+    {
+      "id": "morph with an unknown favorite",
+      "command": "CreateMorphs",
+      "params": {
+        "morphsData": [
+          {
+            "favoriteName": "Tapir check: no such favorite",
+            "floorIndex": 0,
+            "basePoint": { "x": 850.0, "y": 720.0, "z": 0.0 },
+            "size": { "x": 1.0, "y": 1.0, "z": 1.0 }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements", "len": 1 },
+        { "path": "elements[0].error.code", "exists": true, "name": "morph with an unknown favorite refused" }
+      ]
+    },
+    {
+      "id": "morphs with a zero size, with both size and body, and with a face out of range",
+      "command": "CreateMorphs",
+      "params": {
+        "morphsData": [
+          {
+            "floorIndex": 0,
+            "basePoint": { "x": 855.0, "y": 720.0, "z": 0.0 },
+            "size": { "x": 1.0, "y": 0.0, "z": 1.0 }
+          },
+          {
+            "floorIndex": 0,
+            "basePoint": { "x": 860.0, "y": 720.0, "z": 0.0 },
+            "size": { "x": 1.0, "y": 1.0, "z": 1.0 },
+            "body": {
+              "vertices": [
+                { "x": 0.0, "y": 0.0, "z": 0.0 },
+                { "x": 1.0, "y": 0.0, "z": 0.0 }
+              ]
+            }
+          },
+          {
+            "floorIndex": 0,
+            "basePoint": { "x": 865.0, "y": 720.0, "z": 0.0 },
+            "body": {
+              "bodyType": "Solid",
+              "vertices": [
+                { "x": 0.0, "y": 0.0, "z": 0.0 },
+                { "x": 1.0, "y": 0.0, "z": 0.0 },
+                { "x": 0.0, "y": 1.0, "z": 0.0 },
+                { "x": 0.0, "y": 0.0, "z": 1.0 }
+              ],
+              "polygons": [
+                { "vertexIds": [ 0, 2, 1 ] },
+                { "vertexIds": [ 0, 1, 3 ] },
+                { "vertexIds": [ 1, 2, 9 ] },
+                { "vertexIds": [ 2, 0, 3 ] }
+              ]
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "elements", "len": 3 },
+        { "path": "elements[0].error.code", "exists": true, "name": "morph with a zero size refused" },
+        { "path": "elements[1].error.code", "exists": true, "name": "morph with both size and body refused" },
+        { "path": "elements[2].error.code", "exists": true, "name": "morph whose face uses a missing vertex refused" }
+      ]
+    },
+    {
+      "id": "only the valid meshes were created",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Mesh" },
+      "expect": [ { "path": "elements", "len": 2 } ]
+    },
+    {
+      "id": "only the valid morphs were created",
+      "command": "GetElementsByType",
+      "creates": false,
+      "params": { "elementType": "Morph" },
+      "expect": [ { "path": "elements", "len": 3 } ]
+    }
+  ]
+}

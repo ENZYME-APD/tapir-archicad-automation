@@ -1,0 +1,14 @@
+{
+    "notApplicable": {
+        "groups": {},
+        "items": {
+            "GenerateDocumentation": "developer command that writes the Add-On's documentation files"
+        },
+        "patterns": {}
+    },
+    "skip": {
+        "groups": {},
+        "items": {},
+        "patterns": {}
+    }
+}

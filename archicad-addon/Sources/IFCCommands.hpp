@@ -42,6 +42,26 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetIFCAttributesOfElementsCommand : public CommandBase
+{
+public:
+    GetIFCAttributesOfElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class SetIFCAttributesOfElementsCommand : public CommandBase
+{
+public:
+    SetIFCAttributesOfElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class SetIFCPropertiesOfElementsCommand : public CommandBase
 {
 public:
@@ -52,10 +72,69 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class RemoveIFCPropertiesOfElementsCommand : public CommandBase
+{
+public:
+    RemoveIFCPropertiesOfElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class GetIFCExportTranslatorsCommand : public CommandBase
 {
 public:
     GetIFCExportTranslatorsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetIFCClassificationReferencesOfElementsCommand : public CommandBase
+{
+public:
+    GetIFCClassificationReferencesOfElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class SetIFCClassificationReferencesOfElementsCommand : public CommandBase
+{
+public:
+    SetIFCClassificationReferencesOfElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class RemoveIFCClassificationReferencesOfElementsCommand : public CommandBase
+{
+public:
+    RemoveIFCClassificationReferencesOfElementsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetIFCSpatialStructureCommand : public CommandBase
+{
+public:
+    GetIFCSpatialStructureCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetIFCAssignmentsCommand : public CommandBase
+{
+public:
+    GetIFCAssignmentsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;

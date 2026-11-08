@@ -1,13 +1,32 @@
 #include "IFCCommands.hpp"
 #include "MigrationHelper.hpp"
+#include "NotificationCommands.hpp"
 #include "StringConversion.hpp"
 
 #ifdef ServerMainVers_2800
+#include "ACAPI/IFCAssignments.hpp"
 #include "ACAPI/IFCAttribute.hpp"
+#include "ACAPI/IFCClassificationReference.hpp"
 #include "ACAPI/IFCObjectAccessor.hpp"
 #include "ACAPI/IFCObjectID.hpp"
 #include "ACAPI/IFCProperty.hpp"
 #include "ACAPI/IFCPropertyAccessor.hpp"
+#endif
+
+#ifndef ServerMainVers_2800
+
+// An IFC GlobalId is the 22 character base64 form of a GUID
+static const USize IFCGlobalIdLength = 22;
+
+static GS::UniString IFCGlobalIdOf (const API_Guid& guid)
+{
+    GS::UniString ifcGlobalId;
+    if (guid == APINULLGuid || ACAPI_IFC_APIGuidToIFCGuid (guid, ifcGlobalId) != NoError) {
+        return GS::EmptyUniString;
+    }
+    return ifcGlobalId;
+}
+
 #endif
 
 GetElementsByIFCIdsCommand::GetElementsByIFCIdsCommand () :
@@ -27,7 +46,7 @@ GS::Optional<GS::UniString> GetElementsByIFCIdsCommand::GetInputParametersSchema
         "properties": {
             "ifcIds": {
                 "type": "array",
-                "description": "A list of IFC identifiers to get the corresponding elements for.",
+                "description": "A list of IFC identifiers to get the corresponding elements for. Each one is either an IFC GlobalId (22 characters) or, before Archicad 28, the 36 character GUID form that GetIFCIdsOfElements returns there as ifcId.",
                 "items": {
                     "type": "string"
                 }
@@ -81,9 +100,17 @@ GS::ObjectState GetElementsByIFCIdsCommand::Execute (const GS::ObjectState& para
             }
         }
 #else
-        const API_Guid apiGuid = APIGuidFromString (ifcId.ToCStr ());
+        API_Guid apiGuid = APINULLGuid;
+        GSErrCode err = NoError;
+        if (ifcId.GetLength () == IFCGlobalIdLength) {
+            err = ACAPI_IFC_IFCGuidToAPIGuid (ifcId, apiGuid);
+        } else {
+            apiGuid = APIGuidFromString (ifcId.ToCStr ());
+        }
         GS::Array<API_Guid> elemGuids;
-        auto err = ACAPI_Element_GetElemListByIFCIdentifier (&apiGuid, &apiGuid, elemGuids);
+        if (err == NoError) {
+            err = ACAPI_Element_GetElemListByIFCIdentifier (&apiGuid, &apiGuid, elemGuids);
+        }
         if (err == NoError) {
             for (auto& elemGuid : elemGuids) {
                 elements (CreateElementIdObjectState (elemGuid));
@@ -186,6 +213,8 @@ GS::ObjectState GetIFCIdsOfElementsCommand::Execute (const GS::ObjectState& para
 
         elemIFCIds.Add ("ifcId", APIGuidToString (ifcId));
         elemIFCIds.Add ("externalIFCId", APIGuidToString (externalIFCId));
+        elemIFCIds.Add ("ifcGlobalId", IFCGlobalIdOf (ifcId));
+        elemIFCIds.Add ("externalIFCGlobalId", IFCGlobalIdOf (externalIFCId));
 #endif
 
         elementIFCIds (elemIFCIds);
@@ -451,6 +480,95 @@ static GS::UniString GetPropertyValueString (const IFCAPI::Property& property)
 		return PropertyTableValueToString (propertyCast);
 	}
 }
+
+static GS::UniString GetPropertyTypeString (const IFCAPI::Property& property)
+{
+	auto propertyVariant = property.GetTyped ();
+
+	if (std::holds_alternative<IFCAPI::PropertySingleValue> (propertyVariant)) {
+		return "SingleValue";
+	} else if (std::holds_alternative<IFCAPI::PropertyListValue> (propertyVariant)) {
+		return "ListValue";
+	} else if (std::holds_alternative<IFCAPI::PropertyBoundedValue> (propertyVariant)) {
+		return "BoundedValue";
+	} else if (std::holds_alternative<IFCAPI::PropertyEnumeratedValue> (propertyVariant)) {
+		return "EnumeratedValue";
+	} else {
+		return "TableValue";
+	}
+}
+
+static GS::UniString GetFirstValueType (const std::vector<IFCAPI::Value>& values)
+{
+	if (values.empty ())
+		return GS::EmptyUniString;
+
+	return GS::UniString (values.front ().GetType ());
+}
+
+static GS::UniString GetPropertyBoundedValueType (const IFCAPI::PropertyBoundedValue& boundedValue)
+{
+	const auto& lowerBoundValue = boundedValue.GetLowerBoundValue ();
+	const auto& upperBoundValue = boundedValue.GetUpperBoundValue ();
+	const auto& setPointValue = boundedValue.GetSetPointValue ();
+
+	if (lowerBoundValue.GetAnyValue ().has_value ())
+		return GS::UniString (lowerBoundValue.GetType ());
+	if (upperBoundValue.GetAnyValue ().has_value ())
+		return GS::UniString (upperBoundValue.GetType ());
+	if (setPointValue.GetAnyValue ().has_value ())
+		return GS::UniString (setPointValue.GetType ());
+	return GS::UniString (lowerBoundValue.GetType ());
+}
+
+// The IFC type of the values of the property, for a table value the type of its defined values
+static GS::UniString GetPropertyValueType (const IFCAPI::Property& property)
+{
+	auto propertyVariant = property.GetTyped ();
+
+	if (std::holds_alternative<IFCAPI::PropertySingleValue> (propertyVariant)) {
+		const auto& propertyCast = std::get<IFCAPI::PropertySingleValue> (propertyVariant);
+		return GS::UniString (propertyCast.GetNominalValue ().GetType ());
+	} else if (std::holds_alternative<IFCAPI::PropertyListValue> (propertyVariant)) {
+		const auto& propertyCast = std::get<IFCAPI::PropertyListValue> (propertyVariant);
+		return GetFirstValueType (propertyCast.GetListValues ());
+	} else if (std::holds_alternative<IFCAPI::PropertyBoundedValue> (propertyVariant)) {
+		const auto& propertyCast = std::get<IFCAPI::PropertyBoundedValue> (propertyVariant);
+		return GetPropertyBoundedValueType (propertyCast);
+	} else if (std::holds_alternative<IFCAPI::PropertyEnumeratedValue> (propertyVariant)) {
+		const auto& propertyCast = std::get<IFCAPI::PropertyEnumeratedValue> (propertyVariant);
+		return GetFirstValueType (propertyCast.GetEnumerationValues ());
+	} else {
+		const auto& propertyCast = std::get<IFCAPI::PropertyTableValue> (propertyVariant);
+		return GetFirstValueType (propertyCast.GetDefinedValues ());
+	}
+}
+
+static GS::ObjectState CreateIFCPropertyObjectState (const IFCAPI::Property& property, const GS::UniString& source)
+{
+	GS::ObjectState ifcProperty (
+		"propertySetName", property.GetPropertySetName (),
+		"name", property.GetName (),
+		"value", GetPropertyValueString (property),
+		"propertyType", GetPropertyTypeString (property),
+		"source", source
+	);
+	const GS::UniString valueType = GetPropertyValueType (property);
+	if (!valueType.IsEmpty ())
+		ifcProperty.Add ("valueType", valueType);
+
+	auto propertyVariant = property.GetTyped ();
+	if (std::holds_alternative<IFCAPI::PropertyEnumeratedValue> (propertyVariant)) {
+		const auto& propertyCast = std::get<IFCAPI::PropertyEnumeratedValue> (propertyVariant);
+		const std::vector<IFCAPI::Value> enumerationReference = propertyCast.GetEnumerationReference ();
+		if (!enumerationReference.empty ()) {
+			const auto& referenceAdder = ifcProperty.AddList<GS::UniString> ("enumerationReference");
+			for (const auto& value : enumerationReference)
+				referenceAdder (PropertyValueToString (value));
+		}
+	}
+	return ifcProperty;
+}
 #else
 static GS::UniString PropertyValueToString (const API_IFCPropertyValue& value)
 {
@@ -546,6 +664,47 @@ static GS::UniString GetPropertyValueString (const API_IFCProperty& property)
         return PropertyTableValueToString (property.tableValue);
     }
 }
+
+static GS::UniString GetPropertyTypeString (const API_IFCProperty& property)
+{
+    if (property.head.propertyType == API_IFCPropertySingleValueType) {
+        return "SingleValue";
+    } else if (property.head.propertyType == API_IFCPropertyListValueType) {
+        return "ListValue";
+    } else if (property.head.propertyType == API_IFCPropertyBoundedValueType) {
+        return "BoundedValue";
+    } else if (property.head.propertyType == API_IFCPropertyEnumeratedValueType) {
+        return "EnumeratedValue";
+    } else {
+        return "TableValue";
+    }
+}
+
+static GS::UniString GetFirstValueType (const GS::Array<API_IFCPropertyValue>& values)
+{
+    if (values.IsEmpty ())
+        return GS::EmptyUniString;
+
+    return values[0].valueType;
+}
+
+// The IFC type of the values of the property, for a table value the type of its defined values
+static GS::UniString GetPropertyValueType (const API_IFCProperty& property)
+{
+    if (property.head.propertyType == API_IFCPropertySingleValueType) {
+        return property.singleValue.nominalValue.valueType;
+    } else if (property.head.propertyType == API_IFCPropertyListValueType) {
+        return GetFirstValueType (property.listValue.listValues);
+    } else if (property.head.propertyType == API_IFCPropertyBoundedValueType) {
+        if (!property.boundedValue.lowerBoundValue.valueType.IsEmpty ())
+            return property.boundedValue.lowerBoundValue.valueType;
+        return property.boundedValue.upperBoundValue.valueType;
+    } else if (property.head.propertyType == API_IFCPropertyEnumeratedValueType) {
+        return GetFirstValueType (property.enumeratedValue.enumerationValues);
+    } else {
+        return GetFirstValueType (property.tableValue.definedValues);
+    }
+}
 #endif
 
 GS::ObjectState GetIFCPropertiesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
@@ -584,11 +743,7 @@ GS::ObjectState GetIFCPropertiesOfElementsCommand::Execute (const GS::ObjectStat
             auto properties = propertyAccessor.GetPreviewProperties ();
             if (!properties.IsErr ()) {
                 for (const auto& property : properties.Unwrap ()) {
-                    ifcProperties (GS::ObjectState (
-                        "propertySetName", property.GetPropertySetName (),
-                        "name", property.GetName (),
-                        "value", GetPropertyValueString (property)
-                    ));
+                    ifcProperties (CreateIFCPropertyObjectState (property, "preview"));
                 }
             }
         }
@@ -596,11 +751,7 @@ GS::ObjectState GetIFCPropertiesOfElementsCommand::Execute (const GS::ObjectStat
             auto properties = propertyAccessor.GetLocalProperties ();
             if (!properties.IsErr ()) {
                 for (const auto& property : properties.Unwrap ()) {
-                    ifcProperties (GS::ObjectState (
-                        "propertySetName", property.GetPropertySetName (),
-                        "name", property.GetName (),
-                        "value", GetPropertyValueString (property)
-                    ));
+                    ifcProperties (CreateIFCPropertyObjectState (property, "local"));
                 }
             }
         }
@@ -613,11 +764,16 @@ GS::ObjectState GetIFCPropertiesOfElementsCommand::Execute (const GS::ObjectStat
         }
 
         for (const API_IFCProperty& property : properties) {
-            ifcProperties (GS::ObjectState (
+            GS::ObjectState ifcProperty (
                 "propertySetName", property.head.propertySetName,
                 "name", property.head.propertyName,
-                "value", GetPropertyValueString (property)
-            ));
+                "value", GetPropertyValueString (property),
+                "propertyType", GetPropertyTypeString (property)
+            );
+            const GS::UniString valueType = GetPropertyValueType (property);
+            if (!valueType.IsEmpty ())
+                ifcProperty.Add ("valueType", valueType);
+            ifcProperties (ifcProperty);
         }
 #endif
 
@@ -625,6 +781,288 @@ GS::ObjectState GetIFCPropertiesOfElementsCommand::Execute (const GS::ObjectStat
     }
 
     return response;
+}
+
+GetIFCAttributesOfElementsCommand::GetIFCAttributesOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetIFCAttributesOfElementsCommand::GetName () const
+{
+    return "GetIFCAttributesOfElements";
+}
+
+GS::Optional<GS::UniString> GetIFCAttributesOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "storedOnly": {
+                "type": "boolean",
+                "description": "Return only the attributes stored on the elements, not the ones Archicad would generate on IFC export. Used only in Archicad 25, 26 and 27. Default: false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetIFCAttributesOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementIFCAttributes": {
+                "$ref": "#/ElementIFCAttributesOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementIFCAttributes"
+        ]
+    })";
+}
+
+GS::ObjectState GetIFCAttributesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+#ifndef ServerMainVers_2800
+    bool storedOnly = false;
+    parameters.Get ("storedOnly", storedOnly);
+#endif
+
+    GS::ObjectState response;
+    const auto& elementIFCAttributes = response.AddList<GS::ObjectState> ("elementIFCAttributes");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            elementIFCAttributes (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        API_Elem_Head elemHeader;
+        if (!LoadElementHeaderByGuid (elemGuid, elemHeader)) {
+            elementIFCAttributes (CreateErrorResponse (APIERR_BADPARS, "The given element was not found"));
+            continue;
+        }
+
+#ifdef ServerMainVers_2800
+        auto objectID = IFCAPI::GetObjectAccessor ().CreateElementObjectID (elemHeader);
+        if (objectID.IsErr ()) {
+            elementIFCAttributes (CreateErrorResponse (objectID.UnwrapErr ().kind, "Failed to get IFC accessor for the element"));
+            continue;
+        }
+        IFCAPI::PropertyAccessor propertyAccessor = IFCAPI::PropertyAccessor (*objectID);
+        auto attributes = propertyAccessor.GetAttributes ();
+        if (attributes.IsErr ()) {
+            elementIFCAttributes (CreateErrorResponse (attributes.UnwrapErr ().kind, "Failed to get the IFC attributes of the element"));
+            continue;
+        }
+
+        GS::ObjectState elemIFCAttributes = CreateElementIdObjectState (elemGuid);
+        const auto& ifcAttributes = elemIFCAttributes.AddList<GS::ObjectState> ("ifcAttributes");
+        for (const auto& attribute : attributes.Unwrap ()) {
+            GS::ObjectState ifcAttribute (
+                "name", attribute.GetName (),
+                "valueType", GS::UniString (attribute.GetValueType ())
+            );
+            // Optional IFC attributes can have no value, then value is left out
+            const auto value = attribute.GetValue ();
+            if (value.has_value ()) {
+                ifcAttribute.Add ("value", *value);
+            }
+            ifcAttributes (ifcAttribute);
+        }
+
+        elementIFCAttributes (elemIFCAttributes);
+#else
+        GS::Array<API_IFCAttribute> attributes;
+        const GSErrCode err = ACAPI_Element_GetIFCAttributes (elemGuid, storedOnly, &attributes);
+        if (err != NoError) {
+            elementIFCAttributes (CreateErrorResponse (err, "Failed to get the IFC attributes of the element"));
+            continue;
+        }
+
+        GS::ObjectState elemIFCAttributes = CreateElementIdObjectState (elemGuid);
+        const auto& ifcAttributes = elemIFCAttributes.AddList<GS::ObjectState> ("ifcAttributes");
+        for (const API_IFCAttribute& attribute : attributes) {
+            GS::ObjectState ifcAttribute (
+                "name", attribute.attributeName,
+                "valueType", attribute.attributeType
+            );
+            // Optional IFC attributes can have no value (an empty string here), then value is left out
+            if (!attribute.attributeValue.IsEmpty ()) {
+                ifcAttribute.Add ("value", attribute.attributeValue);
+            }
+            ifcAttributes (ifcAttribute);
+        }
+
+        elementIFCAttributes (elemIFCAttributes);
+#endif
+    }
+
+    return response;
+}
+
+SetIFCAttributesOfElementsCommand::SetIFCAttributesOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetIFCAttributesOfElementsCommand::GetName () const
+{
+    return "SetIFCAttributesOfElements";
+}
+
+GS::Optional<GS::UniString> SetIFCAttributesOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementIFCAttributeValues": {
+                "type": "array",
+                "description": "The IFC attribute values to set.",
+                "items": {
+                    "$ref": "#/ElementIFCAttributeValue"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementIFCAttributeValues"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetIFCAttributesOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetIFCAttributesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    UNUSED_PARAMETER (parameters);
+    // The IFCAPI introduced in Archicad 28 replaced ACAPI_Element_SetIFCAttribute without a write counterpart here yet
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Writing IFC attributes is not supported in Archicad 28 and newer yet.");
+#else
+    GS::Array<GS::ObjectState> elementIFCAttributeValues;
+    parameters.Get ("elementIFCAttributeValues", elementIFCAttributeValues);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    struct SettableIFCAttribute {
+        API_Guid         elemGuid;
+        API_IFCAttribute attribute;
+        UIndex           resultIndex;
+    };
+
+    GS::Array<GS::ObjectState> results (elementIFCAttributeValues.GetSize ());
+    GS::Array<SettableIFCAttribute> attributesToSet;
+
+    for (const GS::ObjectState& elementIFCAttributeValue : elementIFCAttributeValues) {
+        const GS::ObjectState* elementId = elementIFCAttributeValue.Get ("elementId");
+        if (elementId == nullptr) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        GS::UniString name;
+        if (!elementIFCAttributeValue.Get ("name", name) || name.IsEmpty ()) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "name is missing"));
+            continue;
+        }
+
+        GS::UniString value;
+        if (!elementIFCAttributeValue.Get ("value", value)) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "value must be a string"));
+            continue;
+        }
+
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        API_Elem_Head elemHeader;
+        if (!LoadElementHeaderByGuid (elemGuid, elemHeader)) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "The given element was not found"));
+            continue;
+        }
+
+        // Start from the attribute of the element, so its IFC value type is kept
+        GS::Array<API_IFCAttribute> attributes;
+        const GSErrCode err = ACAPI_Element_GetIFCAttributes (elemGuid, false, &attributes);
+        if (err != NoError) {
+            results.Push (CreateFailedExecutionResult (err, "Failed to get the IFC attributes of the element"));
+            continue;
+        }
+
+        const API_IFCAttribute* foundAttribute = nullptr;
+        for (const API_IFCAttribute& attribute : attributes) {
+            if (attribute.attributeName == name) {
+                foundAttribute = &attribute;
+                break;
+            }
+        }
+        if (foundAttribute == nullptr) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("The element has no IFC attribute named %T", name.ToPrintf ())));
+            continue;
+        }
+
+        API_IFCAttribute attribute = *foundAttribute;
+        attribute.attributeValue = value;
+
+        attributesToSet.Push ({ elemGuid, attribute, results.GetSize () });
+        results.PushNew ();
+    }
+
+    // An IFC attribute change may leave the element's modification stamp as it was, so the
+    // elements changed are marked for the notification clients.
+    ElementChangeReporter changeReporter;
+    for (const SettableIFCAttribute& attributeToSet : attributesToSet) {
+        changeReporter.Add (attributeToSet.elemGuid);
+    }
+
+    ACAPI_CallUndoableCommand ("SetIFCAttributesOfElementsCommand", [&]() -> GSErrCode {
+        for (const SettableIFCAttribute& attributeToSet : attributesToSet) {
+            const GSErrCode err = ACAPI_Element_SetIFCAttribute (attributeToSet.elemGuid, attributeToSet.attribute);
+            if (err == NoError) {
+                changeReporter.MarkChanged (attributeToSet.elemGuid);
+            }
+            results[attributeToSet.resultIndex] = err == NoError
+                ? CreateSuccessfulExecutionResult ()
+                : CreateFailedExecutionResult (err, "Failed to set the IFC attribute for the element");
+        }
+        return NoError;
+    });
+
+    changeReporter.Report ();
+
+    for (const GS::ObjectState& result : results) {
+        executionResults (result);
+    }
+
+    return response;
+#endif
 }
 
 SetIFCPropertiesOfElementsCommand::SetIFCPropertiesOfElementsCommand () :
@@ -661,7 +1099,7 @@ GS::Optional<GS::UniString> SetIFCPropertiesOfElementsCommand::GetInputParameter
                         },
                         "type": {
                             "type": "string",
-                            "description": "The IFC type of the value, for example IfcLabel, IfcText, IfcIdentifier, IfcBoolean, IfcLogical, IfcInteger, IfcReal or a measure type like IfcThermalTransmittanceMeasure."
+                            "description": "The IFC type of the value, for example IfcLabel, IfcText, IfcIdentifier, IfcBoolean, IfcLogical, IfcInteger, IfcReal or a measure type like IfcThermalTransmittanceMeasure. A type Archicad does not know is rejected."
                         },
                         "value": {
                             "description": "The new value of the property. Provide a boolean for IfcBoolean and IfcLogical (IfcLogical also accepts the string Unknown), a number for the numeric types and a string for every other type."
@@ -703,22 +1141,19 @@ GS::Optional<GS::UniString> SetIFCPropertiesOfElementsCommand::GetRawResponseSch
 
 #ifndef ServerMainVers_2800
 
-static bool IsIntegerIFCValueType (const GS::UniString& valueType)
-{
-    return valueType == "IfcInteger" || valueType == "IfcCountMeasure" || valueType == "IfcTimeStamp";
-}
-
-static bool IsRealIFCValueType (const GS::UniString& valueType)
-{
-    return valueType == "IfcReal" || (valueType.EndsWith ("Measure") && valueType != "IfcDescriptiveMeasure");
-}
-
 static bool ParseIFCPropertyValue (const GS::ObjectState& elementIFCPropertyValue, const GS::UniString& valueType, API_IFCPropertyAnyValue& anyValue, GS::UniString& errorMessage)
 {
-    if (valueType == "IfcBoolean" || valueType == "IfcLogical") {
+    // Archicad tells which primitive type an IFC value type is stored as, and fails for an unknown value type
+    API_IFCPropertyValuePrimitiveType primitiveType;
+    if (ACAPI_Element_GetIFCPropertyValuePrimitiveType (valueType, &primitiveType) != NoError) {
+        errorMessage = GS::UniString::Printf ("%T is not a known IFC value type", valueType.ToPrintf ());
+        return false;
+    }
+
+    if (primitiveType == API_IFCPropertyAnyValueBooleanType || primitiveType == API_IFCPropertyAnyValueLogicalType) {
         bool boolValue = false;
         if (elementIFCPropertyValue.Get ("value", boolValue)) {
-            if (valueType == "IfcLogical") {
+            if (primitiveType == API_IFCPropertyAnyValueLogicalType) {
                 // Logicals are stored in intValue as 0 = Unknown, 1 = False, 2 = True (see PropertyValueToString above)
                 anyValue.primitiveType = API_IFCPropertyAnyValueLogicalType;
                 anyValue.intValue = boolValue ? 2 : 1;
@@ -729,7 +1164,7 @@ static bool ParseIFCPropertyValue (const GS::ObjectState& elementIFCPropertyValu
             return true;
         }
         GS::UniString stringValue;
-        if (valueType == "IfcLogical" && elementIFCPropertyValue.Get ("value", stringValue) && stringValue == UnknownString) {
+        if (primitiveType == API_IFCPropertyAnyValueLogicalType && elementIFCPropertyValue.Get ("value", stringValue) && stringValue == UnknownString) {
             anyValue.primitiveType = API_IFCPropertyAnyValueLogicalType;
             anyValue.intValue = 0;
             return true;
@@ -738,7 +1173,7 @@ static bool ParseIFCPropertyValue (const GS::ObjectState& elementIFCPropertyValu
         return false;
     }
 
-    if (IsIntegerIFCValueType (valueType)) {
+    if (primitiveType == API_IFCPropertyAnyValueIntegerType) {
         Int64 intValue = 0;
         if (!elementIFCPropertyValue.Get ("value", intValue)) {
             errorMessage = GS::UniString::Printf ("value must be an integer for %T", valueType.ToPrintf ());
@@ -749,7 +1184,7 @@ static bool ParseIFCPropertyValue (const GS::ObjectState& elementIFCPropertyValu
         return true;
     }
 
-    if (IsRealIFCValueType (valueType)) {
+    if (primitiveType == API_IFCPropertyAnyValueRealType) {
         double doubleValue = 0.0;
         if (!elementIFCPropertyValue.Get ("value", doubleValue)) {
             errorMessage = GS::UniString::Printf ("value must be a number for %T", valueType.ToPrintf ());
@@ -842,15 +1277,192 @@ GS::ObjectState SetIFCPropertiesOfElementsCommand::Execute (const GS::ObjectStat
         results.PushNew ();
     }
 
+    // An IFC property change may leave the element's modification stamp as it was, so the
+    // elements changed are marked for the notification clients.
+    ElementChangeReporter changeReporter;
+    for (const SettableIFCProperty& propertyToSet : propertiesToSet) {
+        changeReporter.Add (propertyToSet.elemGuid);
+    }
+
     ACAPI_CallUndoableCommand ("SetIFCPropertiesOfElementsCommand", [&]() -> GSErrCode {
         for (const SettableIFCProperty& propertyToSet : propertiesToSet) {
             const GSErrCode err = ACAPI_Element_SetIFCProperty (propertyToSet.elemGuid, propertyToSet.property);
+            if (err == NoError) {
+                changeReporter.MarkChanged (propertyToSet.elemGuid);
+            }
             results[propertyToSet.resultIndex] = err == NoError
                 ? CreateSuccessfulExecutionResult ()
                 : CreateFailedExecutionResult (err, "Failed to set the IFC property for the element");
         }
         return NoError;
     });
+
+    changeReporter.Report ();
+
+    for (const GS::ObjectState& result : results) {
+        executionResults (result);
+    }
+
+    return response;
+#endif
+}
+
+RemoveIFCPropertiesOfElementsCommand::RemoveIFCPropertiesOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RemoveIFCPropertiesOfElementsCommand::GetName () const
+{
+    return "RemoveIFCPropertiesOfElements";
+}
+
+GS::Optional<GS::UniString> RemoveIFCPropertiesOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementIFCProperties": {
+                "type": "array",
+                "description": "The local IFC properties to remove.",
+                "items": {
+                    "$ref": "#/ElementIFCPropertyRemoval"
+                }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementIFCProperties"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> RemoveIFCPropertiesOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
+            "executionResults": {
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input item, in the order of the input. On a dry run an element that has the local IFC property gets wouldDelete."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState RemoveIFCPropertiesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    UNUSED_PARAMETER (parameters);
+    // The IFCAPI introduced in Archicad 28 replaced ACAPI_Element_RemoveIFCProperty without a write counterpart here yet
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Removing IFC properties is not supported in Archicad 28 and newer yet.");
+#else
+    GS::Array<GS::ObjectState> elementIFCProperties;
+    parameters.Get ("elementIFCProperties", elementIFCProperties);
+    const bool dryRun = IsDryRun (parameters);
+
+    GS::ObjectState response;
+    AddDryRunField (response, dryRun);
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    struct RemovableIFCProperty {
+        API_Guid        elemGuid;
+        API_IFCProperty property;
+        UIndex          resultIndex;
+    };
+
+    GS::Array<GS::ObjectState> results (elementIFCProperties.GetSize ());
+    GS::Array<RemovableIFCProperty> propertiesToRemove;
+
+    for (const GS::ObjectState& elementIFCProperty : elementIFCProperties) {
+        const GS::ObjectState* elementId = elementIFCProperty.Get ("elementId");
+        if (elementId == nullptr) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        GS::UniString propertySetName;
+        if (!elementIFCProperty.Get ("propertySetName", propertySetName) || propertySetName.IsEmpty ()) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "propertySetName is missing"));
+            continue;
+        }
+
+        GS::UniString propertyName;
+        if (!elementIFCProperty.Get ("propertyName", propertyName) || propertyName.IsEmpty ()) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "propertyName is missing"));
+            continue;
+        }
+
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        API_Elem_Head elemHeader;
+        if (!LoadElementHeaderByGuid (elemGuid, elemHeader)) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "The given element was not found"));
+            continue;
+        }
+
+        // Only the properties stored on the element can be removed, the ones the translator generates cannot
+        GS::Array<API_IFCProperty> storedProperties;
+        const GSErrCode err = ACAPI_Element_GetIFCProperties (elemGuid, true, &storedProperties);
+        if (err != NoError) {
+            results.Push (CreateFailedExecutionResult (err, "Failed to get IFC properties for the element"));
+            continue;
+        }
+
+        const API_IFCProperty* propertyToRemove = nullptr;
+        for (const API_IFCProperty& storedProperty : storedProperties) {
+            if (storedProperty.head.propertySetName == propertySetName && storedProperty.head.propertyName == propertyName) {
+                propertyToRemove = &storedProperty;
+                break;
+            }
+        }
+        if (propertyToRemove == nullptr) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "The element has no local IFC property with the given name in the given property set"));
+            continue;
+        }
+
+        propertiesToRemove.Push ({ elemGuid, *propertyToRemove, results.GetSize () });
+        results.PushNew ();
+    }
+
+    if (dryRun) {
+        for (const RemovableIFCProperty& propertyToRemove : propertiesToRemove) {
+            results[propertyToRemove.resultIndex] = CreateDryRunExecutionResult ("wouldDelete");
+        }
+        for (const GS::ObjectState& result : results) {
+            executionResults (result);
+        }
+        return response;
+    }
+
+    ElementChangeReporter changeReporter;
+    for (const RemovableIFCProperty& propertyToRemove : propertiesToRemove) {
+        changeReporter.Add (propertyToRemove.elemGuid);
+    }
+
+    ACAPI_CallUndoableCommand ("RemoveIFCPropertiesOfElementsCommand", [&]() -> GSErrCode {
+        for (const RemovableIFCProperty& propertyToRemove : propertiesToRemove) {
+            const GSErrCode err = ACAPI_Element_RemoveIFCProperty (propertyToRemove.elemGuid, propertyToRemove.property);
+            if (err == NoError) {
+                changeReporter.MarkChanged (propertyToRemove.elemGuid);
+            }
+            results[propertyToRemove.resultIndex] = err == NoError
+                ? CreateSuccessfulExecutionResult ()
+                : CreateFailedExecutionResult (err, "Failed to remove the IFC property from the element");
+        }
+        return NoError;
+    });
+
+    changeReporter.Report ();
 
     for (const GS::ObjectState& result : results) {
         executionResults (result);
@@ -877,7 +1489,7 @@ GS::Optional<GS::UniString> GetIFCExportTranslatorsCommand::GetRawResponseSchema
         "properties": {
             "translators": {
                 "type": "array",
-                "description": "The IFC export translators of the project, the preview translator first.",
+                "description": "The IFC export translators of the project, in the order of Archicad's translator list. The first one, which the Archicad API documents as the preview translator, has preview true.",
                 "items": {
                     "$ref": "#/IFCExportTranslator"
                 }
@@ -908,4 +1520,865 @@ GS::ObjectState GetIFCExportTranslatorsCommand::Execute (const GS::ObjectState& 
     }
 
     return response;
+}
+
+GetIFCClassificationReferencesOfElementsCommand::GetIFCClassificationReferencesOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetIFCClassificationReferencesOfElementsCommand::GetName () const
+{
+    return "GetIFCClassificationReferencesOfElements";
+}
+
+GS::Optional<GS::UniString> GetIFCClassificationReferencesOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            },
+            "storedOnly": {
+                "type": "boolean",
+                "description": "Return only the classification references stored on the elements, not the ones Archicad would generate on IFC export. Used only in Archicad 25, 26 and 27. Default: false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> GetIFCClassificationReferencesOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementIFCClassificationReferences": {
+                "$ref": "#/ElementIFCClassificationReferencesOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementIFCClassificationReferences"
+        ]
+    })";
+}
+
+#ifdef ServerMainVers_2800
+// Values the IFC API gives as std::nullopt are left out of the object
+static void AddOptionalString (GS::ObjectState& os, const char* name, const std::optional<GS::UniString>& value)
+{
+    if (value.has_value ()) {
+        os.Add (name, *value);
+    }
+}
+
+static GS::ObjectState ClassificationReferenceToObjectState (const IFCAPI::ClassificationReference& classificationReference, const char* source)
+{
+    GS::ObjectState ifcClassificationReference;
+    AddOptionalString (ifcClassificationReference, "identification", classificationReference.GetIdentification ());
+    AddOptionalString (ifcClassificationReference, "name", classificationReference.GetName ());
+    AddOptionalString (ifcClassificationReference, "location", classificationReference.GetLocation ());
+#ifdef ServerMainVers_2900
+    AddOptionalString (ifcClassificationReference, "description", classificationReference.GetDescription ());
+    AddOptionalString (ifcClassificationReference, "sort", classificationReference.GetSort ());
+#endif
+
+    // The name of the IfcRelAssociatesClassification that links the reference to the element;
+    // left out when it is empty, as the other texts are when they have no value.
+    const GS::UniString relAssociatesClassificationName = classificationReference.GetIfcRelAssociatesClassificationName ();
+    if (!relAssociatesClassificationName.IsEmpty ()) {
+        ifcClassificationReference.Add ("relAssociatesClassificationName", relAssociatesClassificationName);
+    }
+
+    const IFCAPI::Classification referencedSource = classificationReference.GetReferencedSource ();
+    GS::ObjectState referencedSourceObject ("name", referencedSource.GetName ());
+    AddOptionalString (referencedSourceObject, "source", referencedSource.GetSource ());
+    AddOptionalString (referencedSourceObject, "edition", referencedSource.GetEdition ());
+    AddOptionalString (referencedSourceObject, "editionDate", referencedSource.GetEditionDate ());
+    AddOptionalString (referencedSourceObject, "description", referencedSource.GetDescription ());
+    AddOptionalString (referencedSourceObject, "location", referencedSource.GetLocation ());
+    ifcClassificationReference.Add ("referencedSource", referencedSourceObject);
+
+    ifcClassificationReference.Add ("source", GS::UniString (source));
+    return ifcClassificationReference;
+}
+#else
+// Empty texts are left out of the object, as the IFCAPI leaves out the values it does not have
+static void AddNonEmptyString (GS::ObjectState& os, const char* name, const GS::UniString& value)
+{
+    if (!value.IsEmpty ()) {
+        os.Add (name, value);
+    }
+}
+
+// Archicad 26 and 27 give the texts as GS::Optional, Archicad 25 as GS::UniString
+template <typename T>
+static void AddNonEmptyString (GS::ObjectState& os, const char* name, const GS::Optional<T>& value)
+{
+    if (value.HasValue ()) {
+        AddNonEmptyString (os, name, *value);
+    }
+}
+
+static GS::ObjectState ClassificationReferenceToObjectState (const API_IFCClassificationReference& classificationReference)
+{
+    GS::ObjectState ifcClassificationReference;
+    AddNonEmptyString (ifcClassificationReference, "identification", classificationReference.identification);
+    AddNonEmptyString (ifcClassificationReference, "name", classificationReference.name);
+    AddNonEmptyString (ifcClassificationReference, "location", classificationReference.location);
+
+    const API_IFCClassification& referencedSource = classificationReference.referencedSource;
+    GS::ObjectState referencedSourceObject ("name", referencedSource.name);
+    AddNonEmptyString (referencedSourceObject, "edition", referencedSource.edition);
+    AddNonEmptyString (referencedSourceObject, "editionDate", referencedSource.editionDate);
+    AddNonEmptyString (referencedSourceObject, "description", referencedSource.description);
+    AddNonEmptyString (referencedSourceObject, "location", referencedSource.location);
+    ifcClassificationReference.Add ("referencedSource", referencedSourceObject);
+
+    return ifcClassificationReference;
+}
+#endif
+
+GS::ObjectState GetIFCClassificationReferencesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> elements;
+    parameters.Get ("elements", elements);
+
+#ifndef ServerMainVers_2800
+    bool storedOnly = false;
+    parameters.Get ("storedOnly", storedOnly);
+#endif
+
+    GS::ObjectState response;
+    const auto& elementIFCClassificationReferences = response.AddList<GS::ObjectState> ("elementIFCClassificationReferences");
+
+    for (const GS::ObjectState& element : elements) {
+        const GS::ObjectState* elementId = element.Get ("elementId");
+        if (elementId == nullptr) {
+            elementIFCClassificationReferences (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        API_Elem_Head elemHeader;
+        if (!LoadElementHeaderByGuid (elemGuid, elemHeader)) {
+            elementIFCClassificationReferences (CreateErrorResponse (APIERR_BADPARS, "The given element was not found"));
+            continue;
+        }
+
+#ifdef ServerMainVers_2800
+        auto objectID = IFCAPI::GetObjectAccessor ().CreateElementObjectID (elemHeader);
+        if (objectID.IsErr ()) {
+            elementIFCClassificationReferences (CreateErrorResponse (objectID.UnwrapErr ().kind, "Failed to get IFC accessor for the element"));
+            continue;
+        }
+        IFCAPI::PropertyAccessor propertyAccessor = IFCAPI::PropertyAccessor (*objectID);
+        auto previewReferences = propertyAccessor.GetPreviewClassificationReferences ();
+        auto localReferences = propertyAccessor.GetLocalClassificationReferences ();
+        if (previewReferences.IsErr () && localReferences.IsErr ()) {
+            elementIFCClassificationReferences (CreateErrorResponse (previewReferences.UnwrapErr ().kind, "Failed to get the IFC classification references of the element"));
+            continue;
+        }
+
+        GS::ObjectState elemIFCClassificationReferences = CreateElementIdObjectState (elemGuid);
+        const auto& ifcClassificationReferences = elemIFCClassificationReferences.AddList<GS::ObjectState> ("ifcClassificationReferences");
+        if (previewReferences.IsOk ()) {
+            for (const auto& classificationReference : previewReferences.Unwrap ()) {
+                ifcClassificationReferences (ClassificationReferenceToObjectState (classificationReference, "preview"));
+            }
+        }
+        if (localReferences.IsOk ()) {
+            for (const auto& classificationReference : localReferences.Unwrap ()) {
+                ifcClassificationReferences (ClassificationReferenceToObjectState (classificationReference, "local"));
+            }
+        }
+
+        elementIFCClassificationReferences (elemIFCClassificationReferences);
+#else
+        GS::Array<API_IFCClassificationReference> classificationReferences;
+        const GSErrCode err = ACAPI_Element_GetIFCClassificationReferences (elemGuid, storedOnly, &classificationReferences);
+        if (err != NoError) {
+            elementIFCClassificationReferences (CreateErrorResponse (err, "Failed to get the IFC classification references of the element"));
+            continue;
+        }
+
+        GS::ObjectState elemIFCClassificationReferences = CreateElementIdObjectState (elemGuid);
+        const auto& ifcClassificationReferences = elemIFCClassificationReferences.AddList<GS::ObjectState> ("ifcClassificationReferences");
+        for (const API_IFCClassificationReference& classificationReference : classificationReferences) {
+            ifcClassificationReferences (ClassificationReferenceToObjectState (classificationReference));
+        }
+
+        elementIFCClassificationReferences (elemIFCClassificationReferences);
+#endif
+    }
+
+    return response;
+}
+
+SetIFCClassificationReferencesOfElementsCommand::SetIFCClassificationReferencesOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SetIFCClassificationReferencesOfElementsCommand::GetName () const
+{
+    return "SetIFCClassificationReferencesOfElements";
+}
+
+GS::Optional<GS::UniString> SetIFCClassificationReferencesOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementIFCClassificationReferences": {
+                "type": "array",
+                "description": "The IFC classification references to store on the elements.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "identification": {
+                            "type": "string",
+                            "description": "The identification of the classification reference, for example a classification code. Default: empty."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "The name of the classification reference. Default: empty."
+                        },
+                        "location": {
+                            "type": "string",
+                            "description": "The location of the classification reference, for example a URL. Default: empty."
+                        },
+                        "referencedSource": {
+                            "type": "object",
+                            "description": "The classification (IfcClassification) the reference belongs to.",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "The name of the classification."
+                                },
+                                "edition": {
+                                    "type": "string",
+                                    "description": "The edition of the classification. Default: empty."
+                                },
+                                "editionDate": {
+                                    "type": "string",
+                                    "description": "The edition date of the classification. Default: empty."
+                                },
+                                "description": {
+                                    "type": "string",
+                                    "description": "The description of the classification. Default: empty."
+                                },
+                                "location": {
+                                    "type": "string",
+                                    "description": "The location of the classification, for example a URL. Default: empty."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "name"
+                            ]
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "referencedSource"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementIFCClassificationReferences"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> SetIFCClassificationReferencesOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "executionResults": {
+                "$ref": "#/ExecutionResults"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState SetIFCClassificationReferencesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    UNUSED_PARAMETER (parameters);
+    // The IFCAPI introduced in Archicad 28 replaced ACAPI_Element_SetIFCClassificationReference without a write counterpart here yet
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Writing IFC classification references is not supported in Archicad 28 and newer yet.");
+#else
+    GS::Array<GS::ObjectState> elementIFCClassificationReferences;
+    parameters.Get ("elementIFCClassificationReferences", elementIFCClassificationReferences);
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    struct SettableIFCClassificationReference {
+        API_Guid                        elemGuid;
+        API_IFCClassificationReference  classificationReference;
+        UIndex                          resultIndex;
+    };
+
+    GS::Array<GS::ObjectState> results (elementIFCClassificationReferences.GetSize ());
+    GS::Array<SettableIFCClassificationReference> referencesToSet;
+
+    for (const GS::ObjectState& elementIFCClassificationReference : elementIFCClassificationReferences) {
+        const GS::ObjectState* elementId = elementIFCClassificationReference.Get ("elementId");
+        if (elementId == nullptr) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        const GS::ObjectState* referencedSource = elementIFCClassificationReference.Get ("referencedSource");
+        GS::UniString referencedSourceName;
+        if (referencedSource == nullptr || !referencedSource->Get ("name", referencedSourceName) || referencedSourceName.IsEmpty ()) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "referencedSource.name is missing"));
+            continue;
+        }
+
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        API_Elem_Head elemHeader;
+        if (!LoadElementHeaderByGuid (elemGuid, elemHeader)) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "The given element was not found"));
+            continue;
+        }
+
+        // Missing texts stay empty
+        API_IFCClassificationReference classificationReference = {};
+        elementIFCClassificationReference.Get ("identification", classificationReference.identification);
+        elementIFCClassificationReference.Get ("name", classificationReference.name);
+        elementIFCClassificationReference.Get ("location", classificationReference.location);
+        classificationReference.referencedSource.name = referencedSourceName;
+        referencedSource->Get ("edition", classificationReference.referencedSource.edition);
+        referencedSource->Get ("editionDate", classificationReference.referencedSource.editionDate);
+        referencedSource->Get ("description", classificationReference.referencedSource.description);
+        referencedSource->Get ("location", classificationReference.referencedSource.location);
+
+        referencesToSet.Push ({ elemGuid, classificationReference, results.GetSize () });
+        results.PushNew ();
+    }
+
+    ElementChangeReporter changeReporter;
+    for (const SettableIFCClassificationReference& referenceToSet : referencesToSet) {
+        changeReporter.Add (referenceToSet.elemGuid);
+    }
+
+    ACAPI_CallUndoableCommand ("SetIFCClassificationReferencesOfElementsCommand", [&]() -> GSErrCode {
+        for (const SettableIFCClassificationReference& referenceToSet : referencesToSet) {
+            const GSErrCode err = ACAPI_Element_SetIFCClassificationReference (referenceToSet.elemGuid, referenceToSet.classificationReference);
+            if (err == NoError) {
+                changeReporter.MarkChanged (referenceToSet.elemGuid);
+            }
+            results[referenceToSet.resultIndex] = err == NoError
+                ? CreateSuccessfulExecutionResult ()
+                : CreateFailedExecutionResult (err, "Failed to set the IFC classification reference for the element");
+        }
+        return NoError;
+    });
+
+    changeReporter.Report ();
+
+    for (const GS::ObjectState& result : results) {
+        executionResults (result);
+    }
+
+    return response;
+#endif
+}
+
+RemoveIFCClassificationReferencesOfElementsCommand::RemoveIFCClassificationReferencesOfElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RemoveIFCClassificationReferencesOfElementsCommand::GetName () const
+{
+    return "RemoveIFCClassificationReferencesOfElements";
+}
+
+GS::Optional<GS::UniString> RemoveIFCClassificationReferencesOfElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elementIFCClassificationReferences": {
+                "type": "array",
+                "description": "The IFC classification references to remove from the elements. Only references stored on the elements (the ones GetIFCClassificationReferencesOfElements returns with storedOnly) can be removed.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "elementId": {
+                            "$ref": "#/ElementId"
+                        },
+                        "referencedSource": {
+                            "type": "object",
+                            "description": "The classification (IfcClassification) the reference belongs to.",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "The name of the classification."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "name"
+                            ]
+                        },
+                        "identification": {
+                            "type": "string",
+                            "description": "The identification of the classification reference to remove. When it is not given, every stored reference of the classification is removed from the element."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "elementId",
+                        "referencedSource"
+                    ]
+                }
+            },
+            "dryRun": {
+                "$ref": "#/DryRun"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementIFCClassificationReferences"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> RemoveIFCClassificationReferencesOfElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "dryRun": {
+                "$ref": "#/DryRunFlag"
+            },
+            "executionResults": {
+                "$ref": "#/DeletionExecutionResults",
+                "description": "One result for each input item, in the order of the input. On a dry run an element that has a stored IFC classification reference of the given classification (and identification, when given) gets wouldDelete."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "executionResults"
+        ]
+    })";
+}
+
+GS::ObjectState RemoveIFCClassificationReferencesOfElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    UNUSED_PARAMETER (parameters);
+    // The IFCAPI introduced in Archicad 28 replaced ACAPI_Element_RemoveIFCClassificationReference without a write counterpart here yet
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "Removing IFC classification references is not supported in Archicad 28 and newer yet.");
+#else
+    GS::Array<GS::ObjectState> elementIFCClassificationReferences;
+    parameters.Get ("elementIFCClassificationReferences", elementIFCClassificationReferences);
+    const bool dryRun = IsDryRun (parameters);
+
+    GS::ObjectState response;
+    AddDryRunField (response, dryRun);
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    struct RemovableIFCClassificationReferences {
+        API_Guid                                        elemGuid;
+        GS::Array<API_IFCClassificationReference>       classificationReferences;
+        UIndex                                          resultIndex;
+    };
+
+    GS::Array<GS::ObjectState> results (elementIFCClassificationReferences.GetSize ());
+    GS::Array<RemovableIFCClassificationReferences> referencesToRemove;
+
+    for (const GS::ObjectState& elementIFCClassificationReference : elementIFCClassificationReferences) {
+        const GS::ObjectState* elementId = elementIFCClassificationReference.Get ("elementId");
+        if (elementId == nullptr) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "elementId is missing"));
+            continue;
+        }
+
+        const GS::ObjectState* referencedSource = elementIFCClassificationReference.Get ("referencedSource");
+        GS::UniString referencedSourceName;
+        if (referencedSource == nullptr || !referencedSource->Get ("name", referencedSourceName) || referencedSourceName.IsEmpty ()) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "referencedSource.name is missing"));
+            continue;
+        }
+
+        GS::UniString identification;
+        const bool hasIdentification = elementIFCClassificationReference.Get ("identification", identification);
+
+        const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+        API_Elem_Head elemHeader;
+        if (!LoadElementHeaderByGuid (elemGuid, elemHeader)) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "The given element was not found"));
+            continue;
+        }
+
+        // Remove the stored references exactly as Archicad gives them, so they are found
+        GS::Array<API_IFCClassificationReference> storedReferences;
+        const GSErrCode err = ACAPI_Element_GetIFCClassificationReferences (elemGuid, true, &storedReferences);
+        if (err != NoError) {
+            results.Push (CreateFailedExecutionResult (err, "Failed to get the IFC classification references of the element"));
+            continue;
+        }
+
+        GS::Array<API_IFCClassificationReference> matchingReferences;
+        for (const API_IFCClassificationReference& storedReference : storedReferences) {
+            if (storedReference.referencedSource.name == referencedSourceName &&
+                (!hasIdentification || storedReference.identification == identification)) {
+                matchingReferences.Push (storedReference);
+            }
+        }
+        if (matchingReferences.IsEmpty ()) {
+            results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "The element has no stored IFC classification reference of the given classification and identification"));
+            continue;
+        }
+
+        referencesToRemove.Push ({ elemGuid, matchingReferences, results.GetSize () });
+        results.PushNew ();
+    }
+
+    if (dryRun) {
+        for (const RemovableIFCClassificationReferences& referenceToRemove : referencesToRemove) {
+            results[referenceToRemove.resultIndex] = CreateDryRunExecutionResult ("wouldDelete");
+        }
+        for (const GS::ObjectState& result : results) {
+            executionResults (result);
+        }
+        return response;
+    }
+
+    ElementChangeReporter changeReporter;
+    for (const RemovableIFCClassificationReferences& referenceToRemove : referencesToRemove) {
+        changeReporter.Add (referenceToRemove.elemGuid);
+    }
+
+    ACAPI_CallUndoableCommand ("RemoveIFCClassificationReferencesOfElementsCommand", [&]() -> GSErrCode {
+        for (const RemovableIFCClassificationReferences& referenceToRemove : referencesToRemove) {
+            GSErrCode err = NoError;
+            bool removedAny = false;
+            for (const API_IFCClassificationReference& classificationReference : referenceToRemove.classificationReferences) {
+                err = ACAPI_Element_RemoveIFCClassificationReference (referenceToRemove.elemGuid, classificationReference);
+                if (err != NoError) {
+                    break;
+                }
+                removedAny = true;
+            }
+            if (removedAny) {
+                changeReporter.MarkChanged (referenceToRemove.elemGuid);
+            }
+            results[referenceToRemove.resultIndex] = err == NoError
+                ? CreateSuccessfulExecutionResult ()
+                : CreateFailedExecutionResult (err, "Failed to remove the IFC classification reference from the element");
+        }
+        return NoError;
+    });
+
+    changeReporter.Report ();
+
+    for (const GS::ObjectState& result : results) {
+        executionResults (result);
+    }
+
+    return response;
+#endif
+}
+
+#ifdef ServerMainVers_2800
+// An IFC object as the IFC object accessor identifies it: the hash value of its identifier,
+// and the element, the IFC type and the GlobalId where the accessor reports them.
+static GS::ObjectState CreateIFCObjectObjectState (IFCAPI::ObjectAccessor& accessor, const IFCAPI::ObjectID& objectID)
+{
+    GS::ObjectState ifcObject ("hashValue", static_cast<Int64> (objectID.GenerateHashValue ()));
+
+    auto elementId = accessor.GetAPIElementID (objectID);
+    if (elementId.IsOk ()) {
+        ifcObject.Add ("elementId", CreateGuidObjectState (elementId.Unwrap ()));
+    }
+    auto ifcType = accessor.GetIFCType (objectID);
+    if (ifcType.IsOk ()) {
+        ifcObject.Add ("ifcType", ifcType.Unwrap ());
+    }
+    auto globalId = accessor.GetGlobalId (objectID);
+    if (globalId.IsOk ()) {
+        ifcObject.Add ("globalId", globalId.Unwrap ());
+    }
+
+    return ifcObject;
+}
+#endif
+
+GetIFCSpatialStructureCommand::GetIFCSpatialStructureCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetIFCSpatialStructureCommand::GetName () const
+{
+    return "GetIFCSpatialStructure";
+}
+
+GS::Optional<GS::UniString> GetIFCSpatialStructureCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "Elements to get the IFC story index of. Optional."
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> GetIFCSpatialStructureCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "project": {
+                "$ref": "#/IFCObject",
+                "description": "The IfcProject object. Left out when Archicad does not report it."
+            },
+            "site": {
+                "$ref": "#/IFCObject",
+                "description": "The IfcSite object. Left out when Archicad does not report it."
+            },
+            "building": {
+                "$ref": "#/IFCObject",
+                "description": "The IfcBuilding object. Left out when Archicad does not report it."
+            },
+            "elements": {
+                "type": "array",
+                "description": "The story of each given element in the IFC model, in the order of the input. Left out when no elements were given.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "elementId": {
+                                    "$ref": "#/ElementId"
+                                },
+                                "storyIndex": {
+                                    "type": "integer",
+                                    "description": "The index of the story the element is assigned to in the IFC model."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "elementId",
+                                "storyIndex"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::ObjectState GetIFCSpatialStructureCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    auto accessor = IFCAPI::GetObjectAccessor ();
+
+    GS::ObjectState response;
+    auto projectID = accessor.CreateIfcProjectObjectID ();
+    if (projectID.IsOk ()) {
+        response.Add ("project", CreateIFCObjectObjectState (accessor, projectID.Unwrap ()));
+    }
+    auto siteID = accessor.CreateIfcSiteObjectID ();
+    if (siteID.IsOk ()) {
+        response.Add ("site", CreateIFCObjectObjectState (accessor, siteID.Unwrap ()));
+    }
+    auto buildingID = accessor.CreateIfcBuildingObjectID ();
+    if (buildingID.IsOk ()) {
+        response.Add ("building", CreateIFCObjectObjectState (accessor, buildingID.Unwrap ()));
+    }
+
+    GS::Array<GS::ObjectState> elements;
+    if (parameters.Get ("elements", elements)) {
+        const auto& elementStories = response.AddList<GS::ObjectState> ("elements");
+        for (const GS::ObjectState& element : elements) {
+            const GS::ObjectState* elementId = element.Get ("elementId");
+            if (elementId == nullptr) {
+                elementStories (CreateErrorResponse (APIERR_BADPARS, "elementId is missing"));
+                continue;
+            }
+
+            const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
+            API_Elem_Head elemHeader;
+            if (!LoadElementHeaderByGuid (elemGuid, elemHeader)) {
+                elementStories (CreateErrorResponse (APIERR_BADPARS, "The given element was not found"));
+                continue;
+            }
+
+            auto objectID = accessor.CreateElementObjectID (elemHeader);
+            if (objectID.IsErr ()) {
+                elementStories (CreateErrorResponse (objectID.UnwrapErr ().kind, "Failed to get IFC accessor for the element"));
+                continue;
+            }
+
+            auto storyIndex = accessor.GetStoryIndex (objectID.Unwrap ());
+            if (storyIndex.IsErr ()) {
+                elementStories (CreateErrorResponse (storyIndex.UnwrapErr ().kind, "Failed to get the IFC story of the element"));
+                continue;
+            }
+
+            GS::ObjectState elementStory = CreateElementIdObjectState (elemGuid);
+            elementStory.Add ("storyIndex", storyIndex.Unwrap ());
+            elementStories (elementStory);
+        }
+    }
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
+}
+
+GetIFCAssignmentsCommand::GetIFCAssignmentsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String GetIFCAssignmentsCommand::GetName () const
+{
+    return "GetIFCAssignments";
+}
+
+GS::Optional<GS::UniString> GetIFCAssignmentsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "rootGroups": {
+                "type": "array",
+                "description": "The IFC groups (e.g. IfcGroup, IfcZone, IfcSystem) that are not assigned to another group.",
+                "items": {
+                    "$ref": "#/IFCObject"
+                }
+            },
+            "childObjects": {
+                "type": "array",
+                "description": "Each IFC object that has objects assigned to it, with those objects.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "object": {
+                            "$ref": "#/IFCObject"
+                        },
+                        "children": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/IFCObject"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "object",
+                        "children"
+                    ]
+                }
+            },
+            "parentObjects": {
+                "type": "array",
+                "description": "Each IFC object that is assigned to other objects, with those objects.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "object": {
+                            "$ref": "#/IFCObject"
+                        },
+                        "parents": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/IFCObject"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "object",
+                        "parents"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "rootGroups",
+            "childObjects",
+            "parentObjects"
+        ]
+    })";
+}
+
+GS::ObjectState GetIFCAssignmentsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    auto accessor = IFCAPI::GetObjectAccessor ();
+    auto assignments = accessor.GetAssignments ();
+    if (assignments.IsErr ()) {
+        return CreateErrorResponse (assignments.UnwrapErr ().kind, "Failed to get the IFC assignments of the project");
+    }
+    const IFCAPI::Assignments unWrappedAssignments = assignments.Unwrap ();
+
+    GS::ObjectState response;
+    const auto& rootGroups = response.AddList<GS::ObjectState> ("rootGroups");
+    for (const IFCAPI::ObjectID& objectID : unWrappedAssignments.GetRootGroups ()) {
+        rootGroups (CreateIFCObjectObjectState (accessor, objectID));
+    }
+
+    const auto& childObjects = response.AddList<GS::ObjectState> ("childObjects");
+    for (const auto& [objectID, children] : unWrappedAssignments.GetChildObjectTable ()) {
+        GS::ObjectState childObject ("object", CreateIFCObjectObjectState (accessor, objectID));
+        const auto& childList = childObject.AddList<GS::ObjectState> ("children");
+        for (const IFCAPI::ObjectID& childID : children) {
+            childList (CreateIFCObjectObjectState (accessor, childID));
+        }
+        childObjects (childObject);
+    }
+
+    const auto& parentObjects = response.AddList<GS::ObjectState> ("parentObjects");
+    for (const auto& [objectID, parents] : unWrappedAssignments.GetParentObjectTable ()) {
+        GS::ObjectState parentObject ("object", CreateIFCObjectObjectState (accessor, objectID));
+        const auto& parentList = parentObject.AddList<GS::ObjectState> ("parents");
+        for (const IFCAPI::ObjectID& parentID : parents) {
+            parentList (CreateIFCObjectObjectState (accessor, parentID));
+        }
+        parentObjects (parentObject);
+    }
+
+    return response;
+#else
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
+#endif
 }

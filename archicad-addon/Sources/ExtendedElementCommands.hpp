@@ -11,6 +11,15 @@ GS::Optional<GS::UniString> BuildMeshPolyMemoFromGeometry (
     const GS::Array<GS::ObjectState>& polygonArcs,
     const GS::Array<GS::ObjectState>& holes);
 
+// Gives an existing slab a new outline and holes (in the format of ModifySlabs), keeping the trim
+// and side surface of every edge that lies on an old edge. Used by SplitElements.
+GS::Optional<GS::UniString> ChangeSlabPolygonKeepingEdges (
+    const API_Element& slab,
+    GS::Array<GS::ObjectState>& polygonOutline,
+    const GS::Array<GS::ObjectState>& polygonArcs,
+    const GS::Array<GS::ObjectState>& holes,
+    GSErrCode& err);
+
 void BuildMeshSublinesMemoFromGeometry (
     API_Element& elem,
     API_ElementMemo& memo,
@@ -24,6 +33,38 @@ GS::Optional<GS::UniString> ApplySlabStructure (
     API_Element* mask,
     const GS::ObjectState& details,
     bool& changed);
+
+// The surface, cut fill and cover fill settings each Create and Modify pair shares (#2220): the
+// schema fragment ends the item schema of both commands, and the function writes the given keys
+// into the element and its mask (the Create commands discard the mask). Returns an error text,
+// before anything is written, when a given surface or fill attribute does not exist.
+extern const char* ColumnSurfaceAndFillSchemaProperties;
+extern const char* BeamSurfaceAndFillSchemaProperties;
+extern const char* SlabSurfaceAndFillSchemaProperties;
+
+GS::Optional<GS::UniString> ApplyColumnSurfaceAndFillSettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed);
+GS::Optional<GS::UniString> ApplyBeamSurfaceAndFillSettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed);
+GS::Optional<GS::UniString> ApplySlabSurfaceAndFillSettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed);
+
+// The extrusion body of an Opening element, in world coordinates: the outline lies in the plane through
+// anchorPoint spanned by xAxis and yAxis, as a box from profileXMin to profileXMax along xAxis and from
+// profileYMin to profileYMax along yAxis, and is extruded along extrusionDirection from extrusionStart to
+// extrusionEnd (either may be infinite). Archicad 29 and later; used by Get3DBoundingBoxes.
+struct OpeningExtrusionBody {
+    API_Coord3D anchorPoint;
+    API_Vector3D xAxis;
+    API_Vector3D yAxis;
+    API_Vector3D extrusionDirection;
+    double profileXMin;
+    double profileXMax;
+    double profileYMin;
+    double profileYMax;
+    double extrusionStart;
+    double extrusionEnd;
+    GS::Array<API_Guid> cutElements;
+};
+
+GSErrCode GetOpeningExtrusionBody (const API_Guid& openingGuid, OpeningExtrusionBody& body);
 
 class CreateWallsCommand : public CreateElementsCommandBase
 {
@@ -47,6 +88,42 @@ public:
     CreateStairsCommand ();
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
+class CreateShellsCommand : public CreateElementsCommandBase
+{
+public:
+    CreateShellsCommand ();
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
+class CreateSkylightsCommand : public CreateElementsCommandBase
+{
+public:
+    CreateSkylightsCommand ();
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::ObjectState> SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& stories, const GS::ObjectState& parameters) const override;
+};
+
+class SolveStairBaselineCommand : public CommandBase
+{
+public:
+    SolveStairBaselineCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ModifyStairsCommand : public CommandBase
+{
+public:
+    ModifyStairsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
 class CreateWindowsCommand : public CommandBase
@@ -73,6 +150,26 @@ class CreateOpeningsCommand : public CommandBase
 {
 public:
     CreateOpeningsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetOpeningDetailsCommand : public CommandBase
+{
+public:
+    GetOpeningDetailsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class SetOpeningDetailsCommand : public CommandBase
+{
+public:
+    SetOpeningDetailsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
@@ -159,6 +256,26 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class ModifyCurtainWallsCommand : public CommandBase
+{
+public:
+    ModifyCurtainWallsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ModifyCurtainWallFramesCommand : public CommandBase
+{
+public:
+    ModifyCurtainWallFramesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class ModifyColumnsCommand : public CommandBase
 {
 public:
@@ -199,10 +316,40 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class ModifyShellsCommand : public CommandBase
+{
+public:
+    ModifyShellsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class ModifyDoorsCommand : public CommandBase
 {
 public:
     ModifyDoorsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ModifySkylightsCommand : public CommandBase
+{
+public:
+    ModifySkylightsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ModifyOpeningsCommand : public CommandBase
+{
+public:
+    ModifyOpeningsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
@@ -219,6 +366,16 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class ModifySectionsCommand : public CommandBase
+{
+public:
+    ModifySectionsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class CreateInteriorElevationsCommand : public CommandBase
 {
 public:
@@ -228,6 +385,20 @@ public:
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
+
+class ModifyAssociativeDimensionsCommand : public CommandBase
+{
+public:
+    ModifyAssociativeDimensionsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+// Adds the settings of a linear dimension (API_DimensionID) to the details GetDetailsOfElements
+// returns, with the keys ModifyAssociativeDimensions takes.
+void AddDimensionDetails (GS::ObjectState& details, const API_Element& element);
 
 class CreateElevationsCommand : public CommandBase
 {
@@ -269,10 +440,130 @@ public:
     virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
+class GetOpeningTransformationsCommand : public CommandBase
+{
+public:
+    GetOpeningTransformationsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
 class ModifyMeshesCommand : public CommandBase
 {
 public:
     ModifyMeshesCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetOpeningFloorPlanParametersCommand : public CommandBase
+{
+public:
+    GetOpeningFloorPlanParametersCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class SetOpeningFloorPlanParametersCommand : public CommandBase
+{
+public:
+    SetOpeningFloorPlanParametersCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetOpeningSymbolParametersCommand : public CommandBase
+{
+public:
+    GetOpeningSymbolParametersCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class SetOpeningSymbolParametersCommand : public CommandBase
+{
+public:
+    SetOpeningSymbolParametersCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class GetOpeningDefaultCommand : public CommandBase
+{
+public:
+    GetOpeningDefaultCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class SetOpeningDefaultCommand : public CommandBase
+{
+public:
+    SetOpeningDefaultCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class PlaceOpeningsCommand : public CommandBase
+{
+public:
+    PlaceOpeningsCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class CreateDetailMarkersCommand : public CommandBase
+{
+public:
+    CreateDetailMarkersCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class CreateWorksheetMarkersCommand : public CommandBase
+{
+public:
+    CreateWorksheetMarkersCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ModifyDetailMarkersCommand : public CommandBase
+{
+public:
+    ModifyDetailMarkersCommand ();
+    virtual GS::String GetName () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+};
+
+class ModifyRailingsCommand : public CommandBase
+{
+public:
+    ModifyRailingsCommand ();
     virtual GS::String GetName () const override;
     virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
     virtual GS::Optional<GS::UniString> GetRawResponseSchema () const override;

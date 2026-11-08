@@ -1,9 +1,11 @@
 using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using TapirGrasshopperPlugin.Helps;
 
 namespace TapirGrasshopperPlugin.Components.MEPComponents
 {
@@ -14,7 +16,13 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
         public GetMEPPreferenceTablesComponent()
             : base(
                 "GetMEPPreferenceTables",
-                "Get the circular segment preference tables of the given MEP domain. Available from Archicad 28.",
+                "Get the circular cross section preference tables (referenceId, diameter, wall thickness, description) and " +
+                "the reference set of the Piping or Ventilation domain, optionally with the elbow, branch and transition " +
+                "preference tables, plus the rectangular duct tables of the Ventilation domain or the segment tables of the " +
+                "CableCarrier domain. The *JSON outputs give each table complete (name, whether it is editable, " +
+                "segmentation lengths from Archicad 29, and rows with their index and validity), in the shape " +
+                "ModifyMEPPreferenceTables takes in its Tables input. The angle set and the transition tables are " +
+                "available from Archicad 29. Available from Archicad 28.",
                 GroupNames.MEP)
         {
         }
@@ -23,7 +31,14 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
         {
             InText(
                 "Domain",
-                "The MEP domain of the segment preference tables: Piping or Ventilation.");
+                "The MEP domain of the segment preference tables: Piping, Ventilation or CableCarrier.");
+
+            InBoolean(
+                "IncludeFittingTables",
+                "Also return the elbow, branch and transition preference tables (ignored for the CableCarrier domain).",
+                false);
+
+            SetOptionality(1);
         }
 
         protected override void AddOutputs()
@@ -45,6 +60,38 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             OutTextTree(
                 "Descriptions",
                 "Description of each table row (one branch per table).");
+
+            OutTexts(
+                "TablesJSON",
+                "Each circular segment preference table as JSON, complete.");
+
+            OutTexts(
+                "RectangularTablesJSON",
+                "Each rectangular segment preference table of the Ventilation domain as JSON.");
+
+            OutTexts(
+                "CableCarrierTablesJSON",
+                "Each segment preference table of the CableCarrier domain as JSON.");
+
+            OutText(
+                "ReferenceSetJSON",
+                "The reference set of the Piping or Ventilation domain as JSON: which reference ids are defined.");
+
+            OutText(
+                "AngleSetJSON",
+                "The angle set of the Piping or Ventilation domain as JSON: which angles are defined (Archicad 29 or newer).");
+
+            OutTexts(
+                "ElbowTablesJSON",
+                "Each elbow preference table as JSON (only with IncludeFittingTables).");
+
+            OutTexts(
+                "BranchTablesJSON",
+                "Each branch preference table as JSON (only with IncludeFittingTables).");
+
+            OutTexts(
+                "TransitionTablesJSON",
+                "Each transition preference table as JSON (only with IncludeFittingTables, Archicad 29 or newer).");
         }
 
         protected override void Solve(
@@ -57,6 +104,10 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             }
 
             var parameters = new JObject { ["domain"] = domain };
+            if (da.GetOptional(1, false))
+            {
+                parameters["includeFittingTables"] = true;
+            }
 
             if (!TryGetCadResponse(
                     CommandName,
@@ -98,6 +149,28 @@ namespace TapirGrasshopperPlugin.Components.MEPComponents
             da.SetDataTree(1, referenceIds);
             da.SetDataTree(2, diameters);
             da.SetDataTree(3, descriptions);
+            da.SetDataList(4, JsonTexts(response["tables"]));
+            da.SetDataList(5, JsonTexts(response["rectangularTables"]));
+            da.SetDataList(6, JsonTexts(response["cableCarrierTables"]));
+            da.SetData(7, response["referenceSet"]?.ToString(Formatting.None));
+            da.SetData(8, response["angleSet"]?.ToString(Formatting.None));
+            da.SetDataList(9, JsonTexts(response["elbowTables"]));
+            da.SetDataList(10, JsonTexts(response["branchTables"]));
+            da.SetDataList(11, JsonTexts(response["transitionTables"]));
+        }
+
+        private static List<string> JsonTexts(
+            JToken array)
+        {
+            var texts = new List<string>();
+            if (array is JArray items)
+            {
+                foreach (var item in items)
+                {
+                    texts.Add(item.ToString(Formatting.None));
+                }
+            }
+            return texts;
         }
 
         protected override System.Drawing.Bitmap Icon =>

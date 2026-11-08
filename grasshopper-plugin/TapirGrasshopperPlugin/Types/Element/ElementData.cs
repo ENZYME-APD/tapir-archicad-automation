@@ -48,8 +48,15 @@ namespace TapirGrasshopperPlugin.Types.Element
         [JsonProperty("propertyId")]
         public PropertyGuidObject PropertyId;
 
-        [JsonProperty("propertyValue")]
+        [JsonProperty(
+            "propertyValue",
+            NullValueHandling = NullValueHandling.Ignore)]
         public PropertyValueObj PropertyValue;
+
+        [JsonProperty(
+            "valueStatus",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string ValueStatus;
     }
 
     public class ElementPropertyValuesObj
@@ -236,8 +243,16 @@ namespace TapirGrasshopperPlugin.Types.Element
         [JsonProperty("boundingBox3D")]
         public Box3DObject BoundingBox3D;
 
+        [JsonProperty("error")]
+        public TapirGrasshopperPlugin.Types.Generic.Error Error;
+
         public BoundingBox ToRhino()
         {
+            if (BoundingBox3D == null)
+            {
+                return BoundingBox.Unset;
+            }
+
             return new BoundingBox()
             {
                 Min = new Point3d(

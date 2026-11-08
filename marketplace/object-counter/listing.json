@@ -1,0 +1,18 @@
+{
+    "slug": "object-counter",
+    "name": "Object Counter",
+    "summary": "Counts placed objects, lamps, doors, windows and electrical devices by library part, per story and zone, and saves the table as CSV or Excel.",
+    "category": "quantities-scheduling",
+    "tags": ["objects", "lamps", "doors", "windows", "electrical", "zones", "count", "export"],
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
+    "license": "MIT",
+    "entry": "ObjectCounter.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [25, 26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "First version in the marketplace, the same as the built-in script of the same name."
+        }
+    ]
+}

@@ -30,6 +30,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;
 
+        // Appended after the component was released (#2018), so saved definitions keep their inputs.
+        private static readonly List<Field> TrailingFieldDefinitions = new List<Field>
+        {
+            new Field("DatabaseId", "databaseId", FieldKind.DatabaseId, "Database to place the objects in, e.g. the DatabaseId of CreateWorksheets or GetDatabases. Optional, default is the current database.")
+        };
+
+        protected override IReadOnlyList<Field> TrailingFields => TrailingFieldDefinitions;
+
         protected override System.Drawing.Bitmap Icon =>
             Properties.Resources.CreateObjects;
 

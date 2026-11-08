@@ -71,6 +71,16 @@ namespace TapirGrasshopperPlugin.Types.Commands
             "conflictPolicy",
             NullValueHandling = NullValueHandling.Ignore)]
         public string ConflictPolicy;
+
+        [JsonProperty(
+            "format",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string Format;
+
+        [JsonProperty(
+            "fileNames",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public List<string> FileNames;
     }
 
     public class ExportFavoritesParameters
@@ -82,6 +92,18 @@ namespace TapirGrasshopperPlugin.Types.Commands
             "names",
             NullValueHandling = NullValueHandling.Ignore)]
         public List<string> Names;
+
+        // prefs, xml or legacyPRF; the last two from Archicad 29.
+        [JsonProperty(
+            "format",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public string Format;
+
+        // Only set when false; true is the command's default.
+        [JsonProperty(
+            "overwrite",
+            NullValueHandling = NullValueHandling.Ignore)]
+        public bool? Overwrite;
     }
 
     // Solid element operations

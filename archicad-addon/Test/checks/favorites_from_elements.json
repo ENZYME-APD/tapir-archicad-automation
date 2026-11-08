@@ -1,0 +1,306 @@
+{
+  "title": "Favorites from elements: CreateFavoritesFromElements, GetFavoritesByType, GetFavoriteDetails, GetFavoriteSettings, UpdateFavoritesFromElements, ApplyFavoritesToElements, RenameFavorites and DeleteFavorites change what they say and fail per item on bad input",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "wall A (Outside, 0.2) and wall B (Inside, 0.3)",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 1200.0, "y": 1200.0 }, "endCoordinate": { "x": 1205.0, "y": 1200.0 },
+            "zCoordinate": 0, "height": 2.5, "structureType": "Basic", "thickness": 0.2, "referenceLineLocation": "Outside" },
+          { "begCoordinate": { "x": 1200.0, "y": 1204.0 }, "endCoordinate": { "x": 1205.0, "y": 1204.0 },
+            "zCoordinate": 0, "height": 2.5, "structureType": "Basic", "thickness": 0.3, "referenceLineLocation": "Inside" }
+        ]
+      },
+      "save": {
+        "wallA": "elements[0].elementId.guid",
+        "wallB": "elements[1].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "wall A created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "wall B created" }
+      ]
+    },
+    {
+      "id": "spline",
+      "command": "CreateSplines",
+      "params": {
+        "splinesData": [
+          { "coordinates": [ { "x": 1200.0, "y": 1220.0 }, { "x": 1202.0, "y": 1223.0 }, { "x": 1204.0, "y": 1220.0 } ] }
+        ]
+      },
+      "save": {
+        "spline": "elements[0].elementId.guid"
+      }
+    },
+    {
+      "id": "[wall A, spline, element that does not exist]",
+      "command": "CreateFavoritesFromElements",
+      "creates": false,
+      "params": {
+        "favoritesFromElements": [
+          { "elementId": { "guid": "${wallA}" }, "favorite": "Tapir check wall favorite" },
+          { "elementId": { "guid": "${spline}" }, "favorite": "Tapir check spline favorite" },
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "favorite": "Tapir check missing element" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per favorite" },
+        { "path": "executionResults[0].success", "eq": true, "name": "wall favorite created" },
+        { "path": "executionResults[1].success", "eq": true, "name": "spline favorite created" },
+        { "path": "executionResults[2].success", "eq": false, "name": "missing element refused" }
+      ]
+    },
+    {
+      "id": "read the favorites back",
+      "command": "GetFavoriteDetails",
+      "creates": false,
+      "params": {
+        "favorites": [ "Tapir check wall favorite", "Tapir check missing element" ]
+      },
+      "expect": [
+        { "path": "favoriteDetails", "len": 2, "name": "one item per favorite" },
+        { "path": "favoriteDetails[0].favorite", "eq": "Tapir check wall favorite" },
+        { "path": "favoriteDetails[0].elementType", "eq": "Wall" },
+        { "path": "favoriteDetails[1].error.code", "exists": true, "name": "the refused one was not created" }
+      ]
+    },
+    {
+      "id": "read the settings back",
+      "command": "GetFavoriteSettings",
+      "creates": false,
+      "params": {
+        "favorites": [ "Tapir check spline favorite", "Tapir check missing element" ]
+      },
+      "expect": [
+        { "path": "favoriteSettings", "len": 2, "name": "one item per favorite" },
+        { "path": "favoriteSettings[0].favorite", "eq": "Tapir check spline favorite" },
+        { "path": "favoriteSettings[0].elementType", "eq": "Spline" },
+        { "path": "favoriteSettings[1].error.code", "exists": true, "name": "error for a favorite that does not exist" }
+      ]
+    },
+    {
+      "id": "spline favorites",
+      "command": "GetFavoritesByType",
+      "creates": false,
+      "params": {
+        "elementType": "Spline"
+      },
+      "expect": [
+        { "path": "favorites", "len": 1, "name": "only the new spline favorite (the templates have none)" },
+        { "path": "favorites[0]", "eq": "Tapir check spline favorite" }
+      ]
+    },
+    {
+      "id": "wall C from the favorite",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 1200.0, "y": 1208.0 }, "endCoordinate": { "x": 1205.0, "y": 1208.0 },
+            "favoriteName": "Tapir check wall favorite" }
+        ]
+      },
+      "save": {
+        "wallC": "elements[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "wall C created" }
+      ]
+    },
+    {
+      "id": "wall C has wall A's settings",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${wallC}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.referenceLineLocation", "eq": "Outside" },
+        { "path": "detailsOfElements[0].details.begThickness", "approx": 0.2 }
+      ]
+    },
+    {
+      "id": "[update the favorite from wall B, update a favorite that does not exist]",
+      "command": "UpdateFavoritesFromElements",
+      "creates": false,
+      "params": {
+        "favoritesFromElements": [
+          { "elementId": { "guid": "${wallB}" }, "favorite": "Tapir check wall favorite" },
+          { "elementId": { "guid": "${wallA}" }, "favorite": "Tapir check no such favorite" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 2, "name": "one result per favorite" },
+        { "path": "executionResults[0].success", "eq": true, "name": "favorite updated" },
+        { "path": "executionResults[1].success", "eq": false, "name": "missing favorite refused" }
+      ]
+    },
+    {
+      "id": "wall D from the updated favorite",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          { "begCoordinate": { "x": 1200.0, "y": 1212.0 }, "endCoordinate": { "x": 1205.0, "y": 1212.0 },
+            "favoriteName": "Tapir check wall favorite" }
+        ]
+      },
+      "save": {
+        "wallD": "elements[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "wall D created" }
+      ]
+    },
+    {
+      "id": "wall D has wall B's settings",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${wallD}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.referenceLineLocation", "eq": "Inside" },
+        { "path": "detailsOfElements[0].details.begThickness", "approx": 0.3 }
+      ]
+    },
+    {
+      "id": "[favorite to wall C, missing favorite to wall C, wall favorite to the spline]",
+      "command": "ApplyFavoritesToElements",
+      "creates": false,
+      "params": {
+        "favoritesToApply": [
+          { "elementId": { "guid": "${wallC}" }, "favorite": "Tapir check wall favorite" },
+          { "elementId": { "guid": "${wallC}" }, "favorite": "Tapir check no such favorite" },
+          { "elementId": { "guid": "${spline}" }, "favorite": "Tapir check wall favorite" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "applied" },
+        { "path": "executionResults[1].success", "eq": false, "name": "missing favorite refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "other element type refused" }
+      ]
+    },
+    {
+      "id": "wall C took the favorite's reference line, kept its place",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${wallC}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.referenceLineLocation", "eq": "Inside" },
+        { "path": "detailsOfElements[0].details.begCoordinate.y", "approx": 1208.0, "name": "not moved" }
+      ]
+    },
+    {
+      "id": "favorite to wall A, keeping its reference line",
+      "command": "ApplyFavoritesToElements",
+      "creates": false,
+      "params": {
+        "favoritesToApply": [
+          { "elementId": { "guid": "${wallA}" }, "favorite": "Tapir check wall favorite" }
+        ],
+        "keepFields": [ "referenceLineLocation" ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true }
+      ]
+    },
+    {
+      "id": "wall A kept its reference line",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${wallA}" } } ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.referenceLineLocation", "eq": "Outside" }
+      ]
+    },
+    {
+      "id": "[rename the wall favorite, rename a missing one, rename the spline favorite to a taken name]",
+      "command": "RenameFavorites",
+      "creates": false,
+      "params": {
+        "renames": [
+          { "oldName": "Tapir check wall favorite", "newName": "Tapir check wall favorite renamed" },
+          { "oldName": "Tapir check no such favorite", "newName": "Tapir check no such favorite renamed" },
+          { "oldName": "Tapir check spline favorite", "newName": "Tapir check wall favorite renamed" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per rename" },
+        { "path": "executionResults[0].success", "eq": true, "name": "renamed" },
+        { "path": "executionResults[1].success", "eq": false, "name": "missing favorite refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "taken name refused" }
+      ]
+    },
+    {
+      "id": "read the names back",
+      "command": "GetFavoriteDetails",
+      "creates": false,
+      "params": {
+        "favorites": [ "Tapir check wall favorite renamed", "Tapir check wall favorite", "Tapir check spline favorite" ]
+      },
+      "expect": [
+        { "path": "favoriteDetails[0].favorite", "eq": "Tapir check wall favorite renamed", "name": "new name found" },
+        { "path": "favoriteDetails[0].elementType", "eq": "Wall", "name": "new name is the wall favorite" },
+        { "path": "favoriteDetails[1].error.code", "exists": true, "name": "old name gone" },
+        { "path": "favoriteDetails[2].elementType", "eq": "Spline", "name": "refused rename left the spline favorite" }
+      ]
+    },
+    {
+      "id": "[delete both, delete the renamed one again]",
+      "command": "DeleteFavorites",
+      "creates": false,
+      "params": {
+        "favorites": [ "Tapir check wall favorite renamed", "Tapir check spline favorite", "Tapir check wall favorite renamed" ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 3, "name": "one result per favorite" },
+        { "path": "executionResults[0].success", "eq": true, "name": "wall favorite deleted" },
+        { "path": "executionResults[1].success", "eq": true, "name": "spline favorite deleted" },
+        { "path": "executionResults[2].success", "eq": false, "name": "already deleted" }
+      ]
+    },
+    {
+      "id": "they are gone",
+      "command": "GetFavoriteDetails",
+      "creates": false,
+      "params": {
+        "favorites": [ "Tapir check wall favorite renamed", "Tapir check spline favorite" ]
+      },
+      "expect": [
+        { "path": "favoriteDetails[0].error.code", "exists": true, "name": "wall favorite gone" },
+        { "path": "favoriteDetails[1].error.code", "exists": true, "name": "spline favorite gone" }
+      ]
+    },
+    {
+      "id": "no spline favorite left",
+      "command": "GetFavoritesByType",
+      "creates": false,
+      "params": {
+        "elementType": "Spline"
+      },
+      "expect": [
+        { "path": "favorites", "len": 0 }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteFavorites",
+      "params": {
+        "favorites": [
+          "Tapir check wall favorite",
+          "Tapir check wall favorite renamed",
+          "Tapir check spline favorite",
+          "Tapir check missing element",
+          "Tapir check no such favorite renamed"
+        ]
+      }
+    }
+  ]
+}

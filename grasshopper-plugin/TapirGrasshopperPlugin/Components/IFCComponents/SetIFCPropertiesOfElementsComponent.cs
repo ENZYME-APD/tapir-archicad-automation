@@ -10,7 +10,10 @@ using TapirGrasshopperPlugin.Types.GuidObjects;
 
 namespace TapirGrasshopperPlugin.Components.IFCComponents
 {
-    public class SetIFCPropertiesOfElementsComponent : ArchicadExecutorComponent
+    // Sends one SetIFCPropertiesOfElements request for every branch of the
+    // inputs, so a tree input makes one undo step in Archicad (#203).
+    public class SetIFCPropertiesOfElementsComponent
+        : BatchedExecutorComponent<JObject>
     {
         public override string CommandName => "SetIFCPropertiesOfElements";
 
@@ -59,14 +62,17 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                 "Error message of each element (empty when the IFC property was set successfully).");
         }
 
-        protected override void Solve(
-            IGH_DataAccess da)
+        protected override bool TryGetBatchItems(
+            IGH_DataAccess da,
+            out List<JObject> items)
         {
+            items = null;
+
             if (!da.TryGetList(
                     0,
                     out List<GH_ObjectWrapper> elementWrappers))
             {
-                return;
+                return false;
             }
 
             var inputs = new List<string>[3];
@@ -77,7 +83,7 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                         inputIndex + 1,
                         out List<string> texts))
                 {
-                    return;
+                    return false;
                 }
 
                 if (texts.Count != 1 &&
@@ -85,7 +91,7 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                 {
                     this.AddError(
                         $"The size of the input {inputNames[inputIndex]} must be 1 or equal to the size of the input ElementGuids.");
-                    return;
+                    return false;
                 }
 
                 inputs[inputIndex] = texts;
@@ -95,7 +101,7 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                     4,
                     out List<GH_ObjectWrapper> values))
             {
-                return;
+                return false;
             }
 
             if (values.Count != 1 &&
@@ -103,17 +109,17 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
             {
                 this.AddError(
                     "The size of the input Values must be 1 or equal to the size of the input ElementGuids.");
-                return;
+                return false;
             }
 
-            var propertyValues = new JArray();
+            var propertyValues = new List<JObject>();
             for (var i = 0; i < elementWrappers.Count; i++)
             {
                 var elementId = GuidObject<ElementGuid>.CreateFromWrapper(elementWrappers[i]);
                 if (elementId == null)
                 {
                     this.AddError("Invalid element identifier in the ElementGuids input.");
-                    return;
+                    return false;
                 }
 
                 var valueType = Pick(inputs[2], i);
@@ -124,7 +130,7 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                 {
                     this.AddError(
                         "Invalid value in the Values input: it must be a number, a text or a boolean.");
-                    return;
+                    return false;
                 }
 
                 propertyValues.Add(
@@ -138,11 +144,14 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                     });
             }
 
-            SetCadValuesWithErrorMessages(
-                CommandName,
-                new JObject { ["elementIFCPropertyValues"] = propertyValues },
-                ToAddOn,
-                da);
+            items = propertyValues;
+            return true;
+        }
+
+        protected override object CreateBatchParameters(
+            List<JObject> items)
+        {
+            return new JObject { ["elementIFCPropertyValues"] = new JArray(items) };
         }
 
         private static T Pick<T>(

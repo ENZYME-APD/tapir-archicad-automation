@@ -1,0 +1,18 @@
+{
+    "slug": "room-finishes-schedule",
+    "name": "Room Finishes Schedule",
+    "summary": "Lists the floor, wall and ceiling finish areas of every zone, the walls split by surface, and saves the table as CSV or Excel.",
+    "category": "quantities-scheduling",
+    "tags": ["zones", "finishes", "surfaces", "areas", "schedule", "export"],
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
+    "license": "MIT",
+    "entry": "RoomFinishesSchedule.py",
+    "versions": [
+        {
+            "version": "1.0.0",
+            "archicadVersions": [26, 27, 28, 29, 30],
+            "minTapirVersion": "1.8.0",
+            "changelog": "First version in the marketplace, the same as the built-in script of the same name."
+        }
+    ]
+}

@@ -42,7 +42,11 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 "FloorIndices",
                 "Floor index of each elevation (input only 1 to use the same floor for all). Optional.");
 
-            SetOptionality(new[] { 2, 3, 4 });
+            InTexts(
+                "IDs",
+                "Reference ID of each elevation, shown in its marker and in the Project Map (input only 1 to use the same ID for all). Optional.");
+
+            SetOptionality(new[] { 2, 3, 4, 5 });
         }
 
         protected override void AddOutputs()
@@ -85,12 +89,15 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
             names = names ?? new List<string>();
             da.TryGetList(4, out List<int> floorIndices);
             floorIndices = floorIndices ?? new List<int>();
+            da.TryGetList(5, out List<string> ids);
+            ids = ids ?? new List<string>();
 
             foreach (var pair in new (string Name, int Count)[]
                      {
                          ("Depths", depths.Count),
                          ("Names", names.Count),
-                         ("FloorIndices", floorIndices.Count)
+                         ("FloorIndices", floorIndices.Count),
+                         ("IDs", ids.Count)
                      })
             {
                 if (pair.Count > 1 &&
@@ -132,6 +139,11 @@ namespace TapirGrasshopperPlugin.Components.NavigatorComponents
                 if (floorIndices.Count > 0)
                 {
                     item["floorIndex"] = floorIndices[floorIndices.Count == 1 ? 0 : i];
+                }
+
+                if (ids.Count > 0)
+                {
+                    item["id"] = ids[ids.Count == 1 ? 0 : i];
                 }
 
                 items.Add(item);

@@ -1,0 +1,150 @@
+{
+  "title": "SetGhostStorySettings sets the floor plan's Trace & Reference story, color and filter, keeps what is not given, and GetGhostStorySettings reads it back",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "floor plan, story 0",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "FloorPlan", "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "the floor plan database, for the teardown",
+      "command": "GetCurrentWindowType",
+      "creates": false,
+      "params": {},
+      "save": { "floorPlanDb": "databaseId.guid" },
+      "expect": [
+        { "path": "currentWindowType", "eq": "FloorPlan" }
+      ]
+    },
+    {
+      "id": "story 0 in red, walls and slabs",
+      "command": "SetGhostStorySettings",
+      "creates": false,
+      "params": {
+        "on": true,
+        "showOne": true,
+        "storyIndex": 0,
+        "ghostColor": { "red": 1.0, "green": 0.0, "blue": 0.0 },
+        "filter": [ "Wall", "Slab" ]
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read it back",
+      "command": "GetGhostStorySettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "on", "eq": true },
+        { "path": "showOne", "eq": true },
+        { "path": "showAbove", "eq": false },
+        { "path": "showBelow", "eq": false },
+        { "path": "storyIndex", "eq": 0 },
+        { "path": "ghostColor.red", "approx": 1.0, "tol": 0.01 },
+        { "path": "ghostColor.green", "approx": 0.0, "tol": 0.01 },
+        { "path": "ghostColor.blue", "approx": 0.0, "tol": 0.01 },
+        { "path": "filter", "eq": [ "Wall", "Slab" ] }
+      ]
+    },
+    {
+      "id": "only the color",
+      "command": "SetGhostStorySettings",
+      "creates": false,
+      "params": {
+        "ghostColor": { "red": 0.0, "green": 0.0, "blue": 1.0 }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "color changed, the rest kept",
+      "command": "GetGhostStorySettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "ghostColor.red", "approx": 0.0, "tol": 0.01 },
+        { "path": "ghostColor.blue", "approx": 1.0, "tol": 0.01 },
+        { "path": "on", "eq": true, "name": "on kept" },
+        { "path": "showOne", "eq": true, "name": "story choice kept" },
+        { "path": "storyIndex", "eq": 0, "name": "story kept" },
+        { "path": "filter", "eq": [ "Wall", "Slab" ], "name": "filter kept" }
+      ]
+    },
+    {
+      "id": "the story above instead",
+      "command": "SetGhostStorySettings",
+      "creates": false,
+      "params": { "showAbove": true },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "a story choice replaces the other",
+      "command": "GetGhostStorySettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "showAbove", "eq": true },
+        { "path": "showOne", "eq": false, "name": "showOne cleared" },
+        { "path": "showBelow", "eq": false }
+      ]
+    },
+    {
+      "id": "bad input: two story choices",
+      "command": "SetGhostStorySettings",
+      "creates": false,
+      "params": { "showOne": true, "showBelow": true, "storyIndex": 0 },
+      "expect": [
+        { "path": "success", "eq": false, "name": "refused" }
+      ]
+    },
+    {
+      "id": "unchanged after the refused call",
+      "command": "GetGhostStorySettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "showAbove", "eq": true },
+        { "path": "showOne", "eq": false },
+        { "path": "showBelow", "eq": false }
+      ]
+    },
+    {
+      "id": "off",
+      "command": "SetGhostStorySettings",
+      "creates": false,
+      "params": { "on": false },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read off",
+      "command": "GetGhostStorySettings",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "on", "eq": false }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "SetGhostStorySettings",
+      "params": { "on": false }
+    },
+    {
+      "command": "DeleteGhostRecords",
+      "params": { "databases": [ { "databaseId": { "guid": "${floorPlanDb}" } } ] }
+    }
+  ]
+}
