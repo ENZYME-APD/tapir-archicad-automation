@@ -87,6 +87,7 @@ private:
     GS::Process process;
     GS::UniString runningCommand;   // the command process was started with, to find the process among the child processes of Archicad
     GS::Array<GS::UInt64> childProcessIdsBeforeStart;   // the child processes of Archicad that ran before process was started, so are not it
+    GS::UInt32 startedScriptCount = 0;   // numbers the TAPIR_SCRIPT_ID of each started script
     GS::ThreadedExecutor executor;
     // The script list. scriptSelectionPopUp only shows it (RebuildScriptPopUp), in this order: the scripts the user
     // added, a separator when hasAddedScript, the scripts of the custom-scripts folder, a separator when

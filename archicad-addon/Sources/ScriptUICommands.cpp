@@ -11,7 +11,7 @@ static const char* ScriptUIWindowInputProperties = R"(
             },
             "scriptId": {
                 "type": "string",
-                "description": "Any text that identifies the calling script, so it uses its own window: ShowScriptUI gives a script without a window a free one, preferring the closed windows. Without uiId and scriptId the first window is used.",
+                "description": "Any text that identifies the calling script, so it uses its own window: ShowScriptUI gives a script without a window a free one, preferring the closed windows. The Tapir palette gives each script it starts its own id in the TAPIR_SCRIPT_ID environment variable, which aclib passes here automatically; that script's window is titled with its name and is freed when it ends. Without uiId and scriptId the first window is used.",
                 "minLength": 1
             })";
 

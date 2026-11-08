@@ -16,6 +16,7 @@
 #include "AddOnVersion.hpp"
 #include "MigrationHelper.hpp"
 #include "ScriptRequirements.hpp"
+#include "ScriptUIPalette.hpp"
 
 #include <cstdlib>
 #include <cstring>
@@ -1522,6 +1523,60 @@ void TapirPalette::KillRunningProcess ()
     }
 }
 
+// Sets an environment variable in Archicad's environment while this object exists, so that only the process
+// started meanwhile inherits it, then puts back the value Archicad had. The value must be ASCII.
+class ScopedEnvironmentVariable {
+public:
+    ScopedEnvironmentVariable (const char* _name, const GS::UniString& value) : name (_name)
+    {
+        const std::string valueStr (value.ToCStr ().Get ());
+#if defined (WINDOWS)
+        const std::wstring nameW (name.begin (), name.end ());
+        const DWORD oldValueSize = GetEnvironmentVariableW (nameW.c_str (), nullptr, 0);
+        std::vector<wchar_t> oldValueW (oldValueSize + 1);
+        hasOldValue = oldValueSize > 0 && GetEnvironmentVariableW (nameW.c_str (), oldValueW.data (), oldValueSize) < oldValueSize;
+        if (hasOldValue) {
+            oldValue = std::wstring (oldValueW.data ());
+        }
+        const std::wstring valueW (valueStr.begin (), valueStr.end ());
+        SetEnvironmentVariableW (nameW.c_str (), valueW.c_str ());
+#else
+        const char* old = getenv (name.c_str ());
+        hasOldValue = old != nullptr;
+        if (hasOldValue) {
+            oldValue = old;
+        }
+        setenv (name.c_str (), valueStr.c_str (), 1);
+#endif
+    }
+
+    ~ScopedEnvironmentVariable ()
+    {
+#if defined (WINDOWS)
+        const std::wstring nameW (name.begin (), name.end ());
+        SetEnvironmentVariableW (nameW.c_str (), hasOldValue ? oldValue.c_str () : nullptr);
+#else
+        if (hasOldValue) {
+            setenv (name.c_str (), oldValue.c_str (), 1);
+        } else {
+            unsetenv (name.c_str ());
+        }
+#endif
+    }
+
+    ScopedEnvironmentVariable (const ScopedEnvironmentVariable&) = delete;
+    ScopedEnvironmentVariable& operator= (const ScopedEnvironmentVariable&) = delete;
+
+private:
+    const std::string name;
+    bool hasOldValue = false;
+#if defined (WINDOWS)
+    std::wstring oldValue;
+#else
+    std::string oldValue;
+#endif
+};
+
 void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
 {
     if (!ConfirmScriptRequirements (popUpItemData)) {
@@ -1534,6 +1589,20 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
     class UIUpdaterThread : public GS::Runnable
     {
         GS::Process& process;
+        const GS::UniString scriptId;
+
+        // The script's Script UI window is free for other scripts once it ended or was stopped.
+        class ScriptEndedTask : public GS::Runnable {
+            GS::UniString scriptId;
+        public:
+            explicit ScriptEndedTask (const GS::UniString& _scriptId) : scriptId(_scriptId)
+            {}
+            virtual void Run ()
+            {
+                ForgetPostedTask (this);
+                ScriptUIPalette::ReleaseScript (scriptId);
+            }
+        };
 
         class IconUpdateTask : public GS::Runnable {
         public:
@@ -1603,7 +1672,7 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
         }
 
     public:
-        explicit UIUpdaterThread (GS::Process& p) : process(p)
+        UIUpdaterThread (GS::Process& p, const GS::UniString& _scriptId) : process(p), scriptId(_scriptId)
         {
         }
         GS::UniString ReadFromChannel (GS::IBinaryChannel& channel)
@@ -1648,6 +1717,7 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
             process = {}; // Reset the process to an invalid state
 
             Post (new IconUpdateTask ());
+            Post (new ScriptEndedTask (scriptId));
             Post (new ExitCodeReportTask (exitCode));
         }
     };
@@ -1687,7 +1757,17 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
         constexpr bool redirectStandardError = true;
         runningCommand = command;
         childProcessIdsBeforeStart = ListChildProcessIds ();
+
+        // Every started script gets its own id in TAPIR_SCRIPT_ID, which aclib passes to the Script UI commands as
+        // scriptId, so that each script has its own Script UI window, titled with the script's name (issue #1819).
+        // The id of this Archicad's process keeps the ids of two Archicads apart.
+        const GS::UniString scriptId = "tapir-" + GS::ValueToUniString (static_cast<GS::UInt32> (GetThisProcessId ())) +
+            "-" + GS::ValueToUniString (++startedScriptCount);
+        IO::Name scriptFileName;
+        popUpItemData.fileLocation.GetLastLocalName (&scriptFileName);
+        ScriptUIPalette::SetScriptName (scriptId, scriptFileName.ToString ());
         {
+            const ScopedEnvironmentVariable scriptIdVariable ("TAPIR_SCRIPT_ID", scriptId);
 #if defined (WINDOWS)
             // Python writes to a pipe in the system code page unless told otherwise (cp932 on Japanese
             // Windows), while the output is read as UTF-8. PYTHONIOENCODING makes the script's standard
@@ -1708,7 +1788,7 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
             WriteReport (DG_ERROR, PaletteText (ID_PALETTE_STRINGS_UV_START_FAILED));
         }
 
-        executor.Execute (new UIUpdaterThread (process));
+        executor.Execute (new UIUpdaterThread (process, scriptId));
     } catch (const GS::ProcessException&) {
         WriteReport (DG_ERROR, PaletteText (ID_PALETTE_STRINGS_EXECUTE_FAILED), filePath.ToPrintf ());
     } catch (...) {

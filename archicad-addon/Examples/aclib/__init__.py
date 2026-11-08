@@ -1,5 +1,6 @@
 import http.client
 import json
+import os
 import socket
 import sys
 import urllib.error
@@ -165,11 +166,27 @@ def _ResultOf (command, response_json, debug, raiseErrors):
     return result
 
 
+# The commands that address a Script UI window. A script started from the Tapir palette has its
+# own id in the TAPIR_SCRIPT_ID environment variable; RunTapirCommand passes it to these commands
+# as scriptId, unless the call gives uiId or scriptId, so that the script uses its own window.
+_scriptUICommands = ('ShowScriptUI', 'GetScriptUIResult')
+
+
+def _WithScriptId (command, parameters):
+    scriptId = os.environ.get ('TAPIR_SCRIPT_ID')
+    if not scriptId or command not in _scriptUICommands or not isinstance (parameters, dict):
+        return parameters
+    if 'uiId' in parameters or 'scriptId' in parameters:
+        return parameters
+    return dict (parameters, scriptId = scriptId)
+
+
 def RunTapirCommand (command, parameters = None, debug = None, raiseOnError = None, timeout = None):
     if debug is None:
         debug = printCommands
     if parameters is None:
         parameters = {}
+    parameters = _WithScriptId (command, parameters)
     raiseErrors = _ShouldRaise (raiseOnError)
     requestTimeout = _TimeoutOf (timeout)
 
