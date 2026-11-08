@@ -60,7 +60,59 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
                 "OffsetV",
                 "Moves the bubble from its position by this many pixels, positive downwards. Optional.");
 
-            SetOptionality(new[] { 1, 2, 3, 4, 5, 6, 7 });
+            InText(
+                "LargeIcon",
+                "The icon shown instead of Icon when the \"Use large alert cues\" option is on in Work " +
+                "Environment: information, warning or error. Optional; not set by default.");
+
+            AddOptionalInteger(
+                "RedrawCountLimit",
+                "Shows the bubble at most this many times (at least 1). After that it does not appear again, " +
+                "for any later ShowNotificationBubble call, until the user runs the 'Enable all informational " +
+                "messages' command in Archicad. Optional; not set by default.");
+
+            inManager.AddBooleanParameter(
+                "Disabled",
+                "Disabled",
+                ("True turns the bubble off instead of showing it: it does not appear again, for any later " +
+                 "ShowNotificationBubble call, until the user runs the 'Enable all informational messages' " +
+                 "command in Archicad. Optional; False (the default) changes nothing.").WithTypeName(
+                    "booleanItem"),
+                GH_ParamAccess.item);
+
+            SetOptionality(new[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+        }
+
+        protected override void AddOutputs()
+        {
+            OutText(
+                "Text",
+                "The text of the bubble after the call, read back from Archicad (null when it has none).");
+
+            OutText(
+                "Icon",
+                "The icon of the bubble after the call: none, information, warning, error or other.");
+
+            OutText(
+                "LargeIcon",
+                "The icon shown when the \"Use large alert cues\" option is on: none, information, warning, " +
+                "error or other.");
+
+            OutInteger(
+                "OffsetH",
+                "The horizontal offset of the bubble from its position, in pixels.");
+
+            OutInteger(
+                "OffsetV",
+                "The vertical offset of the bubble from its position, in pixels.");
+
+            OutInteger(
+                "TimeoutMilliseconds",
+                "How long the bubble stays, in milliseconds.");
+
+            OutInteger(
+                "RedrawCountLimit",
+                "How many times the bubble is shown at most (null when it has no limit).");
         }
 
         private void AddOptionalInteger(
@@ -150,6 +202,24 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
                 };
             }
 
+            string largeIcon = null;
+            if (da.GetData(8, ref largeIcon) && !string.IsNullOrEmpty(largeIcon))
+            {
+                parameters["largeIcon"] = largeIcon;
+            }
+
+            int redrawCountLimit = 0;
+            if (da.GetData(9, ref redrawCountLimit))
+            {
+                parameters["redrawCountLimit"] = redrawCountLimit;
+            }
+
+            bool disabled = false;
+            if (da.GetData(10, ref disabled))
+            {
+                parameters["disabled"] = disabled;
+            }
+
             if (!TryGetCadResponse(
                     CommandName,
                     parameters,
@@ -164,7 +234,37 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
                 this.AddError(
                     response["error"]?["message"]?.ToString() ??
                     "Failed to show the notification bubble.");
+                return;
             }
+
+            if (response == null)
+            {
+                return;
+            }
+
+            da.SetData(0, response["text"]?.ToString());
+            da.SetData(1, response["icon"]?.ToString());
+            da.SetData(2, response["largeIcon"]?.ToString());
+            if (response["offset"] is JObject responseOffset)
+            {
+                da.SetData(3, (int?)responseOffset["h"]);
+                da.SetData(4, (int?)responseOffset["v"]);
+            }
+            da.SetData(5, ToInteger(response["timeoutMilliseconds"]));
+            da.SetData(6, ToInteger(response["redrawCountLimit"]));
+        }
+
+        // Grasshopper integers are 32-bit; the add-on returns values up to 4294967295.
+        private static int? ToInteger(
+            JToken token)
+        {
+            var value = (long?)token;
+            if (value == null)
+            {
+                return null;
+            }
+
+            return (int)Math.Max(int.MinValue, Math.Min(int.MaxValue, value.Value));
         }
 
         protected override System.Drawing.Bitmap Icon =>
