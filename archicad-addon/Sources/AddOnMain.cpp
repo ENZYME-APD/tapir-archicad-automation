@@ -1989,11 +1989,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetGraphicOverrideRulesCommand> (
             attributeCommands, "1.7.2",
-            "Gets all graphic override rules of the project, with their rule group, criterion and style. Available from Archicad 27."
+            "Gets all graphic override rules of the project, with their rule group, criterion and style. With includeCriterion the criterion also comes as structured conditions, which CreateGraphicOverrideRules and ModifyGraphicOverrideRules take back. Available from Archicad 27."
         );
         err |= RegisterCommand<GetGraphicOverrideRulesByNameCommand> (
             attributeCommands, "1.7.3",
-            "Gets graphic override rules by name, with their rule group, criterion and style. The rule group narrows the search; without it the rule is searched in every rule group. Available from Archicad 27."
+            "Gets graphic override rules by name, with their rule group, criterion and style. The rule group narrows the search; without it the rule is searched in every rule group. With includeCriterion the criterion also comes as structured conditions. Available from Archicad 27."
         );
         err |= RegisterCommand<CreateGraphicOverrideRulesCommand> (
             attributeCommands, "1.7.2",

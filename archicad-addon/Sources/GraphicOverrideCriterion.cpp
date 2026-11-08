@@ -2,6 +2,12 @@
 
 #include "MigrationHelper.hpp"
 
+#include <cstdlib>
+#include <cstring>
+#include <string>
+#include <utility>
+#include <vector>
+
 #ifdef ServerMainVers_2700
 
 // ---------------------------------------------------------------------------
@@ -107,6 +113,60 @@ static const ElemTypeInfo kElemTypeTable[] = {
     { "Equipment",           "1162958153", "00000000-0000-0000-0000-000000000000", "00000000-0000-0000-0000-000000000000" },
 };
 
+// Archicad 29 and 30 keep an element type as ElemType/ClassId (VBEF::CritToolType Mv="2"), not as
+// the ElemRegistryRefId Tapir writes: Archicad rewrites the type when it stores the rule, and the
+// criteria editor writes it that way too. The ClassIds of the tools below were read in Archicad 29
+// (build 5101) and 30 (build 3001), both giving the same values, by creating one rule per tool with
+// CreateGraphicOverrideRules and reading it back (issue #1816). The library part based tools are not
+// listed: their ClassId was not read, so a type of theirs is returned as raw criterionXML.
+struct ElemTypeClassIdInfo { const char* name; const char* classId; };
+
+static const char* kAllTypesElemTypeName = "AllTypes";
+static const char* kZeroGuid = "00000000-0000-0000-0000-000000000000";
+
+static const ElemTypeClassIdInfo kElemTypeClassIdTable[] = {
+    { "Wall",                "4F654582-33AF-4E52-ABFC-C35D46765EC4" },
+    { "Column",              "13E8EB85-5A33-47A3-A4D4-1E05296AEC7E" },
+    { "Beam",                "A5C2D285-5A7C-4A68-9554-9EDA9D4556CA" },
+    { "Slab",                "945C1275-7948-41D4-8744-9D22D72CA486" },
+    { "Roof",                "6EE31DEA-1D22-487B-9464-EBEF72C2C497" },
+    { "Shell",               "4E697088-D921-4470-B8D3-50425E05EAA5" },
+    { "Stair",               "FA0F7F15-29B4-4905-80FA-C6769109847B" },
+    { "Railing",             "4C5AE61A-AF17-4B85-93E0-005C987D5F5B" },
+    { "CurtainWall",         "C653C817-A855-4446-AEF4-24EFB46271AA" },
+    { "Opening",             "6746AA79-7498-4BEA-BAD8-191CDAD31D05" },
+    { "Mesh",                "8F2FEE46-6A3F-41AC-A32B-69E44DC6276D" },
+    { "Morph",               "E6363C7B-940E-4DEB-AF95-8B3B39E86BD2" },
+    { "Dimension",           "965D38E5-0CAD-4BE4-B502-4F5E907815DC" },
+    { "LevelDimension",      "690878FA-B11F-46C9-953C-3864D85BDEE6" },
+    { "RadialDimension",     "9938D642-ADAF-4471-944D-1801372AFE10" },
+    { "AngleDimension",      "2120198C-D317-4CEA-AB4E-C7B6CEB5156E" },
+    { "Text",                "E6C07EAE-5A2A-4597-95A9-73E7543AC91E" },
+    { "ChangeMarker",        "0A3ED604-99A8-436B-8B4C-039FE67BFA0D" },
+    { "Hatch",               "66306134-F76A-410F-991D-C9EE97B541EC" },
+    { "Line",                "BDFE7D73-1C78-4ACA-809B-1B25747E3126" },
+    { "Arc",                 "F3497B2B-11FC-49AE-8424-D933780BACCE" },
+    { "PolyLine",            "B0DC8B22-AD6D-4BF1-9733-5077B6588FC4" },
+    { "Spline",              "1E3120A6-36CE-464F-90E2-322CE53E2521" },
+    { "Hotspot",             "DAACFF27-AC06-469B-BB7C-B1F15EAEDF70" },
+    { "Section",             "B04555DD-A98F-4788-BDB1-C4A0F7DCF754" },
+    { "Elevation",           "74AA8C96-4616-4777-BDEB-2F1B056D78CD" },
+    { "InteriorElevation",   "D237E1F7-4DBC-4E54-8CCE-9F1C3C7D2A8C" },
+    { "Detail",              "5E8AE540-D498-42C2-85FC-0710BD677752" },
+    { "Worksheet",           "D75AD808-23AF-4278-969B-FA3ED3A6773E" },
+    { "Camera",              "FB1AA3EA-890A-4AFD-A8F8-09B0DF5E502A" },
+    { "Figure",              "558759DB-6AEA-4B80-B47F-FCD070B825CD" },
+    { "Drawing",             "2DBE8C52-93B3-46B5-A0A9-2492C45C2AB3" },
+    { "StructuralLink",      "C758E95E-D1C7-431E-993E-D3A91D0B6D8C" },
+    { "StructuralSupport",   "5AE66636-F6CE-4FB7-9AAF-8B9B144DEBB1" },
+    { "LinearLoad",          "726D33B4-6C35-4D53-993B-EF9101B12C90" },
+    { "PointLoad",           "7E109364-8415-43D9-AE47-CE268AB99BD5" },
+    { "SurfaceLoad",         "5417D715-D521-4A4E-8B4A-E409EAD7C4F4" },
+    { "DuctRouting",         "FCECE4C5-E4E2-4335-A976-DD7F902466A1" },
+    { "CableCarrierRouting", "D5FC1FF7-9DD7-4759-8700-FD78186FCE6C" },
+    { "PipeRouting",         "BD6A8805-AD79-461B-AC77-23F0325DB295" },
+};
+
 // User strings (values, property and group names, classification item IDs and system names) go
 // into the XML as element text: escape the characters XML reserves, or a name like "Doors & Windows"
 // makes the XML malformed and Archicad drops the whole criterion without an error.
@@ -120,6 +180,282 @@ static GS::UniString XmlEscape (const GS::UniString& text)
     return escaped;
 }
 
+// ---------------------------------------------------------------------------
+// A small reader for criterionXML (issue #1816). Archicad keeps a criterion as elements,
+// attributes and text only, so this reads exactly that, skips comments, the XML declaration and
+// processing instructions, and fails on anything else (CDATA, DOCTYPE, mismatched tags) instead of
+// guessing. Strings are handled as UTF-8.
+// ---------------------------------------------------------------------------
+
+struct CriterionXmlNode {
+    std::string                   name;
+    std::string                   attributes;   // name="value" pairs as written, separated by one space
+    std::string                   text;         // the unescaped text of an element without children
+    std::vector<CriterionXmlNode> children;
+};
+
+static std::string ToUtf8 (const GS::UniString& text)
+{
+    return std::string (text.ToCStr (CC_UTF8).Get ());
+}
+
+static GS::UniString FromUtf8 (const std::string& text)
+{
+    return GS::UniString (text.c_str (), CC_UTF8);
+}
+
+static std::string XmlEscapeUtf8 (const std::string& text)
+{
+    std::string escaped;
+    for (char c : text) {
+        switch (c) {
+            case '&':  escaped += "&amp;";  break;
+            case '<':  escaped += "&lt;";   break;
+            case '>':  escaped += "&gt;";   break;
+            case '"':  escaped += "&quot;"; break;
+            default:   escaped += c;        break;
+        }
+    }
+    return escaped;
+}
+
+static void AppendUtf8 (unsigned long codePoint, std::string& out)
+{
+    if (codePoint < 0x80) {
+        out += static_cast<char> (codePoint);
+    } else if (codePoint < 0x800) {
+        out += static_cast<char> (0xC0 | (codePoint >> 6));
+        out += static_cast<char> (0x80 | (codePoint & 0x3F));
+    } else if (codePoint < 0x10000) {
+        out += static_cast<char> (0xE0 | (codePoint >> 12));
+        out += static_cast<char> (0x80 | ((codePoint >> 6) & 0x3F));
+        out += static_cast<char> (0x80 | (codePoint & 0x3F));
+    } else {
+        out += static_cast<char> (0xF0 | (codePoint >> 18));
+        out += static_cast<char> (0x80 | ((codePoint >> 12) & 0x3F));
+        out += static_cast<char> (0x80 | ((codePoint >> 6) & 0x3F));
+        out += static_cast<char> (0x80 | (codePoint & 0x3F));
+    }
+}
+
+static bool XmlUnescapeUtf8 (const std::string& text, std::string& out)
+{
+    out.clear ();
+    for (size_t i = 0; i < text.size (); ++i) {
+        if (text[i] != '&') {
+            out += text[i];
+            continue;
+        }
+        const size_t end = text.find (';', i);
+        if (end == std::string::npos)
+            return false;
+        const std::string entity = text.substr (i + 1, end - i - 1);
+        if (entity == "amp")        out += '&';
+        else if (entity == "lt")    out += '<';
+        else if (entity == "gt")    out += '>';
+        else if (entity == "quot")  out += '"';
+        else if (entity == "apos")  out += '\'';
+        else if (entity.size () > 1 && entity[0] == '#') {
+            const bool hex = entity[1] == 'x' || entity[1] == 'X';
+            const std::string digits = entity.substr (hex ? 2 : 1);
+            if (digits.empty ())
+                return false;
+            char* parsedEnd = nullptr;
+            const unsigned long codePoint = std::strtoul (digits.c_str (), &parsedEnd, hex ? 16 : 10);
+            if (parsedEnd == nullptr || *parsedEnd != '\0' || codePoint == 0 || codePoint > 0x10FFFF)
+                return false;
+            AppendUtf8 (codePoint, out);
+        } else {
+            return false;
+        }
+        i = end;
+    }
+    return true;
+}
+
+class CriterionXmlReader {
+public:
+    explicit CriterionXmlReader (const std::string& source) : s (source), pos (0) {}
+
+    // Reads the elements that follow each other up to the end of the source.
+    bool ReadSequence (std::vector<CriterionXmlNode>& outNodes)
+    {
+        while (true) {
+            if (!SkipMisc ())
+                return false;
+            if (pos >= s.size ())
+                return true;
+            CriterionXmlNode node;
+            if (!ReadElement (node))
+                return false;
+            outNodes.push_back (node);
+        }
+    }
+
+private:
+    std::string s;
+    size_t      pos;
+
+    bool StartsWith (const char* prefix) const
+    {
+        return s.compare (pos, std::strlen (prefix), prefix) == 0;
+    }
+
+    static bool IsSpace (char c)
+    {
+        return c == ' ' || c == '\t' || c == '\r' || c == '\n';
+    }
+
+    void SkipSpaces ()
+    {
+        while (pos < s.size () && IsSpace (s[pos]))
+            ++pos;
+    }
+
+    bool SkipPast (const char* terminator)
+    {
+        const size_t end = s.find (terminator, pos);
+        if (end == std::string::npos)
+            return false;
+        pos = end + std::strlen (terminator);
+        return true;
+    }
+
+    // White space, comments, the XML declaration and processing instructions between elements.
+    bool SkipMisc ()
+    {
+        while (true) {
+            SkipSpaces ();
+            if (StartsWith ("<!--")) {
+                if (!SkipPast ("-->"))
+                    return false;
+            } else if (StartsWith ("<?")) {
+                if (!SkipPast ("?>"))
+                    return false;
+            } else {
+                return true;
+            }
+        }
+    }
+
+    bool ReadName (std::string& outName)
+    {
+        const size_t start = pos;
+        while (pos < s.size () && !IsSpace (s[pos]) && s[pos] != '/' && s[pos] != '>' && s[pos] != '=')
+            ++pos;
+        outName = s.substr (start, pos - start);
+        return !outName.empty ();
+    }
+
+    bool ReadElement (CriterionXmlNode& node)
+    {
+        if (pos >= s.size () || s[pos] != '<')
+            return false;
+        ++pos;
+        if (!ReadName (node.name) || node.name[0] == '!' || node.name[0] == '?')
+            return false;
+
+        while (true) {
+            SkipSpaces ();
+            if (pos >= s.size ())
+                return false;
+            if (s[pos] == '/') {
+                ++pos;
+                if (pos >= s.size () || s[pos] != '>')
+                    return false;
+                ++pos;
+                return true;
+            }
+            if (s[pos] == '>') {
+                ++pos;
+                break;
+            }
+            std::string attributeName;
+            if (!ReadName (attributeName))
+                return false;
+            SkipSpaces ();
+            if (pos >= s.size () || s[pos] != '=')
+                return false;
+            ++pos;
+            SkipSpaces ();
+            if (pos >= s.size () || (s[pos] != '"' && s[pos] != '\''))
+                return false;
+            const char quote = s[pos++];
+            const size_t valueEnd = s.find (quote, pos);
+            if (valueEnd == std::string::npos)
+                return false;
+            if (!node.attributes.empty ())
+                node.attributes += ' ';
+            node.attributes += attributeName + "=\"" + s.substr (pos, valueEnd - pos) + "\"";
+            pos = valueEnd + 1;
+        }
+
+        std::string rawText;
+        while (true) {
+            if (pos >= s.size ())
+                return false;
+            if (StartsWith ("<!--")) {
+                if (!SkipPast ("-->"))
+                    return false;
+            } else if (StartsWith ("</")) {
+                pos += 2;
+                std::string endName;
+                if (!ReadName (endName) || endName != node.name)
+                    return false;
+                SkipSpaces ();
+                if (pos >= s.size () || s[pos] != '>')
+                    return false;
+                ++pos;
+                break;
+            } else if (s[pos] == '<') {
+                if (StartsWith ("<!") || StartsWith ("<?"))
+                    return false;
+                CriterionXmlNode child;
+                if (!ReadElement (child))
+                    return false;
+                node.children.push_back (child);
+            } else {
+                rawText += s[pos++];
+            }
+        }
+
+        if (!node.children.empty ()) {
+            for (char c : rawText) {
+                if (!IsSpace (c))
+                    return false;
+            }
+            return true;
+        }
+        return XmlUnescapeUtf8 (rawText, node.text);
+    }
+};
+
+// One form for comparing and returning XML: no white space between elements, attributes as read,
+// text escaped the way the generator escapes it, and empty elements as <Name/>.
+static std::string CanonicalXml (const CriterionXmlNode& node)
+{
+    std::string xml = "<" + node.name;
+    if (!node.attributes.empty ())
+        xml += " " + node.attributes;
+    if (node.children.empty () && node.text.empty ())
+        return xml + "/>";
+    xml += ">";
+    if (node.children.empty ()) {
+        xml += XmlEscapeUtf8 (node.text);
+    } else {
+        for (const CriterionXmlNode& child : node.children)
+            xml += CanonicalXml (child);
+    }
+    return xml + "</" + node.name + ">";
+}
+
+static bool ReadCriterionXmlSequence (const GS::UniString& xml, std::vector<CriterionXmlNode>& outNodes)
+{
+    const std::string source = ToUtf8 (xml);
+    CriterionXmlReader reader (source);
+    return reader.ReadSequence (outNodes);
+}
+
 static const ElemTypeInfo* FindElemTypeInfo (const GS::UniString& name)
 {
     for (const ElemTypeInfo& info : kElemTypeTable) {
@@ -129,16 +465,33 @@ static const ElemTypeInfo* FindElemTypeInfo (const GS::UniString& name)
     return nullptr;
 }
 
-static GS::UniString ElemTypeCriterionXML (const ElemTypeInfo& info)
+// isNot: the element type criterion's own LogicalOperator is 1 for "is" and 2 for "is not" (read
+// from rules made in the criteria editor, issue #1816). mainGuid/revGuid: the library part subtype
+// (ElemCreatorToolUnID), all zeros for the whole tool.
+static GS::UniString ElemTypeCriterionXML (const ElemTypeInfo& info, bool isNot = false, const GS::UniString& mainGuid = GS::UniString (), const GS::UniString& revGuid = GS::UniString ())
 {
     return GS::UniString ("<ClassGuid>") + kElemTypeClassGuid + "</ClassGuid>"
          + "<ElemTypeCriterion Mv=\"2\" Sv=\"3\">"
          +     "<VBEF::CritToolType Mv=\"1\" Sv=\"0\">"
          +         "<ElemRegistryRefId>" + info.refId + "</ElemRegistryRefId>"
          +         "<ElemCreatorToolUnID>"
-         +             "<MainGuid>" + info.mainGuid + "</MainGuid>"
-         +             "<RevGuid>"  + info.revGuid  + "</RevGuid>"
+         +             "<MainGuid>" + (mainGuid.IsEmpty () ? GS::UniString (info.mainGuid) : mainGuid) + "</MainGuid>"
+         +             "<RevGuid>"  + (revGuid.IsEmpty () ? GS::UniString (info.revGuid) : revGuid) + "</RevGuid>"
          +         "</ElemCreatorToolUnID>"
+         +     "</VBEF::CritToolType>"
+         +     "<LogicalOperator>" + GS::UniString (isNot ? "2" : "1") + "</LogicalOperator>"
+         + "</ElemTypeCriterion>";
+}
+
+// "Element Type is All Types": the all-zero ClassId, written exactly as Archicad keeps it in its own
+// renovation rules (issue #1816); it has no ElemRegistryRefId.
+static GS::UniString AllTypesElemTypeCriterionXML ()
+{
+    return GS::UniString ("<ClassGuid>") + kElemTypeClassGuid + "</ClassGuid>"
+         + "<ElemTypeCriterion Mv=\"2\" Sv=\"3\">"
+         +     "<VBEF::CritToolType Mv=\"2\" Sv=\"0\">"
+         +         "<ElemType Mv=\"1\" Sv=\"0\"><ClassId>" + kZeroGuid + "</ClassId><Variation>0</Variation></ElemType>"
+         +         "<ElemCreatorToolUnID><MainGuid>" + kZeroGuid + "</MainGuid><RevGuid>" + kZeroGuid + "</RevGuid></ElemCreatorToolUnID>"
          +     "</VBEF::CritToolType>"
          +     "<LogicalOperator>1</LogicalOperator>"
          + "</ElemTypeCriterion>";
@@ -1114,15 +1467,35 @@ static bool TryEmitStringListField (const GS::ObjectState& node, const char* fie
     return false;
 }
 
+// A raw {"criterionXML": ...} leaf (see GraphicOverrideCriterionFromXML) that is an "is" element
+// type, model element or drawing element condition, e.g. the type of a library part based tool
+// whose ClassId is not known: it establishes the element type like elementType does.
+static bool IsTypeEstablishingRawLeaf (const GS::UniString& fragmentXML)
+{
+    std::vector<CriterionXmlNode> nodes;
+    if (!ReadCriterionXmlSequence (fragmentXML, nodes) || nodes.size () != 2 || nodes[0].name != "ClassGuid")
+        return false;
+    const CriterionXmlNode& leaf = nodes[1];
+    if (leaf.name != "ElemTypeCriterion" && leaf.name != "ModelElementCriterion" && leaf.name != "DrawingElementCriteiron")
+        return false;
+    for (const CriterionXmlNode& child : leaf.children) {
+        if (child.name == "LogicalOperator")
+            return child.text == "1";
+    }
+    return false;
+}
+
 // A shallow check for whether a node directly establishes an element type/model-element-ness
-// (elementType, all3DTypes, all2DTypes).
+// (elementType, all3DTypes, all2DTypes, or a raw leaf of that kind). elementTypeNot does not: it
+// excludes a type without naming the ones that match.
 static bool IsTypeEstablishingNode (const GS::ObjectState& node)
 {
     GS::UniString dummyStr;
     bool dummyBool = false;
     return node.Get ("elementType", dummyStr) ||
            (node.Get ("all3DTypes", dummyBool) && dummyBool) ||
-           (node.Get ("all2DTypes", dummyBool) && dummyBool);
+           (node.Get ("all2DTypes", dummyBool) && dummyBool) ||
+           (node.Get ("criterionXML", dummyStr) && IsTypeEstablishingRawLeaf (dummyStr));
 }
 
 // Checks whether a type-establishing node is reachable from the given node by following ONLY
@@ -1134,16 +1507,25 @@ static bool IsTypeEstablishingNode (const GS::ObjectState& node)
 // live: a rule combining "classificationNot" OR "elementType" failed to create at all when the
 // generator (wrongly, in an earlier version) treated the elementType inside the "or" as covering
 // the whole rule and skipped injecting a shared anchor.
+// An "or" all of whose branches hold an anchor holds one too: every element it matches has one of
+// the types. This is the editor's usual "Element Type is Slab or Roof or Stair" row (issue #1816),
+// which would otherwise get a second, needless "3D types" row when read back and written again.
 static bool HasAndReachableAnchor (const GS::ObjectState& node)
 {
     if (IsTypeEstablishingNode (node))
         return true;
-    GS::Array<GS::ObjectState> andChildren;
+    GS::Array<GS::ObjectState> andChildren, orChildren;
     if (node.Get ("and", andChildren)) {
         for (const GS::ObjectState& child : andChildren) {
             if (HasAndReachableAnchor (child))
                 return true;
         }
+    } else if (node.Get ("or", orChildren) && !orChildren.IsEmpty ()) {
+        for (const GS::ObjectState& child : orChildren) {
+            if (!HasAndReachableAnchor (child))
+                return false;
+        }
+        return true;
     }
     return false;
 }
@@ -1201,6 +1583,27 @@ static bool AllLeavesAreTextPenOrFont (const GS::ObjectState& node)
     return IsTextPenNode (node) || IsFontNode (node) || IsDrawingOnlyFieldNode (node);
 }
 
+// Every leaf is emitted wrapped in its trivial group (WrapAsTrivialGroup), which is what a row of
+// the criteria editor's table holds when it has one value. Inside a row with several values, the
+// editor keeps the values bare (issue #1816), so the and/or of a row takes the wrapping off again.
+static bool UnwrapTrivialGroup (GS::UniString& xml)
+{
+    const std::string prefix = ToUtf8 (GS::UniString ("<ClassGuid>") + kCompositeClassGuid + "</ClassGuid>"
+                                       + "<CompositeCriterion Mv=\"2\" Sv=\"1\"><LogicalOperator>1</LogicalOperator><CriteriaCount>1</CriteriaCount>");
+    const std::string suffix = "</CompositeCriterion>";
+    const std::string text = ToUtf8 (xml);
+    if (text.size () < prefix.size () + suffix.size () || text.compare (0, prefix.size (), prefix) != 0 || text.compare (text.size () - suffix.size (), suffix.size (), suffix) != 0)
+        return false;
+    xml = FromUtf8 (text.substr (prefix.size (), text.size () - prefix.size () - suffix.size ()));
+    return true;
+}
+
+static bool IsCompositeFragment (const GS::UniString& fragmentXML)
+{
+    std::vector<CriterionXmlNode> nodes;
+    return ReadCriterionXmlSequence (fragmentXML, nodes) && nodes.size () == 2 && nodes[0].name == "ClassGuid" && nodes[1].name == "CompositeCriterion";
+}
+
 // outIsSelfRooting is set true only when outXML already represents a complete, real multi-item
 // CompositeCriterion suitable to be CriterionExpression's root directly - see the comment on
 // CriterionToXML for why this distinction is needed.
@@ -1208,23 +1611,21 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
 {
     outIsSelfRooting = false;
     GS::Array<GS::ObjectState> andChildren, orChildren;
-    GS::UniString elementType, classification, classificationNot;
+    GS::UniString elementType, elementTypeNot, classification, classificationNot;
     bool all3DTypes = false, all2DTypes = false;
 
     const bool hasAnd = node.Get ("and", andChildren);
     const bool hasOr  = !hasAnd && node.Get ("or", orChildren);
     if (hasAnd || hasOr) {
-        // ArchiCAD's criteria editor was confirmed live to only reliably render/evaluate a FLAT
-        // "and" or "or" of leaves - nesting a further "and"/"or" inside one (e.g. AND containing an
-        // OR that itself contains an AND) reliably corrupted the rendering of the property-based
-        // leaves inside it, even with the ModelElementCriterion anchoring rules above correctly
-        // applied. The only working fix found for a rule using that shape was to flatten it
-        // entirely into one "and" of leaves - so reject deeper nesting explicitly here rather than
-        // silently generating XML that produces a broken rule.
-        if (depth > 0) {
-            outError = "'and'/'or' cannot be nested inside another 'and'/'or' - ArchiCAD's criteria "
-                       "editor does not reliably support that. Flatten into a single 'and' or 'or' "
-                       "of leaves instead.";
+        // The nesting follows the criteria editor's table, as Archicad keeps it (read from rules
+        // made in the editor, issue #1816): the top and/or holds the rows, a row is an and/or of its
+        // values, and values joined with "and" inside an "or" row are one more group. A row's
+        // values are bare leaves, not wrapped in their own trivial group (see UnwrapTrivialGroup).
+        // An earlier version wrapped them, and the editor then showed the rule wrongly, which is
+        // why nesting was rejected before. Nothing deeper than these three levels is written.
+        if (depth > 2) {
+            outError = "'and'/'or' can be nested at most three levels deep, like the rows of the criteria "
+                       "editor: the rows, the values of a row, and values joined with 'and' within a row.";
             return false;
         }
         const bool isAnd = hasAnd;
@@ -1239,6 +1640,9 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
             bool childIsSelfRooting = false;
             if (!EmitCriterionNode (child, childXML, outError, childIsSelfRooting, depth + 1))
                 return false;
+            const bool childIsGroup = child.Contains ("and") || child.Contains ("or");
+            if (depth > 0 && !childIsGroup)
+                UnwrapTrivialGroup (childXML);
             childrenXML += childXML;
         }
         outXML = GS::UniString ("<ClassGuid>") + kCompositeClassGuid + "</ClassGuid>"
@@ -1254,13 +1658,42 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
         return true;
     }
 
-    if (node.Get ("elementType", elementType)) {
-        const ElemTypeInfo* info = FindElemTypeInfo (elementType);
-        if (info == nullptr) {
-            outError = "Unknown or unsupported elementType '" + elementType + "'.";
+    // A condition the reader does not decode, written back as it was read (issue #1816).
+    GS::UniString rawCriterionXML;
+    if (node.Get ("criterionXML", rawCriterionXML)) {
+        std::vector<CriterionXmlNode> nodes;
+        if (!ReadCriterionXmlSequence (rawCriterionXML, nodes) || nodes.size () != 2 || nodes[0].name != "ClassGuid") {
+            outError = "'criterionXML' in a criterion must be one condition as GetGraphicOverrideRules returns it: a <ClassGuid> followed by one element.";
             return false;
         }
-        outXML = WrapAsTrivialGroup (ElemTypeCriterionXML (*info));
+        const GS::UniString fragmentXML = FromUtf8 (CanonicalXml (nodes[0]) + CanonicalXml (nodes[1]));
+        outXML = IsCompositeFragment (fragmentXML) ? fragmentXML : WrapAsTrivialGroup (fragmentXML);
+        return true;
+    }
+
+    const bool hasElementType = node.Get ("elementType", elementType);
+    if (hasElementType || node.Get ("elementTypeNot", elementTypeNot)) {
+        const GS::UniString& typeName = hasElementType ? elementType : elementTypeNot;
+        GS::UniString mainGuid, revGuid;
+        const GS::ObjectState* subtype = node.Get ("libraryPartSubtype");
+        if (subtype != nullptr && (!subtype->Get ("mainGuid", mainGuid) || !subtype->Get ("revGuid", revGuid) || mainGuid.IsEmpty () || revGuid.IsEmpty ())) {
+            outError = "'libraryPartSubtype' requires 'mainGuid' and 'revGuid'.";
+            return false;
+        }
+        if (typeName == kAllTypesElemTypeName) {
+            if (!hasElementType || subtype != nullptr) {
+                outError = "'AllTypes' can only be used with 'elementType', without 'libraryPartSubtype'.";
+                return false;
+            }
+            outXML = WrapAsTrivialGroup (AllTypesElemTypeCriterionXML ());
+            return true;
+        }
+        const ElemTypeInfo* info = FindElemTypeInfo (typeName);
+        if (info == nullptr) {
+            outError = "Unknown or unsupported element type '" + typeName + "'.";
+            return false;
+        }
+        outXML = WrapAsTrivialGroup (ElemTypeCriterionXML (*info, !hasElementType, mainGuid, revGuid));
         return true;
     }
 
@@ -2726,7 +3159,7 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
         return true;
     }
 
-    outError = "A criterion node must contain exactly one of: and, or, elementType, classification, classificationNot, "
+    outError = "A criterion node must contain exactly one of: and, or, criterionXML, elementType, elementTypeNot, classification, classificationNot, "
                "classificationIs, classificationIsNot, classificationChildOf, classificationNotChildOf, classificationHasValue, classificationHasNoValue, "
                "morphBodyType(Not), beamCrossSectionType, hatchCategory, openingShape(Not), openingLimits(Not), openingOrientation(Not), "
                "textAlignment, textStyle, textLineSpacing, meshEdgePen, meshSkirtSurface(Not), dimensionMarkerSize(...), dimensionMarkerPen, "
@@ -2822,6 +3255,374 @@ bool GraphicOverrideCriterionToXML (const GS::ObjectState& criterionOS, GS::UniS
            + "<CriterionExpression Mv=\"2\" Sv=\"2\"><TextMatchType>1</TextMatchType><Size>1</Size>"
            + rootCompositeXML
            + "</CriterionExpression>";
+    return true;
+}
+
+// ---------------------------------------------------------------------------
+// criterionXML -> structured criterion reader (issue #1816)
+//
+// The layout, read from rules made in the criteria editor of Archicad 29 and 30: CriterionExpression
+// holds one root CompositeCriterion, an AND of the rows of the editor's table. A row is a
+// CompositeCriterion of its values, OR or AND as the editor joins them, and values joined with "and"
+// within an "or" row are one more CompositeCriterion. Each child is preceded by a ClassGuid naming
+// its class. The reader returns this nesting one to one (a row with one value as its plain leaf),
+// which GraphicOverrideCriterionToXML writes back the same way.
+//
+// A leaf is only returned by name when the generator writes it back to the same condition: the
+// property conditions are checked by generating their XML and comparing it with what was read. A
+// leaf that is not decoded, or not in the form the generator writes, comes back as a raw
+// {"criterionXML": "<ClassGuid>...</ClassGuid><...>"} leaf, which the generator writes back as it is.
+// ---------------------------------------------------------------------------
+
+static const char* kClassificationGroupName = "ClassificationSystemPropertyDefinitionGroup";
+
+static bool SameGuid (const std::string& guid, const char* expected)
+{
+    const size_t length = std::strlen (expected);
+    if (guid.size () != length)
+        return false;
+    for (size_t i = 0; i < length; ++i) {
+        char c = guid[i];
+        if (c >= 'a' && c <= 'z')
+            c = static_cast<char> (c - 'a' + 'A');
+        if (c != expected[i])
+            return false;
+    }
+    return true;
+}
+
+static const CriterionXmlNode* FindChild (const CriterionXmlNode& node, const char* name)
+{
+    for (const CriterionXmlNode& child : node.children) {
+        if (child.name == name)
+            return &child;
+    }
+    return nullptr;
+}
+
+static bool ParseInt (const std::string& text, int& outValue)
+{
+    if (text.empty ())
+        return false;
+    char* end = nullptr;
+    const long value = std::strtol (text.c_str (), &end, 10);
+    if (end == nullptr || *end != '\0')
+        return false;
+    outValue = static_cast<int> (value);
+    return true;
+}
+
+static bool ParseDouble (const std::string& text, double& outValue)
+{
+    if (text.empty ())
+        return false;
+    char* end = nullptr;
+    outValue = std::strtod (text.c_str (), &end);
+    return end != nullptr && *end == '\0';
+}
+
+static GS::ObjectState RawCriterionLeaf (const CriterionXmlNode& classGuid, const CriterionXmlNode& leaf)
+{
+    return GS::ObjectState ("criterionXML", FromUtf8 (CanonicalXml (classGuid) + CanonicalXml (leaf)));
+}
+
+// Whether the generator writes exactly this ClassGuid and leaf for generatedXML.
+static bool MatchesGenerated (const CriterionXmlNode& classGuid, const CriterionXmlNode& leaf, const GS::UniString& generatedXML)
+{
+    std::vector<CriterionXmlNode> nodes;
+    return ReadCriterionXmlSequence (generatedXML, nodes) && nodes.size () == 2
+        && CanonicalXml (nodes[0]) == CanonicalXml (classGuid) && CanonicalXml (nodes[1]) == CanonicalXml (leaf);
+}
+
+static bool ReadElemTypeLeaf (const CriterionXmlNode& leaf, GS::ObjectState& outLeaf)
+{
+    if (leaf.children.size () != 2 || leaf.children[0].name != "VBEF::CritToolType" || leaf.children[1].name != "LogicalOperator")
+        return false;
+    const CriterionXmlNode& toolType = leaf.children[0];
+    const std::string& logicalOperator = leaf.children[1].text;
+    if (logicalOperator != "1" && logicalOperator != "2")
+        return false;
+    const bool isNot = logicalOperator == "2";
+
+    if (toolType.children.size () != 2 || toolType.children[1].name != "ElemCreatorToolUnID")
+        return false;
+    const CriterionXmlNode& typeId = toolType.children[0];
+    const CriterionXmlNode& unId = toolType.children[1];
+    if (unId.children.size () != 2 || unId.children[0].name != "MainGuid" || unId.children[1].name != "RevGuid")
+        return false;
+    const std::string& mainGuid = unId.children[0].text;
+    const std::string& revGuid = unId.children[1].text;
+
+    const char* typeName = nullptr;
+    if (typeId.name == "ElemType") {
+        // Variation holds the API_ElemVariationID of a type that has one (e.g. a Grid Element is the
+        // Object ClassId with APIVarId_GridElement); those are not decoded.
+        if (typeId.children.size () != 2 || typeId.children[0].name != "ClassId" || typeId.children[1].name != "Variation" || typeId.children[1].text != "0")
+            return false;
+        const std::string& classId = typeId.children[0].text;
+        if (SameGuid (classId, kZeroGuid)) {
+            typeName = kAllTypesElemTypeName;
+        } else {
+            for (const ElemTypeClassIdInfo& info : kElemTypeClassIdTable) {
+                if (SameGuid (classId, info.classId)) {
+                    typeName = info.name;
+                    break;
+                }
+            }
+        }
+    } else if (typeId.name == "ElemRegistryRefId") {
+        for (const ElemTypeInfo& info : kElemTypeTable) {
+            if (typeId.text == info.refId) {
+                typeName = info.name;
+                break;
+            }
+        }
+    }
+    if (typeName == nullptr)
+        return false;
+
+    const bool hasSubtype = !SameGuid (mainGuid, kZeroGuid) || !SameGuid (revGuid, kZeroGuid);
+    const bool isAllTypes = std::strcmp (typeName, kAllTypesElemTypeName) == 0;
+    if (isAllTypes && (isNot || hasSubtype))
+        return false;
+    // The generator writes a type by its ElemRegistryRefId, so a type without one (AllTypes aside)
+    // cannot be written back.
+    if (!isAllTypes && FindElemTypeInfo (typeName) == nullptr)
+        return false;
+
+    outLeaf = GS::ObjectState (isNot ? "elementTypeNot" : "elementType", GS::UniString (typeName));
+    if (hasSubtype)
+        outLeaf.Add ("libraryPartSubtype", GS::ObjectState ("mainGuid", FromUtf8 (mainGuid), "revGuid", FromUtf8 (revGuid)));
+    return true;
+}
+
+static bool ReadClassificationLeaf (const CriterionXmlNode& classGuid, const CriterionXmlNode& leaf, const GS::UniString& systemLabel, int op, const CriterionXmlNode& valueNode, GS::ObjectState& outLeaf)
+{
+    const CriterionXmlNode* itemNode = FindChild (valueNode, "ClassificationItemUserID");
+    if (valueNode.name != "ClassificationValue" || valueNode.children.size () != 1 || itemNode == nullptr)
+        return false;
+    const GS::UniString itemId = FromUtf8 (itemNode->text);
+    if (!MatchesGenerated (classGuid, leaf, ClassificationCriterionXML (itemId, op, systemLabel)))
+        return false;
+
+    // See the operator comment above ClassificationSystemLabel.
+    static const int   kOps[]  = { 0,                  1,                     12,               13,                      14,                  15 };
+    static const char* kKeys[] = { "classificationIs", "classificationIsNot", "classification", "classificationChildOf", "classificationNot", "classificationNotChildOf" };
+    for (int i = 0; i < 6; ++i) {
+        if (op == kOps[i]) {
+            outLeaf = GS::ObjectState (kKeys[i], itemId, "classificationSystem", systemLabel);
+            return true;
+        }
+    }
+    if (op == 10 || op == 11) {
+        // These ignore the item; the generator writes the system's first one.
+        outLeaf = GS::ObjectState (op == 10 ? "classificationHasValue" : "classificationHasNoValue", true, "classificationSystem", systemLabel);
+        return true;
+    }
+    return false;
+}
+
+// The availability operators every custom property has, see CustomPropertyHeaderXML.
+static const char* MetaOperatorKey (int op)
+{
+    static const char* kKeys[] = { "hasDefaultValue", "hasCustomValue", "isAvailable", "isNotAvailable", "isUndefined", "isNotUndefined" };
+    return (op >= 16 && op <= 21) ? kKeys[op - 16] : nullptr;
+}
+
+static const char* ComparisonOperatorKey (int op)
+{
+    static const char* kKeys[] = { "equals", "notEquals", "lessThan", "greaterThan", "lessOrEqual", "greaterOrEqual" };
+    return (op >= 0 && op <= 5) ? kKeys[op] : nullptr;
+}
+
+static bool ReadCustomPropertyLeaf (const CriterionXmlNode& classGuid, const CriterionXmlNode& leaf, const GS::UniString& name, const GS::UniString& group, int op, const CriterionXmlNode& valueNode, GS::ObjectState& outLeaf)
+{
+    const bool bareVariant = valueNode.name == "Variant";
+    const CriterionXmlNode* variant = bareVariant ? &valueNode : nullptr;
+    if (valueNode.name == "Value" && valueNode.children.size () == 1 && valueNode.children[0].name == "Variant")
+        variant = &valueNode.children[0];
+    if (variant == nullptr || variant->children.size () != 2 || variant->children[0].name != "Status" || variant->children[1].name != "Value" || !variant->children[1].children.empty ())
+        return false;
+    const std::string& valueText = variant->children[1].text;
+    const GS::UniString headerXML = CustomPropertyHeaderXML (name, group);
+    const char* metaKey = MetaOperatorKey (op);
+
+    GS::ObjectState condition ("name", name, "group", group);
+    const char* conditionKey = nullptr;
+    GS::UniString generatedXML;
+    if (variant->attributes == "Type=\"BoolVariant\"" && !bareVariant) {
+        if (valueText != "true" && valueText != "false")
+            return false;
+        const bool value = valueText == "true";
+        if (metaKey == nullptr && op != 0)
+            return false;
+        conditionKey = "customPropertyBool";
+        generatedXML = CustomPropertyCriterionXML (headerXML, op, BoolVariantXML (value));
+        if (metaKey == nullptr)
+            condition.Add ("equals", value);
+    } else if (variant->attributes == "Type=\"StringVariant\"" && bareVariant) {
+        // The generator writes a custom text property's value without the <Value> wrapper. The
+        // editor writes some with it (issue #1816); which properties take which form is not known
+        // yet, so those stay raw rather than be written back in the other form.
+        if (metaKey == nullptr && op != 0 && op != 1)
+            return false;
+        const GS::UniString value = FromUtf8 (valueText);
+        conditionKey = "customPropertyString";
+        generatedXML = CustomPropertyCriterionXML (headerXML, op, StringVariantXML (value), true);
+        if (metaKey == nullptr)
+            condition.Add (op == 0 ? "equals" : "notEquals", value);
+    } else if (variant->attributes == "Type=\"NumVariant\"" && !bareVariant) {
+        double value = 0.0;
+        if (!ParseDouble (valueText, value) || (metaKey == nullptr && ComparisonOperatorKey (op) == nullptr))
+            return false;
+        conditionKey = "customPropertyNumber";
+        // Compared with the number as Archicad wrote it; written back, it is formatted with %.15g.
+        generatedXML = CustomPropertyCriterionXML (headerXML, op, GS::UniString ("<Variant Type=\"NumVariant\"><Status>Normal</Status><Value>") + FromUtf8 (valueText) + "</Value></Variant>");
+        if (metaKey == nullptr)
+            condition.Add (ComparisonOperatorKey (op), value);
+    } else if (variant->attributes == "Type=\"IntVariant\"" && !bareVariant) {
+        int value = 0;
+        if (!ParseInt (valueText, value) || (metaKey == nullptr && ComparisonOperatorKey (op) == nullptr))
+            return false;
+        conditionKey = "customPropertyInteger";
+        generatedXML = CustomPropertyCriterionXML (headerXML, op, GS::UniString ("<Variant Type=\"IntVariant\"><Status>Normal</Status><Value>") + FromUtf8 (valueText) + "</Value></Variant>");
+        if (metaKey == nullptr)
+            condition.Add (ComparisonOperatorKey (op), static_cast<Int32> (value));
+    } else {
+        return false;
+    }
+    if (!MatchesGenerated (classGuid, leaf, generatedXML))
+        return false;
+    // The value of an availability operator is a placeholder, which the generator picks itself.
+    if (metaKey != nullptr)
+        condition.Add (metaKey, true);
+    outLeaf = GS::ObjectState (conditionKey, condition);
+    return true;
+}
+
+// Classification and custom property conditions, which are identified by name. Built-in properties,
+// identified by guid, are not decoded yet.
+static bool ReadPropertyLeaf (const CriterionXmlNode& classGuid, const CriterionXmlNode& leaf, GS::ObjectState& outLeaf)
+{
+    if (leaf.children.size () != 1 || leaf.children[0].name != "VBEF::ConditionIO")
+        return false;
+    const CriterionXmlNode& condition = leaf.children[0];
+    if (condition.children.size () != 3 || condition.children[0].name != "PropertyDefinitionUserId" || condition.children[1].name != "CriteriaOperatorEnum")
+        return false;
+    const CriterionXmlNode& definition = condition.children[0];
+    int op = 0;
+    if (!ParseInt (condition.children[1].text, op))
+        return false;
+
+    const CriterionXmlNode* hasNameId = FindChild (definition, "HasNameId");
+    const CriterionXmlNode* nameNode = FindChild (definition, "Name");
+    const CriterionXmlNode* groupNode = FindChild (definition, "PropertyDefinitionGroupUserId");
+    if (hasNameId == nullptr || hasNameId->text != "true" || nameNode == nullptr || nameNode->text.empty () || groupNode == nullptr)
+        return false;
+    const CriterionXmlNode* groupNameNode = FindChild (*groupNode, "Name");
+    if (groupNameNode == nullptr || groupNameNode->text.empty ())
+        return false;
+    const GS::UniString name = FromUtf8 (nameNode->text);
+    const GS::UniString group = FromUtf8 (groupNameNode->text);
+
+    // The generated XML is compared with what was read, so a property of another by-name group
+    // (e.g. the profile parameters) is never taken for a custom property: its header differs.
+    if (groupNameNode->text == kClassificationGroupName)
+        return ReadClassificationLeaf (classGuid, leaf, name, op, condition.children[2], outLeaf);
+    return ReadCustomPropertyLeaf (classGuid, leaf, name, group, op, condition.children[2], outLeaf);
+}
+
+static GS::ObjectState ReadCriterionLeaf (const CriterionXmlNode& classGuid, const CriterionXmlNode& leaf)
+{
+    GS::ObjectState result;
+    const std::string& classId = classGuid.text;
+    if (SameGuid (classId, kElemTypeClassGuid) && leaf.name == "ElemTypeCriterion") {
+        if (ReadElemTypeLeaf (leaf, result))
+            return result;
+    } else if ((SameGuid (classId, kModelElemClassGuid) && leaf.name == "ModelElementCriterion") ||
+               (SameGuid (classId, kDrawingElemClassGuid) && leaf.name == "DrawingElementCriteiron")) {
+        if (leaf.children.size () == 1 && leaf.children[0].name == "LogicalOperator" && leaf.children[0].text == "1")
+            return GS::ObjectState (leaf.name == "ModelElementCriterion" ? "all3DTypes" : "all2DTypes", true);
+    } else if (SameGuid (classId, kPropertyClassGuid) && leaf.name == "PropertyCriterion") {
+        if (ReadPropertyLeaf (classGuid, leaf, result))
+            return result;
+    }
+    return RawCriterionLeaf (classGuid, leaf);
+}
+
+using CriterionXmlChild = std::pair<const CriterionXmlNode*, const CriterionXmlNode*>;
+
+// A CompositeCriterion: its LogicalOperator (1 OR, 2 AND) and its (ClassGuid, criterion) children.
+static bool ReadComposite (const CriterionXmlNode& composite, bool& outIsAnd, std::vector<CriterionXmlChild>& outChildren)
+{
+    if (composite.name != "CompositeCriterion" || composite.children.size () < 4 || composite.children.size () % 2 != 0)
+        return false;
+    const CriterionXmlNode& logicalOperator = composite.children[0];
+    const CriterionXmlNode& count = composite.children[1];
+    if (logicalOperator.name != "LogicalOperator" || (logicalOperator.text != "1" && logicalOperator.text != "2") || count.name != "CriteriaCount")
+        return false;
+    int criteriaCount = 0;
+    if (!ParseInt (count.text, criteriaCount) || criteriaCount != static_cast<int> ((composite.children.size () - 2) / 2))
+        return false;
+    outIsAnd = logicalOperator.text == "2";
+    outChildren.clear ();
+    for (size_t i = 2; i < composite.children.size (); i += 2) {
+        if (composite.children[i].name != "ClassGuid")
+            return false;
+        outChildren.push_back (CriterionXmlChild (&composite.children[i], &composite.children[i + 1]));
+    }
+    return true;
+}
+
+static bool IsCompositeChild (const CriterionXmlChild& child)
+{
+    return SameGuid (child.first->text, kCompositeClassGuid) && child.second->name == "CompositeCriterion";
+}
+
+// depth: 1 for a row of the editor's table, 2 for a group within a row. Deeper groups stay raw,
+// because the generator writes no more levels.
+static GS::ObjectState ReadCriterionNode (const CriterionXmlChild& child, int depth)
+{
+    bool isAnd = false;
+    std::vector<CriterionXmlChild> children;
+    if (depth <= 2 && IsCompositeChild (child) && ReadComposite (*child.second, isAnd, children)) {
+        if (depth == 1 && children.size () == 1 && !IsCompositeChild (children[0]))
+            return ReadCriterionLeaf (*children[0].first, *children[0].second);
+        GS::ObjectState group;
+        const auto& groupList = group.AddList<GS::ObjectState> (isAnd ? "and" : "or");
+        for (const CriterionXmlChild& groupChild : children)
+            groupList (ReadCriterionNode (groupChild, depth + 1));
+        return group;
+    }
+    return ReadCriterionLeaf (*child.first, *child.second);
+}
+
+bool GraphicOverrideCriterionFromXML (const GS::UniString& criterionXML, GS::ObjectState& outCriterion)
+{
+    std::vector<CriterionXmlNode> nodes;
+    if (!ReadCriterionXmlSequence (criterionXML, nodes) || nodes.size () != 1)
+        return false;
+    // The generator writes this envelope only, so another one could not be written back.
+    const CriterionXmlNode& expression = nodes[0];
+    if (expression.name != "CriterionExpression" || expression.attributes != "Mv=\"2\" Sv=\"2\"" || expression.children.size () != 4)
+        return false;
+    const CriterionXmlNode& textMatchType = expression.children[0];
+    const CriterionXmlNode& size = expression.children[1];
+    if (textMatchType.name != "TextMatchType" || textMatchType.text != "1" || size.name != "Size" || size.text != "1")
+        return false;
+    const CriterionXmlChild root (&expression.children[2], &expression.children[3]);
+    if (root.first->name != "ClassGuid" || !IsCompositeChild (root) || root.second->attributes != "Mv=\"2\" Sv=\"1\"")
+        return false;
+
+    bool isAnd = false;
+    std::vector<CriterionXmlChild> rows;
+    if (!ReadComposite (*root.second, isAnd, rows))
+        return false;
+    GS::ObjectState criterion;
+    const auto& rowList = criterion.AddList<GS::ObjectState> (isAnd ? "and" : "or");
+    for (const CriterionXmlChild& row : rows)
+        rowList (ReadCriterionNode (row, 1));
+    outCriterion = criterion;
     return true;
 }
 
