@@ -49,4 +49,4 @@ confirm. You can undo it in Archicad. It writes no files.
 
 ## Credits
 
-Requested by @parikshit99 in #2001. Written by the Tapir project.
+Requested by @parikshit99 in #2001, written with the Tapir issue bot.

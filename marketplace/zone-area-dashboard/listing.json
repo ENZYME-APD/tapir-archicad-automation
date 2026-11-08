@@ -4,7 +4,7 @@
     "summary": "Shows zone areas grouped by name, number, category, story, property or classification, highlights groups in Archicad and exports to Excel or CSV.",
     "category": "zones-areas",
     "tags": ["zones", "areas", "dashboard", "highlight", "excel", "csv"],
-    "author": { "name": "Tapir" },
+    "author": { "name": "Jorge Beneitez", "github": "JBENEITEZ" },
     "license": "MIT",
     "entry": "ZoneAreaDashboard.py",
     "versions": [

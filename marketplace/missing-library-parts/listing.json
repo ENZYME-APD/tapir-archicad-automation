@@ -4,7 +4,7 @@
     "summary": "Lists the library parts placed objects, lamps, windows and doors use but the loaded libraries lack, and replaces them with loaded ones.",
     "category": "libraries-objects",
     "tags": ["library-parts", "missing", "objects", "doors", "windows", "migration"],
-    "author": { "name": "Tapir" },
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
     "license": "MIT",
     "entry": "MissingLibraryParts.py",
     "versions": [

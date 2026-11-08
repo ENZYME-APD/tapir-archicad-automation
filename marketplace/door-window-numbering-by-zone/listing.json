@@ -4,7 +4,7 @@
     "summary": "Gives every door and window an Element ID built from the zone it opens into, such as 1.04-D1, numbered clockwise within each zone.",
     "category": "element-data-properties",
     "tags": ["doors", "windows", "zones", "numbering", "element-id"],
-    "author": { "name": "Tapir" },
+    "author": { "name": "Parikshit Wadhwa", "github": "parikshit99" },
     "license": "MIT",
     "entry": "DoorWindowNumberingByZone.py",
     "versions": [

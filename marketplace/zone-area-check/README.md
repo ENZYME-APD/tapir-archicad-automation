@@ -45,4 +45,4 @@ selection. *Export...* writes one file, where you choose in the save dialog; its
 
 ## Credits
 
-Requested by @parikshit99 in #2007. Written by the Tapir project.
+Requested by @parikshit99 in #2007, written with the Tapir issue bot.

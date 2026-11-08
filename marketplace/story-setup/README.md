@@ -48,4 +48,4 @@ in Archicad since *Compare*. It writes no files; *Load CSV...* only reads one.
 
 ## Credits
 
-Requested by @parikshit99 in #2009. Written by the Tapir project.
+Requested by @parikshit99 in #2009, written with the Tapir issue bot.

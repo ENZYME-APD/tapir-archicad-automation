@@ -139,7 +139,8 @@ Plain words, for architects:
 4. What it changes (or that it changes nothing), and which files it writes, where.
 5. Its limits: element types, Archicad versions, Teamwork, units.
 6. `Original by <author>`, and who adapted it if someone did; for a script
-   requested in an issue, `Requested by @<login> in #<issue number>`.
+   requested in an issue, `Requested by @<login> in #<issue number>, written with
+   the Tapir issue bot.` (see below).
 
 ### Screenshots
 
@@ -155,9 +156,16 @@ format above. It goes to [`builtin-scripts/`](../builtin-scripts/) only when a
 maintainer asks for that in the issue, because every built-in script is in
 every Tapir user's palette.
 
-- The listing's `author` is `{ "name": "Tapir" }`: the project wrote it.
-- Its README credits the request instead of an original author:
-  `Requested by @<login> in #<issue number>`.
+- The listing's `author` is the person who opened the issue: they specified
+  the script and the issue bot wrote the code, as other contributors write
+  code with AI help. `name` is their GitHub profile name when they have set
+  one, else their login, and `github` is their login, e.g.
+  `{ "name": "Parikshit Wadhwa", "github": "parikshit99" }`.
+- Its README credits the request:
+  `Requested by @<login> in #<issue number>, written with the Tapir issue bot.`
+- An issue a bot opened (the Discord issue bot files them) has no GitHub
+  author to name: the listing's `author` stays `{ "name": "Tapir" }`, and the
+  README credits the Discord user who asked for it by name.
 - Everything else (headers, README, the rules below) is as for a shared
   script; there is no author to ask, so the person who asked for it is asked
   to try it.
