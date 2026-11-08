@@ -10395,6 +10395,10 @@
             "thickness": {
                 "type": "number"
             },
+            "isFlipped": {
+                "type": "boolean",
+                "description": "The Flip setting of the shell: true when the thickness is applied to the other side of the reference surface. CreateShells and ModifyShells write it."
+            },
             "buildingMaterialId": {
                 "$ref": "#/AttributeId"
             },

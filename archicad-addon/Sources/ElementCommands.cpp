@@ -3219,6 +3219,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 typeSpecificDetails.Add ("structureType", StructureTypeToString (base.modelElemStructureType));
                 typeSpecificDetails.Add ("thickness", base.thickness);
+                // The Flip setting: which side of the reference surface the thickness is on (#2432).
+                typeSpecificDetails.Add ("isFlipped", elem.shell.isFlipped);
                 if (StructureTypeToString (base.modelElemStructureType) == "Composite") {
                     typeSpecificDetails.Add ("compositeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_CompWallID, base.composite)));
                 } else {

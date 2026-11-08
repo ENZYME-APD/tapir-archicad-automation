@@ -11339,7 +11339,11 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                             "$ref": "#/ShellStructureType"
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
-                        "compositeId": { "$ref": "#/AttributeId" }
+                        "compositeId": { "$ref": "#/AttributeId" },
+                        "isFlipped": {
+                            "type": "boolean",
+                            "description": "The Flip setting: true applies the thickness to the other side of the reference surface, as CreateShells' isFlipped. The shell keeps its GUID, profile and reference surface."
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -11389,6 +11393,14 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
             if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                 continue;
+            }
+
+            // The Flip setting (#2432), as CreateShells writes it.
+            bool isFlipped = false;
+            if (item.Get ("isFlipped", isFlipped)) {
+                element.shell.isFlipped = isFlipped;
+                ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, isFlipped);
+                changed = true;
             }
 
             if (!changed) {
