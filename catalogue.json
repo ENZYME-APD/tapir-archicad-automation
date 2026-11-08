@@ -581,7 +581,8 @@
         "interiors"
       ],
       "author": {
-        "name": "Tapir"
+        "name": "Jorge Beneitez",
+        "github": "JBENEITEZ"
       },
       "license": "MIT",
       "entry": "RoomFinishesFromZones.py",
@@ -599,8 +600,8 @@
           ],
           "minTapirVersion": "1.8.0",
           "changelog": "Cove: an optional Beam or Wall favorite along every straight room edge, standing on the ceiling's bottom, with the ceiling moved off the room edge by the offset typed in the window so that the cove sits in the gap.",
-          "commit": "6fd442cdf9baf2bed1d9f31580e23860e01dfffc",
-          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/6fd442cdf9baf2bed1d9f31580e23860e01dfffc/marketplace/room-finishes-from-zones/RoomFinishesFromZones.py",
+          "commit": "85f6ea0976c3f3c1582b972132fb4aeefcb51a13",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/85f6ea0976c3f3c1582b972132fb4aeefcb51a13/marketplace/room-finishes-from-zones/RoomFinishesFromZones.py",
           "sha256": "87bd2ec27afc8aefb97dc1f6663246f45ec40df8b88b3ebe191cc3e786c1f5f1"
         },
         {
@@ -800,6 +801,47 @@
           "commit": "7fa4dfe1325f98f95bae8f5d9145bc65598870a3",
           "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/7fa4dfe1325f98f95bae8f5d9145bc65598870a3/marketplace/story-setup/StorySetup.py",
           "sha256": "adb64da536891b6d5f2b24eafa7656ff21b7a5389b4e0ee5011ed2c99e7dbaab"
+        }
+      ]
+    },
+    {
+      "slug": "symbol-numbering-by-circuit-and-zone",
+      "name": "Electrical and Plumbing Symbol Numbering",
+      "summary": "Numbers electrical and plumbing symbols by board, circuit and zone, such as DB1.3-04, writes the numbers to the Element ID or a parameter and can label them.",
+      "category": "element-data-properties",
+      "tags": [
+        "electrical",
+        "plumbing",
+        "mep",
+        "circuits",
+        "zones",
+        "numbering",
+        "element-id",
+        "labels"
+      ],
+      "author": {
+        "name": "Parikshit Wadhwa",
+        "github": "parikshit99"
+      },
+      "license": "MIT",
+      "entry": "SymbolNumbering.py",
+      "changes": "model",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "archicadVersions": [
+            25,
+            26,
+            27,
+            28,
+            29,
+            30
+          ],
+          "minTapirVersion": "1.8.0",
+          "changelog": "First version.",
+          "commit": "91ee9b104e55f87c1f5b6eafae86b8daf625e3f6",
+          "url": "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/91ee9b104e55f87c1f5b6eafae86b8daf625e3f6/marketplace/symbol-numbering-by-circuit-and-zone/SymbolNumbering.py",
+          "sha256": "25c8d93748985f2ac8a0ecd1a651168fbd3522cff15ae1a9ba0253cb0dfea17d"
         }
       ]
     },
