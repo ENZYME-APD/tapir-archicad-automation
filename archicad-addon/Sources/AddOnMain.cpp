@@ -301,6 +301,10 @@ GSErrCode Initialize (void)
             applicationCommands,"1.5.6",
             "Display a dialog with up to three buttons."
         );
+        err |= RegisterCommand<ShowNotificationBubbleCommand> (
+            applicationCommands, "1.8.1",
+            "Shows a non-blocking notification bubble with a message in the current Archicad window, e.g. to report progress or a result without stopping the user as ShowAlert does. The bubble disappears by itself after the timeout. It is shown at a model coordinate or a pixel position of the current view, by default at the center of the current 2D view. Requires Archicad 29 or later."
+        );
         err |= RegisterCommand<GetSpecialFoldersCommand> (
             applicationCommands, "1.5.6",
             "Retrieves the filesystem paths of the special folders of the running Archicad (preferences, cache, data, temporary, application, defaults, templates, help, embedded project library, etc.)."

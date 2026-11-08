@@ -9,6 +9,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <optional>
 
 static ULong GenerateProjectLocationHashValue (const IO::Location& projectLocation)
 {
@@ -78,6 +79,13 @@ static IO::Location GetProjectPreviewsFolder (const IO::Location& projectLocatio
 #if defined (ServerMainVers_2800) && __has_include ("ACAPI/CuttingPlane.hpp")
 #include "ACAPI/CuttingPlane.hpp"
 #define TAPIR_HAS_CUTTING_PLANE
+#endif
+
+#if defined (ServerMainVers_2900) && __has_include ("ACAPI/UI/NotificationBubble/NotificationBubbleManager.hpp")
+#include "ACAPI/UI/NotificationBubble/NotificationBubbleManager.hpp"
+#include "ACAPI/UI/NotificationBubble/NotificationBubble.hpp"
+#include "DGUtility.hpp"
+#define TAPIR_HAS_NOTIFICATION_BUBBLE
 #endif
 
 GetAddOnVersionCommand::GetAddOnVersionCommand () :
@@ -1445,6 +1453,212 @@ GS::ObjectState ShowAlertCommand::Execute (const GS::ObjectState& parameters, GS
     short clicked = DGAlert (alertType, title, message, subMessage, button1, button2, button3);
 
     return GS::ObjectState ("clickedButton", static_cast<Int32> (clicked));
+}
+
+ShowNotificationBubbleCommand::ShowNotificationBubbleCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String ShowNotificationBubbleCommand::GetName () const
+{
+    return "ShowNotificationBubble";
+}
+
+GS::Optional<GS::UniString> ShowNotificationBubbleCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "message": {
+                "type": "string",
+                "description": "The text of the notification bubble.",
+                "minLength": 1
+            },
+            "icon": {
+                "type": "string",
+                "enum": ["none", "information", "warning", "error"],
+                "description": "The icon shown in the bubble. Default: information."
+            },
+            "timeoutMilliseconds": {
+                "type": "integer",
+                "description": "How long the bubble stays, in milliseconds. Default: Archicad's default, 1000 (1 second).",
+                "minimum": 1,
+                "maximum": 4294967295
+            },
+            "coordinate": {
+                "$ref": "#/Coordinate3D",
+                "description": "The model coordinate in the current database (meters) where the bubble is shown, converted like ModelToScreen does: in a 3D window it is projected with the current camera, in other windows z is disregarded. Do not give it together with screenPoint. When neither is given, the bubble is shown at the center of the current view in 2D windows and at the project's local origin otherwise."
+            },
+            "screenPoint": {
+                "type": "object",
+                "description": "The pixel position local to the current Archicad view window (not global desktop coordinates) where the bubble is shown, e.g. a point returned by ModelToScreen. Do not give it together with coordinate.",
+                "properties": {
+                    "h": {
+                        "type": "integer",
+                        "description": "Horizontal pixel position from the left edge of the view window.",
+                        "minimum": -32768,
+                        "maximum": 32767
+                    },
+                    "v": {
+                        "type": "integer",
+                        "description": "Vertical pixel position from the top edge of the view window.",
+                        "minimum": -32768,
+                        "maximum": 32767
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "h",
+                    "v"
+                ]
+            },
+            "offset": {
+                "type": "object",
+                "description": "Moves the bubble from its position by this many pixels.",
+                "properties": {
+                    "h": {
+                        "type": "integer",
+                        "description": "Horizontal offset in pixels, positive to the right.",
+                        "minimum": -32768,
+                        "maximum": 32767
+                    },
+                    "v": {
+                        "type": "integer",
+                        "description": "Vertical offset in pixels, positive downwards.",
+                        "minimum": -32768,
+                        "maximum": 32767
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "h",
+                    "v"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "message"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> ShowNotificationBubbleCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "$ref": "#/ExecutionResult"
+    })";
+}
+
+#ifdef TAPIR_HAS_NOTIFICATION_BUBBLE
+static API_Point GetPointFromObjectState (const GS::ObjectState& os)
+{
+    Int32 h = 0;
+    Int32 v = 0;
+    os.Get ("h", h);
+    os.Get ("v", v);
+    API_Point point = {};
+    point.h = static_cast<short> (h);
+    point.v = static_cast<short> (v);
+    return point;
+}
+
+static GSErrCode GetModelCoordinateScreenPoint (const API_Coord3D& coord3D, API_Point& point)
+{
+    API_Coord coord = {};
+    GSErrCode err = ACAPI_View_ModelToScreen (coord3D, coord);
+    if (err != NoError) {
+        return err;
+    }
+    return ACAPI_View_CoordToPoint (&coord, &point);
+}
+#endif
+
+GS::ObjectState ShowNotificationBubbleCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef TAPIR_HAS_NOTIFICATION_BUBBLE
+    GS::UniString message;
+    parameters.Get ("message", message);
+    if (message.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "message must not be empty.");
+    }
+
+    GS::UniString iconStr = "information";
+    parameters.Get ("icon", iconStr);
+    std::optional<short> iconId;
+    if (iconStr == "information") {
+        iconId = DG::Icon::Information;
+    } else if (iconStr == "warning") {
+        iconId = DG::Icon::Warning;
+    } else if (iconStr == "error") {
+        iconId = DG::Icon::Error;
+    } else if (iconStr != "none") {
+        return CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString ("Unknown icon: ") + iconStr + ".");
+    }
+
+    const GS::ObjectState* coordinateOS = parameters.Get ("coordinate");
+    const GS::ObjectState* screenPointOS = parameters.Get ("screenPoint");
+    if (coordinateOS != nullptr && screenPointOS != nullptr) {
+        return CreateFailedExecutionResult (APIERR_BADPARS, "Give either coordinate or screenPoint, not both.");
+    }
+
+    API_Point point = {};
+    if (screenPointOS != nullptr) {
+        point = GetPointFromObjectState (*screenPointOS);
+    } else if (coordinateOS != nullptr) {
+        const GSErrCode err = GetModelCoordinateScreenPoint (Get3DCoordinateFromObjectState (*coordinateOS), point);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to convert the coordinate to a screen point of the current view.");
+        }
+    } else {
+        // The center of the visible area of a 2D window; ACAPI_View_GetZoom fails in
+        // other windows (e.g. 3D), where the local origin is used as in the DevKit example.
+        API_Box zoomBox = {};
+        GSErrCode err = ACAPI_View_GetZoom (&zoomBox);
+        if (err == NoError) {
+            API_Coord center = {};
+            center.x = (zoomBox.xMin + zoomBox.xMax) / 2.0;
+            center.y = (zoomBox.yMin + zoomBox.yMax) / 2.0;
+            err = ACAPI_View_CoordToPoint (&center, &point);
+        } else {
+            API_Coord3D localOrigin = {};
+            err = ACAPI_Database_GetLocOrigo (&localOrigin);
+            if (err == NoError) {
+                err = GetModelCoordinateScreenPoint (localOrigin, point);
+            }
+        }
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to find a position in the current view; give coordinate or screenPoint.");
+        }
+    }
+
+    // One bubble of Tapir's own; showing it again replaces its text and settings.
+    static constexpr const char* TapirNotificationBubbleGuid = "8D3B6F1E-5C2A-4E7B-9A41-2F6C0D8E7B53";
+    auto notificationBubble = ACAPI::UI::Notification::CreateNotificationBubbleManager ().CreateNotificationBubble (APIGuidFromString (TapirNotificationBubbleGuid));
+
+    notificationBubble.SetText (message);
+    if (iconId.has_value ()) {
+        notificationBubble.SetIcon (DG::Icon (SysResModule, *iconId));
+    }
+
+    GS::Int64 timeoutMilliseconds = 0;
+    if (parameters.Get ("timeoutMilliseconds", timeoutMilliseconds) && timeoutMilliseconds > 0) {
+        notificationBubble.SetTimeout (static_cast<UInt32> (timeoutMilliseconds));
+    }
+
+    const GS::ObjectState* offsetOS = parameters.Get ("offset");
+    if (offsetOS != nullptr) {
+        notificationBubble.SetOffset (GetPointFromObjectState (*offsetOS));
+    }
+
+    notificationBubble.Show (point);
+
+    return CreateSuccessfulExecutionResult ();
+#else
+    (void) parameters;
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED, "ShowNotificationBubble requires Archicad 29 or later.");
+#endif
 }
 
 GetSpecialFoldersCommand::GetSpecialFoldersCommand () :
