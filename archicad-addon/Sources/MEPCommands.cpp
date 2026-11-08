@@ -2015,84 +2015,7 @@ GS::Optional<GS::UniString> GetMEPElementDetailsCommand::GetRawResponseSchema ()
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementId": {
-                                    "$ref": "#/ElementId"
-                                },
-                                "type": {
-                                    "$ref": "#/MEPElementType"
-                                },
-                                "domain": {
-                                    "type": "string",
-                                    "description": "The MEP domain (Ventilation, Piping or CableCarrier), empty if the element has none."
-                                },
-                                "insulationThickness": {
-                                    "type": "number",
-                                    "description": "The insulation thickness. RigidSegment, Elbow, Branch and Transition."
-                                },
-                                "routingSegmentId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The routing segment the rigid segment belongs to (see GetMEPRoutingElements). RigidSegment."
-                                },
-                                "routingNodeId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The routing node the elbow or transition belongs to (see GetMEPRoutingElements). Elbow and Transition."
-                                },
-                                "controlPoints": {
-                                    "type": "array",
-                                    "description": "The control points of the flexible segment. FlexibleSegment.",
-                                    "items": {
-                                        "$ref": "#/Coordinate3D"
-                                    }
-                                },
-                                "polyline": {
-                                    "$ref": "#/MEPFlexibleSegmentPolyline",
-                                    "description": "The line and spline parts of the flexible segment, when Archicad gives them (a flexible segment placed as a polyline, see CreateMEPFlexibleSegments). FlexibleSegment."
-                                },
-                                "factorRadius": {
-                                    "type": "number",
-                                    "description": "The radius factor of the elbow (Elbow::GetFactorRadius). Elbow, from Archicad 29."
-                                },
-                                "preferenceTableId": {
-                                    "$ref": "#/Guid",
-                                    "description": "The guid of the elbow or transition preference table (see GetMEPPreferenceTables). Elbow and Transition, from Archicad 29."
-                                },
-                                "branchAngle": {
-                                    "type": "number",
-                                    "description": "The angle of the branch, as returned by Branch::GetBranchAngle. Branch."
-                                },
-                                "branchLength": {
-                                    "type": "number",
-                                    "description": "The length of the branch. Branch."
-                                },
-                                "offsetY": {
-                                    "type": "number",
-                                    "description": "The Y offset of the transition (Transition::GetOffsetY). Transition."
-                                },
-                                "offsetZ": {
-                                    "type": "number",
-                                    "description": "The Z offset of the transition (Transition::GetOffsetZ). Transition."
-                                },
-                                "widerPortId": {
-                                    "$ref": "#/Guid",
-                                    "description": "The port at the wider end of the transition (see GetMEPPorts). Transition."
-                                },
-                                "narrowerPortId": {
-                                    "$ref": "#/Guid",
-                                    "description": "The port at the narrower end of the transition (see GetMEPPorts). Transition."
-                                },
-                                "isControlledByPreference": {
-                                    "type": "boolean",
-                                    "description": "Whether the transition is controlled by its preference table. Transition, from Archicad 29."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementId",
-                                "type",
-                                "domain"
-                            ]
+                            "$ref": "#/MEPElementDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -2416,95 +2339,7 @@ GS::Optional<GS::UniString> CreateMEPRoutingElementsCommand::GetInputParametersS
                 "type": "array",
                 "description": "Array of data to create MEP routing elements.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "domain": {
-                            "$ref": "#/MEPDomain"
-                        },
-                        "nodeCoordinates": {
-                            "type": "array",
-                            "description": "The corner points of the route polyline.",
-                            "items": {
-                                "$ref": "#/Coordinate3D"
-                            },
-                            "minItems": 2
-                        },
-                        "crossSectionWidth": {
-                            "type": "number",
-                            "description": "Optional cross section width applied to all segments."
-                        },
-                        "crossSectionHeight": {
-                            "type": "number",
-                            "description": "Optional cross section height applied to all segments."
-                        },
-                        "crossSectionShape": {
-                            "$ref": "#/MEPCrossSectionShape",
-                            "description": "Optional; applied to all segments."
-                        },
-                        "crossSectionReferenceId": {
-                            "type": "integer",
-                            "description": "Optional cross section reference id of the segment preference table (used for circular cross sections). Resolved against preferenceTableId if given, otherwise against the table of the current routing tool default."
-                        },
-                        "preferenceTableId": {
-                            "$ref": "#/Guid",
-                            "description": "Optional guid of the segment preference table (see GetMEPPreferenceTables) applied to all segments. Not applicable to the CableCarrier domain."
-                        },
-                        "mepSystemId": {
-                            "$ref": "#/AttributeId",
-                            "description": "Optional MEP system attribute."
-                        },
-                        "layerIndex": {
-                            "type": "integer",
-                            "description": "Optional layer attribute index of the routing element and all its parts (routing segments, rigid segments, elbows and transitions). Only a positive index takes effect; otherwise the routing tool default layer is used. A layer that does not exist or is locked gives an error for the item, and nothing is placed."
-                        },
-                        "floorIndex": {
-                            "type": "integer",
-                            "description": "Optional home story index (as returned by GetStories) of the routing element and all its parts. The node coordinates stay absolute: the route is placed at them, then moved to this home story. Without it, Archicad picks the home story, which follows the active story. A story that does not exist gives an error for the item, and nothing is placed."
-                        },
-                        "defaults": {
-                            "type": "object",
-                            "description": "Optional changes to the routing tool default of the domain before the route is placed. Only what is placed changes, not the routing tool's settings. A value that cannot be set gives an error for the item, and nothing is placed.",
-                            "properties": {
-                                "routingNode": {
-                                    "type": "object",
-                                    "description": "The routing node default: the elbows and transitions placed at the nodes of the route. Available from Archicad 29.",
-                                    "properties": {
-                                        "elbow": {
-                                            "type": "object",
-                                            "properties": {
-                                                "preferenceTableId": {
-                                                    "$ref": "#/Guid",
-                                                    "description": "The guid of an elbow preference table of the domain (see GetMEPPreferenceTables with includeFittingTables)."
-                                                },
-                                                "factorRadius": {
-                                                    "type": "number",
-                                                    "description": "The radius factor of the elbows placed at the nodes."
-                                                }
-                                            },
-                                            "additionalProperties": false
-                                        },
-                                        "transition": {
-                                            "type": "object",
-                                            "properties": {
-                                                "preferenceTableId": {
-                                                    "$ref": "#/Guid",
-                                                    "description": "The guid of a transition preference table of the domain (see GetMEPPreferenceTables with includeFittingTables)."
-                                                }
-                                            },
-                                            "additionalProperties": false
-                                        }
-                                    },
-                                    "additionalProperties": false
-                                }
-                            },
-                            "additionalProperties": false
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "domain",
-                        "nodeCoordinates"
-                    ]
+                    "$ref": "#/MEPRoutingElementCreationData"
                 }
             }
         },
@@ -2743,104 +2578,7 @@ GS::Optional<GS::UniString> CreateMEPElementsCommand::GetInputParametersSchema (
                 "type": "array",
                 "description": "Array of data to create MEP elements.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "type": {
-                            "$ref": "#/MEPComponentType"
-                        },
-                        "domain": {
-                            "$ref": "#/MEPDomain",
-                            "description": "Required for all types except Equipment. For Equipment it only selects the ports that mepSystemId is applied to."
-                        },
-                        "position": {
-                            "$ref": "#/Coordinate3D"
-                        },
-                        "libraryPartId": {
-                            "$ref": "#/LibPartUnId",
-                            "description": "Optional library part to place instead of the one in the tool's settings, as listed by GetAvailableLibraryParts. Its ports replace the default ones, so 'ports' refers to the ports of this library part. Its ports keep the MEP system of the library part, which may be none, so give 'mepSystemId' with it to connect it. If it is not found, the item fails and nothing is placed."
-                        },
-                        "xSize": {
-                            "type": "number",
-                            "description": "Optional size along the local x axis in meters. Available from Archicad 30. Some library parts calculate their own size and keep it."
-                        },
-                        "ySize": {
-                            "type": "number",
-                            "description": "Optional size along the local y axis in meters. Available from Archicad 30. Some library parts calculate their own size and keep it."
-                        },
-                        "mepSystemId": {
-                            "$ref": "#/AttributeId",
-                            "description": "Optional MEP system of the ports of the element's domain (of every port when an Equipment item has no domain). The 'mepSystemId' of an entry of 'ports' overrides it for that port."
-                        },
-                        "ports": {
-                            "type": "array",
-                            "description": "Optional changes to single ports of the element before it is placed. The values are in meters.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "portIndex": {
-                                        "type": "integer",
-                                        "description": "Zero-based index of the port in the library part."
-                                    },
-                                    "mepSystemId": {
-                                        "$ref": "#/AttributeId",
-                                        "description": "The MEP system of the port."
-                                    },
-                                    "shape": {
-                                        "$ref": "#/MEPCrossSectionShape",
-                                        "description": "The shape of the port."
-                                    },
-                                    "width": {
-                                        "type": "number",
-                                        "description": "The width of the port."
-                                    },
-                                    "height": {
-                                        "type": "number",
-                                        "description": "The height of a ventilation or cable carrier port."
-                                    },
-                                    "diameter": {
-                                        "type": "number",
-                                        "description": "The diameter of a piping port."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "portIndex"
-                                ]
-                            }
-                        },
-                        "orientationDirection": {
-                            "$ref": "#/Coordinate3D",
-                            "description": "Optional direction vector of the orientation. Defaults to (1, 0, 0)."
-                        },
-                        "orientationRotation": {
-                            "$ref": "#/Coordinate3D",
-                            "description": "Optional rotation vector of the orientation. Defaults to (0, 1, 0)."
-                        },
-                        "floorIndex": {
-                            "type": "integer",
-                            "description": "Optional home story index (as returned by GetStories). The position stays absolute: the element is placed at it, then moved to this home story. Without it, Archicad picks the home story, which follows the active story. A story that does not exist gives an error for the item, and nothing is placed."
-                        },
-                        "defaults": {
-                            "type": "object",
-                            "description": "Optional changes to the tool default before the element is placed. Only what is placed changes, not the tool's settings. A value that cannot be set gives an error for the item, and nothing is placed.",
-                            "properties": {
-                                "insulationThickness": {
-                                    "type": "number",
-                                    "description": "The insulation thickness in meters."
-                                },
-                                "removeInsulation": {
-                                    "type": "boolean",
-                                    "description": "If true, the element is placed without insulation. Cannot be combined with insulationThickness."
-                                }
-                            },
-                            "additionalProperties": false
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "type",
-                        "position"
-                    ]
+                    "$ref": "#/MEPElementCreationData"
                 }
             }
         },
@@ -2968,99 +2706,7 @@ GS::Optional<GS::UniString> ModifyMEPRoutingElementsCommand::GetInputParametersS
                 "type": "array",
                 "description": "Array of data to modify MEP routing elements. Only provided fields are changed.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "mepSystemId": {
-                            "$ref": "#/AttributeId"
-                        },
-                        "crossSectionWidth": {
-                            "type": "number",
-                            "description": "New cross section width applied to all segments."
-                        },
-                        "crossSectionHeight": {
-                            "type": "number",
-                            "description": "New cross section height applied to all segments."
-                        },
-                        "crossSectionShape": {
-                            "$ref": "#/MEPCrossSectionShape",
-                            "description": "The new shape is applied to all segments."
-                        },
-                        "crossSectionReferenceId": {
-                            "type": "integer",
-                            "description": "New cross section reference id of the segment preference table applied to all segments (used for circular cross sections). Resolved against preferenceTableId if given, otherwise against the table the segments already use."
-                        },
-                        "preferenceTableId": {
-                            "$ref": "#/Guid",
-                            "description": "New segment preference table (guid as returned by GetMEPPreferenceTables) applied to all segments. Not applicable to the CableCarrier domain."
-                        },
-                        "branchPreferenceTableId": {
-                            "$ref": "#/Guid",
-                            "description": "New branch preference table (guid as returned by GetMEPPreferenceTables) of the routing element."
-                        },
-                        "anchor": {
-                            "$ref": "#/MEPRoutingAnchor",
-                            "description": "Applied to all segments of the routing element."
-                        },
-                        "referenceLineOffsetX": {
-                            "type": "number",
-                            "description": "New horizontal offset of the reference line from the anchor point, applied to all segments."
-                        },
-                        "referenceLineOffsetY": {
-                            "type": "number",
-                            "description": "New vertical offset of the reference line from the anchor point, applied to all segments."
-                        },
-                        "wallThickness": {
-                            "type": "number",
-                            "description": "New wall thickness applied to all segments."
-                        },
-                        "flangeSize": {
-                            "type": "number",
-                            "description": "New flange size applied to all segments. Needs the Flanged connection style, which can be set in the same call."
-                        },
-                        "insulationThickness": {
-                            "type": "number",
-                            "minimum": 0,
-                            "description": "New insulation thickness of the route, as Insulation in its settings: applied to the rigid segments of all segments and to the elbows (bends in Archicad 28) and transitions at all nodes. 0 removes the insulation. Not applicable to the CableCarrier domain."
-                        },
-                        "connectionStyle": {
-                            "$ref": "#/MEPConnectionStyle",
-                            "description": "New connection style applied to all segments."
-                        },
-                        "preferredTransitionPlacement": {
-                            "$ref": "#/MEPPreferredTransitionPlacement",
-                            "description": "New preferred transition placement applied to all nodes."
-                        },
-                        "cutPlanePosition": {
-                            "$ref": "#/MEPCutPlanePosition",
-                            "description": "New cut plane position of the routing element. Available from Archicad 29."
-                        },
-                        "floorPlanDisplayOption": {
-                            "$ref": "#/MEPFloorPlanDisplayOption",
-                            "description": "New floor plan display option of the routing element. Available from Archicad 29."
-                        },
-                        "showProjection": {
-                            "$ref": "#/MEPShowProjection",
-                            "description": "New show projection setting of the routing element. Available from Archicad 29."
-                        },
-                        "onStoryVisibility": {
-                            "$ref": "#/MEPOnStoryVisibility",
-                            "description": "New on-story visibility of the routing element. Available from Archicad 29."
-                        },
-                        "nodePositions": {
-                            "type": "array",
-                            "description": "New positions of the routing nodes. The size must match the number of nodes of the route.",
-                            "items": {
-                                "$ref": "#/Coordinate3D"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId"
-                    ]
+                    "$ref": "#/MEPRoutingElementModificationData"
                 }
             }
         },
@@ -3370,37 +3016,7 @@ GS::Optional<GS::UniString> ModifyMEPPortsCommand::GetInputParametersSchema () c
                 "type": "array",
                 "description": "Array of data to modify MEP ports. Only provided fields are changed.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "portId": {
-                            "$ref": "#/Guid",
-                            "description": "The port to modify, as returned by GetMEPPorts."
-                        },
-                        "shape": {
-                            "$ref": "#/MEPCrossSectionShape",
-                            "description": "New shape of the port."
-                        },
-                        "connectionStyle": {
-                            "$ref": "#/MEPConnectionStyle",
-                            "description": "New connection style of the port. Available from Archicad 30."
-                        },
-                        "flowDirection": {
-                            "$ref": "#/MEPFlowDirection",
-                            "description": "New flow direction of a piping or ventilation port."
-                        },
-                        "outerDiameter": {
-                            "type": "number",
-                            "description": "New outer diameter of a piping port."
-                        },
-                        "nominalSize": {
-                            "type": "string",
-                            "description": "New nominal size of a piping port. Available from Archicad 30."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "portId"
-                    ]
+                    "$ref": "#/MEPPortModificationData"
                 }
             }
         },
@@ -3623,22 +3239,7 @@ GS::Optional<GS::UniString> ConnectMEPElementsCommand::GetInputParametersSchema 
                 "type": "array",
                 "description": "Array of connections to create.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "routingElementId": {
-                            "$ref": "#/ElementId",
-                            "description": "The routing element to connect to. When connecting two routes, the first or last node of the 'connectToId' route must lie exactly on this route (on its centerline, not within a tolerance). For a tee, this is the main route, which is split and gets the branch element."
-                        },
-                        "connectToId": {
-                            "$ref": "#/ElementId",
-                            "description": "The MEP element or routing element connected to 'routingElementId'. For a tee, this is the branch route, whose first or last node lies on the main route. Two routes must have the same domain and MEP system; an MEP element's port must match the route in domain and MEP system, lie on its first or last node and point in the opposite direction."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "routingElementId",
-                        "connectToId"
-                    ]
+                    "$ref": "#/MEPConnectionData"
                 }
             }
         },
@@ -3814,22 +3415,7 @@ GS::Optional<GS::UniString> CheckMEPPortConnectabilityCommand::GetInputParameter
                 "type": "array",
                 "description": "The pairs of ports to check.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "portId": {
-                            "$ref": "#/Guid",
-                            "description": "The port to check, as returned by GetMEPPorts."
-                        },
-                        "otherPortId": {
-                            "$ref": "#/Guid",
-                            "description": "The port to connect it to, as returned by GetMEPPorts."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "portId",
-                        "otherPortId"
-                    ]
+                    "$ref": "#/MEPPortPair"
                 }
             }
         },
@@ -3852,17 +3438,7 @@ GS::Optional<GS::UniString> CheckMEPPortConnectabilityCommand::GetRawResponseSch
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "isConnectable": {
-                                    "type": "boolean",
-                                    "description": "Whether the port can be connected to the other port."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "isConnectable"
-                            ]
+                            "$ref": "#/MEPPortConnectability"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -4439,17 +4015,7 @@ GS::Optional<GS::UniString> ModifyMEPPreferenceTablesCommand::GetInputParameters
                 "type": "array",
                 "description": "New tables to add to the domain, before the other changes.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "type": {
-                            "$ref": "#/MEPPreferenceTableType"
-                        },
-                        "name": {
-                            "type": "string"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["type", "name"]
+                    "$ref": "#/MEPPreferenceTableToAdd"
                 }
             },
             "tables": {
@@ -5650,41 +5216,13 @@ GS::Optional<GS::UniString> GetElectricalProjectSettingsCommand::GetRawResponseS
             "wiringTypes": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string"
-                        },
-                        "crossSectionalArea": {
-                            "type": "number",
-                            "description": "The cross-sectional area of the wire in square millimeters."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "crossSectionalArea"
-                    ]
+                    "$ref": "#/ElectricalWiringType"
                 }
             },
             "loadClassifications": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string"
-                        },
-                        "demandFactor": {
-                            "type": "number",
-                            "description": "The demand factor, between 0 and 1."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "demandFactor"
-                    ]
+                    "$ref": "#/ElectricalLoadClassification"
                 }
             }
         },
@@ -5962,49 +5500,7 @@ GS::Optional<GS::UniString> CreateElectricalPanelsCommand::GetInputParametersSch
                 "type": "array",
                 "description": "Array of data to create electrical panels. The fields that are not given are taken from the default settings of the Electrical Panel tool.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "position": {
-                            "$ref": "#/Coordinate3D",
-                            "description": "The anchor point of the new panel."
-                        },
-                        "orientation": {
-                            "$ref": "#/MEPOrientation",
-                            "description": "Defaults to the direction (1, 0, 0) and the rotation (0, 1, 0)."
-                        },
-                        "rotation": {
-                            "type": "number",
-                            "description": "The base rotation in radians."
-                        },
-                        "isReflected": {
-                            "type": "boolean"
-                        },
-                        "libraryPartId": {
-                            "$ref": "#/LibPartUnId",
-                            "description": "The library part to use, as listed by GetAvailableLibraryParts."
-                        },
-                        "xSize": {
-                            "type": "number",
-                            "description": "The size along the local x axis. Some library parts calculate their own size, then the item fails."
-                        },
-                        "ySize": {
-                            "type": "number",
-                            "description": "The size along the local y axis. Some library parts calculate their own size, then the item fails."
-                        },
-                        "panelName": {
-                            "type": "string"
-                        },
-                        "circuitNamePrefix": {
-                            "type": "string"
-                        },
-                        "circuitIdStyle": {
-                            "type": "integer"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "position"
-                    ]
+                    "$ref": "#/ElectricalPanelCreationData"
                 }
             }
         },
@@ -6133,56 +5629,7 @@ GS::Optional<GS::UniString> CreateElectricalDevicesCommand::GetInputParametersSc
                 "type": "array",
                 "description": "Array of data to create electrical devices. The fields that are not given are taken from the default settings of the Electrical Device tool.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "position": {
-                            "$ref": "#/Coordinate3D",
-                            "description": "The anchor point of the new device."
-                        },
-                        "orientation": {
-                            "$ref": "#/MEPOrientation",
-                            "description": "Defaults to the direction (1, 0, 0) and the rotation (0, 1, 0)."
-                        },
-                        "rotation": {
-                            "type": "number",
-                            "description": "The base rotation in radians."
-                        },
-                        "isReflected": {
-                            "type": "boolean"
-                        },
-                        "libraryPartId": {
-                            "$ref": "#/LibPartUnId",
-                            "description": "The library part to use, as listed by GetAvailableLibraryParts."
-                        },
-                        "xSize": {
-                            "type": "number",
-                            "description": "The size along the local x axis. Some library parts calculate their own size, then the item fails."
-                        },
-                        "ySize": {
-                            "type": "number",
-                            "description": "The size along the local y axis. Some library parts calculate their own size, then the item fails."
-                        },
-                        "apparentPower": {
-                            "type": "integer",
-                            "minimum": 0,
-                            "description": "The apparent power in VA."
-                        },
-                        "isApparentPowerEnabled": {
-                            "type": "boolean"
-                        },
-                        "loadClassificationName": {
-                            "type": "string",
-                            "description": "One of the load classifications of the electrical project settings, or an empty string for none."
-                        },
-                        "circuitId": {
-                            "$ref": "#/ElementId",
-                            "description": "The circuit to connect the new device to."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "position"
-                    ]
+                    "$ref": "#/ElectricalDeviceCreationData"
                 }
             }
         },
@@ -6327,50 +5774,7 @@ GS::Optional<GS::UniString> ModifyElectricalPanelsCommand::GetInputParametersSch
                 "type": "array",
                 "description": "Array of data to modify electrical panels. Only the given fields are changed.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "panelName": {
-                            "type": "string"
-                        },
-                        "circuitNamePrefix": {
-                            "type": "string"
-                        },
-                        "circuitIdStyle": {
-                            "type": "integer"
-                        },
-                        "anchorPoint": {
-                            "$ref": "#/Coordinate3D"
-                        },
-                        "orientation": {
-                            "$ref": "#/MEPOrientation"
-                        },
-                        "rotation": {
-                            "type": "number",
-                            "description": "The base rotation in radians."
-                        },
-                        "isReflected": {
-                            "type": "boolean"
-                        },
-                        "libraryPartId": {
-                            "$ref": "#/LibPartUnId",
-                            "description": "The library part to use, as listed by GetAvailableLibraryParts."
-                        },
-                        "xSize": {
-                            "type": "number",
-                            "description": "The size along the local x axis. Some library parts calculate their own size, then the item fails."
-                        },
-                        "ySize": {
-                            "type": "number",
-                            "description": "The size along the local y axis. Some library parts calculate their own size, then the item fails."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId"
-                    ]
+                    "$ref": "#/ElectricalPanelModificationData"
                 }
             }
         },
@@ -6442,36 +5846,7 @@ GS::Optional<GS::UniString> CreateElectricalCircuitsCommand::GetInputParametersS
                 "type": "array",
                 "description": "Array of data to create electrical circuits. Each item adds one circuit to the given panel.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "electricalPanelId": {
-                            "$ref": "#/ElementId",
-                            "description": "The panel to add the new circuit to."
-                        },
-                        "description": {
-                            "type": "string"
-                        },
-                        "voltage": {
-                            "type": "number"
-                        },
-                        "wiringTypeName": {
-                            "type": "string",
-                            "description": "One of the wiring types of the electrical project settings, or an empty string for none."
-                        },
-                        "isPhaseAUsed": {
-                            "type": "boolean"
-                        },
-                        "isPhaseBUsed": {
-                            "type": "boolean"
-                        },
-                        "isPhaseCUsed": {
-                            "type": "boolean"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "electricalPanelId"
-                    ]
+                    "$ref": "#/ElectricalCircuitCreationData"
                 }
             }
         },
@@ -6711,35 +6086,7 @@ GS::Optional<GS::UniString> ModifyElectricalCircuitsCommand::GetInputParametersS
                 "type": "array",
                 "description": "Array of data to modify electrical circuits. Only the given fields are changed.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "description": {
-                            "type": "string"
-                        },
-                        "voltage": {
-                            "type": "number"
-                        },
-                        "wiringTypeName": {
-                            "type": "string",
-                            "description": "One of the wiring types of the electrical project settings, or an empty string for none."
-                        },
-                        "isPhaseAUsed": {
-                            "type": "boolean"
-                        },
-                        "isPhaseBUsed": {
-                            "type": "boolean"
-                        },
-                        "isPhaseCUsed": {
-                            "type": "boolean"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId"
-                    ]
+                    "$ref": "#/ElectricalCircuitModificationData"
                 }
             }
         },
@@ -6828,53 +6175,7 @@ GS::Optional<GS::UniString> ModifyElectricalDevicesCommand::GetInputParametersSc
                 "type": "array",
                 "description": "Array of data to modify electrical devices. Only the given fields are changed.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "apparentPower": {
-                            "type": "integer",
-                            "minimum": 0,
-                            "description": "The apparent power in VA."
-                        },
-                        "isApparentPowerEnabled": {
-                            "type": "boolean"
-                        },
-                        "loadClassificationName": {
-                            "type": "string",
-                            "description": "One of the load classifications of the electrical project settings, or an empty string for none."
-                        },
-                        "anchorPoint": {
-                            "$ref": "#/Coordinate3D"
-                        },
-                        "orientation": {
-                            "$ref": "#/MEPOrientation"
-                        },
-                        "rotation": {
-                            "type": "number",
-                            "description": "The base rotation in radians."
-                        },
-                        "isReflected": {
-                            "type": "boolean"
-                        },
-                        "libraryPartId": {
-                            "$ref": "#/LibPartUnId",
-                            "description": "The library part to use, as listed by GetAvailableLibraryParts."
-                        },
-                        "xSize": {
-                            "type": "number",
-                            "description": "The size along the local x axis. Some library parts calculate their own size, then the item fails."
-                        },
-                        "ySize": {
-                            "type": "number",
-                            "description": "The size along the local y axis. Some library parts calculate their own size, then the item fails."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId"
-                    ]
+                    "$ref": "#/ElectricalDeviceModificationData"
                 }
             }
         },
@@ -6951,22 +6252,7 @@ GS::Optional<GS::UniString> ConnectToElectricalCircuitsCommand::GetInputParamete
                 "type": "array",
                 "description": "Array of electrical devices or panels and the circuits to connect them to. A panel connected to a circuit becomes a sub-panel of the panel of that circuit.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId",
-                            "description": "An electrical device or an electrical panel."
-                        },
-                        "circuitId": {
-                            "$ref": "#/ElementId",
-                            "description": "The electrical circuit to connect to."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "circuitId"
-                    ]
+                    "$ref": "#/ElectricalCircuitConnectionData"
                 }
             }
         },
@@ -7433,16 +6719,7 @@ GS::Optional<GS::UniString> CreateMEPSystemGroupsCommand::GetInputParametersSche
                 "type": "array",
                 "description": "Array of data to create system groups.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name"
-                    ]
+                    "$ref": "#/MEPSystemGroupCreationData"
                 }
             }
         },
@@ -7533,29 +6810,7 @@ GS::Optional<GS::UniString> CreateMEPPhysicalSystemsCommand::GetInputParametersS
                 "type": "array",
                 "description": "Array of data to create physical systems.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "systemGroupId": {
-                            "$ref": "#/MEPSystemGroupId",
-                            "description": "The system group the new physical system belongs to."
-                        },
-                        "name": {
-                            "type": "string"
-                        },
-                        "rootElementId": {
-                            "$ref": "#/ElementId",
-                            "description": "The MEP element the system starts from. Archicad keeps it only while it is part of an MEP network: the root of a stand-alone element is cleared when the MEP networks are recalculated."
-                        },
-                        "mepSystemId": {
-                            "$ref": "#/AttributeId",
-                            "description": "The MEP system attribute used as the category of the physical system."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "systemGroupId",
-                        "name"
-                    ]
+                    "$ref": "#/MEPPhysicalSystemCreationData"
                 }
             }
         },
@@ -7698,21 +6953,7 @@ GS::Optional<GS::UniString> ModifyMEPSystemGroupsCommand::GetInputParametersSche
                 "type": "array",
                 "description": "Array of data to modify system groups.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "systemGroupId": {
-                            "$ref": "#/MEPSystemGroupId"
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The new name of the system group."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "systemGroupId",
-                        "name"
-                    ]
+                    "$ref": "#/MEPSystemGroupModificationData"
                 }
             }
         },
@@ -7803,28 +7044,7 @@ GS::Optional<GS::UniString> ModifyMEPPhysicalSystemsCommand::GetInputParametersS
                 "type": "array",
                 "description": "Array of data to modify physical systems. Only the given fields are changed.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "physicalSystemId": {
-                            "$ref": "#/MEPPhysicalSystemId"
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The new name of the physical system."
-                        },
-                        "rootElementId": {
-                            "$ref": "#/ElementId",
-                            "description": "The MEP element the system starts from. Archicad keeps it only while it is part of an MEP network: the root of a stand-alone element is cleared when the MEP networks are recalculated."
-                        },
-                        "mepSystemId": {
-                            "$ref": "#/AttributeId",
-                            "description": "The MEP system attribute used as the category of the physical system."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "physicalSystemId"
-                    ]
+                    "$ref": "#/MEPPhysicalSystemModificationData"
                 }
             }
         },
@@ -7940,16 +7160,7 @@ GS::Optional<GS::UniString> DeleteMEPPhysicalSystemsCommand::GetInputParametersS
                 "type": "array",
                 "description": "The physical systems to remove from their system groups. Their member elements are not deleted.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "physicalSystemId": {
-                            "$ref": "#/MEPPhysicalSystemId"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "physicalSystemId"
-                    ]
+                    "$ref": "#/MEPPhysicalSystemIdArrayItem"
                 }
             }
         },
@@ -8327,36 +7538,7 @@ GS::Optional<GS::UniString> GetMEPToolDefaultsCommand::GetRawResponseSchema () c
                 "description": "The default of the Equipment tool, which has no domain. Left out when Archicad gives none."
             },
             "electricalPanel": {
-                "type": "object",
-                "description": "The default of the Electrical Panel tool, which has no domain. Available from Archicad 30.",
-                "properties": {
-                    "libraryPartId": {
-                        "$ref": "#/LibPartUnId",
-                        "description": "The library part the tool places."
-                    },
-                    "panelName": {
-                        "type": "string"
-                    },
-                    "circuitNamePrefix": {
-                        "type": "string"
-                    },
-                    "circuitIdStyle": {
-                        "type": "integer",
-                        "description": "The index of the circuit id style."
-                    },
-                    "circuitDefaultCount": {
-                        "type": "integer",
-                        "description": "The number of circuit defaults of the panel default."
-                    }
-                },
-                "additionalProperties": false,
-                "required": [
-                    "libraryPartId",
-                    "panelName",
-                    "circuitNamePrefix",
-                    "circuitIdStyle",
-                    "circuitDefaultCount"
-                ]
+                "$ref": "#/ElectricalPanelToolDefaults"
             }
         },
         "additionalProperties": false,
@@ -8586,20 +7768,7 @@ GS::Optional<GS::UniString> GetMEPPhysicalSystemsOfElementsCommand::GetRawRespon
                 "type": "array",
                 "description": "The physical systems of each given element, in the order of the elements.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "physicalSystemIds": {
-                            "type": "array",
-                            "description": "The physical systems the element is part of. Empty for an element of no physical system.",
-                            "items": {
-                                "$ref": "#/MEPPhysicalSystemId"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "physicalSystemIds"
-                    ]
+                    "$ref": "#/MEPPhysicalSystemsOfElement"
                 }
             }
         },
@@ -8743,44 +7912,7 @@ GS::Optional<GS::UniString> CreateMEPFlexibleSegmentsCommand::GetInputParameters
                 "type": "array",
                 "description": "Array of data to place MEP flexible segments with the current settings of the Flexible Segment tool of their domain (see GetMEPToolDefaults).",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "domain": {
-                            "$ref": "#/MEPDomain"
-                        },
-                        "controlPoints": {
-                            "type": "array",
-                            "description": "The control points of the flexible segment, from its beginning to its end. Give either 'controlPoints' or 'polyline'.",
-                            "items": {
-                                "$ref": "#/Coordinate3D"
-                            },
-                            "minItems": 2
-                        },
-                        "startOrientation": {
-                            "$ref": "#/MEPOrientation",
-                            "description": "Optional orientation at the beginning, with 'controlPoints'. Defaults to the direction from the first control point to the second one, with a horizontal rotation vector perpendicular to it."
-                        },
-                        "endOrientation": {
-                            "$ref": "#/MEPOrientation",
-                            "description": "Optional orientation at the end, with 'controlPoints'. Defaults to the direction from the last but one control point to the last one, with a horizontal rotation vector perpendicular to it."
-                        },
-                        "polyline": {
-                            "$ref": "#/MEPFlexibleSegmentPolyline",
-                            "description": "The flexible segment as alternating line and spline parts that connect at their ends, instead of 'controlPoints'. Archicad places polyline flexible segments in the Piping domain only."
-                        },
-                        "startDirection": {
-                            "$ref": "#/Coordinate3D",
-                            "description": "Optional direction vector at the beginning, with 'polyline'. Only when the first part is a spline."
-                        },
-                        "endDirection": {
-                            "$ref": "#/Coordinate3D",
-                            "description": "Optional direction vector at the end, with 'polyline'. Only when the last part is a spline."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "domain"
-                    ]
+                    "$ref": "#/MEPFlexibleSegmentCreationData"
                 }
             }
         },
@@ -8888,47 +8020,7 @@ GS::Optional<GS::UniString> CreateMEPTakeOffsCommand::GetInputParametersSchema (
                 "type": "array",
                 "description": "Array of data to create MEP take-offs on routing segments with the current settings of the Take-Off tool of their domain.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "domain": {
-                            "$ref": "#/MEPDomain",
-                            "description": "Optional domain of the Take-Off tool whose settings are used. Defaults to the domain of the segment's routing element. Archicad currently only has Ventilation take-offs."
-                        },
-                        "segmentId": {
-                            "$ref": "#/ElementId",
-                            "description": "The routing segment to place the take-off on (the elementId of an item of 'segments' returned by GetMEPRoutingElements)."
-                        },
-                        "distanceFromBeginning": {
-                            "type": "number",
-                            "description": "The distance of the take-off from the beginning of the segment, in meters. Must not be negative or more than the length of the segment.",
-                            "minimum": 0
-                        },
-                        "rotationAroundMainAxis": {
-                            "type": "number",
-                            "description": "Optional rotation of the take-off around the axis of the segment, in radians. Archicad places take-offs only at quarter turns, so it must be a multiple of pi/2 (negative values and full turns are allowed). Defaults to 0, which places the take-off facing left relative to the segment's direction; pi/2 faces up, pi faces right, 3*pi/2 (or -pi/2) faces down."
-                        },
-                        "length": {
-                            "type": "number",
-                            "description": "Optional length of the take-off in meters, set after placing it; must be positive. The length of the Take-Off tool when not given.",
-                            "exclusiveMinimum": 0
-                        },
-                        "defaults": {
-                            "type": "object",
-                            "description": "Optional changes to the settings of the Take-Off tool before the take-off is placed. Only what is placed changes, not the tool's settings. A value that cannot be set gives an error for the item, and nothing is placed. The insulation thickness of a take-off cannot be set (Archicad stops with a fatal error).",
-                            "properties": {
-                                "removeInsulation": {
-                                    "type": "boolean",
-                                    "description": "If true, the take-off is placed without insulation."
-                                }
-                            },
-                            "additionalProperties": false
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "segmentId",
-                        "distanceFromBeginning"
-                    ]
+                    "$ref": "#/MEPTakeOffCreationData"
                 }
             }
         },
@@ -9335,48 +8427,7 @@ GS::Optional<GS::UniString> ModifyMEPElementsCommand::GetInputParametersSchema (
                 "type": "array",
                 "description": "The MEP elements to modify, each with the fields to change. Only the given fields are changed.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "anchorPoint": {
-                            "$ref": "#/Coordinate3D",
-                            "description": "The new anchor point of a terminal, accessory, equipment, fitting or flexible segment."
-                        },
-                        "orientation": {
-                            "$ref": "#/MEPOrientation",
-                            "description": "The new orientation of a terminal, accessory, equipment, fitting or flexible segment."
-                        },
-                        "libraryPartId": {
-                            "$ref": "#/LibPartUnId",
-                            "description": "The library part a terminal, accessory, equipment or fitting uses, as listed by GetAvailableLibraryParts. If it is not found, the element keeps its library part and the item fails."
-                        },
-                        "controlPoints": {
-                            "type": "array",
-                            "description": "The new control points of a flexible segment, from its beginning to its end. Not together with 'polyline'.",
-                            "items": {
-                                "$ref": "#/Coordinate3D"
-                            },
-                            "minItems": 2
-                        },
-                        "polyline": {
-                            "$ref": "#/MEPFlexibleSegmentPolyline",
-                            "description": "The new geometry of a Piping flexible segment as alternating line and spline parts that connect at their ends. Not together with 'controlPoints'. Available from Archicad 28."
-                        },
-                        "width": {
-                            "type": "number",
-                            "description": "The new width of a flexible segment."
-                        },
-                        "height": {
-                            "type": "number",
-                            "description": "The new height of a flexible segment."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId"
-                    ]
+                    "$ref": "#/MEPElementModificationData"
                 }
             }
         },
