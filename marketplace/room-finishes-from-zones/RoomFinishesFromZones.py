@@ -28,13 +28,18 @@ Adds the finishes of each selected zone:
   and opening behind it: its width and height plus a margin for the frame, from
   the finish's bottom for a door and from the sill for a window. It is a finite
   opening as deep as the finish and cuts the finish only, never the structural
-  wall or a slab.
+  wall or a slab;
+- an optional cove: a Beam or Wall favorite (usually with a complex profile)
+  along every straight edge of the zone, its reference line on the room edge
+  and growing into the room, standing on the room height (the ceiling's
+  bottom). The ceiling is then moved off the room edge by the offset typed in
+  the window, so the cove sits in the gap.
 
 Each kind is made from a favorite of its tool or, without one, from a layer, a
-building material, composite (or, for walls, complex profile) and a thickness.
-Every finish gets the Element ID FIN-<zone number>-floor, -ceiling or
--wall-<n>, so a second run on the same zones replaces them instead of adding
-duplicates.
+building material, composite (or, for walls, complex profile) and a thickness;
+the cove always from a favorite. Every finish gets the Element ID
+FIN-<zone number>-floor, -ceiling, -wall-<n> or -cove-<n>, so a second run on
+the same zones replaces them instead of adding duplicates.
 
 Preview lists the zones with their levels, draws the selected one and sums up
 each story. It also warns when a structural slab overlaps a finish, in plan and
@@ -61,6 +66,9 @@ OPENINGS_MIN_VERSION = 29
 OPENING_KINDS = ("Door", "Window")
 TAG_PREFIX = "FIN"
 WALL_ID_PATTERN = re.compile(r"^FIN-(.+)-wall-\d+$")
+COVE_ID_PATTERN = re.compile(r"^FIN-(.+)-cove-\d+$")
+COVE_TOOLS = ("Beam", "Wall")
+DEFAULT_COVE_OFFSET = "0.10"
 KINDS = [("floor", "Floor finish"), ("ceiling", "Ceiling"), ("wall", "Wall finish")]
 SLAB_KINDS = ("floor", "ceiling")
 TOOLS = {"floor": "Slab", "ceiling": "Slab", "wall": "Wall"}
@@ -548,6 +556,124 @@ def opening_correction(details: dict, wall_guid: str, piece: dict, point: dict, 
     return change, warning
 
 
+def room_on_left_of(contour: dict, is_hole: bool) -> bool:
+    """ True when the room is left of the contour's edges: those of a counter-clockwise outline and
+    of a clockwise hole. """
+    return (signed_area(contour["points"]) > 0) != is_hole
+
+
+def offset_contour(points, distance: float, room_on_left: bool) -> list[tuple[float, float]] | None:
+    """ The contour with every edge moved by distance towards the room (into an outline, out of a
+    hole), the corners where the moved edges meet. None when an edge would vanish or turn round:
+    the distance is too large for the contour. """
+    n = len(points)
+    if n < 3:
+        return None
+    lines = []
+    for _, a, b in edges(points):
+        length = math.hypot(b[0] - a[0], b[1] - a[1])
+        if length < EPSILON:
+            return None
+        ux, uy = (b[0] - a[0]) / length, (b[1] - a[1]) / length
+        nx, ny = (-uy, ux) if room_on_left else (uy, -ux)
+        lines.append(((a[0] + nx * distance, a[1] + ny * distance), (ux, uy)))
+    result = []
+    for i in range(n):
+        (p, u), (q, v) = lines[i - 1], lines[i]
+        cross = u[0] * v[1] - u[1] * v[0]
+        if abs(cross) < EPSILON:
+            # Two edges in one line: the corner just moves with them.
+            result.append(q)
+            continue
+        t = ((q[0] - p[0]) * v[1] - (q[1] - p[1]) * v[0]) / cross
+        result.append((p[0] + u[0] * t, p[1] + u[1] * t))
+    for (_, a, b), (_, c, d) in zip(edges(points), edges(result)):
+        if (d[0] - c[0]) * (b[0] - a[0]) + (d[1] - c[1]) * (b[1] - a[1]) <= LENGTH_TOLERANCE:
+            return None
+    return result
+
+
+def inset_ceiling(outline: dict, holes: list[dict], distance: float) -> dict | None:
+    """ The ceiling's outline and holes moved away from the room edge by distance, so that the
+    cove fits in the gap: {"outline": points, "holes": [points]}. None when the zone has a curved
+    edge or the distance is too large for it. """
+    if outline["curved"] or any(h["curved"] for h in holes):
+        return None
+    inset = offset_contour(outline["points"], distance, room_on_left_of(outline, False))
+    if inset is None:
+        return None
+    grown = []
+    for hole in holes:
+        points = offset_contour(hole["points"], distance, room_on_left_of(hole, True))
+        if points is None or not all(strictly_inside(p, inset, 0.0) for p in points):
+            return None
+        grown.append(points)
+    return {"outline": inset, "holes": grown}
+
+
+def cove_pieces(outline: dict, holes: list[dict]) -> list[dict]:
+    """ The coves of a zone: one along every straight edge of the outline and of its holes, the
+    room on its right (as the wall finishes, see finish_pieces), so they grow into the room. """
+    pieces = []
+    for contour, is_hole in [(outline, False)] + [(h, True) for h in holes]:
+        points = contour["points"]
+        if len(points) < 3:
+            continue
+        room_on_left = room_on_left_of(contour, is_hole)
+        for index, a, b in edges(points):
+            if index in contour["curved"]:
+                continue
+            length = math.hypot(b[0] - a[0], b[1] - a[1])
+            if length < MIN_WALL_PIECE:
+                continue
+            beg, end = (b, a) if room_on_left else (a, b)
+            pieces.append({"edge": index, "hole": is_hole, "beg": beg, "end": end, "length": length})
+    return pieces
+
+
+def cove_id(tag: str, number: int) -> str:
+    return f"{TAG_PREFIX}-{tag}-cove-{number}"
+
+
+def cove_tag(element_id: str) -> str | None:
+    """ The zone tag of a cove's Element ID (FIN-<tag>-cove-<n>), or None. """
+    match = COVE_ID_PATTERN.match(element_id or "")
+    return match.group(1) if match else None
+
+
+def cove_data(zone: dict, piece: dict, number: int, settings: dict) -> tuple[str, dict]:
+    """ The tool ("Beam" or "Wall") and the CreateBeams / CreateWalls item of one cove: from the
+    cove's favorite, its reference line on the room edge and growing into the room (a wall
+    unflipped with the line on its Outside face, a beam anchored at its bottom left), standing on
+    the room height, which is the ceiling's bottom. """
+    cove = settings["cove"]
+    item = {
+        "id": cove_id(zone["tag"], number),
+        "floorIndex": zone["floorIndex"],
+        "begCoordinate": {"x": piece["beg"][0], "y": piece["beg"][1]},
+        "endCoordinate": {"x": piece["end"][0], "y": piece["end"][1]},
+        "offset": 0.0,
+    }
+    if cove["tool"] == "Wall":
+        # With floorIndex, CreateWalls takes zCoordinate relative to the story.
+        item.update({"zCoordinate": zone["bottomOffset"] + zone["roomHeight"], "referenceLineLocation": "Outside",
+                     "flipped": False})
+    else:
+        # CreateBeams takes an absolute zCoordinate.
+        item.update({"zCoordinate": zone["baseZ"] + zone["roomHeight"], "anchorPoint": "BottomLeft"})
+    if cove.get("favorite"):
+        item["favoriteName"] = cove["favorite"]
+    if cove.get("layerIndex") is not None:
+        item["layerIndex"] = cove["layerIndex"]
+    return cove["tool"], item
+
+
+def contour_coordinates(points, closed: bool) -> list[dict]:
+    """ The points as CreateSlabs coordinates, the first one repeated at the end when closed. """
+    result = [{"x": p[0], "y": p[1]} for p in points]
+    return result + result[:1] if closed and result else result
+
+
 def zone_tag(number: str, guid: str) -> str:
     """ The zone's part of the Element ID: its number with spaces made underscores, or the start
     of its guid when it has no number. """
@@ -577,10 +703,25 @@ def slab_data(zone: dict, kind: str, settings: dict) -> dict:
         "referencePlaneLocation": "Top" if kind == "floor" else "Bottom",
         "level": levels[1] if kind == "floor" else levels[0],
     }
-    if zone["polygonArcs"]:
-        item["polygonArcs"] = zone["polygonArcs"]
-    if zone["holeData"]:
-        item["holes"] = zone["holeData"]
+    inset = zone.get("ceilingInset") if kind == "ceiling" else None
+    if inset:
+        # Moved off the room edge for the cove (a zone with a curved edge gets no cove, so there are
+        # no arcs to keep).
+        closed = len(zone["polygonCoordinates"]) > len(inset["outline"])
+        item["polygonCoordinates"] = contour_coordinates(inset["outline"], closed)
+        if inset["holes"]:
+            item["holes"] = [{"polygonOutline": contour_coordinates(points, len(raw["polygonOutline"]) > len(points))}
+                             for points, raw in zip(inset["holes"], zone["holeData"])]
+    else:
+        if zone["polygonArcs"]:
+            item["polygonArcs"] = zone["polygonArcs"]
+        if zone["holeData"]:
+            item["holes"] = zone["holeData"]
+    return _slab_structure(item, kind_settings)
+
+
+def _slab_structure(item: dict, kind_settings: dict) -> dict:
+    """ Adds the layer and the favorite or structure of the finish to its CreateSlabs item. """
     if kind_settings.get("layerIndex") is not None:
         item["layerIndex"] = kind_settings["layerIndex"]
     if kind_settings.get("favorite"):
@@ -607,15 +748,21 @@ def known_thickness(kind_settings: dict) -> float | None:
 def story_summary(zones: list[dict]) -> list[dict]:
     """ Per story, in story order: the zones, the finishes of each kind to create ("planned"; for
     walls the number of pieces), the zones' area, the length of the wall finishes, their area
-    with the openings deducted and the doors, windows and openings kept clear. """
+    with the openings deducted, the doors, windows and openings kept clear and the length of the
+    coves. """
     rows: dict[int, dict] = {}
     for zone in zones:
         row = rows.setdefault(zone["floorIndex"], {"floorIndex": zone["floorIndex"], "story": zone["story"],
                                                   "zones": 0, "floor": 0, "ceiling": 0, "wall": 0, "area": 0.0,
-                                                  "wallLength": 0.0, "wallArea": 0.0, "keptClear": 0, "clashes": 0})
+                                                  "wallLength": 0.0, "wallArea": 0.0, "keptClear": 0, "clashes": 0,
+                                                  "cove": 0, "coveLength": 0.0})
         row["zones"] += 1
         for kind in zone["planned"]:
-            if kind == "wall":
+            if kind == "cove":
+                pieces = zone.get("covePieces", [])
+                row["cove"] += len(pieces)
+                row["coveLength"] += sum(p["length"] for p in pieces)
+            elif kind == "wall":
                 pieces = zone.get("wallPieces", [])
                 cuts = zone.get("cuts", [])
                 row["wall"] += len(pieces)
@@ -638,8 +785,8 @@ class RoomFinishesFromZones:
             "Adds the finishes of each selected zone: a floor finish and a ceiling, as slabs with the zone's polygon "
             "(the floor finish's top at the zone's base, the ceiling's bottom at the room height), and a wall finish "
             "along every edge with a wall behind it, growing into the room, with an opening for each door, window and "
-            "opening behind it. Press Preview to check them, then Create.",
-            min_width=1080, min_height=800)
+            "opening behind it, and optionally a cove at the ceiling. Press Preview to check them, then Create.",
+            min_width=1320, min_height=800)
         self.favorites: dict[str, list[str]] = {}
         self.layers: dict[str, int] = {}
         self.structures: dict[str, dict[str, dict]] = {}
@@ -690,6 +837,7 @@ class RoomFinishesFromZones:
             self.kind_widgets[kind] = widgets
             vars_["favorite"].trace_add("write", lambda *_a, k=kind: self._update_kind_state(k))
             vars_["structure"].trace_add("write", lambda *_a, k=kind: self._update_kind_state(k))
+        self._build_cove(kinds, len(KINDS))
 
         options = ttk.LabelFrame(body, text="Room height and options", padding=(10, 6))
         options.grid(row=1, column=0, sticky="ew", pady=(8, 0))
@@ -721,6 +869,7 @@ class RoomFinishesFromZones:
                                              ("wallLength", "Wall finish length (m)", 140, "e"),
                                              ("wallArea", "Wall finish area, openings deducted (m²)", 230, "e"),
                                              ("keptClear", "Kept clear", 80, "e"),
+                                             ("coveLength", "Cove length (m)", 110, "e"),
                                              ("area", "Area (m²)", 90, "e"), ("clashes", "Clashes", 70, "e")], height=4)
         self.summary_tree.container.grid(row=2, column=0, sticky="ew", pady=(8, 0))
 
@@ -745,6 +894,41 @@ class RoomFinishesFromZones:
         self.canvas.grid(row=1, column=1, sticky="nsew", padx=(8, 0))
         self.canvas.bind("<Configure>", lambda _e: self._draw())
 
+    def _build_cove(self, parent: ttk.Frame, column: int) -> None:
+        parent.columnconfigure(column, weight=1)
+        frame = ttk.LabelFrame(parent, text="Cove", padding=(10, 6))
+        frame.grid(row=0, column=column, sticky="nsew", padx=(8, 0))
+        frame.columnconfigure(1, weight=1)
+        self.cove_vars = {
+            "enabled": tk.BooleanVar(value=False),
+            "tool": tk.StringVar(value=COVE_TOOLS[0]),
+            "favorite": tk.StringVar(value=NO_FAVORITE),
+            "layer": tk.StringVar(value=NO_LAYER),
+            "offset": tk.StringVar(value=DEFAULT_COVE_OFFSET),
+        }
+        ttk.Checkbutton(frame, text="Create a cove at the ceiling", variable=self.cove_vars["enabled"]).grid(
+            row=0, column=0, columnspan=2, sticky="w")
+        self.cove_widgets = {}
+        for row, (key, text, values) in enumerate([("tool", "Tool:", list(COVE_TOOLS)), ("favorite", "Favorite:", []),
+                                                   ("layer", "Layer:", [])], start=1):
+            ttk.Label(frame, text=text).grid(row=row, column=0, sticky="w", pady=(4, 0))
+            box = ttk.Combobox(frame, textvariable=self.cove_vars[key], state="readonly", width=26, values=values)
+            box.grid(row=row, column=1, sticky="ew", padx=(6, 0), pady=(4, 0))
+            self.cove_widgets[key] = box
+        ttk.Label(frame, text="Ceiling offset (m):").grid(row=4, column=0, sticky="w", pady=(4, 0))
+        ttk.Entry(frame, textvariable=self.cove_vars["offset"], width=8).grid(row=4, column=1, sticky="w",
+                                                                             padx=(6, 0), pady=(4, 0))
+        ttk.Label(frame, text="A Beam or Wall favorite (usually with a\ncomplex profile) along the room edge, on "
+                              "the\nceiling's bottom; the ceiling stays this far\nfrom the room edge.",
+                  style="Muted.TLabel").grid(row=5, column=0, columnspan=2, sticky="w", pady=(4, 0))
+        self.cove_vars["tool"].trace_add("write", lambda *_a: self._update_cove_favorites())
+
+    def _update_cove_favorites(self) -> None:
+        favorites = self.favorites.get(self.cove_vars["tool"].get(), [])
+        self.cove_widgets["favorite"].configure(values=favorites)
+        if self.cove_vars["favorite"].get() not in favorites:
+            self.cove_vars["favorite"].set(favorites[0] if favorites else NO_FAVORITE)
+
     def _update_kind_state(self, kind: str) -> None:
         vars_, widgets = self.kind_vars[kind], self.kind_widgets[kind]
         has_favorite = vars_["favorite"].get() != NO_FAVORITE
@@ -755,9 +939,9 @@ class RoomFinishesFromZones:
     # ---- start ----
 
     def load(self) -> None:
-        with self.window.busy("Reading the Slab and Wall favorites, layers, building materials, composites and "
-                              "profiles..."):
-            for tool in sorted(set(TOOLS.values())):
+        with self.window.busy("Reading the Slab, Wall and Beam favorites, layers, building materials, composites "
+                              "and profiles..."):
+            for tool in sorted(set(TOOLS.values()) | set(COVE_TOOLS)):
                 try:
                     self.favorites[tool] = sorted(
                         run_tapir("GetFavoritesByType", {"elementType": tool}).get("favorites", []), key=str.lower)
@@ -784,8 +968,11 @@ class RoomFinishesFromZones:
             widgets["layer"].configure(values=[NO_LAYER] + list(self.layers))
             widgets["structure"].configure(values=list(self.structures[tool]))
             self._update_kind_state(kind)
-        self.window.set_status(f"{len(self.favorites['Slab'])} Slab and {len(self.favorites['Wall'])} Wall "
-                               "favorite(s). Select the zones in Archicad and press Preview.")
+        self.cove_widgets["layer"].configure(values=[NO_LAYER] + list(self.layers))
+        self._update_cove_favorites()
+        self.window.set_status(f"{len(self.favorites['Slab'])} Slab, {len(self.favorites['Wall'])} Wall and "
+                               f"{len(self.favorites['Beam'])} Beam favorite(s). Select the zones in Archicad and "
+                               "press Preview.")
 
     def _attributes(self, attribute_type: str) -> list[tuple[str, dict]]:
         """ (label, attributeId) by name; a name used twice gets its index added. """
@@ -843,7 +1030,23 @@ class RoomFinishesFromZones:
                     return None
                 kind_settings["thickness"] = thickness
             settings[kind] = kind_settings
-        if not any(settings[kind]["enabled"] for kind, _ in KINDS):
+        cove = {"enabled": bool(self.cove_vars["enabled"].get()), "tool": self.cove_vars["tool"].get(),
+                "favorite": None, "layerIndex": self.layers.get(self.cove_vars["layer"].get()), "offset": 0.0}
+        if cove["enabled"]:
+            favorite = self.cove_vars["favorite"].get()
+            if favorite in ("", NO_FAVORITE):
+                self.window.set_status(f"Choose a {cove['tool']} favorite for the cove (save one with the cove's "
+                                       "profile in Archicad first).", "warning")
+                return None
+            cove["favorite"] = favorite
+            offset = parse_length(self.cove_vars["offset"].get())
+            if offset is None or offset < 0:
+                self.window.set_status("The ceiling offset for the cove must be 0 or a positive number of metres.",
+                                       "warning")
+                return None
+            cove["offset"] = offset
+        settings["cove"] = cove
+        if not any(settings[kind]["enabled"] for kind in [k for k, _ in KINDS] + ["cove"]):
             self.window.set_status("Tick at least one kind of finish to create.", "warning")
             return None
         return settings
@@ -915,6 +1118,8 @@ class RoomFinishesFromZones:
                 "wallPieces": [],
                 "cuts": [],
                 "covered": [],
+                "covePieces": [],
+                "ceilingInset": None,
             })
         # Two selected zones with the same number on one story would get the same Element ID.
         seen: dict[tuple, int] = {}
@@ -965,7 +1170,58 @@ class RoomFinishesFromZones:
             if "begCoordinate" in d and "endCoordinate" in d:
                 item["beg"], item["end"] = _xy(d["begCoordinate"]), _xy(d["endCoordinate"])
             finishes.setdefault(key, []).append(item)
-        return {w["elementId"]["guid"] for w in wall_ids}, finishes
+        # A cove made as a wall stands on the ceiling's bottom; it is no wall behind a room edge.
+        return {w["elementId"]["guid"] for w, d in zip(wall_ids, details)
+                if not cove_tag(str(d.get("id", "") or ""))}, finishes
+
+    @staticmethod
+    def _read_coves() -> dict[tuple, list[dict]]:
+        """ The coves of earlier runs (beams and walls) by (floor index, zone tag). """
+        coves: dict[tuple, list[dict]] = {}
+        for tool in COVE_TOOLS:
+            try:
+                ids = run_tapir("GetElementsByType", {"elementType": tool}).get("elements", [])
+            except ArchicadError as e:
+                print(f"The {tool.lower()}s cannot be read: {e}")
+                continue
+            details = get_details_of_elements(ids, ["id", "floorIndex"]) if ids else []
+            for element_id, detail in zip(ids, details):
+                tag = cove_tag(str(detail.get("id", "") or ""))
+                if tag:
+                    coves.setdefault((int(detail.get("floorIndex", 0)), tag), []).append(
+                        {"elementId": element_id["elementId"]})
+        return coves
+
+    def _plan_coves(self, zones: list[dict], settings: dict, replaced: list[dict]) -> None:
+        """ Fills each zone's covePieces and ceilingInset (the ceiling moved off the room edge by the
+        offset, also when the cove of an earlier run is kept) and adds the coves of earlier runs to
+        replace to replaced. """
+        self.window.set_status("Reading the coves of earlier runs...")
+        earlier = self._read_coves()
+        offset = settings["cove"]["offset"]
+        for zone in zones:
+            old = earlier.get((zone["floorIndex"], zone["tag"]), [])
+            # With Replace on, the coves of an earlier run go also when the zone gets none now:
+            # the ceiling is recreated and would run into them.
+            if settings["replace"]:
+                replaced += old
+            if zone["roomHeight"] <= EPSILON:
+                zone["notes"].append("no cove: the zone has no height")
+                continue
+            inset = inset_ceiling(zone["outline"], zone["holes"], offset)
+            if inset is None:
+                curved = zone["outline"]["curved"] or any(h["curved"] for h in zone["holes"])
+                zone["notes"].append("no cove: curved edges" if curved
+                                     else f"no cove: the ceiling offset of {offset:.3f} m is too large for the zone")
+                continue
+            zone["ceilingInset"] = inset
+            if old and not settings["replace"]:
+                zone["existing"].add("cove")
+                zone["notes"].append("already has a cove: kept")
+                continue
+            zone["covePieces"] = cove_pieces(zone["outline"], zone["holes"])
+            if zone["covePieces"]:
+                zone["planned"].append("cove")
 
     @staticmethod
     def _read_boundaries(zones: list[dict]) -> dict[str, list[dict] | None]:
@@ -1164,6 +1420,8 @@ class RoomFinishesFromZones:
             self.window.set_status("Reading the slabs...")
             structural, finishes = self._read_slabs()
             replaced = []
+            if settings["cove"]["enabled"]:
+                self._plan_coves(zones, settings, replaced)
             for zone in zones:
                 for kind, label in KINDS:
                     if kind not in SLAB_KINDS:
@@ -1179,7 +1437,10 @@ class RoomFinishesFromZones:
                         continue
                     zone["planned"].append(kind)
                     if settings["checkClashes"]:
-                        for slab in clashing_slabs(zone["outline"]["points"], zone["levels"][kind], structural):
+                        polygon = zone["outline"]["points"]
+                        if kind == "ceiling" and zone["ceilingInset"]:
+                            polygon = zone["ceilingInset"]["outline"]
+                        for slab in clashing_slabs(polygon, zone["levels"][kind], structural):
                             zone["clashes"].append({"kind": kind, "slab": slab})
                 if zone["clashes"]:
                     zone["notes"].append(f"{len(zone['clashes'])} clash(es) with structural slabs")
@@ -1198,9 +1459,12 @@ class RoomFinishesFromZones:
         walls = sum(len(z["wallPieces"]) for z in zones if "wall" in z["planned"])
         clashes = sum(len(z["clashes"]) for z in zones)
         cuts = sum(len(z["cuts"]) for z in zones if "wall" in z["planned"])
+        coves = sum(len(z["covePieces"]) for z in zones if "cove" in z["planned"])
         message = f"Preview: {slabs} finish slab(s) and {walls} wall finish(es) for {len(zones)} zone(s)"
         if cuts:
             message += f", with {cuts} opening(s) for the doors, windows and openings behind them"
+        if coves:
+            message += f", and {coves} cove piece(s) ({settings['cove']['tool'].lower()}s)"
         if replaced:
             message += f", replacing {len(replaced)} element(s) of an earlier run"
         message += "."
@@ -1226,7 +1490,8 @@ class RoomFinishesFromZones:
         for index, row in enumerate(story_summary(self.preview["zones"])):
             self.summary_tree.insert("", "end", iid=str(index), values=(
                 row["story"], row["zones"], row["floor"], row["ceiling"], row["wall"], f"{row['wallLength']:.2f}",
-                f"{row['wallArea']:.2f}", row["keptClear"], f"{row['area']:.2f}", row["clashes"]))
+                f"{row['wallArea']:.2f}", row["keptClear"], f"{row['coveLength']:.2f}", f"{row['area']:.2f}",
+                row["clashes"]))
         self.zone_tree.delete(*self.zone_tree.get_children())
         for index, zone in enumerate(self.preview["zones"]):
             floor = f"{zone['levels']['floor'][1]:.3f}" if "floor" in zone["planned"] else "-"
@@ -1250,7 +1515,7 @@ class RoomFinishesFromZones:
         x0, y0, x1, y1 = bounding_box(points)
         width, height = max(10, self.canvas.winfo_width()), max(10, self.canvas.winfo_height())
         pad = 18
-        section = 70  # the strip at the bottom with the levels
+        section = 90  # the strip at the bottom with the levels
         plan_height = max(10, height - section)
         scale = min((width - 2 * pad) / max(EPSILON, x1 - x0), (plan_height - 2 * pad) / max(EPSILON, y1 - y0))
         ox = pad + ((width - 2 * pad) - (x1 - x0) * scale) / 2
@@ -1286,6 +1551,14 @@ class RoomFinishesFromZones:
                     self.canvas.create_line(bx + (ex - bx) * f0 + nx, by + (ey - by) * f0 + ny,
                                             bx + (ex - bx) * f1 + nx, by + (ey - by) * f1 + ny,
                                             fill="#e68c00", width=6)
+        if "cove" in zone["planned"]:
+            # The coves in violet on the room edge, the ceiling's edge moved off it dashed.
+            for piece in zone["covePieces"]:
+                self.canvas.create_line(*to_canvas(piece["beg"]), *to_canvas(piece["end"]), fill="#7a3fb0", width=2)
+        if zone["ceilingInset"] and "ceiling" in zone["planned"]:
+            for contour in [zone["ceilingInset"]["outline"]] + zone["ceilingInset"]["holes"]:
+                self.canvas.create_polygon(*[c for p in contour for c in to_canvas(p)], outline="#7a3fb0", fill="",
+                                           dash=(3, 3))
         lines = [f"Zone base {zone['baseZ']:.3f} m, room height {zone['roomHeight']:.3f} m"]
         if "floor" in zone["planned"]:
             bottom, top = zone["levels"]["floor"]
@@ -1302,6 +1575,11 @@ class RoomFinishesFromZones:
             if zone["cuts"]:
                 area = wall_finish_area(zone["wallPieces"], zone["cuts"], zone["roomHeight"])
                 lines.append(f"Openings (orange): {len(zone['cuts'])}; finish area {area:.2f} m² with them deducted")
+        if "cove" in zone["planned"]:
+            length = sum(p["length"] for p in zone["covePieces"])
+            lines.append(f"Cove (violet): {len(zone['covePieces'])} piece(s), {length:.2f} m, on "
+                         f"{zone['baseZ'] + zone['roomHeight']:.3f}; ceiling (dashed) "
+                         f"{self.preview['settings']['cove']['offset']:.3f} m off the room edge")
         self.canvas.create_text(8, plan_height + 4, anchor="nw", text="\n".join(lines), fill="#333333")
 
     def _highlight(self, zones: list[dict]) -> None:
@@ -1338,7 +1616,9 @@ class RoomFinishesFromZones:
                        for index in range(len(zone["wallPieces"]))]
         wall_items = [wall_data(zone, zone["wallPieces"][index], index + 1, settings) for zone, index in wall_pieces]
         cut_count = sum(1 for zone, index in wall_pieces for c in zone["cuts"] if c["piece"] == index)
-        total = len(slab_items) + len(wall_items)
+        cove_items = [cove_data(zone, piece, number, settings) for zone, kind in self._planned() if kind == "cove"
+                      for number, piece in enumerate(zone["covePieces"], start=1)]
+        total = len(slab_items) + len(wall_items) + len(cove_items)
         if not total:
             self.window.set_status("There is nothing to create.", "warning")
             return
@@ -1353,6 +1633,10 @@ class RoomFinishesFromZones:
             if kind_settings["enabled"]:
                 source = kind_settings["favorite"] or self.kind_vars[kind]["structure"].get()
                 lines.append(f"{label}: {source}")
+        if cove_items:
+            cove = settings["cove"]
+            lines.append(f"Cove: {len(cove_items)} {cove['tool'].lower()}(s) from {cove['favorite']}, the ceiling "
+                         f"{cove['offset']:.3f} m off the room edge")
         if replaced:
             lines.append(f"\n{len(replaced)} finish(es) and their openings of an earlier run are deleted first (a "
                          "separate Undo step).")
@@ -1392,9 +1676,19 @@ class RoomFinishesFromZones:
             if walls_with_cuts:
                 self.window.set_status(f"Cutting {cut_count} opening(s) into the wall finishes...")
                 created_openings, kept_clear, opening_warnings = self._cut_openings(walls_with_cuts, errors)
+            created_coves = []
+            for tool, command, key in (("Beam", "CreateBeams", "beamsData"), ("Wall", "CreateWalls", "wallsData")):
+                items = [item for item_tool, item in cove_items if item_tool == tool]
+                if items:
+                    self.window.set_status(f"Creating {len(items)} cove {tool.lower()}(s)...")
+                for chunk in batched(items, 500):
+                    result = run_tapir(command, {key: chunk}).get("elements", [])
+                    created_coves += [{"elementId": e["elementId"]} for e in result
+                                      if isinstance(e, dict) and "elementId" in e]
+                    errors += item_errors(result)
             clashes = self._check_created(created_slabs) if created_slabs and settings["checkClashes"] else []
 
-        created = created_slabs + created_walls
+        created = created_slabs + created_walls + created_coves
         self.created = created
         if created:
             run_tapir("HighlightElements", {
@@ -1415,6 +1709,8 @@ class RoomFinishesFromZones:
         if cut_count:
             message += (f" Cut {len(created_openings)} of {cut_count} opening(s) for the doors, windows and "
                         "openings, listed per zone in the palette's output.")
+        if cove_items:
+            message += f" Created {len(created_coves)} of {len(cove_items)} cove piece(s)."
         kind = "ok"
         if opening_warnings:
             message += f" Check {len(opening_warnings)} opening(s) in 3D, listed in the palette's output."
