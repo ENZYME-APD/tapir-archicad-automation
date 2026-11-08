@@ -54,6 +54,13 @@ coloured in Archicad by their average DF.
   or weather file is needed.
 - The grid is laid along each zone's longest edge, so the same room moved or rotated gets the
   same cells. A zone smaller than the wall band counts all its cells.
+- `archicad-addon/Test/test_daylight_factor_radiance.py` checks the scene, sky and Radiance runs
+  on a side-lit shoebox room, without Archicad: an unobstructed point gets 100 %, a black room
+  with an open window gets the window's sky component (integrated from the CIE overcast sky),
+  the glazed room's average is near the BRE average daylight factor formula, the DF falls away
+  from the window, a room without a window gets 0, half the glass transmittance gives about half
+  the DF, and the room moved and rotated gets the same result. Run it with
+  `uv run --with pyradiance python archicad-addon/Test/test_daylight_factor_radiance.py`.
 - The Radiance files of each run (scene, sky, materials, grid points, results and the settings)
   are kept in `Documents/Tapir/Daylight Factor/<date and time>/`, and the settings are in the
   export, so a result can be reproduced with Radiance.

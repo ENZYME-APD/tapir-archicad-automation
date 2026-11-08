@@ -577,6 +577,37 @@ def runs_folder() -> Path:
     return (documents if documents.is_dir() else Path.home()) / "Tapir" / "Daylight Factor"
 
 
+def write_scene_files(folder: Path, scene: str, panes, settings: dict) -> None:
+    """ Writes the sky, the materials and the scene into folder; build_octree makes scene.oct of them. """
+    folder.mkdir(parents=True, exist_ok=True)
+    (folder / "df_sky.cal").write_text(SKY_CAL, encoding="utf-8")
+    (folder / "sky.rad").write_text(sky_text(settings["outsideReflectance"]), encoding="utf-8")
+    (folder / "materials.rad").write_text(materials_text(settings, panes or {1}), encoding="utf-8")
+    (folder / "scene.rad").write_text(scene, encoding="utf-8")
+
+
+def build_octree(folder: Path, radiance: dict, wait) -> None:
+    run_program([radiance["oconv"], "materials.rad", "sky.rad", "scene.rad"], None, str(folder / "scene.oct"),
+                str(folder), radiance["raypath"], wait)
+
+
+def compute_df(folder: Path, name: str, cells: list[dict], z: float, options: list[str], radiance: dict,
+               wait) -> list[float]:
+    """ The DF (%) at the cells, at height z, facing up, with rtrace on scene.oct of folder; the
+    points and the results are kept as <name>.pts and <name>.dat. """
+    if not cells:
+        return []
+    points = folder / f"{name}.pts"
+    points.write_text(sensor_text(cells, z), encoding="ascii")
+    output = folder / f"{name}.dat"
+    run_program([radiance["rtrace"], *options, "-I+", "-h-", "-w-", "scene.oct"], str(points), str(output),
+                str(folder), radiance["raypath"], wait)
+    values = parse_rtrace_output(output.read_text(encoding="ascii", errors="replace"))
+    if len(values) != len(cells):
+        raise RuntimeError(f"rtrace returned {len(values)} values for {len(cells)} points.")
+    return values
+
+
 def parse_number(text: str) -> float | None:
     try:
         return float(str(text).strip().replace(",", "."))
@@ -863,17 +894,12 @@ def main() -> None:
             self.pump()
             scene, report = build_scene(elements, zones, surfaces, settings["glassNames"])
             folder = runs_folder() / datetime.datetime.now().strftime("%Y-%m-%d %H-%M-%S")
-            folder.mkdir(parents=True, exist_ok=True)
             settings["runFolder"] = str(folder)
-            (folder / "df_sky.cal").write_text(SKY_CAL, encoding="utf-8")
-            (folder / "sky.rad").write_text(sky_text(settings["outsideReflectance"]), encoding="utf-8")
-            (folder / "materials.rad").write_text(materials_text(settings, report["panes"] or {1}), encoding="utf-8")
-            (folder / "scene.rad").write_text(scene, encoding="utf-8")
+            write_scene_files(folder, scene, report["panes"], settings)
             (folder / "settings.json").write_text(json.dumps(dict(settings_report(settings, self.unit.get())), indent=2,
                                                              ensure_ascii=False), encoding="utf-8")
             self.window.set_status(f"Radiance: building the octree of {report['faces']} faces...")
-            run_program([radiance["oconv"], "materials.rad", "sky.rad", "scene.rad"], None, str(folder / "scene.oct"),
-                        str(folder), radiance["raypath"], self.pump)
+            build_octree(folder, radiance, self.pump)
 
             self.results = []
             self.settings = settings
@@ -886,14 +912,7 @@ def main() -> None:
                 if cells:
                     self.window.set_status(f"Radiance: zone {index + 1} of {len(zones)} ({zone_label(zone)}), "
                                            f"{len(cells)} points...")
-                    points = folder / f"zone{index + 1}.pts"
-                    points.write_text(sensor_text(cells, z), encoding="ascii")
-                    output = folder / f"zone{index + 1}.dat"
-                    run_program([radiance["rtrace"], *options, "-I+", "-h-", "-w-", "scene.oct"], str(points), str(output),
-                                str(folder), radiance["raypath"], self.pump)
-                    values = parse_rtrace_output(output.read_text(encoding="ascii", errors="replace"))
-                    if len(values) != len(cells):
-                        raise RuntimeError(f"rtrace returned {len(values)} values for {len(cells)} points.")
+                    values = compute_df(folder, f"zone{index + 1}", cells, z, options, radiance, self.pump)
                 stats = zone_statistics(values, [c["inBand"] for c in cells], settings["targetDf"], settings["useBand"])
                 result = {"zone": zone, "cells": cells, "values": values, "stats": stats, "z": z}
                 self.results.append(result)
