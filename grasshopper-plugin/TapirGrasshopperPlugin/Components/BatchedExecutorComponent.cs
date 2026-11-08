@@ -2,6 +2,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using TapirGrasshopperPlugin.Helps;
 using TapirGrasshopperPlugin.Types.Generic;
 
@@ -18,8 +19,14 @@ namespace TapirGrasshopperPlugin.Components
     // output path it would have written to. AfterSolveInstance sends one
     // request with the items of every iteration, splits the per-item results
     // of the response in the same order and writes each slice to the path of
-    // the iteration it belongs to, so the ErrorMessages tree has the same
-    // shape as with one request per branch.
+    // the iteration it belongs to, so the outputs have the same shape as with
+    // one request per branch.
+    //
+    // A component with a DryRun input (DryRunInputIndex) sends the iterations
+    // with DryRun on in a second request with dryRun set, which changes
+    // nothing; its refusals are warnings, and the OldValues and NewValues
+    // outputs (OldValuesOutputIndex, NewValuesOutputIndex) get the wouldChange
+    // values of each item.
     //
     // An iteration whose inputs are invalid reports its error and adds no
     // items, like before; the other iterations are still sent.
@@ -30,6 +37,7 @@ namespace TapirGrasshopperPlugin.Components
         {
             public GH_Path Path;
             public List<T> Items;
+            public bool DryRun;
         }
 
         private readonly List<Iteration> _iterations = new List<Iteration>();
@@ -37,6 +45,15 @@ namespace TapirGrasshopperPlugin.Components
         // The output the per-item error messages are written to (added with
         // OutErrorMessages).
         protected virtual int ErrorMessagesOutputIndex => 0;
+
+        // The optional DryRun boolean input, or -1 when there is none.
+        protected virtual int DryRunInputIndex => -1;
+
+        // The outputs of the oldValue and newValue of each item's wouldChange
+        // (null without DryRun), or -1 when there are none.
+        protected virtual int OldValuesOutputIndex => -1;
+
+        protected virtual int NewValuesOutputIndex => -1;
 
         public BatchedExecutorComponent(
             string name,
@@ -70,9 +87,11 @@ namespace TapirGrasshopperPlugin.Components
             return null;
         }
 
-        // The per-item error messages of the response, one per item sent.
+        // The per-item messages of the response written to the error messages
+        // output, one per item sent.
         protected virtual List<string> GetBatchErrorMessages(
-            JObject response)
+            JObject response,
+            bool dryRun)
         {
             return ExecutionResultsResponse.ErrorMessages(response);
         }
@@ -97,7 +116,11 @@ namespace TapirGrasshopperPlugin.Components
                 new Iteration
                 {
                     Path = da.ParameterTargetPath(ErrorMessagesOutputIndex),
-                    Items = items ?? new List<T>()
+                    Items = items ?? new List<T>(),
+                    DryRun = DryRunInputIndex >= 0 &&
+                             da.GetOptional(
+                                 DryRunInputIndex,
+                                 false)
                 });
         }
 
@@ -105,7 +128,14 @@ namespace TapirGrasshopperPlugin.Components
         {
             try
             {
-                SendBatch();
+                // A real run and a dry run cannot share a request, so the
+                // iterations with DryRun on go in a second one.
+                SendBatch(
+                    _iterations.Where(x => !x.DryRun).ToList(),
+                    false);
+                SendBatch(
+                    _iterations.Where(x => x.DryRun).ToList(),
+                    true);
             }
             finally
             {
@@ -114,9 +144,11 @@ namespace TapirGrasshopperPlugin.Components
             }
         }
 
-        private void SendBatch()
+        private void SendBatch(
+            List<Iteration> iterations,
+            bool dryRun)
         {
-            if (_iterations.Count == 0)
+            if (iterations.Count == 0)
             {
                 return;
             }
@@ -128,7 +160,7 @@ namespace TapirGrasshopperPlugin.Components
             var sentItems = new List<T>();
             var resultIndexOfItem = new List<int>();
             var sentIndexOfKey = new Dictionary<string, int>();
-            foreach (var iteration in _iterations)
+            foreach (var iteration in iterations)
             {
                 foreach (var item in iteration.Items)
                 {
@@ -158,19 +190,29 @@ namespace TapirGrasshopperPlugin.Components
                 return;
             }
 
-            var parameters = CreateBatchParameters(sentItems);
+            var batchParameters = CreateBatchParameters(sentItems);
+            var parameters = batchParameters == null
+                ? new JObject()
+                : JObject.FromObject(batchParameters);
+
+            // Only sent when it differs from the command's default.
+            if (dryRun)
+            {
+                parameters["dryRun"] = true;
+            }
+
             if (!TryGetCadResponse(
                     CommandName,
-                    parameters == null
-                        ? new JObject()
-                        : JObject.FromObject(parameters),
+                    parameters,
                     ToAddOn,
                     out var response))
             {
                 return;
             }
 
-            var messages = GetBatchErrorMessages(response);
+            var messages = GetBatchErrorMessages(
+                response,
+                dryRun);
             if (messages.Count != sentItems.Count)
             {
                 this.AddError(
@@ -179,21 +221,69 @@ namespace TapirGrasshopperPlugin.Components
                 return;
             }
 
-            var output = Params.Output[ErrorMessagesOutputIndex];
-            var itemIndex = 0;
-            foreach (var iteration in _iterations)
+            // A dry run changes nothing, so its refusals are reported, not
+            // failed.
+            if (dryRun)
             {
-                var branchMessages = new List<string>();
+                AddDryRunWarnings(
+                    ExecutionResultsResponse.ErrorMessages(response));
+            }
+
+            WriteSlices(
+                iterations,
+                resultIndexOfItem,
+                ErrorMessagesOutputIndex,
+                messages);
+
+            if (OldValuesOutputIndex >= 0)
+            {
+                WriteSlices(
+                    iterations,
+                    resultIndexOfItem,
+                    OldValuesOutputIndex,
+                    ExecutionResultsResponse.WouldChangeValues(
+                        response,
+                        "oldValue"));
+            }
+
+            if (NewValuesOutputIndex >= 0)
+            {
+                WriteSlices(
+                    iterations,
+                    resultIndexOfItem,
+                    NewValuesOutputIndex,
+                    ExecutionResultsResponse.WouldChangeValues(
+                        response,
+                        "newValue"));
+            }
+        }
+
+        // Writes the results of each iteration's items to the iteration's
+        // path of the output.
+        private void WriteSlices(
+            List<Iteration> iterations,
+            List<int> resultIndexOfItem,
+            int outputIndex,
+            List<string> results)
+        {
+            var output = Params.Output[outputIndex];
+            var itemIndex = 0;
+            foreach (var iteration in iterations)
+            {
+                var branchResults = new List<string>();
                 for (var i = 0; i < iteration.Items.Count; i++)
                 {
-                    branchMessages.Add(
-                        messages[resultIndexOfItem[itemIndex]]);
+                    var resultIndex = resultIndexOfItem[itemIndex];
+                    branchResults.Add(
+                        resultIndex < results.Count
+                            ? results[resultIndex]
+                            : null);
                     itemIndex++;
                 }
 
                 output.AddVolatileDataList(
                     iteration.Path,
-                    branchMessages);
+                    branchResults);
             }
         }
     }
