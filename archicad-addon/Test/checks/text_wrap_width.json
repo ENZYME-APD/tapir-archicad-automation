@@ -96,7 +96,8 @@
         { "path": "detailsOfElements[1].details.runs", "len": 2, "name": "width alone keeps both runs" },
         { "path": "detailsOfElements[1].details.runs[0].bold", "eq": true, "name": "first run still bold" },
         { "path": "detailsOfElements[1].details.runs[1].bold", "eq": false, "name": "second run still not bold" },
-        { "path": "detailsOfElements[2].details.style.nonBreaking", "eq": true, "name": "new text without width: auto-width, as before" }
+        { "path": "detailsOfElements[2].details.style.nonBreaking", "eq": false, "name": "new text without width keeps the wrap" },
+        { "path": "detailsOfElements[2].details.style.boxWidth", "approx": 30.0, "tol": 0.01, "name": "new text without width keeps the wrap width" }
       ]
     },
     {
@@ -125,6 +126,38 @@
         { "path": "detailsOfElements[0].details.style.nonBreaking", "eq": false, "name": "word wrap on after the content rebuild" },
         { "path": "detailsOfElements[0].details.style.boxWidth", "approx": 25.0, "tol": 0.01, "name": "box width applied after the content rebuild" },
         { "path": "detailsOfElements[0].details.text", "eq": "A long line of text that does not fit into a narrow text box", "name": "new content written" }
+      ]
+    },
+    {
+      "id": "a pen change on a wrapped text, and width 0",
+      "command": "ModifyTexts",
+      "params": {
+        "textsWithDetails": [
+          { "elementId": { "guid": "${t2}" }, "style": { "penIndex": 3 } },
+          { "elementId": { "guid": "${t0}" }, "width": 0.0 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "pen change accepted" },
+        { "path": "executionResults[1].success", "eq": true, "name": "width 0 accepted" }
+      ]
+    },
+    {
+      "id": "the pen change keeps the wrap, width 0 turns it off",
+      "command": "GetDetailsOfElements",
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${t2}" } },
+          { "elementId": { "guid": "${t0}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.style.nonBreaking", "eq": false, "name": "word wrap still on after a pen change" },
+        { "path": "detailsOfElements[0].details.style.boxWidth", "approx": 50.0, "tol": 0.01, "name": "wrap width kept through the rebuild" },
+        { "path": "detailsOfElements[0].details.runs", "len": 2, "name": "pen change keeps both runs" },
+        { "path": "detailsOfElements[0].details.runs[0].bold", "eq": true, "name": "first run still bold after the pen change" },
+        { "path": "detailsOfElements[1].details.style.nonBreaking", "eq": true, "name": "width 0 turns word wrap off" },
+        { "path": "detailsOfElements[1].details.text", "eq": "A long line of text that does not fit into a narrow text box", "name": "width 0 keeps the content" }
       ]
     }
   ]

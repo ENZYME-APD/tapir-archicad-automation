@@ -137,10 +137,8 @@ namespace TapirGrasshopperPlugin.Components.PropertiesComponents
             da.SetDataList(1, errors);
         }
 
-        // No icon of its own yet; GetPropertyEditability, which also checks
-        // properties without changing them, is the closest.
         protected override System.Drawing.Bitmap Icon =>
-            Properties.Resources.GetPropertyEditability;
+            Properties.Resources.CheckPropertyValues;
 
         public override Guid ComponentGuid =>
             new Guid("e8ddc60a-079b-4781-9512-f165b0242656");
