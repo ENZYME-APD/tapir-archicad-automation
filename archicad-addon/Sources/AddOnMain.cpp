@@ -717,7 +717,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetElementsByCriteriaCommand> (
             elementCommands, "1.8.1",
-            "Returns the elements, or with countOnly only their number, that match all the given criteria: element types, home stories, layers, Archicad's element filter flags and property criteria (a value compared in internal units, or a value status such as hasValue, isUserUndefined, isNotAvailable, isDefault or hasCustomValue). An unknown type, property or operator is an error, not ignored."
+            "Returns the elements, or with countOnly only their number, that match all the given criteria: element types, home stories, layers, Archicad's element filter flags and property criteria (a value compared in internal units, or a value status such as hasValue, isUserUndefined, isNotAvailable, isDefault or hasCustomValue). An unknown type, property or operator is an error, not ignored. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given."
         );
         err |= RegisterCommand<GetDetailsOfElementsCommand> (
             elementCommands, "1.5.7",

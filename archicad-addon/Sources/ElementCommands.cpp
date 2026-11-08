@@ -13847,7 +13847,7 @@ GS::Optional<GS::UniString> GetElementsByCriteriaCommand::GetInputParametersSche
             },
             "filters": {
                 "type": "array",
-                "description": "Optional Archicad API element filter flags.",
+                "description": "Optional Archicad API element filter flags. Objects that belong to another element (zone stamps, the parts of stairs, railings and curtain walls) are left out unless IncludeSubElemObjects is given, as in GetElementsByType and GetAllElements.",
                 "items": {
                     "$ref": "#/ElementFilter"
                 }
@@ -13967,11 +13967,19 @@ static bool AreCriterionNumbersEqual (double a, double b)
 
 GS::ObjectState GetElementsByCriteriaCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
+    // IncludeSubElemObjects is no API filter flag: as in GetElementsByType and GetAllElements,
+    // objects that belong to another element (zone stamps, parts of stairs, railings and curtain
+    // walls) are left out unless it is given.
+    bool includeSubElemObjects = false;
     API_ElemFilterFlags filterFlags = APIFilt_None;
     GS::Array<GS::UniString> filterStrings;
     if (parameters.Get ("filters", filterStrings)) {
         for (const GS::UniString& fs : filterStrings) {
-            filterFlags = filterFlags | ConvertFilterStringToFlag (fs);
+            if (fs == "IncludeSubElemObjects") {
+                includeSubElemObjects = true;
+            } else {
+                filterFlags = filterFlags | ConvertFilterStringToFlag (fs);
+            }
         }
     }
 
@@ -14131,6 +14139,14 @@ GS::ObjectState GetElementsByCriteriaCommand::Execute (const GS::ObjectState& pa
         ACAPI_Element_GetElemList (API_ZombieElemID, &candidateGuids, filterFlags);
     }
 
+    // Only a listing that can contain Objects can contain sub-element objects.
+    const bool skipSubElemObjects = !includeSubElemObjects &&
+        (elementFilter.types.IsEmpty () || elementFilter.types.Contains (API_ObjectID));
+    SubElemObjectChecker subElemObjectChecker;
+    if (skipSubElemObjects) {
+        subElemObjectChecker.ReadZoneStamps ();
+    }
+
     GS::Array<API_Guid> propGuidsToFetch;
     for (const auto& crit : criteriaList) {
         if (!propGuidsToFetch.Contains (crit.propertyGuid)) {
@@ -14150,6 +14166,10 @@ GS::ObjectState GetElementsByCriteriaCommand::Execute (const GS::ObjectState& pa
         }
 
         if (!elementFilter.Matches (head)) {
+            continue;
+        }
+
+        if (skipSubElemObjects && subElemObjectChecker.IsSubElemObject (elemGuid)) {
             continue;
         }
 
