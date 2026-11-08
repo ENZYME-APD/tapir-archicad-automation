@@ -1,9 +1,9 @@
 {
- "generatedAt": "2026-11-08 17:15 UTC",
+ "generatedAt": "2026-11-08 17:32 UTC",
  "counts": {
   "done": 568,
   "merged": 215,
-  "claimed": 5,
+  "in progress": 5,
   "not applicable": 1
  },
  "parameters": {
@@ -2853,14 +2853,19 @@
    "group": "Element Commands",
    "version": "1.8.1",
    "brief": "Returns the elements, or with countOnly only their number, that match all the given criteria: element types, home stories, layers, Archicad's element filter flags and property criteria (a value compared in internal units, or a value status such as hasValue, isUserUndefined, isNotAvailable, isDefault or hasCustomValue). An unknown type, property or operator is an error, not ignored. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given.",
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 12,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2393,
+     "title": "[2/4] Grasshopper: ElementsByCriteria component"
+    }
+   ],
    "issues": [
     {
      "number": 2391,
@@ -9158,14 +9163,19 @@
    "group": "Favorites Commands",
    "version": "1.8.1",
    "brief": "Searches project favorites by keyword (matching favorite name or folder) and/or element type.",
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2394,
+     "title": "[3/4] Grasshopper: SearchProperties and SearchFavorites components"
+    }
+   ],
    "issues": [
     {
      "number": 2391,
@@ -9214,14 +9224,19 @@
    "group": "Property Commands",
    "version": "1.8.1",
    "brief": "Searches properties by name or group substring with optional filtering by property type, value type, and collection type.",
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 8,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2394,
+     "title": "[3/4] Grasshopper: SearchProperties and SearchFavorites components"
+    }
+   ],
    "issues": [
     {
      "number": 2391,
@@ -16025,14 +16040,19 @@
    "group": "Navigator Commands",
    "version": "1.8.1",
    "brief": "Gets every configurable setting of the given Section and Elevation elements, with their name and reference ID.",
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2392,
+     "title": "[1/4] Grasshopper: GetSectionsAndElevationsDetails and SetSectionsAndElevationsDetails components"
+    }
+   ],
    "issues": [
     {
      "number": 2391,
@@ -16045,14 +16065,19 @@
    "group": "Navigator Commands",
    "version": "1.8.1",
    "brief": "Sets settings of the given Section and Elevation elements: pens, line types, horizontal and vertical range, model effects, story handles and markers. The name and the reference ID are changed with ModifySections.",
-   "status": "claimed",
+   "status": "in progress",
    "reason": "",
    "components": [],
    "parameters": null,
    "parameterCount": 3,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2392,
+     "title": "[1/4] Grasshopper: GetSectionsAndElevationsDetails and SetSectionsAndElevationsDetails components"
+    }
+   ],
    "issues": [
     {
      "number": 2391,
