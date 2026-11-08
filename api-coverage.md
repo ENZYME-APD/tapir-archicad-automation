@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 66 | 57 | 9 |  |  |  | 9 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1441 | 1207 | 234 |  |  |  | 11 | 375 |
 
-Archicad 25–30 DevKits; updated 2026-11-08 19:27 UTC.
+Archicad 25–30 DevKits; updated 2026-11-08 19:38 UTC.
 
 | | Status |
 |---|---|
@@ -173,7 +173,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🔀 `ACAPI_Element_GetExtent3D` – Returns the model extent of the current database. <sub>(was `APIDb_GetExtent3DID`)</sub>
 - ✅ `ACAPI_Element_GetHeader` – Returns general information on the given element. — [#2402](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2402 "GetLCSOfAnalyticalMembers: refuse non-members instead of crashing Archicad 29")
 - 🔀 `ACAPI_Element_GetHotspots` – Retrieves the hotspots of the given element.
-- ✅ `ACAPI_Element_GetMemo` — [#2400](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2400 "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
+- ✅ `ACAPI_Element_GetMemo` — [#2429](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2429 "Read and edit the extrusion of an existing extruded shell"), [#2400](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2400 "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"), [#1914](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1914 "ACAPI_Element_Create silently turns an APIWtyp_Poly wall into a straight wall (or crashes) when the wall tool default is a composite — workaround found")
 - ✅ `ACAPI_Element_GetMemo_ExternalHierarchical` <sub>AC27–30</sub> – @brief Retrieves all additional information of the sub-elements of an external hierarchical element.
 - ✅ `ACAPI_Element_GetMoreQuantities` – Returns information on the quantities parameters of multiple elements of the same type.
 - ✅ `ACAPI_Element_GetOpeningTransformation` – Returns the position and the normal vector of the given opening. <sub>(was `APIAny_GetOpeningTransformationID`)</sub>
@@ -513,7 +513,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_DisposeAttrDefsHdlsExt` – Frees the memory occupied by all of the attribute definition handles.
 - ✅ `ACAPI_DisposeBeamRelationHdls` – Frees the memory occupied by all allocated beam relation handles.
 - ✅ `ACAPI_DisposeBeamSegmentRelationHdls` – Frees the memory occupied by all the allocated beam segment relation handles.
-- ✅ `ACAPI_DisposeElemMemoHdls` – Frees the memory occupied by all of the allocated memo handles. — [#2400](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2400 "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"), [#2313](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2313 "Self-audit of the whole repository: AI slop, performance and safety")
+- ✅ `ACAPI_DisposeElemMemoHdls` – Frees the memory occupied by all of the allocated memo handles. — [#2429](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2429 "Read and edit the extrusion of an existing extruded shell"), [#2400](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2400 "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"), [#2313](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2313 "Self-audit of the whole repository: AI slop, performance and safety")
 - ✅ `ACAPI_DisposeParagraphsHdl` – Frees the memory occupied by a handle to an array of @ref API_ParagraphType.
 - ✅ `ACAPI_DisposeRoomRelationHdls` – Frees the memory occupied by all allocated room relation handles.
 - ✅ `ACAPI_DisposeWallRelationHdls` – Frees the memory occupied by all allocated wall relation handles.
@@ -1392,7 +1392,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::AngleSetBase::GetSize` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::IsAngleDefined` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::IsEditable` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::AngleSetBase::Modifier::Add` <sub>AC29–30</sub>
+- ✅ `ACAPI::MEP::AngleSetBase::Modifier::Add` <sub>AC29–30</sub> — [#2429](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2429 "Read and edit the extrusion of an existing extruded shell"), [#2428](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2428 "ModifyShells: set the thickness and the flip of a Basic shell")
 - ✅ `ACAPI::MEP::AngleSetBase::Modifier::Delete` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::Modifier::SetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::AngleSetBase::Modify` <sub>AC29–30</sub>
@@ -1764,7 +1764,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::RemoveWiringType` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::SetVoltage` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modify` <sub>AC30</sub>
-- ✅ `ACAPI::MEP::Element::Get` <sub>AC27–30</sub> — [#2400](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2400 "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"), [#2397](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2397 "SetGDLParametersOfElements: report a parameter the Parameter Script sets back (#2396)")
+- ✅ `ACAPI::MEP::Element::Get` <sub>AC27–30</sub> — [#2429](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2429 "Read and edit the extrusion of an existing extruded shell"), [#2428](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2428 "ModifyShells: set the thickness and the flip of a Basic shell"), [#2400](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2400 "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"), [#2397](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2397 "SetGDLParametersOfElements: report a parameter the Parameter Script sets back (#2396)")
 - ✅ `ACAPI::MEP::ElementBase::Exists` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetAnchorPoint` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetBaseRotation` <sub>AC30</sub>
@@ -2141,7 +2141,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ReferenceSetBase::GetSize` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::IsEditable` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::IsReferenceIdDefined` <sub>AC28–30</sub>
-- ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Add` <sub>AC28–30</sub>
+- ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Add` <sub>AC28–30</sub> — [#2429](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2429 "Read and edit the extrusion of an existing extruded shell"), [#2428](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2428 "ModifyShells: set the thickness and the flip of a Basic shell")
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::Delete` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modifier::SetName` <sub>AC28–30</sub>
 - ✅ `ACAPI::MEP::ReferenceSetBase::Modify` <sub>AC28–30</sub>
@@ -2310,7 +2310,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::SystemGroup::GetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::GetSystemIDs` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::IsEditable` <sub>AC29–30</sub>
-- ✅ `ACAPI::MEP::SystemGroup::Modifier::Add` <sub>AC29–30</sub>
+- ✅ `ACAPI::MEP::SystemGroup::Modifier::Add` <sub>AC29–30</sub> — [#2429](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2429 "Read and edit the extrusion of an existing extruded shell"), [#2428](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2428 "ModifyShells: set the thickness and the flip of a Basic shell")
 - ✅ `ACAPI::MEP::SystemGroup::Modifier::Remove` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::Modifier::SetName` <sub>AC29–30</sub>
 - ✅ `ACAPI::MEP::SystemGroup::Modify` <sub>AC29–30</sub>
@@ -2446,7 +2446,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::Element::ModifiableOpeningGeometry::SetPolygon` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::ModifiableOpeningGeometry::Transform` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::Opening::Exists` <sub>AC29–30</sub>
-- ✅ `ACAPI::Element::Opening::Get` <sub>AC29–30</sub> — [#2400](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2400 "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof")
+- ✅ `ACAPI::Element::Opening::Get` <sub>AC29–30</sub> — [#2429](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2429 "Read and edit the extrusion of an existing extruded shell"), [#2428](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2428 "ModifyShells: set the thickness and the flip of a Basic shell"), [#2400](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2400 "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof")
 - ✅ `ACAPI::Element::Opening::GetConnectedOpenings` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::Opening::GetCutElements` <sub>AC29–30</sub>
 - ✅ `ACAPI::Element::Opening::GetExtrusionParameters` <sub>AC29–30</sub>

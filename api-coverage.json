@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 19:27 UTC",
+ "generatedAt": "2026-11-08 19:38 UTC",
  "versions": [
   25,
   26,
@@ -5759,6 +5759,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2429,
+     "title": "Read and edit the extrusion of an existing extruded shell"
+    },
+    {
      "number": 2400,
      "title": "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"
     }
@@ -7749,6 +7753,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2429,
+     "title": "Read and edit the extrusion of an existing extruded shell"
+    },
     {
      "number": 2400,
      "title": "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"
@@ -25266,6 +25274,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2429,
+     "title": "Read and edit the extrusion of an existing extruded shell"
+    },
+    {
+     "number": 2428,
+     "title": "ModifyShells: set the thickness and the flip of a Basic shell"
+    },
+    {
      "number": 2400,
      "title": "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"
     }
@@ -30845,7 +30861,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2429,
+     "title": "Read and edit the extrusion of an existing extruded shell"
+    },
+    {
+     "number": 2428,
+     "title": "ModifyShells: set the thickness and the flip of a Basic shell"
+    }
+   ],
    "issues": []
   },
   {
@@ -37308,6 +37333,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2429,
+     "title": "Read and edit the extrusion of an existing extruded shell"
+    },
+    {
+     "number": 2428,
+     "title": "ModifyShells: set the thickness and the flip of a Basic shell"
+    },
     {
      "number": 2400,
      "title": "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"
@@ -44000,7 +44033,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2429,
+     "title": "Read and edit the extrusion of an existing extruded shell"
+    },
+    {
+     "number": 2428,
+     "title": "ModifyShells: set the thickness and the flip of a Basic shell"
+    }
+   ],
    "issues": []
   },
   {
@@ -47086,7 +47128,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2429,
+     "title": "Read and edit the extrusion of an existing extruded shell"
+    },
+    {
+     "number": 2428,
+     "title": "ModifyShells: set the thickness and the flip of a Basic shell"
+    }
+   ],
    "issues": []
   },
   {
