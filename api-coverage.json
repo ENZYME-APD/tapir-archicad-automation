@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 20:00 UTC",
+ "generatedAt": "2026-11-08 20:10 UTC",
  "versions": [
   25,
   26,
@@ -25315,6 +25315,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2452,
+     "title": "[3/3] Shells: read back and write the custom surface of individual edges"
+    },
+    {
+     "number": 2451,
+     "title": "ModifyRailings: write story visibility and floor plan pens"
+    },
+    {
      "number": 2450,
      "title": "Read and set single railing segments and nodes"
     },
@@ -30935,6 +30943,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2452,
+     "title": "[3/3] Shells: read back and write the custom surface of individual edges"
+    },
     {
      "number": 2450,
      "title": "Read and set single railing segments and nodes"
@@ -37418,6 +37430,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2452,
+     "title": "[3/3] Shells: read back and write the custom surface of individual edges"
+    },
+    {
+     "number": 2451,
+     "title": "ModifyRailings: write story visibility and floor plan pens"
+    },
     {
      "number": 2450,
      "title": "Read and set single railing segments and nodes"
@@ -44152,6 +44172,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2452,
+     "title": "[3/3] Shells: read back and write the custom surface of individual edges"
+    },
+    {
      "number": 2450,
      "title": "Read and set single railing segments and nodes"
     },
@@ -47258,6 +47282,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2452,
+     "title": "[3/3] Shells: read back and write the custom surface of individual edges"
+    },
     {
      "number": 2450,
      "title": "Read and set single railing segments and nodes"
