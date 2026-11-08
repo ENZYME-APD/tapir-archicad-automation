@@ -7407,6 +7407,497 @@
             "$ref": "#/ClassificationIdOrError"
         }
     },
+    "ClassificationItemElements": {
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/Elements"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    },
+    "AttributeClassifications": {
+        "type": "object",
+        "properties": {
+            "classificationIds": {
+                "type": "array",
+                "description": "The classification of the attribute in every classification system it is classified in.",
+                "items": {
+                    "$ref": "#/ClassificationId"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [ "classificationIds" ]
+    },
+    "AttributeClassification": {
+        "type": "object",
+        "properties": {
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            },
+            "classificationId": {
+                "$ref": "#/ClassificationId",
+                "description": "The classification to set. The item replaces the attribute's current item in the same classification system. If the classificationItemId field is omitted, the attribute becomes unclassified in the given system."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeId",
+            "classificationId"
+        ]
+    },
+    "ToolDefaultClassifications": {
+        "type": "object",
+        "properties": {
+            "classificationIds": {
+                "type": "array",
+                "description": "One item for each classification system in which the tool default is classified. Systems in which it is unclassified are left out.",
+                "items": {
+                    "$ref": "#/ClassificationId"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationIds"
+        ]
+    },
+    "ClassificationSystemSummary": {
+        "type": "object",
+        "properties": {
+            "classificationSystemId": {
+                "$ref": "#/ClassificationSystemId"
+            },
+            "name": {
+                "type": "string",
+                "description": "The display name of the classification system."
+            },
+            "description": {
+                "type": "string",
+                "description": "The description of the classification system."
+            },
+            "source": {
+                "type": "string",
+                "description": "The source of the classification system (e.g. URL to a classification system standard)."
+            },
+            "version": {
+                "type": "string",
+                "description": "The version of the classification system."
+            },
+            "date": {
+                "$ref": "#/Date",
+                "description": "The release date of the classification system's current version."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationSystemId",
+            "name",
+            "description",
+            "source",
+            "version",
+            "date"
+        ]
+    },
+    "ClassificationItemParent": {
+        "type": "object",
+        "properties": {
+            "classificationSystemId": {
+                "$ref": "#/ClassificationSystemId",
+                "description": "The classification system the item belongs to."
+            },
+            "parentClassificationItemId": {
+                "$ref": "#/ClassificationItemId",
+                "description": "The parent item. Missing for a top level item of its system."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationSystemId"
+        ]
+    },
+    "ClassificationItemVisibilities": {
+        "type": "object",
+        "properties": {
+            "visibilities": {
+                "type": "array",
+                "description": "One entry per classification item, in the order of the input. A non-existing classification item is represented by an error object.",
+                "items": {
+                    "type": "object",
+                    "oneOf": [
+                        {
+                            "$ref": "#/ClassificationItemVisibility"
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "visibilities"
+        ]
+    },
+    "ClassificationItemVisibility": {
+        "type": "object",
+        "properties": {
+            "classificationItemId": {
+                "$ref": "#/ClassificationItemId"
+            },
+            "isVisible": {
+                "type": "boolean",
+                "description": "Whether the classification item is visible (offered) for the target, as Archicad reports it. It can be true even if a parent item is not visible. It does not tell whether the target is classified with the item."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "classificationItemId",
+            "isVisible"
+        ]
+    },
+    "AttributeUserData": {
+        "type": "object",
+        "properties": {
+            "pairs": {
+                "$ref": "#/UserDataPairs"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "pairs"
+        ]
+    },
+    "PropertyDefinitionType": {
+        "type": "string",
+        "enum": [
+            "StaticBuiltIn",
+            "DynamicBuiltIn",
+            "Custom"
+        ]
+    },
+    "AttributePropertyValuesResult": {
+        "type": "object",
+        "properties": {
+            "propertyValues": {
+                "type": "array",
+                "items": {
+                    "oneOf": [
+                        {
+                            "$ref": "#/PropertyValueArrayItem"
+                        },
+                        {
+                            "$ref": "#/AttributePropertyValueStatus"
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyValues"
+        ]
+    },
+    "AttributePropertyValueStatus": {
+        "type": "object",
+        "description": "A property value with its status, returned when includeStatus is true.",
+        "properties": {
+            "propertyValue": {
+                "$ref": "#/PropertyValue",
+                "description": "Missing when the value is not available or not evaluated."
+            },
+            "isAvailable": {
+                "type": "boolean",
+                "description": "Whether the property definition is available for the attribute."
+            },
+            "isEditable": {
+                "type": "boolean",
+                "description": "Whether the value of the property is editable for the attribute."
+            },
+            "isVisible": {
+                "type": "boolean",
+                "description": "Whether the property definition is visible for the attribute."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "isAvailable",
+            "isEditable",
+            "isVisible"
+        ]
+    },
+    "AttributeBuiltInPropertyValues": {
+        "type": "object",
+        "properties": {
+            "attributeId": {
+                "$ref": "#/AttributeId"
+            },
+            "properties": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/BuiltInPropertyValue"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "attributeId",
+            "properties"
+        ]
+    },
+    "BuiltInPropertyValue": {
+        "type": "object",
+        "properties": {
+            "propertyId": {
+                "$ref": "#/PropertyId"
+            },
+            "propertyValue": {
+                "$ref": "#/PropertyValue"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyId",
+            "propertyValue"
+        ]
+    },
+    "ToolDefaultPropertyFilter": {
+        "type": "string",
+        "description": "Which property definitions to return: the user defined (custom) ones, the fundamental built-in ones, the user level built-in ones, or all of them. The default is All. From Archicad 28 the API no longer separates the two kinds of built-in properties, so there FundamentalBuiltIn and UserLevelBuiltIn both return every built-in property.",
+        "enum": [
+            "UserDefined",
+            "FundamentalBuiltIn",
+            "UserLevelBuiltIn",
+            "All"
+        ]
+    },
+    "ToolDefaultProperties": {
+        "type": "object",
+        "properties": {
+            "properties": {
+                "type": "array",
+                "items": {
+                    "$ref": "#/ToolDefaultProperty"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "properties"
+        ]
+    },
+    "ToolDefaultProperty": {
+        "type": "object",
+        "properties": {
+            "propertyId": {
+                "$ref": "#/PropertyId"
+            },
+            "propertyName": {
+                "type": "string"
+            },
+            "propertyGroupId": {
+                "$ref": "#/PropertyGroupId"
+            },
+            "propertyValue": {
+                "$ref": "#/PropertyValue",
+                "description": "The value in the tool default, in the format of GetPropertyValuesOfElements. Only returned when includeValues is true."
+            },
+            "error": {
+                "$ref": "#/Error",
+                "description": "Why the value could not be read. Only returned when includeValues is true."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyId",
+            "propertyName",
+            "propertyGroupId"
+        ]
+    },
+    "DefaultPropertyAvailability": {
+        "type": "object",
+        "properties": {
+            "available": {
+                "type": "boolean",
+                "description": "Whether the property is available for the tool default of the element type."
+            },
+            "visible": {
+                "type": "boolean",
+                "description": "Whether the property is visible for the tool default of the element type."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "available",
+            "visible"
+        ]
+    },
+    "ElementPropertyObjects": {
+        "type": "object",
+        "properties": {
+            "propertyObjects": {
+                "type": "array",
+                "description": "The property objects (library parts of the old listing system) of the element, linked to it by criteria or individually. Empty when the element has none.",
+                "items": {
+                    "$ref": "#/ElementPropertyObject"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "propertyObjects"
+        ]
+    },
+    "ElementPropertyObject": {
+        "type": "object",
+        "properties": {
+            "libraryPartIndex": {
+                "type": "integer",
+                "description": "The index of the property object's library part, the same as the index returned by GetAvailableLibraryParts."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the library part. Absent when the library part cannot be read."
+            },
+            "guid": {
+                "type": "string",
+                "description": "The guid of the library part, the same as the guid returned by GetAvailableLibraryParts. Absent when the library part cannot be read."
+            },
+            "isIndividuallyAssigned": {
+                "type": "boolean",
+                "description": "True when the property object is assigned to the element individually, false when it is linked by criteria."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryPartIndex",
+            "isIndividuallyAssigned"
+        ]
+    },
+    "ElementDescriptors": {
+        "type": "object",
+        "properties": {
+            "descriptors": {
+                "type": "array",
+                "description": "The descriptors in the property objects of the element. Empty when the element has none.",
+                "items": {
+                    "$ref": "#/ElementDescriptor"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "descriptors"
+        ]
+    },
+    "ElementDescriptor": {
+        "type": "object",
+        "properties": {
+            "libraryPartIndex": {
+                "type": "integer",
+                "description": "The index of the library part that declares the descriptor, the same as the index returned by GetAvailableLibraryParts."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the library part. Absent when the library part cannot be read."
+            },
+            "guid": {
+                "type": "string",
+                "description": "The guid of the library part, the same as the guid returned by GetAvailableLibraryParts. Absent when the library part cannot be read."
+            },
+            "setIndex": {
+                "type": "integer",
+                "description": "The index of the listing database set of the descriptor. Meaningful only when status is Normal."
+            },
+            "index": {
+                "type": "integer",
+                "description": "The index of the descriptor in the listing database set when status is Normal, in the library part when status is Local."
+            },
+            "status": {
+                "$ref": "#/ElementDescriptorStatus"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryPartIndex",
+            "setIndex",
+            "index",
+            "status"
+        ]
+    },
+    "ElementDescriptorStatus": {
+        "type": "string",
+        "description": "Normal: the descriptor exists in the listing database. Deleted: it is referenced, but deleted from the database. Local: it is defined in the library part. Unknown for a value this version of Tapir does not name.",
+        "enum": [
+            "Normal",
+            "Deleted",
+            "Local",
+            "Unknown"
+        ]
+    },
+    "ElementLinkedPropertyObjects": {
+        "type": "object",
+        "properties": {
+            "linkByCriteria": {
+                "type": "boolean",
+                "description": "True when the property objects matching their criteria are linked to the element."
+            },
+            "individualLibraryPartIndex": {
+                "type": "integer",
+                "description": "The index of the library part of the individually assigned property object, the same as the index returned by GetAvailableLibraryParts. 0 when no property object is assigned individually."
+            },
+            "individualLibraryPartName": {
+                "type": "string",
+                "description": "The name of the individually assigned library part. Absent when there is none or it cannot be read."
+            },
+            "individualLibraryPartGuid": {
+                "type": "string",
+                "description": "The guid of the individually assigned library part, the same as the guid returned by GetAvailableLibraryParts. Absent when there is none or it cannot be read."
+            },
+            "criteriaPropertyObjects": {
+                "type": "array",
+                "description": "The linked property objects whose criteria match the element.",
+                "items": {
+                    "$ref": "#/CriteriaPropertyObject"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "linkByCriteria",
+            "individualLibraryPartIndex",
+            "criteriaPropertyObjects"
+        ]
+    },
+    "CriteriaPropertyObject": {
+        "type": "object",
+        "properties": {
+            "libraryPartIndex": {
+                "type": "integer",
+                "description": "The index of the property object's library part, the same as the index returned by GetAvailableLibraryParts."
+            },
+            "name": {
+                "type": "string",
+                "description": "The name of the library part. Absent when the library part cannot be read."
+            },
+            "guid": {
+                "type": "string",
+                "description": "The guid of the library part, the same as the guid returned by GetAvailableLibraryParts. Absent when the library part cannot be read."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "libraryPartIndex"
+        ]
+    },
     "DesignOptionIdsOrErrors": {
         "type": "array",
         "description": "A list of design option identifiers or errors.",
