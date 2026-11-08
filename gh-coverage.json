@@ -1,14 +1,16 @@
 {
- "generatedAt": "2026-11-08 03:43 UTC",
+ "generatedAt": "2026-11-08 05:50 UTC",
  "counts": {
   "done": 568,
   "merged": 195,
-  "open": 6,
+  "open": 7,
   "in progress": 1,
+  "claimed": 1,
   "not applicable": 1
  },
  "parameters": {
-  "all": 726,
+  "all": 722,
+  "partial": 4,
   "json": 37
  },
  "items": [
@@ -180,12 +182,14 @@
      "path": "Components/GeneralComponents/GetPointFromUserComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 1,
+   "parameters": "partial",
+   "parameterCount": 2,
    "coveredParameters": [
     "prompt"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "snapFilter"
+   ],
    "pullRequests": [],
    "issues": [
     {
@@ -253,13 +257,15 @@
      "path": "Components/GeneralComponents/GetElementFromUserComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 2,
+   "parameters": "partial",
+   "parameterCount": 3,
    "coveredParameters": [
     "elementTypes",
     "prompt"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "snapFilter"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -352,14 +358,16 @@
      "path": "Components/GeneralComponents/GetLineFromUserComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 3,
+   "parameters": "partial",
+   "parameterCount": 4,
    "coveredParameters": [
     "endPrompt",
     "showRubberLineFeedback",
     "startPrompt"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "snapFilter"
+   ],
    "pullRequests": [],
    "issues": [
     {
@@ -406,13 +414,35 @@
      "path": "Components/GeneralComponents/GetPolygonFromUserComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 3,
+   "parameters": "partial",
+   "parameterCount": 4,
    "coveredParameters": [
     "method",
     "prompt",
     "startPrompt"
    ],
+   "missingParameters": [
+    "snapFilter"
+   ],
+   "pullRequests": [],
+   "issues": [
+    {
+     "number": 2268,
+     "title": "User input: GetArcFromUser, snap filter and constraint options"
+    }
+   ]
+  },
+  {
+   "id": "GetMagicWandSettings",
+   "group": "Application Commands",
+   "version": "1.8.1",
+   "brief": "Returns the settings of Archicad's Magic Wand Settings dialog: how curves are approximated with straight segments (a number of segments along arcs or circles, a largest deviation from the curve, or a segment length) and the trace method. Useful to know how the Magic Wand will trace a curve. Changes nothing in the project.",
+   "status": "claimed",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 0,
+   "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
    "issues": [
@@ -20139,6 +20169,21 @@
    ],
    "parameters": "all",
    "parameterCount": 0,
+   "coveredParameters": [],
+   "missingParameters": [],
+   "pullRequests": [],
+   "issues": []
+  },
+  {
+   "id": "OpenSettingsDialog",
+   "group": "Script UI Commands",
+   "version": "1.8.1",
+   "brief": "Opens Archicad's settings dialog of the selected elements or the current tool (Archicad 28 and later), or the default settings dialog of the given element type, waits for the user and reports whether the dialog was closed with OK or Cancel.",
+   "status": "open",
+   "reason": "",
+   "components": [],
+   "parameters": null,
+   "parameterCount": 1,
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],

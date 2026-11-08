@@ -1,10 +1,10 @@
-**763 of 770** applicable Tapir commands have a Grasshopper component (99 %): ✅ 568 done, 🔀 195 merged, 🚧 1 in progress, ⬜ 6 open, ➖ 1 not applicable.
+**763 of 772** applicable Tapir commands have a Grasshopper component (98 %): ✅ 568 done, 🔀 195 merged, 🚧 1 in progress, 🙋 1 claimed, ⬜ 7 open, ➖ 1 not applicable.
 
-Parameters of the 763 used commands: 🟢 726 every parameter has an input, 🟡 37 the rest through a JSON input, 🟠 0 some parameters missing.
+Parameters of the 763 used commands: 🟢 722 every parameter has an input, 🟡 37 the rest through a JSON input, 🟠 4 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Application Commands | 92 % | 41 | 25 | 13 | 1 |  | 2 |  |  | 38 |  |  |
+| Application Commands | 90 % | 42 | 25 | 13 | 1 | 1 | 2 |  |  | 34 |  | 4 |
 | Project Commands | 98 % | 66 | 50 | 15 |  |  | 1 |  |  | 65 |  |  |
 | Custom Data Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Element Commands | 100 % | 173 | 130 | 43 |  |  |  |  |  | 150 | 23 |  |
@@ -27,7 +27,7 @@ Parameters of the 763 used commands: 🟢 726 every parameter has an input, 🟡
 | MEP Commands (extended) | 100 % | 6 | 6 |  |  |  |  |  |  | 6 |  |  |
 | Analytical Commands | 100 % | 35 | 19 | 16 |  |  |  |  |  | 35 |  |  |
 | Solid Element Operation Commands | 100 % | 10 | 10 |  |  |  |  |  |  | 10 |  |  |
-| Script UI Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
+| Script UI Commands | 66 % | 3 | 2 |  |  |  | 1 |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-08 03:43 UTC.
+Updated 2026-11-08 05:50 UTC.

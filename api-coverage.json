@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 03:43 UTC",
+ "generatedAt": "2026-11-08 05:50 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,8 @@
   "not applicable": 569,
   "done": 1908,
   "skipped": 29,
-  "merged": 345,
-  "in progress": 17,
+  "merged": 351,
+  "in progress": 11,
   "claimed": 1,
   "open": 10
  },
@@ -5664,7 +5664,7 @@
    "olderNames": [
     "APIIo_SettingsDialogID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -5686,10 +5686,6 @@
     {
      "number": 2281,
      "title": "[2/6] Add PickLibraryPart: Archicad's Object Settings dialog as a library part picker"
-    },
-    {
-     "number": 2277,
-     "title": "[1/6] Add OpenSettingsDialog command"
     }
    ],
    "issues": [
@@ -6789,12 +6785,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2293,
-     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2267,
@@ -7680,10 +7671,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2293,
-     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
-    },
     {
      "number": 1292,
      "title": "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"
@@ -14618,12 +14605,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2293,
-     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2267,
@@ -14674,12 +14656,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2293,
-     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2267,
@@ -14707,12 +14684,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2293,
-     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2267,
@@ -14786,12 +14758,7 @@
    ],
    "status": "not applicable",
    "reason": "event handlers, not commands",
-   "pullRequests": [
-    {
-     "number": 2293,
-     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -14812,14 +14779,9 @@
    "olderNames": [
     "ACAPI_Notify_GetTranParams"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2293,
-     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2267,
@@ -14869,12 +14831,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2293,
-     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2267,
@@ -14901,12 +14858,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2293,
-     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2267,
@@ -17904,12 +17856,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2293,
-     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18047,12 +17994,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2293,
-     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18525,10 +18467,6 @@
     {
      "number": 2281,
      "title": "[2/6] Add PickLibraryPart: Archicad's Object Settings dialog as a library part picker"
-    },
-    {
-     "number": 2277,
-     "title": "[1/6] Add OpenSettingsDialog command"
     }
    ],
    "issues": [
@@ -18732,7 +18670,7 @@
    "olderNames": [
     "APIIo_ClearNeigFilterID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -18742,10 +18680,6 @@
     {
      "number": 2286,
      "title": "[3/5] Constraint option on the Get...FromUser commands"
-    },
-    {
-     "number": 2280,
-     "title": "[2/5] Snap filter option on the Get...FromUser commands"
     }
    ],
    "issues": [
@@ -18798,12 +18732,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2295,
-     "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2268,
@@ -18854,12 +18783,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2295,
-     "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2268,
@@ -18887,12 +18811,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2295,
-     "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18913,14 +18832,9 @@
    "olderNames": [
     "APIEnv_GetMagicWandSetsID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2290,
-     "title": "[4/5] Add GetMagicWandSettings command"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2268,
@@ -18956,10 +18870,6 @@
     {
      "number": 2286,
      "title": "[3/5] Constraint option on the Get...FromUser commands"
-    },
-    {
-     "number": 2280,
-     "title": "[2/5] Snap filter option on the Get...FromUser commands"
     }
    ],
    "issues": []
@@ -19005,7 +18915,7 @@
    "olderNames": [
     "APIIo_InitNeigFilterID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -19015,10 +18925,6 @@
     {
      "number": 2286,
      "title": "[3/5] Constraint option on the Get...FromUser commands"
-    },
-    {
-     "number": 2280,
-     "title": "[2/5] Snap filter option on the Get...FromUser commands"
     }
    ],
    "issues": [
@@ -19142,7 +19048,7 @@
    "olderNames": [
     "APIIo_SetNeigFilterID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
    "pullRequests": [
     {
@@ -19152,10 +19058,6 @@
     {
      "number": 2286,
      "title": "[3/5] Constraint option on the Get...FromUser commands"
-    },
-    {
-     "number": 2280,
-     "title": "[2/5] Snap filter option on the Get...FromUser commands"
     }
    ],
    "issues": [
@@ -20325,12 +20227,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2295,
-     "title": "[5/5] Grasshopper: GetArcFromUser component, snap filter and constraint inputs"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -21349,20 +21246,12 @@
      "title": "[4/6] Add PickLibraryFolder: Archicad's library folder dialog"
     },
     {
-     "number": 2290,
-     "title": "[4/5] Add GetMagicWandSettings command"
-    },
-    {
      "number": 2287,
      "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
     },
     {
      "number": 2281,
      "title": "[2/6] Add PickLibraryPart: Archicad's Object Settings dialog as a library part picker"
-    },
-    {
-     "number": 2277,
-     "title": "[1/6] Add OpenSettingsDialog command"
     }
    ],
    "issues": []
@@ -21950,14 +21839,6 @@
     {
      "number": 2281,
      "title": "[2/6] Add PickLibraryPart: Archicad's Object Settings dialog as a library part picker"
-    },
-    {
-     "number": 2280,
-     "title": "[2/5] Snap filter option on the Get...FromUser commands"
-    },
-    {
-     "number": 2277,
-     "title": "[1/6] Add OpenSettingsDialog command"
     }
    ],
    "issues": []
@@ -31014,10 +30895,6 @@
     {
      "number": 2286,
      "title": "[3/5] Constraint option on the Get...FromUser commands"
-    },
-    {
-     "number": 2280,
-     "title": "[2/5] Snap filter option on the Get...FromUser commands"
     }
    ],
    "issues": []
@@ -37711,10 +37588,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2293,
-     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
-    },
-    {
      "number": 2148,
      "title": "ChangeSelectionOfElements: report elements Archicad did not select"
     },
@@ -43289,12 +43162,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2293,
-     "title": "[6/6] Notification clients: transformation of moved, rotated and mirrored elements"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
