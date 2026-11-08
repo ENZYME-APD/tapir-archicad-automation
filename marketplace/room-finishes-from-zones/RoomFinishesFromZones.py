@@ -1173,6 +1173,11 @@ class RoomFinishesFromZones:
         earlier = self._read_coves()
         offset = settings["cove"]["offset"]
         for zone in zones:
+            old = earlier.get((zone["floorIndex"], zone["tag"]), [])
+            # With Replace on, the coves of an earlier run go also when the zone gets none now:
+            # the ceiling is recreated and would run into them.
+            if settings["replace"]:
+                replaced += old
             if zone["roomHeight"] <= EPSILON:
                 zone["notes"].append("no cove: the zone has no height")
                 continue
@@ -1183,12 +1188,10 @@ class RoomFinishesFromZones:
                                      else f"no cove: the ceiling offset of {offset:.3f} m is too large for the zone")
                 continue
             zone["ceilingInset"] = inset
-            old = earlier.get((zone["floorIndex"], zone["tag"]), [])
             if old and not settings["replace"]:
                 zone["existing"].add("cove")
                 zone["notes"].append("already has a cove: kept")
                 continue
-            replaced += old
             zone["covePieces"] = cove_pieces(zone["outline"], zone["holes"])
             if zone["covePieces"]:
                 zone["planned"].append("cove")
