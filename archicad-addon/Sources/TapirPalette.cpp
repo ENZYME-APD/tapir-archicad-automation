@@ -486,6 +486,7 @@ TapirPalette::TapirPalette ()
     Attach (*this);
     AttachToAllItems (*this);
 
+    paletteState.Load ();
     LoadScriptsToPopUp ();
 
     installedVersionText.SetText (GS::UniString::Printf (
@@ -607,6 +608,7 @@ void TapirPalette::PanelOpened (const DG::PanelOpenEvent&)
 {
     const short selectedItemBefore = scriptSelectionPopUp.GetSelectedItem ();
     auto itemToSelect = AddScriptsFromPreferences ();
+    itemToSelect = GetSavedSelectionItem (itemToSelect);
     RebuildScriptPopUp (selectedItemBefore);
     if (itemToSelect <= 0 || scriptSelectionPopUp.IsSeparator (itemToSelect) || scriptSelectionPopUp.GetItemCount () - 1 <= itemToSelect) {
         itemToSelect = scriptSelectionPopUp.GetSelectedItem ();
@@ -1685,6 +1687,9 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
         return;
     }
 
+    paletteState.AddRecent (GetScriptPath (popUpItemData));
+    paletteState.Save ();
+
     GS::UniString filePath;
     popUpItemData.fileLocation.ToPath (&filePath);
 
@@ -2241,7 +2246,7 @@ void TapirPalette::LoadScriptsToPopUp ()
     AddScriptsFromLocalFolders ();
     AddScriptsFromRepositories ();
 
-    RebuildScriptPopUp (itemToSelect);
+    RebuildScriptPopUp (GetSavedSelectionItem (itemToSelect));
     SetDeleteScriptButtonStatus ();
 }
 
@@ -2806,6 +2811,35 @@ void TapirPalette::SaveScriptsToPreferences ()
     // +1 keeps the terminating null in the stored blob; older builds stored strlen bytes
     // only, which made the load side read past its buffer (see AddScriptsFromPreferences).
     ACAPI_SetPreferences (PREFERENCES_VERSION, (GSSize)strlen (cStr.Get()) + 1, cStr.Get());
+
+    // The selection by its path as well, which outlives a change of the list (GetSavedSelectionItem)
+    const GS::Ref<PopUpItemData> selectedScript = GetSelectedScript ();
+    paletteState.SetSelected (selectedScript != nullptr ? GetScriptPath (*selectedScript) : GS::EmptyUniString);
+    paletteState.Save ();
+}
+
+GS::UniString TapirPalette::GetScriptPath (const PopUpItemData& popUpData)
+{
+    GS::UniString path;
+    popUpData.fileLocation.ToPath (&path);
+    return path;
+}
+
+short TapirPalette::GetSavedSelectionItem (short savedItem) const
+{
+    const GS::UniString& selectedPath = paletteState.Selected ();
+    if (selectedPath.IsEmpty ()) {
+        return savedItem;
+    }
+    // Every script item and separator of the dropdown as RebuildScriptPopUp builds it
+    const short lastItem = static_cast<short> (GetAllScripts ().GetSize () + 2);
+    for (short item = DG::PopUp::TopItem; item <= lastItem; ++item) {
+        const GS::Ref<PopUpItemData> popUpItemData = GetScriptOfPopUpItem (item);
+        if (popUpItemData != nullptr && GetScriptPath (*popUpItemData) == selectedPath) {
+            return item;
+        }
+    }
+    return savedItem;
 }
 
 bool TapirPalette::IsValidLocation (const IO::Location& location)

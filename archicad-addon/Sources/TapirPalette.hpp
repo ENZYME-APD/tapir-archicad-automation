@@ -8,6 +8,7 @@
 #include "Config.hpp"
 #include "UvManager.hpp"
 #include "ScriptInfo.hpp"
+#include "PaletteState.hpp"
 #include "ResourceIds.hpp"
 
 #include <atomic>
@@ -119,6 +120,7 @@ private:
     UvManager uvManager;
     IO::Location scriptShortcutSlots[ScriptShortcutSlotCount];    // empty = unassigned
     GS::UniString scriptShortcutLabels[ScriptShortcutSlotCount];  // empty = using the default menu text
+    PaletteState paletteState;   // Documents/Tapir/palette.json: the favourites, the recent scripts and the selection
 
     void SetMenuItemCheckedState (bool);
     void ExecuteScript (const PopUpItemData& popUpItemData);   // every path that starts a script calls this
@@ -147,9 +149,13 @@ private:
     ScriptList GetAllScripts () const;   // in the order of the dropdown
     GS::UniString GetScriptLabel (const PopUpItemData& popUpData) const;   // the label with the "[Shortcut N]" suffix
     bool IsPopUpContainsFile (const IO::Location& fileLocation) const;
-    void SaveScriptsToPreferences ();
+    void SaveScriptsToPreferences ();   // also writes the selection to palette.json
     bool IsValidLocation (const IO::Location& location);
     short AddScriptsFromPreferences ();
+    // The item to select once the list is loaded: the script saved in palette.json while it is still listed,
+    // otherwise savedItem, the item index saved in the preferences.
+    short GetSavedSelectionItem (short savedItem) const;
+    static GS::UniString GetScriptPath (const PopUpItemData& popUpData);   // how palette.json names the script
     bool AddNewScript ();
     void DeleteScriptFromPopUp ();
     bool IsSelectedScriptFromGitHub () const;
