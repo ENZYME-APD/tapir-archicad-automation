@@ -44,6 +44,10 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
                 GH_ParamAccess.item);
 
             SetOptionality(new[] { 0, 1, 2, 3 });
+
+            // The snap filter applies to the center and the start point (the end
+            // point snaps as usual), the constraint to every click.
+            UserInputOptions.AddInputs(this);
         }
 
         protected override void AddOutputs()
@@ -141,6 +145,11 @@ namespace TapirGrasshopperPlugin.Components.GeneralComponents
             {
                 parameters["showRubberArcFeedback"] = showRubberArcFeedback;
             }
+
+            UserInputOptions.AddParameters(
+                da,
+                4,
+                parameters);
 
             if (!TryGetCadResponse(
                     CommandName,
