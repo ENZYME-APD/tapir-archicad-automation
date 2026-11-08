@@ -3206,6 +3206,37 @@
             "DimensionOn"
         ]
     },
+    "InputConstraint": {
+        "type": "object",
+        "description": "Archicad's drawing constraint for the clicks of a Get...FromUser command: the cursor can only move along it, as when a coordinate is locked in the Tracker. It is dissolved when the command returns, also on Escape and on errors.",
+        "properties": {
+            "type": {
+                "type": "string",
+                "description": "What is fixed: X = the X coordinate, Y = the Y coordinate, Z = the Z coordinate (3D window), Angle = the direction from the reference point (the cursor moves along a line), Distance = the distance from the reference point (the cursor moves along a circle).",
+                "enum": [
+                    "X",
+                    "Y",
+                    "Z",
+                    "Angle",
+                    "Distance"
+                ]
+            },
+            "value": {
+                "type": "number",
+                "description": "The fixed value: a coordinate or distance in meters, or for Angle an angle in radians, counterclockwise from the X axis."
+            },
+            "fromLastPoint": {
+                "type": "boolean",
+                "description": "If true, the value is measured from the last clicked point (Archicad's local origin), otherwise from the project origin.",
+                "default": false
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type",
+            "value"
+        ]
+    },
     "Coordinate2D": {
         "type": "object",
         "description": "2D coordinate.",

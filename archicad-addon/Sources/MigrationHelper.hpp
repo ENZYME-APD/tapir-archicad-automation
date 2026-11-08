@@ -739,6 +739,19 @@ inline GSErrCode ACAPI_UserInput_ClearNeigFilter (API_NeigFilter* neigFilter, AP
     return ACAPI_Interface (APIIo_ClearNeigFilterID, neigFilter, (void*) (GS::IntPtr) neigID);
 }
 
+// The AC25/26 forms of the AC27 ACAPI_UserInput_* drawing constraint functions (APIdefs_Interface.h):
+// APIIo_SetConstraintID   par1: API_ConstraintPars*
+// APIIo_ResetConstraintID par1: ---
+inline GSErrCode ACAPI_UserInput_SetConstraint (API_ConstraintPars* constraintPars)
+{
+    return ACAPI_Interface (APIIo_SetConstraintID, constraintPars);
+}
+
+inline GSErrCode ACAPI_UserInput_ResetConstraint ()
+{
+    return ACAPI_Interface (APIIo_ResetConstraintID);
+}
+
 // The AC25/26 forms of the AC27 ACAPI_UserInput_* input functions (APIdefs_Interface.h):
 // APIIo_GetPointID       par1: API_GetPointType*   par2: [RubberLineInfoProc*]   par3: [Get3DComponentProc*]
 // APIIo_GetLineID        par1: API_GetLineType*    par2: [RubberLineInfoProc*]
