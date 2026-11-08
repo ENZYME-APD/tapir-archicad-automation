@@ -1,9 +1,9 @@
 /* Italiano: the API limits page (limits/index.html). The Evidence column (headers and function names)
    stays English. See ../README.md. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'What the Archicad API can\'t do - Tapir': 'Cosa non può fare l’API di Archicad - Tapir',
-    'What people ask Tapir for that Graphisoft\'s Archicad API does not offer: undo, the clipboard, File > Merge, Interactive Schedule rows and more, each with the workaround and the DevKit evidence.':
-        'Cosa si chiede a Tapir che l’API di Archicad di Graphisoft non offre: annulla, gli appunti, File > Merge, le righe di un Interactive Schedule e altro, ognuno con la soluzione alternativa e la prova nel DevKit.',
+    'What the Archicad API can\'t do | Tapir': 'Cosa non può fare l’API di Archicad | Tapir',
+    'What people ask for that Graphisoft\'s Archicad API does not offer, such as undo or the clipboard, each with what to do instead and the DevKit evidence.':
+        'Ciò che si chiede e che l’API di Archicad di Graphisoft non offre, come annulla o gli appunti, ognuno con cosa fare invece e la prova nel DevKit.',
     '<a href="../">Tapir</a> / <a href="../docs/">Docs</a> / API limits': '<a href="../">Tapir</a> / <a href="../docs/">Docs</a> / Limiti dell’API',
     'What the Archicad API <em>can\'t do.</em>': 'Cosa l’API di Archicad <em>non può fare.</em>',
     'Tapir uses the Archicad API that Graphisoft publishes for add-ons, and covers all of it that can be a JSON command. What that API does not offer, Tapir cannot offer either. This page lists what people ask for that is not in it, with what to do instead.':

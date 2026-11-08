@@ -1,9 +1,9 @@
 /* Deutsch: the Grasshopper page (grasshopper/index.html). See ../README.md.
    Component, input and button names stay English, as Grasshopper shows them. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Grasshopper - Tapir': 'Grasshopper - Tapir',
-    'Read, change and create Archicad elements from Grasshopper with the Tapir plugin: what the components do, the tool components, installing the tapir package and a first definition.':
-        'Archicad-Elemente mit dem Tapir-Plugin aus Grasshopper lesen, ändern und erstellen: was die Komponenten tun, die Werkzeug-Komponenten, die Installation des tapir-Pakets und eine erste Definition.',
+    'Archicad Grasshopper live connection | Tapir': 'Live-Verbindung zwischen Archicad und Grasshopper | Tapir',
+    'Connect Grasshopper live to a running Archicad with the Tapir plugin: read, change and create Archicad elements from Rhino geometry, without writing code.':
+        'Grasshopper mit dem Tapir-Plugin live mit einem laufenden Archicad verbinden: Archicad-Elemente aus Rhino-Geometrie lesen, ändern und erstellen, ohne Code zu schreiben.',
     '<a href="../">Tapir</a> / <a href="../docs/">Docs</a> / Grasshopper':
         '<a href="../">Tapir</a> / <a href="../docs/">Doku</a> / Grasshopper',
     'Grasshopper, <em>visually.</em>': 'Grasshopper, <em>visuell.</em>',

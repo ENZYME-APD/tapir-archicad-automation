@@ -1,9 +1,9 @@
 /* Deutsch: the Community page (community/index.html, with the texts community/community.js reads
    from it). See ../README.md. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Community - Tapir': 'Community - Tapir',
-    'Ask on Discord, report a bug, test a fix: how Tapir\'s community and its bots turn a report into a release.':
-        'Auf Discord fragen, einen Fehler melden, eine Korrektur testen: wie die Community von Tapir und ihre Bots aus einer Meldung eine neue Version machen.',
+    'Community – Archicad automation with Tapir': 'Community – Archicad-Automatisierung mit Tapir',
+    'Ask on Discord, report a bug, test a fix in your Archicad: how Tapir\'s community and its bots turn a report into a release, and how the project grew.':
+        'Auf Discord fragen, einen Fehler melden, eine Korrektur in Ihrem Archicad testen: wie die Community von Tapir und ihre Bots aus einer Meldung eine neue Version machen, und wie das Projekt gewachsen ist.',
     '<a href="../">Tapir</a> / Community': '<a href="../">Tapir</a> / Community',
     'Ask. Report. <em>Test.</em>': 'Fragen. Melden. <em>Testen.</em>',
     'Architects, developers and the maintainers in one place. Bugs and ideas become fixes that someone with your Archicad version tests before they ship.':

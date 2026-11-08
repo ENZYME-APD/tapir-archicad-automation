@@ -7,8 +7,8 @@ Tapir adds hundreds of JSON commands to Graphisoft Archicad, on top of the offic
 [![Archicad Add-On Build Check](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/archicad_addon_build_check.yml/badge.svg)](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/archicad_addon_build_check.yml)
 [![Grasshopper Plugin Build Check](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/grasshopper_plugin_build_check.yml/badge.svg)](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/grasshopper_plugin_build_check.yml)
 [![Tapir Installer Build Check](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/installer_build_check.yml/badge.svg)](https://github.com/ENZYME-APD/tapir-archicad-automation/actions/workflows/installer_build_check.yml)
-[![Archicad API coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FENZYME-APD%2Ftapir-archicad-automation%2Fapi-coverage%2Fapi-coverage-badge.json)](https://enzyme-apd.github.io/tapir-archicad-automation/api-coverage/)
-[![Grasshopper coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FENZYME-APD%2Ftapir-archicad-automation%2Fapi-coverage%2Fgh-coverage-badge.json)](https://enzyme-apd.github.io/tapir-archicad-automation/gh-coverage/)
+[![Archicad API coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FENZYME-APD%2Ftapir-archicad-automation%2Fapi-coverage%2Fapi-coverage-badge.json)](https://archicad-api.com/api-coverage/)
+[![Grasshopper coverage](https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2FENZYME-APD%2Ftapir-archicad-automation%2Fapi-coverage%2Fgh-coverage-badge.json)](https://archicad-api.com/gh-coverage/)
 
 ## Get started
 
@@ -77,7 +77,7 @@ Every Tapir command is called this way: change `commandName` and put the command
 
 #### Preview a change with `dryRun`
 
-The commands that delete or change can be asked what they would do first. With `"dryRun": true` among its parameters such a command makes all the checks of a real run, with the same errors, but changes nothing in the project and adds no undo step; its response is a real run's plus `"dryRun": true`, and says for each target what would happen (`"wouldDelete": true` for an element `DeleteElements` would delete; for the bulk setters `SetPropertyValuesOfElements`, `SetClassificationsOfElements`, `SetCategoryValuesOfElements` and `SetGDLParametersOfElements`, `"wouldChange"` with the target's `oldValue` and the `newValue` a real run would write). Without `dryRun`, or with `false`, the command works as before. The [command reference](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon) says which commands take it.
+The commands that delete or change can be asked what they would do first. With `"dryRun": true` among its parameters such a command makes all the checks of a real run, with the same errors, but changes nothing in the project and adds no undo step; its response is a real run's plus `"dryRun": true`, and says for each target what would happen (`"wouldDelete": true` for an element `DeleteElements` would delete; for the bulk setters `SetPropertyValuesOfElements`, `SetClassificationsOfElements`, `SetCategoryValuesOfElements` and `SetGDLParametersOfElements`, `"wouldChange"` with the target's `oldValue` and the `newValue` a real run would write). Without `dryRun`, or with `false`, the command works as before. The [command reference](https://archicad-api.com/archicad-addon/) says which commands take it.
 
 ```python
 preview = aclib.RunTapirCommand('DeleteElements', {'elements': elements, 'dryRun': True})
@@ -100,7 +100,7 @@ The Add-On adds a **Tapir** menu to Archicad; open the palette with **Tapir > Ta
 
 ## What you can do
 
-- **[Command reference](https://enzyme-apd.github.io/tapir-archicad-automation/archicad-addon):** every Tapir command with its parameters, its response and a Python example from [archicad-addon/Examples](archicad-addon/Examples/).
+- **[Command reference](https://archicad-api.com/archicad-addon/):** every Tapir command with its parameters, its response and a Python example from [archicad-addon/Examples](archicad-addon/Examples/).
 - **The palette's built-in scripts**, in [builtin-scripts/](builtin-scripts/):
   - [AutomaticNumberingBasedOnPolyline](builtin-scripts/AutomaticNumberingBasedOnPolyline.py): sets the Element IDs of the selected elements in the order they follow along a selected polyline.
   - [BatchPublisher](builtin-scripts/BatchPublisher.py): publishes the chosen Publisher Sets in one go, now or on a schedule, optionally after receiving the Teamwork changes and updating the drawings on the layouts.
@@ -125,9 +125,9 @@ The Add-On of every such pull request is built for every Archicad version, and a
 
 ### Archicad API coverage
 
-How much of the Archicad API the Tapir Add-On already uses. The image is updated automatically, within minutes of every change; the [full checklist](https://enzyme-apd.github.io/tapir-archicad-automation/api-coverage/) lists every function. To ask for one, file an "Archicad API request" issue that names it.
+How much of the Archicad API the Tapir Add-On already uses. The image is updated automatically, within minutes of every change; the [full checklist](https://archicad-api.com/api-coverage/) lists every function. To ask for one, file an "Archicad API request" issue that names it.
 
-<a href="https://enzyme-apd.github.io/tapir-archicad-automation/api-coverage/">
+<a href="https://archicad-api.com/api-coverage/">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/api-coverage-dark.svg">
     <img alt="Archicad API coverage of Tapir" src="https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/api-coverage.svg">
@@ -136,9 +136,9 @@ How much of the Archicad API the Tapir Add-On already uses. The image is updated
 
 ### Grasshopper coverage
 
-How many of the Tapir Add-On's commands the Grasshopper plugin's components call, and whether they cover each command's parameters, updated the same way; the [full checklist](https://enzyme-apd.github.io/tapir-archicad-automation/gh-coverage/) lists every command with its components and the parameters they miss.
+How many of the Tapir Add-On's commands the Grasshopper plugin's components call, and whether they cover each command's parameters, updated the same way; the [full checklist](https://archicad-api.com/gh-coverage/) lists every command with its components and the parameters they miss.
 
-<a href="https://enzyme-apd.github.io/tapir-archicad-automation/gh-coverage/">
+<a href="https://archicad-api.com/gh-coverage/">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/gh-coverage-dark.svg">
     <img alt="Grasshopper coverage of the Tapir commands" src="https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/api-coverage/gh-coverage.svg">

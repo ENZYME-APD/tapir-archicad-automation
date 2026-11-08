@@ -2,9 +2,9 @@
    Command names, the label enhancement and the names of the issue form and of the old list stay English,
    and so do the technical words Indian architects use in English. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Roadmap - Tapir': 'रोडमैप - Tapir',
-    'How to ask for a feature in Tapir, what is being asked for now, and what shipped recently.':
-        'Tapir में कोई feature कैसे माँगें, अभी क्या माँगा जा रहा है, और हाल में क्या release हुआ।',
+    'Tapir roadmap – Archicad automation': 'Tapir रोडमैप – Archicad automation',
+    'How to ask for a feature in Tapir, the Archicad add-on, what people are asking for now, what shipped from the old list and which ideas are still open.':
+        'Archicad add-on Tapir में कोई feature कैसे माँगें, लोग अभी क्या माँग रहे हैं, पुरानी सूची में से क्या release हुआ और कौन-से विचार अभी भी खुले हैं।',
     '<a href="../">Tapir</a> / <a href="../community/">Community</a> / Roadmap':
         '<a href="../">Tapir</a> / <a href="../community/">समुदाय</a> / रोडमैप',
     'What\'s <em>next.</em>': 'आगे <em>क्या है।</em>',

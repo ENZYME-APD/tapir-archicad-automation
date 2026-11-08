@@ -1,9 +1,9 @@
 /* 日本語: the Scripts page (scripts/index.html), with the texts scripts.js shows from it. See ../README.md.
    The scripts' own names, summaries and READMEs stay as their authors wrote them. */
 (window.TAPIR_I18N = window.TAPIR_I18N || []).push ({
-    'Scripts - Tapir': 'スクリプト - Tapir',
-    'Scripts shared by architects for the Tapir palette in Archicad, each one reviewed and adapted to work in any office before it is listed.':
-        '建築家が共有した、Archicad の Tapir パレット用スクリプト。掲載前にそれぞれ審査され、どの事務所でも動くように調整されています。',
+    'Free Archicad Python scripts | Tapir': '無料の Archicad Python スクリプト | Tapir',
+    'Free Python scripts for the Tapir palette in Archicad, shared by architects, each one reviewed and adapted to work in any office before it is listed.':
+        '建築家が共有した、Archicad の Tapir パレット用の無料 Python スクリプト。掲載前にそれぞれ審査され、どの事務所でも動くように調整されています。',
     '<a href="../">Tapir</a> / Scripts': '<a href="../">Tapir</a> / スクリプト',
     'The script <em>schedule.</em>': 'スクリプト<em>一覧。</em>',
     'Scripts shared by architects. Each one is checked for safety and adapted to work in any office and any Archicad language before it is listed.':
