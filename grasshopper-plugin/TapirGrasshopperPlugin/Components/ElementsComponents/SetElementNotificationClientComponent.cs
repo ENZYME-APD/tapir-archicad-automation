@@ -14,8 +14,9 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "SetElementNotificationClient",
                 "Sets up a new notification client to receive element events: Archicad posts the new, changed, " +
                 "deleted, reserved and released elements, and on request the selection, window, project, " +
-                "attribute replacement, tool change, Navigator item, Teamwork lockable object set reservation " +
-                "and tool default events, as JSON to " +
+                "attribute replacement, tool change, Navigator item, Teamwork lockable object set reservation, " +
+                "tool default, attribute, classification, property definition, marquee and 3D settings events, " +
+                "as JSON to " +
                 "http://<Host>:<Port>/element_notification. " +
                 "Setting up the same client again changes which events it gets. The client (an HTTP server) is " +
                 "not part of this component; remove it with RemoveElementNotificationClient.",
@@ -124,7 +125,42 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     .WithTypeName("booleanItem"),
                 GH_ParamAccess.item);
 
-            SetOptionality(new[] { 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13 });
+            inManager.AddBooleanParameter(
+                "NotifyOnAttributeChanges",
+                "NotifyOnAttributeChanges",
+                "Notify when attributes are created, modified or deleted, as attributesChanged with the event and the attribute ids. Archicad 26 and later. Defaults to false. Optional."
+                    .WithTypeName("booleanItem"),
+                GH_ParamAccess.item);
+
+            inManager.AddBooleanParameter(
+                "NotifyOnClassificationChanges",
+                "NotifyOnClassificationChanges",
+                "Notify when classification systems or items are created, modified or deleted, as classificationSystemsChanged and classificationItemsChanged. Archicad 26 and later. Defaults to false. Optional."
+                    .WithTypeName("booleanItem"),
+                GH_ParamAccess.item);
+
+            inManager.AddBooleanParameter(
+                "NotifyOnPropertyDefinitionChanges",
+                "NotifyOnPropertyDefinitionChanges",
+                "Notify when property groups or property definitions are created, modified or deleted, as propertyGroupsChanged and propertyDefinitionsChanged. Archicad 26 and later. Defaults to false. Optional."
+                    .WithTypeName("booleanItem"),
+                GH_ParamAccess.item);
+
+            inManager.AddBooleanParameter(
+                "NotifyOnMarqueeChange",
+                "NotifyOnMarqueeChange",
+                "Notify when the marquee is drawn, changed or removed, as marqueeChanged with its type. Archicad 27 and later. Defaults to false. Optional."
+                    .WithTypeName("booleanItem"),
+                GH_ParamAccess.item);
+
+            inManager.AddBooleanParameter(
+                "NotifyOn3DSettingsChanges",
+                "NotifyOn3DSettingsChanges",
+                "Notify when the settings of the 3D window change, as view3DSettingsChanged. Archicad 30 and later. Defaults to false. Optional."
+                    .WithTypeName("booleanItem"),
+                GH_ParamAccess.item);
+
+            SetOptionality(new[] { 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 });
         }
 
         protected override void Solve(
@@ -216,6 +252,36 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (da.GetData(13, ref notifyOnToolDefaultChanges))
             {
                 parameters["notifyOnToolDefaultChanges"] = notifyOnToolDefaultChanges;
+            }
+
+            var notifyOnAttributeChanges = false;
+            if (da.GetData(14, ref notifyOnAttributeChanges))
+            {
+                parameters["notifyOnAttributeChanges"] = notifyOnAttributeChanges;
+            }
+
+            var notifyOnClassificationChanges = false;
+            if (da.GetData(15, ref notifyOnClassificationChanges))
+            {
+                parameters["notifyOnClassificationChanges"] = notifyOnClassificationChanges;
+            }
+
+            var notifyOnPropertyDefinitionChanges = false;
+            if (da.GetData(16, ref notifyOnPropertyDefinitionChanges))
+            {
+                parameters["notifyOnPropertyDefinitionChanges"] = notifyOnPropertyDefinitionChanges;
+            }
+
+            var notifyOnMarqueeChange = false;
+            if (da.GetData(17, ref notifyOnMarqueeChange))
+            {
+                parameters["notifyOnMarqueeChange"] = notifyOnMarqueeChange;
+            }
+
+            var notifyOn3DSettingsChanges = false;
+            if (da.GetData(18, ref notifyOn3DSettingsChanges))
+            {
+                parameters["notifyOn3DSettingsChanges"] = notifyOn3DSettingsChanges;
             }
 
             if (TryGetCadResponse(
