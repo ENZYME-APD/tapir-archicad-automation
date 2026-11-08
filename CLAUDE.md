@@ -440,21 +440,15 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   it labels the PR `needs-maintainer` and stops; removing the label hands the PR
   back with its fix round and review counts reset. `BOT_PR_STEWARD=false` turns it
   off; `needs-maintainer`, `do-not-merge` or draft takes a PR out of its hands.
-  `main` is merged in by a step without a model and pushed with a GitHub App
-  installation token (secrets `TAPIR_BOT_APP_ID`, `TAPIR_BOT_APP_PRIVATE_KEY`;
-  App permissions Contents and Workflows read and write, installed on this
-  repository), because `GITHUB_TOKEN` may not push main's workflow changes: on
-  conflicts the model only resolves them in the working tree; the `push-merge`
-  job, on a fresh runner that never ran the model, redoes the merge in a new
-  clone, takes only the conflicted files from the model (an artifact), refuses
-  leftover conflict markers, and commits and pushes with git hooks off.
-  Conflicts under `.github/`, `tools/`, `archicad-addon/Tools/` or
-  `archicad-addon/Installer/` never go to the model. The App token exists only
-  in that job, never on the model's runner. The App's push starts the build checks
-  itself, so the sweep counts runs queued on a head as started, and the review
-  skips a bot's push to a bot PR (the steward dispatches it). Without the
-  secrets, a merge that brings workflow changes is handed over at once
-  ("Update branch"). A fix run that pushes nothing ends its comment with
+  `main` is merged in by the model and pushed with `GITHUB_TOKEN`; there is no
+  GitHub App for it (#1623). A step without a model checks the merge first and
+  hands the PR over at once (`needs-maintainer`, asking a person to merge `main`
+  in with "Update branch" or by hand and then remove the label) when `main`
+  brings changes under `.github/`, which `GITHUB_TOKEN` may not push, or the
+  merge conflicts under `.github/`, `tools/`, `archicad-addon/Tools/` or
+  `archicad-addon/Installer/`, which never go to the model. A person's push
+  starts the build checks itself, so the sweep counts runs queued on a head as
+  started. A fix run that pushes nothing ends its comment with
   `<!-- steward-fix-outcome: <outcome> <nonce> -->`: `transient-ci` re-runs the
   failed build jobs and `review-disputed` starts a fresh review (each at most
   twice per PR), `waits-for:#N` parks the PR without a label (commit status
