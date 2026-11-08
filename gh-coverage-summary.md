@@ -1,18 +1,18 @@
-**765 of 782** applicable Tapir commands have a Grasshopper component (97 %): ✅ 568 done, 🔀 197 merged, 🙋 2 claimed, ⬜ 15 open, ➖ 1 not applicable.
+**765 of 782** applicable Tapir commands have a Grasshopper component (97 %): ✅ 568 done, 🔀 197 merged, 🚧 17 in progress, ➖ 1 not applicable.
 
 Parameters of the 765 used commands: 🟢 726 every parameter has an input, 🟡 37 the rest through a JSON input, 🟠 2 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Application Commands | 92 % | 42 | 25 | 14 |  | 1 | 2 |  |  | 39 |  |  |
-| Project Commands | 98 % | 66 | 50 | 15 |  |  | 1 |  |  | 65 |  |  |
+| Application Commands | 92 % | 42 | 25 | 14 | 3 |  |  |  |  | 39 |  |  |
+| Project Commands | 98 % | 66 | 50 | 15 | 1 |  |  |  |  | 65 |  |  |
 | Custom Data Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Element Commands | 100 % | 173 | 130 | 43 |  |  |  |  |  | 150 | 23 |  |
 | Element grouping Commands | 100 % | 15 | 11 | 4 |  |  |  |  |  | 15 |  |  |
 | Favorites Commands | 100 % | 26 | 18 | 8 |  |  |  |  |  | 26 |  |  |
 | Property Commands | 100 % | 30 | 21 | 9 |  |  |  |  |  | 29 | 1 |  |
 | Classification Commands | 100 % | 19 | 17 | 2 |  |  |  |  |  | 19 |  |  |
-| Attribute Commands | 95 % | 69 | 55 | 11 |  |  | 3 |  |  | 55 | 9 | 2 |
+| Attribute Commands | 95 % | 69 | 55 | 11 | 3 |  |  |  |  | 55 | 9 | 2 |
 | IFC Commands | 100 % | 15 | 13 | 2 |  |  |  |  |  | 15 |  |  |
 | Library Commands | 100 % | 51 | 18 | 33 |  |  |  |  |  | 51 |  |  |
 | Teamwork Commands | 100 % | 18 | 15 | 3 |  |  |  |  |  | 18 |  |  |
@@ -27,7 +27,7 @@ Parameters of the 765 used commands: 🟢 726 every parameter has an input, 🟡
 | MEP Commands (extended) | 100 % | 6 | 6 |  |  |  |  |  |  | 6 |  |  |
 | Analytical Commands | 100 % | 35 | 19 | 16 |  |  |  |  |  | 35 |  |  |
 | Solid Element Operation Commands | 100 % | 10 | 10 |  |  |  |  |  |  | 10 |  |  |
-| Script UI Commands | 16 % | 12 | 2 |  |  | 1 | 9 |  |  | 2 |  |  |
+| Script UI Commands | 16 % | 12 | 2 |  | 10 |  |  |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-08 11:22 UTC.
+Updated 2026-11-08 12:08 UTC.

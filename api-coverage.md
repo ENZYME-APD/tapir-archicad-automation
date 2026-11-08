@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 98 % | 67 | 57 | 9 |  | 1 |  | 8 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 99 % | 1441 | 1207 | 224 | 10 |  |  | 11 | 375 |
 
-Archicad 25–30 DevKits; updated 2026-11-08 11:22 UTC.
+Archicad 25–30 DevKits; updated 2026-11-08 12:08 UTC.
 
 | | Status |
 |---|---|
@@ -522,13 +522,13 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `ACAPI_GetExtensionInstance` – Returns the HINSTANCE of the add-on's DLL. *(add-on infrastructure)*
 - ➖ `ACAPI_GetMainWindow` – Returns the application's main window where the add-on works. *(user interface)*
 - ✅ `ACAPI_GetOwnLocation` – Returns the location of the add-on in the file system. — [#2185](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2185 "[2/2] Add-On: Update when Archicad closes choice, pending marker and README (#2182)")
-- ✅ `ACAPI_GetOwnResModule` – Returns the add-on's resource module identifier for loading resources. — [#2185](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2185 "[2/2] Add-On: Update when Archicad closes choice, pending marker and README (#2182)")
+- ✅ `ACAPI_GetOwnResModule` – Returns the add-on's resource module identifier for loading resources. — [#2354](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2354 "[4/4] Palette: run scripts at the same time, each with its own Run/Stop"), [#2353](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2353 "[3/4] Grasshopper: UiId and ScriptId on the Script UI components"), [#2352](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2352 "[2/4] Palette and aclib: TAPIR_SCRIPT_ID picks each script's Script UI window"), [#2351](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2351 "[1/4] Script UI: one window per script (uiId, scriptId)"), [#2185](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2185 "[2/2] Add-On: Update when Archicad closes choice, pending marker and README (#2182)")
 - ✅ `ACAPI_GetPreferences` – Returns the stored preferences of the add-on.
 - ✅ `ACAPI_GetReleaseNumber`
 - ✅ `ACAPI_GetToken` <sub>AC26–30</sub> – Returns the token associated with the AddOn.
 - ➖ `ACAPI_KeepInMemory` *(add-on infrastructure)*
 - ➖ `ACAPI_RefreshTeamworkReserveInterface` – Refreshes the registered teamwork interface. *(event handlers, not commands)*
-- ✅ `ACAPI_RegisterModelessWindow` – Registers a modeless palette in the API.
+- ✅ `ACAPI_RegisterModelessWindow` – Registers a modeless palette in the API. — [#2354](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2354 "[4/4] Palette: run scripts at the same time, each with its own Run/Stop"), [#2353](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2353 "[3/4] Grasshopper: UiId and ScriptId on the Script UI components"), [#2352](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2352 "[2/4] Palette and aclib: TAPIR_SCRIPT_ID picks each script's Script UI window"), [#2351](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2351 "[1/4] Script UI: one window per script (uiId, scriptId)")
 - ➖ `ACAPI_RegisterTeamworkReserveInterface` – Registers an interface supporting reserve/release in teamwork operations. *(event handlers, not commands)*
 - ➖ `ACAPI_SetDllTermHookProc` – Sets a handler procedure for the case of abnormal termination. *(add-on infrastructure)*
 - ✅ `ACAPI_SetPreferences` – Saves custom preferences data into the preferences file.
@@ -1764,7 +1764,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::RemoveWiringType` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::SetVoltage` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modify` <sub>AC30</sub>
-- ✅ `ACAPI::MEP::Element::Get` <sub>AC27–30</sub> — [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
+- ✅ `ACAPI::MEP::Element::Get` <sub>AC27–30</sub> — [#2354](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2354 "[4/4] Palette: run scripts at the same time, each with its own Run/Stop"), [#2353](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2353 "[3/4] Grasshopper: UiId and ScriptId on the Script UI components"), [#2352](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2352 "[2/4] Palette and aclib: TAPIR_SCRIPT_ID picks each script's Script UI window"), [#2351](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2351 "[1/4] Script UI: one window per script (uiId, scriptId)"), [#1292](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/1292 "Phase 0 of optimizations. In-process Criteria Evaluator and Search Commands (#1253)"), [#995](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/995 "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes")
 - ✅ `ACAPI::MEP::ElementBase::Exists` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetAnchorPoint` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetBaseRotation` <sub>AC30</sub>
