@@ -149,6 +149,9 @@ private:
     GS::Ref<PopUpItemData> GetScriptOfPopUpItem (short item) const;   // nullptr for a separator and "Reload scripts..."
     GS::Ref<PopUpItemData> GetSelectedScript () const;
     ScriptList GetAllScripts () const;   // in the order of the dropdown
+    // The scripts panel's accessor of the script list: every script of the dropdown, in its order, with what the
+    // panel shows of it.
+    GS::Array<ScriptsPanel::Script> GetPanelScripts () const;
     GS::UniString GetScriptLabel (const PopUpItemData& popUpData) const;   // the label with the "[Shortcut N]" suffix
     bool IsPopUpContainsFile (const IO::Location& fileLocation) const;
     void SaveScriptsToPreferences ();

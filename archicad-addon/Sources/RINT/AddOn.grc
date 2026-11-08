@@ -104,6 +104,27 @@
 'STR#' ID_SCRIPTS_PANEL_STRINGS "Tapir Scripts Panel Strings" {
 /* [  1] */ "Show scripts panel"
 /* [  2] */ "Hide scripts panel"
+/* [  3] */ "All"
+/* [  4] */ "Documentation / layouts"
+/* [  5] */ "Element data / properties"
+/* [  6] */ "Modeling / geometry"
+/* [  7] */ "Zones / areas"
+/* [  8] */ "Import / export"
+/* [  9] */ "Quality assurance"
+/* [ 10] */ "Quantities / scheduling"
+/* [ 11] */ "Libraries / objects"
+/* [ 12] */ "Navigator / views"
+/* [ 13] */ "Classification / attributes"
+/* [ 14] */ "Batch automation"
+/* [ 15] */ "Utilities"
+/* [ 16] */ "Other"
+/* [ 17] */ "Built-in"
+/* [ 18] */ "Marketplace"
+/* [ 19] */ "My scripts"
+/* [ 20] */ "By %T"
+/* [ 21] */ "Version %T"
+/* [ 22] */ "No script matches the search."
+/* [ 23] */ "Select a script to see what it does."
 }
 
 'STR#' ID_AUTOUPDATE_STRINGS "Tapir Update Strings" {
@@ -228,6 +249,12 @@
 /* [  9] */ IconButton               508   0  28  28    ID_CHECKFORUPDATES_BUTTON_ICON noFrame
 /* [ 10] */ IconButton               536   0  28  28    ID_EXPAND_DOWN_ICON noFrame
 /* [ 11] */ Separator                  0  28 564   2
+/* [ 12] */ TextEdit                   6  36 300  22    SmallPlain  255
+/* [ 13] */ PopupControl             312  36 246  22    80  3
+/* [ 14] */ SingleSelList              6  64 552 300    SmallPlain  PartialItems  18
+/* [ 15] */ LeftText                   6 370 552  20    LargeBold  vCenter | truncEnd  ""
+/* [ 16] */ LeftText                   6 390 552  16    LargePlain  vCenter  ""
+/* [ 17] */ LeftText                   6 408 552 106    SmallPlain  ""
 }
 
 'DLGH' ID_PALETTE Tapir_Palette {
@@ -242,6 +269,12 @@
 9    "Check for Updates"               CheckForUpdatesButton
 10   "Show scripts panel"              ExpandButton
 11   ""                                ScriptsPanelSeparator
+12   "Search the scripts by name, then by what they do"   ScriptsPanelSearch
+13   "Show the scripts of one category"                   ScriptsPanelCategory
+14   ""                                ScriptsPanelList
+15   ""                                ScriptsPanelName
+16   ""                                ScriptsPanelBadge
+17   ""                                ScriptsPanelDetails
 }
 
 'GDLG' ID_SCRIPTUI_PALETTE Palette | leftCaption | close | grow   0   0  600  450  "Tapir Script UI"  {

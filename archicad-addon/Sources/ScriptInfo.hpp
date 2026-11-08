@@ -16,6 +16,7 @@
 //     # changes = "model"
 //     # ///
 //
+// The optional keys `author` and `version` (strings) are shown in the scripts panel's details when given.
 // A missing or malformed header, or a value of the wrong type, is never an error: the key is just left empty.
 struct ScriptInfo
 {
@@ -26,6 +27,8 @@ struct ScriptInfo
     GS::Array<Int32> archicadVersions;
     GS::UniString minTapirVersion;
     GS::UniString changes;            // "model", "files" or "read-only"; empty when missing or anything else
+    GS::UniString author;
+    GS::UniString version;
 
     bool ChangesModel () const { return changes == "model"; }
     bool WritesFiles () const  { return changes == "files"; }
