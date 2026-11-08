@@ -34,7 +34,7 @@ Parameters of the 782 used commands: 🟢 742 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 12 | 2 | 10 |  |  |  |  |  | 10 |  | 2 |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-08 12:54 UTC.
+Updated 2026-11-08 13:26 UTC.
 
 | | Status |
 |---|---|
@@ -82,7 +82,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `RebuildCurrentDatabase` 🟢 0/0 parameters – `RebuildCurrentDatabaseComponent`
 - 🔀 `DeleteGhostRecords` 🟢 1/1 parameters – `DeleteGhostRecordsComponent`
 - ✅ `GetUserGSID` 🟢 0/0 parameters – `GetUserGSIDComponent`
-- ✅ `ShowAlert` 🟢 7/7 parameters – `ShowAlertComponent` — [#2237](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2237 "audit what Tapir leaves out of the Archicad API")
+- ✅ `ShowAlert` 🟢 7/7 parameters – `ShowAlertComponent`
 - 🔀 `ShowNotificationBubble` 🟠 8/11 parameters – `ShowNotificationBubbleComponent`<br><sub>no input: `disabled`, `largeIcon`, `redrawCountLimit`</sub>
 - ✅ `GetSpecialFolders` 🟢 1/1 parameters – `GetSpecialFoldersComponent`
 - ✅ `GetEditModeState` 🟢 0/0 parameters – `GetEditModeStateComponent`
@@ -892,7 +892,7 @@ A parameter counts as covered when the component's code names it (a static check
 
 ## Script UI Commands
 
-- ✅ `ShowScriptUI` 🟠 13/15 parameters – `ShowScriptUIComponent` — [#2237](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2237 "audit what Tapir leaves out of the Archicad API")<br><sub>no input: `scriptId`, `uiId`</sub>
+- ✅ `ShowScriptUI` 🟠 13/15 parameters – `ShowScriptUIComponent`<br><sub>no input: `scriptId`, `uiId`</sub>
 - ✅ `GetScriptUIResult` 🟠 0/2 parameters – `GetScriptUIResultComponent`<br><sub>no input: `scriptId`, `uiId`</sub>
 - 🔀 `OpenSettingsDialog` 🟢 1/1 parameters – `OpenSettingsDialogComponent`
 - 🔀 `PickLibraryPart` 🟢 2/2 parameters – `PickLibraryPartComponent`

@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 12:54 UTC",
+ "generatedAt": "2026-11-08 13:26 UTC",
  "counts": {
   "done": 568,
   "merged": 214,
@@ -673,12 +673,7 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2237,
-     "title": "audit what Tapir leaves out of the Archicad API"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ShowNotificationBubble",
@@ -20205,12 +20200,7 @@
     "uiId"
    ],
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2237,
-     "title": "audit what Tapir leaves out of the Archicad API"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "GetScriptUIResult",
