@@ -3498,6 +3498,10 @@ GSErrCode Initialize (void)
             scriptUICommands, "1.8.1",
             "Opens Archicad's Save Library Part dialog (object, door or window), waits for the user and returns the location chosen to save the library part to, or reports that the user cancelled. Nothing is saved."
         );
+        err |= RegisterCommand<PickLibraryFolderCommand> (
+            scriptUICommands, "1.8.1",
+            "Opens Archicad's dialog for choosing or creating a library folder, waits for the user and returns the location of the folder, or reports that the user cancelled. The folder is not added to the libraries of the project."
+        );
         AddCommandGroup (scriptUICommands);
     }
 
