@@ -3,6 +3,7 @@
 #include "APIEnvir.h"
 #include "ACAPinc.h"
 #include "DGModule.hpp"
+#include "MarketplaceInstalls.hpp"
 
 #include <ctime>
 #include <vector>
@@ -13,9 +14,13 @@
 // Refresh; Documents/Tapir/config.json's marketplaceCatalogueUrl overrides the address for testing. The last good
 // copy is kept in Documents/Tapir/marketplace/catalogue.json and shown when the fetch fails.
 //
-// This is part 1 of the plan in #2408: the window, the catalogue, search, categories, the Available tab and the
-// details of the selected script. Installing, updating and removing scripts come in the next parts, so the
-// Installed and Updates tabs are empty for now.
+// Install downloads the newest version's entry file at its pinned commit, checks its SHA-256 against the catalogue
+// before anything is written, asks once per author whether their scripts may run, and writes it to
+// Documents/Tapir/marketplace/<slug>/<version>/ (see MarketplaceInstalls.hpp). Remove deletes that folder.
+//
+// Parts 1 and 2 of the plan in #2408 are done: the window, the catalogue, search, categories, the Available and
+// Installed tabs, the details, Install, Remove and Enabled. Updates (part 3), the palette's Marketplace section
+// (part 4) and the README and screenshots (part 5) come next, so the Updates tab is empty for now.
 class ScriptManager final : public DG::Palette,
     public DG::PanelObserver,
     public DG::ButtonItemObserver,
@@ -52,6 +57,9 @@ public:
         GS::UniString              changes;   // "model", "files", "read-only" or empty
         GS::Array<GS::UniString>   screenshots;
         std::vector<ScriptVersion> versions;
+        // False for an installed script the catalogue no longer lists (or no catalogue could be loaded): it is only
+        // on the Installed tab, with its installed version as its one version.
+        bool                       inCatalogue = true;
     };
 
     virtual ~ScriptManager ();
@@ -97,15 +105,30 @@ private:
     DG::Button           shareButton;
     DG::Button           scriptsPageButton;
     DG::Button           closeButton;
+    DG::CheckBox         enabledCheckBox;
+    DG::Button           installButton;
+    DG::Button           removeButton;
 
-    std::vector<Script> scripts;            // the catalogue, in its order (by slug)
+    std::vector<Script> scripts;            // the catalogue, in its order (by slug), then the installed scripts it lacks
     bool                hasCatalogue = false;
     std::time_t         catalogueTime = 0;   // when the shown catalogue was fetched
     std::vector<size_t> shownScripts;       // the index in scripts of each row of scriptList
+    GS::UniString       selectedSlug;       // the script selected last, selected again when the list is rebuilt
     bool                hiddenByArchicad = false;
+    MarketplaceInstalls::State installs;     // installed.json
 
     // Fetches the catalogue (falling back to the cached copy, see the top of the class) and fills the window.
     void LoadCatalogue ();
+    // Re-reads installed.json and lists the installed scripts the catalogue lacks (see Script::inCatalogue).
+    void LoadInstalls ();
+    void MergeInstalledScripts ();
+
+    const MarketplaceInstalls::InstalledScript* GetInstalled (const Script& script) const;
+    // Downloads, checks and writes the newest version of the script, after asking about its author; false when it
+    // was not installed (the reason was shown).
+    bool Install (const Script& script);
+    bool Remove (const Script& script);
+    void ShowInstallError (const Script& script, const GS::UniString& reason) const;
 
     Tab GetCurrentTab () const;
     GS::UniString GetSelectedCategory () const;   // empty: All categories

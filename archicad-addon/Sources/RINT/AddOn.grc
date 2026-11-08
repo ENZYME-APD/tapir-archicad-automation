@@ -173,6 +173,26 @@
 /* [ 26] */ "by %T - %T available"
 /* [ 27] */ "%T or newer"
 /* [ 28] */ "What is new in %T"
+/* [ 29] */ "by %T - %T installed - %T available"
+/* [ 30] */ "%T installed - no longer in the catalogue"
+/* [ 31] */ "Tapir Script Manager"
+/* [ 32] */ "Scripts by %T run Python code on this computer. Allow scripts by %T?"
+/* [ 33] */ "Allow"
+/* [ 34] */ "Cancel"
+/* [ 35] */ "OK"
+/* [ 36] */ "%T could not be installed."
+/* [ 37] */ "The catalogue has no download for version %T."
+/* [ 38] */ "The catalogue gives it a name that cannot be used for a file or folder: %T"
+/* [ 39] */ "%T could not be downloaded: %T"
+/* [ 40] */ "%T does not match the catalogue: its SHA-256 is %T, the catalogue says %T. Nothing was written."
+/* [ 41] */ "%T could not be written."
+/* [ 42] */ "Remove %T?"
+/* [ 43] */ "Its files are deleted from %T."
+/* [ 44] */ "Remove"
+/* [ 45] */ "%T could not be removed."
+/* [ 46] */ "Tapir: %T %T was installed in %T"
+/* [ 47] */ "Tapir: %T was removed"
+/* [ 48] */ "%T: %T"
 }
 
 'STR#' ID_UV_STRINGS "Tapir uv Strings" {
@@ -290,10 +310,13 @@
 /* [ 19] */ LeftText                 640 212 100  18    SmallPlain  vCenter  "Licence"
 /* [ 20] */ LeftText                 745 212 185  18    SmallPlain  vCenter  ""
 /* [ 21] */ LeftText                 640 238 290  18    LargeBold   vCenter  ""
-/* [ 22] */ LeftText                 640 258 290 232    SmallPlain  ""
+/* [ 22] */ LeftText                 640 258 290 180    SmallPlain  ""
 /* [ 23] */ Button                    10 500 140  24    LargePlain  "Share a script..."
 /* [ 24] */ Button                   160 500 200  24    LargePlain  "Open the Scripts page"
 /* [ 25] */ Button                   830 500 100  24    LargePlain  "Close"
+/* [ 26] */ CheckBox                 640 444 290  18    LargePlain  "Enabled in the Tapir Palette"
+/* [ 27] */ Button                   830 466 100  24    LargePlain  "Install"
+/* [ 28] */ Button                   830 466 100  24    LargePlain  "Remove"
 }
 
 'DLGH' ID_SCRIPT_MANAGER Tapir_Script_Manager {
@@ -322,6 +345,9 @@
 23   "Share a script on archicad-api.com" ShareButton
 24   "Open https://archicad-api.com/scripts/" ScriptsPageButton
 25   ""                                CloseButton
+26   "Untick to keep the script installed but leave it out of the list of the Tapir Palette" EnabledCheckBox
+27   "Download the newest version, check it and install it" InstallButton
+28   "Delete the installed script" RemoveButton
 }
 
 'GDLG' ID_SCRIPTUI_PALETTE Palette | leftCaption | close | grow   0   0  600  450  "Tapir Script UI"  {
