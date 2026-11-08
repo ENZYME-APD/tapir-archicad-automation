@@ -181,6 +181,57 @@
 #define ID_REPORT_STRINGS_CONFIG_SAVE_FAILED    20
 #define ID_REPORT_STRINGS_COMMAND_NOT_REGISTERED 21
 
+// The Script Manager (#2408): its window, its texts and its menu item. #2408 reserves 32120-32122 and the icons
+// 32540-32549 for it.
+#define ID_SCRIPT_MANAGER                    32120
+#define ID_SCRIPT_MANAGER_SEARCH                  1
+#define ID_SCRIPT_MANAGER_AVAILABLE_TAB           2
+#define ID_SCRIPT_MANAGER_INSTALLED_TAB           3
+#define ID_SCRIPT_MANAGER_UPDATES_TAB             4
+#define ID_SCRIPT_MANAGER_CATALOGUE_TIME          5
+#define ID_SCRIPT_MANAGER_REFRESH                 6
+#define ID_SCRIPT_MANAGER_CATEGORIES              7
+#define ID_SCRIPT_MANAGER_FITS                    8
+#define ID_SCRIPT_MANAGER_SCRIPTS                 9
+#define ID_SCRIPT_MANAGER_NAME                   10
+#define ID_SCRIPT_MANAGER_BYLINE                 11
+#define ID_SCRIPT_MANAGER_SUMMARY                12
+#define ID_SCRIPT_MANAGER_CHANGES_LABEL          13
+#define ID_SCRIPT_MANAGER_CHANGES_VALUE          14
+#define ID_SCRIPT_MANAGER_ARCHICAD_LABEL         15
+#define ID_SCRIPT_MANAGER_ARCHICAD_VALUE         16
+#define ID_SCRIPT_MANAGER_TAPIR_LABEL            17
+#define ID_SCRIPT_MANAGER_TAPIR_VALUE            18
+#define ID_SCRIPT_MANAGER_LICENCE_LABEL          19
+#define ID_SCRIPT_MANAGER_LICENCE_VALUE          20
+#define ID_SCRIPT_MANAGER_WHAT_IS_NEW            21
+#define ID_SCRIPT_MANAGER_CHANGELOG              22
+#define ID_SCRIPT_MANAGER_SHARE                  23
+#define ID_SCRIPT_MANAGER_SCRIPTS_PAGE           24
+#define ID_SCRIPT_MANAGER_CLOSE                  25
+
+#define ID_SCRIPT_MANAGER_STRINGS            32121
+// "All categories", then the display names of the 12 categories in the order of CategoryKeys in ScriptManager.cpp
+#define ID_SCRIPT_MANAGER_STRINGS_ALL_CATEGORIES  1
+#define ID_SCRIPT_MANAGER_STRINGS_AVAILABLE_TAB  14
+#define ID_SCRIPT_MANAGER_STRINGS_INSTALLED_TAB  15
+#define ID_SCRIPT_MANAGER_STRINGS_UPDATES_TAB    16
+#define ID_SCRIPT_MANAGER_STRINGS_CHECKED        17
+#define ID_SCRIPT_MANAGER_STRINGS_CHECKED_OFFLINE 18
+#define ID_SCRIPT_MANAGER_STRINGS_TODAY          19
+#define ID_SCRIPT_MANAGER_STRINGS_NOT_LOADED     20
+#define ID_SCRIPT_MANAGER_STRINGS_FETCH_FAILED_REPORT 21
+#define ID_SCRIPT_MANAGER_STRINGS_NOT_A_CATALOGUE 22
+#define ID_SCRIPT_MANAGER_STRINGS_NAME_COLUMN    23
+#define ID_SCRIPT_MANAGER_STRINGS_SUMMARY_COLUMN 24
+#define ID_SCRIPT_MANAGER_STRINGS_VERSION_COLUMN 25
+#define ID_SCRIPT_MANAGER_STRINGS_BYLINE         26
+#define ID_SCRIPT_MANAGER_STRINGS_OR_NEWER       27
+#define ID_SCRIPT_MANAGER_STRINGS_WHAT_IS_NEW    28
+
+#define ID_ADDON_MENU_FOR_SCRIPT_MANAGER     32122
+#define ID_ADDON_MENU_SCRIPT_MANAGER              1
+
 #define ID_BUILTINSCRIPTS_NAMES         32004
 
 #define ID_TAPIR_LOGO                   32502
@@ -199,6 +250,8 @@
 // for every other item, so that the names stay aligned.
 #define ID_SCRIPT_RUNNING_ICON          32514
 #define ID_SCRIPT_NOT_RUNNING_ICON      32515
+// The Script Manager's button on the palette bar (#2408, icons 32540-32549)
+#define ID_SCRIPTMANAGER_BUTTON_ICON    32540
 
 #define ID_ABOUT_DIALOG                 32003
 #define ID_PALETTE                      32004

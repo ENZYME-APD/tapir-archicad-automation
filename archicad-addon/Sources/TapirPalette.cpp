@@ -17,6 +17,7 @@
 #include "MigrationHelper.hpp"
 #include "ScriptRequirements.hpp"
 #include "ScriptUIPalette.hpp"
+#include "ScriptManager.hpp"
 
 #include <cstdlib>
 #include <cstring>
@@ -482,6 +483,7 @@ TapirPalette::TapirPalette ()
     , manageShortcutsButton (GetReference (), 7)
     , installedVersionText (GetReference (), 8)
     , checkForUpdatesButton (GetReference (), 9)
+    , scriptManagerButton (GetReference (), 10)
 {
     Attach (*this);
     AttachToAllItems (*this);
@@ -677,6 +679,8 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
         OpenShortcutsDialog ();
     } else if (ev.GetSource () == &checkForUpdatesButton) {
         CheckForUpdates ();
+    } else if (ev.GetSource () == &scriptManagerButton) {
+        ScriptManager::Instance ().Show ();
     }
 }
 

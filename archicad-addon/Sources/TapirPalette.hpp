@@ -87,6 +87,7 @@ private:
     DG::IconButton manageShortcutsButton;
     DG::LeftText   installedVersionText;
     DG::IconButton checkForUpdatesButton;
+    DG::IconButton scriptManagerButton;   // opens the Script Manager (#2408)
 
     // A script started by the palette, until it ended or was stopped. Any number of scripts run at the same time,
     // but a script at most once: Run, and its shortcut slot, stop it while it runs (issue #1819).

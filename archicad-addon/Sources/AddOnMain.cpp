@@ -19,6 +19,7 @@
 #include "AboutDialog.hpp"
 #include "TapirPalette.hpp"
 #include "ScriptUIPalette.hpp"
+#include "ScriptManager.hpp"
 #include "VersionChecker.hpp"
 
 #include "ApplicationCommands.hpp"
@@ -120,6 +121,14 @@ static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
                     break;
             }
             break;
+        case ID_ADDON_MENU_FOR_SCRIPT_MANAGER:
+            switch (menuParams->menuItemRef.itemIndex) {
+                case ID_ADDON_MENU_SCRIPT_MANAGER:
+                    // The same as the palette's Script Manager button.
+                    ScriptManager::Instance ().Show ();
+                    break;
+            }
+            break;
         case ID_ADDON_MENU_FOR_UPDATE:
             switch (menuParams->menuItemRef.itemIndex) {
                 case ID_ADDON_MENU_UPDATE:
@@ -164,6 +173,7 @@ GSErrCode RegisterInterface (void)
     GSErrCode err = NoError;
 
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_PALETTE, 0, MenuCode_UserDef, MenuFlag_Default);
+    err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_SCRIPT_MANAGER, 0, MenuCode_UserDef, MenuFlag_Default);
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_UPDATE, 0, MenuCode_UserDef, MenuFlag_Default);
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU, 0, MenuCode_UserDef, MenuFlag_Default);
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_SHORTCUTS, 0, MenuCode_UserDef, MenuFlag_SeparatorBefore);
@@ -186,6 +196,7 @@ GSErrCode Initialize (void)
     GSErrCode err = NoError;
 
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_PALETTE, MenuCommandHandler);
+    err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_SCRIPT_MANAGER, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_UPDATE, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_SHORTCUTS, MenuCommandHandler);
@@ -197,6 +208,7 @@ GSErrCode Initialize (void)
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_RUNSCRIPT_6, MenuCommandHandler);
     err |= TapirPalette::RegisterPaletteControlCallBack ();
     err |= ScriptUIPalette::RegisterPaletteControlCallBack ();
+    err |= ScriptManager::RegisterPaletteControlCallBack ();
     // The add-on's one project event handler: drops the element states of CaptureElementState when
     // the project closes and passes window, floor and project events to the notification clients.
     err |= InstallProjectEventHandler ();
