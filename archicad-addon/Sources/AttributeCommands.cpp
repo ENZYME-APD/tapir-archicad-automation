@@ -8505,16 +8505,7 @@ GS::Optional<GS::UniString> GetUserDataOfAttributesCommand::GetRawResponseSchema
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "pairs": {
-                                    "$ref": "#/UserDataPairs"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "pairs"
-                            ]
+                            "$ref": "#/AttributeUserData"
                         },
                         {
                             "$ref": "#/ErrorItem"

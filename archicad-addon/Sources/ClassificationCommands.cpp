@@ -143,16 +143,7 @@ GS::Optional<GS::UniString> GetElementsByClassificationCommand::GetRawResponseSc
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elements": {
-                                    "$ref": "#/Elements"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elements"
-                            ]
+                            "$ref": "#/ClassificationItemElements"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -412,18 +403,7 @@ GS::Optional<GS::UniString> GetClassificationsOfAttributesCommand::GetRawRespons
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "classificationIds": {
-                                    "type": "array",
-                                    "description": "The classification of the attribute in every classification system it is classified in.",
-                                    "items": {
-                                        "$ref": "#/ClassificationId"
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [ "classificationIds" ]
+                            "$ref": "#/AttributeClassifications"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -500,21 +480,7 @@ GS::Optional<GS::UniString> SetClassificationsOfAttributesCommand::GetInputParam
                 "type": "array",
                 "description": "The classifications to set, one per attribute and classification system.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "attributeId": {
-                            "$ref": "#/AttributeId"
-                        },
-                        "classificationId": {
-                            "$ref": "#/ClassificationId",
-                            "description": "The classification to set. The item replaces the attribute's current item in the same classification system. If the classificationItemId field is omitted, the attribute becomes unclassified in the given system."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "attributeId",
-                        "classificationId"
-                    ]
+                    "$ref": "#/AttributeClassification"
                 }
             }
         },
@@ -1019,20 +985,7 @@ GS::Optional<GS::UniString> GetClassificationsOfToolDefaultsCommand::GetRawRespo
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "classificationIds": {
-                                    "type": "array",
-                                    "description": "One item for each classification system in which the tool default is classified. Systems in which it is unclassified are left out.",
-                                    "items": {
-                                        "$ref": "#/ClassificationId"
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "classificationIds"
-                            ]
+                            "$ref": "#/ToolDefaultClassifications"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -1107,41 +1060,7 @@ GS::Optional<GS::UniString> GetAllClassificationSystemsCommand::GetRawResponseSc
                 "type": "array",
                 "description": "The classification systems of the project.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "classificationSystemId": {
-                            "$ref": "#/ClassificationSystemId"
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The display name of the classification system."
-                        },
-                        "description": {
-                            "type": "string",
-                            "description": "The description of the classification system."
-                        },
-                        "source": {
-                            "type": "string",
-                            "description": "The source of the classification system (e.g. URL to a classification system standard)."
-                        },
-                        "version": {
-                            "type": "string",
-                            "description": "The version of the classification system."
-                        },
-                        "date": {
-                            "$ref": "#/Date",
-                            "description": "The release date of the classification system's current version."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "classificationSystemId",
-                        "name",
-                        "description",
-                        "source",
-                        "version",
-                        "date"
-                    ]
+                    "$ref": "#/ClassificationSystemSummary"
                 }
             }
         },
@@ -1800,21 +1719,7 @@ GS::Optional<GS::UniString> GetClassificationItemParentsCommand::GetRawResponseS
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "classificationSystemId": {
-                                    "$ref": "#/ClassificationSystemId",
-                                    "description": "The classification system the item belongs to."
-                                },
-                                "parentClassificationItemId": {
-                                    "$ref": "#/ClassificationItemId",
-                                    "description": "The parent item. Missing for a top level item of its system."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "classificationSystemId"
-                            ]
+                            "$ref": "#/ClassificationItemParent"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -2044,42 +1949,7 @@ GS::Optional<GS::UniString> GetClassificationItemVisibilityCommand::GetRawRespon
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "visibilities": {
-                                    "type": "array",
-                                    "description": "One entry per classification item, in the order of the input. A non-existing classification item is represented by an error object.",
-                                    "items": {
-                                        "type": "object",
-                                        "oneOf": [
-                                            {
-                                                "type": "object",
-                                                "properties": {
-                                                    "classificationItemId": {
-                                                        "$ref": "#/ClassificationItemId"
-                                                    },
-                                                    "isVisible": {
-                                                        "type": "boolean",
-                                                        "description": "Whether the classification item is visible (offered) for the target, as Archicad reports it. It can be true even if a parent item is not visible. It does not tell whether the target is classified with the item."
-                                                    }
-                                                },
-                                                "additionalProperties": false,
-                                                "required": [
-                                                    "classificationItemId",
-                                                    "isVisible"
-                                                ]
-                                            },
-                                            {
-                                                "$ref": "#/ErrorItem"
-                                            }
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "visibilities"
-                            ]
+                            "$ref": "#/ClassificationItemVisibilities"
                         },
                         {
                             "$ref": "#/ErrorItem"

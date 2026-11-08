@@ -495,12 +495,7 @@ GS::Optional<GS::UniString> GetAllPropertiesCommand::GetInputParametersSchema ()
                 "type": "array",
                 "description": "Returns only the properties of these types. All types are returned when omitted.",
                 "items": {
-                    "type": "string",
-                    "enum": [
-                        "StaticBuiltIn",
-                        "DynamicBuiltIn",
-                        "Custom"
-                    ]
+                    "$ref": "#/PropertyDefinitionType"
                 }
             },
             "includeAvailability": {
@@ -1010,12 +1005,7 @@ GS::Optional<GS::UniString> GetPropertyDefinitionsOfElementComponentsCommand::Ge
                                                 "type": "string"
                                             },
                                             "propertyType": {
-                                                "type": "string",
-                                                "enum": [
-                                                    "StaticBuiltIn",
-                                                    "DynamicBuiltIn",
-                                                    "Custom"
-                                                ]
+                                                "$ref": "#/PropertyDefinitionType"
                                             }
                                         },
                                         "additionalProperties": false,
@@ -1730,54 +1720,7 @@ GS::Optional<GS::UniString> GetPropertyValuesOfAttributesCommand::GetRawResponse
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "propertyValues": {
-                                    "type": "array",
-                                    "items": {
-                                        "oneOf": [
-                                            {
-                                                "$ref": "#/PropertyValueArrayItem"
-                                            },
-                                            {
-                                                "type": "object",
-                                                "description": "A property value with its status, returned when includeStatus is true.",
-                                                "properties": {
-                                                    "propertyValue": {
-                                                        "$ref": "#/PropertyValue",
-                                                        "description": "Missing when the value is not available or not evaluated."
-                                                    },
-                                                    "isAvailable": {
-                                                        "type": "boolean",
-                                                        "description": "Whether the property definition is available for the attribute."
-                                                    },
-                                                    "isEditable": {
-                                                        "type": "boolean",
-                                                        "description": "Whether the value of the property is editable for the attribute."
-                                                    },
-                                                    "isVisible": {
-                                                        "type": "boolean",
-                                                        "description": "Whether the property definition is visible for the attribute."
-                                                    }
-                                                },
-                                                "additionalProperties": false,
-                                                "required": [
-                                                    "isAvailable",
-                                                    "isEditable",
-                                                    "isVisible"
-                                                ]
-                                            },
-                                            {
-                                                "$ref": "#/ErrorItem"
-                                            }
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "propertyValues"
-                            ]
+                            "$ref": "#/AttributePropertyValuesResult"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -2063,36 +2006,7 @@ GS::Optional<GS::UniString> SetBuiltInPropertyValuesOfAttributesCommand::GetInpu
                 "type": "array",
                 "description": "The attributes and the built-in property values to set on each.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "attributeId": {
-                            "$ref": "#/AttributeId"
-                        },
-                        "properties": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "propertyId": {
-                                        "$ref": "#/PropertyId"
-                                    },
-                                    "propertyValue": {
-                                        "$ref": "#/PropertyValue"
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "propertyId",
-                                    "propertyValue"
-                                ]
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "attributeId",
-                        "properties"
-                    ]
+                    "$ref": "#/AttributeBuiltInPropertyValues"
                 }
             }
         },
@@ -2512,14 +2426,7 @@ GS::Optional<GS::UniString> GetPropertiesOfToolDefaultsCommand::GetInputParamete
                 }
             },
             "filter": {
-                "type": "string",
-                "description": "Which property definitions to return: the user defined (custom) ones, the fundamental built-in ones, the user level built-in ones, or all of them. The default is All. From Archicad 28 the API no longer separates the two kinds of built-in properties, so there FundamentalBuiltIn and UserLevelBuiltIn both return every built-in property.",
-                "enum": [
-                    "UserDefined",
-                    "FundamentalBuiltIn",
-                    "UserLevelBuiltIn",
-                    "All"
-                ]
+                "$ref": "#/ToolDefaultPropertyFilter"
             },
             "includeValues": {
                 "type": "boolean",
@@ -2544,44 +2451,7 @@ GS::Optional<GS::UniString> GetPropertiesOfToolDefaultsCommand::GetRawResponseSc
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "properties": {
-                                    "type": "array",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "propertyId": {
-                                                "$ref": "#/PropertyId"
-                                            },
-                                            "propertyName": {
-                                                "type": "string"
-                                            },
-                                            "propertyGroupId": {
-                                                "$ref": "#/PropertyGroupId"
-                                            },
-                                            "propertyValue": {
-                                                "$ref": "#/PropertyValue",
-                                                "description": "The value in the tool default, in the format of GetPropertyValuesOfElements. Only returned when includeValues is true."
-                                            },
-                                            "error": {
-                                                "$ref": "#/Error",
-                                                "description": "Why the value could not be read. Only returned when includeValues is true."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "propertyId",
-                                            "propertyName",
-                                            "propertyGroupId"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "properties"
-                            ]
+                            "$ref": "#/ToolDefaultProperties"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -4763,22 +4633,7 @@ GS::Optional<GS::UniString> GetPropertyAvailabilityOfDefaultsCommand::GetRawResp
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "available": {
-                                    "type": "boolean",
-                                    "description": "Whether the property is available for the tool default of the element type."
-                                },
-                                "visible": {
-                                    "type": "boolean",
-                                    "description": "Whether the property is visible for the tool default of the element type."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "available",
-                                "visible"
-                            ]
+                            "$ref": "#/DefaultPropertyAvailability"
                         },
                         {
                             "$ref": "#/ErrorItem"
