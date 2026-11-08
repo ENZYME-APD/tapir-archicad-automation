@@ -174,6 +174,7 @@ inline GSErrCode ACAPI_HierarchicalEditing_GetHierarchicalElementOwner (const AP
 // Archicad 26 only, Archicad 25 has no attribute replacement notification.
 #define ACAPI_Notification_CatchAttributeReplacement ACAPI_Notify_CatchAttributeReplacement
 #define ACAPI_Notification_CatchToolChange ACAPI_Notify_CatchToolChange
+#define ACAPI_Notification_CatchViewEvent ACAPI_Notify_CatchViewEvent
 
 #define ACAPI_ModelAccess_Get3DInfo ACAPI_Element_Get3DInfo
 #define ACAPI_ModelAccess_GetComponent ACAPI_3D_GetComponent

@@ -14,7 +14,7 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                 "SetElementNotificationClient",
                 "Sets up a new notification client to receive element events: Archicad posts the new, changed, " +
                 "deleted, reserved and released elements, and on request the selection, window, project, " +
-                "attribute replacement and tool change events, as JSON to " +
+                "attribute replacement, tool change and Navigator item events, as JSON to " +
                 "http://<Host>:<Port>/element_notification. " +
                 "Setting up the same client again changes which events it gets. The client (an HTTP server) is " +
                 "not part of this component; remove it with RemoveElementNotificationClient.",
@@ -102,7 +102,14 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
                     .WithTypeName("booleanItem"),
                 GH_ParamAccess.item);
 
-            SetOptionality(new[] { 0, 2, 3, 4, 5, 6, 7, 8, 9, 10 });
+            inManager.AddBooleanParameter(
+                "NotifyOnViewEvents",
+                "NotifyOnViewEvents",
+                "Notify when a Navigator item (a view, story, layout, publisher set item) is inserted, modified, deleted or opened, as viewEvent with the event, the navigator map and the item's guid. Defaults to false. Optional."
+                    .WithTypeName("booleanItem"),
+                GH_ParamAccess.item);
+
+            SetOptionality(new[] { 0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 });
         }
 
         protected override void Solve(
@@ -176,6 +183,12 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
             if (da.GetData(10, ref notifyOnToolChange))
             {
                 parameters["notifyOnToolChange"] = notifyOnToolChange;
+            }
+
+            var notifyOnViewEvents = false;
+            if (da.GetData(11, ref notifyOnViewEvents))
+            {
+                parameters["notifyOnViewEvents"] = notifyOnViewEvents;
             }
 
             if (TryGetCadResponse(

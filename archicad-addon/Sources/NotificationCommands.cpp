@@ -13,6 +13,8 @@
 #include "ApplicationCommands.hpp"
 #include "MigrationHelper.hpp"
 
+static void CatchViewEvents (APIViewEventHandlerProc* handlerProc);
+
 static
 GS::String ElementEventTypeToString (AddElementNotificationClientCommand::ElementEventType eventType)
 {
@@ -81,6 +83,7 @@ bool AddElementNotificationClientCommand::hasClientToNotifyOnReservationChanges 
 bool AddElementNotificationClientCommand::hasClientToNotifyOnSelectionChange = false;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnAttributeReplacement = false;
 bool AddElementNotificationClientCommand::hasClientToNotifyOnToolChange = false;
+bool AddElementNotificationClientCommand::hasClientToNotifyOnViewEvents = false;
 std::unique_ptr<AddElementNotificationClientCommand::EventQueue> AddElementNotificationClientCommand::queuedEvents;
 GS::Thread AddElementNotificationClientCommand::messageSenderThread;
 
@@ -160,6 +163,10 @@ GS::Optional<GS::UniString> AddElementNotificationClientCommand::GetInputParamet
             "notifyOnToolChange": {
                 "type": "boolean",
                 "description": "Notify when the user switches to another tool in the Toolbox. The message is {\"toolChanged\": {\"elementType\": ...}}: elementType is the element type of the new tool, as in elementTypesToObserve (for example \"Wall\" or \"Column\"), \"None\" for the Arrow and the Marquee, and \"Unknown\" for a tool Tapir has no type name for. Optional parameter, by default false."
+            },
+            "notifyOnViewEvents": {
+                "type": "boolean",
+                "description": "Notify when an item of the Project Navigator or the Organizer is inserted (for example a view is saved or a layout is created), modified (for example renamed), deleted or opened. The message is {\"viewEvent\": {\"event\": ..., \"navigatorMapId\": ..., \"navigatorItemId\": {\"guid\": ...}}}: event is one of \"Inserted\", \"Modified\", \"Deleted\" and \"Opened\", navigatorMapId is the navigator map of the item, one of \"ProjectMap\", \"PublicViewMap\", \"MyViewMap\", \"LayoutBook\" and \"PublisherSets\" (as navigatorMapId of GetNavigatorItemTree), and navigatorItemId is the guid of the navigator item, as in the response of GetNavigatorItemTree (a deleted item no longer exists). Optional parameter, by default false."
             }
         },
         "additionalProperties": false,
@@ -222,6 +229,9 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
     bool notifyOnToolChange = false;
     parameters.Get ("notifyOnToolChange", notifyOnToolChange);
 
+    bool notifyOnViewEvents = false;
+    parameters.Get ("notifyOnViewEvents", notifyOnViewEvents);
+
     std::set<API_ElemTypeID> elementTypesToObserve;
     GS::Array<GS::UniString> elementTypeNames;
     if (parameters.Get ("elementTypesToObserve", elementTypeNames)) {
@@ -239,7 +249,7 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
 
     const GS::UniString connectionUrlStr = GS::UniString::Printf ("http://%T:%d/", host.ToPrintf (), port);
     const IO::URI::URI connectionUrl (connectionUrlStr);
-    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges, notifyOnSelectionChange, notifyOnWindowChange, notifyOnProjectEvents, notifyOnAttributeReplacement, notifyOnToolChange, elementTypesToObserve));
+    auto result = clients.emplace(std::piecewise_construct, std::forward_as_tuple(connectionUrlStr), std::forward_as_tuple(connectionUrl, notifyOnNew, notifyOnModification, notifyOnReservationChanges, notifyOnSelectionChange, notifyOnWindowChange, notifyOnProjectEvents, notifyOnAttributeReplacement, notifyOnToolChange, notifyOnViewEvents, elementTypesToObserve));
     if (!result.second) {
         result.first->second.notifyOnNew = notifyOnNew;
         result.first->second.notifyOnModification = notifyOnModification;
@@ -249,6 +259,7 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
         result.first->second.notifyOnProjectEvents = notifyOnProjectEvents;
         result.first->second.notifyOnAttributeReplacement = notifyOnAttributeReplacement;
         result.first->second.notifyOnToolChange = notifyOnToolChange;
+        result.first->second.notifyOnViewEvents = notifyOnViewEvents;
         result.first->second.elementTypesToObserve = elementTypesToObserve;
         // A client registered again without these notifications may have been the
         // last one that wanted them; uninstall the handlers in that case, as
@@ -257,6 +268,7 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
         UninstallSelectionChangeHandlerIfNotNeeded ();
         UninstallAttributeReplacementHandlerIfNotNeeded ();
         UninstallToolChangeHandlerIfNotNeeded ();
+        UninstallViewEventHandlerIfNotNeeded ();
     }
 
     if (notifyOnNew && !hasClientToNotifyOnNew) {
@@ -289,6 +301,11 @@ GS::ObjectState AddElementNotificationClientCommand::Execute (const GS::ObjectSt
     if (notifyOnToolChange && !hasClientToNotifyOnToolChange) {
         ACAPI_Notification_CatchToolChange (ToolChangeHandler);
         hasClientToNotifyOnToolChange = true;
+    }
+
+    if (notifyOnViewEvents && !hasClientToNotifyOnViewEvents) {
+        CatchViewEvents (ViewEventHandler);
+        hasClientToNotifyOnViewEvents = true;
     }
 
     ACAPI_Element_InstallElementObserver (ElementEventHandlerProc);
@@ -571,6 +588,94 @@ AddElementNotificationClientCommand::ToolChangeHandler (const API_ToolBoxItem* n
     for (auto& kv : clients) {
         auto& client = kv.second;
         if (!client.notifyOnToolChange) {
+            continue;
+        }
+
+        SendMessageToNotificationClient (client, message);
+    }
+
+    return NoError;
+}
+
+// The navigator maps whose item events are reported, with the names navigatorMapId of
+// GetNavigatorItemTree uses (MyViewMap is not one of those, it has the API's name).
+static const std::pair<API_NavigatorMapID, const char*> ObservedNavigatorMaps[] = {
+    { API_ProjectMap,       "ProjectMap" },
+    { API_PublicViewMap,    "PublicViewMap" },
+    { API_MyViewMap,        "MyViewMap" },
+    { API_LayoutMap,        "LayoutBook" },
+    { API_PublisherSets,    "PublisherSets" }
+};
+
+static GS::UniString NavigatorMapIdToString (API_NavigatorMapID mapId)
+{
+    for (const auto& map : ObservedNavigatorMaps) {
+        if (map.first == mapId) {
+            return map.second;
+        }
+    }
+    return "Unknown";
+}
+
+static GS::Optional<GS::UniString> ViewEventToString (API_NotifyViewEventID notifID)
+{
+    switch (notifID) {
+        case APINotifyView_Inserted:    return GS::UniString ("Inserted");
+        case APINotifyView_Modified:    return GS::UniString ("Modified");
+        case APINotifyView_Deleted:     return GS::UniString ("Deleted");
+        case APINotifyView_Opened:      return GS::UniString ("Opened");
+        default:                        return GS::NoValue;
+    }
+}
+
+// Installs the handler for every observed navigator map, or removes it with nullptr.
+static void CatchViewEvents (APIViewEventHandlerProc* handlerProc)
+{
+    // Begin and End only frame the other events, so they are not asked for.
+    const GSFlags eventTypes = APINotifyView_Inserted | APINotifyView_Modified | APINotifyView_Deleted | APINotifyView_Opened;
+    for (const auto& map : ObservedNavigatorMaps) {
+        ACAPI_Notification_CatchViewEvent (eventTypes, map.first, handlerProc);
+    }
+}
+
+void
+AddElementNotificationClientCommand::UninstallViewEventHandlerIfNotNeeded ()
+{
+    if (!hasClientToNotifyOnViewEvents) {
+        return;
+    }
+
+    for (const auto& kv : clients) {
+        if (kv.second.notifyOnViewEvents) {
+            return;
+        }
+    }
+
+    CatchViewEvents (nullptr);
+    hasClientToNotifyOnViewEvents = false;
+}
+
+GSErrCode
+AddElementNotificationClientCommand::ViewEventHandler (const API_NotifyViewEventType* viewEvent)
+{
+    if (viewEvent == nullptr) {
+        return NoError;
+    }
+
+    const GS::Optional<GS::UniString> event = ViewEventToString (viewEvent->notifID);
+    if (!event.HasValue ()) {
+        return NoError;
+    }
+
+    const GS::ObjectState message ("viewEvent", GS::ObjectState (
+        "event", event.Get (),
+        "navigatorMapId", NavigatorMapIdToString (viewEvent->mapId),
+        "navigatorItemId", CreateGuidObjectState (viewEvent->itemGuid)));
+
+    // Sent at once, like the selection: a navigator item event is not an element event.
+    for (auto& kv : clients) {
+        auto& client = kv.second;
+        if (!client.notifyOnViewEvents) {
             continue;
         }
 
@@ -1016,6 +1121,7 @@ GS::ObjectState RemoveElementNotificationClientCommand::Execute (const GS::Objec
     AddElementNotificationClientCommand::UninstallSelectionChangeHandlerIfNotNeeded ();
     AddElementNotificationClientCommand::UninstallAttributeReplacementHandlerIfNotNeeded ();
     AddElementNotificationClientCommand::UninstallToolChangeHandlerIfNotNeeded ();
+    AddElementNotificationClientCommand::UninstallViewEventHandlerIfNotNeeded ();
 
     return CreateSuccessfulExecutionResult ();
 }
