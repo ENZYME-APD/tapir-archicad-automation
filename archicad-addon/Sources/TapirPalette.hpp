@@ -57,6 +57,9 @@ public:
     // their output reader threads, so that no thread outlives the add-on (Archicad crashed on quit while a palette
     // script was running).
     static void StopRunningScriptOnQuit ();
+    // Called from FreeData after StopRunningScriptOnQuit: destroys the palette while Archicad's user interface still
+    // exists, not in the destructor of the static instance when the add-on is unloaded (as ScriptUIPalette::Release).
+    static void Release ();
 
 private:
     struct PopUpItemData : public GS::Object
