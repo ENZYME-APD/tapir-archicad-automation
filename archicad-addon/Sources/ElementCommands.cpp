@@ -229,6 +229,46 @@ static void AddEdgeSideMaterialsFromMemo (const API_Guid& guid, GS::ObjectState&
     }
 }
 
+static GS::UniString EdgeTrimTypeToString (API_EdgeTrimID sideType)
+{
+    switch (sideType) {
+        case APIEdgeTrim_Vertical:      return "Vertical";
+        case APIEdgeTrim_Perpendicular: return "Perpendicular";
+        case APIEdgeTrim_Horizontal:    return "Horizontal";
+        case APIEdgeTrim_CustomAngle:   return "CustomAngle";
+        case APIEdgeTrim_AlignWithCut:  return "AlignWithCut";
+        default:                        return "Vertical";
+    }
+}
+
+// The cut of each edge of a Single-plane Roof's polygon (APIMemoMask_EdgeTrims), in the order
+// of edgeSideMaterials: edgeTrims[i] belongs to the edge from coords[i] to coords[i + 1] (#2363).
+static void AddEdgeTrimsFromMemo (const API_Guid& guid, GS::ObjectState& os)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_Polygon | APIMemoMask_EdgeTrims) != NoError || memo.coords == nullptr || memo.edgeTrims == nullptr) {
+        return;
+    }
+    const GSSize nCoords = BMhGetSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (API_Coord);
+    const GSSize nTrims = BMhGetSize (reinterpret_cast<GSHandle> (memo.edgeTrims)) / sizeof (API_EdgeTrim);
+    const GSSize nPends = memo.pends == nullptr ? 0 : BMhGetSize (reinterpret_cast<GSHandle> (memo.pends)) / sizeof (Int32);
+
+    const auto& edgeTrims = os.AddList<GS::ObjectState> ("edgeTrims");
+    GSIndex iPend = 1;
+    for (GSIndex i = 1; i < nCoords - 1 && i < nTrims; ++i) {
+        if (iPend < nPends && (*memo.pends)[iPend] == i) {
+            ++iPend;
+            continue;
+        }
+        const API_EdgeTrim& trim = (*memo.edgeTrims)[i];
+        GS::ObjectState trimOs;
+        trimOs.Add ("trimType", EdgeTrimTypeToString (trim.sideType));
+        trimOs.Add ("angle", trim.sideAngle);
+        edgeTrims (trimOs);
+    }
+}
+
 // The roof planes of each edge of a Multi-plane Roof's pivot polygon (APIMemoMask_AdditionalPolygon,
 // which the DevKit calls APIMemoMask_PivotPolygon but does not define): per level the angle,
 // the eaves overhang and whether the plane is a gable (#569). The items follow
@@ -3094,6 +3134,9 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             case API_RoofID:
                 AddRoofDetails (elem.roof, elem.header.guid, elem.header.floorInd, nullptr, stories, typeSpecificDetails);
                 AddEdgeSideMaterialsFromMemo (elem.header.guid, typeSpecificDetails);
+                if (elem.roof.roofClass == API_PlaneRoofID) {
+                    AddEdgeTrimsFromMemo (elem.header.guid, typeSpecificDetails);
+                }
                 break;
 
             case API_ShellID: {
