@@ -525,17 +525,7 @@ GS::Optional<GS::UniString> DeleteEmbeddedLibraryItemsCommand::GetInputParameter
                 "type": "array",
                 "description": "A list of embedded library items to delete.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "path": {
-                            "type": "string",
-                            "description": "The relative path of the library item inside the embedded library, the same path AddFilesToEmbeddedLibrary takes as outputPath."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "path"
-                    ]
+                    "$ref": "#/EmbeddedLibraryItem"
                 }
             }
         },
@@ -1151,122 +1141,7 @@ GS::Optional<GS::UniString> CreateLibraryPartsCommand::GetInputParametersSchema 
                 "type": "array",
                 "description": "The library parts to create in the embedded library.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the new library part, as shown in the library and used by CreateObjects as libraryPartName."
-                        },
-                        "parentId": {
-                            "type": "string",
-                            "description": "The parent subtype of the new library part: its unique ID ('{main}-{revision}') or its main GUID, as GetAvailableLibraryParts reports it. Either parentId or parentName is required."
-                        },
-                        "parentName": {
-                            "type": "string",
-                            "description": "The document name of the parent subtype, e.g. 'General Object' or 'General Label' from the Archicad Library; used when parentId is not given."
-                        },
-                        "type": {
-                            "$ref": "#/LibraryPartType",
-                            "description": "Optional. The type of the new library part. By default the type of the parent found by parentName or by a parentId GUID, and Object otherwise."
-                        },
-                        "path": {
-                            "type": "string",
-                            "description": "Optional. The relative path of the .gsm file inside the embedded library, the same kind of path AddFilesToEmbeddedLibrary takes as outputPath. By default '<name>.gsm'."
-                        },
-                        "a": {
-                            "type": "number",
-                            "description": "Optional. The default value of the A (X size) parameter. 1.0 by default."
-                        },
-                        "b": {
-                            "type": "number",
-                            "description": "Optional. The default value of the B (Y size) parameter. 1.0 by default."
-                        },
-                        "masterScript": {
-                            "type": "string",
-                            "description": "Optional. The GDL master script."
-                        },
-                        "script2D": {
-                            "type": "string",
-                            "description": "Optional. The GDL 2D script."
-                        },
-                        "script3D": {
-                            "type": "string",
-                            "description": "Optional. The GDL 3D script."
-                        },
-                        "parameterScript": {
-                            "type": "string",
-                            "description": "Optional. The GDL parameter script (value lists, locks, hiding)."
-                        },
-                        "uiScript": {
-                            "type": "string",
-                            "description": "Optional. The GDL user interface script."
-                        },
-                        "propertiesScript": {
-                            "type": "string",
-                            "description": "Optional. The GDL properties (component listing) script."
-                        },
-                        "parameters": {
-                            "type": "array",
-                            "description": "Optional. The parameters of the library part besides A and B, in the order they appear in the settings dialog. Only simple (non-array) parameters can be defined.",
-                            "items": {
-                                "type": "object",
-                                "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "description": "The GDL variable name of the parameter (at most 31 characters)."
-                                    },
-                                    "type": {
-                                        "type": "string",
-                                        "description": "The type of the parameter, named as GetGDLParametersOfElements reports it.",
-                                        "enum": [
-                                            "Integer",
-                                            "Length",
-                                            "Angle",
-                                            "RealNumber",
-                                            "LightSwitch",
-                                            "RGBColor",
-                                            "Intensity",
-                                            "LineType",
-                                            "Material",
-                                            "FillPattern",
-                                            "PenColor",
-                                            "String",
-                                            "Boolean",
-                                            "Separator",
-                                            "Title",
-                                            "BuildingMaterial",
-                                            "Profile"
-                                        ]
-                                    },
-                                    "value": {
-                                        "description": "Optional. The default value: a number for the numeric and attribute index types, a string for String and Title, true or false for Boolean, 'On' or 'Off' for LightSwitch.",
-                                        "oneOf": [
-                                            { "type": "number" },
-                                            { "type": "string" },
-                                            { "type": "boolean" }
-                                        ]
-                                    },
-                                    "description": {
-                                        "type": "string",
-                                        "description": "Optional. The display name of the parameter in the settings dialog."
-                                    },
-                                    "isHidden": {
-                                        "type": "boolean",
-                                        "description": "Optional. When true, the parameter is hidden from the settings dialog. False by default."
-                                    }
-                                },
-                                "additionalProperties": false,
-                                "required": [
-                                    "name",
-                                    "type"
-                                ]
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name"
-                    ]
+                    "$ref": "#/LibraryPartCreationData"
                 }
             },
             "overwriteExisting": {
@@ -1292,37 +1167,7 @@ GS::Optional<GS::UniString> CreateLibraryPartsCommand::GetRawResponseSchema () c
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "name": {
-                                    "type": "string",
-                                    "description": "The name of the created library part."
-                                },
-                                "unId": {
-                                    "type": "string",
-                                    "description": "The unique ID of the created library part ('{main}-{revision}'), usable as parentId of further library parts."
-                                },
-                                "guid": {
-                                    "type": "string",
-                                    "description": "The main GUID of the created library part, as GetAvailableLibraryParts reports it."
-                                },
-                                "index": {
-                                    "type": "integer",
-                                    "description": "The index of the created library part in the loaded libraries."
-                                },
-                                "path": {
-                                    "type": "string",
-                                    "description": "The relative path of the .gsm file inside the embedded library; DeleteEmbeddedLibraryItems takes it as path."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "name",
-                                "unId",
-                                "guid",
-                                "index",
-                                "path"
-                            ]
+                            "$ref": "#/CreatedLibraryPart"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -2149,19 +1994,7 @@ GS::Optional<GS::UniString> GetAvailableLibraryPartsCommand::GetRawResponseSchem
             "libraryParts": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "guid": { "type": "string" },
-                        "index": { "type": "integer" },
-                        "documentName": { "type": "string" },
-                        "fileName": { "type": "string" },
-                        "typeId": { "$ref": "#/LibraryPartType" },
-                        "type": {
-                            "type": "string",
-                            "enum": ["Object", "Image", "Text", "BinaryListCrit", "Other"],
-                            "description": "The kind of the library part file: a GDL object, an image, a text file, a binary list criteria file or other. Available from Archicad 28; missing when it cannot be read."
-                        }
-                    }
+                    "$ref": "#/AvailableLibraryPart"
                 }
             },
             "skippedCount": {
@@ -2172,11 +2005,7 @@ GS::Optional<GS::UniString> GetAvailableLibraryPartsCommand::GetRawResponseSchem
                 "type": "array",
                 "description": "First five failed indices with their ACAPI error code, for diagnostic.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "index": { "type": "integer" },
-                        "code": { "type": "integer" }
-                    }
+                    "$ref": "#/SkippedLibraryPart"
                 }
             }
         },
@@ -2324,18 +2153,7 @@ GS::Optional<GS::UniString> GetLibrariesOfLibPartsCommand::GetInputParametersSch
                 "type": "array",
                 "description": "Library parts to look up, each given by exactly one of name and guid.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "File name of the library part with extension (the fileName GetAvailableLibraryParts returns). Fails when it is ambiguous."
-                        },
-                        "guid": {
-                            "type": "string",
-                            "description": "The guid GetAvailableLibraryParts returns."
-                        }
-                    },
-                    "additionalProperties": false
+                    "$ref": "#/LibraryPartNameOrGuid"
                 }
             }
         },
@@ -2353,33 +2171,7 @@ GS::Optional<GS::UniString> GetLibrariesOfLibPartsCommand::GetRawResponseSchema 
                 "type": "array",
                 "description": "One entry per input library part, in the same order.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "library": {
-                            "type": "object",
-                            "properties": {
-                                "displayName": { "type": "string" },
-                                "path": { "type": "string" },
-                                "isEmbedded": { "type": "boolean" },
-                                "isBuiltIn": { "type": "boolean" },
-                                "isPackage": { "type": "boolean" },
-                                "isLocal": { "type": "boolean" },
-                                "isMissing": { "type": "boolean" }
-                            }
-                        },
-                        "libraryTreePath": {
-                            "type": "array",
-                            "description": "The path in the Library Manager tree, not a physical location.",
-                            "items": { "type": "string" }
-                        },
-                        "error": {
-                            "type": "object",
-                            "properties": {
-                                "code": { "type": "integer" },
-                                "message": { "type": "string" }
-                            }
-                        }
-                    }
+                    "$ref": "#/LibraryOfLibraryPart"
                 }
             }
         },
@@ -2646,30 +2438,10 @@ GS::Optional<GS::UniString> GetLibraryPartTypeDetailsCommand::GetRawResponseSche
                                 "isPlaceable": { "type": "boolean" },
                                 "isTemplate": { "type": "boolean" },
                                 "objectDetails": {
-                                    "type": "object",
-                                    "description": "The detail flags of an Object, Lamp, Label or Room library part.",
-                                    "properties": {
-                                        "fixSize": { "type": "boolean" },
-                                        "autoHotspot": { "type": "boolean" }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [ "fixSize", "autoHotspot" ]
+                                    "$ref": "#/LibraryPartObjectDetails"
                                 },
                                 "doorWindowDetails": {
-                                    "type": "object",
-                                    "description": "The details of a Door or Window library part.",
-                                    "properties": {
-                                        "mirThick": { "type": "number" },
-                                        "wallInset": { "type": "number" },
-                                        "leftFram": { "type": "number" },
-                                        "righFram": { "type": "number" },
-                                        "topFram": { "type": "number" },
-                                        "botFram": { "type": "number" },
-                                        "orientation": { "type": "integer", "description": "The orientation setting (API_Orient value) of the door or window." },
-                                        "contours3D": { "type": "boolean" }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [ "mirThick", "wallInset", "leftFram", "righFram", "topFram", "botFram", "orientation", "contours3D" ]
+                                    "$ref": "#/LibraryPartDoorWindowDetails"
                                 },
                                 "creatorElementType": { "$ref": "#/ElementType", "description": "The type of the element the library part is placed as (its creator tool). Missing when Archicad does not report one." },
                                 "creatorVariation": { "type": "string", "description": "The four character variation ID of the creator tool, when it is not the generic variation." }
@@ -2954,21 +2726,7 @@ GS::Optional<GS::UniString> GetMissingLibPartNamesCommand::GetRawResponseSchema 
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementId": {
-                                    "$ref": "#/ElementId"
-                                },
-                                "libPartName": {
-                                    "type": "string",
-                                    "description": "The name of the element's library part, also when the library containing it is not loaded."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementId",
-                                "libPartName"
-                            ]
+                            "$ref": "#/MissingLibraryPartName"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -3068,24 +2826,7 @@ GS::Optional<GS::UniString> GetUnusedLibraryPartsCommand::GetRawResponseSchema (
                 "type": "array",
                 "description": "The loaded library parts that no element of the project is placed from, in index order.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "guid": { "type": "string" },
-                        "index": { "type": "integer" },
-                        "documentName": { "type": "string" },
-                        "fileName": { "type": "string" },
-                        "typeId": { "$ref": "#/LibraryPartType" },
-                        "isPlaceable": { "type": "boolean" }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "guid",
-                        "index",
-                        "documentName",
-                        "fileName",
-                        "typeId",
-                        "isPlaceable"
-                    ]
+                    "$ref": "#/UnusedLibraryPart"
                 }
             },
             "usedLibraryPartCount": {
@@ -3691,14 +3432,7 @@ GS::Optional<GS::UniString> FindLibraryPartsCommand::GetInputParametersSchema ()
         "type": "object",
         "properties": {
             "kind": {
-                "type": "string",
-                "enum": [
-                    "All",
-                    "Object",
-                    "Image",
-                    "Text"
-                ],
-                "description": "Optional. Which library parts to find: all of them (default), GDL objects, images or text files, as selected by the Library Manager's own selectors."
+                "$ref": "#/LibraryPartKind"
             },
             "nameContains": {
                 "type": "string",
@@ -3722,22 +3456,7 @@ GS::Optional<GS::UniString> FindLibraryPartsCommand::GetRawResponseSchema () con
                 "type": "array",
                 "description": "The matching library parts.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the library part."
-                        },
-                        "path": {
-                            "type": "string",
-                            "description": "The location of the library part file."
-                        },
-                        "index": {
-                            "type": "integer",
-                            "description": "The index of the library part in the loaded libraries."
-                        }
-                    },
-                    "additionalProperties": false
+                    "$ref": "#/FoundLibraryPart"
                 }
             }
         },
@@ -3838,34 +3557,7 @@ GS::Optional<GS::UniString> GetLibraryPartDetailsCommand::GetInputParametersSche
                 "type": "array",
                 "description": "The library parts to read, each by its name or by its index.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts or the name field of FindLibraryParts (e.g. 'Door 26.gsm')."
-                        },
-                        "index": {
-                            "type": "integer",
-                            "description": "The index of the library part, as returned by FindLibraryParts."
-                        },
-                        "password": {
-                            "type": "string",
-                            "description": "Optional. The password of a password protected library part, used to read its scripts."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "oneOf": [
-                        {
-                            "required": [
-                                "name"
-                            ]
-                        },
-                        {
-                            "required": [
-                                "index"
-                            ]
-                        }
-                    ]
+                    "$ref": "#/LibraryPartNameOrIndex"
                 }
             },
             "subTypeOf": {
@@ -3896,186 +3588,7 @@ GS::Optional<GS::UniString> GetLibraryPartDetailsCommand::GetRawResponseSchema (
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "name": {
-                                    "type": "string",
-                                    "description": "The name of the library part."
-                                },
-                                "path": {
-                                    "type": "string",
-                                    "description": "The location of the library part file."
-                                },
-                                "index": {
-                                    "type": "integer",
-                                    "description": "The index of the library part in the loaded libraries."
-                                },
-                                "libraryTreePath": {
-                                    "type": "object",
-                                    "description": "The place of the library part in the library tree.",
-                                    "properties": {
-                                        "parts": {
-                                            "type": "array",
-                                            "description": "The names along the path, from the root.",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "lastPart": {
-                                            "type": "string",
-                                            "description": "The last name of the path."
-                                        },
-                                        "isRoot": {
-                                            "type": "boolean",
-                                            "description": "True if the path is the root of the library tree."
-                                        },
-                                        "parentParts": {
-                                            "type": "array",
-                                            "description": "The names along the path of the parent, from the root. Omitted for the root.",
-                                            "items": {
-                                                "type": "string"
-                                            }
-                                        },
-                                        "teamworkId": {
-                                            "type": "string",
-                                            "description": "The Teamwork identifier of the path. Omitted when Archicad has none for it, e.g. outside Teamwork."
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "parts",
-                                        "lastPart",
-                                        "isRoot"
-                                    ]
-                                },
-                                "library": {
-                                    "type": "object",
-                                    "description": "The library containing the library part.",
-                                    "properties": {
-                                        "name": {
-                                            "type": "string",
-                                            "description": "The name of the library."
-                                        },
-                                        "localizedName": {
-                                            "type": "string",
-                                            "description": "The localized name of the library, when it has one. Archicad 29 or newer."
-                                        },
-                                        "path": {
-                                            "type": "string",
-                                            "description": "The location of the library."
-                                        },
-                                        "isServer": {
-                                            "type": "boolean",
-                                            "description": "True if it is a Teamwork server library."
-                                        },
-                                        "twServerPath": {
-                                            "type": "string",
-                                            "description": "The path of the library on the Teamwork server. Only for server libraries."
-                                        },
-                                        "twServerUrl": {
-                                            "type": "string",
-                                            "description": "The URL of the Teamwork server. Only for server libraries."
-                                        }
-                                    },
-                                    "additionalProperties": false
-                                },
-                                "gsmObject": {
-                                    "type": "object",
-                                    "description": "The GDL object data. Omitted for a library part that is not a GDL object, e.g. an image.",
-                                    "properties": {
-                                        "guid": {
-                                            "type": "string",
-                                            "description": "The main GUID of the library part, the guid field of GetAvailableLibraryParts."
-                                        },
-                                        "isSubType": {
-                                            "type": "boolean",
-                                            "description": "True if the library part is a subtype other library parts can be derived from."
-                                        },
-                                        "subTypeGuid": {
-                                            "type": "string",
-                                            "description": "The main GUID of the subtype (parent) of the library part."
-                                        },
-                                        "isInSubTypeOf": {
-                                            "type": "boolean",
-                                            "description": "True if the library part is in the subtype given by subTypeOf. Only when subTypeOf is given."
-                                        },
-                                        "isUIDefault": {
-                                            "type": "boolean",
-                                            "description": "True if the library part is marked as the default user interface (UI default)."
-                                        },
-                                        "license": {
-                                            "type": "string",
-                                            "description": "The license of the library part."
-                                        },
-                                        "licenseVersion": {
-                                            "type": "string",
-                                            "description": "The version of the license of the library part."
-                                        },
-                                        "contents": {
-                                            "type": "object",
-                                            "description": "Which sections the library part has.",
-                                            "properties": {
-                                                "interfaceScript": {
-                                                    "type": "boolean"
-                                                },
-                                                "forwardMigrationScript": {
-                                                    "type": "boolean"
-                                                },
-                                                "backwardMigrationScript": {
-                                                    "type": "boolean"
-                                                },
-                                                "2dVectorImage": {
-                                                    "type": "boolean"
-                                                },
-                                                "previewPicture": {
-                                                    "type": "boolean"
-                                                },
-                                                "gdlPictures": {
-                                                    "type": "boolean"
-                                                },
-                                                "darkPreviewPicture": {
-                                                    "type": "boolean",
-                                                    "description": "Archicad 29 or newer."
-                                                },
-                                                "darkGdlPictures": {
-                                                    "type": "boolean",
-                                                    "description": "Archicad 29 or newer."
-                                                }
-                                            },
-                                            "additionalProperties": false,
-                                            "required": [
-                                                "interfaceScript",
-                                                "forwardMigrationScript",
-                                                "backwardMigrationScript",
-                                                "2dVectorImage",
-                                                "previewPicture",
-                                                "gdlPictures"
-                                            ]
-                                        },
-                                        "scripts": {
-                                            "type": "object",
-                                            "description": "The scripts of the library part. Only when includeScripts is true. A script is omitted when the library part has none or it cannot be read, e.g. without the right password.",
-                                            "properties": {
-                                                "interface": {
-                                                    "type": "string"
-                                                },
-                                                "forwardMigration": {
-                                                    "type": "string"
-                                                },
-                                                "backwardMigration": {
-                                                    "type": "string"
-                                                }
-                                            },
-                                            "additionalProperties": false
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "contents"
-                                    ]
-                                }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/LibraryPartDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -4205,30 +3718,7 @@ GS::Optional<GS::UniString> ModifyLibraryListCommand::GetInputParametersSchema (
                 "type": "array",
                 "description": "Loaded libraries to remove, each by its name or by its path.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the library, as returned by GetLibraries."
-                        },
-                        "path": {
-                            "type": "string",
-                            "description": "The absolute path of the library, as returned by GetLibraries."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "oneOf": [
-                        {
-                            "required": [
-                                "name"
-                            ]
-                        },
-                        {
-                            "required": [
-                                "path"
-                            ]
-                        }
-                    ]
+                    "$ref": "#/LibraryToRemove"
                 }
             }
         },
@@ -4389,17 +3879,7 @@ GS::Optional<GS::UniString> GetLibraryPartMetadataCommand::GetInputParametersSch
                 "type": "array",
                 "description": "The library parts to read the metadata of.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'Door 26.gsm')."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name"
-                    ]
+                    "$ref": "#/LibraryPartName"
                 }
             }
         },
@@ -4422,42 +3902,7 @@ GS::Optional<GS::UniString> GetLibraryPartMetadataCommand::GetRawResponseSchema 
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "description": {
-                                    "type": "string",
-                                    "description": "The description of the library part."
-                                },
-                                "keywords": {
-                                    "type": "string",
-                                    "description": "The keywords of the library part as stored, usually a comma separated list used for searching."
-                                },
-                                "author": {
-                                    "type": "string",
-                                    "description": "The author of the library part."
-                                },
-                                "isPlaceable": {
-                                    "type": "boolean",
-                                    "description": "True if the library part can be placed in the plan; false e.g. for macros."
-                                },
-                                "isPasswordProtected": {
-                                    "type": "boolean",
-                                    "description": "True if the library part is password protected and encrypted."
-                                },
-                                "isHierarchicalPagesUsed": {
-                                    "type": "boolean",
-                                    "description": "True if the user interface of the library part uses hierarchical pages."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "description",
-                                "keywords",
-                                "author",
-                                "isPlaceable",
-                                "isPasswordProtected",
-                                "isHierarchicalPagesUsed"
-                            ]
+                            "$ref": "#/LibraryPartMetadata"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -4567,17 +4012,7 @@ GS::Optional<GS::UniString> GetLibraryPartOriginalLocationsCommand::GetInputPara
                 "type": "array",
                 "description": "The library parts to look up.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "index": {
-                            "type": "integer",
-                            "description": "The index of the library part, as returned by GetAvailableLibraryParts."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "index"
-                    ]
+                    "$ref": "#/LibraryPartIndex"
                 }
             }
         },
@@ -4600,17 +4035,7 @@ GS::Optional<GS::UniString> GetLibraryPartOriginalLocationsCommand::GetRawRespon
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "path": {
-                                    "type": "string",
-                                    "description": "The path of the file the library part originally came from, e.g. before it was embedded into the project."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "path"
-                            ]
+                            "$ref": "#/LibraryPartOriginalLocation"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -4802,21 +4227,7 @@ GS::Optional<GS::UniString> GetLibraryPartSectionsCommand::GetInputParametersSch
                 "type": "array",
                 "description": "The library parts to list the sections of.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "index": {
-                            "type": "integer",
-                            "description": "The index of a loaded library part, as GetAvailableLibraryParts returns it."
-                        },
-                        "password": {
-                            "type": "string",
-                            "description": "The password of a protected library part. Needed to read the size of its protected sections."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "index"
-                    ]
+                    "$ref": "#/LibraryPartIndexAndPassword"
                 }
             }
         },
@@ -4838,48 +4249,7 @@ GS::Optional<GS::UniString> GetLibraryPartSectionsCommand::GetRawResponseSchema 
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "index": {
-                                    "type": "integer",
-                                    "description": "The index of the library part."
-                                },
-                                "sections": {
-                                    "type": "array",
-                                    "description": "The sections of the library part, in the order Archicad lists them.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "sectionType": {
-                                                "type": "string",
-                                                "description": "The four-character code of the section type, as GetLibraryPartSection takes it."
-                                            },
-                                            "subIdent": {
-                                                "type": "integer",
-                                                "description": "The sub-identifier that tells apart sections of the same type."
-                                            },
-                                            "size": {
-                                                "type": "integer",
-                                                "description": "The size of the section content in bytes. Missing when Archicad could not read the section, for example a protected one without its password."
-                                            },
-                                            "isText": {
-                                                "type": "boolean",
-                                                "description": "True when Archicad returns the section as text (scripts, comments), which GetLibraryPartSection reads. Binary sections, such as previews, are only listed. Missing when Archicad could not read the section."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "sectionType",
-                                            "subIdent"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "index",
-                                "sections"
-                            ]
+                            "$ref": "#/LibraryPartSections"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -5075,80 +4445,7 @@ GS::Optional<GS::UniString> SetLibraryPartScriptsCommand::GetInputParametersSche
                 "type": "array",
                 "description": "The library parts to modify, with the scripts to set and to delete in each.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm')."
-                        },
-                        "scripts": {
-                            "type": "object",
-                            "description": "Optional. The scripts to set. Only the scripts given here are changed, the others are kept. An empty string makes that script section empty, it does not delete it; use deleteScripts for that.",
-                            "properties": {
-                                "master": {
-                                    "type": "string",
-                                    "description": "The master script."
-                                },
-                                "parameter": {
-                                    "type": "string",
-                                    "description": "The parameter script."
-                                },
-                                "2d": {
-                                    "type": "string",
-                                    "description": "The 2D script."
-                                },
-                                "3d": {
-                                    "type": "string",
-                                    "description": "The 3D script."
-                                },
-                                "properties": {
-                                    "type": "string",
-                                    "description": "The properties script."
-                                },
-                                "interface": {
-                                    "type": "string",
-                                    "description": "The interface (user interface) script."
-                                },
-                                "forwardMigration": {
-                                    "type": "string",
-                                    "description": "The forward migration script."
-                                },
-                                "backwardMigration": {
-                                    "type": "string",
-                                    "description": "The backward migration script."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "minProperties": 1
-                        },
-                        "deleteScripts": {
-                            "type": "array",
-                            "description": "Optional. The script sections to delete from the library part. A script cannot be both set in scripts and deleted here.",
-                            "items": {
-                                "type": "string",
-                                "enum": [
-                                    "master",
-                                    "parameter",
-                                    "2d",
-                                    "3d",
-                                    "properties",
-                                    "interface",
-                                    "forwardMigration",
-                                    "backwardMigration"
-                                ]
-                            },
-                            "minItems": 1,
-                            "uniqueItems": true
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name"
-                    ],
-                    "anyOf": [
-                        { "required": ["scripts"] },
-                        { "required": ["deleteScripts"] }
-                    ]
+                    "$ref": "#/LibraryPartScriptsUpdate"
                 }
             }
         },
@@ -5288,62 +4585,7 @@ GS::Optional<GS::UniString> SetLibraryPartMetadataCommand::GetInputParametersSch
                 "type": "array",
                 "description": "The library parts to modify and the metadata to set in each.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm')."
-                        },
-                        "metadata": {
-                            "type": "object",
-                            "description": "The metadata to set. Only the fields given here are changed, the others are kept.",
-                            "properties": {
-                                "author": {
-                                    "type": "string",
-                                    "description": "The author of the library part."
-                                },
-                                "keywords": {
-                                    "type": "string",
-                                    "description": "The keywords of the library part."
-                                },
-                                "license": {
-                                    "type": "string",
-                                    "description": "The license of the library part."
-                                },
-                                "licenseVersion": {
-                                    "type": "string",
-                                    "description": "The version of the license."
-                                },
-                                "password": {
-                                    "type": "string",
-                                    "description": "The new password of the library part."
-                                },
-                                "placeable": {
-                                    "type": "boolean",
-                                    "description": "Whether the library part can be placed in the project."
-                                },
-                                "uiDefault": {
-                                    "type": "boolean",
-                                    "description": "The UI Default flag of the library part."
-                                },
-                                "isSubtype": {
-                                    "type": "boolean",
-                                    "description": "Whether the library part is a subtype template."
-                                },
-                                "hierarchicalPagesUsed": {
-                                    "type": "boolean",
-                                    "description": "Whether the library part uses hierarchical pages in its user interface."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "minProperties": 1
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "name",
-                        "metadata"
-                    ]
+                    "$ref": "#/LibraryPartMetadataUpdate"
                 }
             }
         },
@@ -5744,14 +4986,7 @@ GS::Optional<GS::UniString> GetLibraryPartScriptsCommand::GetInputParametersSche
                 "type": "array",
                 "description": "The scripts to read. All five by default.",
                 "items": {
-                    "type": "string",
-                    "enum": [
-                        "master",
-                        "parameter",
-                        "2d",
-                        "3d",
-                        "properties"
-                    ]
+                    "$ref": "#/LibraryPartScriptType"
                 },
                 "minItems": 1
             },
@@ -5779,43 +5014,7 @@ GS::Optional<GS::UniString> GetLibraryPartScriptsCommand::GetRawResponseSchema (
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "libraryPartName": {
-                                    "type": "string",
-                                    "description": "The name of the library part file with its extension."
-                                },
-                                "unID": {
-                                    "type": "string",
-                                    "description": "The unique ID of the library part, its main and revision GUID."
-                                },
-                                "scripts": {
-                                    "type": "object",
-                                    "description": "The requested scripts, by the keys used in the input.",
-                                    "additionalProperties": {
-                                        "type": "object",
-                                        "properties": {
-                                            "present": {
-                                                "type": "boolean",
-                                                "description": "Whether the library part has this script section."
-                                            },
-                                            "script": {
-                                                "type": "string",
-                                                "description": "The script text. Left out when the section is not present."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "present"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "libraryPartName",
-                                "scripts"
-                            ]
+                            "$ref": "#/LibraryPartScriptsDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -5926,14 +5125,7 @@ GS::Optional<GS::UniString> GetLibraryPartFileInfoCommand::GetInputParametersSch
                 "type": "array",
                 "description": "The scripts to read. All five by default.",
                 "items": {
-                    "type": "string",
-                    "enum": [
-                        "master",
-                        "parameter",
-                        "2d",
-                        "3d",
-                        "properties"
-                    ]
+                    "$ref": "#/LibraryPartScriptType"
                 },
                 "minItems": 1
             },
@@ -5961,47 +5153,7 @@ GS::Optional<GS::UniString> GetLibraryPartFileInfoCommand::GetRawResponseSchema 
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "path": {
-                                    "type": "string",
-                                    "description": "The path of the file, as given in the input."
-                                },
-                                "unID": {
-                                    "type": "string",
-                                    "description": "The unique ID of the library part, its main and revision GUID."
-                                },
-                                "subTypeUnID": {
-                                    "type": "string",
-                                    "description": "The unique ID of the subtype the library part belongs to."
-                                },
-                                "scripts": {
-                                    "type": "object",
-                                    "description": "The requested scripts, by the keys used in the input.",
-                                    "additionalProperties": {
-                                        "type": "object",
-                                        "properties": {
-                                            "present": {
-                                                "type": "boolean",
-                                                "description": "Whether the library part has this script section."
-                                            },
-                                            "script": {
-                                                "type": "string",
-                                                "description": "The script text. Left out when the section is not present."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "present"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "path",
-                                "scripts"
-                            ]
+                            "$ref": "#/LibraryPartFileInfo"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -6108,34 +5260,7 @@ GS::Optional<GS::UniString> CopyLibraryPartsCommand::GetInputParametersSchema ()
                 "type": "array",
                 "description": "The library parts to copy, each given by its name or by an element placed from it, with the name of the copy.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "libraryPartName": {
-                            "type": "string",
-                            "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm'). Give this or elementId."
-                        },
-                        "elementId": {
-                            "$ref": "#/ElementId",
-                            "description": "An object, lamp, window, door, skylight, zone or curtain wall frame, panel, junction or accessory; the library part it is placed from is copied. Give this or libraryPartName."
-                        },
-                        "newName": {
-                            "type": "string",
-                            "description": "The file name of the copy with its extension (e.g. 'My Door copy.gsm'). It must not contain a folder.",
-                            "minLength": 1
-                        },
-                        "targetFolder": {
-                            "type": "string",
-                            "description": "Optional. The absolute path of an existing folder to put the copy into. By default the folder of the embedded library. The copy can only be found by name after the reload when the folder belongs to a loaded library."
-                        },
-                        "keepMainGuid": {
-                            "type": "boolean",
-                            "description": "Optional. When true, the copy keeps the main GUID of the original. By default false: the copy gets a new unique ID."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "newName"
-                    ]
+                    "$ref": "#/LibraryPartCopyData"
                 }
             }
         },
@@ -6158,26 +5283,7 @@ GS::Optional<GS::UniString> CopyLibraryPartsCommand::GetRawResponseSchema () con
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "libraryPartName": {
-                                    "type": "string",
-                                    "description": "The file name of the copy with its extension."
-                                },
-                                "unID": {
-                                    "type": "string",
-                                    "description": "The unique ID of the copy, its main and revision GUID."
-                                },
-                                "path": {
-                                    "type": "string",
-                                    "description": "The absolute path of the copy."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "libraryPartName",
-                                "path"
-                            ]
+                            "$ref": "#/CopiedLibraryPart"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -6347,22 +5453,7 @@ GS::Optional<GS::UniString> GetLibraryPartIdentitiesCommand::GetInputParametersS
                 "type": "array",
                 "description": "The library parts, each given by its index or by the path of its file.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "index": {
-                            "type": "integer",
-                            "description": "The index of a loaded library part, as GetAvailableLibraryParts returns it."
-                        },
-                        "path": {
-                            "type": "string",
-                            "description": "The path of a library part file, for example a .gsm file."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "oneOf": [
-                        { "required": ["index"] },
-                        { "required": ["path"] }
-                    ]
+                    "$ref": "#/LibraryPartIndexOrPath"
                 }
             }
         },
@@ -6384,44 +5475,7 @@ GS::Optional<GS::UniString> GetLibraryPartIdentitiesCommand::GetRawResponseSchem
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "path": {
-                                    "type": "string",
-                                    "description": "The path of the library part file."
-                                },
-                                "unId": {
-                                    "type": "string",
-                                    "description": "The unique ID of the library part, '{main GUID}-{revision GUID}'."
-                                },
-                                "mainGuid": {
-                                    "$ref": "#/Guid",
-                                    "description": "The main GUID of the unique ID. It stays the same across the revisions of a library part."
-                                },
-                                "revisionGuid": {
-                                    "$ref": "#/Guid",
-                                    "description": "The revision GUID of the unique ID. It changes whenever the library part is saved."
-                                },
-                                "refGuid": {
-                                    "$ref": "#/Guid",
-                                    "description": "The reference GUID of the library part file. Missing when Archicad could not tell it."
-                                },
-                                "lockStatus": {
-                                    "type": "string",
-                                    "enum": ["Free", "Editable", "Locked", "NotAvailable", "NotExist"],
-                                    "description": "The Teamwork lock status of the library part file. Missing when Archicad could not tell it."
-                                },
-                                "isServerLibraryPart": {
-                                    "type": "boolean",
-                                    "description": "True when the library part is in a BIMcloud or Teamwork server library."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "path",
-                                "unId",
-                                "isServerLibraryPart"
-                            ]
+                            "$ref": "#/LibraryPartIdentity"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -6489,57 +5543,7 @@ GS::Optional<GS::UniString> GetLibraryPartParameterValuesCommand::GetRawResponse
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "name": {
-                                    "type": "string",
-                                    "description": "The name of the library part, as given."
-                                },
-                                "parameters": {
-                                    "type": "array",
-                                    "description": "The parameters of the library part with their default values, in the format of GetGDLParametersOfElements. Separators, titles and dictionary parameters have no value here and are left out.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "name": {
-                                                "type": "string",
-                                                "description": "The name of the parameter."
-                                            },
-                                            "type": {
-                                                "type": "string",
-                                                "enum": ["Integer", "Length", "Angle", "RealNumber", "LightSwitch", "RGBColor", "Intensity", "LineType", "Material", "FillPattern", "PenColor", "String", "Boolean", "BuildingMaterial", "Profile"],
-                                                "description": "The type of the parameter."
-                                            },
-                                            "dimension1": {
-                                                "type": "integer",
-                                                "description": "The 1st dimension of an array parameter."
-                                            },
-                                            "dimension2": {
-                                                "type": "integer",
-                                                "description": "The 2nd dimension of an array parameter, 1 for a one-dimensional array."
-                                            },
-                                            "value": {
-                                                "description": "The default value of the parameter: a number, a boolean, a string, or 'On' or 'Off' for a LightSwitch. Angles are in radians. For an array parameter, a list of its dimension1 x dimension2 items, the first index outer."
-                                            },
-                                            "description": {
-                                                "type": "string",
-                                                "description": "The description of the parameter, the text shown for it in the settings dialog. Missing when Archicad gives no description for it."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "name",
-                                            "type",
-                                            "value"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "name",
-                                "parameters"
-                            ]
+                            "$ref": "#/LibraryPartParameterValues"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -6844,38 +5848,7 @@ GS::Optional<GS::UniString> SearchLibraryPartsCommand::GetRawResponseSchema () c
                 "type": "array",
                 "description": "The library parts found. Archicad returns at most 50.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "index": {
-                            "type": "integer",
-                            "description": "The index of the library part, as GetAvailableLibraryParts returns it."
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the library part."
-                        },
-                        "fileName": {
-                            "type": "string",
-                            "description": "The file name of the library part."
-                        },
-                        "unId": {
-                            "type": "string",
-                            "description": "The unique ID of the library part, '{main GUID}-{revision GUID}'."
-                        },
-                        "parentUnId": {
-                            "type": "string",
-                            "description": "The unique ID of the parent of the library part."
-                        },
-                        "typeId": {
-                            "$ref": "#/LibraryPartType"
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "index",
-                        "name",
-                        "unId"
-                    ]
+                    "$ref": "#/LibraryPartSearchResult"
                 }
             }
         },

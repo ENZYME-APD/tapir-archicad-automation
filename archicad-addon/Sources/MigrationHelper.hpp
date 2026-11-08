@@ -8,6 +8,16 @@
 #define CaseInsensitive GS::UniString::CaseInsensitive
 #endif
 
+// Archicad 30 renamed UniString::ToLowerCase to GetLowerCased.
+inline GS::UniString GetLowerCasedString (const GS::UniString& str)
+{
+#ifdef ServerMainVers_3000
+    return str.GetLowerCased ();
+#else
+    return str.ToLowerCase ();
+#endif
+}
+
 #ifndef ServerMainVers_2700
 
 #define ACAPI_MenuItem_RegisterMenu ACAPI_Register_Menu

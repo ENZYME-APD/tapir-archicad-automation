@@ -1306,6 +1306,30 @@ API_ElemTypeID GetElementTypeFromNonLocalizedName (const GS::UniString& typeStr)
     return API_ZombieElemID;
 }
 
+GS::Optional<GS::UniString> ElementTypeFloorLayerFilter::Read (const GS::ObjectState& os)
+{
+    GS::Array<GS::UniString> typeNames;
+    if (os.Get ("types", typeNames)) {
+        for (const GS::UniString& typeName : typeNames) {
+            const API_ElemTypeID typeId = GetElementTypeFromNonLocalizedName (typeName);
+            if (typeId == API_ZombieElemID) {
+                return GS::UniString ("Unknown element type in types: ") + typeName;
+            }
+            types.Push (typeId);
+        }
+    }
+    os.Get ("floorIndices", floorIndices);
+    os.Get ("layerIndices", layerIndices);
+    return {};
+}
+
+bool ElementTypeFloorLayerFilter::Matches (const API_Elem_Head& header) const
+{
+    return (types.IsEmpty () || types.Contains (GetElemTypeId (header))) &&
+        (floorIndices.IsEmpty () || floorIndices.Contains (header.floorInd)) &&
+        (layerIndices.IsEmpty () || layerIndices.Contains (GetAttributeIndex (header.layer)));
+}
+
 API_Guid GetParentElemOfSectElem (const API_Guid& elemGuid)
 {
     API_Element element = {};

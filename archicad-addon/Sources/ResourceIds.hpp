@@ -155,6 +155,7 @@
 #define ID_UV_STRINGS_INSTALL_FAILED_TITLE      23
 #define ID_UV_STRINGS_INSTALL_FAILED_TEXT       24
 #define ID_UV_STRINGS_GO_TO_UV_WEBSITE          25
+#define ID_UV_STRINGS_ABORTED_HINT              26
 
 // The messages the add-on writes to the Report window
 #define ID_REPORT_STRINGS               32013
@@ -192,6 +193,12 @@
 #define ID_RUNWITHUPDATE_BUTTON_ICON    32509
 #define ID_UPDATE_ICON                  32510
 #define ID_SHORTCUTS_BUTTON_ICON        32511
+#define ID_CHECKFORUPDATES_BUTTON_ICON  32512
+#define ID_UPDATEAVAILABLE_BUTTON_ICON  32513
+// The marks before each script in the palette's script list: a running script, and an empty one of the same size
+// for every other item, so that the names stay aligned.
+#define ID_SCRIPT_RUNNING_ICON          32514
+#define ID_SCRIPT_NOT_RUNNING_ICON      32515
 
 #define ID_ABOUT_DIALOG                 32003
 #define ID_PALETTE                      32004

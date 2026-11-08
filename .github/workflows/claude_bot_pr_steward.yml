@@ -13,7 +13,24 @@ name: Claude Bot PR Steward
 #            links the built add-on in a comment that asks the issue's author
 #            to try it in Archicad (a newer head updates the links, or posts
 #            them again when someone commented since); the review counts a
-#            reported problem as blocking.
+#            reported problem as blocking. With those links (once per green
+#            head) it also labels the pull request `needs-test` when the pull
+#            request adds or changes a check in archicad-addon/Test/checks/.
+#            Testers' community test runners (tools/community-test-runner)
+#            poll that label and install the pull request's built add-on in
+#            their Archicad, so a bot pull request's native code, written by a
+#            model from public issue text, is installed on testers' machines
+#            with no person looking at it first - and so is every later head
+#            the bot pushes that builds green, while the label stays. The
+#            maintainer's decision (#1138): it gets bot pull requests tried in
+#            Archicad before they are merged. The label is set only here, by
+#            this job, which runs no model; only on the pull requests this
+#            sweep looks after (opened by the Actions bot from a claude/
+#            branch of this repository); only after every build check of the
+#            head is green. A person stops it by removing the label (the next
+#            green head sets it again) or for good with `needs-maintainer`,
+#            `do-not-merge` or a draft, which take the pull request out of
+#            the sweep.
 #   fix    - Claude reads the failed build logs and the open review findings
 #            and pushes a fix to the pull request's branch. A conflict with
 #            main is merged first, by a step of its own (see "Merging main").
@@ -269,7 +286,7 @@ jobs:
           # Archicad; a later green head updates the links in that comment.
           # What they report there, the review counts as blocking.
           testBuild() {
-            local pr=$1 head=$2 links="" wf prefix run issue author kind body comments existing
+            local pr=$1 head=$2 branch=$3 links="" wf prefix run issue author kind body comments existing files
             # A Markdown link per artifact of the successful run of each build
             # check on this head.
             for wf in archicad_addon_build_check.yml:Tapir_Add-On grasshopper_plugin_build_check.yml:Tapir_Grasshopper; do
@@ -300,6 +317,22 @@ jobs:
             fi
             if [ "$(cut -d' ' -f3 <<<"$existing")" = "true" ]; then
               existing=""
+            fi
+            # A new green head: built, and with a check file of its own, it goes
+            # to the community test runner (tools/community-test-runner), which
+            # tests what is labelled needs-test on testers' Archicads and
+            # comments the result. Once per head, here, so a person who removes
+            # the label is not overruled by the next sweep. Only a claude/ branch
+            # (the sweep only looks at those; this is a second guard).
+            if [[ "$branch" == claude/* ]]; then
+              files=$(gh api --paginate "repos/$REPO/pulls/$pr/files?per_page=100" \
+                --jq '.[] | select(.status != "removed") | .filename' || true)
+              if grep -qE '^archicad-addon/Test/checks/[^/]+\.json$' <<<"$files"; then
+                gh label create needs-test --repo "$REPO" --color 0E8A16 \
+                  --description "Built, with checks: the community test runner tests it in Archicad" 2>/dev/null || true
+                gh pr edit "$pr" --repo "$REPO" --add-label needs-test >/dev/null \
+                  || echo "::warning::could not label #$pr needs-test"
+              fi
             fi
             # The issue this pull request fixes, from `Fixes #N` or
             # `Part k of N of #n`, and who opened it - tagged unless a bot did.
@@ -453,7 +486,7 @@ jobs:
               buildFailed=true
             fi
             if [ "$buildFailed" = false ]; then
-              testBuild "$pr" "$head" || echo "::warning::could not post the test build links on #$pr"
+              testBuild "$pr" "$head" "$branch" || echo "::warning::could not post the test build links on #$pr"
             fi
 
             # 2. The review's verdict on this head (newest status first).

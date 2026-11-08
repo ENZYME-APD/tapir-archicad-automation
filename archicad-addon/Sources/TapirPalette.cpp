@@ -491,7 +491,7 @@ TapirPalette::TapirPalette ()
     installedVersionText.SetText (GS::UniString::Printf (
         UpdateText (ID_AUTOUPDATE_INSTALLED_VERSION_TEXT), ADDON_VERSION));
     SetRunButtonIcon ();
-    SetUpdateButtonText ();
+    SetUpdateButtonIcon ();
 
     BeginEventProcessing ();
 }
@@ -658,7 +658,7 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
             RunOrStopScript (*popUpItemData);
         }
     } else if (ev.GetSource () == &tapirButton) {
-        OpenWebpage ("https://github.com/ENZYME-APD/tapir-archicad-automation");
+        OpenWebpage ("https://tapir-api.com");   // redirects to the Tapir website
     } else if (ev.GetSource () == &openScriptButton) {
         GS::Ref<PopUpItemData> popUpItemData = GetSelectedScript ();
         if (popUpItemData == nullptr) {
@@ -765,7 +765,25 @@ void TapirPalette::RebuildScriptPopUp (short itemToSelect)
         itemToSelect = DG::PopUp::TopItem;
     }
     scriptSelectionPopUp.SelectItem (itemToSelect);
+    RefreshRunningMarks ();
     SetRunButtonIcon ();   // the selected script may have changed
+}
+
+// DG::PopUp has no right-aligned column or tab stop for a mark after the name, so the mark is the item's icon,
+// drawn before the name. Every other item gets an empty icon of the same size, so the names stay aligned.
+void TapirPalette::RefreshRunningMarks ()
+{
+    const DG::Icon runningIcon (ACAPI_GetOwnResModule (), ID_SCRIPT_RUNNING_ICON);
+    const DG::Icon notRunningIcon (ACAPI_GetOwnResModule (), ID_SCRIPT_NOT_RUNNING_ICON);
+    const short itemCount = scriptSelectionPopUp.GetItemCount ();
+    for (short i = DG::PopUp::TopItem; i <= itemCount; ++i) {
+        if (scriptSelectionPopUp.IsSeparator (i)) {
+            continue;
+        }
+        GS::Ref<PopUpItemData> popUpItemData = GetScriptOfPopUpItem (i);   // nullptr for "Reload scripts..."
+        const bool isRunning = popUpItemData != nullptr && IsScriptRunning (popUpItemData->fileLocation);
+        scriptSelectionPopUp.SetItemIcon (i, isRunning ? runningIcon : notRunningIcon);
+    }
 }
 
 void TapirPalette::PopUpChanged (const DG::PopUpChangeEvent& ev)
@@ -919,9 +937,18 @@ bool TapirPalette::ConfirmScriptRequirements (const PopUpItemData& popUpItemData
 }
 
 // The selected script's summary and badge, on the script list and on the Run button (while the selected script
-// does not run, when the button is Stop).
+// does not run, when the button is Stop), and the update button's "Check for Updates" or "Update to <version>".
 void TapirPalette::ItemToolTipRequested (const DG::ItemHelpEvent& ev, GS::UniString* toolTipText)
 {
+    if (toolTipText != nullptr && ev.GetSource () == &checkForUpdatesButton) {
+        if (VersionChecker::IsUsingLatestVersion ()) {
+            *toolTipText = UpdateText (ID_AUTOUPDATE_CHECK_BUTTON_TEXT);
+        } else {
+            *toolTipText = GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_UPDATE_BUTTON_TEXT), VersionChecker::LatestVersion ().ToPrintf ());
+        }
+        return;
+    }
+
     const bool isPopUp = ev.GetSource () == &scriptSelectionPopUp;
     const bool isRunButton = ev.GetSource () == &runScriptButton;
     if (toolTipText == nullptr || !(isPopUp || isRunButton)) {
@@ -1669,6 +1696,7 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
         GS::Process& process;
         const GS::UniString scriptId;
         const GS::UniString scriptName;
+        const bool runWithUv;
 
         // The script's Script UI window is free for other scripts once it ended or was stopped, and the palette
         // forgets the script, so its Run button and shortcut slot start it again.
@@ -1682,6 +1710,7 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
                 ForgetPostedTask (this);
                 ScriptUIPalette::ReleaseScript (scriptId);
                 TapirPalette::Instance ().RemoveEndedScript (scriptId);
+                TapirPalette::Instance ().RefreshRunningMarks ();
                 TapirPalette::Instance ().SetRunButtonIcon ();
             }
         };
@@ -1722,6 +1751,20 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
                 TapirPalette::Instance ().WriteReport (DG_INFORMATION, "%T", PrefixLines (scriptName, text).ToPrintf ());
             }
         };
+#if defined (macintosh)
+        // The hint for a uv that aborted (exit code 134), also read from the resources on the main thread.
+        class AbortedUvHintTask : public GS::Runnable {
+            GS::UniString scriptName;
+        public:
+            explicit AbortedUvHintTask (const GS::UniString& _scriptName) : scriptName(_scriptName)
+            {}
+            virtual void Run ()
+            {
+                ForgetPostedTask (this);
+                TapirPalette::Instance ().WriteReport (DG_ERROR, "%T", PrefixLines (scriptName, UvManager::GetAbortedUvHint ()).ToPrintf ());
+            }
+        };
+#endif
 
         void ProcessStderrBlock (const GS::UniString& stderrContent)
         {
@@ -1757,8 +1800,8 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
         }
 
     public:
-        explicit UIUpdaterThread (RunningScript& _script)
-            : script(_script), process(_script.process), scriptId(_script.scriptId), scriptName(_script.scriptName)
+        UIUpdaterThread (RunningScript& _script, bool _runWithUv)
+            : script(_script), process(_script.process), scriptId(_script.scriptId), scriptName(_script.scriptName), runWithUv(_runWithUv)
         {
         }
         GS::UniString ReadFromChannel (GS::IBinaryChannel& channel)
@@ -1803,6 +1846,13 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
             script.ended = true;   // no longer running; the last thing done with script
 
             Post (new ExitCodeReportTask (scriptName, exitCode));
+#if defined (macintosh)
+            // Exit code 134 is an abort (SIGABRT). uv builds that need a newer macOS than the one running
+            // abort at start with "macOS <x> or later required" (issue #392).
+            if (runWithUv && exitCode == 134) {
+                Post (new AbortedUvHintTask (scriptName));
+            }
+#endif
             Post (new ScriptEndedTask (scriptId));   // last: it removes the script once this has returned
         }
     };
@@ -1901,7 +1951,7 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
 
         RunningScript& startedScript = *script;
         runningScripts.push_back (std::move (script));
-        startedScript.executor.Execute (new UIUpdaterThread (startedScript));
+        startedScript.executor.Execute (new UIUpdaterThread (startedScript, filePath.EndsWith (".py")));
     } catch (const GS::ProcessException&) {
         if (!scriptId.IsEmpty ()) {
             ScriptUIPalette::ReleaseScript (scriptId);
@@ -1913,6 +1963,7 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
         }
         WriteReport (DG_ERROR, PaletteText (ID_PALETTE_STRINGS_EXECUTE_UNEXPECTED), filePath.ToPrintf ());
     }
+    RefreshRunningMarks ();
     SetRunButtonIcon ();
 }
 
@@ -2209,15 +2260,11 @@ void TapirPalette::SetRunButtonIcon ()
     runScriptButton.SetIcon (DG::Icon (ACAPI_GetOwnResModule (), resId));
 }
 
-void TapirPalette::SetUpdateButtonText ()
+// Its tooltip, "Check for Updates" or "Update to <version>", is set by ItemToolTipRequested.
+void TapirPalette::SetUpdateButtonIcon ()
 {
-    if (VersionChecker::IsUsingLatestVersion ()) {
-        checkForUpdatesButton.SetText (UpdateText (ID_AUTOUPDATE_CHECK_BUTTON_TEXT));
-    } else {
-        checkForUpdatesButton.SetText (GS::UniString::Printf (
-            UpdateText (ID_AUTOUPDATE_UPDATE_BUTTON_TEXT),
-            VersionChecker::LatestVersion ().ToPrintf ()));
-    }
+    const short resId = VersionChecker::IsUsingLatestVersion () ? ID_CHECKFORUPDATES_BUTTON_ICON : ID_UPDATEAVAILABLE_BUTTON_ICON;
+    checkForUpdatesButton.SetIcon (DG::Icon (ACAPI_GetOwnResModule (), resId));
 }
 
 void TapirPalette::ApplyUpdateMenuItemState ()

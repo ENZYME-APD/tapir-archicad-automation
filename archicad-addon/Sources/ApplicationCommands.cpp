@@ -481,22 +481,7 @@ GS::Optional<GS::UniString> GetPrinterAndPlotterInfoCommand::GetRawResponseSchem
                 "description": "The printer selected in Archicad, or an error when it cannot be read.",
                 "oneOf": [
                     {
-                        "type": "object",
-                        "properties": {
-                            "name": {
-                                "type": "string",
-                                "description": "The name of the selected printer."
-                            },
-                            "portrait": {
-                                "type": "boolean",
-                                "description": "The selected orientation: true for portrait, false for landscape."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "name",
-                            "portrait"
-                        ]
+                        "$ref": "#/PrinterInfo"
                     },
                     {
                         "$ref": "#/ErrorItem"
@@ -508,22 +493,7 @@ GS::Optional<GS::UniString> GetPrinterAndPlotterInfoCommand::GetRawResponseSchem
                 "description": "The plotter selected in Archicad, or an error when it cannot be read.",
                 "oneOf": [
                     {
-                        "type": "object",
-                        "properties": {
-                            "name": {
-                                "type": "string",
-                                "description": "The name of the selected plotter."
-                            },
-                            "model": {
-                                "type": "string",
-                                "description": "The model of the selected plotter."
-                            }
-                        },
-                        "additionalProperties": false,
-                        "required": [
-                            "name",
-                            "model"
-                        ]
+                        "$ref": "#/PlotterInfo"
                     },
                     {
                         "$ref": "#/ErrorItem"
@@ -1017,8 +987,21 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
     }
 
     if (databaseId != nullptr) {
-        API_DatabaseInfo targetDatabase = DatabaseIdResolver::Instance ().GetDatabaseWithId (GetGuidFromObjectState (*databaseId));
+        const API_DatabaseInfo resolvedDatabase = DatabaseIdResolver::Instance ().GetDatabaseWithId (GetGuidFromObjectState (*databaseId));
+        API_DatabaseInfo targetDatabase = resolvedDatabase;
         GSErrCode err = ACAPI_Window_GetDatabaseInfo (&targetDatabase);
+        if (err != NoError && hasWindowType && resolvedDatabase.typeID == API_ZombieWindowID) {
+            // GetDatabaseWithId only recognizes the FloorPlan/3DModel sentinel guids; for
+            // every other database kind it leaves typeID unset and only fills
+            // databaseUnId.elemSetId, with which ACAPI_Window_GetDatabaseInfo can fail with
+            // APIERR_BADDATABASE (seen for Sections and Elevations). Retry with the type
+            // windowType gives, the same way DocumentCreationCommands does for
+            // Layout/MasterLayout. Only as a retry, so the windowType check below still
+            // catches a wrong windowType whenever the database resolves on its own.
+            targetDatabase = resolvedDatabase;
+            targetDatabase.typeID = windowInfo.typeID;
+            err = ACAPI_Window_GetDatabaseInfo (&targetDatabase);
+        }
         if (err != NoError) {
             return CreateErrorResponse (err, "Failed to resolve target database.");
         }
@@ -1043,7 +1026,16 @@ GS::ObjectState ChangeWindowCommand::Execute (const GS::ObjectState& parameters,
                     : CreateErrorResponse (goToViewErr, "Failed to change current database, and failed to open the database's Project Map item.");
             }
 #endif
-            return CreateErrorResponse (err, "Failed to change current database.");
+            // Any other viewpoint whose window was never opened (e.g. an Elevation just created
+            // with CreateElevations) has no database to switch to yet: ChangeCurrentDatabase
+            // fails with APIERR_BADDATABASE until the window exists. Open the window first,
+            // then retry.
+            if (ACAPI_Window_ChangeWindow (&targetDatabase) == NoError) {
+                err = ACAPI_Database_ChangeCurrentDatabase (&targetDatabase);
+            }
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to change current database.");
+            }
         }
 
         windowInfo = targetDatabase;
@@ -1166,21 +1158,7 @@ GS::Optional<GS::UniString> CloseWindowsCommand::GetInputParametersSchema () con
                 "type": "array",
                 "description": "The windows to close.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "databaseId": {
-                            "$ref": "#/DatabaseId",
-                            "description": "The database shown in the window, as GetDatabases, GetContainingDatabases or GetDatabaseIdFromNavigatorItemId return it."
-                        },
-                        "windowType": {
-                            "$ref": "#/WindowType",
-                            "description": "Optional. When given, the window is only closed when its database is of this type."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "databaseId"
-                    ]
+                    "$ref": "#/WindowToClose"
                 }
             }
         },
@@ -2243,8 +2221,7 @@ GS::Optional<GS::UniString> RunActionCenterChecksCommand::GetInputParametersSche
                 "type": "array",
                 "description": "The Action Center checks to run, in this order. Omitted means [\"Hotlinks\"]. \"Hotlinks\" is available on every Archicad version; \"All\", \"Libraries\", \"Drawings\" and \"Licenses\" only on Archicad 25, later versions return an error for them in their execution result.",
                 "items": {
-                    "type": "string",
-                    "enum": ["Hotlinks", "All", "Libraries", "Drawings", "Licenses"]
+                    "$ref": "#/ActionCenterCheck"
                 },
                 "minItems": 1
             }
@@ -2365,7 +2342,7 @@ GS::ObjectState RedrawCurrentDatabaseCommand::Execute (const GS::ObjectState& /*
 // ---------------------------------------------------------------------------
 
 GetProductVersionInfoCommand::GetProductVersionInfoCommand () :
-    CommandBase (CommonSchema::NotUsed)
+    CommandBase (CommonSchema::Used)
 {
 }
 
@@ -2425,8 +2402,7 @@ GS::Optional<GS::UniString> GetProductVersionInfoCommand::GetRawResponseSchema (
             "availableDomains": {
                 "type": "array",
                 "items": {
-                    "type": "string",
-                    "enum": ["Architecture", "MEP"]
+                    "$ref": "#/ProductDomain"
                 },
                 "description": "The domains available in the running Archicad. Archicad 29 or later."
             },
@@ -3466,10 +3442,7 @@ GS::Optional<GS::UniString> GetPolygonFromUserCommand::GetInputParametersSchema 
                 "default": "Click polygon nodes and finish the input"
             },
             "method": {
-                "type": "string",
-                "description": "Polygon input method. 'General' = free polygon, 'Rect' = axis-aligned rectangle, 'RotRect' = rotated rectangle, 'Polyline' = open polyline.",
-                "enum": ["General", "Rect", "RotRect", "Polyline"],
-                "default": "General"
+                "$ref": "#/PolygonInputMethod"
             },
             "snapFilter": {
                 "$ref": "#/SnapFilter",
@@ -3783,22 +3756,7 @@ GS::Optional<GS::UniString> ModelToScreenCommand::GetRawResponseSchema () const
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "h": {
-                                    "type": "integer",
-                                    "description": "Horizontal pixel position from the left edge of the view window."
-                                },
-                                "v": {
-                                    "type": "integer",
-                                    "description": "Vertical pixel position from the top edge of the view window."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "h",
-                                "v"
-                            ]
+                            "$ref": "#/ScreenPoint"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -3870,26 +3828,7 @@ GS::Optional<GS::UniString> ScreenToModelCommand::GetInputParametersSchema () co
                 "type": "array",
                 "description": "Pixel positions local to the current Archicad view window (not global desktop coordinates).",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "h": {
-                            "type": "integer",
-                            "description": "Horizontal pixel position from the left edge of the view window.",
-                            "minimum": -32768,
-                            "maximum": 32767
-                        },
-                        "v": {
-                            "type": "integer",
-                            "description": "Vertical pixel position from the top edge of the view window.",
-                            "minimum": -32768,
-                            "maximum": 32767
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "h",
-                        "v"
-                    ]
+                    "$ref": "#/ScreenPointInput"
                 }
             }
         },

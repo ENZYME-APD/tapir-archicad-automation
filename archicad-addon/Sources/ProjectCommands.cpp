@@ -904,25 +904,7 @@ GS::Optional<GS::UniString> GetNoteAutotextsCommand::GetRawResponseSchema () con
                 "type": "array",
                 "description": "The autotexts available in the notes of the given owner type, in ascending order of autotextId.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "autotextId": {
-                            "type": "integer",
-                            "description": "The numeric value of the autotext's API_NoteAutotextID in the Archicad API."
-                        },
-                        "elementTypes": {
-                            "type": "array",
-                            "description": "The element types the autotext is available for.",
-                            "items": {
-                                "$ref": "#/ElementType"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "autotextId",
-                        "elementTypes"
-                    ]
+                    "$ref": "#/NoteAutotextDetails"
                 }
             }
         },
@@ -1885,22 +1867,7 @@ GS::Optional<GS::UniString> RenameProjectInfoGroupsCommand::GetInputParametersSc
                 "type": "array",
                 "description": "The Project Info groups to rename, each with its new name.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "projectInfoGroupId": {
-                            "$ref": "#/ProjectInfoGroupId"
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The new name of the group. It must not be used by another group.",
-                            "minLength": 1
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "projectInfoGroupId",
-                        "name"
-                    ]
+                    "$ref": "#/ProjectInfoGroupRename"
                 },
                 "minItems": 1
             }
@@ -2036,20 +2003,7 @@ GS::Optional<GS::UniString> MoveProjectInfoGroupsCommand::GetInputParametersSche
                 "type": "array",
                 "description": "The Project Info groups to move, in the order the moves are made.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "projectInfoGroupId": {
-                            "$ref": "#/ProjectInfoGroupId"
-                        },
-                        "beforeProjectInfoGroupId": {
-                            "$ref": "#/ProjectInfoGroupId",
-                            "description": "The group to move the group before. When omitted, the group is moved to the end of the group list."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "projectInfoGroupId"
-                    ]
+                    "$ref": "#/ProjectInfoGroupMove"
                 },
                 "minItems": 1
             }
@@ -7919,17 +7873,7 @@ GS::Optional<GS::UniString> GetHotlinkSourceStatusCommand::GetInputParametersSch
                 "type": "array",
                 "description": "The source files of hotlinks of the project, for example the location of each node GetHotlinks returns.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "location": {
-                            "type": "string",
-                            "description": "Absolute path of the hotlink's source file."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "location"
-                    ]
+                    "$ref": "#/HotlinkSourceReference"
                 }
             }
         },
@@ -7952,25 +7896,7 @@ GS::Optional<GS::UniString> GetHotlinkSourceStatusCommand::GetRawResponseSchema 
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "type": "string",
-                                    "enum": [
-                                        "AuthCanceld",
-                                        "SourceMissing",
-                                        "SourceAvailable",
-                                        "SourceNotAccessible",
-                                        "SourceIncompatible",
-                                        "SourceOffline"
-                                    ],
-                                    "description": "The API_HotlinkSourceStatus value without its prefix (AuthCanceld is spelled as in the API)."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "status"
-                            ]
+                            "$ref": "#/HotlinkSourceStatusResult"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -8098,39 +8024,7 @@ GS::Optional<GS::UniString> ConvertUnitValuesCommand::GetInputParametersSchema (
                 "type": "array",
                 "description": "The values to convert.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "value": {
-                            "type": "number",
-                            "description": "The value to convert, in meters, square meters, cubic meters or radians, matching the kind of the preference."
-                        },
-                        "preference": {
-                            "type": "string",
-                            "description": "The Project Preference whose unit and rounding are applied: WorkModel, WorkLayout and WorkAngle are the Working Units; the Dim ones are the Dimensions (DimDoorWindow the door, window and skylight dimensions, DimParapet the sill height, DimArea the area calculations); the Calc ones are the Calculation Units & Rules.",
-                            "enum": [
-                                "WorkModel",
-                                "WorkLayout",
-                                "WorkAngle",
-                                "DimLinear",
-                                "DimAngle",
-                                "DimRadial",
-                                "DimLevel",
-                                "DimElevation",
-                                "DimDoorWindow",
-                                "DimParapet",
-                                "DimArea",
-                                "CalcLength",
-                                "CalcArea",
-                                "CalcVolume",
-                                "CalcAngle"
-                            ]
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "value",
-                        "preference"
-                    ]
+                    "$ref": "#/UnitValueConversionData"
                 }
             }
         },
@@ -8153,27 +8047,7 @@ GS::Optional<GS::UniString> ConvertUnitValuesCommand::GetRawResponseSchema () co
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "convertedValue": {
-                                    "type": "string",
-                                    "description": "The value as Archicad shows it in the unit of the preference, without the extra accuracy decimals. It may contain the unit."
-                                },
-                                "extraAccuracy": {
-                                    "type": "string",
-                                    "description": "The extra accuracy decimals, if any (at most two). Empty when there are none."
-                                },
-                                "unit": {
-                                    "type": "string",
-                                    "description": "The unit of the preference. It may be empty."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "convertedValue",
-                                "extraAccuracy",
-                                "unit"
-                            ]
+                            "$ref": "#/ConvertedUnitValue"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -8253,27 +8127,7 @@ GS::Optional<GS::UniString> GetRenovationStatusNamesCommand::GetRawResponseSchem
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "status": {
-                                    "type": "string",
-                                    "description": "The renovation status.",
-                                    "enum": [
-                                        "Existing",
-                                        "New",
-                                        "Demolished"
-                                    ]
-                                },
-                                "name": {
-                                    "type": "string",
-                                    "description": "The name of the status as the running Archicad shows it (localized)."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "status",
-                                "name"
-                            ]
+                            "$ref": "#/RenovationStatusName"
                         },
                         {
                             "$ref": "#/ErrorItem"

@@ -75,6 +75,7 @@ docs/                    Generated docs (archicad-addon command reference),
                          never hand-edited); .nojekyll, so Pages serves the files as they are
 tools/                   Version bump scripts (update_version.py), package_info.json,
                          Add-On docs generator (generate_addon_docs.py),
+                         expanded-schema dump and compare (expand_schemas.py),
                          command scaffolder (new_command.py),
                          one-example-per-command checker (check_examples.py),
                          Grasshopper GUI label table checker (check_tool_settings.py),
@@ -111,8 +112,27 @@ sandbox/                 Experiments / scratch
   attribute lookup, and `Create*Response`/`Create*ExecutionResult` builders. Reuse these
   helpers when adding commands; match the existing style.
 - **Schemas:** input/response JSON schemas are defined per command
-  (`GetInputParametersSchema` / `GetResponseSchema`) plus shared definitions in
-  [Sources/SchemaDefinitions.cpp](archicad-addon/Sources/SchemaDefinitions.cpp).
+  (`GetInputParametersSchema` / `GetResponseSchema`) plus shared named definitions in
+  [Sources/RFIX/Images/CommonSchemaDefinitions.json](archicad-addon/Sources/RFIX/Images/CommonSchemaDefinitions.json)
+  (loaded by [Sources/SchemaDefinitions.cpp](archicad-addon/Sources/SchemaDefinitions.cpp)), which a
+  schema references with `{"$ref": "#/<Name>"}`. **Shared shapes are named definitions, never inline
+  copies**, so they can't drift apart:
+  - An object shape that more than one command uses, or that describes an element, attribute,
+    view or other Archicad item (its details, settings, a geometry, a status), is a definition in
+    `CommonSchemaDefinitions.json`, and every command that uses it refers to it with `$ref`.
+  - Adding or changing a field of a shared shape changes its definition, so every command that
+    uses it gets the field. Never add the field to one inline copy.
+  - A change that touches an inline schema whose shape already has a definition (or a second
+    command's inline copy of the same shape) replaces it with the `$ref` in the same change. A new
+    command's own object shape becomes a definition as soon as a second command needs it.
+  - Only parameters that are specific to one command (its own flags, a one-off option object)
+    stay inline. Name definitions in PascalCase after what they describe (`WallDetails`,
+    `Hole2D`), and keep their descriptions as complete as the inline text was.
+  - Moving a schema into a definition must not change what the command accepts or returns. Check
+    it with `python tools/generate_addon_docs.py` and then `python tools/expand_schemas.py --out`
+    before and after the change, and `python tools/expand_schemas.py --compare before.json after.json`:
+    the expanded schemas must be the same (the generator writes the `$ref`s as they are; only
+    `expand_schemas.py` and the docs page in the browser expand them).
 - **UI:** the Add-On adds a menu + palette ([TapirPalette](archicad-addon/Sources/TapirPalette.cpp)),
   an About dialog, and an auto-update/version check ([VersionChecker](archicad-addon/Sources/VersionChecker.cpp)).
 - **Auto-update:** the update is done by the Tapir Installer (see Installation). The
@@ -144,14 +164,16 @@ sandbox/                 Experiments / scratch
 
 ### Adding or changing a command
 
-[tools/new_command.py](tools/new_command.py) writes the repetitive part of steps 1–4 for new
+[tools/new_command.py](tools/new_command.py) writes the repetitive part of steps 1–5 for new
 commands from a short spec (format in its docstring): the class, schemas, an `Execute` skeleton,
-the registration and a starter example. The Archicad API calls in `Execute` and any
-`Test/ExpectedOutputs/` are still written by hand.
+the registration, a starter example and a starter check. The Archicad API calls in `Execute`,
+the check's real parameters and expectations, and any `Test/ExpectedOutputs/` are still written
+by hand.
 
 1. Add/modify the command class in the appropriate `Sources/*Commands.{cpp,hpp}`
    (or create a new group file and include it in `AddOnMain.cpp`).
-2. Implement input/response schemas; reuse `SchemaDefinitions` and `CommandBase` helpers.
+2. Implement input/response schemas; reuse the shared definitions (`$ref`, see *Schemas* above,
+   and add one for a shape a second command uses) and the `CommandBase` helpers.
 3. Register it in `AddOnMain.cpp` `Initialize()` with the version it is introduced in
    and a clear description.
 4. Add its example as `archicad-addon/Examples/<GroupFolder>/<CommandName>.py`: a module
@@ -162,11 +184,19 @@ the registration and a starter example. The Archicad API calls in `Execute` and 
    and `python tools/check_examples.py` checks them. A script that tests behaviour goes to
    `archicad-addon/Test/Scripts/` (with its golden under `Test/ExpectedOutputs/` if
    `test_examples.py` should compare it), a multi-command task to `archicad-addon/Workflows/`.
-5. Docs at <https://archicad-api.com/...> are generated from the registered
+5. Add or update a **check** for every command you add or whose behaviour you change:
+   `archicad-addon/Test/checks/<snake_case command>.json`, the commands the
+   [community test runner](tools/community-test-runner/) sends to an empty, untitled Archicad
+   project and the answers they must give (format: its README, "Writing checks"). It is how a
+   pull request gets run in real Archicad before it is merged: testers' runners test what is
+   labelled `needs-test`, which the bot PR steward sets on a bot pull request once its builds are
+   green and it has a check (see CI). Make the elements it needs in its own steps, and make the
+   expectations catch the bug or prove the feature, not only that the command answers.
+6. Docs at <https://archicad-api.com/...> are generated from the registered
    descriptions and schemas by `python tools/generate_addon_docs.py` (no Archicad
    needed; same output as the `GenerateDocumentation` developer command). The weekly
    release regenerates them automatically; run it yourself to update them earlier.
-6. Bump the version consistently (see Versioning below) when releasing.
+7. Bump the version consistently (see Versioning below) when releasing.
 
 ## Building the Add-On
 
@@ -221,7 +251,10 @@ python test_examples.py
   [tools/community-test-runner/](tools/community-test-runner/) (JSON checks in
   `archicad-addon/Test/checks/`). Use its `--brief` output (`prs`, `test … --brief --no-post`,
   `trial … --brief`, `check --brief`) rather than reading reports or its source; its skill is
-  `tools/community-test-runner/claude-skill/tapir-pr-test/SKILL.md`.
+  `tools/community-test-runner/claude-skill/tapir-pr-test/SKILL.md`. Runners test what is
+  labelled `needs-test`: a person sets it on a PR, and the bot PR steward sets it by itself on a
+  bot PR with a check once its builds are green, so testers' runners install those bot builds
+  without a person looking first (see `claude_bot_pr_steward.yml` under CI).
 
 ## Grasshopper plugin
 
@@ -442,7 +475,8 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   maintainer (their `GITHUB_TOKEN` pushes start no runs): an hourly sweep, also
   started by the issue bot and the review, dispatches the build checks and the
   review on each new head, links the built add-on in a comment asking the
-  issue's author to test it in Archicad, and starts a `fix` run on a failed build,
+  issue's author to test it in Archicad, labels it `needs-test` when it has a check
+  file (for the community test runner, see below), and starts a `fix` run on a failed build,
   a blocking review or a conflict with `main`, at most
   `BOT_PR_MAX_FIX_ROUNDS` (default 6) times, on at most `BOT_PR_SWEEP_BATCH`
   (default 15) PRs per sweep. Then
@@ -463,6 +497,18 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   twice per PR), `waits-for:#N` parks the PR without a label (commit status
   `steward-fix` pending) until PR #N is merged; `merge-blocked`, `stuck` or no
   marker hands it over at once.
+  The `needs-test` label is set by the sweep, which runs no model, only on the
+  bot's own PRs (`claude/` branches of this repository, opened by the Actions bot),
+  only once every build check of the head is green, and only when the PR adds or
+  changes a file in `archicad-addon/Test/checks/`. It is never removed by the
+  steward. That label is what testers' community test runners poll, and they
+  install the PR's built add-on on their own machines: so a bot PR's native code,
+  written by a model from public issue text, reaches testers' Archicads with no
+  person looking at it first, also for every later head the bot pushes and the
+  build check builds. The maintainers chose this (#1138) so bot PRs get tested
+  before they are merged; a person takes a PR out of it by removing the label
+  (the next green head sets it again unless the PR is also labelled
+  `needs-maintainer` or `do-not-merge`, or is a draft).
 - Model tiers of these three Claude workflows, from repository variables
   (aliases, so each tier follows new models): `CLAUDE_LIGHT_MODEL` (default
   `sonnet`) for issue replies and PR re-reviews, `CLAUDE_MODEL` (default `opus`)

@@ -256,6 +256,21 @@ double GetZPos (const short floorIndex, const double offset, const Stories& stor
 GS::Pair<short, double> ResolveFloorIndexAndOffset (const GS::ObjectState& parameters, const char* floorIndexFieldName, const double zPos, const Stories& stories);
 GS::UniString GetElementTypeNonLocalizedName (API_ElemTypeID typeID);
 API_ElemTypeID GetElementTypeFromNonLocalizedName (const GS::UniString& typeStr);
+
+// The server-side element filter of #/ElementTypeFloorLayerFilter (types, floorIndices,
+// layerIndices), used by GetDetailsOfElements, GetElementsByCriteria and ApplyFavoritesToElements:
+// an element matches when its type, home story and layer are each among the listed ones; an
+// omitted or empty list does not filter.
+struct ElementTypeFloorLayerFilter {
+    GS::Array<API_ElemTypeID> types;
+    GS::Array<short> floorIndices;
+    GS::Array<Int32> layerIndices;
+
+    // Reads the fields from os; returns an error message for an unknown element type.
+    GS::Optional<GS::UniString> Read (const GS::ObjectState& os);
+    bool Matches (const API_Elem_Head& header) const;
+};
+
 // The model element a section/elevation element was cut from, or elemGuid itself for any other element.
 API_Guid GetParentElemOfSectElem (const API_Guid& elemGuid);
 short ParseAnchorPointString (const GS::UniString& anchorPoint);

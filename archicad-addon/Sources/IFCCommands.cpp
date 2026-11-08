@@ -1084,35 +1084,7 @@ GS::Optional<GS::UniString> SetIFCPropertiesOfElementsCommand::GetInputParameter
                 "type": "array",
                 "description": "The IFC property values to set. Only single value (IfcPropertySingleValue) properties are supported.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "propertySetName": {
-                            "type": "string",
-                            "description": "The name of the property set, for example Pset_DoorCommon. Custom property set names are also accepted."
-                        },
-                        "propertyName": {
-                            "type": "string",
-                            "description": "The name of the property, for example FireRating."
-                        },
-                        "type": {
-                            "type": "string",
-                            "description": "The IFC type of the value, for example IfcLabel, IfcText, IfcIdentifier, IfcBoolean, IfcLogical, IfcInteger, IfcReal or a measure type like IfcThermalTransmittanceMeasure. A type Archicad does not know is rejected."
-                        },
-                        "value": {
-                            "description": "The new value of the property. Provide a boolean for IfcBoolean and IfcLogical (IfcLogical also accepts the string Unknown), a number for the numeric types and a string for every other type."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "propertySetName",
-                        "propertyName",
-                        "type",
-                        "value"
-                    ]
+                    "$ref": "#/ElementIFCPropertyValue"
                 }
             }
         },
@@ -1739,59 +1711,7 @@ GS::Optional<GS::UniString> SetIFCClassificationReferencesOfElementsCommand::Get
                 "type": "array",
                 "description": "The IFC classification references to store on the elements.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "identification": {
-                            "type": "string",
-                            "description": "The identification of the classification reference, for example a classification code. Default: empty."
-                        },
-                        "name": {
-                            "type": "string",
-                            "description": "The name of the classification reference. Default: empty."
-                        },
-                        "location": {
-                            "type": "string",
-                            "description": "The location of the classification reference, for example a URL. Default: empty."
-                        },
-                        "referencedSource": {
-                            "type": "object",
-                            "description": "The classification (IfcClassification) the reference belongs to.",
-                            "properties": {
-                                "name": {
-                                    "type": "string",
-                                    "description": "The name of the classification."
-                                },
-                                "edition": {
-                                    "type": "string",
-                                    "description": "The edition of the classification. Default: empty."
-                                },
-                                "editionDate": {
-                                    "type": "string",
-                                    "description": "The edition date of the classification. Default: empty."
-                                },
-                                "description": {
-                                    "type": "string",
-                                    "description": "The description of the classification. Default: empty."
-                                },
-                                "location": {
-                                    "type": "string",
-                                    "description": "The location of the classification, for example a URL. Default: empty."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "name"
-                            ]
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "referencedSource"
-                    ]
+                    "$ref": "#/ElementIFCClassificationReferenceUpdate"
                 }
             }
         },
@@ -1923,35 +1843,7 @@ GS::Optional<GS::UniString> RemoveIFCClassificationReferencesOfElementsCommand::
                 "type": "array",
                 "description": "The IFC classification references to remove from the elements. Only references stored on the elements (the ones GetIFCClassificationReferencesOfElements returns with storedOnly) can be removed.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "referencedSource": {
-                            "type": "object",
-                            "description": "The classification (IfcClassification) the reference belongs to.",
-                            "properties": {
-                                "name": {
-                                    "type": "string",
-                                    "description": "The name of the classification."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "name"
-                            ]
-                        },
-                        "identification": {
-                            "type": "string",
-                            "description": "The identification of the classification reference to remove. When it is not given, every stored reference of the classification is removed from the element."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "referencedSource"
-                    ]
+                    "$ref": "#/ElementIFCClassificationReferenceRemoval"
                 }
             },
             "dryRun": {
@@ -2175,21 +2067,7 @@ GS::Optional<GS::UniString> GetIFCSpatialStructureCommand::GetRawResponseSchema 
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "elementId": {
-                                    "$ref": "#/ElementId"
-                                },
-                                "storyIndex": {
-                                    "type": "integer",
-                                    "description": "The index of the story the element is assigned to in the IFC model."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "elementId",
-                                "storyIndex"
-                            ]
+                            "$ref": "#/IFCSpatialStructureOfElement"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -2289,46 +2167,14 @@ GS::Optional<GS::UniString> GetIFCAssignmentsCommand::GetRawResponseSchema () co
                 "type": "array",
                 "description": "Each IFC object that has objects assigned to it, with those objects.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "object": {
-                            "$ref": "#/IFCObject"
-                        },
-                        "children": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/IFCObject"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "object",
-                        "children"
-                    ]
+                    "$ref": "#/IFCObjectWithChildren"
                 }
             },
             "parentObjects": {
                 "type": "array",
                 "description": "Each IFC object that is assigned to other objects, with those objects.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "object": {
-                            "$ref": "#/IFCObject"
-                        },
-                        "parents": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/IFCObject"
-                            }
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "object",
-                        "parents"
-                    ]
+                    "$ref": "#/IFCObjectWithParents"
                 }
             }
         },

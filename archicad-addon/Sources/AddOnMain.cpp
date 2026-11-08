@@ -715,9 +715,13 @@ GSErrCode Initialize (void)
             elementCommands, "1.0.7",
             "Keeps the elements that match all the given criteria: Archicad's flag filters (filters), layer (layerIndices), home story (floorIndices), element type (elementTypes) and hotlink (fromHotlink, hotlinkIds). Within one criterion any of the listed values matches; an omitted criterion does not filter."
         );
+        err |= RegisterCommand<GetElementsByCriteriaCommand> (
+            elementCommands, "1.8.1",
+            "Returns the elements, or with countOnly only their number, that match all the given criteria: element types, home stories, layers, Archicad's element filter flags and property criteria (a value compared in internal units, or a value status such as hasValue, isUserUndefined, isNotAvailable, isDefault or hasCustomValue). An unknown type, property or operator is an error, not ignored. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given."
+        );
         err |= RegisterCommand<GetDetailsOfElementsCommand> (
             elementCommands, "1.5.7",
-            "Gets the details of the given elements (geometry parameters etc). Use the optional fields parameter to return only the fields you need and skip the computation of the others (for example floorPlanPolygons). Use the optional additionalFields parameter to also get the info string, the compound info string, the library part unique ID and the creator tool unique ID. An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true."
+            "Gets the details of elements (geometry parameters etc). When elements is omitted, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried; an empty elements list returns no details. Use the optional fields parameter to return only the fields you need (e.g. elementId, type, id, floorIndex) and skip the computation of the others (for example floorPlanPolygons). Use the optional additionalFields parameter to also get the info string, the compound info string, the library part unique ID and the creator tool unique ID. An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true."
         );
         err |= RegisterCommand<SetDetailsOfElementsCommand> (
             elementCommands, "1.0.7",
@@ -1490,7 +1494,9 @@ GSErrCode Initialize (void)
             "categories and properties are all applied; each can be opted out of individually. "
             "keepFields lists fields of the target (its ID, layer, an opening's width, height and sill "
             "height, a Wall's reference line location, height and top link) that are copied back after "
-            "the Favorite has been applied, so that e.g. only the library part or the wall type changes."
+            "the Favorite has been applied, so that e.g. only the library part or the wall type changes. "
+            "With favorite instead of favoritesToApply, one Favorite is read once and applied to the given elements, "
+            "or to every element of its type that matches the filter."
         );
         err |= RegisterCommand<UpdateFavoritesFromElementsCommand> (
             favoritesCommands, "1.5.4",
@@ -1583,6 +1589,10 @@ GSErrCode Initialize (void)
             "the marker of every element type that has one, and the sub-elements with each of their kinds (Curtain Wall "
             "frames and panels, Stair treads and risers, Railing posts and rails, markers ...). Available from Archicad 29."
         );
+        err |= RegisterCommand<SearchFavoritesCommand> (
+            favoritesCommands, "1.8.1",
+            "Searches project favorites by keyword (matching favorite name or folder) and/or element type."
+        );
         AddCommandGroup (favoritesCommands);
     }
 
@@ -1591,6 +1601,10 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<GetAllPropertiesCommand> (
             propertyCommands, "1.1.3",
             "Returns all user defined and built-in properties. Optionally only the given properties or property types, and without the availability lists."
+        );
+        err |= RegisterCommand<SearchPropertiesCommand> (
+            propertyCommands, "1.8.1",
+            "Searches properties by name or group substring with optional filtering by property type, value type, and collection type."
         );
         err |= RegisterCommand<GetPropertyValuesOfElementsCommand> (
             propertyCommands, "1.0.6",
@@ -2708,7 +2722,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateSectionsCommand> (
             navigatorCommands, "1.5.0",
-            "Creates Section elements on the floor plan. A section looks to the left of its start to end direction, with its depth line that far on that side. GetDetailsOfElements reads the geometry of existing sections back."
+            "Creates Section elements on the floor plan. A section looks to the left of its start to end direction, with its depth line that far on that side. GetDetailsOfElements reads the geometry of existing sections back. The floor plan must be the active window: creation fails while a Section or Elevation window is active."
         );
         err |= RegisterCommand<ModifySectionsCommand> (
             navigatorCommands, "1.8.1",
@@ -2717,6 +2731,18 @@ GSErrCode Initialize (void)
         err |= RegisterCommand<CreateInteriorElevationsCommand> (
             navigatorCommands, "1.5.8",
             "Creates Interior Elevation elements on the floor plan. Every consecutive pair of the given points becomes one segment, each with its own viewpoint - feed it the corner points of a room to get an interior elevation of that room."
+        );
+        err |= RegisterCommand<CreateElevationsCommand> (
+            navigatorCommands, "1.8.1",
+            "Creates Elevation elements on the floor plan. The floor plan must be the active window: creation fails while a Section or Elevation window is active."
+        );
+        err |= RegisterCommand<GetSectionsAndElevationsDetailsCommand> (
+            navigatorCommands, "1.8.1",
+            "Gets every configurable setting of the given Section and Elevation elements, with their name and reference ID."
+        );
+        err |= RegisterCommand<SetSectionsAndElevationsDetailsCommand> (
+            navigatorCommands, "1.8.1",
+            "Sets settings of the given Section and Elevation elements: pens, line types, horizontal and vertical range, model effects, story handles and markers. The name and the reference ID are changed with ModifySections."
         );
         err |= RegisterCommand<MoveNavigatorItemCommand> (
             navigatorCommands, "1.1.7",
@@ -3536,12 +3562,13 @@ GSErrCode Initialize (void)
 
     // The latest release is looked up on a background thread, so Archicad does not wait for GitHub while it
     // starts or opens a project (#798). Once the result is in, the palette shows the "run with update" icon and
-    // "Update to <version>" on its update button, and the menu item reads "Update Tapir to <version>...".
+    // the "update available" icon with "Update to <version>" as its tooltip on its update button, and the menu item
+    // reads "Update Tapir to <version>...".
     VersionChecker::StartCheck ([] () {
         TapirPalette::ApplyUpdateMenuItemState ();
         if (TapirPalette::HasInstance ()) {
             TapirPalette::Instance ().SetRunButtonIcon ();
-            TapirPalette::Instance ().SetUpdateButtonText ();
+            TapirPalette::Instance ().SetUpdateButtonIcon ();
         }
     });
 
