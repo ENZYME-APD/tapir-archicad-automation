@@ -161,8 +161,10 @@ jobs:
   # An issue too large for one pull request is split: the run posts a split
   # plan (at most six parts) and opens the pull request of part 1, and the
   # `next-part` job below dispatches this job again for the next part, one part
-  # per run, as long as each run adds one. A script for marketplace/ is never
-  # split: it is tested in Archicad as a whole, so it is one pull request.
+  # per run, as long as each run adds one. When a part is merged,
+  # claude_split_next_part.yml dispatches it too, for a chain that stopped
+  # because its next part waited for that merge. A script for marketplace/ is
+  # never split: it is tested in Archicad as a whole, so it is one pull request.
   #
   # The issue number comes from the event, or from the dispatch input when
   # there is no issue event; the first step checks that input.
@@ -590,14 +592,22 @@ jobs:
 
   # ------------------------------------------------------------- next-part --
   # Starts the fix job again for the next part of a split issue. Plain shell,
-  # no model, and the only job here with actions: write. It dispatches only
-  # while the issue is open, a split plan of the bot's exists, fewer parts than
-  # planned (at most six) have a pull request, and the run that just finished
-  # added one - so a run that gives up or fails ends the chain, and a chain is
-  # at most six runs long. A dispatch sent with GITHUB_TOKEN does start a run.
+  # no model. It dispatches only while the issue is open, a split plan of the
+  # bot's exists, fewer parts than planned (at most six) have a pull request,
+  # and the run that just finished added one - so a run that gives up ends the
+  # chain, and a chain is at most six runs long. A run that failed after
+  # opening its part still continues it (#2145): the count it made before the
+  # model started (parts_before, a job output set in an early step, which a
+  # failing job still passes on) is compared as for a successful run. A run
+  # that failed before counting has no count and ends the chain, and a
+  # cancelled run never continues it. A dispatch sent with GITHUB_TOKEN does
+  # start a run.
   next-part:
     needs: [fix, reply]
-    if: always() && (needs.fix.result == 'success' || needs.reply.result == 'success')
+    if: >
+      always() &&
+      (needs.fix.result == 'success' || needs.fix.result == 'failure' ||
+       needs.reply.result == 'success' || needs.reply.result == 'failure')
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -616,6 +626,9 @@ jobs:
           case "$ISSUE_NUMBER" in
             ''|*[!0-9]*) echo "::error::'$ISSUE_NUMBER' is not an issue number."; exit 1 ;;
           esac
+          case "$PARTS_BEFORE" in
+            ''|*[!0-9]*) echo "The run ended before it counted the parts, so the chain stops here."; exit 0 ;;
+          esac
           if [ "$(gh api "repos/$REPO/issues/$ISSUE_NUMBER" --jq '.state')" != "open" ]; then
             echo "The issue is closed."
             exit 0
@@ -633,12 +646,12 @@ jobs:
           count=$(gh pr list --repo "$REPO" --state all --limit 500 --json headRefName,author \
             --jq "[.[] | select(.author.login == \"app/github-actions\" or .author.login == \"github-actions[bot]\" or .author.login == \"github-actions\")
                    | .headRefName | capture(\"^claude/issue-${ISSUE_NUMBER}-part(?<k>[0-9]+)-\") | .k] | unique | length")
-          echo "Planned parts: $planned, with a pull request: $count (before this run: ${PARTS_BEFORE:-0})"
+          echo "Planned parts: $planned, with a pull request: $count (before this run: $PARTS_BEFORE)"
           if [ "$count" -ge "$planned" ]; then
             echo "Every part has a pull request."
             exit 0
           fi
-          if [ "$count" -le "${PARTS_BEFORE:-0}" ]; then
+          if [ "$count" -le "$PARTS_BEFORE" ]; then
             echo "This run opened no part, so the chain stops here."
             exit 0
           fi
