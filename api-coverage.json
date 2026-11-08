@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 06:58 UTC",
+ "generatedAt": "2026-11-08 07:47 UTC",
  "versions": [
   25,
   26,
@@ -12,8 +12,7 @@
   "not applicable": 569,
   "done": 1908,
   "skipped": 29,
-  "merged": 353,
-  "in progress": 9,
+  "merged": 362,
   "claimed": 1,
   "open": 10
  },
@@ -2759,18 +2758,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2318,
-     "title": "Dialogs and pickers of #2269: parts 2–6 together (#2281, #2287, #2291, #2294, #2298)"
-    },
-    {
-     "number": 2298,
-     "title": "[6/6] Add PickAttribute and PickAttributeFolder commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2269,
@@ -3171,16 +3161,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2318,
-     "title": "Dialogs and pickers of #2269: parts 2–6 together (#2281, #2287, #2291, #2294, #2298)"
-    },
-    {
-     "number": 2298,
-     "title": "[6/6] Add PickAttribute and PickAttributeFolder commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -5500,18 +5481,9 @@
    "olderNames": [
     "ACAPI_Interface_CreateAttributePicker"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2318,
-     "title": "Dialogs and pickers of #2269: parts 2–6 together (#2281, #2287, #2291, #2294, #2298)"
-    },
-    {
-     "number": 2298,
-     "title": "[6/6] Add PickAttribute and PickAttributeFolder commands"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2269,
@@ -5537,18 +5509,9 @@
    "olderNames": [
     "APIIo_ObjectSettingsID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2318,
-     "title": "Dialogs and pickers of #2269: parts 2–6 together (#2281, #2287, #2291, #2294, #2298)"
-    },
-    {
-     "number": 2281,
-     "title": "[2/6] Add PickLibraryPart: Archicad's Object Settings dialog as a library part picker"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2269,
@@ -5574,18 +5537,9 @@
    "olderNames": [
     "APIIo_OpenLibPartFileDialogID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2318,
-     "title": "Dialogs and pickers of #2269: parts 2–6 together (#2281, #2287, #2291, #2294, #2298)"
-    },
-    {
-     "number": 2287,
-     "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2269,
@@ -5611,18 +5565,9 @@
    "olderNames": [
     "APIIo_OpenOtherObjectDialogID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2318,
-     "title": "Dialogs and pickers of #2269: parts 2–6 together (#2281, #2287, #2291, #2294, #2298)"
-    },
-    {
-     "number": 2287,
-     "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2269,
@@ -5648,18 +5593,9 @@
    "olderNames": [
     "APIIo_OpenPictureDialogID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2318,
-     "title": "Dialogs and pickers of #2269: parts 2–6 together (#2281, #2287, #2291, #2294, #2298)"
-    },
-    {
-     "number": 2287,
-     "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2269,
@@ -5708,18 +5644,9 @@
    "olderNames": [
     "APIIo_SaveLibPartFileDialogID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2318,
-     "title": "Dialogs and pickers of #2269: parts 2–6 together (#2281, #2287, #2291, #2294, #2298)"
-    },
-    {
-     "number": 2287,
-     "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2269,
@@ -5770,28 +5697,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2298,
-     "title": "[6/6] Add PickAttribute and PickAttributeFolder commands"
-    },
-    {
-     "number": 2294,
-     "title": "[5/6] Add ShowIFCExportSettings command"
-    },
-    {
-     "number": 2291,
-     "title": "[4/6] Add PickLibraryFolder: Archicad's library folder dialog"
-    },
-    {
-     "number": 2287,
-     "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
-    },
-    {
-     "number": 2281,
-     "title": "[2/6] Add PickLibraryPart: Archicad's Object Settings dialog as a library part picker"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2269,
@@ -5863,16 +5769,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2318,
-     "title": "Dialogs and pickers of #2269: parts 2–6 together (#2281, #2287, #2291, #2294, #2298)"
-    },
-    {
-     "number": 2281,
-     "title": "[2/6] Add PickLibraryPart: Archicad's Object Settings dialog as a library part picker"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -10098,14 +9995,6 @@
      "title": "Add-On: translatable user interface (#2119)"
     },
     {
-     "number": 2318,
-     "title": "Dialogs and pickers of #2269: parts 2–6 together (#2281, #2287, #2291, #2294, #2298)"
-    },
-    {
-     "number": 2298,
-     "title": "[6/6] Add PickAttribute and PickAttributeFolder commands"
-    },
-    {
      "number": 2185,
      "title": "[2/2] Add-On: \"Update when Archicad closes\" choice, pending marker and README (#2182)"
     }
@@ -11546,16 +11435,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2318,
-     "title": "Dialogs and pickers of #2269: parts 2–6 together (#2281, #2287, #2291, #2294, #2298)"
-    },
-    {
-     "number": 2294,
-     "title": "[5/6] Add ShowIFCExportSettings command"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11594,18 +11474,9 @@
     30
    ],
    "olderNames": [],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2318,
-     "title": "Dialogs and pickers of #2269: parts 2–6 together (#2281, #2287, #2291, #2294, #2298)"
-    },
-    {
-     "number": 2294,
-     "title": "[5/6] Add ShowIFCExportSettings command"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2269,
@@ -11949,18 +11820,9 @@
    "olderNames": [
     "APIEnv_NewLibDialID"
    ],
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2318,
-     "title": "Dialogs and pickers of #2269: parts 2–6 together (#2281, #2287, #2291, #2294, #2298)"
-    },
-    {
-     "number": 2291,
-     "title": "[4/6] Add PickLibraryFolder: Archicad's library folder dialog"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2269,
@@ -14446,16 +14308,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2318,
-     "title": "Dialogs and pickers of #2269: parts 2–6 together (#2281, #2287, #2291, #2294, #2298)"
-    },
-    {
-     "number": 2294,
-     "title": "[5/6] Add ShowIFCExportSettings command"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16691,16 +16544,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2318,
-     "title": "Dialogs and pickers of #2269: parts 2–6 together (#2281, #2287, #2291, #2294, #2298)"
-    },
-    {
-     "number": 2287,
-     "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -18833,28 +18677,7 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2298,
-     "title": "[6/6] Add PickAttribute and PickAttributeFolder commands"
-    },
-    {
-     "number": 2294,
-     "title": "[5/6] Add ShowIFCExportSettings command"
-    },
-    {
-     "number": 2291,
-     "title": "[4/6] Add PickLibraryFolder: Archicad's library folder dialog"
-    },
-    {
-     "number": 2287,
-     "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
-    },
-    {
-     "number": 2281,
-     "title": "[2/6] Add PickLibraryPart: Archicad's Object Settings dialog as a library part picker"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2266,
@@ -21569,32 +21392,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2318,
-     "title": "Dialogs and pickers of #2269: parts 2–6 together (#2281, #2287, #2291, #2294, #2298)"
-    },
-    {
-     "number": 2298,
-     "title": "[6/6] Add PickAttribute and PickAttributeFolder commands"
-    },
-    {
-     "number": 2294,
-     "title": "[5/6] Add ShowIFCExportSettings command"
-    },
-    {
-     "number": 2291,
-     "title": "[4/6] Add PickLibraryFolder: Archicad's library folder dialog"
-    },
-    {
-     "number": 2287,
-     "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
-    },
-    {
-     "number": 2281,
-     "title": "[2/6] Add PickLibraryPart: Archicad's Object Settings dialog as a library part picker"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -22152,32 +21950,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2318,
-     "title": "Dialogs and pickers of #2269: parts 2–6 together (#2281, #2287, #2291, #2294, #2298)"
-    },
-    {
-     "number": 2298,
-     "title": "[6/6] Add PickAttribute and PickAttributeFolder commands"
-    },
-    {
-     "number": 2294,
-     "title": "[5/6] Add ShowIFCExportSettings command"
-    },
-    {
-     "number": 2291,
-     "title": "[4/6] Add PickLibraryFolder: Archicad's library folder dialog"
-    },
-    {
-     "number": 2287,
-     "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
-    },
-    {
-     "number": 2281,
-     "title": "[2/6] Add PickLibraryPart: Archicad's Object Settings dialog as a library part picker"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25871,6 +25644,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2334,
+     "title": "[1/5] Read graphic override criteria back as structured conditions (includeCriterion)"
+    },
     {
      "number": 2329,
      "title": "[5/5] GetMissingAttributes: check attributes that refer to other attributes"
@@ -30345,18 +30122,6 @@
     {
      "number": 2319,
      "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    },
-    {
-     "number": 2318,
-     "title": "Dialogs and pickers of #2269: parts 2–6 together (#2281, #2287, #2291, #2294, #2298)"
-    },
-    {
-     "number": 2291,
-     "title": "[4/6] Add PickLibraryFolder: Archicad's library folder dialog"
-    },
-    {
-     "number": 2287,
-     "title": "[3/6] File pickers: PickLibraryPartFile, PickPictureFile, PickZoneStampOrLabelFile, PickLibraryPartSaveLocation"
     }
    ],
    "issues": []
@@ -38817,7 +38582,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2334,
+     "title": "[1/5] Read graphic override criteria back as structured conditions (includeCriterion)"
+    }
+   ],
    "issues": []
   },
   {
@@ -54398,14 +54168,6 @@
     {
      "number": 2319,
      "title": "[1/5] GetMissingAttributes: missing attributes of placed elements"
-    },
-    {
-     "number": 2318,
-     "title": "Dialogs and pickers of #2269: parts 2–6 together (#2281, #2287, #2291, #2294, #2298)"
-    },
-    {
-     "number": 2298,
-     "title": "[6/6] Add PickAttribute and PickAttributeFolder commands"
     },
     {
      "number": 1292,
