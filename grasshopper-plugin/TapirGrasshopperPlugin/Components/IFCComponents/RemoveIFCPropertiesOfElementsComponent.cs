@@ -35,12 +35,23 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
             InTexts(
                 "PropertyNames",
                 "Name of the property, for example FireRating (input only 1 to use the same value for all).");
+
+            // Appended after the original inputs, so saved definitions keep their wiring.
+            InBoolean(
+                "DryRun",
+                "If true, nothing is removed: ErrorMessages says what the removal would do for each element, " +
+                "from the check made before removing (the element has the local IFC property). Default is " +
+                "false.",
+                false);
+
+            SetOptionality(3);
         }
 
         protected override void AddOutputs()
         {
             OutErrorMessages(
-                "Error message of each element (empty when it succeeded).");
+                "Error message of each element (empty when it succeeded, or with DryRun when the property " +
+                "would be removed).");
         }
 
         protected override void Solve(
@@ -92,9 +103,17 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                     });
             }
 
+            var parameters = new JObject { ["elementIFCProperties"] = items };
+
+            // Only sent when it differs from the command's default.
+            if (da.GetOptional(3, false))
+            {
+                parameters["dryRun"] = true;
+            }
+
             SetCadValuesWithErrorMessages(
                 CommandName,
-                new JObject { ["elementIFCProperties"] = items },
+                parameters,
                 ToAddOn,
                 da);
         }

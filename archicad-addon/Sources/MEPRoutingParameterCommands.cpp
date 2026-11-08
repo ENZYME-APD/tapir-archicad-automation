@@ -1,4 +1,5 @@
 #include "MEPRoutingParameterCommands.hpp"
+#include "NotificationCommands.hpp"
 
 #ifdef ServerMainVers_2800
 #include "ACAPI/Result.hpp"
@@ -1095,12 +1096,21 @@ GS::ObjectState SetMEPRoutingParametersCommand::Execute (const GS::ObjectState& 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
 
+    // The changed routes are reported to the notification clients as changed (#1825); a routing
+    // node is reported only when Archicad has an element header for it.
+    ElementChangeReporter changeReporter;
+    changeReporter.AddElementIdsOf (elements);
+
     ACAPI_CallUndoableCommand ("Set MEP Routing Parameters", [&]() -> GSErrCode {
         for (const GS::ObjectState& elementData : elements) {
-            executionResults (SetRoutingParameters (elementData));
+            const GS::ObjectState result = SetRoutingParameters (elementData);
+            changeReporter.MarkChangedIfSucceeded (elementData, result);
+            executionResults (result);
         }
         return NoError;
     });
+
+    changeReporter.Report ();
 
     return response;
 #else

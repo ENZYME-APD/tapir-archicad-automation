@@ -2,7 +2,7 @@
 Then it gives the text a fixed width of 20 mm, so it wraps, without changing its content.
 
 Only the given fields change; text replaces the whole content (see ChangeTextContent to change a part).
-A new content makes the text auto-width unless a width is given in the same item.
+A text that wraps keeps its wrap width when its content or style is rebuilt; width 0 turns word wrap off.
 """
 import aclib
 

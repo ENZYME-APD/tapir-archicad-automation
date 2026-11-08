@@ -9,8 +9,8 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
 {
     // The Column tool: reads, writes and creates columns with the settings of
     // the Column Settings dialog, from ToolSettings/Column.json. Origin places
-    // a new column; its Z is the absolute elevation of the column's base, as
-    // in the Origin read by Refresh.
+    // a new column (or moves one this component created before); its Z is the
+    // absolute elevation of the column's base, as in the Origin read by Refresh.
     public class ColumnsComponent : ElementToolComponent
     {
         protected override string ToolName => "Column";
@@ -42,6 +42,11 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             "isWidthAndHeightLinked", "origin", "profileId", "relativeTopStory", "slantAngle",
             "slantDirectionAngle", "topOffset", "veneer", "width", "wrapping", "zCoordinate"
         };
+
+        // ModifyColumns takes the origin and the base elevation, so Create
+        // updates the columns this component made before instead of making
+        // new ones (#521).
+        protected override bool CanUpdateCreatedElements => true;
 
         protected override ISet<string> CreateKeys => CreateColumnsKeys;
         protected override ISet<string> ModifyKeys => ModifyColumnsKeys;
@@ -93,7 +98,10 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 "Reads (Refresh), writes (Execute) and creates (Create) columns, with the settings of the " +
                 "Column Settings dialog as one JSON object per dialog panel. A new column starts from the Column " +
                 "tool defaults, or from FavoriteName, and the given settings override them. Origin places a new " +
-                "column: its Z is the absolute elevation of the column's base.")
+                "column: its Z is the absolute elevation of the column's base. Create updates the columns this " +
+                "component created before (kept in the .gh file) instead of creating new ones; a column deleted " +
+                "since then is reported in Errors, not created again. Switch this off or forget the columns in " +
+                "the component menu.")
         {
         }
 
@@ -103,7 +111,8 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         {
             InPoints(
                 "Origin",
-                "Position of each new column (Create); Z is the absolute elevation of its base. The home story " +
+                "Position of each new column, or of a column this component created before (Create); Z is the " +
+                "absolute elevation of its base. The home story " +
                 "is derived from Z, or is the Home Story of the Positioning JSON when given.");
         }
 
@@ -119,16 +128,37 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
             int firstInputIndex,
             out List<JObject> geometry)
         {
+            // In ModifyColumns' names, so Create can move the columns it
+            // updates; PrepareCreateItem turns them into CreateColumns'
+            // coordinates for a new column.
             var points = new List<Point3d>();
             da.GetDataList(firstInputIndex, points);
             geometry = points
                 .Select(
                     p => new JObject
                     {
-                        ["coordinates"] = new JObject { ["x"] = p.X, ["y"] = p.Y, ["z"] = p.Z }
+                        ["origin"] = new JObject { ["x"] = p.X, ["y"] = p.Y },
+                        ["zCoordinate"] = p.Z
                     })
                 .ToList();
             return true;
+        }
+
+        protected override void PrepareCreateItem(
+            JObject item)
+        {
+            if (!(item["origin"] is JObject origin))
+            {
+                return;
+            }
+            item["coordinates"] = new JObject
+            {
+                ["x"] = origin["x"],
+                ["y"] = origin["y"],
+                ["z"] = item["zCoordinate"] ?? new JValue(0.0)
+            };
+            item.Remove("origin");
+            item.Remove("zCoordinate");
         }
 
         protected override void SetGeometryOutputs(
