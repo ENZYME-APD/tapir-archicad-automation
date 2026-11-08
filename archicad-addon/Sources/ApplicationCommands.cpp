@@ -3076,6 +3076,14 @@ GS::Optional<GS::UniString> GetArcFromUserCommand::GetInputParametersSchema () c
                 "type": "boolean",
                 "description": "If true, also draws the whole circle of the arc while the start and end points are chosen: its radius follows the cursor until the start point is clicked. Drawn in 2D windows only; the 3D window shows Archicad's default feedback.",
                 "default": true
+            },
+            "snapFilter": {
+                "$ref": "#/SnapFilter",
+                "description": "Which points and lines of the elements the cursor snaps to for the center and the start point. Archicad's arc input has no snap filter, so the end point snaps as usual. Default: Archicad's usual snapping."
+            },
+            "constraint": {
+                "$ref": "#/InputConstraint",
+                "description": "Constrains every click: the center, the start point and the end point. With fromLastPoint the start point is measured from the center (type Distance fixes the radius, type Angle the direction of the start point) and the end point from the start point. Default: no constraint."
             }
         },
         "additionalProperties": false
@@ -3153,7 +3161,28 @@ GS::ObjectState GetArcFromUserCommand::Execute (const GS::ObjectState& parameter
     API_GetPointType pointInfo = {};
     CHTruncate (centerPromptStr.ToCStr ().Get (), pointInfo.prompt, sizeof (pointInfo.prompt));
 
-    GSErrCode err = ACAPI_UserInput_GetPoint (&pointInfo);
+    GS::UniString snapFilterError;
+    GSErrCode err = ReadSnapFilter (parameters, pointInfo.changeFilter, pointInfo.filter, snapFilterError);
+    if (err != NoError) {
+        return CreateErrorResponse (err, snapFilterError);
+    }
+
+    bool hasConstraint = false;
+    API_ConstraintPars constraintPars = {};
+    GS::UniString constraintError;
+    err = ReadInputConstraint (parameters, hasConstraint, constraintPars, constraintError);
+    if (err != NoError) {
+        return CreateErrorResponse (err, constraintError);
+    }
+
+    // The constraint applies to every click, so it is set before each input.
+    InputConstraintScope constraintScope (hasConstraint, constraintPars);
+    err = constraintScope.Set ();
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to set the constraint.");
+    }
+
+    err = ACAPI_UserInput_GetPoint (&pointInfo);
     if (err == APIERR_CANCEL) {
         return GS::ObjectState ("cancelled", true);
     }
@@ -3168,6 +3197,13 @@ GS::ObjectState GetArcFromUserCommand::Execute (const GS::ObjectState& parameter
     API_GetLineType lineInfo = {};
     lineInfo.startCoord = pointInfo.pos;
     CHTruncate (startPromptStr.ToCStr ().Get (), lineInfo.prompt, sizeof (lineInfo.prompt));
+    lineInfo.changeFilter = pointInfo.changeFilter;
+    std::memcpy (lineInfo.filter, pointInfo.filter, sizeof (lineInfo.filter));
+
+    err = constraintScope.Set ();
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to set the constraint.");
+    }
 
     err = showRubberArcFeedback
         ? ACAPI_UserInput_GetLine (&lineInfo, RubberArcCallBack)
@@ -3194,6 +3230,12 @@ GS::ObjectState GetArcFromUserCommand::Execute (const GS::ObjectState& parameter
     arcInfo.startCoord = lineInfo.pos;
     arcInfo.startCoordGiven = true;
     CHTruncate (endPromptStr.ToCStr ().Get (), arcInfo.prompt, sizeof (arcInfo.prompt));
+
+    // API_GetArcType has no snap filter, so only the constraint applies to the end point.
+    err = constraintScope.Set ();
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to set the constraint.");
+    }
 
     err = showRubberArcFeedback
         ? ACAPI_UserInput_GetArc (&arcInfo, RubberArcCallBack)
