@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 21:46 UTC",
+ "generatedAt": "2026-11-08 22:14 UTC",
  "versions": [
   25,
   26,
@@ -6737,7 +6737,12 @@
      "title": "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 2461,
+     "title": "ModifyTexts fails with \"Failed to modify the Text\" when content contains a newline after a line longer than a few characters"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_ChangeContent",
@@ -25299,6 +25304,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2460,
+     "title": "Graphic override criterion: library part element types, and an exact round trip"
+    },
+    {
      "number": 2459,
      "title": "Columns and beams: a width given alone also works on a linked cross section"
     },
@@ -38136,7 +38145,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2460,
+     "title": "Graphic override criterion: library part element types, and an exact round trip"
+    }
+   ],
    "issues": []
   },
   {
