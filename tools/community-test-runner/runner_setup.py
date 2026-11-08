@@ -103,7 +103,7 @@ def run(config_path: Path | str, yes: bool, claude_skill: bool) -> int:
 
     found = host.find_archicads()
     if not found:
-        sys.exit(f"no Archicad found under {host.GRAPHISOFT_FOLDER}")
+        sys.exit(f"no Archicad found in {host.ARCHICAD_SEARCH}")
     print("Archicads on this computer:")
     for ac in found:
         print(describe(ac))
