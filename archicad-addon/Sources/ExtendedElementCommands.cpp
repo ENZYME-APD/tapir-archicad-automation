@@ -1969,19 +1969,24 @@ void AddAdditionalPolyToMemo (
     }
 }
 
-GS::Optional<GS::UniString> BuildRoofMemoFromGeometry (
-    API_Element& element,
-    API_ElementMemo& memo,
-    GS::Array<GS::ObjectState>& polygonOutline,
-    const GS::Array<GS::ObjectState>& polygonArcs,
-    const GS::Array<GS::ObjectState>& holes)
+// Shared first half of the roof, plane roof and mesh memo builders: checks the outline
+// (named 'outlineKey' in the error message) and the holes, drops a closing coordinate
+// equal to the first one, and counts the coordinates, sub-polygons and arcs of the
+// outline and its holes into 'poly'. The memo handles are sized and filled by each
+// builder, because they differ per element.
+GS::Optional<GS::UniString> PreparePolygonWithHoles (
+    const char*                       outlineKey,
+    GS::Array<GS::ObjectState>&       outline,
+    const GS::Array<GS::ObjectState>& arcs,
+    const GS::Array<GS::ObjectState>& holes,
+    API_Polygon&                      poly)
 {
-    if (polygonOutline.GetSize () < 3) {
-        return "'polygonOutline' must contain at least 3 coordinates.";
+    if (outline.GetSize () < 3) {
+        return GS::UniString::Printf ("'%s' must contain at least 3 coordinates.", outlineKey);
     }
 
-    if (IsSame2DCoordinate (polygonOutline.GetFirst (), polygonOutline.GetLast ())) {
-        polygonOutline.Pop ();
+    if (IsSame2DCoordinate (outline.GetFirst (), outline.GetLast ())) {
+        outline.Pop ();
     }
 
     auto holesError = ValidateHoles (holes);
@@ -1989,18 +1994,33 @@ GS::Optional<GS::UniString> BuildRoofMemoFromGeometry (
         return holesError;
     }
 
-    element.roof.u.polyRoof.pivotPolygon.nCoords = polygonOutline.GetSize () + 1;
-    element.roof.u.polyRoof.pivotPolygon.nSubPolys = 1;
-    element.roof.u.polyRoof.pivotPolygon.nArcs = polygonArcs.GetSize ();
+    poly.nCoords = outline.GetSize () + 1;
+    poly.nSubPolys = 1;
+    poly.nArcs = arcs.GetSize ();
 
     for (const GS::ObjectState& hole : holes) {
-        GS::Array<GS::ObjectState> holePolygonOutline;
-        GS::Array<GS::ObjectState> holePolygonArcs;
-        if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
-            element.roof.u.polyRoof.pivotPolygon.nCoords += holePolygonOutline.GetSize () + 1;
-            ++element.roof.u.polyRoof.pivotPolygon.nSubPolys;
-            element.roof.u.polyRoof.pivotPolygon.nArcs += holePolygonArcs.GetSize ();
+        GS::Array<GS::ObjectState> holeOutline;
+        GS::Array<GS::ObjectState> holeArcs;
+        if (GetHoleGeometry (hole, holeOutline, holeArcs)) {
+            poly.nCoords += holeOutline.GetSize () + 1;
+            ++poly.nSubPolys;
+            poly.nArcs += holeArcs.GetSize ();
         }
+    }
+
+    return {};
+}
+
+GS::Optional<GS::UniString> BuildRoofMemoFromGeometry (
+    API_Element& element,
+    API_ElementMemo& memo,
+    GS::Array<GS::ObjectState>& polygonOutline,
+    const GS::Array<GS::ObjectState>& polygonArcs,
+    const GS::Array<GS::ObjectState>& holes)
+{
+    auto polygonError = PreparePolygonWithHoles ("polygonOutline", polygonOutline, polygonArcs, holes, element.roof.u.polyRoof.pivotPolygon);
+    if (polygonError.HasValue ()) {
+        return polygonError;
     }
 
     // GetDefaults typically leaves the roof pivot-polygon memo handles null, and
@@ -2054,31 +2074,9 @@ GS::Optional<GS::UniString> BuildPlaneRoofMemoFromGeometry (
     const GS::Array<GS::ObjectState>& polygonArcs,
     const GS::Array<GS::ObjectState>& holes)
 {
-    if (polygonOutline.GetSize () < 3) {
-        return "'polygonOutline' must contain at least 3 coordinates.";
-    }
-
-    if (IsSame2DCoordinate (polygonOutline.GetFirst (), polygonOutline.GetLast ())) {
-        polygonOutline.Pop ();
-    }
-
-    auto holesError = ValidateHoles (holes);
-    if (holesError.HasValue ()) {
-        return holesError;
-    }
-
-    element.roof.u.planeRoof.poly.nCoords = polygonOutline.GetSize () + 1;
-    element.roof.u.planeRoof.poly.nSubPolys = 1;
-    element.roof.u.planeRoof.poly.nArcs = polygonArcs.GetSize ();
-
-    for (const GS::ObjectState& hole : holes) {
-        GS::Array<GS::ObjectState> holePolygonOutline;
-        GS::Array<GS::ObjectState> holePolygonArcs;
-        if (GetHoleGeometry (hole, holePolygonOutline, holePolygonArcs)) {
-            element.roof.u.planeRoof.poly.nCoords += holePolygonOutline.GetSize () + 1;
-            ++element.roof.u.planeRoof.poly.nSubPolys;
-            element.roof.u.planeRoof.poly.nArcs += holePolygonArcs.GetSize ();
-        }
+    auto polygonError = PreparePolygonWithHoles ("polygonOutline", polygonOutline, polygonArcs, holes, element.roof.u.planeRoof.poly);
+    if (polygonError.HasValue ()) {
+        return polygonError;
     }
 
     // GetDefaults typically leaves the roof polygon memo handles null; BMReallocHandle
@@ -12888,30 +12886,9 @@ GS::Optional<GS::UniString> BuildMeshPolyMemoFromGeometry (
     const GS::Array<GS::ObjectState>&  polygonArcs,
     const GS::Array<GS::ObjectState>&  holes)
 {
-    if (polygonCoordinates.GetSize () < 3) {
-        return "'polygonCoordinates' must contain at least 3 coordinates.";
-    }
-    if (IsSame2DCoordinate (polygonCoordinates.GetFirst (), polygonCoordinates.GetLast ())) {
-        polygonCoordinates.Pop ();
-    }
-
-    auto holesError = ValidateHoles (holes);
-    if (holesError.HasValue ()) {
-        return holesError;
-    }
-
-    elem.mesh.poly.nCoords   = polygonCoordinates.GetSize () + 1;
-    elem.mesh.poly.nSubPolys = 1;
-    elem.mesh.poly.nArcs     = polygonArcs.GetSize ();
-
-    for (const GS::ObjectState& hole : holes) {
-        GS::Array<GS::ObjectState> holeCoords;
-        GS::Array<GS::ObjectState> holeArcs;
-        if (GetHoleGeometry (hole, holeCoords, holeArcs)) {
-            elem.mesh.poly.nCoords += holeCoords.GetSize () + 1;
-            ++elem.mesh.poly.nSubPolys;
-            elem.mesh.poly.nArcs += holeArcs.GetSize ();
-        }
+    auto polygonError = PreparePolygonWithHoles ("polygonCoordinates", polygonCoordinates, polygonArcs, holes, elem.mesh.poly);
+    if (polygonError.HasValue ()) {
+        return polygonError;
     }
 
     const Int32 nCoords   = elem.mesh.poly.nCoords;
