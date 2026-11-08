@@ -13,7 +13,9 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
     // with the settings of the Door/Window Settings dialog, from
     // ToolSettings/Door.json or Window.json. OwnerWall and CenterOffset place
     // a new opening (the wall it is cut into and the distance of its center
-    // from the wall's start point). Create<Type>s and Modify<Type>s share one
+    // from the wall's start point); CenterOffset also moves existing openings
+    // on Execute. The library part is in the Preview and Positioning JSON and,
+    // as in the Add-On, only Create sets it. Create<Type>s and Modify<Type>s share one
     // apply function on the Add-On side (ApplyWindowOrDoorDetails), so they
     // take the same settings.
     public abstract class OpeningToolComponent : ElementToolComponent
@@ -61,6 +63,28 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
 
         protected override int GeometryInputCount => 2;
 
+        // GetDetailsOfElements returns the library part as an object
+        // ({ name, parentUnID, ownUnID }); Create<Type>s takes its name. Only
+        // Create can change it, so Execute reports it as Create-only.
+        protected override void PrepareSettings(
+            JObject settings,
+            ISet<string> notes)
+        {
+            if (!(settings["libraryPartName"] is JObject libPart))
+            {
+                return;
+            }
+            var name = libPart["name"]?.ToString();
+            if (string.IsNullOrEmpty(name))
+            {
+                settings.Remove("libraryPartName");
+            }
+            else
+            {
+                settings["libraryPartName"] = name;
+            }
+        }
+
         protected override void AddGeometryInputs()
         {
             InGenerics(
@@ -69,8 +93,41 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 $"{ElementNoun}.");
             InNumbers(
                 "CenterOffset",
-                $"Distance of each new {ElementNoun}'s center from the start point of its wall (Create): one for " +
-                $"all {ElementNoun}s or one per {ElementNoun}.");
+                $"Distance of each {ElementNoun}'s center from the start point of its wall: for the new " +
+                $"{ElementNoun}s (Create) or to move the {ElementNoun}s in ElementGuid along their walls (Execute); " +
+                $"one for all {ElementNoun}s or one per {ElementNoun}.");
+        }
+
+        // Execute moves the openings along their walls when CenterOffset is
+        // given (ModifyDoors/ModifyWindows take centerOffset); OwnerWall is
+        // only used by Create.
+        protected override bool TryGetExecuteGeometry(
+            IGH_DataAccess da,
+            int firstInputIndex,
+            int count,
+            out List<JObject> geometry)
+        {
+            geometry = null;
+            var offsets = new List<double>();
+            da.GetDataList(firstInputIndex + 1, offsets);
+            if (offsets.Count == 0)
+            {
+                return true;
+            }
+            if (offsets.Count != 1 && offsets.Count != count)
+            {
+                this.AddError(
+                    $"CenterOffset has {offsets.Count} items: give none, one for all {count} {ElementNoun}s, or " +
+                    $"one per {ElementNoun}.");
+                return false;
+            }
+
+            geometry = new List<JObject>();
+            for (var i = 0; i < count; i++)
+            {
+                geometry.Add(new JObject { ["centerOffset"] = offsets.Count == 1 ? offsets[0] : offsets[i] });
+            }
+            return true;
         }
 
         protected override void AddGeometryOutputs()
