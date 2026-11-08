@@ -29,6 +29,11 @@
 /* [  1] */        "Manage Script Shortcuts...^E3^ES^EE^EI^ED^EL^EW^ET^EM"
 }
 
+'STR#' ID_ADDON_MENU_FOR_SHARE "Add-On Menu" {
+/* [   ] */        "Tapir"
+/* [  1] */        "Share a Script...^E3^ES^EE^EI^ED^EL^EW^ET^EM"
+}
+
 'STR#' ID_ADDON_MENU_RUNSCRIPT_1 "Add-On Menu" {
 /* [   ] */        "Tapir"
 /* [  1] */        "Run Script Shortcut 1^E3^ES^EE^EI^ED^EL^EW^ET^EM"
@@ -94,6 +99,20 @@
 /* [ 32] */ "Failed to start uv process. Ensure it is installed and executable."
 /* [ 33] */ "Failed to execute %T"
 /* [ 34] */ "Unexpected issue while executing %T"
+}
+
+'STR#' ID_SHARE_STRINGS "Tapir Share Strings" {
+/* [  1] */ "Share a script"
+/* [  2] */ "Select a Python Script to Share"
+/* [  3] */ "Select"
+/* [  4] */ "%T cannot be read."
+/* [  5] */ "%T is larger than 1 MB, too large to share."
+/* [  6] */ "%T is not UTF-8 text, so it cannot be shared."
+/* [  7] */ "OK"
+/* [  8] */ "Sending..."
+/* [  9] */ "Shared, waiting for review."
+/* [ 10] */ "The share service isn't available yet. You can share it on the website instead."
+/* [ 11] */ "Close"
 }
 
 'STR#' ID_AUTOUPDATE_STRINGS "Tapir Update Strings" {
@@ -250,6 +269,38 @@
 2    ""        CancelButton
 3    ""        PickerLabel
 4    ""        PickerPushCheck
+}
+
+/* The script's text is shown above the fields in a read-only MultiLineEdit that ShareDialog.cpp creates
+   (10, 32, 630, 330). */
+'GDLG' ID_SHARE_DIALOG Modal | noGrow    60   60  640  560  "Share a script" {
+/* [  1] */ Button       545  526   85   24    LargePlain  "Share"
+/* [  2] */ Button       450  526   85   24    LargePlain  "Cancel"
+/* [  3] */ LeftText      10   10  620   18    LargePlain  vCenter  "This is exactly what will be sent:"
+/* [  4] */ LeftText      10  344  190   22    LargePlain  vCenter  "What does it do?"
+/* [  5] */ TextEdit     205  344  425   22    LargePlain  160
+/* [  6] */ LeftText      10  374  190   22    LargePlain  vCenter  "Credit me as"
+/* [  7] */ TextEdit     205  374  425   22    LargePlain  100
+/* [  8] */ LeftText      10  404  190   22    LargePlain  vCenter  "Email for updates (optional)"
+/* [  9] */ TextEdit     205  404  425   22    LargePlain  254
+/* [ 10] */ CheckBox      10  438  620   20    LargePlain  "This script becomes public under the MIT licence"
+/* [ 11] */ LeftText      10  466  620   48    LargePlain  ""
+/* [ 12] */ Button        10  526  150   24    LargePlain  "Open the Issue"
+}
+
+'DLGH' ID_SHARE_DIALOG Tapir_Share_Dialog {
+1    ""        ShareButton
+2    ""        CancelButton
+3    ""        ContentLabel
+4    ""        SummaryLabel
+5    "One sentence, at most 160 characters"        SummaryEdit
+6    ""        CreditNameLabel
+7    "The name you are credited under"        CreditNameEdit
+8    ""        EmailLabel
+9    ""        EmailEdit
+10   ""        LicenceCheck
+11   ""        StatusText
+12   ""        OpenIssueButton
 }
 
 'GDLG' ID_SHORTCUTS_DIALOG Modal | noGrow    80   80  500  270  "Script Shortcuts" {
