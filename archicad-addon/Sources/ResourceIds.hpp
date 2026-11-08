@@ -22,6 +22,10 @@
 #define ID_ATTRIBUTE_PICKER_DIALOG_LABEL          3
 #define ID_ATTRIBUTE_PICKER_DIALOG_PICKER         4
 
+// "Scripts Panel": opens the Tapir Palette with its scripts panel shown
+#define ID_ADDON_MENU_FOR_SCRIPTS_PANEL 32112
+#define ID_ADDON_MENU_SCRIPTS_PANEL         1
+
 #define ID_ADDON_MENU_FOR_SHORTCUTS     32026
 #define ID_ADDON_MENU_MANAGE_SHORTCUTS      1
 
@@ -85,6 +89,11 @@
 #define ID_PALETTE_STRINGS_UV_START_FAILED       32
 #define ID_PALETTE_STRINGS_EXECUTE_FAILED        33
 #define ID_PALETTE_STRINGS_EXECUTE_UNEXPECTED    34
+
+// The texts of the palette's scripts panel (ScriptsPanel)
+#define ID_SCRIPTS_PANEL_STRINGS        32111
+#define ID_SCRIPTS_PANEL_STRINGS_SHOW_PANEL      1
+#define ID_SCRIPTS_PANEL_STRINGS_HIDE_PANEL      2
 
 #define ID_AUTOUPDATE_STRINGS           32011
 #define ID_AUTOUPDATE_NEWVERSION_ALERT_TITLE 1
@@ -199,6 +208,10 @@
 // for every other item, so that the names stay aligned.
 #define ID_SCRIPT_RUNNING_ICON          32514
 #define ID_SCRIPT_NOT_RUNNING_ICON      32515
+// The expand arrow at the palette's right end: a down chevron opens the scripts panel, an up chevron closes it.
+// The scripts panel uses the icons 32530-32539.
+#define ID_EXPAND_DOWN_ICON             32530
+#define ID_EXPAND_UP_ICON               32531
 
 #define ID_ABOUT_DIALOG                 32003
 #define ID_PALETTE                      32004

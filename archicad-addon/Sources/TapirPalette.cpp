@@ -482,6 +482,7 @@ TapirPalette::TapirPalette ()
     , manageShortcutsButton (GetReference (), 7)
     , installedVersionText (GetReference (), 8)
     , checkForUpdatesButton (GetReference (), 9)
+    , scriptsPanel (*this, 10, 11)
 {
     Attach (*this);
     AttachToAllItems (*this);
@@ -492,6 +493,7 @@ TapirPalette::TapirPalette ()
         UpdateText (ID_AUTOUPDATE_INSTALLED_VERSION_TEXT), ADDON_VERSION));
     SetRunButtonIcon ();
     SetUpdateButtonIcon ();
+    scriptsPanel.RestoreState ();
 
     BeginEventProcessing ();
 }
@@ -581,6 +583,12 @@ void TapirPalette::Hide ()
     SetMenuItemCheckedState (false);
 }
 
+void TapirPalette::ShowScriptsPanel ()
+{
+    Show ();
+    scriptsPanel.SetOpen (true);
+}
+
 void TapirPalette::SetMenuItemCheckedState (bool isChecked)
 {
     API_MenuItemRef    itemRef = {};
@@ -617,6 +625,13 @@ void TapirPalette::PanelOpened (const DG::PanelOpenEvent&)
     scriptSelectionPopUp.SelectItem (itemToSelect);
     RefreshScriptListShortcutLabels ();
     SetRunButtonIcon ();
+    // Archicad may give the palette the size it had when it was last closed: place the panel's controls for it.
+    scriptsPanel.Layout ();
+}
+
+void TapirPalette::PanelResized (const DG::PanelResizeEvent&)
+{
+    scriptsPanel.Resized ();
 }
 
 static void OpenWebpage (const GS::UniString& webpage)
@@ -652,6 +667,9 @@ static void OpenFileInExplorer (const IO::Location& file)
 
 void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
 {
+    if (scriptsPanel.ButtonClicked (ev)) {
+        return;
+    }
     if (ev.GetSource () == &runScriptButton) {
         GS::Ref<PopUpItemData> popUpItemData = GetSelectedScript ();
         if (popUpItemData != nullptr) {
@@ -940,6 +958,9 @@ bool TapirPalette::ConfirmScriptRequirements (const PopUpItemData& popUpItemData
 // does not run, when the button is Stop), and the update button's "Check for Updates" or "Update to <version>".
 void TapirPalette::ItemToolTipRequested (const DG::ItemHelpEvent& ev, GS::UniString* toolTipText)
 {
+    if (scriptsPanel.ToolTipRequested (ev, toolTipText)) {
+        return;
+    }
     if (toolTipText != nullptr && ev.GetSource () == &checkForUpdatesButton) {
         if (VersionChecker::IsUsingLatestVersion ()) {
             *toolTipText = UpdateText (ID_AUTOUPDATE_CHECK_BUTTON_TEXT);

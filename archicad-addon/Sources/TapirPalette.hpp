@@ -9,6 +9,7 @@
 #include "UvManager.hpp"
 #include "ScriptInfo.hpp"
 #include "ResourceIds.hpp"
+#include "ScriptsPanel.hpp"
 
 #include <atomic>
 #include <memory>
@@ -30,6 +31,8 @@ public:
 
     void Show ();
     void Hide ();
+    // The "Scripts Panel" menu item: shows the palette with its scripts panel open.
+    void ShowScriptsPanel ();
 
     bool UpdateAddOn ();
     void SetRunButtonIcon ();   // also called once the VersionChecker's lookup completes
@@ -87,6 +90,7 @@ private:
     DG::IconButton manageShortcutsButton;
     DG::LeftText   installedVersionText;
     DG::IconButton checkForUpdatesButton;
+    ScriptsPanel   scriptsPanel;   // the expand arrow and the controls below the bar
 
     // A script started by the palette, until it ended or was stopped. Any number of scripts run at the same time,
     // but a script at most once: Run, and its shortcut slot, stop it while it runs (issue #1819).
@@ -163,6 +167,7 @@ private:
 
     virtual void PanelCloseRequested (const DG::PanelCloseRequestEvent& ev, bool* accepted) override;
     virtual void PanelOpened (const DG::PanelOpenEvent& ev) override;
+    virtual void PanelResized (const DG::PanelResizeEvent& ev) override;
     virtual void ButtonClicked (const DG::ButtonClickEvent& ev) override;
     virtual void PopUpChanged (const DG::PopUpChangeEvent& ev) override;
     // Overrides the ItemObserver function of both the button and the pop-up observer bases.
