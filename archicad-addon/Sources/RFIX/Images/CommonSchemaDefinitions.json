@@ -10255,7 +10255,7 @@
             "cutBodyType": {
                 "type": "string",
                 "enum": [ "Editable", "ContoursDown", "PivotLinesDown", "UpwardsExtrusion", "DownwardsExtrusion" ],
-                "description": "How the roof's body is extended for connections with other elements (API_ShellBaseType::cutBodyType, on the Model panel of Roof Settings)."
+                "description": "How the roof's body is extended for connections with other elements (API_ShellBaseType::cutBodyType, the Trimming Body on the Model panel of Roof Settings). A roof uses ContoursDown or PivotLinesDown, which ModifyRoofs sets."
             },
             "cutFillPen": {
                 "$ref": "#/OverriddenPen"
@@ -10422,7 +10422,7 @@
             "cutBodyType": {
                 "type": "string",
                 "enum": [ "Editable", "ContoursDown", "PivotLinesDown", "UpwardsExtrusion", "DownwardsExtrusion" ],
-                "description": "How the body is extended for connections (Model panel). A shell uses Editable, UpwardsExtrusion or DownwardsExtrusion."
+                "description": "How the body is extended for connections (Model panel). A shell uses Editable, UpwardsExtrusion or DownwardsExtrusion; ModifyShells sets UpwardsExtrusion or DownwardsExtrusion."
             },
             "cutFillPen": {
                 "$ref": "#/OverriddenPen"

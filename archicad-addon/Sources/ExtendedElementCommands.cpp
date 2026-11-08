@@ -10958,6 +10958,43 @@ static GSErrCode RestoreRoofSurfaces (const API_Guid& roofGuid, const API_ShellB
     return ACAPI_Element_Change (&roof, &mask, nullptr, 0, true);
 }
 
+// Reads "cutBodyType" (the Trimming Body on the Model panel of Roof and Shell Settings,
+// API_ShellBaseType::cutBodyType) into cutBodyType. Only the given allowed values are
+// accepted: roofs offer ContoursDown and PivotLinesDown, shells UpwardsExtrusion and
+// DownwardsExtrusion (Editable needs an editable trimming body, which is not written here).
+static GS::Optional<GS::UniString> GetShellBaseCutBodyType (
+    const GS::ObjectState& details,
+    const GS::Array<API_ShellBaseCutBodyTypeID>& allowed,
+    API_ShellBaseCutBodyTypeID& cutBodyType,
+    bool& given)
+{
+    given = false;
+    GS::UniString name;
+    if (!details.Get ("cutBodyType", name)) {
+        return {};
+    }
+    API_ShellBaseCutBodyTypeID value;
+    if (name == "Editable") {
+        value = APIShellBaseCutBody_Editable;
+    } else if (name == "ContoursDown") {
+        value = APIShellBaseCutBody_ContoursDown;
+    } else if (name == "PivotLinesDown") {
+        value = APIShellBaseCutBody_PivotLinesDown;
+    } else if (name == "UpwardsExtrusion") {
+        value = APIShellBaseCutBody_UpwardsExtrusion;
+    } else if (name == "DownwardsExtrusion") {
+        value = APIShellBaseCutBody_DownwardsExtrusion;
+    } else {
+        return "Unknown cutBodyType '" + name + "'.";
+    }
+    if (!allowed.Contains (value)) {
+        return "cutBodyType '" + name + "' cannot be set on this element.";
+    }
+    cutBodyType = value;
+    given = true;
+    return {};
+}
+
 ModifyRoofsCommand::ModifyRoofsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -11016,6 +11053,11 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                             "items": { "$ref": "#/PolyArc" }
                         },
                         "holes": { "$ref": "#/Holes2D" },
+                        "cutBodyType": {
+                            "type": "string",
+                            "enum": [ "ContoursDown", "PivotLinesDown" ],
+                            "description": "The Trimming Body of the roof (Model panel of Roof Settings): Contours Down or Pivot Lines Down. GetDetailsOfElements reports it as cutBodyType."
+                        },
                         "angle": {
                             "type": "number",
                             "description": "Single-plane roofs only: the angle of the plane to the XY plane."
@@ -11146,6 +11188,18 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
             if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                 continue;
+            }
+            {
+                bool cutBodyGiven = false;
+                auto cutBodyError = GetShellBaseCutBodyType (item, { APIShellBaseCutBody_ContoursDown, APIShellBaseCutBody_PivotLinesDown }, element.roof.shellBase.cutBodyType, cutBodyGiven);
+                if (cutBodyError.HasValue ()) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, cutBodyError.Get ()));
+                    continue;
+                }
+                if (cutBodyGiven) {
+                    ACAPI_ELEMENT_MASK_SET (mask, API_RoofType, shellBase.cutBodyType);
+                    changed = true;
+                }
             }
             if (isPlaneRoof) {
                 auto planeError = ApplyPlaneRoofPivot (element, mask, item, changed);
@@ -11339,7 +11393,12 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                             "$ref": "#/ShellStructureType"
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
-                        "compositeId": { "$ref": "#/AttributeId" }
+                        "compositeId": { "$ref": "#/AttributeId" },
+                        "cutBodyType": {
+                            "type": "string",
+                            "enum": [ "UpwardsExtrusion", "DownwardsExtrusion" ],
+                            "description": "The Trimming Body of the shell (Model panel of Shell Settings): Upward Extrusion or Downward Extrusion. GetDetailsOfElements reports it as cutBodyType. An Editable trimming body cannot be set yet."
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -11389,6 +11448,16 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
             if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                 continue;
+            }
+            bool cutBodyGiven = false;
+            error = GetShellBaseCutBodyType (item, { APIShellBaseCutBody_UpwardsExtrusion, APIShellBaseCutBody_DownwardsExtrusion }, element.shell.shellBase.cutBodyType, cutBodyGiven);
+            if (error.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
+                continue;
+            }
+            if (cutBodyGiven) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.cutBodyType);
+                changed = true;
             }
 
             if (!changed) {
