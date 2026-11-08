@@ -9,7 +9,10 @@ using TapirGrasshopperPlugin.Types.GuidObjects;
 
 namespace TapirGrasshopperPlugin.Components.IFCComponents
 {
-    public class SetIFCAttributesOfElementsComponent : ArchicadExecutorComponent
+    // Sends one SetIFCAttributesOfElements request for every branch of the
+    // inputs, so a tree input makes one undo step in Archicad (#203).
+    public class SetIFCAttributesOfElementsComponent
+        : BatchedExecutorComponent<JObject>
     {
         public override string CommandName => "SetIFCAttributesOfElements";
 
@@ -44,14 +47,17 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                 "Error message of each element (empty when it succeeded).");
         }
 
-        protected override void Solve(
-            IGH_DataAccess da)
+        protected override bool TryGetBatchItems(
+            IGH_DataAccess da,
+            out List<JObject> items)
         {
+            items = null;
+
             if (!da.TryGetList(
                     0,
                     out List<GH_ObjectWrapper> elementWrappers))
             {
-                return;
+                return false;
             }
 
             if (!TryGetTexts(
@@ -61,7 +67,7 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                     elementWrappers.Count,
                     out List<string> attributeNames))
             {
-                return;
+                return false;
             }
 
             if (!TryGetTexts(
@@ -71,20 +77,20 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                     elementWrappers.Count,
                     out List<string> values))
             {
-                return;
+                return false;
             }
 
-            var items = new JArray();
+            var iterationItems = new List<JObject>();
             for (var i = 0; i < elementWrappers.Count; i++)
             {
                 var elementId = GuidObject<ElementGuid>.CreateFromWrapper(elementWrappers[i]);
                 if (elementId == null)
                 {
                     this.AddError("Invalid element identifier in the ElementGuids input.");
-                    return;
+                    return false;
                 }
 
-                items.Add(
+                iterationItems.Add(
                     new JObject
                     {
                         ["elementId"] = new JObject { ["guid"] = elementId.Guid },
@@ -93,11 +99,14 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                     });
             }
 
-            SetCadValuesWithErrorMessages(
-                CommandName,
-                new JObject { ["elementIFCAttributeValues"] = items },
-                ToAddOn,
-                da);
+            items = iterationItems;
+            return true;
+        }
+
+        protected override object CreateBatchParameters(
+            List<JObject> items)
+        {
+            return new JObject { ["elementIFCAttributeValues"] = new JArray(items) };
         }
 
         // Reads a text list input that holds 0 (only when optional), 1 (the
