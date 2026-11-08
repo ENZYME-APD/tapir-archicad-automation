@@ -3988,6 +3988,34 @@
             "IncludeSubElemObjects"
         ]
     },
+    "ElementTypeFloorLayerFilter": {
+        "type": "object",
+        "description": "A server-side element filter. An element matches when its type, its home story and its layer are each among the listed ones; an omitted or empty list does not filter.",
+        "properties": {
+            "types": {
+                "type": "array",
+                "description": "Element types to keep (e.g. ['Wall', 'Column']).",
+                "items": {
+                    "$ref": "#/ElementType"
+                }
+            },
+            "floorIndices": {
+                "type": "array",
+                "description": "Home story indices to keep (e.g. [0, 1]).",
+                "items": {
+                    "type": "integer"
+                }
+            },
+            "layerIndices": {
+                "type": "array",
+                "description": "Layer attribute indices to keep.",
+                "items": {
+                    "type": "integer"
+                }
+            }
+        },
+        "additionalProperties": false
+    },
     "WindowType": {
         "type": "string",
         "description": "The type of a window.",
@@ -12538,6 +12566,7 @@
         "type": "string",
         "description": "A field of the details of an element.",
         "enum": [
+            "elementId",
             "type",
             "id",
             "floorIndex",
@@ -20038,6 +20067,10 @@
         "type": "object",
         "description": "Details of an element. When the optional fields filter is given in the input, only the requested fields are present; the required list below applies to unfiltered requests.",
         "properties": {
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "The identifier of the element. Returned when elementId is listed in fields, and always when no elements are given."
+            },
             "type": {
                 "$ref": "#/ElementType"
             },
@@ -20195,6 +20228,13 @@
             "elementType": {
                 "$ref": "#/ElementType",
                 "description": "The element type of the Favorite. Missing when Archicad cannot read the Favorite's element settings."
+            },
+            "folder": {
+                "type": "array",
+                "description": "The names of the folders leading from the root of the Favorites palette to the Favorite's folder. Returned only by SearchFavorites, and missing for a Favorite in the root folder.",
+                "items": {
+                    "type": "string"
+                }
             }
         },
         "additionalProperties": false,

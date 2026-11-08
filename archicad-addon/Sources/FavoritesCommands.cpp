@@ -1760,6 +1760,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
         "properties": {
             "favoritesToApply": {
                 "type": "array",
+                "description": "The elements and the Favorite to apply to each. Give this or favorite.",
                 "items": {
                     "type": "object",
                     "description": "The identifier of the element and the name of the Favorite to apply to it.",
@@ -1777,6 +1778,18 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
                         "favorite"
                     ]
                 }
+            },
+            "favorite": {
+                "type": "string",
+                "description": "The name of one Favorite to apply to many elements, instead of favoritesToApply: to the given elements, or without elements to every element of the Favorite's type that matches the filter. The Favorite is read only once. Needs elements or filter."
+            },
+            "elements": {
+                "$ref": "#/Elements",
+                "description": "The elements to apply the single favorite to, one execution result each, in the same order. Only with favorite."
+            },
+            "filter": {
+                "$ref": "#/ElementTypeFloorLayerFilter",
+                "description": "Server-side element filter for the single favorite. Without elements the favorite is applied to every element of its type that matches it; an element of elements that does not match it gets a failed execution result. Only with favorite."
             },
             "applySettings": {
                 "type": "boolean",
@@ -1802,10 +1815,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
                 }
             }
         },
-        "additionalProperties": false,
-        "required": [
-            "favoritesToApply"
-        ]
+        "additionalProperties": false
     })";
 }
 
@@ -1825,24 +1835,140 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetRawResponseSchem
     })";
 }
 
+// What ApplyFavoritesToElements applies of a Favorite, and which fields of the target it keeps.
+struct FavoriteApplyOptions
+{
+    bool applySettings = true;
+    bool applyClassifications = true;
+    bool applyCategories = true;
+    bool applyProperties = true;
+    KeptFields keptFields;
+};
+
+// Reads the Favorite of the given name for ApplyFavoritesToElements, with its memo, properties,
+// classifications and element category values. On an error the memo is disposed and errorMessage
+// says what went wrong; otherwise the caller disposes the memo.
+static GSErrCode GetFavoriteToApply (const GS::UniString& favoriteName, API_Favorite& favorite, GS::UniString& errorMessage)
+{
+    favorite.memo.New ();
+    favorite.properties.New ();
+    favorite.classifications.New ();
+    favorite.elemCategoryValues.New ();
+    favorite.name = favoriteName;
+
+    const GSErrCode err = ACAPI_Favorite_Get (&favorite);
+    if (err == NoError) {
+        return NoError;
+    }
+    ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
+    errorMessage = err == APIERR_REFUSEDCMD
+        ? "Archicad does not give out the settings of this Favorite as element settings, so they cannot be applied to elements (the case for Drawing favorites). ApplyFavoritesToElementDefaults can still make them the tool's defaults."
+        : "Failed to get favorite";
+    return err;
+}
+
+// Applies a Favorite read by GetFavoriteToApply to one target element, as ACAPI_Element_Get
+// returned it, and returns the element's execution result. This is the per-element part of
+// ApplyFavoritesToElements, shared by its favoritesToApply list and its single favorite, so
+// both apply a Favorite the same way. It does not dispose the Favorite's memo, so one Favorite
+// can be applied to many elements.
+static GS::ObjectState ApplyFavoriteToElement (const API_Element& targetElement, API_Favorite& favorite, const FavoriteApplyOptions& options)
+{
+    const API_Guid targetGuid = targetElement.header.guid;
+
+    // Compare the type ID only - never the whole API_ElemType. On AC26+ that struct
+    // also carries the variationID, and a Window favorite can legitimately hold a
+    // different variation than the window it is applied to (dual-use library parts
+    // report APIVarId_CornerWindow even when placed as regular windows), which made
+    // every Window favorite look like a type mismatch. The same guard elsewhere
+    // (see ExtendedElementCommands.cpp) compares the type ID for this reason.
+    if (GetElemTypeId (favorite.element.header) != GetElemTypeId (targetElement.header)) {
+        return CreateFailedExecutionResult (APIERR_BADID, "The Favorite's element type does not match the target element's type.");
+    }
+
+    // The Element ID is read off the memo before anything is applied - see RestoreKeptFields.
+    API_ElementMemo targetIdMemo = {};
+    const GS::OnExit disposeTargetIdMemo ([&targetIdMemo] () { ACAPI_DisposeElemMemoHdls (&targetIdMemo); });
+    GSErrCode err = NoError;
+    if (options.keptFields.id) {
+        err = ACAPI_Element_GetMemo (targetGuid, &targetIdMemo, APIMemoMask_ElemInfoString);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "Failed to read the ID of the element");
+        }
+    }
+
+    // ACAPI_Element_ChangeParameters (unlike ACAPI_Element_Change) only ever touches
+    // settings-type parameters of the API_Element itself, never its geometry, and
+    // always keeps the target's own guid - exactly the "apply favorite settings"
+    // semantics we want here. The memo is the one part that can carry geometry, so
+    // it is withheld for the types where it does (see MemoCarriesGeometry above).
+    if (options.applySettings) {
+        if (IsWindowOrDoor (targetElement.header)) {
+            err = ApplyFavoriteToOpening (targetElement, favorite);
+        } else {
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_SETFULL (mask);
+
+            GS::Array<API_Guid> targetGuids;
+            targetGuids.Push (targetGuid);
+
+            const API_ElementMemo* memoToApply = MemoCarriesGeometry (targetElement.header)
+                ? nullptr
+                : favorite.memo.GetPtr ();
+
+            // The home story is part of the header the full mask covers, and the Favorite
+            // carries the story of the element it was captured from: applied as is, it moved
+            // a Wall from story 2 down to story 0 (#1565). The target keeps its own story.
+            favorite.element.header.floorInd = targetElement.header.floorInd;
+            mask.header.floorInd = 0;
+
+            err = ACAPI_Element_ChangeParameters (targetGuids, &favorite.element, memoToApply, &mask);
+            if (err == NoError) {
+                err = RestoreHomeStory (targetElement);
+            }
+        }
+    }
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to apply favorite to element");
+    }
+
+    if (options.applyClassifications) {
+        for (const GS::Pair<API_Guid, API_Guid>& pair : *favorite.classifications) {
+            ACAPI_Element_AddClassificationItem (targetGuid, pair.second);
+        }
+    }
+
+    if (options.applyCategories) {
+        for (const API_ElemCategoryValue& categoryValue : *favorite.elemCategoryValues) {
+            TAPIR_Element_SetCategoryValue (targetGuid, categoryValue);
+        }
+    }
+
+    if (options.applyProperties) {
+        ACAPI_Element_SetProperties (targetGuid, *favorite.properties);
+    }
+
+    if (options.keptFields.Any ()) {
+        err = RestoreKeptFields (targetElement, targetIdMemo, options.keptFields);
+        if (err != NoError) {
+            return CreateFailedExecutionResult (err, "The favorite was applied, but a field listed in keepFields could not be restored");
+        }
+    }
+
+    return CreateSuccessfulExecutionResult ();
+}
+
 GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
-    GS::Array<GS::ObjectState> favoritesToApply;
-    parameters.Get ("favoritesToApply", favoritesToApply);
+    FavoriteApplyOptions options;
+    parameters.Get ("applySettings", options.applySettings);
+    parameters.Get ("applyClassifications", options.applyClassifications);
+    parameters.Get ("applyCategories", options.applyCategories);
+    parameters.Get ("applyProperties", options.applyProperties);
 
-    bool applySettings = true;
-    parameters.Get ("applySettings", applySettings);
-    bool applyClassifications = true;
-    parameters.Get ("applyClassifications", applyClassifications);
-    bool applyCategories = true;
-    parameters.Get ("applyCategories", applyCategories);
-    bool applyProperties = true;
-    parameters.Get ("applyProperties", applyProperties);
-
-    KeptFields keptFields;
     GS::Array<GS::UniString> keepFieldNames;
     if (parameters.Get ("keepFields", keepFieldNames)) {
-        const auto parseError = ParseKeptFields (keepFieldNames, keptFields);
+        const auto parseError = ParseKeptFields (keepFieldNames, options.keptFields);
         if (parseError.HasValue ()) {
             return CreateErrorResponse (APIERR_BADPARS, parseError.Get ());
         }
@@ -1850,6 +1976,82 @@ GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState&
 
     GS::ObjectState response;
     const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    GS::UniString singleFavoriteName;
+    if (parameters.Get ("favorite", singleFavoriteName)) {
+        // One Favorite applied to many elements, read once (#1253).
+        if (parameters.Contains ("favoritesToApply")) {
+            return CreateErrorResponse (APIERR_BADPARS, "Give either 'favoritesToApply' or 'favorite', not both.");
+        }
+        const GS::ObjectState* filterObj = parameters.Get ("filter");
+        const bool hasElements = parameters.Contains ("elements");
+        if (!hasElements && filterObj == nullptr) {
+            return CreateErrorResponse (APIERR_BADPARS, "Give 'elements' or 'filter' with 'favorite', so that it is not applied to the whole project by accident.");
+        }
+
+        ElementTypeFloorLayerFilter filter;
+        if (filterObj != nullptr) {
+            const auto filterError = filter.Read (*filterObj);
+            if (filterError.HasValue ()) {
+                return CreateErrorResponse (APIERR_BADPARS, "filter: " + filterError.Get ());
+            }
+        }
+
+        API_Favorite favorite;
+        GS::UniString favoriteErrorMessage;
+        const GSErrCode favoriteErr = GetFavoriteToApply (singleFavoriteName, favorite, favoriteErrorMessage);
+        if (favoriteErr != NoError) {
+            return CreateErrorResponse (favoriteErr, GS::UniString::Printf ("Favorite '%T': ", singleFavoriteName.ToPrintf ()) + favoriteErrorMessage);
+        }
+        const GS::OnExit disposeFavoriteMemo ([&favorite] () { ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ()); });
+
+        GS::Array<API_Guid> targetGuids;
+        if (hasElements) {
+            GS::Array<GS::ObjectState> elements;
+            parameters.Get ("elements", elements);
+            targetGuids = elements.Transform<API_Guid> (GetGuidFromElementsArrayItem);
+        } else {
+            // Only elements of the Favorite's type can take it.
+            const GSErrCode err = ACAPI_Element_GetElemList (GetElemTypeId (favorite.element.header), &targetGuids);
+            if (err != NoError) {
+                return CreateErrorResponse (err, "Failed to list the elements of the Favorite's type.");
+            }
+        }
+
+        ACAPI_CallUndoableCommand ("ApplyFavoritesToElements", [&]() -> GSErrCode {
+            for (const API_Guid& targetGuid : targetGuids) {
+                API_Element targetElement = {};
+                targetElement.header.guid = targetGuid;
+                const GSErrCode err = ACAPI_Element_Get (&targetElement);
+                if (err != NoError) {
+                    executionResults (CreateFailedExecutionResult (err, "Failed to find element"));
+                    continue;
+                }
+
+                // A listed element gets a result even when the filter leaves it out, so that the
+                // results line up with 'elements'.
+                if (!filter.Matches (targetElement.header)) {
+                    if (hasElements) {
+                        executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Not applied: the element does not match the filter."));
+                    }
+                    continue;
+                }
+
+                executionResults (ApplyFavoriteToElement (targetElement, favorite, options));
+            }
+            return NoError;
+        });
+
+        return response;
+    }
+
+    GS::Array<GS::ObjectState> favoritesToApply;
+    if (!parameters.Get ("favoritesToApply", favoritesToApply)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Give 'favoritesToApply', or 'favorite' with 'elements' or 'filter'.");
+    }
+    if (parameters.Contains ("elements") || parameters.Contains ("filter")) {
+        return CreateErrorResponse (APIERR_BADPARS, "'elements' and 'filter' only go with 'favorite'; each item of 'favoritesToApply' names its own element.");
+    }
 
     ACAPI_CallUndoableCommand ("ApplyFavoritesToElements", [&]() -> GSErrCode {
         for (const GS::ObjectState& item : favoritesToApply) {
@@ -1859,120 +2061,26 @@ GS::ObjectState ApplyFavoritesToElementsCommand::Execute (const GS::ObjectState&
                 continue;
             }
 
-            const API_Guid targetGuid = GetGuidFromObjectState (*elementId);
             API_Element targetElement = {};
-            targetElement.header.guid = targetGuid;
-            GSErrCode err = ACAPI_Element_Get (&targetElement);
+            targetElement.header.guid = GetGuidFromObjectState (*elementId);
+            const GSErrCode err = ACAPI_Element_Get (&targetElement);
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to find element"));
                 continue;
             }
 
-            // The Element ID is read off the memo before anything is applied - see RestoreKeptFields.
-            API_ElementMemo targetIdMemo = {};
-            const GS::OnExit disposeTargetIdMemo ([&targetIdMemo] () { ACAPI_DisposeElemMemoHdls (&targetIdMemo); });
-            if (keptFields.id) {
-                err = ACAPI_Element_GetMemo (targetGuid, &targetIdMemo, APIMemoMask_ElemInfoString);
-                if (err != NoError) {
-                    executionResults (CreateFailedExecutionResult (err, "Failed to read the ID of the element"));
-                    continue;
-                }
-            }
-
+            GS::UniString favoriteName;
+            item.Get ("favorite", favoriteName);
             API_Favorite favorite;
-            favorite.memo.New ();
-            favorite.properties.New ();
-            favorite.classifications.New ();
-            favorite.elemCategoryValues.New ();
-            item.Get ("favorite", favorite.name);
-
-            err = ACAPI_Favorite_Get (&favorite);
-            if (err == APIERR_REFUSEDCMD) {
-                executionResults (CreateFailedExecutionResult (err, "Archicad does not give out the settings of this Favorite as element settings, so they cannot be applied to elements (the case for Drawing favorites). ApplyFavoritesToElementDefaults can still make them the tool's defaults."));
-                ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
-                continue;
-            }
-            if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (err, "Failed to get favorite"));
-                ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
+            GS::UniString favoriteErrorMessage;
+            const GSErrCode favoriteErr = GetFavoriteToApply (favoriteName, favorite, favoriteErrorMessage);
+            if (favoriteErr != NoError) {
+                executionResults (CreateFailedExecutionResult (favoriteErr, favoriteErrorMessage));
                 continue;
             }
 
-            // Compare the type ID only - never the whole API_ElemType. On AC26+ that struct
-            // also carries the variationID, and a Window favorite can legitimately hold a
-            // different variation than the window it is applied to (dual-use library parts
-            // report APIVarId_CornerWindow even when placed as regular windows), which made
-            // every Window favorite look like a type mismatch. The same guard elsewhere
-            // (see ExtendedElementCommands.cpp) compares the type ID for this reason.
-            const bool typeMatches = GetElemTypeId (favorite.element.header) == GetElemTypeId (targetElement.header);
-            if (!typeMatches) {
-                executionResults (CreateFailedExecutionResult (APIERR_BADID, "The Favorite's element type does not match the target element's type."));
-                ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
-                continue;
-            }
-
-            // ACAPI_Element_ChangeParameters (unlike ACAPI_Element_Change) only ever touches
-            // settings-type parameters of the API_Element itself, never its geometry, and
-            // always keeps the target's own guid - exactly the "apply favorite settings"
-            // semantics we want here. The memo is the one part that can carry geometry, so
-            // it is withheld for the types where it does (see MemoCarriesGeometry above).
-            if (applySettings) {
-                if (IsWindowOrDoor (targetElement.header)) {
-                    err = ApplyFavoriteToOpening (targetElement, favorite);
-                } else {
-                    API_Element mask = {};
-                    ACAPI_ELEMENT_MASK_SETFULL (mask);
-
-                    GS::Array<API_Guid> targetGuids;
-                    targetGuids.Push (targetGuid);
-
-                    const API_ElementMemo* memoToApply = MemoCarriesGeometry (targetElement.header)
-                        ? nullptr
-                        : favorite.memo.GetPtr ();
-
-                    // The home story is part of the header the full mask covers, and the Favorite
-                    // carries the story of the element it was captured from: applied as is, it moved
-                    // a Wall from story 2 down to story 0 (#1565). The target keeps its own story.
-                    favorite.element.header.floorInd = targetElement.header.floorInd;
-                    mask.header.floorInd = 0;
-
-                    err = ACAPI_Element_ChangeParameters (targetGuids, &favorite.element, memoToApply, &mask);
-                    if (err == NoError) {
-                        err = RestoreHomeStory (targetElement);
-                    }
-                }
-            }
+            executionResults (ApplyFavoriteToElement (targetElement, favorite, options));
             ACAPI_DisposeElemMemoHdls (&favorite.memo.Get ());
-            if (err != NoError) {
-                executionResults (CreateFailedExecutionResult (err, "Failed to apply favorite to element"));
-                continue;
-            }
-
-            if (applyClassifications) {
-                for (const GS::Pair<API_Guid, API_Guid>& pair : *favorite.classifications) {
-                    ACAPI_Element_AddClassificationItem (targetGuid, pair.second);
-                }
-            }
-
-            if (applyCategories) {
-                for (const API_ElemCategoryValue& categoryValue : *favorite.elemCategoryValues) {
-                    TAPIR_Element_SetCategoryValue (targetGuid, categoryValue);
-                }
-            }
-
-            if (applyProperties) {
-                ACAPI_Element_SetProperties (targetGuid, *favorite.properties);
-            }
-
-            if (keptFields.Any ()) {
-                err = RestoreKeptFields (targetElement, targetIdMemo, keptFields);
-                if (err != NoError) {
-                    executionResults (CreateFailedExecutionResult (err, "The favorite was applied, but a field listed in keepFields could not be restored"));
-                    continue;
-                }
-            }
-
-            executionResults (CreateSuccessfulExecutionResult ());
         }
 
         return NoError;
@@ -2205,6 +2313,155 @@ GS::ObjectState DeleteFavoritesCommand::Execute (const GS::ObjectState& paramete
 
         return NoError;
     });
+
+    return response;
+}
+
+SearchFavoritesCommand::SearchFavoritesCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String SearchFavoritesCommand::GetName () const
+{
+    return "SearchFavorites";
+}
+
+GS::Optional<GS::UniString> SearchFavoritesCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "Optional case-insensitive substring to search in favorite name or folder hierarchy."
+            },
+            "elementType": {
+                "$ref": "#/ElementType",
+                "description": "Optional filter by element type. If omitted, searches across all element types."
+            },
+            "limit": {
+                "type": "integer",
+                "description": "Maximum number of matching favorites to return.",
+                "minimum": 1
+            }
+        },
+        "additionalProperties": false
+    })";
+}
+
+GS::Optional<GS::UniString> SearchFavoritesCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "favorites": {
+                "type": "array",
+                "description": "The matching Favorites, each with its element type and folder.",
+                "items": {
+                    "$ref": "#/FavoriteSummary"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "favorites"
+        ]
+    })";
+}
+
+GS::ObjectState SearchFavoritesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::UniString query;
+    const bool hasQuery = parameters.Get ("query", query) && !query.IsEmpty ();
+    const GS::UniString queryLower = hasQuery ? GetLowerCasedString (query) : GS::EmptyUniString;
+
+    GS::Array<API_ElemTypeID> typesToQuery;
+    GS::UniString elementTypeStr;
+    if (parameters.Get ("elementType", elementTypeStr) && !elementTypeStr.IsEmpty ()) {
+        const API_ElemTypeID elemType = GetElementTypeFromNonLocalizedName (elementTypeStr);
+        if (elemType == API_ZombieElemID) {
+            return CreateErrorResponse (APIERR_BADPARS,
+                GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ()));
+        }
+        typesToQuery.Push (elemType);
+    } else {
+        // Every element type, as ScanFavorites in AttributeCommands.cpp does: a type without
+        // Favorites (or one ACAPI_Favorite_GetNum refuses) is skipped in the loop below.
+        for (Int32 type = API_FirstElemType; type <= API_LastElemType; ++type) {
+            typesToQuery.Push (static_cast<API_ElemTypeID> (type));
+        }
+    }
+
+    Int32 limit = 0;
+    const bool hasLimit = parameters.Get ("limit", limit) && limit > 0;
+
+    GS::ObjectState response;
+    const auto& favoritesList = response.AddList<GS::ObjectState> ("favorites");
+
+    Int32 matchCount = 0;
+
+    for (const API_ElemTypeID typeId : typesToQuery) {
+        if (hasLimit && matchCount >= limit) {
+            break;
+        }
+
+        short count = 0;
+        GS::Array<API_FavoriteFolderHierarchy> folders;
+        GS::Array<GS::UniString> names;
+
+#ifdef ServerMainVers_2600
+        GSErrCode err = ACAPI_Favorite_GetNum (typeId, &count, &folders, &names);
+#else
+        API_ElemVariationID variation = APIVarId_Generic;
+        GSErrCode err = ACAPI_Favorite_GetNum (typeId, variation, &count, &folders, &names);
+#endif
+        if (err != NoError || names.IsEmpty ()) {
+            continue;
+        }
+
+        const GS::UniString elementTypeName = GetElementTypeNonLocalizedName (typeId);
+
+        for (UIndex i = 0; i < names.GetSize (); ++i) {
+            if (hasLimit && matchCount >= limit) {
+                break;
+            }
+
+            const GS::UniString& favoriteName = names[i];
+            bool matches = !hasQuery;
+
+            if (hasQuery) {
+                if (GetLowerCasedString (favoriteName).Contains (queryLower)) {
+                    matches = true;
+                } else if (i < folders.GetSize ()) {
+                    for (const GS::UniString& folderSegment : folders[i]) {
+                        if (GetLowerCasedString (folderSegment).Contains (queryLower)) {
+                            matches = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            if (!matches) {
+                continue;
+            }
+
+            GS::ObjectState favoriteItem;
+            favoriteItem.Add ("name", favoriteName);
+            favoriteItem.Add ("elementType", elementTypeName);
+
+            if (i < folders.GetSize () && !folders[i].IsEmpty ()) {
+                const auto& folderList = favoriteItem.AddList<GS::UniString> ("folder");
+                for (const GS::UniString& folderSegment : folders[i]) {
+                    folderList (folderSegment);
+                }
+            }
+
+            favoritesList (favoriteItem);
+            matchCount++;
+        }
+    }
 
     return response;
 }
