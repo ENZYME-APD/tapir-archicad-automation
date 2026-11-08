@@ -179,6 +179,8 @@ class SymbolNumbering:
         self.window.add_button("Read symbols", self.read_symbols)
         self.write_button = self.window.add_button("Write", self.write, primary=True)
         self.write_button.state(["disabled"])
+        # needs the Write button, so only after it exists
+        self._source_changed()
 
     # ---- window ----
 
@@ -290,8 +292,6 @@ class SymbolNumbering:
             ("reason", "Reason", 380, "w"),
         ], height=5)
         self.skipped_tree.container.grid(row=5, column=0, sticky="nsew")
-
-        self._source_changed()
 
     def _source_changed(self) -> None:
         gdl = self.source.get() == "gdl"
