@@ -11,7 +11,40 @@
   <url><loc>https://archicad-api.com/community/</loc></url>
   <url><loc>https://archicad-api.com/roadmap/</loc></url>
   <url><loc>https://archicad-api.com/about/</loc></url>
+  <url><loc>https://archicad-api.com/limits/</loc></url>
+  <url><loc>https://archicad-api.com/tutorials/batch-rename-views/</loc></url>
+  <url><loc>https://archicad-api.com/tutorials/connect-grasshopper-to-archicad/</loc></url>
+  <url><loc>https://archicad-api.com/tutorials/export-properties-to-excel/</loc></url>
+  <url><loc>https://archicad-api.com/tutorials/first-python-script/</loc></url>
+  <url><loc>https://archicad-api.com/tutorials/number-doors-and-windows-by-zone/</loc></url>
   <url><loc>https://archicad-api.com/archicad-addon/</loc></url>
   <url><loc>https://archicad-api.com/api-coverage/</loc></url>
   <url><loc>https://archicad-api.com/gh-coverage/</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=building-material-property-audit</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=bulk-view-renamer</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=classification-overview</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=contour-mesh</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=copy-settings-to-selection</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=distribution-board-schedule</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=door-window-numbering-by-zone</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=drawing-status-report</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=electrical-plumbing-check</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=material-take-off</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=missing-library-parts</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=object-counter</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=place-symbols-in-rooms</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=property-value-exporter</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=property-value-importer</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=room-finishes-from-zones</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=room-finishes-schedule</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=run-lengths</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=sheet-index-export</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=story-setup</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=symbol-legend</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=symbol-numbering-by-circuit-and-zone</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=text-find-replace</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=wall-clearance</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=zone-area-check</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=zone-area-dashboard</loc></url>
+  <url><loc>https://archicad-api.com/scripts/?s=zones-to-walls-and-slabs</loc></url>
 </urlset>

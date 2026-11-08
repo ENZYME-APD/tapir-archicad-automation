@@ -262,6 +262,8 @@ From download to your first script in about ten minutes. Steps 1 to 3 need no pr
 
 **Video** Prefer watching? The [Tapir video tutorials](https://archicad-api.com/tutorials/) walk through installing Tapir and using it.
 
+**Tutorials** Written tutorials, step by step: [properties to Excel](https://archicad-api.com/tutorials/export-properties-to-excel/), [Grasshopper](https://archicad-api.com/tutorials/connect-grasshopper-to-archicad/), [renaming views](https://archicad-api.com/tutorials/batch-rename-views/), [numbering doors and windows](https://archicad-api.com/tutorials/number-doors-and-windows-by-zone/) and [your first Python script](https://archicad-api.com/tutorials/first-python-script/).
+
 ### Install Tapir
 
 **With the installer (recommended).** It finds every Archicad version on the computer and installs the matching add-on into each, so Archicad loads it on its next start.
@@ -418,6 +420,22 @@ Components
 Which Tapir commands have a Grasshopper component, and which inputs each component still lacks.
 
 See the coverage
+
+Archicad API
+
+#### [API limits](https://archicad-api.com/limits/)
+
+What the Archicad API can't do, such as undo, the clipboard or the rows of a schedule, with what to do instead and the DevKit evidence.
+
+See the limits
+
+Tutorials
+
+#### [Written tutorials](https://archicad-api.com/tutorials/#written)
+
+Step by step: properties to Excel, Grasshopper, renaming views, numbering doors and windows, and your first Python script.
+
+Read the tutorials
 
 ### How it *works.*
 
@@ -881,6 +899,36 @@ Do not change anything; only read.
 Tell me which Tapir commands you used.
 ```
 
+### Check names, *don't guess.*
+
+Your words rarely match the names in the project: "fire rating" may be a property called FireRating in one template and Feuerwiderstand in another, and "level 2" may be the story "02 First Floor". An AI that guesses the name still gets an answer, only a wrong one: no values found, so "no doors have a fire rating".
+
+**01** **Look the words up first**Before a command whose parameters come from your words (a story, property, classification, layer, building material, composite, surface, zone category or element type), the AI sends those words to [ResolveNames](https://archicad-api.com/archicad-addon/#ResolveNames), with the kind of each when it knows it. It only reads.
+
+**02** **Use what it returns**found: the item named exactly so, with the ids the other commands take (story index, attribute id, elementType, propertyId, classification ids). closeMatches: only similar names, best first; the AI asks you which one you meant instead of picking one itself.
+
+**03** **Say "not in this project"**notFound: nothing in the project is close, so the project has no such item. The AI says "this project has no X" instead of guessing a name or reporting an empty result as the answer.
+
+Add these lines to your prompt, or to the instructions of your MCP server, so the AI checks the names every time. They work the same when the AI writes a script: the script sends ResolveNames first and stops with a message on notFound.
+
+Before a change, ask for a preview. The commands that delete or replace, such as [DeleteElements](https://archicad-api.com/archicad-addon/#DeleteElements), [DeleteAttributes](https://archicad-api.com/archicad-addon/#DeleteAttributes) and [DeleteAndReplaceAttributes](https://archicad-api.com/archicad-addon/#DeleteAndReplaceAttributes), take "dryRun": true: nothing changes, and the response lists what would. The command reference says which commands have it.
+
+promptadd to any request
+
+```
+Before you use a name taken from my words (a story,
+property, classification, layer, building material,
+composite, surface, zone category or element type),
+check it with the Tapir command ResolveNames.
+- found: use the ids it returns.
+- closeMatches: ask me which one I mean.
+- notFound: tell me this project has no such item.
+  Never guess a name.
+Before a command that deletes or replaces, run it with
+"dryRun": true if it has that input, and show me what
+it would change.
+```
+
 ### Describe it, *run it.*
 
 Without an MCP server, describe the task, give the AI the command list, and run the script it writes.
@@ -962,6 +1010,50 @@ Source: https://archicad-api.com/tutorials/
 ## Learn by *watching.*
 
 Short videos that show Tapir at work in Archicad and Grasshopper, all in one playlist on YouTube.
+
+### Written *tutorials.*
+
+Step by step, for questions people ask about automating Archicad, each answered with what Tapir already has.
+
+Data
+
+#### [Export Archicad element properties to Excel with Python](https://archicad-api.com/tutorials/export-properties-to-excel/)
+
+Property values to an Excel or CSV file, one row per element, and the edited values back.
+
+Read the tutorial
+
+Grasshopper
+
+#### [Connect Grasshopper to Archicad](https://archicad-api.com/tutorials/connect-grasshopper-to-archicad/)
+
+Install the tapir package, read a wall and change its height.
+
+Read the tutorial
+
+Navigator
+
+#### [Batch rename views in Archicad](https://archicad-api.com/tutorials/batch-rename-views/)
+
+Find and replace, a prefix or a counter in the names of the views.
+
+Read the tutorial
+
+Elements
+
+#### [Number doors and windows by room in Archicad](https://archicad-api.com/tutorials/number-doors-and-windows-by-zone/)
+
+Element IDs such as 1.04-D1, from the zone each door or window opens into.
+
+Read the tutorial
+
+Python
+
+#### [Your first Archicad Python script](https://archicad-api.com/tutorials/first-python-script/)
+
+A few lines that call one Tapir command, run from the Tapir palette.
+
+Read the tutorial
 
 ### Videos
 
@@ -1402,6 +1494,412 @@ Free code signing provided by SignPath.io, certificate by SignPath Foundation. A
 
 ---
 
+Source: https://archicad-api.com/limits/
+
+[Tapir](https://archicad-api.com/) / [Docs](https://archicad-api.com/docs/) / API limits
+
+## What the Archicad API *can't do.*
+
+Tapir uses the Archicad API that Graphisoft publishes for add-ons, and covers all of it that can be a JSON command. What that API does not offer, Tapir cannot offer either. This page lists what people ask for that is not in it, with what to do instead.
+
+### The *list.*
+
+It is also what Tapir would like the Archicad API to offer, and the list Tapir sends to Graphisoft. Every row was checked in the headers of the Archicad API DevKits of Archicad 25 to 30, the versions Tapir is built for; the Evidence column names the headers and functions.
+
+| What people want | Status | What to do instead | Evidence | Issue |
+| --- | --- | --- | --- | --- |
+| Elements | | | | |
+| Explode an element into its parts, as Edit > Reshape > Explode into Current View does | Not possible | Nothing yet | No explode function in `ACAPinc.h`, the `ACAPI_*.h` headers or the `ACAPI::` modules (AC25–AC30). `APIAttrCreationMethod_Explode` (`APIdefs_Attributes.h`) only tells how an attribute was created. | – |
+| A camera with a name of its own, or an axonometric camera | Partly possible | Name the Camera Set the camera is in. For an axonometric view, set the 3D window with [Set3DProjectionSettings](https://archicad-api.com/archicad-addon/#Set3DProjectionSettings). | `API_CameraType` holds only `head`, `camSetGuid` and `perspCam` (`API_PerspCamPars`); only `API_CamSetType` has a `name` (`APIdefs_Elements.h`, AC25–AC30). | [#2192](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2192) |
+| Remove one direction of a trim between two roofs or shells that trim each other | Workaround | Remove the trim with [RemoveElementTrims](https://archicad-api.com/archicad-addon/#RemoveElementTrims), which removes both directions, then trim the other direction again with [TrimElements](https://archicad-api.com/archicad-addon/#TrimElements). | The only removal function, `ACAPI_Element_Trim_Remove (guid_Element1, guid_Element2)` (`ACAPinc.h`, AC25–AC30), “removes trimming connection between the elements” and takes no direction or trim type. | [#2365](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2365) |
+| Navigator and views | | | | |
+| Add an item to a publisher set | Not possible | Add the items in Archicad's Organizer, then publish the set with [PublishPublisherSet](https://archicad-api.com/archicad-addon/#PublishPublisherSet). | The `ACAPI_Navigator_*` functions (`ACAPI_Navigator.h`; `APINavigator_*ID` in AC25–AC26) create views and folders on the View Map (`ACAPI_Navigator_NewNavigatorView`, `ACAPI_Navigator_CloneProjectMapItemToViewMap`) and layouts (`ACAPI_Navigator_CreateLayout`); `ACAPI_Navigator_SetNavigatorItemPosition` moves items on the Layout Book and the View Maps only. None adds to a publisher set. | – |
+| Change, rename or create a stored Model View Options combination | Partly possible | Read the combinations with [GetModelViewOptionDetails](https://archicad-api.com/archicad-addon/#GetModelViewOptionDetails); change the options of the current window with [SetViewOptions](https://archicad-api.com/archicad-addon/#SetViewOptions). | `ACAPinc.h` has only `ACAPI_Navigator_ModelViewOptions_Get`, `_GetNum` and `_Search` (AC27–AC30). In AC25–AC26 the combinations are attributes (`API_ModelViewOptionsID`); not checked there. | [#781](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/781) |
+| Project and files | | | | |
+| Undo or redo, as Edit > Undo does | Not possible | Most Tapir commands change the model in an undo step, so the user can undo them in Archicad; the command reference says which cannot be undone. Save the project with [SaveProject](https://archicad-api.com/archicad-addon/#SaveProject) before a script that may need to be taken back. | `ACAPI_CallUndoableCommand` (`ACAPinc.h`) only opens an undo step; `APINotifyElement_Undo` and `APINotifyElement_Redo` (`APIdefs_Callback.h`) only notify. No function runs an undo or a redo (AC25–AC30). | [#1820](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1820) |
+| Copy and paste through the clipboard | Workaround | In a project, copy 2D elements to another view with [CopyElementsToDatabase](https://archicad-api.com/archicad-addon/#CopyElementsToDatabase). Between projects, save the elements as a module with [SaveAsModuleFile](https://archicad-api.com/archicad-addon/#SaveAsModuleFile), place it in the other project with [CreateHotlinkNodes](https://archicad-api.com/archicad-addon/#CreateHotlinkNodes) and [CreateHotlinkInstances](https://archicad-api.com/archicad-addon/#CreateHotlinkInstances), and, to keep plain elements, [BreakHotlinkNodes](https://archicad-api.com/archicad-addon/#BreakHotlinkNodes). | No clipboard, copy or paste function in `ACAPinc.h`, the `ACAPI_*.h` headers or the `ACAPI::` modules (AC25–AC30). | – |
+| Merge a file into the project, as File > Interoperability > Merge does | Workaround | Place the file as a hotlink with [CreateHotlinkNodes](https://archicad-api.com/archicad-addon/#CreateHotlinkNodes) and [CreateHotlinkInstances](https://archicad-api.com/archicad-addon/#CreateHotlinkInstances), then [BreakHotlinkNodes](https://archicad-api.com/archicad-addon/#BreakHotlinkNodes). | The project functions (`ACAPI_ProjectOperation_*`; `APIDo_*ID` in AC25–AC26) open, create, save, close, print and publish, but none merges. `ACAPI_Element_Merge_Elements` is the Merge of construction elements, not of files. | – |
+| Documents and publishing | | | | |
+| Read the rows of an Interactive Schedule | Not possible | Build the list yourself: find the elements with [GetElementsByType](https://archicad-api.com/archicad-addon/#GetElementsByType) and read their values with [GetPropertyValuesOfElements](https://archicad-api.com/archicad-addon/#GetPropertyValuesOfElements) or [GetQuantitiesOfElements](https://archicad-api.com/archicad-addon/#GetQuantitiesOfElements). The [built-in scripts](https://archicad-api.com/scripts/) Room Finishes Schedule and Material Take-Off build such lists. | A schedule appears only as a Project Map item (`API_ScheduleNavItem`, `APIdefs_Navigator.h`), a view node (`API_ViewNodeSchedule`) and a window type (`APIWind_IESCommonDrawingID`, `APIdefs_Database.h`). No function returns its rows (AC25–AC30). | – |
+| Export an Interactive Schedule | Workaround | Put the schedule in a publisher set in Archicad once, then publish that set with [PublishPublisherSet](https://archicad-api.com/archicad-addon/#PublishPublisherSet). | No schedule export function (AC25–AC30); `ACAPI_ProjectOperation_Publish` (`APIDo_PublishID` in AC25–AC26) publishes a whole publisher set. | – |
+| Archicad's interface | | | | |
+| Read the text of the Session Report window | Not possible | Open the window for the user with [ChangeWindow](https://archicad-api.com/archicad-addon/#ChangeWindow) and windowType 'Report' (from Archicad 26). | `ACAPI_WriteReport` (`ACAPinc.h`) writes to it and `ACAPI_Dialog_ActivateSessionReport` (`ACAPI_Goodies.h`, AC27–AC30; `APIAny_ActivateSessionReportID` in AC26) opens it; no function reads it (AC25–AC30). | [#1707](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1707) |
+| Get the outcome of an Action Center check | Partly possible | Run the check with [RunActionCenterChecks](https://archicad-api.com/archicad-addon/#RunActionCenterChecks); Archicad shows the Action Center when it found an issue. For the hotlink check, read the state of each source with [GetHotlinkSourceStatus](https://archicad-api.com/archicad-addon/#GetHotlinkSourceStatus) (from Archicad 27). | `ACAPI_Window_Check` (`ACAPinc.h`, AC27–AC30; `ACAPI_ActionCenter_Check` in AC25–AC26) returns only an error code; `API_ActionCenterItemID` (`APIdefs_ActionCenter.hpp`) has only `APIActionCenterItem_Hotlinks`. | – |
+
+Found something else the Archicad API cannot do? Say so in an issue, with the DevKit headers you checked, and it is added here. [Open an issue](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/new/choose)
+
+
+---
+
+Source: https://archicad-api.com/tutorials/batch-rename-views/
+
+[Tapir](https://archicad-api.com/) / [Tutorials](https://archicad-api.com/tutorials/) / Batch rename views
+
+## Batch rename views in *Archicad.*
+
+Bulk View Renamer, a script that comes with Tapir, renames the views of the View Map, or of one of its folders, in one go. You see every new name before anything is renamed.
+
+### Open the script
+
+Install the Tapir Add-On with the Tapir Installer, as [Get started](https://archicad-api.com/start/#install) shows, and start Archicad with a project open. Choose *Tapir Palette* from the *Tapir* menu.
+
+Bulk View Renamer is a built-in script: pick *BulkViewRenamer* in the palette's list and click *Run Script*. It lists the views of the View Map with their folder, ID and name. It is also on the Scripts page as [Bulk View Renamer](https://archicad-api.com/scripts/?s=bulk-view-renamer).
+
+### Choose the views
+
+In *Views in*, choose the whole View Map or one folder; its subfolders are included.
+
+### Choose how the names change
+
+  - *Find and replace*: *Find* and *Replace with*, optionally with *Match case* and *Regular expression*.
+  - *Prefix and suffix*: *Add before* and *Add after*.
+  - *Pattern with counter*: a *Pattern* in which `{name}` is the current name, `{id}` the view's ID and `{n}` the counter, with its *Start*, *Step* and *Digits*. The counter counts in View Map order. With the first settings, pattern `{name} {n}`, start 1 and 2 digits, a first view named *Ground Floor* becomes *Ground Floor 01*.
+
+### Check the new names
+
+The table shows the new names. A *clash* is a view that would get the same name as another view in its folder; an empty new name is skipped. Select rows to rename only those; *Clear selection* renames every listed view again.
+
+### Rename
+
+Press *Rename...*: the script lists the changes and asks first, then renames the views one at a time and reads the View Map again. Views that could not be renamed are named in the palette's output. Only the names change, not the view IDs or the views' settings.
+
+### The commands *behind it.*
+
+The script reads the View Map with Archicad's own `API.GetNavigatorItemTree` command and renames each view with the Tapir command [`RenameNavigatorItem`](https://archicad-api.com/archicad-addon/#RenameNavigatorItem). Its code is [`builtin-scripts/BulkViewRenamer.py`](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/BulkViewRenamer.py). It works in Archicad 25 to 30 with Tapir 1.8.0 or later.
+
+Elements
+
+#### [Number doors and windows by room in Archicad](https://archicad-api.com/tutorials/number-doors-and-windows-by-zone/)
+
+Element IDs such as 1.04-D1, from the zone each door or window opens into.
+
+Read it
+
+Tutorials
+
+#### [All tutorials](https://archicad-api.com/tutorials/)
+
+The written tutorials and the videos.
+
+See them all
+
+Stuck?
+
+#### [Ask on Discord](https://discord.gg/NAnSennmpY)
+
+Architects, developers and the maintainers answer there. Or open an issue on GitHub.
+
+Join Discord
+
+
+---
+
+Source: https://archicad-api.com/tutorials/connect-grasshopper-to-archicad/
+
+[Tapir](https://archicad-api.com/) / [Tutorials](https://archicad-api.com/tutorials/) / Connect Grasshopper
+
+## Connect Grasshopper to *Archicad.*
+
+Grasshopper talks to Archicad through two parts of Tapir: the Tapir Add-On in Archicad and the tapir package in Rhino. Install both, then read a wall and change one of its settings, without writing code.
+
+### Install the Tapir Add-On in Archicad
+
+The Grasshopper components send their commands to the Add-On. Install it with the Tapir Installer, as [Get started](https://archicad-api.com/start/#install) shows.
+
+### Install the tapir package in Rhino
+
+In Rhino 7 or 8, open *Tools > Package Manager* (or type `PackageManager`), search for tapir and click *Install*. Restart Rhino.
+
+### Open Archicad, then Grasshopper
+
+With a project open in Archicad, start Grasshopper. The *Tapir* tab appears in its toolbar. With more than one Archicad open, give the port of the one you want to the **ConnectArchicad** component (*Tapir > General*); the first Archicad uses 19723.
+
+### Read a wall
+
+  - In Archicad, select one wall.
+  - In Grasshopper, place the **SelectedElements** component from *Tapir > Elements*. Its `ElementGuids` output holds the selected elements. After you change the selection in Archicad, recompute the canvas to read it again.
+  - Place the **Walls** component from *Tapir > Design Tools* and connect `ElementGuids` to its `ElementGuid` input.
+  - Press **Refresh** on Walls and connect a **Panel** to its `GeometryAndPositioning_JSON` output. It shows the settings of the wall's Geometry and Positioning panel, keyed by the labels of the Wall Settings dialog, such as `Wall Height`.
+
+For every wall of the project instead of the selection, use **ElementsByType** (*Tapir > Elements*): it comes with a list of element types connected to its `ElementsType` input, set to `Wall`.
+
+### Change one value
+
+  - Place a second Panel with the text below and connect it to the `GeometryAndPositioning_JSON` input of Walls.
+  - Press **Execute**. The wall in Archicad is now 3.5 m high; Archicad reads the numbers as metres.
+  - Only the keys you give are written; the other settings stay as they are. One JSON for several walls is written to all of them. The `Errors` output has a message for each wall that could not be changed.
+
+Panel → GeometryAndPositioning_JSONJSON
+
+```
+{"Wall Height": 3.5}
+```
+
+Nothing is written to Archicad until you press Execute, or Create, which makes new walls. [The Grasshopper guide](https://archicad-api.com/grasshopper/#sample) shows how to create a wall from two points.
+
+### The commands *behind it.*
+
+SelectedElements sends [`GetSelectedElements`](https://archicad-api.com/archicad-addon/#GetSelectedElements) and ElementsByType sends [`GetElementsByType`](https://archicad-api.com/archicad-addon/#GetElementsByType). Refresh on Walls reads the walls with [`GetDetailsOfElements`](https://archicad-api.com/archicad-addon/#GetDetailsOfElements), Execute writes them with [`ModifyWalls`](https://archicad-api.com/archicad-addon/#ModifyWalls) and Create makes them with [`CreateWalls`](https://archicad-api.com/archicad-addon/#CreateWalls). Which other commands have a component is on the [Grasshopper coverage](https://archicad-api.com/gh-coverage/) page.
+
+Navigator
+
+#### [Batch rename views in Archicad](https://archicad-api.com/tutorials/batch-rename-views/)
+
+Find and replace, a prefix or a counter in the names of the views.
+
+Read it
+
+Tutorials
+
+#### [All tutorials](https://archicad-api.com/tutorials/)
+
+The written tutorials and the videos.
+
+See them all
+
+Stuck?
+
+#### [Ask on Discord](https://discord.gg/NAnSennmpY)
+
+Architects, developers and the maintainers answer there. Or open an issue on GitHub.
+
+Join Discord
+
+
+---
+
+Source: https://archicad-api.com/tutorials/export-properties-to-excel/
+
+[Tapir](https://archicad-api.com/) / [Tutorials](https://archicad-api.com/tutorials/) / Export properties to Excel
+
+## Export Archicad element properties to Excel with *Python.*
+
+Tapir comes with a script for it: Property Value Exporter writes the values of the properties you choose into an Excel workbook or a CSV file, one row per element, without an Interactive Schedule. Property Value Importer reads the edited file back.
+
+### Open the script
+
+Install the Tapir Add-On with the Tapir Installer, as [Get started](https://archicad-api.com/start/#install) shows, and start Archicad with a project open. Choose *Tapir Palette* from the *Tapir* menu.
+
+Property Value Exporter is a built-in script, so it is in the palette from the start: pick *PropertyValueExporter* in the palette's list and click *Run Script*. It reads every property of the project and opens its window. It is also on the Scripts page as [Property Value Exporter](https://archicad-api.com/scripts/?s=property-value-exporter).
+
+### Choose the elements and the properties
+
+  - Under *Elements*, choose *Selection*, *Current story* or *Whole project*, and if you want *Only elements on visible layers*.
+  - Tick the element types to export. *All types* and *No types* tick or untick every one.
+  - Under *Properties*, find properties with *Search* and move them to the *Exported* list with *Add →* or a double-click. *Up* and *Down* set the order of the columns; *← Remove* takes one out again.
+  - Tick *Precise numbers* to export numbers in SI units (m, m², m³, degrees) instead of the values as Archicad displays them. Leave it off for a file you want to read back in.
+
+### Export
+
+Press *Export...* and choose the file. Its default name is `Property values <date> <time>.xlsx`; give it a `.csv` name for a CSV file. Nothing in the project changes.
+
+The file has the columns *GUID*, *Element ID*, *Type* and *Story*, then one column per property, headed `<group>: <name>`. Rows are sorted by type, story from the bottom up and Element ID. A property an element does not have gives an empty cell. The file cannot be written while it is open in Excel.
+
+### Bring the edited values back
+
+Edit the values in Excel, then run [Property Value Importer](https://archicad-api.com/scripts/?s=property-value-importer). It is not built in: download it from the Scripts page into a folder of your own, with copies of the `utilities/` and `aclib/` folders of [`builtin-scripts/`](https://github.com/ENZYME-APD/tapir-archicad-automation/tree/main/builtin-scripts) next to it. Add that folder to `localFolders` in `Documents/Tapir/config.json`, as [Get started](https://archicad-api.com/start/#marketplace) shows, then choose *Reload scripts...* at the bottom of the palette's script list.
+
+  - Press *Open file...* and choose the `.xlsx` or `.csv` file. A row is matched to its element by its GUID, or by its Element ID when it has no GUID.
+  - The list shows each value that would change as *Current* → *New*, and in red what cannot be written, with the reason. An empty cell leaves the value as it is.
+  - Press *Write to Archicad* and confirm. The values are written in one Undo step, and the *Result* column says *Written* or why a value was refused, for example because the property is read-only for that element.
+
+### The commands *behind it.*
+
+Both scripts are Python that sends Tapir commands to Archicad. The exporter lists the properties with [`GetAllProperties`](https://archicad-api.com/archicad-addon/#GetAllProperties), finds the elements with [`GetElementsByType`](https://archicad-api.com/archicad-addon/#GetElementsByType) or [`GetSelectedElements`](https://archicad-api.com/archicad-addon/#GetSelectedElements), reads their ID, type and story with [`GetDetailsOfElements`](https://archicad-api.com/archicad-addon/#GetDetailsOfElements) and their values with [`GetPropertyValuesOfElements`](https://archicad-api.com/archicad-addon/#GetPropertyValuesOfElements). The importer writes the values with [`SetPropertyValuesOfElements`](https://archicad-api.com/archicad-addon/#SetPropertyValuesOfElements).
+
+Their code is [`builtin-scripts/PropertyValueExporter.py`](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/PropertyValueExporter.py) and [`marketplace/property-value-importer/PropertyValueImporter.py`](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/marketplace/property-value-importer/PropertyValueImporter.py). Both work in Archicad 25 to 30 with Tapir 1.8.0 or later.
+
+Grasshopper
+
+#### [Connect Grasshopper to Archicad](https://archicad-api.com/tutorials/connect-grasshopper-to-archicad/)
+
+Install the tapir package, read a wall and change its height.
+
+Read it
+
+Tutorials
+
+#### [All tutorials](https://archicad-api.com/tutorials/)
+
+The written tutorials and the videos.
+
+See them all
+
+Stuck?
+
+#### [Ask on Discord](https://discord.gg/NAnSennmpY)
+
+Architects, developers and the maintainers answer there. Or open an issue on GitHub.
+
+Join Discord
+
+
+---
+
+Source: https://archicad-api.com/tutorials/first-python-script/
+
+[Tapir](https://archicad-api.com/) / [Tutorials](https://archicad-api.com/tutorials/) / First Python script
+
+## Your first Archicad *Python script.*
+
+A Tapir script is a Python file that sends JSON commands to Archicad. This one asks Archicad how many elements are selected, and runs from the Tapir palette.
+
+### Install Tapir
+
+Install the Tapir Add-On with the Tapir Installer, as [Get started](https://archicad-api.com/start/#install) shows, and start Archicad with a project open. The Tapir palette runs scripts with [uv](https://docs.astral.sh/uv/), which brings the Python each script needs; if uv is not installed yet, Tapir offers to install it the first time you run a script.
+
+### Make a folder with aclib
+
+Make a folder for your scripts, for example `Documents/Tapir scripts`, and an `aclib` folder inside it. Download [`builtin-scripts/aclib/__init__.py`](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/aclib/__init__.py) into that `aclib` folder. `aclib` is the small helper of the built-in scripts: it sends a Tapir command to Archicad and returns the answer.
+
+Documents/Tapir scriptsfolder
+
+```
+FirstScript.py
+aclib/
+    __init__.py
+```
+
+### Write the script
+
+Save this as `FirstScript.py` in the folder. The two headers are those of the built-in scripts, described in [`builtin-scripts/README.md`](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/README.md): uv reads the first, and the palette shows `changes` as *Read only*. The last two lines are [`archicad-addon/Examples/Element/GetSelectedElements.py`](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetSelectedElements.py), the example of [`GetSelectedElements`](https://archicad-api.com/archicad-addon/#GetSelectedElements).
+
+FirstScript.pyPython
+
+```
+## /// script
+## requires-python = ">=3.11"
+## dependencies = []
+## ///
+
+## /// tapir
+## changes = "read-only"
+## ///
+
+"""
+First Script
+
+Prints how many elements are selected in Archicad.
+"""
+import aclib
+
+selectedElements = aclib.RunTapirCommand ('GetSelectedElements', {})['elements']
+print ('{} elements are selected.'.format (len (selectedElements)))
+```
+
+### Run it from the palette
+
+Add the folder to `localFolders` in `Documents/Tapir/config.json`, with the `displayName` *My scripts*, as [Get started](https://archicad-api.com/start/#marketplace) shows. Choose *Tapir Palette* from the *Tapir* menu, then *Reload scripts...* at the bottom of its script list.
+
+Select a few elements in Archicad, pick *FirstScript (My scripts)* in the palette's list and click *Run Script*. The palette reports what the script prints, such as `3 elements are selected.` Edits to the file take effect the next time you run it.
+
+The palette starts the script with `uv run --script FirstScript.py --port <port>`, and `aclib` reads `--port`, so the script talks to the Archicad whose palette started it. With Python installed, you can also run it yourself as `python FirstScript.py`; it then uses the first Archicad, on port 19723.
+
+### Call another command
+
+Every Tapir command is called the same way: its name and a dictionary of its parameters. These lines count the walls of the project with [`GetElementsByType`](https://archicad-api.com/archicad-addon/#GetElementsByType):
+
+FirstScript.pyPython
+
+```
+walls = aclib.RunTapirCommand ('GetElementsByType', {'elementType': 'Wall'})['elements']
+print ('{} walls in the project.'.format (len (walls)))
+```
+
+[The command reference](https://archicad-api.com/archicad-addon/) lists every command with its parameters, its response and an example like the one above. To send the commands without `aclib`, see [Write a script of your own](https://archicad-api.com/start/#python).
+
+Data
+
+#### [Export Archicad element properties to Excel with Python](https://archicad-api.com/tutorials/export-properties-to-excel/)
+
+A script that does more: property values to Excel and back.
+
+Read it
+
+Tutorials
+
+#### [All tutorials](https://archicad-api.com/tutorials/)
+
+The written tutorials and the videos.
+
+See them all
+
+Stuck?
+
+#### [Ask on Discord](https://discord.gg/NAnSennmpY)
+
+Architects, developers and the maintainers answer there. Or open an issue on GitHub.
+
+Join Discord
+
+
+---
+
+Source: https://archicad-api.com/tutorials/number-doors-and-windows-by-zone/
+
+[Tapir](https://archicad-api.com/) / [Tutorials](https://archicad-api.com/tutorials/) / Number doors and windows
+
+## Number doors and windows by room in *Archicad.*
+
+Door and Window Numbering by Zone, a script that comes with Tapir, gives every door and window an Element ID built from the zone it opens into, such as `1.04-D1` or `1.04-W2`, numbered within each zone.
+
+### Open the script
+
+Install the Tapir Add-On with the Tapir Installer, as [Get started](https://archicad-api.com/start/#install) shows, and start Archicad with a project open. Choose *Tapir Palette* from the *Tapir* menu.
+
+Door and Window Numbering by Zone is a built-in script: open the floor plan, pick *DoorWindowNumberingByZone* in the palette's list and click *Run Script*. It reads the doors and windows of the current story and shows the new IDs next to the current ones; nothing is changed yet. It is also on the Scripts page as [Door and Window Numbering by Zone](https://archicad-api.com/scripts/?s=door-window-numbering-by-zone).
+
+### Choose the elements
+
+In *Elements*, choose *Selection*, *Current story* or *Whole project*, then press *Read elements*.
+
+### Set the patterns
+
+The list of new IDs updates as you type.
+
+  - *Doors* and *Windows* are the patterns of the IDs, `{zone}-D{n}` and `{zone}-W{n}` at first. `{zone}` is the zone number, `{name}` the zone name (also used for `{zone}` when the zone has no number) and `{n}` the running number within the zone.
+  - *Start at* is the first number in each zone, 1 at first.
+  - *Digits* is the least number of digits of `{n}`, padded with zeros: 2 gives `01`.
+
+The script warns when new IDs repeat.
+
+### Rename
+
+Press *Rename* and confirm. The script changes the Element ID of each door and window whose new ID differs from the current one, and you can undo it in Archicad. The status column shows the elements that could not be changed and why. In a Teamwork project, an element you have not reserved may not be changed.
+
+### How it finds the *zone.*
+
+Each door or window belongs to the zone on its "to" side, or to the zone on its "from" side when there is none. Within a zone they are numbered clockwise around the zone stamp, starting from the north. Zones with the same number continue one count, from north to south. Doors and windows without a zone are listed separately, with the reason, and are not renamed. Skylights and curtain wall panels are not numbered.
+
+The script reads the zones of the doors and windows with [`GetRelationsOfElements`](https://archicad-api.com/archicad-addon/#GetRelationsOfElements) and their positions with [`Get3DBoundingBoxes`](https://archicad-api.com/archicad-addon/#Get3DBoundingBoxes), and writes the IDs with [`SetElementInfoStrings`](https://archicad-api.com/archicad-addon/#SetElementInfoStrings). Its code is [`builtin-scripts/DoorWindowNumberingByZone.py`](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/DoorWindowNumberingByZone.py). It works in Archicad 26 to 30 with Tapir 1.8.0 or later; Archicad 25 cannot tell which zone a door or window opens into.
+
+Python
+
+#### [Your first Archicad Python script](https://archicad-api.com/tutorials/first-python-script/)
+
+A few lines that call one Tapir command, run from the palette.
+
+Read it
+
+Tutorials
+
+#### [All tutorials](https://archicad-api.com/tutorials/)
+
+The written tutorials and the videos.
+
+See them all
+
+Stuck?
+
+#### [Ask on Discord](https://discord.gg/NAnSennmpY)
+
+Architects, developers and the maintainers answer there. Or open an issue on GitHub.
+
+Join Discord
+
+
+---
+
 ## Scripts in the Tapir palette
 
 - **Automatic Numbering Based on Polyline**: Select one polyline and the elements to number. The elements get their Element ID in the order they follow along the polyline, from its first point to its last one. ([source](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/AutomaticNumberingBasedOnPolyline.py))
@@ -1430,6 +1928,7 @@ Free code signing provided by SignPath.io, certificate by SignPath Foundation. A
 - **Story Setup**: Sets up the stories of the project from a table: paste it (name and level or height per row, from Excel or any text) or load a CSV file. The current stories are shown next to the new ones with what would be added, renamed, moved and deleted, and nothing changes until you press Apply. A table that would delete a story with elements on it is refused. ([source](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/StorySetup.py))
 - **Find and Replace in Texts**: Searches the content of every Text and text Label (the selection, the current story or the whole project), with match case and whole word options. Every match is listed with its story and a preview of the changed line, with a checkbox per match; only the checked matches are replaced. The replacement is written with ChangeTextContent, so the styles of the rest of the content and the autotexts in it stay as they are. ([source](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/TextFindReplace.py))
 - **Unused View Cleaner**: Finds the views of the View Map that are neither placed on a layout nor published by a Publisher Set, and moves the chosen ones into a separate folder that repeats their original folder structure. A clone folder is only moved as a whole, when none of its views is used. ([source](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/UnusedViewCleaner.py))
+- **Wall Clearance**: Finds the doors, windows and objects whose space is too close to a wall and moves them just enough. One rule for every kind: - the element's space is its own floor plan outline (the convex hull of what Archicad draws for it: an object's symbol, rotated with it) plus a margin. Archicad draws doors and windows as part of their wall and gives no outline of their own, so a door's or window's space is its opening in the wall: its width (centerOffset +/- width / 2) across the wall's thickness. The swing of a door is not part of it; - the obstructions are the walls, columns and curtain walls cut on its story (their floor plan cut fill, GetDetailsOfElements floorPlanPolygons), except the wall a door or window sits in and the wall an object stands against; - the space must not come closer to an obstruction than the margin. Now in the list is the smallest gap (negative when they overlap), Needed is the margin. ([source](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/WallClearance.py))
 - **Zone Area Check**: Compares the measured area of every zone with a target area read from a property you choose, within a tolerance in percent. Lists the zones that are over, under and on target, and highlights them in three colors. It changes nothing in the project apart from the highlight. Select rows to highlight only those zones, double-click one to select it in Archicad, and export the list to Excel or CSV. ([source](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/builtin-scripts/ZoneAreaCheck.py))
 
 
