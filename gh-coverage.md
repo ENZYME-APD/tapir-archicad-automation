@@ -34,7 +34,7 @@ Parameters of the 760 used commands: 🟢 719 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-08 01:27 UTC.
+Updated 2026-11-08 01:35 UTC.
 
 | | Status |
 |---|---|
@@ -105,7 +105,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `RenameProjectInfoGroups` 🟢 3/3 parameters – `RenameProjectInfoGroupsComponent`
 - ✅ `DeleteProjectInfoGroups` 🟢 1/1 parameters – `DeleteProjectInfoGroupsComponent`
 - ✅ `MoveProjectInfoGroups` 🟢 3/3 parameters – `MoveProjectInfoGroupsComponent`
-- ✅ `GetStories` 🟢 0/0 parameters – `GetDetailsOfElementsComponent`, `GetStoriesComponent`
+- ✅ `GetStories` 🟢 0/0 parameters – `GetDetailsOfElementsComponent`, `GetStoriesComponent` — [#2313](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2313 "Self-audit of the whole repository: AI slop, performance and safety")
 - ✅ `SetStories` 🟢 1/1 parameters – `SetStoriesComponent`
 - ✅ `GetAutoTextKeys` 🟢 1/1 parameters – `GetAutoTextKeysComponent`
 - ✅ `GetAutoTextName` 🟢 1/1 parameters – `GetAutoTextNameComponent`

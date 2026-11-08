@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 01:27 UTC",
+ "generatedAt": "2026-11-08 01:35 UTC",
  "versions": [
   25,
   26,
@@ -4113,6 +4113,10 @@
    ],
    "issues": [
     {
+     "number": 2313,
+     "title": "Self-audit of the whole repository: AI slop, performance and safety"
+    },
+    {
      "number": 2218,
      "title": "Docs: a page of what the Archicad API cannot do, with the workaround and the DevKit evidence"
     },
@@ -5957,7 +5961,12 @@
      "title": "Section and Elevation commands: CreateElevations, Get/SetSectionsAndElevationsDetails, ChangeWindow fixes"
     }
    ],
-   "issues": []
+   "issues": [
+    {
+     "number": 2313,
+     "title": "Self-audit of the whole repository: AI slop, performance and safety"
+    }
+   ]
   },
   {
    "id": "ACAPI_DisposeParagraphsHdl",

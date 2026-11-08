@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 01:27 UTC",
+ "generatedAt": "2026-11-08 01:35 UTC",
  "counts": {
   "done": 568,
   "merged": 192,
@@ -1108,7 +1108,12 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2313,
+     "title": "Self-audit of the whole repository: AI slop, performance and safety"
+    }
+   ]
   },
   {
    "id": "SetStories",
