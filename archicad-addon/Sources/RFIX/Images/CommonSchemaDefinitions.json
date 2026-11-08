@@ -22041,6 +22041,434 @@
             "addOwnPrefix"
         ]
     },
+    "CreatedDatabase": {
+        "type": "object",
+        "properties": {
+            "databaseId": {
+                "$ref": "#/DatabaseId"
+            },
+            "navigatorItemId": {
+                "$ref": "#/NavigatorItemId",
+                "description": "The Project Map item of the new database, for ChangeWindow or CreateDrawings. Missing when the item could not be found."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "databaseId"
+        ]
+    },
+    "DrawingNumberingGridLine": {
+        "type": "object",
+        "properties": {
+            "begC": {
+                "$ref": "#/Coordinate2D",
+                "description": "The start point of the line, in layout coordinates."
+            },
+            "endC": {
+                "$ref": "#/Coordinate2D",
+                "description": "The end point of the line, in layout coordinates."
+            },
+            "penIndex": {
+                "type": "integer",
+                "description": "The index of the pen of the line."
+            },
+            "lineTypeIndex": {
+                "type": "integer",
+                "description": "The index of the line type of the line."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "begC",
+            "endC",
+            "penIndex",
+            "lineTypeIndex"
+        ]
+    },
+    "Document3DPlanConnection": {
+        "type": "string",
+        "description": "The connection of the 3D Document to the model.",
+        "enum": [
+            "Online",
+            "Offline",
+            "Drawing"
+        ]
+    },
+    "Document3DBoundaryDisplay": {
+        "type": "string",
+        "description": "How the boundary contours are displayed.",
+        "enum": [
+            "UncutContours",
+            "NoContours",
+            "OverrideContours"
+        ]
+    },
+    "Document3DAttributeOptions": {
+        "type": "object",
+        "description": "The uniform attribute options (cut and uncut surfaces, shading, hidden edges).",
+        "properties": {
+            "shouldUseUniformCutAttributes": {
+                "type": "boolean",
+                "description": "Use uniform attributes on the cut surfaces."
+            },
+            "uniformLineType": {
+                "type": "integer",
+                "description": "The index of the uniform line type of the cut surfaces."
+            },
+            "uniformFillPen": {
+                "type": "integer",
+                "description": "The uniform fill pen of the cut surfaces."
+            },
+            "uniformFillBkgPen": {
+                "type": "integer",
+                "description": "The uniform fill background pen of the cut surfaces."
+            },
+            "shouldUseUncutSurfaceFill": {
+                "type": "boolean",
+                "description": "Fill the uncut surfaces."
+            },
+            "uncutSurfaceBkgPen": {
+                "type": "integer",
+                "description": "The background pen of the uncut surfaces."
+            },
+            "shouldUseElemPen": {
+                "type": "boolean",
+                "description": "Use a uniform pen for the element contours."
+            },
+            "elemPen": {
+                "type": "integer",
+                "description": "The uniform pen of the element contours."
+            },
+            "shadFillPen": {
+                "type": "integer",
+                "description": "The pen of the shadow fill."
+            },
+            "shadFill": {
+                "type": "integer",
+                "description": "The index of the shadow fill."
+            },
+            "shadFillBkgPen": {
+                "type": "integer",
+                "description": "The background pen of the shadow fill."
+            },
+            "shadContPen": {
+                "type": "integer",
+                "description": "The pen of the shadow contours."
+            },
+            "hiddenEdgeLineType": {
+                "type": "integer",
+                "description": "The index of the line type of the hidden edges."
+            },
+            "hiddenEdgeLinePen": {
+                "type": "integer",
+                "description": "The pen of the hidden edges."
+            }
+        },
+        "additionalProperties": false
+    },
+    "DrawingPrimitive": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "type": "string",
+                "description": "The API_PrimTypeID name without its API_Prim prefix and ID suffix.",
+                "enum": [
+                    "Point",
+                    "Line",
+                    "Arc",
+                    "Text",
+                    "PLine",
+                    "Tri",
+                    "Poly",
+                    "Pict",
+                    "Ctrl_Beg",
+                    "Ctrl_HatchBorderBeg",
+                    "Ctrl_HatchBorderEnd",
+                    "Ctrl_HatchLinesBeg",
+                    "Ctrl_HatchLinesEnd",
+                    "Ctrl_HoledimLinesBeg",
+                    "Ctrl_HoledimLinesEnd",
+                    "Ctrl_ArrowBeg",
+                    "Ctrl_ArrowEnd",
+                    "Ctrl_ElementRef",
+                    "Ctrl_End",
+                    "Ctrl_PlacedBorderBeg",
+                    "Ctrl_PlacedBorderEnd",
+                    "Ctrl_TextBeg",
+                    "Ctrl_TextEnd",
+                    "Ctrl_CWallPanelBeg",
+                    "Ctrl_CWallPanelEnd",
+                    "Ctrl_BackgroundFillBeg",
+                    "Ctrl_BackgroundFillEnd",
+                    "Ctrl_FrameBeg",
+                    "Ctrl_FrameEnd",
+                    "Unknown"
+                ]
+            },
+            "layer": {
+                "$ref": "#/AttributeIdArrayItem",
+                "description": "The layer of the element."
+            },
+            "pen": {
+                "type": "integer",
+                "description": "The pen index of the primitive."
+            },
+            "drwIndex": {
+                "type": "integer"
+            },
+            "renovationStatus": {
+                "type": "string",
+                "enum": [
+                    "Undefined",
+                    "Existing",
+                    "New",
+                    "Demolished"
+                ]
+            },
+            "lineType": {
+                "$ref": "#/AttributeIdArrayItem",
+                "description": "Line, Arc, PLine, Tri and Poly: the line type."
+            },
+            "determination": {
+                "type": "integer",
+                "description": "How the type of the line or fill is determined (origin, inner line, contour line)."
+            },
+            "penWeight": {
+                "type": "number"
+            },
+            "solid": {
+                "type": "boolean"
+            },
+            "loc": {
+                "$ref": "#/Coordinate2D",
+                "description": "Point: the location. Text: the left baseline position."
+            },
+            "c1": {
+                "$ref": "#/Coordinate2D"
+            },
+            "c2": {
+                "$ref": "#/Coordinate2D"
+            },
+            "whole": {
+                "type": "boolean"
+            },
+            "reflected": {
+                "type": "boolean",
+                "description": "The arc goes clockwise."
+            },
+            "orig": {
+                "$ref": "#/Coordinate2D"
+            },
+            "r": {
+                "type": "number"
+            },
+            "begAng": {
+                "type": "number"
+            },
+            "endAng": {
+                "type": "number"
+            },
+            "angle": {
+                "type": "number"
+            },
+            "ratio": {
+                "type": "number"
+            },
+            "font": {
+                "type": "integer"
+            },
+            "faceBits": {
+                "type": "integer"
+            },
+            "effectBits": {
+                "type": "integer"
+            },
+            "anchor": {
+                "type": "string"
+            },
+            "just": {
+                "type": "string"
+            },
+            "heightMM": {
+                "type": "number"
+            },
+            "widthMM": {
+                "type": "number"
+            },
+            "widthFactor": {
+                "type": "number"
+            },
+            "charSpaceFactor": {
+                "type": "number"
+            },
+            "drawSegmentMode": {
+                "type": "integer"
+            },
+            "nCoords": {
+                "type": "integer"
+            },
+            "nSubPolys": {
+                "type": "integer"
+            },
+            "nArcs": {
+                "type": "integer",
+                "description": "The number of curved segments. Their geometry is not returned."
+            },
+            "useRgb": {
+                "type": "boolean"
+            },
+            "fillPen": {
+                "type": "integer"
+            },
+            "rgbColor": {
+                "type": "object",
+                "properties": {
+                    "red": {
+                        "type": "number"
+                    },
+                    "green": {
+                        "type": "number"
+                    },
+                    "blue": {
+                        "type": "number"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "red",
+                    "green",
+                    "blue"
+                ]
+            },
+            "coordinates": {
+                "type": "array",
+                "description": "Tri: the three corners.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "polygons": {
+                "type": "array",
+                "description": "Poly: the sub polygons, the first one is the outline, the others are holes.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "coordinates": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/Coordinate2D"
+                            }
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "coordinates"
+                    ]
+                }
+            },
+            "rotAngle": {
+                "type": "number"
+            },
+            "destBox": {
+                "type": "object",
+                "description": "Pict: the bounding box of the picture.",
+                "properties": {
+                    "xMin": {
+                        "type": "number"
+                    },
+                    "yMin": {
+                        "type": "number"
+                    },
+                    "xMax": {
+                        "type": "number"
+                    },
+                    "yMax": {
+                        "type": "number"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "xMin",
+                    "yMin",
+                    "xMax",
+                    "yMax"
+                ]
+            },
+            "hatchBorder": {
+                "type": "object",
+                "description": "Ctrl_HatchBorderBeg: the fill that follows.",
+                "properties": {
+                    "doFrame": {
+                        "type": "boolean"
+                    },
+                    "fill": {
+                        "$ref": "#/AttributeIdArrayItem"
+                    },
+                    "fillPen": {
+                        "type": "integer"
+                    },
+                    "fillbkgPen": {
+                        "type": "integer"
+                    },
+                    "determination": {
+                        "type": "integer"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "doFrame",
+                    "fillPen",
+                    "fillbkgPen",
+                    "determination"
+                ]
+            },
+            "referencedElement": {
+                "type": "object",
+                "description": "Ctrl_ElementRef: the element the item refers to. The drawing of a Wall ends with one such item for each Window and Door in it.",
+                "properties": {
+                    "elementId": {
+                        "$ref": "#/ElementId"
+                    },
+                    "type": {
+                        "$ref": "#/ElementType"
+                    },
+                    "drwIndex": {
+                        "type": "integer",
+                        "description": "The drawing order index of the referenced element."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "elementId",
+                    "type",
+                    "drwIndex"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type",
+            "pen",
+            "drwIndex",
+            "renovationStatus"
+        ]
+    },
+    "ElementDrawingPrimitives": {
+        "type": "object",
+        "properties": {
+            "primitives": {
+                "type": "array",
+                "description": "The primitives in the order Archicad draws them. The Ctrl_* items mark the beginning and the end of sub-parts (hatch borders, hatch lines, texts, curtain wall panels, ...).",
+                "items": {
+                    "$ref": "#/DrawingPrimitive"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "primitives"
+        ]
+    },
     "NavigatorParentItem": {
         "type": "object",
         "properties": {

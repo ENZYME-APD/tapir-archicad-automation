@@ -428,16 +428,7 @@ GS::Optional<GS::UniString> CreateDetailsCommand::GetRawResponseSchema () const
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "databaseId": { "$ref": "#/DatabaseId" },
-                                "navigatorItemId": {
-                                    "$ref": "#/NavigatorItemId",
-                                    "description": "The Project Map item of the new database, for ChangeWindow or CreateDrawings. Missing when the item could not be found."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": ["databaseId"]
+                            "$ref": "#/CreatedDatabase"
                         },
                         { "$ref": "#/ErrorItem" }
                     ]
@@ -2155,32 +2146,7 @@ GS::Optional<GS::UniString> GetDrawingNumberingGridLinesCommand::GetRawResponseS
                 "type": "array",
                 "description": "The lines of the grid of the grid-based drawing numbering of the current layout. Only a layout that uses grid-based drawing numbering has such a grid.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "begC": {
-                            "$ref": "#/Coordinate2D",
-                            "description": "The start point of the line, in layout coordinates."
-                        },
-                        "endC": {
-                            "$ref": "#/Coordinate2D",
-                            "description": "The end point of the line, in layout coordinates."
-                        },
-                        "penIndex": {
-                            "type": "integer",
-                            "description": "The index of the pen of the line."
-                        },
-                        "lineTypeIndex": {
-                            "type": "integer",
-                            "description": "The index of the line type of the line."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "begC",
-                        "endC",
-                        "penIndex",
-                        "lineTypeIndex"
-                    ]
+                    "$ref": "#/DrawingNumberingGridLine"
                 }
             }
         },
