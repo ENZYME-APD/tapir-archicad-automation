@@ -9,7 +9,12 @@ using TapirGrasshopperPlugin.Types.GuidObjects;
 
 namespace TapirGrasshopperPlugin.Components.IFCComponents
 {
-    public class RemoveIFCClassificationReferencesOfElementsComponent : ArchicadExecutorComponent
+    // Sends one RemoveIFCClassificationReferencesOfElements request for every
+    // branch of the inputs, so a tree input makes one undo step in Archicad
+    // (#203). The branches with DryRun on go in a second request with dryRun
+    // set.
+    public class RemoveIFCClassificationReferencesOfElementsComponent
+        : BatchedExecutorComponent<JObject>
     {
         public override string CommandName => "RemoveIFCClassificationReferencesOfElements";
 
@@ -59,14 +64,19 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                 "would be removed).");
         }
 
-        protected override void Solve(
-            IGH_DataAccess da)
+        protected override int DryRunInputIndex => 3;
+
+        protected override bool TryGetBatchItems(
+            IGH_DataAccess da,
+            out List<JObject> items)
         {
+            items = null;
+
             if (!da.TryGetList(
                     0,
                     out List<GH_ObjectWrapper> elementWrappers))
             {
-                return;
+                return false;
             }
 
             if (!TryGetTexts(
@@ -76,7 +86,7 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                     elementWrappers.Count,
                     out List<string> classificationNames))
             {
-                return;
+                return false;
             }
 
             if (!TryGetTexts(
@@ -86,17 +96,17 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                     elementWrappers.Count,
                     out List<string> identifications))
             {
-                return;
+                return false;
             }
 
-            var items = new JArray();
+            var references = new List<JObject>();
             for (var i = 0; i < elementWrappers.Count; i++)
             {
                 var elementId = GuidObject<ElementGuid>.CreateFromWrapper(elementWrappers[i]);
                 if (elementId == null)
                 {
                     this.AddError("Invalid element identifier in the ElementGuids input.");
-                    return;
+                    return false;
                 }
 
                 var item = new JObject
@@ -108,22 +118,30 @@ namespace TapirGrasshopperPlugin.Components.IFCComponents
                     }
                 };
                 AddIfGiven(item, "identification", Pick(identifications, i));
-                items.Add(item);
+                references.Add(item);
             }
 
-            var parameters = new JObject { ["elementIFCClassificationReferences"] = items };
+            items = references;
+            return true;
+        }
 
-            // Only sent when it differs from the command's default.
-            if (da.GetOptional(3, false))
-            {
-                parameters["dryRun"] = true;
-            }
+        // The command checks every item before removing any, so a reference
+        // given in two branches would pass the check twice and fail the
+        // second removal; the branches used to be sent one after the other.
+        // It is sent once and both branches get its result.
+        protected override string GetBatchItemKey(
+            JObject item)
+        {
+            var identification = item["identification"];
+            return $"{((string)item["elementId"]?["guid"])?.ToLowerInvariant()}|" +
+                   $"{(string)item["referencedSource"]?["name"]}|" +
+                   (identification == null ? "*" : "=" + (string)identification);
+        }
 
-            SetCadValuesWithErrorMessages(
-                CommandName,
-                parameters,
-                ToAddOn,
-                da);
+        protected override object CreateBatchParameters(
+            List<JObject> items)
+        {
+            return new JObject { ["elementIFCClassificationReferences"] = new JArray(items) };
         }
 
         // Reads a text list input that holds 0 (only when optional), 1 (the
