@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 19:01 UTC",
+ "generatedAt": "2026-11-08 19:27 UTC",
  "versions": [
   25,
   26,
@@ -9648,6 +9648,26 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2423,
+     "title": "[5/5] Script Manager: the README and screenshots in the details"
+    },
+    {
+     "number": 2421,
+     "title": "[5/5] Tapir Palette: right-click menu, dropped .py files, first-run row and Settings in the scripts panel"
+    },
+    {
+     "number": 2420,
+     "title": "[4/5] Script Manager: the Marketplace section of the Tapir Palette"
+    },
+    {
+     "number": 2419,
+     "title": "[4/5] Tapir Palette: Run/Stop and the result in the scripts panel"
+    },
+    {
+     "number": 2418,
+     "title": "[3/5] Script Manager: the Updates tab, Update and Update all"
+    },
+    {
      "number": 2417,
      "title": "[2/5] Script Manager: Install, Remove and the Installed tab"
     },
@@ -13101,6 +13121,26 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2423,
+     "title": "[5/5] Script Manager: the README and screenshots in the details"
+    },
+    {
+     "number": 2421,
+     "title": "[5/5] Tapir Palette: right-click menu, dropped .py files, first-run row and Settings in the scripts panel"
+    },
+    {
+     "number": 2420,
+     "title": "[4/5] Script Manager: the Marketplace section of the Tapir Palette"
+    },
+    {
+     "number": 2419,
+     "title": "[4/5] Tapir Palette: Run/Stop and the result in the scripts panel"
+    },
+    {
+     "number": 2418,
+     "title": "[3/5] Script Manager: the Updates tab, Update and Update all"
+    },
+    {
      "number": 2417,
      "title": "[2/5] Script Manager: Install, Remove and the Installed tab"
     },
@@ -13144,6 +13184,26 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2423,
+     "title": "[5/5] Script Manager: the README and screenshots in the details"
+    },
+    {
+     "number": 2421,
+     "title": "[5/5] Tapir Palette: right-click menu, dropped .py files, first-run row and Settings in the scripts panel"
+    },
+    {
+     "number": 2420,
+     "title": "[4/5] Script Manager: the Marketplace section of the Tapir Palette"
+    },
+    {
+     "number": 2419,
+     "title": "[4/5] Tapir Palette: Run/Stop and the result in the scripts panel"
+    },
+    {
+     "number": 2418,
+     "title": "[3/5] Script Manager: the Updates tab, Update and Update all"
+    },
     {
      "number": 2417,
      "title": "[2/5] Script Manager: Install, Remove and the Installed tab"
@@ -16634,6 +16694,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2423,
+     "title": "[5/5] Script Manager: the README and screenshots in the details"
+    },
+    {
+     "number": 2420,
+     "title": "[4/5] Script Manager: the Marketplace section of the Tapir Palette"
+    },
+    {
+     "number": 2418,
+     "title": "[3/5] Script Manager: the Updates tab, Update and Update all"
+    },
+    {
      "number": 2417,
      "title": "[2/5] Script Manager: Install, Remove and the Installed tab"
     },
@@ -20105,6 +20177,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2423,
+     "title": "[5/5] Script Manager: the README and screenshots in the details"
+    },
+    {
+     "number": 2420,
+     "title": "[4/5] Script Manager: the Marketplace section of the Tapir Palette"
+    },
+    {
+     "number": 2418,
+     "title": "[3/5] Script Manager: the Updates tab, Update and Update all"
+    },
     {
      "number": 2417,
      "title": "[2/5] Script Manager: Install, Remove and the Installed tab"
