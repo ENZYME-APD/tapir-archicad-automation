@@ -206,7 +206,7 @@
 4    ""        VersionText
 }
 
-'GDLG' ID_PALETTE Palette | leftCaption | close   0   0  648  28  "Tapir Palette"  {
+'GDLG' ID_PALETTE Palette | leftCaption | close   0   0  536  28  "Tapir Palette"  {
 /* [  1] */ IconButton                 0   0  28  28    ID_TAPIR_LOGO_MINI noFrame
 /* [  2] */ PopupControl              28   3 260  22    80  3
 /* [  3] */ IconButton               288   0  28  28    ID_RUN_BUTTON_ICON noFrame
@@ -215,11 +215,11 @@
 /* [  6] */ IconButton               372   0  28  28    ID_DELSCRIPT_BUTTON_ICON noFrame
 /* [  7] */ IconButton               400   0  28  28    ID_SHORTCUTS_BUTTON_ICON noFrame
 /* [  8] */ LeftText                 434   6  72  16    SmallPlain  vCenter  "Tapir"
-/* [  9] */ Button                   508   3 136  22    SmallPlain  "Check for Updates"
+/* [  9] */ IconButton               508   0  28  28    ID_CHECKFORUPDATES_BUTTON_ICON noFrame
 }
 
 'DLGH' ID_PALETTE Tapir_Palette {
-1    ""        TapirButton
+1    "Open the Tapir website"  TapirButton
 2    ""        ScriptSelection
 3    "Run Script"          RunButton
 4    "Open in Browser"     OpenButton
@@ -227,7 +227,7 @@
 6    "Remove Script"       DelButton
 7    "Manage Shortcuts"    ManageShortcutsButton
 8    "Installed Tapir version"         InstalledVersionText
-9    "Check for Tapir updates"         CheckForUpdatesButton
+9    "Check for Updates"               CheckForUpdatesButton
 }
 
 'GDLG' ID_SCRIPTUI_PALETTE Palette | leftCaption | close | grow   0   0  600  450  "Tapir Script UI"  {

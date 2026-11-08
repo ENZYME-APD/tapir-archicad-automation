@@ -45,6 +45,22 @@
     "Shortcuts"
 }
 
+'GICN' ID_CHECKFORUPDATES_BUTTON_ICON "CheckForUpdates" {
+    "CheckForUpdates"
+}
+
+'GICN' ID_UPDATEAVAILABLE_BUTTON_ICON "UpdateAvailable" {
+    "UpdateAvailable"
+}
+
+'GICN' ID_SCRIPT_RUNNING_ICON "ScriptRunning" {
+    "ScriptRunning"
+}
+
+'GICN' ID_SCRIPT_NOT_RUNNING_ICON "ScriptNotRunning" {
+    "ScriptNotRunning"
+}
+
 'FILE' ID_COMMON_SCHEMA_DEFINITIONS_FILE "" {
     "CommonSchemaDefinitions.json"
 }
