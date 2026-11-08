@@ -21681,7 +21681,7 @@
     },
     "NameKind": {
         "type": "string",
-        "description": "The kind of an item of the project that ResolveNames looks a name up among: a story, an attribute of the given type, or an element type (matched by its API name and, from Archicad 27, by the name the Archicad interface shows).",
+        "description": "The kind of an item of the project that ResolveNames looks a name up among: a story, an attribute of the given type, an element type (matched by its API name and, from Archicad 27, by the name the Archicad interface shows), a property (built-in or custom; matched by its name and by its group and name together), or a classification (a classification system, matched by its name and by its name and version together, or an item of any system at any depth, matched by its name, by its ID and by both together).",
         "enum": [
             "Story",
             "Layer",
@@ -21693,7 +21693,9 @@
             "Fill",
             "Line",
             "ZoneCategory",
-            "ElementType"
+            "ElementType",
+            "Property",
+            "Classification"
         ]
     },
     "NameMatch": {
@@ -21705,7 +21707,7 @@
             },
             "name": {
                 "type": "string",
-                "description": "The name of the item in the project. For an element type, the name the Archicad interface shows (from Archicad 27; the API name before)."
+                "description": "The name of the item in the project. For an element type, the name the Archicad interface shows (from Archicad 27; the API name before). For a classification item, its name, or its ID when it has no name."
             },
             "match": {
                 "type": "string",
@@ -21739,6 +21741,86 @@
             },
             "elementType": {
                 "$ref": "#/ElementType"
+            },
+            "propertyId": {
+                "$ref": "#/PropertyId",
+                "description": "The property, as GetPropertyValuesOfElements and SetPropertyValuesOfElements take it. Only for a property."
+            },
+            "propertyGroupId": {
+                "$ref": "#/PropertyGroupId",
+                "description": "The group of the property. Only for a property."
+            },
+            "propertyGroupName": {
+                "type": "string",
+                "description": "The name of the group of the property. Only for a property."
+            },
+            "propertyType": {
+                "type": "string",
+                "description": "Whether the property is built in or custom. Only for a property.",
+                "enum": [
+                    "StaticBuiltIn",
+                    "DynamicBuiltIn",
+                    "Custom"
+                ]
+            },
+            "propertyCollectionType": {
+                "type": "string",
+                "description": "Whether the property holds one value, a list, or one or more choices of a list of options. Only for a property.",
+                "enum": [
+                    "Undefined",
+                    "Single",
+                    "List",
+                    "SingleChoiceEnumeration",
+                    "MultipleChoiceEnumeration"
+                ]
+            },
+            "propertyValueType": {
+                "type": "string",
+                "description": "The type of the values of the property. Only for a property.",
+                "enum": [
+                    "Undefined",
+                    "Integer",
+                    "Real",
+                    "String",
+                    "Boolean",
+                    "Guid"
+                ]
+            },
+            "propertyMeasureType": {
+                "type": "string",
+                "description": "What a number value of the property measures. Only for a property; left out for the attribute index types of some built-in properties.",
+                "enum": [
+                    "Undefined",
+                    "Default",
+                    "Length",
+                    "Area",
+                    "Volume",
+                    "Angle"
+                ]
+            },
+            "propertyIsEditable": {
+                "type": "boolean",
+                "description": "Whether the value of the property can be set. Only for a property."
+            },
+            "availability": {
+                "$ref": "#/ClassificationItemIds",
+                "description": "The classification items the property is available for: an element has the property only when it is classified as one of them. Only for a custom property; built-in properties have no such list."
+            },
+            "classificationSystemId": {
+                "$ref": "#/ClassificationSystemId",
+                "description": "The classification system, or the system of the classification item. Only for a classification."
+            },
+            "classificationSystemName": {
+                "type": "string",
+                "description": "The name of the classification system. Only for a classification."
+            },
+            "classificationItemId": {
+                "$ref": "#/ClassificationItemId",
+                "description": "The classification item. Only for a classification item, not for a classification system."
+            },
+            "classificationItemCode": {
+                "type": "string",
+                "description": "The ID of the classification item, as Archicad shows it (for example Ss_25_10). Only for a classification item."
             }
         },
         "additionalProperties": false,
