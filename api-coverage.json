@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 10:45 UTC",
+ "generatedAt": "2026-11-08 11:07 UTC",
  "versions": [
   25,
   26,
@@ -13,7 +13,7 @@
   "done": 1908,
   "skipped": 29,
   "merged": 362,
-  "open": 11
+  "claimed": 11
  },
  "items": [
   {
@@ -5590,7 +5590,12 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2345,
+     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
+    }
+   ]
   },
   {
    "id": "ACAPI_DifferenceGenerator_GenerateDifference",
@@ -18648,7 +18653,12 @@
    "status": "merged",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2344,
+     "title": "GetArcFromUser: snap filter and constraint options like the other Get…FromUser commands"
+    }
+   ]
   },
   {
    "id": "ACAPI_UserInput_ResetConstraint",
@@ -22446,10 +22456,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2345,
+     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
+    }
+   ]
   },
   {
    "id": "APIIo_Set3DCutawayStatusID",
@@ -52720,10 +52735,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2345,
+     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::GetLargeIcon",
@@ -52737,10 +52757,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2345,
+     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::GetOffset",
@@ -52754,10 +52779,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2345,
+     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::GetRedrawCountLimit",
@@ -52771,10 +52801,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2345,
+     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::GetText",
@@ -52788,10 +52823,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2345,
+     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::GetTimeout",
@@ -52805,10 +52845,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2345,
+     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::SetDisabled",
@@ -52822,10 +52867,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2345,
+     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::SetIcon",
@@ -52856,10 +52906,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2345,
+     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::SetOffset",
@@ -52890,10 +52945,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2345,
+     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UI::Notification::NotificationBubble::SetText",
@@ -52975,10 +53035,15 @@
     30
    ],
    "olderNames": [],
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2345,
+     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
+    }
+   ]
   },
   {
    "id": "ACAPI::UniqueID::GetGuid",

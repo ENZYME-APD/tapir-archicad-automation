@@ -1,9 +1,10 @@
 {
- "generatedAt": "2026-11-08 10:45 UTC",
+ "generatedAt": "2026-11-08 11:07 UTC",
  "counts": {
   "done": 568,
   "merged": 197,
-  "open": 17,
+  "open": 15,
+  "claimed": 2,
   "not applicable": 1
  },
  "parameters": {
@@ -189,7 +190,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2344,
+     "title": "GetArcFromUser: snap filter and constraint options like the other Get…FromUser commands"
+    }
+   ]
   },
   {
    "id": "ModelToScreen",
@@ -352,7 +358,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2344,
+     "title": "GetArcFromUser: snap filter and constraint options like the other Get…FromUser commands"
+    }
+   ]
   },
   {
    "id": "GetArcFromUser",
@@ -377,7 +388,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2344,
+     "title": "GetArcFromUser: snap filter and constraint options like the other Get…FromUser commands"
+    }
+   ]
   },
   {
    "id": "GetPolygonFromUser",
@@ -403,7 +419,12 @@
    ],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2344,
+     "title": "GetArcFromUser: snap filter and constraint options like the other Get…FromUser commands"
+    }
+   ]
   },
   {
    "id": "GetMagicWandSettings",
@@ -674,7 +695,7 @@
    "group": "Application Commands",
    "version": "1.8.1",
    "brief": "Shows a non-blocking notification bubble with a message in the current Archicad window, e.g. to report progress or a result without stopping the user as ShowAlert does. The bubble disappears by itself after the timeout. It is shown at a model coordinate or a pixel position of the current view, by default at the center of the current 2D view. Requires Archicad 29 or later.",
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "components": [],
    "parameters": null,
@@ -682,7 +703,12 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2345,
+     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
+    }
+   ]
   },
   {
    "id": "GetSpecialFolders",
@@ -20171,7 +20197,7 @@
    "group": "Script UI Commands",
    "version": "1.8.1",
    "brief": "Opens Archicad's settings dialog of the selected elements or the current tool (Archicad 28 and later), or the default settings dialog of the given element type, waits for the user and reports whether the dialog was closed with OK or Cancel.",
-   "status": "open",
+   "status": "claimed",
    "reason": "",
    "components": [],
    "parameters": null,
@@ -20179,7 +20205,12 @@
    "coveredParameters": [],
    "missingParameters": [],
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2345,
+     "title": "API coverage: the last 11 open items (OpenSettingsDialog on AC25/26, the rest of the notification bubble API)"
+    }
+   ]
   },
   {
    "id": "PickLibraryPart",
