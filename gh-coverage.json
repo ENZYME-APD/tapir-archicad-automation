@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 20:10 UTC",
+ "generatedAt": "2026-11-08 20:39 UTC",
  "counts": {
   "done": 568,
   "merged": 220,
@@ -15304,7 +15304,7 @@
    "id": "SetCurrent3DStyle",
    "group": "Navigator Commands",
    "version": "1.8.1",
-   "brief": "Makes the given 3D style, one of the names Get3DStyles returns, the current one, which the 3D window uses.",
+   "brief": "Meant to make the given 3D style, one of the names Get3DStyles returns, the current one. Not available yet: it checks the name, then refuses, because Archicad's API function for it crashes Archicad.",
    "status": "merged",
    "reason": "",
    "components": [

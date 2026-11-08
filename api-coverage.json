@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 20:10 UTC",
+ "generatedAt": "2026-11-08 20:39 UTC",
  "versions": [
   25,
   26,
@@ -12,7 +12,8 @@
   "not applicable": 569,
   "done": 1908,
   "skipped": 30,
-  "merged": 372
+  "merged": 371,
+  "open": 1
  },
  "items": [
   {
@@ -102,12 +103,7 @@
    ],
    "status": "not applicable",
    "reason": "communication between add-ons",
-   "pullRequests": [
-    {
-     "number": 2401,
-     "title": "SetCurrent3DStyle: refuse instead of crashing Archicad 29"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -4019,12 +4015,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2401,
-     "title": "SetCurrent3DStyle: refuse instead of crashing Archicad 29"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2313,
@@ -5759,6 +5750,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2455,
+     "title": "ModifyShells: edit the profile of an existing extruded shell"
+    },
+    {
      "number": 2450,
      "title": "Read and set single railing segments and nodes"
     },
@@ -5773,10 +5768,6 @@
     {
      "number": 2429,
      "title": "Read and edit the extrusion of an existing extruded shell"
-    },
-    {
-     "number": 2400,
-     "title": "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"
     }
    ],
    "issues": [
@@ -6730,6 +6721,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2455,
+     "title": "ModifyShells: edit the profile of an existing extruded shell"
+    },
     {
      "number": 2450,
      "title": "Read and set single railing segments and nodes"
@@ -7734,12 +7729,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2402,
-     "title": "GetLCSOfAnalyticalMembers: refuse non-members instead of crashing Archicad 29"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7782,6 +7772,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2455,
+     "title": "ModifyShells: edit the profile of an existing extruded shell"
+    },
     {
      "number": 2450,
      "title": "Read and set single railing segments and nodes"
@@ -19707,14 +19701,9 @@
    "olderNames": [
     "APIEnv_SetCurrent3DStyleID"
    ],
-   "status": "merged",
+   "status": "open",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2401,
-     "title": "SetCurrent3DStyle: refuse instead of crashing Archicad 29"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25314,6 +25303,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2455,
+     "title": "ModifyShells: edit the profile of an existing extruded shell"
+    },
     {
      "number": 2452,
      "title": "[3/3] Shells: read back and write the custom surface of individual edges"
@@ -30944,6 +30937,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2455,
+     "title": "ModifyShells: edit the profile of an existing extruded shell"
+    },
+    {
      "number": 2452,
      "title": "[3/3] Shells: read back and write the custom surface of individual edges"
     },
@@ -31101,12 +31098,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -31456,12 +31448,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -32652,12 +32639,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -33568,12 +33550,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -34210,12 +34187,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -34816,12 +34788,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -35138,12 +35105,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -37431,6 +37393,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2455,
+     "title": "ModifyShells: edit the profile of an existing extruded shell"
+    },
+    {
      "number": 2452,
      "title": "[3/3] Shells: read back and write the custom surface of individual edges"
     },
@@ -38855,12 +38821,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38895,12 +38856,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38918,12 +38874,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38975,12 +38926,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -38997,12 +38943,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39087,12 +39028,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39110,12 +39046,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39167,12 +39098,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -39189,12 +39115,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40080,12 +40001,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -40996,12 +40912,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -41602,12 +41513,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -42242,12 +42148,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43779,12 +43680,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -43982,12 +43878,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -44171,6 +44062,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2455,
+     "title": "ModifyShells: edit the profile of an existing extruded shell"
+    },
     {
      "number": 2452,
      "title": "[3/3] Shells: read back and write the custom surface of individual edges"
@@ -47282,6 +47177,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2455,
+     "title": "ModifyShells: edit the profile of an existing extruded shell"
+    },
     {
      "number": 2452,
      "title": "[3/3] Shells: read back and write the custom surface of individual edges"
@@ -53392,12 +53291,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2403,
-     "title": "MEP preference tables: ask the container before getting a table"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
