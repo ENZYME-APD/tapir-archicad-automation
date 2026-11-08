@@ -686,7 +686,7 @@ static GS::ObjectState CreateFailedPreferenceTableRowResults (UIndex count, GSEr
 // container is asked first. Within a container a table of the other type is fine: Get answers an error (circular and
 // rectangular duct segment tables share a container).
 template <typename ContainerResultT>
-static bool ListsPreferenceTable (const ContainerResultT& container, const UniqueID& id)
+static bool ListsPreferenceTable (const ContainerResultT& container, const ACAPI::MEP::UniqueID& id)
 {
     if (container.IsErr ()) {
         return false;
