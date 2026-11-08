@@ -21,6 +21,7 @@ from pathlib import Path
 import runner_windows as rw  # the rules both share: which files are Tapirs, the lists' names, the token's name
 
 GRAPHISOFT_FOLDER = "/Applications/Graphisoft"
+ARCHICAD_SEARCH = GRAPHISOFT_FOLDER
 PLATFORM = "Mac"  # in the build check's artifact names and the add-on's name
 TOKEN_STORE = "your login keychain"
 CREDENTIAL_TARGET = rw.CREDENTIAL_TARGET  # the keychain item's service name
