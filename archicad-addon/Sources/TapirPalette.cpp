@@ -21,6 +21,7 @@
 #include <cstring>
 #include <ctime>
 #include <functional>
+#include <initializer_list>
 #include <map>
 #include <regex>
 #include <string>
@@ -581,7 +582,9 @@ void TapirPalette::PanelCloseRequested (const DG::PanelCloseRequestEvent&, bool*
 
 void TapirPalette::PanelOpened (const DG::PanelOpenEvent&)
 {
+    const short selectedItemBefore = scriptSelectionPopUp.GetSelectedItem ();
     auto itemToSelect = AddScriptsFromPreferences ();
+    RebuildScriptPopUp (selectedItemBefore);
     if (itemToSelect <= 0 || scriptSelectionPopUp.IsSeparator (itemToSelect) || scriptSelectionPopUp.GetItemCount () - 1 <= itemToSelect) {
         itemToSelect = scriptSelectionPopUp.GetSelectedItem ();
         if (scriptSelectionPopUp.IsSeparator (itemToSelect) || scriptSelectionPopUp.GetItemCount () - 1 <= itemToSelect) {
@@ -636,7 +639,7 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
                 return;
             }
 
-            GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (scriptSelectionPopUp.GetSelectedItem ()));
+            GS::Ref<PopUpItemData> popUpItemData = GetSelectedScript ();
             if (popUpItemData != nullptr) {
                 ExecuteScript (*popUpItemData);
             }
@@ -644,7 +647,10 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
     } else if (ev.GetSource () == &tapirButton) {
         OpenWebpage ("https://github.com/ENZYME-APD/tapir-archicad-automation");
     } else if (ev.GetSource () == &openScriptButton) {
-        GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (scriptSelectionPopUp.GetSelectedItem ()));
+        GS::Ref<PopUpItemData> popUpItemData = GetSelectedScript ();
+        if (popUpItemData == nullptr) {
+            return;
+        }
         if (popUpItemData->repoRelLoc.IsEmpty ()) {
             OpenFileInExplorer (popUpItemData->fileLocation);
         } else {
@@ -663,17 +669,89 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
 
 bool TapirPalette::IsPopUpContainsFile (const IO::Location& fileLocation) const
 {
-    for (short i = 1; i <= scriptSelectionPopUp.GetItemCount () - 1; ++i) {
-        if (scriptSelectionPopUp.IsSeparator (i)) {
-            continue;
-        }
-
-        GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (i));
-        if (popUpItemData != nullptr && popUpItemData->fileLocation == fileLocation) {
+    for (const GS::Ref<PopUpItemData>& popUpItemData : GetAllScripts ()) {
+        if (popUpItemData->fileLocation == fileLocation) {
             return true;
         }
     }
     return false;
+}
+
+TapirPalette::ScriptList TapirPalette::GetAllScripts () const
+{
+    ScriptList scripts;
+    for (const ScriptList* list : { &addedScripts, &customScripts, &listedScripts }) {
+        for (const GS::Ref<PopUpItemData>& popUpItemData : *list) {
+            scripts.Push (popUpItemData);
+        }
+    }
+    return scripts;
+}
+
+// The dropdown's sections, as RebuildScriptPopUp fills them: each list followed by its separator when shown.
+GS::Ref<TapirPalette::PopUpItemData> TapirPalette::GetScriptOfPopUpItem (short item) const
+{
+    const std::pair<const ScriptList*, bool> sections[] = {
+        { &addedScripts, hasAddedScript },
+        { &customScripts, hasCustomScript },
+        { &listedScripts, true }
+    };
+    Int32 firstItem = DG::PopUp::TopItem;
+    for (const auto& section : sections) {
+        const Int32 size = static_cast<Int32> (section.first->GetSize ());
+        if (item >= firstItem && item < firstItem + size) {
+            return (*section.first)[static_cast<UIndex> (item - firstItem)];
+        }
+        firstItem += size + (section.second ? 1 : 0);
+    }
+    return GS::Ref<PopUpItemData> ();
+}
+
+GS::Ref<TapirPalette::PopUpItemData> TapirPalette::GetSelectedScript () const
+{
+    return GetScriptOfPopUpItem (scriptSelectionPopUp.GetSelectedItem ());
+}
+
+GS::UniString TapirPalette::GetScriptLabel (const PopUpItemData& popUpData) const
+{
+    GS::UniString label = popUpData.baseDisplayText;
+    for (short slot = 0; slot < ScriptShortcutSlotCount; ++slot) {
+        if (!scriptShortcutSlots[slot].IsEmpty () && scriptShortcutSlots[slot] == popUpData.fileLocation) {
+            label += GS::UniString::Printf ("   [Shortcut %d]", (int) (slot + 1));
+            break;
+        }
+    }
+    return label;
+}
+
+void TapirPalette::RebuildScriptPopUp (short itemToSelect)
+{
+    scriptSelectionPopUp.DeleteItem (DG_ALL_ITEMS);
+
+    const auto appendScripts = [this] (const ScriptList& scripts) {
+        for (const GS::Ref<PopUpItemData>& popUpItemData : scripts) {
+            scriptSelectionPopUp.AppendItem ();
+            scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, GetScriptLabel (*popUpItemData));
+        }
+    };
+    appendScripts (addedScripts);
+    if (hasAddedScript) {
+        scriptSelectionPopUp.AppendSeparator ();
+    }
+    appendScripts (customScripts);
+    if (hasCustomScript) {
+        scriptSelectionPopUp.AppendSeparator ();
+    }
+    appendScripts (listedScripts);
+
+    scriptSelectionPopUp.AppendSeparator ();
+    scriptSelectionPopUp.AppendItem ();
+    scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, "Reload scripts...");
+
+    if (itemToSelect <= 0 || scriptSelectionPopUp.IsSeparator (itemToSelect) || scriptSelectionPopUp.GetItemCount () - 1 <= itemToSelect) {
+        itemToSelect = DG::PopUp::TopItem;
+    }
+    scriptSelectionPopUp.SelectItem (itemToSelect);
 }
 
 void TapirPalette::PopUpChanged (const DG::PopUpChangeEvent& ev)
@@ -835,11 +913,7 @@ void TapirPalette::ItemToolTipRequested (const DG::ItemHelpEvent& ev, GS::UniStr
         return;
     }
 
-    const short selectedItem = scriptSelectionPopUp.GetSelectedItem ();
-    if (selectedItem <= 0 || scriptSelectionPopUp.IsSeparator (selectedItem)) {
-        return;
-    }
-    GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (selectedItem));
+    GS::Ref<PopUpItemData> popUpItemData = GetSelectedScript ();
     if (popUpItemData == nullptr) {
         return;
     }
@@ -875,31 +949,22 @@ void TapirPalette::RunShortcutSlot (short slotIndex)
         return;
     }
 
-    for (short i = 1; i <= scriptSelectionPopUp.GetItemCount () - 1; ++i) {
-        if (scriptSelectionPopUp.IsSeparator (i)) {
-            continue;
-        }
-        GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (i));
-        if (popUpItemData != nullptr && popUpItemData->fileLocation == scriptShortcutSlots[slotIndex]) {
+    const ScriptList scripts = GetAllScripts ();
+    for (const GS::Ref<PopUpItemData>& popUpItemData : scripts) {
+        if (popUpItemData->fileLocation == scriptShortcutSlots[slotIndex]) {
             ExecuteScript (*popUpItemData);
             return;
         }
     }
     WriteReport (DG_ERROR, "Script assigned to shortcut slot %d could not be found (%d scripts currently listed).",
-        (int) (slotIndex + 1), (int) (scriptSelectionPopUp.GetItemCount () - 1));
+        (int) (slotIndex + 1), (int) scripts.GetSize ());
 }
 
 void TapirPalette::GetAvailableScripts (GS::Array<std::pair<GS::UniString, IO::Location>>& outScripts)
 {
     outScripts.Clear ();
-    for (short i = 1; i <= scriptSelectionPopUp.GetItemCount () - 1; ++i) {
-        if (scriptSelectionPopUp.IsSeparator (i)) {
-            continue;
-        }
-        GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (i));
-        if (popUpItemData != nullptr) {
-            outScripts.Push ({ scriptSelectionPopUp.GetItemText (i), popUpItemData->fileLocation });
-        }
+    for (const GS::Ref<PopUpItemData>& popUpItemData : GetAllScripts ()) {
+        outScripts.Push ({ GetScriptLabel (*popUpItemData), popUpItemData->fileLocation });
     }
 }
 
@@ -958,21 +1023,10 @@ void TapirPalette::SetShortcutLabel (short slotIndex, const GS::UniString& label
 void TapirPalette::RefreshScriptListShortcutLabels ()
 {
     for (short i = 1; i <= scriptSelectionPopUp.GetItemCount () - 1; ++i) {
-        if (scriptSelectionPopUp.IsSeparator (i)) {
-            continue;
+        GS::Ref<PopUpItemData> popUpItemData = GetScriptOfPopUpItem (i);
+        if (popUpItemData != nullptr) {
+            scriptSelectionPopUp.SetItemText (i, GetScriptLabel (*popUpItemData));
         }
-        GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (i));
-        if (popUpItemData == nullptr) {
-            continue;
-        }
-        GS::UniString label = popUpItemData->baseDisplayText;
-        for (short slot = 0; slot < ScriptShortcutSlotCount; ++slot) {
-            if (!scriptShortcutSlots[slot].IsEmpty () && scriptShortcutSlots[slot] == popUpItemData->fileLocation) {
-                label += GS::UniString::Printf ("   [Shortcut %d]", (int) (slot + 1));
-                break;
-            }
-        }
-        scriptSelectionPopUp.SetItemText (i, label);
     }
 }
 
@@ -1632,14 +1686,14 @@ void TapirPalette::ExecuteScript (const PopUpItemData& popUpItemData)
     }
 }
 
-bool TapirPalette::AddScriptToPopUp (GS::Ref<PopUpItemData> popUpData, short index)
+bool TapirPalette::PrepareScript (PopUpItemData& popUpData)
 {
-    if (popUpData == nullptr || !IsValidLocation (popUpData->fileLocation)) {
+    if (!IsValidLocation (popUpData.fileLocation)) {
         return false;
     }
 
     IO::Name name;
-    popUpData->fileLocation.GetLastLocalName (&name);
+    popUpData.fileLocation.GetLastLocalName (&name);
 
 #if defined (macintosh)
     if (name.ToString ().BeginsWith ('.')) {
@@ -1647,22 +1701,19 @@ bool TapirPalette::AddScriptToPopUp (GS::Ref<PopUpItemData> popUpData, short ind
     }
 #endif
 
-    scriptSelectionPopUp.InsertItem (index);
-    if (popUpData->repo) {
-        auto* repo = popUpData->repo;
+    if (popUpData.repo) {
+        auto* repo = popUpData.repo;
         if (repo->displayName.IsEmpty ()) {
-            popUpData->baseDisplayText = name.ToString () + " (" + repo->repoOwner + "/" + repo->repoName + ")";
+            popUpData.baseDisplayText = name.ToString () + " (" + repo->repoOwner + "/" + repo->repoName + ")";
         } else {
-            popUpData->baseDisplayText = name.ToString () + " (" + repo->displayName + ")";
+            popUpData.baseDisplayText = name.ToString () + " (" + repo->displayName + ")";
         }
-    } else if (!popUpData->sourceName.IsEmpty ()) {
-        popUpData->baseDisplayText = name.ToString () + " (" + popUpData->sourceName + ")";
+    } else if (!popUpData.sourceName.IsEmpty ()) {
+        popUpData.baseDisplayText = name.ToString () + " (" + popUpData.sourceName + ")";
     } else {
-        popUpData->baseDisplayText = name.ToString ();
+        popUpData.baseDisplayText = name.ToString ();
     }
-    popUpData->info = ReadScriptInfo (popUpData->fileLocation);
-    scriptSelectionPopUp.SetItemText (index, popUpData->baseDisplayText);
-    scriptSelectionPopUp.SetItemObjectData (index, popUpData);
+    popUpData.info = ReadScriptInfo (popUpData.fileLocation);
 
     return true;
 }
@@ -1781,7 +1832,9 @@ void TapirPalette::AddScriptsFromRepositories ()
             ACAPI_WriteReport ("Added to the popup: " + repoLoc, false);
             GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (fileLoc, kv.first, &repo);
             popUpItemData->uvProjectPath = uvProjectPath;
-            AddScriptToPopUp (popUpItemData, DG::PopUp::BottomItem);
+            if (PrepareScript (*popUpItemData)) {
+                listedScripts.Push (popUpItemData);
+            }
         }
     }
 }
@@ -1861,7 +1914,9 @@ void TapirPalette::AddScriptsFromLocalFolders ()
             GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (kv.second);
             popUpItemData->sourceName = sourceName;
             popUpItemData->uvProjectPath = uvProjectPath;
-            AddScriptToPopUp (popUpItemData, DG::PopUp::BottomItem);
+            if (PrepareScript (*popUpItemData)) {
+                listedScripts.Push (popUpItemData);
+            }
         }
     }
 }
@@ -1882,20 +1937,21 @@ void TapirPalette::AddScriptsFromCustomScriptsFolder ()
             return;
         }
 
-        if (!hasCustomScript) {
-            scriptSelectionPopUp.InsertSeparator (DG::PopUp::TopItem);
-            hasCustomScript = true;
-        }
+        hasCustomScript = true;
 
-        IO::Location file (customScriptsFolderLoc, name);
-        AddScriptToPopUp (GS::NewRef<PopUpItemData> (file));
+        // Each one goes first, as when they were inserted at the top of the dropdown.
+        GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (IO::Location (customScriptsFolderLoc, name));
+        if (PrepareScript (*popUpItemData)) {
+            customScripts.Insert (0, popUpItemData);
+        }
     });
 }
 
 void TapirPalette::LoadScriptsToPopUp ()
 {
-    scriptSelectionPopUp.DeleteItem (DG_ALL_ITEMS);
-
+    addedScripts.Clear ();
+    customScripts.Clear ();
+    listedScripts.Clear ();
     hasCustomScript = false;
     hasAddedScript = false;
 
@@ -1904,16 +1960,7 @@ void TapirPalette::LoadScriptsToPopUp ()
     AddScriptsFromLocalFolders ();
     AddScriptsFromRepositories ();
 
-    scriptSelectionPopUp.AppendSeparator ();
-    scriptSelectionPopUp.AppendItem ();
-    scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, "Reload scripts...");
-
-    if (itemToSelect <= 0 || scriptSelectionPopUp.IsSeparator (itemToSelect) || scriptSelectionPopUp.GetItemCount () - 1 <= itemToSelect) {
-        itemToSelect = DG::PopUp::TopItem;
-    }
-    scriptSelectionPopUp.SelectItem (itemToSelect);
-
-    RefreshScriptListShortcutLabels ();
+    RebuildScriptPopUp (itemToSelect);
     SetDeleteScriptButtonStatus ();
 }
 
@@ -2458,18 +2505,12 @@ static const GS::UniString ShortcutLabelDefaultMarker ("(default)");   // means 
 void TapirPalette::SaveScriptsToPreferences ()
 {
     GS::UniString preferencesStr;
-    if (hasAddedScript) {
-        for (short i = 1; i <= scriptSelectionPopUp.GetItemCount () - 1 && !scriptSelectionPopUp.IsSeparator (i); ++i) {
-            GS::Ref<PopUpItemData> popUpItemData = GS::DynamicCast<PopUpItemData> (scriptSelectionPopUp.GetItemObjectData (i));
-            if (popUpItemData == nullptr) {
-                continue;
-            }
-
-            GS::UniString pathStr;
-            popUpItemData->fileLocation.ToPath (&pathStr);
-            preferencesStr += pathStr + '\n';
-        }
+    for (const GS::Ref<PopUpItemData>& popUpItemData : addedScripts) {
+        GS::UniString pathStr;
+        popUpItemData->fileLocation.ToPath (&pathStr);
+        preferencesStr += pathStr + '\n';
     }
+    // The dropdown's item index, as before, so that every Tapir version reads the blob the same way
     preferencesStr += GS::ValueToUniString (scriptSelectionPopUp.GetSelectedItem ());
     for (short slot = 0; slot < ScriptShortcutSlotCount; ++slot) {
         GS::UniString slotPathStr = ShortcutSlotEmptyMarker;
@@ -2501,11 +2542,8 @@ bool TapirPalette::IsValidLocation (const IO::Location& location)
 
 short TapirPalette::AddScriptsFromPreferences ()
 {
-    if (hasAddedScript) {
-        while (!scriptSelectionPopUp.IsSeparator (DG::PopUp::TopItem)) {
-            scriptSelectionPopUp.DeleteItem (DG::PopUp::TopItem);
-        }
-    }
+    // The caller shows the result with RebuildScriptPopUp. hasAddedScript stays as it was, as the separator did.
+    addedScripts.Clear ();
     for (short slot = 0; slot < ScriptShortcutSlotCount; ++slot) {
         scriptShortcutSlots[slot] = IO::Location ();
         scriptShortcutLabels[slot] = GS::EmptyUniString;
@@ -2567,11 +2605,12 @@ short TapirPalette::AddScriptsFromPreferences ()
         if (!IsValidLocation (ownScript)) {
             continue;
         }
-        if (!hasAddedScript) {
-            scriptSelectionPopUp.InsertSeparator (DG::PopUp::TopItem);
-            hasAddedScript = true;
+        hasAddedScript = true;
+        // Each one goes first, as when they were inserted at the top of the dropdown.
+        GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (ownScript);
+        if (PrepareScript (*popUpItemData)) {
+            addedScripts.Insert (0, popUpItemData);
         }
-        AddScriptToPopUp (GS::NewRef<PopUpItemData> (ownScript));
     }
     return selectedItemBeforeClose;
 }
@@ -2594,16 +2633,16 @@ bool TapirPalette::AddNewScript ()
         if (IsPopUpContainsFile (file)) {
             continue;
         }
-        if (!hasAddedScript) {
-            scriptSelectionPopUp.InsertSeparator (DG::PopUp::TopItem);
-            hasAddedScript = true;
+        hasAddedScript = true;
+        GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (file);
+        if (PrepareScript (*popUpItemData)) {
+            addedScripts.Insert (0, popUpItemData);
         }
-        AddScriptToPopUp (GS::NewRef<PopUpItemData> (file));
         hasNew = true;
     }
 
     if (hasNew) {
-        scriptSelectionPopUp.SelectItem (DG::PopUp::TopItem);
+        RebuildScriptPopUp (DG::PopUp::TopItem);
         SaveScriptsToPreferences ();
         SetDeleteScriptButtonStatus ();
     }
@@ -2611,17 +2650,25 @@ bool TapirPalette::AddNewScript ()
     return hasNew;
 }
 
+// The selected item is one of addedScripts: SetDeleteScriptButtonStatus enables the button only then.
 void TapirPalette::DeleteScriptFromPopUp ()
 {
-    short selectedItem = scriptSelectionPopUp.GetSelectedItem ();
-    scriptSelectionPopUp.DeleteItem (selectedItem);
-    if (scriptSelectionPopUp.IsSeparator (DG::PopUp::TopItem)) {
-        scriptSelectionPopUp.DeleteItem (DG::PopUp::TopItem);
+    const short selectedItem = scriptSelectionPopUp.GetSelectedItem ();
+    if (!hasAddedScript || selectedItem < DG::PopUp::TopItem || selectedItem > static_cast<short> (addedScripts.GetSize ())) {
+        return;
+    }
+    addedScripts.Delete (static_cast<UIndex> (selectedItem - DG::PopUp::TopItem));
+
+    // The next script takes the deleted one's place; after the last added one the one above it is selected. When
+    // none is left, the section and its separator go, and the first item is selected.
+    short itemToSelect = selectedItem;
+    if (addedScripts.IsEmpty ()) {
         hasAddedScript = false;
+        itemToSelect = DG::PopUp::TopItem;
+    } else if (itemToSelect > static_cast<short> (addedScripts.GetSize ())) {
+        itemToSelect = static_cast<short> (addedScripts.GetSize ());
     }
-    if (scriptSelectionPopUp.IsSeparator (scriptSelectionPopUp.GetSelectedItem ())) {
-        scriptSelectionPopUp.SelectItem (scriptSelectionPopUp.GetSelectedItem () - 1);
-    }
+    RebuildScriptPopUp (itemToSelect);
 
     SaveScriptsToPreferences ();
     SetDeleteScriptButtonStatus ();
@@ -2629,17 +2676,10 @@ void TapirPalette::DeleteScriptFromPopUp ()
 
 void TapirPalette::SetDeleteScriptButtonStatus ()
 {
-    if (!hasAddedScript) {
+    const short selectedItem = scriptSelectionPopUp.GetSelectedItem ();
+    if (hasAddedScript && selectedItem >= DG::PopUp::TopItem && selectedItem <= static_cast<short> (addedScripts.GetSize ())) {
+        delScriptButton.Enable ();
+    } else {
         delScriptButton.Disable ();
-        return;
     }
-
-    for (short i = scriptSelectionPopUp.GetSelectedItem (); i >= DG_POPUP_TOP; --i) {
-        if (scriptSelectionPopUp.IsSeparator (i)) {
-            delScriptButton.Disable ();
-            return;
-        }
-    }
-
-    delScriptButton.Enable ();
 }
