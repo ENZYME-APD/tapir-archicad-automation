@@ -50,6 +50,33 @@
 #define ID_SHORTCUTS_DIALOG_LABELEDIT_6          20
 #define ID_SHORTCUTS_DIALOG_CLOSE_BUTTON         21
 
+// Sharing a script (ShareDialog): the ids 32130-32134 and icons 32550-32559 are kept for it.
+#define ID_SHARE_DIALOG                      32130
+#define ID_SHARE_DIALOG_SHARE_BUTTON              1
+#define ID_SHARE_DIALOG_CANCEL_BUTTON             2
+#define ID_SHARE_DIALOG_SUMMARY_EDIT              5
+#define ID_SHARE_DIALOG_CREDIT_NAME_EDIT          7
+#define ID_SHARE_DIALOG_EMAIL_EDIT                9
+#define ID_SHARE_DIALOG_LICENCE_CHECK            10
+#define ID_SHARE_DIALOG_STATUS_TEXT              11
+#define ID_SHARE_DIALOG_OPEN_ISSUE_BUTTON        12
+
+#define ID_SHARE_STRINGS                     32131
+#define ID_SHARE_STRINGS_TITLE                    1
+#define ID_SHARE_STRINGS_SELECT_SCRIPT_TITLE      2
+#define ID_SHARE_STRINGS_SELECT_SCRIPT_BUTTON     3
+#define ID_SHARE_STRINGS_FILE_CANNOT_READ         4
+#define ID_SHARE_STRINGS_FILE_TOO_LARGE           5
+#define ID_SHARE_STRINGS_FILE_NOT_TEXT            6
+#define ID_SHARE_STRINGS_OK                       7
+#define ID_SHARE_STRINGS_SENDING                  8
+#define ID_SHARE_STRINGS_SHARED                   9
+#define ID_SHARE_STRINGS_SERVICE_NOT_AVAILABLE   10
+#define ID_SHARE_STRINGS_CLOSE                   11
+
+#define ID_ADDON_MENU_FOR_SHARE              32132
+#define ID_ADDON_MENU_SHARE                       1
+
 #define ID_PALETTE_STRINGS              32010
 #define ID_PALETTE_STRINGS_SELECT_SCRIPTS_TITLE  1
 #define ID_PALETTE_STRINGS_SELECT_SCRIPTS_BUTTON 2
