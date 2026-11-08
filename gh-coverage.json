@@ -1,15 +1,14 @@
 {
- "generatedAt": "2026-11-08 12:49 UTC",
+ "generatedAt": "2026-11-08 12:54 UTC",
  "counts": {
   "done": 568,
-  "merged": 197,
-  "in progress": 17,
+  "merged": 214,
   "not applicable": 1
  },
  "parameters": {
-  "all": 724,
-  "json": 37,
-  "partial": 4
+  "all": 742,
+  "partial": 3,
+  "json": 37
  },
  "items": [
   {
@@ -97,19 +96,19 @@
    "group": "Application Commands",
    "version": "1.8.1",
    "brief": "Retrieves the license the running Archicad runs on: its type (Full, Education, Trial, Demo, Start or BIMcloud Team Client), the raw protection mode with its bits by name, and the highest Software Service Agreement (SSA) level of the license, so a script can warn before it uses a feature the license lacks. The SSA level is not available in Archicad 25.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetArchicadLicenseInfoComponent",
+     "path": "Components/GeneralComponents/GetArchicadLicenseInfoComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2349,
-     "title": "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -417,19 +416,19 @@
    "group": "Application Commands",
    "version": "1.8.1",
    "brief": "Returns the settings of Archicad's Magic Wand Settings dialog: how curves are approximated with straight segments (a number of segments along arcs or circles, a largest deviation from the curve, or a segment length) and the trace method. Useful to know how the Magic Wand will trace a curve. Changes nothing in the project.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "GetMagicWandSettingsComponent",
+     "path": "Components/GeneralComponents/GetMagicWandSettingsComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2349,
-     "title": "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -686,19 +685,32 @@
    "group": "Application Commands",
    "version": "1.8.1",
    "brief": "Shows a non-blocking notification bubble with a message in the current Archicad window, e.g. to report progress or a result without stopping the user as ShowAlert does. The bubble disappears by itself after the timeout. It is shown at a model coordinate or a pixel position of the current view, by default at the center of the current 2D view. Optionally it gets a large icon, is shown at most a given number of times, or is turned off, until the user runs 'Enable all informational messages'. Returns the bubble's settings read back from Archicad. Requires Archicad 29 or later.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 11,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2349,
-     "title": "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters"
+     "name": "ShowNotificationBubbleComponent",
+     "path": "Components/GeneralComponents/ShowNotificationBubbleComponent.cs"
     }
    ],
+   "parameters": "partial",
+   "parameterCount": 11,
+   "coveredParameters": [
+    "coordinate",
+    "icon",
+    "message",
+    "offset",
+    "screenPoint",
+    "screenPoint.h",
+    "screenPoint.v",
+    "timeoutMilliseconds"
+   ],
+   "missingParameters": [
+    "disabled",
+    "largeIcon",
+    "redrawCountLimit"
+   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -2462,19 +2474,24 @@
    "group": "Project Commands",
    "version": "1.8.1",
    "brief": "Looks up words or phrases (for example from a user's question) among the names of the open project before they are passed to other commands: stories, layers, layer combinations, building materials, composites, profiles, surfaces, fills, lines, zone categories, element types (by API name and, from Archicad 27, by the name the Archicad interface shows), properties (by name, and by group and name together) and classifications (systems by name and version, items of every system by name and ID). For each name it returns 'found' with the items named exactly so, 'closeMatches' with the nearest names, best first (ranked by differences in case, accents, spacing and separators, shared words, one name containing the other and a few differing characters), or 'notFound' when nothing in the project is close, meaning the project has no such item and it must not be guessed. Each match carries what the other commands take: the story index, the attribute id and index, the elementType, the propertyId (with the property's group, value type and the classification items a custom property is available for), or the classificationSystemId and classificationItemId. Matching is lexical and deterministic. Read only.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 4,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2349,
-     "title": "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters"
+     "name": "ResolveNamesComponent",
+     "path": "Components/ProjectComponents/ResolveNamesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "maxCloseMatches",
+    "names",
+    "names.kind",
+    "names.name"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11296,19 +11313,21 @@
    "group": "Attribute Commands",
    "version": "1.8.1",
    "brief": "Returns the layer of the tool defaults of the given element types: the layer new elements of that type are placed on.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2349,
-     "title": "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters"
+     "name": "GetLayerOfElementDefaultsComponent",
+     "path": "Components/AttributesComponents/GetLayerOfElementDefaultsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elementTypes"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11316,19 +11335,23 @@
    "group": "Attribute Commands",
    "version": "1.8.1",
    "brief": "Sets the layer of the tool defaults of the given element types, so new elements of that type are placed on it. Only the layer of the defaults is changed.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2349,
-     "title": "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters"
+     "name": "SetLayerOfElementDefaultsComponent",
+     "path": "Components/AttributesComponents/SetLayerOfElementDefaultsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "layersOfElementDefaults",
+    "layersOfElementDefaults.elementType",
+    "layersOfElementDefaults.layerId"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11336,19 +11359,23 @@
    "group": "Attribute Commands",
    "version": "1.8.1",
    "brief": "Renames attributes of any type (layers, layer combinations, composites, surfaces, ...). Each attribute keeps its index, its id and its settings. A new name that another attribute of the same type already has is refused, and so is renaming the attributes Archicad does not allow to change (the built-in Archicad Layer, the Solid and Empty fills).",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2349,
-     "title": "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters"
+     "name": "RenameAttributesComponent",
+     "path": "Components/AttributesComponents/RenameAttributesComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "attributes",
+    "attributes.attributeId",
+    "attributes.newName"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11680,12 +11707,12 @@
      "path": "Components/AttributesComponents/GetGraphicOverrideRulesComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [
+   "coveredParameters": [
     "includeCriterion"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -11702,14 +11729,13 @@
      "path": "Components/AttributesComponents/GetGraphicOverrideRulesByNameComponent.cs"
     }
    ],
-   "parameters": "partial",
+   "parameters": "all",
    "parameterCount": 2,
    "coveredParameters": [
-    "graphicOverrideRules"
-   ],
-   "missingParameters": [
+    "graphicOverrideRules",
     "includeCriterion"
    ],
+   "missingParameters": [],
    "pullRequests": [],
    "issues": []
   },
@@ -20214,19 +20240,21 @@
    "group": "Script UI Commands",
    "version": "1.8.1",
    "brief": "Opens Archicad's settings dialog of the selected elements or the current tool (Archicad 28 and later), or the default settings dialog of the given element type, waits for the user and reports whether the dialog was closed with OK or Cancel.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2349,
-     "title": "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters"
+     "name": "OpenSettingsDialogComponent",
+     "path": "Components/GeneralComponents/OpenSettingsDialogComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "elementType"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20234,19 +20262,22 @@
    "group": "Script UI Commands",
    "version": "1.8.1",
    "brief": "Opens Archicad's Object, Lamp, Window or Door Settings dialog, optionally limited to a library part subtype, lets the user pick a library part and set its parameters, and returns the chosen library part with its GDL parameters, or that the user cancelled. Places nothing.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2349,
-     "title": "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters"
+     "name": "PickLibraryPartComponent",
+     "path": "Components/GeneralComponents/PickLibraryPartComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "elementType",
+    "subtypeUnID"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20254,19 +20285,21 @@
    "group": "Script UI Commands",
    "version": "1.8.1",
    "brief": "Opens Archicad's Open Library Part dialog, waits for the user and returns the location of the chosen library part, or reports that the user cancelled.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2349,
-     "title": "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters"
+     "name": "PickLibraryPartFileComponent",
+     "path": "Components/GeneralComponents/PickLibraryPartFileComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "generalGDLObjectsOnly"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20274,19 +20307,19 @@
    "group": "Script UI Commands",
    "version": "1.8.1",
    "brief": "Opens Archicad's Open Picture dialog (the one of the texture settings), waits for the user and returns the location of the chosen picture, or reports that the user cancelled. Archicad adds the chosen picture to the embedded library when it is not in it yet.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
+   "components": [
+    {
+     "name": "PickPictureFileComponent",
+     "path": "Components/GeneralComponents/PickPictureFileComponent.cs"
+    }
+   ],
+   "parameters": "all",
    "parameterCount": 0,
    "coveredParameters": [],
    "missingParameters": [],
-   "pullRequests": [
-    {
-     "number": 2349,
-     "title": "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20294,19 +20327,21 @@
    "group": "Script UI Commands",
    "version": "1.8.1",
    "brief": "Opens Archicad's dialog for opening a zone stamp or label library part, waits for the user and returns the location of the chosen file, or reports that the user cancelled.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2349,
-     "title": "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters"
+     "name": "PickZoneStampOrLabelFileComponent",
+     "path": "Components/GeneralComponents/PickZoneStampOrLabelFileComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "objectType"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20314,19 +20349,24 @@
    "group": "Script UI Commands",
    "version": "1.8.1",
    "brief": "Opens Archicad's Save Library Part dialog (object, door or window), waits for the user and returns the location chosen to save the library part to, or reports that the user cancelled. Nothing is saved.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 4,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2349,
-     "title": "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters"
+     "name": "PickLibraryPartSaveLocationComponent",
+     "path": "Components/GeneralComponents/PickLibraryPartSaveLocationComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 4,
+   "coveredParameters": [
+    "browseForFolder",
+    "defaultPath",
+    "libraryPartType",
+    "title"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20334,19 +20374,21 @@
    "group": "Script UI Commands",
    "version": "1.8.1",
    "brief": "Opens Archicad's dialog for choosing or creating a library folder, waits for the user and returns the location of the folder, or reports that the user cancelled. The folder is not added to the libraries of the project.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 1,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2349,
-     "title": "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters"
+     "name": "PickLibraryFolderComponent",
+     "path": "Components/GeneralComponents/PickLibraryFolderComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 1,
+   "coveredParameters": [
+    "defaultName"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20354,19 +20396,22 @@
    "group": "Script UI Commands",
    "version": "1.8.1",
    "brief": "Opens Archicad's IFC export settings dialog, where the user picks a view and an IFC export translator, waits for the user and returns the chosen view and translator, or cancelled. Available from Archicad 28.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2349,
-     "title": "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters"
+     "name": "ShowIFCExportSettingsComponent",
+     "path": "Components/GeneralComponents/ShowIFCExportSettingsComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "navigatorItemId",
+    "translatorName"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20374,19 +20419,23 @@
    "group": "Script UI Commands",
    "version": "1.8.1",
    "brief": "Opens a small dialog with Archicad's attribute picker for the given attribute type (layer, building material, composite, profile or surface; fill and line from Archicad 27), waits for the user and returns the chosen attribute, or cancelled. Available from Archicad 26.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 3,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2349,
-     "title": "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters"
+     "name": "PickAttributeComponent",
+     "path": "Components/GeneralComponents/PickAttributeComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 3,
+   "coveredParameters": [
+    "attributeId",
+    "attributeType",
+    "title"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20394,19 +20443,22 @@
    "group": "Script UI Commands",
    "version": "1.8.1",
    "brief": "Opens a small dialog with Archicad's attribute folder picker for the given attribute type, waits for the user and returns the chosen folder as its path from the root folder, or cancelled. Available from Archicad 26.",
-   "status": "in progress",
+   "status": "merged",
    "reason": "",
-   "components": [],
-   "parameters": null,
-   "parameterCount": 2,
-   "coveredParameters": [],
-   "missingParameters": [],
-   "pullRequests": [
+   "components": [
     {
-     "number": 2349,
-     "title": "Grasshopper: components for the 17 new commands, includeCriterion on the graphic override getters"
+     "name": "PickAttributeFolderComponent",
+     "path": "Components/GeneralComponents/PickAttributeFolderComponent.cs"
     }
    ],
+   "parameters": "all",
+   "parameterCount": 2,
+   "coveredParameters": [
+    "attributeType",
+    "title"
+   ],
+   "missingParameters": [],
+   "pullRequests": [],
    "issues": []
   },
   {
