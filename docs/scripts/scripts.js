@@ -429,6 +429,77 @@
         }
     }
 
+    function splitTableRow (line) {
+        // The cells of "| a | b |": a | inside `code` or written as \| does not end a cell.
+        var text = line.trim ().replace (/^\|/, '');
+        var cells = [];
+        var cell = '';
+        var inCode = false;
+        for (var c = 0; c < text.length; c++) {
+            var ch = text.charAt (c);
+            if (ch === '\\' && text.charAt (c + 1) === '|') {
+                cell += '|';
+                c++;
+            } else if (ch === '`') {
+                inCode = !inCode;
+                cell += ch;
+            } else if (ch === '|' && !inCode) {
+                cells.push (cell.trim ());
+                cell = '';
+            } else {
+                cell += ch;
+            }
+        }
+        if (cell.trim () !== '') {
+            cells.push (cell.trim ());
+        }
+        return cells;
+    }
+
+    function renderTable (tableLines, links) {
+        // A Markdown table as a table; on phones each row is a card, its header cells the labels.
+        var separator = /^\s*\|[\s:|-]+\|\s*$/;
+        var labels = [];
+        var bodyLines = tableLines;
+        var table = document.createElement ('table');
+        table.className = 'schedule readme-table';
+        if (tableLines.length > 1 && separator.test (tableLines[1])) {
+            var headRow = document.createElement ('tr');
+            splitTableRow (tableLines[0]).forEach (function (text) {
+                var th = document.createElement ('th');
+                th.scope = 'col';
+                appendInline (th, text, links);
+                labels.push (th.textContent);
+                headRow.appendChild (th);
+            });
+            var thead = document.createElement ('thead');
+            thead.appendChild (headRow);
+            table.appendChild (thead);
+            bodyLines = tableLines.slice (2);
+        }
+        var tbody = document.createElement ('tbody');
+        bodyLines.forEach (function (rowLine) {
+            if (separator.test (rowLine)) {
+                return;
+            }
+            var tr = document.createElement ('tr');
+            splitTableRow (rowLine).forEach (function (text, index) {
+                var td = document.createElement ('td');
+                if (labels[index]) {
+                    td.setAttribute ('data-label', labels[index]);
+                }
+                appendInline (td, text, links);
+                tr.appendChild (td);
+            });
+            tbody.appendChild (tr);
+        });
+        table.appendChild (tbody);
+        var wrap = document.createElement ('div');
+        wrap.className = 'schedule-wrap readme-table-wrap';
+        wrap.appendChild (table);
+        return wrap;
+    }
+
     function renderMarkdown (container, markdown, links) {
         var lines = markdown.replace (/\r\n?/g, '\n').split ('\n');
         var i = 0;
@@ -494,19 +565,14 @@
                 continue;
             }
             if (/^\s*\|.*\|\s*$/.test (line)) {
-                // Tables are shown as their text, which stays readable.
                 flushParagraph ();
                 closeList ();
-                var rows = [];
+                var tableLines = [];
                 while (i < lines.length && /^\s*\|.*\|\s*$/.test (lines[i])) {
-                    if (!/^\s*\|[\s:|-]+\|\s*$/.test (lines[i])) {
-                        rows.push (lines[i].trim ());
-                    }
+                    tableLines.push (lines[i]);
                     i++;
                 }
-                var table = document.createElement ('pre');
-                table.textContent = rows.join ('\n');
-                container.appendChild (table);
+                container.appendChild (renderTable (tableLines, links));
                 continue;
             }
             if (line.trim () === '' || /^\s*([-*_])(\s*\1){2,}\s*$/.test (line)) {
