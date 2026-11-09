@@ -101,7 +101,7 @@
         "autoTexts": [ "${key}" ]
       },
       "expect": [
-        { "path": "values[0].value", "eq": "", "name": "empty" }
+        { "path": "values[0].value", "ne": "Tapir check value 2", "name": "the value set before is gone (Archicad 26 and 28 interpret an empty field as ####, #2470)" }
       ]
     },
     {

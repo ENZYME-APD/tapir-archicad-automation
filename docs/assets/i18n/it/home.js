@@ -12,8 +12,8 @@
     'Number every door along a line. Colour the model by any property. Check a project before it goes out. Tapir adds hundreds of commands to Archicad and a palette that runs scripts in one click.':
         'Numera tutte le porte lungo una linea. Colora il modello in base a qualsiasi proprietà. Controlla un progetto prima di consegnarlo. Tapir aggiunge ad Archicad centinaia di comandi e una palette che esegue script con un clic.',
     'Download the Tapir Installer': 'Scarica il Tapir Installer',
-    'Download <span class="os">WINDOWS</span>': 'Scarica <span class="os">WINDOWS</span>',
-    'Download <span class="os">MACOS</span>': 'Scarica <span class="os">MACOS</span>',
+    'Download <span class="os">Windows</span>': 'Scarica <span class="os">Windows</span>',
+    'Download <span class="os">macOS</span>': 'Scarica <span class="os">macOS</span>',
     '100% free': '100% gratuito',
     'Open source (MIT)': 'Open source (MIT)',
     'Watch the tutorials': 'Guarda i tutorial',

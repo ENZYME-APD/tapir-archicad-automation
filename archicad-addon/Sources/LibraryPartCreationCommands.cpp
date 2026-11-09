@@ -645,24 +645,33 @@ GS::ObjectState CreateLibraryPartFromElementsCommand::Execute (const GS::ObjectS
     double a = 1.0;
     double b = 1.0;
     if (err == NoError) {
+        // Each of the three calls has its own message, so a failure tells which one Archicad
+        // refused (#2470: Archicad 26 and 28 answered only "Failed to write the parameter section").
         GSHandle paramHdl = nullptr;
         err = ACAPI_LibraryPart_GetSect_ParamDef (&libPart, nullptr, &a, &b, drawHdl, &paramHdl);
-        if (err == NoError) {
+        if (err != NoError) {
+            failedStep = "Failed to prepare the parameter section of the library part from its 2D symbol (ACAPI_LibraryPart_GetSect_ParamDef).";
+        } else if (paramHdl == nullptr) {
+            err = APIERR_GENERAL;
+            failedStep = "Failed to prepare the parameter section of the library part: the API returned no section.";
+        } else {
             API_LibPartDetails details = {};
             details.object.fixSize = false;
             details.object.autoHotspot = true;
             err = SetLibPartDetails (&libPart, paramHdl, &details);
-        }
-        if (err == NoError) {
-            API_LibPartSection section = {};
-            section.sectType = API_SectParamDef;
-            err = ACAPI_LibraryPart_AddSection (&section, paramHdl, nullptr);
+            if (err != NoError) {
+                failedStep = "Failed to set the details of the parameter section of the library part (ACAPI_LibraryPart_SetDetails_ParamDef).";
+            } else {
+                API_LibPartSection section = {};
+                section.sectType = API_SectParamDef;
+                err = ACAPI_LibraryPart_AddSection (&section, paramHdl, nullptr);
+                if (err != NoError) {
+                    failedStep = "Failed to write the parameter section of the library part (ACAPI_LibraryPart_AddSection).";
+                }
+            }
         }
         if (paramHdl != nullptr) {
             BMKillHandle (&paramHdl);
-        }
-        if (err != NoError) {
-            failedStep = "Failed to write the parameter section of the library part.";
         }
     }
 
