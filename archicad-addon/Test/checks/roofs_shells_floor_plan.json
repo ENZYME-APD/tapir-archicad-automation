@@ -1,6 +1,6 @@
 {
   "title": "ModifyRoofs and ModifyShells write the floor plan and section settings and keep the 3D geometry (#2434)",
-  "minTapir": "1.8.1",
+  "minTapir": "2.0.1",
   "requiresEmpty": [ "Roof", "Shell" ],
   "steps": [
     {
