@@ -4,6 +4,7 @@
 # ///
 
 # /// tapir
+# category = "element-data-properties"
 # changes = "model"
 # ///
 

@@ -4,6 +4,7 @@
 # ///
 
 # /// tapir
+# category = "batch-automation"
 # changes = "model"
 # ///
 

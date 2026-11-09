@@ -4,6 +4,7 @@
 # ///
 
 # /// tapir
+# category = "utilities"
 # changes = "model"
 # ///
 
