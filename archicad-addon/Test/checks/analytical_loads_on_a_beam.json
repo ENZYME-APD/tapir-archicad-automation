@@ -185,6 +185,9 @@
     }
   ],
   "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${pointLoad}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${edgeLoad}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${beam}" } } ] } },
     { "command": "DeleteAnalyticalLoadCases", "params": { "loadCaseIds": [ { "loadCaseId": { "guid": "${case}" } } ] } },
     { "command": "DeleteAnalyticalLoadGroups", "params": { "loadGroupIds": [ { "loadGroupId": { "guid": "${group}" } } ] } }
   ]

@@ -58,6 +58,7 @@
       "id": "CreateStairs: a bad tread role is refused by the shared schema",
       "command": "CreateStairs",
       "creates": false,
+      "allowEnvelopeError": true,
       "params": {
         "stairsData": [
           {
@@ -74,7 +75,7 @@
         ]
       },
       "expect": [
-        { "path": "error.code", "exists": true, "name": "refused" },
+        { "path": "__envelopeError__", "exists": true, "name": "refused by the input schema" },
         { "path": "elements", "exists": false, "name": "no stair created" }
       ]
     },

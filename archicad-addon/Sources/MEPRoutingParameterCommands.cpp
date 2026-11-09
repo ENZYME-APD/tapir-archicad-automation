@@ -880,7 +880,7 @@ GS::Optional<GS::UniString> SetMEPRoutingParametersCommand::GetInputParametersSc
                 "type": "array",
                 "description": "The routing parameters to change. Only the given keys are changed. An item gives either routingNodeParameters and/or routingSegmentParameters for a routing element, or elbowParameters and/or transitionParameters for a routing node.",
                 "items": {
-                    "$ref": "#/MEPRoutingParametersUpdate"
+                    "$ref": "#/ElementMEPRoutingParameters"
                 }
             }
         },

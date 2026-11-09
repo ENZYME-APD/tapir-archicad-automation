@@ -188,6 +188,16 @@ class InstallationTest(unittest.TestCase):
         for p in self.patches:
             p.stop()
 
+    def test_a_crash_report_left_open_by_an_earlier_crash_is_not_this_runs(self):
+        folder = str(Path(tempfile.gettempdir()) / "Archicad 28")
+        exe, reporter = str(Path(folder) / "Archicad.exe"), str(Path(folder) / "GSReport.exe")
+        with unittest.mock.patch.object(r, "processes", return_value={7: reporter, 9: exe}):
+            before = r.crash_reporters(exe)
+            self.assertEqual(before, {7})
+            self.assertFalse(r.crash_reporter_running(exe, before))
+        with unittest.mock.patch.object(r, "processes", return_value={7: reporter, 8: reporter}):
+            self.assertTrue(r.crash_reporter_running(exe, before))
+
     def test_a_dialog_stops_the_start_and_is_named(self):
         with unittest.mock.patch.object(r, "find_port", return_value=None), \
                 unittest.mock.patch.object(rw, "dialogs", return_value=["Archicad-Umgebung"]) as dialogs, \
