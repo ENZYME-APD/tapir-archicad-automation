@@ -4680,7 +4680,16 @@ void AddMorphBodyFromMemo (const API_Element& elem, GS::ObjectState& typeSpecifi
         return;
     }
     const Modeler::MeshBody& meshBody = *memo.morphBody;
-    body.Add ("isClosed", meshBody.IsClosedBody ());
+    // Closed means every edge has two faces. This is counted from the edges, not read from
+    // MeshBody::IsClosedBody: that is a status flag, which Archicad does not set again when
+    // ModifyMorphs replaces the body, so a closed tetrahedron was reported open (#2470).
+    {
+        bool isClosed = meshBody.GetPolygonCount () > 0 && meshBody.GetEdgeCount () > 0;
+        for (ULong i = 0; isClosed && i < meshBody.GetEdgeCount (); ++i) {
+            isClosed = meshBody.GetConstEdge (i).GetPolygonCount () == 2;
+        }
+        body.Add ("isClosed", isClosed);
+    }
 
     {
         const auto& vertices = body.AddList<GS::ObjectState> ("vertices");
