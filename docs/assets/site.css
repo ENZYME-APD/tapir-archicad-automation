@@ -14,7 +14,8 @@
    which the head's display script changes for a stored look or mode, and site.js when it changes):
        <meta name="theme-color" content="#11161D" media="(prefers-color-scheme: dark)">
        <meta name="theme-color" content="#FFFFFF">
-   the fonts (Inter and JetBrains Mono; the display script adds Fraunces for Legacy only), this file,
+   the fonts (Inter and JetBrains Mono; the display script adds Fraunces for Legacy's own font only,
+   and Atkinson Hyperlegible for the Readable font only), this file,
    site.js and two inline scripts: the stored Display settings (see site.js), and data-i18n-loading
    while a translation loads. On phones site.js turns the header's nav, language menu and Display
    button into a menu (.has-menu, below).
@@ -73,9 +74,9 @@
     --hatch: repeating-linear-gradient(45deg, var(--charcoal-12) 0 1px, transparent 1px 12px);
     /* Hard offset shadows: a card lifting onto ochre (and a smaller one for the coverage tiles and the
        command reference's cards), a pressed button, the code panel; the soft ones under the phone menu
-       and the sidebar drawer of the command reference and the coverage pages. */
+       and the sidebar drawer of the coverage pages and the sidebar sheet of the command reference. */
     --shadow-lift: 6px 6px 0 var(--ochre); --shadow-lift-small: 4px 4px 0 var(--ochre);
-    --shadow-drawer: 0 0 20px rgba(0, 0, 0, .3); --shadow-press: 0 6px 0 -2px var(--charcoal);
+    --shadow-drawer: 0 0 20px rgba(0, 0, 0, .3); --shadow-sheet: 0 -6px 24px rgba(0, 0, 0, .3); --shadow-press: 0 6px 0 -2px var(--charcoal);
     --shadow-term: 12px 12px 0 var(--moss); --shadow-term-small: 6px 6px 0 var(--moss);
     --shadow-term-dark: 12px 12px 0 var(--moss-light); --shadow-menu: 0 12px 24px var(--charcoal-25);
     color-scheme: light;
@@ -94,7 +95,7 @@
 * { box-sizing: border-box }
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100% }
 body {
-    margin: 0; background: var(--bg); color: var(--fg); font: 400 16px/1.6 var(--body);
+    margin: 0; background: var(--bg); color: var(--fg); font: 400 1rem/1.6 var(--body);
     background-image: var(--texture);
     background-size: 24px 24px;
     overflow-wrap: break-word;
@@ -106,21 +107,21 @@ img, svg { max-width: 100% }
 .wrap { max-width: 1200px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
 h1, h2, h3, h4 { font-family: var(--display); line-height: 1.02; text-wrap: balance; margin: 0; letter-spacing: -.01em; color: inherit }
 /* .h1: a heading that looks like the page's h1 but is not one (a page has one h1) */
-h1, .h1 { font-size: clamp(40px, 6vw, 72px); font-weight: 900 }
-h2 { font-size: clamp(34px, 5.4vw, 64px); font-weight: 700 }
+h1, .h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900 }
+h2 { font-size: clamp(2.125rem, 5.4vw, 4rem); font-weight: 700 }
 h1 em, h2 em, h3 em { font-style: italic; font-weight: 500 }
-h3 { font-size: 22px; font-weight: 700; line-height: 1.15 }
-h4 { font-size: 17px; font-weight: 700; line-height: 1.25 }
+h3 { font-size: 1.375rem; font-weight: 700; line-height: 1.15 }
+h4 { font-size: 1.0625rem; font-weight: 700; line-height: 1.25 }
 p { margin: 0 }
 code, pre, kbd { font-family: var(--mono) }
 code { font-size: .88em; background: var(--code-bg); color: var(--fg); border-radius: 3px; padding: .1em .35em }
 .page-head code, .teaser.dark code, .term code, .stack .box code { color: inherit }
-pre { margin: 0; padding: 18px; overflow-x: auto; background: var(--pre-bg); color: var(--pre-text); border-radius: 6px; font: 400 13px/1.65 var(--mono) }
+pre { margin: 0; padding: 18px; overflow-x: auto; background: var(--pre-bg); color: var(--pre-text); border-radius: 6px; font: 400 .8125rem/1.65 var(--mono) }
 pre code { background: none; padding: 0; font-size: inherit; color: inherit; border-radius: 0 }
 .mono { font-family: var(--mono); font-size: .9em }
 .muted { color: var(--muted) }
 .nowrap { white-space: nowrap }
-.tagline { display: block; font: 700 12px/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--link) }
+.tagline { display: block; font: 700 .75rem/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--link) }
 [hidden] { display: none !important }
 .visually-hidden {
     position: absolute !important; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden;
@@ -138,11 +139,11 @@ main { display: block }
 .brand img { width: 30px; height: 30px; display: block }
 .brand img.brand-tile { display: none } /* favicon.svg, shown only by the Standard look's light header */
 .site-nav ul { display: flex; gap: 4px 22px; list-style: none; margin: 0; padding: 0; flex-wrap: wrap }
-.site-nav a { display: inline-block; padding-block: 4px; color: var(--cream); text-decoration: none; font-weight: 500; font-size: 15px; opacity: .88 }
+.site-nav a { display: inline-block; padding-block: 4px; color: var(--cream); text-decoration: none; font-weight: 500; font-size: .9375rem; opacity: .88 }
 .site-nav a:hover { opacity: 1; color: var(--ochre-light) }
 .site-nav a[aria-current] { opacity: 1; color: var(--ochre-light); box-shadow: inset 0 -2px 0 var(--ochre-light) }
 .site-header .right { margin-left: auto; display: flex; gap: 10px; align-items: center }
-.toggle { background: transparent; color: var(--cream); border: 1px solid var(--cream-30); border-radius: 8px; padding: 7px 11px; font: 500 12px var(--mono); cursor: pointer }
+.toggle { background: transparent; color: var(--cream); border: 1px solid var(--cream-30); border-radius: 8px; padding: 7px 11px; font: 500 .75rem var(--mono); cursor: pointer }
 .toggle:hover { border-color: var(--ochre-light); color: var(--ochre-light) }
 /* The language menu (site.js adds it), drawn like the toggle; the open list in the brand's colours. */
 .lang-select { max-width: 9.5em }
@@ -165,43 +166,43 @@ main { display: block }
 :root[data-i18n-loading] body { visibility: hidden }
 
 /* ---------- buttons ---------- */
-.btn { display: inline-flex; align-items: center; gap: 10px; border-radius: 8px; padding: 14px 22px; font: 700 15px/1 var(--body); text-decoration: none; border: 1.5px solid transparent; cursor: pointer; white-space: nowrap; transition: transform .15s ease, box-shadow .15s ease }
+.btn { display: inline-flex; align-items: center; gap: 10px; border-radius: 8px; padding: 14px 22px; font: 700 .9375rem/1 var(--body); text-decoration: none; border: 1.5px solid transparent; cursor: pointer; white-space: nowrap; transition: transform .15s ease, box-shadow .15s ease }
 .btn-primary { background: var(--ochre); color: var(--charcoal) }
 .btn-primary:hover { color: var(--charcoal); transform: translateY(-2px); box-shadow: var(--shadow-press) }
 .btn-ghost { border-color: var(--cream-55); color: var(--cream); background: transparent }
 .btn-ghost:hover { border-color: var(--ochre-light); color: var(--ochre-light) }
 .btn-line { border-color: currentColor; color: var(--fg); background: transparent }
 .btn-line:hover { color: var(--link) }
-.btn-sm { padding: 9px 14px; font-size: 14px }
-.btn .os { font: 500 11px var(--mono); letter-spacing: .06em; text-transform: uppercase }
+.btn-sm { padding: 9px 14px; font-size: .875rem }
+.btn .os { font: 500 .6875rem var(--mono); letter-spacing: .06em; text-transform: uppercase }
 .ctas { display: flex; gap: 12px; flex-wrap: wrap }
 
 /* ---------- dimension line, sections ---------- */
-.dim { display: flex; align-items: center; gap: 12px; color: var(--muted); font: 500 12px var(--mono); letter-spacing: .04em; text-transform: uppercase; padding-block: 40px 0 }
+.dim { display: flex; align-items: center; gap: 12px; color: var(--muted); font: 500 .75rem var(--mono); letter-spacing: .04em; text-transform: uppercase; padding-block: 40px 0 }
 .dim::before, .dim::after { content: ""; height: 1px; background: var(--muted); flex: 1; opacity: .6 }
 .dim span { position: relative; padding-inline: 4px; text-align: center }
 .dim i { width: 1px; height: 14px; background: var(--muted); opacity: .6; flex: none }
 .wrap > section, .page-body > section { padding-block: 56px 32px }
 .page-body > section:first-child, .page-body > .dim + section { padding-top: 32px }
 .sec-head { display: grid; grid-template-columns: auto 1fr; gap: 12px 40px; align-items: end; margin-bottom: 40px }
-.sec-head p { color: var(--muted); max-width: 34em; font-size: 17px }
-.sec-head h2 { font-size: clamp(32px, 4.6vw, 56px) }
+.sec-head p { color: var(--muted); max-width: 34em; font-size: 1.0625rem }
+.sec-head h2 { font-size: clamp(2rem, 4.6vw, 3.5rem) }
 /* Clear of the sticky header (one row, also on phones) when a link jumps to it. */
 [id] { scroll-margin-top: calc(88px + env(safe-area-inset-top, 0px)) }
 
 /* ---------- figures (live numbers; a hidden one leaves no gap) ---------- */
 .figures { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); border: 1.5px solid var(--fg); background: var(--surface); overflow: hidden }
 .figures > div { padding: 26px 24px; display: grid; gap: 8px; align-content: start; box-shadow: -1px 0 0 var(--line), 0 -1px 0 var(--line); min-width: 0 }
-.figures strong { font: 900 clamp(40px, 5vw, 64px)/.9 var(--display); font-variant-numeric: tabular-nums; letter-spacing: -.02em }
+.figures strong { font: 900 clamp(2.5rem, 5vw, 4rem)/.9 var(--display); font-variant-numeric: tabular-nums; letter-spacing: -.02em }
 .figures strong sup { font-size: .4em; vertical-align: top; color: var(--link) }
-.figures span { font: 500 12.5px/1.4 var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .06em }
+.figures span { font: 500 .78125rem/1.4 var(--mono); color: var(--muted); text-transform: uppercase; letter-spacing: .06em }
 .figures span a { color: inherit }
 
 /* ---------- cards: ways in, teasers ---------- */
 .ways { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
 .way { background: var(--surface); border: 1.5px solid var(--fg); border-radius: 4px; padding: 26px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-content: start; position: relative; min-width: 0; transition: transform .15s ease, box-shadow .15s ease }
 .way:hover { transform: translate(-3px, -3px); box-shadow: var(--shadow-lift) }
-.way .who { font: 700 11.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--link) }
+.way .who { font: 700 .71875rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--link) }
 .way p, .way li { color: var(--muted) }
 .way > a, .way .go-links a { font-weight: 700; text-decoration: none }
 .way > a:hover, .way .go-links a:hover { text-decoration: underline }
@@ -209,11 +210,11 @@ main { display: block }
 .way svg { width: 44px; height: 44px; color: var(--fg) }
 .way ul, .way ol { margin: 0; padding-left: 20px; display: grid; gap: 6px }
 .comm { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
-.comm .way h3 { font-size: 26px }
+.comm .way h3 { font-size: 1.625rem }
 .teasers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
 .teaser { display: grid; gap: 10px; align-content: start; padding: 28px; border: 1.5px solid var(--fg); border-radius: 4px; text-decoration: none; color: var(--fg); background: var(--surface); transition: transform .15s ease, box-shadow .15s ease; min-width: 0 }
 .teaser:hover { color: var(--fg); transform: translate(-3px, -3px); box-shadow: var(--shadow-lift) }
-.teaser h3 { font-size: 30px } .teaser p { color: var(--muted) } .teaser .go { font-weight: 700; color: var(--link) }
+.teaser h3 { font-size: 1.875rem } .teaser p { color: var(--muted) } .teaser .go { font-weight: 700; color: var(--link) }
 .teaser.dark { background: var(--charcoal); color: var(--cream); border-color: var(--charcoal); --focus: var(--ochre-light) }
 .teaser.dark:hover { color: var(--cream) }
 .teaser.dark p { color: var(--slate-light) } .teaser.dark .go, .teaser.dark .tagline { color: var(--ochre-light) }
@@ -229,63 +230,63 @@ div.teaser.dark .ctas { margin-top: 8px }
 .term { background: var(--charcoal); color: var(--cream); border-radius: 6px; overflow: hidden; box-shadow: var(--shadow-term); min-width: 0; --focus: var(--ochre-light) }
 :root[data-theme="dark"] .term { box-shadow: var(--shadow-term-dark); border: 1px solid var(--cream-12) }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"], [data-theme="contrast"]) .term { box-shadow: var(--shadow-term-dark); border: 1px solid var(--cream-12) } }
-.term .bar { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; font: 500 11.5px var(--mono); color: var(--slate-light); border-bottom: 1px solid var(--cream-10) }
-.term pre { margin: 0; padding: 18px; background: transparent; border-radius: 0; overflow-x: auto; font: 400 13px/1.65 var(--mono); color: var(--cream) }
+.term .bar { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; font: 500 .71875rem var(--mono); color: var(--slate-light); border-bottom: 1px solid var(--cream-10) }
+.term pre { margin: 0; padding: 18px; background: transparent; border-radius: 0; overflow-x: auto; font: 400 .8125rem/1.65 var(--mono); color: var(--cream) }
 .term .k { color: var(--ochre-light) } .term .s { color: var(--sage) } .term .c { color: var(--slate-light) } .term .o { color: var(--cream); font-weight: 700 }
 /* The copy button site.js adds to every code block. */
 .code-block { position: relative }
 .code-block > pre { padding-right: 76px }
-.copy-button { position: absolute; top: 8px; right: 8px; padding: 3px 10px; border: 1px solid var(--cream-35); border-radius: 6px; background: var(--charcoal-90); color: var(--cream); font: 500 12.5px/1.4 var(--body); cursor: pointer; --focus: var(--ochre-light) }
+.copy-button { position: absolute; top: 8px; right: 8px; padding: 3px 10px; border: 1px solid var(--cream-35); border-radius: 6px; background: var(--charcoal-90); color: var(--cream); font: 500 .78125rem/1.4 var(--body); cursor: pointer; --focus: var(--ochre-light) }
 .copy-button:hover { border-color: var(--ochre-light) }
 .copy-button:focus-visible { outline-color: var(--ochre-light) }
 
 /* ---------- schedule (the scripts) ---------- */
 .schedule-wrap { border: 1.5px solid var(--fg); background: var(--surface); overflow-x: auto }
-table.schedule { width: 100%; border-collapse: collapse; font-size: 14.5px }
-.schedule caption { text-align: left; padding: 12px 16px; font: 700 12px var(--mono); letter-spacing: .1em; text-transform: uppercase; border-bottom: 1.5px solid var(--fg); background: var(--badge) }
-.schedule th { text-align: left; font: 700 11.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 10px 16px; border-bottom: 1px solid var(--line) }
+table.schedule { width: 100%; border-collapse: collapse; font-size: .90625rem }
+.schedule caption { text-align: left; padding: 12px 16px; font: 700 .75rem var(--mono); letter-spacing: .1em; text-transform: uppercase; border-bottom: 1.5px solid var(--fg); background: var(--badge) }
+.schedule th { text-align: left; font: 700 .71875rem var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); padding: 10px 16px; border-bottom: 1px solid var(--line) }
 .schedule td { padding: 14px 16px; border-bottom: 1px solid var(--line); vertical-align: top }
 .schedule tr:last-child td { border-bottom: 0 }
 .schedule tbody tr { transition: background .15s ease }
 .schedule tbody tr:hover { background: var(--badge) }
-.schedule .id { font: 700 13px var(--mono); color: var(--link); white-space: nowrap }
-.schedule .nm { font: 700 17px/1.2 var(--display) }
-.schedule .ds { color: var(--muted); font-size: 13.5px; margin-top: 2px }
+.schedule .id { font: 700 .8125rem var(--mono); color: var(--link); white-space: nowrap }
+.schedule .nm { font: 700 1.0625rem/1.2 var(--display) }
+.schedule .ds { color: var(--muted); font-size: .84375rem; margin-top: 2px }
 /* The API limits page (limits/): rows grouped by area, a long Evidence column of header and function names. */
-.schedule tr.area th { padding: 18px 16px 8px; font: 700 12px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--fg); background: var(--badge); border-bottom: 1px solid var(--line) }
+.schedule tr.area th { padding: 18px 16px 8px; font: 700 .75rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--fg); background: var(--badge); border-bottom: 1px solid var(--line) }
 .schedule tbody tr.area:hover { background: none }
 .schedule.limits td:first-child { min-width: 11em; font-weight: 600 }
-.schedule.limits td.evidence { min-width: 16em; font-size: 13px; color: var(--muted); overflow-wrap: anywhere }
+.schedule.limits td.evidence { min-width: 16em; font-size: .8125rem; color: var(--muted); overflow-wrap: anywhere }
 .schedule.limits td.evidence code { overflow-wrap: anywhere }
 a.nm { color: var(--fg); text-decoration: none } a.nm:hover { color: var(--link); text-decoration: underline }
-.pill { display: inline-block; font: 600 11.5px/1.5 var(--body); border-radius: 999px; padding: 3px 10px; white-space: nowrap; background: var(--badge); color: var(--fg) }
+.pill { display: inline-block; font: 600 .71875rem/1.5 var(--body); border-radius: 999px; padding: 3px 10px; white-space: nowrap; background: var(--badge); color: var(--fg) }
 .pill.chg { background: var(--ochre); color: var(--charcoal) }
 .pill.ro { background: transparent; border: 1px solid var(--border-strong); padding: 2px 9px }
 .pills { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0 }
 /* About: everyone who has contributed, in columns; the GitHub name after a real name is muted. */
-.all-people { list-style: none; margin: 0; padding: 0; columns: 4 150px; column-gap: 24px; font-size: 14.5px; line-height: 1.5 }
+.all-people { list-style: none; margin: 0; padding: 0; columns: 4 150px; column-gap: 24px; font-size: .90625rem; line-height: 1.5 }
 .all-people li { break-inside: avoid; padding: 3px 0 }
 .all-people a { color: var(--fg); text-decoration: underline; text-decoration-color: var(--border-strong); text-underline-offset: 3px }
 .all-people a:hover, .all-people a:focus-visible { color: var(--link); text-decoration: underline }
-.all-people span { color: var(--muted); font: 400 12.5px var(--mono) }
+.all-people span { color: var(--muted); font: 400 .78125rem var(--mono) }
 .filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px }
-.chip { border: 1.5px solid var(--fg); border-radius: 999px; padding: 6px 14px; font: 600 13px var(--body); background: transparent; color: var(--fg); cursor: pointer }
+.chip { border: 1.5px solid var(--fg); border-radius: 999px; padding: 6px 14px; font: 600 .8125rem var(--body); background: transparent; color: var(--fg); cursor: pointer }
 .chip:hover { background: var(--badge) }
 .chip[aria-pressed="true"] { background: var(--fg); color: var(--bg) }
 input.chip { cursor: text; font-weight: 500; min-width: 0 }
 input.chip::placeholder { color: var(--muted); opacity: 1 }
-.kbd { font: 600 13px var(--mono); border: 1px solid var(--border-strong); border-bottom-width: 2px; border-radius: 4px; padding: 1px 6px; background: var(--surface); white-space: nowrap }
+.kbd { font: 600 .8125rem var(--mono); border: 1px solid var(--border-strong); border-bottom-width: 2px; border-radius: 4px; padding: 1px 6px; background: var(--surface); white-space: nowrap }
 
 /* ---------- page heads ---------- */
 .page-head { background-color: var(--moss); color: var(--cream); --focus: var(--ochre-light);
     background-image: var(--texture-head);
     background-size: 48px 48px }
 .page-head .wrap { padding-block: 56px 48px; display: grid; gap: 16px }
-.page-head h1, .page-head .h1 { font-size: clamp(44px, 7vw, 88px); font-weight: 900; line-height: .95; letter-spacing: -.02em }
+.page-head h1, .page-head .h1 { font-size: clamp(2.75rem, 7vw, 5.5rem); font-weight: 900; line-height: .95; letter-spacing: -.02em }
 .page-head h1 em, .page-head .h1 em { color: var(--ochre-light); font-weight: 500 }
-.page-head p { font-size: 19px; color: var(--cream-86); max-width: 36em }
+.page-head p { font-size: 1.1875rem; color: var(--cream-86); max-width: 36em }
 .page-head p a { color: var(--ochre-light) }
-.crumb { font: 500 12.5px var(--mono); color: var(--cream-72) } .page-head .crumb { font-size: 12.5px } .crumb a { color: var(--ochre-light) }
+.crumb { font: 500 .78125rem var(--mono); color: var(--cream-72) } .page-head .crumb { font-size: .78125rem } .crumb a { color: var(--ochre-light) }
 .page-head.ochre { background-color: var(--ochre); color: var(--charcoal); --focus: var(--charcoal); background-image: var(--hatch) }
 .page-head.ochre p { color: var(--charcoal) } .page-head.ochre h1 em, .page-head.ochre .h1 em { color: var(--charcoal) }
 .page-head.ochre .crumb { color: var(--charcoal) } .page-head.ochre .crumb a, .page-head.ochre p a { color: var(--charcoal) }
@@ -296,15 +297,15 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
    heading as the sections of every other page; a heading inside a section (a table, a group of
    commands) is .ref-sub, one fixed size on all three pages. */
 .sec-head.ref { margin: 56px 0 24px }
-.ref-sub { font: 700 26px/1.15 var(--display); letter-spacing: -.01em; margin: 40px 0 12px }
+.ref-sub { font: 700 1.625rem/1.15 var(--display); letter-spacing: -.01em; margin: 40px 0 12px }
 @media (max-width: 640px) { .sec-head.ref { margin-top: 40px } }
 
 /* ---------- timeline, flow, stack ---------- */
 .timeline { list-style: none; margin: 0; padding: 0; display: grid; gap: 0 }
 .timeline > li { display: grid; grid-template-columns: 96px 1fr; gap: 24px; padding-block: 32px; border-top: 1px solid var(--line) }
 .timeline > li:first-child { border-top: 0; padding-top: 0 }
-.timeline .n { font: 900 72px/.85 var(--display); color: var(--link); font-variant-numeric: lining-nums }
-.timeline h2, .timeline h3 { font-size: 30px; font-weight: 700; margin-bottom: 4px }
+.timeline .n { font: 900 4.5rem/.85 var(--display); color: var(--link); font-variant-numeric: lining-nums }
+.timeline h2, .timeline h3 { font-size: 1.875rem; font-weight: 700; margin-bottom: 4px }
 .timeline p, .timeline li li { color: var(--muted); max-width: 40em }
 .timeline .body { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; min-width: 0; align-content: start }
 .timeline .body ul, .timeline .body ol { margin: 0; padding-left: 22px; display: grid; gap: 6px; color: var(--muted); max-width: 40em }
@@ -314,30 +315,30 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 .flow.flow-4 { grid-template-columns: repeat(4, 1fr) }
 .flow > div { padding: 20px; border-right: 1px solid var(--line); display: grid; gap: 8px; align-content: start; position: relative; min-width: 0 }
 .flow > div:last-child { border-right: 0 }
-.flow b { font: 700 12px var(--mono); color: var(--link) } .flow strong { font: 700 18px/1.2 var(--display) } .flow span { color: var(--muted); font-size: 14px }
+.flow b { font: 700 .75rem var(--mono); color: var(--link) } .flow strong { font: 700 1.125rem/1.2 var(--display) } .flow span { color: var(--muted); font-size: .875rem }
 /* "How it works": the clients, the add-on and Archicad, stacked as in a section drawing. */
 .stack { display: grid; gap: 10px; max-width: 760px; margin-inline: auto; text-align: center }
 .stack .clients { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px }
 .stack .box { border: 1.5px solid var(--fg); border-radius: 4px; padding: 16px 14px; background: var(--surface); display: grid; gap: 4px }
-.stack .box strong { font: 700 19px/1.2 var(--display) }
-.stack .box span { color: var(--muted); font-size: 14px }
+.stack .box strong { font: 700 1.1875rem/1.2 var(--display) }
+.stack .box span { color: var(--muted); font-size: .875rem }
 .stack .box.addon { background: var(--ochre); border-color: var(--ochre); color: var(--charcoal) }
 .stack .box.addon span { color: var(--charcoal) }
 .stack .box.archicad { background: var(--charcoal); border-color: var(--charcoal); color: var(--cream) }
 .stack .box.archicad span { color: var(--slate-pale) }
 :root[data-theme="dark"] .stack .box.archicad { border-color: var(--cream-35) }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"], [data-theme="contrast"]) .stack .box.archicad { border-color: var(--cream-35) } }
-.stack .wire { font: 600 12.5px var(--mono); color: var(--muted); letter-spacing: .06em; text-transform: uppercase }
+.stack .wire { font: 600 .78125rem var(--mono); color: var(--muted); letter-spacing: .06em; text-transform: uppercase }
 
 /* ---------- use cases ---------- */
 .uses { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
-.uses .way h3 { font-size: 21px }
+.uses .way h3 { font-size: 1.3125rem }
 .uses .meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
-.uses .meta code { font-size: 12px }
+.uses .meta code { font-size: .75rem }
 .uses-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); border: 1.5px solid var(--fg); background: var(--surface); overflow: hidden }
 .uses-grid li { padding: 20px; display: grid; gap: 6px; align-content: start; box-shadow: -1px 0 0 var(--line), 0 -1px 0 var(--line); min-width: 0 }
-.uses-grid h3 { font-size: 19px }
-.uses-grid p { color: var(--muted); font-size: 14.5px }
+.uses-grid h3 { font-size: 1.1875rem }
+.uses-grid p { color: var(--muted); font-size: .90625rem }
 .uses-grid.three { grid-template-columns: repeat(3, 1fr) }
 
 /* ---------- one script ---------- */
@@ -346,19 +347,19 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 .spec { border: 1.5px solid var(--fg); background: var(--surface); min-width: 0 }
 .spec dl { margin: 0; display: grid; grid-template-columns: auto 1fr }
 .spec dt, .spec dd { margin: 0; padding: 11px 16px; border-bottom: 1px solid var(--line); min-width: 0 }
-.spec dt { font: 700 11.5px/1.9 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
+.spec dt { font: 700 .71875rem/1.9 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
 .spec dd { font-weight: 600; overflow-wrap: anywhere }
-.spec dd code { font-size: 11.5px; font-weight: 400 }
+.spec dd code { font-size: .71875rem; font-weight: 400 }
 .spec .install { padding: 18px 16px; display: grid; gap: 10px; background: var(--badge) }
-.spec .install > strong { font: 700 20px/1.2 var(--display) }
-.spec .install p, .spec .install ol { color: var(--fg); font-size: 14px }
+.spec .install > strong { font: 700 1.25rem/1.2 var(--display) }
+.spec .install p, .spec .install ol { color: var(--fg); font-size: .875rem }
 .shot { border: 1.5px solid var(--fg); background: var(--cream); border-radius: 4px; overflow: hidden }
 .shot img, .shot svg { display: block; width: 100%; height: auto }
 .bullets { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: var(--muted) }
 .share-steps ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
 .share-steps li { background: var(--surface); border: 1.5px solid var(--fg); border-radius: 4px; padding: 22px; display: grid; gap: 10px; align-content: start }
-.share-steps li b { font: 900 48px/1 var(--display); color: var(--link) }
-.share-steps li strong { display: block; font: 700 22px/1.2 var(--display) } .share-steps li span { color: var(--muted) }
+.share-steps li b { font: 900 3rem/1 var(--display); color: var(--link) }
+.share-steps li strong { display: block; font: 700 1.375rem/1.2 var(--display) } .share-steps li span { color: var(--muted) }
 
 /* ---------- videos ---------- */
 .videos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
@@ -372,8 +373,8 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 .video .play { position: relative; z-index: 1; width: 64px; height: 64px; border-radius: 50%; background: var(--ochre); display: grid; place-items: center; box-shadow: var(--shadow-press) }
 .video .play svg { width: 24px; height: 24px; margin-left: 4px; color: var(--charcoal) }
 .video .text { padding: 18px 20px 22px; display: grid; gap: 8px }
-.video h3 { font-size: 22px }
-.video p { color: var(--muted); font-size: 14.5px }
+.video h3 { font-size: 1.375rem }
+.video p { color: var(--muted); font-size: .90625rem }
 
 /* ---------- prose and callouts ---------- */
 .prose { max-width: 46em }
@@ -391,14 +392,14 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 .tblock { display: grid; grid-template-columns: 2fr repeat(4, 1fr); border-left: 1.5px solid var(--fg); border-right: 1.5px solid var(--fg); margin-block: 32px 0 }
 .tblock > div { padding: 14px 16px; border-right: 1px solid var(--line); display: grid; gap: 6px; align-content: start; min-width: 0 }
 .tblock > div:last-child { border-right: 0 }
-.tblock .lab { font: 700 10.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted) }
-.tblock .val { font: 700 15px var(--body) }
-.tblock .proj { font: 900 34px/1 var(--display) }
-.tblock .note { color: var(--muted); font-size: 14px }
-.tblock ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 14px }
+.tblock .lab { font: 700 .65625rem var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted) }
+.tblock .val { font: 700 .9375rem var(--body) }
+.tblock .proj { font: 900 2.125rem/1 var(--display) }
+.tblock .note { color: var(--muted); font-size: .875rem }
+.tblock ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: .875rem }
 .tblock a { color: var(--fg); text-decoration: none } .tblock a:hover { color: var(--link); text-decoration: underline }
 .tblock .rev { display: grid; gap: 6px; margin-bottom: 8px }
-.fine { padding-block: 14px 28px; color: var(--muted); font-size: 13px }
+.fine { padding-block: 14px 28px; color: var(--muted); font-size: .8125rem }
 
 @media (max-width: 900px) {
     .two, .detail { grid-template-columns: 1fr }
@@ -408,8 +409,8 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
     .tblock { grid-template-columns: 1fr 1fr } .tblock > div:first-child { grid-column: 1 / -1; border-right: 0; border-bottom: 1px solid var(--line) }
     .tblock > div:nth-child(3) { border-right: 0 } .tblock > div:nth-child(-n+3) { border-bottom: 1px solid var(--line) }
     .flow, .flow.flow-3, .flow.flow-4 { grid-template-columns: 1fr } .flow > div { border-right: 0; border-bottom: 1px solid var(--line) } .flow > div:last-child { border-bottom: 0 }
-    .timeline > li { grid-template-columns: 56px 1fr; gap: 16px } .timeline .n { font-size: 48px }
-    .timeline h2, .timeline h3 { font-size: 25px }
+    .timeline > li { grid-template-columns: 56px 1fr; gap: 16px } .timeline .n { font-size: 3rem }
+    .timeline h2, .timeline h3 { font-size: 1.5625rem }
     .site-header .right { margin-left: auto }
 }
 @media (max-width: 640px) {
@@ -418,7 +419,7 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
     .site-header:not(.has-menu) { position: static }
     .site-header:not(.has-menu) .site-nav { order: 3; flex-basis: 100% }
     .site-nav ul { gap: 2px 16px }
-    .site-nav a { font-size: 14.5px }
+    .site-nav a { font-size: .90625rem }
     /* With it: one row (logo; Download and the menu button), and the menu opens a panel under it. */
     .has-menu .nav { position: relative; flex-wrap: nowrap }
     .has-menu .brand { min-width: 0 }
@@ -434,23 +435,23 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
     .has-menu.menu-open .site-menu { display: block }
     .has-menu .site-nav ul { display: block }
     .has-menu .site-nav li + li { border-top: 1px solid var(--cream-12) }
-    .has-menu .site-nav a { display: block; padding-block: 12px; font-size: 17px }
+    .has-menu .site-nav a { display: block; padding-block: 12px; font-size: 1.0625rem }
     .has-menu .site-nav a[aria-current] { box-shadow: none; text-decoration: underline 2px var(--ochre-light); text-underline-offset: 7px }
     .has-menu .menu-tools { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 14px; border-top: 1px solid var(--cream-12) }
-    .has-menu .menu-tools .toggle { min-height: 44px; padding: 10px 14px; font-size: 14px }
+    .has-menu .menu-tools .toggle { min-height: 44px; padding: 10px 14px; font-size: .875rem }
     .has-menu .menu-tools .lang-select { max-width: 100% }
     .page-head .wrap { padding-block: 40px 36px }
-    .page-head p { font-size: 17px }
+    .page-head p { font-size: 1.0625rem }
     .page-body { padding-top: 36px }
     .wrap > section, .page-body > section { padding-block: 40px 24px }
     .way, .teaser { padding: 22px }
-    .teaser h3 { font-size: 26px }
+    .teaser h3 { font-size: 1.625rem }
     .stack .clients { grid-template-columns: 1fr }
     .term { box-shadow: var(--shadow-term-small) }
-    .term pre { font-size: 12.5px; padding: 14px }
+    .term pre { font-size: .78125rem; padding: 14px }
     .spec dl { grid-template-columns: 1fr } .spec dt { border-bottom: 0; padding-bottom: 0 } .spec dd { padding-top: 2px }
     .btn { padding: 12px 18px }
-    .tblock .proj { font-size: 28px }
+    .tblock .proj { font-size: 1.75rem }
     /* The schedule becomes one card per script. */
     table.schedule, .schedule tbody, .schedule tr, .schedule td, .schedule caption { display: block }
     .schedule thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0) }
@@ -462,7 +463,7 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
     .schedule.limits td:first-child, .schedule.limits td.evidence { min-width: 0 }
     .schedule tr.area { display: block; padding: 0 }
     .schedule tr.area th { display: block; padding: 14px 16px 8px }
-    .schedule td[data-label]::before { content: attr(data-label); display: block; font: 700 10.5px/1.6 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
+    .schedule td[data-label]::before { content: attr(data-label); display: block; font: 700 .65625rem/1.6 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
 }
 @media (max-width: 400px) {
     .uses-grid, .uses-grid.three { grid-template-columns: 1fr }
@@ -516,7 +517,7 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
     --shadow-soft: 0 1px 2px rgba(17, 24, 39, .06), 0 8px 24px rgba(17, 24, 39, .06);
     --shadow-lift: var(--shadow-soft); --shadow-lift-small: var(--shadow-soft); --shadow-press: var(--shadow-soft);
     --shadow-term: var(--shadow-soft); --shadow-term-small: var(--shadow-soft); --shadow-term-dark: none;
-    --shadow-menu: var(--shadow-soft); --shadow-drawer: var(--shadow-soft);
+    --shadow-menu: var(--shadow-soft); --shadow-drawer: var(--shadow-soft); --shadow-sheet: var(--shadow-soft);
     color-scheme: light;
 }
 :root:not([data-style="legacy"])[data-theme="dark"] {
@@ -626,7 +627,7 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
     --code-bg: #F2F2F2; --code-fg: #000000; --pre-bg: #FFFFFF; --pre-text: #000000; --pre-border: #000000;
     --pre-comment: #333333; --pre-keyword: #0B4FA8; --pre-string: #14532D; --pre-line: #000000; --pre-focus: #000000;
     --shadow-soft: none; --shadow-lift: none; --shadow-lift-small: none; --shadow-press: none;
-    --shadow-term: none; --shadow-term-small: none; --shadow-menu: none; --shadow-drawer: none;
+    --shadow-term: none; --shadow-term-small: none; --shadow-menu: none; --shadow-drawer: none; --shadow-sheet: none;
     color-scheme: light;
 }
 :root[data-theme="contrast"] a:not(.btn):not(.brand):not(.skip-link) { text-decoration: underline }
@@ -743,21 +744,21 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 .display-button svg { width: 16px; height: 16px; display: block }
 .display-panel { position: fixed; z-index: 70; width: min(320px, calc(100vw - 32px)); max-height: calc(100vh - 96px); overflow-y: auto;
     background: var(--surface); color: var(--fg); border: 1px solid var(--border-strong); border-radius: 12px;
-    box-shadow: 0 1px 2px rgba(17, 24, 39, .08), 0 12px 32px rgba(17, 24, 39, .16); padding: 16px; font: 400 15px/1.4 var(--body); --focus: var(--link) }
+    box-shadow: 0 1px 2px rgba(17, 24, 39, .08), 0 12px 32px rgba(17, 24, 39, .16); padding: 16px; font: 400 .9375rem/1.4 var(--body); --focus: var(--link) }
 :root[data-style="legacy"] .display-panel { border: 1.5px solid var(--fg); border-radius: 4px; box-shadow: var(--shadow-lift) }
 .display-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px }
-.display-title { font-weight: 700; font-size: 17px }
+.display-title { font-weight: 700; font-size: 1.0625rem }
 .display-panel fieldset { margin: 0; padding: 10px 0 12px; border: 0; border-top: 1px solid var(--line); min-width: 0 }
-.display-panel legend { float: left; width: 100%; padding: 0 0 6px; font-weight: 600; font-size: 14px; color: var(--muted) }
+.display-panel legend { float: left; width: 100%; padding: 0 0 6px; font-weight: 600; font-size: .875rem; color: var(--muted) }
 .display-options { clear: both; display: flex; flex-wrap: wrap; gap: 6px }
-.display-options label { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border: 1px solid var(--border-strong); border-radius: 8px; cursor: pointer; font-size: 14px }
+.display-options label { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border: 1px solid var(--border-strong); border-radius: 8px; cursor: pointer; font-size: .875rem }
 .display-options label:hover { border-color: var(--link) }
 .display-options label.checked { border-color: var(--link); background: var(--badge); font-weight: 600 }
 .display-options input { margin: 0; accent-color: var(--link) }
 /* Accent in High contrast, where it does not apply: dashed, not faded, so its text keeps its contrast. */
 .display-panel fieldset:disabled .display-options label { border-style: dashed; cursor: not-allowed }
 .display-panel fieldset:disabled .display-options label:hover { border-color: var(--border-strong) }
-.display-reset, .display-done { font: 600 14px var(--body); color: var(--fg); background: transparent; border: 1px solid var(--border-strong); border-radius: 8px; padding: 7px 12px; cursor: pointer }
+.display-reset, .display-done { font: 600 .875rem var(--body); color: var(--fg); background: transparent; border: 1px solid var(--border-strong); border-radius: 8px; padding: 7px 12px; cursor: pointer }
 .display-reset { width: 100%; margin-top: 4px }
 .display-reset:hover, .display-done:hover { border-color: var(--link); color: var(--link) }
 .display-done { display: none }
@@ -768,3 +769,37 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
     .display-done { display: inline-block }
     .display-options label, .display-reset, .display-done { min-height: 44px }
 }
+
+/* ------------------------------------------------------------------------------------------------------
+   Text size and Font (the Display menu's, data-size and data-font on <html>), in every look and mode,
+   High contrast included.
+   Text size scales the root font size. Every text size on the site is in rem (1 rem is 16 px at 100 %,
+   so the default is the same as before), so all text scales with it, except two kinds of drawing: the
+   header's brand (its 30 px mark does not scale, and the splash lands on it), and the labels of the
+   floor plan and the growth chart, which scale with the drawing's width. The page's widths and
+   spacing stay in px, so the layout does not change, only its text.
+   Font: none is the look's own (Inter, with Fraunces for Legacy's headings, which the head's script
+   loads for Legacy only). System is the device's own fonts and loads no web font: nothing uses Inter
+   or JetBrains Mono, so the browser downloads neither (and neither Fraunces nor Atkinson Hyperlegible
+   is linked). Readable is Atkinson Hyperlegible for text and headings, which the head's script links
+   only when it is chosen (weights 400 and 700: Legacy's 900 and 500 take the nearest); code stays
+   JetBrains Mono. Each stack keeps the Devanagari fonts at its end
+   for Hindi. The rules come after every look's block and outweigh none of them by specificity, so they
+   win by order; the pages' own stylesheets only use these properties.
+   ------------------------------------------------------------------------------------------------------ */
+:root[data-size="90"] { font-size: 90% }
+:root[data-size="115"] { font-size: 115% }
+:root[data-size="130"] { font-size: 130% }
+/* On phones, the larger sizes let the one-line buttons and command names wrap rather than push the
+   page sideways (a long word in the largest headings wraps inside the word, by overflow-wrap). */
+@media (max-width: 640px) {
+    :root[data-size="115"] .btn, :root[data-size="130"] .btn { white-space: normal; text-align: center }
+    :root[data-size="115"] .schedule .id, :root[data-size="130"] .schedule .id { white-space: normal; overflow-wrap: anywhere }
+}
+:root[data-font="system"] {
+    --body: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Devanagari", "Kohinoor Devanagari", "Nirmala UI", sans-serif;
+    --mono: ui-monospace, Menlo, Consolas, "Noto Sans Devanagari", "Kohinoor Devanagari", "Nirmala UI", monospace;
+    --display: var(--body); --font-heading: var(--body); --font-sans: var(--body); --font-mono: var(--mono) }
+:root[data-font="readable"] {
+    --body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", "Noto Sans Devanagari", "Kohinoor Devanagari", "Nirmala UI", sans-serif;
+    --display: var(--body); --font-heading: var(--body); --font-sans: var(--body) }
