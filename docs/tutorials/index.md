@@ -6,6 +6,50 @@
 
 Short videos that show Tapir at work in Archicad and Grasshopper, all in one playlist on YouTube.
 
+## Written *tutorials.*
+
+Step by step, for questions people ask about automating Archicad, each answered with what Tapir already has.
+
+Data
+
+### [Export Archicad element properties to Excel with Python](https://archicad-api.com/tutorials/export-properties-to-excel/)
+
+Property values to an Excel or CSV file, one row per element, and the edited values back.
+
+Read the tutorial
+
+Grasshopper
+
+### [Connect Grasshopper to Archicad](https://archicad-api.com/tutorials/connect-grasshopper-to-archicad/)
+
+Install the tapir package, read a wall and change its height.
+
+Read the tutorial
+
+Navigator
+
+### [Batch rename views in Archicad](https://archicad-api.com/tutorials/batch-rename-views/)
+
+Find and replace, a prefix or a counter in the names of the views.
+
+Read the tutorial
+
+Elements
+
+### [Number doors and windows by room in Archicad](https://archicad-api.com/tutorials/number-doors-and-windows-by-zone/)
+
+Element IDs such as 1.04-D1, from the zone each door or window opens into.
+
+Read the tutorial
+
+Python
+
+### [Your first Archicad Python script](https://archicad-api.com/tutorials/first-python-script/)
+
+A few lines that call one Tapir command, run from the Tapir palette.
+
+Read the tutorial
+
 ## Videos
 
 -

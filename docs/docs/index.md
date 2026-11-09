@@ -38,6 +38,22 @@ Which Tapir commands have a Grasshopper component, and which inputs each compone
 
 See the coverage
 
+Archicad API
+
+### [API limits](https://archicad-api.com/limits/)
+
+What the Archicad API can't do, such as undo, the clipboard or the rows of a schedule, with what to do instead and the DevKit evidence.
+
+See the limits
+
+Tutorials
+
+### [Written tutorials](https://archicad-api.com/tutorials/#written)
+
+Step by step: properties to Excel, Grasshopper, renaming views, numbering doors and windows, and your first Python script.
+
+Read the tutorials
+
 ## How it *works.*
 
 Tapir is an Archicad add-on that turns native API functions into a stateless JSON server on port 19723. Anything that can send an HTTP request can drive Archicad.

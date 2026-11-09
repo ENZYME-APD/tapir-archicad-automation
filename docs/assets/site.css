@@ -74,9 +74,9 @@
     --hatch: repeating-linear-gradient(45deg, var(--charcoal-12) 0 1px, transparent 1px 12px);
     /* Hard offset shadows: a card lifting onto ochre (and a smaller one for the coverage tiles and the
        command reference's cards), a pressed button, the code panel; the soft ones under the phone menu
-       and the sidebar drawer of the command reference and the coverage pages. */
+       and the sidebar drawer of the coverage pages and the sidebar sheet of the command reference. */
     --shadow-lift: 6px 6px 0 var(--ochre); --shadow-lift-small: 4px 4px 0 var(--ochre);
-    --shadow-drawer: 0 0 20px rgba(0, 0, 0, .3); --shadow-press: 0 6px 0 -2px var(--charcoal);
+    --shadow-drawer: 0 0 20px rgba(0, 0, 0, .3); --shadow-sheet: 0 -6px 24px rgba(0, 0, 0, .3); --shadow-press: 0 6px 0 -2px var(--charcoal);
     --shadow-term: 12px 12px 0 var(--moss); --shadow-term-small: 6px 6px 0 var(--moss);
     --shadow-term-dark: 12px 12px 0 var(--moss-light); --shadow-menu: 0 12px 24px var(--charcoal-25);
     color-scheme: light;
@@ -516,7 +516,7 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
     --shadow-soft: 0 1px 2px rgba(17, 24, 39, .06), 0 8px 24px rgba(17, 24, 39, .06);
     --shadow-lift: var(--shadow-soft); --shadow-lift-small: var(--shadow-soft); --shadow-press: var(--shadow-soft);
     --shadow-term: var(--shadow-soft); --shadow-term-small: var(--shadow-soft); --shadow-term-dark: none;
-    --shadow-menu: var(--shadow-soft); --shadow-drawer: var(--shadow-soft);
+    --shadow-menu: var(--shadow-soft); --shadow-drawer: var(--shadow-soft); --shadow-sheet: var(--shadow-soft);
     color-scheme: light;
 }
 :root:not([data-style="legacy"])[data-theme="dark"] {
@@ -626,7 +626,7 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
     --code-bg: #F2F2F2; --code-fg: #000000; --pre-bg: #FFFFFF; --pre-text: #000000; --pre-border: #000000;
     --pre-comment: #333333; --pre-keyword: #0B4FA8; --pre-string: #14532D; --pre-line: #000000; --pre-focus: #000000;
     --shadow-soft: none; --shadow-lift: none; --shadow-lift-small: none; --shadow-press: none;
-    --shadow-term: none; --shadow-term-small: none; --shadow-menu: none; --shadow-drawer: none;
+    --shadow-term: none; --shadow-term-small: none; --shadow-menu: none; --shadow-drawer: none; --shadow-sheet: none;
     color-scheme: light;
 }
 :root[data-theme="contrast"] a:not(.btn):not(.brand):not(.skip-link) { text-decoration: underline }
