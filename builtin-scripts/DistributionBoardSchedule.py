@@ -4,6 +4,7 @@
 # ///
 
 # /// tapir
+# category = "quantities-scheduling"
 # changes = "files"
 # ///
 

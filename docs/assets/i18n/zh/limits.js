@@ -34,6 +34,10 @@
         '只删除两个相互修剪的屋顶或壳体之间修剪的一个方向',
     'Remove the trim with <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a>, which removes both directions, then trim the other direction again with <a href="../archicad-addon/#TrimElements">TrimElements</a>.':
         '用 <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a> 删除修剪（会删除两个方向），然后用 <a href="../archicad-addon/#TrimElements">TrimElements</a> 重新修剪另一个方向。',
+    'Read which slab or stair edge a railing is linked to, or link a railing to one':
+        '读取栏杆关联到哪个楼板或楼梯的边缘，或将栏杆关联到某个边缘',
+    'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
+        '用 <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> 读取楼板的轮廓，再用 <a href="../archicad-addon/#CreateRailings">CreateRailings</a> 沿该边缘创建静态栏杆。楼板改变时，删除栏杆并重新创建。',
 
     // Navigator and views
     'Navigator and views': '导航器与视图',
