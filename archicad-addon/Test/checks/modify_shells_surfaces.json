@@ -1,6 +1,6 @@
 {
   "title": "GetDetailsOfElements reads and ModifyShells sets and clears the top, side and bottom surfaces of a shell, and keeps the rest (#2433)",
-  "minTapir": "1.8.1",
+  "minTapir": "2.0.1",
   "requiresEmpty": [ "Shell" ],
   "steps": [
     {
