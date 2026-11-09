@@ -84,7 +84,8 @@
       },
       "expect": [
         { "path": "hSize", "eq": 640, "name": "answer: hSize" },
-        { "path": "vSize", "eq": 480, "name": "answer: vSize" }
+        { "path": "vSize", "eq": 480, "name": "answer: vSize" },
+        { "path": "zoomDispX", "approx": 0.5, "tol": 1e-6, "name": "answer: zoom kept (#2470)" }
       ]
     },
     {
@@ -95,7 +96,10 @@
       "expect": [
         { "path": "hSize", "eq": 640 },
         { "path": "vSize", "eq": 480 },
-        { "path": "zoomDispX", "approx": 0.5, "tol": 1e-6, "name": "zoom kept" }
+        { "path": "zoomDispX", "approx": 0.5, "tol": 1e-6, "name": "zoom kept" },
+        { "path": "zoomDispY", "approx": -0.25, "tol": 1e-6, "name": "zoomDispY kept after the resize" },
+        { "path": "zoomScaleX", "approx": 0.5, "tol": 1e-6, "name": "zoomScaleX kept after the resize" },
+        { "path": "zoomScaleY", "approx": 0.5, "tol": 1e-6, "name": "zoomScaleY kept after the resize" }
       ]
     },
     {
