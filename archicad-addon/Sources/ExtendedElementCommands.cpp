@@ -10124,7 +10124,7 @@ GS::Optional<GS::UniString> ModifyCurtainWallsCommand::GetInputParametersSchema 
                         },
                         "height": {
                             "type": "number",
-                            "description": "The new height of the curtain wall. It is applied before the other fields and read back: when Archicad does not apply it, the item fails and the curtain wall is left unchanged.",
+                            "description": "The new height of the curtain wall. It is applied before the other fields and read back. When Archicad ignores it (Archicad 29 does), the top edges of the contours of the segments are moved to the new height instead. When neither applies it, the item fails and no other field is changed.",
                             "exclusiveMinimum": 0.0
                         },
                         "primaryPattern": {
@@ -10176,6 +10176,67 @@ bool IsSameCurtainWallPattern (const API_CWSegmentPatternData& expected, const A
         }
     }
     return true;
+}
+
+// Archicad 29 answers NoError to a curtain wall height change and keeps the old height (#2523):
+// API_CurtainWallType::height is documented as input only, and Archicad keeps the height of the
+// segments' contours (cWSegContour). Those contours lie in the plane of their segment, x along
+// it and y up from the bottom of the curtain wall, as the DevKit's CurtainWall_Drawer example
+// writes them when it changes a curtain wall. Here the vertices on the top edge of every contour
+// are moved to the new height, and the contours are written with the height. Nothing is
+// written when a contour is not that shape; the reason is returned instead.
+GS::Optional<GS::UniString> ChangeCurtainWallHeightWithContours (const API_Element& element, double actualHeight, double height)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (element.header.guid, &memo, APIMemoMask_CWSegContour) != NoError || memo.cWSegContour == nullptr) {
+        return GS::UniString ("the contours of its segments could not be read");
+    }
+
+    const UInt32 nContours = static_cast<UInt32> (BMpGetSize (reinterpret_cast<GSPtr> (memo.cWSegContour)) / sizeof (API_CWContourData));
+    if (nContours == 0) {
+        return GS::UniString ("it has no segment contours");
+    }
+
+    // A contour as high as the curtain wall (its height or its actual height) is one whose y
+    // goes up; anything else is left alone.
+    constexpr double Eps = 1e-5;
+    for (UInt32 c = 0; c < nContours; ++c) {
+        const API_CWContourData& contour = memo.cWSegContour[c];
+        if (contour.coords == nullptr || contour.polygon.nCoords < 4 ||
+            BMGetHandleSize (reinterpret_cast<GSHandle> (contour.coords)) < static_cast<GSSize> ((contour.polygon.nCoords + 1) * sizeof (API_Coord))) {
+            return GS::UniString::Printf ("the contour of segment %u could not be read", c);
+        }
+        double minY = (*contour.coords)[1].y;
+        double maxY = minY;
+        for (Int32 i = 1; i <= contour.polygon.nCoords; ++i) {
+            minY = std::min (minY, (*contour.coords)[i].y);
+            maxY = std::max (maxY, (*contour.coords)[i].y);
+        }
+        if (std::fabs ((maxY - minY) - element.curtainWall.height) > Eps && std::fabs ((maxY - minY) - actualHeight) > Eps) {
+            return GS::UniString::Printf ("the contour of segment %u is not as high as the curtain wall (%.4f m, not %.4f m)", c, maxY - minY, actualHeight);
+        }
+        const double newTop = minY + height;
+        for (Int32 i = 1; i <= contour.polygon.nCoords; ++i) {
+            API_Coord& vertex = (*contour.coords)[i];
+            if (std::fabs (vertex.y - maxY) <= Eps) {
+                vertex.y = newTop;
+            } else if (vertex.y >= newTop - Eps) {
+                return GS::UniString::Printf ("the contour of segment %u has a vertex below its top edge that is higher than the new height", c);
+            }
+        }
+    }
+
+    API_Element changed = element;
+    changed.curtainWall.height = height;
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, height);
+    const GSErrCode err = ACAPI_Element_Change (&changed, &mask, &memo, APIMemoMask_CWSegContour, true);
+    if (err != NoError) {
+        return GS::UniString::Printf ("changing the contours of its segments failed (error %d)", err);
+    }
+    return {};
 }
 
 GS::ObjectState ModifyCurtainWall (const GS::ObjectState& item, const Stories& stories)
@@ -10321,13 +10382,40 @@ GS::ObjectState ModifyCurtainWall (const GS::ObjectState& item, const Stories& s
         if (err != NoError) {
             return CreateFailedExecutionResult (err, "Failed to modify the height of the curtain wall.");
         }
+        // Applied when the height of the curtain wall or its actual height (the one
+        // GetDetailsOfElements reports as actualHeight) is the new one.
         API_Element readBack = {};
-        readBack.header.guid = element.header.guid;
-        if (ACAPI_Element_Get (&readBack) != NoError) {
+        double actualHeight = 0.0;
+        const auto readHeight = [&] () -> bool {
+            API_Element current = {};
+            current.header.guid = element.header.guid;
+            if (ACAPI_Element_Get (&current) != NoError) {
+                return false;
+            }
+            readBack = current;
+            actualHeight = readBack.curtainWall.height;
+            ACAPI_CurtainWall_GetCWHeight (&readBack.header.guid, &actualHeight);
+            return true;
+        };
+        const auto heightApplied = [&] () {
+            return std::fabs (readBack.curtainWall.height - height) <= 1e-6 || std::fabs (actualHeight - height) <= 1e-6;
+        };
+        if (!readHeight ()) {
             return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to read back the modified curtain wall.");
         }
-        if (std::fabs (readBack.curtainWall.height - height) > 1e-6) {
-            return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply the height to the curtain wall; no other field was changed.");
+        if (!heightApplied ()) {
+            // Ignored (Archicad 29, #2523): the top edges of the segment contours are moved
+            // instead, and the height is read back again.
+            const auto contourError = ChangeCurtainWallHeightWithContours (readBack, actualHeight, height);
+            if (contourError.HasValue ()) {
+                return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply the height to the curtain wall, and it could not be changed through its segment contours: " + contourError.Get () + ". No other field was changed.");
+            }
+            if (!readHeight ()) {
+                return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to read back the modified curtain wall.");
+            }
+            if (!heightApplied ()) {
+                return CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString::Printf ("Archicad did not apply the height to the curtain wall, also not through its segment contours (its height is %.4f m, its actual height %.4f m); the contours were written, no other field was changed.", readBack.curtainWall.height, actualHeight));
+            }
         }
     }
 
