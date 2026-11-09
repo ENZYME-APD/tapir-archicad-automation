@@ -300,19 +300,95 @@ static void AddPivotEdgesFromMemo (const API_Guid& guid, GS::ObjectState& os)
     }
 }
 
+// The length of a beam segment, from the beam's assemblySegmentSchemes (#2551).
+static GS::ObjectState CreateAssemblySegmentLengthObjectState (const API_AssemblySegmentSchemeData& scheme)
+{
+    GS::ObjectState os;
+    os.Add ("lengthType", scheme.lengthType == APIAssemblySegment_Proportional ? "Proportional" : "Fixed");
+    os.Add ("fixedLength", scheme.fixedLength);
+    os.Add ("lengthProportion", scheme.lengthProportion);
+    return os;
+}
+
+// The cross section, taper and length of a beam segment (#2551). scheme is nullptr when the beam
+// has no scheme for the segment.
+static GS::ObjectState CreateBeamSegmentGeometryObjectState (const API_AssemblySegmentData& segment, const API_AssemblySegmentSchemeData* scheme)
+{
+    GS::ObjectState os;
+    os.Add ("structureType", StructureTypeToString (segment.modelElemStructureType));
+    os.Add ("width", segment.nominalWidth);
+    os.Add ("height", segment.nominalHeight);
+    os.Add ("isWidthAndHeightLinked", segment.isWidthAndHeightLinked);
+    os.Add ("circleBased", segment.circleBased);
+    if (segment.modelElemStructureType == API_BasicStructure) {
+        os.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, segment.buildingMaterial)));
+    } else if (segment.modelElemStructureType == API_ProfileStructure) {
+        os.Add ("profileId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_ProfileID, segment.profileAttr)));
+    }
+    os.Add ("isHomogeneous", segment.isHomogeneous);
+    os.Add ("endWidth", segment.endWidth);
+    os.Add ("endHeight", segment.endHeight);
+    os.Add ("isEndWidthAndHeightLinked", segment.isEndWidthAndHeightLinked);
+    if (scheme != nullptr) {
+        os.Add ("length", CreateAssemblySegmentLengthObjectState (*scheme));
+    }
+    return os;
+}
+
+// The segments of a Beam and their length schemes, in the order of the beam (#2551).
+static bool GetBeamSegmentsMemo (const API_Guid& beamGuid, API_ElementMemo& memo, GSSize& nSegments, GSSize& nSchemes)
+{
+    nSegments = 0;
+    nSchemes = 0;
+    if (ACAPI_Element_GetMemo (beamGuid, &memo, APIMemoMask_BeamSegment | APIMemoMask_AssemblySegmentScheme) != NoError || memo.beamSegments == nullptr) {
+        return false;
+    }
+    nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.beamSegments)) / sizeof (API_BeamSegmentType);
+    if (memo.assemblySegmentSchemes != nullptr) {
+        nSchemes = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.assemblySegmentSchemes)) / sizeof (API_AssemblySegmentSchemeData);
+    }
+    return true;
+}
+
+// The index of a BeamSegment in its beam and its length (#2551).
+static void AddBeamSegmentIndexAndLength (const API_BeamSegmentType& beamSegment, GS::ObjectState& os)
+{
+    if (beamSegment.owner == APINULLGuid) {
+        return;
+    }
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    GSSize nSegments = 0;
+    GSSize nSchemes = 0;
+    if (!GetBeamSegmentsMemo (beamSegment.owner, memo, nSegments, nSchemes)) {
+        return;
+    }
+    for (GSIndex i = 0; i < nSegments; ++i) {
+        if (memo.beamSegments[i].head.guid == beamSegment.head.guid) {
+            os.Add ("segmentIndex", static_cast<Int32> (i));
+            if (i < nSchemes) {
+                os.Add ("length", CreateAssemblySegmentLengthObjectState (memo.assemblySegmentSchemes[i]));
+            }
+            return;
+        }
+    }
+}
+
 // The surfaces of a Beam or Column are kept on each of its segments (#1672).
 static void AddBeamSegmentSurfacesFromMemo (const API_Guid& guid, GS::ObjectState& os)
 {
     API_ElementMemo memo = {};
     const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_BeamSegment) != NoError || memo.beamSegments == nullptr) {
+    GSSize nSegments = 0;
+    GSSize nSchemes = 0;
+    if (!GetBeamSegmentsMemo (guid, memo, nSegments, nSchemes)) {
         return;
     }
-    const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.beamSegments)) / sizeof (API_BeamSegmentType);
     const auto& segments = os.AddList<GS::ObjectState> ("segments");
     for (GSIndex i = 0; i < nSegments; ++i) {
         const API_BeamSegmentType& segment = memo.beamSegments[i];
         GS::ObjectState segmentOs;
+        segmentOs.Add ("geometry", CreateBeamSegmentGeometryObjectState (segment.assemblySegmentData, i < nSchemes ? &memo.assemblySegmentSchemes[i] : nullptr));
         segmentOs.Add ("leftMaterial", CreateOverriddenMaterialObjectState (segment.leftMaterial));
         segmentOs.Add ("topMaterial", CreateOverriddenMaterialObjectState (segment.topMaterial));
         segmentOs.Add ("rightMaterial", CreateOverriddenMaterialObjectState (segment.rightMaterial));
@@ -2641,6 +2717,11 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 } else if (segment.modelElemStructureType == API_ProfileStructure) {
                     typeSpecificDetails.Add ("profileId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_ProfileID, segment.profileAttr)));
                 }
+                typeSpecificDetails.Add ("isHomogeneous", segment.isHomogeneous);
+                typeSpecificDetails.Add ("endWidth", segment.endWidth);
+                typeSpecificDetails.Add ("endHeight", segment.endHeight);
+                typeSpecificDetails.Add ("isEndWidthAndHeightLinked", segment.isEndWidthAndHeightLinked);
+                AddBeamSegmentIndexAndLength (elem.beamSegment, typeSpecificDetails);
             } break;
 
             case API_SlabID:

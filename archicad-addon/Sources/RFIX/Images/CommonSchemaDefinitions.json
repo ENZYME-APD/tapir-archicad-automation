@@ -10176,7 +10176,7 @@
             },
             "segments": {
                 "type": "array",
-                "description": "The surfaces of each segment of the beam.",
+                "description": "The surfaces and the geometry (cross section, taper and length) of each segment of the beam, in the order of the beam's segments (segmentIndex of a BeamSegment).",
                 "items": {
                     "$ref": "#/BeamSegmentSurfaces"
                 }
@@ -10678,8 +10678,12 @@
     },
     "BeamSegmentSurfaces": {
         "type": "object",
-        "description": "The surfaces of a beam segment.",
+        "description": "The surfaces of a beam segment, and its geometry when read.",
         "properties": {
+            "geometry": {
+                "$ref": "#/BeamSegmentGeometry",
+                "description": "The cross section, taper and length of the segment. Read only for now."
+            },
             "leftMaterial": {
                 "$ref": "#/OverriddenMaterial"
             },
@@ -10839,6 +10843,30 @@
             "profileId": {
                 "$ref": "#/AttributeId",
                 "description": "Present when the cross section uses a custom extruded profile rather than a building material."
+            },
+            "isHomogeneous": {
+                "type": "boolean",
+                "description": "True when the cross section is the same at both ends of the segment; false for a tapered segment, which ends with endWidth and endHeight."
+            },
+            "endWidth": {
+                "type": "number",
+                "description": "Cross section width at the end of a tapered segment. Archicad uses it only when isHomogeneous is false."
+            },
+            "endHeight": {
+                "type": "number",
+                "description": "Cross section height at the end of a tapered segment. Archicad uses it only when isHomogeneous is false."
+            },
+            "isEndWidthAndHeightLinked": {
+                "type": "boolean",
+                "description": "Whether the end width and end height of a tapered segment are linked."
+            },
+            "segmentIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The index of the segment in its beam, the same as its position in the beam's segments list."
+            },
+            "length": {
+                "$ref": "#/AssemblySegmentLength"
             }
         },
         "additionalProperties": false,
@@ -10848,6 +10876,94 @@
             "height",
             "isWidthAndHeightLinked",
             "circleBased"
+        ]
+    },
+    "AssemblySegmentLength": {
+        "type": "object",
+        "description": "The length of a segment of a beam, from the beam's segment schemes.",
+        "properties": {
+            "lengthType": {
+                "type": "string",
+                "enum": [ "Fixed", "Proportional" ],
+                "description": "Fixed: the segment is fixedLength long. Proportional: the segment takes lengthProportion of the length the fixed segments leave."
+            },
+            "fixedLength": {
+                "type": "number",
+                "description": "The length of the segment. Archicad uses it when lengthType is Fixed."
+            },
+            "lengthProportion": {
+                "type": "number",
+                "description": "The share of the length of the segment. Archicad uses it when lengthType is Proportional."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "lengthType",
+            "fixedLength",
+            "lengthProportion"
+        ]
+    },
+    "BeamSegmentGeometry": {
+        "type": "object",
+        "description": "The cross section, taper and length of a segment of a beam.",
+        "properties": {
+            "structureType": {
+                "$ref": "#/SegmentStructureType"
+            },
+            "width": {
+                "type": "number",
+                "description": "Cross section width of the segment (at its start, for a tapered segment)."
+            },
+            "height": {
+                "type": "number",
+                "description": "Cross section height of the segment (at its start, for a tapered segment)."
+            },
+            "isWidthAndHeightLinked": {
+                "type": "boolean"
+            },
+            "circleBased": {
+                "type": "boolean",
+                "description": "True for a round cross section, false for rectangular."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section uses a building material rather than a custom profile."
+            },
+            "profileId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section uses a custom extruded profile rather than a building material."
+            },
+            "isHomogeneous": {
+                "type": "boolean",
+                "description": "True when the cross section is the same at both ends of the segment; false for a tapered segment, which ends with endWidth and endHeight."
+            },
+            "endWidth": {
+                "type": "number",
+                "description": "Cross section width at the end of a tapered segment. Archicad uses it only when isHomogeneous is false."
+            },
+            "endHeight": {
+                "type": "number",
+                "description": "Cross section height at the end of a tapered segment. Archicad uses it only when isHomogeneous is false."
+            },
+            "isEndWidthAndHeightLinked": {
+                "type": "boolean",
+                "description": "Whether the end width and end height of a tapered segment are linked."
+            },
+            "length": {
+                "$ref": "#/AssemblySegmentLength"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "structureType",
+            "width",
+            "height",
+            "isWidthAndHeightLinked",
+            "circleBased",
+            "isHomogeneous",
+            "endWidth",
+            "endHeight",
+            "isEndWidthAndHeightLinked"
         ]
     },
     "DetailWorksheetDetails": {
