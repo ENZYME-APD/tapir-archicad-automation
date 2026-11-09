@@ -1,6 +1,6 @@
 {
   "title": "ModifyRoofs sets the cut of one contour edge and one hole edge of a multi-plane roof and keeps the other edges and the roof planes (#2435)",
-  "minTapir": "1.8.1",
+  "minTapir": "2.0.1",
   "steps": [
     {
       "id": "multi-plane roof with a hole, no eaves overhang",
