@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 13:01 UTC",
+ "generatedAt": "2026-11-09 13:36 UTC",
  "versions": [
   25,
   26,
@@ -4014,7 +4014,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2511,
+     "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
+    }
+   ],
    "issues": [
     {
      "number": 2313,
@@ -5739,6 +5744,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2511,
+     "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
+    },
+    {
      "number": 2510,
      "title": "Railing segments and nodes (takes over #2450): height for every segment, segment reference line location"
     },
@@ -6715,6 +6724,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2511,
+     "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
+    },
+    {
      "number": 2510,
      "title": "Railing segments and nodes (takes over #2450): height for every segment, segment reference line location"
     },
@@ -6959,6 +6972,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2511,
+     "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
+    },
     {
      "number": 2506,
      "title": "CreateAssociativeDimensions: an error instead of an elementId for dimensions Archicad removes (#2505)"
@@ -7233,6 +7250,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2511,
+     "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
+    },
     {
      "number": 2510,
      "title": "Railing segments and nodes (takes over #2450): height for every segment, segment reference line location"
@@ -31005,6 +31026,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2511,
+     "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
+    },
+    {
      "number": 2510,
      "title": "Railing segments and nodes (takes over #2450): height for every segment, segment reference line location"
     },
@@ -37456,6 +37481,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2511,
+     "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
+    },
     {
      "number": 2510,
      "title": "Railing segments and nodes (takes over #2450): height for every segment, segment reference line location"
@@ -44136,6 +44165,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2511,
+     "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
+    },
+    {
      "number": 2510,
      "title": "Railing segments and nodes (takes over #2450): height for every segment, segment reference line location"
     },
@@ -47246,6 +47279,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2511,
+     "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
+    },
     {
      "number": 2510,
      "title": "Railing segments and nodes (takes over #2450): height for every segment, segment reference line location"
