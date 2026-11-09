@@ -1068,7 +1068,8 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateSlabsCommand> (
             elementCommands, "1.0.3",
-            "Creates Slab elements based on the given parameters. Takes the same surfaces (top, side, bottom), cut fill pens and floor fill as ModifySlabs, besides the outline, holes, level and structure; "
+            "Creates Slab elements based on the given parameters. Takes the same surfaces (top, side, bottom), cut fill pens, floor fill and floor plan and section display (contour, section contour and hidden contour pens and line types, "
+            "the story visibility of the contour and the fill, materialsChained, linkToSettings) as ModifySlabs, besides the outline, holes, level and structure; "
             "settings not given come from the Slab tool defaults or the favorite. Not written by either command: the surface of a single edge, and the cut fill pens before Archicad 27; "
             "of the floor fill orientation Archicad applies only the type through the API."
         );
@@ -1258,7 +1259,10 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifySlabsCommand> (
             elementCommands, "1.4.0",
-            "Modifies Slab elements based on the given parameters. CreateSlabs takes the same surfaces, cut fill pens and floor fill. Not written: the surface of a single edge, and the cut fill pens before Archicad 27. Of the cover fill orientation, Archicad applies only the type to a Slab through the API; a given origin or distortion matrix that did not stick gets a failed execution result, while the other details are applied."
+            "Modifies Slab elements based on the given parameters. CreateSlabs takes the same surfaces, cut fill pens, floor fill and floor plan and section display, with the keys GetDetailsOfElements reads "
+            "(contourPen, contourLineTypeId, sectionContourPen, sectionContourLineTypeId, hiddenContourLinePen, hiddenContourLineTypeId, visibility, fillVisibility, isAutoOnStoryVisibility from Archicad 29, materialsChained, linkToSettings). "
+            "Not written: the surface of a single edge, and the cut fill pens before Archicad 27. Each slab is read back after the change: a given display setting Archicad did not apply gets a failed execution result naming it, "
+            "and so does a given cover fill origin or distortion matrix, of whose orientation Archicad applies only the type to a Slab through the API; the other details are applied."
         );
         err |= RegisterCommand<ModifyColumnsCommand> (
             elementCommands, "1.4.0",
