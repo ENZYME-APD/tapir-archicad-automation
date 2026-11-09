@@ -1,6 +1,6 @@
 {
   "title": "Graphic override rules: custom text properties with the text operators, multiple choice option sets",
-  "minTapir": "1.8.1",
+  "minTapir": "2.0.1",
   "minArchicad": "29",
   "steps": [
     {

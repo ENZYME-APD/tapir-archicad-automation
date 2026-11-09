@@ -2943,7 +2943,7 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
                     return false;
                 }
                 outXML = WrapAsTrivialGroup (CustomPropertyCriterionXML (headerXML, op, StringListVariantXML (strValue), true));
-            } else if (found && definition.collectionType == API_PropertySingleCollectionType) {
+            } else if (found && definition.collectionType == API_PropertySingleCollectionType && definition.valueType == API_PropertyStringValueType) {
                 outXML = WrapAsTrivialGroup (CustomPropertyCriterionXML (headerXML, op, StringVariantXML (strValue)));
             } else {
                 if (op > 1) {
