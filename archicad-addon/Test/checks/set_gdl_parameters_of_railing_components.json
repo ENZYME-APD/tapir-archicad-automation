@@ -1,0 +1,123 @@
+{
+  "title": "SetGDLParametersOfElements: the top rail of a railing (#2572 part 5)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "create a one-segment railing on story 0",
+      "command": "CreateRailings",
+      "params": {
+        "railingsData": [
+          {
+            "coordinates": [
+              { "x": 830.0, "y": 830.0 },
+              { "x": 834.0, "y": 830.0 }
+            ],
+            "floorIndex": 0,
+            "bottomOffset": 0.0,
+            "height": 1.0
+          }
+        ]
+      },
+      "save": { "r": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "railing created" }
+      ]
+    },
+    {
+      "id": "list the railing's components",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
+      "save": { "toprail": "subelements[0].railingToprails[0].elementId.guid" },
+      "expect": [
+        { "path": "subelements[0].railingToprails[0].elementId.guid", "exists": true, "name": "the railing has a top rail" }
+      ]
+    },
+    {
+      "id": "read the top rail's GDL parameters",
+      "command": "GetGDLParametersOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${toprail}" } } ] },
+      "save": {
+        "pName": "gdlParametersOfElements[0].parameters[0].name",
+        "pValue": "gdlParametersOfElements[0].parameters[0].value"
+      },
+      "expect": [
+        { "path": "gdlParametersOfElements[0].parameters[0].name", "exists": true, "name": "the top rail has GDL parameters" }
+      ]
+    },
+    {
+      "id": "dry run: write the first parameter with its own value",
+      "command": "SetGDLParametersOfElements",
+      "creates": false,
+      "params": {
+        "dryRun": true,
+        "elementsWithGDLParameters": [
+          {
+            "elementId": { "guid": "${toprail}" },
+            "gdlParameters": [ { "name": "${pName}", "value": "${pValue}" } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "dryRun", "eq": true, "name": "answered as a dry run" },
+        { "path": "executionResults", "len": 1, "name": "one result" },
+        { "path": "executionResults[0].success", "eq": true, "name": "the top rail accepts the parameter (no 'Failed to open parameters')" },
+        { "path": "executionResults[0].wouldChange.newValue[0].name", "exists": true, "name": "wouldChange lists the written parameter" }
+      ]
+    },
+    {
+      "id": "write the first parameter with its own value",
+      "command": "SetGDLParametersOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithGDLParameters": [
+          {
+            "elementId": { "guid": "${toprail}" },
+            "gdlParameters": [ { "name": "${pName}", "value": "${pValue}" } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 1, "name": "one result" },
+        { "path": "executionResults[0].success", "eq": true, "name": "Archicad changes the top rail and keeps the value" }
+      ]
+    },
+    {
+      "id": "the top rail still has its parameters",
+      "command": "GetGDLParametersOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${toprail}" } } ] },
+      "expect": [
+        { "path": "gdlParametersOfElements[0].parameters[0].name", "exists": true, "name": "parameters readable after the change" },
+        { "path": "gdlParametersOfElements[0].parameters[0].value", "exists": true, "name": "the first parameter has a value" }
+      ]
+    },
+    {
+      "id": "a parameter the top rail does not have",
+      "command": "SetGDLParametersOfElements",
+      "creates": false,
+      "params": {
+        "elementsWithGDLParameters": [
+          {
+            "elementId": { "guid": "${toprail}" },
+            "gdlParameters": [ { "name": "tapirCheckNoSuchParameter2572", "value": 1.0 } ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "nonexistent parameter refused" },
+        { "path": "executionResults[0].error.message", "contains": "railing component", "name": "refused by the railing component path" }
+      ]
+    },
+    {
+      "id": "the railing itself still answers as before",
+      "command": "GetGDLParametersOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
+      "expect": [
+        { "path": "gdlParametersOfElements", "len": 1, "name": "one answer for the railing" }
+      ]
+    }
+  ]
+}
