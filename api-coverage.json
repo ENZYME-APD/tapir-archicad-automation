@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 11:59 UTC",
+ "generatedAt": "2026-11-09 12:34 UTC",
  "versions": [
   25,
   26,
@@ -6929,7 +6929,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2507,
+     "title": "ModifyRailings: read back after the change, report the railing visibility limit"
+    }
+   ],
    "issues": []
   },
   {
@@ -6950,7 +6955,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2506,
+     "title": "CreateAssociativeDimensions: an error instead of an elementId for dimensions Archicad removes (#2505)"
+    }
+   ],
    "issues": [
     {
      "number": 1914,
@@ -7220,6 +7230,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2507,
+     "title": "ModifyRailings: read back after the change, report the railing visibility limit"
+    },
+    {
+     "number": 2506,
+     "title": "CreateAssociativeDimensions: an error instead of an elementId for dimensions Archicad removes (#2505)"
+    },
     {
      "number": 2450,
      "title": "Read and set single railing segments and nodes"
@@ -25343,6 +25361,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2506,
+     "title": "CreateAssociativeDimensions: an error instead of an elementId for dimensions Archicad removes (#2505)"
+    },
+    {
      "number": 2489,
      "title": "Graphic override criterion: custom text properties with the text operators, multiple choice option sets"
     },
@@ -37427,6 +37449,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2506,
+     "title": "CreateAssociativeDimensions: an error instead of an elementId for dimensions Archicad removes (#2505)"
+    },
     {
      "number": 2497,
      "title": "Update: save or send the project before Archicad is restarted"
