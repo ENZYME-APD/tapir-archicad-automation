@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 66 | 66 |  |  |  |  | 9 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1441 | 1441 |  |  |  |  | 11 | 375 |
 
-Archicad 25–30 DevKits; updated 2026-11-09 10:27 UTC.
+Archicad 25–30 DevKits; updated 2026-11-09 10:41 UTC.
 
 | | Status |
 |---|---|
@@ -463,7 +463,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 
 - ✅ `ACAPI_Navigator_ChangeCurrLayerComb` – Activates a layer combination. <sub>(was `APIEnv_ChangeCurrLayerCombID`)</sub>
 - ✅ `ACAPI_Navigator_ChangeLayoutSets` – Changes the settings of the current layout in Archicad. <sub>(was `APIEnv_ChangeLayoutSetsID`)</sub>
-- ✅ `ACAPI_Navigator_ChangeNavigatorItem` – Modifies the given Project Navigator item. <sub>(was `APINavigator_ChangeNavigatorItemID`)</sub>
+- ✅ `ACAPI_Navigator_ChangeNavigatorItem` – Modifies the given Project Navigator item. <sub>(was `APINavigator_ChangeNavigatorItemID`)</sub> — [#2499](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2499 "Publisher set items: read and set custom names with autotext tokens")
 - ✅ `ACAPI_Navigator_ChangeNavigatorVPItem` – Changes an existing Navigator viewpoint root, group or leaf node in the Project Map. <sub>(was `APINavigator_ChangeNavigatorVPItemID`)</sub>
 - ✅ `ACAPI_Navigator_ChangeNavigatorView` – Sets the given Project Navigator item and its view settings. <sub>(was `APINavigator_ChangeNavigatorViewID`)</sub> — [#688](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/688 "SetViewSettings fails at ACAPI_Navigator_ChangeNavigatorView (-2130313113) even when writing a view's current values")
 - ✅ `ACAPI_Navigator_ChangeStructureDisplay` – Changes the partial structure display options for the current database. <sub>(was `APIEnv_ChangeStructureDisplayID`)</sub>
@@ -481,11 +481,11 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Navigator_GetLayoutBook` – Retrieves the Book Settings. <sub>(was `APIDb_GetLayoutBookID`)</sub>
 - ✅ `ACAPI_Navigator_GetLayoutSets` – Returns the settings of a layout. <sub>(was `APIEnv_GetLayoutSetsID`)</sub>
 - ✅ `ACAPI_Navigator_GetNavigatorChildNum` – Retrieves the number of children of a navigator item. <sub>(was `APINavigator_GetNavigatorChildNumID`)</sub>
-- ✅ `ACAPI_Navigator_GetNavigatorChildrenItems` – Retrieves the child items of a navigator item. <sub>(was `APINavigator_GetNavigatorChildrenItemsID`)</sub>
-- ✅ `ACAPI_Navigator_GetNavigatorItem` – Retrieves a navigator item. <sub>(was `APINavigator_GetNavigatorItemID`)</sub> — [#2342](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2342 "ChangeWindow crashes Archicad (ODB type compatibility violation)")
+- ✅ `ACAPI_Navigator_GetNavigatorChildrenItems` – Retrieves the child items of a navigator item. <sub>(was `APINavigator_GetNavigatorChildrenItemsID`)</sub> — [#2498](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2498 "Navigator items: a guid of another object no longer makes Archicad quit (#2342)")
+- ✅ `ACAPI_Navigator_GetNavigatorItem` – Retrieves a navigator item. <sub>(was `APINavigator_GetNavigatorItemID`)</sub> — [#2498](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2498 "Navigator items: a guid of another object no longer makes Archicad quit (#2342)"), [#2499](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2499 "Publisher set items: read and set custom names with autotext tokens"), [#2342](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2342 "ChangeWindow crashes Archicad (ODB type compatibility violation)")
 - ✅ `ACAPI_Navigator_GetNavigatorParentItem` – Retrieves the parent item of a navigator item. <sub>(was `APINavigator_GetNavigatorParentItemID`)</sub>
-- ✅ `ACAPI_Navigator_GetNavigatorSet` – Retrieves information about a Project Navigator Map or Publisher Set. <sub>(was `APINavigator_GetNavigatorSetID`)</sub>
-- ✅ `ACAPI_Navigator_GetNavigatorSetNum` – Retrieves the number of Publisher Sets. <sub>(was `APINavigator_GetNavigatorSetNumID`)</sub>
+- ✅ `ACAPI_Navigator_GetNavigatorSet` – Retrieves information about a Project Navigator Map or Publisher Set. <sub>(was `APINavigator_GetNavigatorSetID`)</sub> — [#2498](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2498 "Navigator items: a guid of another object no longer makes Archicad quit (#2342)")
+- ✅ `ACAPI_Navigator_GetNavigatorSetNum` – Retrieves the number of Publisher Sets. <sub>(was `APINavigator_GetNavigatorSetNumID`)</sub> — [#2498](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2498 "Navigator items: a guid of another object no longer makes Archicad quit (#2342)")
 - ✅ `ACAPI_Navigator_GetNavigatorVPItem` – Gets information about an existing Navigator viewpoint root, group or leaf node in the Project Map. <sub>(was `APINavigator_GetNavigatorVPItemID`)</sub>
 - ✅ `ACAPI_Navigator_GetNavigatorVPItemChildren` – Gets the list of child viewpoint groups/nodes of a Navigator viewpoint root or group. <sub>(was `APINavigator_GetNavigatorVPItemChildrenID`)</sub>
 - ✅ `ACAPI_Navigator_GetNavigatorVPRootGroups` – Gets the list of Navigator viewpoint roots. <sub>(was `APINavigator_GetNavigatorVPRootGroupsID`)</sub>
@@ -662,7 +662,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Teamwork_ReserveElements` – Reserves elements in Teamwork mode. <sub>(was `ACAPI_TeamworkControl_ReserveElements`)</sub>
 - ✅ `ACAPI_Teamwork_ReserveHotlinkCacheManagement` – Reserves the Hotlink/XRef Management in Teamwork mode. <sub>(was `ACAPI_TeamworkControl_ReserveHotlinkCacheManagement`)</sub>
 - ✅ `ACAPI_Teamwork_ReserveLockable` – Reserves a lockable object set in Teamwork mode. <sub>(was `ACAPI_TeamworkControl_ReserveLockable`)</sub>
-- ✅ `ACAPI_Teamwork_SendChanges` – Sends changes to the BIMcloud server. <sub>(was `ACAPI_TeamworkControl_SendChanges`)</sub>
+- ✅ `ACAPI_Teamwork_SendChanges` – Sends changes to the BIMcloud server. <sub>(was `ACAPI_TeamworkControl_SendChanges`)</sub> — [#2497](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2497 "Update: save or send the project before Archicad is restarted")
 - ➖ `ACAPI_Teamwork_SendReleaseCommentMail` – Sends the release comment mail. <sub>(was `ACAPI_TeamworkReserveInterface_SendReleaseCommentMail`)</sub> *(needs the ids of a Teamwork reserve interface the add-on registered for its own dialog (add-on infrastructure))*
 - ✅ `ACAPI_Teamwork_UploadLibraries` <sub>AC29–30</sub> – Uploads the given libraries to the BIMcloud server.
 
@@ -801,11 +801,11 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_ProjectOperation_NewProject` – Opens a new plan. <sub>(was `APIDo_NewProjectID`)</sub>
 - ✅ `ACAPI_ProjectOperation_Open` – Opens a new project file. <sub>(was `APIDo_OpenID`)</sub>
 - ✅ `ACAPI_ProjectOperation_Print` – Prints the content of the current window. <sub>(was `APIDo_PrintID`)</sub>
-- ✅ `ACAPI_ProjectOperation_Project` – Returns information on the current project file. <sub>(was `APIEnv_ProjectID`)</sub>
+- ✅ `ACAPI_ProjectOperation_Project` – Returns information on the current project file. <sub>(was `APIEnv_ProjectID`)</sub> — [#2497](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2497 "Update: save or send the project before Archicad is restarted")
 - ✅ `ACAPI_ProjectOperation_Publish` – Publishes a publisher set. <sub>(was `APIDo_PublishID`)</sub>
 - ✅ `ACAPI_ProjectOperation_Quit` – Terminates the server application. <sub>(was `APIDo_QuitID`)</sub>
 - ✅ `ACAPI_ProjectOperation_ReloadLibraries` – Resets and loads the active libraries. <sub>(was `APIDo_ReloadLibrariesID`)</sub>
-- ✅ `ACAPI_ProjectOperation_Save` <sub>AC27–30</sub> – Saves the content of the current window in different file formats.
+- ✅ `ACAPI_ProjectOperation_Save` <sub>AC27–30</sub> – Saves the content of the current window in different file formats. — [#2497](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2497 "Update: save or send the project before Archicad is restarted")
 - ✅ `ACAPI_ProjectOperation_SaveAsModuleFile` – Saves the selected elements into a module file. <sub>(was `APIDo_SaveAsModuleFileID`)</sub>
 
 ## UserInput
@@ -1764,7 +1764,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::RemoveWiringType` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modifier::SetVoltage` <sub>AC30</sub>
 - ✅ `ACAPI::MEP::ElectricalProjectSettings::Modify` <sub>AC30</sub>
-- ✅ `ACAPI::MEP::Element::Get` <sub>AC27–30</sub> — [#2459](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2459 "Columns and beams: a width given alone also works on a linked cross section"), [#2455](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2455 "ModifyShells: edit the profile of an existing extruded shell"), [#2452](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2452 "[3/3] Shells: read back and write the custom surface of individual edges"), [#2450](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2450 "Read and set single railing segments and nodes"), [#2444](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2444 "[2/3] Read back and write the surface overrides of shells"), [#2443](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2443 "Read and write the edge types of single-plane roofs"), [#2440](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2440 "Write floor plan and section settings with ModifyRoofs and ModifyShells"), [#2439](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2439 "Read and edit the clipping contour and holes of an existing shell"), [#2438](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2438 "Read and set the Flip of an existing shell"), [#2437](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2437 "Set the trimming body of roofs and shells (cutBodyType) with ModifyRoofs and ModifyShells"), [#2429](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2429 "Read and edit the extrusion of an existing extruded shell"), [#2400](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2400 "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"), [#2397](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2397 "SetGDLParametersOfElements: report a parameter the Parameter Script sets back (#2396)")
+- ✅ `ACAPI::MEP::Element::Get` <sub>AC27–30</sub> — [#2497](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2497 "Update: save or send the project before Archicad is restarted"), [#2459](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2459 "Columns and beams: a width given alone also works on a linked cross section"), [#2455](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2455 "ModifyShells: edit the profile of an existing extruded shell"), [#2452](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2452 "[3/3] Shells: read back and write the custom surface of individual edges"), [#2450](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2450 "Read and set single railing segments and nodes"), [#2444](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2444 "[2/3] Read back and write the surface overrides of shells"), [#2443](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2443 "Read and write the edge types of single-plane roofs"), [#2440](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2440 "Write floor plan and section settings with ModifyRoofs and ModifyShells"), [#2439](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2439 "Read and edit the clipping contour and holes of an existing shell"), [#2438](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2438 "Read and set the Flip of an existing shell"), [#2437](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2437 "Set the trimming body of roofs and shells (cutBodyType) with ModifyRoofs and ModifyShells"), [#2429](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2429 "Read and edit the extrusion of an existing extruded shell"), [#2400](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2400 "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"), [#2397](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2397 "SetGDLParametersOfElements: report a parameter the Parameter Script sets back (#2396)")
 - ✅ `ACAPI::MEP::ElementBase::Exists` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetAnchorPoint` <sub>AC27–30</sub>
 - ✅ `ACAPI::MEP::ElementBase::GetBaseRotation` <sub>AC30</sub>

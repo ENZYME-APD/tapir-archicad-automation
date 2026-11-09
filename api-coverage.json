@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 10:27 UTC",
+ "generatedAt": "2026-11-09 10:41 UTC",
  "versions": [
   25,
   26,
@@ -13657,7 +13657,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2499,
+     "title": "Publisher set items: read and set custom names with autotext tokens"
+    }
+   ]
   },
   {
    "id": "ACAPI_Navigator_ChangeNavigatorVPItem",
@@ -14063,7 +14068,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2498,
+     "title": "Navigator items: a guid of another object no longer makes Archicad quit (#2342)"
+    }
+   ],
    "issues": []
   },
   {
@@ -14086,8 +14096,17 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2498,
+     "title": "Navigator items: a guid of another object no longer makes Archicad quit (#2342)"
+    }
+   ],
    "issues": [
+    {
+     "number": 2499,
+     "title": "Publisher set items: read and set custom names with autotext tokens"
+    },
     {
      "number": 2342,
      "title": "ChangeWindow crashes Archicad (ODB type compatibility violation)"
@@ -14137,7 +14156,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2498,
+     "title": "Navigator items: a guid of another object no longer makes Archicad quit (#2342)"
+    }
+   ],
    "issues": []
   },
   {
@@ -14160,7 +14184,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2498,
+     "title": "Navigator items: a guid of another object no longer makes Archicad quit (#2342)"
+    }
+   ],
    "issues": []
   },
   {
@@ -15877,7 +15906,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2497,
+     "title": "Update: save or send the project before Archicad is restarted"
+    }
+   ],
    "issues": []
   },
   {
@@ -15965,7 +15999,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2497,
+     "title": "Update: save or send the project before Archicad is restarted"
+    }
+   ],
    "issues": []
   },
   {
@@ -18291,7 +18330,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2497,
+     "title": "Update: save or send the project before Archicad is restarted"
+    }
+   ],
    "issues": []
   },
   {
@@ -37383,6 +37427,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2497,
+     "title": "Update: save or send the project before Archicad is restarted"
+    },
     {
      "number": 2459,
      "title": "Columns and beams: a width given alone also works on a linked cross section"
