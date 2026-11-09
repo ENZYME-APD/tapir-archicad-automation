@@ -50,6 +50,33 @@ private:
     mutable GS::Optional<GS::UniString> mSchemaDefinitions;
 };
 
+// What Archicad gets for a command (RegisterCommand installs it): the command itself, but with the
+// "$ref"s of its input schema written the way Archicad resolves them (see ToArchicadSchemaReferences
+// in SchemaDefinitions.hpp). Without it Archicad accepts any value for a part of an input that is a
+// "$ref". The docs and GetCommands keep reading the command's own schemas.
+class ArchicadSchemaCommand : public API_AddOnCommand
+{
+public:
+    explicit ArchicadSchemaCommand (GS::Owner<CommandBase> command);
+
+    virtual GS::String GetName () const override;
+    virtual GS::String GetNamespace () const override;
+    virtual GS::Optional<GS::UniString> GetSchemaDefinitions () const override;
+    virtual GS::Optional<GS::UniString> GetInputParametersSchema () const override;
+    virtual GS::Optional<GS::UniString> GetResponseSchema () const override;
+    virtual API_AddOnCommandExecutionPolicy GetExecutionPolicy () const override;
+#ifdef ServerMainVers_2600
+    virtual bool IsProcessWindowVisible () const override;
+#endif
+    virtual GS::ObjectState Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+    virtual void OnResponseValidationFailed (const GS::ObjectState& response) const override;
+
+private:
+    GS::Owner<CommandBase> mCommand;
+    mutable std::once_flag mInputParametersSchemaOnce;
+    mutable GS::Optional<GS::UniString> mInputParametersSchema;
+};
+
 GS::ObjectState CreateErrorResponse (GSErrCode errorCode, const GS::UniString& errorMessage);
 GS::ObjectState CreateFailedExecutionResult (GSErrCode errorCode, const GS::UniString& errorMessage);
 // The FailedExecutionResult shape for an error already built with CreateErrorResponse.
