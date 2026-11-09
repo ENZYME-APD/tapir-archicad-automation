@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 14:38 UTC",
+ "generatedAt": "2026-11-09 15:23 UTC",
  "counts": {
   "done": 788,
   "not applicable": 1
@@ -7477,7 +7477,7 @@
    "id": "ModifyRoofs",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness, structure and the top, side and bottom surface overrides apply to both; angle, pivotLine, edgeTrims (the cut of each polygon edge) and edgeSideMaterials (the custom surface of each polygon edge) only to single-plane roofs; levels, eavesOverhang and pivotEdges only to multi-plane roofs. On a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs. level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof on its story.",
+   "brief": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness, structure, trimming body (cutBodyType) and the top, side and bottom surface overrides apply to both; angle, pivotLine, edgeTrims (the cut of each polygon edge) and edgeSideMaterials (the custom surface of each polygon edge) only to single-plane roofs; levels, eavesOverhang and pivotEdges only to multi-plane roofs. On a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs. level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof on its story.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7491,7 +7491,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 28,
+   "parameterCount": 29,
    "coveredParameters": [
     "roofsWithDetails",
     "roofsWithDetails.angle",
@@ -7516,6 +7516,7 @@
    ],
    "missingParameters": [
     "roofsWithDetails.bottomMaterial",
+    "roofsWithDetails.cutBodyType",
     "roofsWithDetails.edgeSideMaterials",
     "roofsWithDetails.edgeTrims",
     "roofsWithDetails.edgeTrims.trimType",
@@ -7531,7 +7532,7 @@
    "id": "ModifyShells",
    "group": "Element Commands",
    "version": "1.8.0",
-   "brief": "Modifies the structure (Basic or Composite, building material or composite), the thickness of Basic shells and the side of the reference surface the thickness is applied to (isFlipped) of Shell elements based on the given parameters. The reference surface stays in place when the thickness changes; a thickness for a Composite shell is refused, as it comes from the composite.",
+   "brief": "Modifies the structure (Basic or Composite, building material or composite), the thickness of Basic shells and the side of the reference surface the thickness is applied to (isFlipped) and the trimming body (cutBodyType: Upward or Downward Extrusion) of Shell elements based on the given parameters. The reference surface stays in place when the thickness changes; a thickness for a Composite shell is refused, as it comes from the composite.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7541,7 +7542,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 7,
+   "parameterCount": 8,
    "coveredParameters": [
     "shellsWithDetails",
     "shellsWithDetails.buildingMaterialId",
@@ -7551,6 +7552,7 @@
     "shellsWithDetails.thickness"
    ],
    "missingParameters": [
+    "shellsWithDetails.cutBodyType",
     "shellsWithDetails.isFlipped"
    ],
    "pullRequests": [],

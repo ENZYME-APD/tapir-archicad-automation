@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 14:38 UTC",
+ "generatedAt": "2026-11-09 15:23 UTC",
  "versions": [
   25,
   26,
@@ -259,7 +259,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2520,
+     "title": "Input schemas: hand Archicad the $refs in the form it resolves, so shared definitions are validated"
+    }
+   ],
    "issues": []
   },
   {
@@ -25389,6 +25394,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2520,
+     "title": "Input schemas: hand Archicad the $refs in the form it resolves, so shared definitions are validated"
+    },
+    {
      "number": 2510,
      "title": "Railing segments and nodes (takes over #2450): height for every segment, segment reference line location"
     },
@@ -25435,10 +25444,6 @@
     {
      "number": 2439,
      "title": "Read and edit the clipping contour and holes of an existing shell"
-    },
-    {
-     "number": 2437,
-     "title": "Set the trimming body of roofs and shells (cutBodyType) with ModifyRoofs and ModifyShells"
     },
     {
      "number": 2429,
@@ -37528,10 +37533,6 @@
     {
      "number": 2439,
      "title": "Read and edit the clipping contour and holes of an existing shell"
-    },
-    {
-     "number": 2437,
-     "title": "Set the trimming body of roofs and shells (cutBodyType) with ModifyRoofs and ModifyShells"
     },
     {
      "number": 2429,
