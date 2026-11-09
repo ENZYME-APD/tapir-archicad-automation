@@ -367,6 +367,23 @@ static const char* ElemProjectionModeToString (API_ElemProjectionModesID project
     }
 }
 
+static const char* BeamVisibleLinesToString (API_BeamVisibleLinesID visibleLines)
+{
+    switch (visibleLines) {
+        case APIBeamLineHideAlways: return "HideAlways";
+        case APIBeamLineByMVO:      return "ByMVO";
+        case APIBeamLineShowAlways:
+        default:                    return "ShowAlways";
+    }
+}
+
+static void AddLineTypeIdIfValid (GS::ObjectState& os, const char* key, API_AttributeIndex lineType)
+{
+    if (lineType != APIInvalidAttributeIndex) {
+        os.Add (key, CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, lineType)));
+    }
+}
+
 static const char* StairTurnTypeToString (API_StairTurnTypeID type)
 {
     switch (type) {
@@ -2526,6 +2543,25 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("isFlipped", elem.beam.isFlipped);
                 typeSpecificDetails.Add ("profileAngle", elem.beam.profileAngle);
                 typeSpecificDetails.Add ("anchorPoint", AnchorIdToString (static_cast<API_AnchorID> (elem.beam.anchorPoint)));
+                // The floor plan display settings, under the names ModifyBeams takes (#2529).
+                typeSpecificDetails.Add ("visibility", CreateStoryVisibilityObjectState (elem.beam.visibility));
+                typeSpecificDetails.Add ("isAutoOnStoryVisibility", elem.beam.isAutoOnStoryVisibility);
+                typeSpecificDetails.Add ("displayOption", ElemDisplayOptionToString (elem.beam.displayOption));
+                typeSpecificDetails.Add ("viewDepthLimitation", ViewDepthLimitationToString (elem.beam.viewDepthLimitation));
+                typeSpecificDetails.Add ("uncutProjectionMode", ElemProjectionModeToString (elem.beam.uncutProjectionMode));
+                typeSpecificDetails.Add ("overheadProjectionMode", ElemProjectionModeToString (elem.beam.overheadProjectionMode));
+                typeSpecificDetails.Add ("showContourLines", BeamVisibleLinesToString (elem.beam.showContourLines));
+                typeSpecificDetails.Add ("showReferenceAxis", BeamVisibleLinesToString (elem.beam.showReferenceAxis));
+                typeSpecificDetails.Add ("cutContourLinePen", (Int32) elem.beam.cutContourLinePen);
+                AddLineTypeIdIfValid (typeSpecificDetails, "cutContourLineTypeId", elem.beam.cutContourLineType);
+                typeSpecificDetails.Add ("belowViewLinePen", (Int32) elem.beam.belowViewLinePen);
+                AddLineTypeIdIfValid (typeSpecificDetails, "belowViewLineTypeId", elem.beam.belowViewLineType);
+                typeSpecificDetails.Add ("aboveViewLinePen", (Int32) elem.beam.aboveViewLinePen);
+                AddLineTypeIdIfValid (typeSpecificDetails, "aboveViewLineTypeId", elem.beam.aboveViewLineType);
+                typeSpecificDetails.Add ("hiddenLinePen", (Int32) elem.beam.hiddenLinePen);
+                AddLineTypeIdIfValid (typeSpecificDetails, "hiddenLineTypeId", elem.beam.hiddenLineType);
+                typeSpecificDetails.Add ("referenceLinePen", (Int32) elem.beam.refPen);
+                AddLineTypeIdIfValid (typeSpecificDetails, "referenceLineTypeId", elem.beam.refLtype);
 #ifdef ServerMainVers_2700
                 typeSpecificDetails.Add ("cutFillPen", CreateOverriddenPenObjectState (elem.beam.cutFillPen));
                 typeSpecificDetails.Add ("cutFillBackgroundPen", CreateOverriddenPenObjectState (elem.beam.cutFillBackgroundPen));

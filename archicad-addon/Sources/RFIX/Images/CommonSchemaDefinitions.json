@@ -4737,6 +4737,15 @@
             "Hybrid"
         ]
     },
+    "BeamVisibleLines": {
+        "type": "string",
+        "description": "When a line of a beam is shown on the floor plan (API_BeamVisibleLinesID): always, never, or as the Model View Options set it.",
+        "enum": [
+            "ShowAlways",
+            "HideAlways",
+            "ByMVO"
+        ]
+    },
     "TextureProjectionType": {
         "type": "string",
         "description": "Projection type of the 3D texture.",
@@ -10134,6 +10143,76 @@
             },
             "anchorPoint": {
                 "$ref": "#/BeamAnchorPoint"
+            },
+            "visibility": {
+                "$ref": "#/StoryVisibility",
+                "description": "The stories the beam is shown on (Show On Stories). While isAutoOnStoryVisibility is true, Archicad computes it from the beam's elevation."
+            },
+            "isAutoOnStoryVisibility": {
+                "type": "boolean",
+                "description": "True when Archicad recomputes visibility automatically from the actual elevation of the beam."
+            },
+            "displayOption": {
+                "$ref": "#/DisplayOption"
+            },
+            "viewDepthLimitation": {
+                "$ref": "#/ViewDepthLimitation"
+            },
+            "uncutProjectionMode": {
+                "$ref": "#/ElemProjectionMode",
+                "description": "Projection mode of the uncut part of the beam on the floor plan."
+            },
+            "overheadProjectionMode": {
+                "$ref": "#/ElemProjectionMode",
+                "description": "Projection mode of the overhead part of the beam on the floor plan."
+            },
+            "showContourLines": {
+                "$ref": "#/BeamVisibleLines",
+                "description": "Whether the contour lines of the beam are shown on the floor plan."
+            },
+            "showReferenceAxis": {
+                "$ref": "#/BeamVisibleLines",
+                "description": "Whether the reference axis of the beam is shown on the floor plan."
+            },
+            "cutContourLinePen": {
+                "type": "integer",
+                "description": "Pen of the cut contour lines of the beam."
+            },
+            "cutContourLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the cut contour lines of the beam."
+            },
+            "belowViewLinePen": {
+                "type": "integer",
+                "description": "Pen of the uncut lines of the beam."
+            },
+            "belowViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the uncut lines of the beam."
+            },
+            "aboveViewLinePen": {
+                "type": "integer",
+                "description": "Pen of the overhead lines of the beam."
+            },
+            "aboveViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the overhead lines of the beam."
+            },
+            "hiddenLinePen": {
+                "type": "integer",
+                "description": "Pen of the hidden lines of the beam (the beam below a slab, usually dashed)."
+            },
+            "hiddenLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the hidden lines of the beam, for example a dashed line."
+            },
+            "referenceLinePen": {
+                "type": "integer",
+                "description": "Pen of the reference axis of the beam."
+            },
+            "referenceLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the reference axis of the beam."
             },
             "cutFillPen": {
                 "$ref": "#/OverriddenPen"
