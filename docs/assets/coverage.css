@@ -8,9 +8,9 @@
 
 :root {
     --track: #E3DED3; --done: var(--moss); --merged: #5E7A64; --progress: #A3B8A7; --claimed: #A3B8A7;
-    /* The stripes of a claimed item, a tile's lift onto ochre and the shadow of the sidebar drawer. */
+    /* The stripes of a claimed item. A tile's lift and the drawer's shadow are site.css's
+       --shadow-lift-small and --shadow-drawer, which the command reference uses too. */
     --stripes-claimed: repeating-linear-gradient(45deg, var(--claimed) 0 3px, var(--track) 3px 6px);
-    --shadow-lift-small: 4px 4px 0 var(--ochre); --shadow-drawer: 0 0 20px rgba(0, 0, 0, .3);
 }
 :root[data-theme="dark"] { --track: #3A4042; --done: #C7D6CA; --merged: #8EAA94; --progress: #557060; --claimed: #557060; }
 @media (prefers-color-scheme: dark) {

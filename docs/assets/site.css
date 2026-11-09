@@ -66,9 +66,11 @@
     --texture-head: linear-gradient(var(--cream-06) 1px, transparent 1px), linear-gradient(90deg, var(--cream-06) 1px, transparent 1px);
     --texture-frame: linear-gradient(var(--cream-07) 1px, transparent 1px), linear-gradient(90deg, var(--cream-07) 1px, transparent 1px);
     --hatch: repeating-linear-gradient(45deg, var(--charcoal-12) 0 1px, transparent 1px 12px);
-    /* Hard offset shadows: a card lifting onto ochre, a pressed button, the code panel; the soft one
-       under the phone menu. */
-    --shadow-lift: 6px 6px 0 var(--ochre); --shadow-press: 0 6px 0 -2px var(--charcoal);
+    /* Hard offset shadows: a card lifting onto ochre (and a smaller one for the coverage tiles and the
+       command reference's cards), a pressed button, the code panel; the soft ones under the phone menu
+       and the sidebar drawer of the command reference and the coverage pages. */
+    --shadow-lift: 6px 6px 0 var(--ochre); --shadow-lift-small: 4px 4px 0 var(--ochre);
+    --shadow-drawer: 0 0 20px rgba(0, 0, 0, .3); --shadow-press: 0 6px 0 -2px var(--charcoal);
     --shadow-term: 12px 12px 0 var(--moss); --shadow-term-small: 6px 6px 0 var(--moss);
     --shadow-term-dark: 12px 12px 0 var(--moss-light); --shadow-menu: 0 12px 24px var(--charcoal-25);
     color-scheme: light;
