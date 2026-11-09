@@ -4,6 +4,7 @@
 # ///
 
 # /// tapir
+# category = "modeling-geometry"
 # changes = "model"
 # ///
 
