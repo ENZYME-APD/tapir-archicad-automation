@@ -1141,7 +1141,7 @@ GS::Optional<GS::UniString> CreateLibraryPartsCommand::GetInputParametersSchema 
                 "type": "array",
                 "description": "The library parts to create in the embedded library.",
                 "items": {
-                    "$ref": "#/LibraryPartCreationData"
+                    "$ref": "#/LibraryPartData"
                 }
             },
             "overwriteExisting": {
@@ -1167,7 +1167,7 @@ GS::Optional<GS::UniString> CreateLibraryPartsCommand::GetRawResponseSchema () c
                 "items": {
                     "oneOf": [
                         {
-                            "$ref": "#/CreatedLibraryPart"
+                            "$ref": "#/LibraryPartCreationDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -3902,7 +3902,7 @@ GS::Optional<GS::UniString> GetLibraryPartMetadataCommand::GetRawResponseSchema 
                     "type": "object",
                     "oneOf": [
                         {
-                            "$ref": "#/LibraryPartMetadata"
+                            "$ref": "#/LibraryPartMetadataDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -4012,7 +4012,7 @@ GS::Optional<GS::UniString> GetLibraryPartOriginalLocationsCommand::GetInputPara
                 "type": "array",
                 "description": "The library parts to look up.",
                 "items": {
-                    "$ref": "#/LibraryPartIndex"
+                    "$ref": "#/LibraryPartByIndex"
                 }
             }
         },
@@ -4986,7 +4986,7 @@ GS::Optional<GS::UniString> GetLibraryPartScriptsCommand::GetInputParametersSche
                 "type": "array",
                 "description": "The scripts to read. All five by default.",
                 "items": {
-                    "$ref": "#/LibraryPartScriptType"
+                    "$ref": "#/LibraryPartReadableScriptType"
                 },
                 "minItems": 1
             },
@@ -5125,7 +5125,7 @@ GS::Optional<GS::UniString> GetLibraryPartFileInfoCommand::GetInputParametersSch
                 "type": "array",
                 "description": "The scripts to read. All five by default.",
                 "items": {
-                    "$ref": "#/LibraryPartScriptType"
+                    "$ref": "#/LibraryPartReadableScriptType"
                 },
                 "minItems": 1
             },
