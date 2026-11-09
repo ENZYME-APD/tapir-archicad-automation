@@ -1,6 +1,6 @@
 {
   "title": "GetDetailsOfElements reads and ModifyShells sets and clears the custom surface of individual shell edges, and keeps the other edges and faces (#2433)",
-  "minTapir": "1.8.1",
+  "minTapir": "2.0.1",
   "requiresEmpty": [ "Shell" ],
   "steps": [
     {
