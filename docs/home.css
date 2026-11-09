@@ -130,7 +130,7 @@
     --font-plan-ui: var(--body);
 }
 :root:not([data-style="legacy"])[data-theme="dark"] { --shadow-plan: none }
-@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"]) { --shadow-plan: none } }
+@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) { --shadow-plan: none } }
 :root:not([data-style="legacy"]) .hero { background-color: var(--subtle); color: var(--fg); border-bottom: 1px solid var(--line); --focus: var(--link) }
 :root:not([data-style="legacy"]) .hero .tagline, :root:not([data-style="legacy"]) .hero .meta a { color: var(--link) }
 :root:not([data-style="legacy"]) .hero h1 em { color: inherit }
@@ -145,3 +145,21 @@
 :root:not([data-style="legacy"]) .way .accent-line { stroke: var(--accent-fill) }
 :root:not([data-style="legacy"]) .ticker { background: var(--subtle); color: var(--fg); border-block-color: var(--line) }
 :root:not([data-style="legacy"]) .ticker-track span::before { color: var(--link) }
+
+/* The Display menu's Accent (see site.css): the floor plan's tags, its Run button and the Property
+   Highlighter's markers take the chosen accent. In Legacy --plan-mark is --ochre, which the accent
+   already replaces (a busy Run button turns the accent's light value, charcoal text on both); in
+   Standard the plan stays light in dark mode, so it takes the accent's light value in both modes. */
+:root[data-style="legacy"][data-accent] { --plan-mark-busy: var(--choice-legacy-light); --plan-mark-tint: var(--choice-legacy-tint) }
+:root:not([data-style="legacy"])[data-accent] {
+    --plan-focus: var(--choice-light); --plan-mark: var(--choice-light); --plan-mark-busy: var(--choice-light-hover);
+    --plan-mark-tint: var(--choice-light-12); --plan-bar-focus: var(--choice-dark) }
+/* High contrast: a white sheet in black ink, a black palette bar in white, the tags in the link blue
+   (white on it 7.8:1), and the Run button ringed in white so it stands out on the black bar. */
+:root:not([data-style="legacy"])[data-theme="contrast"] {
+    --plan-sheet: #FFFFFF; --plan-paper: #FFFFFF; --plan-ink: #000000; --plan-muted: #333333;
+    --plan-focus: #000000; --plan-line: #000000;
+    --plan-bar: #000000; --plan-bar-text: #FFFFFF; --plan-bar-focus: #FFFFFF; --plan-bar-line: #FFFFFF; --plan-bar-muted: #FFFFFF;
+    --plan-mark: #0B4FA8; --plan-mark-busy: #08387A; --plan-mark-tint: rgba(11, 79, 168, .12); --plan-label-text: #FFFFFF;
+    --shadow-plan: none; --shadow-plan-small: none }
+:root[data-theme="contrast"] .plan-run { box-shadow: 0 0 0 2px var(--plan-bar-text) }

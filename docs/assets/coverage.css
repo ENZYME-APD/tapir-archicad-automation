@@ -14,7 +14,7 @@
 }
 :root[data-theme="dark"] { --track: #3A4042; --done: #C7D6CA; --merged: #8EAA94; --progress: #557060; --claimed: #557060; }
 @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) { --track: #3A4042; --done: #C7D6CA; --merged: #8EAA94; --progress: #557060; --claimed: #557060; }
+    :root:not([data-theme="light"], [data-theme="contrast"]) { --track: #3A4042; --done: #C7D6CA; --merged: #8EAA94; --progress: #557060; --claimed: #557060; }
 }
 /* The filter bar and the sidebar stick to the top of the window, so the site header scrolls away. */
 .site-header { position: static }
@@ -150,8 +150,10 @@ ul.items li .detail { display: block; padding-left: 1.6em; font-size: 13.5px; co
 :root:not([data-style="legacy"]) { --track: #E5E7EB; --done: #1F6B4E; --merged: #4F9A7A; --progress: #A7D3BF; --claimed: #A7D3BF }
 :root:not([data-style="legacy"])[data-theme="dark"] { --track: #232B36; --done: #4CB88A; --merged: #2F7D5C; --progress: #1E4D3A; --claimed: #1E4D3A }
 @media (prefers-color-scheme: dark) {
-    :root:not([data-style="legacy"]):not([data-theme="light"]) { --track: #232B36; --done: #4CB88A; --merged: #2F7D5C; --progress: #1E4D3A; --claimed: #1E4D3A }
+    :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) { --track: #232B36; --done: #4CB88A; --merged: #2F7D5C; --progress: #1E4D3A; --claimed: #1E4D3A }
 }
+/* High contrast (see site.css): the ramp in greys, black the strongest step. */
+:root:not([data-style="legacy"])[data-theme="contrast"] { --track: #D9D9D9; --done: #000000; --merged: #595959; --progress: #A6A6A6; --claimed: #A6A6A6 }
 :root:not([data-style="legacy"]) .sidebar-title, :root:not([data-style="legacy"]) main th {
     font-family: var(--body); font-weight: 600; letter-spacing: normal; text-transform: none }
 :root:not([data-style="legacy"]) .sidebar-link, :root:not([data-style="legacy"]) .option { border-radius: var(--radius-control) }

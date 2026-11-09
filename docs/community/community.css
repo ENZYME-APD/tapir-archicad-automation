@@ -35,7 +35,7 @@
 }
 :root[data-theme="dark"] .growth { --layer-commits: var(--moss-mist); --layer-github: var(--ochre); --layer-discord: var(--moss-mid); --members: var(--cream) }
 @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .growth { --layer-commits: var(--moss-mist); --layer-github: var(--ochre); --layer-discord: var(--moss-mid); --members: var(--cream) }
+    :root:not([data-theme="light"], [data-theme="contrast"]) .growth { --layer-commits: var(--moss-mist); --layer-github: var(--ochre); --layer-discord: var(--moss-mid); --members: var(--cream) }
 }
 .growth-legend { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 20px; font: 700 11.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
 .growth-legend li { display: inline-flex; align-items: center; gap: 8px }
@@ -83,7 +83,7 @@
 :root:not([data-style="legacy"]) .growth { --layer-commits: #1F6B4E; --layer-github: #64748B; --layer-discord: #A7D3BF; --members: #111827 }
 :root:not([data-style="legacy"])[data-theme="dark"] .growth { --layer-commits: #4CB88A; --layer-github: #94A3B8; --layer-discord: #1E4D3A; --members: #E6EAF0 }
 @media (prefers-color-scheme: dark) {
-    :root:not([data-style="legacy"]):not([data-theme="light"]) .growth { --layer-commits: #4CB88A; --layer-github: #94A3B8; --layer-discord: #1E4D3A; --members: #E6EAF0 }
+    :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) .growth { --layer-commits: #4CB88A; --layer-github: #94A3B8; --layer-discord: #1E4D3A; --members: #E6EAF0 }
 }
 :root:not([data-style="legacy"]) .contributors, :root:not([data-style="legacy"]) .activity-card { border: 1px solid var(--line); border-radius: var(--radius-card) }
 :root:not([data-style="legacy"]) .growth-legend { font-family: var(--body); font-weight: 600; letter-spacing: normal; text-transform: none }
