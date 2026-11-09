@@ -13876,6 +13876,25 @@
             "endCoordinate"
         ]
     },
+    "RoofPivotEdgeChange": {
+        "type": "object",
+        "properties": {
+            "levels": {
+                "type": "array",
+                "description": "The roof plane of the edge on each level, from the pivot polygon upwards; at most as many as the roof has levels.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "angle": { "type": "number", "description": "Angle of the plane to the XY plane." },
+                        "eavesOverhang": { "type": "number", "description": "Extension of the eaves outside the pivot polygon." },
+                        "angleType": { "type": "string", "enum": [ "Sloped", "Gable" ], "description": "Gable for a vertical gable plane, Sloped otherwise." }
+                    },
+                    "additionalProperties": false
+                }
+            }
+        },
+        "additionalProperties": false
+    },
     "DesignOptionData": {
         "type": "object",
         "properties": {
