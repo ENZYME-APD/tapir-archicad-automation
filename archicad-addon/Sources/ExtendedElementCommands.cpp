@@ -10999,6 +10999,45 @@ static GSErrCode RestoreRoofSurfaces (const API_Guid& roofGuid, const API_ShellB
     return ACAPI_Element_Change (&roof, &mask, nullptr, 0, true);
 }
 
+// Reads "cutBodyType" (the Trimming Body on the Model panel of Roof and Shell Settings,
+// API_ShellBaseType::cutBodyType) into cutBodyType. Only the given allowed values are
+// accepted: roofs offer ContoursDown and PivotLinesDown, shells UpwardsExtrusion and
+// DownwardsExtrusion (Editable needs an editable trimming body, which is not written here).
+// The input schemas' enums already refuse any other value for the whole call before
+// Execute runs; the checks here only guard against a schema that is loosened later.
+static GS::Optional<GS::UniString> GetShellBaseCutBodyType (
+    const GS::ObjectState& details,
+    const GS::Array<API_ShellBaseCutBodyTypeID>& allowed,
+    API_ShellBaseCutBodyTypeID& cutBodyType,
+    bool& given)
+{
+    given = false;
+    GS::UniString name;
+    if (!details.Get ("cutBodyType", name)) {
+        return {};
+    }
+    API_ShellBaseCutBodyTypeID value;
+    if (name == "Editable") {
+        value = APIShellBaseCutBody_Editable;
+    } else if (name == "ContoursDown") {
+        value = APIShellBaseCutBody_ContoursDown;
+    } else if (name == "PivotLinesDown") {
+        value = APIShellBaseCutBody_PivotLinesDown;
+    } else if (name == "UpwardsExtrusion") {
+        value = APIShellBaseCutBody_UpwardsExtrusion;
+    } else if (name == "DownwardsExtrusion") {
+        value = APIShellBaseCutBody_DownwardsExtrusion;
+    } else {
+        return "Unknown cutBodyType '" + name + "'.";
+    }
+    if (!allowed.Contains (value)) {
+        return "cutBodyType '" + name + "' cannot be set on this element.";
+    }
+    cutBodyType = value;
+    given = true;
+    return {};
+}
+
 // Reads an OverriddenMaterial the caller sent: an overridden surface needs the id of an
 // existing Surface attribute; one that is not overridden clears the override.
 static GS::Optional<GS::UniString> GetOverriddenMaterialChecked (const GS::ObjectState& materialOs, const GS::UniString& name, API_OverriddenAttribute& result)
@@ -11224,6 +11263,11 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                             "description": "Single-plane roofs only: the custom surface of each edge of the roof's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeSideMaterials (the outline, then each hole). An overridden item sets the edge's custom surface, overridden false clears it so the edge shows the roof's side surface. Send every edge; the other edges keep their surface when sent as read. Cannot be combined with polygonOutline.",
                             "items": { "$ref": "#/OverriddenMaterial" }
                         },
+                        "cutBodyType": {
+                            "type": "string",
+                            "enum": [ "ContoursDown", "PivotLinesDown" ],
+                            "description": "The Trimming Body of the roof (Model panel of Roof Settings): Contours Down or Pivot Lines Down. GetDetailsOfElements reports it as cutBodyType."
+                        },
                         "angle": {
                             "type": "number",
                             "description": "Single-plane roofs only: the angle of the plane to the XY plane."
@@ -11354,6 +11398,18 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
             if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                 continue;
+            }
+            {
+                bool cutBodyGiven = false;
+                auto cutBodyError = GetShellBaseCutBodyType (item, { APIShellBaseCutBody_ContoursDown, APIShellBaseCutBody_PivotLinesDown }, element.roof.shellBase.cutBodyType, cutBodyGiven);
+                if (cutBodyError.HasValue ()) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, cutBodyError.Get ()));
+                    continue;
+                }
+                if (cutBodyGiven) {
+                    ACAPI_ELEMENT_MASK_SET (mask, API_RoofType, shellBase.cutBodyType);
+                    changed = true;
+                }
             }
             // Before the polygon edits below: a new edge of a single-plane outline gets the side
             // surface given here, and a multi-plane outline restores the surfaces given here.
@@ -11580,6 +11636,11 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                         "isFlipped": {
                             "type": "boolean",
                             "description": "The side of the reference surface the thickness is applied to, as CreateShells takes it and GetDetailsOfElements returns it. Changing it keeps the reference surface in place and moves the body to its other side."
+                        },
+                        "cutBodyType": {
+                            "type": "string",
+                            "enum": [ "UpwardsExtrusion", "DownwardsExtrusion" ],
+                            "description": "The Trimming Body of the shell (Model panel of Shell Settings): Upward Extrusion or Downward Extrusion. GetDetailsOfElements reports it as cutBodyType. An Editable trimming body cannot be set yet."
                         }
                     },
                     "additionalProperties": false,
@@ -11630,6 +11691,16 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
             if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                 continue;
+            }
+            bool cutBodyGiven = false;
+            error = GetShellBaseCutBodyType (item, { APIShellBaseCutBody_UpwardsExtrusion, APIShellBaseCutBody_DownwardsExtrusion }, element.shell.shellBase.cutBodyType, cutBodyGiven);
+            if (error.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
+                continue;
+            }
+            if (cutBodyGiven) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.cutBodyType);
+                changed = true;
             }
 
             // The thickness of a Basic shell (#2424). Checked against the structure the shell has
