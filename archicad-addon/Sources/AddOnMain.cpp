@@ -1286,7 +1286,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyShellsCommand> (
             elementCommands, "1.8.0",
-            "Modifies the structure (Basic or Composite, building material or composite), the thickness of Basic shells and the side of the reference surface the thickness is applied to (isFlipped), the trimming body (cutBodyType: Upward or Downward Extrusion), the top, side (edge) and bottom surface overrides and the custom surface of individual edges (edgeMaterials) of Shell elements based on the given parameters. The reference surface stays in place when the thickness changes; a thickness for a Composite shell is refused, as it comes from the composite."
+            "Modifies the structure (Basic or Composite, building material or composite), the thickness of Basic shells and the side of the reference surface the thickness is applied to (isFlipped), the trimming body (cutBodyType: Upward or Downward Extrusion), the top, side (edge) and bottom surface overrides and the custom surface of individual edges (edgeMaterials) of Shell elements, and the extrusion vector or length of extruded Shells (keeping their profile, base plane and extrusion start), based on the given parameters. The reference surface stays in place when the thickness changes; a thickness for a Composite shell is refused, as it comes from the composite."
         );
         err |= RegisterCommand<ModifyMeshesCommand> (
             elementCommands, "1.5.4",
@@ -1294,7 +1294,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyRailingsCommand> (
             elementCommands, "2.0.0",
-            "Modifies Railing elements in place: the height of their segments, the bottom offset, the home story, the story visibility (visibility, isAutoOnStoryVisibility; Archicad 29 does not let the automatic story visibility be turned off) and the pens of the reference line and the contour. The reference line, the nodes and segments, and the posts, rails and panels stay as they are. Each railing is read back once the change is done, and a value Archicad did not apply gets a failed execution result."
+            "Modifies Railing elements in place: the height of all their segments, the bottom offset, the home story, the story visibility (visibility, isAutoOnStoryVisibility; Archicad 29 does not let the automatic story visibility be turned off), the pens of the reference line and the contour, and single segments (height, lateral offset) and nodes (post offset, elevation, whether the pattern continues across the node) by their index in the segments and nodes GetDetailsOfElements returns. The reference line, the other segments and nodes, the posts, rails and panels and the railing's GUID stay as they are. Each railing is read back once the change is done, and a value Archicad did not apply gets a failed execution result."
         );
         err |= RegisterCommand<ModifyObjectsCommand> (
             elementCommands, "1.5.7",
