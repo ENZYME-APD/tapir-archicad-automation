@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 19:14 UTC",
+ "generatedAt": "2026-11-09 19:29 UTC",
  "counts": {
   "done": 788,
   "not applicable": 1
@@ -7532,7 +7532,7 @@
    "id": "ModifyShells",
    "group": "Element Commands",
    "version": "1.8.0",
-   "brief": "Modifies the structure (Basic or Composite, building material or composite), the thickness of Basic shells and the side of the reference surface the thickness is applied to (isFlipped) and the trimming body (cutBodyType: Upward or Downward Extrusion) of Shell elements based on the given parameters. The reference surface stays in place when the thickness changes; a thickness for a Composite shell is refused, as it comes from the composite.",
+   "brief": "Modifies the structure (Basic or Composite, building material or composite), the thickness of Basic shells and the side of the reference surface the thickness is applied to (isFlipped) and the trimming body (cutBodyType: Upward or Downward Extrusion) of Shell elements, and the extrusion vector or length of extruded Shells (keeping their profile, base plane and extrusion start), based on the given parameters. The reference surface stays in place when the thickness changes; a thickness for a Composite shell is refused, as it comes from the composite.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7542,7 +7542,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 8,
+   "parameterCount": 10,
    "coveredParameters": [
     "shellsWithDetails",
     "shellsWithDetails.buildingMaterialId",
@@ -7553,7 +7553,9 @@
     "shellsWithDetails.thickness"
    ],
    "missingParameters": [
-    "shellsWithDetails.cutBodyType"
+    "shellsWithDetails.cutBodyType",
+    "shellsWithDetails.extrusionLength",
+    "shellsWithDetails.extrusionVector"
    ],
    "pullRequests": [],
    "issues": []

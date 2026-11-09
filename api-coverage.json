@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 19:14 UTC",
+ "generatedAt": "2026-11-09 19:29 UTC",
  "versions": [
   25,
   26,
@@ -5790,10 +5790,6 @@
     {
      "number": 2439,
      "title": "Read and edit the clipping contour and holes of an existing shell"
-    },
-    {
-     "number": 2429,
-     "title": "Read and edit the extrusion of an existing extruded shell"
     }
    ],
    "issues": [
@@ -7888,10 +7884,6 @@
     {
      "number": 2439,
      "title": "Read and edit the clipping contour and holes of an existing shell"
-    },
-    {
-     "number": 2429,
-     "title": "Read and edit the extrusion of an existing extruded shell"
     },
     {
      "number": 2400,
@@ -25536,10 +25528,6 @@
      "title": "Read and edit the clipping contour and holes of an existing shell"
     },
     {
-     "number": 2429,
-     "title": "Read and edit the extrusion of an existing extruded shell"
-    },
-    {
      "number": 2400,
      "title": "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"
     }
@@ -31156,10 +31144,6 @@
     {
      "number": 2439,
      "title": "Read and edit the clipping contour and holes of an existing shell"
-    },
-    {
-     "number": 2429,
-     "title": "Read and edit the extrusion of an existing extruded shell"
     }
    ],
    "issues": []
@@ -37664,10 +37648,6 @@
     {
      "number": 2439,
      "title": "Read and edit the clipping contour and holes of an existing shell"
-    },
-    {
-     "number": 2429,
-     "title": "Read and edit the extrusion of an existing extruded shell"
     },
     {
      "number": 2400,
@@ -44327,10 +44307,6 @@
     {
      "number": 2439,
      "title": "Read and edit the clipping contour and holes of an existing shell"
-    },
-    {
-     "number": 2429,
-     "title": "Read and edit the extrusion of an existing extruded shell"
     }
    ],
    "issues": []
@@ -47450,10 +47426,6 @@
     {
      "number": 2439,
      "title": "Read and edit the clipping contour and holes of an existing shell"
-    },
-    {
-     "number": 2429,
-     "title": "Read and edit the extrusion of an existing extruded shell"
     }
    ],
    "issues": []
