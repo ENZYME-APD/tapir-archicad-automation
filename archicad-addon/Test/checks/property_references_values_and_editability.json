@@ -91,7 +91,8 @@
       "save": { "refInt": "references[0].reference" },
       "expect": [
         { "path": "references", "len": 3, "name": "one item per property" },
-        { "path": "references[0].reference", "contains": "Tapir check integer", "name": "reference names the custom property" },
+        { "path": "references[0].reference", "exists": true, "name": "reference of the custom property" },
+        { "path": "references[0].reference", "ne": "", "name": "reference not empty (Archicad may give it by guid, ###Property:<guid>###, so the next step proves it)" },
         { "path": "references[1].reference", "exists": true, "name": "reference of the built-in property" },
         { "path": "references[2].error", "exists": true, "name": "unknown property: error item" },
         { "path": "references[2].reference", "exists": false, "name": "unknown property: no reference" }
