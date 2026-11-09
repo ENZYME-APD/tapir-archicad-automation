@@ -1324,6 +1324,10 @@ GSErrCode Initialize (void)
             elementCommands, "2.0.1",
             "Assigns a panel class to single Curtain Wall Panels by their GUID; the panel takes the settings of the class (thickness, surfaces, building material, cut line, panel type). ACAPI_Element_Change does not take a panel on its own, so the change is written through the memo of the owner curtain wall, and read back to check that Archicad applied it."
         );
+        err |= RegisterCommand<ModifyCurtainWallClassesCommand> (
+            elementCommands, "2.0.1",
+            "Edits the frame and panel class defaults of Curtain Walls, picked by classIndex or className: the frame contour of a custom frame class (a 60 mm frame is a1 and a2 of 0.03), and the thickness and the outer, inner and edge surfaces of a panel class. The frames and panels of the class take the new values. Written through the class memo of the curtain wall, as the DevKit's Element_Test does, and read back; GetDetailsOfElements lists the classes of a curtain wall."
+        );
         err |= RegisterCommand<ModifyStairsCommand> (
             elementCommands, "2.0.0",
             "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the finish and structure visibility, "

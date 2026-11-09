@@ -1,0 +1,152 @@
+{
+  "title": "ModifyCurtainWallClasses: frame width and panel thickness/surface of the class defaults are written and read back, bad inputs refused (#2533)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "a surface to assign",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Surface" },
+      "save": { "surfA": "attributes[1].attributeId.guid" },
+      "expect": [
+        { "path": "attributes[1].attributeId.guid", "exists": true, "name": "the project has two surfaces" }
+      ]
+    },
+    {
+      "id": "create a one-segment curtain wall",
+      "command": "CreateCurtainWalls",
+      "params": {
+        "curtainWallsData": [
+          {
+            "coordinates": [
+              { "x": 960.0, "y": 960.0 },
+              { "x": 966.0, "y": 960.0 }
+            ],
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "height": 3.0,
+            "primaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" },
+            "secondaryPattern": { "sizes": [ 1.5 ], "logic": "FixedSizes", "origin": "StartWithPattern" }
+          }
+        ]
+      },
+      "save": { "cw": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "curtain wall created" }
+      ]
+    },
+    {
+      "id": "its classes as created",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${cw}" } } ] },
+      "save": {
+        "panelClassName": "detailsOfElements[0].details.panelClasses[0].className"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.frameClasses[0].classIndex", "eq": 4, "name": "GetDetailsOfElements lists the custom frame classes, numbered from 4" },
+        { "path": "detailsOfElements[0].details.frameClasses[0].frameContour.a1", "exists": true, "name": "with their contour" },
+        { "path": "detailsOfElements[0].details.panelClasses[0].classIndex", "eq": 1, "name": "and the panel classes, numbered from 1" },
+        { "path": "detailsOfElements[0].details.panelClasses[0].thickness", "gt": 0.0, "name": "with their thickness" }
+      ]
+    },
+    {
+      "id": "ModifyCurtainWallClasses: 60 mm frame class 4, 35 mm panel class 1 with an outer surface",
+      "command": "ModifyCurtainWallClasses",
+      "creates": false,
+      "params": {
+        "curtainWallsWithClasses": [
+          {
+            "elementId": { "guid": "${cw}" },
+            "frameClasses": [
+              { "classIndex": 4, "frameContour": { "a1": 0.03, "a2": 0.03 } }
+            ],
+            "panelClasses": [
+              { "classIndex": 1, "thickness": 0.035, "outerSurfaceId": { "guid": "${surfA}" } }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "class change accepted and read back" }
+      ]
+    },
+    {
+      "id": "the classes after the change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${cw}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.frameClasses[0].frameContour.a1", "approx": 0.03, "name": "frame class a1 is half of 60 mm" },
+        { "path": "detailsOfElements[0].details.frameClasses[0].frameContour.a2", "approx": 0.03, "name": "frame class a2 is half of 60 mm" },
+        { "path": "detailsOfElements[0].details.panelClasses[0].thickness", "approx": 0.035, "name": "panel class is 35 mm thick" },
+        { "path": "detailsOfElements[0].details.panelClasses[0].outerSurfaceId.guid", "eq": "${surfA}", "name": "panel class has the outer surface" },
+        { "path": "detailsOfElements[0].details.height", "approx": 3.0, "name": "curtain wall height unchanged" }
+      ]
+    },
+    {
+      "id": "ModifyCurtainWallClasses: panel class picked by its name",
+      "command": "ModifyCurtainWallClasses",
+      "creates": false,
+      "params": {
+        "curtainWallsWithClasses": [
+          {
+            "elementId": { "guid": "${cw}" },
+            "panelClasses": [
+              { "className": "${panelClassName}", "thickness": 0.04 }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "class picked by className accepted" }
+      ]
+    },
+    {
+      "id": "the panel class after the change by name",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${cw}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.panelClasses[0].thickness", "approx": 0.04, "name": "panel class is 40 mm thick" },
+        { "path": "detailsOfElements[0].details.panelClasses[0].outerSurfaceId.guid", "eq": "${surfA}", "name": "its outer surface is kept" },
+        { "path": "detailsOfElements[0].details.frameClasses[0].frameContour.a1", "approx": 0.03, "name": "the frame class is kept" }
+      ]
+    },
+    {
+      "id": "ModifyCurtainWallClasses: bad inputs",
+      "command": "ModifyCurtainWallClasses",
+      "creates": false,
+      "params": {
+        "curtainWallsWithClasses": [
+          { "elementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }, "panelClasses": [ { "classIndex": 1, "thickness": 0.05 } ] },
+          { "elementId": { "guid": "${cw}" }, "panelClasses": [ { "classIndex": 99, "thickness": 0.05 } ] },
+          { "elementId": { "guid": "${cw}" }, "frameClasses": [ { "classIndex": 99, "frameContour": { "a1": 0.05 } } ] },
+          { "elementId": { "guid": "${cw}" }, "panelClasses": [ { "className": "No Such Panel Class 2533", "thickness": 0.05 } ] },
+          { "elementId": { "guid": "${cw}" }, "frameClasses": [ { "classIndex": 4 } ] },
+          { "elementId": { "guid": "${cw}" } },
+          { "elementId": { "guid": "${cw}" }, "panelClasses": [ { "classIndex": 1, "thickness": 0.05 }, { "classIndex": 99, "thickness": 0.05 } ] }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": false, "name": "nonexistent guid refused" },
+        { "path": "executionResults[1].success", "eq": false, "name": "a panel class the curtain wall does not have refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "a frame class the curtain wall does not have refused" },
+        { "path": "executionResults[3].success", "eq": false, "name": "an unknown class name refused" },
+        { "path": "executionResults[4].success", "eq": false, "name": "a frame class with nothing to change refused" },
+        { "path": "executionResults[5].success", "eq": false, "name": "an item with no classes refused" },
+        { "path": "executionResults[6].success", "eq": false, "name": "an item with one bad class refused as a whole" }
+      ]
+    },
+    {
+      "id": "the refused items changed nothing",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${cw}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.panelClasses[0].thickness", "approx": 0.04, "name": "panel class still 40 mm thick" },
+        { "path": "detailsOfElements[0].details.frameClasses[0].frameContour.a1", "approx": 0.03, "name": "frame class still 60 mm wide" }
+      ]
+    }
+  ]
+}
