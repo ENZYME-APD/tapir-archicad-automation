@@ -1,0 +1,88 @@
+{
+  "title": "ModifyTexts: multi-line content with a line longer than the next one (#2461)",
+  "minTapir": "1.8.1",
+  "steps": [
+    {
+      "id": "three single-line texts",
+      "command": "CreateTexts",
+      "params": {
+        "textsData": [
+          { "coordinate": { "x": 720.0, "y": 720.0, "z": 0.0 }, "text": "TEST", "height": 2.5, "justification": "Left" },
+          { "coordinate": { "x": 720.0, "y": 715.0, "z": 0.0 }, "text": "TEST", "height": 2.5, "justification": "Left" },
+          { "coordinate": { "x": 720.0, "y": 710.0, "z": 0.0 }, "text": "TEST", "height": 2.5, "justification": "Left" }
+        ]
+      },
+      "save": {
+        "t0": "elements[0].elementId.guid",
+        "t1": "elements[1].elementId.guid",
+        "t2": "elements[2].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "first text created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "second text created" },
+        { "path": "elements[2].elementId.guid", "exists": true, "name": "third text created" }
+      ]
+    },
+    {
+      "id": "a long line before a short one, as text and as runs",
+      "command": "ModifyTexts",
+      "creates": false,
+      "params": {
+        "textsWithDetails": [
+          { "elementId": { "guid": "${t0}" }, "text": "abcdefghijklmnopqrstuvwxyz0123456789\nx" },
+          { "elementId": { "guid": "${t1}" }, "runs": [ { "text": "abcdefghijklmnopqrstuvwxyz0123456789\n" }, { "text": "x" } ] },
+          { "elementId": { "guid": "${t2}" }, "text": "Lorem ipsum dolor sit - W/(m*K)\nconsectetur adipiscing.\n\nend\n" }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "long line then short line accepted" },
+        { "path": "executionResults[1].success", "eq": true, "name": "the same as two runs accepted" },
+        { "path": "executionResults[2].success", "eq": true, "name": "empty lines and a trailing line break accepted" }
+      ]
+    },
+    {
+      "id": "the new content is stored",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${t0}" } },
+          { "elementId": { "guid": "${t1}" } },
+          { "elementId": { "guid": "${t2}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.text", "eq": "abcdefghijklmnopqrstuvwxyz0123456789\nx", "name": "text content replaced" },
+        { "path": "detailsOfElements[0].details.style.lineCount", "eq": 2, "name": "text has two lines" },
+        { "path": "detailsOfElements[1].details.text", "eq": "abcdefghijklmnopqrstuvwxyz0123456789\nx", "name": "runs content replaced" },
+        { "path": "detailsOfElements[2].details.text", "contains": "Lorem ipsum dolor sit - W/(m*K)\nconsectetur adipiscing.\n\nend", "name": "content with empty lines replaced" }
+      ]
+    },
+    {
+      "id": "a style-only change rebuilds the multi-line content",
+      "command": "ModifyTexts",
+      "creates": false,
+      "params": {
+        "textsWithDetails": [
+          { "elementId": { "guid": "${t0}" }, "style": { "penIndex": 3 } }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "pen change on multi-line text accepted" }
+      ]
+    },
+    {
+      "id": "the content survives the rebuild",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${t0}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.text", "eq": "abcdefghijklmnopqrstuvwxyz0123456789\nx", "name": "content kept after the pen change" }
+      ]
+    }
+  ]
+}
