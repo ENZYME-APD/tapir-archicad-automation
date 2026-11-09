@@ -714,7 +714,8 @@ static GS::UniString PropertyHeaderXML (const char* propertyGuid, const char* gr
 // (including an empty string, or any other string not in the list) causes rule creation to silently
 // succeed while ArchiCAD discards the whole criterion internally, with no error reported. A
 // genuinely free-text (non-option-list) custom string property has no such constraint.
-static bool FindFirstOptionValueForCustomProperty (const GS::UniString& propertyName, const GS::UniString& groupName, GS::UniString& outValue)
+// The definition of a custom property by its (name, group) pair.
+static bool FindCustomPropertyDefinition (const GS::UniString& propertyName, const GS::UniString& groupName, API_PropertyDefinition& outDefinition)
 {
     GS::Array<API_PropertyGroup> groups;
     if (ACAPI_Property_GetPropertyGroups (groups) != NoError)
@@ -727,15 +728,24 @@ static bool FindFirstOptionValueForCustomProperty (const GS::UniString& property
         if (ACAPI_Property_GetPropertyDefinitions (group.guid, definitions) != NoError)
             continue;
         for (const API_PropertyDefinition& definition : definitions) {
-            if (definition.name != propertyName)
-                continue;
-            if (definition.collectionType != API_PropertySingleChoiceEnumerationCollectionType || definition.possibleEnumValues.IsEmpty ())
-                return false;
-            outValue = definition.possibleEnumValues[0].displayVariant.uniStringValue;
-            return true;
+            if (definition.name == propertyName) {
+                outDefinition = definition;
+                return true;
+            }
         }
     }
     return false;
+}
+
+static bool FindFirstOptionValueForCustomProperty (const GS::UniString& propertyName, const GS::UniString& groupName, GS::UniString& outValue)
+{
+    API_PropertyDefinition definition;
+    if (!FindCustomPropertyDefinition (propertyName, groupName, definition))
+        return false;
+    if (definition.collectionType != API_PropertySingleChoiceEnumerationCollectionType || definition.possibleEnumValues.IsEmpty ())
+        return false;
+    outValue = definition.possibleEnumValues[0].displayVariant.uniStringValue;
+    return true;
 }
 
 // Custom (user-defined) properties, identified purely by name + group name (both HasNameId=true,
@@ -774,9 +784,11 @@ static bool TryGetMetaOperator (const GS::ObjectState& node, int& outOp)
     return false;
 }
 
-// bareVariant: confirmed live that a custom String/Option-Set property omits the <Value> wrapper
-// entirely (for every operator, including the meta-operators) - unlike Bool/Number custom
-// properties, which do wrap. Yet another per-property-type quirk, not inferable from anything else.
+// bareVariant: a single choice option set property omits the <Value> wrapper (for every operator,
+// including the meta-operators), and a multiple choice one writes its value as a bare
+// StringListVariant. A free text property wraps its value in <Value>, like Bool/Number custom
+// properties, and has the text operators (contains, starts with, ...). Read from rules made in the
+// criteria editor of Archicad 29; see the customPropertyString writer.
 static GS::UniString CustomPropertyCriterionXML (const GS::UniString& headerXML, int op, const GS::UniString& valueVariantXML, bool bareVariant = false)
 {
     return GS::UniString ("<ClassGuid>") + kPropertyClassGuid + "</ClassGuid>"
@@ -795,6 +807,25 @@ static GS::UniString BoolVariantXML (bool value)
 static GS::UniString StringVariantXML (const GS::UniString& value)
 {
     return GS::UniString ("<Variant Type=\"StringVariant\"><Status>Normal</Status><Value>") + XmlEscape (value) + "</Value></Variant>";
+}
+
+// The value of a multiple choice option set property: one option in a list.
+static GS::UniString StringListVariantXML (const GS::UniString& value)
+{
+    return GS::UniString ("<Variant Type=\"StringListVariant\"><Status>Normal</Status><ValueArray><ValueItem>") + XmlEscape (value) + "</ValueItem></ValueArray></Variant>";
+}
+
+// The text operators of a free text custom property, as the criteria editor numbers them.
+static const char* const kCustomTextOperatorKeys[] = { "equals", "notEquals", "contains", "notContains", "startsWith", "endsWith" };
+static const int kCustomTextOperators[] = { 0, 1, 6, 7, 8, 9 };
+
+static const char* CustomTextOperatorKey (int op)
+{
+    for (int i = 0; i < 6; ++i) {
+        if (kCustomTextOperators[i] == op)
+            return kCustomTextOperatorKeys[i];
+    }
+    return nullptr;
 }
 
 static GS::UniString NumVariantXML (double value)
@@ -2891,13 +2922,36 @@ static bool EmitCriterionNode (const GS::ObjectState& node, GS::UniString& outXM
             GS::UniString placeholder;
             FindFirstOptionValueForCustomProperty (name, group, placeholder);
             outXML = WrapAsTrivialGroup (CustomPropertyCriterionXML (headerXML, metaOp, StringVariantXML (placeholder), true));
-        } else if (customPropertyString.Get ("equals", strValue)) {
-            outXML = WrapAsTrivialGroup (CustomPropertyCriterionXML (headerXML, 0, StringVariantXML (strValue), true));
-        } else if (customPropertyString.Get ("notEquals", strValue)) {
-            outXML = WrapAsTrivialGroup (CustomPropertyCriterionXML (headerXML, 1, StringVariantXML (strValue), true));
         } else {
-            outError = "'customPropertyString' requires exactly one of: equals, notEquals, hasDefaultValue, hasCustomValue, isAvailable, isNotAvailable, isUndefined, isNotUndefined.";
-            return false;
+            int op = -1;
+            for (int i = 0; i < 6 && op < 0; ++i) {
+                if (customPropertyString.Get (kCustomTextOperatorKeys[i], strValue))
+                    op = kCustomTextOperators[i];
+            }
+            if (op < 0) {
+                outError = "'customPropertyString' requires exactly one of: equals, notEquals, contains, notContains, startsWith, endsWith, hasDefaultValue, hasCustomValue, isAvailable, isNotAvailable, isUndefined, isNotUndefined.";
+                return false;
+            }
+            // The value is written in the form the criteria editor writes for the property's kind.
+            API_PropertyDefinition definition;
+            const bool found = FindCustomPropertyDefinition (name, group, definition);
+            if (found && definition.collectionType == API_PropertyMultipleChoiceEnumerationCollectionType) {
+                // Only "is" was read from the criteria editor; Archicad drops a rule with "is not" on such
+                // a property without an error, and the command then returns no result for it.
+                if (op != 0) {
+                    outError = "'customPropertyString': '" + name + "' is a multiple choice option set; only equals is available for it.";
+                    return false;
+                }
+                outXML = WrapAsTrivialGroup (CustomPropertyCriterionXML (headerXML, op, StringListVariantXML (strValue), true));
+            } else if (found && definition.collectionType == API_PropertySingleCollectionType) {
+                outXML = WrapAsTrivialGroup (CustomPropertyCriterionXML (headerXML, op, StringVariantXML (strValue)));
+            } else {
+                if (op > 1) {
+                    outError = "'customPropertyString': contains, notContains, startsWith and endsWith are available for a free text custom property only; '" + name + "' in '" + group + "' is not one.";
+                    return false;
+                }
+                outXML = WrapAsTrivialGroup (CustomPropertyCriterionXML (headerXML, op, StringVariantXML (strValue), true));
+            }
         }
         return true;
     }
@@ -3509,6 +3563,21 @@ static const char* ComparisonOperatorKey (int op)
 static bool ReadCustomPropertyLeaf (const CriterionXmlNode& classGuid, const CriterionXmlNode& leaf, const GS::UniString& name, const GS::UniString& group, int op, const CriterionXmlNode& valueNode, GS::ObjectState& outLeaf)
 {
     const bool bareVariant = valueNode.name == "Variant";
+    // A multiple choice option set property: one option in a bare StringListVariant.
+    if (bareVariant && valueNode.attributes == "Type=\"StringListVariant\"") {
+        if (op != 0 || valueNode.children.size () != 2 || valueNode.children[0].name != "Status" || valueNode.children[1].name != "ValueArray")
+            return false;
+        const CriterionXmlNode& items = valueNode.children[1];
+        if (items.children.size () != 1 || items.children[0].name != "ValueItem" || !items.children[0].children.empty ())
+            return false;
+        const GS::UniString value = FromUtf8 (items.children[0].text);
+        if (!MatchesGenerated (classGuid, leaf, CustomPropertyCriterionXML (CustomPropertyHeaderXML (name, group), op, StringListVariantXML (value), true)))
+            return false;
+        GS::ObjectState listCondition ("name", name, "group", group);
+        listCondition.Add ("equals", value);
+        outLeaf = GS::ObjectState ("customPropertyString", listCondition);
+        return true;
+    }
     const CriterionXmlNode* variant = bareVariant ? &valueNode : nullptr;
     if (valueNode.name == "Value" && valueNode.children.size () == 1 && valueNode.children[0].name == "Variant")
         variant = &valueNode.children[0];
@@ -3532,9 +3601,8 @@ static bool ReadCustomPropertyLeaf (const CriterionXmlNode& classGuid, const Cri
         if (metaKey == nullptr)
             condition.Add ("equals", value);
     } else if (variant->attributes == "Type=\"StringVariant\"" && bareVariant) {
-        // The generator writes a custom text property's value without the <Value> wrapper. The
-        // editor writes some with it (issue #1816); which properties take which form is not known
-        // yet, so those stay raw rather than be written back in the other form.
+        // A single choice option set property: the value without the <Value> wrapper (a free text
+        // property wraps it, see the branch below).
         if (metaKey == nullptr && op != 0 && op != 1)
             return false;
         const GS::UniString value = FromUtf8 (valueText);
@@ -3542,6 +3610,15 @@ static bool ReadCustomPropertyLeaf (const CriterionXmlNode& classGuid, const Cri
         generatedXML = CustomPropertyCriterionXML (headerXML, op, StringVariantXML (value), true);
         if (metaKey == nullptr)
             condition.Add (op == 0 ? "equals" : "notEquals", value);
+    } else if (variant->attributes == "Type=\"StringVariant\"" && !bareVariant) {
+        // A free text custom property: the value in <Value>, with the text operators.
+        const char* textKey = CustomTextOperatorKey (op);
+        if (textKey == nullptr)
+            return false;
+        const GS::UniString value = FromUtf8 (valueText);
+        conditionKey = "customPropertyString";
+        generatedXML = CustomPropertyCriterionXML (headerXML, op, StringVariantXML (value));
+        condition.Add (textKey, value);
     } else if (variant->attributes == "Type=\"NumVariant\"" && !bareVariant) {
         double value = 0.0;
         if (!ParseDouble (valueText, value) || (metaKey == nullptr && ComparisonOperatorKey (op) == nullptr))

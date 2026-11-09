@@ -23046,12 +23046,28 @@
             },
             "customPropertyString": {
                 "type": "object",
-                "description": "Matches elements by a custom (user-defined) text or option-set property, identified by its plain name and the name of the property group it appears under. Provide 'name', 'group', and exactly one operator.",
+                "description": "Matches elements by a custom (user-defined) text or option-set property, identified by its plain name and the name of the property group it appears under. Provide 'name', 'group', and exactly one operator. The value is written in the form the criteria editor uses for the property: wrapped for a free text property, bare for a single choice option set, as a list of one option for a multiple choice option set, which takes equals only. contains, notContains, startsWith and endsWith are available for a free text property only.",
                 "properties": {
                     "name": { "type": "string", "description": "The custom property's name, exactly as defined." },
                     "group": { "type": "string", "description": "The custom property group's name, exactly as defined." },
                     "equals": { "type": "string", "description": "Matches if the property's value equals this string exactly." },
                     "notEquals": { "type": "string", "description": "Matches if the property's value does not equal this string." },
+                    "contains": {
+                        "type": "string",
+                        "description": "Matches if the property's value contains this text (free text properties only)."
+                    },
+                    "notContains": {
+                        "type": "string",
+                        "description": "Matches if the property's value does not contain this text (free text properties only)."
+                    },
+                    "startsWith": {
+                        "type": "string",
+                        "description": "Matches if the property's value starts with this text (free text properties only)."
+                    },
+                    "endsWith": {
+                        "type": "string",
+                        "description": "Matches if the property's value ends with this text (free text properties only)."
+                    },
                     "hasDefaultValue": { "type": "boolean" },
                     "hasCustomValue": { "type": "boolean" },
                     "isAvailable": { "type": "boolean" },

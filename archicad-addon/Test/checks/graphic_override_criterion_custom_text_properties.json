@@ -1,0 +1,367 @@
+{
+  "title": "Graphic override rules: custom text properties with the text operators, multiple choice option sets",
+  "minTapir": "1.8.1",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "a property group",
+      "command": "CreatePropertyGroups",
+      "creates": false,
+      "params": {
+        "propertyGroups": [
+          {
+            "propertyGroup": {
+              "name": "TapirCheck Criterion Group",
+              "description": ""
+            }
+          }
+        ]
+      },
+      "save": {
+        "group": "propertyGroupIds[0].propertyGroupId.guid"
+      },
+      "expect": [
+        {
+          "path": "propertyGroupIds[0].propertyGroupId.guid",
+          "exists": true,
+          "name": "group created"
+        }
+      ]
+    },
+    {
+      "id": "a free text and a multiple choice property",
+      "command": "CreatePropertyDefinitions",
+      "creates": false,
+      "params": {
+        "propertyDefinitions": [
+          {
+            "propertyDefinition": {
+              "name": "TapirCheck Fire Rating",
+              "description": "TapirCheck",
+              "type": "string",
+              "isEditable": true,
+              "availability": [],
+              "group": {
+                "propertyGroupId": {
+                  "guid": "${group}"
+                }
+              }
+            }
+          },
+          {
+            "propertyDefinition": {
+              "name": "TapirCheck Wall Finish",
+              "description": "TapirCheck",
+              "type": "multiEnum",
+              "isEditable": true,
+              "availability": [],
+              "group": {
+                "propertyGroupId": {
+                  "guid": "${group}"
+                }
+              },
+              "possibleEnumValues": [
+                {
+                  "enumValue": {
+                    "displayValue": "Plaster"
+                  }
+                },
+                {
+                  "enumValue": {
+                    "displayValue": "Tiles"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "save": {
+        "pText": "propertyIds[0].propertyId.guid",
+        "pList": "propertyIds[1].propertyId.guid"
+      },
+      "expect": [
+        {
+          "path": "propertyIds[0].propertyId.guid",
+          "exists": true,
+          "name": "text property created"
+        },
+        {
+          "path": "propertyIds[1].propertyId.guid",
+          "exists": true,
+          "name": "multiple choice property created"
+        }
+      ]
+    },
+    {
+      "id": "rules with the text operators and a list value",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck text contains",
+            "ruleGroupName": "TapirCheck criterion text props",
+            "criterion": {
+              "and": [
+                {
+                  "all3DTypes": true
+                },
+                {
+                  "customPropertyString": {
+                    "name": "TapirCheck Fire Rating",
+                    "group": "TapirCheck Criterion Group",
+                    "contains": "30"
+                  }
+                }
+              ]
+            },
+            "style": {
+              "lineMarkerTextPen": 20
+            }
+          },
+          {
+            "name": "TapirCheck text starts with",
+            "ruleGroupName": "TapirCheck criterion text props",
+            "criterion": {
+              "and": [
+                {
+                  "all3DTypes": true
+                },
+                {
+                  "customPropertyString": {
+                    "name": "TapirCheck Fire Rating",
+                    "group": "TapirCheck Criterion Group",
+                    "startsWith": "EI"
+                  }
+                }
+              ]
+            },
+            "style": {
+              "lineMarkerTextPen": 20
+            }
+          },
+          {
+            "name": "TapirCheck text equals",
+            "ruleGroupName": "TapirCheck criterion text props",
+            "criterion": {
+              "and": [
+                {
+                  "all3DTypes": true
+                },
+                {
+                  "customPropertyString": {
+                    "name": "TapirCheck Fire Rating",
+                    "group": "TapirCheck Criterion Group",
+                    "equals": "EI 30"
+                  }
+                }
+              ]
+            },
+            "style": {
+              "lineMarkerTextPen": 20
+            }
+          },
+          {
+            "name": "TapirCheck list equals",
+            "ruleGroupName": "TapirCheck criterion text props",
+            "criterion": {
+              "and": [
+                {
+                  "all3DTypes": true
+                },
+                {
+                  "customPropertyString": {
+                    "name": "TapirCheck Wall Finish",
+                    "group": "TapirCheck Criterion Group",
+                    "equals": "Plaster"
+                  }
+                }
+              ]
+            },
+            "style": {
+              "lineMarkerTextPen": 20
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "text contains rule created"
+        },
+        {
+          "path": "graphicOverrideRuleIds[1].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "text starts with rule created"
+        },
+        {
+          "path": "graphicOverrideRuleIds[2].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "text equals rule created"
+        },
+        {
+          "path": "graphicOverrideRuleIds[3].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "list equals rule created"
+        }
+      ]
+    },
+    {
+      "id": "read them back",
+      "command": "GetGraphicOverrideRulesByName",
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck text contains",
+            "ruleGroupName": "TapirCheck criterion text props"
+          },
+          {
+            "name": "TapirCheck text starts with",
+            "ruleGroupName": "TapirCheck criterion text props"
+          },
+          {
+            "name": "TapirCheck text equals",
+            "ruleGroupName": "TapirCheck criterion text props"
+          },
+          {
+            "name": "TapirCheck list equals",
+            "ruleGroupName": "TapirCheck criterion text props"
+          }
+        ],
+        "includeCriterion": true
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRules[0].criterion.and[1].customPropertyString.contains",
+          "eq": "30",
+          "name": "contains read back"
+        },
+        {
+          "path": "graphicOverrideRules[1].criterion.and[1].customPropertyString.startsWith",
+          "eq": "EI",
+          "name": "startsWith read back"
+        },
+        {
+          "path": "graphicOverrideRules[2].criterion.and[1].customPropertyString.equals",
+          "eq": "EI 30",
+          "name": "equals on a text property read back"
+        },
+        {
+          "path": "graphicOverrideRules[3].criterion.and[1].customPropertyString.equals",
+          "eq": "Plaster",
+          "name": "equals on a multiple choice property read back"
+        },
+        {
+          "path": "graphicOverrideRules[3].criterionXML",
+          "contains": "StringListVariant",
+          "name": "multiple choice value written as a list"
+        }
+      ]
+    },
+    {
+      "id": "contains and notEquals on a multiple choice property",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck list contains",
+            "ruleGroupName": "TapirCheck criterion text props",
+            "criterion": {
+              "and": [
+                {
+                  "all3DTypes": true
+                },
+                {
+                  "customPropertyString": {
+                    "name": "TapirCheck Wall Finish",
+                    "group": "TapirCheck Criterion Group",
+                    "contains": "Pl"
+                  }
+                }
+              ]
+            },
+            "style": {
+              "lineMarkerTextPen": 20
+            }
+          },
+          {
+            "name": "TapirCheck list not equals",
+            "ruleGroupName": "TapirCheck criterion text props",
+            "criterion": {
+              "and": [
+                {
+                  "all3DTypes": true
+                },
+                {
+                  "customPropertyString": {
+                    "name": "TapirCheck Wall Finish",
+                    "group": "TapirCheck Criterion Group",
+                    "notEquals": "Plaster"
+                  }
+                }
+              ]
+            },
+            "style": {
+              "lineMarkerTextPen": 20
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].error.code",
+          "exists": true,
+          "name": "contains rejected"
+        },
+        {
+          "path": "graphicOverrideRuleIds[1].error.code",
+          "exists": true,
+          "name": "notEquals rejected"
+        }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteGraphicOverrideRuleGroups",
+      "params": {
+        "ruleGroupNames": [
+          "TapirCheck criterion text props"
+        ],
+        "deleteRules": true
+      }
+    },
+    {
+      "command": "DeletePropertyDefinitions",
+      "params": {
+        "propertyIds": [
+          {
+            "propertyId": {
+              "guid": "${pText}"
+            }
+          },
+          {
+            "propertyId": {
+              "guid": "${pList}"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "command": "DeletePropertyGroups",
+      "params": {
+        "propertyGroupIds": [
+          {
+            "propertyGroupId": {
+              "guid": "${group}"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
