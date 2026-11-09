@@ -61,18 +61,18 @@ GS::ObjectState CreateSuccessfulExecutionResult ();
 // the path; empty otherwise.
 GS::UniString GetOverwriteRefusal (const GS::ObjectState& parameters, const IO::Location& location);
 
-// The optional boolean "dryRun" input of the commands that delete or change (#2195), the #/DryRun
-// schema definition. A dry run makes every check of a real run and resolves the same targets, with
-// the same errors, but changes nothing in the project. A command reads the flag once with
-// IsDryRun, makes its checks, wraps the step that writes with CallUndoableCommandUnlessDryRun,
-// reports each target that passed the checks with CreateDryRunExecutionResult, and adds the
-// response's "dryRun" field with AddDryRunField.
 // The navigator item of a guid given by the caller. A guid that belongs to another kind of object (an
 // element, a database, an attribute, ...) makes ACAPI_Navigator_GetNavigatorItem fail an ODB
 // assertion, and Archicad quits (#2342, Archicad 29 and 30). So the guid is looked for in the navigator
 // trees first, and one that is in none of them gets APIERR_BADID.
 GSErrCode GetNavigatorItemOfGuid (const API_Guid& guid, API_NavigatorItem& item);
 
+// The optional boolean "dryRun" input of the commands that delete or change (#2195), the #/DryRun
+// schema definition. A dry run makes every check of a real run and resolves the same targets, with
+// the same errors, but changes nothing in the project. A command reads the flag once with
+// IsDryRun, makes its checks, wraps the step that writes with CallUndoableCommandUnlessDryRun,
+// reports each target that passed the checks with CreateDryRunExecutionResult, and adds the
+// response's "dryRun" field with AddDryRunField.
 bool IsDryRun (const GS::ObjectState& parameters);
 // Runs write as one undoable command named undoString and returns its error; on a dry run it does
 // not run write at all (so no undo step is made either) and returns NoError.

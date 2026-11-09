@@ -1,6 +1,6 @@
 {
-  "title": "A guid that is not a navigator item, given as navigatorItemId, gets an error instead of making Archicad quit",
-  "minTapir": "1.8.1",
+  "title": "A guid that is not a navigator item, given as navigatorItemId, gets an error instead of making Archicad quit; real items still work",
+  "minTapir": "2.0.1",
   "minArchicad": "27",
   "steps": [
     {
@@ -106,6 +106,62 @@
           "path": "success",
           "eq": false,
           "name": "failed, Archicad still running"
+        }
+      ]
+    },
+    {
+      "id": "a real navigator item: the first story of the Project Map",
+      "command": "GetNavigatorItemTree",
+      "creates": false,
+      "params": {
+        "navigatorMapId": "ProjectMap"
+      },
+      "save": {
+        "story": "navigatorItemTree.children[0].navigatorItem.children[0].navigatorItem.children[0].navigatorItem.navigatorItemId.guid"
+      },
+      "expect": [
+        {
+          "path": "navigatorItemTree.children[0].navigatorItem.children[0].navigatorItem.children[0].navigatorItem.type",
+          "eq": "StoryItem",
+          "name": "first story found"
+        }
+      ]
+    },
+    {
+      "id": "the story still gives its database",
+      "command": "GetDatabaseIdFromNavigatorItemId",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [
+          {
+            "navigatorItemId": {
+              "guid": "${story}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "databases[0].databaseId.guid",
+          "exists": true,
+          "name": "databaseId of a real item"
+        }
+      ]
+    },
+    {
+      "id": "ChangeWindow still opens the story by navigatorItemId",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "navigatorItemId": {
+          "guid": "${story}"
+        }
+      },
+      "expect": [
+        {
+          "path": "success",
+          "eq": true,
+          "name": "story opened"
         }
       ]
     }
