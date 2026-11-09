@@ -229,7 +229,7 @@ Only read the model; change nothing.</code></pre>
 <pre><code><span class="k">import</span> json
 <span class="k">import</span> urllib.request
 
-<span class="k">def</span> run_tapir_command(name, parameters=<span class="k">None</span>, port=19723):
+<span class="k">def</span> <span class="b">run_tapir_command</span>(name, parameters=<span class="k">None</span>, port=<span class="num">19723</span>):
     request = {
         <span class="s">"command"</span>: <span class="s">"API.ExecuteAddOnCommand"</span>,
         <span class="s">"parameters"</span>: {
@@ -240,10 +240,10 @@ Only read the model; change nothing.</code></pre>
     <span class="k">with</span> urllib.request.urlopen(f<span class="s">"http://127.0.0.1:{port}"</span>, json.dumps(request).encode(<span class="s">"utf-8"</span>)) <span class="k">as</span> response:
         answer = json.loads(response.read())
     <span class="k">if not</span> answer.get(<span class="s">"succeeded"</span>):
-        <span class="k">raise</span> RuntimeError(answer.get(<span class="s">"error"</span>))
+        <span class="k">raise</span> <span class="b">RuntimeError</span>(answer.get(<span class="s">"error"</span>))
     <span class="k">return</span> answer[<span class="s">"result"</span>][<span class="s">"addOnCommandResponse"</span>]
 
-print(run_tapir_command(<span class="s">"GetAddOnVersion"</span>))</code></pre>
+<span class="b">print</span>(run_tapir_command(<span class="s">"GetAddOnVersion"</span>))</code></pre>
                 </div>
             </div>
         </section>

@@ -130,7 +130,7 @@ Prints how many elements are selected in Archicad.
 <span class="k">import</span> aclib
 
 selectedElements = aclib.RunTapirCommand (<span class="s">'GetSelectedElements'</span>, {})[<span class="s">'elements'</span>]
-print (<span class="s">'{} elements are selected.'</span>.format (len (selectedElements)))</code></pre>
+<span class="b">print</span> (<span class="s">'{} elements are selected.'</span>.format (<span class="b">len</span> (selectedElements)))</code></pre>
                         </div>
                     </div>
                 </li>
@@ -151,7 +151,7 @@ print (<span class="s">'{} elements are selected.'</span>.format (len (selectedE
                         <div class="term">
                             <div class="bar"><span>FirstScript.py</span><span>Python</span></div>
 <pre><code>walls = aclib.RunTapirCommand (<span class="s">'GetElementsByType'</span>, {<span class="s">'elementType'</span>: <span class="s">'Wall'</span>})[<span class="s">'elements'</span>]
-print (<span class="s">'{} walls in the project.'</span>.format (len (walls)))</code></pre>
+<span class="b">print</span> (<span class="s">'{} walls in the project.'</span>.format (<span class="b">len</span> (walls)))</code></pre>
                         </div>
                         <p data-i18n><a href="../../archicad-addon/">The command reference</a> lists every command with its parameters, its response and an example like the one above. To send the commands without <code>aclib</code>, see <a href="../../start/#python">Write a script of your own</a>.</p>
                     </div>

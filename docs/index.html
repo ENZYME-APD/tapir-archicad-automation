@@ -406,7 +406,7 @@
 <pre><code><span class="k">import</span> json
 <span class="k">import</span> urllib.request
 
-<span class="k">def</span> run_tapir_command(command, parameters=None):
+<span class="k">def</span> <span class="b">run_tapir_command</span>(command, parameters=None):
     body = json.dumps({
         <span class="s">'command'</span>: <span class="s">'API.ExecuteAddOnCommand'</span>,
         <span class="s">'parameters'</span>: {
@@ -418,12 +418,12 @@
     <span class="k">with</span> urllib.request.urlopen(request) <span class="k">as</span> response:
         result = json.loads(response.read())
     <span class="k">if not</span> result[<span class="s">'succeeded'</span>]:
-        <span class="k">raise</span> RuntimeError(result[<span class="s">'error'</span>])
+        <span class="k">raise</span> <span class="b">RuntimeError</span>(result[<span class="s">'error'</span>])
     <span class="k">return</span> result[<span class="s">'result'</span>][<span class="s">'addOnCommandResponse'</span>]
 
-print(run_tapir_command(<span class="s">'GetAddOnVersion'</span>))
+<span class="b">print</span>(run_tapir_command(<span class="s">'GetAddOnVersion'</span>))
 walls = run_tapir_command(<span class="s">'GetElementsByType'</span>, {<span class="s">'elementType'</span>: <span class="s">'Wall'</span>})[<span class="s">'elements'</span>]
-print(len(walls), <span class="s">'walls'</span>)</code></pre>
+<span class="b">print</span>(<span class="b">len</span>(walls),<span class="s">'walls'</span>)</code></pre>
             </div>
         </section>
 

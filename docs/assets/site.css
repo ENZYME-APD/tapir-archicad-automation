@@ -498,8 +498,8 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
    Contrast (WCAG 2), every text pair at least 4.5:1: light, #111827 on #FFFFFF about 17.7:1, #4B5563 on
    #FFFFFF about 7.5:1 (a little less on #F7F8FA), accent #1F6B4E on #FFFFFF and #FFFFFF on it about
    6.4:1; dark, #9AA4B2 on #0B0F14 about 7.6:1, accent #4CB88A on #11161D about 7.4:1 and #0B0F14 on it
-   about 7.8:1. The code colours are the issue's, all light on #0F172A. A badge is the accent at 10 %,
-   so its text keeps nearly the contrast it has on the page.
+   about 7.8:1. The code colours are #2509's, with their contrast at the code block rules below. A
+   badge is the accent at 10 %, so its text keeps nearly the contrast it has on the page.
    ====================================================================================================== */
 :root:not([data-style="legacy"]) {
     --standard-bg: #FFFFFF; --standard-surface: #FFFFFF; --subtle: #F7F8FA;
@@ -508,14 +508,17 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
     --link: #1F6B4E; --link-hover: #164D38; --focus: var(--link); --accent: var(--link); --eyebrow: var(--link);
     --accent-fill: #1F6B4E; --accent-fill-hover: #164D38; --on-accent: #FFFFFF; --button-bg: var(--accent-fill); --button-text: var(--on-accent);
     --badge: rgba(31, 107, 78, .1); --badge-bg: var(--badge); --card-hover: var(--subtle); --warning: #B45309;
-    --code-bg: #F3F4F6; --code-fg: #111827; --pre-bg: #0F172A; --pre-text: #E2E8F0; --pre-border: transparent;
-    --pre-comment: #94A3B8; --pre-keyword: #7DD3FC; --pre-string: #86EFAC; --pre-line: rgba(226, 232, 240, .12); --pre-focus: #4CB88A;
+    --code-bg: #F3F4F6; --code-fg: #111827;
+    --pre-bg: #F7F8FA; --pre-text: #111827; --pre-border: #E5E7EB; --pre-line: #E5E7EB; --pre-bar: #4B5563;
+    --pre-keyword: #0550AE; --pre-string: #116329; --pre-builtin: #6F42C1; --pre-number: #953800;
+    --pre-comment: #57606A; --pre-line-number: #6B7280; --pre-focus: var(--link); --pre-scrollbar: #D1D5DB transparent;
+    --copy-bg: #FFFFFF; --copy-border: #D1D5DB; --copy-text: #111827; --copy-hover: #9CA3AF;
     --display: var(--body); --font-heading: var(--body);
     --radius: 12px; --radius-small: 8px; --radius-card: 12px; --radius-control: 8px;
     --texture: none; --texture-head: none; --texture-frame: none; --hatch: none;
     --shadow-soft: 0 1px 2px rgba(17, 24, 39, .06), 0 8px 24px rgba(17, 24, 39, .06);
     --shadow-lift: var(--shadow-soft); --shadow-lift-small: var(--shadow-soft); --shadow-press: var(--shadow-soft);
-    --shadow-term: var(--shadow-soft); --shadow-term-small: var(--shadow-soft); --shadow-term-dark: none;
+    --shadow-term: none; --shadow-term-small: none; --shadow-term-dark: none;
     --shadow-menu: var(--shadow-soft); --shadow-drawer: var(--shadow-soft);
     color-scheme: light;
 }
@@ -523,14 +526,22 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
     --standard-bg: #0B0F14; --standard-surface: #11161D; --subtle: #0E1318;
     --fg: #E6EAF0; --muted: #9AA4B2; --line: #232B36; --border-strong: #3A4553;
     --link: #4CB88A; --link-hover: #6FCBA3; --accent-fill: #4CB88A; --accent-fill-hover: #6FCBA3; --on-accent: #0B0F14;
-    --badge: rgba(76, 184, 138, .1); --code-bg: #1A212B; --code-fg: #E6EAF0; --pre-border: #232B36; --warning: #F59E0B;
+    --badge: rgba(76, 184, 138, .1); --code-bg: #1A212B; --code-fg: #E6EAF0; --warning: #F59E0B;
+    --pre-bg: #11161D; --pre-text: #E6EAF0; --pre-border: #232B36; --pre-line: #232B36; --pre-bar: #9AA4B2;
+    --pre-keyword: #79C0FF; --pre-string: #7EE787; --pre-builtin: #D2A8FF; --pre-number: #FFA657;
+    --pre-comment: #8B949E; --pre-line-number: #8B949E; --pre-scrollbar: #3A4553 transparent;
+    --copy-bg: #0B0F14; --copy-border: #3A4553; --copy-text: #E6EAF0; --copy-hover: #9AA4B2;
     --shadow-soft: none; color-scheme: dark;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) {
     --standard-bg: #0B0F14; --standard-surface: #11161D; --subtle: #0E1318;
     --fg: #E6EAF0; --muted: #9AA4B2; --line: #232B36; --border-strong: #3A4553;
     --link: #4CB88A; --link-hover: #6FCBA3; --accent-fill: #4CB88A; --accent-fill-hover: #6FCBA3; --on-accent: #0B0F14;
-    --badge: rgba(76, 184, 138, .1); --code-bg: #1A212B; --code-fg: #E6EAF0; --pre-border: #232B36; --warning: #F59E0B;
+    --badge: rgba(76, 184, 138, .1); --code-bg: #1A212B; --code-fg: #E6EAF0; --warning: #F59E0B;
+    --pre-bg: #11161D; --pre-text: #E6EAF0; --pre-border: #232B36; --pre-line: #232B36; --pre-bar: #9AA4B2;
+    --pre-keyword: #79C0FF; --pre-string: #7EE787; --pre-builtin: #D2A8FF; --pre-number: #FFA657;
+    --pre-comment: #8B949E; --pre-line-number: #8B949E; --pre-scrollbar: #3A4553 transparent;
+    --copy-bg: #0B0F14; --copy-border: #3A4553; --copy-text: #E6EAF0; --copy-hover: #9AA4B2;
     --shadow-soft: none; color-scheme: dark } }
 
 /* ------------------------------------------------------------------------------------------------------
@@ -597,7 +608,7 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 :root:not([data-style="legacy"])[data-accent] {
     --link: var(--choice-light); --link-hover: var(--choice-light-hover);
     --accent-fill: var(--choice-light); --accent-fill-hover: var(--choice-light-hover);
-    --badge: var(--choice-light-10); --pre-focus: var(--choice-dark); --ochre-light-28: var(--choice-light-28);
+    --badge: var(--choice-light-10); --ochre-light-28: var(--choice-light-28);
 }
 :root:not([data-style="legacy"])[data-accent][data-theme="dark"] {
     --link: var(--choice-dark); --link-hover: var(--choice-dark-hover);
@@ -613,8 +624,8 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
    same whichever Look and Accent are chosen (they stay stored, and apply again in the other modes).
    The system's dark mode does not apply to it (the :not([data-theme="light"], [data-theme="contrast"])
    of the dark blocks). Every text at least 7:1 (WCAG AAA) on #FFFFFF: #000000 21:1, #333333 12.6:1,
-   #0B4FA8 7.8:1, #14532D 9.1:1, #7C2D12 9.4:1, #8B0000 10.0:1, #5B21B6 9.0:1 (the last two are the
-   command reference's); #0B4FA8 on a hovered card (#F7F7F7) 7.3:1. Inline code and badges hold black
+   #0B4FA8 7.8:1, #7C2D12 9.4:1; #0B4FA8 on a hovered card (#F7F7F7) 7.3:1. In code blocks keywords are
+   #00449E (9.1:1) and strings #0B5A1E (8.4:1), the rest black (#2509). Inline code and badges hold black
    text only.
    ------------------------------------------------------------------------------------------------------ */
 :root:not([data-style="legacy"])[data-theme="contrast"] {
@@ -623,8 +634,11 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
     --link: #0B4FA8; --link-hover: #000000; --focus: #000000;
     --accent-fill: #000000; --accent-fill-hover: #333333; --on-accent: #FFFFFF;
     --badge: #E6E6E6; --card-hover: #F7F7F7; --warning: #7C2D12;
-    --code-bg: #F2F2F2; --code-fg: #000000; --pre-bg: #FFFFFF; --pre-text: #000000; --pre-border: #000000;
-    --pre-comment: #333333; --pre-keyword: #0B4FA8; --pre-string: #14532D; --pre-line: #000000; --pre-focus: #000000;
+    --code-bg: #F2F2F2; --code-fg: #000000;
+    --pre-bg: #FFFFFF; --pre-text: #000000; --pre-border: #000000; --pre-line: #000000; --pre-bar: #000000;
+    --pre-keyword: #00449E; --pre-string: #0B5A1E; --pre-builtin: #000000; --pre-number: #000000;
+    --pre-comment: #000000; --pre-line-number: #000000; --pre-focus: #000000; --pre-scrollbar: auto;
+    --copy-bg: #FFFFFF; --copy-border: #000000; --copy-text: #000000; --copy-hover: #000000;
     --shadow-soft: none; --shadow-lift: none; --shadow-lift-small: none; --shadow-press: none;
     --shadow-term: none; --shadow-term-small: none; --shadow-menu: none; --shadow-drawer: none;
     color-scheme: light;
@@ -651,18 +665,31 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 :root:not([data-style="legacy"]) .page-head code, :root:not([data-style="legacy"]) .term code, :root:not([data-style="legacy"]) .stack .box code,
 :root:not([data-style="legacy"]) pre code { color: inherit }
 
-/* Code blocks and the terminal: slate panels, the same in both modes (with a border in dark mode). */
-:root:not([data-style="legacy"]) pre { border: 1px solid var(--pre-border); border-radius: var(--radius-control) }
+/* Code blocks and the terminal (#2509): light panels like the rest of the page in Light (#F7F8FA, a
+   #E5E7EB line, no shadow), the surface colour in Dark, black on white in High contrast. Every colour is
+   one of the --pre-* and --copy-* properties of the mode blocks above; the command reference's
+   highlight.js tokens use them too (archicad-addon/style.css). The hand-written code marks keywords .k,
+   strings .s, comments .c, output .o, built-ins and function names .b and numbers .num.
+   No block shows line numbers; --pre-line-number is their colour if one ever does.
+   Contrast (WCAG 2) on #F7F8FA: text #111827 16.7:1, title bar #4B5563 7.1:1, keywords #0550AE 7.1:1,
+   strings #116329 7.2:1, built-ins #6F42C1 6.1:1, numbers #953800 7.1:1, comments #57606A 6.0:1, line
+   numbers #6B7280 4.55:1; the Copy button's #111827 on #FFFFFF 17.7:1. On #11161D: text #E6EAF0 15.0:1,
+   title bar #9AA4B2 7.2:1, keywords #79C0FF 9.3:1, strings #7EE787 11.8:1, built-ins #D2A8FF 9.3:1,
+   numbers #FFA657 9.4:1, comments and line numbers #8B949E 5.8:1; the Copy button's #E6EAF0 on #0B0F14
+   16.0:1. High contrast on #FFFFFF: #000000 21:1, keywords #00449E 9.1:1, strings #0B5A1E 8.4:1. */
+:root:not([data-style="legacy"]) pre { border: 1px solid var(--pre-border); border-radius: var(--radius-control); scrollbar-color: var(--pre-scrollbar) }
 :root:not([data-style="legacy"]) .term pre { border: 0; border-radius: 0 }
 :root:not([data-style="legacy"]) .term, :root:not([data-style="legacy"])[data-theme="dark"] .term {
     background: var(--pre-bg); color: var(--pre-text); border: 1px solid var(--pre-border); border-radius: var(--radius-card); box-shadow: var(--shadow-term); --focus: var(--pre-focus) }
 @media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) .term { border-color: var(--pre-border); box-shadow: var(--shadow-term) } }
-:root:not([data-style="legacy"]) .term .bar { color: var(--pre-comment); border-bottom-color: var(--pre-line) }
+:root:not([data-style="legacy"]) .term .bar { color: var(--pre-bar); border-bottom-color: var(--pre-line) }
 :root:not([data-style="legacy"]) .term pre, :root:not([data-style="legacy"]) .term .o { color: var(--pre-text) }
 :root:not([data-style="legacy"]) .term .k { color: var(--pre-keyword) } :root:not([data-style="legacy"]) .term .s { color: var(--pre-string) }
-:root:not([data-style="legacy"]) .term .c { color: var(--pre-comment) }
-:root:not([data-style="legacy"]) .copy-button { background: var(--pre-bg); color: var(--pre-text); border-color: var(--pre-line); border-radius: var(--radius-control); --focus: var(--pre-focus) }
-:root:not([data-style="legacy"]) .copy-button:hover, :root:not([data-style="legacy"]) .copy-button:focus-visible { border-color: var(--pre-focus); outline-color: var(--pre-focus) }
+:root:not([data-style="legacy"]) .term .c { color: var(--pre-comment) } :root:not([data-style="legacy"]) .term .b { color: var(--pre-builtin) }
+:root:not([data-style="legacy"]) .term .num { color: var(--pre-number) }
+:root:not([data-style="legacy"]) .copy-button { background: var(--copy-bg); color: var(--copy-text); border-color: var(--copy-border); border-radius: var(--radius-control); --focus: var(--pre-focus) }
+:root:not([data-style="legacy"]) .copy-button:hover, :root:not([data-style="legacy"]) .copy-button:focus-visible { border-color: var(--copy-hover) }
+:root:not([data-style="legacy"]) .copy-button:focus-visible { outline-color: var(--pre-focus) }
 
 /* Header: the surface with a line under it. */
 :root:not([data-style="legacy"]) .site-header { background: var(--surface); color: var(--fg); border-bottom-color: var(--line); --focus: var(--link) }
