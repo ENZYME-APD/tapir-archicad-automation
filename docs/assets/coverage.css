@@ -8,10 +8,13 @@
 
 :root {
     --track: #E3DED3; --done: var(--moss); --merged: #5E7A64; --progress: #A3B8A7; --claimed: #A3B8A7;
+    /* The stripes of a claimed item. A tile's lift and the drawer's shadow are site.css's
+       --shadow-lift-small and --shadow-drawer, which the command reference uses too. */
+    --stripes-claimed: repeating-linear-gradient(45deg, var(--claimed) 0 3px, var(--track) 3px 6px);
 }
 :root[data-theme="dark"] { --track: #3A4042; --done: #C7D6CA; --merged: #8EAA94; --progress: #557060; --claimed: #557060; }
 @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) { --track: #3A4042; --done: #C7D6CA; --merged: #8EAA94; --progress: #557060; --claimed: #557060; }
+    :root:not([data-theme="light"], [data-theme="contrast"]) { --track: #3A4042; --done: #C7D6CA; --merged: #8EAA94; --progress: #557060; --claimed: #557060; }
 }
 /* The filter bar and the sidebar stick to the top of the window, so the site header scrolls away. */
 .site-header { position: static }
@@ -44,8 +47,8 @@ button { font: inherit; color: inherit; cursor: pointer }
 .hero-caption { color: var(--muted); margin-top: 6px }
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(112px, 1fr)); gap: 8px }
 .tile { text-align: left; background: var(--surface); color: var(--fg); border: 1.5px solid var(--fg); border-radius: 4px; padding: 8px 10px; transition: transform .15s ease, box-shadow .15s ease }
-.tile:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--ochre) }
-.tile[aria-pressed="true"] { box-shadow: 4px 4px 0 var(--ochre); background: var(--badge) }
+.tile:hover { transform: translate(-2px, -2px); box-shadow: var(--shadow-lift-small) }
+.tile[aria-pressed="true"] { box-shadow: var(--shadow-lift-small); background: var(--badge) }
 .tile .value { display: flex; align-items: center; gap: 8px; font: 700 24px/1.2 var(--display); font-variant-numeric: tabular-nums }
 .tile .label { display: block; font-size: 13px; color: var(--muted) }
 
@@ -56,7 +59,7 @@ button { font: inherit; color: inherit; cursor: pointer }
 .bar .done { background: var(--done) }
 .bar .merged { background: var(--merged) }
 .bar .progress { background: var(--progress) }
-.bar .claimed { background: repeating-linear-gradient(45deg, var(--claimed) 0 3px, var(--track) 3px 6px) }
+.bar .claimed { background: var(--stripes-claimed) }
 .bar .open { background: var(--track); flex-grow: 1 }
 
 /* Status marks: the colour of the status in the bars, in a pill with its short name. */
@@ -64,7 +67,7 @@ button { font: inherit; color: inherit; cursor: pointer }
 .swatch.done { background: var(--done) }
 .swatch.merged { background: var(--merged) }
 .swatch.progress { background: var(--progress) }
-.swatch.claimed { background: repeating-linear-gradient(45deg, var(--claimed) 0 3px, var(--track) 3px 6px) }
+.swatch.claimed { background: var(--stripes-claimed) }
 .swatch.open { background: var(--track); box-shadow: inset 0 0 0 1px var(--border-strong) }
 .swatch.skipped { background: var(--slate) }
 .swatch.na { background: transparent; box-shadow: inset 0 0 0 1px var(--slate) }
@@ -128,7 +131,7 @@ ul.items li .detail { display: block; padding-left: 1.6em; font-size: 13.5px; co
 @media (max-width: 1100px) {
     .layout { display: block }
     .sidebar { position: fixed; z-index: 3; top: 0; bottom: 0; left: 0; width: min(300px, 85vw); max-height: none; align-self: stretch;
-        background: var(--bg); box-shadow: 0 0 20px rgba(0, 0, 0, .3); transform: translateX(-105%); visibility: hidden; transition: transform .2s, visibility .2s }
+        background: var(--bg); box-shadow: var(--shadow-drawer); transform: translateX(-105%); visibility: hidden; transition: transform .2s, visibility .2s }
     body.sidebar-open .sidebar { transform: none; visibility: visible }
     .sections-button { display: inline-block }
 }
@@ -157,3 +160,26 @@ ul.items li .detail { display: block; padding-left: 1.6em; font-size: 13.5px; co
     .tile:hover { transform: none }
     .chip-filter { transition: none }
 }
+
+/* The Standard look (see the end of site.css): the progress ramp in the accent's green, light lines,
+   8 px corners on the filters and 12 px on the tiles, labels in normal case. */
+:root:not([data-style="legacy"]) { --track: #E5E7EB; --done: #1F6B4E; --merged: #4F9A7A; --progress: #A7D3BF; --claimed: #A7D3BF }
+:root:not([data-style="legacy"])[data-theme="dark"] { --track: #232B36; --done: #4CB88A; --merged: #2F7D5C; --progress: #1E4D3A; --claimed: #1E4D3A }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) { --track: #232B36; --done: #4CB88A; --merged: #2F7D5C; --progress: #1E4D3A; --claimed: #1E4D3A }
+}
+/* High contrast (see site.css): the ramp in greys, black the strongest step. */
+:root:not([data-style="legacy"])[data-theme="contrast"] { --track: #D9D9D9; --done: #000000; --merged: #595959; --progress: #A6A6A6; --claimed: #A6A6A6 }
+:root:not([data-style="legacy"]) .sidebar-title, :root:not([data-style="legacy"]) main th {
+    font-family: var(--body); font-weight: 600; letter-spacing: normal; text-transform: none }
+:root:not([data-style="legacy"]) .sidebar-link, :root:not([data-style="legacy"]) .option { border-radius: var(--radius-control) }
+:root:not([data-style="legacy"]) .option[aria-pressed="true"] { background: var(--accent-fill); border-color: var(--accent-fill); color: var(--on-accent) }
+:root:not([data-style="legacy"]) .tile { border: 1px solid var(--line); border-radius: var(--radius-card) }
+/* The status chips keep their tint when pressed (site.css's Standard part fills other chips with the
+   accent), so the swatch in them, which can be the accent's green, stays visible. */
+:root:not([data-style="legacy"]) .toolbar .chip[aria-pressed="true"] { background: var(--badge); border-color: var(--link); color: var(--fg) }
+:root:not([data-style="legacy"]) .toolbar input, :root:not([data-style="legacy"]) .toolbar .sections-button,
+:root:not([data-style="legacy"]) .filter-status button { border: 1px solid var(--border-strong); border-radius: var(--radius-control) }
+/* All parameters is --done; the JSON and partial marks take the ramp's lighter step, so they still differ. */
+:root:not([data-style="legacy"]) .swatch.p-json { background: var(--merged) }
+:root:not([data-style="legacy"]) .swatch.p-partial { box-shadow: inset 0 0 0 1.5px var(--merged) }

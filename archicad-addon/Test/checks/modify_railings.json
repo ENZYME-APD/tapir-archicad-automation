@@ -1,9 +1,9 @@
 {
-  "title": "ModifyRailings: one segment and one node of a two-segment railing, the rest kept (#2446)",
+  "title": "ModifyRailings: bottom offset and floor plan pens written and reported as applied, 3D geometry kept",
   "minTapir": "2.0.1",
   "steps": [
     {
-      "id": "create a two-segment railing on story 0",
+      "id": "create a railing on story 0",
       "command": "CreateRailings",
       "params": {
         "railingsData": [
@@ -14,8 +14,8 @@
               { "x": 764.0, "y": 763.0 }
             ],
             "floorIndex": 0,
-            "bottomOffset": 0.0,
-            "height": 1.0
+            "bottomOffset": 0.2,
+            "height": 1.1
           }
         ]
       },
@@ -25,121 +25,163 @@
       ]
     },
     {
-      "id": "segments and nodes before the change",
+      "id": "read the new railing",
       "command": "GetDetailsOfElements",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
-      "save": {
-        "lat0": "detailsOfElements[0].details.segments[0].lateralOffset",
-        "post0": "detailsOfElements[0].details.nodes[0].postOffset",
-        "elev0": "detailsOfElements[0].details.nodes[0].elevation",
-        "post2": "detailsOfElements[0].details.nodes[2].postOffset"
-      },
       "expect": [
-        { "path": "detailsOfElements[0].details.segments", "len": 2, "name": "two segments listed" },
-        { "path": "detailsOfElements[0].details.nodes", "len": 3, "name": "three nodes listed" },
-        { "path": "detailsOfElements[0].details.segments[0].height", "approx": 1.0, "name": "first segment height as created" },
-        { "path": "detailsOfElements[0].details.segments[1].height", "approx": 1.0, "name": "second segment height as created" },
-        { "path": "detailsOfElements[0].details.segments[1].elementId.guid", "exists": true, "name": "segment has its own guid" },
-        { "path": "detailsOfElements[0].details.nodes[1].elementId.guid", "exists": true, "name": "node has its own guid" },
-        { "path": "detailsOfElements[0].details.nodes[1].unifyPatterns", "exists": true, "name": "node tells whether the pattern continues" }
+        { "path": "detailsOfElements[0].details.height", "approx": 1.1, "name": "height as created" },
+        { "path": "detailsOfElements[0].details.referenceLine", "len": 3, "name": "one node per point" },
+        { "path": "detailsOfElements[0].details.visibility", "exists": true, "name": "visibility is read" },
+        { "path": "detailsOfElements[0].details.referenceLinePen", "exists": true, "name": "reference line pen is read" },
+        { "path": "detailsOfElements[0].details.contourPen", "exists": true, "name": "contour pen is read" }
       ]
     },
     {
-      "id": "ModifyRailings: second segment and the node between the segments",
+      "id": "ModifyRailings: bottom offset 0.5 and reference line pen 21",
       "command": "ModifyRailings",
       "creates": false,
       "params": {
         "railingsWithDetails": [
+          { "elementId": { "guid": "${r}" }, "bottomOffset": 0.5, "referenceLinePen": 21 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "bottom offset and reference line pen change reported as applied" }
+      ]
+    },
+    {
+      "id": "railing after the bottom offset and reference line pen change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.bottomOffset", "approx": 0.5, "name": "bottom offset changed" },
+        { "path": "detailsOfElements[0].details.referenceLinePen", "eq": 21, "name": "reference line pen changed" },
+        { "path": "detailsOfElements[0].details.height", "approx": 1.1, "name": "height unchanged" },
+        { "path": "detailsOfElements[0].details.segmentHeights[0]", "approx": 1.1, "name": "first segment height unchanged" },
+        { "path": "detailsOfElements[0].details.segmentHeights[1]", "approx": 1.1, "name": "second segment height unchanged" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "home story unchanged" },
+        { "path": "detailsOfElements[0].details.referenceLine", "len": 3, "name": "node count unchanged" },
+        { "path": "detailsOfElements[0].details.referenceLine[0].x", "approx": 760.0, "name": "first node x unchanged" },
+        { "path": "detailsOfElements[0].details.referenceLine[0].y", "approx": 760.0, "name": "first node y unchanged" },
+        { "path": "detailsOfElements[0].details.referenceLine[2].x", "approx": 764.0, "name": "last node x unchanged" },
+        { "path": "detailsOfElements[0].details.referenceLine[2].y", "approx": 763.0, "name": "last node y unchanged" }
+      ]
+    },
+    {
+      "id": "ModifyRailings: bottom offset 0.3",
+      "command": "ModifyRailings",
+      "creates": false,
+      "params": {
+        "railingsWithDetails": [
+          { "elementId": { "guid": "${r}" }, "bottomOffset": 0.3 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "second bottom offset change reported as applied" }
+      ]
+    },
+    {
+      "id": "railing after the second bottom offset change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.bottomOffset", "approx": 0.3, "name": "bottom offset set, not added to the previous one" },
+        { "path": "detailsOfElements[0].details.referenceLinePen", "eq": 21, "name": "reference line pen kept" }
+      ]
+    },
+    {
+      "id": "ModifyRailings: contour pen 22 only",
+      "command": "ModifyRailings",
+      "creates": false,
+      "params": {
+        "railingsWithDetails": [
+          { "elementId": { "guid": "${r}" }, "contourPen": 22 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "contour pen change accepted" }
+      ]
+    },
+    {
+      "id": "railing after the contour pen change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.contourPen", "eq": 22, "name": "contour pen changed" },
+        { "path": "detailsOfElements[0].details.referenceLinePen", "eq": 21, "name": "reference line pen kept" },
+        { "path": "detailsOfElements[0].details.bottomOffset", "approx": 0.3, "name": "bottom offset kept" },
+        { "path": "detailsOfElements[0].details.height", "approx": 1.1, "name": "height unchanged" },
+        { "path": "detailsOfElements[0].details.referenceLine[1].x", "approx": 764.0, "name": "middle node x unchanged" },
+        { "path": "detailsOfElements[0].details.referenceLine[1].y", "approx": 760.0, "name": "middle node y unchanged" }
+      ]
+    },
+    {
+      "id": "ModifyRailings: automatic visibility on",
+      "command": "ModifyRailings",
+      "creates": false,
+      "params": {
+        "railingsWithDetails": [
+          { "elementId": { "guid": "${r}" }, "isAutoOnStoryVisibility": true }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "automatic visibility change accepted" }
+      ]
+    },
+    {
+      "id": "railing after the automatic visibility change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.isAutoOnStoryVisibility", "eq": true, "name": "automatic visibility on" },
+        { "path": "detailsOfElements[0].details.contourPen", "eq": 22, "name": "contour pen kept" },
+        { "path": "detailsOfElements[0].details.referenceLinePen", "eq": 21, "name": "reference line pen kept" },
+        { "path": "detailsOfElements[0].details.segmentHeights[1]", "approx": 1.1, "name": "segment height unchanged" },
+        { "path": "detailsOfElements[0].details.referenceLine", "len": 3, "name": "node count unchanged" }
+      ]
+    },
+    {
+      "id": "create a stair",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
           {
-            "elementId": { "guid": "${r}" },
-            "segments": [ { "index": 1, "height": 0.8, "lateralOffset": 0.05 } ],
-            "nodes": [ { "index": 1, "postOffset": 0.1, "unifyPatterns": false } ]
+            "baseLinePoints": [
+              { "x": 780.0, "y": 760.0 },
+              { "x": 786.0, "y": 760.0 }
+            ],
+            "baselinePosition": "Center",
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.2,
+            "stepNum": 16,
+            "riserHeight": 0.175,
+            "treadDepth": 0.28
           }
         ]
       },
+      "save": { "s": "elements[0].elementId.guid" },
       "expect": [
-        { "path": "executionResults[0].success", "eq": true, "name": "segment and node change accepted" }
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "stair created" }
       ]
     },
     {
-      "id": "railing after the segment and node change",
-      "command": "GetDetailsOfElements",
-      "creates": false,
-      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
-      "save": {
-        "lat0After": "detailsOfElements[0].details.segments[0].lateralOffset",
-        "post0After": "detailsOfElements[0].details.nodes[0].postOffset",
-        "elev0After": "detailsOfElements[0].details.nodes[0].elevation",
-        "post2After": "detailsOfElements[0].details.nodes[2].postOffset"
-      },
-      "expect": [
-        { "path": "detailsOfElements[0].details.segments[1].height", "approx": 0.8, "name": "second segment got its height" },
-        { "path": "detailsOfElements[0].details.segments[1].lateralOffset", "approx": 0.05, "name": "second segment got its lateral offset" },
-        { "path": "detailsOfElements[0].details.segmentHeights[1]", "approx": 0.8, "name": "segmentHeights agrees" },
-        { "path": "detailsOfElements[0].details.nodes[1].postOffset", "approx": 0.1, "name": "middle node got its post offset" },
-        { "path": "detailsOfElements[0].details.nodes[1].unifyPatterns", "eq": false, "name": "pattern cropped at the middle node" },
-        { "path": "detailsOfElements[0].details.segments[0].height", "approx": 1.0, "name": "first segment height kept" },
-        { "expr": "${lat0After} - ${lat0}", "approx": 0, "name": "first segment lateral offset kept" },
-        { "expr": "${post0After} - ${post0}", "approx": 0, "name": "first node post offset kept" },
-        { "expr": "${elev0After} - ${elev0}", "approx": 0, "name": "first node elevation kept" },
-        { "expr": "${post2After} - ${post2}", "approx": 0, "name": "last node post offset kept" },
-        { "path": "detailsOfElements[0].details.referenceLine", "len": 3, "name": "node count unchanged" },
-        { "path": "detailsOfElements[0].details.referenceLine[1].x", "approx": 764.0, "name": "reference line kept" },
-        { "path": "detailsOfElements[0].details.height", "approx": 1.0, "name": "railing default height kept" }
-      ]
-    },
-    {
-      "id": "ModifyRailings: the pattern continues across the node again",
+      "id": "ModifyRailings: pen of a stair",
       "command": "ModifyRailings",
       "creates": false,
       "params": {
         "railingsWithDetails": [
-          { "elementId": { "guid": "${r}" }, "nodes": [ { "index": 1, "unifyPatterns": true } ] }
+          { "elementId": { "guid": "${s}" }, "contourPen": 5 }
         ]
       },
       "expect": [
-        { "path": "executionResults[0].success", "eq": true, "name": "pattern change accepted" }
-      ]
-    },
-    {
-      "id": "railing after the pattern change",
-      "command": "GetDetailsOfElements",
-      "creates": false,
-      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
-      "expect": [
-        { "path": "detailsOfElements[0].details.nodes[1].unifyPatterns", "eq": true, "name": "pattern continues across the middle node" },
-        { "path": "detailsOfElements[0].details.nodes[1].postOffset", "approx": 0.1, "name": "post offset of the middle node kept" },
-        { "path": "detailsOfElements[0].details.segments[1].height", "approx": 0.8, "name": "second segment height kept" },
-        { "path": "detailsOfElements[0].details.segments[0].height", "approx": 1.0, "name": "first segment height still kept" }
-      ]
-    },
-    {
-      "id": "ModifyRailings: bad segment and node indices",
-      "command": "ModifyRailings",
-      "creates": false,
-      "params": {
-        "railingsWithDetails": [
-          { "elementId": { "guid": "${r}" }, "segments": [ { "index": 2, "height": 0.5 } ] },
-          { "elementId": { "guid": "${r}" }, "nodes": [ { "index": 3, "postOffset": 0.2 } ] },
-          { "elementId": { "guid": "${r}" }, "segments": [ { "index": 0 } ] }
-        ]
-      },
-      "expect": [
-        { "path": "executionResults[0].success", "eq": false, "name": "a segment the railing does not have refused" },
-        { "path": "executionResults[1].success", "eq": false, "name": "a node the railing does not have refused" },
-        { "path": "executionResults[2].success", "eq": false, "name": "a segment with no fields refused" }
-      ]
-    },
-    {
-      "id": "the refused items changed nothing",
-      "command": "GetDetailsOfElements",
-      "creates": false,
-      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
-      "expect": [
-        { "path": "detailsOfElements[0].details.segments[0].height", "approx": 1.0, "name": "first segment height unchanged" },
-        { "path": "detailsOfElements[0].details.segments[1].height", "approx": 0.8, "name": "second segment height unchanged" },
-        { "path": "detailsOfElements[0].details.nodes[1].postOffset", "approx": 0.1, "name": "middle node post offset unchanged" }
+        { "path": "executionResults[0].success", "eq": false, "name": "a stair refused" }
       ]
     }
   ]

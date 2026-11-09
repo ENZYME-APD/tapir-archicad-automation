@@ -275,18 +275,10 @@
         { "path": "detailsOfElements[0].details.body.vertices", "len": 8, "name": "box has 8 vertices" },
         { "path": "detailsOfElements[0].details.body.polygons", "len": 6, "name": "box has 6 faces" },
         { "path": "detailsOfElements[0].details.body.isClosed", "eq": true, "name": "box is closed" },
-        { "path": "detailsOfElements[0].details.body.vertices[6].x", "approx": 2.0, "name": "box size x kept" },
-        { "path": "detailsOfElements[0].details.body.vertices[6].y", "approx": 3.0, "name": "box size y kept" },
-        { "path": "detailsOfElements[0].details.body.vertices[6].z", "approx": 1.0, "name": "box size z kept" },
         { "path": "detailsOfElements[1].details.origin.x", "approx": 860.0, "name": "frustum base point kept" },
         { "path": "detailsOfElements[1].details.castShadow", "eq": true, "name": "frustum casts shadow" },
         { "path": "detailsOfElements[1].details.receiveShadow", "eq": false, "name": "frustum receives no shadow" },
         { "path": "detailsOfElements[1].details.body.vertices", "len": 8, "name": "frustum has 8 vertices" },
-        { "path": "detailsOfElements[1].details.body.vertices[2].x", "approx": 2.0, "name": "frustum bottom corner x not expanded" },
-        { "path": "detailsOfElements[1].details.body.vertices[6].x", "approx": 2.25, "name": "frustum top corner x expanded" },
-        { "path": "detailsOfElements[1].details.body.vertices[6].y", "approx": 2.25, "name": "frustum top corner y expanded" },
-        { "path": "detailsOfElements[1].details.body.vertices[4].x", "approx": -0.25, "name": "frustum opposite top corner expanded" },
-        { "path": "detailsOfElements[1].details.body.vertices[6].z", "approx": 1.0, "name": "frustum height kept" },
         { "path": "detailsOfElements[2].floorIndex", "eq": 1, "name": "tetrahedron on floorIndex 1" },
         { "path": "detailsOfElements[2].id", "eq": "CHK-MORPH-3", "name": "tetrahedron id applied" },
         { "path": "detailsOfElements[2].details.origin.x", "approx": 870.0, "name": "tetrahedron base point x kept" },
@@ -297,6 +289,30 @@
         { "path": "detailsOfElements[2].details.body.isClosed", "eq": true, "name": "tetrahedron is closed" },
         { "path": "detailsOfElements[2].details.body.bodyType", "eq": "Solid", "name": "tetrahedron is a solid" },
         { "path": "detailsOfElements[2].details.body.vertices[3].z", "approx": 1.5, "name": "tetrahedron apex kept" }
+      ]
+    },
+    {
+      "id": "measure the box and the frustum (Archicad keeps the body's vertices in its own order, so their sizes are read from the 3D boxes)",
+      "command": "Get3DBoundingBoxes",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${p1}" } }, { "elementId": { "guid": "${p2}" } } ]
+      },
+      "save": {
+        "b1zMin": "boundingBoxes3D[0].boundingBox3D.zMin", "b1zMax": "boundingBoxes3D[0].boundingBox3D.zMax",
+        "b2zMin": "boundingBoxes3D[1].boundingBox3D.zMin", "b2zMax": "boundingBoxes3D[1].boundingBox3D.zMax"
+      },
+      "expect": [
+        { "path": "boundingBoxes3D[0].boundingBox3D.xMin", "approx": 850.0, "name": "box starts at its base point (x)" },
+        { "path": "boundingBoxes3D[0].boundingBox3D.xMax", "approx": 852.0, "name": "box size x kept" },
+        { "path": "boundingBoxes3D[0].boundingBox3D.yMin", "approx": 700.0, "name": "box starts at its base point (y)" },
+        { "path": "boundingBoxes3D[0].boundingBox3D.yMax", "approx": 703.0, "name": "box size y kept" },
+        { "expr": "${b1zMax} - ${b1zMin}", "approx": 1.0, "name": "box size z kept" },
+        { "path": "boundingBoxes3D[1].boundingBox3D.xMin", "approx": 859.75, "name": "frustum top expanded to -x" },
+        { "path": "boundingBoxes3D[1].boundingBox3D.xMax", "approx": 862.25, "name": "frustum top expanded to +x" },
+        { "path": "boundingBoxes3D[1].boundingBox3D.yMin", "approx": 699.75, "name": "frustum top expanded to -y" },
+        { "path": "boundingBoxes3D[1].boundingBox3D.yMax", "approx": 702.25, "name": "frustum top expanded to +y" },
+        { "expr": "${b2zMax} - ${b2zMin}", "approx": 1.0, "name": "frustum height kept" }
       ]
     },
     {

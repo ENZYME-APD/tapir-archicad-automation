@@ -2038,7 +2038,13 @@ GS::ObjectState UpdateFavoritesFromElementsCommand::Execute (const GS::ObjectSta
                 continue;
             }
 
-            GSErrCode err = ACAPI_Favorite_Change (favorite);
+            // Without a mask ACAPI_Favorite_Change answers NoError and keeps the old settings:
+            // a Favorite updated from a 0.3 m wall still placed the 0.2 m wall it was made
+            // from (#2470). Every field of the element and every memo part are written, as
+            // CreateFavoritesFromElements captures all of them.
+            API_Element mask;
+            ACAPI_ELEMENT_MASK_SETFULL (mask);
+            GSErrCode err = ACAPI_Favorite_Change (favorite, &mask, APIMemoMask_All);
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to update the favorite"));
                 continue;

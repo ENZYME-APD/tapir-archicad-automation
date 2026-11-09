@@ -39,17 +39,17 @@
 </script>
 <!-- site-assets -->
 <link rel="icon" href="../../assets/favicon.svg" type="image/svg+xml">
-<meta name="theme-color" content="#2D3A30" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#2D3A30">
+<meta name="theme-color" content="#11161D" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#FFFFFF">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&amp;family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap">
 <link rel="stylesheet" href="../../assets/site.css">
-<script>try { var t = localStorage.getItem ('tapir-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute ('data-theme', t); } catch (e) {}</script>
+<script>try { var h = document.documentElement, d = {}, o = localStorage.getItem ('tapir-theme'); try { d = JSON.parse (localStorage.getItem ('tapir-display') || '{}') || {}; } catch (e) {} if (o !== null) { if ((o === 'light' || o === 'dark') && !d.theme) d.theme = o; localStorage.setItem ('tapir-display', JSON.stringify (d)); localStorage.removeItem ('tapir-theme'); } var t = d.theme === 'light' || d.theme === 'dark' || d.theme === 'contrast' ? d.theme : '', x = t === 'contrast', s = d.style === 'legacy' && !x, a = !x && (d.accent === 'blue' || d.accent === 'purple' || d.accent === 'orange') ? d.accent : '', c = x ? ['#FFFFFF', '#FFFFFF'] : s ? ['#2D3A30', '#2D3A30'] : t === 'light' ? ['#FFFFFF', '#FFFFFF'] : t === 'dark' ? ['#11161D', '#11161D'] : ['#11161D', '#FFFFFF'], m = document.querySelectorAll ('meta[name="theme-color"]'); if (s) h.setAttribute ('data-style', 'legacy'); if (t) h.setAttribute ('data-theme', t); if (a) h.setAttribute ('data-accent', a); for (var i = 0; i < m.length && i < 2; i++) m[i].setAttribute ('content', c[i]); if (s) { var k = document.createElement ('link'); k.rel = 'stylesheet'; k.id = 'font-legacy'; k.href = 'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&display=swap'; document.head.appendChild (k); } } catch (e) {}</script>
 <script>try { var l = /[?&]lang=([A-Za-z]{2})(?:[&#]|$)/.exec (location.search); l = l ? l[1].toLowerCase () : localStorage.getItem ('tapir-lang') || (navigator.language || '').slice (0, 2).toLowerCase (); if (l && l !== 'en') { document.documentElement.setAttribute ('data-i18n-loading', ''); setTimeout (function () { document.documentElement.removeAttribute ('data-i18n-loading'); }, 2000); } } catch (e) {}</script>
 <script src="../../assets/site.js" defer></script>
 <link rel="stylesheet" href="../../assets/motion.css"><script src="../../assets/motion.js" defer></script>
-<script>try { if ((!sessionStorage.getItem ('tapir-splash') || /[?&]splash/.test (location.search)) && !/nomotion/.test (location.search + location.hash) && 'IntersectionObserver' in window && !matchMedia ('(prefers-reduced-motion: reduce)').matches) { var h = document.documentElement; h.classList.add ('m-splash'); var f = function () { h.classList.add ('m-font'); }; setTimeout (f, 2500); if (document.fonts && document.fonts.load) document.fonts.load ('900 56px Fraunces').then (f, f); else f (); } } catch (e) {}</script>
+<script>try { if ((!sessionStorage.getItem ('tapir-splash') || /[?&]splash/.test (location.search)) && !/nomotion/.test (location.search + location.hash) && 'IntersectionObserver' in window && !matchMedia ('(prefers-reduced-motion: reduce)').matches) { var h = document.documentElement; h.classList.add ('m-splash'); var f = function () { h.classList.add ('m-font'); }; setTimeout (f, 2500); if (document.fonts && document.fonts.load) { var g = function () { document.fonts.load (h.getAttribute ('data-style') === 'legacy' ? '900 56px Fraunces' : '700 56px Inter').then (f, f); }, k = document.getElementById ('font-legacy'); if (k && !k.sheet) { k.addEventListener ('load', g); k.addEventListener ('error', f); } else g (); } else f (); } } catch (e) {}</script>
 <!-- /site-assets -->
 </head>
 <body>
@@ -57,7 +57,7 @@
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header">
     <div class="wrap nav">
-        <a class="brand" href="../../"><img src="../../assets/tapir_mark_cream.svg" alt="" width="30" height="30">Tapir</a>
+        <a class="brand" href="../../"><img src="../../assets/tapir_mark_cream.svg" alt="" width="30" height="30"><img class="brand-tile" src="../../assets/favicon.svg" alt="" width="30" height="30">Tapir</a>
         <nav class="site-nav" aria-label="Site"><ul>
             <li><a href="../../start/">Get started</a></li>
             <li><a href="../../docs/">Docs</a></li>
@@ -67,7 +67,7 @@
             <li><a href="../../about/">About</a></li>
         </ul></nav>
         <div class="right">
-            <button class="toggle" id="theme-toggle" type="button" data-dark="Dark" data-light="Light" hidden><span class="toggle-word">Dark</span><span class="visually-hidden"> mode</span></button>
+            <button class="toggle display-button" id="display-button" type="button" hidden><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 4.5h7M13 4.5h1M2 11.5h1M7 11.5h7"/><circle cx="11" cy="4.5" r="2"/><circle cx="5" cy="11.5" r="2"/></g></svg><span class="visually-hidden">Display</span></button>
             <a class="btn btn-primary btn-sm" href="../../start/#install">Download</a>
         </div>
     </div>

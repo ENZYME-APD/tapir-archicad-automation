@@ -133,8 +133,27 @@ GS::ObjectState CreateIssueCommand::Execute (const GS::ObjectState& parameters, 
 
     API_MarkUpType issue (name);
     issue.tagText = tagText;
-    if (parameters.Get ("parentIssueId", parentIssueId))
+    if (parameters.Get ("parentIssueId", parentIssueId)) {
         issue.parentGuid = GetGuidFromObjectState (parentIssueId);
+        if (issue.parentGuid != APINULLGuid) {
+            // ACAPI_Markup_Create accepts a parent that does not exist, so check it first.
+            GS::Array<API_MarkUpType> issueList;
+            GSErrCode listErr = ACAPI_Markup_GetList (APINULLGuid, &issueList);
+            if (listErr != NoError) {
+                return CreateErrorResponse (listErr, "Failed to retrive issues.");
+            }
+            bool parentFound = false;
+            for (const API_MarkUpType& existingIssue : issueList) {
+                if (existingIssue.guid == issue.parentGuid) {
+                    parentFound = true;
+                    break;
+                }
+            }
+            if (!parentFound) {
+                return CreateErrorResponse (APIERR_BADPARS, "The parent issue does not exist.");
+            }
+        }
+    }
 
     GSErrCode err = ACAPI_CallUndoableCommand ("Create issue", [&]() -> GSErrCode {
         return ACAPI_Markup_Create (issue);

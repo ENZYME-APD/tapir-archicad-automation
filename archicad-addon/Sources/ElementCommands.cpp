@@ -2384,11 +2384,10 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         }
 
         if (isFieldRequested ("id")) {
-            API_ElementMemo memo = {};
-            const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-            ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_ElemInfoString);
-
-            detailsOfElement.Add ("id", memo.elemInfoString != nullptr ? *memo.elemInfoString : GS::EmptyUniString);
+            // Read the way ChangeElementId writes and checks it.
+            GS::UniString elementId;
+            GetElementId (elem.header.guid, elementId);
+            detailsOfElement.Add ("id", elementId);
         }
 
         if (!additionalFields.IsEmpty ()) {
@@ -3209,6 +3208,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 typeSpecificDetails.Add ("structureType", StructureTypeToString (base.modelElemStructureType));
                 typeSpecificDetails.Add ("thickness", base.thickness);
+                typeSpecificDetails.Add ("isFlipped", elem.shell.isFlipped);
                 if (StructureTypeToString (base.modelElemStructureType) == "Composite") {
                     typeSpecificDetails.Add ("compositeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_CompWallID, base.composite)));
                 } else {
@@ -4427,13 +4427,8 @@ GS::ObjectState SetElementInfoStringsCommand::Execute (const GS::ObjectState& pa
             }
 
             const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
-#ifdef ServerMainVers_2700
+            // Before Archicad 27 MigrationHelper.hpp calls APIDb_ChangeElementInfoStringID.
             const GSErrCode err = ACAPI_Element_ChangeElementInfoString (&elemGuid, &infoString);
-#else
-            // ACAPI_Element_ChangeElementInfoString is available from AC27, before that the
-            // info string memo part is written, as SetDetailsOfElements writes the id.
-            const GSErrCode err = ChangeElementId (elemGuid, infoString);
-#endif
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to change the info string of the element"));
                 continue;
@@ -5511,6 +5506,14 @@ GS::ObjectState GetConnectedElementsCommand::Execute (const GS::ObjectState& par
         }
 
         const API_Guid ownerElemGuid = GetGuidFromObjectState (*elementId);
+
+        API_Elem_Head ownerHead = {};
+        ownerHead.guid = ownerElemGuid;
+        const GSErrCode headerErr = ACAPI_Element_GetHeader (&ownerHead);
+        if (headerErr != NoError) {
+            connectedElementsOfInputElements (CreateErrorResponse (headerErr, "Owner element not found."));
+            continue;
+        }
 
         GS::ObjectState elementsOS;
         const auto& elements = elementsOS.AddList<GS::ObjectState> ("elements");
@@ -11386,6 +11389,30 @@ GS::ObjectState GetElementAtCoordinateCommand::Execute (const GS::ObjectState& p
             GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ()));
     }
 
+    // Archicad is documented to answer APIERR_REFUSEDPAR for these, but Archicad 26 and 28 answer
+    // APIERR_BADPARS, which reads as "nothing found"; types without a polygon are refused here.
+    switch (typeID) {
+        case API_WallID:
+        case API_ColumnID:
+        case API_BeamID:
+        case API_WindowID:
+        case API_DoorID:
+        case API_SkylightID:
+        case API_ObjectID:
+        case API_LampID:
+        case API_LineID:
+        case API_PolyLineID:
+        case API_ArcID:
+        case API_SplineID:
+        case API_HotspotID:
+        case API_TextID:
+        case API_LabelID:
+        case API_DimensionID:
+            return CreateErrorResponse (APIERR_REFUSEDPAR, "Only polygonal element types can be searched by coordinate (for example Slab, Roof, Mesh, Zone or Hatch).");
+        default:
+            break;
+    }
+
     const GS::ObjectState* coordinate = parameters.Get ("coordinate");
     if (coordinate == nullptr) {
         return CreateErrorResponse (APIERR_BADPARS, "coordinate is missing");
@@ -12863,11 +12890,11 @@ GS::Optional<GS::UniString> GetQuantitiesOfElementsCommand::GetInputParametersSc
             "minOpeningSize": {
                 "type": "number",
                 "minimum": 0,
-                "description": "Optional minimum opening size in square meters. Openings smaller than this are not subtracted when the conditional values (for example volumeConditional of a Wall) are calculated. Archicad only uses it for walls. Default value is 0, so every opening is subtracted."
+                "description": "Optional minimum opening size in square meters. Openings smaller than this are not subtracted from the conditional surfaces of a Wall (referenceSideSurfaceConditional and oppositeSideSurfaceConditional). Archicad only uses it for walls; the conditional volume follows the project's calculation rules instead. Default value is 0, so every opening is subtracted."
             },
             "calculateInOneCall": {
                 "type": "boolean",
-                "description": "Optional. When true, Archicad calculates the quantities of all the supported elements in one call instead of one call per element, which can be faster for many elements. The output has the same format. If that one call fails, every supported element gets the same error. Default value is false."
+                "description": "Optional. When true, Archicad calculates the quantities of all the supported elements of one type in one call (one call per element type, because Archicad only calculates elements of the same type together) instead of one call per element, which can be faster for many elements. The output has the same format. If the call of a type fails, every element of that type gets the same error. Default value is false."
             }
         },
         "additionalProperties": false,
@@ -13211,10 +13238,29 @@ GS::ObjectState GetQuantitiesOfElementsCommand::Execute (const GS::ObjectState& 
         results.Push (CreateQuantitiesOfElement (typeID, elementQuantity, composites));
     }
 
-    if (!guidsInOneCall.IsEmpty ()) {
+    // ACAPI_Element_GetMoreQuantities calculates "multiple elements of the same type": given a
+    // wall, a slab and a zone together, it failed for all of them (#2470). So there is one call
+    // per element type, in the order the types first appear.
+    GS::Array<API_ElemTypeID> typesInOneCall;
+    for (API_ElemTypeID typeID : typeIDsInOneCall) {
+        if (!typesInOneCall.Contains (typeID)) {
+            typesInOneCall.Push (typeID);
+        }
+    }
+
+    for (API_ElemTypeID typeInOneCall : typesInOneCall) {
+        GS::Array<UIndex> indicesOfType;
+        GS::Array<API_Guid> guidsOfType;
+        for (UIndex i = 0; i < guidsInOneCall.GetSize (); ++i) {
+            if (typeIDsInOneCall[i] == typeInOneCall) {
+                indicesOfType.Push (i);
+                guidsOfType.Push (guidsInOneCall[i]);
+            }
+        }
+
         // Each element gets its own storage, like in the per element call above. All of it is pushed
         // before any address is taken, so no reallocation can invalidate the pointers.
-        const UIndex count = guidsInOneCall.GetSize ();
+        const UIndex count = guidsOfType.GetSize ();
         GS::Array<API_ElementQuantity> elementQuantities;
         GS::Array<GS::Array<API_CompositeQuantity>> compositesOfElements;
         for (UIndex i = 0; i < count; ++i) {
@@ -13230,14 +13276,14 @@ GS::ObjectState GetQuantitiesOfElementsCommand::Execute (const GS::ObjectState& 
             quantities.Push (quantitiesOfElement);
         }
 
-        GSErrCode err = ACAPI_Element_GetMoreQuantities (&guidsInOneCall, &quantityParams, &quantities, &mask);
+        GSErrCode err = ACAPI_Element_GetMoreQuantities (&guidsOfType, &quantityParams, &quantities, &mask);
         if (err == NoError && quantities.GetSize () != count) {
             err = APIERR_GENERAL;
         }
 
         const GS::Array<API_CompositeQuantity> noComposites;
         for (UIndex i = 0; i < count; ++i) {
-            const UIndex resultIndex = resultIndicesInOneCall[i];
+            const UIndex resultIndex = resultIndicesInOneCall[indicesOfType[i]];
             if (err != NoError) {
                 results[resultIndex] = CreateErrorResponse (err, "Failed to get the quantities of the elements");
                 continue;
@@ -13251,7 +13297,7 @@ GS::ObjectState GetQuantitiesOfElementsCommand::Execute (const GS::ObjectState& 
                 continue;
             }
 
-            results[resultIndex] = CreateQuantitiesOfElement (typeIDsInOneCall[i], *quantitiesOfElement.elements,
+            results[resultIndex] = CreateQuantitiesOfElement (typeInOneCall, *quantitiesOfElement.elements,
                 quantitiesOfElement.composites != nullptr ? *quantitiesOfElement.composites : noComposites);
         }
     }

@@ -805,7 +805,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetQuantitiesOfElementsCommand> (
             elementCommands, "1.7.2",
-            "Gets the quantities of the given elements calculated by Archicad (volumes, surfaces, lengths etc.), together with the volume and projected area per building material (one item per skin of composite and complex profile elements, one item for basic elements). Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment. Use the optional minOpeningSize parameter to control the conditional values, and calculateInOneCall to calculate all the elements in one Archicad call."
+            "Gets the quantities of the given elements calculated by Archicad (volumes, surfaces, lengths etc.), together with the volume and projected area per building material (one item per skin of composite and complex profile elements, one item for basic elements). Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment. Use the optional minOpeningSize parameter to control the conditional values, and calculateInOneCall to calculate the elements of each type in one Archicad call."
         );
         err |= RegisterCommand<TriangulatePolygonsOfElementsCommand> (
             elementCommands, "1.7.3",
@@ -1029,7 +1029,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetHotspotsOfElementsCommand> (
             elementCommands, "1.8.0",
-            "Gets the 2D hotspots of the given library part instances (Objects, Lamps, Windows, Doors, Skylights, Zones, Curtain Wall parts, etc.), e.g. to dimension to them."
+            "Gets the 2D hotspots of the given library part instances (Objects, Lamps, Windows, Doors, Skylights, Zones, Curtain Wall parts, etc.), in the library part's own coordinate system. For their positions in the project use GetSnapPointsOfElements."
         );
         err |= RegisterCommand<SetMarkerLibraryPartOfElementsCommand> (
             elementCommands, "2.0.0",
@@ -1282,11 +1282,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyRoofsCommand> (
             elementCommands, "1.4.0",
-            "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness and structure apply to both; angle, pivotLine and edgeTrims (the cut of each polygon edge) only to single-plane roofs; levels, eavesOverhang and pivotEdges only to multi-plane roofs."
+            "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness, structure and the top, side and bottom surface overrides apply to both; angle, pivotLine, edgeTrims (the cut of each polygon edge) and edgeSideMaterials (the custom surface of each polygon edge) only to single-plane roofs; levels, eavesOverhang and pivotEdges only to multi-plane roofs."
         );
         err |= RegisterCommand<ModifyShellsCommand> (
             elementCommands, "1.8.0",
-            "Modifies the structure (Basic or Composite, building material or composite) of Shell elements based on the given parameters."
+            "Modifies the structure (Basic or Composite, building material or composite), the thickness of Basic shells and the side of the reference surface the thickness is applied to (isFlipped) of Shell elements based on the given parameters. The reference surface stays in place when the thickness changes; a thickness for a Composite shell is refused, as it comes from the composite."
         );
         err |= RegisterCommand<ModifyMeshesCommand> (
             elementCommands, "1.5.4",
@@ -1294,7 +1294,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyRailingsCommand> (
             elementCommands, "2.0.0",
-            "Modifies Railing elements in place: the height of all their segments, the bottom offset and the home story, and single segments (height, lateral offset) and nodes (post offset, elevation, whether the pattern continues across the node) by their index in the segments and nodes GetDetailsOfElements returns. The reference line, the other segments and nodes, the posts, rails and panels and the railing's GUID stay as they are. Each railing is read back after the change, and a value Archicad did not apply gets a failed execution result."
+            "Modifies Railing elements in place: the height of all their segments, the bottom offset, the home story, the story visibility (visibility, isAutoOnStoryVisibility; Archicad 29 does not let the automatic story visibility be turned off) and the pens of the reference line and the contour, and single segments (height, lateral offset) and nodes (post offset, elevation, whether the pattern continues across the node) by their index in the segments and nodes GetDetailsOfElements returns. The reference line, the other segments and nodes, the posts, rails and panels and the railing's GUID stay as they are. Each railing is read back once the change is done, and a value Archicad did not apply gets a failed execution result."
         );
         err |= RegisterCommand<ModifyObjectsCommand> (
             elementCommands, "1.5.7",
@@ -3348,7 +3348,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetAnalyticalLoadGroupsCommand> (
             analyticalCommands, "1.8.0",
-            "Retrieves the structural analysis load groups of the project with all their fields."
+            "Retrieves the structural analysis load groups of the project, or the ones given by their ids, with all their fields."
         );
         err |= RegisterCommand<GetAnalyticalLoadCasesCommand> (
             analyticalCommands, "1.8.0",
@@ -3356,7 +3356,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetAnalyticalLoadCombinationsCommand> (
             analyticalCommands, "1.8.0",
-            "Retrieves the structural analysis load combinations of the project with all their fields and load factors."
+            "Retrieves the structural analysis load combinations of the project, or the ones given by their ids, with all their fields and load factors."
         );
         err |= RegisterCommand<CreateAnalyticalLoadGroupsCommand> (
             analyticalCommands, "1.8.0",

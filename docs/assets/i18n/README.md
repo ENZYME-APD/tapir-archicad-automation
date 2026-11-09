@@ -16,8 +16,10 @@ English as Indian architects use them (Archicad, script, BIM, property, layer, A
 
 One folder per language, each with:
 
-- `common.js`: what every page shares (header, footer, the dark mode and copy buttons). These parts
-  are translated without being marked (`SHARED_TEXT` and `SHARED_ATTRS` in `site.js`).
+- `common.js`: what every page shares (header, footer, the copy buttons, and the Display menu's
+  title, settings, options, "Reset to defaults" and "Done"). These parts are translated without
+  being marked (`SHARED_TEXT` and `SHARED_ATTRS` in `site.js`); the Display panel and the phone
+  menu's button, which `site.js` builds, look their English up in it when they are built.
 - one file per page or page group, loaded by the pages that name it in their `<html>` element:
   `<html ... data-i18n-pages="home">` loads `<language>/home.js` too. Only a page with
   `data-i18n-pages` gets the language in its `<html lang>`; on the others each translated element

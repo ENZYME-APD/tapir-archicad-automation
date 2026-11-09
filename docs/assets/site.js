@@ -1,8 +1,20 @@
 /* The shared behaviour of every page of Tapir's site: the language menu and the translations, the
-   dark mode toggle, the header's menu on phones, a copy button on code blocks, and the live figures. The pages are complete
-   without it; it only adds to them. Every text it shows is in the page's HTML, so the pages can be
-   translated: the toggle's two words are its data-dark and data-light attributes, the copy button's
-   labels are data-copy and data-copied on the <html> element.
+   Display menu, the header's menu on phones, a copy button on code blocks, and the live figures. The pages are complete
+   without it; it only adds to them. The texts it shows are in the page's HTML (the copy button's
+   labels are data-copy and data-copied on the <html> element), or, for the menus it builds (the
+   phone menu's button and the Display panel), English here, translated by common.js like the rest.
+
+   Display: the visitor's look (Standard or Legacy), mode (System, Light, Dark or High contrast) and
+   accent (the look's own, Blue, Purple or Orange), kept in localStorage under tapir-display as an
+   object of the settings that differ from the default, e.g. {"style":"legacy","theme":"dark",
+   "accent":"blue"}, and applied as data-style, data-theme and data-accent on <html> (no attribute
+   for a default). High contrast is one look, the same whichever Look and Accent are chosen: with it,
+   neither data-style nor data-accent is set (the stored choices stay, for the other modes), and the
+   panel's Accent is disabled. The head's inline script applies them before the first paint, moves an old
+   tapir-theme choice into tapir-display, sets the theme-color metas and loads Fraunces for Legacy
+   only; this script does the same when the choice changes. Keep the two in step (DISPLAY_SETTINGS,
+   THEME_COLORS, LEGACY_FONTS). A page that draws with colours listens for tapir-display-change on
+   document and draws again.
 
    Translations: the English stays in the HTML. In another language, the inner HTML of every element
    marked data-i18n, and the attributes an element names in data-i18n-attrs="<attribute> ...", are
@@ -31,7 +43,19 @@
 (function () {
     'use strict';
 
-    var STORAGE_KEY = 'tapir-theme';
+    var DISPLAY_KEY = 'tapir-display';
+    var OLD_THEME_KEY = 'tapir-theme';
+    // Each setting: its key in tapir-display, the <html> attribute, the panel's legend, and its options
+    // (value, label, and the label in Legacy when it differs), the default first, which sets no
+    // attribute. inContrast: false for the settings High contrast sets no attribute for.
+    var DISPLAY_SETTINGS = [
+        { key: 'style', attribute: 'data-style', legend: 'Look', inContrast: false, options: [['standard', 'Standard'], ['legacy', 'Legacy']] },
+        { key: 'theme', attribute: 'data-theme', legend: 'Mode', inContrast: true, options: [['system', 'System'], ['light', 'Light'], ['dark', 'Dark'], ['contrast', 'High contrast']] },
+        { key: 'accent', attribute: 'data-accent', legend: 'Accent', inContrast: false, options: [['look', 'Green', 'Ochre'], ['blue', 'Blue'], ['purple', 'Purple'], ['orange', 'Orange']] }
+    ];
+    // The browser bar colour (the header's): [under prefers-color-scheme: dark, otherwise].
+    var THEME_COLORS = { legacy: ['#2D3A30', '#2D3A30'], contrast: ['#FFFFFF', '#FFFFFF'], standard: { system: ['#11161D', '#FFFFFF'], light: ['#FFFFFF', '#FFFFFF'], dark: ['#11161D', '#11161D'] } };
+    var LEGACY_FONTS = 'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&display=swap';
     var CACHE_KEY = 'tapir-live-v1';
     var CACHE_MS = 60 * 60 * 1000;
     var REPO = 'ENZYME-APD/tapir-archicad-automation';
@@ -69,8 +93,7 @@
         '.site-footer .lab, .site-footer .note, .site-footer .fine, .site-footer li a';
     var SHARED_ATTRS = [
         ['html', 'data-copy data-copied'],
-        ['.site-nav', 'aria-label'],
-        ['#theme-toggle', 'data-dark data-light']
+        ['.site-nav', 'aria-label']
     ];
     var NAME_PATTERN = /^[a-z0-9]+(-[a-z0-9]+)*$/;
     var dictionary = {};
@@ -261,7 +284,7 @@
     }
 
     function setUpLanguageMenu (current) {
-        var toggle = document.getElementById ('theme-toggle');
+        var toggle = document.getElementById ('display-button');
         var place = toggle ? toggle.parentNode : document.querySelector ('.site-header .right');
         if (!place) {
             return;
@@ -304,71 +327,290 @@
         }
     };
 
-    // ---- Dark mode ----
+    // ---- Display: look and mode ----
 
-    function storedTheme () {
-        try {
-            var theme = window.localStorage.getItem (STORAGE_KEY);
-            return theme === 'light' || theme === 'dark' ? theme : null;
-        } catch (e) {
-            return null;
-        }
+    function isOption (setting, value) {
+        return setting.options.some (function (option) { return option[0] === value; });
     }
 
-    function storeTheme (theme) {
+    // Only the known settings with a known, non-default value.
+    function cleanDisplay (settings) {
+        var clean = {};
+        DISPLAY_SETTINGS.forEach (function (setting) {
+            var value = settings ? settings[setting.key] : null;
+            if (typeof value === 'string' && value !== setting.options[0][0] && isOption (setting, value)) {
+                clean[setting.key] = value;
+            }
+        });
+        return clean;
+    }
+
+    // The stored settings; moves an old tapir-theme choice into them (the head's script normally did).
+    function storedDisplay () {
+        var settings = {};
         try {
-            window.localStorage.setItem (STORAGE_KEY, theme);
+            settings = JSON.parse (window.localStorage.getItem (DISPLAY_KEY) || '{}') || {};
+        } catch (e) {
+            settings = {};
+        }
+        try {
+            var oldTheme = window.localStorage.getItem (OLD_THEME_KEY);
+            if (oldTheme !== null) {
+                if ((oldTheme === 'light' || oldTheme === 'dark') && !settings.theme) {
+                    settings.theme = oldTheme;
+                }
+                window.localStorage.setItem (DISPLAY_KEY, JSON.stringify (cleanDisplay (settings)));
+                window.localStorage.removeItem (OLD_THEME_KEY);
+            }
+        } catch (e) {}
+        return cleanDisplay (settings);
+    }
+
+    function storeDisplay (settings) {
+        try {
+            if (Object.keys (settings).length) {
+                window.localStorage.setItem (DISPLAY_KEY, JSON.stringify (settings));
+            } else {
+                window.localStorage.removeItem (DISPLAY_KEY);
+            }
         } catch (e) {}
     }
 
-    function isDark () {
-        var theme = root.getAttribute ('data-theme');
-        if (theme === 'light' || theme === 'dark') {
-            return theme === 'dark';
+    function applyDisplay (settings) {
+        var contrast = settings.theme === 'contrast';
+        DISPLAY_SETTINGS.forEach (function (setting) {
+            if (settings[setting.key] && (setting.inContrast || !contrast)) {
+                root.setAttribute (setting.attribute, settings[setting.key]);
+            } else {
+                root.removeAttribute (setting.attribute);
+            }
+        });
+        var legacy = settings.style === 'legacy' && !contrast;
+        var colors = contrast ? THEME_COLORS.contrast : legacy ? THEME_COLORS.legacy : THEME_COLORS.standard[settings.theme || 'system'];
+        var metas = document.querySelectorAll ('meta[name="theme-color"]');
+        for (var i = 0; i < metas.length && i < colors.length; i++) {
+            metas[i].setAttribute ('content', colors[i]);
         }
-        return !!(darkQuery && darkQuery.matches);
+        // Fraunces is only Legacy's; once loaded it stays, unused, if the visitor goes back to Standard.
+        if (legacy && !document.getElementById ('font-legacy')) {
+            var link = document.createElement ('link');
+            link.rel = 'stylesheet';
+            link.id = 'font-legacy';
+            link.href = LEGACY_FONTS;
+            document.head.appendChild (link);
+        }
+        var event;
+        try {
+            event = new CustomEvent ('tapir-display-change', { detail: settings });
+        } catch (e) {
+            event = document.createEvent ('CustomEvent');
+            event.initCustomEvent ('tapir-display-change', false, false, settings);
+        }
+        document.dispatchEvent (event);
     }
 
-    function setUpThemeToggle () {
-        var toggle = document.getElementById ('theme-toggle');
-        if (!toggle) {
-            return;
-        }
-        // The head's inline script already applied a stored choice; this repeats it in case it could not run.
-        var theme = storedTheme ();
-        if (theme) {
-            root.setAttribute ('data-theme', theme);
-        }
-        var word = toggle.querySelector ('.toggle-word') || toggle;
-        function update () {
-            // The button names the theme it switches to.
-            word.textContent = isDark () ? toggle.getAttribute ('data-light') : toggle.getAttribute ('data-dark');
-        }
-        toggle.addEventListener ('click', function () {
-            var next = isDark () ? 'light' : 'dark';
-            root.setAttribute ('data-theme', next);
-            storeTheme (next);
-            update ();
-        });
+    // The Display button opens a dialog with one fieldset of radio buttons per setting; a change applies
+    // at once. A popover under the button on wide screens, a sheet from the bottom below 640 px (CSS).
+    function setUpDisplayMenu () {
+        var button = document.getElementById ('display-button');
+        // The head's inline script already applied the stored choice; this repeats it in case it could not run.
+        var settings = storedDisplay ();
+        applyDisplay (settings);
         if (darkQuery) {
-            var onChange = function () {
-                if (!root.hasAttribute ('data-theme')) {
-                    update ();
+            // In System mode a page that draws with colours draws again when the system's mode changes.
+            var onSystemChange = function () {
+                if (!settings.theme) {
+                    applyDisplay (settings);
                 }
             };
             if (darkQuery.addEventListener) {
-                darkQuery.addEventListener ('change', onChange);
+                darkQuery.addEventListener ('change', onSystemChange);
             } else if (darkQuery.addListener) {
-                darkQuery.addListener (onChange);
+                darkQuery.addListener (onSystemChange);
             }
         }
+        if (!button) {
+            return;
+        }
+        function text (english) {
+            return translate (english) || english;
+        }
+
+        var panel = document.createElement ('div');
+        panel.className = 'display-panel';
+        panel.id = 'display-panel';
+        panel.hidden = true;
+        panel.setAttribute ('role', 'dialog');
+        panel.setAttribute ('aria-labelledby', 'display-title');
+        var head = document.createElement ('div');
+        head.className = 'display-head';
+        var title = document.createElement ('p');
+        title.className = 'display-title';
+        title.id = 'display-title';
+        title.textContent = text ('Display');
+        var done = document.createElement ('button');
+        done.type = 'button';
+        done.className = 'display-done';
+        done.textContent = text ('Done');
+        head.appendChild (title);
+        head.appendChild (done);
+        panel.appendChild (head);
+
+        var inputs = [];
+        // The labels that differ in Legacy (the accent's own: Green or Ochre): [text node, label, Legacy's].
+        var lookLabels = [];
+        // The fieldsets of the settings High contrast leaves out of the page, disabled while it is chosen.
+        var notInContrast = [];
+        DISPLAY_SETTINGS.forEach (function (setting) {
+            var fieldset = document.createElement ('fieldset');
+            var legend = document.createElement ('legend');
+            legend.textContent = text (setting.legend);
+            fieldset.appendChild (legend);
+            if (setting.key === 'accent') {
+                notInContrast.push (fieldset);
+            }
+            var options = document.createElement ('div');
+            options.className = 'display-options';
+            setting.options.forEach (function (option) {
+                var label = document.createElement ('label');
+                var input = document.createElement ('input');
+                input.type = 'radio';
+                input.name = 'display-' + setting.key;
+                input.value = option[0];
+                input.tapirSetting = setting;
+                label.appendChild (input);
+                var labelText = document.createTextNode (text (option[1]));
+                label.appendChild (labelText);
+                if (option[2]) {
+                    lookLabels.push ([labelText, text (option[1]), text (option[2])]);
+                }
+                options.appendChild (label);
+                inputs.push (input);
+                input.addEventListener ('change', function () {
+                    if (!input.checked) {
+                        return;
+                    }
+                    if (option[0] === setting.options[0][0]) {
+                        delete settings[setting.key];
+                    } else {
+                        settings[setting.key] = option[0];
+                    }
+                    applyDisplay (settings);
+                    storeDisplay (settings);
+                    update ();
+                });
+            });
+            fieldset.appendChild (options);
+            panel.appendChild (fieldset);
+        });
+
+        var reset = document.createElement ('button');
+        reset.type = 'button';
+        reset.className = 'display-reset';
+        reset.textContent = text ('Reset to defaults');
+        panel.appendChild (reset);
+        document.body.appendChild (panel);
+
+        // Checks the radio button of each setting's current value (a label shows it checked, also in
+        // browsers without :has), names the accent's own after the chosen look, and disables Accent
+        // in High contrast, where it does not apply.
+        function update () {
+            inputs.forEach (function (input) {
+                var current = settings[input.tapirSetting.key] || input.tapirSetting.options[0][0];
+                input.checked = input.value === current;
+                input.parentNode.classList.toggle ('checked', input.checked);
+            });
+            lookLabels.forEach (function (entry) {
+                entry[0].nodeValue = settings.style === 'legacy' ? entry[2] : entry[1];
+            });
+            notInContrast.forEach (function (fieldset) {
+                fieldset.disabled = settings.theme === 'contrast';
+            });
+        }
+
+        function isOpen () {
+            return !panel.hidden;
+        }
+
+        function place () {
+            var rect = button.getBoundingClientRect ();
+            panel.style.top = Math.max (8, rect.bottom + 8) + 'px';
+            panel.style.right = Math.max (16, document.documentElement.clientWidth - rect.right) + 'px';
+        }
+
+        function open () {
+            update ();
+            place ();
+            panel.hidden = false;
+            button.setAttribute ('aria-expanded', 'true');
+            var checked = panel.querySelector ('input:checked') || panel.querySelector ('input');
+            if (checked) {
+                checked.focus ();
+            }
+        }
+
+        // Back to the Display button, or to the phone menu's button when the menu holding it is closed.
+        function close (focusButton) {
+            if (!isOpen ()) {
+                return;
+            }
+            panel.hidden = true;
+            button.setAttribute ('aria-expanded', 'false');
+            if (focusButton) {
+                var menuButton = document.querySelector ('.site-header .menu-button');
+                (button.offsetParent === null && menuButton ? menuButton : button).focus ();
+            }
+        }
+
+        button.setAttribute ('aria-haspopup', 'dialog');
+        button.setAttribute ('aria-expanded', 'false');
+        button.setAttribute ('aria-controls', panel.id);
+        button.addEventListener ('click', function () {
+            if (isOpen ()) {
+                close (true);
+            } else {
+                open ();
+            }
+        });
+        done.addEventListener ('click', function () {
+            close (true);
+        });
+        reset.addEventListener ('click', function () {
+            settings = {};
+            applyDisplay (settings);
+            storeDisplay (settings);
+            update ();
+        });
+        document.addEventListener ('keydown', function (event) {
+            if ((event.key === 'Escape' || event.key === 'Esc') && isOpen ()) {
+                close (true);
+            }
+        });
+        // A tap on text sends no click on iOS, so outside the panel it listens to pointerdown.
+        document.addEventListener (window.PointerEvent ? 'pointerdown' : 'click', function (event) {
+            if (isOpen () && !panel.contains (event.target) && !button.contains (event.target)) {
+                close (true);
+            }
+        });
+        // Tabbing out of the panel closes it too, leaving the focus where it went.
+        panel.addEventListener ('focusout', function (event) {
+            var next = event.relatedTarget;
+            if (next && !panel.contains (next) && next !== button) {
+                close (false);
+            }
+        });
+        window.addEventListener ('resize', function () {
+            if (isOpen ()) {
+                place ();
+            }
+        });
         update ();
-        toggle.hidden = false;
+        button.hidden = false;
     }
 
     // ---- The header's menu on phones ----
 
-    // Below 640 px (as in site.css) the nav, the language menu and the dark mode toggle move into a
+    // Below 640 px (as in site.css) the nav, the language menu and the Display button move into a
     // panel under the header, opened by a menu button next to Download; on wider screens they stay
     // where they are. Without this script the nav stays a row of links under the logo.
     var NARROW_QUERY = '(max-width: 640px)';
@@ -406,9 +648,9 @@
         button.appendChild (label);
         right.appendChild (button);
 
-        // The language menu and the toggle, in their order, and what follows them in .right.
+        // The language menu and the Display button, in their order, and what follows them in .right.
         var moved = Array.prototype.filter.call (right.children, function (child) {
-            return child.id === 'lang-select' || child.id === 'theme-toggle';
+            return child.id === 'lang-select' || child.id === 'display-button';
         });
         var movedBefore = moved.length ? moved[moved.length - 1].nextSibling : null;
         header.classList.add ('has-menu');
@@ -735,7 +977,7 @@
             }
             root.removeAttribute ('data-i18n-loading');
             setUpLanguageMenu (language);
-            setUpThemeToggle ();
+            setUpDisplayMenu ();
             setUpMenu ();
             setUpCopyButtons ();
             setUpLiveFigures ();

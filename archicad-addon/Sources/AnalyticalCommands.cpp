@@ -3251,6 +3251,24 @@ GS::String GetAnalyticalLoadGroupsCommand::GetName () const
     return "GetAnalyticalLoadGroups";
 }
 
+GS::Optional<GS::UniString> GetAnalyticalLoadGroupsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "loadGroupIds": {
+                "type": "array",
+                "description": "The load groups to read, answered in this order, an error object for one that does not exist. Every load group of the project is listed when it is omitted.",
+                "items": {
+                    "$ref": "#/AnalyticalLoadGroupIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
 GS::Optional<GS::UniString> GetAnalyticalLoadGroupsCommand::GetRawResponseSchema () const
 {
     return R"({
@@ -3258,7 +3276,7 @@ GS::Optional<GS::UniString> GetAnalyticalLoadGroupsCommand::GetRawResponseSchema
         "properties": {
             "loadGroups": {
                 "type": "array",
-                "description": "The load groups of the project. A load group that cannot be read is represented by an error object.",
+                "description": "The load groups of the project, or the ones given in loadGroupIds. A load group that cannot be read is represented by an error object.",
                 "items": {
                     "type": "object",
                     "oneOf": [
@@ -3279,17 +3297,25 @@ GS::Optional<GS::UniString> GetAnalyticalLoadGroupsCommand::GetRawResponseSchema
     })";
 }
 
-GS::ObjectState GetAnalyticalLoadGroupsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState GetAnalyticalLoadGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<API_Guid> loadGroupGuids;
-    const GSErrCode err = TAPIR_GetAnalyticalLoadGroups (loadGroupGuids);
-    if (err != NoError) {
-        return CreateErrorResponse (err, "Failed to get the analytical load groups.");
+    if (parameters.Contains ("loadGroupIds")) {
+        loadGroupGuids = GetGuidsFromIdList (parameters, "loadGroupIds", "loadGroupId");
+    } else {
+        const GSErrCode err = TAPIR_GetAnalyticalLoadGroups (loadGroupGuids);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to get the analytical load groups.");
+        }
     }
 
     GS::ObjectState response;
     const auto& loadGroups = response.AddList<GS::ObjectState> ("loadGroups");
     for (const API_Guid& loadGroupGuid : loadGroupGuids) {
+        if (loadGroupGuid == APINULLGuid) {
+            loadGroups (CreateErrorResponse (APIERR_BADPARS, "loadGroupId is missing or invalid."));
+            continue;
+        }
         API_AnalyticalLoadGroup loadGroup = {};
         const GSErrCode getErr = TAPIR_GetAnalyticalLoadGroup (loadGroupGuid, loadGroup);
         if (getErr != NoError) {
@@ -3398,6 +3424,24 @@ GS::String GetAnalyticalLoadCombinationsCommand::GetName () const
     return "GetAnalyticalLoadCombinations";
 }
 
+GS::Optional<GS::UniString> GetAnalyticalLoadCombinationsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "loadCombinationIds": {
+                "type": "array",
+                "description": "The load combinations to read, answered in this order, an error object for one that does not exist. Every load combination of the project is listed when it is omitted.",
+                "items": {
+                    "$ref": "#/AnalyticalLoadCombinationIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
 GS::Optional<GS::UniString> GetAnalyticalLoadCombinationsCommand::GetRawResponseSchema () const
 {
     return R"({
@@ -3405,7 +3449,7 @@ GS::Optional<GS::UniString> GetAnalyticalLoadCombinationsCommand::GetRawResponse
         "properties": {
             "loadCombinations": {
                 "type": "array",
-                "description": "The load combinations of the project. A load combination that cannot be read is represented by an error object.",
+                "description": "The load combinations of the project, or the ones given in loadCombinationIds. A load combination that cannot be read is represented by an error object.",
                 "items": {
                     "type": "object",
                     "oneOf": [
@@ -3426,17 +3470,25 @@ GS::Optional<GS::UniString> GetAnalyticalLoadCombinationsCommand::GetRawResponse
     })";
 }
 
-GS::ObjectState GetAnalyticalLoadCombinationsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState GetAnalyticalLoadCombinationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<API_Guid> loadCombinationGuids;
-    const GSErrCode err = TAPIR_GetAnalyticalLoadCombinations (loadCombinationGuids);
-    if (err != NoError) {
-        return CreateErrorResponse (err, "Failed to get the analytical load combinations.");
+    if (parameters.Contains ("loadCombinationIds")) {
+        loadCombinationGuids = GetGuidsFromIdList (parameters, "loadCombinationIds", "loadCombinationId");
+    } else {
+        const GSErrCode err = TAPIR_GetAnalyticalLoadCombinations (loadCombinationGuids);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to get the analytical load combinations.");
+        }
     }
 
     GS::ObjectState response;
     const auto& loadCombinations = response.AddList<GS::ObjectState> ("loadCombinations");
     for (const API_Guid& loadCombinationGuid : loadCombinationGuids) {
+        if (loadCombinationGuid == APINULLGuid) {
+            loadCombinations (CreateErrorResponse (APIERR_BADPARS, "loadCombinationId is missing or invalid."));
+            continue;
+        }
         API_AnalyticalLoadCombination loadCombination = {};
         const GSErrCode getErr = TAPIR_GetAnalyticalLoadCombination (loadCombinationGuid, loadCombination);
         if (getErr != NoError) {

@@ -4,25 +4,30 @@
    (.dim), cards are drawn with an ink line and lift onto an ochre shadow, the scripts read like an
    Archicad schedule (.schedule) and the footer is a drawing title block (.tblock).
 
+   This drawing set is the Legacy look (data-style="legacy" on <html>); the default Standard look is
+   the last part of this file, which overrides it.
+
    Every page links it as <root>/assets/site.css, together with <root>/assets/site.js, and repeats the
    same header and footer (between the site-header and site-footer comments), and the head's
    site-assets block: the favicon, two theme-color metas that colour a phone's browser bars like the
-   header (the dark one first, as a browser takes the first that matches; both are --moss, which the
-   header keeps in dark mode):
-       <meta name="theme-color" content="#2D3A30" media="(prefers-color-scheme: dark)">
-       <meta name="theme-color" content="#2D3A30">
-   the fonts, this file, site.js and two inline scripts: the stored theme, and data-i18n-loading
-   while a translation loads (see site.js). On phones site.js turns the header's nav, language menu
-   and toggle into a menu (.has-menu, below).
+   header (the dark one first, as a browser takes the first that matches; Standard's surface colours,
+   which the head's display script changes for a stored look or mode, and site.js when it changes):
+       <meta name="theme-color" content="#11161D" media="(prefers-color-scheme: dark)">
+       <meta name="theme-color" content="#FFFFFF">
+   the fonts (Inter and JetBrains Mono; the display script adds Fraunces for Legacy only), this file,
+   site.js and two inline scripts: the stored Display settings (see site.js), and data-i18n-loading
+   while a translation loads. On phones site.js turns the header's nav, language menu and Display
+   button into a menu (.has-menu, below).
    Right after the site.js line it links <root>/assets/motion.css and <root>/assets/motion.js and
    repeats the inline splash script, which sets html.m-splash on the first page of a visit (see
    motion.css).
 
-   Light is the default. Dark applies under prefers-color-scheme: dark, unless the header's toggle
-   chose a theme: it sets data-theme="light" or "dark" on <html> (remembered in localStorage).
-   A page's own colours for dark mode use the same two selectors as below:
+   Light is the default. Dark applies under prefers-color-scheme: dark, unless the Display menu's Mode
+   chose one: it sets data-theme="light", "dark" or "contrast" (High contrast, near the end of this
+   file) on <html> (remembered in localStorage). A page's own colours for dark mode use the same two
+   selectors as below; the second leaves out High contrast, which the system's dark mode never changes:
        :root[data-theme="dark"] { ... }
-       @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { ... } }
+       @media (prefers-color-scheme: dark) { :root:not([data-theme="light"], [data-theme="contrast"]) { ... } }
 
    Brand colours: Deep Charcoal #1C1E1F, Natural Cream #F4F1EA, Paper #FFFFFF, Jungle Moss #2D3A30,
    Earthy Ochre #BD8D53 (text on it is always charcoal), Deep Ochre #8A6235 (links on light),
@@ -51,9 +56,31 @@
     --code-bg: rgba(112, 124, 128, .12); --pre-bg: var(--charcoal); --pre-text: var(--cream);
     --font-heading: var(--display); --font-sans: var(--body); --font-mono: var(--mono);
     --radius: 4px; --radius-small: 4px; --content-width: 1200px; --text-width: 72ch;
+
+    /* Every colour, texture and shadow the rules below draw with: they use these properties, never a
+       literal, so a look is one block of values. The -NN suffix is the opacity in percent. */
+    --slate-light: #97A2A6; --slate-pale: #C9CFD1; --sage: #B9C7B4; --moss-light: #3C4D40;
+    --cream-06: rgba(244, 241, 234, .06); --cream-07: rgba(244, 241, 234, .07); --cream-10: rgba(244, 241, 234, .1);
+    --cream-12: rgba(244, 241, 234, .12); --cream-30: rgba(244, 241, 234, .3); --cream-35: rgba(244, 241, 234, .35);
+    --cream-55: rgba(244, 241, 234, .55); --cream-72: rgba(244, 241, 234, .72); --cream-86: rgba(244, 241, 234, .86);
+    --charcoal-12: rgba(28, 30, 31, .12); --charcoal-25: rgba(28, 30, 31, .25); --charcoal-90: rgba(28, 30, 31, .9);
+    --moss-25: rgba(45, 58, 48, .25);
+    /* The 24 px drafting grid behind the page, the coarser one on the page heads and the video frames,
+       and the diagonal hatching on the ochre page heads. */
+    --texture: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    --texture-head: linear-gradient(var(--cream-06) 1px, transparent 1px), linear-gradient(90deg, var(--cream-06) 1px, transparent 1px);
+    --texture-frame: linear-gradient(var(--cream-07) 1px, transparent 1px), linear-gradient(90deg, var(--cream-07) 1px, transparent 1px);
+    --hatch: repeating-linear-gradient(45deg, var(--charcoal-12) 0 1px, transparent 1px 12px);
+    /* Hard offset shadows: a card lifting onto ochre (and a smaller one for the coverage tiles and the
+       command reference's cards), a pressed button, the code panel; the soft ones under the phone menu
+       and the sidebar drawer of the command reference and the coverage pages. */
+    --shadow-lift: 6px 6px 0 var(--ochre); --shadow-lift-small: 4px 4px 0 var(--ochre);
+    --shadow-drawer: 0 0 20px rgba(0, 0, 0, .3); --shadow-press: 0 6px 0 -2px var(--charcoal);
+    --shadow-term: 12px 12px 0 var(--moss); --shadow-term-small: 6px 6px 0 var(--moss);
+    --shadow-term-dark: 12px 12px 0 var(--moss-light); --shadow-menu: 0 12px 24px var(--charcoal-25);
     color-scheme: light;
 }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"], [data-theme="contrast"]) {
     --bg: #1C1E1F; --surface: #262A2B; --fg: #F4F1EA; --muted: #97A2A6; --line: rgba(151, 162, 166, .24);
     --grid: rgba(244, 241, 234, .045); --link: #D4A876; --badge: rgba(212, 168, 118, .16); --focus: var(--ochre-light);
     --card-hover: #2E3334; --border-strong: rgba(151, 162, 166, .5); --link-hover: #E6C79E;
@@ -68,7 +95,7 @@
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100% }
 body {
     margin: 0; background: var(--bg); color: var(--fg); font: 400 16px/1.6 var(--body);
-    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-image: var(--texture);
     background-size: 24px 24px;
     overflow-wrap: break-word;
 }
@@ -104,17 +131,18 @@ pre code { background: none; padding: 0; font-size: inherit; color: inherit; bor
 main { display: block }
 
 /* ---------- header ---------- */
-.site-header { background: var(--moss); color: var(--cream); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; border-bottom: 1px solid rgba(244, 241, 234, .12); --focus: var(--ochre-light) }
+.site-header { background: var(--moss); color: var(--cream); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; border-bottom: 1px solid var(--cream-12); --focus: var(--ochre-light) }
 .site-header .nav { display: flex; align-items: center; gap: 8px 28px; padding-block: 12px; flex-wrap: wrap }
 .brand { display: flex; align-items: center; gap: 10px; color: var(--cream); text-decoration: none; font: 900 24px/1 var(--display) }
 .brand:hover { color: var(--cream) }
 .brand img { width: 30px; height: 30px; display: block }
+.brand img.brand-tile { display: none } /* favicon.svg, shown only by the Standard look's light header */
 .site-nav ul { display: flex; gap: 4px 22px; list-style: none; margin: 0; padding: 0; flex-wrap: wrap }
 .site-nav a { display: inline-block; padding-block: 4px; color: var(--cream); text-decoration: none; font-weight: 500; font-size: 15px; opacity: .88 }
 .site-nav a:hover { opacity: 1; color: var(--ochre-light) }
 .site-nav a[aria-current] { opacity: 1; color: var(--ochre-light); box-shadow: inset 0 -2px 0 var(--ochre-light) }
 .site-header .right { margin-left: auto; display: flex; gap: 10px; align-items: center }
-.toggle { background: transparent; color: var(--cream); border: 1px solid rgba(244, 241, 234, .3); border-radius: 8px; padding: 7px 11px; font: 500 12px var(--mono); cursor: pointer }
+.toggle { background: transparent; color: var(--cream); border: 1px solid var(--cream-30); border-radius: 8px; padding: 7px 11px; font: 500 12px var(--mono); cursor: pointer }
 .toggle:hover { border-color: var(--ochre-light); color: var(--ochre-light) }
 /* The language menu (site.js adds it), drawn like the toggle; the open list in the brand's colours. */
 .lang-select { max-width: 9.5em }
@@ -124,7 +152,7 @@ main { display: block }
    the nav sits in the header row as before, and the language menu and the toggle stay in .right. */
 .site-menu { display: contents }
 .menu-tools, .menu-button { display: none }
-.menu-button { align-items: center; justify-content: center; width: 40px; height: 38px; padding: 0; background: transparent; color: var(--cream); border: 1px solid rgba(244, 241, 234, .3); border-radius: 8px; cursor: pointer }
+.menu-button { align-items: center; justify-content: center; width: 40px; height: 38px; padding: 0; background: transparent; color: var(--cream); border: 1px solid var(--cream-30); border-radius: 8px; cursor: pointer }
 .menu-button:hover { border-color: var(--ochre-light); color: var(--ochre-light) }
 .menu-icon, .menu-icon::before, .menu-icon::after { display: block; width: 18px; height: 2px; border-radius: 1px; background: currentColor }
 .menu-icon { position: relative }
@@ -139,13 +167,13 @@ main { display: block }
 /* ---------- buttons ---------- */
 .btn { display: inline-flex; align-items: center; gap: 10px; border-radius: 8px; padding: 14px 22px; font: 700 15px/1 var(--body); text-decoration: none; border: 1.5px solid transparent; cursor: pointer; white-space: nowrap; transition: transform .15s ease, box-shadow .15s ease }
 .btn-primary { background: var(--ochre); color: var(--charcoal) }
-.btn-primary:hover { color: var(--charcoal); transform: translateY(-2px); box-shadow: 0 6px 0 -2px var(--charcoal) }
-.btn-ghost { border-color: rgba(244, 241, 234, .55); color: var(--cream); background: transparent }
+.btn-primary:hover { color: var(--charcoal); transform: translateY(-2px); box-shadow: var(--shadow-press) }
+.btn-ghost { border-color: var(--cream-55); color: var(--cream); background: transparent }
 .btn-ghost:hover { border-color: var(--ochre-light); color: var(--ochre-light) }
 .btn-line { border-color: currentColor; color: var(--fg); background: transparent }
 .btn-line:hover { color: var(--link) }
 .btn-sm { padding: 9px 14px; font-size: 14px }
-.btn .os { font: 500 11px var(--mono); letter-spacing: .06em }
+.btn .os { font: 500 11px var(--mono); letter-spacing: .06em; text-transform: uppercase }
 .ctas { display: flex; gap: 12px; flex-wrap: wrap }
 
 /* ---------- dimension line, sections ---------- */
@@ -172,7 +200,7 @@ main { display: block }
 /* ---------- cards: ways in, teasers ---------- */
 .ways { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
 .way { background: var(--surface); border: 1.5px solid var(--fg); border-radius: 4px; padding: 26px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-content: start; position: relative; min-width: 0; transition: transform .15s ease, box-shadow .15s ease }
-.way:hover { transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--ochre) }
+.way:hover { transform: translate(-3px, -3px); box-shadow: var(--shadow-lift) }
 .way .who { font: 700 11.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--link) }
 .way p, .way li { color: var(--muted) }
 .way > a, .way .go-links a { font-weight: 700; text-decoration: none }
@@ -184,13 +212,13 @@ main { display: block }
 .comm .way h3 { font-size: 26px }
 .teasers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
 .teaser { display: grid; gap: 10px; align-content: start; padding: 28px; border: 1.5px solid var(--fg); border-radius: 4px; text-decoration: none; color: var(--fg); background: var(--surface); transition: transform .15s ease, box-shadow .15s ease; min-width: 0 }
-.teaser:hover { color: var(--fg); transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--ochre) }
+.teaser:hover { color: var(--fg); transform: translate(-3px, -3px); box-shadow: var(--shadow-lift) }
 .teaser h3 { font-size: 30px } .teaser p { color: var(--muted) } .teaser .go { font-weight: 700; color: var(--link) }
 .teaser.dark { background: var(--charcoal); color: var(--cream); border-color: var(--charcoal); --focus: var(--ochre-light) }
 .teaser.dark:hover { color: var(--cream) }
-.teaser.dark p { color: #97A2A6 } .teaser.dark .go, .teaser.dark .tagline { color: var(--ochre-light) }
-:root[data-theme="dark"] .teaser.dark { border-color: rgba(244, 241, 234, .35) }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .teaser.dark { border-color: rgba(244, 241, 234, .35) } }
+.teaser.dark p { color: var(--slate-light) } .teaser.dark .go, .teaser.dark .tagline { color: var(--ochre-light) }
+:root[data-theme="dark"] .teaser.dark { border-color: var(--cream-35) }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"], [data-theme="contrast"]) .teaser.dark { border-color: var(--cream-35) } }
 div.teaser.dark .ctas { margin-top: 8px }
 .doc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px }
 .doc-grid > .wide { grid-column: 1 / -1 }
@@ -198,16 +226,16 @@ div.teaser.dark .ctas { margin-top: 8px }
 .two > * { min-width: 0 }
 
 /* ---------- code panel ---------- */
-.term { background: #1C1E1F; color: #F4F1EA; border-radius: 6px; overflow: hidden; box-shadow: 12px 12px 0 var(--moss); min-width: 0; --focus: var(--ochre-light) }
-:root[data-theme="dark"] .term { box-shadow: 12px 12px 0 #3C4D40; border: 1px solid rgba(244, 241, 234, .12) }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .term { box-shadow: 12px 12px 0 #3C4D40; border: 1px solid rgba(244, 241, 234, .12) } }
-.term .bar { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; font: 500 11.5px var(--mono); color: #97A2A6; border-bottom: 1px solid rgba(244, 241, 234, .1) }
-.term pre { margin: 0; padding: 18px; background: transparent; border-radius: 0; overflow-x: auto; font: 400 13px/1.65 var(--mono); color: #F4F1EA }
-.term .k { color: #D4A876 } .term .s { color: #B9C7B4 } .term .c { color: #97A2A6 } .term .o { color: #F4F1EA; font-weight: 700 }
+.term { background: var(--charcoal); color: var(--cream); border-radius: 6px; overflow: hidden; box-shadow: var(--shadow-term); min-width: 0; --focus: var(--ochre-light) }
+:root[data-theme="dark"] .term { box-shadow: var(--shadow-term-dark); border: 1px solid var(--cream-12) }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"], [data-theme="contrast"]) .term { box-shadow: var(--shadow-term-dark); border: 1px solid var(--cream-12) } }
+.term .bar { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; font: 500 11.5px var(--mono); color: var(--slate-light); border-bottom: 1px solid var(--cream-10) }
+.term pre { margin: 0; padding: 18px; background: transparent; border-radius: 0; overflow-x: auto; font: 400 13px/1.65 var(--mono); color: var(--cream) }
+.term .k { color: var(--ochre-light) } .term .s { color: var(--sage) } .term .c { color: var(--slate-light) } .term .o { color: var(--cream); font-weight: 700 }
 /* The copy button site.js adds to every code block. */
 .code-block { position: relative }
 .code-block > pre { padding-right: 76px }
-.copy-button { position: absolute; top: 8px; right: 8px; padding: 3px 10px; border: 1px solid rgba(244, 241, 234, .35); border-radius: 6px; background: rgba(28, 30, 31, .9); color: #F4F1EA; font: 500 12.5px/1.4 var(--body); cursor: pointer; --focus: var(--ochre-light) }
+.copy-button { position: absolute; top: 8px; right: 8px; padding: 3px 10px; border: 1px solid var(--cream-35); border-radius: 6px; background: var(--charcoal-90); color: var(--cream); font: 500 12.5px/1.4 var(--body); cursor: pointer; --focus: var(--ochre-light) }
 .copy-button:hover { border-color: var(--ochre-light) }
 .copy-button:focus-visible { outline-color: var(--ochre-light) }
 
@@ -231,7 +259,7 @@ table.schedule { width: 100%; border-collapse: collapse; font-size: 14.5px }
 .schedule.limits td.evidence code { overflow-wrap: anywhere }
 a.nm { color: var(--fg); text-decoration: none } a.nm:hover { color: var(--link); text-decoration: underline }
 .pill { display: inline-block; font: 600 11.5px/1.5 var(--body); border-radius: 999px; padding: 3px 10px; white-space: nowrap; background: var(--badge); color: var(--fg) }
-.pill.chg { background: var(--ochre); color: #1C1E1F }
+.pill.chg { background: var(--ochre); color: var(--charcoal) }
 .pill.ro { background: transparent; border: 1px solid var(--border-strong); padding: 2px 9px }
 .pills { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0 }
 /* About: everyone who has contributed, in columns; the GitHub name after a real name is muted. */
@@ -250,17 +278,17 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 
 /* ---------- page heads ---------- */
 .page-head { background-color: var(--moss); color: var(--cream); --focus: var(--ochre-light);
-    background-image: linear-gradient(rgba(244, 241, 234, .06) 1px, transparent 1px), linear-gradient(90deg, rgba(244, 241, 234, .06) 1px, transparent 1px);
+    background-image: var(--texture-head);
     background-size: 48px 48px }
 .page-head .wrap { padding-block: 56px 48px; display: grid; gap: 16px }
 .page-head h1, .page-head .h1 { font-size: clamp(44px, 7vw, 88px); font-weight: 900; line-height: .95; letter-spacing: -.02em }
 .page-head h1 em, .page-head .h1 em { color: var(--ochre-light); font-weight: 500 }
-.page-head p { font-size: 19px; color: rgba(244, 241, 234, .86); max-width: 36em }
+.page-head p { font-size: 19px; color: var(--cream-86); max-width: 36em }
 .page-head p a { color: var(--ochre-light) }
-.crumb { font: 500 12.5px var(--mono); color: rgba(244, 241, 234, .72) } .page-head .crumb { font-size: 12.5px } .crumb a { color: var(--ochre-light) }
-.page-head.ochre { background-color: var(--ochre); color: #1C1E1F; --focus: #1C1E1F; background-image: repeating-linear-gradient(45deg, rgba(28, 30, 31, .12) 0 1px, transparent 1px 12px) }
-.page-head.ochre p { color: #1C1E1F } .page-head.ochre h1 em, .page-head.ochre .h1 em { color: #1C1E1F }
-.page-head.ochre .crumb { color: #1C1E1F } .page-head.ochre .crumb a, .page-head.ochre p a { color: #1C1E1F }
+.crumb { font: 500 12.5px var(--mono); color: var(--cream-72) } .page-head .crumb { font-size: 12.5px } .crumb a { color: var(--ochre-light) }
+.page-head.ochre { background-color: var(--ochre); color: var(--charcoal); --focus: var(--charcoal); background-image: var(--hatch) }
+.page-head.ochre p { color: var(--charcoal) } .page-head.ochre h1 em, .page-head.ochre .h1 em { color: var(--charcoal) }
+.page-head.ochre .crumb { color: var(--charcoal) } .page-head.ochre .crumb a, .page-head.ochre p a { color: var(--charcoal) }
 .page-body { padding-block: 56px 24px }
 
 /* ---------- reference pages: the command reference, API and Grasshopper coverage ----------
@@ -293,12 +321,12 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 .stack .box { border: 1.5px solid var(--fg); border-radius: 4px; padding: 16px 14px; background: var(--surface); display: grid; gap: 4px }
 .stack .box strong { font: 700 19px/1.2 var(--display) }
 .stack .box span { color: var(--muted); font-size: 14px }
-.stack .box.addon { background: var(--ochre); border-color: var(--ochre); color: #1C1E1F }
-.stack .box.addon span { color: #1C1E1F }
-.stack .box.archicad { background: var(--charcoal); border-color: var(--charcoal); color: #F4F1EA }
-.stack .box.archicad span { color: #C9CFD1 }
-:root[data-theme="dark"] .stack .box.archicad { border-color: rgba(244, 241, 234, .35) }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .stack .box.archicad { border-color: rgba(244, 241, 234, .35) } }
+.stack .box.addon { background: var(--ochre); border-color: var(--ochre); color: var(--charcoal) }
+.stack .box.addon span { color: var(--charcoal) }
+.stack .box.archicad { background: var(--charcoal); border-color: var(--charcoal); color: var(--cream) }
+.stack .box.archicad span { color: var(--slate-pale) }
+:root[data-theme="dark"] .stack .box.archicad { border-color: var(--cream-35) }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"], [data-theme="contrast"]) .stack .box.archicad { border-color: var(--cream-35) } }
 .stack .wire { font: 600 12.5px var(--mono); color: var(--muted); letter-spacing: .06em; text-transform: uppercase }
 
 /* ---------- use cases ---------- */
@@ -324,7 +352,7 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 .spec .install { padding: 18px 16px; display: grid; gap: 10px; background: var(--badge) }
 .spec .install > strong { font: 700 20px/1.2 var(--display) }
 .spec .install p, .spec .install ol { color: var(--fg); font-size: 14px }
-.shot { border: 1.5px solid var(--fg); background: #F4F1EA; border-radius: 4px; overflow: hidden }
+.shot { border: 1.5px solid var(--fg); background: var(--cream); border-radius: 4px; overflow: hidden }
 .shot img, .shot svg { display: block; width: 100%; height: auto }
 .bullets { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: var(--muted) }
 .share-steps ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
@@ -335,14 +363,14 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 /* ---------- videos ---------- */
 .videos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
 .video { display: grid; align-content: start; border: 1.5px solid var(--fg); border-radius: 4px; background: var(--surface); color: var(--fg); text-decoration: none; overflow: hidden; height: 100%; transition: transform .15s ease, box-shadow .15s ease }
-.video:hover { color: var(--fg); transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--ochre) }
+.video:hover { color: var(--fg); transform: translate(-3px, -3px); box-shadow: var(--shadow-lift) }
 .video .frame { aspect-ratio: 16 / 9; display: grid; place-items: center; background-color: var(--moss);
-    background-image: linear-gradient(rgba(244, 241, 234, .07) 1px, transparent 1px), linear-gradient(90deg, rgba(244, 241, 234, .07) 1px, transparent 1px);
+    background-image: var(--texture-frame);
     background-size: 24px 24px; border-bottom: 1.5px solid var(--fg); position: relative; overflow: hidden }
 .video .frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block }
-.video .frame:has(img)::after { content: ""; position: absolute; inset: 0; background: rgba(45, 58, 48, .25) }
-.video .play { position: relative; z-index: 1; width: 64px; height: 64px; border-radius: 50%; background: var(--ochre); display: grid; place-items: center; box-shadow: 0 6px 0 -2px #1C1E1F }
-.video .play svg { width: 24px; height: 24px; margin-left: 4px; color: #1C1E1F }
+.video .frame:has(img)::after { content: ""; position: absolute; inset: 0; background: var(--moss-25) }
+.video .play { position: relative; z-index: 1; width: 64px; height: 64px; border-radius: 50%; background: var(--ochre); display: grid; place-items: center; box-shadow: var(--shadow-press) }
+.video .play svg { width: 24px; height: 24px; margin-left: 4px; color: var(--charcoal) }
 .video .text { padding: 18px 20px 22px; display: grid; gap: 8px }
 .video h3 { font-size: 22px }
 .video p { color: var(--muted); font-size: 14.5px }
@@ -398,17 +426,17 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
     .has-menu .menu-button { display: inline-flex }
     .has-menu .site-menu {
         display: none; position: absolute; top: 100%; left: 0; right: 0; margin-top: 1px; z-index: 20;
-        background: var(--moss); border-bottom: 1px solid rgba(244, 241, 234, .12); box-shadow: 0 12px 24px rgba(28, 30, 31, .25);
+        background: var(--moss); border-bottom: 1px solid var(--cream-12); box-shadow: var(--shadow-menu);
         padding: 4px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px));
         max-height: calc(100vh - 64px - env(safe-area-inset-top, 0px)); max-height: calc(100dvh - 64px - env(safe-area-inset-top, 0px));
         overflow-y: auto; overscroll-behavior: contain
     }
     .has-menu.menu-open .site-menu { display: block }
     .has-menu .site-nav ul { display: block }
-    .has-menu .site-nav li + li { border-top: 1px solid rgba(244, 241, 234, .12) }
+    .has-menu .site-nav li + li { border-top: 1px solid var(--cream-12) }
     .has-menu .site-nav a { display: block; padding-block: 12px; font-size: 17px }
     .has-menu .site-nav a[aria-current] { box-shadow: none; text-decoration: underline 2px var(--ochre-light); text-underline-offset: 7px }
-    .has-menu .menu-tools { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 14px; border-top: 1px solid rgba(244, 241, 234, .12) }
+    .has-menu .menu-tools { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 14px; border-top: 1px solid var(--cream-12) }
     .has-menu .menu-tools .toggle { min-height: 44px; padding: 10px 14px; font-size: 14px }
     .has-menu .menu-tools .lang-select { max-width: 100% }
     .page-head .wrap { padding-block: 40px 36px }
@@ -418,7 +446,7 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
     .way, .teaser { padding: 22px }
     .teaser h3 { font-size: 26px }
     .stack .clients { grid-template-columns: 1fr }
-    .term { box-shadow: 6px 6px 0 var(--moss) }
+    .term { box-shadow: var(--shadow-term-small) }
     .term pre { font-size: 12.5px; padding: 14px }
     .spec dl { grid-template-columns: 1fr } .spec dt { border-bottom: 0; padding-bottom: 0 } .spec dd { padding-top: 2px }
     .btn { padding: 12px 18px }
@@ -452,3 +480,291 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 :lang(hi) { letter-spacing: normal !important }
 /* The floor plan's labels (their font-family attribute names Inter only). */
 .plan-card svg text[data-i18n]:lang(hi) { font-family: var(--body) }
+
+/* ======================================================================================================
+   The Standard look, the default: plain white surfaces, Inter for everything (JetBrains Mono only for
+   code and command names), no grid texture or hatching, soft shadows, 8 px corners on buttons, inputs
+   and chips and 12 px on cards and panels. The Display menu (site.js) or a stored choice sets
+   data-style="legacy" on <html> for the drawing set above, which nothing in this part touches, so Legacy
+   is the site as it was. Every rule here starts with :root:not([data-style="legacy"]); each page's own
+   stylesheet ends with its own Standard part. Modes:
+       light: :root:not([data-style="legacy"])
+       dark:  :root:not([data-style="legacy"])[data-theme="dark"], and under prefers-color-scheme: dark
+              :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"])
+       high contrast: :root:not([data-style="legacy"])[data-theme="contrast"], on top of light (never
+              with data-style="legacy"; see High contrast below)
+   The light block comes after the Legacy dark ones and outweighs their :root[data-theme="dark"], so a
+   Standard page in dark mode only takes the values its own dark block gives.
+   Contrast (WCAG 2), every text pair at least 4.5:1: light, #111827 on #FFFFFF about 17.7:1, #4B5563 on
+   #FFFFFF about 7.5:1 (a little less on #F7F8FA), accent #1F6B4E on #FFFFFF and #FFFFFF on it about
+   6.4:1; dark, #9AA4B2 on #0B0F14 about 7.6:1, accent #4CB88A on #11161D about 7.4:1 and #0B0F14 on it
+   about 7.8:1. The code colours are the issue's, all light on #0F172A. A badge is the accent at 10 %,
+   so its text keeps nearly the contrast it has on the page.
+   ====================================================================================================== */
+:root:not([data-style="legacy"]) {
+    --standard-bg: #FFFFFF; --standard-surface: #FFFFFF; --subtle: #F7F8FA;
+    --bg: var(--standard-bg); --surface: var(--standard-surface); --fg: #111827; --muted: #4B5563;
+    --line: #E5E7EB; --border: var(--line); --border-strong: #D1D5DB; --grid: transparent;
+    --link: #1F6B4E; --link-hover: #164D38; --focus: var(--link); --accent: var(--link); --eyebrow: var(--link);
+    --accent-fill: #1F6B4E; --accent-fill-hover: #164D38; --on-accent: #FFFFFF; --button-bg: var(--accent-fill); --button-text: var(--on-accent);
+    --badge: rgba(31, 107, 78, .1); --badge-bg: var(--badge); --card-hover: var(--subtle); --warning: #B45309;
+    --code-bg: #F3F4F6; --code-fg: #111827; --pre-bg: #0F172A; --pre-text: #E2E8F0; --pre-border: transparent;
+    --pre-comment: #94A3B8; --pre-keyword: #7DD3FC; --pre-string: #86EFAC; --pre-line: rgba(226, 232, 240, .12); --pre-focus: #4CB88A;
+    --display: var(--body); --font-heading: var(--body);
+    --radius: 12px; --radius-small: 8px; --radius-card: 12px; --radius-control: 8px;
+    --texture: none; --texture-head: none; --texture-frame: none; --hatch: none;
+    --shadow-soft: 0 1px 2px rgba(17, 24, 39, .06), 0 8px 24px rgba(17, 24, 39, .06);
+    --shadow-lift: var(--shadow-soft); --shadow-lift-small: var(--shadow-soft); --shadow-press: var(--shadow-soft);
+    --shadow-term: var(--shadow-soft); --shadow-term-small: var(--shadow-soft); --shadow-term-dark: none;
+    --shadow-menu: var(--shadow-soft); --shadow-drawer: var(--shadow-soft);
+    color-scheme: light;
+}
+:root:not([data-style="legacy"])[data-theme="dark"] {
+    --standard-bg: #0B0F14; --standard-surface: #11161D; --subtle: #0E1318;
+    --fg: #E6EAF0; --muted: #9AA4B2; --line: #232B36; --border-strong: #3A4553;
+    --link: #4CB88A; --link-hover: #6FCBA3; --accent-fill: #4CB88A; --accent-fill-hover: #6FCBA3; --on-accent: #0B0F14;
+    --badge: rgba(76, 184, 138, .1); --code-bg: #1A212B; --code-fg: #E6EAF0; --pre-border: #232B36; --warning: #F59E0B;
+    --shadow-soft: none; color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) {
+    --standard-bg: #0B0F14; --standard-surface: #11161D; --subtle: #0E1318;
+    --fg: #E6EAF0; --muted: #9AA4B2; --line: #232B36; --border-strong: #3A4553;
+    --link: #4CB88A; --link-hover: #6FCBA3; --accent-fill: #4CB88A; --accent-fill-hover: #6FCBA3; --on-accent: #0B0F14;
+    --badge: rgba(76, 184, 138, .1); --code-bg: #1A212B; --code-fg: #E6EAF0; --pre-border: #232B36; --warning: #F59E0B;
+    --shadow-soft: none; color-scheme: dark } }
+
+/* ------------------------------------------------------------------------------------------------------
+   Accent (the Display menu's, data-accent on <html>): blue, purple or orange instead of the look's own
+   green (Standard) or ochre (Legacy); no attribute is the look's own. Each accent is one block of
+   --choice-* values, which the mappings below put in place of the look's accent:
+       Standard, light: links, buttons, focus, badges --choice-light (white text on buttons)
+       Standard, dark:  --choice-dark (#0B0F14 text on buttons)
+       Legacy:          --ochre (fills, charcoal text on them, the lifted shadows) --choice-legacy-fill,
+                        --ochre-text (links on cream and paper) --choice-legacy-text,
+                        --ochre-light (links on moss and in dark mode) --choice-legacy-light
+   Contrast (WCAG 2), the worst background each sits on:
+       blue    #1D4ED8 on #FFFFFF 6.7:1, on #F7F8FA 6.3:1, #FFFFFF on it 6.7:1;
+               #60A5FA on #11161D 7.1:1, #0B0F14 on it 7.6:1; Legacy: #60A5FA under charcoal 6.6:1,
+               #1D4ED8 on cream 5.9:1, #93C5FD on moss 6.6:1
+       purple  #6D28D9 on #FFFFFF 7.1:1, on #F7F8FA 6.7:1, #FFFFFF on it 7.1:1;
+               #A78BFA on #11161D 6.7:1, #0B0F14 on it 7.1:1; Legacy: #A78BFA under charcoal 6.2:1,
+               #6D28D9 on cream 6.3:1, #C4B5FD on moss 6.5:1
+       orange  #C2410C on #FFFFFF 5.2:1, on #F7F8FA 4.9:1, #FFFFFF on it 5.2:1;
+               #FB923C on #11161D 8.0:1, #0B0F14 on it 8.5:1; Legacy: #FB923C under charcoal 7.4:1,
+               #9A3412 on cream 6.5:1, #FDBA74 on moss 7.1:1
+   The hover colours are darker in light mode and lighter in dark mode, so they pass by more. High
+   contrast (below) sets no data-accent: there the accent does not apply.
+   ------------------------------------------------------------------------------------------------------ */
+:root[data-accent="blue"] {
+    --choice-light: #1D4ED8; --choice-light-hover: #1E40AF; --choice-light-10: rgba(29, 78, 216, .1);
+    --choice-light-12: rgba(29, 78, 216, .12); --choice-light-28: rgba(29, 78, 216, .28);
+    --choice-dark: #60A5FA; --choice-dark-hover: #93C5FD; --choice-dark-10: rgba(96, 165, 250, .1);
+    --choice-legacy-fill: #60A5FA; --choice-legacy-tint: rgba(96, 165, 250, .18);
+    --choice-legacy-text: #1D4ED8; --choice-legacy-text-hover: #1E40AF;
+    --choice-legacy-light: #93C5FD; --choice-legacy-light-hover: #BFDBFE;
+    --choice-legacy-light-16: rgba(147, 197, 253, .16); --choice-legacy-light-28: rgba(147, 197, 253, .28);
+}
+:root[data-accent="purple"] {
+    --choice-light: #6D28D9; --choice-light-hover: #5B21B6; --choice-light-10: rgba(109, 40, 217, .1);
+    --choice-light-12: rgba(109, 40, 217, .12); --choice-light-28: rgba(109, 40, 217, .28);
+    --choice-dark: #A78BFA; --choice-dark-hover: #C4B5FD; --choice-dark-10: rgba(167, 139, 250, .1);
+    --choice-legacy-fill: #A78BFA; --choice-legacy-tint: rgba(167, 139, 250, .18);
+    --choice-legacy-text: #6D28D9; --choice-legacy-text-hover: #5B21B6;
+    --choice-legacy-light: #C4B5FD; --choice-legacy-light-hover: #DDD6FE;
+    --choice-legacy-light-16: rgba(196, 181, 253, .16); --choice-legacy-light-28: rgba(196, 181, 253, .28);
+}
+:root[data-accent="orange"] {
+    --choice-light: #C2410C; --choice-light-hover: #9A3412; --choice-light-10: rgba(194, 65, 12, .1);
+    --choice-light-12: rgba(194, 65, 12, .12); --choice-light-28: rgba(194, 65, 12, .28);
+    --choice-dark: #FB923C; --choice-dark-hover: #FDBA74; --choice-dark-10: rgba(251, 146, 60, .1);
+    --choice-legacy-fill: #FB923C; --choice-legacy-tint: rgba(251, 146, 60, .18);
+    --choice-legacy-text: #9A3412; --choice-legacy-text-hover: #7C2D12;
+    --choice-legacy-light: #FDBA74; --choice-legacy-light-hover: #FED7AA;
+    --choice-legacy-light-16: rgba(253, 186, 116, .16); --choice-legacy-light-28: rgba(253, 186, 116, .28);
+}
+/* Each mode's mapping outweighs the mode's own block (and the light mapping comes before the dark ones,
+   which are more specific). --ochre-light-28 is motion.css's crosshair; the floor plan's tags are
+   home.css's. */
+:root[data-style="legacy"][data-accent] {
+    --ochre: var(--choice-legacy-fill); --ochre-text: var(--choice-legacy-text); --ochre-light: var(--choice-legacy-light);
+    --link: var(--ochre-text); --link-hover: var(--choice-legacy-text-hover); --badge: var(--choice-legacy-tint);
+    --ochre-light-28: var(--choice-legacy-light-28);
+}
+:root[data-style="legacy"][data-accent][data-theme="dark"] {
+    --link: var(--ochre-light); --link-hover: var(--choice-legacy-light-hover); --badge: var(--choice-legacy-light-16) }
+@media (prefers-color-scheme: dark) { :root[data-style="legacy"][data-accent]:not([data-theme="light"], [data-theme="contrast"]) {
+    --link: var(--ochre-light); --link-hover: var(--choice-legacy-light-hover); --badge: var(--choice-legacy-light-16) } }
+:root:not([data-style="legacy"])[data-accent] {
+    --link: var(--choice-light); --link-hover: var(--choice-light-hover);
+    --accent-fill: var(--choice-light); --accent-fill-hover: var(--choice-light-hover);
+    --badge: var(--choice-light-10); --pre-focus: var(--choice-dark); --ochre-light-28: var(--choice-light-28);
+}
+:root:not([data-style="legacy"])[data-accent][data-theme="dark"] {
+    --link: var(--choice-dark); --link-hover: var(--choice-dark-hover);
+    --accent-fill: var(--choice-dark); --accent-fill-hover: var(--choice-dark-hover); --badge: var(--choice-dark-10) }
+@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"])[data-accent]:not([data-theme="light"], [data-theme="contrast"]) {
+    --link: var(--choice-dark); --link-hover: var(--choice-dark-hover);
+    --accent-fill: var(--choice-dark); --accent-fill-hover: var(--choice-dark-hover); --badge: var(--choice-dark-10) } }
+
+/* ------------------------------------------------------------------------------------------------------
+   High contrast (the Display menu's Mode, data-theme="contrast"): black on white, links #0B4FA8 and
+   underlined, black borders, a 3 px focus ring, and code blocks black on white too. It is one look:
+   with it, site.js and the head's script set neither data-style nor data-accent, so the page is the
+   same whichever Look and Accent are chosen (they stay stored, and apply again in the other modes).
+   The system's dark mode does not apply to it (the :not([data-theme="light"], [data-theme="contrast"])
+   of the dark blocks). Every text at least 7:1 (WCAG AAA) on #FFFFFF: #000000 21:1, #333333 12.6:1,
+   #0B4FA8 7.8:1, #14532D 9.1:1, #7C2D12 9.4:1, #8B0000 10.0:1, #5B21B6 9.0:1 (the last two are the
+   command reference's); #0B4FA8 on a hovered card (#F7F7F7) 7.3:1. Inline code and badges hold black
+   text only.
+   ------------------------------------------------------------------------------------------------------ */
+:root:not([data-style="legacy"])[data-theme="contrast"] {
+    --standard-bg: #FFFFFF; --standard-surface: #FFFFFF; --subtle: #FFFFFF;
+    --fg: #000000; --muted: #333333; --line: #000000; --border: #000000; --border-strong: #000000;
+    --link: #0B4FA8; --link-hover: #000000; --focus: #000000;
+    --accent-fill: #000000; --accent-fill-hover: #333333; --on-accent: #FFFFFF;
+    --badge: #E6E6E6; --card-hover: #F7F7F7; --warning: #7C2D12;
+    --code-bg: #F2F2F2; --code-fg: #000000; --pre-bg: #FFFFFF; --pre-text: #000000; --pre-border: #000000;
+    --pre-comment: #333333; --pre-keyword: #0B4FA8; --pre-string: #14532D; --pre-line: #000000; --pre-focus: #000000;
+    --shadow-soft: none; --shadow-lift: none; --shadow-lift-small: none; --shadow-press: none;
+    --shadow-term: none; --shadow-term-small: none; --shadow-menu: none; --shadow-drawer: none;
+    color-scheme: light;
+}
+:root[data-theme="contrast"] a:not(.btn):not(.brand):not(.skip-link) { text-decoration: underline }
+:root[data-theme="contrast"] :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px }
+:root[data-theme="contrast"] .display-panel { border: 2px solid var(--fg); box-shadow: none }
+
+/* Type: Inter headings at 700, no italics, large ones drawn tighter; labels in normal case. */
+:root:not([data-style="legacy"]) h1, :root:not([data-style="legacy"]) .h1, :root:not([data-style="legacy"]) h2 { font-weight: 700; letter-spacing: -.02em; line-height: 1.1 }
+:root:not([data-style="legacy"]) h1 em, :root:not([data-style="legacy"]) h2 em, :root:not([data-style="legacy"]) h3 em,
+:root:not([data-style="legacy"]) .h1 em { font-style: normal; font-weight: inherit; color: inherit }
+:root:not([data-style="legacy"]) .brand, :root:not([data-style="legacy"]) .figures strong, :root:not([data-style="legacy"]) .timeline .n,
+:root:not([data-style="legacy"]) .share-steps li b, :root:not([data-style="legacy"]) .tblock .proj { font-weight: 700 }
+:root:not([data-style="legacy"]) .tagline, :root:not([data-style="legacy"]) .dim, :root:not([data-style="legacy"]) .figures span,
+:root:not([data-style="legacy"]) .way .who, :root:not([data-style="legacy"]) .schedule caption, :root:not([data-style="legacy"]) .schedule th,
+:root:not([data-style="legacy"]) .schedule .id, :root:not([data-style="legacy"]) .schedule tr.area th, :root:not([data-style="legacy"]) .spec dt,
+:root:not([data-style="legacy"]) .tblock .lab, :root:not([data-style="legacy"]) .stack .wire, :root:not([data-style="legacy"]) .flow b,
+:root:not([data-style="legacy"]) .crumb, :root:not([data-style="legacy"]) .toggle, :root:not([data-style="legacy"]) .btn .os,
+:root:not([data-style="legacy"]) .term .bar, :root:not([data-style="legacy"]) .all-people span,
+:root:not([data-style="legacy"]) .schedule td[data-label]::before {
+    font-family: var(--body); font-weight: 500; letter-spacing: normal; text-transform: none }
+:root:not([data-style="legacy"]) code { color: var(--code-fg) }
+:root:not([data-style="legacy"]) .page-head code, :root:not([data-style="legacy"]) .term code, :root:not([data-style="legacy"]) .stack .box code,
+:root:not([data-style="legacy"]) pre code { color: inherit }
+
+/* Code blocks and the terminal: slate panels, the same in both modes (with a border in dark mode). */
+:root:not([data-style="legacy"]) pre { border: 1px solid var(--pre-border); border-radius: var(--radius-control) }
+:root:not([data-style="legacy"]) .term pre { border: 0; border-radius: 0 }
+:root:not([data-style="legacy"]) .term, :root:not([data-style="legacy"])[data-theme="dark"] .term {
+    background: var(--pre-bg); color: var(--pre-text); border: 1px solid var(--pre-border); border-radius: var(--radius-card); box-shadow: var(--shadow-term); --focus: var(--pre-focus) }
+@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) .term { border-color: var(--pre-border); box-shadow: var(--shadow-term) } }
+:root:not([data-style="legacy"]) .term .bar { color: var(--pre-comment); border-bottom-color: var(--pre-line) }
+:root:not([data-style="legacy"]) .term pre, :root:not([data-style="legacy"]) .term .o { color: var(--pre-text) }
+:root:not([data-style="legacy"]) .term .k { color: var(--pre-keyword) } :root:not([data-style="legacy"]) .term .s { color: var(--pre-string) }
+:root:not([data-style="legacy"]) .term .c { color: var(--pre-comment) }
+:root:not([data-style="legacy"]) .copy-button { background: var(--pre-bg); color: var(--pre-text); border-color: var(--pre-line); border-radius: var(--radius-control); --focus: var(--pre-focus) }
+:root:not([data-style="legacy"]) .copy-button:hover, :root:not([data-style="legacy"]) .copy-button:focus-visible { border-color: var(--pre-focus); outline-color: var(--pre-focus) }
+
+/* Header: the surface with a line under it. */
+:root:not([data-style="legacy"]) .site-header { background: var(--surface); color: var(--fg); border-bottom-color: var(--line); --focus: var(--link) }
+:root:not([data-style="legacy"]) .brand, :root:not([data-style="legacy"]) .brand:hover, :root:not([data-style="legacy"]) .site-nav a { color: var(--fg) }
+:root:not([data-style="legacy"]) .site-nav a:hover { color: var(--link) }
+:root:not([data-style="legacy"]) .site-nav a[aria-current] { color: var(--link); box-shadow: inset 0 -2px 0 var(--link) }
+/* The mark is never recoloured (#2476, 3a). On the light header it is favicon.svg, the cream mark on
+   its moss tile; in Dark (chosen, or the system's) it stays tapir_mark_cream.svg, as in Legacy. */
+:root:not([data-style="legacy"]) .site-header .brand img { display: none }
+:root:not([data-style="legacy"]) .site-header .brand img.brand-tile { display: block }
+:root:not([data-style="legacy"])[data-theme="dark"] .site-header .brand img { display: block }
+:root:not([data-style="legacy"])[data-theme="dark"] .site-header .brand img.brand-tile { display: none }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) .site-header .brand img { display: block }
+    :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) .site-header .brand img.brand-tile { display: none } }
+:root:not([data-style="legacy"]) .toggle, :root:not([data-style="legacy"]) .menu-button { color: var(--fg); border-color: var(--border-strong); border-radius: var(--radius-control) }
+:root:not([data-style="legacy"]) .toggle:hover, :root:not([data-style="legacy"]) .menu-button:hover { color: var(--link); border-color: var(--link) }
+:root:not([data-style="legacy"]) .lang-select option { background: var(--surface); color: var(--fg) }
+@media (max-width: 640px) {
+    :root:not([data-style="legacy"]) .has-menu .site-menu { background: var(--surface); border-bottom-color: var(--line) }
+    :root:not([data-style="legacy"]) .has-menu .site-nav li + li, :root:not([data-style="legacy"]) .has-menu .menu-tools { border-top-color: var(--line) }
+    :root:not([data-style="legacy"]) .has-menu .site-nav a[aria-current] { box-shadow: none; text-decoration-color: var(--link) }
+}
+
+/* Buttons, chips, the skip link. */
+:root:not([data-style="legacy"]) .skip-link, :root:not([data-style="legacy"]) .skip-link:focus { background: var(--accent-fill); color: var(--on-accent); border-radius: var(--radius-control) }
+:root:not([data-style="legacy"]) .btn { border-radius: var(--radius-control) }
+:root:not([data-style="legacy"]) .btn-primary, :root:not([data-style="legacy"]) .btn-primary:hover { background: var(--accent-fill); color: var(--on-accent) }
+:root:not([data-style="legacy"]) .btn-primary:hover { background: var(--accent-fill-hover) }
+:root:not([data-style="legacy"]) .btn-ghost, :root:not([data-style="legacy"]) .btn-line { border: 1px solid var(--border-strong); color: var(--fg); background: var(--surface) }
+:root:not([data-style="legacy"]) .btn-ghost:hover, :root:not([data-style="legacy"]) .btn-line:hover { border-color: var(--link); color: var(--link) }
+:root:not([data-style="legacy"]) .chip { border: 1px solid var(--border-strong); border-radius: var(--radius-control) }
+:root:not([data-style="legacy"]) .chip[aria-pressed="true"] { background: var(--accent-fill); border-color: var(--accent-fill); color: var(--on-accent) }
+:root:not([data-style="legacy"]) .pill.chg { background: var(--accent-fill); color: var(--on-accent) }
+
+/* Cards and panels: a light line instead of the ink one, 12 px corners, a soft shadow on hover. */
+:root:not([data-style="legacy"]) .figures, :root:not([data-style="legacy"]) .way, :root:not([data-style="legacy"]) .teaser,
+:root:not([data-style="legacy"]) .schedule-wrap, :root:not([data-style="legacy"]) .flow, :root:not([data-style="legacy"]) .stack .box,
+:root:not([data-style="legacy"]) .uses-grid, :root:not([data-style="legacy"]) .spec, :root:not([data-style="legacy"]) .shot,
+:root:not([data-style="legacy"]) .share-steps li, :root:not([data-style="legacy"]) .video {
+    border: 1px solid var(--line); border-radius: var(--radius-card) }
+:root:not([data-style="legacy"]) .spec, :root:not([data-style="legacy"]) .flow { overflow: hidden }
+:root:not([data-style="legacy"]) .schedule caption { border-bottom: 1px solid var(--line) }
+:root:not([data-style="legacy"]) .callout { border: 1px solid var(--line); border-left: 4px solid var(--accent-fill); border-radius: var(--radius-control) }
+:root:not([data-style="legacy"]) .shot { background: var(--subtle) }
+:root:not([data-style="legacy"]) .teaser.dark, :root:not([data-style="legacy"])[data-theme="dark"] .teaser.dark,
+:root:not([data-style="legacy"]) .teaser.dark:hover { background: var(--subtle); color: var(--fg); border-color: var(--line); --focus: var(--link) }
+@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) .teaser.dark { border-color: var(--line) } }
+:root:not([data-style="legacy"]) .teaser.dark p { color: var(--muted) }
+:root:not([data-style="legacy"]) .teaser.dark .go, :root:not([data-style="legacy"]) .teaser.dark .tagline { color: var(--link) }
+:root:not([data-style="legacy"]) .stack .box.addon { background: var(--accent-fill); border-color: var(--accent-fill); color: var(--on-accent) }
+:root:not([data-style="legacy"]) .stack .box.addon span { color: var(--on-accent) }
+:root:not([data-style="legacy"]) .stack .box.archicad, :root:not([data-style="legacy"])[data-theme="dark"] .stack .box.archicad {
+    background: var(--pre-bg); border-color: var(--pre-border); color: var(--pre-text) }
+@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) .stack .box.archicad { border-color: var(--pre-border) } }
+:root:not([data-style="legacy"]) .stack .box.archicad span { color: var(--pre-comment) }
+:root:not([data-style="legacy"]) .video .frame { background-color: var(--subtle); border-bottom: 1px solid var(--line) }
+:root:not([data-style="legacy"]) .video .frame:has(img)::after { background: none }
+:root:not([data-style="legacy"]) .video .play { background: var(--accent-fill) }
+:root:not([data-style="legacy"]) .video .play svg { color: var(--on-accent) }
+
+/* Page heads: the subtle background with a line under it; the ochre ones too, without the hatching. */
+:root:not([data-style="legacy"]) .page-head, :root:not([data-style="legacy"]) .page-head.ochre {
+    background-color: var(--subtle); color: var(--fg); border-bottom: 1px solid var(--line); --focus: var(--link) }
+:root:not([data-style="legacy"]) .page-head p, :root:not([data-style="legacy"]) .page-head.ochre p { color: var(--muted) }
+:root:not([data-style="legacy"]) .page-head h1 em, :root:not([data-style="legacy"]) .page-head .h1 em { color: inherit }
+:root:not([data-style="legacy"]) .page-head p a, :root:not([data-style="legacy"]) .crumb a,
+:root:not([data-style="legacy"]) .page-head.ochre .crumb a, :root:not([data-style="legacy"]) .page-head.ochre p a { color: var(--link) }
+:root:not([data-style="legacy"]) .crumb, :root:not([data-style="legacy"]) .page-head.ochre .crumb { color: var(--muted) }
+
+/* Footer. */
+:root:not([data-style="legacy"]) .site-footer { border-top: 1px solid var(--line) }
+:root:not([data-style="legacy"]) .tblock { border-left: 1px solid var(--line); border-right: 1px solid var(--line) }
+
+/* The Display menu (site.js): its button sits where the Dark/Light toggle was; the panel is a popover
+   under it on wide screens and a sheet from the bottom below 640 px. Both looks draw it. */
+.display-button { display: inline-flex; align-items: center; justify-content: center; min-height: 31px }
+.display-button svg { width: 16px; height: 16px; display: block }
+.display-panel { position: fixed; z-index: 70; width: min(320px, calc(100vw - 32px)); max-height: calc(100vh - 96px); overflow-y: auto;
+    background: var(--surface); color: var(--fg); border: 1px solid var(--border-strong); border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(17, 24, 39, .08), 0 12px 32px rgba(17, 24, 39, .16); padding: 16px; font: 400 15px/1.4 var(--body); --focus: var(--link) }
+:root[data-style="legacy"] .display-panel { border: 1.5px solid var(--fg); border-radius: 4px; box-shadow: var(--shadow-lift) }
+.display-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px }
+.display-title { font-weight: 700; font-size: 17px }
+.display-panel fieldset { margin: 0; padding: 10px 0 12px; border: 0; border-top: 1px solid var(--line); min-width: 0 }
+.display-panel legend { float: left; width: 100%; padding: 0 0 6px; font-weight: 600; font-size: 14px; color: var(--muted) }
+.display-options { clear: both; display: flex; flex-wrap: wrap; gap: 6px }
+.display-options label { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border: 1px solid var(--border-strong); border-radius: 8px; cursor: pointer; font-size: 14px }
+.display-options label:hover { border-color: var(--link) }
+.display-options label.checked { border-color: var(--link); background: var(--badge); font-weight: 600 }
+.display-options input { margin: 0; accent-color: var(--link) }
+/* Accent in High contrast, where it does not apply: dashed, not faded, so its text keeps its contrast. */
+.display-panel fieldset:disabled .display-options label { border-style: dashed; cursor: not-allowed }
+.display-panel fieldset:disabled .display-options label:hover { border-color: var(--border-strong) }
+.display-reset, .display-done { font: 600 14px var(--body); color: var(--fg); background: transparent; border: 1px solid var(--border-strong); border-radius: 8px; padding: 7px 12px; cursor: pointer }
+.display-reset { width: 100%; margin-top: 4px }
+.display-reset:hover, .display-done:hover { border-color: var(--link); color: var(--link) }
+.display-done { display: none }
+@media (max-width: 640px) {
+    .display-panel { left: 0 !important; right: 0 !important; top: auto !important; bottom: 0; width: auto; max-height: 85vh; max-height: 85dvh;
+        border-radius: 16px 16px 0 0; padding-bottom: max(16px, env(safe-area-inset-bottom, 0px)) }
+    :root[data-style="legacy"] .display-panel { border-radius: 4px 4px 0 0 }
+    .display-done { display: inline-block }
+    .display-options label, .display-reset, .display-done { min-height: 44px }
+}

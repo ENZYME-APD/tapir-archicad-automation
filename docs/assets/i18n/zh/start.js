@@ -15,8 +15,8 @@
     'Install Tapir': '安装 Tapir',
     '<strong>With the installer (recommended).</strong> It finds every Archicad version on the computer and installs the matching add-on into each, so Archicad loads it on its next start.':
         '<strong>使用安装程序（推荐）。</strong>它会找到电脑上的每个 Archicad 版本，并为每个版本安装匹配的插件，Archicad 下次启动时便会加载它。',
-    'Download <span class="os">WINDOWS</span>': '下载 <span class="os">WINDOWS</span>',
-    'Download <span class="os">MACOS</span>': '下载 <span class="os">MACOS</span>',
+    'Download <span class="os">Windows</span>': '下载 <span class="os">Windows</span>',
+    'Download <span class="os">macOS</span>': '下载 <span class="os">macOS</span>',
     '<strong>Windows:</strong> the installer asks for administrator rights, because it copies the add-on into the Archicad folder under Program Files.':
         '<strong>Windows：</strong>安装程序会请求管理员权限，因为它要把插件复制到 Program Files 下的 Archicad 文件夹中。',
     '<strong>macOS:</strong> unzip the download and open the app.':
