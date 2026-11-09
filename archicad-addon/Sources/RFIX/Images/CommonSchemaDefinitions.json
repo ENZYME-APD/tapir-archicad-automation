@@ -2260,6 +2260,9 @@
             "heightStretchable": {
                 "type": "boolean"
             },
+            "stretchZones": {
+                "$ref": "#/ProfileStretchZones"
+            },
             "hasCoreSkin": {
                 "type": "boolean"
             },
@@ -2282,6 +2285,40 @@
             "attributeId",
             "index",
             "name"
+        ]
+    },
+    "ProfileStretchZones": {
+        "type": "object",
+        "description": "The stretch zones of a profile (Profile Manager > Modifiers: Horizontal Stretch and Vertical Stretch), in the coordinates of skins[].outlineCoords. A zone the profile does not have is omitted.",
+        "properties": {
+            "horizontal": {
+                "$ref": "#/ProfileStretchZone",
+                "description": "The horizontal stretch zone (width), an x range. Present only when the profile is widthStretchable."
+            },
+            "vertical": {
+                "$ref": "#/ProfileStretchZone",
+                "description": "The vertical stretch zone (height), a y range. Present only when the profile is heightStretchable."
+            }
+        },
+        "additionalProperties": false
+    },
+    "ProfileStretchZone": {
+        "type": "object",
+        "description": "One stretch zone of a profile: the range between min and max is the part of the profile that stretches.",
+        "properties": {
+            "min": {
+                "type": "number",
+                "description": "The lower limit of the zone (the left one for a horizontal zone, the bottom one for a vertical zone)."
+            },
+            "max": {
+                "type": "number",
+                "description": "The upper limit of the zone (the right one for a horizontal zone, the top one for a vertical zone). Must be greater than min."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "min",
+            "max"
         ]
     },
     "ProfileModifier": {
@@ -4575,6 +4612,7 @@
             "minimumHeight",
             "widthStretchable",
             "heightStretchable",
+            "stretchZones",
             "hasCoreSkin",
             "profileModifiers",
             "skins",
