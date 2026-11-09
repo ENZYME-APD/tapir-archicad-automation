@@ -2364,11 +2364,10 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         }
 
         if (isFieldRequested ("id")) {
-            API_ElementMemo memo = {};
-            const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-            ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_ElemInfoString);
-
-            detailsOfElement.Add ("id", memo.elemInfoString != nullptr ? *memo.elemInfoString : GS::EmptyUniString);
+            // Read the way ChangeElementId writes and checks it.
+            GS::UniString elementId;
+            GetElementId (elem.header.guid, elementId);
+            detailsOfElement.Add ("id", elementId);
         }
 
         if (!additionalFields.IsEmpty ()) {
@@ -4408,13 +4407,8 @@ GS::ObjectState SetElementInfoStringsCommand::Execute (const GS::ObjectState& pa
             }
 
             const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
-#ifdef ServerMainVers_2700
+            // Before Archicad 27 MigrationHelper.hpp calls APIDb_ChangeElementInfoStringID.
             const GSErrCode err = ACAPI_Element_ChangeElementInfoString (&elemGuid, &infoString);
-#else
-            // ACAPI_Element_ChangeElementInfoString is available from AC27, before that the
-            // info string memo part is written, as SetDetailsOfElements writes the id.
-            const GSErrCode err = ChangeElementId (elemGuid, infoString);
-#endif
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to change the info string of the element"));
                 continue;
