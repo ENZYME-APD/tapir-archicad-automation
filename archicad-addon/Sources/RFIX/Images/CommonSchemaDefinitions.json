@@ -10460,6 +10460,42 @@
             },
             "floorFill": {
                 "$ref": "#/ShellBaseFloorFill"
+            },
+            "basePlane": {
+                "$ref": "#/CoordinateSystem3D",
+                "description": "Base plane of the shell, in project coordinates, as CreateShells takes it: the profile, the extrusion start and the extrusion vector are given in it."
+            },
+            "profile": {
+                "$ref": "#/ShellProfile",
+                "description": "Extruded only: the profile polyline, in the plane across the extrusion (x horizontal, y up), as CreateShells takes it. Only the first polyline of the profile is returned."
+            },
+            "extrusionStart": {
+                "$ref": "#/Coordinate3D",
+                "description": "Extruded only: the point the extrusion starts from, in base plane coordinates."
+            },
+            "extrusionVector": {
+                "$ref": "#/Coordinate3D",
+                "description": "Extruded only: the direction and length of the extrusion, in base plane coordinates. The end of the extrusion is extrusionStart + extrusionVector."
+            },
+            "extrusionLength": {
+                "type": "number",
+                "description": "Extruded only: the length of extrusionVector."
+            },
+            "shapePlaneTilt": {
+                "type": "number",
+                "description": "Extruded only: tilt of the profile's plane, in radians."
+            },
+            "begPlaneTilt": {
+                "type": "number",
+                "description": "Extruded only: tilt of the start plane of the extrusion, in radians."
+            },
+            "endPlaneTilt": {
+                "type": "number",
+                "description": "Extruded only: tilt of the end plane of the extrusion, in radians."
+            },
+            "slantAngle": {
+                "type": "number",
+                "description": "Extruded only: slant of the extrusion vector, in radians."
             }
         },
         "additionalProperties": false,
