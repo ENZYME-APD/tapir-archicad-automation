@@ -1286,7 +1286,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyShellsCommand> (
             elementCommands, "1.8.0",
-            "Modifies the structure (Basic or Composite, building material or composite) of Shell elements based on the given parameters."
+            "Modifies the structure (Basic or Composite, building material or composite), the thickness of Basic shells and the side of the reference surface the thickness is applied to (isFlipped) of Shell elements based on the given parameters. The reference surface stays in place when the thickness changes; a thickness for a Composite shell is refused, as it comes from the composite."
         );
         err |= RegisterCommand<ModifyMeshesCommand> (
             elementCommands, "1.5.4",

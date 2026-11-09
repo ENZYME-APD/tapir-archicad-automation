@@ -11339,7 +11339,16 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                             "$ref": "#/ShellStructureType"
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
-                        "compositeId": { "$ref": "#/AttributeId" }
+                        "compositeId": { "$ref": "#/AttributeId" },
+                        "thickness": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "The new thickness of a Basic shell, in meters (or of a shell this item makes Basic with 'structureType'). The shell's reference surface (the surface its profile and base plane define) stays in place and the thickness is measured from it to the side 'isFlipped' selects, so only the opposite face moves. A Composite shell takes its thickness from its composite: the item fails, and nothing of it is written; change the skins of the composite attribute, or make the shell Basic in the same item."
+                        },
+                        "isFlipped": {
+                            "type": "boolean",
+                            "description": "The side of the reference surface the thickness is applied to, as CreateShells takes it and GetDetailsOfElements returns it. Changing it keeps the reference surface in place and moves the body to its other side."
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -11389,6 +11398,31 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
             if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                 continue;
+            }
+
+            // The thickness of a Basic shell (#2424). Checked against the structure the shell has
+            // after this item's structure fields, so an item may make a shell Basic and give it a
+            // thickness at once. A Composite shell's thickness is the sum of its composite's skins.
+            const GS::Optional<double> thickness = GetOptionalDouble (item, "thickness");
+            if (thickness.HasValue ()) {
+                if (thickness.Get () <= 0.0) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'thickness' must be greater than 0."));
+                    continue;
+                }
+                if (element.shell.shellBase.modelElemStructureType != API_BasicStructure) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "The shell is Composite: its thickness comes from its composite attribute. Change the skins of the composite, or make the shell Basic with 'structureType' in the same item."));
+                    continue;
+                }
+                element.shell.shellBase.thickness = thickness.Get ();
+                ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.thickness);
+                changed = true;
+            }
+
+            bool isFlipped = false;
+            if (item.Get ("isFlipped", isFlipped)) {
+                element.shell.isFlipped = isFlipped;
+                ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, isFlipped);
+                changed = true;
             }
 
             if (!changed) {
