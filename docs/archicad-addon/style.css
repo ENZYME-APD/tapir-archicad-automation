@@ -10,6 +10,9 @@
 :root {
     /* The one name json-schema-view-js.min.css uses, mapped onto the site's palette. */
     --gray-70: var(--muted);
+    /* The highlight.js token colours in the code blocks (GitHub's dark theme, see below). */
+    --code-keyword: #ff7b72; --code-title: #d2a8ff; --code-attr: #79c0ff; --code-string: #a5d6ff;
+    --code-builtin: #ffa657; --code-comment: #8b949e; --code-name: #7ee787;
 }
 
 /* The toolbar and the sidebar stick to the top of the window, so the site header scrolls away. */
@@ -161,7 +164,7 @@ details.command_container {
 
 details.command_container[open] {
     border-color: var(--fg);
-    box-shadow: 4px 4px 0 var(--ochre);
+    box-shadow: var(--shadow-lift-small);
 }
 
 details ::marker {
@@ -429,14 +432,14 @@ pre code.hljs {
 }
 
 pre .hljs-doctag, pre .hljs-keyword, pre .hljs-meta .hljs-keyword, pre .hljs-template-tag,
-pre .hljs-template-variable, pre .hljs-type, pre .hljs-variable.language_ { color: #ff7b72; }
-pre .hljs-title, pre .hljs-title.class_, pre .hljs-title.class_.inherited__, pre .hljs-title.function_ { color: #d2a8ff; }
+pre .hljs-template-variable, pre .hljs-type, pre .hljs-variable.language_ { color: var(--code-keyword); }
+pre .hljs-title, pre .hljs-title.class_, pre .hljs-title.class_.inherited__, pre .hljs-title.function_ { color: var(--code-title); }
 pre .hljs-attr, pre .hljs-attribute, pre .hljs-literal, pre .hljs-meta, pre .hljs-number, pre .hljs-operator,
-pre .hljs-selector-attr, pre .hljs-selector-class, pre .hljs-selector-id, pre .hljs-variable { color: #79c0ff; }
-pre .hljs-meta .hljs-string, pre .hljs-regexp, pre .hljs-string { color: #a5d6ff; }
-pre .hljs-built_in, pre .hljs-symbol { color: #ffa657; }
-pre .hljs-code, pre .hljs-comment, pre .hljs-formula { color: #8b949e; }
-pre .hljs-name, pre .hljs-quote, pre .hljs-selector-pseudo, pre .hljs-selector-tag { color: #7ee787; }
+pre .hljs-selector-attr, pre .hljs-selector-class, pre .hljs-selector-id, pre .hljs-variable { color: var(--code-attr); }
+pre .hljs-meta .hljs-string, pre .hljs-regexp, pre .hljs-string { color: var(--code-string); }
+pre .hljs-built_in, pre .hljs-symbol { color: var(--code-builtin); }
+pre .hljs-code, pre .hljs-comment, pre .hljs-formula { color: var(--code-comment); }
+pre .hljs-name, pre .hljs-quote, pre .hljs-selector-pseudo, pre .hljs-selector-tag { color: var(--code-name); }
 pre .hljs-subst { color: var(--pre-text); }
 
 /* Below this width the sidebar is a drawer opened by "Sections". */
@@ -465,7 +468,7 @@ pre .hljs-subst { color: var(--pre-text); }
         align-self: stretch;
         background: var(--surface);
         border-right: 1px solid var(--line);
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        box-shadow: var(--shadow-drawer);
         transform: translateX(-105%);
         visibility: hidden;
         transition: transform 0.2s, visibility 0.2s;
