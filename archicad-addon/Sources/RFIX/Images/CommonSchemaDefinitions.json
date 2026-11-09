@@ -11695,7 +11695,7 @@
     },
     "RailingReferenceLineLocation": {
         "type": "string",
-        "description": "Where the segment lies relative to the reference line of the railing (API_RailingSegmentType::refLineLocation): Center on the line, Left or Right of it. A lateralOffset only takes effect with Left or Right.",
+        "description": "Where the segment lies relative to the reference line of the railing (API_RailingSegmentType::refLineLocation): Center on the line, Left or Right of it. A lateralOffset only takes effect with Left or Right. Switching between Left and Right turns the sign of lateralOffset (Archicad 29), so the segment moves to the other side of the line by the same distance.",
         "enum": [
             "Left",
             "Center",
