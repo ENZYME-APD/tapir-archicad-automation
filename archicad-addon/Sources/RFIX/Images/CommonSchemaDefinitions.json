@@ -5322,15 +5322,15 @@
                 "properties": {
                     "shape": {
                         "$ref": "#/MEPCrossSectionShape",
-                        "description": "Archicad 27 and 28."
+                        "description": "Archicad 27 only. Later versions give the size in routingElement.routingSegment."
                     },
                     "width": {
                         "type": "number",
-                        "description": "Archicad 27 and 28."
+                        "description": "Archicad 27 only. Later versions give the size in routingElement.routingSegment."
                     },
                     "height": {
                         "type": "number",
-                        "description": "Archicad 27 and 28."
+                        "description": "Archicad 27 only. Later versions give the size in routingElement.routingSegment."
                     },
                     "insulationThickness": {
                         "type": "number",
