@@ -48,9 +48,15 @@
 /* 5. Figures count up (motion.js), and their number gets a short ochre underline */
 .motion .figures strong { display: inline-block }
 
-/* 6. Timeline: a moss line is drawn down the steps as you scroll */
+/* 6. Timeline, Legacy look only: under each step's number an ochre segment runs down to 12px above
+   the next number and fills as you scroll to that step. It is placed in the number column (grid
+   column 1, so it is centred at every width), and motion.js measures where it starts and ends
+   (--seg-top, --seg-h) from the numbers and how far it is filled (--prog). The Standard look has none. */
 .motion .timeline { position: relative }
-.motion .timeline::before { content: ""; position: absolute; left: 23px; top: 70px; bottom: 20px; width: 2px; background: linear-gradient(var(--ochre), var(--ochre)) no-repeat; background-size: 2px var(--prog, 0%); opacity: .5 }
+:root[data-style="legacy"] .motion .timeline > li { position: relative }
+:root[data-style="legacy"] .motion .timeline > li:not(:last-child)::after { content: ""; position: absolute; grid-column: 1 / 2; grid-row: auto;
+    left: 50%; top: var(--seg-top, 0); width: 2px; height: var(--seg-h, 0); transform: translateX(-50%); pointer-events: none;
+    background: linear-gradient(var(--ochre), var(--ochre)) no-repeat; background-size: 2px var(--prog, 0%); opacity: .5 }
 .motion .timeline .n { transition: transform .6s var(--ease), color .4s } .motion .timeline > li.rv:not(.in) .n { transform: scale(.6) }
 
 /* 7. Terminal: the code is typed in line by line once it is on screen */
@@ -157,7 +163,6 @@ html.m-splash.m-fade::after { opacity: 0; transition: opacity .4s ease }
 :root:not([data-style="legacy"]) .motion .term pre .caret { background: var(--pre-focus) }
 :root:not([data-style="legacy"]) .m-coords { color: var(--link) }
 :root:not([data-style="legacy"]) .motion .page-head { animation: none }
-:root:not([data-style="legacy"]) .motion .timeline::before { background-image: linear-gradient(var(--accent-fill), var(--accent-fill)) }
 :root:not([data-style="legacy"]) .motion .stack .wire { background-image: linear-gradient(90deg, transparent, var(--accent-fill), transparent) }
 /* The Display menu's Font (see site.css): the splash draws the name in the chosen font. In Legacy that
    is not Fraunces (which is then not loaded), so, like Standard's, the box takes the name's own width.
