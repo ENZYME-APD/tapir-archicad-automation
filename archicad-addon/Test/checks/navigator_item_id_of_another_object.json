@@ -1,0 +1,113 @@
+{
+  "title": "A guid that is not a navigator item, given as navigatorItemId, gets an error instead of making Archicad quit",
+  "minTapir": "1.8.1",
+  "minArchicad": "27",
+  "steps": [
+    {
+      "id": "a wall, whose guid is not a navigator item",
+      "command": "CreateWalls",
+      "params": {
+        "wallsData": [
+          {
+            "begCoordinate": {
+              "x": 700,
+              "y": 700
+            },
+            "endCoordinate": {
+              "x": 703,
+              "y": 700
+            },
+            "height": 2.5,
+            "thickness": 0.2
+          }
+        ]
+      },
+      "save": {
+        "wall": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "wall created"
+        }
+      ]
+    },
+    {
+      "id": "the wall's guid as navigatorItemId of GetDatabaseIdFromNavigatorItemId",
+      "command": "GetDatabaseIdFromNavigatorItemId",
+      "creates": false,
+      "params": {
+        "navigatorItemIds": [
+          {
+            "navigatorItemId": {
+              "guid": "${wall}"
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "databases[0].error.code",
+          "exists": true,
+          "name": "error item, Archicad still running"
+        }
+      ]
+    },
+    {
+      "id": "the wall's guid as navigatorItemId of ChangeWindow",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "navigatorItemId": {
+          "guid": "${wall}"
+        }
+      },
+      "expect": [
+        {
+          "path": "success",
+          "eq": false,
+          "name": "failed, Archicad still running"
+        },
+        {
+          "path": "error.message",
+          "contains": "not an item of the Navigator",
+          "name": "says what is wrong"
+        }
+      ]
+    },
+    {
+      "id": "the floor plan's database guid as navigatorItemId",
+      "command": "GetCurrentWindowType",
+      "creates": false,
+      "params": {},
+      "save": {
+        "db": "databaseId.guid"
+      },
+      "expect": [
+        {
+          "path": "databaseId.guid",
+          "exists": true,
+          "name": "current database read"
+        }
+      ]
+    },
+    {
+      "id": "a database guid as navigatorItemId of ChangeWindow (#2342)",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "navigatorItemId": {
+          "guid": "${db}"
+        }
+      },
+      "expect": [
+        {
+          "path": "success",
+          "eq": false,
+          "name": "failed, Archicad still running"
+        }
+      ]
+    }
+  ]
+}

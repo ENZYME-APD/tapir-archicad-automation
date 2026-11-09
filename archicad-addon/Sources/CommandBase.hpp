@@ -67,6 +67,12 @@ GS::UniString GetOverwriteRefusal (const GS::ObjectState& parameters, const IO::
 // IsDryRun, makes its checks, wraps the step that writes with CallUndoableCommandUnlessDryRun,
 // reports each target that passed the checks with CreateDryRunExecutionResult, and adds the
 // response's "dryRun" field with AddDryRunField.
+// The navigator item of a guid given by the caller. A guid that belongs to another kind of object (an
+// element, a database, an attribute, ...) makes ACAPI_Navigator_GetNavigatorItem fail an ODB
+// assertion, and Archicad quits (#2342, Archicad 29 and 30). So the guid is looked for in the navigator
+// trees first, and one that is in none of them gets APIERR_BADID.
+GSErrCode GetNavigatorItemOfGuid (const API_Guid& guid, API_NavigatorItem& item);
+
 bool IsDryRun (const GS::ObjectState& parameters);
 // Runs write as one undoable command named undoString and returns its error; on a dry run it does
 // not run write at all (so no undo step is made either) and returns NoError.

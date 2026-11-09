@@ -105,6 +105,63 @@ GS::ObjectState CreateSuccessfulExecutionResult ()
         "success", true);
 }
 
+static bool NavigatorTreeContains (API_NavigatorItem item, API_NavigatorMapID mapId, const API_Guid& guid)
+{
+    if (item.guid == guid) {
+        return true;
+    }
+    item.mapId = mapId;
+    GS::Array<API_NavigatorItem> children;
+    if (ACAPI_Navigator_GetNavigatorChildrenItems (&item, &children) != NoError) {
+        return false;
+    }
+    for (const API_NavigatorItem& child : children) {
+        if (NavigatorTreeContains (child, mapId, guid)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static bool IsNavigatorItemGuid (const API_Guid& guid)
+{
+    for (const API_NavigatorMapID mapId : { API_ProjectMap, API_PublicViewMap, API_MyViewMap, API_LayoutMap, API_PublisherSets }) {
+        // A project has one set of each map, except the publisher sets.
+        Int32 setCount = 1;
+        if (mapId == API_PublisherSets && ACAPI_Navigator_GetNavigatorSetNum (&setCount) != NoError) {
+            continue;
+        }
+        for (Int32 ii = 0; ii < setCount; ++ii) {
+            API_NavigatorSet navigatorSet = {};
+            navigatorSet.mapId = mapId;
+            if (ACAPI_Navigator_GetNavigatorSet (&navigatorSet, &ii) != NoError) {
+                continue;
+            }
+            if (navigatorSet.rootGuid == guid) {
+                return true;
+            }
+            // The root guid comes from Archicad itself, so it is a navigator item.
+            API_NavigatorItem rootItem = {};
+            if (ACAPI_Navigator_GetNavigatorItem (&navigatorSet.rootGuid, &rootItem) != NoError) {
+                continue;
+            }
+            if (NavigatorTreeContains (rootItem, mapId, guid)) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+GSErrCode GetNavigatorItemOfGuid (const API_Guid& guid, API_NavigatorItem& item)
+{
+    if (guid == APINULLGuid || !IsNavigatorItemGuid (guid)) {
+        return APIERR_BADID;
+    }
+    API_Guid itemGuid = guid;
+    return ACAPI_Navigator_GetNavigatorItem (&itemGuid, &item);
+}
+
 bool IsDryRun (const GS::ObjectState& parameters)
 {
     bool dryRun = false;
