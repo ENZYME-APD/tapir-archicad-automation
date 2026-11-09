@@ -63,3 +63,10 @@
 .script-section .term pre { max-height: 560px }
 .spec .install ol { font-size: 14px }
 .spec .install #detail-report { font-weight: 700 }
+
+/* The Standard look (see the end of site.css): light lines and 12 px corners, labels in normal case. */
+:root:not([data-style="legacy"]) .screenshots a, :root:not([data-style="legacy"]) .script-versions { border: 1px solid var(--line); border-radius: var(--radius-card) }
+:root:not([data-style="legacy"]) .script-versions { overflow: hidden }
+:root:not([data-style="legacy"]) .filters-toggle[aria-expanded="true"], :root:not([data-style="legacy"]) .active-filter,
+:root:not([data-style="legacy"]) .active-filter:hover { background: var(--accent-fill); border-color: var(--accent-fill); color: var(--on-accent) }
+:root:not([data-style="legacy"]) .readme .readme-table td[data-label]::before { font-family: var(--body); font-weight: 600; letter-spacing: normal; text-transform: none }

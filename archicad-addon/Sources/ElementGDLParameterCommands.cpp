@@ -3406,7 +3406,7 @@ GS::Optional<GS::UniString> GetHotspotsOfElementsCommand::GetRawResponseSchema (
                         "properties": {
                             "hotspots": {
                                 "type": "array",
-                                "description": "The 2D hotspots of the placed library part instance, as Archicad returns them.",
+                                "description": "The 2D hotspots of the placed library part instance, as Archicad returns them: in the library part's own coordinate system (scaled when the instance is resized), not in project coordinates, so they do not change when the element or its wall is moved. GetSnapPointsOfElements returns the points of an element in project coordinates.",
                                 "items": {
                                     "$ref": "#/Coordinate2D"
                                 }

@@ -140,5 +140,9 @@
         { "path": "memberTypesOfElements[3].error.code", "exists": true, "name": "unknown guid is an error item" }
       ]
     }
+  ],
+  "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${beam}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${column}" } } ] } }
   ]
 }
