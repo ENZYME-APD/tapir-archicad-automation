@@ -4229,6 +4229,28 @@ GS::Optional<GS::UniString> ApplyWindowOrDoorDetails (API_Element& element, API_
     return {};
 }
 
+// The result of ModifyWindows/ModifyDoors after ACAPI_Element_Change answered NoError: a
+// success, unless the item gave a displayOption that the window or door does not have now.
+// Archicad answers NoError for every display option and keeps another one on a window or
+// door (OutLinesOnly was read back as CutOnly, #2470), so it is read back here.
+GS::ObjectState CheckWindowOrDoorDisplayOptionApplied (const API_Element& element, const GS::ObjectState& item, const char* noun)
+{
+    GS::UniString displayOptionStr;
+    if (!item.Get ("displayOption", displayOptionStr)) {
+        return CreateSuccessfulExecutionResult ();
+    }
+    API_Element changed = {};
+    changed.header.guid = element.header.guid;
+    if (ACAPI_Element_Get (&changed) != NoError) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString::Printf ("The %s was modified, but it could not be read back to check its displayOption.", noun));
+    }
+    if (changed.window.openingBase.displayOption != element.window.openingBase.displayOption) {
+        return CreateFailedExecutionResult (APIERR_REFUSEDPAR, GS::UniString::Printf ("Archicad did not apply displayOption '%T' to the %s, it has '%T' now; the other given fields were changed.",
+            displayOptionStr.ToPrintf (), noun, ElemDisplayOptionToString (changed.window.openingBase.displayOption).ToPrintf ()));
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
 const std::pair<const char*, API_SkylightAnchorID> SkylightAnchorPoints[] = {
     { "BottomCenter", APISkylightAnchor_BC }, { "BottomLeft", APISkylightAnchor_BL }, { "BottomRight", APISkylightAnchor_BR },
     { "TopCenter", APISkylightAnchor_TC }, { "TopLeft", APISkylightAnchor_TL }, { "TopRight", APISkylightAnchor_TR }
@@ -11955,7 +11977,11 @@ GS::ObjectState ModifyWindowsCommand::Execute (const GS::ObjectState& parameters
             }
 
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
-            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify window."));
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to modify window."));
+                continue;
+            }
+            results.Push (CheckWindowOrDoorDisplayOptionApplied (element, item, "window"));
         }
     });
 }
@@ -12033,7 +12059,11 @@ GS::ObjectState ModifyDoorsCommand::Execute (const GS::ObjectState& parameters, 
             }
 
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
-            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify door."));
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to modify door."));
+                continue;
+            }
+            results.Push (CheckWindowOrDoorDisplayOptionApplied (element, item, "door"));
         }
     });
 }
@@ -12478,6 +12508,28 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
                 if (err != NoError) {
                     results.Push (CreateFailedExecutionResult (err, "Morph modified, but failed to set its edge type."));
                     continue;
+                }
+            }
+
+            // A new body comes back casting a shadow again: a morph set to cast none did after
+            // its body was replaced (#2470). The shadow settings the morph had, or the ones the
+            // item gave, are written again on their own when Archicad did not keep them.
+            if (replacingBody) {
+                API_Element changedMorph = {};
+                changedMorph.header.guid = element.header.guid;
+                if (ACAPI_Element_Get (&changedMorph) == NoError &&
+                    (changedMorph.morph.castShadow != element.morph.castShadow || changedMorph.morph.receiveShadow != element.morph.receiveShadow)) {
+                    API_Element shadowMask = {};
+                    ACAPI_ELEMENT_MASK_CLEAR (shadowMask);
+                    changedMorph.morph.castShadow = element.morph.castShadow;
+                    changedMorph.morph.receiveShadow = element.morph.receiveShadow;
+                    ACAPI_ELEMENT_MASK_SET (shadowMask, API_MorphType, castShadow);
+                    ACAPI_ELEMENT_MASK_SET (shadowMask, API_MorphType, receiveShadow);
+                    err = ACAPI_Element_Change (&changedMorph, &shadowMask, nullptr, 0, true);
+                    if (err != NoError) {
+                        results.Push (CreateFailedExecutionResult (err, "Morph modified, but failed to keep its shadow settings with the new body."));
+                        continue;
+                    }
                 }
             }
 
