@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 21:07 UTC",
+ "generatedAt": "2026-11-09 21:35 UTC",
  "versions": [
   25,
   26,
@@ -5774,6 +5774,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2596,
+     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
+    },
+    {
+     "number": 2595,
+     "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
+    },
+    {
+     "number": 2593,
+     "title": "[2/4] Multi-plane roofs: read the overhang mode and write a manual contour"
+    },
+    {
+     "number": 2592,
+     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
+    },
+    {
      "number": 2589,
      "title": "CreateRoofs: accept id, layerIndex and pivotEdges"
     },
@@ -6794,6 +6810,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2596,
+     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
+    },
+    {
+     "number": 2595,
+     "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
+    },
+    {
+     "number": 2593,
+     "title": "[2/4] Multi-plane roofs: read the overhang mode and write a manual contour"
+    },
+    {
+     "number": 2592,
+     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
+    },
+    {
      "number": 2589,
      "title": "CreateRoofs: accept id, layerIndex and pivotEdges"
     },
@@ -7389,6 +7421,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2596,
+     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
+    },
+    {
+     "number": 2593,
+     "title": "[2/4] Multi-plane roofs: read the overhang mode and write a manual contour"
+    },
+    {
+     "number": 2592,
+     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
+    },
+    {
      "number": 2589,
      "title": "CreateRoofs: accept id, layerIndex and pivotEdges"
     },
@@ -7936,6 +7980,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2596,
+     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
+    },
+    {
+     "number": 2592,
+     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
+    },
+    {
      "number": 2577,
      "title": "[1/5] GetDetailsOfElements: read the components of railings"
     }
@@ -7987,6 +8039,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2596,
+     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
+    },
+    {
+     "number": 2595,
+     "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
+    },
+    {
+     "number": 2593,
+     "title": "[2/4] Multi-plane roofs: read the overhang mode and write a manual contour"
+    },
+    {
+     "number": 2592,
+     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
+    },
     {
      "number": 2589,
      "title": "CreateRoofs: accept id, layerIndex and pivotEdges"
@@ -12205,6 +12273,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2596,
+     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
+    },
+    {
+     "number": 2592,
+     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
+    },
+    {
      "number": 2577,
      "title": "[1/5] GetDetailsOfElements: read the components of railings"
     }
@@ -12762,6 +12838,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2596,
+     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
+    },
+    {
+     "number": 2592,
+     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
+    },
     {
      "number": 2577,
      "title": "[1/5] GetDetailsOfElements: read the components of railings"
@@ -25628,6 +25712,30 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2597,
+     "title": "[3/5] Profiles: read and set opening reference lines"
+    },
+    {
+     "number": 2596,
+     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
+    },
+    {
+     "number": 2595,
+     "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
+    },
+    {
+     "number": 2594,
+     "title": "[2/5] Profiles: read and write the custom surface of each profile edge"
+    },
+    {
+     "number": 2593,
+     "title": "[2/4] Multi-plane roofs: read the overhang mode and write a manual contour"
+    },
+    {
+     "number": 2592,
+     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
+    },
+    {
      "number": 2591,
      "title": "[1/5] Profiles: read and write stretch zones"
     },
@@ -31349,6 +31457,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2596,
+     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
+    },
+    {
+     "number": 2594,
+     "title": "[2/5] Profiles: read and write the custom surface of each profile edge"
+    },
+    {
+     "number": 2593,
+     "title": "[2/4] Multi-plane roofs: read the overhang mode and write a manual contour"
+    },
+    {
+     "number": 2592,
+     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
+    },
     {
      "number": 2591,
      "title": "[1/5] Profiles: read and write stretch zones"
@@ -37841,6 +37965,30 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2597,
+     "title": "[3/5] Profiles: read and set opening reference lines"
+    },
+    {
+     "number": 2596,
+     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
+    },
+    {
+     "number": 2595,
+     "title": "[3/4] ModifyRoofs: custom edge surfaces on multi-plane roofs"
+    },
+    {
+     "number": 2594,
+     "title": "[2/5] Profiles: read and write the custom surface of each profile edge"
+    },
+    {
+     "number": 2593,
+     "title": "[2/4] Multi-plane roofs: read the overhang mode and write a manual contour"
+    },
+    {
+     "number": 2592,
+     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
+    },
     {
      "number": 2591,
      "title": "[1/5] Profiles: read and write stretch zones"
@@ -44609,6 +44757,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2596,
+     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
+    },
+    {
+     "number": 2594,
+     "title": "[2/5] Profiles: read and write the custom surface of each profile edge"
+    },
+    {
+     "number": 2593,
+     "title": "[2/4] Multi-plane roofs: read the overhang mode and write a manual contour"
+    },
+    {
+     "number": 2592,
+     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
+    },
+    {
      "number": 2591,
      "title": "[1/5] Profiles: read and write stretch zones"
     },
@@ -47759,6 +47923,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2596,
+     "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
+    },
+    {
+     "number": 2594,
+     "title": "[2/5] Profiles: read and write the custom surface of each profile edge"
+    },
+    {
+     "number": 2593,
+     "title": "[2/4] Multi-plane roofs: read the overhang mode and write a manual contour"
+    },
+    {
+     "number": 2592,
+     "title": "[3/5] ModifyRailings: change the top rail, rails and handrails of a segment"
+    },
     {
      "number": 2591,
      "title": "[1/5] Profiles: read and write stretch zones"
