@@ -10662,7 +10662,7 @@
             },
             "segments": {
                 "type": "array",
-                "description": "The surfaces of each segment of the column.",
+                "description": "The segments of the column, in the order Archicad keeps them: the surfaces, the cross section, the taper and the length of each.",
                 "items": {
                     "$ref": "#/ColumnSegmentSurfaces"
                 }
@@ -10734,9 +10734,62 @@
         },
         "additionalProperties": false
     },
+    "AssemblySegmentLength": {
+        "type": "object",
+        "description": "How the length of a segment is set (its segment scheme): a fixed length, or a proportion of the length the fixed segments leave. Both values are returned; Archicad uses the one of the lengthType.",
+        "properties": {
+            "lengthType": {
+                "type": "string",
+                "enum": [ "Fixed", "Proportional", "Unknown" ]
+            },
+            "fixedLength": {
+                "type": "number",
+                "description": "The length of the segment, used when lengthType is Fixed."
+            },
+            "lengthProportion": {
+                "type": "number",
+                "description": "The proportion of the segment, used when lengthType is Proportional, as Archicad stores it."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "lengthType",
+            "fixedLength",
+            "lengthProportion"
+        ]
+    },
+    "ColumnSegmentTaper": {
+        "type": "object",
+        "description": "The taper of a column segment: a segment that is not homogeneous changes its cross section from width and depth at its start to endWidth and endDepth at its end.",
+        "properties": {
+            "isHomogeneous": {
+                "type": "boolean",
+                "description": "True when the cross section is the same at both ends of the segment (no taper)."
+            },
+            "endWidth": {
+                "type": "number",
+                "description": "Cross section width at the end of the segment. Used only when isHomogeneous is false."
+            },
+            "endDepth": {
+                "type": "number",
+                "description": "Cross section depth (height) at the end of the segment. Used only when isHomogeneous is false."
+            },
+            "isEndWidthAndDepthLinked": {
+                "type": "boolean",
+                "description": "Whether Archicad keeps endWidth and endDepth linked. Used only when isHomogeneous is false."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "isHomogeneous",
+            "endWidth",
+            "endDepth",
+            "isEndWidthAndDepthLinked"
+        ]
+    },
     "ColumnSegmentSurfaces": {
         "type": "object",
-        "description": "The surfaces of a column segment.",
+        "description": "A segment of a column: its surfaces and veneer, its own cross section, its taper and its length.",
         "properties": {
             "extrusionSurfaceMaterial": {
                 "$ref": "#/OverriddenMaterial"
@@ -10750,6 +10803,39 @@
             },
             "veneer": {
                 "$ref": "#/ColumnVeneer"
+            },
+            "structureType": {
+                "$ref": "#/SegmentStructureType"
+            },
+            "width": {
+                "type": "number",
+                "description": "Cross section width of the segment (at its start when it is tapered)."
+            },
+            "depth": {
+                "type": "number",
+                "description": "Cross section depth (height) of the segment (at its start when it is tapered)."
+            },
+            "isWidthAndHeightLinked": {
+                "type": "boolean"
+            },
+            "circleBased": {
+                "type": "boolean",
+                "description": "True for a round cross section, false for rectangular."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section of the segment uses a building material rather than a custom profile."
+            },
+            "profileId": {
+                "$ref": "#/AttributeId",
+                "description": "Present when the cross section of the segment uses a custom extruded profile rather than a building material."
+            },
+            "taper": {
+                "$ref": "#/ColumnSegmentTaper"
+            },
+            "length": {
+                "$ref": "#/AssemblySegmentLength",
+                "description": "The length scheme of the segment. Absent when Archicad does not return the column's segment schemes."
             }
         },
         "additionalProperties": false,
@@ -10795,6 +10881,13 @@
             },
             "veneer": {
                 "$ref": "#/ColumnVeneer"
+            },
+            "taper": {
+                "$ref": "#/ColumnSegmentTaper"
+            },
+            "length": {
+                "$ref": "#/AssemblySegmentLength",
+                "description": "The length scheme of the segment, from its Column. Absent when Archicad does not return the Column's segment schemes."
             }
         },
         "additionalProperties": false,
