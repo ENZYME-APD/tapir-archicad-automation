@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 20:37 UTC",
+ "generatedAt": "2026-11-09 21:07 UTC",
  "versions": [
   25,
   26,
@@ -5704,7 +5704,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2591,
+     "title": "[1/5] Profiles: read and write stretch zones"
+    }
+   ],
    "issues": []
   },
   {
@@ -5768,6 +5773,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2589,
+     "title": "CreateRoofs: accept id, layerIndex and pivotEdges"
+    },
+    {
+     "number": 2588,
+     "title": "[1/4] Multi-plane roofs: per-plane top/bottom surface and cover fill"
+    },
+    {
+     "number": 2583,
+     "title": "[2/5] GetGDLParametersOfElements: read the parameters of railing components"
+    },
     {
      "number": 2570,
      "title": "Slabs: read and write the Edge Angle and the surface of each edge"
@@ -6777,6 +6794,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2589,
+     "title": "CreateRoofs: accept id, layerIndex and pivotEdges"
+    },
+    {
      "number": 2570,
      "title": "Slabs: read and write the Edge Angle and the surface of each edge"
     },
@@ -7156,7 +7177,16 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2589,
+     "title": "CreateRoofs: accept id, layerIndex and pivotEdges"
+    },
+    {
+     "number": 2578,
+     "title": "CreateWindows/CreateDoors: accept id and layerIndex"
+    }
+   ],
    "issues": []
   },
   {
@@ -7358,6 +7388,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2589,
+     "title": "CreateRoofs: accept id, layerIndex and pivotEdges"
+    },
     {
      "number": 2571,
      "title": "Slabs: read and write the floor plan and section display settings"
@@ -7953,6 +7987,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2589,
+     "title": "CreateRoofs: accept id, layerIndex and pivotEdges"
+    },
+    {
+     "number": 2588,
+     "title": "[1/4] Multi-plane roofs: per-plane top/bottom surface and cover fill"
+    },
+    {
+     "number": 2583,
+     "title": "[2/5] GetGDLParametersOfElements: read the parameters of railing components"
+    },
     {
      "number": 2570,
      "title": "Slabs: read and write the Edge Angle and the surface of each edge"
@@ -12565,7 +12611,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2583,
+     "title": "[2/5] GetGDLParametersOfElements: read the parameters of railing components"
+    }
+   ],
    "issues": []
   },
   {
@@ -25577,6 +25628,30 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2591,
+     "title": "[1/5] Profiles: read and write stretch zones"
+    },
+    {
+     "number": 2590,
+     "title": "CreateProfiles: refuse unknown keys and unresolved attribute ids inside newSkins / skinOverrides / edgeOverrides"
+    },
+    {
+     "number": 2589,
+     "title": "CreateRoofs: accept id, layerIndex and pivotEdges"
+    },
+    {
+     "number": 2588,
+     "title": "[1/4] Multi-plane roofs: per-plane top/bottom surface and cover fill"
+    },
+    {
+     "number": 2580,
+     "title": "Windows and doors: read and write the sill anchor, sub-floor thickness, reveal anchor, surface, plane and fix point"
+    },
+    {
+     "number": 2578,
+     "title": "CreateWindows/CreateDoors: accept id and layerIndex"
+    },
+    {
      "number": 2571,
      "title": "Slabs: read and write the floor plan and section display settings"
     },
@@ -31274,6 +31349,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2591,
+     "title": "[1/5] Profiles: read and write stretch zones"
+    },
+    {
+     "number": 2588,
+     "title": "[1/4] Multi-plane roofs: per-plane top/bottom surface and cover fill"
+    },
+    {
+     "number": 2580,
+     "title": "Windows and doors: read and write the sill anchor, sub-floor thickness, reveal anchor, surface, plane and fix point"
+    },
     {
      "number": 2577,
      "title": "[1/5] GetDetailsOfElements: read the components of railings"
@@ -37754,6 +37841,30 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2591,
+     "title": "[1/5] Profiles: read and write stretch zones"
+    },
+    {
+     "number": 2590,
+     "title": "CreateProfiles: refuse unknown keys and unresolved attribute ids inside newSkins / skinOverrides / edgeOverrides"
+    },
+    {
+     "number": 2589,
+     "title": "CreateRoofs: accept id, layerIndex and pivotEdges"
+    },
+    {
+     "number": 2588,
+     "title": "[1/4] Multi-plane roofs: per-plane top/bottom surface and cover fill"
+    },
+    {
+     "number": 2580,
+     "title": "Windows and doors: read and write the sill anchor, sub-floor thickness, reveal anchor, surface, plane and fix point"
+    },
+    {
+     "number": 2578,
+     "title": "CreateWindows/CreateDoors: accept id and layerIndex"
+    },
     {
      "number": 2571,
      "title": "Slabs: read and write the floor plan and section display settings"
@@ -44498,6 +44609,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2591,
+     "title": "[1/5] Profiles: read and write stretch zones"
+    },
+    {
+     "number": 2588,
+     "title": "[1/4] Multi-plane roofs: per-plane top/bottom surface and cover fill"
+    },
+    {
+     "number": 2580,
+     "title": "Windows and doors: read and write the sill anchor, sub-floor thickness, reveal anchor, surface, plane and fix point"
+    },
+    {
      "number": 2577,
      "title": "[1/5] GetDetailsOfElements: read the components of railings"
     },
@@ -47636,6 +47759,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2591,
+     "title": "[1/5] Profiles: read and write stretch zones"
+    },
+    {
+     "number": 2588,
+     "title": "[1/4] Multi-plane roofs: per-plane top/bottom surface and cover fill"
+    },
+    {
+     "number": 2580,
+     "title": "Windows and doors: read and write the sill anchor, sub-floor thickness, reveal anchor, surface, plane and fix point"
+    },
     {
      "number": 2577,
      "title": "[1/5] GetDetailsOfElements: read the components of railings"
