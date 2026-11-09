@@ -1314,7 +1314,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyCurtainWallsCommand> (
             elementCommands, "1.8.0",
-            "Modifies Curtain Wall elements in place, keeping their GUID, properties and classifications: the height, the bottom elevation and story, the reference line (with the same number of segments), and the column (primary) and row (secondary) pattern with its cell assignments, in the fields of CreateCurtainWalls."
+            "Modifies Curtain Wall elements in place, keeping their GUID, properties and classifications: the height, the bottom elevation and story, the reference line (with the same number of segments), and the column (primary) and row (secondary) pattern with its cell assignments, in the fields of CreateCurtainWalls; and the side of the reference line (flipped), the panel offset from the reference line and the nominal width."
         );
         err |= RegisterCommand<ModifyCurtainWallFramesCommand> (
             elementCommands, "2.0.0",

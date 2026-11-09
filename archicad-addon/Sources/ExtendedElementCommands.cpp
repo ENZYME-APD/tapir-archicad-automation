@@ -10101,7 +10101,7 @@ GS::Optional<GS::UniString> ModifyCurtainWallsCommand::GetInputParametersSchema 
         "properties": {
             "curtainWallsWithDetails": {
                 "type": "array",
-                "description": "Array of Curtain Wall elements to modify, with the fields to change. Only the given fields are changed; the others, and the frames and panels not affected by them, are left as they are. The fields are those of CreateCurtainWalls, so a curtain wall can be changed in place instead of being deleted and recreated, keeping its GUID, properties and classifications.",
+                "description": "Array of Curtain Wall elements to modify, with the fields to change. Only the given fields are changed; the others, and the frames and panels not affected by them, are left as they are. The fields are those of CreateCurtainWalls, plus flipped, offset and nominalWidth, so a curtain wall can be changed in place instead of being deleted and recreated, keeping its GUID, properties and classifications.",
                 "items": {
                     "type": "object",
                     "properties": {
@@ -10125,6 +10125,19 @@ GS::Optional<GS::UniString> ModifyCurtainWallsCommand::GetInputParametersSchema 
                         "height": {
                             "type": "number",
                             "description": "The new height of the curtain wall. It is applied before the other fields and read back: when Archicad does not apply it, the item fails and the curtain wall is left unchanged.",
+                            "exclusiveMinimum": 0.0
+                        },
+                        "flipped": {
+                            "type": "boolean",
+                            "description": "The new side of the reference line the curtain wall is on (API_CurtainWallType::flipped, the flipped value GetDetailsOfElements returns). Changing it mirrors the curtain wall to the other side of its reference line; the reference line itself stays where it is."
+                        },
+                        "offset": {
+                            "type": "number",
+                            "description": "The new offset of the panels from the reference line (API_CurtainWallType::offset, the offset value GetDetailsOfElements returns), e.g. 0.1 for 10 cm."
+                        },
+                        "nominalWidth": {
+                            "type": "number",
+                            "description": "The new nominal width (thickness) of the curtain wall (API_CurtainWallType::nominalWidth, the nominalWidth value GetDetailsOfElements returns).",
                             "exclusiveMinimum": 0.0
                         },
                         "primaryPattern": {
@@ -10221,6 +10234,33 @@ GS::ObjectState ModifyCurtainWall (const GS::ObjectState& item, const Stories& s
     } else if (item.Get ("floorIndex", floorIndex)) {
         element.header.floorInd = floorIndex;
         ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+        changed = true;
+    }
+
+    // The side of the reference line, the panel offset from it and the nominal width: plain
+    // fields of the curtain wall, changed with the others below and read back.
+    bool flipped = false;
+    const bool hasFlipped = item.Get ("flipped", flipped);
+    if (hasFlipped) {
+        element.curtainWall.flipped = flipped;
+        ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, flipped);
+        changed = true;
+    }
+    double offset = 0.0;
+    const bool hasOffset = item.Get ("offset", offset);
+    if (hasOffset) {
+        element.curtainWall.offset = offset;
+        ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, offset);
+        changed = true;
+    }
+    double nominalWidth = 0.0;
+    const bool hasNominalWidth = item.Get ("nominalWidth", nominalWidth);
+    if (hasNominalWidth) {
+        if (nominalWidth <= 0.0) {
+            return CreateFailedExecutionResult (APIERR_BADPARS, "nominalWidth must be positive.");
+        }
+        element.curtainWall.nominalWidth = nominalWidth;
+        ACAPI_ELEMENT_MASK_SET (mask, API_CurtainWallType, nominalWidth);
         changed = true;
     }
 
@@ -10348,6 +10388,15 @@ GS::ObjectState ModifyCurtainWall (const GS::ObjectState& item, const Stories& s
         }
         if (item.Contains ("zCoordinate") && std::fabs (readBack.curtainWall.planeOffset - element.curtainWall.planeOffset) > 1e-6 && std::fabs (readBack.curtainWall.storyRelLevel - element.curtainWall.storyRelLevel) > 1e-6) {
             return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply the bottom elevation to the curtain wall.");
+        }
+        if (hasFlipped && readBack.curtainWall.flipped != flipped) {
+            return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply flipped to the curtain wall.");
+        }
+        if (hasOffset && std::fabs (readBack.curtainWall.offset - offset) > 1e-6) {
+            return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply the offset to the curtain wall.");
+        }
+        if (hasNominalWidth && std::fabs (readBack.curtainWall.nominalWidth - nominalWidth) > 1e-6) {
+            return CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply the nominal width to the curtain wall.");
         }
         if (!coordinates.IsEmpty ()) {
             // The reference line is read back too: a polygon change Archicad accepted but
