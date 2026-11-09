@@ -112,6 +112,13 @@
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2365">#2365</a></td>
                         </tr>
                         <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Read or set the joint type (Vertical Cut and the others) and the dx offset of a stair structure</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Nothing yet</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_StairStructureType</code> (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30) holds <code>structType</code>, <code>bottomType</code>, thicknesses, <code>role</code>, <code>side</code>, <code>isLanding</code>, <code>sequenceNumber</code>, <code>subElemId</code> and <code>API_SideStairStructData</code> or <code>API_MonolithStairStructData</code>; no field, enum or function for the joint type or dx. <code>GetGDLParametersOfElements</code> on stair structure sub-elements fails in Archicad 29 build 3200 (&ldquo;Failed to get parameters of element&rdquo;).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2536">#2536</a></td>
+                        </tr>
+                        <tr>
                             <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Read which slab or stair edge a railing is linked to, or link a railing to one</td>
                             <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
                             <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Read the slab's outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.</td>
