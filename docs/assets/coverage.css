@@ -8,6 +8,9 @@
 
 :root {
     --track: #E3DED3; --done: var(--moss); --merged: #5E7A64; --progress: #A3B8A7; --claimed: #A3B8A7;
+    /* The stripes of a claimed item, a tile's lift onto ochre and the shadow of the sidebar drawer. */
+    --stripes-claimed: repeating-linear-gradient(45deg, var(--claimed) 0 3px, var(--track) 3px 6px);
+    --shadow-lift-small: 4px 4px 0 var(--ochre); --shadow-drawer: 0 0 20px rgba(0, 0, 0, .3);
 }
 :root[data-theme="dark"] { --track: #3A4042; --done: #C7D6CA; --merged: #8EAA94; --progress: #557060; --claimed: #557060; }
 @media (prefers-color-scheme: dark) {
@@ -44,8 +47,8 @@ button { font: inherit; color: inherit; cursor: pointer }
 .hero-caption { color: var(--muted); margin-top: 6px }
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(112px, 1fr)); gap: 8px }
 .tile { text-align: left; background: var(--surface); color: var(--fg); border: 1.5px solid var(--fg); border-radius: 4px; padding: 8px 10px; transition: transform .15s ease, box-shadow .15s ease }
-.tile:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--ochre) }
-.tile[aria-pressed="true"] { box-shadow: 4px 4px 0 var(--ochre); background: var(--badge) }
+.tile:hover { transform: translate(-2px, -2px); box-shadow: var(--shadow-lift-small) }
+.tile[aria-pressed="true"] { box-shadow: var(--shadow-lift-small); background: var(--badge) }
 .tile .value { display: flex; align-items: center; gap: 8px; font: 700 24px/1.2 var(--display); font-variant-numeric: tabular-nums }
 .tile .label { display: block; font-size: 13px; color: var(--muted) }
 
@@ -56,7 +59,7 @@ button { font: inherit; color: inherit; cursor: pointer }
 .bar .done { background: var(--done) }
 .bar .merged { background: var(--merged) }
 .bar .progress { background: var(--progress) }
-.bar .claimed { background: repeating-linear-gradient(45deg, var(--claimed) 0 3px, var(--track) 3px 6px) }
+.bar .claimed { background: var(--stripes-claimed) }
 .bar .open { background: var(--track); flex-grow: 1 }
 
 /* Status marks: the colour of the status in the bars, in a pill with its short name. */
@@ -64,7 +67,7 @@ button { font: inherit; color: inherit; cursor: pointer }
 .swatch.done { background: var(--done) }
 .swatch.merged { background: var(--merged) }
 .swatch.progress { background: var(--progress) }
-.swatch.claimed { background: repeating-linear-gradient(45deg, var(--claimed) 0 3px, var(--track) 3px 6px) }
+.swatch.claimed { background: var(--stripes-claimed) }
 .swatch.open { background: var(--track); box-shadow: inset 0 0 0 1px var(--border-strong) }
 .swatch.skipped { background: var(--slate) }
 .swatch.na { background: transparent; box-shadow: inset 0 0 0 1px var(--slate) }
@@ -127,7 +130,7 @@ ul.items li .detail { display: block; padding-left: 1.6em; font-size: 13.5px; co
 @media (max-width: 1100px) {
     .layout { display: block }
     .sidebar { position: fixed; z-index: 3; top: 0; bottom: 0; left: 0; width: min(300px, 85vw); max-height: none; align-self: stretch;
-        background: var(--bg); box-shadow: 0 0 20px rgba(0, 0, 0, .3); transform: translateX(-105%); visibility: hidden; transition: transform .2s, visibility .2s }
+        background: var(--bg); box-shadow: var(--shadow-drawer); transform: translateX(-105%); visibility: hidden; transition: transform .2s, visibility .2s }
     body.sidebar-open .sidebar { transform: none; visibility: visible }
     .sections-button { display: inline-block }
 }
