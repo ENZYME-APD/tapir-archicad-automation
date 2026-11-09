@@ -125,6 +125,13 @@
                             <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_RailingType</code> has <code>isAutoOnStoryVisibility</code> and <code>visibility</code> (<code>APIdefs_Elements.h</code>, AC27 and AC29), but Archicad 29 keeps <code>isAutoOnStoryVisibility</code> true after <code>ACAPI_Element_Change</code> (with and without the railing&rsquo;s memo) and <code>ACAPI_Element_ChangeParameters</code>, and then ignores <code>visibility</code>. Archicad 30 is untested.</td>
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2448">#2448</a></td>
                         </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Read or set the floor plan symbol of a railing: its break mark, which symbol components it shows, their 2D attributes and the symbol overrides</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Nothing yet</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_RailingType</code> holds only <code>head</code>, <code>linkToSettings</code>, <code>defNode</code>, <code>defSegment</code>, <code>visibility</code>, <code>isAutoOnStoryVisibility</code>, <code>nVertices</code>, <code>referenceLinePen</code>, <code>contourPen</code>, <code>nNodes</code>, <code>nSegments</code> and <code>bottomOffset</code>; neither it nor <code>API_RailingSegmentType</code>, <code>API_RailingNodeType</code> and their post, rail, panel and baluster types has a break mark, symbol component, symbol override or 2D attribute field (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30). The break mark fields (<code>breakLinePositionType</code>, <code>breakLineDistance</code>, <code>breakLineAngle</code>) are only in <code>API_StairType</code>, and the <code>ACAPI::</code> modules have no railing API.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2573">#2573</a></td>
+                        </tr>
 
                         <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Navigator and views</th></tr>
                         <tr>
