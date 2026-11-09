@@ -1046,7 +1046,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateWallsCommand> (
             elementCommands, "1.4.0",
-            "Creates Wall elements based on the given parameters. Takes the same wall settings as ModifyWalls, applied by the same code, except geometryType and profileType, which the new wall takes from the favorite or the Wall tool defaults (its plan outline is always Straight), and bottomOffset, which comes from zCoordinate. Neither command can write a Polygonal outline (it needs an outline polygon, which these commands do not take), connectionPriority or junctionSequence (Archicad ignores writes to them; GetDetailsOfElements reads them), and on Archicad 29 any story visibility other than 'Home story only' and 'All relevant stories'."
+            "Creates Wall elements based on the given parameters. Takes the same wall settings as ModifyWalls, applied by the same code, including geometryType (Straight or Trapezoid, with begThickness and endThickness), profileType (Normal, Slanted or Trapez) and the slant angles, so a trapezoid or slanted wall is made in one call; only bottomOffset differs, which comes from zCoordinate. A slantAlpha or slantBeta that the wall's profileType cannot take fails the item instead of being dropped. Neither command can write a Polygonal outline (it needs an outline polygon, which these commands do not take), connectionPriority or junctionSequence (Archicad ignores writes to them; GetDetailsOfElements reads them), and on Archicad 29 any story visibility other than 'Home story only' and 'All relevant stories'."
         );
         err |= RegisterCommand<CreateBeamsCommand> (
             elementCommands, "1.4.0",
@@ -1250,7 +1250,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyWallsCommand> (
             elementCommands, "1.4.0",
-            "Modifies Wall elements based on the given parameters. Takes the same wall settings as CreateWalls, applied by the same code, plus geometryType (Straight or Trapezoid), profileType and bottomOffset. Neither command can write a Polygonal outline (it needs an outline polygon, which these commands do not take), connectionPriority or junctionSequence (Archicad ignores writes to them; GetDetailsOfElements reads them), and on Archicad 29 any story visibility other than 'Home story only' and 'All relevant stories'."
+            "Modifies Wall elements based on the given parameters. Takes the same wall settings as CreateWalls, applied by the same code, including geometryType (Straight or Trapezoid, with begThickness and endThickness), profileType and the slant angles, plus bottomOffset. A slantAlpha or slantBeta that the wall's profileType cannot take fails the item instead of being dropped. Neither command can write a Polygonal outline (it needs an outline polygon, which these commands do not take), connectionPriority or junctionSequence (Archicad ignores writes to them; GetDetailsOfElements reads them), and on Archicad 29 any story visibility other than 'Home story only' and 'All relevant stories'."
         );
         err |= RegisterCommand<ModifyBeamsCommand> (
             elementCommands, "1.4.0",

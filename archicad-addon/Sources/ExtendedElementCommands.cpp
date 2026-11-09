@@ -2684,6 +2684,21 @@ bool ApplyWallDetails (API_Element& element, API_Element& mask, const GS::Object
         ACAPI_ELEMENT_MASK_SET (mask, API_WallType, thickness);
         changed = true;
     }
+    // The begin/end thickness of a Trapezoid wall (#2564), the same fields
+    // SetDetailsOfElements writes for one: thickness is the begin point's, thickness1
+    // the end point's. begThickness is applied after thickness, so it wins.
+    auto begThickness = GetOptionalDouble (details, "begThickness");
+    if (begThickness.HasValue ()) {
+        element.wall.thickness = begThickness.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, thickness);
+        changed = true;
+    }
+    auto endThickness = GetOptionalDouble (details, "endThickness");
+    if (endThickness.HasValue ()) {
+        element.wall.thickness1 = endThickness.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, thickness1);
+        changed = true;
+    }
     auto bottomOffset = GetOptionalDouble (details, "bottomOffset");
     if (bottomOffset.HasValue ()) {
         element.wall.bottomOffset = bottomOffset.Get ();
@@ -2913,6 +2928,34 @@ bool ApplyWallDetails (API_Element& element, API_Element& mask, const GS::Object
         changed = true;
     }
     return changed;
+}
+
+// Called after ApplyWallDetails, with the slant angles the wall had before it (#2564).
+// Archicad keeps slantAlpha only on a Slanted or Trapez cross section and slantBeta only
+// on a Trapez one; on any other wall it drops them while the command reports success.
+// A slant that cannot take effect is therefore an error. The value the wall already has
+// and the vertical angle (pi/2) are accepted, so a GetDetailsOfElements read fed back
+// unchanged, or a vertical slant, never fails.
+GS::Optional<GS::UniString> CheckWallSlantTakesEffect (const API_Element& element, double previousSlantAlpha, double previousSlantBeta, const GS::ObjectState& details)
+{
+    constexpr double Vertical = 1.5707963267948966;
+    constexpr double Tolerance = 1e-6;
+    const auto isNoChange = [&] (double value, double previous) {
+        return std::abs (value - previous) < Tolerance || std::abs (value - Vertical) < Tolerance;
+    };
+
+    const short profileType = element.wall.profileType;
+    auto slantAlpha = GetOptionalDouble (details, "slantAlpha");
+    if (slantAlpha.HasValue () && profileType != APISect_Slanted && profileType != APISect_Trapez &&
+        !isNoChange (slantAlpha.Get (), previousSlantAlpha)) {
+        return GS::UniString ("'slantAlpha' only takes effect on a wall whose profileType is Slanted or Trapez; send profileType in the same item.");
+    }
+    auto slantBeta = GetOptionalDouble (details, "slantBeta");
+    if (slantBeta.HasValue () && profileType != APISect_Trapez &&
+        !isNoChange (slantBeta.Get (), previousSlantBeta)) {
+        return GS::UniString ("'slantBeta' only takes effect on a wall whose profileType is Trapez; send profileType in the same item.");
+    }
+    return {};
 }
 
 GS::Optional<GS::UniString> ApplyRoofLevels (API_Element& element, API_Element* mask, const GS::ObjectState& details, bool& changed)
@@ -4873,8 +4916,12 @@ void AddMorphBodyFromMemo (const API_Element& elem, GS::ObjectState& typeSpecifi
 // ApplyWallDetails, declared once so that the two schemas cannot drift apart. Each line
 // ends with a comma, so the fragment is followed by at least one more property.
 static const char* WallSharedSettingsSchemaProperties = R"(
-                        "slantAlpha": { "type": "number", "description": "Only has an effect when the wall's profileType is Slanted or Trapez." },
-                        "slantBeta": { "type": "number", "description": "Only has an effect when the wall's profileType is Slanted or Trapez." },
+                        "geometryType": { "$ref": "#/WallModificationGeometryType", "description": "Plan outline of the wall. Trapezoid makes begThickness and endThickness the wall's thickness at its begin and end point. Polygonal is not settable here; it is read-only via GetDetailsOfElements. CreateWalls makes a Straight wall when this is omitted. This is unrelated to slantAlpha/slantBeta - see profileType for the cross section shape those depend on." },
+                        "begThickness": { "type": "number", "exclusiveMinimum": 0.0, "description": "Thickness at begCoordinate, the same value as thickness (applied after it, so it wins when both are given). Together with endThickness it shapes a Trapezoid wall (geometryType). Like thickness, it only takes effect on a Basic wall." },
+                        "endThickness": { "type": "number", "exclusiveMinimum": 0.0, "description": "Thickness at endCoordinate. Only takes effect on a Trapezoid wall (geometryType); a Straight wall has one thickness. Like thickness, it only takes effect on a Basic wall." },
+                        "profileType": { "$ref": "#/WallModificationProfileType", "description": "Cross section shape of the wall. slantAlpha needs Slanted or Trapez, slantBeta needs Trapez. When omitted, CreateWalls keeps the favorite's or the Wall tool default's and ModifyWalls the wall's own." },
+                        "slantAlpha": { "type": "number", "description": "Angle of the slanted face in radians (pi/2 is vertical). Only takes effect when the wall's profileType is Slanted or Trapez, after this item is applied: any other value than the wall's current one or pi/2 on another wall fails the item instead of being dropped." },
+                        "slantBeta": { "type": "number", "description": "Angle of the second slanted face of a double slanted wall, in radians (pi/2 is vertical). Only takes effect when the wall's profileType is Trapez, after this item is applied: any other value than the wall's current one or pi/2 on another wall fails the item instead of being dropped." },
                         "topOffset": { "type": "number", "description": "Only has an effect when relativeTopStory is non-zero." },
                         "relativeTopStory": { "type": "number", "description": "Non-zero links the wall's top to another story instead of an explicit height - do not set together with 'height' for the same wall: whichever is applied last wins, and Archicad recomputes the actual height from the story elevations once relativeTopStory is non-zero." },
                         "zoneRel": {
@@ -5045,7 +5092,8 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     // reference line location, top link and offsets survive into the new wall (#766):
     // forcing Basic / Center / relativeTopStory 0 here used to silently undo them.
     // The plan outline is the one exception: a Poly wall needs a polygon memo that
-    // this command does not build, so the outline is always the plain Normal one.
+    // this command does not build, so the outline starts as the plain Normal one and
+    // only geometryType Trapezoid (applied by ApplyWallDetails below) changes it.
     element.wall.type = APIWtyp_Normal;
     element.wall.begC = begCoordinate;
     element.wall.endC = endCoordinate;
@@ -5109,8 +5157,23 @@ GS::Optional<GS::ObjectState> CreateWallsCommand::SetTypeSpecificParameters (API
     // only apply in certain configurations (e.g. viewDepthLimitation needs a multi-story wall,
     // polyCanChange a Polygonal one); connectionPriority/junctionSequence are confirmed
     // read-only in practice regardless of configuration.
+    // geometryType and profileType are applied here too, after the Normal outline set
+    // above, so a Trapezoid or slanted wall is made in one call (#2564).
+    const double previousSlantAlpha = element.wall.slantAlpha;
+    const double previousSlantBeta = element.wall.slantBeta;
     API_Element unusedMask = {};
     ApplyWallDetails (element, unusedMask, parameters);
+    // A Profile wall's cross section is its profile (APISect_Poly, set by ApplyWallStructure
+    // above or kept from the favorite); profileType would replace it after the structure was
+    // chosen, which ModifyWalls never does (it applies the structure last). Refuse it rather
+    // than create a Profile wall with a Normal or Slanted cross section.
+    if (parameters.Contains ("profileType") && element.wall.modelElemStructureType == API_ProfileStructure && element.wall.profileType != APISect_Poly) {
+        return CreateErrorResponse (APIERR_BADPARS, "'profileType' cannot be set on a Profile wall: its cross section is the profile. Send structureType Basic or Composite to make a Normal, Slanted or Trapez wall.");
+    }
+    auto slantError = CheckWallSlantTakesEffect (element, previousSlantAlpha, previousSlantBeta, parameters);
+    if (slantError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, slantError.Get ());
+    }
 
     return {};
 }
@@ -9600,7 +9663,6 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                     "type": "object",
                     "properties": {
                         "elementId": { "$ref": "#/ElementId" },
-                        "geometryType": { "$ref": "#/WallModificationGeometryType", "description": "Polygonal is not settable here; it is read-only via GetDetailsOfElements. This is unrelated to slantAlpha/slantBeta - see profileType for the cross section shape those depend on." },
                         "begCoordinate": { "$ref": "#/Coordinate2D" },
                         "endCoordinate": { "$ref": "#/Coordinate2D" },
                         "arcAngle": { "type": "number", "description": "Arc angle in radians; non-zero makes the wall curved (begCoordinate/endCoordinate are the chord endpoints)." },
@@ -9621,8 +9683,7 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                         "referenceLineLocation": {
                             "$ref": "#/WallReferenceLineLocation"
                         },
-                        "flipped": { "type": "boolean", "description": "True mirrors the wall to its reference line (the side GetDetailsOfElements reports as flipped)." },
-                        "profileType": { "$ref": "#/WallModificationProfileType", "description": "slantAlpha/slantBeta only have an effect once this is set to Slanted." },)") + WallSharedSettingsSchemaProperties + R"(
+                        "flipped": { "type": "boolean", "description": "True mirrors the wall to its reference line (the side GetDetailsOfElements reports as flipped)." },)") + WallSharedSettingsSchemaProperties + R"(
                         "contourPen": {
                             "type": "integer",
                             "minimum": 1,
@@ -9724,10 +9785,17 @@ GS::ObjectState ModifyWallsCommand::Execute (const GS::ObjectState& parameters, 
 
             API_Element mask = {};
             ACAPI_ELEMENT_MASK_CLEAR (mask);
+            const double previousSlantAlpha = element.wall.slantAlpha;
+            const double previousSlantBeta = element.wall.slantBeta;
             bool changed = ApplyWallDetails (element, mask, item);
             auto error = ApplyWallStructure (element, &mask, item, changed);
             if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
+                continue;
+            }
+            auto slantError = CheckWallSlantTakesEffect (element, previousSlantAlpha, previousSlantBeta, item);
+            if (slantError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, slantError.Get ()));
                 continue;
             }
             if (!changed) {
