@@ -2080,7 +2080,7 @@ GS::Optional<GS::UniString> GetGDLParametersOfLibraryPartsCommand::GetInputParam
                 "properties": {
                     "libraryPartName": {
                         "type": "string",
-                        "description": "The name of the library part, the same name CreateObjects, CreateLamps, CreateWindows and CreateDoors take as libraryPartName."
+                        "description": "The name of the library part, the same name CreateObjects, CreateLamps, CreateWindows and CreateDoors take as libraryPartName. The file name with its .gsm extension, as GetAvailableLibraryParts returns it and SetLibraryPartParameters takes it, is accepted too."
                     }
                 },
                 "additionalProperties": false,
@@ -2225,11 +2225,29 @@ GS::ObjectState GetGDLParametersOfLibraryPartsCommand::Execute (const GS::Object
             continue;
         }
 
+        const auto SearchLibPart = [] (const GS::UniString& name, API_LibPart& libPart) -> GSErrCode {
+            libPart = {};
+            const USize maxNameLength = sizeof (libPart.docu_UName) / sizeof (libPart.docu_UName[0]) - 1;
+            GS::ucscpy (libPart.docu_UName, name.ToUStr (0, GS::Min (name.GetLength (), maxNameLength)).Get ());
+            const GSErrCode searchErr = ACAPI_LibraryPart_Search (&libPart, false, true);
+            delete libPart.location;
+            libPart.location = nullptr;
+            return searchErr;
+        };
+
         API_LibPart libPart = {};
-        const USize maxNameLength = sizeof (libPart.docu_UName) / sizeof (libPart.docu_UName[0]) - 1;
-        GS::ucscpy (libPart.docu_UName, libName.ToUStr (0, GS::Min (libName.GetLength (), maxNameLength)).Get ());
-        GSErrCode err = ACAPI_LibraryPart_Search (&libPart, false, true);
-        delete libPart.location;
+        GSErrCode err = SearchLibPart (libName, libPart);
+        // The library part name has no file extension; accept the file name as GetAvailableLibraryParts
+        // returns it and SetLibraryPartParameters takes it, too.
+        GS::UniString lowerName = libName;
+        lowerName.SetToLowerCase ();
+        if (err != NoError && libName.GetLength () > 4 && lowerName.EndsWith (".gsm")) {
+            API_LibPart libPartWithoutExtension = {};
+            if (SearchLibPart (GS::UniString (libName.GetSubstring (0, libName.GetLength () - 4)), libPartWithoutExtension) == NoError) {
+                libPart = libPartWithoutExtension;
+                err = NoError;
+            }
+        }
         if (err != NoError) {
             libPartParametersListAdder (CreateErrorResponse (err, GS::UniString::Printf ("Not found library part with name '%T'", libName.ToPrintf ())));
             continue;
