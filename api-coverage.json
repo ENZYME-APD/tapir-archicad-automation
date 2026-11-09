@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 21:35 UTC",
+ "generatedAt": "2026-11-09 22:39 UTC",
  "versions": [
   25,
   26,
@@ -5706,6 +5706,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2604,
+     "title": "[5/5] Profiles: nominal size lines, hotspots and skin area method"
+    },
+    {
+     "number": 2603,
+     "title": "[4/5] CreateProfiles: add and rename offset modifiers, GetProfiles reads their edges"
+    },
+    {
      "number": 2591,
      "title": "[1/5] Profiles: read and write stretch zones"
     }
@@ -5773,6 +5781,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2601,
+     "title": "GetDetailsOfElements: report a stair's going from its walking line"
+    },
+    {
+     "number": 2600,
+     "title": "[5/5] SetGDLParametersOfElements: write the GDL parameters of railing components"
+    },
     {
      "number": 2596,
      "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
@@ -5844,10 +5860,6 @@
     {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
-    },
-    {
-     "number": 2455,
-     "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
     {
      "number": 2443,
@@ -6810,6 +6822,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2600,
+     "title": "[5/5] SetGDLParametersOfElements: write the GDL parameters of railing components"
+    },
+    {
      "number": 2596,
      "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
     },
@@ -6868,10 +6884,6 @@
     {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
-    },
-    {
-     "number": 2455,
-     "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
     {
      "number": 2442,
@@ -7420,6 +7432,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2599,
+     "title": "[4/4] Roofs: arcs of the pivot polygon and curved roof segmentation"
+    },
     {
      "number": 2596,
      "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
@@ -8040,6 +8056,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2601,
+     "title": "GetDetailsOfElements: report a stair's going from its walking line"
+    },
+    {
+     "number": 2600,
+     "title": "[5/5] SetGDLParametersOfElements: write the GDL parameters of railing components"
+    },
+    {
      "number": 2596,
      "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
     },
@@ -8102,10 +8126,6 @@
     {
      "number": 2540,
      "title": "ModifyCurtainWalls: change the height through the segment contours"
-    },
-    {
-     "number": 2455,
-     "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
     {
      "number": 2443,
@@ -12688,6 +12708,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2600,
+     "title": "[5/5] SetGDLParametersOfElements: write the GDL parameters of railing components"
+    },
     {
      "number": 2583,
      "title": "[2/5] GetGDLParametersOfElements: read the parameters of railing components"
@@ -25712,6 +25736,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2604,
+     "title": "[5/5] Profiles: nominal size lines, hotspots and skin area method"
+    },
+    {
+     "number": 2603,
+     "title": "[4/5] CreateProfiles: add and rename offset modifiers, GetProfiles reads their edges"
+    },
+    {
+     "number": 2599,
+     "title": "[4/4] Roofs: arcs of the pivot polygon and curved roof segmentation"
+    },
+    {
      "number": 2597,
      "title": "[3/5] Profiles: read and set opening reference lines"
     },
@@ -25846,10 +25882,6 @@
     {
      "number": 2459,
      "title": "Columns and beams: a width given alone also works on a linked cross section"
-    },
-    {
-     "number": 2455,
-     "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
     {
      "number": 2452,
@@ -31457,6 +31489,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2604,
+     "title": "[5/5] Profiles: nominal size lines, hotspots and skin area method"
+    },
+    {
+     "number": 2603,
+     "title": "[4/5] CreateProfiles: add and rename offset modifiers, GetProfiles reads their edges"
+    },
+    {
+     "number": 2601,
+     "title": "GetDetailsOfElements: report a stair's going from its walking line"
+    },
+    {
+     "number": 2599,
+     "title": "[4/4] Roofs: arcs of the pivot polygon and curved roof segmentation"
+    },
     {
      "number": 2596,
      "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
@@ -37966,6 +38014,26 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2604,
+     "title": "[5/5] Profiles: nominal size lines, hotspots and skin area method"
+    },
+    {
+     "number": 2603,
+     "title": "[4/5] CreateProfiles: add and rename offset modifiers, GetProfiles reads their edges"
+    },
+    {
+     "number": 2601,
+     "title": "GetDetailsOfElements: report a stair's going from its walking line"
+    },
+    {
+     "number": 2600,
+     "title": "[5/5] SetGDLParametersOfElements: write the GDL parameters of railing components"
+    },
+    {
+     "number": 2599,
+     "title": "[4/4] Roofs: arcs of the pivot polygon and curved roof segmentation"
+    },
+    {
      "number": 2597,
      "title": "[3/5] Profiles: read and set opening reference lines"
     },
@@ -38104,10 +38172,6 @@
     {
      "number": 2459,
      "title": "Columns and beams: a width given alone also works on a linked cross section"
-    },
-    {
-     "number": 2455,
-     "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
     {
      "number": 2452,
@@ -44757,6 +44821,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2604,
+     "title": "[5/5] Profiles: nominal size lines, hotspots and skin area method"
+    },
+    {
+     "number": 2603,
+     "title": "[4/5] CreateProfiles: add and rename offset modifiers, GetProfiles reads their edges"
+    },
+    {
+     "number": 2601,
+     "title": "GetDetailsOfElements: report a stair's going from its walking line"
+    },
+    {
+     "number": 2599,
+     "title": "[4/4] Roofs: arcs of the pivot polygon and curved roof segmentation"
+    },
+    {
      "number": 2596,
      "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
     },
@@ -47923,6 +48003,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2604,
+     "title": "[5/5] Profiles: nominal size lines, hotspots and skin area method"
+    },
+    {
+     "number": 2603,
+     "title": "[4/5] CreateProfiles: add and rename offset modifiers, GetProfiles reads their edges"
+    },
+    {
+     "number": 2601,
+     "title": "GetDetailsOfElements: report a stair's going from its walking line"
+    },
+    {
+     "number": 2599,
+     "title": "[4/4] Roofs: arcs of the pivot polygon and curved roof segmentation"
+    },
     {
      "number": 2596,
      "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"

@@ -34,7 +34,7 @@ Parameters of the 788 used commands: 🟢 746 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 12 | 12 |  |  |  |  |  |  | 12 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-09 21:35 UTC.
+Updated 2026-11-09 22:39 UTC.
 
 | | Status |
 |---|---|
@@ -325,7 +325,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `ModifyOpenings` 🟢 5/5 parameters – `ModifyOpeningsComponent`
 - ✅ `ModifyMorphs` 🟢 37/37 parameters – `ModifyMorphsComponent`, `MorphsComponent`
 - ✅ `ModifyRoofs` 🟡 20/29 parameters – `ModifyRoofsComponent`, `RoofsComponent`<br><sub>no input: `roofsWithDetails.bottomMaterial`, `roofsWithDetails.cutBodyType`, `roofsWithDetails.edgeSideMaterials`, `roofsWithDetails.edgeTrims`, `roofsWithDetails.edgeTrims.trimType`, `roofsWithDetails.materialsChained`, `roofsWithDetails.pivotEdges.levels.angleType`, `roofsWithDetails.sideMaterial`, `roofsWithDetails.topMaterial`</sub>
-- ✅ `ModifyShells` 🟡 7/10 parameters – `ModifyShellsComponent`<br><sub>no input: `shellsWithDetails.cutBodyType`, `shellsWithDetails.extrusionLength`, `shellsWithDetails.extrusionVector`</sub>
+- ✅ `ModifyShells` 🟡 7/11 parameters – `ModifyShellsComponent`<br><sub>no input: `shellsWithDetails.cutBodyType`, `shellsWithDetails.extrusionLength`, `shellsWithDetails.extrusionVector`, `shellsWithDetails.profile`</sub>
 - ✅ `ModifyMeshes` 🟢 3/3 parameters – `MeshesComponent`, `ModifyMeshesComponent`
 - ✅ `ModifyRailings` 🟡 11/17 parameters – `RailingsComponent`<br><sub>no input: `railingsWithDetails.nodes`, `railingsWithDetails.nodes.postOffset`, `railingsWithDetails.nodes.unifyPatterns`, `railingsWithDetails.segments`, `railingsWithDetails.segments.index`, `railingsWithDetails.segments.lateralOffset`</sub>
 - ✅ `ModifyObjects` 🟢 24/24 parameters – `ModifyObjectsComponent`, `ObjectsComponent`
