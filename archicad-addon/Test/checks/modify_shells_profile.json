@@ -1,6 +1,6 @@
 {
   "title": "ModifyShells replaces the profile of an extruded shell, keeping its GUID, base plane, extrusion and thickness (#2453)",
-  "minTapir": "1.8.1",
+  "minTapir": "2.0.1",
   "requiresEmpty": [ "Shell" ],
   "steps": [
     {
