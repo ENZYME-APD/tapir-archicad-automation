@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 20:15 UTC",
+ "generatedAt": "2026-11-09 20:37 UTC",
  "versions": [
   25,
   26,
@@ -5769,6 +5769,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2570,
+     "title": "Slabs: read and write the Edge Angle and the surface of each edge"
+    },
+    {
      "number": 2560,
      "title": "[2/4] ModifyColumns: set the surfaces and veneer of a single column segment"
     },
@@ -6773,6 +6777,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2570,
+     "title": "Slabs: read and write the Edge Angle and the surface of each edge"
+    },
+    {
+     "number": 2567,
+     "title": "ScaleElements: keep a beam's elevation"
+    },
+    {
      "number": 2555,
      "title": "[1/3] CreateBeams takes holes, like ModifyBeams"
     },
@@ -6961,6 +6973,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2570,
+     "title": "Slabs: read and write the Edge Angle and the surface of each edge"
+    },
     {
      "number": 2557,
      "title": "ApplyFavoritesToElements: keepFields can keep a column's or beam's cross section"
@@ -7226,7 +7242,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2567,
+     "title": "ScaleElements: keep a beam's elevation"
+    }
+   ],
    "issues": []
   },
   {
@@ -7337,6 +7358,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2571,
+     "title": "Slabs: read and write the floor plan and section display settings"
+    },
+    {
+     "number": 2567,
+     "title": "ScaleElements: keep a beam's elevation"
+    },
     {
      "number": 2555,
      "title": "[1/3] CreateBeams takes holes, like ModifyBeams"
@@ -7871,7 +7900,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2577,
+     "title": "[1/5] GetDetailsOfElements: read the components of railings"
+    }
+   ],
    "issues": [
     {
      "number": 2492,
@@ -7919,6 +7953,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2570,
+     "title": "Slabs: read and write the Edge Angle and the surface of each edge"
+    },
     {
      "number": 2560,
      "title": "[2/4] ModifyColumns: set the surfaces and veneer of a single column segment"
@@ -12119,7 +12157,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2577,
+     "title": "[1/5] GetDetailsOfElements: read the components of railings"
+    }
+   ],
    "issues": []
   },
   {
@@ -12668,6 +12711,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2577,
+     "title": "[1/5] GetDetailsOfElements: read the components of railings"
+    },
     {
      "number": 2538,
      "title": "Library part parameters: find a part with and without .gsm in the getter and the setter"
@@ -25530,6 +25577,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2571,
+     "title": "Slabs: read and write the floor plan and section display settings"
+    },
+    {
+     "number": 2570,
+     "title": "Slabs: read and write the Edge Angle and the surface of each edge"
+    },
+    {
+     "number": 2569,
+     "title": "CreateWalls: accept profileType and geometryType; begin/end thickness in Create/ModifyWalls"
+    },
+    {
+     "number": 2568,
+     "title": "Walls: read and write the log wall details beyond logHeight"
+    },
+    {
      "number": 2560,
      "title": "[2/4] ModifyColumns: set the surfaces and veneer of a single column segment"
     },
@@ -31211,6 +31274,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2577,
+     "title": "[1/5] GetDetailsOfElements: read the components of railings"
+    },
+    {
+     "number": 2571,
+     "title": "Slabs: read and write the floor plan and section display settings"
+    },
+    {
+     "number": 2568,
+     "title": "Walls: read and write the log wall details beyond logHeight"
+    },
     {
      "number": 2559,
      "title": "[2/3] GetDetailsOfElements: read beam segment length, taper and cross section"
@@ -37679,6 +37754,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2571,
+     "title": "Slabs: read and write the floor plan and section display settings"
+    },
+    {
+     "number": 2570,
+     "title": "Slabs: read and write the Edge Angle and the surface of each edge"
+    },
+    {
+     "number": 2569,
+     "title": "CreateWalls: accept profileType and geometryType; begin/end thickness in Create/ModifyWalls"
+    },
+    {
+     "number": 2568,
+     "title": "Walls: read and write the log wall details beyond logHeight"
+    },
     {
      "number": 2560,
      "title": "[2/4] ModifyColumns: set the surfaces and veneer of a single column segment"
@@ -44407,6 +44498,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2577,
+     "title": "[1/5] GetDetailsOfElements: read the components of railings"
+    },
+    {
+     "number": 2571,
+     "title": "Slabs: read and write the floor plan and section display settings"
+    },
+    {
+     "number": 2568,
+     "title": "Walls: read and write the log wall details beyond logHeight"
+    },
+    {
      "number": 2559,
      "title": "[2/3] GetDetailsOfElements: read beam segment length, taper and cross section"
     },
@@ -47533,6 +47636,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2577,
+     "title": "[1/5] GetDetailsOfElements: read the components of railings"
+    },
+    {
+     "number": 2571,
+     "title": "Slabs: read and write the floor plan and section display settings"
+    },
+    {
+     "number": 2568,
+     "title": "Walls: read and write the log wall details beyond logHeight"
+    },
     {
      "number": 2559,
      "title": "[2/3] GetDetailsOfElements: read beam segment length, taper and cross section"
