@@ -10209,10 +10209,11 @@
             },
             "level": {
                 "type": "number",
-                "description": "Height of the pivot line (single-plane) or the pivot polygon (multi-plane) above the floor level."
+                "description": "Height of the pivot line (single-plane) or the pivot polygon (multi-plane) above the level of the roof's home story (story-relative). ModifyRoofs and CreateRoofs take the absolute zCoordinate as their 'level' instead."
             },
             "zCoordinate": {
-                "type": "number"
+                "type": "number",
+                "description": "Absolute elevation (from the project zero) of the pivot line (single-plane) or the pivot polygon (multi-plane): level plus the elevation of the home story. This is the value ModifyRoofs and CreateRoofs take as 'level'."
             },
             "buildingMaterialId": {
                 "$ref": "#/AttributeId"
@@ -10254,7 +10255,7 @@
             "cutBodyType": {
                 "type": "string",
                 "enum": [ "Editable", "ContoursDown", "PivotLinesDown", "UpwardsExtrusion", "DownwardsExtrusion" ],
-                "description": "How the roof's body is extended for connections with other elements (API_ShellBaseType::cutBodyType, on the Model panel of Roof Settings)."
+                "description": "How the roof's body is extended for connections with other elements (API_ShellBaseType::cutBodyType, the Trimming Body on the Model panel of Roof Settings). A roof uses ContoursDown or PivotLinesDown, which ModifyRoofs sets."
             },
             "cutFillPen": {
                 "$ref": "#/OverriddenPen"
@@ -10310,14 +10311,14 @@
             },
             "pivotPolygonOutline": {
                 "type": "array",
-                "description": "Multi-plane: the pivot polygon the planes rise from. Arcs are not carried; a curved pivot edge comes back as its end points.",
+                "description": "Multi-plane: the pivot polygon the planes rise from. This is the polygon ModifyRoofs' polygonOutline writes for a multi-plane roof. Arcs are not carried; a curved pivot edge comes back as its end points.",
                 "items": {
                     "$ref": "#/Coordinate2D"
                 }
             },
             "polygonOutline": {
                 "type": "array",
-                "description": "The roof's polygon: the plane roof's outline, the multi-plane roof's contour.",
+                "description": "The roof's polygon: the plane roof's outline, the multi-plane roof's contour (the finished outline, outside the pivot polygon by the eaves overhangs). ModifyRoofs' polygonOutline writes the outline of a single-plane roof but the pivot polygon (pivotPolygonOutline) of a multi-plane roof, so a multi-plane roof's contour read here cannot be sent back as polygonOutline unchanged.",
                 "items": {
                     "$ref": "#/Coordinate2D"
                 }
@@ -10425,7 +10426,7 @@
             "cutBodyType": {
                 "type": "string",
                 "enum": [ "Editable", "ContoursDown", "PivotLinesDown", "UpwardsExtrusion", "DownwardsExtrusion" ],
-                "description": "How the body is extended for connections (Model panel). A shell uses Editable, UpwardsExtrusion or DownwardsExtrusion."
+                "description": "How the body is extended for connections (Model panel). A shell uses Editable, UpwardsExtrusion or DownwardsExtrusion; ModifyShells sets UpwardsExtrusion or DownwardsExtrusion."
             },
             "cutFillPen": {
                 "$ref": "#/OverriddenPen"

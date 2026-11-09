@@ -36,6 +36,8 @@
         'Quite el recorte con <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a>, que quita ambas direcciones, y luego vuelva a recortar la otra dirección con <a href="../archicad-addon/#TrimElements">TrimElements</a>.',
     'Read which slab or stair edge a railing is linked to, or link a railing to one':
         'Leer a qué borde de forjado o escalera está vinculada una barandilla, o vincular una barandilla a uno',
+    'Turn off the automatic story visibility of a railing, so the stories it is shown on can be set':
+        'Desactivar la visibilidad automática por plantas de una barandilla, para poder fijar las plantas en las que se muestra',
     'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
         'Lea el contorno del forjado con <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> y cree una barandilla estática a lo largo del borde con <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. Cuando cambie el forjado, borre la barandilla y vuelva a crearla.',
 
