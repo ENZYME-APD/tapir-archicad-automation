@@ -1106,11 +1106,11 @@ GS::Optional<GS::UniString> CreateDrawingsCommand::GetInputParametersSchema () c
                         },
                         "anchorPoint": {
                             "$ref": "#/DrawingAnchorPoint",
-                            "description": "The node of the drawing's bounding box the drawing is placed by. Used only when useOwnOriginAsAnchor is false. Must be set at creation time (ACAPI_Element_Create) rather than through a follow-up SetDetailsOfElements call, which Archicad does not reliably apply to anchorPoint. Defaults to Center."
+                            "description": "The node of the drawing's bounding box the drawing is placed by. Used only when useOwnOriginAsAnchor is false; giving anchorPoint makes useOwnOriginAsAnchor default to false. Defaults to Center."
                         },
                         "useOwnOriginAsAnchor": {
                             "type": "boolean",
-                            "description": "Whether the drawing is placed by its own origin instead of anchorPoint. Defaults to the Drawing tool's current default."
+                            "description": "Whether the drawing is placed by its own origin instead of anchorPoint. Defaults to false when anchorPoint is given, otherwise to the Drawing tool's current default."
                         },
                         "clipPolygon": {
                             "type": "array",
@@ -1174,7 +1174,7 @@ static API_Coord DrawingVectorOnLayout (const API_DrawingType& drawing, const AP
 // name/nameType/scale/angle/drawingScale/modelOffset/clipPolygon). Shared by CreateDrawingsCommand
 // and ChangeDrawingLinkCommand, which synthesizes the same item shape from an existing Drawing's
 // own current appearance.
-static GS::ObjectState CreateOneDrawing (const GS::ObjectState& item)
+static GS::ObjectState CreateOneDrawing (const GS::ObjectState& item, API_Coord* createdPos = nullptr)
 {
     // The source has to be resolved and checked here, before anything is handed to
     // ACAPI_Element_Create: a drawingGuid that is not a placeable viewpoint - one that resolves
@@ -1220,22 +1220,16 @@ static GS::ObjectState CreateOneDrawing (const GS::ObjectState& item)
     } else if (hasName) {
         element.drawing.nameType = APIName_CustomName;
     }
-    // Drawing Settings > Size and Display. Confirmed live that ACAPI_Element_Create resets
-    // anchorPoint to BottomLeft exactly like the ACAPI_Element_Change bug Graphisoft support
-    // confirmed for SetDetailsOfElements (see ElementCommands.cpp) whenever useOwnOrigoAsAnchor
-    // is false at creation time - so an anchorPoint given here is only kept if
-    // useOwnOrigoAsAnchor is forced true for the creation call; CreateDrawingsCommand::Execute
-    // and ChangeDrawingLinkCommand::Execute restore useOwnOrigoAsAnchor to false afterward, in
-    // their own separate undo step, if that was actually requested (a follow-up
-    // ACAPI_Element_Change right after ACAPI_Element_Create, in the same undo command, crashed
-    // Archicad's command layer in testing - see ChangeDrawingLink's own comment above).
+    // Drawing Settings > Size and Display. ACAPI_Element_Create does not keep an anchorPoint
+    // (it comes back BottomLeft, like the ACAPI_Element_Change bug Graphisoft support confirmed,
+    // see SetDetailsOfElements in ElementCommands.cpp), and creating with useOwnOrigoAsAnchor
+    // forced true to keep it made Archicad store pos as -(position * drawingScale * ratio)
+    // (seen live on AC27). So a requested anchorPoint is not set here: CreateDrawingsCommand::Execute
+    // applies it after the creation with ApplyDrawingAnchor, the same calls SetDetailsOfElements
+    // makes. useOwnOriginAsAnchor alone is set here. ChangeDrawingLink never passes an anchor.
     element.drawing.anchorPoint = APIAnc_MM;
     GS::UniString anchorPointStr;
-    const bool hasAnchorPoint = item.Get ("anchorPoint", anchorPointStr);
-    if (hasAnchorPoint) {
-        element.drawing.anchorPoint = AnchorIdFromString (anchorPointStr, APIAnc_MM);
-        element.drawing.useOwnOrigoAsAnchor = true;
-    } else {
+    if (!item.Get ("anchorPoint", anchorPointStr)) {
         item.Get ("useOwnOriginAsAnchor", element.drawing.useOwnOrigoAsAnchor);
     }
     element.drawing.pos = Get2DCoordinateFromObjectState (*item.Get ("position"));
@@ -1307,15 +1301,19 @@ static GS::ObjectState CreateOneDrawing (const GS::ObjectState& item)
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to create drawing.");
     }
+    if (createdPos != nullptr) {
+        *createdPos = element.drawing.pos;
+    }
     return CreateElementIdObjectState (element.header.guid);
 }
 
-// Restores useOwnOrigoAsAnchor to false on a freshly created Drawing that CreateOneDrawing had
-// to force to true so its requested anchorPoint would not be reset by ACAPI_Element_Create (see
-// that function). Called in a SEPARATE undo step from the creation, never right after it in the
-// same one (see ChangeDrawingLink's comment on that crash). The mask excludes anchorPoint, so
-// the already-applied anchor is not touched by this call.
-static GSErrCode RestoreUseOwnOrigoAsAnchorFalse (const API_Guid& guid)
+// Places a freshly created Drawing by anchorPoint, with the calls SetDetailsOfElements makes
+// (checked live on AC27: pos and offset come out right every time): first anchorPoint together
+// with useOwnOrigoAsAnchor true, then, unless the Drawing is to be placed by its own origin,
+// useOwnOrigoAsAnchor false alone, then pos written back to the position the Drawing was created
+// at. Called in a SEPARATE undo step from the creation, never right after it in the same one
+// (see ChangeDrawingLink's comment on that crash), with the Drawing's layout database current.
+static GSErrCode ApplyDrawingAnchor (const API_Guid& guid, API_AnchorID anchorPoint, bool useOwnOrigoAsAnchor, const API_Coord& pos)
 {
     API_Element element = {};
     element.header.guid = guid;
@@ -1323,10 +1321,31 @@ static GSErrCode RestoreUseOwnOrigoAsAnchorFalse (const API_Guid& guid)
     if (err != NoError) {
         return err;
     }
+
     API_Element mask = {};
     ACAPI_ELEMENT_MASK_CLEAR (mask);
-    element.drawing.useOwnOrigoAsAnchor = false;
+    element.drawing.anchorPoint = anchorPoint;
+    element.drawing.useOwnOrigoAsAnchor = true;
+    ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, anchorPoint);
     ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, useOwnOrigoAsAnchor);
+    err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+    if (err != NoError) {
+        return err;
+    }
+
+    if (!useOwnOrigoAsAnchor) {
+        ACAPI_ELEMENT_MASK_CLEAR (mask);
+        element.drawing.useOwnOrigoAsAnchor = false;
+        ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, useOwnOrigoAsAnchor);
+        err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+        if (err != NoError) {
+            return err;
+        }
+    }
+
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    element.drawing.pos = pos;
+    ACAPI_ELEMENT_MASK_SET (mask, API_DrawingType, pos);
     return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
 }
 
@@ -1410,10 +1429,18 @@ GS::ObjectState CreateDrawingsCommand::Execute (const GS::ObjectState& parameter
     const GSErrCode startingDatabaseErr = ACAPI_Database_GetCurrentDatabase (&startingDatabase);
 
     GS::Array<GS::ObjectState> elementResults;
-    // Drawings whose anchorPoint forced useOwnOrigoAsAnchor true at creation (see
-    // CreateOneDrawing), but which actually asked for useOwnOriginAsAnchor false - fixed up
-    // below, after this undo step, one guid per successfully created item in the same order.
-    GS::Array<API_Guid> anchorFixupGuids;
+    // Drawings created with an anchorPoint, which is applied below (see CreateOneDrawing), in a
+    // separate undo step, in their own layout database.
+    struct AnchorFixup {
+        UIndex       resultIndex;
+        API_Guid     drawingGuid;
+        bool         hasLayoutDatabase;
+        API_Guid     layoutDatabaseGuid;
+        API_AnchorID anchorPoint;
+        bool         useOwnOrigoAsAnchor;
+        API_Coord    createdPos;
+    };
+    GS::Array<AnchorFixup> anchorFixups;
     const GSErrCode undoErr = ACAPI_CallUndoableCommand ("CreateDrawingsCommand", [&]() -> GSErrCode {
         for (const auto& item : items) {
             if (startingDatabaseErr == NoError) {
@@ -1427,33 +1454,54 @@ GS::ObjectState CreateDrawingsCommand::Execute (const GS::ObjectState& parameter
                 }
             }
 
-            const GS::ObjectState result = CreateOneDrawing (item);
+            API_Coord createdPos = {};
+            const GS::ObjectState result = CreateOneDrawing (item, &createdPos);
             elementResults.Push (result);
 
             GS::UniString anchorPointStr;
-            bool useOwnOriginAsAnchor = true;
+            bool useOwnOriginAsAnchor = false;
+            item.Get ("useOwnOriginAsAnchor", useOwnOriginAsAnchor);
             const GS::ObjectState* elementIdState = result.Get ("elementId");
-            if (elementIdState != nullptr && item.Get ("anchorPoint", anchorPointStr) &&
-                item.Get ("useOwnOriginAsAnchor", useOwnOriginAsAnchor) && !useOwnOriginAsAnchor) {
-                anchorFixupGuids.Push (GetGuidFromObjectState (*elementIdState));
+            if (elementIdState != nullptr && item.Get ("anchorPoint", anchorPointStr)) {
+                const GS::ObjectState* layoutDatabaseId = item.Get ("layoutDatabaseId");
+                anchorFixups.Push ({ elementResults.GetSize () - 1,
+                                     GetGuidFromObjectState (*elementIdState),
+                                     layoutDatabaseId != nullptr,
+                                     layoutDatabaseId != nullptr ? GetGuidFromObjectState (*layoutDatabaseId) : APINULLGuid,
+                                     AnchorIdFromString (anchorPointStr, APIAnc_MM),
+                                     useOwnOriginAsAnchor,
+                                     createdPos });
             }
         }
 
         return NoError;
     });
 
+    if (undoErr == NoError && !anchorFixups.IsEmpty ()) {
+        // Each Drawing lives in its layout's database, so that database must be current again
+        // before it can be read and changed.
+        ACAPI_CallUndoableCommand ("CreateDrawingsCommand - anchor", [&]() -> GSErrCode {
+            for (const AnchorFixup& fixup : anchorFixups) {
+                GSErrCode err = NoError;
+                if (fixup.hasLayoutDatabase && startingDatabaseErr == NoError) {
+                    err = ActivateLayoutDatabase (fixup.layoutDatabaseGuid);
+                }
+                if (err == NoError) {
+                    err = ApplyDrawingAnchor (fixup.drawingGuid, fixup.anchorPoint, fixup.useOwnOrigoAsAnchor, fixup.createdPos);
+                }
+                if (err != NoError) {
+                    elementResults[fixup.resultIndex] = CreateErrorResponse (err,
+                        "The Drawing was created, but its anchorPoint could not be applied.");
+                }
+            }
+            return NoError;
+        });
+    }
     if (startingDatabaseErr == NoError) {
         ACAPI_Database_ChangeCurrentDatabase (&startingDatabase);
     }
     if (undoErr != NoError) {
         elementResults.Push (CreateErrorResponse (undoErr, "Failed to execute command in undo scope."));
-    } else if (!anchorFixupGuids.IsEmpty ()) {
-        ACAPI_CallUndoableCommand ("CreateDrawingsCommand - restore anchor", [&]() -> GSErrCode {
-            for (const API_Guid& guid : anchorFixupGuids) {
-                RestoreUseOwnOrigoAsAnchorFalse (guid);
-            }
-            return NoError;
-        });
     }
 
     GS::ObjectState response;
@@ -1643,20 +1691,14 @@ GS::ObjectState ChangeDrawingLinkCommand::Execute (const GS::ObjectState& parame
             newDrawingItem.Add ("angle", oldElement.drawing.angle);
             newDrawingItem.Add ("drawingScale", oldElement.drawing.drawingScale);
             newDrawingItem.Add ("modelOffset", Create2DCoordinateObjectState (oldElement.drawing.modelOffset));
-            // anchorPoint/useOwnOriginAsAnchor are deliberately NOT carried over here. Giving
-            // CreateOneDrawing an anchorPoint at all forces useOwnOrigoAsAnchor true for the
-            // creation call (see there), which shifts what pos/clipPolygon end up placed
-            // relative to - and oldElement.drawing.anchorPoint cannot be used to tell a
-            // deliberately-set anchor apart from Archicad's own default: a Drawing that never
-            // had its anchor touched already reads back BottomLeft, not Center (the same
-            // ACAPI_Element_Create reset this command works around elsewhere), so a value-based
-            // guard here always looks "non-default" and always forces the anchor - confirmed
-            // live to move a relinked Drawing's content (correct scale/rotation, wrong X/Y) on
-            // every relink, exactly what broke a real sales plan generator run. Until Archicad
-            // exposes a reliable way to tell "anchor was deliberately set" from "anchor is the
-            // untouched default", relinking leaves the new Drawing at its default anchor; a
-            // caller that deliberately set a non-default anchor on the old Drawing can reapply
-            // it afterward via SetDetailsOfElements (which does not have this problem).
+            // anchorPoint/useOwnOriginAsAnchor are deliberately NOT carried over here.
+            // oldElement.drawing.anchorPoint cannot tell a deliberately set anchor from Archicad's
+            // own default: a Drawing whose anchor was never touched already reads back BottomLeft
+            // (ACAPI_Element_Create does not keep the anchor), so carrying it over would apply an
+            // anchor on every relink - confirmed live to move a relinked Drawing's content
+            // (right scale and rotation, wrong X/Y), which broke a real sales plan generator run.
+            // A caller that set an anchor on the old Drawing reapplies it afterward with
+            // SetDetailsOfElements.
             if (!oldClipCoords.IsEmpty ()) {
                 const auto& clipList = newDrawingItem.AddList<GS::ObjectState> ("clipPolygon");
                 for (const auto& coord : oldClipCoords) {

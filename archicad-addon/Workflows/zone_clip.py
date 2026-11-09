@@ -77,7 +77,7 @@ def wall_geometry_corners(details):
 
 def model_to_layout(mx, my, offset, angle, view_rotation, drawing_scale, ratio, model_offset):
     """Transform a model-space coordinate to layout space: paper = offset + drawingScale *
-    ratio * R(angle + viewRotation) * (model + modelOffset).
+    ratio * R(angle + viewRotation) * (model - modelOffset).
 
     Uses `offset` (API_DrawingType::offset, read-only), not `pos`: `offset` is always where the
     source view's model origin lands on the layout, regardless of anchorPoint/
@@ -87,8 +87,8 @@ def model_to_layout(mx, my, offset, angle, view_rotation, drawing_scale, ratio, 
     the same rotation/scale as the drawing's own `angle` - both previously ignored here, which
     left a residual error on any Drawing placed from a view at non-1.0 ratio or a rotated view.
     """
-    dx = (mx + model_offset["x"]) * drawing_scale * ratio
-    dy = (my + model_offset["y"]) * drawing_scale * ratio
+    dx = (mx - model_offset["x"]) * drawing_scale * ratio
+    dy = (my - model_offset["y"]) * drawing_scale * ratio
     total_angle = angle + view_rotation
     cos_a = math.cos(total_angle)
     sin_a = math.sin(total_angle)
