@@ -1,12 +1,37 @@
-/* Motion prototype for the Tapir site (see motion.css). */
+/* Motion prototype for the Tapir site (see motion.css).
+   The Display menu's Motion (data-motion on <html>, see site.js) decides whether it runs: Reduced
+   never, Full always, System (no attribute) unless the system asks for reduced motion. ?nomotion
+   turns it off whatever was chosen. A change of choice, or of the system's setting, applies at once:
+   switching off removes html.motion, so everything shows as it is; switching on starts it then
+   (without the splash, which only opens a visit). */
 (function () {
     'use strict';
-    var reduced = window.matchMedia && matchMedia ('(prefers-reduced-motion: reduce)').matches;
     var root = document.documentElement;
+    var query = window.matchMedia ? matchMedia ('(prefers-reduced-motion: reduce)') : null;
+    var blocked = !('IntersectionObserver' in window) || /nomotion/.test (location.search + location.hash);
+    var started = false;
+
+    function wanted () {
+        var choice = root.getAttribute ('data-motion');
+        return !blocked && choice !== 'reduced' && (choice === 'full' || !(query && query.matches));
+    }
+
+    function update () {
+        if (!wanted ()) { root.classList.remove ('motion'); return; }
+        if (started) { root.classList.add ('motion'); return; }
+        started = true; start (false);
+    }
+
     // The inline splash script makes the same checks; drop a splash it set anyway.
-    if (reduced || !('IntersectionObserver' in window) || /nomotion/.test (location.search + location.hash)) { root.classList.remove ('m-splash', 'm-font'); return; }
+    if (wanted ()) { started = true; start (root.classList.contains ('m-splash')); }
+    else root.classList.remove ('m-splash', 'm-font');
+    if (blocked) return;
+    document.addEventListener ('tapir-display-change', update);
+    if (query && query.addEventListener) query.addEventListener ('change', update);
+    else if (query && query.addListener) query.addListener (update);
+
+    function start (splashing) {
     root.classList.add ('motion');
-    var splashing = root.classList.contains ('m-splash');
     if (splashing) root.classList.add ('m-hold');
     var held = [];
 
@@ -148,4 +173,5 @@
         });
         head.addEventListener ('pointerleave', function () { head.classList.remove ('m-hover'); });
     });
+    }  // start
 }) ();

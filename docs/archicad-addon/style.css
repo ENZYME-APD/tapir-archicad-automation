@@ -830,3 +830,9 @@ pre .hljs-subst { color: var(--pre-text); }
 :root:not([data-style="legacy"]) details.command_container[open] {
     box-shadow: inset 3px 0 0 var(--accent-fill);
 }
+
+/* The Display menu's Spacing Compact (see the end of ../assets/site.css): each command's row about
+   30 % shorter. */
+:root[data-spacing="compact"] summary.command_header {
+    min-height: 25px;
+}
