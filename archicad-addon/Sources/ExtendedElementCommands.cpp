@@ -3380,6 +3380,180 @@ static bool ApplyBeamSectionToMemo (API_Guid elemGuid, const GS::ObjectState& de
     return ACAPI_Element_ChangeMemo (elemGuid, APIMemoMask_BeamSegment, &memo) == NoError;
 }
 
+// The segments array of CreateBeams and ModifyBeams (#2551): each item changes the cross section,
+// taper and length (its geometry) of one existing segment of the beam, chosen by segmentIndex or
+// else by the item's position in the array. Only the keys given are written, so the other
+// segments and the other values stay as they are. The number of segments is not changed.
+static Int32 GetBeamSegmentItemIndex (const GS::ObjectState& item, UIndex position)
+{
+    Int32 segmentIndex = static_cast<Int32> (position);
+    item.Get ("segmentIndex", segmentIndex);
+    return segmentIndex;
+}
+
+// Checks the segments array against a beam with nSegments segments and nSchemes segment length
+// schemes before anything is written; returns the reason an item cannot be applied.
+static GS::Optional<GS::UniString> CheckBeamSegments (const GS::Array<GS::ObjectState>& segments, GSSize nSegments, GSSize nSchemes)
+{
+    for (UIndex i = 0; i < segments.GetSize (); ++i) {
+        const GS::ObjectState& item = segments[i];
+        const Int32 segmentIndex = GetBeamSegmentItemIndex (item, i);
+        if (segmentIndex < 0 || segmentIndex >= nSegments) {
+            return GS::UniString::Printf ("segments[%u]: the beam has no segment %d. It has %d segment(s), with segmentIndex 0 to %d; this command does not add segments.",
+                static_cast<unsigned int> (i), static_cast<int> (segmentIndex), static_cast<int> (nSegments), static_cast<int> (nSegments) - 1);
+        }
+        const GS::ObjectState* geometry = item.Get ("geometry");
+        if (geometry == nullptr) {
+            continue;
+        }
+        GS::UniString structureType;
+        const bool hasStructureType = geometry->Get ("structureType", structureType);
+        const bool hasProfileId = geometry->Get ("profileId") != nullptr;
+        const bool hasBuildingMaterialId = geometry->Get ("buildingMaterialId") != nullptr;
+        if (hasProfileId && hasBuildingMaterialId) {
+            return GS::UniString::Printf ("segments[%u].geometry: give either buildingMaterialId or profileId, not both.", static_cast<unsigned int> (i));
+        }
+        if (hasStructureType && structureType == "Profile" && !hasProfileId) {
+            return GS::UniString::Printf ("segments[%u].geometry: structureType Profile needs the profileId of the profile.", static_cast<unsigned int> (i));
+        }
+        if (hasStructureType && structureType == "Basic" && hasProfileId) {
+            return GS::UniString::Printf ("segments[%u].geometry: structureType Basic does not take a profileId.", static_cast<unsigned int> (i));
+        }
+        if (hasStructureType && structureType == "Profile" && hasBuildingMaterialId) {
+            return GS::UniString::Printf ("segments[%u].geometry: structureType Profile does not take a buildingMaterialId.", static_cast<unsigned int> (i));
+        }
+        if (geometry->Get ("length") != nullptr && segmentIndex >= nSchemes) {
+            return GS::UniString::Printf ("segments[%u].geometry.length: the beam has no length scheme for segment %d.", static_cast<unsigned int> (i), static_cast<int> (segmentIndex));
+        }
+    }
+    return {};
+}
+
+// Writes the segments array, checked by CheckBeamSegments, into memo, which holds the beam's
+// beamSegments and assemblySegmentSchemes.
+static GS::Optional<GS::UniString> ApplyBeamSegmentsToMemo (API_ElementMemo& memo, const GS::Array<GS::ObjectState>& segments)
+{
+    const GSSize nSegments = memo.beamSegments == nullptr ? 0 : BMGetPtrSize (reinterpret_cast<GSPtr> (memo.beamSegments)) / sizeof (API_BeamSegmentType);
+    const GSSize nSchemes = memo.assemblySegmentSchemes == nullptr ? 0 : BMGetPtrSize (reinterpret_cast<GSPtr> (memo.assemblySegmentSchemes)) / sizeof (API_AssemblySegmentSchemeData);
+    const GS::Optional<GS::UniString> checkError = CheckBeamSegments (segments, nSegments, nSchemes);
+    if (checkError.HasValue ()) {
+        return checkError;
+    }
+
+    for (UIndex i = 0; i < segments.GetSize (); ++i) {
+        const GS::ObjectState* geometry = segments[i].Get ("geometry");
+        if (geometry == nullptr) {
+            continue;
+        }
+        const Int32 segmentIndex = GetBeamSegmentItemIndex (segments[i], i);
+        API_AssemblySegmentData& segment = memo.beamSegments[segmentIndex].assemblySegmentData;
+
+        bool boolValue = false;
+        if (geometry->Get ("isWidthAndHeightLinked", boolValue)) {
+            segment.isWidthAndHeightLinked = boolValue;
+        }
+        const auto width = GetOptionalDouble (*geometry, "width");
+        if (width.HasValue ()) {
+            segment.nominalWidth = width.Get ();
+        }
+        const auto height = GetOptionalDouble (*geometry, "height");
+        if (height.HasValue ()) {
+            segment.nominalHeight = height.Get ();
+        }
+        if (geometry->Get ("circleBased", boolValue)) {
+            segment.circleBased = boolValue;
+        }
+
+        GS::UniString structureType;
+        geometry->Get ("structureType", structureType);
+        const GS::ObjectState* profileIdOs = geometry->Get ("profileId");
+        const GS::ObjectState* buildingMaterialIdOs = geometry->Get ("buildingMaterialId");
+        if (profileIdOs != nullptr) {
+            segment.modelElemStructureType = API_ProfileStructure;
+            segment.profileType = APISect_Poly;
+            segment.profileAttr = GetAttributeIndexFromGuid (API_ProfileID, GetGuidFromObjectState (*profileIdOs));
+            segment.circleBased = false;
+        } else if (buildingMaterialIdOs != nullptr || structureType == "Basic") {
+            segment.modelElemStructureType = API_BasicStructure;
+            // See ApplyColumnSectionToMemo (#1810).
+            if (segment.profileType == APISect_Poly) {
+                segment.profileType = APISect_Normal;
+            }
+            if (buildingMaterialIdOs != nullptr) {
+                segment.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs));
+            }
+        }
+
+        if (geometry->Get ("isHomogeneous", boolValue)) {
+            segment.isHomogeneous = boolValue;
+        }
+        if (geometry->Get ("isEndWidthAndHeightLinked", boolValue)) {
+            segment.isEndWidthAndHeightLinked = boolValue;
+        }
+        const auto endWidth = GetOptionalDouble (*geometry, "endWidth");
+        if (endWidth.HasValue ()) {
+            segment.endWidth = endWidth.Get ();
+        }
+        const auto endHeight = GetOptionalDouble (*geometry, "endHeight");
+        if (endHeight.HasValue ()) {
+            segment.endHeight = endHeight.Get ();
+        }
+
+        const GS::ObjectState* lengthOs = geometry->Get ("length");
+        if (lengthOs != nullptr) {
+            API_AssemblySegmentSchemeData& scheme = memo.assemblySegmentSchemes[segmentIndex];
+            GS::UniString lengthType;
+            if (lengthOs->Get ("lengthType", lengthType)) {
+                scheme.lengthType = (lengthType == "Proportional") ? APIAssemblySegment_Proportional : APIAssemblySegment_Fixed;
+            }
+            const auto fixedLength = GetOptionalDouble (*lengthOs, "fixedLength");
+            if (fixedLength.HasValue ()) {
+                scheme.fixedLength = fixedLength.Get ();
+            }
+            const auto lengthProportion = GetOptionalDouble (*lengthOs, "lengthProportion");
+            if (lengthProportion.HasValue ()) {
+                scheme.lengthProportion = lengthProportion.Get ();
+            }
+        }
+    }
+    return {};
+}
+
+// Writes the segments array of ModifyBeams into an existing beam (#2551).
+static GSErrCode ApplyBeamSegmentsToBeam (const API_Guid& beamGuid, const GS::Array<GS::ObjectState>& segments, GS::UniString& errorMessage)
+{
+    API_Element element = {};
+    element.header.guid = beamGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        errorMessage = "Failed to load the beam to modify its segments.";
+        return err;
+    }
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    err = ACAPI_Element_GetMemo (beamGuid, &memo, APIMemoMask_BeamSegment | APIMemoMask_AssemblySegmentScheme);
+    if (err != NoError || memo.beamSegments == nullptr) {
+        errorMessage = "Failed to read the segments of the beam.";
+        return err != NoError ? err : APIERR_GENERAL;
+    }
+
+    const GS::Optional<GS::UniString> applyError = ApplyBeamSegmentsToMemo (memo, segments);
+    if (applyError.HasValue ()) {
+        errorMessage = applyError.Get ();
+        return APIERR_BADPARS;
+    }
+
+    // As the DevKit's Element_Test changes beam segments: an empty element mask, the segment memo.
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    err = ACAPI_Element_Change (&element, &mask, &memo, APIMemoMask_BeamSegment | APIMemoMask_AssemblySegmentScheme, true);
+    if (err != NoError) {
+        errorMessage = "Failed to modify the beam segments.";
+    }
+    return err;
+}
+
 bool BuildCuboidMorphMemo (double sizeX, double sizeY, double sizeZ, API_AttributeIndex buildingMaterial, API_ElementMemo& memo, double topExpansion, API_AttributeIndex surface)
 {
     void* bodyData = nullptr;
@@ -5191,6 +5365,13 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                         "profileId": {
                             "$ref": "#/AttributeId",
                             "description": "Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments."
+                        },
+                        "segments": {
+                            "type": "array",
+                            "description": "Optional changes to single segments of the new beam, which has the segments of the Beam tool defaults or the favorite: their cross section, taper and length. Applied after the cross section given for all segments, so a segment given here keeps its own values. Segments are not added; a segmentIndex the defaults do not have is an error and the beam is not created.",
+                            "items": {
+                                "$ref": "#/BeamSegmentModification"
+                            }
                         },)") + BeamSurfaceAndFillSchemaProperties + R"(
                     },
                     "additionalProperties": false,
@@ -5310,6 +5491,19 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
                 segment.modelElemStructureType = API_BasicStructure;
                 segment.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs));
             }
+        }
+    }
+
+    // The segments of the tool defaults or the favorite, changed one by one after the cross section
+    // given for all of them (#2551), the same way ModifyBeams changes them.
+    GS::Array<GS::ObjectState> segments;
+    if (parameters.Get ("segments", segments) && !segments.IsEmpty ()) {
+        if (memo.beamSegments == nullptr) {
+            return CreateErrorResponse (APIERR_GENERAL, "The Beam tool defaults have no segments to apply 'segments' to.");
+        }
+        const GS::Optional<GS::UniString> segmentsError = ApplyBeamSegmentsToMemo (memo, segments);
+        if (segmentsError.HasValue ()) {
+            return CreateErrorResponse (APIERR_BADPARS, segmentsError.Get ());
         }
     }
 
@@ -9788,6 +9982,13 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
                             "items": {
                                 "$ref": "#/BeamHoleModification"
                             }
+                        },
+                        "segments": {
+                            "type": "array",
+                            "description": "Optional changes to single segments of the beam: their cross section, taper and length. Only the segments and keys given change, so the neighbouring segments stay as they are. Applied after the cross section given for all segments. Segments are not added or removed; a segmentIndex the beam does not have fails the item before anything of it is written.",
+                            "items": {
+                                "$ref": "#/BeamSegmentModification"
+                            }
                         },)") + BeamSurfaceAndFillSchemaProperties + R"(
                     },
                     "additionalProperties": false,
@@ -9839,6 +10040,30 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
             }
             const bool hasSectionFields = item.Contains ("width") || item.Contains ("height") || item.Contains ("isWidthAndHeightLinked") || item.Contains ("circleBased") || item.Contains ("buildingMaterialId") || item.Contains ("profileId");
 
+            // The segments are checked before anything is written, so a wrong segmentIndex leaves
+            // the beam as it was, and written last, after the cross section given for all of them (#2551).
+            GS::Array<GS::ObjectState> segments;
+            const bool hasSegments = item.Get ("segments", segments) && !segments.IsEmpty ();
+            if (hasSegments) {
+                if (GetElemTypeId (element.header) != API_BeamID) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'segments' can only be given for a Beam."));
+                    continue;
+                }
+                const GS::Optional<GS::UniString> segmentsError = CheckBeamSegments (segments, static_cast<GSSize> (element.beam.nSegments), static_cast<GSSize> (element.beam.nSchemes));
+                if (segmentsError.HasValue ()) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, segmentsError.Get ()));
+                    continue;
+                }
+            }
+            const auto applySegments = [&] () -> GS::ObjectState {
+                if (!hasSegments) {
+                    return CreateSuccessfulExecutionResult ();
+                }
+                GS::UniString segmentsMessage;
+                const GSErrCode segmentsErr = ApplyBeamSegmentsToBeam (element.header.guid, segments, segmentsMessage);
+                return segmentsErr == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (segmentsErr, segmentsMessage);
+            };
+
             GS::Array<GS::ObjectState> holes;
             if (item.Get ("holes", holes)) {
                 API_ElementMemo memo = {};
@@ -9869,16 +10094,15 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
                     results.Push (CreateFailedExecutionResult (err, "Failed to modify beam holes."));
                     continue;
                 }
-                if (hasSectionFields) {
-                    bool sectionOk = ApplyBeamSectionToMemo (element.header.guid, item);
-                    results.Push (sectionOk ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify beam cross section."));
+                if (hasSectionFields && !ApplyBeamSectionToMemo (element.header.guid, item)) {
+                    results.Push (CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify beam cross section."));
                     continue;
                 }
-                results.Push (CreateSuccessfulExecutionResult ());
+                results.Push (applySegments ());
                 continue;
             }
 
-            if (!changed && !hasSectionFields) {
+            if (!changed && !hasSectionFields && !hasSegments) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No beam fields to modify."));
                 continue;
             }
@@ -9891,13 +10115,12 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
                 }
             }
 
-            if (hasSectionFields) {
-                bool sectionOk = ApplyBeamSectionToMemo (element.header.guid, item);
-                results.Push (sectionOk ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify beam cross section."));
+            if (hasSectionFields && !ApplyBeamSectionToMemo (element.header.guid, item)) {
+                results.Push (CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify beam cross section."));
                 continue;
             }
 
-            results.Push (CreateSuccessfulExecutionResult ());
+            results.Push (applySegments ());
         }
     });
 }
