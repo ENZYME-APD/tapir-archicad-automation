@@ -10759,6 +10759,34 @@
             "materialsChained"
         ]
     },
+    "ColumnSegmentSurfacesModification": {
+        "type": "object",
+        "description": "The surfaces and the veneer to write to one segment of a column, in the shape of ColumnSegmentSurfaces. Only the given fields change. Send overridden false to make a surface come from the cross section again.",
+        "properties": {
+            "segmentIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The 0-based index of the segment, in the order GetDetailsOfElements lists the column's segments. Defaults to the item's position in the segments list."
+            },
+            "extrusionSurfaceMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "Overrides the surface of the sides (the extrusion) of the segment."
+            },
+            "endsMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "Overrides the surface of the top and bottom ends of the segment."
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surface materials are chained. Send false with surfaces that should differ from each other."
+            },
+            "veneer": {
+                "$ref": "#/ColumnVeneer",
+                "description": "The veneer of this segment only; only the given fields change, thickness 0 removes it."
+            }
+        },
+        "additionalProperties": false
+    },
     "ColumnSegmentDetails": {
         "type": "object",
         "description": "Details of a ColumnSegment subelement of a Column.",
