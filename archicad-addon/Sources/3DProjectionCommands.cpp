@@ -958,6 +958,21 @@ GS::ObjectState Set3DWindowSettingsCommand::Execute (const GS::ObjectState& para
         return CreateErrorResponse (APIERR_BADPARS, "Invalid parameters: give at least one of hSize, vSize, zoomScaleX, zoomScaleY, zoomDispX and zoomDispY.");
     }
 
+    // Archicad resets the zoom when it resizes the 3D window: after a size change alone
+    // zoomDispX read back as half the new width instead of the value set before (#2470,
+    // Archicad 26 and 28). So the size is changed first, and the zoom (the given values,
+    // the others as they were before the call) is applied again after it.
+    if (windowInfo.setWindowSize) {
+        API_3DWindowInfo sizeInfo = windowInfo;
+        sizeInfo.setZoom = false;
+        err = ACAPI_View_Change3DWindowSets (&sizeInfo);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to set the size of the 3D window.");
+        }
+        windowInfo.setWindowSize = false;
+        windowInfo.setZoom = true;
+    }
+
     err = ACAPI_View_Change3DWindowSets (&windowInfo);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to set the 3D window settings.");
