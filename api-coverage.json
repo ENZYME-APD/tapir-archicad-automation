@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 16:58 UTC",
+ "generatedAt": "2026-11-09 18:38 UTC",
  "versions": [
   25,
   26,
@@ -5757,10 +5757,6 @@
      "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
     {
-     "number": 2450,
-     "title": "Read and set single railing segments and nodes"
-    },
-    {
      "number": 2443,
      "title": "Read and write the edge types of single-plane roofs"
     },
@@ -6737,10 +6733,6 @@
      "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
     {
-     "number": 2450,
-     "title": "Read and set single railing segments and nodes"
-    },
-    {
      "number": 2442,
      "title": "Read and set the cut of multi-plane roof contour and hole edges"
     },
@@ -7258,10 +7250,6 @@
     {
      "number": 2506,
      "title": "CreateAssociativeDimensions: an error instead of an elementId for dimensions Archicad removes (#2505)"
-    },
-    {
-     "number": 2450,
-     "title": "Read and set single railing segments and nodes"
     }
    ],
    "issues": [
@@ -7808,10 +7796,6 @@
     {
      "number": 2455,
      "title": "ModifyShells: edit the profile of an existing extruded shell"
-    },
-    {
-     "number": 2450,
-     "title": "Read and set single railing segments and nodes"
     },
     {
      "number": 2443,
@@ -25410,10 +25394,6 @@
      "title": "[3/3] Shells: read back and write the custom surface of individual edges"
     },
     {
-     "number": 2450,
-     "title": "Read and set single railing segments and nodes"
-    },
-    {
      "number": 2444,
      "title": "[2/3] Read back and write the surface overrides of shells"
     },
@@ -31025,10 +31005,6 @@
     {
      "number": 2452,
      "title": "[3/3] Shells: read back and write the custom surface of individual edges"
-    },
-    {
-     "number": 2450,
-     "title": "Read and set single railing segments and nodes"
     },
     {
      "number": 2439,
@@ -37489,10 +37465,6 @@
     {
      "number": 2452,
      "title": "[3/3] Shells: read back and write the custom surface of individual edges"
-    },
-    {
-     "number": 2450,
-     "title": "Read and set single railing segments and nodes"
     },
     {
      "number": 2444,
@@ -44154,10 +44126,6 @@
      "title": "[3/3] Shells: read back and write the custom surface of individual edges"
     },
     {
-     "number": 2450,
-     "title": "Read and set single railing segments and nodes"
-    },
-    {
      "number": 2439,
      "title": "Read and edit the clipping contour and holes of an existing shell"
     },
@@ -47263,10 +47231,6 @@
     {
      "number": 2452,
      "title": "[3/3] Shells: read back and write the custom surface of individual edges"
-    },
-    {
-     "number": 2450,
-     "title": "Read and set single railing segments and nodes"
     },
     {
      "number": 2439,
