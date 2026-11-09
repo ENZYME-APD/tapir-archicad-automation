@@ -10,7 +10,7 @@ Every function of the Archicad API (C functions, the C++ API and the Archicad 25
 | C functions of Archicad 25/26 only, and their command ids | 100 % | 66 | 57 | 9 |  |  |  | 9 | 64 |
 | C++ API (ACAPI::, IFCAPI::) | 100 % | 1441 | 1207 | 234 |  |  |  | 11 | 375 |
 
-Archicad 25–30 DevKits; updated 2026-11-09 03:27 UTC.
+Archicad 25–30 DevKits; updated 2026-11-09 03:56 UTC.
 
 | | Status |
 |---|---|
@@ -133,7 +133,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Element_ChangeDefaultsExt` – Changes the default parameters of the Window, Door, Section, Elevation, Interior Elevation, ChangeMarker, Detail, Worksheet, or Stair default element and its marker(s). This function also allows you to change the default settings of the Curtain Wall and its subelem.
 - ✅ `ACAPI_Element_ChangeElementInfoString` – Changes the compound info string of the given element. <sub>(was `APIDb_ChangeElementInfoStringID`)</sub> — [#2473](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2473 "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows")
 - ✅ `ACAPI_Element_ChangeExt` – Modifies a Window, Door, Section, Elevation, Interior Elevation, ChangeMarker, Detail, Worksheet, Stair or External element in the current database. — [#1377](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1377 "Place Detail and Worksheet markers, and change their settings")
-- ✅ `ACAPI_Element_ChangeMemo` – Changes the memo part of certain element types. — [#2473](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2473 "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows")
+- ✅ `ACAPI_Element_ChangeMemo` – Changes the memo part of certain element types.
 - ⛔ `ACAPI_Element_ChangeMore` – Modifies a number of elements in the current database. *(no speed gain over SetDetailsOfElements / the Modify* commands in the #1226 measurement, and one error code for the whole batch instead of per-element results)*
 - ✅ `ACAPI_Element_ChangeMorphEdgeType` <sub>AC29–30</sub> – Modifies a morph element's edge type in the current database.
 - ✅ `ACAPI_Element_ChangeParameters` – Changes the parameters of a number of elements.
@@ -340,7 +340,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - 🔀 `ACAPI_Attribute_GetFirstValidAttribute` <sub>AC27–30</sub> – Returns the first valid attribute index.
 - ✅ `ACAPI_Attribute_GetFolder` <sub>AC26–30</sub> – Retrieves an existing attribute folder by its path or guid.
 - 🔀 `ACAPI_Attribute_GetFolderContent` <sub>AC26–30</sub> – Returns all folders and attributes of an attribute type.
-- ✅ `ACAPI_Attribute_GetNum` – Returns the number of instances of a given type of attribute.
+- ✅ `ACAPI_Attribute_GetNum` – Returns the number of instances of a given type of attribute. — [#2477](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2477 "[6/6] Check catalogue hygiene: leaked elements, load groups of the template, fonts by name")
 - ✅ `ACAPI_Attribute_GetPen` <sub>AC27–30</sub> – Returns a pen by index from the active pen table.
 - ✅ `ACAPI_Attribute_GetPenNum` <sub>AC27–30</sub> – Get the number of pens in the active pen table.
 - ✅ `ACAPI_Attribute_GetPropertyDefinitions` – Retrieves all of the built-in property definitions that are available for an attribute.
@@ -358,7 +358,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_Attribute_Move` <sub>AC26–30</sub> – Moves attributes and attribute folders.
 - ✅ `ACAPI_Attribute_RemoveClassificationItem` – Removes a classification from an attribute.
 - ✅ `ACAPI_Attribute_RenameFolder` <sub>AC26–30</sub> – Deletes an attribute folder and all the folders and attributes it contains.
-- ✅ `ACAPI_Attribute_Search` – Searches for an attribute by name.
+- ✅ `ACAPI_Attribute_Search` – Searches for an attribute by name. — [#2477](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2477 "[6/6] Check catalogue hygiene: leaked elements, load groups of the template, fonts by name")
 - ✅ `ACAPI_Attribute_SetProperties` – Sets the specified built-in properties for the given values on an attribute.
 - ✅ `ACAPI_Attribute_SetProperty` – Sets the property value of the property definition.
 - ✅ `ACAPI_Attribute_AddProperty` <sub>AC27</sub> – Makes a property definition available for all of given attributes (it is created if it does not exist).
@@ -513,7 +513,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ✅ `ACAPI_DisposeAttrDefsHdlsExt` – Frees the memory occupied by all of the attribute definition handles.
 - ✅ `ACAPI_DisposeBeamRelationHdls` – Frees the memory occupied by all allocated beam relation handles.
 - ✅ `ACAPI_DisposeBeamSegmentRelationHdls` – Frees the memory occupied by all the allocated beam segment relation handles.
-- ✅ `ACAPI_DisposeElemMemoHdls` – Frees the memory occupied by all of the allocated memo handles. — [#2473](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2473 "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"), [#2455](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2455 "ModifyShells: edit the profile of an existing extruded shell"), [#2450](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2450 "Read and set single railing segments and nodes"), [#2443](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2443 "Read and write the edge types of single-plane roofs"), [#2439](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2439 "Read and edit the clipping contour and holes of an existing shell"), [#2429](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2429 "Read and edit the extrusion of an existing extruded shell"), [#2313](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2313 "Self-audit of the whole repository: AI slop, performance and safety")
+- ✅ `ACAPI_DisposeElemMemoHdls` – Frees the memory occupied by all of the allocated memo handles. — [#2455](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2455 "ModifyShells: edit the profile of an existing extruded shell"), [#2450](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2450 "Read and set single railing segments and nodes"), [#2443](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2443 "Read and write the edge types of single-plane roofs"), [#2439](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2439 "Read and edit the clipping contour and holes of an existing shell"), [#2429](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2429 "Read and edit the extrusion of an existing extruded shell"), [#2313](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2313 "Self-audit of the whole repository: AI slop, performance and safety")
 - ✅ `ACAPI_DisposeParagraphsHdl` – Frees the memory occupied by a handle to an array of @ref API_ParagraphType.
 - ✅ `ACAPI_DisposeRoomRelationHdls` – Frees the memory occupied by all allocated room relation handles.
 - ✅ `ACAPI_DisposeWallRelationHdls` – Frees the memory occupied by all allocated wall relation handles.
@@ -536,7 +536,7 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 - ➖ `ACAPI_UnregisterTeamworkReserveInterface` – Unregisters a previously registered interface. *(event handlers, not commands)*
 - ✅ `ACAPI_WriteReport` – Writes a report string into the Report Window or into a custom alert window. — [#2423](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2423 "[5/5] Script Manager: the README and screenshots in the details"), [#2420](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2420 "[4/5] Script Manager: the Marketplace section of the Tapir Palette"), [#2418](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2418 "[3/5] Script Manager: the Updates tab, Update and Update all"), [#2417](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2417 "[2/5] Script Manager: Install, Remove and the Installed tab"), [#2415](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2415 "[2/2] Share a script from Archicad: Your shares, with status, answers and Confirm"), [#2414](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2414 "[1/5] Tapir Script Manager: the window, the catalogue and browsing"), [#2411](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2411 "[1/2] Share a script from Archicad: Share dialog, sent to the share service, website fallback")
 - ✅ `ACAPI_Automate` <sub>AC25–26</sub>
-- ✅ `ACAPI_Database` <sub>AC25–26</sub>
+- ✅ `ACAPI_Database` <sub>AC25–26</sub> — [#2473](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2473 "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows")
 - ✅ `ACAPI_Environment` <sub>AC25–26</sub>
 - ✅ `ACAPI_Goodies` <sub>AC25–26</sub>
 - ✅ `ACAPI_Interface` <sub>AC25–26</sub>
@@ -1307,8 +1307,8 @@ Names are the newest ones; older names (renamed functions, AC25/26 command ids) 
 ## Font
 
 - ✅ `ACAPI_Font_GetFont` <sub>AC27–30</sub> – Returns a font either by index or name.
-- ✅ `ACAPI_Font_GetFontNum` <sub>AC27–30</sub> – Get the number of fonts. You could use it to iterate over the fonts
-- ✅ `ACAPI_Font_SearchFont` <sub>AC27–30</sub> – Search for a font by name.
+- ✅ `ACAPI_Font_GetFontNum` <sub>AC27–30</sub> – Get the number of fonts. You could use it to iterate over the fonts — [#2477](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2477 "[6/6] Check catalogue hygiene: leaked elements, load groups of the template, fonts by name")
+- ✅ `ACAPI_Font_SearchFont` <sub>AC27–30</sub> – Search for a font by name. — [#2477](https://github.com/ENZYME-APD/tapir-archicad-automation/pull/2477 "[6/6] Check catalogue hygiene: leaked elements, load groups of the template, fonts by name")
 
 ## ListData
 

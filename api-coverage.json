@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 03:27 UTC",
+ "generatedAt": "2026-11-09 03:56 UTC",
  "versions": [
   25,
   26,
@@ -3170,7 +3170,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2477,
+     "title": "[6/6] Check catalogue hygiene: leaked elements, load groups of the template, fonts by name"
+    }
+   ],
    "issues": []
   },
   {
@@ -3538,7 +3543,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2477,
+     "title": "[6/6] Check catalogue hygiene: leaked elements, load groups of the template, fonts by name"
+    }
+   ],
    "issues": []
   },
   {
@@ -5760,10 +5770,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2473,
-     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
-    },
-    {
      "number": 2455,
      "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
@@ -6909,12 +6915,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2473,
-     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9439,7 +9440,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2477,
+     "title": "[6/6] Check catalogue hygiene: leaked elements, load groups of the template, fonts by name"
+    }
+   ],
    "issues": []
   },
   {
@@ -9458,7 +9464,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2477,
+     "title": "[6/6] Check catalogue hygiene: leaked elements, load groups of the template, fonts by name"
+    }
+   ],
    "issues": []
   },
   {
@@ -20667,7 +20678,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2473,
+     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
+    }
+   ],
    "issues": []
   },
   {
