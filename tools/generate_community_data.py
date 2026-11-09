@@ -9,7 +9,7 @@ docs/community/community.js; this script writes:
                  "discordMessages": 41, "discordMembers": 12}, ...],
      "totals": {"commits": ..., "discordMessages": ..., "discordMembers": ...,
                 "discordMembersChange": {"diff": 23, "days": 30}, "participants": ...},
-     "topContributors": [{"name": "...", "commits": ...}, ...],
+     "topContributors": [{"name": "...", "login": "...", "commits": ..., "reports": ..., "tests": ...}, ...],
      "memberHistory": [{"date": "2026-11-06", "members": 637}, ...]}
 
 Sources, each optional: a series that cannot be read is left out of every month, so the page
@@ -22,6 +22,14 @@ hides it instead of drawing it wrong.
     The top contributors and participants also count the people in a commit's Co-authored-by
     trailers (bots and AI assistants left out), so the issue bot's commits credit the reporter;
     a co-author who also committed is the same person, by the same rules.
+  - top contributors: per person their commits (co-authors included, as above), their reports
+    (issues they opened that a merged pull request closed with a closing keyword, "Fixes #12")
+    and their tests (pull requests they posted a community test runner result on, a comment
+    starting with "tapir-test:"), ranked by the three together; the page shows each separately.
+    "login" is their GitHub account: from a GitHub no-reply address, else from GitHub's own
+    link of the commit's author address to an account (the commits API), and the same account
+    on several names is one person. Reports and tests are counted by account, so a person who
+    only reports or tests is listed under their login.
   - issues opened and pull requests merged per month: the GitHub REST API (GITHUB_TOKEN).
   - Discord messages per month (people, not bots): the history of every text and announcement
     channel the bot can read, and of the threads in them and in forum channels. Discord members
@@ -165,14 +173,15 @@ def group_authors (authors, coauthors=()):
 
 
 def read_commits ():
-    """The commits of the checkout: (commits, credits).
+    """The commits of the checkout: (commits, credits, addresses).
 
     commits is (date, author) of every commit by a person, merges and bots left out. credits is
     (date, name) of everyone a commit credits: its author when a person, and each person in its
     Co-authored-by trailers, so a commit the issue bot made for someone's issue credits the
     person who reported it. The commit counts use commits; the contributors use credits.
     Each person is counted once, under one name, whatever names and addresses their commits and
-    trailers carry (see group_authors), so nobody needs a .mailmap line to be counted once."""
+    trailers carry (see group_authors), so nobody needs a .mailmap line to be counted once.
+    addresses is {name: set of their email_key values}, which link a name to a GitHub account."""
     output = subprocess.run (['git', 'log', '--no-merges',
                               '--format=%aI%x09%aN%x09%aE%x09%(trailers:key=Co-authored-by,valueonly,separator=%x1f)%x1e'],
                              capture_output=True, text=True, check=True).stdout
@@ -197,18 +206,27 @@ def read_commits ():
     shown = group_authors ([author for author, _ in records if author],
                            [coauthor for _, coauthors in records for coauthor in coauthors])
     commits, credits = [], []
+    addresses = collections.defaultdict (set)
     for author, coauthors in records:
         names = []
         if author:
             commits.append ((author[0], shown[author[1:]]))
         for date, name, email in ([author] if author else []) + coauthors:
+            if email_key (email):
+                addresses[shown[(name, email)]].add (email_key (email))
             if shown[(name, email)] not in names:
                 names.append (shown[(name, email)])
                 credits.append ((date, shown[(name, email)]))
-    return commits, credits
+    return commits, credits, addresses
 
 
 # ---- GitHub ----
+
+# The first line of a community test runner result (tools/community-test-runner, RESULT_MARKER).
+TEST_RESULT_MARKER = 'tapir-test:'
+# A closing keyword with the issue it closes: "Fixes #12", "closes: owner/repo#12" or the issue's URL.
+CLOSING_REFERENCE = re.compile (r'\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?):?\s+'
+                                r'(?:https://github\.com/([\w.-]+/[\w.-]+)/issues/|([\w.-]+/[\w.-]+)#|#)(\d+)\b', re.I)
 
 def github_pages (repo, path):
     headers = {'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28'}
@@ -229,7 +247,82 @@ def read_github (repo):
     opened = [(i['created_at'], i['user']['login']) for i in issues if 'pull_request' not in i and i.get ('user')]
     pull_authors = [(p['created_at'], p['user']['login']) for p in pulls if p.get ('user')]
     merged = [p['merged_at'] for p in pulls if p.get ('merged_at')]
-    return opened, merged, pull_authors
+    return opened, merged, pull_authors, count_reports (repo, issues, pulls)
+
+
+def count_reports (repo, issues, pulls):
+    """{login: issues they opened that a merged pull request closed}: closed issues named after a
+    closing keyword in the body of a merged pull request of this repository. Bots left out."""
+    authors = {i['number']: i['user']['login'] for i in issues
+               if 'pull_request' not in i and i.get ('user') and i.get ('state') == 'closed'}
+    fixed = set ()
+    for pull in pulls:
+        if not pull.get ('merged_at'):
+            continue
+        for url_repo, short_repo, number in CLOSING_REFERENCE.findall (pull.get ('body') or ''):
+            other = url_repo or short_repo
+            if not other or other.lower () == repo.lower ():
+                fixed.add (int (number))
+    reports = collections.Counter (authors[n] for n in fixed if n in authors and not BOT_NAME.search (authors[n]))
+    return dict (reports)
+
+
+def count_tests (repo):
+    """{login: pull requests they posted a community test runner result on}. Bots left out."""
+    tested = collections.defaultdict (set)
+    for comment in github_pages (repo, 'issues/comments?sort=created&direction=asc'):
+        login = (comment.get ('user') or {}).get ('login')
+        if login and not BOT_NAME.search (login) and (comment.get ('body') or '').startswith (TEST_RESULT_MARKER):
+            tested[login].add (comment['issue_url'].rsplit ('/', 1)[-1])
+    return {login: len (numbers) for login, numbers in tested.items ()}
+
+
+def commit_logins (repo):
+    """{author address: GitHub login}, as GitHub links the commit addresses of the default branch
+    to accounts (an address a person added to their account)."""
+    logins = {}
+    for commit in github_pages (repo, 'commits?'):
+        login = (commit.get ('author') or {}).get ('login')
+        email = ((commit.get ('commit') or {}).get ('author') or {}).get ('email') or ''
+        if login and email_key (email):
+            logins.setdefault (email_key (email), login)
+    return logins
+
+
+def top_contributors (credits, addresses, logins, reports, tests, count=40):
+    """[{"name", "login", "commits", "reports", "tests"}] of the count people with the most of the
+    three together. A name gets the login its addresses link to; names on one login are one person,
+    shown under the name with the most commits. Reports and tests are matched by login."""
+    people = {}
+
+    def person (key, name):
+        return people.setdefault (key, {'name': name, 'login': None, 'commits': 0, 'reports': 0, 'tests': 0, 'shownBy': -1})
+
+    for name, commits in collections.Counter (name for _, name in credits).items ():
+        linked = sorted ({key[len ('github:'):] for key in addresses.get (name, ()) if key.startswith ('github:')} |
+                         {logins[key] for key in addresses.get (name, ()) if key in logins})
+        linked = [login for login in linked if not BOT_NAME.search (login)]
+        # A name on several accounts: the account named like the person, else the first.
+        login = next ((l for l in linked if name_key (l) == name_key (name)), linked[0] if linked else None)
+        entry = person ('login:' + login.lower () if login else 'name:' + name, name)
+        entry['login'] = login
+        entry['commits'] += commits
+        if commits > entry['shownBy']:
+            entry['name'], entry['shownBy'] = name, commits
+    for counts, field in ((reports, 'reports'), (tests, 'tests')):
+        for login, value in counts.items ():
+            entry = person ('login:' + login.lower (), login)
+            entry['login'] = entry['login'] or login
+            entry[field] += value
+    ranked = sorted (people.values (), key=lambda p: (-(p['commits'] + p['reports'] + p['tests']), -p['commits'], p['name'].lower ()))
+    top = []
+    for p in ranked[:count]:
+        entry = {'name': p['name']}
+        if p['login']:
+            entry['login'] = p['login']
+        entry.update ({field: p[field] for field in ('commits', 'reports', 'tests')})
+        top.append (entry)
+    return top
 
 
 # ---- Discord ----
@@ -368,18 +461,17 @@ def main ():
     series = collections.defaultdict (collections.Counter)
     totals, people = {}, set ()
 
-    commits, credits = read_commits ()
+    commits, credits, addresses = read_commits ()
     for date, author in commits:
         series['commits'][month_of (date)] += 1
     for date, name in credits:
         if date >= year_ago:
             people.add ('git:' + name.lower ())
     totals['commits'] = len (commits)
-    authors = collections.Counter (name for _, name in credits)
-    top = [{'name': name, 'commits': count} for name, count in authors.most_common (40)]
+    top = top_contributors (credits, addresses, {}, {}, {})
 
     try:
-        opened, merged, pull_authors = read_github (args.repo)
+        opened, merged, pull_authors, reports = read_github (args.repo)
         for date, _ in opened:
             series['issuesOpened'][month_of (date)] += 1
         for date in merged:
@@ -391,6 +483,19 @@ def main ():
         print (f'GitHub issues and pull requests not read: {error}', file=sys.stderr)
         series.pop ('issuesOpened', None)
         series.pop ('pullRequestsMerged', None)
+    else:
+        # Without the tests or the logins the reports still count: a person is then matched by name.
+        try:
+            tests = count_tests (args.repo)
+        except (urllib.error.URLError, KeyError, ValueError) as error:
+            print (f'Test results not read: {error}', file=sys.stderr)
+            tests = {}
+        try:
+            logins = commit_logins (args.repo)
+        except (urllib.error.URLError, KeyError, ValueError) as error:
+            print (f'Commit accounts not read: {error}', file=sys.stderr)
+            logins = {}
+        top = top_contributors (credits, addresses, logins, reports, tests)
 
     history = []
     if args.previous and os.path.exists (args.previous):

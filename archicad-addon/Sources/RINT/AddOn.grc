@@ -101,6 +101,14 @@
 /* [ 34] */ "Unexpected issue while executing %T"
 }
 
+'STR#' ID_PALETTE_SEARCH_STRINGS "Tapir Palette Search Strings" {
+/* [  1] */ "Add to favourites"
+/* [  2] */ "Remove from favourites"
+/* [  3] */ "Search scripts"
+/* [  4] */ "No matching scripts"
+/* [  5] */ "Filtered by \"%T\" - click to change the search"
+}
+
 'STR#' ID_AUTOUPDATE_STRINGS "Tapir Update Strings" {
 /* [  1] */ "Tapir Update"
 /* [  2] */ "You are using Tapir version %s. A new version %T is available."
@@ -113,7 +121,7 @@
 /* [  9] */ "Check for Updates"
 /* [ 10] */ "Update to %T"
 /* [ 11] */ "Update Tapir to %T..."
-/* [ 12] */ "Tapir %s"
+/* [ 12] */ "%s"
 /* [ 13] */ "Tapir Update"
 /* [ 14] */ "OK"
 /* [ 15] */ "Tapir is still checking GitHub for the latest release."
@@ -242,17 +250,20 @@
 4    ""        VersionText
 }
 
-'GDLG' ID_PALETTE Palette | leftCaption | close   0   0  564  28  "Tapir Palette"  {
+'GDLG' ID_PALETTE Palette | leftCaption | close   0   0  620  28  "Tapir Palette"  {
 /* [  1] */ IconButton                 0   0  28  28    ID_TAPIR_LOGO_MINI noFrame
-/* [  2] */ PopupControl              28   3 260  22    80  3
-/* [  3] */ IconButton               288   0  28  28    ID_RUN_BUTTON_ICON noFrame
-/* [  4] */ IconButton               316   0  28  28    ID_OPENSCRIPT_BUTTON_ICON noFrame
-/* [  5] */ IconButton               344   0  28  28    ID_ADDSCRIPT_BUTTON_ICON noFrame
-/* [  6] */ IconButton               372   0  28  28    ID_DELSCRIPT_BUTTON_ICON noFrame
-/* [  7] */ IconButton               400   0  28  28    ID_SHORTCUTS_BUTTON_ICON noFrame
-/* [  8] */ LeftText                 434   6  72  16    SmallPlain  vCenter  "Tapir"
-/* [  9] */ IconButton               508   0  28  28    ID_CHECKFORUPDATES_BUTTON_ICON noFrame
-/* [ 10] */ IconButton               536   0  28  28    ID_SCRIPTMANAGER_BUTTON_ICON noFrame
+/* [  2] */ PopupControl              56   3 320  22    80  3
+/* [  3] */ IconButton               376   0  28  28    ID_RUN_BUTTON_ICON noFrame
+/* [  4] */ IconButton               376   0  28  28    ID_OPENSCRIPT_BUTTON_ICON noFrame
+/* [  5] */ IconButton               432   0  28  28    ID_ADDSCRIPT_BUTTON_ICON noFrame
+/* [  6] */ IconButton               460   0  28  28    ID_DELSCRIPT_BUTTON_ICON noFrame
+/* [  7] */ IconButton               488   0  28  28    ID_SHORTCUTS_BUTTON_ICON noFrame
+/* [  8] */ LeftText                 552   6  40  16    SmallPlain  vCenter  ""
+/* [  9] */ IconButton               520   0  28  28    ID_CHECKFORUPDATES_BUTTON_ICON noFrame
+/* [ 10] */ TextEdit                  56   3 120  22    SmallPlain  noDelay  255
+/* [ 11] */ IconButton               404   0  28  28    ID_STAR_BUTTON_ICON noFrame
+/* [ 12] */ IconButton                28   0  28  28    ID_SEARCH_BUTTON_ICON noFrame
+/* [ 13] */ IconButton               592   0  28  28    ID_SCRIPTMANAGER_BUTTON_ICON noFrame
 }
 
 'DLGH' ID_PALETTE Tapir_Palette {
@@ -265,7 +276,10 @@
 7    "Manage Shortcuts"    ManageShortcutsButton
 8    "Installed Tapir version"         InstalledVersionText
 9    "Check for Updates"               CheckForUpdatesButton
-10   "Script Manager"                  ScriptManagerButton
+10   ""        SearchEdit
+11   ""        FavouriteButton
+12   "Search scripts"      SearchButton
+13   "Script Manager"                  ScriptManagerButton
 }
 
 'GDLG' ID_SCRIPT_MANAGER Palette | topCaption | close | grow   0   0  940  540  "Tapir Script Manager"  {

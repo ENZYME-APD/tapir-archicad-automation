@@ -34,6 +34,10 @@
         'Quitar una sola dirección de un recorte entre dos cubiertas o láminas que se recortan mutuamente',
     'Remove the trim with <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a>, which removes both directions, then trim the other direction again with <a href="../archicad-addon/#TrimElements">TrimElements</a>.':
         'Quite el recorte con <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a>, que quita ambas direcciones, y luego vuelva a recortar la otra dirección con <a href="../archicad-addon/#TrimElements">TrimElements</a>.',
+    'Read which slab or stair edge a railing is linked to, or link a railing to one':
+        'Leer a qué borde de forjado o escalera está vinculada una barandilla, o vincular una barandilla a uno',
+    'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
+        'Lea el contorno del forjado con <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> y cree una barandilla estática a lo largo del borde con <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. Cuando cambie el forjado, borre la barandilla y vuelva a crearla.',
 
     // Navigator and views
     'Navigator and views': 'Navegador y vistas',

@@ -4,6 +4,7 @@
 # ///
 
 # /// tapir
+# category = "libraries-objects"
 # changes = "model"
 # ///
 

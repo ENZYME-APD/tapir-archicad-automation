@@ -111,6 +111,13 @@
                             <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">The only removal function, <code>ACAPI_Element_Trim_Remove (guid_Element1, guid_Element2)</code> (<code>ACAPinc.h</code>, AC25&ndash;AC30), &ldquo;removes trimming connection between the elements&rdquo; and takes no direction or trim type.</td>
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2365">#2365</a></td>
                         </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Read which slab or stair edge a railing is linked to, or link a railing to one</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Read the slab's outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_RailingType</code>, <code>API_RailingSegmentType</code> and <code>API_RailingNodeType</code> hold no host element or edge; the node has only <code>isStatic</code> (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30). <code>ACAPI_Grouping_GetConnectedElements</code> and <code>ACAPI_Element_GetRelations</code> (<code>ACAPinc.h</code>) list no railing connection, and the <code>ACAPI::</code> modules have no railing API.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2445">#2445</a></td>
+                        </tr>
 
                         <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Navigator and views</th></tr>
                         <tr>
