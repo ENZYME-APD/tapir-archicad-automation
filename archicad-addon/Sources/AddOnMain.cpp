@@ -2666,7 +2666,8 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<SetCurrent3DStyleCommand> (
             navigatorCommands, "1.8.1",
-            "Makes the given 3D style, one of the names Get3DStyles returns, the current one, which the 3D window uses."
+            "Meant to make the given 3D style, one of the names Get3DStyles returns, the current one. Not available yet: "
+            "it checks the name, then refuses, because Archicad's API function for it crashes Archicad."
         );
         err |= RegisterCommand<StoreViewSettingsCommand> (
             navigatorCommands, "1.8.1",

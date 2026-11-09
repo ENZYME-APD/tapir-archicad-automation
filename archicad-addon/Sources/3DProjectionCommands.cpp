@@ -1023,13 +1023,13 @@ GS::ObjectState SetCurrent3DStyleCommand::Execute (const GS::ObjectState& parame
         return CreateFailedExecutionResult (APIERR_BADNAME, "There is no 3D style with the name '" + styleName + "'.");
     }
 
-    err = ACAPI_CallUndoableCommand ("SetCurrent3DStyleCommand", [&]() -> GSErrCode {
-        return ACAPI_View_SetCurrent3DStyle (&styleName);
-    });
-
-    return err == NoError
-        ? CreateSuccessfulExecutionResult ()
-        : CreateFailedExecutionResult (err, "Failed to set the current 3D style.");
+    // ACAPI_View_SetCurrent3DStyle is not called: in Archicad 28 and 29 it stops Archicad with the assertion "can't open
+    // modification scope inside transaction" whatever it is called from - from this command, inside
+    // ACAPI_CallUndoableCommand, and from the main event loop (ACAPI_AddOnAddOnCommunication_CallFromEventLoop),
+    // because it runs one of Archicad's commands inside another. It has not been seen working in any Archicad, so the
+    // command refuses rather than crash Archicad.
+    return CreateFailedExecutionResult (APIERR_NOTSUPPORTED,
+        "Switching the current 3D style is not available: Archicad's API function for it crashes Archicad.");
 }
 
 StoreViewSettingsCommand::StoreViewSettingsCommand () :
