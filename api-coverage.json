@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 09:03 UTC",
+ "generatedAt": "2026-11-09 09:24 UTC",
  "versions": [
   25,
   26,
@@ -25294,6 +25294,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2489,
+     "title": "Graphic override criterion: custom text properties with the text operators, multiple choice option sets"
+    },
+    {
      "number": 2488,
      "title": "Graphic override criterion: the Zone Category condition (zoneCategory, zoneCategoryNot)"
     },
@@ -38124,6 +38128,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2489,
+     "title": "Graphic override criterion: custom text properties with the text operators, multiple choice option sets"
+    },
     {
      "number": 2488,
      "title": "Graphic override criterion: the Zone Category condition (zoneCategory, zoneCategoryNot)"
