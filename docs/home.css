@@ -39,11 +39,11 @@
 .hero .wrap { display: grid; grid-template-columns: 1fr 1.05fr; gap: 48px; align-items: center; padding-block: 72px 64px }
 .hero .wrap > * { min-width: 0 }
 .hero .tagline { color: var(--ochre-light) }
-.hero h1 { margin-top: 18px; font-size: clamp(52px, 8.4vw, 112px); font-weight: 900; line-height: .92; letter-spacing: -.025em }
+.hero h1 { margin-top: 18px; font-size: clamp(3.25rem, 8.4vw, 7rem); font-weight: 900; line-height: .92; letter-spacing: -.025em }
 .hero h1 em { color: var(--ochre-light); font-weight: 500 }
-.hero .lead { font-size: clamp(17px, 1.6vw, 20px); color: var(--cream-86); margin-top: 24px; max-width: 30em }
+.hero .lead { font-size: clamp(1.0625rem, 1.6vw, 1.25rem); color: var(--cream-86); margin-top: 24px; max-width: 30em }
 .hero .ctas { margin-top: 32px }
-.hero .meta { margin-top: 18px; font: 500 12.5px/1.7 var(--mono); color: var(--cream-72); letter-spacing: .04em; text-transform: uppercase }
+.hero .meta { margin-top: 18px; font: 500 .78125rem/1.7 var(--mono); color: var(--cream-72); letter-spacing: .04em; text-transform: uppercase }
 .hero .meta a { color: var(--ochre-light) }
 .hero .meta .sep { padding-inline: 6px }
 
@@ -56,16 +56,16 @@
 .plan-mark img { display: block; width: 18px; height: 18px }
 .plan-bar select {
     -webkit-appearance: none; -moz-appearance: none; appearance: none; flex: 0 1 auto; min-width: 0; height: 40px; margin: 0;
-    padding: 0 28px 0 12px; border: 0; border-radius: 0; color: var(--plan-bar-text); font: 600 12.5px var(--body); text-overflow: ellipsis; cursor: pointer;
+    padding: 0 28px 0 12px; border: 0; border-radius: 0; color: var(--plan-bar-text); font: 600 .78125rem var(--body); text-overflow: ellipsis; cursor: pointer;
     background: transparent var(--plan-select-arrow) no-repeat right 10px center / 10px 6px
 }
 .plan-bar select:focus-visible { outline-offset: -3px }
 .plan-bar option { color: var(--plan-ink); background: var(--plan-sheet) }
-.plan-run { display: inline-flex; align-items: center; gap: 6px; flex: none; height: 28px; margin-inline: 4px 10px; padding: 0 12px; border: 0; border-radius: 4px; background: var(--plan-mark); color: var(--plan-ink); font: 700 12.5px var(--body); cursor: pointer }
+.plan-run { display: inline-flex; align-items: center; gap: 6px; flex: none; height: 28px; margin-inline: 4px 10px; padding: 0 12px; border: 0; border-radius: 4px; background: var(--plan-mark); color: var(--plan-ink); font: 700 .78125rem var(--body); cursor: pointer }
 .plan-run[aria-busy="true"] { background: var(--plan-mark-busy) }
-.plan-sheet { margin-left: auto; padding-right: 14px; font: 500 11.5px var(--mono); color: var(--plan-bar-muted); white-space: nowrap }
+.plan-sheet { margin-left: auto; padding-right: 14px; font: 500 .71875rem var(--mono); color: var(--plan-bar-muted); white-space: nowrap }
 .plan-card.heat .plan-rooms { fill: var(--plan-ink) }
-.plan-status { display: flex; align-items: center; gap: 10px; padding: 10px 14px 12px; font: 500 12px/1.4 var(--mono); color: var(--plan-muted); border-top: 1px solid var(--plan-line) }
+.plan-status { display: flex; align-items: center; gap: 10px; padding: 10px 14px 12px; font: 500 .75rem/1.4 var(--mono); color: var(--plan-muted); border-top: 1px solid var(--plan-line) }
 .plan-status b { color: var(--plan-ink) }
 .pulse { width: 8px; height: 8px; border-radius: 50%; background: var(--plan-mark); flex: none }
 .plan-status.running .pulse { animation: home-pulse 1s ease-in-out infinite }
@@ -92,7 +92,7 @@
 
 /* ---------- ticker: decoration only, still under reduced motion ---------- */
 .ticker { background: var(--charcoal); color: var(--cream); overflow: hidden; border-block: 1px solid var(--cream-08) }
-.ticker-track { display: flex; gap: 40px; padding: 14px 16px; width: max-content; font: 500 13.5px var(--mono); white-space: nowrap }
+.ticker-track { display: flex; gap: 40px; padding: 14px 16px; width: max-content; font: 500 .84375rem var(--mono); white-space: nowrap }
 .ticker-track.moving { animation: home-slide 60s linear infinite }
 .ticker-track span::before { content: "TapirCommand."; color: var(--ochre-light) }
 @keyframes home-slide { to { transform: translateX(-50%) } }
@@ -100,8 +100,8 @@
 /* ---------- the code sample ---------- */
 .try { display: grid; grid-template-columns: .8fr 1.2fr; gap: 40px; align-items: start }
 .try > * { min-width: 0 }
-.try .prose h2 { font-size: clamp(32px, 4.6vw, 56px) }
-.try .term pre { font-size: 12.5px }
+.try .prose h2 { font-size: clamp(2rem, 4.6vw, 3.5rem) }
+.try .term pre { font-size: .78125rem }
 
 @media (max-width: 900px) {
     .hero .wrap, .try { grid-template-columns: 1fr }
@@ -113,3 +113,57 @@
     .hero .wrap { padding-block: 40px 48px; gap: 36px }
     .plan-card { box-shadow: var(--shadow-plan-small) }
 }
+
+/* The Standard look (see the end of site.css): the hero is a page head (the subtle background, no
+   grid), the ticker a subtle band, and the floor plan a white sheet with the accent's tags, a slate
+   palette bar and the Property Highlighter in the accent's greens. The plan stays light in dark mode. */
+:root:not([data-style="legacy"]) {
+    --texture-hero: none;
+    --plan-sheet: #F7F8FA; --plan-paper: #FFFFFF; --plan-ink: #111827; --plan-muted: #4B5563;
+    --plan-focus: #1F6B4E; --plan-line: #E5E7EB;
+    --plan-bar: #0F172A; --plan-bar-text: #E2E8F0; --plan-bar-focus: #4CB88A;
+    --plan-bar-line: rgba(226, 232, 240, .2); --plan-bar-muted: #94A3B8;
+    --plan-mark: #1F6B4E; --plan-mark-busy: #164D38; --plan-mark-tint: rgba(31, 107, 78, .12);
+    --plan-label-text: #FFFFFF;
+    --plan-heat-low: #E3F1EA; --plan-heat-mid: #B5DCC8; --plan-heat-high: #7FBFA0;
+    --shadow-plan: 0 1px 2px rgba(17, 24, 39, .06), 0 8px 24px rgba(17, 24, 39, .08); --shadow-plan-small: var(--shadow-plan);
+    --font-plan-ui: var(--body);
+}
+:root:not([data-style="legacy"])[data-theme="dark"] { --shadow-plan: none }
+@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) { --shadow-plan: none } }
+:root:not([data-style="legacy"]) .hero { background-color: var(--subtle); color: var(--fg); border-bottom: 1px solid var(--line); --focus: var(--link) }
+:root:not([data-style="legacy"]) .hero .tagline, :root:not([data-style="legacy"]) .hero .meta a { color: var(--link) }
+:root:not([data-style="legacy"]) .hero h1 em { color: inherit }
+:root:not([data-style="legacy"]) .hero h1 { line-height: 1.02 }
+:root:not([data-style="legacy"]) .hero .lead, :root:not([data-style="legacy"]) .hero .meta { color: var(--muted) }
+:root:not([data-style="legacy"]) .hero .meta { font-family: var(--body); letter-spacing: normal; text-transform: none }
+:root:not([data-style="legacy"]) .plan-card { border-radius: var(--radius-card); border: 1px solid var(--line) }
+:root:not([data-style="legacy"]) .plan-bar { border-radius: 11px 11px 0 0 }
+:root:not([data-style="legacy"]) .plan-run { color: #FFFFFF; border-radius: var(--radius-control) }
+:root:not([data-style="legacy"]) .plan-sheet, :root:not([data-style="legacy"]) .plan-status { font-family: var(--body) }
+:root:not([data-style="legacy"]) .way .accent { fill: var(--accent-fill) }
+:root:not([data-style="legacy"]) .way .accent-line { stroke: var(--accent-fill) }
+:root:not([data-style="legacy"]) .ticker { background: var(--subtle); color: var(--fg); border-block-color: var(--line) }
+:root:not([data-style="legacy"]) .ticker-track span::before { color: var(--link) }
+
+/* The Display menu's Accent (see site.css): the floor plan's tags, its Run button and the Property
+   Highlighter's markers take the chosen accent. In Legacy --plan-mark is --ochre, which the accent
+   already replaces (a busy Run button turns the accent's light value, charcoal text on both); in
+   Standard the plan stays light in dark mode, so it takes the accent's light value in both modes. */
+:root[data-style="legacy"][data-accent] { --plan-mark-busy: var(--choice-legacy-light); --plan-mark-tint: var(--choice-legacy-tint) }
+:root:not([data-style="legacy"])[data-accent] {
+    --plan-focus: var(--choice-light); --plan-mark: var(--choice-light); --plan-mark-busy: var(--choice-light-hover);
+    --plan-mark-tint: var(--choice-light-12); --plan-bar-focus: var(--choice-dark) }
+/* High contrast: a white sheet in black ink, a black palette bar in white, the tags in the link blue
+   (white on it 7.8:1), and the Run button ringed in white so it stands out on the black bar. */
+:root:not([data-style="legacy"])[data-theme="contrast"] {
+    --plan-sheet: #FFFFFF; --plan-paper: #FFFFFF; --plan-ink: #000000; --plan-muted: #333333;
+    --plan-focus: #000000; --plan-line: #000000;
+    --plan-bar: #000000; --plan-bar-text: #FFFFFF; --plan-bar-focus: #FFFFFF; --plan-bar-line: #FFFFFF; --plan-bar-muted: #FFFFFF;
+    --plan-mark: #0B4FA8; --plan-mark-busy: #08387A; --plan-mark-tint: rgba(11, 79, 168, .12); --plan-label-text: #FFFFFF;
+    --shadow-plan: none; --shadow-plan-small: none }
+:root[data-theme="contrast"] .plan-run { box-shadow: 0 0 0 2px var(--plan-bar-text) }
+/* The Display menu's Font (see site.css): the plan's check and legend take the chosen font; with
+   System, its door numbers take the device's monospace too, so no web font is loaded. */
+:root[data-font] { --font-plan-ui: var(--body) }
+:root[data-font="system"] { --font-plan-tag: var(--mono) }

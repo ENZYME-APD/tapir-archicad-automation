@@ -7,9 +7,6 @@ command, so only the Archicad API calls inside Execute are left to write by hand
   * the constructor, GetName, GetInputParametersSchema, GetRawResponseSchema and
     an Execute skeleton (parameter parsing, per-item loop, error results, undo
     scope, Archicad version guard) in Sources/<file>.cpp
-  * the input and response schemas as named definitions, <Name>Parameters and
-    <Name>Response, in Sources/RFIX/Images/CommonSchemaDefinitions.json; the two
-    schema functions only refer to them (CLAUDE.md, *Schemas*)
   * the RegisterCommand call in AddOnMain.cpp, with the version from
     tools/package_info.json
   * a starter Python example, archicad-addon/Examples/<GroupFolder>/<CommandName>.py
@@ -33,9 +30,7 @@ Spec format (JSON list, or {"commands": [...]}), one object per command:
     "description": "Creates level dimensions. Available from Archicad 30.",
     "requires": 30,                        optional: Archicad version guard (ServerMainVers_3000)
     "undoable": true,                      optional: default true unless the name starts with Get
-    "commonSchema": true,                  optional, and only true: the command's schemas are
-                                           definitions in CommonSchemaDefinitions.json, which a
-                                           CommonSchema::NotUsed command cannot refer to
+    "commonSchema": true,                  optional: CommonSchema::Used (default) or NotUsed
     "version": "1.7.3",                    optional: defaults to tools/package_info.json
     "example": true,                       optional: write Examples/<GroupFolder>/<CommandName>.py (default true)
     "check": true,                         optional: write Test/checks/<snake_case>.json (default true)
@@ -465,26 +460,6 @@ def gen_execute (cmd, input_schema, output_schema, common):
     return '\n'.join (lines)
 
 
-def parameters_name (name):
-    return name + 'Parameters'
-
-
-def response_name (name):
-    return name + 'Response'
-
-
-def ref_literal (definition):
-    return schema_literal ({'$ref': '#/' + definition})
-
-
-def add_definitions (text, definitions):
-    """CommonSchemaDefinitions.json with the definitions appended, its existing text untouched."""
-    end = text.rstrip ().rstrip ('}').rstrip ()
-    added = ''.join (',\n    {}: {}'.format (json.dumps (name), json.dumps (schema, indent=4, ensure_ascii=False).replace ('\n', '\n    '))
-                     for name, schema in definitions.items ())
-    return end + added + '\n}\n'
-
-
 def gen_cpp (cmd, input_schema, output_schema, common):
     cls = cmd['name'] + 'Command'
     common_flag = 'Used' if cmd.get ('commonSchema', True) else 'NotUsed'
@@ -493,8 +468,8 @@ def gen_cpp (cmd, input_schema, output_schema, common):
         f'GS::String {cls}::GetName () const\n{{\n    return "{cmd["name"]}";\n}}',
     ]
     if input_schema:
-        parts.append (f'GS::Optional<GS::UniString> {cls}::GetInputParametersSchema () const\n{{\n    return R"({ref_literal (parameters_name (cmd["name"]))})";\n}}')
-    parts.append (f'GS::Optional<GS::UniString> {cls}::GetRawResponseSchema () const\n{{\n    return R"({ref_literal (response_name (cmd["name"]))})";\n}}')
+        parts.append (f'GS::Optional<GS::UniString> {cls}::GetInputParametersSchema () const\n{{\n    return R"({schema_literal (input_schema)})";\n}}')
+    parts.append (f'GS::Optional<GS::UniString> {cls}::GetRawResponseSchema () const\n{{\n    return R"({schema_literal (output_schema)})";\n}}')
     parts.append (gen_execute (cmd, input_schema, output_schema, common))
     return '\n\n'.join (parts) + '\n'
 
@@ -655,10 +630,6 @@ def validate (cmd, i):
         raise SpecError (f'{cmd["name"]}: the name must be CamelCase')
     if not re.fullmatch (r'[A-Za-z0-9]+', cmd['file']):
         raise SpecError (f'{cmd["name"]}: "file" is a Sources file name without extension, e.g. MEPCommands')
-    if cmd.get ('commonSchema', True) is not True:
-        # Its schemas are <Name>Parameters/<Name>Response definitions (CLAUDE.md, Schemas), and a
-        # CommonSchema::NotUsed command gets no definitions in Archicad, so its $refs would not resolve.
-        raise SpecError (f'{cmd["name"]}: "commonSchema": false is not possible, the schemas are common definitions')
 
 
 def load_spec (path):
@@ -690,10 +661,7 @@ def main ():
         if twice:
             raise SpecError (f'the spec has {join_names (twice)} more than once')
         version = json.loads (read (PACKAGE_INFO))['version']
-        common_path = os.path.join (SOURCES, 'RFIX', 'Images', 'CommonSchemaDefinitions.json')
-        common_text = read (common_path)
-        common = json.loads (common_text)
-        new_definitions = {}
+        common = json.loads (read (os.path.join (SOURCES, 'RFIX', 'Images', 'CommonSchemaDefinitions.json')))
         main_text = read (ADDON_MAIN)
         main_original = main_text
         all_sources = '\n'.join (read (os.path.join (SOURCES, f)) for f in os.listdir (SOURCES) if f.endswith ('.hpp'))
@@ -728,12 +696,6 @@ def main ():
                 else:
                     pending[cmd['file']] = ['#pragma once\n\n#include "CommandBase.hpp"\n',
                                             f'#include "{cmd["file"]}.hpp"\n', True]
-            for definition, schema in ((parameters_name (name), input_schema), (response_name (name), output_schema)):
-                if schema is None:
-                    continue
-                if definition in common or definition in new_definitions:
-                    raise SpecError (f'{name}: "{definition}" is already in CommonSchemaDefinitions.json')
-                new_definitions[definition] = schema
             entry = pending[cmd['file']]
             hpp_part, cpp_part = gen_hpp (cmd, input_schema), gen_cpp (cmd, input_schema, output_schema, common)
             entry[0] = entry[0].rstrip ('\n') + '\n\n' + hpp_part
@@ -779,10 +741,6 @@ def main ():
             write (os.path.join (SOURCES, file + '.cpp'), cpp, args.dry_run, 'source')
         if main_text != main_original:
             write (ADDON_MAIN, main_text, args.dry_run, 'registration')
-        if new_definitions:
-            if args.dry_run:
-                print ('===== CommonSchemaDefinitions.json (appended)\n' + json.dumps (new_definitions, indent=4, ensure_ascii=False))
-            write (common_path, add_definitions (common_text, new_definitions), args.dry_run, 'schema definitions')
 
         print (f'generated: {", ".join (written) or "nothing"}')
         if skipped:

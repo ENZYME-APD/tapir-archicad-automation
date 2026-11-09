@@ -9,12 +9,13 @@
 :root {
     --track: #E3DED3; --done: var(--moss); --merged: #5E7A64; --progress: #A3B8A7; --claimed: #A3B8A7;
     /* The stripes of a claimed item. A tile's lift and the drawer's shadow are site.css's
-       --shadow-lift-small and --shadow-drawer, which the command reference uses too. */
+       --shadow-lift-small and --shadow-drawer; the filter sheet's on phones is --shadow-sheet, which
+       the command reference's sidebar sheet uses too. */
     --stripes-claimed: repeating-linear-gradient(45deg, var(--claimed) 0 3px, var(--track) 3px 6px);
 }
 :root[data-theme="dark"] { --track: #3A4042; --done: #C7D6CA; --merged: #8EAA94; --progress: #557060; --claimed: #557060; }
 @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) { --track: #3A4042; --done: #C7D6CA; --merged: #8EAA94; --progress: #557060; --claimed: #557060; }
+    :root:not([data-theme="light"], [data-theme="contrast"]) { --track: #3A4042; --done: #C7D6CA; --merged: #8EAA94; --progress: #557060; --claimed: #557060; }
 }
 /* The filter bar and the sidebar stick to the top of the window, so the site header scrolls away. */
 .site-header { position: static }
@@ -27,8 +28,8 @@ button { font: inherit; color: inherit; cursor: pointer }
 
 /* Sidebar: section links, filters and every group. A drawer on narrow screens. */
 .layout { display: grid; grid-template-columns: 230px minmax(0, 1100px); justify-content: center }
-.sidebar { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding: 16px 8px 32px 16px; font-size: 14px; border-right: 1px solid var(--line) }
-.sidebar-title { font: 700 12px/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--link); margin: 18px 0 6px }
+.sidebar { position: sticky; top: 0; align-self: start; max-height: 100vh; overflow-y: auto; padding: 16px 8px 32px 16px; font-size: .875rem; border-right: 1px solid var(--line) }
+.sidebar-title { font: 700 .75rem/1.2 var(--mono); letter-spacing: .14em; text-transform: uppercase; color: var(--link); margin: 18px 0 6px }
 .sidebar-title:first-child { margin-top: 0 }
 .sidebar ul { list-style: none; padding: 0; margin: 0 }
 .sidebar-link { display: flex; justify-content: space-between; gap: 8px; width: 100%; padding: 3px 8px; border: 0; border-radius: 4px; background: none; color: inherit; text-align: left; text-decoration: none; font: inherit }
@@ -36,21 +37,21 @@ button { font: inherit; color: inherit; cursor: pointer }
 .sidebar-link[aria-current] { background: var(--badge); font-weight: 700; box-shadow: inset 2px 0 0 var(--link) }
 .sidebar-link .count { color: var(--muted); font-variant-numeric: tabular-nums }
 .options { display: flex; flex-wrap: wrap; gap: 4px }
-.option { font: 600 13px var(--body); background: transparent; color: var(--fg); border: 1px solid var(--border-strong); border-radius: 999px; padding: 2px 10px }
+.option { font: 600 .8125rem var(--body); background: transparent; color: var(--fg); border: 1px solid var(--border-strong); border-radius: 999px; padding: 2px 10px }
 .option:hover { background: var(--badge) }
 .option[aria-pressed="true"] { background: var(--fg); border-color: var(--fg); color: var(--bg) }
 .sections-button, .filters-button, .sheet-done { display: none }
 
 /* Headline */
 .hero { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 16px 24px; align-items: center }
-.hero-number { font: 900 56px/1 var(--display); letter-spacing: -.02em; font-variant-numeric: tabular-nums }
+.hero-number { font: 900 3.5rem/1 var(--display); letter-spacing: -.02em; font-variant-numeric: tabular-nums }
 .hero-caption { color: var(--muted); margin-top: 6px }
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(112px, 1fr)); gap: 8px }
 .tile { text-align: left; background: var(--surface); color: var(--fg); border: 1.5px solid var(--fg); border-radius: 4px; padding: 8px 10px; transition: transform .15s ease, box-shadow .15s ease }
 .tile:hover { transform: translate(-2px, -2px); box-shadow: var(--shadow-lift-small) }
 .tile[aria-pressed="true"] { box-shadow: var(--shadow-lift-small); background: var(--badge) }
-.tile .value { display: flex; align-items: center; gap: 8px; font: 700 24px/1.2 var(--display); font-variant-numeric: tabular-nums }
-.tile .label { display: block; font-size: 13px; color: var(--muted) }
+.tile .value { display: flex; align-items: center; gap: 8px; font: 700 1.5rem/1.2 var(--display); font-variant-numeric: tabular-nums }
+.tile .label { display: block; font-size: .8125rem; color: var(--muted) }
 
 /* Stacked progress bars: 2px surface gaps between segments, rounded ends. */
 .bar { display: flex; gap: 2px; height: 10px; border-radius: 4px; overflow: hidden; background: var(--bg); min-width: 60px }
@@ -77,24 +78,24 @@ button { font: inherit; color: inherit; cursor: pointer }
 .swatch.p-partial { background: transparent; box-shadow: inset 0 0 0 1.5px var(--ochre) }
 .pill.status { display: inline-flex; align-items: center; gap: 6px; vertical-align: 1px }
 ul.items .pill.status { min-width: 6.4em }
-.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted) }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: .8125rem; color: var(--muted) }
 .legend > span { display: inline-flex; align-items: center; gap: 6px }
 
 /* Overview tables */
 .scroll { overflow-x: auto }
 main table { border-collapse: collapse; width: 100% }
 main th, main td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); vertical-align: middle }
-main th { font: 700 11.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
+main th { font: 700 .71875rem var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
 td.num, th.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums }
 td.barcell { width: 40%; min-width: 120px }
-td .sub { display: block; font-size: 12px; color: var(--muted) }
+td .sub { display: block; font-size: .75rem; color: var(--muted) }
 .linkbutton { display: inline-flex; align-items: center; gap: 6px; background: none; border: 0; padding: 0; color: var(--link); text-align: left; text-decoration: underline; text-underline-offset: 3px }
 .linkbutton:hover { color: var(--link-hover) }
-.table-actions { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin: 8px 0; font-size: 14px }
+.table-actions { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; margin: 8px 0; font-size: .875rem }
 
 /* Sticky filters */
 .toolbar { position: sticky; top: 0; z-index: 2; background: var(--bg); border-bottom: 1px solid var(--line); padding: 10px 0; display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
-.toolbar input, .toolbar .sections-button, .toolbar .filters-button { font: 500 14px var(--body); color: var(--fg); background: var(--surface); border: 1.5px solid var(--fg); border-radius: 999px; padding: 5px 14px }
+.toolbar input, .toolbar .sections-button, .toolbar .filters-button { font: 500 .875rem var(--body); color: var(--fg); background: var(--surface); border: 1.5px solid var(--fg); border-radius: 999px; padding: 5px 14px }
 .toolbar input::placeholder { color: var(--muted); opacity: 1 }
 .toolbar input[type=search] { flex: 1 1 220px; min-width: 0 }
 /* The status filters: a line saying what they do, then one chip per status with its swatch, name and
@@ -102,7 +103,7 @@ td .sub { display: block; font-size: 12px; color: var(--muted) }
    is outlined, empty and struck through, so the state never depends on colour alone. */
 .chip-filter { flex: 1 1 100%; display: flex; flex-direction: column; gap: 4px; min-width: 0 }
 .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 8px }
-.chips-title { font-size: 13px; font-weight: 600; color: var(--muted) }
+.chips-title { font-size: .8125rem; font-weight: 600; color: var(--muted) }
 .chips { display: flex; flex-wrap: wrap; gap: 6px }
 .toolbar .chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; max-width: 100%; text-align: left }
 .toolbar .chip::before { content: ''; flex: none; width: 1em; text-align: center; font-weight: 700 }
@@ -114,19 +115,19 @@ td .sub { display: block; font-size: 12px; color: var(--muted) }
 .toolbar .chip[aria-pressed="false"] { background: transparent; border-color: var(--border-strong); color: var(--muted) }
 .toolbar .chip[aria-pressed="false"]:hover { background: var(--badge) }
 .toolbar .chip[aria-pressed="false"] .chip-label { text-decoration: line-through }
-.filter-status { font-size: 14px; color: var(--muted) }
-.filter-status button { margin-left: 6px; font: 600 13px var(--body); background: var(--badge); color: var(--fg); border: 1px solid var(--border-strong); border-radius: 999px; padding: 1px 10px }
+.filter-status { font-size: .875rem; color: var(--muted) }
+.filter-status button { margin-left: 6px; font: 600 .8125rem var(--body); background: var(--badge); color: var(--fg); border: 1px solid var(--border-strong); border-radius: 999px; padding: 1px 10px }
 
 /* Checklist */
 details.group { border-bottom: 1px solid var(--line); scroll-margin-top: calc(var(--toolbar-height, 60px) + 8px) }
 details.group > summary { cursor: pointer; padding: 8px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px }
 details.group > summary .name { font-weight: 600 }
-details.group > summary .counts { font-size: 13px; color: var(--muted) }
+details.group > summary .counts { font-size: .8125rem; color: var(--muted) }
 details.group > summary .bar { flex: 1 1 160px; max-width: 320px; margin-left: auto }
 ul.items { list-style: none; padding: 0 0 10px 0; margin: 0 }
 ul.items li { padding: 3px 0; overflow-wrap: anywhere }
-.tag { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--muted) }
-ul.items li .detail { display: block; padding-left: 1.6em; font-size: 13.5px; color: var(--muted) }
+.tag { display: inline-flex; align-items: center; gap: 6px; font-size: .78125rem; color: var(--muted) }
+ul.items li .detail { display: block; padding-left: 1.6em; font-size: .84375rem; color: var(--muted) }
 
 @media (max-width: 1100px) {
     .layout { display: block }
@@ -137,7 +138,7 @@ ul.items li .detail { display: block; padding-left: 1.6em; font-size: 13.5px; co
 }
 @media (max-width: 640px) {
     .hero { grid-template-columns: 1fr }
-    .hero-number { font-size: 44px }
+    .hero-number { font-size: 2.75rem }
     td.barcell { width: 30%; min-width: 80px }
     .toolbar .chip { padding: 4px 10px; gap: 5px }
     details.group > summary .bar { flex-basis: 100%; max-width: none; margin-left: 0 }
@@ -149,14 +150,46 @@ ul.items li .detail { display: block; padding-left: 1.6em; font-size: 13.5px; co
     .toolbar input[type=search] { flex: 1 1 0; padding: 5px 10px }
     .chip-filter { position: fixed; z-index: 4; left: 0; right: 0; bottom: 0; max-height: 80vh; overflow-y: auto; overscroll-behavior: contain; gap: 12px;
         padding: 14px max(16px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
-        background: var(--bg); border-top: 1.5px solid var(--fg); border-radius: 12px 12px 0 0; box-shadow: 0 -6px 24px rgba(0, 0, 0, .3);
+        background: var(--bg); border-top: 1.5px solid var(--fg); border-radius: 12px 12px 0 0; box-shadow: var(--shadow-sheet);
         transform: translateY(105%); visibility: hidden; transition: transform .2s, visibility .2s }
     body.filters-open .chip-filter { transform: none; visibility: visible }
-    .chips-title { font-size: 14px; color: var(--fg) }
-    .sheet-done { display: inline-block; flex: none; font: 600 14px var(--body); background: var(--fg); color: var(--bg); border: 1.5px solid var(--fg); border-radius: 999px; padding: 5px 18px }
+    .chips-title { font-size: .875rem; color: var(--fg) }
+    .sheet-done { display: inline-block; flex: none; font: 600 .875rem var(--body); background: var(--fg); color: var(--bg); border: 1.5px solid var(--fg); border-radius: 999px; padding: 5px 18px }
     main > .filter-status { display: block; padding: 10px 0 4px }
 }
+/* Less motion: Motion Reduced, or System under prefers-reduced-motion (see site.css). */
 @media (prefers-reduced-motion: reduce) {
-    .tile:hover { transform: none }
-    .chip-filter { transition: none }
+    :root:not([data-motion="full"]) .tile:hover { transform: none }
+    :root:not([data-motion="full"]) .chip-filter { transition: none }
 }
+:root[data-motion="reduced"] .tile:hover { transform: none }
+:root[data-motion="reduced"] .chip-filter { transition: none }
+/* The Display menu's Spacing Compact (data-spacing on <html>, see site.css): the checklist's groups and
+   items about 30 % shorter, nothing else. */
+:root[data-spacing="compact"] details.group > summary { padding-top: 5px; padding-bottom: 5px }
+:root[data-spacing="compact"] ul.items { padding-bottom: 7px }
+:root[data-spacing="compact"] ul.items li { padding-top: 2px; padding-bottom: 2px }
+
+/* The Standard look (see the end of site.css): the progress ramp in the accent's green, light lines,
+   8 px corners on the filters and 12 px on the tiles, labels in normal case. */
+:root:not([data-style="legacy"]) { --track: #E5E7EB; --done: #1F6B4E; --merged: #4F9A7A; --progress: #A7D3BF; --claimed: #A7D3BF }
+:root:not([data-style="legacy"])[data-theme="dark"] { --track: #232B36; --done: #4CB88A; --merged: #2F7D5C; --progress: #1E4D3A; --claimed: #1E4D3A }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) { --track: #232B36; --done: #4CB88A; --merged: #2F7D5C; --progress: #1E4D3A; --claimed: #1E4D3A }
+}
+/* High contrast (see site.css): the ramp in greys, black the strongest step. */
+:root:not([data-style="legacy"])[data-theme="contrast"] { --track: #D9D9D9; --done: #000000; --merged: #595959; --progress: #A6A6A6; --claimed: #A6A6A6 }
+:root:not([data-style="legacy"]) .sidebar-title, :root:not([data-style="legacy"]) main th {
+    font-family: var(--body); font-weight: 600; letter-spacing: normal; text-transform: none }
+:root:not([data-style="legacy"]) .sidebar-link, :root:not([data-style="legacy"]) .option { border-radius: var(--radius-control) }
+:root:not([data-style="legacy"]) .option[aria-pressed="true"] { background: var(--accent-fill); border-color: var(--accent-fill); color: var(--on-accent) }
+:root:not([data-style="legacy"]) .tile { border: 1px solid var(--line); border-radius: var(--radius-card) }
+/* The status chips keep their tint when pressed (site.css's Standard part fills other chips with the
+   accent), so the swatch in them, which can be the accent's green, stays visible. */
+:root:not([data-style="legacy"]) .toolbar .chip[aria-pressed="true"] { background: var(--badge); border-color: var(--link); color: var(--fg) }
+:root:not([data-style="legacy"]) .toolbar input, :root:not([data-style="legacy"]) .toolbar .sections-button,
+:root:not([data-style="legacy"]) .toolbar .filters-button,
+:root:not([data-style="legacy"]) .filter-status button { border: 1px solid var(--border-strong); border-radius: var(--radius-control) }
+/* All parameters is --done; the JSON and partial marks take the ramp's lighter step, so they still differ. */
+:root:not([data-style="legacy"]) .swatch.p-json { background: var(--merged) }
+:root:not([data-style="legacy"]) .swatch.p-partial { box-shadow: inset 0 0 0 1.5px var(--merged) }

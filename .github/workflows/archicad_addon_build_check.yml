@@ -41,10 +41,6 @@ jobs:
       uses: actions/checkout@v4
     - name: Generate the docs
       run: python3 tools/generate_addon_docs.py
-    # Every command schema is a named definition in CommonSchemaDefinitions.json
-    # (CLAUDE.md, Schemas); the ones still inline are in tools/inline_schemas_baseline.json.
-    - name: Check the schemas
-      run: python3 tools/check_schemas.py
     # One example per command, at archicad-addon/Examples/<Group>/<CommandName>.py;
     # the docs show it in the command's Example popdown.
     - name: Check the examples

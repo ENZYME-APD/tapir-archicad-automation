@@ -5,16 +5,16 @@
 #builtin-scripts { margin-bottom: 40px }
 
 /* The schedule's filters */
-.script-search { flex: 1 1 320px; max-width: 520px; padding: 9px 16px; font-size: 14.5px }
+.script-search { flex: 1 1 320px; max-width: 520px; padding: 9px 16px; font-size: .90625rem }
 .script-search:hover { background: transparent }
 #version-chips { margin-top: -4px }
 /* The Filters button and the applied filters, only below 720 px wide; wider, the chips show as they are. */
 .filters-toggle, .active-filters { display: none }
 .filters-toggle { white-space: nowrap; flex: none }
 .filters-toggle[aria-expanded="true"] { background: var(--fg); color: var(--bg) }
-.active-filter { display: inline-flex; align-items: center; gap: 6px; background: var(--fg); color: var(--bg); padding: 4px 10px 4px 12px; font-size: 12.5px }
+.active-filter { display: inline-flex; align-items: center; gap: 6px; background: var(--fg); color: var(--bg); padding: 4px 10px 4px 12px; font-size: .78125rem }
 .active-filter:hover { background: var(--fg); opacity: .85 }
-.active-filter span { font-size: 15px; line-height: 1 }
+.active-filter span { font-size: .9375rem; line-height: 1 }
 @media (max-width: 719.98px) {
     .filters-toggle { display: inline-block }
     .active-filters { display: flex; margin-top: -6px }
@@ -22,23 +22,23 @@
     .filters-panel { display: none }
     .filters-panel.open { display: block }
 }
-.script-count { margin: 4px 0 14px; color: var(--muted); font-size: 14.5px }
+.script-count { margin: 4px 0 14px; color: var(--muted); font-size: .90625rem }
 .schedule .cell-script { min-width: 240px }
 
 /* One script */
-.detail h2 { font-size: 34px; margin-bottom: 12px }
+.detail h2 { font-size: 2.125rem; margin-bottom: 12px }
 .script-section + .script-section { margin-top: 12px }
 /* minmax(0, 1fr): without it a grid column is as wide as its widest child (a long line of code
    or a table), and so is every paragraph of the README, and the page scrolls sideways. */
 .readme { max-width: 46em; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; overflow-wrap: anywhere }
 .readme p, .readme li { color: var(--muted) }
 .readme h3 { margin-top: 12px }
-.readme h4, .readme h5, .readme h6 { margin-top: 8px; font-size: 17px }
+.readme h4, .readme h5, .readme h6 { margin-top: 8px; font-size: 1.0625rem }
 .readme ul, .readme ol { padding-left: 22px; margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px }
 .readme img { max-width: 100%; height: auto }
 .readme pre { overflow-wrap: normal }
 /* README tables look like the schedule, and become one card per row on phones. */
-.readme .readme-table { font-size: 14px }
+.readme .readme-table { font-size: .875rem }
 .readme .readme-table th { white-space: nowrap }
 .readme .readme-table td { padding: 10px 16px; overflow-wrap: break-word }
 .readme .readme-table td:first-child { font-weight: 600 }
@@ -49,7 +49,7 @@
     .readme .readme-table tr { padding: 12px 16px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px }
     .readme .readme-table tbody tr:last-child { border-bottom: 0 }
     .readme .readme-table td { padding: 0; border: 0; min-width: 0 }
-    .readme .readme-table td[data-label]::before { content: attr(data-label); display: block; font: 700 10.5px/1.6 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
+    .readme .readme-table td[data-label]::before { content: attr(data-label); display: block; font: 700 .65625rem/1.6 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
 }
 .screenshots { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px }
 .screenshots a { display: block; border: 1.5px solid var(--fg); border-radius: 4px; overflow: hidden; background: var(--surface) }
@@ -58,8 +58,23 @@
 .script-versions { list-style: none; margin: 0; padding: 0; border: 1.5px solid var(--fg); background: var(--surface) }
 .script-versions li { padding: 14px 16px; border-bottom: 1px solid var(--line) }
 .script-versions li:last-child { border-bottom: 0 }
-.script-versions .version-head { font: 700 17px/1.3 var(--display) }
+.script-versions .version-head { font: 700 1.0625rem/1.3 var(--display) }
 .script-versions .version-changelog { margin-top: 4px; color: var(--muted) }
 .script-section .term pre { max-height: 560px }
-.spec .install ol { font-size: 14px }
+.spec .install ol { font-size: .875rem }
 .spec .install #detail-report { font-weight: 700 }
+
+/* The Standard look (see the end of site.css): light lines and 12 px corners, labels in normal case. */
+:root:not([data-style="legacy"]) .screenshots a, :root:not([data-style="legacy"]) .script-versions { border: 1px solid var(--line); border-radius: var(--radius-card) }
+:root:not([data-style="legacy"]) .script-versions { overflow: hidden }
+:root:not([data-style="legacy"]) .filters-toggle[aria-expanded="true"], :root:not([data-style="legacy"]) .active-filter,
+:root:not([data-style="legacy"]) .active-filter:hover { background: var(--accent-fill); border-color: var(--accent-fill); color: var(--on-accent) }
+:root:not([data-style="legacy"]) .readme .readme-table td[data-label]::before { font-family: var(--body); font-weight: 600; letter-spacing: normal; text-transform: none }
+
+/* The Display menu's Spacing Compact (see the end of ../assets/site.css): the schedule's rows about
+   30 % shorter, on phones its cards. A README's tables keep their spacing. */
+:root[data-spacing="compact"] .schedule:not(.readme-table) td { padding-top: 10px; padding-bottom: 10px }
+@media (max-width: 640px) {
+    :root[data-spacing="compact"] .schedule:not(.readme-table) td { padding: 0 }
+    :root[data-spacing="compact"] .schedule:not(.readme-table) tr { padding-top: 10px; padding-bottom: 10px }
+}
