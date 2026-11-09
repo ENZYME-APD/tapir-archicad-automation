@@ -1842,11 +1842,9 @@ void DecomposeHotlinkTransformation (const API_Tranmat& transformation, API_Coor
 
 GSErrCode GetElementId (const API_Guid& elementGuid, GS::UniString& id)
 {
-#ifdef ServerMainVers_2700
     if (ACAPI_Element_GetElementInfoString (&elementGuid, &id) == NoError) {
         return NoError;
     }
-#endif
     API_ElementMemo memo = {};
     const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
     const GSErrCode err = ACAPI_Element_GetMemo (elementGuid, &memo, APIMemoMask_ElemInfoString);
@@ -1859,25 +1857,10 @@ GSErrCode GetElementId (const API_Guid& elementGuid, GS::UniString& id)
 
 GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id)
 {
-    GSErrCode err = NoError;
-#ifdef ServerMainVers_2700
-    // The function Archicad has for it from Archicad 27. The memo part written below
-    // answers NoError on polylines and splines and leaves their ID empty (#2470).
-    err = ACAPI_Element_ChangeElementInfoString (&elementGuid, &id);
-#else
-    {
-        // Only the info string part of the memo is filled and masked, so nothing else of the
-        // element is touched. ACAPI_DisposeElemMemoHdls deletes elemInfoString, the same way
-        // it frees the one ACAPI_Element_GetMemo allocates in GetDetailsOfElements.
-        API_ElementMemo memo = {};
-        const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-        memo.elemInfoString = new GS::UniString (id);
-
-        // ACAPI_Element_ChangeMemo takes the guid by non-const reference.
-        API_Guid guid = elementGuid;
-        err = ACAPI_Element_ChangeMemo (guid, APIMemoMask_ElemInfoString, &memo);
-    }
-#endif
+    // Not the elemInfoString memo part: writing it answers NoError on polylines and
+    // splines and leaves their ID empty (#2470). Before Archicad 27 MigrationHelper.hpp
+    // calls APIDb_ChangeElementInfoStringID.
+    const GSErrCode err = ACAPI_Element_ChangeElementInfoString (&elementGuid, &id);
     if (err != NoError) {
         return err;
     }

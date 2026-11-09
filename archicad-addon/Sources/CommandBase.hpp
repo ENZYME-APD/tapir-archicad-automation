@@ -428,12 +428,12 @@ bool DoesElementExist (const API_Guid& elementGuid, API_ElemTypeID expectedTypeI
 GSErrCode GetLayerChangeError (const API_AttributeIndex& layer, GS::UniString& reason);
 
 // Reads the Element ID of an element, the "id" of GetDetailsOfElements: with
-// ACAPI_Element_GetElementInfoString from Archicad 27, else (or when that fails) the
-// elemInfoString memo part. Defined in CommandBase.cpp.
+// ACAPI_Element_GetElementInfoString, or the elemInfoString memo part when that fails.
+// Defined in CommandBase.cpp.
 GSErrCode GetElementId (const API_Guid& elementGuid, GS::UniString& id);
 
-// Writes the Element ID of an existing element (ACAPI_Element_ChangeElementInfoString from
-// Archicad 27, the elemInfoString memo part before) and reads it back with GetElementId:
+// Writes the Element ID of an existing element with ACAPI_Element_ChangeElementInfoString
+// (APIDb_ChangeElementInfoStringID before Archicad 27) and reads it back with GetElementId:
 // APIERR_REFUSEDPAR when Archicad did not keep it. Must be called inside an undoable
 // command. Defined in CommandBase.cpp.
 GSErrCode ChangeElementId (const API_Guid& elementGuid, const GS::UniString& id);
