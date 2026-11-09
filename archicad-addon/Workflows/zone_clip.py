@@ -4,7 +4,8 @@ zone_clip.py
 1. Gets all zones (polygonOutline) and walls (floorPlanPolygons + geometric corners)
 2. Keeps walls adjacent to any zone (5 cm buffer)
 3. Computes a convex hull enclosing all zones + adjacent walls (model space)
-4. Transforms it to layout space using the Drawing's pos/angle/drawingScale/modelOffset
+4. Transforms it to layout space using the Drawing's offset/angle/ratio/drawingScale/modelOffset
+   and its source view's own rotation
 5. Applies it as a clipPolygon to the first Drawing found on a layout
 """
 
@@ -74,14 +75,25 @@ def wall_geometry_corners(details):
     ]
 
 
-def model_to_layout(mx, my, pos, angle, drawing_scale, model_offset):
-    """Transform a model-space coordinate to layout space."""
-    dx = (mx - model_offset["x"]) * drawing_scale
-    dy = (my - model_offset["y"]) * drawing_scale
-    cos_a = math.cos(angle)
-    sin_a = math.sin(angle)
-    lx = pos["x"] + dx * cos_a - dy * sin_a
-    ly = pos["y"] + dx * sin_a + dy * cos_a
+def model_to_layout(mx, my, offset, angle, view_rotation, drawing_scale, ratio, model_offset):
+    """Transform a model-space coordinate to layout space: paper = offset + drawingScale *
+    ratio * R(angle + viewRotation) * (model + modelOffset).
+
+    Uses `offset` (API_DrawingType::offset, read-only), not `pos`: `offset` is always where the
+    source view's model origin lands on the layout, regardless of anchorPoint/
+    useOwnOriginAsAnchor, whereas `pos` only equals that for a clipped drawing (isCutWithFrame)
+    and otherwise depends on the anchor. `ratio` (the scale applied relative to the source view)
+    and the source view's own rotation (`viewRotation`, from GetViewSettings) are folded into
+    the same rotation/scale as the drawing's own `angle` - both previously ignored here, which
+    left a residual error on any Drawing placed from a view at non-1.0 ratio or a rotated view.
+    """
+    dx = (mx + model_offset["x"]) * drawing_scale * ratio
+    dy = (my + model_offset["y"]) * drawing_scale * ratio
+    total_angle = angle + view_rotation
+    cos_a = math.cos(total_angle)
+    sin_a = math.sin(total_angle)
+    lx = offset["x"] + dx * cos_a - dy * sin_a
+    ly = offset["y"] + dx * sin_a + dy * cos_a
     return {"x": lx, "y": ly}
 
 
@@ -237,28 +249,49 @@ lb = aclib.RunCommand("API.GetNavigatorItemTree", {"navigatorTreeId": {"type": "
 layouts = list(find_by_type(lb["navigatorTree"]["rootItem"]["children"], "LayoutItem"))
 assert layouts, "No layout found"
 
-layout_ids = [{"navigatorItemId": l["navigatorItemId"]} for l in layouts]
-databases = run("GetDatabaseIdFromNavigatorItemId", {"navigatorItemIds": layout_ids})["databases"]
-
-drawings = run("GetElementsByType", {"elementType": "Drawing", "databases": databases}).get("elements", [])
-assert drawings, "No Drawing element found on layouts"
-drawing = drawings[0]
+# Take the first layout that actually has a Drawing on it (not just the first layout), so the
+# DrawingItem lookup below (name-matched within THIS layout's own subtree) stays unambiguous.
+drawing = None
+drawing_item = None
+for layout in layouts:
+    database = run("GetDatabaseIdFromNavigatorItemId", {"navigatorItemIds": [
+        {"navigatorItemId": layout["navigatorItemId"]}]})["databases"][0]
+    candidates = run("GetElementsByType", {"elementType": "Drawing", "databases": [database]}).get("elements", [])
+    if not candidates:
+        continue
+    drawing = candidates[0]
+    drawing_items = list(find_by_type(layout.get("children", []), "DrawingItem"))
+    drawing_dets_peek = run("GetDetailsOfElements", {"elements": [drawing]})["detailsOfElements"][0]["details"]
+    drawing_name = drawing_dets_peek.get("customName") or drawing_items[0]["name"] if drawing_items else None
+    drawing_item = next((di for di in drawing_items if di["name"] == drawing_name), drawing_items[0] if drawing_items else None)
+    break
+assert drawing is not None, "No Drawing element found on layouts"
+assert drawing_item is not None, "Could not find the Drawing's own item in the Layout Book tree"
 print("    Drawing elementId: %s" % drawing["elementId"])
 
 drawing_dets = run("GetDetailsOfElements", {"elements": [drawing]})["detailsOfElements"][0]["details"]
-pos           = drawing_dets["pos"]
+offset        = drawing_dets["offset"]
 angle         = drawing_dets.get("angle") or 0.0
+ratio         = drawing_dets.get("ratio") or 1.0
 drawing_scale = drawing_dets.get("drawingScale") or 0.01
 model_offset  = drawing_dets.get("modelOffset") or {"x": 0.0, "y": 0.0}
 
-print("    pos=%s  angle=%.4f  drawingScale=%s  modelOffset=%s" % (pos, angle, drawing_scale, model_offset))
+# The source view's own rotation (API_NavigatorView.tr, exposed as `rotation`) is not part of
+# the Drawing itself, but model_to_layout needs it added to the Drawing's own `angle`.
+source_nav_id = drawing_item.get("sourceNavigatorItemId")
+assert source_nav_id, "The Drawing's Layout Book item has no sourceNavigatorItemId"
+view_settings = run("GetViewSettings", {"navigatorItemIds": [{"navigatorItemId": source_nav_id}]})
+view_rotation = (view_settings.get("viewSettings") or [{}])[0].get("rotation") or 0.0
+
+print("    offset=%s  angle=%.4f  viewRotation=%.4f  ratio=%s  drawingScale=%s  modelOffset=%s" % (
+    offset, angle, view_rotation, ratio, drawing_scale, model_offset))
 
 # ---------------------------------------------------------------------------
 # 5. Transform convex hull to layout space
 # ---------------------------------------------------------------------------
 
 clip_polygon = [
-    model_to_layout(mx, my, pos, angle, drawing_scale, model_offset)
+    model_to_layout(mx, my, offset, angle, view_rotation, drawing_scale, ratio, model_offset)
     for mx, my in hull_coords_model
 ]
 
