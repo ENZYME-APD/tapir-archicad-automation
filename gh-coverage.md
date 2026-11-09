@@ -4,14 +4,14 @@ Every JSON command of the Tapir Add-On, whether a Grasshopper component calls it
 
 **788 of 788** applicable Tapir commands have a Grasshopper component (100 %): ✅ 788 done, ➖ 1 not applicable.
 
-Parameters of the 788 used commands: 🟢 747 every parameter has an input, 🟡 37 the rest through a JSON input, 🟠 4 some parameters missing.
+Parameters of the 788 used commands: 🟢 746 every parameter has an input, 🟡 38 the rest through a JSON input, 🟠 4 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Application Commands | 100 % | 42 | 42 |  |  |  |  |  |  | 42 |  |  |
 | Project Commands | 100 % | 66 | 66 |  |  |  |  |  |  | 66 |  |  |
 | Custom Data Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
-| Element Commands | 100 % | 174 | 174 |  |  |  |  |  |  | 150 | 24 |  |
+| Element Commands | 100 % | 174 | 174 |  |  |  |  |  |  | 149 | 25 |  |
 | Element grouping Commands | 100 % | 15 | 15 |  |  |  |  |  |  | 15 |  |  |
 | Favorites Commands | 100 % | 27 | 27 |  |  |  |  |  |  | 27 |  |  |
 | Property Commands | 100 % | 31 | 31 |  |  |  |  |  |  | 31 |  |  |
@@ -34,7 +34,7 @@ Parameters of the 788 used commands: 🟢 747 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 12 | 12 |  |  |  |  |  |  | 12 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-09 16:15 UTC.
+Updated 2026-11-09 16:58 UTC.
 
 | | Status |
 |---|---|
@@ -327,7 +327,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `ModifyRoofs` 🟡 20/29 parameters – `ModifyRoofsComponent`, `RoofsComponent`<br><sub>no input: `roofsWithDetails.bottomMaterial`, `roofsWithDetails.cutBodyType`, `roofsWithDetails.edgeSideMaterials`, `roofsWithDetails.edgeTrims`, `roofsWithDetails.edgeTrims.trimType`, `roofsWithDetails.materialsChained`, `roofsWithDetails.pivotEdges.levels.angleType`, `roofsWithDetails.sideMaterial`, `roofsWithDetails.topMaterial`</sub>
 - ✅ `ModifyShells` 🟡 7/8 parameters – `ModifyShellsComponent`<br><sub>no input: `shellsWithDetails.cutBodyType`</sub>
 - ✅ `ModifyMeshes` 🟢 3/3 parameters – `MeshesComponent`, `ModifyMeshesComponent`
-- ✅ `ModifyRailings` 🟢 9/9 parameters – `RailingsComponent`
+- ✅ `ModifyRailings` 🟡 11/17 parameters – `RailingsComponent`<br><sub>no input: `railingsWithDetails.nodes`, `railingsWithDetails.nodes.postOffset`, `railingsWithDetails.nodes.unifyPatterns`, `railingsWithDetails.segments`, `railingsWithDetails.segments.index`, `railingsWithDetails.segments.lateralOffset`</sub>
 - ✅ `ModifyObjects` 🟢 24/24 parameters – `ModifyObjectsComponent`, `ObjectsComponent`
 - ✅ `ModifyLamps` 🟢 26/26 parameters – `LampsComponent`, `ModifyLampsComponent`
 - ✅ `ModifyTexts` 🟢 8/8 parameters – `ModifyTextsComponent`, `TextsComponent`

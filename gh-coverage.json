@@ -1,12 +1,12 @@
 {
- "generatedAt": "2026-11-09 16:15 UTC",
+ "generatedAt": "2026-11-09 16:58 UTC",
  "counts": {
   "done": 788,
   "not applicable": 1
  },
  "parameters": {
-  "all": 747,
-  "json": 37,
+  "all": 746,
+  "json": 38,
   "partial": 4
  },
  "items": [
@@ -7590,7 +7590,7 @@
    "id": "ModifyRailings",
    "group": "Element Commands",
    "version": "2.0.0",
-   "brief": "Modifies Railing elements in place: the height of their segments, the bottom offset, the home story, the story visibility (visibility, isAutoOnStoryVisibility; Archicad 29 does not let the automatic story visibility be turned off) and the pens of the reference line and the contour. The reference line, the nodes and segments, and the posts, rails and panels stay as they are. Each railing is read back once the change is done, and a value Archicad did not apply gets a failed execution result.",
+   "brief": "Modifies Railing elements in place: the height of all their segments, the bottom offset, the home story, the story visibility (visibility, isAutoOnStoryVisibility; Archicad 29 does not let the automatic story visibility be turned off), the pens of the reference line and the contour, and single segments (height, lateral offset) and nodes (post offset, elevation, whether the pattern continues across the node) by their index in the segments and nodes GetDetailsOfElements returns. The reference line, the other segments and nodes, the posts, rails and panels and the railing's GUID stay as they are. Each railing is read back once the change is done, and a value Archicad did not apply gets a failed execution result.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7599,8 +7599,8 @@
      "path": "Components/DesignToolsComponents/RailingsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 9,
+   "parameters": "json",
+   "parameterCount": 17,
    "coveredParameters": [
     "railingsWithDetails",
     "railingsWithDetails.bottomOffset",
@@ -7609,10 +7609,19 @@
     "railingsWithDetails.floorIndex",
     "railingsWithDetails.height",
     "railingsWithDetails.isAutoOnStoryVisibility",
+    "railingsWithDetails.nodes.elevation",
     "railingsWithDetails.referenceLinePen",
+    "railingsWithDetails.segments.referenceLineLocation",
     "railingsWithDetails.visibility"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "railingsWithDetails.nodes",
+    "railingsWithDetails.nodes.postOffset",
+    "railingsWithDetails.nodes.unifyPatterns",
+    "railingsWithDetails.segments",
+    "railingsWithDetails.segments.index",
+    "railingsWithDetails.segments.lateralOffset"
+   ],
    "pullRequests": [],
    "issues": []
   },
