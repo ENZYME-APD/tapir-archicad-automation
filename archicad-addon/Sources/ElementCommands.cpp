@@ -2631,6 +2631,32 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("wrapping", elem.column.wrapping);
                 typeSpecificDetails.Add ("topOffset", elem.column.topOffset);
                 typeSpecificDetails.Add ("relativeTopStory", elem.column.relativeTopStory);
+                // The floor plan display settings, under the names ModifyColumns takes (#2529).
+                typeSpecificDetails.Add ("visibility", CreateStoryVisibilityObjectState (elem.column.visibility));
+                typeSpecificDetails.Add ("isAutoOnStoryVisibility", elem.column.isAutoOnStoryVisibility);
+                typeSpecificDetails.Add ("displayOption", ElemDisplayOptionToString (elem.column.displayOption));
+                typeSpecificDetails.Add ("viewDepthLimitation", ViewDepthLimitationToString (elem.column.viewDepthLimitation));
+                typeSpecificDetails.Add ("contourPen", (Int32) elem.column.corePen);
+                if (elem.column.contLtype != APIInvalidAttributeIndex) {
+                    typeSpecificDetails.Add ("contourLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.column.contLtype)));
+                }
+                typeSpecificDetails.Add ("veneerLinePen", (Int32) elem.column.venLinePen);
+                if (elem.column.venLineType != APIInvalidAttributeIndex) {
+                    typeSpecificDetails.Add ("veneerLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.column.venLineType)));
+                }
+                typeSpecificDetails.Add ("coreSymbolPen", (Int32) elem.column.coreSymbolPen);
+                typeSpecificDetails.Add ("belowViewLinePen", (Int32) elem.column.belowViewLinePen);
+                if (elem.column.belowViewLineType != APIInvalidAttributeIndex) {
+                    typeSpecificDetails.Add ("belowViewLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.column.belowViewLineType)));
+                }
+                typeSpecificDetails.Add ("aboveViewLinePen", (Int32) elem.column.aboveViewLinePen);
+                if (elem.column.aboveViewLineType != APIInvalidAttributeIndex) {
+                    typeSpecificDetails.Add ("aboveViewLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.column.aboveViewLineType)));
+                }
+                typeSpecificDetails.Add ("hiddenLinePen", (Int32) elem.column.hiddenLinePen);
+                if (elem.column.hiddenLineType != APIInvalidAttributeIndex) {
+                    typeSpecificDetails.Add ("hiddenLineTypeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_LinetypeID, elem.column.hiddenLineType)));
+                }
 #ifdef ServerMainVers_2700
                 typeSpecificDetails.Add ("cutFillPen", CreateOverriddenPenObjectState (elem.column.cutFillPen));
                 typeSpecificDetails.Add ("cutFillBackgroundPen", CreateOverriddenPenObjectState (elem.column.cutFillBackgroundPen));

@@ -10591,6 +10591,64 @@
                 "type": "number",
                 "description": "Non-zero links the column's top to another story instead of an explicit height - do not set together with 'height' via ModifyColumns in the same call."
             },
+            "visibility": {
+                "$ref": "#/StoryVisibility",
+                "description": "The stories the column is shown on (Show On Stories). While isAutoOnStoryVisibility is true, Archicad computes it from the column's elevation."
+            },
+            "isAutoOnStoryVisibility": {
+                "type": "boolean",
+                "description": "True when Archicad recomputes visibility automatically from the actual elevation of the column."
+            },
+            "displayOption": {
+                "$ref": "#/DisplayOption"
+            },
+            "viewDepthLimitation": {
+                "$ref": "#/ViewDepthLimitation"
+            },
+            "contourPen": {
+                "type": "integer",
+                "description": "Pen of the cut contour lines of the column core."
+            },
+            "contourLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the cut contour lines of the column core."
+            },
+            "veneerLinePen": {
+                "type": "integer",
+                "description": "Pen of the veneer lines of the column."
+            },
+            "veneerLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the veneer lines of the column."
+            },
+            "coreSymbolPen": {
+                "type": "integer",
+                "description": "Pen of the core symbol lines (slash, X or crosshair) of the column."
+            },
+            "belowViewLinePen": {
+                "type": "integer",
+                "description": "Pen of the uncut lines of the column."
+            },
+            "belowViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the uncut lines of the column."
+            },
+            "aboveViewLinePen": {
+                "type": "integer",
+                "description": "Pen of the overhead lines of the column."
+            },
+            "aboveViewLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the overhead lines of the column."
+            },
+            "hiddenLinePen": {
+                "type": "integer",
+                "description": "Pen of the hidden lines of the column."
+            },
+            "hiddenLineTypeId": {
+                "$ref": "#/AttributeId",
+                "description": "Line type of the hidden lines of the column, for example a dashed line."
+            },
             "cutFillPen": {
                 "$ref": "#/OverriddenPen"
             },
