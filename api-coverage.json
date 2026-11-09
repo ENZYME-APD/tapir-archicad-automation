@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 19:58 UTC",
+ "generatedAt": "2026-11-09 20:15 UTC",
  "versions": [
   25,
   26,
@@ -2906,7 +2906,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2558,
+     "title": "ModifyBeams/ModifyColumns: fail the item when a custom profile ignores width/height"
+    }
+   ],
    "issues": []
   },
   {
@@ -5764,6 +5769,26 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2560,
+     "title": "[2/4] ModifyColumns: set the surfaces and veneer of a single column segment"
+    },
+    {
+     "number": 2559,
+     "title": "[2/3] GetDetailsOfElements: read beam segment length, taper and cross section"
+    },
+    {
+     "number": 2558,
+     "title": "ModifyBeams/ModifyColumns: fail the item when a custom profile ignores width/height"
+    },
+    {
+     "number": 2557,
+     "title": "ApplyFavoritesToElements: keepFields can keep a column's or beam's cross section"
+    },
+    {
+     "number": 2555,
+     "title": "[1/3] CreateBeams takes holes, like ModifyBeams"
+    },
+    {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
     },
@@ -6748,6 +6773,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2555,
+     "title": "[1/3] CreateBeams takes holes, like ModifyBeams"
+    },
+    {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
     },
@@ -6931,7 +6960,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2557,
+     "title": "ApplyFavoritesToElements: keepFields can keep a column's or beam's cross section"
+    }
+   ],
    "issues": []
   },
   {
@@ -7017,6 +7051,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2555,
+     "title": "[1/3] CreateBeams takes holes, like ModifyBeams"
+    },
     {
      "number": 2545,
      "title": "Stairs: top story link, offset and Rules and Standards in GetDetailsOfElements, CreateStairs and ModifyStairs"
@@ -7299,6 +7337,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2555,
+     "title": "[1/3] CreateBeams takes holes, like ModifyBeams"
+    },
     {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
@@ -7877,6 +7919,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2560,
+     "title": "[2/4] ModifyColumns: set the surfaces and veneer of a single column segment"
+    },
+    {
+     "number": 2559,
+     "title": "[2/3] GetDetailsOfElements: read beam segment length, taper and cross section"
+    },
+    {
+     "number": 2558,
+     "title": "ModifyBeams/ModifyColumns: fail the item when a custom profile ignores width/height"
+    },
+    {
+     "number": 2557,
+     "title": "ApplyFavoritesToElements: keepFields can keep a column's or beam's cross section"
+    },
     {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
@@ -25472,6 +25530,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2560,
+     "title": "[2/4] ModifyColumns: set the surfaces and veneer of a single column segment"
+    },
+    {
+     "number": 2558,
+     "title": "ModifyBeams/ModifyColumns: fail the item when a custom profile ignores width/height"
+    },
+    {
+     "number": 2555,
+     "title": "[1/3] CreateBeams takes holes, like ModifyBeams"
+    },
+    {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
     },
@@ -31141,6 +31211,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2559,
+     "title": "[2/3] GetDetailsOfElements: read beam segment length, taper and cross section"
+    },
     {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
@@ -37605,6 +37679,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2560,
+     "title": "[2/4] ModifyColumns: set the surfaces and veneer of a single column segment"
+    },
+    {
+     "number": 2558,
+     "title": "ModifyBeams/ModifyColumns: fail the item when a custom profile ignores width/height"
+    },
+    {
+     "number": 2556,
+     "title": "[1/4] CreateColumns: take relativeTopStory and topOffset"
+    },
+    {
+     "number": 2555,
+     "title": "[1/3] CreateBeams takes holes, like ModifyBeams"
+    },
     {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
@@ -44317,6 +44407,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2559,
+     "title": "[2/3] GetDetailsOfElements: read beam segment length, taper and cross section"
+    },
+    {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
     },
@@ -47439,6 +47533,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2559,
+     "title": "[2/3] GetDetailsOfElements: read beam segment length, taper and cross section"
+    },
     {
      "number": 2550,
      "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
