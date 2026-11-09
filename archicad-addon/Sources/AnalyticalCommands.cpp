@@ -3251,6 +3251,24 @@ GS::String GetAnalyticalLoadGroupsCommand::GetName () const
     return "GetAnalyticalLoadGroups";
 }
 
+GS::Optional<GS::UniString> GetAnalyticalLoadGroupsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "loadGroupIds": {
+                "type": "array",
+                "description": "The load groups to read, answered in this order, an error object for one that does not exist. Every load group of the project is listed when it is omitted.",
+                "items": {
+                    "$ref": "#/AnalyticalLoadGroupIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
 GS::Optional<GS::UniString> GetAnalyticalLoadGroupsCommand::GetRawResponseSchema () const
 {
     return R"({
@@ -3258,7 +3276,7 @@ GS::Optional<GS::UniString> GetAnalyticalLoadGroupsCommand::GetRawResponseSchema
         "properties": {
             "loadGroups": {
                 "type": "array",
-                "description": "The load groups of the project. A load group that cannot be read is represented by an error object.",
+                "description": "The load groups of the project, or the ones given in loadGroupIds. A load group that cannot be read is represented by an error object.",
                 "items": {
                     "type": "object",
                     "oneOf": [
@@ -3279,17 +3297,25 @@ GS::Optional<GS::UniString> GetAnalyticalLoadGroupsCommand::GetRawResponseSchema
     })";
 }
 
-GS::ObjectState GetAnalyticalLoadGroupsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState GetAnalyticalLoadGroupsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<API_Guid> loadGroupGuids;
-    const GSErrCode err = TAPIR_GetAnalyticalLoadGroups (loadGroupGuids);
-    if (err != NoError) {
-        return CreateErrorResponse (err, "Failed to get the analytical load groups.");
+    if (parameters.Contains ("loadGroupIds")) {
+        loadGroupGuids = GetGuidsFromIdList (parameters, "loadGroupIds", "loadGroupId");
+    } else {
+        const GSErrCode err = TAPIR_GetAnalyticalLoadGroups (loadGroupGuids);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to get the analytical load groups.");
+        }
     }
 
     GS::ObjectState response;
     const auto& loadGroups = response.AddList<GS::ObjectState> ("loadGroups");
     for (const API_Guid& loadGroupGuid : loadGroupGuids) {
+        if (loadGroupGuid == APINULLGuid) {
+            loadGroups (CreateErrorResponse (APIERR_BADPARS, "loadGroupId is missing or invalid."));
+            continue;
+        }
         API_AnalyticalLoadGroup loadGroup = {};
         const GSErrCode getErr = TAPIR_GetAnalyticalLoadGroup (loadGroupGuid, loadGroup);
         if (getErr != NoError) {
@@ -3398,6 +3424,24 @@ GS::String GetAnalyticalLoadCombinationsCommand::GetName () const
     return "GetAnalyticalLoadCombinations";
 }
 
+GS::Optional<GS::UniString> GetAnalyticalLoadCombinationsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "loadCombinationIds": {
+                "type": "array",
+                "description": "The load combinations to read, answered in this order, an error object for one that does not exist. Every load combination of the project is listed when it is omitted.",
+                "items": {
+                    "$ref": "#/AnalyticalLoadCombinationIdArrayItem"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": []
+    })";
+}
+
 GS::Optional<GS::UniString> GetAnalyticalLoadCombinationsCommand::GetRawResponseSchema () const
 {
     return R"({
@@ -3405,7 +3449,7 @@ GS::Optional<GS::UniString> GetAnalyticalLoadCombinationsCommand::GetRawResponse
         "properties": {
             "loadCombinations": {
                 "type": "array",
-                "description": "The load combinations of the project. A load combination that cannot be read is represented by an error object.",
+                "description": "The load combinations of the project, or the ones given in loadCombinationIds. A load combination that cannot be read is represented by an error object.",
                 "items": {
                     "type": "object",
                     "oneOf": [
@@ -3426,17 +3470,25 @@ GS::Optional<GS::UniString> GetAnalyticalLoadCombinationsCommand::GetRawResponse
     })";
 }
 
-GS::ObjectState GetAnalyticalLoadCombinationsCommand::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState GetAnalyticalLoadCombinationsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<API_Guid> loadCombinationGuids;
-    const GSErrCode err = TAPIR_GetAnalyticalLoadCombinations (loadCombinationGuids);
-    if (err != NoError) {
-        return CreateErrorResponse (err, "Failed to get the analytical load combinations.");
+    if (parameters.Contains ("loadCombinationIds")) {
+        loadCombinationGuids = GetGuidsFromIdList (parameters, "loadCombinationIds", "loadCombinationId");
+    } else {
+        const GSErrCode err = TAPIR_GetAnalyticalLoadCombinations (loadCombinationGuids);
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to get the analytical load combinations.");
+        }
     }
 
     GS::ObjectState response;
     const auto& loadCombinations = response.AddList<GS::ObjectState> ("loadCombinations");
     for (const API_Guid& loadCombinationGuid : loadCombinationGuids) {
+        if (loadCombinationGuid == APINULLGuid) {
+            loadCombinations (CreateErrorResponse (APIERR_BADPARS, "loadCombinationId is missing or invalid."));
+            continue;
+        }
         API_AnalyticalLoadCombination loadCombination = {};
         const GSErrCode getErr = TAPIR_GetAnalyticalLoadCombination (loadCombinationGuid, loadCombination);
         if (getErr != NoError) {
@@ -3468,7 +3520,7 @@ GS::Optional<GS::UniString> CreateAnalyticalLoadGroupsCommand::GetInputParameter
                 "type": "array",
                 "description": "The load groups to create.",
                 "items": {
-                    "$ref": "#/AnalyticalLoadGroupCreationData"
+                    "$ref": "#/AnalyticalLoadGroupData"
                 }
             }
         },
@@ -3555,7 +3607,7 @@ GS::Optional<GS::UniString> CreateAnalyticalLoadCasesCommand::GetInputParameters
                 "type": "array",
                 "description": "The load cases to create.",
                 "items": {
-                    "$ref": "#/AnalyticalLoadCaseCreationData"
+                    "$ref": "#/AnalyticalLoadCaseData"
                 }
             }
         },
@@ -3642,7 +3694,7 @@ GS::Optional<GS::UniString> CreateAnalyticalLoadCombinationsCommand::GetInputPar
                 "type": "array",
                 "description": "The load combinations to create.",
                 "items": {
-                    "$ref": "#/AnalyticalLoadCombinationCreationData"
+                    "$ref": "#/AnalyticalLoadCombinationData"
                 }
             }
         },
@@ -4281,7 +4333,7 @@ GS::Optional<GS::UniString> SetAnalyticalReleasesCommand::GetInputParametersSche
                 "type": "array",
                 "description": "The element and its new release, as GetAnalyticalReleases returns it. The release replaces the element's release as a whole.",
                 "items": {
-                    "$ref": "#/AnalyticalReleaseOfElement"
+                    "$ref": "#/ElementAnalyticalRelease"
                 }
             }
         },
@@ -4466,7 +4518,7 @@ GS::Optional<GS::UniString> SetCustomCurveMemberStretchCommand::GetInputParamete
                 "type": "array",
                 "description": "The element of the curve member and the lengths to add to it.",
                 "items": {
-                    "$ref": "#/AnalyticalCurveMemberStretchOfElement"
+                    "$ref": "#/AnalyticalCurveMemberStretchUpdate"
                 }
             }
         },
@@ -4552,7 +4604,7 @@ GS::Optional<GS::UniString> GetLCSOfAnalyticalMembersCommand::GetInputParameters
                 "type": "array",
                 "description": "The member parts to get the local coordinate system of.",
                 "items": {
-                    "$ref": "#/AnalyticalMemberPartQuery"
+                    "$ref": "#/AnalyticalMemberCoordinateSystemRequest"
                 }
             }
         },
@@ -4606,6 +4658,41 @@ GS::ObjectState GetLCSOfAnalyticalMembersCommand::Execute (const GS::ObjectState
     GS::Array<GS::ObjectState> memberParts;
     parameters.Get ("memberParts", memberParts);
 
+    // Archicad stops with an access violation when the local coordinate system of an element that is not a member of
+    // the Structural Analytical Model is asked for (Archicad 29, with the guid of no element), so only members are
+    // passed on: the curve and surface members of the current model from Archicad 27, existing elements before (Archicad 26
+    // has no current model). When the members cannot be read, the command fails rather than guess.
+#ifdef ServerMainVers_2700
+    API_Guid analyticalModelGuid = APINULLGuid;
+    const GS::Optional<GS::ObjectState> modelError = GetAnalyticalModelGuidFromParameters (parameters, analyticalModelGuid);
+    if (modelError.HasValue ()) {
+        return *modelError;
+    }
+    GS::Array<API_Guid> curveElements;
+    GSErrCode membersErr = TAPIR_GetCurveElements (analyticalModelGuid, curveElements);
+    if (membersErr != NoError) {
+        return CreateErrorResponse (membersErr, "Failed to get the curve members of the Structural Analytical Model.");
+    }
+    GS::Array<API_Guid> surfaceElements;
+    membersErr = TAPIR_GetSurfaceElements (analyticalModelGuid, surfaceElements);
+    if (membersErr != NoError) {
+        return CreateErrorResponse (membersErr, "Failed to get the surface members of the Structural Analytical Model.");
+    }
+    GS::HashSet<API_Guid> members = CreateGuidSet (curveElements);
+    for (const API_Guid& guid : surfaceElements) {
+        members.Add (guid);
+    }
+    const auto isMember = [&] (const API_Guid& guid) {
+        return members.Contains (guid);
+    };
+#else
+    const auto isMember = [] (const API_Guid& guid) {
+        API_Elem_Head elemHead = {};
+        elemHead.guid = guid;
+        return ACAPI_Element_GetHeader (&elemHead) == NoError;
+    };
+#endif
+
     GS::ObjectState response;
     const auto& localCoordinateSystems = response.AddList<GS::ObjectState> ("localCoordinateSystems");
 
@@ -4621,6 +4708,10 @@ GS::ObjectState GetLCSOfAnalyticalMembersCommand::Execute (const GS::ObjectState
             localCoordinateSystems (*partRefError);
             continue;
         }
+        if (!isMember (memberPartRef.elemGuid)) {
+            localCoordinateSystems (CreateErrorResponse (APIERR_BADID, "The element is not a member of the Structural Analytical Model."));
+            continue;
+        }
 
         API_CoordinateSystem coordinateSystem;
         GSErrCode err = NoError;
@@ -4630,6 +4721,10 @@ GS::ObjectState GetLCSOfAnalyticalMembersCommand::Execute (const GS::ObjectState
             partRefError = GetAnalyticalMemberPartRefFromObjectState (*intersectingMemberPartRefOS, intersectingMemberPartRef);
             if (partRefError.HasValue ()) {
                 localCoordinateSystems (*partRefError);
+                continue;
+            }
+            if (!isMember (intersectingMemberPartRef.elemGuid)) {
+                localCoordinateSystems (CreateErrorResponse (APIERR_BADID, "The intersecting element is not a member of the Structural Analytical Model."));
                 continue;
             }
             err = TAPIR_GetLCSOfAnalyticalMemberInIntersection (memberPartRef, intersectingMemberPartRef, coordinateSystem);

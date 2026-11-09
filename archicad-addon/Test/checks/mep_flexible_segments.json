@@ -23,6 +23,9 @@
         { "path": "toolDefaults", "len": 2 },
         { "path": "toolDefaults[0].domain", "eq": "Piping", "name": "in the order requested" },
         { "path": "toolDefaults[1].domain", "eq": "Ventilation", "name": "in the order requested" },
+        { "path": "toolDefaults[0].routingElement.routingSegment", "exists": true, "name": "piping routing segment default" },
+        { "path": "toolDefaults[0].rigidSegment.shape", "exists": false, "name": "rigid segment default size not read (#2468)" },
+        { "path": "toolDefaults[1].rigidSegment.width", "exists": false, "name": "rigid segment default size not read (#2468)" },
         { "path": "toolDefaults[1].flexibleSegment.width", "gt": 0, "name": "ventilation flexible segment width" },
         { "path": "toolDefaults[1].routingElement", "exists": true, "name": "routing tool settings" }
       ]

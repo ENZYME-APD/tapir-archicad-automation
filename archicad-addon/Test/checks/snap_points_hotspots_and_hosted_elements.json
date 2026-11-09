@@ -159,14 +159,14 @@
       ]
     },
     {
-      "id": "window hotspots after the wall moved",
+      "id": "window hotspots after the wall moved (they are in the library part's own coordinates, so they stay the same; GetSnapPointsOfElements gives world positions)",
       "command": "GetHotspotsOfElements",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${win}" } } ] },
       "save": { "hXMoved": "hotspotsOfElements[0].hotspots[0].x", "hYMoved": "hotspotsOfElements[0].hotspots[0].y" },
       "expect": [
-        { "expr": "${hYMoved} - ${hY}", "approx": 10, "name": "window: hotspot moved with its wall" },
-        { "expr": "${hXMoved} - ${hX}", "approx": 0, "name": "window: hotspot kept its x" }
+        { "expr": "${hYMoved} - ${hY}", "approx": 0, "name": "window: hotspot in the window's own coordinates, unchanged by the move (y)" },
+        { "expr": "${hXMoved} - ${hX}", "approx": 0, "name": "window: hotspot in the window's own coordinates, unchanged by the move (x)" }
       ]
     },
     {
