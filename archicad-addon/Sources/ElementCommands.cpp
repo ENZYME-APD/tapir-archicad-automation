@@ -12843,11 +12843,11 @@ GS::Optional<GS::UniString> GetQuantitiesOfElementsCommand::GetInputParametersSc
             "minOpeningSize": {
                 "type": "number",
                 "minimum": 0,
-                "description": "Optional minimum opening size in square meters. Openings smaller than this are not subtracted when the conditional values (for example volumeConditional of a Wall) are calculated. Archicad only uses it for walls. Default value is 0, so every opening is subtracted."
+                "description": "Optional minimum opening size in square meters. Openings smaller than this are not subtracted from the conditional surfaces of a Wall (referenceSideSurfaceConditional and oppositeSideSurfaceConditional). Archicad only uses it for walls; the conditional volume follows the project's calculation rules instead. Default value is 0, so every opening is subtracted."
             },
             "calculateInOneCall": {
                 "type": "boolean",
-                "description": "Optional. When true, Archicad calculates the quantities of all the supported elements in one call instead of one call per element, which can be faster for many elements. The output has the same format. If that one call fails, every supported element gets the same error. Default value is false."
+                "description": "Optional. When true, Archicad calculates the quantities of all the supported elements of one type in one call (one call per element type, because Archicad only calculates elements of the same type together) instead of one call per element, which can be faster for many elements. The output has the same format. If the call of a type fails, every element of that type gets the same error. Default value is false."
             }
         },
         "additionalProperties": false,
@@ -13191,10 +13191,29 @@ GS::ObjectState GetQuantitiesOfElementsCommand::Execute (const GS::ObjectState& 
         results.Push (CreateQuantitiesOfElement (typeID, elementQuantity, composites));
     }
 
-    if (!guidsInOneCall.IsEmpty ()) {
+    // ACAPI_Element_GetMoreQuantities calculates "multiple elements of the same type": given a
+    // wall, a slab and a zone together, it failed for all of them (#2470). So there is one call
+    // per element type, in the order the types first appear.
+    GS::Array<API_ElemTypeID> typesInOneCall;
+    for (API_ElemTypeID typeID : typeIDsInOneCall) {
+        if (!typesInOneCall.Contains (typeID)) {
+            typesInOneCall.Push (typeID);
+        }
+    }
+
+    for (API_ElemTypeID typeInOneCall : typesInOneCall) {
+        GS::Array<UIndex> indicesOfType;
+        GS::Array<API_Guid> guidsOfType;
+        for (UIndex i = 0; i < guidsInOneCall.GetSize (); ++i) {
+            if (typeIDsInOneCall[i] == typeInOneCall) {
+                indicesOfType.Push (i);
+                guidsOfType.Push (guidsInOneCall[i]);
+            }
+        }
+
         // Each element gets its own storage, like in the per element call above. All of it is pushed
         // before any address is taken, so no reallocation can invalidate the pointers.
-        const UIndex count = guidsInOneCall.GetSize ();
+        const UIndex count = guidsOfType.GetSize ();
         GS::Array<API_ElementQuantity> elementQuantities;
         GS::Array<GS::Array<API_CompositeQuantity>> compositesOfElements;
         for (UIndex i = 0; i < count; ++i) {
@@ -13210,14 +13229,14 @@ GS::ObjectState GetQuantitiesOfElementsCommand::Execute (const GS::ObjectState& 
             quantities.Push (quantitiesOfElement);
         }
 
-        GSErrCode err = ACAPI_Element_GetMoreQuantities (&guidsInOneCall, &quantityParams, &quantities, &mask);
+        GSErrCode err = ACAPI_Element_GetMoreQuantities (&guidsOfType, &quantityParams, &quantities, &mask);
         if (err == NoError && quantities.GetSize () != count) {
             err = APIERR_GENERAL;
         }
 
         const GS::Array<API_CompositeQuantity> noComposites;
         for (UIndex i = 0; i < count; ++i) {
-            const UIndex resultIndex = resultIndicesInOneCall[i];
+            const UIndex resultIndex = resultIndicesInOneCall[indicesOfType[i]];
             if (err != NoError) {
                 results[resultIndex] = CreateErrorResponse (err, "Failed to get the quantities of the elements");
                 continue;
@@ -13231,7 +13250,7 @@ GS::ObjectState GetQuantitiesOfElementsCommand::Execute (const GS::ObjectState& 
                 continue;
             }
 
-            results[resultIndex] = CreateQuantitiesOfElement (typeIDsInOneCall[i], *quantitiesOfElement.elements,
+            results[resultIndex] = CreateQuantitiesOfElement (typeInOneCall, *quantitiesOfElement.elements,
                 quantitiesOfElement.composites != nullptr ? *quantitiesOfElement.composites : noComposites);
         }
     }
