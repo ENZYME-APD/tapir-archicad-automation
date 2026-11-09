@@ -1,6 +1,6 @@
 {
   "title": "GetDetailsOfElements reads and ModifyRoofs writes the edge types of a single-plane roof without changing its polygon or edge cuts",
-  "minTapir": "1.8.1",
+  "minTapir": "2.0.1",
   "requiresEmpty": [ "Roof" ],
   "steps": [
     {
