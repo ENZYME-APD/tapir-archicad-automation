@@ -6044,6 +6044,67 @@ void ApplyShellEdgeTrims (API_Element& element, const GS::ObjectState& parameter
     ApplyShellEdgeTrim (parameters, "endSideEdgeTrim", sideEdges[1]);
 }
 
+void KillShellShapeHandles (API_ShellShapeData& shapeData, bool withIds)
+{
+    BMKillHandle (reinterpret_cast<GSHandle*> (&shapeData.coords));
+    BMKillHandle (reinterpret_cast<GSHandle*> (&shapeData.pends));
+    BMKillHandle (reinterpret_cast<GSHandle*> (&shapeData.parcs));
+    BMKillHandle (reinterpret_cast<GSHandle*> (&shapeData.bodyFlags));
+    if (withIds) {
+        BMKillHandle (reinterpret_cast<GSHandle*> (&shapeData.vertexIDs));
+        BMKillHandle (reinterpret_cast<GSHandle*> (&shapeData.edgeIDs));
+    }
+}
+
+// A new profile for an existing extruded shell (#2453), in the format CreateShells takes. The
+// shell's polygon memo is read and only its first profile polyline is replaced, so written back
+// with the element the GUID, the base plane, the extrusion start and vector, the thickness and the
+// cut contours stay. The vertex and edge ids are kept when the number of points stays the same.
+// memo is filled here and must be disposed by the caller; memoLoaded tells whether to write it.
+GS::Optional<GS::UniString> ApplyShellProfile (
+    API_Element& element,
+    API_Element& mask,
+    API_ElementMemo& memo,
+    const GS::ObjectState& details,
+    bool& memoLoaded,
+    bool& changed)
+{
+    const GS::ObjectState* profile = details.Get ("profile");
+    if (profile == nullptr) {
+        return {};
+    }
+    if (element.shell.shellClass != API_ExtrudedShellID) {
+        return GS::UniString ("'profile' can only be changed on an Extruded shell.");
+    }
+
+    API_Polygon newShape = {};
+    API_ShellShapeData newShapeData = {};
+    auto error = FillShellShape (*profile, newShape, newShapeData);
+    if (error.HasValue ()) {
+        KillShellShapeHandles (newShapeData, true);
+        return error;
+    }
+
+    if (ACAPI_Element_GetMemo (element.header.guid, &memo, APIMemoMask_Polygon) != NoError) {
+        KillShellShapeHandles (newShapeData, true);
+        return GS::UniString ("Failed to load the profile of the shell.");
+    }
+    memoLoaded = true;
+
+    API_Polygon& shape = element.shell.u.extrudedShell.shellShape;
+    API_ShellShapeData& shapeData = memo.shellShapes[0];
+    KillShellShapeHandles (shapeData, newShape.nCoords != shape.nCoords);
+    shapeData.coords = newShapeData.coords;
+    shapeData.pends = newShapeData.pends;
+    shapeData.parcs = newShapeData.parcs;
+    shapeData.bodyFlags = newShapeData.bodyFlags;
+    shape = newShape;
+
+    ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.shellShape);
+    changed = true;
+    return {};
+}
+
 } // namespace
 
 CreateShellsCommand::CreateShellsCommand () :
@@ -11783,11 +11844,6 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                         "bottomMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the other face of the shell (bottomMaterial of GetDetailsOfElements); overridden false clears the override." },
                         "materialsChained": { "type": "boolean", "description": "Whether the surface materials are chained, as GetDetailsOfElements reports it." },
                         "edgeMaterials": { "$ref": "#/ShellEdgeMaterials", "description": "The custom surface of individual edges of the shell, as GetDetailsOfElements reports them. Only the edges given are written; overridden false clears an edge's custom surface." },
-                        "cutBodyType": {
-                            "type": "string",
-                            "enum": [ "UpwardsExtrusion", "DownwardsExtrusion" ],
-                            "description": "The Trimming Body of the shell (Model panel of Shell Settings): Upward Extrusion or Downward Extrusion. GetDetailsOfElements reports it as cutBodyType. An Editable trimming body cannot be set yet."
-                        },
                         "extrusionVector": {
                             "$ref": "#/Coordinate3D",
                             "description": "Extruded shells only: the new direction and length of the extrusion, in base plane coordinates (as GetDetailsOfElements returns it). The profile, the base plane and the extrusion start are kept, so only the end of the shell moves. Cannot be given together with extrusionLength."
@@ -11796,6 +11852,15 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                             "type": "number",
                             "exclusiveMinimum": 0.0,
                             "description": "Extruded shells only: the new length of the extrusion. The extrusion vector keeps its direction and is scaled to this length; the profile, the base plane and the extrusion start are kept, so only the end of the shell moves. Cannot be given together with extrusionVector."
+                        },
+                        "profile": {
+                            "$ref": "#/ShellProfile",
+                            "description": "Extruded shells only: the new profile polyline, in the format and coordinates CreateShells takes and GetDetailsOfElements returns (the plane across the extrusion, x horizontal, y up). It replaces the first profile polyline; the GUID, the base plane, the extrusion start and vector, the thickness and the cut contours are kept."
+                        },
+                        "cutBodyType": {
+                            "type": "string",
+                            "enum": [ "UpwardsExtrusion", "DownwardsExtrusion" ],
+                            "description": "The Trimming Body of the shell (Model panel of Shell Settings): Upward Extrusion or Downward Extrusion. GetDetailsOfElements reports it as cutBodyType. An Editable trimming body cannot be set yet."
                         }
                     },
                     "additionalProperties": false,
@@ -11845,6 +11910,12 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
             auto error = ApplyShellStructure (element, &mask, item, changed);
             if (!error.HasValue ()) {
                 error = ApplyShellExtrusion (element, mask, item, changed);
+            }
+            API_ElementMemo memo = {};
+            const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+            bool memoLoaded = false;
+            if (!error.HasValue ()) {
+                error = ApplyShellProfile (element, mask, memo, item, memoLoaded, changed);
             }
             if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
@@ -11901,7 +11972,7 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
                 continue;
             }
 
-            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            err = ACAPI_Element_Change (&element, &mask, memoLoaded ? &memo : nullptr, memoLoaded ? APIMemoMask_Polygon : 0, true);
             results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify shell."));
         }
     });
