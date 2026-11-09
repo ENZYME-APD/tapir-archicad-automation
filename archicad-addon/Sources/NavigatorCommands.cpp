@@ -4264,7 +4264,8 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
                     failureMessage = "Failed to read back the navigator item after the change.";
                     return err;
                 }
-                if (GS::UniString (changedItem.uName) != GS::UniString (navItem.uName)) {
+                if (GS::UniString (changedItem.uName) != GS::UniString (navItem.uName) &&
+                    GS::UniString (changedItem.uAutoTextedName) != GS::UniString (navItem.uName)) {
                     failureMessage = "Archicad did not apply the new name. The Project Map item kept its old name after the element behind it was renamed, so the change was undone.";
                     err = APIERR_REFUSEDPAR;
                     return err;
@@ -4303,7 +4304,12 @@ GS::ObjectState RenameNavigatorItemCommand::Execute (const GS::ObjectState& para
         if (err != NoError) {
             return CreateFailedExecutionResult (err, "Failed to read back the navigator item after the change.");
         }
-        if (hasNewName && GS::UniString (changedItem.uName) != GS::UniString (navItem.uName)) {
+        // A name with autotext tokens (<PROJECTNUMBER>, <SourceID>, ...) is stored as it was given in
+        // uAutoTextedName, while uName holds it with the tokens resolved (#2499), so it is applied
+        // when either of the two reads back as the requested name.
+        if (hasNewName &&
+            GS::UniString (changedItem.uName) != GS::UniString (navItem.uName) &&
+            GS::UniString (changedItem.uAutoTextedName) != GS::UniString (navItem.uName)) {
             return CreateFailedExecutionResult (APIERR_REFUSEDPAR,
                 "Archicad did not apply the new name. The name of this navigator item cannot be changed by this command (e.g. Project Map schedule items are named by their scheme).");
         }
@@ -4840,6 +4846,14 @@ static GS::ObjectState NavigatorItemToObjectState (API_NavigatorItem item, API_N
     itemOS.Add ("type",            NavigatorItemTypeToString (item.itemType));
     itemOS.Add ("name",            GS::UniString (item.uName));
     itemOS.Add ("navigatorItemId", CreateGuidObjectState (item.guid));
+
+    // The name as it was typed, with its autotext tokens (<PROJECTNUMBER>, <SourceID>, ...),
+    // which name only shows resolved (#2499). Only added when the two differ, so items
+    // without autotext look as they did.
+    const GS::UniString autoTextedName (item.uAutoTextedName);
+    if (!autoTextedName.IsEmpty () && autoTextedName != GS::UniString (item.uName)) {
+        itemOS.Add ("autoTextedName", autoTextedName);
+    }
 
     GS::UniString prefix;
     if (item.itemType == API_StoryNavItem) {
