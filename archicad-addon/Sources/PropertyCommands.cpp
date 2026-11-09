@@ -3223,14 +3223,16 @@ GS::ObjectState CreatePropertyDefinitionsCommand::Execute (const GS::ObjectState
 
             GS::Array<GS::ObjectState> possibleEnumValues;
             if (propertyDefinition->Get ("possibleEnumValues", possibleEnumValues)) {
-                API_SingleEnumerationVariant v;
-                v.displayVariant.type = apiPropertyDefinition.valueType;
-                v.keyVariant.type = API_PropertyGuidValueType;
                 for (const GS::ObjectState& e : possibleEnumValues) {
                     const GS::ObjectState* enumValue = e.Get ("enumValue");
                     if (enumValue == nullptr) {
                         continue;
                     }
+                    // A fresh value for each option: a reused one kept the nonlocalized
+                    // value of the option before, and Archicad refuses duplicate ones.
+                    API_SingleEnumerationVariant v;
+                    v.displayVariant.type = apiPropertyDefinition.valueType;
+                    v.keyVariant.type = API_PropertyGuidValueType;
                     v.keyVariant.guidValue = GetRandomGuid ();
 
                     if (!enumValue->Get ("displayValue", v.displayVariant.uniStringValue)) {
@@ -3898,15 +3900,19 @@ GS::ObjectState GetPropertyValuesOfElementDefaultsCommand::Execute (const GS::Ob
     for (const GS::ObjectState& property : properties) {
         const GS::ObjectState* propertyId = property.Get ("propertyId");
         if (propertyId != nullptr) {
-            const API_Guid propertyGuid = GetGuidFromObjectState (*propertyId);
-            if (propertyGuid != APINULLGuid) {
-                propertyGuids.Push (propertyGuid);
+            // A property that does not exist makes Archicad fail the whole call,
+            // so only the existing ones are asked for; the others become error items below.
+            API_PropertyDefinition definition = {};
+            definition.guid = GetGuidFromObjectState (*propertyId);
+            if (definition.guid != APINULLGuid && ACAPI_Property_GetPropertyDefinition (definition) == NoError) {
+                propertyGuids.Push (definition.guid);
             }
         }
     }
 
     GS::Array<API_Property> fetchedProperties;
-    GSErrCode err = TAPIR_Element_GetPropertyValuesOfDefaultElemByGuid (elemTypeId, propertyGuids, fetchedProperties);
+    GSErrCode err = propertyGuids.IsEmpty () ? NoError :
+        TAPIR_Element_GetPropertyValuesOfDefaultElemByGuid (elemTypeId, propertyGuids, fetchedProperties);
     if (err != NoError) {
         return CreateErrorResponse (err, "Failed to get property values of the tool default");
     }

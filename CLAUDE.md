@@ -87,7 +87,8 @@ tools/                   Version bump scripts (update_version.py), package_info.
                          Community page data (generate_community_data.py),
                          marketplace folder checker (check_marketplace.py) and
                          Scripts page catalogue (generate_catalogue.py),
-                         site copies for AI assistants (generate_llm_files.py)
+                         site copies for AI assistants (generate_llm_files.py),
+                         release notes summary (release_notes.py)
   discord-issue-bot/     Discord -> GitHub issue bot (run by .github/workflows/discord_issue_bot.yml)
 sandbox/                 Experiments / scratch
 .github/workflows/       CI: build checks + release pipelines for both components
@@ -423,6 +424,11 @@ GitHub Actions in [.github/workflows/](.github/workflows/):
   example, each page as `index.md`, `sitemap.xml`, `robots.txt`; a failure there only
   warns), and pushes them to `main` when they changed (never hand-edit those docs).
   Run both scripts yourself to update them earlier; `--check` reports stale files.
+  The release notes are the installer links, a short summary written by
+  `tools/release_notes.py` (the new commands per group, the new Grasshopper components
+  and marketplace scripts, who made the pull requests, the new contributors and the
+  compare link) and the code signing line, not GitHub's list of every pull request,
+  which is used only when the summary cannot be written.
 - `claude_issue_triage.yml` — the issue bot. Every newly opened issue (`fix` job) and
   every new human comment on an issue (`reply` job), from anyone, runs Claude with
   write access: it answers, closes verified already-fixed issues, or opens a

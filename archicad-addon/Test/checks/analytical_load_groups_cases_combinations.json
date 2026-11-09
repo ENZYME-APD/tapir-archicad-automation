@@ -1,23 +1,14 @@
 {
-  "title": "Analytical load groups, load cases and load combinations: create, read back, add load cases, delete, and fail on bad input",
+  "title": "Analytical load groups, load cases and load combinations: create, read back by id, add load cases, delete, and fail on bad input (the template may have load groups of its own, the German one has)",
   "minTapir": "1.8.1",
   "steps": [
     {
-      "id": "project starts without load groups (the reads below rely on it)",
+      "id": "every load group of the project is a list",
       "command": "GetAnalyticalLoadGroups",
       "creates": false,
       "params": {},
       "expect": [
-        { "path": "loadGroups", "len": 0, "name": "no load group in the project" }
-      ]
-    },
-    {
-      "id": "project starts without load combinations (the reads below rely on it)",
-      "command": "GetAnalyticalLoadCombinations",
-      "creates": false,
-      "params": {},
-      "expect": [
-        { "path": "loadCombinations", "len": 0, "name": "no load combination in the project" }
+        { "path": "loadGroups", "exists": true }
       ]
     },
     {
@@ -40,13 +31,19 @@
       ]
     },
     {
-      "id": "read the group back",
+      "id": "read the group back by its id, and a group that does not exist",
       "command": "GetAnalyticalLoadGroups",
       "creates": false,
-      "params": {},
+      "params": {
+        "loadGroupIds": [
+          { "loadGroupId": { "guid": "${group}" } },
+          { "loadGroupId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
       "expect": [
-        { "path": "loadGroups", "len": 1, "name": "only the valid group was created" },
+        { "path": "loadGroups", "len": 2, "name": "one item per id" },
         { "path": "loadGroups[0].loadGroupId.guid", "eq": "${group}", "name": "its id" },
+        { "path": "loadGroups[1].error", "exists": true, "name": "nonexistent group: error item" },
         { "path": "loadGroups[0].name", "eq": "Tapir check group" },
         { "path": "loadGroups[0].groupType", "eq": "VariableLoad" },
         { "path": "loadGroups[0].relation", "eq": "TogetherRelation" },
@@ -122,15 +119,6 @@
       ]
     },
     {
-      "id": "every case of the project",
-      "command": "GetAnalyticalLoadCases",
-      "creates": false,
-      "params": {},
-      "expect": [
-        { "path": "loadCases", "len": 2, "name": "the two cases, not the one into the nonexistent group" }
-      ]
-    },
-    {
       "id": "[combination with case 1, combination with a load case that does not exist]",
       "command": "CreateAnalyticalLoadCombinations",
       "creates": false,
@@ -153,13 +141,19 @@
       ]
     },
     {
-      "id": "read the combination back",
+      "id": "read the combination back by its id, and a combination that does not exist",
       "command": "GetAnalyticalLoadCombinations",
       "creates": false,
-      "params": {},
+      "params": {
+        "loadCombinationIds": [
+          { "loadCombinationId": { "guid": "${combination}" } },
+          { "loadCombinationId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } }
+        ]
+      },
       "expect": [
-        { "path": "loadCombinations", "len": 1, "name": "only the valid combination was created" },
+        { "path": "loadCombinations", "len": 2, "name": "one item per id" },
         { "path": "loadCombinations[0].loadCombinationId.guid", "eq": "${combination}", "name": "its id" },
+        { "path": "loadCombinations[1].error", "exists": true, "name": "nonexistent combination: error item" },
         { "path": "loadCombinations[0].name", "eq": "Tapir check combination" },
         { "path": "loadCombinations[0].description", "eq": "Tapir check combination description" },
         { "path": "loadCombinations[0].category", "eq": "SLS" },
@@ -191,7 +185,9 @@
       "id": "the combination has both load factors",
       "command": "GetAnalyticalLoadCombinations",
       "creates": false,
-      "params": {},
+      "params": {
+        "loadCombinationIds": [ { "loadCombinationId": { "guid": "${combination}" } } ]
+      },
       "expect": [
         { "path": "loadCombinations[0].loadFactors", "len": 2, "name": "case 1 and case 2, not the nonexistent one" }
       ]
@@ -216,9 +212,11 @@
       "id": "the combination is gone",
       "command": "GetAnalyticalLoadCombinations",
       "creates": false,
-      "params": {},
+      "params": {
+        "loadCombinationIds": [ { "loadCombinationId": { "guid": "${combination}" } } ]
+      },
       "expect": [
-        { "path": "loadCombinations", "len": 0 }
+        { "path": "loadCombinations[0].error", "exists": true, "name": "error item for the deleted combination" }
       ]
     },
     {
@@ -282,9 +280,11 @@
       "id": "the group is gone",
       "command": "GetAnalyticalLoadGroups",
       "creates": false,
-      "params": {},
+      "params": {
+        "loadGroupIds": [ { "loadGroupId": { "guid": "${group}" } } ]
+      },
       "expect": [
-        { "path": "loadGroups", "len": 0 }
+        { "path": "loadGroups[0].error", "exists": true, "name": "error item for the deleted group" }
       ]
     }
   ],
