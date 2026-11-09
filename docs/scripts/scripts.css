@@ -70,3 +70,11 @@
 :root:not([data-style="legacy"]) .filters-toggle[aria-expanded="true"], :root:not([data-style="legacy"]) .active-filter,
 :root:not([data-style="legacy"]) .active-filter:hover { background: var(--accent-fill); border-color: var(--accent-fill); color: var(--on-accent) }
 :root:not([data-style="legacy"]) .readme .readme-table td[data-label]::before { font-family: var(--body); font-weight: 600; letter-spacing: normal; text-transform: none }
+
+/* The Display menu's Spacing Compact (see the end of ../assets/site.css): the schedule's rows about
+   30 % shorter, on phones its cards. A README's tables keep their spacing. */
+:root[data-spacing="compact"] .schedule:not(.readme-table) td { padding-top: 10px; padding-bottom: 10px }
+@media (max-width: 640px) {
+    :root[data-spacing="compact"] .schedule:not(.readme-table) td { padding: 0 }
+    :root[data-spacing="compact"] .schedule:not(.readme-table) tr { padding-top: 10px; padding-bottom: 10px }
+}
