@@ -1,6 +1,6 @@
 {
  "version": 1,
- "generatedAt": "2026-11-08T20:15:27Z",
+ "generatedAt": "2026-11-09T11:27:21Z",
  "months": [
   {
    "month": "2022-07",
@@ -420,28 +420,35 @@
   }
  ],
  "totals": {
-  "commits": 1298,
-  "discordMessages": 11595,
-  "discordMembers": 643,
+  "commits": 1312,
+  "discordMessages": 11644,
+  "discordMembers": 646,
   "discordMembersChange": {
-   "diff": 3,
-   "days": 2
+   "diff": 6,
+   "days": 3
   },
-  "participants": 462
+  "participants": 468
  },
  "topContributors": [
   {
    "name": "tlorantfy",
    "login": "tlorantfy",
-   "commits": 437,
+   "commits": 450,
    "reports": 14,
    "tests": 0
   },
   {
    "name": "Parikshit Wadhwa",
    "login": "parikshit99",
-   "commits": 48,
-   "reports": 157,
+   "commits": 55,
+   "reports": 160,
+   "tests": 0
+  },
+  {
+   "name": "archispatialist",
+   "login": "archispatialist",
+   "commits": 8,
+   "reports": 126,
    "tests": 0
   },
   {
@@ -452,16 +459,9 @@
    "tests": 0
   },
   {
-   "name": "archispatialist",
-   "login": "archispatialist",
-   "commits": 4,
-   "reports": 123,
-   "tests": 0
-  },
-  {
    "name": "Cri5chan",
    "login": "Cri5chan",
-   "commits": 119,
+   "commits": 120,
    "reports": 2,
    "tests": 0
   },
@@ -473,18 +473,18 @@
    "tests": 0
   },
   {
-   "name": "SzamosiMate",
-   "login": "SzamosiMate",
-   "commits": 86,
-   "reports": 6,
-   "tests": 0
-  },
-  {
    "name": "weltmaister",
    "login": "weltmaister",
-   "commits": 46,
-   "reports": 19,
+   "commits": 54,
+   "reports": 21,
    "tests": 25
+  },
+  {
+   "name": "SzamosiMate",
+   "login": "SzamosiMate",
+   "commits": 87,
+   "reports": 6,
+   "tests": 0
   },
   {
    "name": "fuzesArch",
@@ -720,6 +720,10 @@
   {
    "date": "2026-11-08",
    "members": 643
+  },
+  {
+   "date": "2026-11-09",
+   "members": 646
   }
  ]
 }
