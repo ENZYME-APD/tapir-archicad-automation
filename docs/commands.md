@@ -2,7 +2,7 @@
 
 # Tapir commands
 
-All 641 commands Tapir adds to Archicad, by group.
+All 789 commands Tapir adds to Archicad, by group.
 
 ## How a Tapir command is sent
 
@@ -37,6 +37,26 @@ Returns:
 Grasshopper: `GetAddOnVersionComponent`
 
 Example: [archicad-addon/Examples/Application/GetAddOnVersion.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetAddOnVersion.py): Prints the version of the Tapir Add-On with GetAddOnVersion.
+
+### GetCommands
+
+Retrieves every command of the Tapir Add-On with its command group, the Tapir version it was introduced in and its description, so a script can check that a command exists before calling it.
+
+Group: Application Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetCommands
+
+Parameters: none.
+
+Returns:
+
+- `commands` (array of object, required): Every command of the Tapir Add-On, in the order of the command reference.
+  - `name` (string, required): The name of the command.
+  - `group` (string, required): The name of the command group, e.g. "Application Commands".
+  - `version` (string, required): The Tapir version the command was introduced in, in the form of "1.1.1".
+  - `description` (string, required): The description of the command, as in the command reference.
+
+Grasshopper: `GetCommandsComponent`
+
+Example: [archicad-addon/Examples/Application/GetCommands.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetCommands.py): Lists the commands of the Tapir Add-On with GetCommands and checks that a command exists before calling it.
 
 ### GetArchicadLocation
 
@@ -73,6 +93,25 @@ Grasshopper: `GetArchicadReleaseInfoComponent`
 
 Example: [archicad-addon/Examples/Application/GetArchicadReleaseInfo.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetArchicadReleaseInfo.py): Prints the version, release and build number of the running Archicad with GetArchicadReleaseInfo.
 
+### GetArchicadLicenseInfo
+
+Retrieves the license the running Archicad runs on: its type (Full, Education, Trial, Demo, Start or BIMcloud Team Client), the raw protection mode with its bits by name, and the highest Software Service Agreement (SSA) level of the license, so a script can warn before it uses a feature the license lacks. The SSA level is not available in Archicad 25.
+
+Group: Application Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetArchicadLicenseInfo
+
+Parameters: none.
+
+Returns:
+
+- `licenseType` (string ("Full", "Education", "Trial", "Demo", "Start", "BIMcloudTeamClient"), required): The kind of license Archicad runs on, read from protectionMode: Trial, Demo, Education (an education license with or without a key), BIMcloudTeamClient, Start (the Start edition), otherwise Full.
+- `protectionMode` (integer, required): The raw protection mode bit mask reported by Archicad (the APIPROT_*_MASK bits of the Archicad API).
+- `licenseFlags` (array of string ("Site", "NotForResale", "School", "PayPerUse", "Network", "Teamwork", "Education", "Start", "Solo", "LiveSubscription", "OEM", "SSA", ...), required): The bits set in protectionMode, by name: Site (more licenses), NotForResale, School, PayPerUse, Network (network licensing), Teamwork (Teamwork functionality is on), Education (education key), Start (Start edition), Solo (SOLO edition), LiveSubscription, OEM (Archicad 27 or later), SSA (SSA license, Archicad 25 only), and without a hardware or software key EducationWithoutKey, Demo, Trial and BIMcloudTeamClient.
+- `ssaLevel` (string ("NoSSA", "SSA", "Forward")): The highest Software Service Agreement (SSA) level the license has: NoSSA, SSA or Forward. A script needing a level checks that this is at least that level, in this order. Missing in Archicad 25, which cannot report it.
+
+Grasshopper: `GetArchicadLicenseInfoComponent`
+
+Example: [archicad-addon/Examples/Application/GetArchicadLicenseInfo.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetArchicadLicenseInfo.py): Prints the license type, the license flags and the SSA level of the running Archicad with GetArchicadLicenseInfo, then warns when the license is not a full one. The SSA level is not reported in Archicad 25.
+
 ### GetPrinterInfo
 
 Retrieves Archicad's current print settings: the print area, grid, fixed text size and scale (the settings PrintView takes).
@@ -83,7 +122,7 @@ Parameters: none.
 
 Returns:
 
-- `printArea` (string ("currentView", "entireDrawing", "marquee", "unknown"), required): The area Archicad prints, as set in the print settings. 'unknown' for a value this add-on does not name.
+- `printArea` (PrinterPrintArea, required)
 - `grid` (boolean, required): Whether the grid is printed.
 - `fixText` (boolean, required): Whether text is printed in fixed size.
 - `scale` (integer, required): The print scale.
@@ -102,8 +141,8 @@ Parameters: none.
 
 Returns:
 
-- `printer` (object or ErrorItem, required): The printer selected in Archicad, or an error when it cannot be read.
-- `plotter` (object or ErrorItem, required): The plotter selected in Archicad, or an error when it cannot be read.
+- `printer` (PrinterInfo or ErrorItem, required): The printer selected in Archicad, or an error when it cannot be read.
+- `plotter` (PlotterInfo or ErrorItem, required): The plotter selected in Archicad, or an error when it cannot be read.
 
 Grasshopper: `GetPrinterAndPlotterInfoComponent`
 
@@ -131,6 +170,8 @@ Group: Application Commands. Added in Tapir 1.5.9. Docs: https://archicad-api.co
 Parameters:
 
 - `prompt` (string): Shown in the control box while Archicad waits for the click. Single-byte text: the box takes a char field. Archicad's main thread waits for the click or for Escape, and every other JSON command queues behind this one until then.
+- `snapFilter` (SnapFilter): Which points and lines of the elements the cursor snaps to. Default: Archicad's usual snapping.
+- `constraint` (InputConstraint): Constrains the click, for example to a fixed X coordinate or to a direction. Default: no constraint.
 
 Returns:
 
@@ -138,7 +179,7 @@ Returns:
 
 Grasshopper: `GetPointFromUserComponent`
 
-Example: [archicad-addon/Examples/Application/GetPointFromUser.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetPointFromUser.py): Asks the user to click a point in the current window with GetPointFromUser and prints it. Waits for a click in Archicad; Escape cancels the input and the command fails.
+Example: [archicad-addon/Examples/Application/GetPointFromUser.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetPointFromUser.py): Asks the user to click a point in the current window with GetPointFromUser and prints it. Waits for a click in Archicad; Escape cancels the input and the command fails. The optional snapFilter makes the cursor snap only to the end points and reference lines of walls.
 
 ### ModelToScreen
 
@@ -152,7 +193,7 @@ Parameters:
 
 Returns:
 
-- `screenPoints` (array of object or ErrorItem, required): One item per input coordinate, in the same order: the pixel position local to the current Archicad view window (not global desktop coordinates), or an error.
+- `screenPoints` (array of ScreenPoint or ErrorItem, required): One item per input coordinate, in the same order: the pixel position local to the current Archicad view window (not global desktop coordinates), or an error.
 
 Grasshopper: `ModelToScreenComponent`
 
@@ -166,9 +207,7 @@ Group: Application Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.co
 
 Parameters:
 
-- `screenPoints` (array of object, required): Pixel positions local to the current Archicad view window (not global desktop coordinates).
-  - `h` (integer, required): Horizontal pixel position from the left edge of the view window.
-  - `v` (integer, required): Vertical pixel position from the top edge of the view window.
+- `screenPoints` (array of ScreenPointInput, required): Pixel positions local to the current Archicad view window (not global desktop coordinates).
 
 Returns:
 
@@ -188,6 +227,8 @@ Parameters:
 
 - `prompt` (string): Shown in the control box while Archicad waits for the click. Single-byte text: the box takes a char field. Archicad's main thread waits for the click or for Escape, and every other JSON command queues behind this one until then.
 - `elementTypes` (array of ElementType): Only an element of one of these types is accepted. A click on empty space or on an element of another type asks for the click again. Default: any element.
+- `snapFilter` (SnapFilter): Which points and lines of the elements the cursor snaps to, for example only the points and edges of the element types asked for. Default: Archicad's usual snapping.
+- `constraint` (InputConstraint): Constrains every click, for example to a fixed X coordinate or to a direction. Default: no constraint.
 
 Returns:
 
@@ -199,7 +240,67 @@ Returns:
 
 Grasshopper: `GetElementFromUserComponent`
 
-Example: [archicad-addon/Examples/Application/GetElementFromUser.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetElementFromUser.py): Asks the user to click a wall or a column with GetElementFromUser and prints its id, type and the clicked point. Waits for a click in Archicad; Escape returns cancelled.
+Example: [archicad-addon/Examples/Application/GetElementFromUser.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetElementFromUser.py): Asks the user to click a wall or a column with GetElementFromUser and prints its id, type and the clicked point. Waits for a click in Archicad; Escape returns cancelled. The optional snapFilter makes the cursor snap only to the points and lines of walls and columns.
+
+### GetCurrentTool
+
+Returns the tool active in the Toolbox: its element type, its variation (the subtype, e.g. Door, Skylight or a library part subtype of an add-on) and, for the tools of add-ons, its class id, in the form SetCurrentTool accepts. Nothing is returned when the active tool makes no element, e.g. the Arrow or the Marquee.
+
+Group: Application Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetCurrentTool
+
+Parameters: none.
+
+Returns:
+
+- `elementType` (ElementType): The element type of the tool. Unknown for the tools of add-ons, which classId identifies.
+- `variation` (string): The four-character subtype of the tool, e.g. DOOR, SKYL, CRWD, or the signature of a library part subtype registered by an add-on. Missing for the generic tool of the element type.
+- `classId` (string): The class id (a guid) of the tool of an add-on, whose elementType is Unknown. Archicad 26 and later.
+
+Grasshopper: `GetCurrentToolComponent`
+
+Example: [archicad-addon/Examples/Application/GetCurrentTool.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetCurrentTool.py): Gets the tool active in the Toolbox with GetCurrentTool. The result (element type, variation, class id) can be given to SetCurrentTool as it is. It is empty when the Arrow or the Marquee is active.
+
+### SetCurrentTool
+
+Activates a tool in the Toolbox, given as GetCurrentTool or GetToolboxItems returns it; an empty input activates the Arrow. Archicad switches the tool once it processes its events, so GetCurrentTool may still return the previous tool right after this command.
+
+Group: Application Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#SetCurrentTool
+
+Parameters:
+
+- `elementType` (ElementType): The element type of the tool. Unknown for the tools of add-ons, which classId identifies.
+- `variation` (string): The four-character subtype of the tool, e.g. DOOR, SKYL, CRWD, or the signature of a library part subtype registered by an add-on. Missing for the generic tool of the element type.
+- `classId` (string): The class id (a guid) of the tool of an add-on, whose elementType is Unknown. Archicad 26 and later.
+
+
+Grasshopper: `SetCurrentToolComponent`
+
+Example: [archicad-addon/Examples/Application/SetCurrentTool.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/SetCurrentTool.py): Activates the Wall tool with SetCurrentTool, then the Door tool, then restores the tool that was active. Archicad switches the tool once it processes its events, so it may take a moment to show in the Toolbox. An empty input activates the Arrow.
+
+### GetToolboxItems
+
+Lists the tools of the Toolbox, the tools of add-ons included, in the form SetCurrentTool accepts, and the active tool. includeHidden also lists the tools without an icon, e.g. the Slab Accessory.
+
+Group: Application Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetToolboxItems
+
+Parameters:
+
+- `includeHidden` (boolean): Also list the tools that have no icon in the Toolbox but can be active, e.g. the Slab Accessory. Default: false.
+
+Returns:
+
+- `toolboxItems` (array of object, required): The tools installed in the Toolbox, the tools of add-ons included, each in the form SetCurrentTool accepts.
+  - `elementType` (ElementType, required): The element type of the tool. Unknown for the tools of add-ons, which classId identifies.
+  - `variation` (string): The four-character subtype of the tool, e.g. DOOR, SKYL, CRWD, or the signature of a library part subtype registered by an add-on. Missing for the generic tool of the element type.
+  - `classId` (string): The class id (a guid) of the tool of an add-on, whose elementType is Unknown. Archicad 26 and later.
+- `currentTool` (object, required): The tool active in the Toolbox, as GetCurrentTool returns it. Empty for the Arrow and the Marquee.
+  - `elementType` (ElementType): The element type of the tool. Unknown for the tools of add-ons, which classId identifies.
+  - `variation` (string): The four-character subtype of the tool, e.g. DOOR, SKYL, CRWD, or the signature of a library part subtype registered by an add-on. Missing for the generic tool of the element type.
+  - `classId` (string): The class id (a guid) of the tool of an add-on, whose elementType is Unknown. Archicad 26 and later.
+
+Grasshopper: `GetToolboxItemsComponent`
+
+Example: [archicad-addon/Examples/Application/GetToolboxItems.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetToolboxItems.py): Lists the tools of the Toolbox with GetToolboxItems, the tools of add-ons included, and the active tool. Each item can be given to SetCurrentTool as it is. includeHidden also lists the tools without an icon, e.g. the Slab Accessory.
 
 ### GetLineFromUser
 
@@ -212,6 +313,8 @@ Parameters:
 - `startPrompt` (string): Prompt for selecting the line start point.
 - `endPrompt` (string): Prompt for selecting the line end point.
 - `showRubberLineFeedback` (boolean): If true, draws a unit-square rubber feedback around the cursor while input is active.
+- `snapFilter` (SnapFilter): Which points and lines of the elements the cursor snaps to, for both points. Default: Archicad's usual snapping.
+- `constraint` (InputConstraint): Constrains the end point, for example to a direction from the start point (type Angle with fromLastPoint). The start point is not constrained. Default: no constraint.
 
 Returns:
 
@@ -221,7 +324,38 @@ Returns:
 
 Grasshopper: `GetLineFromUserComponent`
 
-Example: [archicad-addon/Examples/Application/GetLineFromUser.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetLineFromUser.py): Asks the user to draw a line in the current window with GetLineFromUser and prints its end points. Waits for two clicks in Archicad; Escape returns cancelled.
+Example: [archicad-addon/Examples/Application/GetLineFromUser.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetLineFromUser.py): Asks the user to draw a line in the current window with GetLineFromUser and prints its end points. Waits for two clicks in Archicad; Escape returns cancelled. The optional snapFilter makes the cursor snap only to points (end points, vertices, hotspots), not to edges, and never to hatches. The optional constraint keeps the end point on the horizontal line through the start point (angle 0 measured from the last clicked point), so the line is always horizontal.
+
+### GetArcFromUser
+
+Asks the designer to draw an arc in the current window - its center, its start point (which sets the radius) and its end point - with a rubber-band circle shown while drawing, and returns its center, radius, start and end angles, the angle it turns through, its direction and its start and end points. Archicad waits for the clicks or for Escape, and every other JSON command queues behind this one until then; cancelling returns cancelled.
+
+Group: Application Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetArcFromUser
+
+Parameters:
+
+- `centerPrompt` (string): Prompt for clicking the center of the arc. Single-byte text: the control box takes a char field.
+- `startPrompt` (string): Prompt for clicking the start point of the arc, which also sets its radius.
+- `endPrompt` (string): Prompt for clicking the end point of the arc. Archicad draws the arc while the cursor moves; the direction the cursor goes around the center decides whether the arc is clockwise.
+- `showRubberArcFeedback` (boolean): If true, also draws the whole circle of the arc while the start and end points are chosen: its radius follows the cursor until the start point is clicked. Drawn in 2D windows only; the 3D window shows Archicad's default feedback.
+- `snapFilter` (SnapFilter): Which points and lines of the elements the cursor snaps to for the center and the start point. Archicad's arc input has no snap filter, so the end point snaps as usual. Default: Archicad's usual snapping.
+- `constraint` (InputConstraint): Constrains every click: the center, the start point and the end point. With fromLastPoint the start point is measured from the center (type Distance fixes the radius, type Angle the direction of the start point) and the end point from the start point. Default: no constraint.
+
+Returns:
+
+- `cancelled` (boolean, required): True if the user cancelled the input (Escape); no other field is returned then.
+- `center` (Coordinate3D): The center of the arc.
+- `radius` (number): The radius of the arc: the distance of the start point from the center in the x-y plane.
+- `startAngle` (number): The direction of the start point from the center, in radians from the x axis, counterclockwise, between -pi and pi.
+- `endAngle` (number): The direction of the end point from the center, in radians from the x axis, counterclockwise, between -pi and pi.
+- `arcAngle` (number): The angle the arc turns through from its start to its end, in radians: positive (up to 2*pi) for a counterclockwise arc, negative (down to -2*pi) for a clockwise one.
+- `clockwise` (boolean): True if the arc was drawn clockwise from its start to its end.
+- `startPoint` (Coordinate3D): The start point of the arc, as clicked.
+- `endPoint` (Coordinate3D): The end point of the arc: the point of its circle in the direction of the third click (its z is the clicked z).
+
+Grasshopper: `GetArcFromUserComponent`
+
+Example: [archicad-addon/Examples/Application/GetArcFromUser.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetArcFromUser.py): Asks the user to draw an arc in the current window with GetArcFromUser and prints its center, radius and angles. Waits for three clicks in Archicad (center, start point, end point); Escape returns cancelled. The optional snapFilter makes the center and the start point snap only to points (end points, vertices, hotspots), not to edges, and never to hatches; the end point snaps as usual. The optional constraint keeps every click at the height 0 (type Z), which matters in the 3D window.
 
 ### GetPolygonFromUser
 
@@ -233,7 +367,9 @@ Parameters:
 
 - `startPrompt` (string): Prompt for selecting the polygon start point.
 - `prompt` (string): Prompt shown while placing the remaining polygon nodes.
-- `method` (string ("General", "Rect", "RotRect", "Polyline")): Polygon input method. 'General' = free polygon, 'Rect' = axis-aligned rectangle, 'RotRect' = rotated rectangle, 'Polyline' = open polyline.
+- `method` (PolygonInputMethod)
+- `snapFilter` (SnapFilter): Which points and lines of the elements the cursor snaps to for the start point. Archicad's polygon input has no snap filter, so the other nodes snap as usual. Default: Archicad's usual snapping.
+- `constraint` (InputConstraint): Constrains the nodes after the start point, for example to a direction from the previous node (type Angle with fromLastPoint). The start point is not constrained. Default: no constraint.
 
 Returns:
 
@@ -243,7 +379,48 @@ Returns:
 
 Grasshopper: `GetPolygonFromUserComponent`
 
-Example: [archicad-addon/Examples/Application/GetPolygonFromUser.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetPolygonFromUser.py): Asks the user to draw a polygon in the current window with GetPolygonFromUser and prints its points and arcs. Waits for the polygon input in Archicad (a double click or Enter finishes it); Escape returns cancelled.
+Example: [archicad-addon/Examples/Application/GetPolygonFromUser.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetPolygonFromUser.py): Asks the user to draw a polygon in the current window with GetPolygonFromUser and prints its points and arcs. Waits for the polygon input in Archicad (a double click or Enter finishes it); Escape returns cancelled. The optional snapFilter makes the first corner snap only to the corners of zones; the other corners snap as usual.
+
+### GetMagicWandSettings
+
+Returns the settings of Archicad's Magic Wand Settings dialog: how curves are approximated with straight segments (a number of segments along arcs or circles, a largest deviation from the curve, or a segment length) and the trace method. Useful to know how the Magic Wand will trace a curve. Changes nothing in the project.
+
+Group: Application Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetMagicWandSettings
+
+Parameters: none.
+
+Returns:
+
+- `curveApproximation` (string ("SegmentsAlongArcs", "SegmentsAlongCircles", "DeviationFromCurves", "SegmentLength", "Unknown"), required): How the Magic Wand approximates curves with straight segments: a fixed number of segments along arcs or along full circles (segmentCount), segments that deviate from the curve by at most maxDeviation, or segments of segmentLength. Unknown for a mode this version of Tapir does not know.
+- `segmentCount` (integer, required): The number of segments along an arc or circle, used by SegmentsAlongArcs and SegmentsAlongCircles.
+- `maxDeviation` (number, required): The largest distance of the segments from the curve, in meters, used by DeviationFromCurves.
+- `segmentLength` (number, required): The length of the segments, in meters, used by SegmentLength.
+- `traceMethod` (string ("Linear", "BestMatch", "Unknown"), required): How curves are traced: Linear traces them with straight segments as set above, BestMatch with the curves that match them best. Unknown for a method this version of Tapir does not know.
+
+Grasshopper: `GetMagicWandSettingsComponent`
+
+Example: [archicad-addon/Examples/Application/GetMagicWandSettings.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/GetMagicWandSettings.py): Prints the Magic Wand settings (how curves are approximated with segments, and the trace method) with GetMagicWandSettings.
+
+### ConvertImages
+
+Converts base64 encoded images from one image format to another with Archicad's own image converters, for example a PNG preview image to JPEG. The formats are Bitmap, GIF, TIFF, JPEG and PNG, or the MIME type of another format Archicad can read or write. The output is aligned with the input array of images. Changes nothing in the project.
+
+Group: Application Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ConvertImages
+
+Parameters:
+
+- `images` (array of object, required): The images to convert.
+  - `image` (string, required): The base64 encoded image, for example a previewImage returned by GetElementPreviewImage.
+  - `inputFormat` (string, required): The format of the image: Bitmap, GIF, TIFF, JPEG or PNG, or the MIME type of another format Archicad can read (for example image/x-targa).
+  - `outputFormat` (string, required): The format to convert the image to: Bitmap, GIF, TIFF, JPEG or PNG, or the MIME type of another format Archicad can write.
+
+Returns:
+
+- `images` (array of object or ErrorItem, required): The converted images in the order of the input, or an error.
+
+Grasshopper: `ConvertImagesComponent`
+
+Example: [archicad-addon/Examples/Application/ConvertImages.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/ConvertImages.py): ConvertImages converts base64 encoded images with Archicad's own converters. The formats are Bitmap, GIF, TIFF, JPEG and PNG, or the MIME type of another format Archicad can read or write. Here the PNG preview image of an element is converted to JPEG, and to a MIME type format.
 
 ### GetCurrentWindowType
 
@@ -319,7 +496,7 @@ Parameters:
 
 Returns:
 
-- `databases` (array of object or ErrorItem, required): The database of each element, in the order of the input elements. Pass windowType and databaseId to ChangeWindow to open it.
+- `databases` (array of ContainingDatabase or ErrorItem, required): The database of each element, in the order of the input elements. Pass windowType and databaseId to ChangeWindow to open it.
 
 Grasshopper: `GetContainingDatabasesComponent`
 
@@ -333,9 +510,7 @@ Group: Application Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.co
 
 Parameters:
 
-- `windows` (array of object, required): The windows to close.
-  - `databaseId` (DatabaseId, required): The database shown in the window, as GetDatabases, GetContainingDatabases or GetDatabaseIdFromNavigatorItemId return it.
-  - `windowType` (WindowType): Optional. When given, the window is only closed when its database is of this type.
+- `windows` (array of WindowToClose, required): The windows to close.
 
 Returns:
 
@@ -417,6 +592,43 @@ Grasshopper: `ShowAlertComponent`
 
 Example: [archicad-addon/Examples/Application/ShowAlert.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/ShowAlert.py): Shows a warning dialog with two buttons in Archicad with ShowAlert and prints which one was clicked. Waits until the user clicks a button.
 
+### ShowNotificationBubble
+
+Shows a non-blocking notification bubble with a message in the current Archicad window, e.g. to report progress or a result without stopping the user as ShowAlert does. The bubble disappears by itself after the timeout. It is shown at a model coordinate or a pixel position of the current view, by default at the center of the current 2D view. Optionally it gets a large icon, is shown at most a given number of times, or is turned off, until the user runs 'Enable all informational messages'. Returns the bubble's settings read back from Archicad. Requires Archicad 29 or later.
+
+Group: Application Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ShowNotificationBubble
+
+Parameters:
+
+- `message` (string, required): The text of the notification bubble.
+- `icon` (string ("none", "information", "warning", "error")): The icon shown in the bubble. Default: information.
+- `timeoutMilliseconds` (integer): How long the bubble stays, in milliseconds. Default: Archicad's default, 1000 (1 second).
+- `coordinate` (Coordinate3D): The model coordinate in the current database (meters) where the bubble is shown, converted like ModelToScreen does: in a 3D window it is projected with the current camera, in other windows z is disregarded. Do not give it together with screenPoint. When neither is given, the bubble is shown at the center of the current view in 2D windows and at the project's local origin otherwise.
+- `screenPoint` (object): The pixel position local to the current Archicad view window (not global desktop coordinates) where the bubble is shown, e.g. a point returned by ModelToScreen. Do not give it together with coordinate.
+  - `h` (integer, required): Horizontal pixel position from the left edge of the view window.
+  - `v` (integer, required): Vertical pixel position from the top edge of the view window.
+- `offset` (object): Moves the bubble from its position by this many pixels.
+  - `h` (integer, required): Horizontal offset in pixels, positive to the right.
+  - `v` (integer, required): Vertical offset in pixels, positive downwards.
+- `largeIcon` (string ("information", "warning", "error")): The icon shown instead of icon when the "Use large alert cues" option is on in Work Environment. Not set by default.
+- `redrawCountLimit` (integer): Shows the bubble at most this many times. After that it does not appear again, for any later ShowNotificationBubble call, until the user runs the 'Enable all informational messages' command in Archicad. Not set by default.
+- `disabled` (boolean): True turns the bubble off instead of showing it: it does not appear again, for any later ShowNotificationBubble call, until the user runs the 'Enable all informational messages' command in Archicad. False (the default) changes nothing.
+
+Returns:
+
+- `text` (string): The text of the bubble. Missing when it has none.
+- `icon` (string ("none", "information", "warning", "error", "other"), required): The icon of the bubble.
+- `largeIcon` (string ("none", "information", "warning", "error", "other"), required): The icon shown when the "Use large alert cues" option is on in Work Environment.
+- `offset` (object, required): The offset of the bubble from its position, in pixels.
+  - `h` (integer, required)
+  - `v` (integer, required)
+- `timeoutMilliseconds` (integer, required): How long the bubble stays, in milliseconds.
+- `redrawCountLimit` (integer): How many times the bubble is shown at most. Missing when it has no limit.
+
+Grasshopper: `ShowNotificationBubbleComponent`
+
+Example: [archicad-addon/Examples/Application/ShowNotificationBubble.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Application/ShowNotificationBubble.py): Shows a non-blocking notification bubble in Archicad with ShowNotificationBubble and prints the bubble's settings. Unlike ShowAlert, the script and the user go on at once; the bubble disappears after the timeout. Without a coordinate or screenPoint it is shown at the center of the current 2D view. largeIcon is used when "Use large alert cues" is on in Work Environment. The response is the bubble's text, icons, offset, timeout and redraw count limit as Archicad reports them. redrawCountLimit and disabled (not used here) stop the bubble from appearing until the user runs 'Enable all informational messages'. Requires Archicad 29 or later.
+
 ### GetSpecialFolders
 
 Retrieves the filesystem paths of the special folders of the running Archicad (preferences, cache, data, temporary, application, defaults, templates, help, embedded project library, etc.).
@@ -494,7 +706,7 @@ Group: Application Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.co
 
 Parameters:
 
-- `checks` (array of string ("Hotlinks", "All", "Libraries", "Drawings", "Licenses")): The Action Center checks to run, in this order. Omitted means ["Hotlinks"]. "Hotlinks" is available on every Archicad version; "All", "Libraries", "Drawings" and "Licenses" only on Archicad 25, later versions return an error for them in their execution result.
+- `checks` (array of ActionCenterCheck): The Action Center checks to run, in this order. Omitted means ["Hotlinks"]. "Hotlinks" is available on every Archicad version; "All", "Libraries", "Drawings" and "Licenses" only on Archicad 25, later versions return an error for them in their execution result.
 
 Returns:
 
@@ -537,7 +749,7 @@ Returns:
 - `updateVersion` (string): The update version, as text. Archicad 29 or later.
 - `hotfixVersion` (string): The hotfix version, as text. Archicad 29 or later.
 - `versionNumbers` (array of integer): The three parts of the version number. Archicad 28 only.
-- `availableDomains` (array of string ("Architecture", "MEP")): The domains available in the running Archicad. Archicad 29 or later.
+- `availableDomains` (array of ProductDomain): The domains available in the running Archicad. Archicad 29 or later.
 - `ceipProjectId` (string): The CEIP project identifier of the open project. Left out when no saved project is open. Archicad 29 or later.
 
 Grasshopper: `GetProductVersionInfoComponent`
@@ -623,7 +835,7 @@ Returns:
 
 - `isUntitled` (boolean, required): True, if the project is not saved yet.
 - `isTeamwork` (boolean, required): True, if the project is a Teamwork (BIMcloud) project.
-- `projectLocation` (string): The location of the project in the filesystem or a BIMcloud project reference.
+- `projectLocation` (string): The location of the project in the filesystem or a BIMcloud project reference. A BIMcloud project reference is returned without the user name and login token.
 - `projectPath` (string): The path of the project. A filesystem path or a BIMcloud server relative path.
 - `projectName` (string): The name of the project.
 
@@ -665,7 +877,7 @@ Example: [archicad-addon/Examples/Project/SetProjectInfoField.py](https://github
 
 ### CreateProjectInfoFields
 
-Creates one or more custom project info fields.
+Creates one or more custom project info fields. From Archicad 30 the Project Info group of each field can be given; without it the field goes to the first group.
 
 Group: Project Commands. Added in Tapir 1.5.2. Docs: https://archicad-api.com/archicad-addon/#CreateProjectInfoFields
 
@@ -675,7 +887,7 @@ Parameters:
 
 Returns:
 
-- `fields` (ProjectInfoFields, required)
+- `fields` (CreatedProjectInfoFieldsOrErrors, required)
 
 Grasshopper: `CreateProjectInfoFieldsComponent`
 
@@ -683,13 +895,14 @@ Example: [archicad-addon/Examples/Project/CreateProjectInfoFields.py](https://gi
 
 ### DeleteProjectInfoFields
 
-Deletes one or more custom project info fields. Hardcoded fields cannot be deleted.
+Deletes one or more custom project info fields, by their autotext keys or, from Archicad 30, by the ids of the fields of the Project Info groups. Hardcoded fields cannot be deleted.
 
 Group: Project Commands. Added in Tapir 1.5.4. Docs: https://archicad-api.com/archicad-addon/#DeleteProjectInfoFields
 
 Parameters:
 
-- `projectInfoIds` (array of string, required): List of project info field ids to delete. Only custom fields (ids starting with 'autotext-') can be deleted.
+- `projectInfoIds` (array of string): List of project info field ids (autotext keys, as GetProjectInfoFields returns them) to delete. Only custom fields can be deleted. On Archicad 30 a key is matched to the field by its name, so it fails when more than one field has the name; delete such a field by its projectInfoFieldId instead.
+- `projectInfoFieldIds` (array of ProjectInfoFieldIdArrayItem): List of fields of the Project Info groups to delete, by the ids GetProjectInfoGroups returns. Available from Archicad 30. Their results follow the results of projectInfoIds.
 
 Returns:
 
@@ -698,6 +911,47 @@ Returns:
 Grasshopper: `DeleteProjectInfoFieldsComponent`
 
 Example: [archicad-addon/Examples/Project/DeleteProjectInfoFields.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Project/DeleteProjectInfoFields.py): Creates a custom Project Info field and deletes it by its autotext key with DeleteProjectInfoFields. Built-in fields cannot be deleted. From Archicad 30 fields can also be deleted by projectInfoFieldIds.
+
+### RenameProjectInfoFields
+
+Renames custom fields of the Project Info groups. Fixed (built-in) fields cannot be renamed. Available from Archicad 30.
+
+Group: Project Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#RenameProjectInfoFields
+
+Parameters:
+
+- `projectInfoFields` (array of object, required): The fields of the Project Info groups to rename, each with its new name. Fixed (built-in) fields cannot be renamed.
+  - `projectInfoFieldId` (ProjectInfoFieldId, required)
+  - `name` (string, required): The new name of the field. It must not be used by another field.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `RenameProjectInfoFieldsComponent`
+
+Example: [archicad-addon/Examples/Project/RenameProjectInfoFields.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Project/RenameProjectInfoFields.py): Creates a custom Project Info field, renames it with RenameProjectInfoFields, then deletes it. Built-in fields cannot be renamed. Requires Archicad 30 or later.
+
+### MoveProjectInfoFields
+
+Moves fields of the Project Info groups to a group, before another field of it or to its end. A subfield of a calculated field moves with its parent field. Available from Archicad 30.
+
+Group: Project Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#MoveProjectInfoFields
+
+Parameters:
+
+- `projectInfoFields` (array of object, required): The fields of the Project Info groups to move, in the order the moves are made. A subfield of a calculated field cannot be moved on its own, it moves with its parent field.
+  - `projectInfoFieldId` (ProjectInfoFieldId, required)
+  - `projectInfoGroupId` (ProjectInfoGroupId, required): The group to move the field to. To reorder a field within its group, give its current group.
+  - `beforeProjectInfoFieldId` (ProjectInfoFieldId): The field of the target group to move the field before. When omitted, the field is moved to the end of the group.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `MoveProjectInfoFieldsComponent`
+
+Example: [archicad-addon/Examples/Project/MoveProjectInfoFields.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Project/MoveProjectInfoFields.py): Creates a custom Project Info field, moves it to the top of the first group with MoveProjectInfoFields, then deletes it. Requires Archicad 30 or later.
 
 ### GetProjectInfoGroups
 
@@ -742,9 +996,7 @@ Group: Project Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `projectInfoGroups` (array of object, required): The Project Info groups to rename, each with its new name.
-  - `projectInfoGroupId` (ProjectInfoGroupId, required)
-  - `name` (string, required): The new name of the group. It must not be used by another group.
+- `projectInfoGroups` (array of ProjectInfoGroupRename, required): The Project Info groups to rename, each with its new name.
 
 Returns:
 
@@ -780,9 +1032,7 @@ Group: Project Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `projectInfoGroups` (array of object, required): The Project Info groups to move, in the order the moves are made.
-  - `projectInfoGroupId` (ProjectInfoGroupId, required)
-  - `beforeProjectInfoGroupId` (ProjectInfoGroupId): The group to move the group before. When omitted, the group is moved to the end of the group list.
+- `projectInfoGroups` (array of ProjectInfoGroupMove, required): The Project Info groups to move, in the order the moves are made.
 
 Returns:
 
@@ -865,21 +1115,57 @@ Grasshopper: `GetAutoTextNameComponent`
 
 Example: [archicad-addon/Examples/Project/GetAutoTextName.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Project/GetAutoTextName.py): Prints the display names of two autotext keys with GetAutoTextName.
 
+### GetAllAutoTextKeys
+
+Retrieves every autotext key Archicad knows (not only the property-based ones returned by GetAutoTextKeys) with its current value, resolved without an element context.
+
+Group: Project Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetAllAutoTextKeys
+
+Parameters: none.
+
+Returns:
+
+- `autoTexts` (array of object, required)
+  - `key` (string, required): The autotext's key. To embed it in the content of a Text or Label element, surround it with '<' and '>'.
+  - `value` (string, required): The autotext's current value, as Archicad resolves it without an element context.
+
+Grasshopper: `GetAllAutoTextKeysComponent`
+
+Example: [archicad-addon/Examples/Project/GetAllAutoTextKeys.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Project/GetAllAutoTextKeys.py): Prints the first autotext keys Archicad knows, each with its current value, with GetAllAutoTextKeys. The values are resolved without an element context; the keys and values depend on the project, the Archicad version and the UI language.
+
+### InterpretAutoTexts
+
+Resolves one or more autotexts (e.g. '<LAYOUTID>') to their values, optionally in the context of an element, so a key can be tested before it is written into a Text or Label.
+
+Group: Project Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#InterpretAutoTexts
+
+Parameters:
+
+- `autoTexts` (array of string, required): The autotexts to resolve, either as they are written in the content of a Text or Label element, e.g. '<LAYOUTID>' or '<PROPERTY-69A58F6F-DD3B-478D-B5EF-09A16BD0C548>', or as bare keys without the surrounding '<' and '>', e.g. 'LAYOUTID'.
+- `elementId` (ElementId): Optional. The element in whose context the autotexts are resolved, e.g. a Text on a layout for layout autotexts. When omitted, they are resolved without an element context.
+
+Returns:
+
+- `values` (array of object or ErrorItem, required): One result per input autotext, in the same order.
+
+Grasshopper: `InterpretAutoTextsComponent`
+
+Example: [archicad-addon/Examples/Project/InterpretAutoTexts.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Project/InterpretAutoTexts.py): Resolves the project name autotext to its value with InterpretAutoTexts. An autotext can be given as written in a Text ('<PROJECTNAME>') or as a bare key ('PROJECTNAME'). Pass an elementId (e.g. of a Text on a layout) to resolve them in that element's context.
+
 ### GetNoteAutotexts
 
-Retrieves the autotexts available in the notes of an element type (e.g. a Dimension), each with the element types it is available for. The autotexts are identified by the numeric value of their API_NoteAutotextID. Needs Archicad 26 or later.
+Retrieves the autotexts available in the notes of an element type (e.g. a Dimension), each with the element types it is available for. The autotexts are identified by the numeric value of their API_NoteAutotextID. For a Dimension, the optional dimensionAppearance (Linear by default) chooses the dimension type. Needs Archicad 26 or later.
 
 Group: Project Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#GetNoteAutotexts
 
 Parameters:
 
 - `noteOwnerType` (ElementType, required): The type of the element that owns the note, e.g. 'Dimension', 'RadialDimension', 'LevelDimension' or 'AngleDimension'.
+- `dimensionAppearance` (string ("Linear", "Cumulative", "Baseline", "Elevation")): Optional dimension type, as in the Dimension Settings, whose note autotexts are listed when noteOwnerType is 'Dimension'. Defaults to Linear. Not allowed with other owner types.
 
 Returns:
 
-- `noteAutotexts` (array of object, required): The autotexts available in the notes of the given owner type, in ascending order of autotextId.
-  - `autotextId` (integer, required): The numeric value of the autotext's API_NoteAutotextID in the Archicad API.
-  - `elementTypes` (array of ElementType, required): The element types the autotext is available for.
+- `noteAutotexts` (array of NoteAutotextDetails, required): The autotexts available in the notes of the given owner type, in ascending order of autotextId.
 
 Grasshopper: `GetNoteAutotextsComponent`
 
@@ -897,7 +1183,7 @@ Parameters:
 
 Returns:
 
-- `keywords` (array of object or ErrorItem, required): One result per input id, in the same order.
+- `keywords` (array of NoteAutoTextKeyword or ErrorItem, required): One result per input id, in the same order.
 
 Grasshopper: `GetNoteAutoTextKeywordsComponent`
 
@@ -1084,7 +1370,7 @@ Parameters:
 
 Returns:
 
-- `proxyElementTables` (array of object or ErrorItem, required): One item per requested instance, in order: its proxy elements with the source elements they were made from, or an error.
+- `proxyElementTables` (array of HotlinkProxyElementTable or ErrorItem, required): One item per requested instance, in order: its proxy elements with the source elements they were made from, or an error.
 
 Grasshopper: `GetHotlinkProxyElementTableComponent`
 
@@ -1098,12 +1384,11 @@ Group: Project Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `hotlinks` (array of object, required): The source files of hotlinks of the project, for example the location of each node GetHotlinks returns.
-  - `location` (string, required): Absolute path of the hotlink's source file.
+- `hotlinks` (array of HotlinkSourceReference, required): The source files of hotlinks of the project, for example the location of each node GetHotlinks returns.
 
 Returns:
 
-- `hotlinkSourceStatuses` (array of object or ErrorItem, required): One item per requested hotlink, in order: the availability of its source file, or an error.
+- `hotlinkSourceStatuses` (array of HotlinkSourceStatusResult or ErrorItem, required): One item per requested hotlink, in order: the availability of its source file, or an error.
 
 Grasshopper: `GetHotlinkSourceStatusComponent`
 
@@ -1111,7 +1396,7 @@ Example: [archicad-addon/Examples/Project/GetHotlinkSourceStatus.py](https://git
 
 ### OpenProject
 
-Opens the given project.
+Opens the given project. The unsaved changes of the open project are discarded without asking: Archicad has no query for them, so call SaveProject first when they must be kept.
 
 Group: Project Commands. Added in Tapir 1.0.7. Docs: https://archicad-api.com/archicad-addon/#OpenProject
 
@@ -1154,13 +1439,14 @@ Example: [archicad-addon/Examples/Project/CloseProject.py](https://github.com/EN
 
 ### SaveProject
 
-Saves the currently opened project.
+Saves the currently opened project, in place or to a given path. With overwrite false it refuses to replace an existing file at the path.
 
 Group: Project Commands. Added in Tapir 1.3.1. Docs: https://archicad-api.com/archicad-addon/#SaveProject
 
 Parameters:
 
-- `projectPath` (string): Optional. Full path of a .pln file to save the project to, as File > Save As does: the open project then refers to that file. This saves an untitled project, or one opened from an older Archicad version, which cannot be saved in place. An existing file at the path is overwritten. When omitted, or when it is the project's own file, the project is saved in place, which keeps the refusal of a project opened read-only.
+- `projectPath` (string): Optional. Full path of a .pln file to save the project to, as File > Save As does: the open project then refers to that file. This saves an untitled project, or one opened from an older Archicad version, which cannot be saved in place. An existing file at the path is overwritten, unless overwrite is false. When omitted, or when it is the project's own file, the project is saved in place, which keeps the refusal of a project opened read-only.
+- `overwrite` (boolean): Optional, true by default. Only together with projectPath: false refuses to save when a file already exists at projectPath, the project's own file included, and writes nothing.
 
 
 Grasshopper: `SaveProjectComponent`
@@ -1169,13 +1455,14 @@ Example: [archicad-addon/Examples/Project/SaveProject.py](https://github.com/ENZ
 
 ### SaveAsModuleFile
 
-Saves the given elements, or the current selection, as a hotlink module (.mod) file.
+Saves the given elements, or the current selection, as a hotlink module (.mod) file. With overwrite false it refuses to replace an existing file.
 
 Group: Project Commands. Added in Tapir 1.5.9. Docs: https://archicad-api.com/archicad-addon/#SaveAsModuleFile
 
 Parameters:
 
-- `moduleFilePath` (string, required): Absolute path of the .mod file to write. An existing file is overwritten. The current window must be a floor plan, section, elevation or detail.
+- `moduleFilePath` (string, required): Absolute path of the .mod file to write. An existing file is overwritten, unless overwrite is false. The current window must be a floor plan, section, elevation or detail.
+- `overwrite` (boolean): Optional, true by default. false refuses to save when a file already exists at moduleFilePath, and writes nothing.
 - `elements` (Elements): Optional. The elements that go into the module; omitted, the current selection does, as Save Selection as Module would. Pass GetAllElements for the whole project. Archicad 25 and 26 support the selection form only.
 
 
@@ -1185,13 +1472,14 @@ Example: [archicad-addon/Examples/Project/SaveAsModuleFile.py](https://github.co
 
 ### SaveProjectAsArchive
 
-Saves the open project as an archive (.pla) file, with the library parts it uses inside.
+Saves the open project as an archive (.pla) file, with the library parts it uses inside. With overwrite false it refuses to replace an existing file.
 
 Group: Project Commands. Added in Tapir 1.6.0. Docs: https://archicad-api.com/archicad-addon/#SaveProjectAsArchive
 
 Parameters:
 
-- `archiveFilePath` (string, required): Absolute path of the .pla archive to write. An existing file is overwritten. The archive becomes the open project, as Save As does.
+- `archiveFilePath` (string, required): Absolute path of the .pla archive to write. An existing file is overwritten, unless overwrite is false. The archive becomes the open project, as Save As does.
+- `overwrite` (boolean): Optional, true by default. false refuses to save when a file already exists at archiveFilePath, and writes nothing.
 - `includeLibraryParts` (boolean): Optional, true by default. Whether the library parts the project uses go into the archive, which makes the archive usable as a linked library of another project.
 - `includeProperties` (boolean): Optional, true by default. Whether the properties go into the archive.
 - `includeTextures` (boolean): Optional, false by default. Whether the linked textures go into the archive.
@@ -1202,15 +1490,69 @@ Grasshopper: `SaveProjectAsArchiveComponent`
 
 Example: [archicad-addon/Examples/Project/SaveProjectAsArchive.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Project/SaveProjectAsArchive.py): Saves the open project as an archive (.pla) in the temp folder with SaveProjectAsArchive.
 
+### GetRenderingScenes
+
+Gets the names of the rendering scenes of the project (the Scene list of the PhotoRendering Settings palette), the most recently used first, and the name of the current scene.
+
+Group: Project Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#GetRenderingScenes
+
+Parameters: none.
+
+Returns:
+
+- `sceneNames` (array of string, required): The names of the rendering scenes of the project (the Scene list of the PhotoRendering Settings palette), in the order of recent usage: the most recently used scene, the current one, first.
+- `currentSceneName` (string): The name of the current rendering scene, the one selected in the PhotoRendering Settings palette: the first of sceneNames. Left out when the project has no rendering scene.
+
+Grasshopper: `GetRenderingScenesComponent`
+
+Example: [archicad-addon/Examples/Project/GetRenderingScenes.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Project/GetRenderingScenes.py): Prints the names of the rendering scenes and the current scene with GetRenderingScenes.
+
+### SetCurrentRenderingScene
+
+Makes the given rendering scene the current one, as selecting it in the PhotoRendering Settings palette does.
+
+Group: Project Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#SetCurrentRenderingScene
+
+Parameters:
+
+- `sceneName` (string, required): The name of the rendering scene to make current, one of the names GetRenderingScenes returns.
+
+
+Grasshopper: `SetCurrentRenderingSceneComponent`
+
+Example: [archicad-addon/Examples/Project/SetCurrentRenderingScene.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Project/SetCurrentRenderingScene.py): Makes the last rendering scene the current one with SetCurrentRenderingScene, then restores the original scene.
+
+### PhotoRender
+
+Renders the 3D model with the current rendering scene, or with the given one, as Document > Creative Imaging > PhotoRender Projection does, and saves the image to a file (png, jpg, bmp, tiff or gif). The image size, resolution and quality come from the scene; a width, height or resolution given here is used for this render only, the scene is not changed. With overwrite false it refuses to replace an existing file.
+
+Group: Project Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#PhotoRender
+
+Parameters:
+
+- `imageFilePath` (string, required): Absolute path of the image file to write. An existing file is overwritten, unless overwrite is false.
+- `overwrite` (boolean): Optional, true by default. false refuses to render when a file already exists at imageFilePath, and writes nothing.
+- `format` (string ("png", "jpg", "bmp", "tiff", "gif")): Optional. The image file format; omitted, it comes from the extension of imageFilePath (.png, .jpg or .jpeg, .bmp, .tif or .tiff, .gif).
+- `sceneName` (string): Optional. The rendering scene to render with, one of the names GetRenderingScenes returns. It is made the current scene first, as SetCurrentRenderingScene does, and stays current afterwards. Omitted, the current scene is used.
+- `width` (integer): Optional. The width of the image in pixels (the Size field of the PhotoRendering Settings palette). Omitted, the width of the scene is used. The image settings of the scene are changed for this render only and restored afterwards.
+- `height` (integer): Optional. The height of the image in pixels (the Size field of the PhotoRendering Settings palette). Omitted, the height of the scene is used. The image settings of the scene are changed for this render only and restored afterwards.
+- `resolution` (integer): Optional. The resolution of the image in dpi (the Resolution field of the PhotoRendering Settings palette). Omitted, the resolution of the scene is used. The image settings of the scene are changed for this render only and restored afterwards.
+
+
+Grasshopper: `PhotoRenderComponent`
+
+Example: [archicad-addon/Examples/Project/PhotoRender.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Project/PhotoRender.py): Renders the 3D model with the current rendering scene into a 640x480 png in the temp folder with PhotoRender. The model is rendered as the 3D window shows it. The scene's own size and resolution are not changed.
+
 ### SaveCurrentWindowAsImage
 
-Saves what the current window shows as an image file (png, jpg, bmp, tiff or gif), as File > Save as does with a picture format. Master layout windows are not supported: save a layout that uses the master layout instead.
+Saves what the current window shows as an image file (png, jpg, bmp, tiff or gif), as File > Save as does with a picture format. Master layout windows are not supported: save a layout that uses the master layout instead. With overwrite false it refuses to replace an existing file.
 
 Group: Project Commands. Added in Tapir 1.7.2. Docs: https://archicad-api.com/archicad-addon/#SaveCurrentWindowAsImage
 
 Parameters:
 
-- `imageFilePath` (string, required): Absolute path of the image file to write. An existing file is overwritten.
+- `imageFilePath` (string, required): Absolute path of the image file to write. An existing file is overwritten, unless overwrite is false.
+- `overwrite` (boolean): Optional, true by default. false refuses to save when a file already exists at imageFilePath, and writes nothing.
 - `format` (string ("png", "jpg", "bmp", "tiff", "gif")): Optional. The image file format; omitted, it comes from the extension of imageFilePath (.png, .jpg or .jpeg, .bmp, .tif or .tiff, .gif).
 - `colorDepth` (string ("blackAndWhite", "16Colors", "256Colors", "16Grays", "256Grays", "trueColor", "trueColorWithAlpha")): Optional, trueColor by default. The color depth of the image, as in the Save as picture dialog.
 - `dithered` (boolean): Optional, false by default. Whether the image is dithered when its color depth drops colors.
@@ -1234,8 +1576,8 @@ Group: Project Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `source` (string ("3DWindow", "RenderingWindow")): Optional, 3DWindow by default. The window whose image is returned: the 3D window, or the PhotoRendering window.
-- `format` (string ("png", "jpg")): Optional, png by default. The image format.
+- `source` (ViewImageSource): Optional, 3DWindow by default.
+- `format` (ViewImageFormat): Optional, png by default.
 
 Returns:
 
@@ -1246,54 +1588,6 @@ Returns:
 Grasshopper: `GetCurrentViewImageComponent`
 
 Example: [archicad-addon/Examples/Project/GetCurrentViewImage.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Project/GetCurrentViewImage.py): Gets what the 3D window shows as a png with GetCurrentViewImage and writes it to the temp folder. Needs the 3D window to be open. Requires Archicad 30 or later.
-
-### GetRenderingScenes
-
-Gets the names of the rendering scenes of the project, as the Scene list of the PhotoRendering Settings palette shows them.
-
-Group: Project Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#GetRenderingScenes
-
-Parameters: none.
-
-Returns:
-
-- `sceneNames` (array of string, required): The names of the rendering scenes of the project, in the order of the Scene list of the PhotoRendering Settings palette. The API does not tell which one is current.
-
-Grasshopper: `GetRenderingScenesComponent`
-
-Example: [archicad-addon/Examples/Project/GetRenderingScenes.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Project/GetRenderingScenes.py): Prints the names of the rendering scenes and the current scene with GetRenderingScenes.
-
-### SetCurrentRenderingScene
-
-Makes the given rendering scene the current one, as selecting it in the PhotoRendering Settings palette does.
-
-Group: Project Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#SetCurrentRenderingScene
-
-Parameters:
-
-- `sceneName` (string, required): The name of the rendering scene to make current, one of the names GetRenderingScenes returns.
-
-
-Grasshopper: `SetCurrentRenderingSceneComponent`
-
-Example: [archicad-addon/Examples/Project/SetCurrentRenderingScene.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Project/SetCurrentRenderingScene.py): Makes the last rendering scene the current one with SetCurrentRenderingScene, then restores the original scene.
-
-### PhotoRender
-
-Renders the 3D model with the current rendering scene, or with the given one, as Document > Creative Imaging > PhotoRender Projection does, and saves the image to a file (png, jpg, bmp, tiff or gif). The image size and quality come from the scene.
-
-Group: Project Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#PhotoRender
-
-Parameters:
-
-- `imageFilePath` (string, required): Absolute path of the image file to write. An existing file is overwritten.
-- `format` (string ("png", "jpg", "bmp", "tiff", "gif")): Optional. The image file format; omitted, it comes from the extension of imageFilePath (.png, .jpg or .jpeg, .bmp, .tif or .tiff, .gif).
-- `sceneName` (string): Optional. The rendering scene to render with, one of the names GetRenderingScenes returns. It is made the current scene first, as SetCurrentRenderingScene does, and stays current afterwards. Omitted, the current scene is used.
-
-
-Grasshopper: `PhotoRenderComponent`
-
-Example: [archicad-addon/Examples/Project/PhotoRender.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Project/PhotoRender.py): Renders the 3D model with the current rendering scene into a 640x480 png in the temp folder with PhotoRender. The model is rendered as the 3D window shows it. The scene's own size and resolution are not changed.
 
 ### GetCalculationUnits
 
@@ -1310,18 +1604,9 @@ Returns:
   - `accuracy` (AccuracyType, required)
   - `decimals` (integer, required): Number of decimals to display for length values.
   - `roundInch` (integer): Fractional inches.
-- `area` (object, required)
-  - `unit` (AreaType, required)
-  - `accuracy` (AccuracyType, required)
-  - `decimals` (integer, required): Number of decimals to display for area values.
-- `volume` (object, required)
-  - `unit` (VolumeType, required)
-  - `accuracy` (AccuracyType, required)
-  - `decimals` (integer, required): Number of decimals to display for volume values.
-- `angle` (object, required)
-  - `unit` (AngleType, required)
-  - `decimals` (integer, required): Number of decimals to display for angle values.
-  - `accuracy` (integer, required): Accuracy for angle values.
+- `area` (CalculationUnitAreaFormat, required)
+- `volume` (CalculationUnitVolumeFormat, required)
+- `angle` (AngleUnitFormat, required)
 
 Grasshopper: `GetCalculationUnitsComponent`
 
@@ -1350,7 +1635,7 @@ Example: [archicad-addon/Examples/Project/GetDimensionStandards.py](https://gith
 
 ### GetExportTolerance
 
-Gets the export tolerance: the largest distance allowed between an arc and the straight segments that replace it when curves are segmented for export.
+Gets the export tolerance: the largest distance allowed between an arc and the straight segments that replace it when curves are segmented for export. Archicad only provides this value while an export is in progress, so outside an export the command returns an error saying so.
 
 Group: Project Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#GetExportTolerance
 
@@ -1400,13 +1685,13 @@ Example: [archicad-addon/Examples/Project/SetLast3DDefaultLevels.py](https://git
 
 ### GetProjectPreferences
 
-Gets pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units and the zones. Further pages may follow.
+Gets pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units, the zones and the reference levels, and the Floor Plan Cut Plane Settings. Further pages may follow.
 
 Group: Project Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/archicad-addon/#GetProjectPreferences
 
 Parameters:
 
-- `preferenceTypes` (array of string ("WorkingUnits", "Dimensions", "CalculationUnits", "Zones")): The preference pages to get. Every page when missing.
+- `preferenceTypes` (array of string ("WorkingUnits", "Dimensions", "CalculationUnits", "Zones", "ReferenceLevels", "FloorPlanCutPlane")): The preference pages to get. Every page when missing.
 
 Returns:
 
@@ -1432,6 +1717,14 @@ Returns:
   - `angle` (object, required)
 - `zones` (object): The Zones page: the reduction of the calculated zone area under a low ceiling. The wall inset (niche) sizes of the page are not available through the API.
   - `lowCeilingAreaReduction` (object, required): Up to three ceiling height limits split a zone into height ranges; the area of each range is reduced by its own percent in the calculated area of the zone.
+- `referenceLevels` (object): The Reference Levels page: two named levels that elevations can be measured from, besides Project Zero and the stories.
+  - `level1` (object, required): The first reference level.
+  - `level2` (object, required): The second reference level.
+- `floorPlanCutPlane` (object): The Floor Plan Cut Plane Settings (Document > Floor Plan Cut Plane): where the floor plan cuts the model and which range of it the floor plan shows.
+  - `cutPlaneHeight` (number, required): The height of the cut plane from the current story in meters.
+  - `topLevel` (object, required): The top of the floor plan range: elements are shown up to this level.
+  - `bottomLevel` (object, required): The bottom of the floor plan range: elements are shown down to this level.
+  - `absoluteDisplayLimit` (number, required): The absolute display limit from Project Zero in meters: elements set to show on the floor plan down to the absolute display limit are shown down to this level.
 
 Grasshopper: `GetProjectPreferencesComponent`
 
@@ -1439,7 +1732,7 @@ Example: [archicad-addon/Examples/Project/GetProjectPreferences.py](https://gith
 
 ### SetProjectPreferences
 
-Changes pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units and the zones. Only the given fields change, the rest of each page keeps its value. In Teamwork the PreferencesDialog lockable object set has to be reserved first (ReserveLockableObjectSet). Available from Archicad 27.
+Changes pages of the project preferences (Options > Project Preferences): the working units, the dimensions, the calculation units, the zones and the reference levels, and the Floor Plan Cut Plane Settings. Only the given fields change, the rest of each page keeps its value. In Teamwork the PreferencesDialog lockable object set has to be reserved first (ReserveLockableObjectSet). Available from Archicad 27.
 
 Group: Project Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/archicad-addon/#SetProjectPreferences
 
@@ -1467,6 +1760,14 @@ Parameters:
   - `angle` (object)
 - `zones` (object): The Zones page: the reduction of the calculated zone area under a low ceiling. The wall inset (niche) sizes of the page are not available through the API.
   - `lowCeilingAreaReduction` (object): Up to three ceiling height limits split a zone into height ranges; the area of each range is reduced by its own percent in the calculated area of the zone.
+- `referenceLevels` (object): The Reference Levels page: two named levels that elevations can be measured from, besides Project Zero and the stories.
+  - `level1` (object): The first reference level.
+  - `level2` (object): The second reference level.
+- `floorPlanCutPlane` (object): The Floor Plan Cut Plane Settings (Document > Floor Plan Cut Plane): where the floor plan cuts the model and which range of it the floor plan shows.
+  - `cutPlaneHeight` (number): The height of the cut plane from the current story in meters.
+  - `topLevel` (object): The top of the floor plan range: elements are shown up to this level.
+  - `bottomLevel` (object): The bottom of the floor plan range: elements are shown down to this level.
+  - `absoluteDisplayLimit` (number): The absolute display limit from Project Zero in meters: elements set to show on the floor plan down to the absolute display limit are shown down to this level.
 
 Returns:
 
@@ -1474,6 +1775,8 @@ Returns:
 - `dimensions` (ExecutionResult)
 - `calculationUnits` (ExecutionResult)
 - `zones` (ExecutionResult)
+- `referenceLevels` (ExecutionResult)
+- `floorPlanCutPlane` (ExecutionResult)
 
 Grasshopper: `SetProjectPreferencesComponent`
 
@@ -1487,13 +1790,11 @@ Group: Project Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `values` (array of object, required): The values to convert.
-  - `value` (number, required): The value to convert, in meters, square meters, cubic meters or radians, matching the kind of the preference.
-  - `preference` (string ("WorkModel", "WorkLayout", "WorkAngle", "DimLinear", "DimAngle", "DimRadial", "DimLevel", "DimElevation", "DimDoorWindow", "DimParapet", "DimArea", "CalcLength", ...), required): The Project Preference whose unit and rounding are applied: WorkModel, WorkLayout and WorkAngle are the Working Units; the Dim ones are the Dimensions (DimDoorWindow the door, window and skylight dimensions, DimParapet the sill height, DimArea the area calculations); the Calc ones are the Calculation Units & Rules.
+- `values` (array of UnitValueConversionData, required): The values to convert.
 
 Returns:
 
-- `convertedValues` (array of object or ErrorItem, required): The converted values, in the order of the input. A value that cannot be converted is an error item.
+- `convertedValues` (array of ConvertedUnitValue or ErrorItem, required): The converted values, in the order of the input. A value that cannot be converted is an error item.
 
 Grasshopper: `ConvertUnitValuesComponent`
 
@@ -1509,7 +1810,7 @@ Parameters: none.
 
 Returns:
 
-- `renovationStatuses` (array of object or ErrorItem, required): The renovation statuses an element can have, in the order Existing, New, Demolished.
+- `renovationStatuses` (array of RenovationStatusName or ErrorItem, required): The renovation statuses an element can have, in the order Existing, New, Demolished.
 
 Grasshopper: `GetRenovationStatusNamesComponent`
 
@@ -1573,20 +1874,7 @@ Group: Project Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `placeInfo` (object, required): The place settings to change (API_PlaceInfo), with its field names. Only the given keys are changed; an empty object changes nothing and returns the current settings.
-  - `longitude` (number): Longitude in degrees.
-  - `latitude` (number): Latitude in degrees.
-  - `altitude` (number): Altitude in meters.
-  - `north` (number): The north direction in radians.
-  - `year` (integer)
-  - `month` (integer)
-  - `day` (integer)
-  - `hour` (integer)
-  - `minute` (integer)
-  - `second` (integer)
-  - `sumTime` (boolean): Whether summer time (+1 hour) is on.
-  - `timeZoneInMinutes` (integer): The time zone, in minutes from Greenwich.
-  - `timeZoneOffset` (integer): Tells apart time zones with the same timeZoneInMinutes.
+- `placeInfo` (PlaceSettingsUpdate, required)
 
 Returns:
 
@@ -1648,8 +1936,8 @@ Returns:
 - `city` (string, required): City.
 - `country` (string, required): Country.
 - `postalCode` (string, required): Postal code.
-- `architect` (string, required): Architect.
-- `draftsmen` (string, required): Draftsmen.
+- `architect` (string, required): Architect: the full name of the Project Info contact. Archicad keeps it as name parts (title prefix, given, middle and family name, title suffix); SetProjectNotes puts a new value into the given name and clears the other parts, so it reads back unchanged. Use SetProjectInfoField to set the parts.
+- `draftsmen` (string, required): Draftsmen: the full name of the Project Info CAD technician, kept as name parts like architect.
 - `projectStatus` (string, required): Project status.
 - `dateOfIssue` (string, required): Date of issue (free text, as typed in Project Notes).
 - `keywords` (string, required): Keywords.
@@ -1661,7 +1949,7 @@ Example: [archicad-addon/Examples/Project/GetProjectNotes.py](https://github.com
 
 ### SetProjectNotes
 
-Changes the Project Notes of the project (File > Info > Project Notes). Only the given fields are changed; texts longer than the field Archicad stores are truncated.
+Changes the Project Notes of the project (File > Info > Project Notes). Only the given fields are changed; texts longer than the field Archicad stores are truncated. architect and draftsmen are full names that Archicad keeps as name parts: a new name is stored in the given name with the other parts cleared, and the parts of a name that is not given or not changed are kept.
 
 Group: Project Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/archicad-addon/#SetProjectNotes
 
@@ -1674,8 +1962,8 @@ Parameters:
 - `city` (string): City.
 - `country` (string): Country.
 - `postalCode` (string): Postal code.
-- `architect` (string): Architect.
-- `draftsmen` (string): Draftsmen.
+- `architect` (string): Architect: the full name of the Project Info contact. Archicad keeps it as name parts (title prefix, given, middle and family name, title suffix); SetProjectNotes puts a new value into the given name and clears the other parts, so it reads back unchanged. Use SetProjectInfoField to set the parts.
+- `draftsmen` (string): Draftsmen: the full name of the Project Info CAD technician, kept as name parts like architect.
 - `projectStatus` (string): Project status.
 - `dateOfIssue` (string): Date of issue (free text, as typed in Project Notes).
 - `keywords` (string): Keywords.
@@ -1725,6 +2013,23 @@ Parameters:
 Grasshopper: `CalculateSunPositionComponent`
 
 Example: [archicad-addon/Examples/Project/CalculateSunPosition.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Project/CalculateSunPosition.py): Calculates the sun's azimuth and altitude at noon on 21 June at the project location with CalculateSunPosition. Fields left out keep the project's value. The project is not changed.
+
+### GetCoordinateOrigins
+
+Gets the offset of the virtual coordinate system origin from the world origin, and the user origin of the current database. Use it to tell which origin the coordinates of different sources (elements, views, survey point) are relative to.
+
+Group: Project Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetCoordinateOrigins
+
+Parameters: none.
+
+Returns:
+
+- `virtualOriginOffset` (Coordinate2D): The offset of the origin of the virtual coordinate system from the world origin. Archicad sets it after a project is opened when the model is far from the world origin. Missing when Archicad does not return it for the current window.
+- `userOrigin` (Coordinate3D): The user origin of the current database, relative to the origin of the virtual coordinate system. Missing when the current window has none (only floor plan, section, detail and 3D windows have one).
+
+Grasshopper: `GetCoordinateOriginsComponent`
+
+Example: [archicad-addon/Examples/Project/GetCoordinateOrigins.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Project/GetCoordinateOrigins.py): Prints the virtual origin offset and the user origin of the current database with GetCoordinateOrigins.
 
 ### PrintView
 
@@ -1789,6 +2094,31 @@ Parameters:
 Grasshopper: `SetAutoIntersectComponent`
 
 Example: [archicad-addon/Examples/Project/SetAutoIntersect.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Project/SetAutoIntersect.py): Turns Auto-Intersection off with SetAutoIntersect, reads it back, then restores the previous state. It is a setting of the running Archicad, not of the project.
+
+### ResolveNames
+
+Looks up words or phrases (for example from a user's question) among the names of the open project before they are passed to other commands: stories, layers, layer combinations, building materials, composites, profiles, surfaces, fills, lines, zone categories, element types (by API name and, from Archicad 27, by the name the Archicad interface shows), properties (by name, and by group and name together) and classifications (systems by name and version, items of every system by name and ID). For each name it returns 'found' with the items named exactly so, 'closeMatches' with the nearest names, best first (ranked by differences in case, accents, spacing and separators, shared words, one name containing the other and a few differing characters), or 'notFound' when nothing in the project is close, meaning the project has no such item and it must not be guessed. Each match carries what the other commands take: the story index, the attribute id and index, the elementType, the propertyId (with the property's group, value type and the classification items a custom property is available for), or the classificationSystemId and classificationItemId. Matching is lexical and deterministic. Read only.
+
+Group: Project Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ResolveNames
+
+Parameters:
+
+- `names` (array of object, required): The words or phrases to look up in the open project, for example taken from a user's question.
+  - `name` (string, required): The word or phrase.
+  - `kind` (NameKind): The kind of item the word names. When it is left out, every kind is searched.
+- `maxCloseMatches` (integer): The most close matches returned for one word, best first. The default is 5.
+
+Returns:
+
+- `results` (array of object, required): One result for each of the given names, in the same order.
+  - `name` (string, required): The given word or phrase.
+  - `status` (string ("found", "closeMatches", "notFound"), required): found: an item of the project has exactly this name (see found). closeMatches: no item has exactly this name, but some are close (see closeMatches). notFound: nothing in the project is close to it; the project has no such item, so it must not be guessed.
+  - `found` (array of NameMatch, required): The items named exactly so (the same characters), with match 'exact'. More than one when items of different kinds, or several stories, have the name.
+  - `closeMatches` (array of NameMatch, required): When nothing is named exactly so: the nearest items, best first. Empty when the status is found or notFound.
+
+Grasshopper: `ResolveNamesComponent`
+
+Example: [archicad-addon/Examples/Project/ResolveNames.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Project/ResolveNames.py): Checks words from a user's question against the open project with ResolveNames before using them: a story, a building material, an element type, a property, a classification and a word looked up among every kind of name. Each result says whether the project has an item named exactly so (found), only similar names (closeMatches, best first) or nothing close (notFound). A matched property carries the propertyId that GetPropertyValuesOfElements takes, a matched classification item its classificationSystemId and classificationItemId.
 
 
 ## Custom Data Commands
@@ -1893,7 +2223,7 @@ Group: Element Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `type` (string ("ModificationStamp", "3DModel")): How GetElementChangesSince finds the changed elements between this state and another one. ModificationStamp (the default) compares the modification stamps of the elements, so any change to an element counts. 3DModel compares the 3D model of the elements, so only a change that alters the 3D model counts, and capturing it generates the 3D model of the project. Two states can only be compared when they were captured with the same type.
+- `type` (string ("ModificationStamp", "3DModel")): How GetElementChangesSince finds the changed elements between this state and another one. ModificationStamp (the default) compares the modification stamps of the elements, so any change to a tracked element counts. 3DModel compares the 3D model of the elements, so only a change that alters the 3D model counts, and capturing it generates the 3D model of the project. Two states can only be compared when they were captured with the same type. With either type the changes come from Archicad's element difference generator, which tracks the model elements: 2D elements such as texts, labels and hatches can be missing from the result even when they were created, modified or deleted.
 
 Returns:
 
@@ -1907,7 +2237,7 @@ Example: [archicad-addon/Examples/Element/CaptureElementState.py](https://github
 
 ### GetElementChangesSince
 
-Returns the new, modified and deleted elements between a state captured by CaptureElementState and either another captured state (toStateId) or the current state of the project. Scripts that keep an external copy of the model use it to sync only what changed instead of re-reading every element. Fails for a stateId that is unknown - never captured, released, or lost because the project was closed or Archicad restarted.
+Returns the new, modified and deleted elements between a state captured by CaptureElementState and either another captured state (toStateId) or the current state of the project. Scripts that keep an external copy of the model use it to sync only what changed instead of re-reading every element. The changes come from Archicad's element difference generator, which tracks the model elements: 2D elements such as texts, labels and hatches can be missing from the lists, so read those directly. Fails for a stateId that is unknown - never captured, released, or lost because the project was closed or Archicad restarted.
 
 Group: Element Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#GetElementChangesSince
 
@@ -1956,7 +2286,7 @@ Parameters:
 
 Returns:
 
-- `names` (array of object or ErrorItem, required): The localized name of each element type, aligned with the input, or an error.
+- `names` (array of ElementTypeName or ErrorItem, required): The localized name of each element type, aligned with the input, or an error.
 
 Grasshopper: `GetElementTypeNamesComponent`
 
@@ -1997,9 +2327,60 @@ Grasshopper: `ChangeSelectionComponent`
 
 Example: [archicad-addon/Examples/Element/ChangeSelectionOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ChangeSelectionOfElements.py): Adds walls to the selection and removes one of them again with ChangeSelectionOfElements. Needs at least one Wall. The original selection is restored at the end.
 
+### DeselectAll
+
+Clears the selection in the current window.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#DeselectAll
+
+Parameters: none.
+
+
+Grasshopper: `DeselectAllComponent`
+
+Example: [archicad-addon/Examples/Element/DeselectAll.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/DeselectAll.py): Clears the selection in the current window with DeselectAll. The original selection is restored at the end.
+
+### GetMarquee
+
+Gets the marquee of the current window: its shape (rectangle, rotated rectangle or polygon), whether it is multi-story, and its outline as a polygon. Returns the type 'none' when there is no marquee.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetMarquee
+
+Parameters: none.
+
+Returns:
+
+- `type` (string ("none", "rectangle", "rotatedRectangle", "polygon"), required): The shape of the marquee in the current window, or 'none' when there is no marquee.
+- `multiStory` (boolean): True for a multi-story (thick) marquee, false for a single-story (thin) one. Absent when there is no marquee.
+- `box` (BoundingBox2D): The rectangle of a 'rectangle' or 'rotatedRectangle' marquee. For a rotated rectangle it is given as Archicad stores it: in the coordinate system rotated by rotationAngle around the project origin, not around the box itself. Use polygon for the corners on the plan.
+- `rotationAngle` (number): The rotation angle (radians) of a 'rotatedRectangle' marquee.
+- `polygon` (array of Coordinate2D): The vertices of the marquee outline on the plan, each listed once: the four corners of a 'rectangle' or 'rotatedRectangle' marquee, the vertices of a 'polygon' marquee.
+
+Grasshopper: `GetMarqueeComponent`
+
+Example: [archicad-addon/Examples/Element/GetMarquee.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetMarquee.py): Reads the marquee of the current window with GetMarquee: its shape, whether it is multi-story, and its outline. The type is 'none' when there is no marquee.
+
+### SetMarquee
+
+Draws a marquee in the current window from a polygon or a box (optionally rotated), single- or multi-story. Called without polygon and box it removes the marquee.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#SetMarquee
+
+Parameters:
+
+- `polygon` (array of Coordinate2D): The vertices of a polygon marquee, in order. The polygon is closed automatically; a repeated first vertex at the end is accepted. Give either polygon or box.
+- `box` (BoundingBox2D): A rectangle marquee. With rotationAngle it is a rotated rectangle, and the box is read the way Archicad stores it (see GetMarquee): in the coordinate system rotated by rotationAngle around the project origin. Give either polygon or box.
+- `rotationAngle` (number): Rotation angle (radians) of the box around the project origin. Only together with box. The default is 0: a horizontal rectangle.
+- `multiStory` (boolean): True for a multi-story (thick) marquee, false for a single-story (thin) one. The default is false.
+
+
+Grasshopper: `SetMarqueeComponent`
+
+Example: [archicad-addon/Examples/Element/SetMarquee.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/SetMarquee.py): Draws a 10 x 10 m rectangle marquee around the origin with SetMarquee, then reads it back. The original marquee (or no marquee) is restored at the end.
+
 ### FilterElements
 
-Keeps the elements that match all the given criteria: Archicad's flag filters (filters), layer (layerIndices), home story (floorIndices) and element type (elementTypes). Within one criterion any of the listed values matches; an omitted criterion does not filter.
+Keeps the elements that match all the given criteria: Archicad's flag filters (filters), layer (layerIndices), home story (floorIndices), element type (elementTypes) and hotlink (fromHotlink, hotlinkIds). Within one criterion any of the listed values matches; an omitted criterion does not filter.
 
 Group: Element Commands. Added in Tapir 1.0.7. Docs: https://archicad-api.com/archicad-addon/#FilterElements
 
@@ -2010,6 +2391,8 @@ Parameters:
 - `layerIndices` (array of integer): Optional. An element is kept only when it is on one of these layers (the layerIndex field of GetDetailsOfElements).
 - `floorIndices` (array of integer): Optional. An element is kept only when its home story is one of these (the floorIndex field of GetDetailsOfElements).
 - `elementTypes` (array of ElementType): Optional. An element is kept only when its type is one of these.
+- `fromHotlink` (boolean): Optional. true keeps only the elements that came in through a placed hotlink (they are read-only), false only the project's own elements.
+- `hotlinkIds` (array of ElementId): Optional. An element is kept only when it came in through one of these placed hotlink instances (the hotlinkId field of GetDetailsOfElements, elements of type Hotlink).
 
 Returns:
 
@@ -2019,28 +2402,60 @@ Grasshopper: `FilterElementsComponent`
 
 Example: [archicad-addon/Examples/Element/FilterElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/FilterElements.py): Keeps only the editable walls and slabs of all elements with FilterElements.
 
+### GetElementsByCriteria
+
+Returns the elements, or with countOnly only their number, that match all the given criteria: element types, home stories, layers, Archicad's element filter flags and property criteria (a value compared in internal units, or a value status such as hasValue, isUserUndefined, isNotAvailable, isDefault or hasCustomValue). An unknown type, property or operator is an error, not ignored. Objects that belong to another element (zone stamps, the parts of stairs and railings) are left out unless the IncludeSubElemObjects filter is given.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetElementsByCriteria
+
+Parameters:
+
+- `types` (array of ElementType): Optional filter for element types (e.g. ['Wall', 'Column']).
+- `floorIndices` (array of integer): Optional filter for story/floor indices (e.g. [0, 1]).
+- `layerIndices` (array of integer): Optional filter for layer attribute indices.
+- `filters` (array of ElementFilter): Optional Archicad API element filter flags. Objects that belong to another element (zone stamps, the parts of stairs, railings and curtain walls) are left out unless IncludeSubElemObjects is given, as in GetElementsByType and GetAllElements.
+- `propertyCriteria` (array of object): Optional list of property evaluation criteria. All criteria must match (AND condition).
+  - `propertyId` (PropertyId)
+  - `propertyName` (string): Case-insensitive property definition name, as shown in the project's language. An error is returned when it matches no property, or properties in more than one group and propertyGroupName is not given. Prefer propertyId in scripts that must work in any language.
+  - `propertyGroupName` (string): Case-insensitive property group name, to choose between properties of the same name in different groups.
+  - `operator` (string ("equals", "notEquals", "contains", "greaterThan", "lessThan", "greaterOrEqual", "lessOrEqual", "hasValue", "hasAnyValue", "isUndefined", "isUserUndefined", "isNotAvailable", ...)): Evaluation operator. Default is 'equals'. hasValue (alias hasAnyValue) matches a property with a value, isUserUndefined (alias isUndefined) one set to undefined by the user, isNotAvailable one that does not apply to the element. isDefault matches a property whose value comes from its default, hasCustomValue one whose value was set on the element (also to undefined). Archicad gives the default status only together with the evaluated value, so isDefault and hasCustomValue take as long as reading the value, also for expression properties.
+  - `value` (string): Expected value as a string. Required for the comparison operators. For number, integer, length, area, volume and angle properties, equals, notEquals and the range operators compare numbers in internal units (m, m², m³, rad) written with a decimal point, independent of the project's display settings; other properties compare the displayed text, case-insensitively.
+- `countOnly` (boolean): If true, only returns the count of matching elements without listing their GUIDs. Minimizes token usage.
+- `limit` (integer): Maximum number of matching elements to list. The count is still the total number of matches.
+
+Returns:
+
+- `count` (integer, required): Total number of matching elements.
+- `elements` (Elements): List of matching elements.
+
+Grasshopper: `GetElementsByCriteriaComponent`
+
+Example: [archicad-addon/Examples/Element/GetElementsByCriteria.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetElementsByCriteria.py): Finds walls by story and by a property value with GetElementsByCriteria, first counting them only. The property criterion compares the wall thickness in metres, whatever the project's display units.
+
 ### GetDetailsOfElements
 
-Gets the details of the given elements (geometry parameters etc). Use the optional fields parameter to return only the fields you need and skip the computation of the others (for example floorPlanPolygons). An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true.
+Gets the details of elements (geometry parameters etc). When elements is omitted, all elements matching the optional server-side filter (types, floorIndices, layerIndices) are queried; an empty elements list returns no details. Use the optional fields parameter to return only the fields you need (e.g. elementId, type, id, floorIndex) and skip the computation of the others (for example floorPlanPolygons). Use the optional additionalFields parameter to also get the info string, the compound info string, the library part unique ID and the creator tool unique ID. An element of another database (a layout, a section, a worksheet ...) returns only its header fields (type, floor index, layer, draw index) with fromOtherDatabase set to true.
 
 Group: Element Commands. Added in Tapir 1.5.7. Docs: https://archicad-api.com/archicad-addon/#GetDetailsOfElements
 
 Parameters:
 
-- `elements` (Elements, required)
+- `elements` (Elements): Optional list of elements to get details for. When omitted, all elements in the current database (optionally filtered by the filter parameter) are used; an empty list returns no details.
 - `fields` (array of ElementDetailsField): Optional filter for the fields to return for each element. When omitted, every field is returned. Fields not listed are not computed at all, so listing only what you need skips in particular the floorPlanPolygons extraction, which regenerates each element's 2D drawing primitives and can dominate the execution time of batch reads.
+- `filter` (ElementTypeFloorLayerFilter): Optional server-side filter. Without elements, only the elements matching it are returned. A listed element that does not match it gets an error entry in its place.
+- `additionalFields` (array of ElementDetailsAdditionalField): Optional extra fields to return for each element, on top of the ones selected by fields. None of them is returned unless listed here, so callers that do not give this parameter get the same response as before.
 
 Returns:
 
-- `detailsOfElements` (array of object or object or ErrorItem, required): One entry per input element, in the same order as the input elements array. An element that cannot be read gets an error entry in its place, so the position of an entry tells which input element it belongs to.
+- `detailsOfElements` (array of DetailsOfElement or ElementHeaderFromOtherDatabase or ErrorItem, required): One entry per input element, in the same order as the input elements array. An element that cannot be read, or that does not match the filter, gets an error entry in its place, so the position of an entry tells which input element it belongs to. Without elements, one entry per element that matches the filter.
 
 Grasshopper: `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `FillsComponent`, `GetDetailsOfBeamsComponent`, `GetDetailsOfColumnsComponent`, `GetDetailsOfElementsComponent`, `GetDetailsOfLabelsComponent`, `GetDetailsOfPolylinesComponent`, `GetDetailsOfRoofsComponent`, `GetDetailsOfSlabsComponent`, `GetDetailsOfTextsComponent`, `GetDetailsOfWallsComponent`, `GetDetailsOfZonesComponent`, `HotspotsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent`
 
-Example: [archicad-addon/Examples/Element/GetDetailsOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetDetailsOfElements.py): Reads the details (type, story, layer, geometry etc.) of the first walls with GetDetailsOfElements. Needs at least one Wall. The second call asks only for the fields it needs, which is faster.
+Example: [archicad-addon/Examples/Element/GetDetailsOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetDetailsOfElements.py): Reads the details (type, story, layer, geometry etc.) of the first walls with GetDetailsOfElements. Needs at least one Wall. The second call asks only for the fields it needs, which is faster. The third gives no elements but a filter, so it reads every wall of the ground floor in one call.
 
 ### SetDetailsOfElements
 
-Sets the details of the given elements (floor, layer, order, Element ID etc).
+Sets the details of the given elements. Every element type: Element ID (id), story (floorIndex), layer (layerIndex) and display order (drawIndex). In typeSpecificDetails: Wall - start and end point, height, base offset, and the start and end thickness of a trapezoid wall; Zone - the ZoneSettings fields (the same as ModifyZones); Line - start and end point, pen, line type, room separator; Arc and Circle - origin, radius, angle, ratio, start and end angle (arcs only), reflected, pen, line type, room separator; Polyline - points and arcs, pen, line type, room separator; Spline - pen, line type, room separator; Hatch - outline, holes, contour pen, fill pen and background pen or colors, fill or building material, area display, room special and fill orientation; Hotspot - position, height, pen; Text - text, position, angle, height, justification; Label - the text of a text label; Drawing - position, angle, ratio, model offset, clip polygon (isCutWithFrame), name, ID and numbering, scale in Autotext, border, title library part, pen table (penTableUsageMode, penTableIndex), colorMode, isTransparentBackground, rasterizeDPI and the anchor (anchorPoint, useOwnOriginAsAnchor). Not written, because the Archicad API does not take them: the geometry of a Spline, the source of a Drawing (use ChangeDrawingLink), the Drawing Manager's update type and stored in project, and often a placed Drawing's drawingScale, which comes from its source view (the element's result then names the kept value). Other wall, slab, column, beam, stair and object settings are written by their Modify commands. An element Archicad does not let you edit (its layer is hidden or locked, it is locked, or it is not reserved by you in teamwork) gets a failed execution result naming the reason; a Drawing setting Archicad kept unchanged is named in a failed execution result too.
 
 Group: Element Commands. Added in Tapir 1.0.7. Docs: https://archicad-api.com/archicad-addon/#SetDetailsOfElements
 
@@ -2056,7 +2471,7 @@ Returns:
 
 Grasshopper: `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `FillsComponent`, `HotspotsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SetDetailsOfTextsComponent`, `SetDetailsOfWallsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent`
 
-Example: [archicad-addon/Examples/Element/SetDetailsOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/SetDetailsOfElements.py): Raises the height of a wall by 0.5 m with SetDetailsOfElements, reads it back, then restores it. Needs at least one editable Wall.
+Example: [archicad-addon/Examples/Element/SetDetailsOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/SetDetailsOfElements.py): Raises the height of a wall by 0.5 m with SetDetailsOfElements, reads it back, then restores it. Needs at least one editable Wall. The keys of typeSpecificDetails depend on the element type, for example a Drawing takes {'penTableUsageMode': 'ModelPenTable', 'colorMode': 'Grayscale', 'isTransparentBackground': True, 'anchorPoint': 'BottomLeft'}; the command's description lists them for every type. GetDetailsOfElements returns the same keys.
 
 ### SetElementInfoStrings
 
@@ -2066,9 +2481,7 @@ Group: Element Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `elements` (array of object, required)
-  - `elementId` (ElementId, required)
-  - `infoString` (string, required): The new Element ID, as the Info Box shows it (GetDetailsOfElements returns it as id).
+- `elements` (array of ElementInfoString, required)
 
 Returns:
 
@@ -2088,11 +2501,7 @@ Parameters: none.
 
 Returns:
 
-- `categories` (array of object, required): The element categories of the project, each with its possible values.
-  - `categoryId` (ElementCategoryId, required)
-  - `type` (ElementCategoryType, required)
-  - `name` (string, required): The localized name of the category, for display only.
-  - `values` (array of object, required): The possible values of the category.
+- `categories` (array of ElementCategoryDetails, required): The element categories of the project, each with its possible values.
 
 Grasshopper: `GetElementCategoriesComponent`
 
@@ -2111,7 +2520,7 @@ Parameters:
 
 Returns:
 
-- `categoryValuesOfElements` (array of object or ErrorItem, required): The category values of each element, in the order of the input. A category the element does not have is left out of its list; an element that does not exist or has none of the requested categories (an annotation, for example) is represented by an error object.
+- `categoryValuesOfElements` (array of ElementCategoryValues or ErrorItem, required): The category values of each element, in the order of the input. A category the element does not have is left out of its list; an element that does not exist or has none of the requested categories (an annotation, for example) is represented by an error object.
 
 Grasshopper: `GetCategoryValuesOfElementsComponent`
 
@@ -2138,20 +2547,19 @@ Example: [archicad-addon/Examples/Element/GetCategoryValuesOfDefaults.py](https:
 
 ### SetCategoryValuesOfElements
 
-Sets the category values (Structural Function, Position, Renovation Status ...) of the given elements, one element and one category per item, in a single undoable step. The value must belong to the given category, as GetElementCategories lists them; an element without that category gets a failed execution result. The names are localized: use the type and the categoryValueId in scripts.
+Sets the category values (Structural Function, Position, Renovation Status ...) of the given elements, one element and one category per item, in a single undoable step. The value must belong to the given category, as GetElementCategories lists them; an element without that category gets a failed execution result. The names are localized: use the type and the categoryValueId in scripts. With dryRun true nothing is changed and no undo step is created: the response has dryRun set to true, and each item that passes the checks made before writing gets wouldChange, with the element's value in the category now (oldValue) and the value a real run would set (newValue).
 
 Group: Element Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/archicad-addon/#SetCategoryValuesOfElements
 
 Parameters:
 
-- `elementCategoryValues` (array of object, required): The category values to set: one element and one category per item. The same element can appear in several items, one per category.
-  - `elementId` (ElementId, required)
-  - `type` (ElementCategoryType, required)
-  - `categoryValueId` (ElementCategoryValueId, required): A value of the category given by type, as GetElementCategories lists them.
+- `elementCategoryValues` (array of ElementCategoryValueData, required): The category values to set: one element and one category per item. The same element can appear in several items, one per category.
+- `dryRun` (DryRun)
 
 Returns:
 
-- `executionResults` (ExecutionResults, required): One result per item of the input, in the same order.
+- `dryRun` (DryRunFlag)
+- `executionResults` (ChangeExecutionResults, required): One result per item of the input, in the same order. On a dry run an item that passes every check made before writing (the category and the value exist, the element exists and has the category) gets wouldChange: oldValue is the element's value in the category now and newValue the value a real run would set, both as GetCategoryValuesOfElements gives them (type, categoryId, categoryValueId and name; oldValue has only type and categoryId when the element has no value in the category). Archicad can still refuse an item that passes them.
 
 Grasshopper: `SetCategoryValuesOfElementsComponent`
 
@@ -2159,7 +2567,7 @@ Example: [archicad-addon/Examples/Element/SetCategoryValuesOfElements.py](https:
 
 ### Get3DBoundingBoxes
 
-Get the 3D bounding box of elements. The bounding box is calculated from the global origin in the 3D view. The output is the array of the bounding boxes respective to the input array of elements. An element without 3D geometry of its own gets an error item instead of a bounding box.
+Get the 3D bounding box of elements. The bounding box is calculated from the global origin in the 3D view. The output is the array of the bounding boxes respective to the input array of elements. An element without 3D geometry of its own gets an error item instead of a bounding box. Walls, Slabs, Roofs, Zones and Stairs are measured on their 3D model, so the box of a Wall includes its connections to other walls. The current window does not need to show the element: it works with a layout or a section open as well.
 
 Group: Element Commands. Added in Tapir 1.1.2. Docs: https://archicad-api.com/archicad-addon/#Get3DBoundingBoxes
 
@@ -2175,6 +2583,24 @@ Grasshopper: `Get3DBoundingBoxesOfElementsComponent`
 
 Example: [archicad-addon/Examples/Element/Get3DBoundingBoxes.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/Get3DBoundingBoxes.py): Reads the 3D bounding boxes of the first walls with Get3DBoundingBoxes. Needs at least one Wall.
 
+### Get2DBoundingBoxes
+
+Get the 2D bounding box of elements as Archicad draws them, in the coordinates of the database the element is in: the floor plan, a section, a worksheet, a layout or a master layout. Works for 2D elements (Line, PolyLine, Arc, Hatch, Text, Label, Dimension, Drawing ...) as well as for model elements; a Text's box covers its drawn lines, a Drawing's box its frame with the title. The current window does not need to show the element. The output is the array of the bounding boxes respective to the input array of elements.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#Get2DBoundingBoxes
+
+Parameters:
+
+- `elements` (Elements, required)
+
+Returns:
+
+- `boundingBoxes2D` (BoundingBoxes2D, required)
+
+Grasshopper: `Get2DBoundingBoxesOfElementsComponent`
+
+Example: [archicad-addon/Examples/Element/Get2DBoundingBoxes.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/Get2DBoundingBoxes.py): Reads the 2D bounding boxes of the first walls, as Archicad draws them on the floor plan, with Get2DBoundingBoxes. Needs at least one Wall.
+
 ### GetLibPartTransformations
 
 Gets the placement transformation of library part instances (Window, Door, Object, Lamp, Zone) as Archicad computes it: the location, the rotation angle and the x/y scaling. The output is aligned with the input array of elements.
@@ -2187,11 +2613,29 @@ Parameters:
 
 Returns:
 
-- `transformations` (array of object or ErrorItem, required): The placement transformation of each element, aligned with the input, or an error.
+- `transformations` (array of ElementLibraryPartTransformation or ErrorItem, required): The placement transformation of each element, aligned with the input, or an error.
 
 Grasshopper: `GetLibPartTransformationsComponent`
 
 Example: [archicad-addon/Examples/Element/GetLibPartTransformations.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetLibPartTransformations.py): Reads the location, rotation angle and scaling of the first placed objects, windows and doors with GetLibPartTransformations. Needs at least one Object, Window or Door.
+
+### GetSnapPointsOfElements
+
+Gets the snap points (hotspots) of the given elements, of any element type: the points of an element that the cursor snaps to and dimensions attach to (for example the endpoints of a Wall's reference line or the vertices of a Slab), in world coordinates, each with the neig kind and subindex identifying which point of the element it is. For the 2D hotspots of library part instances see GetHotspotsOfElements. The output is aligned with the input array of elements.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetSnapPointsOfElements
+
+Parameters:
+
+- `elements` (Elements, required)
+
+Returns:
+
+- `snapPointsOfElements` (array of object or ErrorItem, required): The snap points (hotspots) of each element, aligned with the input array of elements, or an error.
+
+Grasshopper: `GetSnapPointsOfElementsComponent`
+
+Example: [archicad-addon/Examples/Element/GetSnapPointsOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetSnapPointsOfElements.py): Reads the snap points (hotspots) of a wall with GetSnapPointsOfElements. Needs at least one Wall.
 
 ### ConvertRevealOffsets
 
@@ -2201,14 +2645,11 @@ Group: Element Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `openings` (array of object, required): Windows and doors placed in walls, each with exactly one of coreOffset or sideOffset.
-  - `elementId` (ElementId, required): A window or door placed in a wall.
-  - `coreOffset` (number): Reveal depth offset measured from the core skin of the owner wall, to convert to the wall side reference.
-  - `sideOffset` (number): Reveal depth offset measured from the side of the owner wall, to convert to the core skin reference.
+- `openings` (array of OpeningRevealOffsetData, required): Windows and doors placed in walls, each with exactly one of coreOffset or sideOffset.
 
 Returns:
 
-- `revealOffsets` (array of object or ErrorItem, required): The reveal depth offset of each opening in both references, aligned with the input, or an error.
+- `revealOffsets` (array of OpeningRevealOffsets or ErrorItem, required): The reveal depth offset of each opening in both references, aligned with the input, or an error.
 
 Grasshopper: `ConvertRevealOffsetsComponent`
 
@@ -2226,7 +2667,7 @@ Parameters:
 
 Returns:
 
-- `geometries3D` (array of object or ErrorItem, required): The 3D geometry of each element, aligned with the input: the solid bodies of its 3D model, or an error.
+- `geometries3D` (array of ElementGeometry3D or ErrorItem, required): The 3D geometry of each element, aligned with the input: the solid bodies of its 3D model, or an error.
 
 Grasshopper: `Get3DGeometryOfElementsComponent`
 
@@ -2274,7 +2715,7 @@ Example: [archicad-addon/Examples/Element/GetBodyMaterialsOfElements.py](https:/
 
 ### GetCutPolygonsOfElements
 
-Cuts each body of the 3D model of the given elements with a plane and returns, for each body, its building material, the area of the cut surface and its polygons (outline and holes) in 2D coordinates of the plane. The 3D model is generated with separate components in a temporary sight, so a composite structure has one body per skin and the 3D window is not changed. The output is aligned with the input array of elements. Available from Archicad 28.
+Cuts each body of the 3D model of the given elements with a plane and returns, for each body, its building material, the area of the cut surface and its polygons (outline and holes) in 2D coordinates of the plane. From Archicad 28 the 3D model is generated with separate components in a temporary sight, so a composite structure has one body per skin and the 3D window is not changed. Before Archicad 28 the bodies are those of the element's 3D model (a composite structure is one body) and their building materials are left out. The output is aligned with the input array of elements.
 
 Group: Element Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#GetCutPolygonsOfElements
 
@@ -2329,7 +2770,7 @@ Parameters:
 
 Returns:
 
-- `skylightHolePolygons` (array of object or ErrorItem, required): The hole each Skylight cuts into its host Roof or Shell, aligned with the input: its polygon, or an error (for example for an element that is not a Skylight).
+- `skylightHolePolygons` (array of SkylightHolePolygon or ErrorItem, required): The hole each Skylight cuts into its host Roof or Shell, aligned with the input: its polygon, or an error (for example for an element that is not a Skylight).
 
 Grasshopper: `GetSkylightHolePolygonsComponent`
 
@@ -2348,11 +2789,29 @@ Parameters:
 
 Returns:
 
-- `visibleSkinStatuses` (array of object or ErrorItem, required): Whether each element has a visible skin in the given Partial Structure Display mode, aligned with the input, or an error.
+- `visibleSkinStatuses` (array of VisibleSkinStatus or ErrorItem, required): Whether each element has a visible skin in the given Partial Structure Display mode, aligned with the input, or an error.
 
 Grasshopper: `GetVisibleSkinStatusComponent`
 
 Example: [archicad-addon/Examples/Element/GetVisibleSkinStatus.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetVisibleSkinStatus.py): Checks which slabs still show a skin in the Core Only Partial Structure Display mode with GetVisibleSkinStatus. The current window is not changed. Needs at least one Slab.
+
+### GetRoofPlanes
+
+Gets the single planes of roofs, without changing the roofs. A multi-plane roof is decomposed by Archicad into its planes, each returned with its part identifier and its details as a single-plane roof (slope, pivot line, level, outline with arcs and holes); a single-plane roof is returned as its only plane. The output is aligned with the input array of elements.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetRoofPlanes
+
+Parameters:
+
+- `elements` (Elements, required)
+
+Returns:
+
+- `roofPlanesOfElements` (array of object or ErrorItem, required): The planes of each roof, aligned with the input, or an error.
+
+Grasshopper: `GetRoofPlanesComponent`
+
+Example: [archicad-addon/Examples/Element/GetRoofPlanes.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetRoofPlanes.py): Reads the single planes of the first roofs with GetRoofPlanes; a multi-plane roof comes back plane by plane. Needs at least one Roof.
 
 ### GetCurtainWallAbsoluteBottoms
 
@@ -2366,7 +2825,7 @@ Parameters:
 
 Returns:
 
-- `absoluteBottoms` (array of object or ErrorItem, required): The absolute bottom of each element, aligned with the input, or an error.
+- `absoluteBottoms` (array of CurtainWallAbsoluteBottom or ErrorItem, required): The absolute bottom of each element, aligned with the input, or an error.
 
 Grasshopper: `GetCurtainWallAbsoluteBottomsComponent`
 
@@ -2386,7 +2845,7 @@ Parameters:
 
 Returns:
 
-- `quantitiesOfElements` (array of object or ErrorItem, required): The quantities of the elements, in the order of the given elements. Lengths are in meters, areas in square meters and volumes in cubic meters.
+- `quantitiesOfElements` (array of ElementQuantityDetails or ErrorItem, required): The quantities of the elements, in the order of the given elements. Lengths are in meters, areas in square meters and volumes in cubic meters.
 
 Grasshopper: `GetQuantitiesOfElementsComponent`
 
@@ -2405,7 +2864,7 @@ Parameters:
 
 Returns:
 
-- `triangulations` (array of object or object or ErrorItem, required): The triangulation of the polygon of each element, aligned with the input: its triangles (or with convex: true its convex polygons), or an error (for example for an element type that has no polygon).
+- `triangulations` (array of ElementTriangulation or ElementConvexPolygons or ErrorItem, required): The triangulation of the polygon of each element, aligned with the input: its triangles (or with convex: true its convex polygons), or an error (for example for an element type that has no polygon).
 
 Grasshopper: `TriangulatePolygonsOfElementsComponent`
 
@@ -2423,7 +2882,7 @@ Parameters:
 
 Returns:
 
-- `textureCoordinates` (array of object or ErrorItem, required): The texture coordinates of each element, aligned with the input: per solid body of its 3D model, or an error.
+- `textureCoordinates` (array of ElementTextureCoordinates or ErrorItem, required): The texture coordinates of each element, aligned with the input: per solid body of its 3D model, or an error.
 
 Grasshopper: `GetTextureCoordinatesComponent`
 
@@ -2449,7 +2908,7 @@ Example: [archicad-addon/Examples/Element/GetSurfaceTypesOfElements.py](https://
 
 ### Get3DModelCounts
 
-Gets the number of components of each type (bodies, polygons, polygon edges, edges, vertices, normal vectors, materials and lights) in the 3D model Archicad currently holds, as ACAPI_ModelAccess_GetNum counts them. A type that cannot be counted gets an error item. Available from Archicad 27.
+Gets the number of components of each type (bodies, polygons, polygon edges, edges, vertices, normal vectors, materials and lights) in the 3D model Archicad currently holds. Bodies, materials and lights are counted with ACAPI_ModelAccess_GetNum; the polygons, polygon edges, edges, vertices and normal vectors, which that function refuses to count, are summed over the bodies. A type that cannot be counted gets an error item. Available from Archicad 27.
 
 Group: Element Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#Get3DModelCounts
 
@@ -2457,11 +2916,31 @@ Parameters: none.
 
 Returns:
 
-- `counts` (array of object or ErrorItem, required): The number of components of each type in the 3D model Archicad currently holds, one item per type, or an error for a type that could not be counted.
+- `counts` (array of Model3DCount or ErrorItem, required): The number of components of each type in the 3D model Archicad currently holds, one item per type, or an error for a type that could not be counted.
 
 Grasshopper: `Get3DModelCountsComponent`
 
 Example: [archicad-addon/Examples/Element/Get3DModelCounts.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/Get3DModelCounts.py): Prints how many bodies, polygons, edges, vertices etc. the current 3D model has, with Get3DModelCounts. Requires Archicad 27 or later.
+
+### DeleteUserDataOfElements
+
+Deletes the user data this add-on stored on the given elements. Archicad keeps the user data of an element per add-on, so the data of other add-ons is left as it is. All deletions are one undo step. The output has one execution result per element, aligned with the input array of elements. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each element that exists gets wouldDelete.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#DeleteUserDataOfElements
+
+Parameters:
+
+- `elements` (Elements, required)
+- `dryRun` (DryRun)
+
+Returns:
+
+- `dryRun` (DryRunFlag)
+- `executionResults` (DeletionExecutionResults, required): One result per element, aligned with the input. On a dry run an element that exists gets wouldDelete; Archicad can still refuse to delete its user data.
+
+Grasshopper: `DeleteUserDataOfElementsComponent`
+
+Example: [archicad-addon/Examples/Element/DeleteUserDataOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/DeleteUserDataOfElements.py): Deletes the user data the Tapir Add-On stored on a wall with DeleteUserDataOfElements. The user data of other add-ons is kept. Needs at least one Wall.
 
 ### GetSurfaceQuantitiesOfElements
 
@@ -2476,7 +2955,7 @@ Parameters:
 
 Returns:
 
-- `surfaceQuantitiesOfElements` (array of object or ErrorItem, required): The surface quantities of the elements, in the order of the given elements. Areas are in square meters.
+- `surfaceQuantitiesOfElements` (array of ElementSurfaceQuantities or ErrorItem, required): The surface quantities of the elements, in the order of the given elements. Areas are in square meters.
 
 Grasshopper: `GetSurfaceQuantitiesOfElementsComponent`
 
@@ -2537,11 +3016,11 @@ Group: Element Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/ar
 Parameters:
 
 - `elements` (Elements, required): The elements whose owners are looked up, e.g. Curtain Wall frames or panels, Stair treads or Railing posts.
-- `ownerMode` (string ("root", "parent")): root (default): the root of the hierarchical element tree, e.g. the Curtain Wall, Stair or Railing. parent: the immediate parent, which may itself be a subelement.
+- `ownerMode` (HierarchicalOwnerMode): root by default.
 
 Returns:
 
-- `owners` (array of object or ErrorItem, required): The owner of each element, aligned with the input.
+- `owners` (array of HierarchicalElementOwner or ErrorItem, required): The owner of each element, aligned with the input.
 
 Grasshopper: `GetHierarchicalElementOwnersComponent`
 
@@ -2549,7 +3028,7 @@ Example: [archicad-addon/Examples/Element/GetHierarchicalElementOwners.py](https
 
 ### EditHierarchicalElement
 
-Opens the given hierarchical element (Curtain Wall, Stair, Railing, Beam or Column) in its hierarchical 3D editing mode, as the Edit button of the element does. Fails when Archicad is already in an editing mode. Leave the mode with FinishHierarchicalEditing. Requires Archicad 27 or later.
+Opens the given hierarchical element (Curtain Wall, Stair, Railing, Beam or Column) in its hierarchical 3D editing mode, as the Edit button of the element does. Fails when Archicad is already in an editing mode. Limitation: while the editing mode is open, Archicad refuses every JSON command, this add-on's included, with error 4001 (ongoing user input), FinishHierarchicalEditing included, so the mode can only be left in Archicad, with the button of its edit mode palette (reported for Archicad 29). Requires Archicad 27 or later.
 
 Group: Element Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#EditHierarchicalElement
 
@@ -2564,7 +3043,7 @@ Example: [archicad-addon/Examples/Element/EditHierarchicalElement.py](https://gi
 
 ### FinishHierarchicalEditing
 
-Finishes the current hierarchical editing mode (Curtain Wall, Stair, Railing, Beam or Column): accept true keeps the changes (OK), accept false discards them (Cancel). The accept parameter is required, so changes are never discarded silently. Fails when Archicad is not in such an editing mode. Requires Archicad 27 or later.
+Finishes the current hierarchical editing mode (Curtain Wall, Stair, Railing, Beam or Column): accept true keeps the changes (OK), accept false discards them (Cancel). The accept parameter is required, so changes are never discarded silently. Fails when Archicad is not in such an editing mode. Limitation: while an editing mode is open, Archicad refuses JSON commands with error 4001 (ongoing user input) before they run, so this command cannot leave a mode opened by EditHierarchicalElement or in Archicad (reported for Archicad 29); leave it in Archicad instead. Requires Archicad 27 or later.
 
 Group: Element Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#FinishHierarchicalEditing
 
@@ -2612,7 +3091,7 @@ Example: [archicad-addon/Examples/Element/GetElementsInDrawOrder.py](https://git
 
 ### GetDrawingPrimitivesOfElements
 
-Returns the 2D drawing primitives (points, lines, arcs, texts, polylines, triangles, polygons, pictures) Archicad draws each given floor plan element from, in drawing order, as ACAPI_DrawingPrimitive_ShapePrimsExt decomposes it on every story and unclipped. Control items (type Ctrl_*) mark the beginning and the end of sub-parts such as hatches and texts. The floor plan must be the current database. The output is aligned with the input array of elements.
+Returns the 2D drawing primitives (points, lines, arcs, texts, polylines, triangles, polygons, pictures) Archicad draws each given floor plan element from, in drawing order, as ACAPI_DrawingPrimitive_ShapePrimsExt decomposes it on every story and unclipped. Control items (type Ctrl_*) mark the beginning and the end of sub-parts such as hatches and texts. Texts are returned without their content and polylines without their vertices. A Ctrl_ElementRef item names the element it refers to: the drawing of a Wall ends with one for each Window and Door in it, while Windows and Doors give no primitives of their own. The floor plan must be the current database. The output is aligned with the input array of elements.
 
 Group: Element Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#GetDrawingPrimitivesOfElements
 
@@ -2622,7 +3101,7 @@ Parameters:
 
 Returns:
 
-- `drawingPrimitivesOfElements` (array of object or ErrorItem, required): The drawing primitives of each element, in the order of the input elements.
+- `drawingPrimitivesOfElements` (array of ElementDrawingPrimitives or ErrorItem, required): The drawing primitives of each element, in the order of the input elements.
 
 Grasshopper: `GetDrawingPrimitivesOfElementsComponent`
 
@@ -2640,53 +3119,30 @@ Parameters:
 
 Returns:
 
-- `primitives` (array of object, required): The primitives of the story levels drawn in the database, in the order Archicad draws them. The Ctrl_* items mark the beginning and the end of sub-parts (texts, ...).
-  - `type` (string ("Point", "Line", "Arc", "Text", "PLine", "Tri", "Poly", "Pict", "Ctrl_Beg", "Ctrl_HatchBorderBeg", "Ctrl_HatchBorderEnd", "Ctrl_HatchLinesBeg", ...), required): The API_PrimTypeID name without its API_Prim prefix and ID suffix.
-  - `layer` (AttributeIdArrayItem): The layer of the element.
-  - `pen` (integer, required): The pen index of the primitive.
-  - `drwIndex` (integer, required)
-  - `renovationStatus` (string ("Undefined", "Existing", "New", "Demolished"), required)
-  - `lineType` (AttributeIdArrayItem): Line, Arc, PLine, Tri and Poly: the line type.
-  - `determination` (integer): How the type of the line or fill is determined (origin, inner line, contour line).
-  - `penWeight` (number)
-  - `solid` (boolean)
-  - `loc` (Coordinate2D): Point: the location. Text: the left baseline position.
-  - `c1` (Coordinate2D)
-  - `c2` (Coordinate2D)
-  - `whole` (boolean)
-  - `reflected` (boolean): The arc goes clockwise.
-  - `orig` (Coordinate2D)
-  - `r` (number)
-  - `begAng` (number)
-  - `endAng` (number)
-  - `angle` (number)
-  - `ratio` (number)
-  - `text` (string): Text: the content.
-  - `font` (integer)
-  - `faceBits` (integer)
-  - `effectBits` (integer)
-  - `anchor` (string)
-  - `just` (string)
-  - `heightMM` (number)
-  - `widthMM` (number)
-  - `widthFactor` (number)
-  - `charSpaceFactor` (number)
-  - `drawSegmentMode` (integer)
-  - `nCoords` (integer)
-  - `nSubPolys` (integer)
-  - `nArcs` (integer): The number of curved segments. Their geometry is not returned.
-  - `useRgb` (boolean)
-  - `fillPen` (integer)
-  - `rgbColor` (object)
-  - `coordinates` (array of Coordinate2D): PLine: the vertices. Tri: the three corners.
-  - `polygons` (array of object): Poly: the sub polygons, the first one is the outline, the others are holes.
-  - `rotAngle` (number)
-  - `destBox` (object): Pict: the bounding box of the picture.
-  - `hatchBorder` (object): Ctrl_HatchBorderBeg and Ctrl_HatchLinesBeg: the fill that follows.
+- `primitives` (array of DrawingPrimitive, required): The primitives of the story levels drawn in the database, in the order Archicad draws them. The Ctrl_* items mark the beginning and the end of sub-parts (texts, ...).
 
 Grasshopper: `GetStoryControlPrimitivesComponent`
 
 Example: [archicad-addon/Examples/Element/GetStoryControlPrimitives.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetStoryControlPrimitives.py): Reads the story lines and their markers drawn in the first section with GetStoryControlPrimitives. Needs at least one Section.
+
+### GetShapePrimitivesOfElements
+
+Returns the 2D drawing primitives of each given floor plan element in the same format as GetDrawingPrimitivesOfElements, but drawn as ACAPI_DrawingPrimitive_ShapePrims draws it by default (on the current story, clipped as Archicad clips it) instead of on every story and unclipped. With includeMarkers the objects attached to the elements (window and door markers, drawing titles, ...) are drawn with them or left out; Archicad's setting is changed back afterwards. An element on another story gets an error item. The floor plan must be the current database. The output is aligned with the input array of elements.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetShapePrimitivesOfElements
+
+Parameters:
+
+- `elements` (Elements, required)
+- `includeMarkers` (boolean): Whether the objects attached to the elements (window and door markers, drawing titles, ...) are drawn with them. When omitted, Archicad's current setting is used. The setting is changed back after the drawing.
+
+Returns:
+
+- `shapePrimitivesOfElements` (array of ElementDrawingPrimitives or ErrorItem, required): The drawing primitives of each element, in the order of the input elements.
+
+Grasshopper: `GetShapePrimitivesOfElementsComponent`
+
+Example: [archicad-addon/Examples/Element/GetShapePrimitivesOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetShapePrimitivesOfElements.py): GetShapePrimitivesOfElements draws the elements as ACAPI_DrawingPrimitive_ShapePrims draws them by default, in the format of GetDrawingPrimitivesOfElements. includeMarkers draws the objects attached to the elements (window and door markers, ...) with them or leaves them out; Archicad's own setting is changed back afterwards. The floor plan must be the current database.
 
 ### GetSectionElements
 
@@ -2811,7 +3267,7 @@ Parameters:
 
 Returns:
 
-- `reductionsOfZones` (array of object or ErrorItem, required): The area reductions of each Zone, aligned with the input array of elements, or an error.
+- `reductionsOfZones` (array of ZoneReductions or ErrorItem, required): The area reductions of each Zone, aligned with the input array of elements, or an error.
 
 Grasshopper: `GetZoneReductionsComponent`
 
@@ -2829,7 +3285,7 @@ Parameters:
 
 Returns:
 
-- `propertyObjectsOfElements` (array of object or ErrorItem, required): The property objects of each element, aligned with the input array of elements, or an error.
+- `propertyObjectsOfElements` (array of ElementPropertyObjects or ErrorItem, required): The property objects of each element, aligned with the input array of elements, or an error.
 
 Grasshopper: `GetPropertyObjectsOfElementsComponent`
 
@@ -2847,7 +3303,7 @@ Parameters:
 
 Returns:
 
-- `descriptorsOfElements` (array of object or ErrorItem, required): The descriptors of each element, aligned with the input array of elements, or an error.
+- `descriptorsOfElements` (array of ElementDescriptors or ErrorItem, required): The descriptors of each element, aligned with the input array of elements, or an error.
 
 Grasshopper: `GetDescriptorsOfElementsComponent`
 
@@ -2861,11 +3317,11 @@ Group: Element Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `elements` (array of ElementIdArrayItem or object, required): A list of elements, or of element types to read the links of the element defaults of that type.
+- `elements` (array of object or object, required): A list of elements, or of element types to read the links of the element defaults of that type.
 
 Returns:
 
-- `linkedPropertyObjectsOfElements` (array of object or ErrorItem, required): The property object links of each element or element default, aligned with the input array of elements, or an error.
+- `linkedPropertyObjectsOfElements` (array of ElementLinkedPropertyObjects or ErrorItem, required): The property object links of each element or element default, aligned with the input array of elements, or an error.
 
 Grasshopper: `GetLinkedPropertyObjectsOfElementsComponent`
 
@@ -2891,7 +3347,7 @@ Example: [archicad-addon/Examples/Element/SetLinkedPropertyObjectsOfElements.py]
 
 ### UpdateZones
 
-Updates all Zones (recalculates their geometry, updates their Zone Stamps and the connected elements).
+Updates Zones (recalculates their geometry, updates their Zone Stamps and the connected elements): the selected Zones, every Zone when nothing is selected, or the Zones given in zones. Archicad runs the update right after the command has returned, on the Zones selected at that moment, so the new geometry can only be read with a later command.
 
 Group: Element Commands. Added in Tapir 1.5.4. Docs: https://archicad-api.com/archicad-addon/#UpdateZones
 
@@ -2900,6 +3356,7 @@ Parameters:
 - `keepStampPosition` (boolean): Keep the position of the Zone Stamps. The default is true.
 - `undoTopTrim` (boolean): Undo the trimming of the top of the Zones. The default is false.
 - `undoBottomTrim` (boolean): Undo the trimming of the bottom of the Zones. The default is false.
+- `zones` (Elements): Optional list of the Zones to update, on any story. They are selected instead of the current selection and stay selected: Archicad updates the selected Zones right after the command has returned, not during it, and clears the selection when it is done. So do not change the selection until then, and read the new geometry with a later command. Every Zone is checked first; if one cannot be updated (not a Zone, listed twice, hidden or locked layer, not editable), nothing is selected or updated. An empty list updates nothing. Without the list the current selection is updated, or every Zone when nothing is selected.
 
 
 Grasshopper: `UpdateZonesComponent`
@@ -3005,6 +3462,109 @@ Grasshopper: `MoveElementsComponent`
 
 Example: [archicad-addon/Examples/Element/MoveElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/MoveElements.py): Moves a wall by 1 m along the X axis with MoveElements, then moves it back. Needs at least one editable Wall.
 
+### AlignElements
+
+Aligns elements on the floor plan or in the current 2D view to one edge of their plan bounding boxes (left, right, top or bottom) or to their middle (centerX, centerY), either of the whole set or of a reference element, by moving them in one undo step. The bounding boxes are those Get2DBoundingBoxes returns. Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Mesh, Zone, Object, Lamp, Stair, Railing, CurtainWall, Line, PolyLine, Arc, Circle, Spline, Hatch, Text and Hotspot. An element of another type (doors, windows and openings, which only slide along their host, subelements, dimensions, labels, ...) or one that cannot be edited gets a failed execution result naming the reason, and the other elements are still aligned.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#AlignElements
+
+Parameters:
+
+- `elements` (Elements, required): The elements to align: Wall, Column, Beam, Slab, Roof, Shell, Morph, Mesh, Zone, Object, Lamp, Stair, Railing, CurtainWall, Line, PolyLine, Arc, Circle, Spline, Hatch, Text or Hotspot, in the current database.
+- `alignTo` (string ("left", "right", "top", "bottom", "centerX", "centerY"), required): The edge of the plan bounding boxes to align: left (smallest X), right (largest X), bottom (smallest Y), top (largest Y), centerX (the middle in X, so the elements line up on one vertical line) or centerY (the middle in Y, on one horizontal line).
+- `reference` (ElementId): Optional element to align to; it is not moved itself. Without it the elements are aligned to the outermost edge of the whole set (its leftmost left edge, its topmost top edge, ...), or for centerX and centerY to the middle of the bounding box of the whole set.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `AlignElementsComponent`
+
+Example: [archicad-addon/Examples/Element/AlignElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/AlignElements.py): Aligns the left edges of three walls with AlignElements, prints their bounding boxes, then moves them back. Needs at least two editable Walls on the floor plan.
+
+### DistributeElements
+
+Distributes 3 or more elements on the floor plan or in the current 2D view evenly along X (horizontal) or Y (vertical), with equal distances between the middles of their plan bounding boxes (centers) or equal space between the boxes (gaps), by moving them in one undo step. The elements are taken in the order of their middles along the direction, and the two outermost stay where they are. The bounding boxes are those Get2DBoundingBoxes returns. Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Mesh, Zone, Object, Lamp, Stair, Railing, CurtainWall, Line, PolyLine, Arc, Circle, Spline, Hatch, Text and Hotspot. An element of another type (doors, windows and openings, which only slide along their host, subelements, dimensions, labels, ...) or one that cannot be edited gets a failed execution result naming the reason, and the other elements are still distributed.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#DistributeElements
+
+Parameters:
+
+- `elements` (Elements, required): At least 3 elements to distribute: Wall, Column, Beam, Slab, Roof, Shell, Morph, Mesh, Zone, Object, Lamp, Stair, Railing, CurtainWall, Line, PolyLine, Arc, Circle, Spline, Hatch, Text or Hotspot, in the current database. Their order does not matter: they are distributed in the order of the middles of their plan bounding boxes along the direction.
+- `direction` (string ("horizontal", "vertical"), required): horizontal distributes the elements along X, vertical along Y. They are not moved in the other direction.
+- `mode` (string ("centers", "gaps"), required): centers makes the distances between the middles of the plan bounding boxes equal, gaps makes the empty space between neighbouring bounding boxes equal (the gap is negative, so the boxes overlap, when the elements are wider together than the space between the two outermost elements).
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `DistributeElementsComponent`
+
+Example: [archicad-addon/Examples/Element/DistributeElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/DistributeElements.py): Distributes up to five walls along X with equal gaps using DistributeElements, prints their new left edges, then moves them back. Needs at least three editable Walls on the floor plan.
+
+### SplitElements
+
+Splits each given element along a line (the infinite line through its begin and end point, like Archicad's Split command). The original element keeps one part, copies of it (Drag a Copy, so they keep the layer, classifications, properties and every other setting) get the others; all are returned, the original first. Supports straight walls without doors, windows or openings, straight unslanted single segment beams without holes or openings, and lines (their arrows stay at the original ends), which are split in two, the original keeping the part from its begin point; and slabs, meshes without level lines or points, fills and single contour polylines, whose polygon (holes and arcs included) or points are cut along the line into one part per piece, the original keeping the largest piece (a polyline: the piece with its begin point). Slab edges keep their trim and side surface, the edges along the line are vertical; the corners a mesh gets on the line take their height from the edge they lie on. An element the line does not cross is reported as notCut, an unsupported one as an error naming its type. One undo step.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#SplitElements
+
+Parameters:
+
+- `elements` (Elements, required): The elements to split. Supported: straight walls (not polygonal, without doors, windows or openings), straight beams (not slanted or curved, one segment, without holes or openings), lines, slabs, meshes (without level lines or points), fills and polylines (one contour). Other types are reported with their type name.
+- `line` (object, required): The split line in project coordinates: the infinite line through begin and end, as the split line of Archicad's Split command.
+  - `begin` (Coordinate2D, required)
+  - `end` (Coordinate2D, required)
+
+Returns:
+
+- `results` (array of object or object or ErrorItem, required): One item per given element, in the same order.
+
+Grasshopper: `SplitElementsComponent`
+
+Example: [archicad-addon/Examples/Element/SplitElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/SplitElements.py): Creates a 6 m wall and a 6 m x 5 m slab with a hole, splits both with SplitElements along the line x = 2, then deletes the parts. The wall gives two parts: the original wall (0 to 2 m) and a copy with the same settings (2 to 6 m). The slab gives two slabs with the same settings: the original keeps the larger piece (2 to 6 m, with the hole), the copy gets the rest.
+
+### CopyElementsToDatabase
+
+Copies 2D elements (lines, polylines, arcs, circles, splines, hotspots, texts, hatches, independent labels) from one database into another, e.g. from a worksheet into another worksheet, a detail or a layout, optionally moved by an offset. Returns the new elements in the order of the given ones.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#CopyElementsToDatabase
+
+Parameters:
+
+- `elements` (Elements, required): The 2D elements to copy: Line, PolyLine, Arc, Circle, Spline, Hotspot, Text, Hatch or Label (not associated with an element). Drawings are not copied yet: created from their own data they lose the link to their source view.
+- `sourceDatabaseId` (DatabaseId): The database the elements are in. Default is the current database.
+- `targetDatabaseId` (DatabaseId, required): The database to copy the elements into, e.g. a worksheet, a detail or a layout (see GetDatabases).
+- `offset` (Coordinate2D): Optional vector the copies are moved by in the target database. Without it they keep the coordinates of the originals.
+
+Returns:
+
+- `elements` (ElementIdsOrErrors, required): The new element of each given element, in the same order, or the reason it was not copied.
+
+Grasshopper: `CopyElementsToDatabaseComponent`
+
+Example: [archicad-addon/Examples/Element/CopyElementsToDatabase.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CopyElementsToDatabase.py): Copies a polyline from the floor plan into a new worksheet, moved by 1 m, with CopyElementsToDatabase. Run it with the floor plan open. The polyline and the worksheet are created by the script and deleted at the end.
+
+### ElevateElements
+
+Moves elements vertically by a given offset in meters, like Edit > Move > Elevate. An element that cannot be edited (its layer is hidden or locked, it is locked, or it is not available in teamwork) gets a failed execution result naming the reason instead of being skipped silently.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ElevateElements
+
+Parameters:
+
+- `elementsWithElevations` (array of object, required): The elements with elevation offset pairs.
+  - `elementId` (ElementId, required)
+  - `elevation` (number, required): The vertical offset in meters to move the element by, like Edit > Move > Elevate. A positive value moves the element up, a negative value moves it down. The home story of the element does not change.
+  - `copy` (boolean): Optional parameter. If true, then a copy of the element will be elevated. By default it's false.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `ElevateElementsComponent`
+
+Example: [archicad-addon/Examples/Element/ElevateElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ElevateElements.py): Moves a wall up by 1 m with ElevateElements, like Edit > Move > Elevate, then moves it back down. Needs at least one editable Wall.
+
 ### RotateElements
 
 Rotates elements around a reference point. An element that cannot be edited (its layer is hidden or locked, it is locked, or it is not available in teamwork) gets a failed execution result naming the reason instead of being skipped silently.
@@ -3034,10 +3594,7 @@ Group: Element Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `elementsWithMirrorAxes` (array of object, required): The elements with mirror axes.
-  - `elementId` (ElementId, required)
-  - `mirrorAxis` (object, required): The mirror axis: the line through two points on the floor plan.
-  - `copy` (boolean): Optional parameter. If true, a mirrored copy of the element is created and the original is kept. By default it's false.
+- `elementsWithMirrorAxes` (array of ElementMirrorData, required): The elements with mirror axes.
 
 Returns:
 
@@ -3047,19 +3604,87 @@ Grasshopper: `MirrorElementsComponent`
 
 Example: [archicad-addon/Examples/Element/MirrorElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/MirrorElements.py): Mirrors a wall across the Y axis with MirrorElements, then mirrors it back. Needs at least one editable Wall. With copy True the original would be kept and a mirrored copy created.
 
+### CopyElements
+
+Copies elements by an offset, like dragging a copy in Archicad, keeping all their settings. With count, copy n is moved by n times the offset, which makes a linear array. Returns the new elements of each given element, in the order of the given ones; an element Archicad cannot copy (a part of a curtain wall, stair or railing, a locked element or one on a hidden or locked layer, ...) gets an error naming the reason, and the other elements are still copied. All copies are one undo step.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#CopyElements
+
+Parameters:
+
+- `elements` (Elements, required): The elements to copy.
+- `offset` (Coordinate3D, required): The vector in meters the first copy is moved by from its element.
+- `count` (integer): Optional number of copies of each element. Copy n is moved by n times the offset, so more than one makes a linear array. By default it's 1.
+
+Returns:
+
+- `copies` (array of object, required): One item for each given element, in the same order.
+  - `elements` (Elements, required): The new elements made from this element, the first copy first. When the element is in a group and Suspend Groups is off, Archicad copies the whole group, and the copies of the other members are listed too.
+  - `error` (Error): Why the element, or some of its copies, could not be made. The copies made before the error are still listed in elements.
+
+Grasshopper: `CopyElementsComponent`
+
+Example: [archicad-addon/Examples/Element/CopyElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CopyElements.py): Makes a linear array of 5 copies of a wall, 2 m apart along the X axis, with CopyElements, then deletes the copies. Needs at least one editable Wall. Copy n is moved by n times the offset; the response lists the new elements of each given element in the order of the given ones.
+
+### RotateCopyElements
+
+Copies elements rotated around a center on the floor plan by an angle in radians, like rotating a copy in Archicad, keeping all their settings. With count, copy n is rotated by n times the angle, which makes a circular array. Returns the new elements of each given element, in the order of the given ones; an element Archicad cannot copy gets an error naming the reason, and the other elements are still copied. All copies are one undo step.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#RotateCopyElements
+
+Parameters:
+
+- `elements` (Elements, required): The elements to copy.
+- `center` (Coordinate2D, required): The center of the rotation on the floor plan.
+- `angle` (number, required): The angle in radians the first copy is rotated by from its element, counterclockwise.
+- `count` (integer): Optional number of copies of each element. Copy n is rotated by n times the angle, so more than one makes a circular array. By default it's 1.
+
+Returns:
+
+- `copies` (array of object, required): One item for each given element, in the same order.
+  - `elements` (Elements, required): The new elements made from this element, the first copy first. When the element is in a group and Suspend Groups is off, Archicad copies the whole group, and the copies of the other members are listed too.
+  - `error` (Error): Why the element, or some of its copies, could not be made. The copies made before the error are still listed in elements.
+
+Grasshopper: `RotateCopyElementsComponent`
+
+Example: [archicad-addon/Examples/Element/RotateCopyElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/RotateCopyElements.py): Makes a circular array of 3 copies of a wall around the project origin, 90 degrees apart, with RotateCopyElements, then deletes the copies. Needs at least one editable Wall. The angle is in radians, counterclockwise; copy n is rotated by n times the angle.
+
+### ScaleElements
+
+Scales elements on the floor plan or in the current 2D view by a factor around a center point with Archicad's Resize edit, in one undo step. Resize scales X and Y by the same ratio, so factorY, if given, must equal factor. Supported types: Wall, Column, Beam, Slab, Roof, Mesh, Zone, Line, PolyLine, Arc, Circle, Spline, Hatch and Hotspot. An element of another type (library parts such as objects, lamps, doors and windows, stairs, railings, curtain walls, shells, morphs, texts, subelements, dimensions, labels, ...) or one that cannot be edited gets a failed execution result naming the reason, and the other elements are still scaled.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ScaleElements
+
+Parameters:
+
+- `elements` (Elements, required): The elements to scale: Wall, Column, Beam, Slab, Roof, Mesh, Zone, Line, PolyLine, Arc, Circle, Spline, Hatch or Hotspot, in the current database.
+- `center` (Coordinate2D, required): The fixed point of the scaling on the floor plan; every point of the elements moves away from it (factor > 1) or towards it (factor < 1).
+- `factor` (number, required): The scale factor, greater than 0: 2 doubles the distances from the center, 0.5 halves them.
+- `factorY` (number): Optional scale factor in Y. Archicad's Resize scales X and Y by one ratio, so it must be the same as factor (or left out); a different value is refused.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `ScaleElementsComponent`
+
+Example: [archicad-addon/Examples/Element/ScaleElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ScaleElements.py): Scales a slab by 2 around the centre of its bounding box with ScaleElements, prints its bounding box before and after, then scales it back by 0.5. Needs at least one editable Slab. The bounding box after scaling should be twice as wide and deep, with the same centre.
+
 ### DeleteElements
 
-Deletes elements. The zones of the call are deleted before all the other elements, so an automatic zone deleted together with its bounding walls is gone before its boundary is; deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found' dialog, which blocks the command until someone clicks it in Archicad. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) or a guid that is not in the project gets a failed execution result instead of being skipped silently, and does not stop the other elements from being deleted.
+Deletes elements. The zones of the call are deleted before all the other elements, so an automatic zone deleted together with its bounding walls is gone before its boundary is; deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found' dialog, which blocks the command until someone clicks it in Archicad. Returns an execution result for each input element: an element that could not be deleted (for example because its layer is locked) or a guid that is not in the project gets a failed execution result instead of being skipped silently, and does not stop the other elements from being deleted. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each element that passes the checks made before deleting gets wouldDelete, so a script can preview a deletion before making it.
 
 Group: Element Commands. Added in Tapir 1.2.1. Docs: https://archicad-api.com/archicad-addon/#DeleteElements
 
 Parameters:
 
 - `elements` (Elements, required): The elements to delete. The zones among them are deleted before all the others, so an automatic zone deleted together with its bounding elements is gone before its boundary is. Deleting the boundary of an automatic zone without the zone itself can open Archicad's modal 'No closed polygon found around the clicked point' dialog, which blocks the command until someone clicks it in Archicad.
+- `dryRun` (DryRun)
 
 Returns:
 
-- `executionResults` (ExecutionResults, required)
+- `dryRun` (DryRunFlag)
+- `executionResults` (DeletionExecutionResults, required): One result for each input element, in the order of the input. On a dry run an element that passes every check made before deleting (it exists, its layer is not locked, it is editable) gets wouldDelete; Archicad can still refuse an element that passes them.
 
 Grasshopper: `DeleteElementsComponent`, `ElementMetadata`
 
@@ -3067,12 +3692,21 @@ Example: [archicad-addon/Examples/Element/DeleteElements.py](https://github.com/
 
 ### DeleteSelectedElements
 
-Deletes the currently selected elements in one undo step, the same as pressing the Delete key.
+Deletes the currently selected elements in one undo step, the same as pressing the Delete key. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true and lists the selected elements, with wouldDelete when there is at least one, or fails when one of them cannot be edited (Archicad then deletes none of them).
 
 Group: Element Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/archicad-addon/#DeleteSelectedElements
 
-Parameters: none.
+Parameters:
 
+- `dryRun` (DryRun)
+
+Returns:
+
+- `dryRun` (DryRunFlag)
+- `success` (boolean, required)
+- `error` (Error)
+- `wouldDelete` (boolean): Only on a dry run that passed the checks: true when at least one element is selected.
+- `elements` (Elements): Only on a dry run: the selected elements (for a marquee, the ones it touches). A real run deletes them, together with the other members of their groups when Suspend Groups is off and the elements linked to them (labels, dimensions, ...).
 
 Grasshopper: `DeleteSelectedElementsComponent`
 
@@ -3147,7 +3781,7 @@ Example: [archicad-addon/Examples/Element/GetGDLParametersOfElements.py](https:/
 
 ### SetGDLParametersOfElements
 
-Sets the given GDL parameters of the given elements. An element Archicad does not let the user edit (its layer locked, the element locked, or not reserved by the user in Teamwork) gets a failed execution result naming that reason, whatever the parameter. The parameters are read back after the change, and a written parameter Archicad did not keep (e.g. one it sets from the element's own settings, like AC_TextSize_1 of a label) gives a failed execution result naming it.
+Sets the given GDL parameters of the given elements. An element Archicad does not let the user edit (its layer locked, the element locked, or not reserved by the user in Teamwork) gets a failed execution result naming that reason, whatever the parameter. On a Curtain Wall Frame, A, B, ac_frameWidth and ac_frameDepth mirror the frame's contour, which Archicad derives from the frame's settings, so they are rejected instead of reporting a change that does not take effect; a frame without a library part (an invisible Boundary frame, for example) has no GDL parameters. The parameters are read back after the change, and a written parameter Archicad did not keep (e.g. one it sets from the element's own settings, like AC_TextSize_1 of a label) gives a failed execution result naming it. With dryRun true no element is changed and no undo step is created: the parameters are written to the element's parameter list and its Parameter Script runs as in a real run, the response has dryRun set to true, and each element that passes the checks made before changing it gets wouldChange, listing the parameters a real run would change (the given ones and the ones the Parameter Script changes with them) with their old and new values.
 
 Group: Element Commands. Added in Tapir 1.5.7. Docs: https://archicad-api.com/archicad-addon/#SetGDLParametersOfElements
 
@@ -3156,10 +3790,12 @@ Parameters:
 - `elementsWithGDLParameters` (array of object, required): The elements with GDL parameters dictionary pairs.
   - `elementId` (ElementId, required)
   - `gdlParameters` (SetGDLParameterArray, required)
+- `dryRun` (DryRun)
 
 Returns:
 
-- `executionResults` (ExecutionResults, required)
+- `dryRun` (DryRunFlag)
+- `executionResults` (ChangeExecutionResults, required): One result for each item of elementsWithGDLParameters, in the order of the input. On a dry run the parameters are written to the element's parameter list and its Parameter Script runs as in a real run, but the element is not changed. An element that passes every check made before changing it (the element and its parameters exist, every value is valid for its parameter, the element is editable) gets wouldChange: oldValue and newValue list the parameters a real run would change - the ones given and the ones the Parameter Script changes with them - before and after, each with name, index, type and value as GetGDLParametersOfElements gives them. Archicad can still refuse an element that passes them.
 
 Grasshopper: `SetGDLParametersComponent`
 
@@ -3264,6 +3900,24 @@ Grasshopper: `ChangeLibraryPartOfElementsComponent`
 
 Example: [archicad-addon/Examples/Element/ChangeLibraryPartOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ChangeLibraryPartOfElements.py): Sets the first object to the library part it already uses with ChangeLibraryPartOfElements. Needs at least one Object. Giving the part it already has leaves the project unchanged; give the name of another library part (see GetAvailableLibraryParts) to replace it.
 
+### GetCalculatedParametersOfCurtainWallSubElements
+
+Gets the GDL parameters (name, type, value) of the given Curtain Wall Frame, Panel, Junction and Accessory elements as Archicad calculated them for their place in the curtain wall. GetGDLParametersOfElements returns the parameters the sub-element was set up with instead.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetCalculatedParametersOfCurtainWallSubElements
+
+Parameters:
+
+- `elements` (Elements, required)
+
+Returns:
+
+- `calculatedParametersOfElements` (array of object or ErrorItem, required): The calculated parameters of each given element, in the order of the input, or an error for an element that is not a curtain wall frame, panel, junction or accessory.
+
+Grasshopper: `GetCalculatedParametersOfCurtainWallSubElementsComponent`
+
+Example: [archicad-addon/Examples/Element/GetCalculatedParametersOfCurtainWallSubElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetCalculatedParametersOfCurtainWallSubElements.py): Prints the GDL parameters of the first curtain wall panel as Archicad calculated them, with GetCalculatedParametersOfCurtainWallSubElements. Needs at least one Curtain Wall.
+
 ### GetHotspotsOfElements
 
 Gets the 2D hotspots of the given library part instances (Objects, Lamps, Windows, Doors, Skylights, Zones, Curtain Wall parts, etc.), e.g. to dimension to them.
@@ -3281,6 +3935,26 @@ Returns:
 Grasshopper: `GetHotspotsOfElementsComponent`
 
 Example: [archicad-addon/Examples/Element/GetHotspotsOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetHotspotsOfElements.py): Prints the 2D hotspots of the first object with GetHotspotsOfElements. Needs at least one Object.
+
+### SetMarkerLibraryPartOfElements
+
+Changes which library part the marker of the given Window and Door elements uses, given by its name (find the available ones with GetAvailableLibraryParts); only a marker library part for the opening's type is accepted. The marker gets the new library part's default parameters, which SetMarkerParametersOfElements can change afterwards; the opening's own settings are left as they are.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#SetMarkerLibraryPartOfElements
+
+Parameters:
+
+- `elementsWithMarkerLibraryPart` (array of object, required): The elements with the library part their marker should use.
+  - `elementId` (ElementId, required)
+  - `libraryPartName` (string, required): The name of the library part the marker should use, as GetMarkerParametersOfElements and GetAvailableLibraryParts report it. It has to be a marker library part: Archicad's marker parent for windows or doors, or a library part derived from it. Any other library part is refused.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `SetMarkerLibraryPartOfElementsComponent`
+
+Example: [archicad-addon/Examples/Element/SetMarkerLibraryPartOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/SetMarkerLibraryPartOfElements.py): Sets the marker of the first window or door to the library part it already uses with SetMarkerLibraryPartOfElements. Needs at least one Window or Door. Give the name of another marker library part (see GetAvailableLibraryParts) to replace it. The marker gets the library part's default parameters.
 
 ### RunParameterScriptOfElements
 
@@ -3302,7 +3976,7 @@ Example: [archicad-addon/Examples/Element/RunParameterScriptOfElements.py](https
 
 ### CreateColumns
 
-Creates Column elements based on the given parameters.
+Creates Column elements based on the given parameters. Takes the same cut fill pens and cover fill as ModifyColumns, besides the position, size, slant, cross section and veneer; settings not given come from the Column tool defaults or the favorite. Not written by either command: the surfaces of the column segments, and the cut fill pens before Archicad 27.
 
 Group: Element Commands. Added in Tapir 1.0.3. Docs: https://archicad-api.com/archicad-addon/#CreateColumns
 
@@ -3325,7 +3999,11 @@ Parameters:
   - `isWidthAndHeightLinked` (boolean): When true (the default), Archicad keeps width and depth equal and setting one changes the other - set to false to give width/depth independent values. Applied to all segments.
   - `buildingMaterialId` (AttributeId): Cross section building material (round or rectangular, per circleBased). Applied to all segments.
   - `profileId` (AttributeId): Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments.
+  - `veneer` (ColumnVeneer): Veneer of the column (type, thickness, building material); the fields not given come from the tool defaults or favoriteName, thickness 0 creates the column without veneer. Applied to all segments.
   - `floorIndex` (integer): Optional floor index. If omitted, derived from the coordinate's z value.
+  - `cutFillPen` (OverriddenPen): Overrides the pen of the cut fill. Written from Archicad 27.
+  - `cutFillBackgroundPen` (OverriddenPen): Overrides the background pen of the cut fill. Written from Archicad 27.
+  - `coverFill` (CoverFill): The cover fill of the column in the floor plan, as GetDetailsOfElements returns it.
 
 Returns:
 
@@ -3333,11 +4011,11 @@ Returns:
 
 Grasshopper: `ColumnsComponent`, `CreateColumnsComponent`
 
-Example: [archicad-addon/Examples/Element/CreateColumns.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateColumns.py): Creates two columns with CreateColumns: one with the Column tool defaults and one round, 3 m high column. Coordinates are in meters; z is the elevation of the column base.
+Example: [archicad-addon/Examples/Element/CreateColumns.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateColumns.py): Creates two columns with CreateColumns: one with the Column tool defaults and one round, 3 m high column with its own cut fill pens. Coordinates are in meters; z is the elevation of the column base. CreateColumns takes the same cut fill pens (written from Archicad 27) and cover fill as ModifyColumns.
 
 ### CreateWalls
 
-Creates Wall elements based on the given parameters.
+Creates Wall elements based on the given parameters. Takes the same wall settings as ModifyWalls, applied by the same code, except geometryType and profileType, which the new wall takes from the favorite or the Wall tool defaults (its plan outline is always Straight), and bottomOffset, which comes from zCoordinate. Neither command can write a Polygonal outline (it needs an outline polygon, which these commands do not take), connectionPriority or junctionSequence (Archicad ignores writes to them; GetDetailsOfElements reads them), and on Archicad 29 any story visibility other than 'Home story only' and 'All relevant stories'.
 
 Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/archicad-addon/#CreateWalls
 
@@ -3357,6 +4035,18 @@ Parameters:
   - `arcAngle` (number): Arc angle in radians; non-zero creates a curved wall (begCoordinate/endCoordinate are the chord endpoints).
   - `referenceLineLocation` (WallReferenceLineLocation): Optional. When omitted, the favorite's or the Wall tool default's reference line location is kept. The Core* values only have an effect on a Composite or Profile wall.
   - `flipped` (boolean): Optional. True mirrors the wall to its reference line (the side GetDetailsOfElements reports as flipped). When omitted, the favorite's or the Wall tool default's side is kept, which for a Profile wall mirrors its whole cross section.
+  - `slantAlpha` (number): Only has an effect when the wall's profileType is Slanted or Trapez.
+  - `slantBeta` (number): Only has an effect when the wall's profileType is Slanted or Trapez.
+  - `topOffset` (number): Only has an effect when relativeTopStory is non-zero.
+  - `relativeTopStory` (number): Non-zero links the wall's top to another story instead of an explicit height - do not set together with 'height' for the same wall: whichever is applied last wins, and Archicad recomputes the actual height from the story elevations once relativeTopStory is non-zero.
+  - `zoneRel` (WallZoneRelation)
+  - `visibility` (StoryVisibility): Confirmed live on Archicad 29 (#852): a wall there knows only 'Home story only' and 'All relevant stories' (Wall Settings offers no Custom option), and Archicad silently drops every other combination written here although the command reports success - showAllAbove, showAllBelow, showRelAbove and showRelBelow (any value, 0 included) and showOnHome true -> false all read back unchanged. 'All relevant stories' is isAutoOnStoryVisibility true. 'Home story only' takes two calls: first isAutoOnStoryVisibility true (Archicad resets the custom fields to 0), then isAutoOnStoryVisibility false with visibility { showOnHome: true }. Archicad 30 adds a Custom option for walls; whether the other fields become writable there is untested.
+  - `isAutoOnStoryVisibility` (boolean): When true (the default on a new wall), Archicad recomputes 'visibility' automatically from the wall's vertical extent and ignores any value set for it. Setting 'visibility' without also setting this field turns it off automatically. See the note on 'visibility' for which combinations a wall accepts.
+  - `referenceMaterial` (OverriddenMaterial)
+  - `oppositeMaterial` (OverriddenMaterial)
+  - `sideMaterial` (OverriddenMaterial)
+  - `cutFillPen` (OverriddenPen): Pen of the cut fill. Archicad 27 and later; ignored on older versions.
+  - `cutFillBackgroundPen` (OverriddenPen): Background pen of the cut fill. Archicad 27 and later; ignored on older versions.
   - `structureType` (WallStructureType): Optional. When neither this nor one of the attribute ids below is given, the favorite's or the Wall tool default's structure is kept.
   - `buildingMaterialId` (AttributeId)
   - `compositeId` (AttributeId)
@@ -3383,11 +4073,11 @@ Returns:
 
 Grasshopper: `CreateWallsComponent`, `WallsApiComponent`, `WallsComponent`
 
-Example: [archicad-addon/Examples/Element/CreateWalls.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateWalls.py): Creates a straight and a curved wall with CreateWalls. Fields not given (structure, top link, ...) come from the Wall tool defaults, or from favoriteName.
+Example: [archicad-addon/Examples/Element/CreateWalls.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateWalls.py): Creates a straight and a curved wall with CreateWalls. Fields not given (structure, top link, ...) come from the Wall tool defaults, or from favoriteName. CreateWalls takes the same wall settings as ModifyWalls: the second wall also sets how it relates to zones and overrides the surface of its reference side.
 
 ### CreateBeams
 
-Creates Beam elements based on the given parameters.
+Creates Beam elements based on the given parameters. Takes the same cut fill pens and cover fill as ModifyBeams, besides the position, shape, slant and cross section; settings not given come from the Beam tool defaults or the favorite. Not written by either command: the surfaces of the beam segments, and the cut fill pens before Archicad 27.
 
 Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/archicad-addon/#CreateBeams
 
@@ -3400,8 +4090,8 @@ Parameters:
   - `begCoordinate` (Coordinate2D, required)
   - `endCoordinate` (Coordinate2D, required)
   - `floorIndex` (integer): Optional floor index. If omitted, derived from zCoordinate.
-  - `zCoordinate` (number, required)
-  - `offset` (number)
+  - `zCoordinate` (number, required): Absolute Z of the beam's reference line. Which point of the cross section lies on the reference line is set by anchorPoint: with a Top anchor the beam hangs below zCoordinate, so zCoordinate 10 and height 0.1 span 9.9 to 10; MiddleLeft, Center and MiddleRight center it on zCoordinate; Bottom anchors stand it on top. The home story is derived from it unless floorIndex is given.
+  - `offset` (number): Horizontal distance of the beam from its reference line, in meters; positive moves the beam to the left of the line, looking from begCoordinate to endCoordinate.
   - `slantAngle` (number): Slant angle in radians. A non-zero value also switches the beam to slanted, unless isSlanted is given explicitly.
   - `isSlanted` (boolean): Optional explicit slanted state. By default it is derived from slantAngle.
   - `profileAngle` (number): Rotation angle of the profile around the beam's center line, in radians.
@@ -3409,11 +4099,14 @@ Parameters:
   - `verticalCurveHeight` (number): Optional rise of a vertically curved beam. A non-zero value makes a vertically curved beam; it wins over arcAngle.
   - `width` (number): Cross section width of the beam. Applied to all segments.
   - `height` (number): Cross section height of the beam. Applied to all segments.
-  - `anchorPoint` (BeamAnchorPoint)
+  - `anchorPoint` (BeamAnchorPoint): The point of the cross section that lies on the reference line (begCoordinate to endCoordinate at zCoordinate). Top anchors hang the beam below zCoordinate, Bottom anchors stand it on top, MiddleLeft, Center and MiddleRight center it. Left and Right anchors put the line on the beam's left or right edge, looking from begCoordinate to endCoordinate; TopCenter, Center and BottomCenter keep it on the beam's axis.
   - `circleBased` (boolean): True for a round beam cross section, false for rectangular. Ignored if profileId is also given. Applied to all segments.
   - `isWidthAndHeightLinked` (boolean): When true (the default), Archicad keeps width and height equal and setting one changes the other - set to false to give width/height independent values. Applied to all segments.
   - `buildingMaterialId` (AttributeId): Cross section building material (round or rectangular, per circleBased). Applied to all segments.
   - `profileId` (AttributeId): Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments.
+  - `cutFillPen` (OverriddenPen): Overrides the pen of the cut fill. Written from Archicad 27.
+  - `cutFillBackgroundPen` (OverriddenPen): Overrides the background pen of the cut fill. Written from Archicad 27.
+  - `coverFill` (CoverFill): The cover fill of the beam in the floor plan, as GetDetailsOfElements returns it.
 
 Returns:
 
@@ -3421,11 +4114,11 @@ Returns:
 
 Grasshopper: `BeamsComponent`, `CreateBeamsComponent`
 
-Example: [archicad-addon/Examples/Element/CreateBeams.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateBeams.py): Creates a 6 m long beam at 3 m height with CreateBeams. With the TopCenter anchor the beam hangs below its reference line at zCoordinate.
+Example: [archicad-addon/Examples/Element/CreateBeams.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateBeams.py): Creates a 6 m long beam at 3 m height with its own cut fill pen with CreateBeams. With the TopCenter anchor the beam hangs below its reference line at zCoordinate. CreateBeams takes the same cut fill pens (written from Archicad 27) and cover fill as ModifyBeams.
 
 ### CreateStairs
 
-Creates Stair elements based on the given baseline and parameters.
+Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge and the turn at each baseline point (landings and winders). Accepts the same settings as ModifyStairs: the step values with their locks, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser and structure settings of the flights and the landings; settings not given come from the Stair tool defaults or the favorite.
 
 Group: Element Commands. Added in Tapir 1.5.0. Docs: https://archicad-api.com/archicad-addon/#CreateStairs
 
@@ -3434,15 +4127,34 @@ Parameters:
 - `stairsData` (array of object, required): Array of data to create Stair elements.
   - `favoriteName` (string): Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them.
   - `id` (string): Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool.
-  - `baseLinePoints` (array of Coordinate2D, required): 2D coordinates defining the stair baseline polyline. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.
+  - `baseLinePoints` (array of Coordinate2D, required): 2D coordinates of the stair baseline polyline. Whether the baseline runs along the left edge, the right edge or the center of the flight is the Stair tool's baseline position, taken from baselinePosition, or else from the tool defaults or favoriteName: with the baseline on the left edge, the flight lies to the right of it, looking from the first point to the last. The first point is kept; the length of the flight comes from the riser count and going, so the flight does not necessarily end at the last point given. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.
+  - `baselinePosition` (string ("Left", "Right", "Center")): Optional. Where the baseline runs on the flight, looking from the first point to the last. Left: along the left edge, the flight lies to the right of the baseline. Right: along the right edge, the flight lies to the left of it. Center: along the middle of the flight. Without it the baseline position of the Stair tool defaults (or of favoriteName) is used.
+  - `baselineOffset` (number): Optional. The offset of the baseline from the flight edge that baselinePosition names (Left or Right); not used with Center. Without it the offset of the Stair tool defaults (or of favoriteName) is kept.
   - `zCoordinate` (number, required): The Z coordinate (absolute elevation) of the stair base.
   - `floorIndex` (integer): Optional floor index. If omitted, derived from zCoordinate.
   - `totalHeight` (number): Total height of the stair.
   - `flightWidth` (number): Width of the stair flight.
-  - `stepNum` (integer): Number of risers (steps).
-  - `riserHeight` (number): Height of each riser.
-  - `treadDepth` (number): Depth (going) of each tread.
-  - `finishVisible` (boolean): Optional. If false, the tread/riser finishes are hidden and only the stair structure (e.g. a monolith) is modeled.
+  - `stepNum` (integer): Number of risers (steps). Advisory: Archicad computes the step layout from totalHeight and the stair rules, so the created stair may not have this many risers.
+  - `riserHeight` (number): Height of each riser. Advisory: Archicad computes the step layout from totalHeight and the stair rules, so the created stair may not use this riser height.
+  - `treadDepth` (number): Depth (going) of each tread. Pinned as a fixed going in the stair rules, so the run length follows from the number of treads; the standard's combined riser/going rules (2R+G, R+G, R/G) are not applied to this stair.
+  - `baseLineEdges` (array of object): Optional. The segment type of each baseline edge, one item per edge (baseLinePoints.length - 1 items; edge i runs from point i to point i + 1). A U-shaped stair with a half landing is Flight, Landing, Flight with landing turns at both inner points. When neither baseLineEdges nor baseLineVertices is given, Archicad decides the segments and turns itself; when only baseLineVertices is given, every edge is a flight. Combinations Archicad cannot build fail like any other invalid stair.
+  - `baseLineVertices` (array of object): Optional. The turn at each baseline point, one item per point (baseLinePoints.length items). When neither baseLineEdges nor baseLineVertices is given, Archicad decides the segments and turns itself; when only baseLineEdges is given, the first and last points get no turn and every other point a landing turn. Winders use Archicad's default winder settings.
+  - `treadDepthLocked` (boolean): Whether the going lengths are locked.
+  - `totalHeightLocked` (boolean): Whether the total height is locked.
+  - `finishVisible` (boolean): Whether the tread and riser finishes of the stair are shown; false models only the structure (e.g. a monolith). The treads and risers of each part can also be switched on and off with treads and risers.
+  - `extraTopTread` (boolean): Whether the stair has an extra tread at its top.
+  - `extraBottomTread` (boolean): Whether the stair has an extra tread at its bottom.
+  - `walkingLinePosition` (string ("Left", "Right", "Center", "Auto")): Where the walking line runs on the flight: offset from the left or the right side (walkingLineOffset), centered, or placed by Archicad (Auto).
+  - `walkingLineOffset` (number): The offset of the walking line from the side walkingLinePosition names (Left or Right); not used with Center and Auto.
+  - `numberingType` (string ("Treads", "Risers")): Whether the steps are numbered on their treads or on their risers.
+  - `inputDirection` (string ("Upward", "Inverse")): The walking direction along the baseline: upward from its first point, or inverse (downward).
+  - `uniformFinish` (boolean): Whether the flights and the landings share one finish setting.
+  - `uniformMonolithAttributes` (boolean): Whether the monolithic structures of the flights and the landings share one set of attributes.
+  - `uniformDrainings` (boolean): Whether the flights and the landings share one draining setting.
+  - `structureVisibility` (boolean): Whether the structure of the stair is shown.
+  - `treads` (array of object): The tread settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.
+  - `risers` (array of object): The riser settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.
+  - `structures` (array of object): The structure settings of the flights (Run) and of the landings (Landing), for each side: the left and right side structures and the structure under the stair. Only the given fields of the given parts and sides are changed.
 
 Returns:
 
@@ -3450,7 +4162,7 @@ Returns:
 
 Grasshopper: `CreateStairsComponent`
 
-Example: [archicad-addon/Examples/Element/CreateStairs.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateStairs.py): Creates a straight stair and a U-shaped stair with a half landing with CreateStairs. Two baseline points make a straight stair; more points make an L- or U-shaped one. The straight stair's baseline runs along the middle of its flight (baselinePosition). Fields not given come from the Stair tool defaults.
+Example: [archicad-addon/Examples/Element/CreateStairs.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateStairs.py): Creates a straight stair and a U-shaped stair with a half landing with CreateStairs. Two baseline points make a straight stair; more points make an L- or U-shaped one. The straight stair's baseline runs along the middle of its flight (baselinePosition), and its treads and structure are set with the same tread, riser and structure settings ModifyStairs accepts. Fields not given come from the Stair tool defaults.
 
 ### SolveStairBaseline
 
@@ -3460,20 +4172,11 @@ Group: Element Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `stairsData` (array of object, required): Array of Stair data to check, with the same fields as the items of CreateStairs (without favoriteName). Nothing is created.
-  - `baseLinePoints` (array of Coordinate2D, required): 2D coordinates defining the stair baseline polyline. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.
-  - `zCoordinate` (number, required): The Z coordinate (absolute elevation) of the stair base.
-  - `floorIndex` (integer): Optional floor index. If omitted, derived from zCoordinate.
-  - `totalHeight` (number): Total height of the stair.
-  - `flightWidth` (number): Width of the stair flight.
-  - `stepNum` (integer): Number of risers (steps).
-  - `riserHeight` (number): Height of each riser.
-  - `treadDepth` (number): Depth (going) of each tread.
-  - `finishVisible` (boolean): Optional. If false, the tread/riser finishes are hidden and only the stair structure (e.g. a monolith) is modeled.
+- `stairsData` (array of StairBaselineData, required): Array of Stair data to check, with the same fields as the items of CreateStairs (without favoriteName). Nothing is created.
 
 Returns:
 
-- `solutions` (array of object or ErrorItem, required): The results of the stair solver, aligned with the input stairsData.
+- `solutions` (array of StairBaselineSolution or ErrorItem, required): The results of the stair solver, aligned with the input stairsData.
 
 Grasshopper: `SolveStairBaselineComponent`
 
@@ -3481,7 +4184,7 @@ Example: [archicad-addon/Examples/Element/SolveStairBaseline.py](https://github.
 
 ### CreateSlabs
 
-Creates Slab elements based on the given parameters.
+Creates Slab elements based on the given parameters. Takes the same surfaces (top, side, bottom), cut fill pens and floor fill as ModifySlabs, besides the outline, holes, level and structure; settings not given come from the Slab tool defaults or the favorite. Not written by either command: the surface of a single edge, and the cut fill pens before Archicad 27; of the floor fill orientation Archicad applies only the type through the API.
 
 Group: Element Commands. Added in Tapir 1.0.3. Docs: https://archicad-api.com/archicad-addon/#CreateSlabs
 
@@ -3501,6 +4204,12 @@ Parameters:
   - `polygonArcs` (array of PolyArc): Polygon outline arcs of the slab.
   - `holes` (Holes2D)
   - `floorIndex` (integer): Optional floor index. If omitted, derived from level.
+  - `topMaterial` (OverriddenMaterial): Overrides the surface of the top of the slab.
+  - `sideMaterial` (OverriddenMaterial): Overrides the surface of the sides of the slab.
+  - `bottomMaterial` (OverriddenMaterial): Overrides the surface of the bottom of the slab.
+  - `cutFillPen` (OverriddenPen): Overrides the pen of the cut fill. Written from Archicad 27.
+  - `cutFillBackgroundPen` (OverriddenPen): Overrides the background pen of the cut fill. Written from Archicad 27.
+  - `floorFill` (FloorFill): The cover fill of the slab in the floor plan. Only the given fields change; of the orientation Archicad applies only its type through the API, read it back with GetDetailsOfElements.
 
 Returns:
 
@@ -3508,7 +4217,7 @@ Returns:
 
 Grasshopper: `CreateSlabsComponent`, `SlabsComponent`
 
-Example: [archicad-addon/Examples/Element/CreateSlabs.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateSlabs.py): Creates a 6 m x 5 m slab with a 1 m x 1 m hole with CreateSlabs. level is the elevation of the slab's reference plane, in meters.
+Example: [archicad-addon/Examples/Element/CreateSlabs.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateSlabs.py): Creates a 6 m x 5 m slab with a 1 m x 1 m hole, a top surface and a floor fill with CreateSlabs. level is the elevation of the slab's reference plane, in meters. CreateSlabs takes the same surfaces, cut fill pens (written from Archicad 27) and floor fill as ModifySlabs.
 
 ### CreateWindows
 
@@ -3520,14 +4229,31 @@ Parameters:
 
 - `windowsData` (array of object, required)
   - `ownerWallId` (ElementId, required)
-  - `centerOffset` (number, required)
-  - `sillHeight` (number)
   - `width` (number)
   - `height` (number)
+  - `sillHeight` (number)
+  - `centerOffset` (number, required)
   - `reflected` (boolean)
   - `refSide` (boolean)
   - `oSide` (boolean)
-  - `libraryPartName` (string): Optional. Localized library part name (docu_UName) to place instead of the tool default/favorite, e.g. a shutter part that has no favorite. It has to be a window library part. Applied to the tool defaults before cloning.
+  - `reveal` (boolean): Turn the reveal on or off.
+  - `revealDepthOffset` (number): Distance the frame plane is moved across the wall thickness, along the wall normal.
+  - `displayOption` (DisplayOption)
+  - `pen` (integer): Pen of the opening's floor plan symbol; used unless useObjectPens is true.
+  - `lineTypeId` (AttributeId): Line type of the opening's floor plan symbol; used unless useObjectLineTypes is true.
+  - `cutLineTypeId` (AttributeId): Line type of the cut lines of the opening.
+  - `sectionFillId` (AttributeId): Fill of the section of the opening; used unless useObjectSectionAttributes is true.
+  - `sectionFillPen` (integer)
+  - `sectionFillBackgroundPen` (integer)
+  - `sectionContourPen` (integer)
+  - `aboveViewLinePen` (integer): Pen of the overhead lines ("Overhead Line Pens").
+  - `aboveViewLineTypeId` (AttributeId): Line type of the overhead lines ("Overhead Lines").
+  - `belowViewLinePen` (integer): Pen of the uncut lines of the opening.
+  - `belowViewLineTypeId` (AttributeId): Line type of the uncut lines ("Uncut Lines").
+  - `useObjectPens` (boolean): Use the pens defined in the library part instead of 'pen'.
+  - `useObjectLineTypes` (boolean): Use the line types defined in the library part instead of 'lineTypeId'.
+  - `useObjectSectionAttributes` (boolean): Use the section attributes defined in the library part instead of 'sectionFillId' and the section pens.
+  - `libraryPartName` (string): Optional. Localized library part name (docu_UName) to place instead of the tool default/favorite, e.g. a shutter part that has no favorite. It has to be a window library part. Set on the created window only, with its A and B from `width` and `height` (or the tool default's width and height); the Window tool defaults are not changed.
   - `favoriteName` (string): Optional. Name of an existing Window favorite (as returned by `GetFavoritesByType`). Applied to the Window tool defaults before the create.
 
 Returns:
@@ -3548,14 +4274,31 @@ Parameters:
 
 - `doorsData` (array of object, required)
   - `ownerWallId` (ElementId, required)
-  - `centerOffset` (number, required)
-  - `sillHeight` (number)
   - `width` (number)
   - `height` (number)
+  - `sillHeight` (number)
+  - `centerOffset` (number, required)
   - `reflected` (boolean)
   - `refSide` (boolean)
   - `oSide` (boolean)
-  - `libraryPartName` (string): Optional. Localized library part name (docu_UName) to place instead of the tool default/favorite, e.g. a shutter part that has no favorite. It has to be a door library part. Applied to the tool defaults before cloning.
+  - `reveal` (boolean): Turn the reveal on or off.
+  - `revealDepthOffset` (number): Distance the frame plane is moved across the wall thickness, along the wall normal.
+  - `displayOption` (DisplayOption)
+  - `pen` (integer): Pen of the opening's floor plan symbol; used unless useObjectPens is true.
+  - `lineTypeId` (AttributeId): Line type of the opening's floor plan symbol; used unless useObjectLineTypes is true.
+  - `cutLineTypeId` (AttributeId): Line type of the cut lines of the opening.
+  - `sectionFillId` (AttributeId): Fill of the section of the opening; used unless useObjectSectionAttributes is true.
+  - `sectionFillPen` (integer)
+  - `sectionFillBackgroundPen` (integer)
+  - `sectionContourPen` (integer)
+  - `aboveViewLinePen` (integer): Pen of the overhead lines ("Overhead Line Pens").
+  - `aboveViewLineTypeId` (AttributeId): Line type of the overhead lines ("Overhead Lines").
+  - `belowViewLinePen` (integer): Pen of the uncut lines of the opening.
+  - `belowViewLineTypeId` (AttributeId): Line type of the uncut lines ("Uncut Lines").
+  - `useObjectPens` (boolean): Use the pens defined in the library part instead of 'pen'.
+  - `useObjectLineTypes` (boolean): Use the line types defined in the library part instead of 'lineTypeId'.
+  - `useObjectSectionAttributes` (boolean): Use the section attributes defined in the library part instead of 'sectionFillId' and the section pens.
+  - `libraryPartName` (string): Optional. Localized library part name (docu_UName) to place instead of the tool default/favorite, e.g. a shutter part that has no favorite. It has to be a door library part. Set on the created door only, with its A and B from `width` and `height` (or the tool default's width and height); the Door tool defaults are not changed.
   - `favoriteName` (string): Optional. Name of an existing Door favorite (as returned by `GetFavoritesByType`). Applied to the Door tool defaults before the create.
 
 Returns:
@@ -3848,13 +4591,16 @@ Example: [archicad-addon/Examples/Element/SetOpeningDetails.py](https://github.c
 
 ### CreateMorphs
 
-Creates Morph elements from simple box definitions.
+Creates Morph elements from simple box definitions or arbitrary bodies. Each item may name a favorite (favoriteName) to start from, a layer (layerIndex) and an Element ID (id); the given geometry and floor are kept.
 
 Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/archicad-addon/#CreateMorphs
 
 Parameters:
 
 - `morphsData` (array of object, required)
+  - `favoriteName` (string): Optional name of a Morph favorite to base the new morph on. Its settings are applied first, then the explicitly given fields override them. The geometry (basePoint, size or body, axes) and the floor always come from this item, not from the favorite.
+  - `id` (string): Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool.
+  - `layerIndex` (integer): Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults.
   - `basePoint` (Coordinate3D, required)
   - `size` (Dimensions3D): Builds a simple axis-aligned box of this size. Mutually exclusive with `body` - give exactly one of the two.
   - `body` (MorphBody): Builds arbitrary geometry instead of a simple box. Mutually exclusive with `size` - give exactly one of the two.
@@ -3932,9 +4678,150 @@ Grasshopper: `CreateRoofsComponent`, `RoofsComponent`
 
 Example: [archicad-addon/Examples/Element/CreateRoofs.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateRoofs.py): Creates a multi-plane roof and a single-plane roof with CreateRoofs. A pivotLine makes a single-plane roof that rises on the left of the line; angles are in radians.
 
+### CreateShells
+
+Creates extruded, revolved and ruled Shell elements from profile polylines, with thickness, structure, an optional clipping contour and holes.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#CreateShells
+
+Parameters:
+
+- `shellsData` (array of object, required): Array of data to create Shells.
+  - `favoriteName` (string): Optional name of a Shell favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them.
+  - `id` (string): Optional Element ID of the new element. When omitted the element gets the next automatic ID of its tool.
+  - `shellClass` (string ("Extruded", "Revolved", "Ruled"), required): Extruded: 'profile' swept along 'extrusionVector'. Revolved: 'profile' turned around 'axis'. Ruled: a surface ruled between 'profile' and 'secondProfile'.
+  - `floorIndex` (integer): Optional story index of the shell. Without it the shell is placed on the story of the Shell tool defaults.
+  - `basePlane` (CoordinateSystem3D): Base plane of the shell, in project coordinates; the profiles, the extrusion, the axis and the contour and hole polygons are given in it. The project axes by default, except for a Revolved shell, whose default base plane stands upright (its Y axis is the project Z axis), so the profile's x is the radius and its y the height.
+  - `profile` (ShellProfile, required): The profile polyline. Extruded: in the plane across the extrusion, x horizontal and y up. Revolved: in the base plane's XY plane. Ruled: in the XY plane of 'profilePlane'.
+  - `thickness` (number): Only takes effect on a Basic shell; a Composite shell takes its thickness from the composite.
+  - `isFlipped` (boolean): Applies the thickness to the other side of the reference surface.
+  - `structureType` (RoofStructureType)
+  - `buildingMaterialId` (AttributeId)
+  - `compositeId` (AttributeId)
+  - `extrusionVector` (Coordinate3D): Extruded only, required: the direction and length of the extrusion, in base plane coordinates.
+  - `extrusionStart` (Coordinate3D): Extruded only: the point the extrusion starts from, in base plane coordinates.
+  - `shapePlaneTilt` (number): Extruded only: tilt of the profile's plane, in radians.
+  - `begPlaneTilt` (number): Extruded only: tilt of the start plane of the extrusion, in radians.
+  - `endPlaneTilt` (number): Extruded only: tilt of the end plane of the extrusion, in radians.
+  - `slantAngle` (number): Extruded and Revolved: slant of the extrusion vector or of the profile, in radians.
+  - `axis` (CoordinateSystem3D): Revolved only: the coordinate system whose Z axis the profile is turned around, in base plane coordinates. By default the base plane's Y axis.
+  - `revolutionAngle` (number): Revolved only: the angle the profile is turned through, in radians. 2*pi (a full turn) by default.
+  - `beginAngle` (number): Revolved only: the angle the revolution starts at, in radians.
+  - `distortionAngle` (number): Revolved only: shear of the revolution, in radians. pi/2 (no shear) by default.
+  - `segmentsByCircle` (integer): Revolved only: the number of segments a full circle is resolved into.
+  - `secondProfile` (ShellProfile): Ruled only, required: the second profile polyline, in the XY plane of 'secondProfilePlane'.
+  - `profilePlane` (CoordinateSystem3D): Ruled only, required: the plane of 'profile', in base plane coordinates.
+  - `secondProfilePlane` (CoordinateSystem3D): Ruled only, required: the plane of 'secondProfile', in base plane coordinates.
+  - `morphingRule` (string ("Paired", "Smooth")): Ruled only: how the two profiles are joined, segment by segment (Paired) or smoothly.
+  - `contour` (ShellCutPolygon): Optional clipping contour: only the part of the shell inside this polygon, seen along the Z axis of its plane, is kept. Its 'depth' is ignored.
+  - `holes` (array of ShellCutPolygon): Optional holes, each requiring 'depth' to extrude its cutting polygon along the Z axis of its plane.
+  - `begShapeEdgeTrim` (ShellEdgeTrim): Optional trim of the profile's edges at the start of the shell (the start plane of an extrusion, the begin angle of a revolution, the first profile of a ruled shell). Perpendicular at pi/2 by default, as the Shell tool draws it, also when favoriteName is given.
+  - `endShapeEdgeTrim` (ShellEdgeTrim): Optional trim of the profile's edges at the end of the shell. Perpendicular at pi/2 by default.
+  - `begSideEdgeTrim` (ShellEdgeTrim): Optional trim of the edge that the profile's first point sweeps from the start to the end of the shell. Perpendicular at pi/2 by default.
+  - `endSideEdgeTrim` (ShellEdgeTrim): Optional trim of the edge that the profile's last point sweeps. Perpendicular at pi/2 by default.
+
+Returns:
+
+- `elements` (ElementIdsOrErrors, required)
+
+Grasshopper: `CreateShellsComponent`
+
+Example: [archicad-addon/Examples/Element/CreateShells.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateShells.py): Creates an extruded barrel vault, a revolved dome and a ruled shell with CreateShells. The vault has a square opening, and the dome has a circular oculus. Profiles, placement planes and cutting polygons define the three shells.
+
+### CreateSkylights
+
+Creates Skylight elements with a roof or shell owner and a floor plan anchor position. It takes the same settings as ModifySkylights (anchor point, fix mode, width, height, azimuth and elevation angles, mirroring, floor plan display, pens, line types, section fill, surface and the library part flags) and optionally a library part; the settings not given come from the Skylight tool defaults or a favorite. Surface placement is handled by Archicad and has not yet been verified for this command.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#CreateSkylights
+
+Parameters:
+
+- `skylightsData` (array of object, required): Array of data to create Skylights.
+  - `favoriteName` (string): Optional name of a Skylight favorite to base the new element on.
+  - `id` (string): Optional Element ID of the new element. When omitted the element gets the next automatic ID of its tool.
+  - `ownerId` (ElementId, required): The roof (single- or multi-plane) or shell the skylight is placed in.
+  - `libraryPartName` (string): Optional localized name of a skylight library part to place instead of the tool default's.
+  - `anchorPosition` (Coordinate2D, required): Global XY coordinates of the skylight's anchor point (API_SkylightType::anchorPosition). Archicad places the skylight on its owner roof or shell at this point; moving it onto another plane of a multi-plane roof has not been verified.
+  - `anchorPoint` (string ("BottomCenter", "BottomLeft", "BottomRight", "TopCenter", "TopLeft", "TopRight")): Which point of the skylight anchorPosition places (API_SkylightType::anchorPoint).
+  - `fixMode` (string ("Horizontal", "Vertical")): What the skylight keeps when the angle or the height of its owner changes (API_SkylightType::fixMode).
+  - `width` (number)
+  - `height` (number)
+  - `azimuthAngle` (number): Rotation angle of the skylight in the horizontal plane, measured clockwise, in radians (API_SkylightType::azimuthAngle).
+  - `elevationAngle` (number): Elevation angle of the owner's surface at the skylight, in radians (API_SkylightType::elevationAngle). Archicad may set it again from the owner roof or shell.
+  - `reflected` (boolean): Mirror the skylight (API_OpeningBaseType::reflected).
+  - `displayOption` (DisplayOption)
+  - `pen` (integer): Pen of the skylight's floor plan symbol; used unless useObjectPens is true.
+  - `lineTypeId` (AttributeId): Line type of the skylight's floor plan symbol; used unless useObjectLineTypes is true.
+  - `cutLineTypeId` (AttributeId): Line type of the cut lines of the skylight.
+  - `sectionFillId` (AttributeId): Fill of the section of the skylight; used unless useObjectSectionAttributes is true.
+  - `sectionFillPen` (integer)
+  - `sectionFillBackgroundPen` (integer)
+  - `sectionContourPen` (integer)
+  - `aboveViewLinePen` (integer): Pen of the overhead lines.
+  - `aboveViewLineTypeId` (AttributeId): Line type of the overhead lines.
+  - `belowViewLinePen` (integer): Pen of the uncut lines of the skylight.
+  - `belowViewLineTypeId` (AttributeId): Line type of the uncut lines.
+  - `surfaceId` (AttributeId): Surface of the skylight (API_OpeningBaseType::mat); used unless useObjectMaterials is true.
+  - `useObjectPens` (boolean): Use the pens defined in the library part instead of 'pen'.
+  - `useObjectLineTypes` (boolean): Use the line types defined in the library part instead of 'lineTypeId'.
+  - `useObjectMaterials` (boolean): Use the surfaces defined in the library part instead of 'surfaceId'.
+  - `useObjectSectionAttributes` (boolean): Use the section attributes defined in the library part instead of 'sectionFillId' and the section pens.
+
+Returns:
+
+- `elements` (ElementIdsOrErrors, required)
+
+Grasshopper: `CreateSkylightsComponent`
+
+Example: [archicad-addon/Examples/Element/CreateSkylights.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateSkylights.py): Requests three skylights in single-plane and multi-plane roof owners. Creates the roofs first, then uses their IDs and global XY anchor positions. Automatic surface placement still needs verification in a running Archicad.
+
+### ModifySkylights
+
+Modifies Skylight elements: anchor position and anchor point, fix mode, width, height, azimuth and elevation angles, mirroring, floor plan display option, pens, line types, section fill and pens, surface and the use-the-library-part's-settings flags - the same settings CreateSkylights takes and GetDetailsOfElements returns. Only the given settings change. Not written by this command: the owner roof or shell, the anchor level and the vertical link (Archicad places the skylight on its owner), the plane of a multi-plane roof it sits on, the dimension marker (a separate element) and the library part's own parameters (use SetGDLParametersOfElements). Archicad may set the elevation angle again from the owner.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ModifySkylights
+
+Parameters:
+
+- `skylightsWithDetails` (array of object, required): The skylights to modify, each with the settings to change. The settings not given stay as they are.
+  - `elementId` (ElementId, required)
+  - `anchorPosition` (Coordinate2D): Global XY coordinates of the skylight's anchor point (API_SkylightType::anchorPosition). Archicad places the skylight on its owner roof or shell at this point; moving it onto another plane of a multi-plane roof has not been verified.
+  - `anchorPoint` (string ("BottomCenter", "BottomLeft", "BottomRight", "TopCenter", "TopLeft", "TopRight")): Which point of the skylight anchorPosition places (API_SkylightType::anchorPoint).
+  - `fixMode` (string ("Horizontal", "Vertical")): What the skylight keeps when the angle or the height of its owner changes (API_SkylightType::fixMode).
+  - `width` (number)
+  - `height` (number)
+  - `azimuthAngle` (number): Rotation angle of the skylight in the horizontal plane, measured clockwise, in radians (API_SkylightType::azimuthAngle).
+  - `elevationAngle` (number): Elevation angle of the owner's surface at the skylight, in radians (API_SkylightType::elevationAngle). Archicad may set it again from the owner roof or shell.
+  - `reflected` (boolean): Mirror the skylight (API_OpeningBaseType::reflected).
+  - `displayOption` (DisplayOption)
+  - `pen` (integer): Pen of the skylight's floor plan symbol; used unless useObjectPens is true.
+  - `lineTypeId` (AttributeId): Line type of the skylight's floor plan symbol; used unless useObjectLineTypes is true.
+  - `cutLineTypeId` (AttributeId): Line type of the cut lines of the skylight.
+  - `sectionFillId` (AttributeId): Fill of the section of the skylight; used unless useObjectSectionAttributes is true.
+  - `sectionFillPen` (integer)
+  - `sectionFillBackgroundPen` (integer)
+  - `sectionContourPen` (integer)
+  - `aboveViewLinePen` (integer): Pen of the overhead lines.
+  - `aboveViewLineTypeId` (AttributeId): Line type of the overhead lines.
+  - `belowViewLinePen` (integer): Pen of the uncut lines of the skylight.
+  - `belowViewLineTypeId` (AttributeId): Line type of the uncut lines.
+  - `surfaceId` (AttributeId): Surface of the skylight (API_OpeningBaseType::mat); used unless useObjectMaterials is true.
+  - `useObjectPens` (boolean): Use the pens defined in the library part instead of 'pen'.
+  - `useObjectLineTypes` (boolean): Use the line types defined in the library part instead of 'lineTypeId'.
+  - `useObjectMaterials` (boolean): Use the surfaces defined in the library part instead of 'surfaceId'.
+  - `useObjectSectionAttributes` (boolean): Use the section attributes defined in the library part instead of 'sectionFillId' and the section pens.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `ModifySkylightsComponent`
+
+Example: [archicad-addon/Examples/Element/ModifySkylights.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifySkylights.py): Changes the size, rotation and floor plan display of the skylights with ModifySkylights. Needs at least one Skylight. Only the settings given change; CreateSkylights takes the same keys, and GetDetailsOfElements reads them back.
+
 ### CreateRailings
 
-Creates Railing elements along a reference polyline. Posts, rails, handrails, toprails, panels and balusters come from the favorite or from the Railing tool defaults; Archicad generates one node per vertex and one segment per pair of consecutive vertices.
+Creates Railing elements along a reference polyline. Posts, rails, handrails, toprails, panels and balusters come from the favorite, from an existing railing (templateElementId) or from the Railing tool defaults; Archicad generates one node per vertex and one segment per pair of consecutive vertices.
 
 Group: Element Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#CreateRailings
 
@@ -3943,6 +4830,7 @@ Parameters:
 - `railingsData` (array of object, required): Array of data to create Railings.
   - `favoriteName` (string): Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them.
   - `id` (string): Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool.
+  - `templateElementId` (ElementId): Optional existing Railing whose settings the new railing takes instead of the tool defaults (or the favorite): its node and segment settings, from which the posts, rails, handrails, toprails, panels and balusters are generated, its story visibility, pens, bottom offset, layer and home story. floorIndex, bottomOffset and height given here override them. The reference line of a railing cannot be changed through the Archicad API, so a railing is given a new reference line by creating it again with itself as templateElementId and deleting the old one.
   - `coordinates` (array of Coordinate2D, required): The 2D coordinates of the reference line of the railing on the floor plan. Each pair of consecutive coordinates becomes one straight segment.
   - `floorIndex` (integer): Optional floor index (home story) of the railing. The story is made active in the floor plan while the railing is created and the previously active story is restored afterwards. When omitted, the current story.
   - `bottomOffset` (number): Optional base height of the railing relative to the floor level. When omitted, the value of the favorite (or of the Railing tool defaults) is kept.
@@ -3954,7 +4842,31 @@ Returns:
 
 Grasshopper: `RailingsComponent`
 
-Example: [archicad-addon/Examples/Element/CreateRailings.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateRailings.py): Creates a 1.1 m high railing along three edges of a balcony with CreateRailings. The posts, rails, handrails and infill come from the Railing tool defaults, or from favoriteName.
+Example: [archicad-addon/Examples/Element/CreateRailings.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateRailings.py): Creates a 1.1 m high railing along three edges of a balcony with CreateRailings, then a second one with its settings. The posts, rails, handrails and infill come from the Railing tool defaults, or from favoriteName. The second railing takes every setting of the first through templateElementId; the reference line of a railing cannot be changed, so this is also how a railing gets a new one (create it again with itself as the template, then delete the old one).
+
+### CreateRailingsFromPolyline
+
+Creates Railing elements along a 3D reference polyline: each node has its own elevation and segments can be arcs. Posts, rails, handrails, toprails, panels and balusters come from the favorite or from the Railing tool defaults.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#CreateRailingsFromPolyline
+
+Parameters:
+
+- `railingsData` (array of object, required): Array of data to create Railings.
+  - `favoriteName` (string): Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them.
+  - `id` (string): Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool.
+  - `floorIndex` (integer): Optional floor index (home story) of the railing. The story is made active in the floor plan while the railing is created and the previously active story is restored afterwards. When omitted, the current story.
+  - `polylineCoordinates` (array of Coordinate3D, required): The nodes of the reference line of the railing. z is the elevation of the node relative to the floor level of the home story, so the railing can climb or descend along its segments.
+  - `polylineArcs` (array of PolyArc): Optional arc segments of the reference line. begIndex and endIndex are indices into polylineCoordinates and must be consecutive (endIndex = begIndex + 1).
+  - `height` (number): Optional height of the railing segments. When omitted, the segment height of the favorite (or of the Railing tool defaults) is kept.
+
+Returns:
+
+- `elements` (ElementIdsOrErrors, required)
+
+Grasshopper: `CreateRailingsFromPolylineComponent`
+
+Example: [archicad-addon/Examples/Element/CreateRailingsFromPolyline.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateRailingsFromPolyline.py): Creates a railing that climbs 1 m along its second segment and ends in a quarter arc with CreateRailingsFromPolyline. z of each node is its elevation above the home story. The posts, rails and infill come from the Railing tool defaults, or from favoriteName.
 
 ### CreateCurtainWalls
 
@@ -3985,16 +4897,23 @@ Example: [archicad-addon/Examples/Element/CreateCurtainWalls.py](https://github.
 
 ### CreateAssociativeDimensions
 
-Creates associative linear dimensions from explicit witness point references. A witness point can also be static, given by its coordinate instead of an element.
+Creates associative dimensions from explicit witness point references: linear by default, or cumulative, baseline or elevation dimensions (appearance). A witness point can also be static, given by its coordinate instead of an element.
 
 Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/archicad-addon/#CreateAssociativeDimensions
 
 Parameters:
 
 - `dimensionsData` (array of object, required)
-  - `favoriteName` (string): Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight and textPen for the texts. The Dimension tool defaults are left as they were.
-  - `textHeight` (number): Optional height of the dimension texts in millimeters (paper size), applied to every witness point after favoriteName.
-  - `textPen` (integer): Optional pen index of the dimension texts, applied to every witness point after favoriteName.
+  - `favoriteName` (string): Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight, textPen and textFrame for the texts. The Dimension tool defaults are left as they were.
+  - `textHeight` (number): Optional height of the dimension texts in millimeters (paper size), applied to every witness point (on creation after favoriteName).
+  - `textPen` (integer): Optional pen index of the dimension texts, applied to every witness point (on creation after favoriteName).
+  - `textFrame` (boolean): Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point. Without it a new dimension gets the Dimension tool's setting.
+  - `appearance` (string ("Linear", "Cumulative", "Baseline", "Elevation")): Optional dimension type, as in the Dimension Settings. A new dimension is Linear without it, whatever favoriteName or the Dimension tool defaults say. Elevation gives level marks, e.g. on a vertical chain in a section.
+  - `elevationOrigin` (DimensionOrigin): Optional level an Elevation dimension measures from. A new dimension gets the one of favoriteName or the Dimension tool defaults without it.
+  - `linePen` (integer): Optional pen of the dimension and witness lines.
+  - `marker` (object): Optional marker at the witness points; give the type, the pen or both. Its size is not written: the size the API reports did not match the marker size of the Dimension Settings for linear dimensions.
+  - `defaultWitnessForm` (string ("None", "Small", "Large", "Fix")): Optional witness line form, as in the Dimension Settings, applied to every witness point.
+  - `defaultWitnessVal` (number): Optional value that goes with the witness line form, in meters (for Fix the length of the witness lines), applied to every witness point.
   - `referencePoint` (Coordinate2D, required)
   - `direction` (Coordinate2D, required)
   - `floorIndex` (number)
@@ -4010,20 +4929,27 @@ Example: [archicad-addon/Examples/Element/CreateAssociativeDimensions.py](https:
 
 ### CreateAssociativeDimensionsOnSection
 
-Creates associative linear dimensions on section elements using common wall, slab, beam, column and opening presets. The preset points of multiple section elements can be merged into one continuous dimension chain via sectionElementIds.
+Creates associative dimensions on section elements using common wall, slab, beam, column, door and window presets: linear by default, or cumulative, baseline or elevation dimensions (appearance), e.g. level marks. The preset points of multiple section elements can be merged into one continuous dimension chain via sectionElementIds. For Opening tool elements, which Archicad does not associate with dimensions, the OpeningEdges preset places fixed points at their edges instead.
 
 Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/archicad-addon/#CreateAssociativeDimensionsOnSection
 
 Parameters:
 
 - `dimensionsData` (array of object, required)
-  - `favoriteName` (string): Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight and textPen for the texts. The Dimension tool defaults are left as they were.
-  - `textHeight` (number): Optional height of the dimension texts in millimeters (paper size), applied to every witness point after favoriteName.
-  - `textPen` (integer): Optional pen index of the dimension texts, applied to every witness point after favoriteName.
+  - `favoriteName` (string): Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight, textPen and textFrame for the texts. The Dimension tool defaults are left as they were.
+  - `textHeight` (number): Optional height of the dimension texts in millimeters (paper size), applied to every witness point (on creation after favoriteName).
+  - `textPen` (integer): Optional pen index of the dimension texts, applied to every witness point (on creation after favoriteName).
+  - `textFrame` (boolean): Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point. Without it a new dimension gets the Dimension tool's setting.
+  - `appearance` (string ("Linear", "Cumulative", "Baseline", "Elevation")): Optional dimension type, as in the Dimension Settings. A new dimension is Linear without it, whatever favoriteName or the Dimension tool defaults say. Elevation gives level marks, e.g. on a vertical chain in a section.
+  - `elevationOrigin` (DimensionOrigin): Optional level an Elevation dimension measures from. A new dimension gets the one of favoriteName or the Dimension tool defaults without it.
+  - `linePen` (integer): Optional pen of the dimension and witness lines.
+  - `marker` (object): Optional marker at the witness points; give the type, the pen or both. Its size is not written: the size the API reports did not match the marker size of the Dimension Settings for linear dimensions.
+  - `defaultWitnessForm` (string ("None", "Small", "Large", "Fix")): Optional witness line form, as in the Dimension Settings, applied to every witness point.
+  - `defaultWitnessVal` (number): Optional value that goes with the witness line form, in meters (for Fix the length of the witness lines), applied to every witness point.
   - `sectionElementId` (ElementId): The identifier of a single section element. Only one of sectionElementId and sectionElementIds can be given.
   - `sectionElementIds` (array of ElementId): A list of section elements whose preset points are merged into one continuous dimension chain. Only one of sectionElementId and sectionElementIds can be given.
   - `referencePoint` (Coordinate2D, required)
-  - `preset` (string ("WallCompositeFaces", "WallSkinBorders", "SlabCompositeFaces", "SlabSkinBorders", "BeamOrColumnRefLineEndPoints", "BeamOrColumnBoundingBoxCorners", "DoorWindowWallHoleCorners", "DoorWindowModelHotspots"), required)
+  - `preset` (string ("WallCompositeFaces", "WallSkinBorders", "SlabCompositeFaces", "SlabSkinBorders", "BeamOrColumnRefLineEndPoints", "BeamOrColumnBoundingBoxCorners", "DoorWindowWallHoleCorners", "DoorWindowModelHotspots", "OpeningEdges"), required): OpeningEdges puts fixed points, not associated ones, at the edges of an Opening tool element as the section draws it: left and right for a horizontal direction, bottom and top for a vertical one. Archicad does not associate dimensions with openings in sections.
   - `direction` (Coordinate2D)
   - `skinBorderIndices` (array of integer)
   - `beginPlane` (boolean)
@@ -4047,9 +4973,16 @@ Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/ar
 Parameters:
 
 - `dimensionsData` (array of object, required)
-  - `favoriteName` (string): Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight and textPen for the texts. The Dimension tool defaults are left as they were.
-  - `textHeight` (number): Optional height of the dimension texts in millimeters (paper size), applied to every witness point after favoriteName.
-  - `textPen` (integer): Optional pen index of the dimension texts, applied to every witness point after favoriteName.
+  - `favoriteName` (string): Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight, textPen and textFrame for the texts. The Dimension tool defaults are left as they were.
+  - `textHeight` (number): Optional height of the dimension texts in millimeters (paper size), applied to every witness point (on creation after favoriteName).
+  - `textPen` (integer): Optional pen index of the dimension texts, applied to every witness point (on creation after favoriteName).
+  - `textFrame` (boolean): Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point. Without it a new dimension gets the Dimension tool's setting.
+  - `appearance` (string ("Linear", "Cumulative", "Baseline", "Elevation")): Optional dimension type, as in the Dimension Settings. A new dimension is Linear without it, whatever favoriteName or the Dimension tool defaults say. Elevation gives level marks, e.g. on a vertical chain in a section.
+  - `elevationOrigin` (DimensionOrigin): Optional level an Elevation dimension measures from. A new dimension gets the one of favoriteName or the Dimension tool defaults without it.
+  - `linePen` (integer): Optional pen of the dimension and witness lines.
+  - `marker` (object): Optional marker at the witness points; give the type, the pen or both. Its size is not written: the size the API reports did not match the marker size of the Dimension Settings for linear dimensions.
+  - `defaultWitnessForm` (string ("None", "Small", "Large", "Fix")): Optional witness line form, as in the Dimension Settings, applied to every witness point.
+  - `defaultWitnessVal` (number): Optional value that goes with the witness line form, in meters (for Fix the length of the witness lines), applied to every witness point.
   - `wallId` (ElementId, required)
   - `referencePoint` (Coordinate2D, required)
   - `direction` (Coordinate2D, required)
@@ -4062,9 +4995,37 @@ Grasshopper: `CreateWallThicknessDimensionsComponent`
 
 Example: [archicad-addon/Examples/Element/CreateWallThicknessDimensions.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateWallThicknessDimensions.py): Creates a wall and dimensions its thickness with CreateWallThicknessDimensions. The dimension line runs across the wall (direction) through referencePoint.
 
+### ModifyAssociativeDimensions
+
+Changes the settings of existing linear dimensions (the Dimension tool's elements, also in sections): the dimension type, the elevation origin, the line pen, the marker type and pen, the text height, pen and frame and the witness line form and value, with the same keys as the dimension creation commands. The text and witness line settings are applied to every witness point. Not written: the witness points, the dimension line position and direction (use MoveElements), the marker size, the text content and position, the witness extension line, the layout and the hole and composite wall dimensioning settings.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ModifyAssociativeDimensions
+
+Parameters:
+
+- `dimensionsWithDetails` (array of object, required): The linear dimensions to change (the Dimension tool's elements, also those placed in sections), each with the settings to change. Only the given settings are changed.
+  - `elementId` (ElementId, required)
+  - `textHeight` (number): Optional height of the dimension texts in millimeters (paper size), applied to every witness point (on creation after favoriteName).
+  - `textPen` (integer): Optional pen index of the dimension texts, applied to every witness point (on creation after favoriteName).
+  - `textFrame` (boolean): Optional frame around the dimension texts (true: framed, false: not framed), applied to every witness point. Without it a new dimension gets the Dimension tool's setting.
+  - `appearance` (string ("Linear", "Cumulative", "Baseline", "Elevation")): Optional dimension type, as in the Dimension Settings. A new dimension is Linear without it, whatever favoriteName or the Dimension tool defaults say. Elevation gives level marks, e.g. on a vertical chain in a section.
+  - `elevationOrigin` (DimensionOrigin): Optional level an Elevation dimension measures from. A new dimension gets the one of favoriteName or the Dimension tool defaults without it.
+  - `linePen` (integer): Optional pen of the dimension and witness lines.
+  - `marker` (object): Optional marker at the witness points; give the type, the pen or both. Its size is not written: the size the API reports did not match the marker size of the Dimension Settings for linear dimensions.
+  - `defaultWitnessForm` (string ("None", "Small", "Large", "Fix")): Optional witness line form, as in the Dimension Settings, applied to every witness point.
+  - `defaultWitnessVal` (number): Optional value that goes with the witness line form, in meters (for Fix the length of the witness lines), applied to every witness point.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `ModifyAssociativeDimensionsComponent`
+
+Example: [archicad-addon/Examples/Element/ModifyAssociativeDimensions.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyAssociativeDimensions.py): Creates a linear dimension, then changes its pens, marker, texts and witness lines with ModifyAssociativeDimensions. The keys are the ones the dimension creation commands take, and GetDetailsOfElements returns them, so the settings read from one dimension can be written to others. The text and witness line settings are applied to every witness point. Run it with a floor plan window active.
+
 ### GetDimensionData
 
-Gets witness point data (coordinates, measured values) from existing dimension chains.
+Gets the data of existing dimension chains: the line pen, the marker type and pen and the default witness line, and per witness point the coordinates, measured value, witness line and the text height, pen and frame.
 
 Group: Element Commands. Added in Tapir 1.5.0. Docs: https://archicad-api.com/archicad-addon/#GetDimensionData
 
@@ -4101,7 +5062,7 @@ Example: [archicad-addon/Examples/Element/GetOpeningTransformations.py](https://
 
 ### CreateZones
 
-Creates Zone elements based on the given parameters.
+Creates Zone elements based on the given parameters. Takes the same zone settings as ModifyZones (name, number, category, zone stamp, levels, contour line and cover fill), applied by the same helpers; the polygon or reference point is only set here. An item whose area would overlap an existing Zone on the same story fails with an error naming that Zone instead of opening Archicad's modal overlap warning, unless its allowOverlap is true.
 
 Group: Element Commands. Added in Tapir 1.1.8. Docs: https://archicad-api.com/archicad-addon/#CreateZones
 
@@ -4119,6 +5080,7 @@ Parameters:
   - `fixedStampAngle` (boolean): If true, the zone stamp angle remains fixed when the element is rotated.
   - `contourLine` (ZoneContourLine): Optional contour line of the zone. Fields that are left out keep the value of the favorite or of the Zone tool defaults.
   - `coverFill` (ZoneCoverFill): Optional cover fill of the zone. Fields that are left out keep the value of the favorite or of the Zone tool defaults.
+  - `allowOverlap` (boolean): Optional, defaults to false. Archicad answers a new zone whose area overlaps an existing zone on the same story with a modal warning dialog that blocks the API until it is dismissed, so by default such an item fails with an error naming the overlapping zone and no element is created for it. Set it to true to skip this check and create the zone anyway; the dialog may then appear. Zones that only touch (a shared edge or corner) do not overlap; curved edges are checked by their chords, and an automatic zone counts as overlapping when its referencePosition lies inside an existing zone.
   - `height` (number): Optional height of the zone from its bottom. Sets relativeTopStory to 0 (explicit height); when omitted, the height and top link of the favorite or of the Zone tool defaults are kept. Do not combine with relativeTopStory.
   - `bottomOffset` (number): Optional base level of the zone relative to its home story level.
   - `topOffset` (number): Optional offset of the top of the zone from the linked top story level. Only has an effect when relativeTopStory is non-zero.
@@ -4132,7 +5094,7 @@ Returns:
 
 Grasshopper: `CreateZonesComponent`, `ZonesComponent`
 
-Example: [archicad-addon/Examples/Element/CreateZones.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateZones.py): Creates a 6 m x 5 m zone named Office from its outline with CreateZones. A zone that would overlap an existing zone on the same story fails with an error instead (unless allowOverlap is true). Give 'geometry': {'referencePosition': {'x': ..., 'y': ...}} instead to create an automatic zone in the room around that point.
+Example: [archicad-addon/Examples/Element/CreateZones.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateZones.py): Creates a 6 m x 5 m zone named Office from its outline with CreateZones, with its contour line drawn. A zone that would overlap an existing zone on the same story fails with an error instead (unless allowOverlap is true). Give 'geometry': {'referencePosition': {'x': ..., 'y': ...}} instead to create an automatic zone in the room around that point. contourLine and coverFill take the same keys in ModifyZones; fields left out keep the Zone tool defaults.
 
 ### CreatePolylines
 
@@ -4153,6 +5115,7 @@ Parameters:
   - `roomSeparator` (boolean): Is this a zone boundary line? Optional, defaults to false.
   - `coordinates` (array of Coordinate2D, required): The 2D coordinates of the polyline.
   - `arcs` (array of PolyArc): The arcs of the polyline.
+- `databaseId` (DatabaseId): Optional database to create the elements in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails.
 
 Returns:
 
@@ -4180,6 +5143,7 @@ Parameters:
   - `roomSeparator` (boolean): Is this a zone boundary line? Optional, defaults to false.
   - `linePenIndex` (integer): Optional pen index. By default the current pen is used.
   - `lineTypeId` (AttributeId): Optional line type attribute. By default the current line type is used.
+- `databaseId` (DatabaseId): Optional database to create the elements in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails.
 
 Returns:
 
@@ -4209,6 +5173,7 @@ Parameters:
   - `roomSeparator` (boolean): Is this a zone boundary line? Optional, defaults to false.
   - `linePenIndex` (integer): Optional pen index. By default the current pen is used.
   - `lineTypeId` (AttributeId): Optional line type attribute. By default the current line type is used.
+- `databaseId` (DatabaseId): Optional database to create the elements in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails.
 
 Returns:
 
@@ -4236,6 +5201,7 @@ Parameters:
   - `roomSeparator` (boolean): Is this a zone boundary line? Optional, defaults to false.
   - `linePenIndex` (integer): Optional pen index. By default the current pen is used.
   - `lineTypeId` (AttributeId): Optional line type attribute. By default the current line type is used.
+- `databaseId` (DatabaseId): Optional database to create the elements in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails.
 
 Returns:
 
@@ -4261,6 +5227,7 @@ Parameters:
   - `position` (Coordinate2D, required)
   - `height` (number)
   - `penIndex` (integer): Optional pen index. By default the current pen is used.
+- `databaseId` (DatabaseId): Optional database to create the elements in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails.
 
 Returns:
 
@@ -4295,6 +5262,7 @@ Parameters:
   - `buildingMaterialId` (AttributeId)
   - `roomSpecial` (integer): Special area percent in a room (negative means OFF).
   - `showArea` (boolean)
+- `databaseId` (DatabaseId): Optional database to create the elements in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails.
 
 Returns:
 
@@ -4322,6 +5290,7 @@ Parameters:
   - `roomSeparator` (boolean): Is this a zone boundary line? Optional, defaults to false.
   - `linePenIndex` (integer): Optional pen index. By default the current pen is used.
   - `lineTypeId` (AttributeId): Optional line type attribute. By default the current line type is used.
+- `databaseId` (DatabaseId): Optional database to create the elements in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails.
 
 Returns:
 
@@ -4333,7 +5302,7 @@ Example: [archicad-addon/Examples/Element/CreateSplines.py](https://github.com/E
 
 ### CreateObjects
 
-Creates Object elements based on the given parameters.
+Creates Object elements based on the given parameters. A library part named in libraryPartName starts from its own default size and GDL parameters, not from those of the part the Object tool holds; the dimensions and the GDL parameters given (by name, in parameters) override them. layerIndex places the element on a layer. With databaseId the objects are placed in that database, e.g. a worksheet, instead of the current one.
 
 Group: Element Commands. Added in Tapir 1.5.7. Docs: https://archicad-api.com/archicad-addon/#CreateObjects
 
@@ -4366,6 +5335,9 @@ Parameters:
   - `floorIndex` (integer): Optional floor index. If omitted, derived from the coordinate's z value.
   - `favoriteName` (string): Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them.
   - `id` (string): Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool.
+  - `parameters` (array of object): Optional GDL parameters to set by name, after dimensions. The value is a number, a boolean or a string; array parameters are not supported. A or B also set the size. An unknown name or a value of the wrong type fails the item, and nothing is created for it.
+  - `layerIndex` (integer): Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults.
+- `databaseId` (DatabaseId): Optional database to place the elements in, e.g. a worksheet or a detail (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return), for a legend of symbols. The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are placed in the current database. If Archicad cannot switch to it, nothing is created and the call fails.
 
 Returns:
 
@@ -4373,11 +5345,11 @@ Returns:
 
 Grasshopper: `CreateObjectsComponent`, `ObjectsComponent`
 
-Example: [archicad-addon/Examples/Element/CreateObjects.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateObjects.py): Places the first Object library part of the loaded libraries at the origin with CreateObjects. Give any loaded library part name in libraryPartName, e.g. one listed by GetAvailableLibraryParts.
+Example: [archicad-addon/Examples/Element/CreateObjects.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateObjects.py): Places the first Object library part of the loaded libraries at the origin with CreateObjects, then once more in a new worksheet. Give any loaded library part name in libraryPartName, e.g. one listed by GetAvailableLibraryParts. The object starts from the library part's own default size and parameters; 'dimensions' and the GDL 'parameters' given (by name, e.g. A and B, the size) override them, and 'layerIndex' puts it on a layer (here the first layer of the project). With 'databaseId' (here the one CreateWorksheets returns) the object is placed in that database, e.g. for a legend of symbols in a worksheet, and the front window stays as it is. The example worksheet is deleted again at the end.
 
 ### CreateLamps
 
-Creates Lamp elements based on the given parameters.
+Creates Lamp elements based on the given parameters. A library part named in libraryPartName starts from its own default size and GDL parameters, not from those of the part the Lamp tool holds; the dimensions and the GDL parameters given (by name, in parameters) override them. layerIndex places the element on a layer. With databaseId the lamps are placed in that database, e.g. a worksheet, instead of the current one.
 
 Group: Element Commands. Added in Tapir 1.5.7. Docs: https://archicad-api.com/archicad-addon/#CreateLamps
 
@@ -4412,6 +5384,9 @@ Parameters:
   - `floorIndex` (integer): Optional floor index. If omitted, derived from the coordinate's z value.
   - `favoriteName` (string): Optional name of a favorite to base the new element on. Its settings are applied first, then the explicitly given fields override them.
   - `id` (string): Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool.
+  - `parameters` (array of object): Optional GDL parameters to set by name, after dimensions. The value is a number, a boolean or a string; array parameters are not supported. A or B also set the size. An unknown name or a value of the wrong type fails the item, and nothing is created for it.
+  - `layerIndex` (integer): Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults.
+- `databaseId` (DatabaseId): Optional database to place the elements in, e.g. a worksheet or a detail (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return), for a legend of symbols. The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are placed in the current database. If Archicad cannot switch to it, nothing is created and the call fails.
 
 Returns:
 
@@ -4419,7 +5394,7 @@ Returns:
 
 Grasshopper: `CreateLampsComponent`, `LampsComponent`
 
-Example: [archicad-addon/Examples/Element/CreateLamps.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateLamps.py): Places the first Lamp library part of the loaded libraries 2.5 m above the floor, switched on, with CreateLamps. Give any loaded lamp library part name in libraryPartName, e.g. one listed by GetAvailableLibraryParts.
+Example: [archicad-addon/Examples/Element/CreateLamps.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateLamps.py): Places the first Lamp library part of the loaded libraries 2.5 m above the floor, switched on, with CreateLamps. Give any loaded lamp library part name in libraryPartName, e.g. one listed by GetAvailableLibraryParts. The lamp starts from the library part's own default size and parameters; GDL 'parameters' given by name override them, and 'layerIndex' puts it on a layer (here the first layer of the project). A top-level 'databaseId' (e.g. the one CreateWorksheets returns) places the lamps in that database instead of the current one, as in the CreateObjects example.
 
 ### GetGridElementDefaults
 
@@ -4569,6 +5544,7 @@ Parameters:
   - `midCoordinate` (Coordinate2D): The mid coordinate of leader line. Optional parameter; give it together with endCoordinate to place the label exactly where the coordinates say.
   - `endCoordinate` (Coordinate2D): The end coordinate of leader line. Optional parameter; give it together with midCoordinate to place the label exactly where the coordinates say.
   - `floorInd` (number): The identifier of the floor. Optional parameter, by default the current floor or the floor of the parent element is used.
+- `databaseId` (DatabaseId): Optional database to create the elements in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails.
 
 Returns:
 
@@ -4597,8 +5573,10 @@ Parameters:
   - `angle` (number): Optional rotation angle in radians. Equivalent to style.angle.
   - `justification` (Justification): Optional; equivalent to style.justification.
   - `style` (TextStyleSettableDetails): height/pen/angle/justification above take precedence over the same fields here if both are given.
+  - `width` (number): Optional box width in mm (paper size, like height). Turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). When omitted the text is auto-width (word wrap off) and grows with its content. Read back by GetDetailsOfElements as style.boxWidth, with style.nonBreaking false.
   - `floorIndex` (integer): Optional floor index. If omitted, derived from the coordinate's z value.
   - `layerIndex` (integer): Optional layer attribute index. If omitted, the Text tool default layer is used.
+- `databaseId` (DatabaseId): Optional database to create the elements in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the elements are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails.
 
 Returns:
 
@@ -4606,7 +5584,7 @@ Returns:
 
 Grasshopper: `CreateTextsComponent`, `TextsComponent`
 
-Example: [archicad-addon/Examples/Element/CreateTexts.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateTexts.py): Creates a plain text and a two-line text with a bold first line with CreateTexts. height is the character height in millimeters (paper size).
+Example: [archicad-addon/Examples/Element/CreateTexts.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateTexts.py): Creates a plain text, a two-line text with a bold first line and a text that wraps within 30 mm with CreateTexts. height is the character height and width the box width of a wrapped text, both in millimeters (paper size). Without a width the text is auto-width: it grows with its content.
 
 ### CreateLevelDimensions
 
@@ -4625,8 +5603,8 @@ Parameters:
   - `floorIndex` (integer): The index of the floor to place the dimension on. Optional parameter, by default the floor of the parent element, otherwise the current floor is used.
   - `layerIndex` (integer): Layer attribute index to place the dimension on. Optional parameter, by default the layer of the favorite or the Level Dimension tool default is used.
   - `pen` (integer): Pen index of the marker. Optional parameter.
-  - `textHeight` (number): Height of the dimension text in millimeters (paper size). Optional parameter.
-  - `textPen` (integer): Pen index of the dimension text. Optional parameter.
+  - `textHeight` (number): Height of the dimension text in millimeters (paper size), applied to both texts of the marker. Optional parameter.
+  - `textPen` (integer): Pen index of the dimension text, applied to both texts of the marker. Optional parameter.
   - `dimForm` (integer): Marker type of the Level Dimension tool, 0-19 as Archicad stores it (read it back with GetDetailsOfElements from an existing level dimension or one placed with a favorite). Optional parameter.
   - `needPlus` (boolean): Show a plus sign for positive values. Optional parameter.
   - `markerSize` (number): Size of the marker in millimeters (paper size). Optional parameter.
@@ -4641,9 +5619,37 @@ Grasshopper: `LevelDimensionsComponent`
 
 Example: [archicad-addon/Examples/Element/CreateLevelDimensions.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/CreateLevelDimensions.py): Creates a slab and puts an associative level dimension on it with CreateLevelDimensions, plus one showing a fixed level. The associative one shows the slab's level at its position and follows the slab when it changes; level (in meters, from the project zero) is only used without parentElementId.
 
+### ModifyLevelDimensions
+
+Changes existing Level Dimension elements: the position of the marker and the settings CreateLevelDimensions takes (pen, text height and pen, marker type and size, plus sign, angle, origin), with the same keys. Not written: the parent element and the static level (delete and recreate the dimension to change them), the text content and the hide-with-base-element setting.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ModifyLevelDimensions
+
+Parameters:
+
+- `levelDimensionsWithDetails` (array of object, required): The Level Dimensions to change, each with the settings to change. Only the given settings are changed.
+  - `elementId` (ElementId, required)
+  - `position` (Coordinate2D): The new location of the marker on the floor plan. An associative level dimension then shows the height of its element at the new position. Optional parameter.
+  - `pen` (integer): Pen index of the marker. Optional parameter.
+  - `textHeight` (number): Height of the dimension text in millimeters (paper size), applied to both texts of the marker. Optional parameter.
+  - `textPen` (integer): Pen index of the dimension text, applied to both texts of the marker. Optional parameter.
+  - `dimForm` (integer): Marker type of the Level Dimension tool, 0-19 as Archicad stores it (read it back with GetDetailsOfElements from an existing level dimension or one placed with a favorite). Optional parameter.
+  - `needPlus` (boolean): Show a plus sign for positive values. Optional parameter.
+  - `markerSize` (number): Size of the marker in millimeters (paper size). Optional parameter.
+  - `angle` (number): Rotation angle of the marker in radians. Optional parameter.
+  - `origin` (DimensionOrigin): The origin the level is measured from. Optional parameter.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `LevelDimensionsComponent`
+
+Example: [archicad-addon/Examples/Element/ModifyLevelDimensions.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyLevelDimensions.py): Creates a level dimension showing a fixed level, then moves it and changes its marker and texts with ModifyLevelDimensions. The settings have the keys CreateLevelDimensions takes and GetDetailsOfElements returns; only the given ones are changed.
+
 ### ModifyWalls
 
-Modifies Wall elements based on the given parameters.
+Modifies Wall elements based on the given parameters. Takes the same wall settings as CreateWalls, applied by the same code, plus geometryType (Straight or Trapezoid), profileType and bottomOffset. Neither command can write a Polygonal outline (it needs an outline polygon, which these commands do not take), connectionPriority or junctionSequence (Archicad ignores writes to them; GetDetailsOfElements reads them), and on Archicad 29 any story visibility other than 'Home story only' and 'All relevant stories'.
 
 Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/archicad-addon/#ModifyWalls
 
@@ -4666,18 +5672,18 @@ Parameters:
   - `referenceLineLocation` (WallReferenceLineLocation)
   - `flipped` (boolean): True mirrors the wall to its reference line (the side GetDetailsOfElements reports as flipped).
   - `profileType` (WallModificationProfileType): slantAlpha/slantBeta only have an effect once this is set to Slanted.
-  - `slantAlpha` (number): Only has an effect once profileType is set to Slanted or Trapez.
-  - `slantBeta` (number): Only has an effect once profileType is set to Slanted or Trapez.
+  - `slantAlpha` (number): Only has an effect when the wall's profileType is Slanted or Trapez.
+  - `slantBeta` (number): Only has an effect when the wall's profileType is Slanted or Trapez.
   - `topOffset` (number): Only has an effect when relativeTopStory is non-zero.
-  - `relativeTopStory` (number): Non-zero links the wall's top to another story instead of an explicit height - do not set together with 'height' in the same call, see the note on 'height' above.
+  - `relativeTopStory` (number): Non-zero links the wall's top to another story instead of an explicit height - do not set together with 'height' for the same wall: whichever is applied last wins, and Archicad recomputes the actual height from the story elevations once relativeTopStory is non-zero.
   - `zoneRel` (WallZoneRelation)
   - `visibility` (StoryVisibility): Confirmed live on Archicad 29 (#852): a wall there knows only 'Home story only' and 'All relevant stories' (Wall Settings offers no Custom option), and Archicad silently drops every other combination written here although the command reports success - showAllAbove, showAllBelow, showRelAbove and showRelBelow (any value, 0 included) and showOnHome true -> false all read back unchanged. 'All relevant stories' is isAutoOnStoryVisibility true. 'Home story only' takes two calls: first isAutoOnStoryVisibility true (Archicad resets the custom fields to 0), then isAutoOnStoryVisibility false with visibility { showOnHome: true }. Archicad 30 adds a Custom option for walls; whether the other fields become writable there is untested.
   - `isAutoOnStoryVisibility` (boolean): When true (the default on a new wall), Archicad recomputes 'visibility' automatically from the wall's vertical extent and ignores any value set for it. Setting 'visibility' without also setting this field turns it off automatically. See the note on 'visibility' for which combinations a wall accepts.
   - `referenceMaterial` (OverriddenMaterial)
   - `oppositeMaterial` (OverriddenMaterial)
   - `sideMaterial` (OverriddenMaterial)
-  - `cutFillPen` (OverriddenPen)
-  - `cutFillBackgroundPen` (OverriddenPen)
+  - `cutFillPen` (OverriddenPen): Pen of the cut fill. Archicad 27 and later; ignored on older versions.
+  - `cutFillBackgroundPen` (OverriddenPen): Background pen of the cut fill. Archicad 27 and later; ignored on older versions.
   - `contourPen` (integer): Pen of the wall's own contour/reference outline (API_WallType::contPen) - distinct from cutFillPen, which is the cut fill pattern's pen. Not inheritable/overridable like cutFillPen, it is the wall's own pen index directly, the same field regardless of structureType.
   - `contourPen3D` (integer): Pen of the wall's contour in 3D views (API_WallType::contPen3D).
   - `contourLineTypeId` (AttributeId): Line type of the wall's own contour (API_WallType::contLtype) - pairs with contourPen, which only sets the pen, not the line type.
@@ -4700,11 +5706,11 @@ Returns:
 
 Grasshopper: `ModifyWallsComponent`, `WallsApiComponent`, `WallsComponent`
 
-Example: [archicad-addon/Examples/Element/ModifyWalls.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyWalls.py): Creates a wall, then makes it longer, higher and thicker with ModifyWalls. Only the given fields change. A new thickness only takes effect on a Basic wall.
+Example: [archicad-addon/Examples/Element/ModifyWalls.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyWalls.py): Creates a wall, then makes it longer, higher and thicker with ModifyWalls, and stops it reducing zone areas. Only the given fields change. A new thickness only takes effect on a Basic wall. ModifyWalls takes the same wall settings as CreateWalls, plus geometryType, profileType and bottomOffset.
 
 ### ModifyBeams
 
-Modifies Beam elements based on the given parameters.
+Modifies Beam elements based on the given parameters. CreateBeams takes the same cut fill pens and cover fill, and the same absolute zCoordinate of the reference line (with an optional floorIndex). Not written: the surfaces of the beam segments, and the cut fill pens before Archicad 27.
 
 Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/archicad-addon/#ModifyBeams
 
@@ -4714,7 +5720,9 @@ Parameters:
   - `elementId` (ElementId, required)
   - `begCoordinate` (Coordinate2D)
   - `endCoordinate` (Coordinate2D)
-  - `level` (number)
+  - `zCoordinate` (number): Absolute Z of the beam's reference line, as in CreateBeams. The home story is derived from it unless floorIndex is given; level, when given too, is applied after it.
+  - `floorIndex` (integer): Optional home story index (as returned by GetStories). With zCoordinate it pins the story the Z is resolved against; alone it only changes the home story (combine with level to set the offset relative to it).
+  - `level` (number): Elevation of the reference line relative to the home story.
   - `offset` (number)
   - `slantAngle` (number)
   - `arcAngle` (number)
@@ -4731,9 +5739,9 @@ Parameters:
   - `buildingMaterialId` (AttributeId): Cross section building material (round or rectangular, per circleBased). Applied to all segments.
   - `profileId` (AttributeId): Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments.
   - `holes` (array of BeamHoleModification): Replaces all holes currently placed on the beam.
-  - `cutFillPen` (OverriddenPen)
-  - `cutFillBackgroundPen` (OverriddenPen)
-  - `coverFill` (CoverFill)
+  - `cutFillPen` (OverriddenPen): Overrides the pen of the cut fill. Written from Archicad 27.
+  - `cutFillBackgroundPen` (OverriddenPen): Overrides the background pen of the cut fill. Written from Archicad 27.
+  - `coverFill` (CoverFill): The cover fill of the beam in the floor plan, as GetDetailsOfElements returns it.
 
 Returns:
 
@@ -4741,11 +5749,11 @@ Returns:
 
 Grasshopper: `BeamsComponent`, `ModifyBeamsComponent`
 
-Example: [archicad-addon/Examples/Element/ModifyBeams.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyBeams.py): Creates a beam, then changes its cross section and adds a round hole with ModifyBeams. Only the given fields change; holes replaces every hole of the beam.
+Example: [archicad-addon/Examples/Element/ModifyBeams.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyBeams.py): Creates a beam, then changes its cross section and adds a round hole with ModifyBeams, and moves it: a new reference line and its absolute elevation (zCoordinate, as in CreateBeams). Only the given fields change; holes replaces every hole of the beam.
 
 ### ModifySlabs
 
-Modifies Slab elements based on the given parameters.
+Modifies Slab elements based on the given parameters. CreateSlabs takes the same surfaces, cut fill pens and floor fill. Not written: the surface of a single edge, and the cut fill pens before Archicad 27. Of the cover fill orientation, Archicad applies only the type to a Slab through the API; a given origin or distortion matrix that did not stick gets a failed execution result, while the other details are applied.
 
 Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/archicad-addon/#ModifySlabs
 
@@ -4763,12 +5771,12 @@ Parameters:
   - `polygonOutline` (array of Coordinate2D): Replaces the slab's entire polygon, including its holes - resend the holes field too to keep them, otherwise they are removed.
   - `polygonArcs` (array of PolyArc)
   - `holes` (Holes2D): Can be given on its own, without polygonOutline, to add/remove/clear holes in place (an empty array clears all holes) - the slab's current outline is reused unchanged.
-  - `topMaterial` (OverriddenMaterial)
-  - `sideMaterial` (OverriddenMaterial)
-  - `bottomMaterial` (OverriddenMaterial)
-  - `cutFillPen` (OverriddenPen)
-  - `cutFillBackgroundPen` (OverriddenPen)
-  - `floorFill` (FloorFill)
+  - `topMaterial` (OverriddenMaterial): Overrides the surface of the top of the slab.
+  - `sideMaterial` (OverriddenMaterial): Overrides the surface of the sides of the slab.
+  - `bottomMaterial` (OverriddenMaterial): Overrides the surface of the bottom of the slab.
+  - `cutFillPen` (OverriddenPen): Overrides the pen of the cut fill. Written from Archicad 27.
+  - `cutFillBackgroundPen` (OverriddenPen): Overrides the background pen of the cut fill. Written from Archicad 27.
+  - `floorFill` (FloorFill): The cover fill of the slab in the floor plan. Only the given fields change; of the orientation Archicad applies only its type through the API, read it back with GetDetailsOfElements.
 
 Returns:
 
@@ -4780,7 +5788,7 @@ Example: [archicad-addon/Examples/Element/ModifySlabs.py](https://github.com/ENZ
 
 ### ModifyColumns
 
-Modifies Column elements based on the given parameters.
+Modifies Column elements based on the given parameters. CreateColumns takes the same cut fill pens and cover fill. Not written: the surfaces of the column segments, and the cut fill pens before Archicad 27.
 
 Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/archicad-addon/#ModifyColumns
 
@@ -4808,9 +5816,10 @@ Parameters:
   - `circleBased` (boolean): True for a round column cross section, false for rectangular. Ignored once profileId switches the column to a custom profile shape. Applied to all segments.
   - `buildingMaterialId` (AttributeId): Cross section building material (round or rectangular, per circleBased). Applied to all segments.
   - `profileId` (AttributeId): Switches the cross section to this custom extruded profile (circleBased becomes false). Applied to all segments.
-  - `cutFillPen` (OverriddenPen)
-  - `cutFillBackgroundPen` (OverriddenPen)
-  - `coverFill` (CoverFill)
+  - `veneer` (ColumnVeneer): Veneer of the column (type, thickness, building material); only the given fields change, thickness 0 removes it. Applied to all segments.
+  - `cutFillPen` (OverriddenPen): Overrides the pen of the cut fill. Written from Archicad 27.
+  - `cutFillBackgroundPen` (OverriddenPen): Overrides the background pen of the cut fill. Written from Archicad 27.
+  - `coverFill` (CoverFill): The cover fill of the column in the floor plan, as GetDetailsOfElements returns it.
 
 Returns:
 
@@ -4839,6 +5848,21 @@ Parameters:
   - `oSide` (boolean)
   - `reveal` (boolean): Turn the reveal on or off.
   - `revealDepthOffset` (number): Distance the frame plane is moved across the wall thickness, along the wall normal.
+  - `displayOption` (DisplayOption)
+  - `pen` (integer): Pen of the opening's floor plan symbol; used unless useObjectPens is true.
+  - `lineTypeId` (AttributeId): Line type of the opening's floor plan symbol; used unless useObjectLineTypes is true.
+  - `cutLineTypeId` (AttributeId): Line type of the cut lines of the opening.
+  - `sectionFillId` (AttributeId): Fill of the section of the opening; used unless useObjectSectionAttributes is true.
+  - `sectionFillPen` (integer)
+  - `sectionFillBackgroundPen` (integer)
+  - `sectionContourPen` (integer)
+  - `aboveViewLinePen` (integer): Pen of the overhead lines ("Overhead Line Pens").
+  - `aboveViewLineTypeId` (AttributeId): Line type of the overhead lines ("Overhead Lines").
+  - `belowViewLinePen` (integer): Pen of the uncut lines of the opening.
+  - `belowViewLineTypeId` (AttributeId): Line type of the uncut lines ("Uncut Lines").
+  - `useObjectPens` (boolean): Use the pens defined in the library part instead of 'pen'.
+  - `useObjectLineTypes` (boolean): Use the line types defined in the library part instead of 'lineTypeId'.
+  - `useObjectSectionAttributes` (boolean): Use the section attributes defined in the library part instead of 'sectionFillId' and the section pens.
 
 Returns:
 
@@ -4867,6 +5891,21 @@ Parameters:
   - `oSide` (boolean)
   - `reveal` (boolean): Turn the reveal on or off.
   - `revealDepthOffset` (number): Distance the frame plane is moved across the wall thickness, along the wall normal.
+  - `displayOption` (DisplayOption)
+  - `pen` (integer): Pen of the opening's floor plan symbol; used unless useObjectPens is true.
+  - `lineTypeId` (AttributeId): Line type of the opening's floor plan symbol; used unless useObjectLineTypes is true.
+  - `cutLineTypeId` (AttributeId): Line type of the cut lines of the opening.
+  - `sectionFillId` (AttributeId): Fill of the section of the opening; used unless useObjectSectionAttributes is true.
+  - `sectionFillPen` (integer)
+  - `sectionFillBackgroundPen` (integer)
+  - `sectionContourPen` (integer)
+  - `aboveViewLinePen` (integer): Pen of the overhead lines ("Overhead Line Pens").
+  - `aboveViewLineTypeId` (AttributeId): Line type of the overhead lines ("Overhead Lines").
+  - `belowViewLinePen` (integer): Pen of the uncut lines of the opening.
+  - `belowViewLineTypeId` (AttributeId): Line type of the uncut lines ("Uncut Lines").
+  - `useObjectPens` (boolean): Use the pens defined in the library part instead of 'pen'.
+  - `useObjectLineTypes` (boolean): Use the line types defined in the library part instead of 'lineTypeId'.
+  - `useObjectSectionAttributes` (boolean): Use the section attributes defined in the library part instead of 'sectionFillId' and the section pens.
 
 Returns:
 
@@ -4875,6 +5914,28 @@ Returns:
 Grasshopper: `DoorsComponent`, `ModifyDoorsComponent`
 
 Example: [archicad-addon/Examples/Element/ModifyDoors.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyDoors.py): Creates a wall with a door, then mirrors the door and moves it along the wall with ModifyDoors. Only the given fields change. centerOffset is measured along the wall from its begin point.
+
+### ModifyOpenings
+
+Modifies Opening elements: the width, the height and the base point CreateOpenings takes. Needs Archicad 28 or earlier; in Archicad 29 and later every item fails with a message pointing to SetOpeningDetails, which changes the size and the position of an opening there.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ModifyOpenings
+
+Parameters:
+
+- `openingsWithDetails` (array of object, required)
+  - `elementId` (ElementId, required)
+  - `basePoint` (Coordinate3D): New base point of the opening: its bottom left corner in world space, the same point CreateOpenings takes.
+  - `width` (number): New width of the opening.
+  - `height` (number): New height of the opening. The bottom edge stays where it is, the opening grows or shrinks upwards.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `ModifyOpeningsComponent`
+
+Example: [archicad-addon/Examples/Element/ModifyOpenings.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyOpenings.py): Creates a wall with an opening, then resizes and moves the opening with ModifyOpenings. Requires Archicad 28 or earlier; from Archicad 29 use SetOpeningDetails instead.
 
 ### ModifyMorphs
 
@@ -4932,7 +5993,7 @@ Example: [archicad-addon/Examples/Element/ModifyMorphs.py](https://github.com/EN
 
 ### ModifyRoofs
 
-Modifies multi-plane Roof elements based on the given parameters.
+Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness and structure apply to both; angle, pivotLine and edgeTrims (the cut of each polygon edge) only to single-plane roofs; levels, eavesOverhang and pivotEdges only to multi-plane roofs.
 
 Group: Element Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/archicad-addon/#ModifyRoofs
 
@@ -4940,7 +6001,8 @@ Parameters:
 
 - `roofsWithDetails` (array of object, required)
   - `elementId` (ElementId, required)
-  - `level` (number)
+  - `level` (number): Absolute elevation of the roof's pivot line (the zCoordinate GetDetailsOfElements returns). The roof is put on the story floorIndex when given, else on the story at this elevation.
+  - `floorIndex` (integer): Home story of the roof. With level, the roof gets this home story at the absolute elevation level; without level, it moves to this story and keeps its offset from the story.
   - `thickness` (number): Only takes effect on a Basic (homogeneous) roof - a Composite roof takes its thickness from the composite attribute. Send structureType 'Basic' in the same call to switch a composite roof first.
   - `eavesOverhang` (number)
   - `levels` (array of RoofLevel)
@@ -4950,6 +6012,10 @@ Parameters:
   - `polygonOutline` (array of Coordinate2D)
   - `polygonArcs` (array of PolyArc)
   - `holes` (Holes2D)
+  - `angle` (number): Single-plane roofs only: the angle of the plane to the XY plane.
+  - `pivotLine` (object): Single-plane roofs only: the line the plane rises from. The ends are named begCoordinate and endCoordinate as in CreateRoofs, or begin and end as GetDetailsOfElements reports them.
+  - `edgeTrims` (array of object): Single-plane roofs only: the cut of each edge of the roof's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeTrims (the outline, then each hole). Only the given fields change; an empty item keeps its edge. Cannot be combined with polygonOutline.
+  - `pivotEdges` (array of object): Multi-plane roofs only: the roof planes of each edge of the pivot polygon, one item per edge in the order GetDetailsOfElements reports them (the outline, then each hole). Only the given fields change; an item without levels keeps its edge. Cannot be combined with polygonOutline.
 
 Returns:
 
@@ -5000,6 +6066,28 @@ Returns:
 Grasshopper: `MeshesComponent`, `ModifyMeshesComponent`
 
 Example: [archicad-addon/Examples/Element/ModifyMeshes.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyMeshes.py): Creates a flat mesh, then gives it a skirt and a raised corner with ModifyMeshes. Only the fields given in meshData change; polygonCoordinates replaces the whole outline, z being the height of each point above level.
+
+### ModifyRailings
+
+Modifies Railing elements in place: the height of their segments, the bottom offset and the home story. The reference line, the nodes and segments, and the posts, rails and panels stay as they are. Each railing is read back after the change, and a value Archicad did not apply gets a failed execution result.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ModifyRailings
+
+Parameters:
+
+- `railingsWithDetails` (array of object, required)
+  - `elementId` (ElementId, required)
+  - `height` (number): The new height of the railing segments (the height GetDetailsOfElements returns), applied to every segment of the railing.
+  - `bottomOffset` (number): The new base height of the railing relative to its home story.
+  - `floorIndex` (integer): The new home story index (as returned by GetStories). The bottom offset is kept, or set from bottomOffset when that is given too, so the railing moves with the story.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `RailingsComponent`
+
+Example: [archicad-addon/Examples/Element/ModifyRailings.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyRailings.py): Creates a railing, then makes it 1.2 m high and raises it by 0.15 m with ModifyRailings. Only the given fields change; the reference line, posts, rails and panels stay as they are. GetDetailsOfElements reads the new height, bottomOffset and segmentHeights back.
 
 ### ModifyObjects
 
@@ -5093,13 +6181,14 @@ Group: Element Commands. Added in Tapir 1.5.9. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `textsWithDetails` (array of object, required): Array of Text elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content as one paragraph, which makes the element auto-width (word wrap off), as SetDetailsOfElements does, and on a multi-run text applies that style to every run; the other style fields leave the content as it is.
+- `textsWithDetails` (array of object, required): Array of Text elements to modify, with the fields to change. Only provided fields are changed; omitted fields are left as-is. A change of the text, the runs, or a run-level style field (pen, font, faces, height, effects) rebuilds the content as one paragraph, as SetDetailsOfElements does, and on a multi-run text applies that style to every run; a text that wraps keeps its wrap width through the rebuild unless the same item gives a width. The other style fields and a width leave the content as it is.
   - `elementId` (ElementId, required)
   - `coordinate` (Coordinate3D): The new placement position. As in CreateTexts, the z value selects the floor when floorIndex is omitted.
   - `floorIndex` (integer): Optional. Moves the text to this floor; when omitted and a coordinate is given, the floor is derived from its z value.
   - `text` (string): The new text content. Newlines create multiple lines; Windows-style CRLF (and bare CR) line endings are normalized to LF.
   - `runs` (array of TextRunDetails)
   - `style` (TextStyleSettableDetails)
+  - `width` (number): Optional box width in mm (paper size, like height). Greater than 0 turns word wrap on: the text wraps within this width ('Wrap Text' in the Text settings, nonBreaking false). 0 turns word wrap off: the text is auto-width and grows with its content; on a wrapped text this rebuilds the content, so like a pen change it is refused for content with an autotext run. Given alone it leaves the content and its runs (and any autotext in them) as they are. When the content is rebuilt in the same item, the width is applied after the rebuild. When omitted, the current wrap setting is kept, also through a rebuild of the content. Read back by GetDetailsOfElements as style.boxWidth, with style.nonBreaking false.
 
 Returns:
 
@@ -5107,7 +6196,7 @@ Returns:
 
 Grasshopper: `ModifyTextsComponent`, `TextsComponent`
 
-Example: [archicad-addon/Examples/Element/ModifyTexts.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyTexts.py): Creates a text, then replaces its content, makes it bold and 5 mm high, and moves it with ModifyTexts. Only the given fields change; text replaces the whole content (see ChangeTextContent to change a part).
+Example: [archicad-addon/Examples/Element/ModifyTexts.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyTexts.py): Creates a text, then replaces its content, makes it bold and 5 mm high, and moves it with ModifyTexts. Then it gives the text a fixed width of 20 mm, so it wraps, without changing its content. Only the given fields change; text replaces the whole content (see ChangeTextContent to change a part). A text that wraps keeps its wrap width when its content or style is rebuilt; width 0 turns word wrap off.
 
 ### ModifyLabels
 
@@ -5146,7 +6235,7 @@ Parameters:
   - `coordinates` (array of Coordinate2D): The new 2D coordinates of the reference line of the curtain wall on the floor plan. Each pair of consecutive coordinates is one straight segment, so the number of coordinates must be the current number of segments plus one: the segments can be moved and resized, but not added or removed (a curved segment becomes straight).
   - `zCoordinate` (number): The new Z coordinate (absolute elevation) of the bottom of the curtain wall. The home story is derived from it unless floorIndex is given too.
   - `floorIndex` (integer): The new home story index. On its own it moves the curtain wall to that story, keeping its bottom offset from the story; with zCoordinate it pins the story the bottom elevation is measured from.
-  - `height` (number): The new height of the curtain wall.
+  - `height` (number): The new height of the curtain wall. It is applied before the other fields and read back: when Archicad does not apply it, the item fails and the curtain wall is left unchanged.
   - `primaryPattern` (CurtainWallPattern): The new column pattern: the sizes of the columns along the segments (the primary grid). Applied to every segment of the curtain wall; the frames and panels are regenerated from it.
   - `secondaryPattern` (CurtainWallPattern): The new row pattern: the sizes of the rows from the bottom up (the secondary grid). Applied to every segment of the curtain wall; the frames and panels are regenerated from it.
   - `cells` (array of CurtainWallPatternCell): Assignment of panel and frame classes to the cells of the pattern unit of every segment, as in CreateCurtainWalls. Without a pattern change, a cell not listed here keeps its current assignment; with one, it takes the assignment of the first current cell.
@@ -5159,6 +6248,68 @@ Grasshopper: `CurtainWallsComponent`, `ModifyCurtainWallsComponent`
 
 Example: [archicad-addon/Examples/Element/ModifyCurtainWalls.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyCurtainWalls.py): Creates a curtain wall, then makes it 4 m high with 1 m wide columns with ModifyCurtainWalls. The curtain wall keeps its GUID, properties and classifications.
 
+### ModifyCurtainWallFrames
+
+EXPERIMENTAL. Modifies single Curtain Wall Frames by their GUID: the frame contour (a1, a2, b1, b2), the frame class and the frame type. ACAPI_Element_Change does not take a frame on its own, so the change is written through the memo of the owner curtain wall, and read back to check that Archicad applied it.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ModifyCurtainWallFrames
+
+Parameters:
+
+- `framesWithDetails` (array of object, required): Curtain Wall Frames to modify (the GUIDs from GetSubelementsOfHierarchicalElements), with the fields to change. Only the given fields are changed. EXPERIMENTAL.
+  - `frameId` (ElementId, required)
+  - `frameContour` (object): The contour of the frame, as GetDetailsOfElements returns it. Only the given keys are changed.
+  - `classIndex` (integer): The frame class (classID) of the frame: 0 to 3 for the built-in classes, 4 and up for the frame classes of the owner curtain wall.
+  - `type` (string ("Invisible", "GDL", "InvisibleConnectedTurning", "InvisibleConnectedStill")): The type of the frame (API_CWFrameObjectTypeID).
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `ModifyCurtainWallFramesComponent`
+
+Example: [archicad-addon/Examples/Element/ModifyCurtainWallFrames.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyCurtainWallFrames.py): EXPERIMENTAL: changes the contour and the type of the first frame of a new curtain wall with ModifyCurtainWallFrames. The frame is found by its GUID, which GetSubelementsOfHierarchicalElements returns.
+
+### ModifyStairs
+
+Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the finish and structure visibility, the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction, the uniform finish, monolith and draining settings, and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness). CreateStairs accepts the same settings. Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements. Not written by this command: the baseline with its landings and winders, the top link, the floor plan display (symbol and marker layout), the headroom and the stair rules; the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ModifyStairs
+
+Parameters:
+
+- `stairsWithDetails` (array of object, required): Array of Stair elements to modify, with the settings to change. Only the given settings are changed; the baseline, the position and the omitted settings are kept.
+  - `elementId` (ElementId, required)
+  - `flightWidth` (number): The width of the flights.
+  - `totalHeight` (number): The height of the stair relative to its bottom.
+  - `stepNum` (integer): The number of steps (risers).
+  - `riserHeight` (number): The height of each riser.
+  - `treadDepth` (number): The length of each going.
+  - `treadDepthLocked` (boolean): Whether the going lengths are locked.
+  - `totalHeightLocked` (boolean): Whether the total height is locked.
+  - `finishVisible` (boolean): Whether the tread and riser finishes of the stair are shown; false models only the structure (e.g. a monolith). The treads and risers of each part can also be switched on and off with treads and risers.
+  - `extraTopTread` (boolean): Whether the stair has an extra tread at its top.
+  - `extraBottomTread` (boolean): Whether the stair has an extra tread at its bottom.
+  - `walkingLinePosition` (string ("Left", "Right", "Center", "Auto")): Where the walking line runs on the flight: offset from the left or the right side (walkingLineOffset), centered, or placed by Archicad (Auto).
+  - `walkingLineOffset` (number): The offset of the walking line from the side walkingLinePosition names (Left or Right); not used with Center and Auto.
+  - `numberingType` (string ("Treads", "Risers")): Whether the steps are numbered on their treads or on their risers.
+  - `inputDirection` (string ("Upward", "Inverse")): The walking direction along the baseline: upward from its first point, or inverse (downward).
+  - `uniformFinish` (boolean): Whether the flights and the landings share one finish setting.
+  - `uniformMonolithAttributes` (boolean): Whether the monolithic structures of the flights and the landings share one set of attributes.
+  - `uniformDrainings` (boolean): Whether the flights and the landings share one draining setting.
+  - `structureVisibility` (boolean): Whether the structure of the stair is shown.
+  - `treads` (array of object): The tread settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.
+  - `risers` (array of object): The riser settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.
+  - `structures` (array of object): The structure settings of the flights (Run) and of the landings (Landing), for each side: the left and right side structures and the structure under the stair. Only the given fields of the given parts and sides are changed.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `ModifyStairsComponent`
+
+Example: [archicad-addon/Examples/Element/ModifyStairs.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyStairs.py): Creates a straight stair, then changes its width, its walking line, its tread thickness and its structure with ModifyStairs. Makes the flights monolithic with a smooth underside and numbers the steps on the risers, reads the stair back with GetDetailsOfElements, then deletes the stair it created.
+
 ### ChangeTextContent
 
 Replaces a range of the content of Text elements and text Labels, keeping the styles of the runs and the autotexts in the rest of the content.
@@ -5167,11 +6318,7 @@ Group: Element Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `contentChanges` (array of object, required): The content changes, applied in order (several changes of one element see the content as the previous one left it). Unlike ModifyTexts/ModifyLabels, the rest of the content is not rebuilt: the other runs, their styles and any autotext in them stay as they are, and the inserted piece takes the style of the character at 'from'.
-  - `elementId` (ElementId, required): A Text element or a Label of the Text class.
-  - `from` (integer, required): The position in the content where the replaced range starts.
-  - `range` (integer, required): The number of characters to replace; 0 inserts the content at 'from'. The range may not reach over a line end into another paragraph.
-  - `content` (string, required): The new content of the range; an empty string deletes the range. It must not contain line ends.
+- `contentChanges` (array of TextContentChange, required): The content changes, applied in order (several changes of one element see the content as the previous one left it). Unlike ModifyTexts/ModifyLabels, the rest of the content is not rebuilt: the other runs, their styles and any autotext in them stay as they are, and the inserted piece takes the style of the character at 'from'.
 
 Returns:
 
@@ -5183,7 +6330,7 @@ Example: [archicad-addon/Examples/Element/ChangeTextContent.py](https://github.c
 
 ### ModifyZones
 
-Modifies Zone elements: name, number, category, zone stamp, height, base offset, top link and floor thickness. Only the given fields are changed; the polygon is kept.
+Modifies Zone elements: name, number, category, zone stamp, height, base offset, top link, floor thickness, contour line and cover fill - the same settings as CreateZones, applied by the same helpers. Only the given fields are changed. The polygon of a manual zone cannot be changed here (the change takes no polygon memo), nor the reference point of an automatic one (SetDetailsOfElements moves it).
 
 Group: Element Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#ModifyZones
 
@@ -5202,6 +6349,8 @@ Parameters:
   - `topOffset` (number): Offset of the top of the zone from the linked top story level. Only has an effect when relativeTopStory is non-zero.
   - `relativeTopStory` (number): Non-zero links the top of the zone to another story, relative to its home story (1 is the story above), instead of an explicit height. Do not set together with height in the same call, see the note on height.
   - `floorThickness` (number): Thickness of the floor finish (subfloor thickness) of the zone.
+  - `contourLine` (ZoneContourLine): Contour line of the zone. Only the given fields are changed.
+  - `coverFill` (ZoneCoverFill): Cover fill of the zone. Only the given fields are changed.
 
 Returns:
 
@@ -5209,7 +6358,7 @@ Returns:
 
 Grasshopper: `ModifyZonesComponent`, `ZonesComponent`
 
-Example: [archicad-addon/Examples/Element/ModifyZones.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyZones.py): Renames and renumbers the first zone with ModifyZones, reads it back, then restores its name and number. Needs at least one Zone. Only the given fields change; the polygon is kept.
+Example: [archicad-addon/Examples/Element/ModifyZones.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/ModifyZones.py): Renames and renumbers the first zone and changes its contour line pen with ModifyZones, reads it back, then restores them. Needs at least one Zone. Only the given fields change; the polygon is kept. ModifyZones takes the same settings as CreateZones, contourLine and coverFill included.
 
 ### MeasureTexts
 
@@ -5222,7 +6371,7 @@ Parameters:
 - `texts` (array of any or any, required): The texts to measure, each with the font, style and height it would be placed with. Nothing is created.
   - `text` (string, required): The text to measure. Newlines separate lines, each measured on its own; Windows-style CRLF (and bare CR) line endings are treated as LF.
   - `fontIndex` (integer): The index of the font, as GetDetailsOfElements and GetFontsByName report it in fontIndex. One of fontName and fontIndex is required.
-  - `fontName` (string): Name of the font as Archicad's font list carries it (GetDetailsOfElements reports it in fontName), which is not always the operating system's font name; GetFontsByName tells whether a name is found. Resolved to the font's index (exact match first, then case-insensitive); the text fails when no loaded font has the name. Takes precedence over fontIndex if both are given. One of fontName and fontIndex is required.
+  - `fontName` (string): Name of the font as Archicad's font list carries it (GetDetailsOfElements reports it in fontName), which is not always the operating system's font name; GetFontsByName tells whether a name is found. Resolved to the font's index (exact match first, then case-insensitive, then Archicad's font search as GetFontsByName does, so a family name such as 'Arial' finds 'Arial Western'); the text fails when no loaded font has the name. Takes precedence over fontIndex if both are given. One of fontName and fontIndex is required.
   - `height` (number, required): The character height in millimetres, as a Text's height.
   - `bold` (boolean): Bold style. Optional, default false.
   - `italic` (boolean): Italic style. Optional, default false.
@@ -5232,7 +6381,7 @@ Parameters:
 
 Returns:
 
-- `measurements` (array of object or ErrorItem, required): One item per input text, in the same order. The measurement takes no width factor or character spacing into account.
+- `measurements` (array of TextMeasurement or ErrorItem, required): One item per input text, in the same order. The measurement takes no width factor or character spacing into account.
 
 Grasshopper: `MeasureTextsComponent`
 
@@ -5284,6 +6433,19 @@ Grasshopper: `GetRoomImageComponent`
 
 Example: [archicad-addon/Examples/Element/GetRoomImage.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetRoomImage.py): Saves the room image of the first zone as a PNG file in the temp folder with GetRoomImage. Needs at least one Zone. scale 0.02 is 1:50; the image comes base64 encoded.
 
+### GetModelExtent
+
+Returns the 3D extent (xMin, yMin, zMin, xMax, yMax, zMax) of the current database, the region Archicad's Fit in Window would show.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetModelExtent
+
+Parameters: none.
+
+
+Grasshopper: `GetModelExtentComponent`
+
+Example: [archicad-addon/Examples/Element/GetModelExtent.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetModelExtent.py): Prints the model extent with GetModelExtent: the region Fit in Window would show in the current database, vertical range included. A stray element far from the building makes it much larger than expected.
+
 ### SetElementNotificationClient
 
 Sets up a new notification client to receive element events.
@@ -5295,8 +6457,22 @@ Parameters:
 - `host` (string): The host address of the notification client. If not provided, localhost is used.
 - `port` (integer, required): The port number of the notification client.
 - `notifyOnNewElement` (boolean): Notify on creation of a new element. Optional parameter, by default true.
-- `notifyOnModificationOfAnElement` (boolean): Notify on modification/deletion of an element. Optional parameter, by default true.
+- `notifyOnModificationOfAnElement` (boolean): Notify on modification/deletion of an element. The observed elements are the ones ACAPI_Element_GetElemList returns, for API_ZombieElemID or, with elementTypesToObserve, for each of those types, when the first client asking for these notifications of them is registered, and every element of the observed types created after that. Archicad does not report the changes made by Tapir's own commands, so Tapir reports them itself for SetDetailsOfElements, SetPropertyValuesOfElements, MoveElements, RotateElements, MirrorElements (not for the copies they make, which are new elements), DeleteElements, DeleteSelectedElements, the Modify<Tool> commands (ModifyWalls, ModifyBeams, ModifySlabs, ModifyColumns, ModifyWindows, ModifyDoors, ModifyOpenings, ModifyMorphs, ModifyRoofs, ModifyShells, ModifyMeshes, ModifyObjects, ModifyLamps, ModifyTexts, ModifyLabels, ModifyCurtainWalls, ModifyCurtainWallFrames, ModifyZones, ModifySections, ModifyDetailMarkers, ModifyRailings, ModifyStairs), ChangeTextContent, SetGDLParametersOfElements, RunParameterScriptOfElements (only when the script changed the element), SetMarkerParametersOfElements, SetMarkerLibraryPartOfElements, ChangeLibraryPartOfElements, SetClassificationsOfElements, SetCategoryValuesOfElements, ModifyPropertyValueOfElements, SetElementInfoStrings, SetURLReferencesOfElements, SetIFCAttributesOfElements, SetIFCPropertiesOfElements, RemoveIFCPropertiesOfElements, SetIFCClassificationReferencesOfElements, RemoveIFCClassificationReferencesOfElements, LockElements, UnlockElements, SetOpeningDetails, SetOpeningFloorPlanParameters, SetOpeningSymbolParameters, CreateGroups and UngroupElements (the grouped elements), MoveElementsToDesignOptions, CreateSolidElementLinks, RemoveSolidElementLinks, CreateSolidOperations (the target and operator when the operation changed or deleted them; the results are new elements), TrimElements, RemoveElementTrims, MergeElements, UnmergeElements, ModifyMEPRoutingElements, ModifyMEPPorts (the element owning the port), ConnectMEPElements, ModifyMEPElements, SetMEPRoutingParameters, ModifyElectricalPanels, ModifyElectricalDevices and ConnectToElectricalCircuits. Of the elements these commands change, only the given ones are reported: an element deleted together with its owner (a door or window of a deleted wall) is not. UpdateZones is not reported by Tapir, because Archicad updates the Zones after the command has returned. When the user moves, rotates, mirrors, elevates, resizes or stretches elements in Archicad, each of their changedElements items also has a transformation: {"type": ..., ...}, where type is "Drag" (with displacement: {"x", "y", "z"}), "Elevate" (with displacement, only z is not 0), "Rotate" (with origin: {"x", "y"} and angle, in radians, counterclockwise), "Mirror" (with origin, a point of the mirror axis, and axisDirection: {"x", "y"}, its unit vector), "Resize" (with origin and ratio), "Stretch", "VerticalStretch", "PreservedHeightStretch", "PreservedDirectionStretch" or "General"; the changes made by Tapir's own commands and by undo or redo have no transformation. Optional parameter, by default true. Archicad attaches an observer to each element to observe (see elementTypesToObserve) when the first client asks for this, and detaches them when the last one stops, and it is blocked meanwhile: the time grows faster than the number of elements, from seconds for a few hundred elements to many minutes for a few thousand. Count the elements first (GetAllElements with IncludeSubElemObjects, or GetElementsByType) and limit the types on large projects.
+- `elementTypesToObserve` (array of ElementType): Only modifications/deletions of elements of these types are observed and notified to this client. Optional parameter, by default every element (including the parts of curtain walls, stairs and railings, which are most of the elements of large projects). Registering the same client again with other types changes them; only the elements of types no client observed before get an observer then. Does not limit the other notifications.
 - `notifyOnReservationChanges` (boolean): Notify on reservation changes of an element. Optional parameter, by default true.
+- `notifyOnSelectionChange` (boolean): Notify when the selection changes. The message is {"selectedElements": [...]}: the whole current selection, each item an elementId as in the response of GetSelectedElements, an empty list when nothing is selected. Optional parameter, by default false.
+- `notifyOnWindowChange` (boolean): Notify when the current (active) window changes or the user switches to another story. The message is {"windowChanged": {"event": "Window" or "Floor", "windowType": ..., "databaseId": ..., "storyIndex": ...}}: windowType and databaseId describe the new current window as in the response of GetCurrentWindowType (databaseId is missing when that response has none), storyIndex is the active story, missing when it cannot be read. Optional parameter, by default false.
+- `notifyOnProjectEvents` (boolean): Notify on project events. The message is {"projectEvent": ...}, one of "New", "NewAndReset", "Open", "Close", "Quit", "SendChanges" (a Teamwork send is about to start) and "ReceiveChanges" (Teamwork changes were received). The client stays registered when the project is closed or another one is opened. Optional parameter, by default false.
+- `notifyOnAttributeReplacement` (boolean): Notify when attributes are deleted and replaced by other attributes of the same type (for example Delete and Replace in the Attribute Manager). The message is {"replacedAttributes": [{"attributeType": ..., "oldIndex": ..., "newIndex": ..., "newAttributeId": ...}, ...]}: attributeType is one of the type names of GetAttributesByType ("Layer", "Line", "Fill", "Composite", "Surface", "LayerCombination", "ZoneCategory", "Profile", "PenTable", "MEPSystem", "OperationProfile", "BuildingMaterial", or "Unknown"), oldIndex is the index of the replaced attribute and newIndex the index of the attribute that replaces it, newAttributeId is the attributeId of that attribute, missing when it cannot be found. Not available in Archicad 25: setting it to true there fails. Optional parameter, by default false.
+- `notifyOnToolChange` (boolean): Notify when the user switches to another tool in the Toolbox. The message is {"toolChanged": {"elementType": ...}}: elementType is the element type of the new tool, as in elementTypesToObserve (for example "Wall" or "Column"), "None" for the Arrow and the Marquee, and "Unknown" for a tool Tapir has no type name for. Optional parameter, by default false.
+- `notifyOnViewEvents` (boolean): Notify when an item of the Project Navigator or the Organizer is inserted (for example a view is saved or a layout is created), modified (for example renamed), deleted or opened. The message is {"viewEvent": {"event": ..., "navigatorMapId": ..., "navigatorItemId": {"guid": ...}}}: event is one of "Inserted", "Modified", "Deleted" and "Opened", navigatorMapId is the navigator map of the item, one of "ProjectMap", "PublicViewMap", "MyViewMap", "LayoutBook" and "PublisherSets" (as navigatorMapId of GetNavigatorItemTree), and navigatorItemId is the guid of the navigator item, as in the response of GetNavigatorItemTree (a deleted item no longer exists). Optional parameter, by default false.
+- `notifyOnLockableReservationChanges` (boolean): Notify when a Teamwork lockable object set (the non-element things Teamwork reserves: the attributes of a type, favorites, model view options, project info, project preferences, ...) is reserved or released, by anyone, including the current user. The message is {"lockableReservationChanged": {"event": ..., "objectSetId": {"guid": ...}, "objectSetName": ..., "reservedBy": ..., "reservedByUserId": ...}}: event is "Reserved" or "Released", objectSetId is the guid of the object set, objectSetName its name as objectSetName of ReserveLockableObjectSet (for example "Composites", "LayerSettingsDialog" or "Favorites"), missing when it is not one of the documented sets, and reservedBy and reservedByUserId are the name and the Teamwork user id of the member who reserved it, only for "Reserved". Element reservations are notified by notifyOnReservationChanges. Optional parameter, by default false.
+- `notifyOnToolDefaultChanges` (boolean): Notify when the default settings of a tool change (for example the user changes the settings of the Wall tool with no wall selected), so a client can read the new defaults. The message is {"toolDefaultsChanged": {"elementType": ...}}: elementType is the element type whose defaults changed, as in elementTypesToObserve (for example "Wall" or "Column"), and "Unknown" for a type Tapir has no type name for. Optional parameter, by default false.
+- `notifyOnAttributeChanges` (boolean): Notify when attributes (layers, fills, composites, surfaces, building materials, ...) are created, modified or deleted. The message is {"attributesChanged": {"event": ..., "attributeIds": [{"attributeId": {"guid": ...}}, ...]}}: event is "Created", "Modified" or "Deleted", and attributeIds are the attributes, as in the response of GetAttributesByType (a deleted attribute no longer exists). Not available in Archicad 25: setting it to true there fails. Optional parameter, by default false.
+- `notifyOnClassificationChanges` (boolean): Notify when classification systems or classification items are created, modified or deleted. The messages are {"classificationSystemsChanged": {"event": ..., "classificationSystemIds": [{"classificationSystemId": {"guid": ...}}, ...]}} and {"classificationItemsChanged": {"event": ..., "classificationItemIds": [{"classificationItemId": {"guid": ...}}, ...]}}: event is "Created", "Modified" or "Deleted", and the ids are as in the response of GetAllClassificationSystems and GetAllClassificationsInSystem. Not available in Archicad 25: setting it to true there fails. Optional parameter, by default false.
+- `notifyOnPropertyDefinitionChanges` (boolean): Notify when property groups or property definitions are created, modified or deleted (property values of elements are notified as changedElements by notifyOnModificationOfAnElement). The messages are {"propertyGroupsChanged": {"event": ..., "propertyGroupIds": [{"propertyGroupId": {"guid": ...}}, ...]}} and {"propertyDefinitionsChanged": {"event": ..., "propertyIds": [{"propertyId": {"guid": ...}}, ...]}}: event is "Created", "Modified" or "Deleted", and the ids are as in the response of GetAllProperties. Not available in Archicad 25: setting it to true there fails. Optional parameter, by default false.
+- `notifyOnMarqueeChange` (boolean): Notify when the marquee is drawn, changed or removed. The message is {"marqueeChanged": {"type": ..., "multiStory": ...}}: type is "rectangle", "rotatedRectangle", "polygon" or, when the marquee was removed, "none", as type of GetMarquee, which returns the shape of the marquee; multiStory is missing for "none". Available from Archicad 27: setting it to true in an earlier version fails. Optional parameter, by default false.
+- `notifyOn3DSettingsChanges` (boolean): Notify when the settings of the 3D window change (projection, Filter and Cut Elements in 3D, 3D window settings). The message is {"view3DSettingsChanged": {}}; read the new settings with the commands of the 3D window. The changes made while navigating in 3D are not notified. Available from Archicad 30: setting it to true in an earlier version fails. Optional parameter, by default false.
 
 
 Grasshopper: `SetElementNotificationClientComponent`
@@ -5327,15 +6503,12 @@ Group: Element Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `polygons` (array of object, required): The polygons to regularize, in the format of CreateSlabs (polygonCoordinates, polygonArcs, holes). For CreateHatches, pass the outline of a result as its coordinates and arcs.
-  - `polygonCoordinates` (array of Coordinate2D, required): The 2D coordinates of the outline. A last coordinate equal to the first is ignored.
-  - `polygonArcs` (array of PolyArc): Arcs of the outline.
-  - `holes` (Holes2D)
+- `polygons` (array of PolygonRegularizationData, required): The polygons to regularize, in the format of CreateSlabs (polygonCoordinates, polygonArcs, holes). For CreateHatches, pass the outline of a result as its coordinates and arcs.
 - `withAncestry` (boolean): Also return for every vertex and edge of the results which input vertex or edge it came from. Optional, false by default.
 
 Returns:
 
-- `results` (array of object or ErrorItem, required): One item per input polygon, in the order of the request.
+- `results` (array of RegularizedPolygons or ErrorItem, required): One item per input polygon, in the order of the request.
 
 Grasshopper: `RegularizePolygonsComponent`
 
@@ -5349,18 +6522,37 @@ Group: Element Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `polylines` (array of object, required): The polylines to regularize, in the format of CreatePolylines.
-  - `coordinates` (array of Coordinate2D, required): The 2D coordinates of the polyline.
-  - `arcs` (array of PolyArc): The arcs of the polyline.
+- `polylines` (array of PolylineRegularizationData, required): The polylines to regularize, in the format of CreatePolylines.
 - `withAncestry` (boolean): Also return for every point and segment of the results which input point or segment it came from. Optional, false by default.
 
 Returns:
 
-- `results` (array of object or ErrorItem, required): One item per input polyline, in the order of the request.
+- `results` (array of RegularizedPolyline or ErrorItem, required): One item per input polyline, in the order of the request.
 
 Grasshopper: `RegularizePolylinesComponent`
 
 Example: [archicad-addon/Examples/Element/RegularizePolylines.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/RegularizePolylines.py): Removes the repeated points of a polyline with RegularizePolylines, and reports which input point each result point came from. The result is in the format of CreatePolylines; nothing is created.
+
+### GetSplineMaxDistances
+
+Measures how far the given 2D coordinates are from a segment of a Spline element, between two of its fit points, with its own Bezier handles: returns the largest distance, for example to check how well a polyline follows the spline. The output is aligned with the input array. Changes nothing in the project.
+
+Group: Element Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetSplineMaxDistances
+
+Parameters:
+
+- `splines` (array of object, required): The spline segments to measure and the coordinates to measure from them.
+  - `elementId` (ElementId, required): A Spline element.
+  - `segmentIndex` (integer, required): The segment of the spline between its fit points segmentIndex and segmentIndex + 1, from 0 to the number of fit points - 2 (the fit points are the coordinates GetDetailsOfElements returns for the spline).
+  - `coordinates` (array of Coordinate2D, required): The 2D coordinates to measure from the segment.
+
+Returns:
+
+- `results` (array of object or ErrorItem, required): The result of each input item, in the same order, or an error.
+
+Grasshopper: `GetSplineMaxDistancesComponent`
+
+Example: [archicad-addon/Examples/Element/GetSplineMaxDistances.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Element/GetSplineMaxDistances.py): GetSplineMaxDistances measures how far coordinates are from a segment of a Spline element (between its fit points segmentIndex and segmentIndex + 1), with the spline's own Bezier handles, and returns the largest distance. Here a spline is created and the midpoint of the straight line between its first two fit points is measured from its first segment.
 
 
 ## Element grouping Commands
@@ -5601,7 +6793,7 @@ Example: [archicad-addon/Examples/ElementGrouping/CreateElementSets.py](https://
 
 ### DeleteElementSets
 
-Deletes the given element sets. The elements of a set are not deleted. Only element sets created by the Tapir Add-On can be deleted; sets created by other add-ons are reported as failed.
+Deletes the given element sets. The elements of a set are not deleted. Only element sets created by the Tapir Add-On can be deleted; sets created by other add-ons are reported as failed. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each element set that a real run would delete gets wouldDelete.
 
 Group: Element grouping Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#DeleteElementSets
 
@@ -5609,10 +6801,12 @@ Parameters:
 
 - `elementSets` (array of object, required): The element sets to delete, as returned by CreateElementSets or GetElementSetsOfElements. Only element sets created by the Tapir Add-On can be deleted. The elements of a deleted set are not deleted.
   - `elementSetId` (object, required): The identifier of an element set.
+- `dryRun` (DryRun)
 
 Returns:
 
-- `executionResults` (ExecutionResults, required)
+- `dryRun` (DryRunFlag)
+- `executionResults` (DeletionExecutionResults, required): One result for each input element set, in the order of the input. On a dry run an element set that exists and was created by the Tapir Add-On gets wouldDelete.
 
 Grasshopper: `DeleteElementSetsComponent`
 
@@ -5630,7 +6824,7 @@ Parameters:
 
 Returns:
 
-- `elementSetsOfElements` (array of object or ErrorItem, required): The element sets that contain each given element, or an error, in the order of the input. Only element sets created by the Tapir Add-On are examined.
+- `elementSetsOfElements` (array of ElementSetsOfElement or ErrorItem, required): The element sets that contain each given element, or an error, in the order of the input. Only element sets created by the Tapir Add-On are examined.
 
 Grasshopper: `GetElementSetsOfElementsComponent`
 
@@ -5666,9 +6860,7 @@ Parameters:
 
 Returns:
 
-- `favorites` (array of object, required)
-  - `name` (string, required): The name of the Favorite.
-  - `elementType` (ElementType): The element type of the Favorite. Missing when Archicad cannot read the Favorite's element settings.
+- `favorites` (array of FavoriteSummary, required)
 
 Grasshopper: `GetAllFavoritesComponent`
 
@@ -5708,7 +6900,7 @@ Parameters:
 
 Returns:
 
-- `favoriteDetails` (array of object or ErrorItem, required): The details of the given favorites, in the order of the input, or an error for a favorite that could not be read.
+- `favoriteDetails` (array of FavoriteDetails or ErrorItem, required): The details of the given favorites, in the order of the input, or an error for a favorite that could not be read.
 
 Grasshopper: `GetFavoriteDetailsComponent`
 
@@ -5740,10 +6932,7 @@ Group: Favorites Commands. Added in Tapir 1.1.2. Docs: https://archicad-api.com/
 
 Parameters:
 
-- `favoritesFromElements` (array of object, required)
-  - `elementId` (ElementId, required)
-  - `favorite` (string, required)
-  - `folder` (array of string): Optional folder hierarchy in the Favorites palette to place the new favorite under. Empty/omitted = root.
+- `favoritesFromElements` (array of FavoriteFromElement, required)
 
 Returns:
 
@@ -5755,18 +6944,18 @@ Example: [archicad-addon/Examples/Favorites/CreateFavoritesFromElements.py](http
 
 ### ImportFavorites
 
-Import Favorites from a .prefs file or folder into the current project. From Archicad 29 they can also be imported from a folder of Favorite files (xml format, all of them or the given fileNames) or from a legacy .prf file (legacyPRF format), with the conflict policies Error, Skip, OverwriteExisting and RenameNew.
+Import Favorites from a .prefs file or folder into the current project. From Archicad 29 they can also be imported from a folder of Favorite files (xml format, all of them or the given fileNames) or from a legacy .prf file (legacyPRF format), with the conflict policies Error, Skip, OverwriteExisting and RenameNew. In a Teamwork project the Favorites lockable object set must be reserved first (see ReserveLockableObjectSet).
 
 Group: Favorites Commands. Added in Tapir 1.5.0. Docs: https://archicad-api.com/archicad-addon/#ImportFavorites
 
 Parameters:
 
 - `path` (string, required): Absolute path on the AC host. With the prefs format: a Favorites file (.prefs) or folder. With the xml format: the folder of Favorite files, as ExportFavorites writes it. With the legacyPRF format: the .prf file.
-- `format` (string ("prefs", "xml", "legacyPRF")): The format to import from, the counterpart of the format of ExportFavorites. prefs (the default) works in every Archicad version. xml imports Favorite files from a folder, and legacyPRF a Favorites file of earlier Archicad versions; these two require Archicad 29 or newer.
+- `format` (FavoriteImportFormat)
 - `fileNames` (array of string): Only with the xml format: the names of the Favorite files in the folder to import. Default: every Favorite file of the folder.
 - `targetFolder` (array of string): Folder hierarchy under which to import. Empty = root. With the xml and legacyPRF formats the folder must exist, and omitting it keeps the folders stored with the Favorites.
 - `importFolders` (boolean): Only with the prefs format: if true and `path` is a folder, the folder structure is preserved.
-- `conflictPolicy` (string ("Error", "Skip", "Overwrite", "Append", "OverwriteExisting", "RenameNew")): How to resolve name conflicts. The prefs format takes Error, Skip, Overwrite or Append, default Overwrite. The xml and legacyPRF formats take Error, Skip, OverwriteExisting or RenameNew, default Error.
+- `conflictPolicy` (FavoriteImportConflictPolicy)
 
 Returns:
 
@@ -5778,7 +6967,7 @@ Example: [archicad-addon/Examples/Favorites/ImportFavorites.py](https://github.c
 
 ### ExportFavorites
 
-Export the project's Favorites to a .prefs file or folder. From Archicad 29 they can also be exported to a folder of Favorite files (xml format) or to a legacy .prf file (legacyPRF format).
+Export the project's Favorites to a .prefs file or folder. From Archicad 29 they can also be exported to a folder of Favorite files (xml format) or to a legacy .prf file (legacyPRF format). With overwrite false an export to a single file refuses to replace an existing file.
 
 Group: Favorites Commands. Added in Tapir 1.5.0. Docs: https://archicad-api.com/archicad-addon/#ExportFavorites
 
@@ -5786,7 +6975,8 @@ Parameters:
 
 - `path` (string, required): Absolute path on the AC host. With the prefs format: if extension matches the Favorite binary format (.prefs), writes a single file; otherwise treats as folder. With the xml format: the folder to write the Favorite files to. With the legacyPRF format: the .prf file to write.
 - `names` (array of string): Optional subset of Favorites to export. Default: export all.
-- `format` (string ("prefs", "xml", "legacyPRF")): The format to export to. prefs (the default) works in every Archicad version. xml exports each Favorite to its own file in the folder, and legacyPRF exports to a Favorites file of earlier Archicad versions; these two require Archicad 29 or newer.
+- `format` (FavoriteExportFormat): prefs (the default) works in every Archicad version. xml exports each Favorite to its own file in the folder, and legacyPRF exports to a Favorites file of earlier Archicad versions; these two require Archicad 29 or newer.
+- `overwrite` (boolean): Optional, true by default: an existing file is overwritten. false refuses to export when a file already exists at path, and writes nothing. It needs an export to a single file (prefs format with a .prefs path, or legacyPRF format); with an export to a folder it is an error, as the names of the files written there are Archicad's.
 
 
 Grasshopper: `ExportFavoritesComponent`
@@ -5795,20 +6985,21 @@ Example: [archicad-addon/Examples/Favorites/ExportFavorites.py](https://github.c
 
 ### ApplyFavoritesToElements
 
-Apply the given favorites to existing elements. Only settings-type parameters are changed - geometry (position, floor, and dimensions such as a Wall's height) is left untouched, so applying a Favorite never moves the target element. A Window or Door keeps its wall, marker and placement, and takes the Favorite's library part and parameters, size included. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. By default settings, classifications, categories and properties are all applied; each can be opted out of individually. keepFields lists fields of the target (its ID, layer, an opening's width, height and sill height, a Wall's reference line location, height and top link) that are copied back after the Favorite has been applied, so that e.g. only the library part or the wall type changes.
+Apply the given favorites to existing elements. Only settings-type parameters are changed - geometry (position, floor, and dimensions such as a Wall's height) is left untouched, so applying a Favorite never moves the target element. A Window or Door keeps its wall, marker and placement, and takes the Favorite's library part and parameters, size included. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. By default settings, classifications, categories and properties are all applied; each can be opted out of individually. keepFields lists fields of the target (its ID, layer, an opening's width, height and sill height, a Wall's reference line location, height and top link) that are copied back after the Favorite has been applied, so that e.g. only the library part or the wall type changes. With favorite instead of favoritesToApply, one Favorite is read once and applied to the given elements, or to every element of its type that matches the filter.
 
 Group: Favorites Commands. Added in Tapir 1.5.4. Docs: https://archicad-api.com/archicad-addon/#ApplyFavoritesToElements
 
 Parameters:
 
-- `favoritesToApply` (array of object, required)
-  - `elementId` (ElementId, required)
-  - `favorite` (string, required)
-- `applySettings` (boolean): Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc.). Geometry (position, floor, and dimensions such as a Wall's height) is never applied - the element stays on its own home story - except that a Window or Door takes the Favorite's library part and parameters, size included, while keeping its wall, marker and placement. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. A Dimension's text size, text pen and text frame are not changed (tested in Archicad 28): the dimension creation commands take textHeight and textPen for them. Default is true.
+- `favoritesToApply` (array of FavoriteToApply): The elements and the Favorite to apply to each. Give this or favorite.
+- `favorite` (string): The name of one Favorite to apply to many elements, instead of favoritesToApply: to the given elements, or without elements to every element of the Favorite's type that matches the filter. The Favorite is read only once. Needs elements or filter.
+- `elements` (Elements): The elements to apply the single favorite to, one execution result each, in the same order. Only with favorite.
+- `filter` (ElementTypeFloorLayerFilter): Server-side element filter for the single favorite. Without elements the favorite is applied to every element of its type that matches it; an element of elements that does not match it gets a failed execution result. Only with favorite.
+- `applySettings` (boolean): Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc.). Geometry (position, floor, and dimensions such as a Wall's height) is never applied - the element stays on its own home story - except that a Window or Door takes the Favorite's library part and parameters, size included, while keeping its wall, marker and placement. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. A Dimension's text size, text pen and text frame are not changed (tested in Archicad 28): the dimension creation commands take textHeight, textPen and textFrame for them. Default is true.
 - `applyClassifications` (boolean): Whether to apply the Favorite's classifications. Default is true.
 - `applyCategories` (boolean): Whether to apply the Favorite's element categories (e.g. IFC categories). Default is true.
 - `applyProperties` (boolean): Whether to apply the Favorite's property values. Default is true.
-- `keepFields` (array of string ("id", "layerIndex", "width", "height", "sillHeight", "referenceLineLocation", "topOffset", "relativeTopStory")): Fields of the target element to keep: after the Favorite has been applied, they are copied back from the target as it was before, so only the Favorite's other settings (e.g. its library part or wall type) take effect. 'id' and 'layerIndex' apply to every element type; 'width', 'height' and 'sillHeight' to a Window or Door ('width' and 'height' also to a Skylight); 'height', 'topOffset' and 'relativeTopStory' to a Wall or Column; 'referenceLineLocation' to a Wall. A field the target's type does not have is ignored. To keep a Wall's or Column's top exactly as it was, keep 'height', 'relativeTopStory' and 'topOffset' together - a kept 'height' alone is recomputed by Archicad while the Favorite's relativeTopStory links the top to a story. Default: nothing is kept.
+- `keepFields` (array of FavoriteKeepField): Fields of the target element to keep: after the Favorite has been applied, they are copied back from the target as it was before, so only the Favorite's other settings (e.g. its library part or wall type) take effect. 'id' and 'layerIndex' apply to every element type; 'width', 'height' and 'sillHeight' to a Window or Door ('width' and 'height' also to a Skylight); 'height', 'topOffset' and 'relativeTopStory' to a Wall or Column; 'referenceLineLocation' to a Wall. A field the target's type does not have is ignored. To keep a Wall's or Column's top exactly as it was, keep 'height', 'relativeTopStory' and 'topOffset' together - a kept 'height' alone is recomputed by Archicad while the Favorite's relativeTopStory links the top to a story. Default: nothing is kept.
 
 Returns:
 
@@ -5888,6 +7079,24 @@ Grasshopper: `GetFavoriteFoldersComponent`
 
 Example: [archicad-addon/Examples/Favorites/GetFavoriteFolders.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/GetFavoriteFolders.py): Prints the folder tree of the Favorites palette with GetFavoriteFolders. Requires Archicad 29 or later.
 
+### ReadFavoritesFile
+
+Read the Favorites of a .prefs file or folder without importing them, returning the name, element type and folder of each. Nothing in the project changes, so the result can be compared with the project's Favorites before ImportFavorites.
+
+Group: Favorites Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ReadFavoritesFile
+
+Parameters:
+
+- `path` (string, required): Absolute path on the AC host to a Favorites file (.prefs) or folder.
+
+Returns:
+
+- `favorites` (array of FavoriteFileEntry, required)
+
+Grasshopper: `ReadFavoritesFileComponent`
+
+Example: [archicad-addon/Examples/Favorites/ReadFavoritesFile.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/ReadFavoritesFile.py): Lists the Favorites stored in a .prefs file with ReadFavoritesFile, without importing them. Needs a Wall Favorite: the script first exports the Wall Favorites to a temporary file to have a file to read.
+
 ### CreateFavoriteFolder
 
 Creates a folder in the Favorites palette, in the parent folder given by its path. Returns the new folder. Available from Archicad 29.
@@ -5957,7 +7166,7 @@ Parameters:
 
 Returns:
 
-- `favoriteSettings` (array of object or ErrorItem, required): The settings of each given Favorite, in the order of the input, or an error for a Favorite that could not be read.
+- `favoriteSettings` (array of FavoriteSettings or ErrorItem, required): The settings of each given Favorite, in the order of the input, or an error for a Favorite that could not be read.
 
 Grasshopper: `GetFavoriteSettingsComponent`
 
@@ -5973,16 +7182,14 @@ Parameters:
 
 - `name` (string, required): The name of the new Favorite.
 - `folder` (array of string): The folder of the Favorites palette to create the Favorite in, as the folder names from the root down. The folder must exist. Empty or omitted = root.
-- `source` (object, required): Where the settings of the new Favorite come from: exactly one of favoriteName and toolDefault.
-  - `favoriteName` (string): Take the settings of this Favorite.
-  - `toolDefault` (string ("Opening")): Take the current settings of this tool.
-- `conflictPolicy` (string ("Error", "Skip", "OverwriteExisting", "RenameNew")): What to do when a Favorite with this name already exists: Error fails, Skip leaves the existing Favorite unchanged, OverwriteExisting gives the existing Favorite the new settings (its folder does not change), RenameNew creates the Favorite with ' (2)', ' (3)', ... appended to the name. Default Error.
+- `source` (FavoriteSettingsSource, required)
+- `conflictPolicy` (FavoriteCreationConflictPolicy)
 
 Returns:
 
 - `name` (string, required): The name of the Favorite: the given name, or the new name with RenameNew.
 - `folder` (array of string): The folder of the Favorite, as the folder names from the root down. Empty for the root. Missing when Archicad cannot read it.
-- `outcome` (string ("Created", "Skipped", "Overwritten"), required): Created for a new Favorite (also with RenameNew), Skipped or Overwritten when a Favorite with the name already existed.
+- `outcome` (FavoriteCreationOutcome, required)
 
 Grasshopper: `CreateFavoriteComponent`
 
@@ -6043,6 +7250,42 @@ Grasshopper: `MoveFavoriteFolderComponent`
 
 Example: [archicad-addon/Examples/Favorites/MoveFavoriteFolder.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/MoveFavoriteFolder.py): Moves a folder of the Favorites palette into another folder with MoveFavoriteFolder. Both folders are created by the script and deleted at the end. Requires Archicad 29 or later.
 
+### GetFavoriteContents
+
+Returns the Favorites of a folder of the Favorites palette and of its subfolders (every Favorite when no folder is given), each with its folder path, classifications, element category values and property values, read through the Favorite manager. Available from Archicad 29.
+
+Group: Favorites Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetFavoriteContents
+
+Parameters:
+
+- `folderPath` (array of string): The folder to read, the folder names from the root of the Favorites palette down. The Favorites of its subfolders are returned too. Omit it or leave it empty for every Favorite.
+
+Returns:
+
+- `favorites` (array of FavoriteContents or ErrorItem, required): The Favorites of the folder and of its subfolders, or an error for a Favorite that could not be read.
+
+Grasshopper: `GetFavoriteContentsComponent`
+
+Example: [archicad-addon/Examples/Favorites/GetFavoriteContents.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/GetFavoriteContents.py): Lists every Favorite with its folder path, classifications, element category and property values with GetFavoriteContents. Give 'folderPath', the folder names from the root down, to read only one folder and its subfolders. Requires Archicad 29 or later.
+
+### DeleteFavoritesWithManager
+
+Deletes the given Favorites through the Favorite manager, each found by name, optionally only in the given folder. One execution result for each. Available from Archicad 29.
+
+Group: Favorites Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#DeleteFavoritesWithManager
+
+Parameters:
+
+- `favorites` (array of FavoriteNameAndFolder, required): The Favorites to delete.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `DeleteFavoritesWithManagerComponent`
+
+Example: [archicad-addon/Examples/Favorites/DeleteFavoritesWithManager.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/DeleteFavoritesWithManager.py): Deletes a Favorite through the Favorite manager with DeleteFavoritesWithManager. Needs at least one Wall. The deleted Favorite is created from the first wall by the script first; the second, missing Favorite shows the error item. Requires Archicad 29 or later.
+
 ### MoveFavorites
 
 Moves Favorites given by their names into a folder of the Favorites palette given by its path. Returns an execution result for each Favorite. Available from Archicad 29.
@@ -6062,6 +7305,44 @@ Grasshopper: `MoveFavoritesComponent`
 
 Example: [archicad-addon/Examples/Favorites/MoveFavorites.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/MoveFavorites.py): Moves a Favorite into a folder of the Favorites palette with MoveFavorites. Needs a Favorite. The moved Favorite is a copy of the first Favorite and the folder is new; both are created by the script and deleted at the end. Requires Archicad 29 or later.
 
+### GetFavoriteDefaults
+
+Reads the element default stored in each given Favorite through the Favorite manager, without applying it or placing an element: the element type, the layer, the element ID, the folder, the library part and GDL parameters, the marker of every element type that has one, and the sub-elements with each of their kinds (Curtain Wall frames and panels, Stair treads and risers, Railing posts and rails, markers ...). Available from Archicad 29.
+
+Group: Favorites Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetFavoriteDefaults
+
+Parameters:
+
+- `favorites` (Favorites, required)
+
+Returns:
+
+- `favoriteDefaults` (array of FavoriteDefaults or ErrorItem, required): The element default of each given Favorite, in the order of the input, or an error for a Favorite that could not be read.
+
+Grasshopper: `GetFavoriteDefaultsComponent`
+
+Example: [archicad-addon/Examples/Favorites/GetFavoriteDefaults.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/GetFavoriteDefaults.py): Reads the element default stored in Favorites through the Favorite manager (Archicad 29 or newer), without applying it or placing an element: element type, layer, element ID, folder, library part and GDL parameters, the marker of every element type that has one and the sub-elements with their kinds (subTypes). A Favorite without a marker has no 'marker' field, and a Favorite that cannot be read gets an error item.
+
+### SearchFavorites
+
+Searches project favorites by keyword (matching favorite name or folder) and/or element type.
+
+Group: Favorites Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#SearchFavorites
+
+Parameters:
+
+- `query` (string): Optional case-insensitive substring to search in favorite name or folder hierarchy.
+- `elementType` (ElementType): Optional filter by element type. If omitted, searches across all element types.
+- `limit` (integer): Maximum number of matching favorites to return.
+
+Returns:
+
+- `favorites` (array of FavoriteSummary, required): The matching Favorites, each with its element type and folder.
+
+Grasshopper: `SearchFavoritesComponent`
+
+Example: [archicad-addon/Examples/Favorites/SearchFavorites.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Favorites/SearchFavorites.py): Searches the Favorites whose name or folder contains "Wall" with SearchFavorites.
+
 
 ## Property Commands
 
@@ -6074,7 +7355,7 @@ Group: Property Commands. Added in Tapir 1.1.3. Docs: https://archicad-api.com/a
 Parameters:
 
 - `properties` (PropertyIds): Returns only the definitions of these properties. Identifiers not found in the project are left out of the response. All properties are returned when omitted.
-- `propertyTypes` (array of string ("StaticBuiltIn", "DynamicBuiltIn", "Custom")): Returns only the properties of these types. All types are returned when omitted.
+- `propertyTypes` (array of PropertyDefinitionType): Returns only the properties of these types. All types are returned when omitted.
 - `includeAvailability` (boolean): Adds the availability list (the classification items a custom property is available for) to each custom property. Default is true.
 
 Returns:
@@ -6085,6 +7366,31 @@ Returns:
 Grasshopper: `ElementMetadata`, `FindPropertyByGuidComponent`, `FindPropertyByName`, `GetAllPropertiesComponent`
 
 Example: [archicad-addon/Examples/Property/GetAllProperties.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/GetAllProperties.py): Lists the group and name of every custom property of the project with GetAllProperties.
+
+### SearchProperties
+
+Searches properties by name or group substring with optional filtering by property type, value type, and collection type.
+
+Group: Property Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#SearchProperties
+
+Parameters:
+
+- `query` (string): Case-insensitive substring to search in property name or property group name.
+- `propertyGroup` (string): Optional case-insensitive substring to filter by property group name.
+- `propertyType` (string ("StaticBuiltIn", "DynamicBuiltIn", "Custom")): Optional filter by property definition type.
+- `valueType` (string ("Integer", "Real", "String", "Boolean", "Guid")): Optional filter by property value type.
+- `collectionType` (string ("Single", "List", "SingleChoiceEnumeration", "MultipleChoiceEnumeration")): Optional filter by property collection type.
+- `includeEnumValues` (boolean): If true, includes possibleEnumValues for enumeration properties. Default is false to minimize token footprint.
+- `includeAvailability` (boolean): If true, includes classification availability. Default is false to minimize token footprint.
+- `limit` (integer): Maximum number of matching properties to return.
+
+Returns:
+
+- `properties` (array of PropertyDetails, required): A list of property details matching the search criteria.
+
+Grasshopper: `SearchPropertiesComponent`
+
+Example: [archicad-addon/Examples/Property/SearchProperties.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/SearchProperties.py): Searches the properties whose name or group contains "Fire" with SearchProperties, then the custom string properties.
 
 ### GetPropertyValuesOfElements
 
@@ -6097,6 +7403,7 @@ Parameters:
 - `elements` (Elements, required)
 - `properties` (PropertyIds, required)
 - `includeAvailability` (boolean): Adds isAvailable to each property value or error, telling whether the property is available for the element (for example by its classification). Default is false.
+- `useSIUnits` (boolean): Returns precise, locale-independent numeric strings in SI units, except degrees for angles. Default is false.
 
 Returns:
 
@@ -6108,21 +7415,100 @@ Example: [archicad-addon/Examples/Property/GetPropertyValuesOfElements.py](https
 
 ### SetPropertyValuesOfElements
 
-Sets the property values of elements. It works for subelements of hierarchal elements also.
+Sets the property values of elements. It works for subelements of hierarchal elements also. With valueStatus an element's value can also be reset to the default value of the property (Default) or made undefined (UserUndefined, from 1.8.1). With dryRun true nothing is changed and no undo step is created: the response has dryRun set to true, and each item that passes the checks made before writing gets wouldChange, with the element's value now (oldValue) and the value a real run would write (newValue), both as GetPropertyValuesOfElements gives them.
 
 Group: Property Commands. Added in Tapir 1.0.6. Docs: https://archicad-api.com/archicad-addon/#SetPropertyValuesOfElements
 
 Parameters:
 
-- `elementPropertyValues` (ElementPropertyValues, required)
+- `elementPropertyValues` (ElementPropertyValues, required): A single real value accepts '.' or ',' as the decimal separator, so the value strings GetPropertyValuesOfElements returns can be written back: when both appear the last one is the decimal separator, a separator that appears more than once groups thousands, and a single separator is the decimal one. Unitless real and integer lists accept semicolon-separated numbers; an empty string sets an empty list. Invalid items reject the entire property write.
+- `dryRun` (DryRun)
+
+Returns:
+
+- `dryRun` (DryRunFlag)
+- `executionResults` (ChangeExecutionResults, required): One result for each item of elementPropertyValues, in the order of the input. On a dry run an item that passes every check made before writing (the property values of the element can be read, the value is editable for the element and converts to the property's type) gets wouldChange: oldValue is the element's value now as GetPropertyValuesOfElements gives it (left out when the property is not available or not evaluated for the element), newValue the value that would be written in the same format (left out for valueStatus Default). Archicad can still refuse a value that passes them.
+
+Grasshopper: `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `ElementMetadata`, `FillsComponent`, `HotspotsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SetPropertyValuesOfElementsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent`
+
+Example: [archicad-addon/Examples/Property/SetPropertyValuesOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/SetPropertyValuesOfElements.py): Sets the Element ID of the first Wall with SetPropertyValuesOfElements, reads it back, then restores it. Needs at least one Wall.
+
+### GetComponentsOfElements
+
+Returns the components of the elements: the building material skins of composite walls, slabs, roofs and shells, and the parts of complex profile walls, beams and columns. The components have their own property values (building material, thickness, area, volume and the properties of the building material); read them with GetPropertyValuesOfElementComponents.
+
+Group: Property Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetComponentsOfElements
+
+Parameters:
+
+- `elements` (Elements, required)
+
+Returns:
+
+- `componentsOfElements` (ElementComponentsOrErrorArray, required): The components of each element, in the order of the given elements. Each component id carries the element id too, so the items can be passed on to GetPropertyValuesOfElementComponents as they are.
+
+Grasshopper: `GetComponentsOfElementsComponent`
+
+Example: [archicad-addon/Examples/Property/GetComponentsOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/GetComponentsOfElements.py): Prints the components (building material skins or profile parts) of the first walls with GetComponentsOfElements. Needs at least one Wall; a basic wall has a single component.
+
+### GetPropertyDefinitionsOfElementComponents
+
+Returns the property definitions available on the given element components, optionally filtered to user defined or built-in ones.
+
+Group: Property Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetPropertyDefinitionsOfElementComponents
+
+Parameters:
+
+- `elementComponents` (ElementComponents, required)
+- `filter` (string ("UserDefined", "BuiltIn", "All")): Which property definitions to return: the user defined (Custom) ones, the built-in ones, or all. The default is All.
+
+Returns:
+
+- `propertyDefinitionsOfElementComponents` (array of object or ErrorItem, required): The property definitions available on each element component, in the order of the given element components. GetAllProperties returns the full details of a property.
+
+Grasshopper: `GetPropertyDefinitionsOfElementComponentsComponent`
+
+Example: [archicad-addon/Examples/Property/GetPropertyDefinitionsOfElementComponents.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/GetPropertyDefinitionsOfElementComponents.py): Prints the built-in properties of the first component of the first wall with GetPropertyDefinitionsOfElementComponents. Needs at least one Wall.
+
+### GetPropertyValuesOfElementComponents
+
+Returns the property values of the given element components for the given properties, in the shape of GetPropertyValuesOfElements. Use GetComponentsOfElements to list the components of an element.
+
+Group: Property Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetPropertyValuesOfElementComponents
+
+Parameters:
+
+- `elementComponents` (ElementComponents, required)
+- `properties` (PropertyIds, required)
+
+Returns:
+
+- `propertyValuesForElementComponents` (PropertyValuesOrErrorArray, required): The order of the outer list is that of the given element components. The order of the inner lists are that of the given properties. The items have the shape of GetPropertyValuesOfElements.
+
+Grasshopper: `GetPropertyValuesOfElementComponentsComponent`
+
+Example: [archicad-addon/Examples/Property/GetPropertyValuesOfElementComponents.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/GetPropertyValuesOfElementComponents.py): Prints the building material name of each component of the first wall with GetPropertyValuesOfElementComponents. Needs at least one Wall. The Building Material Name property has the same guid in every language.
+
+### SetPropertyValuesOfElementDefaults
+
+Sets the property values of the tool defaults (the settings new elements get) of element types, so every element placed afterwards gets them, without saving and applying a favorite.
+
+Group: Property Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#SetPropertyValuesOfElementDefaults
+
+Parameters:
+
+- `elementDefaultPropertyValues` (array of object, required): The property values to set on the tool defaults (the settings new elements get) of element types.
+  - `elementType` (ElementType, required)
+  - `propertyId` (PropertyId, required)
+  - `propertyValue` (PropertyValue, required)
 
 Returns:
 
 - `executionResults` (ExecutionResults, required)
 
-Grasshopper: `ArcsComponent`, `BeamsComponent`, `CirclesComponent`, `ColumnsComponent`, `CurtainWallsComponent`, `DoorsComponent`, `DrawingsComponent`, `ElementMetadata`, `FillsComponent`, `HotspotsComponent`, `LabelsComponent`, `LampsComponent`, `LevelDimensionsComponent`, `LinesComponent`, `MeshesComponent`, `MorphsComponent`, `ObjectsComponent`, `PolylinesComponent`, `RailingsComponent`, `RoofsComponent`, `SetPropertyValuesOfElementsComponent`, `SlabsComponent`, `SplinesComponent`, `TextsComponent`, `WallsApiComponent`, `WallsComponent`, `WindowsComponent`, `ZonesComponent`
+Grasshopper: `SetPropertyValuesOfElementDefaultsComponent`
 
-Example: [archicad-addon/Examples/Property/SetPropertyValuesOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/SetPropertyValuesOfElements.py): Sets the Element ID of the first Wall with SetPropertyValuesOfElements, reads it back, then restores it. Needs at least one Wall.
+Example: [archicad-addon/Examples/Property/SetPropertyValuesOfElementDefaults.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/SetPropertyValuesOfElementDefaults.py): Sets the Element ID of the Wall tool default with SetPropertyValuesOfElementDefaults, reads it back, then restores it. New walls get the tool default's values.
 
 ### GetPropertyValuesOfAttributes
 
@@ -6138,7 +7524,7 @@ Parameters:
 
 Returns:
 
-- `propertyValuesForAttributes` (array of object or ErrorItem, required): The order of the outer list is that of the given attributes. The order of the inner lists are that of the given properties.
+- `propertyValuesForAttributes` (array of AttributePropertyValuesResult or ErrorItem, required): The order of the outer list is that of the given attributes. The order of the inner lists are that of the given properties.
 
 Grasshopper: `GetPropertyValuesOfAttributesComponent`
 
@@ -6170,9 +7556,7 @@ Group: Property Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/a
 
 Parameters:
 
-- `attributes` (array of object, required): The attributes and the built-in property values to set on each.
-  - `attributeId` (AttributeId, required)
-  - `properties` (array of object, required)
+- `attributes` (array of AttributeBuiltInPropertyValues, required): The attributes and the built-in property values to set on each.
 
 Returns:
 
@@ -6181,6 +7565,23 @@ Returns:
 Grasshopper: `SetBuiltInPropertyValuesOfAttributesComponent`
 
 Example: [archicad-addon/Examples/Property/SetBuiltInPropertyValuesOfAttributes.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/SetBuiltInPropertyValuesOfAttributes.py): Sets an editable built-in text property of the first Building Material with SetBuiltInPropertyValuesOfAttributes, then restores it.
+
+### SetPropertyValueOfAttributes
+
+Sets one property value on several attributes (for example Building Materials) in one undo step. If the property is not available for any of the given attributes, no attribute is changed.
+
+Group: Property Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#SetPropertyValueOfAttributes
+
+Parameters:
+
+- `propertyId` (PropertyId, required)
+- `propertyValue` (PropertyValue, required)
+- `attributeIds` (AttributeIds, required): The attributes to set the value on. The property must be available for every one of them.
+
+
+Grasshopper: `SetPropertyValueOfAttributesComponent`
+
+Example: [archicad-addon/Examples/Property/SetPropertyValueOfAttributes.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/SetPropertyValueOfAttributes.py): Sets one value of a custom text property on every Building Material that has it with SetPropertyValueOfAttributes, then restores the values. Needs Building Materials that have an editable, not expression based, custom text property.
 
 ### GetPropertyDefinitionsOfAttributes
 
@@ -6191,11 +7592,11 @@ Group: Property Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/a
 Parameters:
 
 - `attributeIds` (AttributeIds, required)
-- `filter` (string ("UserDefined", "FundamentalBuiltIn", "All")): Which property definitions to return: the user defined (custom) ones, the fundamental built-in ones, or all of them. The default is UserDefined.
+- `filter` (AttributePropertyDefinitionFilter): The default is UserDefined.
 
 Returns:
 
-- `propertyDefinitionsOfAttributes` (array of object or ErrorItem, required): The property definitions of each attribute, in the order of the given attributes.
+- `propertyDefinitionsOfAttributes` (array of AttributePropertyIds or ErrorItem, required): The property definitions of each attribute, in the order of the given attributes.
 
 Grasshopper: `GetPropertyDefinitionsOfAttributesComponent`
 
@@ -6210,12 +7611,12 @@ Group: Property Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/a
 Parameters:
 
 - `elementTypes` (array of ElementType, required): The element types whose tool defaults (the settings new elements get) are read.
-- `filter` (string ("UserDefined", "FundamentalBuiltIn", "UserLevelBuiltIn", "All")): Which property definitions to return: the user defined (custom) ones, the fundamental built-in ones, the user level built-in ones, or all of them. The default is All. From Archicad 28 the API no longer separates the two kinds of built-in properties, so there FundamentalBuiltIn and UserLevelBuiltIn both return every built-in property.
+- `filter` (ToolDefaultPropertyFilter)
 - `includeValues` (boolean): Adds the value of each property in the tool default (propertyValue), or an error in its place when it has none. Default is false.
 
 Returns:
 
-- `propertiesOfToolDefaults` (array of object or ErrorItem, required): The properties of the tool defaults of each element type, in the order of the given element types. Invalid element types are represented by error objects.
+- `propertiesOfToolDefaults` (array of ToolDefaultProperties or ErrorItem, required): The properties of the tool defaults of each element type, in the order of the given element types. Invalid element types are represented by error objects.
 
 Grasshopper: `GetPropertiesOfToolDefaultsComponent`
 
@@ -6239,7 +7640,7 @@ Example: [archicad-addon/Examples/Property/AddPropertyToAttributes.py](https://g
 
 ### RemovePropertyFromAttributes
 
-Makes a custom property unavailable for the given attributes (for example Building Materials), in one undo step. Available in Archicad 25, 26 and 27 only.
+Makes a custom property unavailable for the given attributes (for example Building Materials), in one undo step. Available in Archicad 25, 26 and 27 only. With dryRun true nothing is changed and no undo step is created: the response has dryRun set to true, and wouldDelete when the property and every attribute exist.
 
 Group: Property Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/archicad-addon/#RemovePropertyFromAttributes
 
@@ -6247,7 +7648,14 @@ Parameters:
 
 - `propertyId` (PropertyId, required)
 - `attributeIds` (AttributeIds, required): The attributes (for example Building Materials) to make the property unavailable for.
+- `dryRun` (DryRun)
 
+Returns:
+
+- `dryRun` (DryRunFlag)
+- `success` (boolean, required)
+- `error` (Error)
+- `wouldDelete` (boolean (true))
 
 Grasshopper: `RemovePropertyFromAttributesComponent`
 
@@ -6273,17 +7681,19 @@ Example: [archicad-addon/Examples/Property/CreatePropertyGroups.py](https://gith
 
 ### DeletePropertyGroups
 
-Deletes the given Custom Property Groups.
+Deletes the given Custom Property Groups. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each property group that exists gets wouldDelete.
 
 Group: Property Commands. Added in Tapir 1.0.9. Docs: https://archicad-api.com/archicad-addon/#DeletePropertyGroups
 
 Parameters:
 
 - `propertyGroupIds` (array of PropertyGroupIdArrayItem, required): The identifiers of property groups to delete.
+- `dryRun` (DryRun)
 
 Returns:
 
-- `executionResults` (ExecutionResults, required)
+- `dryRun` (DryRunFlag)
+- `executionResults` (DeletionExecutionResults, required): One result for each input property group, in the order of the input. On a dry run a property group that exists gets wouldDelete; Archicad can still refuse to delete one that exists (for example a built-in group).
 
 Grasshopper: `DeletePropertyGroupsComponent`
 
@@ -6309,17 +7719,19 @@ Example: [archicad-addon/Examples/Property/CreatePropertyDefinitions.py](https:/
 
 ### DeletePropertyDefinitions
 
-Deletes the given Custom Property Definitions.
+Deletes the given Custom Property Definitions. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each property that exists gets wouldDelete.
 
 Group: Property Commands. Added in Tapir 1.0.9. Docs: https://archicad-api.com/archicad-addon/#DeletePropertyDefinitions
 
 Parameters:
 
 - `propertyIds` (array of PropertyIdArrayItem, required): The identifiers of properties to delete.
+- `dryRun` (DryRun)
 
 Returns:
 
-- `executionResults` (ExecutionResults, required)
+- `dryRun` (DryRunFlag)
+- `executionResults` (DeletionExecutionResults, required): One result for each input property, in the order of the input. On a dry run a property that exists gets wouldDelete; Archicad can still refuse to delete one that exists (for example a built-in property).
 
 Grasshopper: `DeletePropertyDefinitionsComponent`
 
@@ -6382,9 +7794,28 @@ Grasshopper: `ImportPropertiesXmlComponent`
 
 Example: [archicad-addon/Examples/Property/ImportPropertiesXml.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/ImportPropertiesXml.py): Imports a group with one text property from Property Manager XML with ImportPropertiesXml, then deletes them. conflictPolicy 'skip' keeps a property whose name already exists in its group.
 
+### GetPropertyValuesOfElementDefaults
+
+Returns the values of the given properties in the current tool default of an element type, which new elements of that type get. It reads the native tool default of the generic variation of the type, not a Favorite that is not applied. A property that is not available for the tool default is reported as an error.
+
+Group: Property Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetPropertyValuesOfElementDefaults
+
+Parameters:
+
+- `elementType` (ElementType, required): The element type whose current tool default is read. This is the native tool default of the generic variation of the type, a Favorite counts only after it was applied.
+- `properties` (PropertyIds, required)
+
+Returns:
+
+- `propertyValues` (PropertyValues, required): The order is that of the given properties. A property that is not available for the tool default is an error item.
+
+Grasshopper: `GetPropertyValuesOfElementDefaultsComponent`
+
+Example: [archicad-addon/Examples/Property/GetPropertyValuesOfElementDefaults.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/GetPropertyValuesOfElementDefaults.py): Reads the Element ID of the Wall tool default, which new walls get, with GetPropertyValuesOfElementDefaults.
+
 ### ModifyPropertyValueOfElements
 
-Sets one property value on all the given elements in a single step. If the property is not available for any of the elements, none of them is changed. Available from Archicad 27.
+Sets one property value on all the given elements in a single step. If the property is not available for any of the elements, none of them is changed.
 
 Group: Property Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#ModifyPropertyValueOfElements
 
@@ -6399,6 +7830,67 @@ Grasshopper: `ModifyPropertyValueOfElementsComponent`
 
 Example: [archicad-addon/Examples/Property/ModifyPropertyValueOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/ModifyPropertyValueOfElements.py): Sets the same Element ID on the first three Walls in one step with ModifyPropertyValueOfElements, then restores their values. Needs at least one Wall.
 
+### GetPropertyExpressionReferences
+
+Returns the strings that refer to the given properties in property expressions.
+
+Group: Property Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetPropertyExpressionReferences
+
+Parameters:
+
+- `propertyIds` (PropertyIds, required)
+
+Returns:
+
+- `references` (array of object or ErrorItem, required): One item for each property, in the order of the input: its expression reference, or an error.
+
+Grasshopper: `GetPropertyExpressionReferencesComponent`
+
+Example: [archicad-addon/Examples/Property/GetPropertyExpressionReferences.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/GetPropertyExpressionReferences.py): Gets the strings that property expressions use to refer to the Element ID and Width properties with GetPropertyExpressionReferences.
+
+### CheckPropertyValues
+
+Checks whether the given values are acceptable for the given property definitions, without changing anything.
+
+Group: Property Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#CheckPropertyValues
+
+Parameters:
+
+- `propertyValues` (array of object, required): The values to check, each with the property definition it is checked against.
+  - `propertyId` (PropertyId, required)
+  - `propertyValue` (PropertyValue, required)
+
+Returns:
+
+- `results` (array of object or ErrorItem, required): One item for each value, in the order of the input: whether it is acceptable, or an error if the property was not found.
+
+Grasshopper: `CheckPropertyValuesComponent`
+
+Example: [archicad-addon/Examples/Property/CheckPropertyValues.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/CheckPropertyValues.py): Checks values against custom property definitions with CheckPropertyValues, without changing anything. Checks a number and a text for a custom number property, and an existing and a made-up option for a custom enumeration property. Needs at least one such property in the project.
+
+### GetPropertyEditability
+
+Tells whether the values of the given properties can be modified, and whether the properties are visible, for the given elements. Also tells whether they can be modified in the tool defaults of element types (from Archicad 26) and in the default values of the property definitions themselves. Unknown elements, element types and properties are reported as errors, not as locked properties.
+
+Group: Property Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetPropertyEditability
+
+Parameters:
+
+- `properties` (PropertyIds, required)
+- `elements` (Elements): Checks whether the value of each property can be modified for these elements, and whether each property is visible for them.
+- `elementTypes` (array of ElementType): Checks whether the value of each property can be modified in the tool default of these element types.
+- `propertyDefinitionDefaults` (boolean): When true, checks whether the default value of each property definition can be modified. This is the default value of the property definition itself, not the tool default of an element type.
+
+Returns:
+
+- `editabilityOfElements` (array of object or ErrorItem): Present when elements were given. The order of the outer list is that of the given elements. The order of the inner lists are that of the given properties.
+- `editabilityOfElementTypeDefaults` (array of object or ErrorItem): Present when elementTypes were given. The order of the outer list is that of the given element types. The order of the inner lists are that of the given properties.
+- `editabilityOfPropertyDefinitionDefaults` (array of object or ErrorItem): Present when propertyDefinitionDefaults is true. The order is that of the given properties.
+
+Grasshopper: `GetPropertyEditabilityComponent`
+
+Example: [archicad-addon/Examples/Property/GetPropertyEditability.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Property/GetPropertyEditability.py): Tells whether the Element ID can be modified for the first Wall and in the Wall tool default with GetPropertyEditability. Needs at least one Wall.
+
 ### GetPropertyAvailabilityOfDefaults
 
 Tells whether the given properties are available and whether they are visible in the current tool default of an element type, before creating new elements. It checks the native tool default only, not a Favorite that is not applied. Unknown properties are reported as errors, not as unavailable. Available from Archicad 26.
@@ -6412,7 +7904,7 @@ Parameters:
 
 Returns:
 
-- `propertyAvailabilities` (array of object or ErrorItem, required): The order is that of the given properties.
+- `propertyAvailabilities` (array of DefaultPropertyAvailability or ErrorItem, required): The order is that of the given properties.
 
 Grasshopper: `GetPropertyAvailabilityOfDefaultsComponent`
 
@@ -6420,7 +7912,7 @@ Example: [archicad-addon/Examples/Property/GetPropertyAvailabilityOfDefaults.py]
 
 ### MakePropertyAvailableForElements
 
-Makes a property definition available for all the given elements. Available only in Archicad 27.
+Makes a property definition available for all the given elements. Available in Archicad 25, 26 and 27.
 
 Group: Property Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/archicad-addon/#MakePropertyAvailableForElements
 
@@ -6436,7 +7928,7 @@ Example: [archicad-addon/Examples/Property/MakePropertyAvailableForElements.py](
 
 ### MakePropertyUnavailableForElements
 
-Makes a property definition unavailable for all the given elements. Available only in Archicad 27.
+Makes a property definition unavailable for all the given elements. Available in Archicad 25, 26 and 27.
 
 Group: Property Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/archicad-addon/#MakePropertyUnavailableForElements
 
@@ -6484,7 +7976,7 @@ Parameters:
 
 Returns:
 
-- `elementsOfClassificationItems` (array of object or ErrorItem, required): The elements classified with each classification item, aligned with the input, or an error for a non-existing classification item.
+- `elementsOfClassificationItems` (array of ClassificationItemElements or ErrorItem, required): The elements classified with each classification item, aligned with the input, or an error for a non-existing classification item.
 
 Grasshopper: `GetElementsByClassificationComponent`
 
@@ -6492,17 +7984,19 @@ Example: [archicad-addon/Examples/Classification/GetElementsByClassification.py]
 
 ### SetClassificationsOfElements
 
-Sets the classifications of elements. In order to set the classification of an element to unclassified, omit the classificationItemId field. It works for subelements of hierarchal elements also.
+Sets the classifications of elements. In order to set the classification of an element to unclassified, omit the classificationItemId field. It works for subelements of hierarchal elements also. With dryRun true nothing is changed and no undo step is created: the response has dryRun set to true, and each item that passes the checks made before writing gets wouldChange, with the element's classification in the system now (oldValue) and the one a real run would set (newValue).
 
 Group: Classification Commands. Added in Tapir 1.0.7. Docs: https://archicad-api.com/archicad-addon/#SetClassificationsOfElements
 
 Parameters:
 
 - `elementClassifications` (ElementClassifications, required)
+- `dryRun` (DryRun)
 
 Returns:
 
-- `executionResults` (ExecutionResults, required)
+- `dryRun` (DryRunFlag)
+- `executionResults` (ChangeExecutionResults, required): One result for each item of elementClassifications, in the order of the input. On a dry run an item that passes every check made before writing (the classification item and its system exist, the element's classification in that system can be read) gets wouldChange: oldValue is the element's classificationId in the system now and newValue the one a real run would set, both as GetClassificationsOfElements gives them (without classificationItemId when the element is or would be unclassified in the system). Archicad can still refuse an item that passes them.
 
 Grasshopper: `SetClassificationsOfElementsComponent`
 
@@ -6520,7 +8014,7 @@ Parameters:
 
 Returns:
 
-- `attributeClassifications` (array of object or ErrorItem, required): The classifications of the attributes, in the order of the input. A non-existing attribute is represented by an error object.
+- `attributeClassifications` (array of AttributeClassifications or ErrorItem, required): The classifications of the attributes, in the order of the input. A non-existing attribute is represented by an error object.
 
 Grasshopper: `GetClassificationsOfAttributesComponent`
 
@@ -6534,9 +8028,7 @@ Group: Classification Commands. Added in Tapir 1.8.0. Docs: https://archicad-api
 
 Parameters:
 
-- `attributeClassifications` (array of object, required): The classifications to set, one per attribute and classification system.
-  - `attributeId` (AttributeId, required)
-  - `classificationId` (ClassificationId, required): The classification to set. The item replaces the attribute's current item in the same classification system. If the classificationItemId field is omitted, the attribute becomes unclassified in the given system.
+- `attributeClassifications` (array of AttributeClassification, required): The classifications to set, one per attribute and classification system.
 
 Returns:
 
@@ -6592,9 +8084,7 @@ Group: Classification Commands. Added in Tapir 1.7.3. Docs: https://archicad-api
 
 Parameters:
 
-- `elementDefaultClassifications` (array of object, required): The classifications to set on the tool defaults (the settings new elements get).
-  - `elementType` (ElementType, required)
-  - `classificationId` (ClassificationId, required)
+- `elementDefaultClassifications` (array of ElementDefaultClassification, required): The classifications to set on the tool defaults (the settings new elements get).
 
 Returns:
 
@@ -6616,7 +8106,7 @@ Parameters:
 
 Returns:
 
-- `classificationsOfToolDefaults` (array of object or ErrorItem, required): The classifications of the tool defaults of each element type, in the order of the given element types. Invalid element types are represented by error objects.
+- `classificationsOfToolDefaults` (array of ToolDefaultClassifications or ErrorItem, required): The classifications of the tool defaults of each element type, in the order of the given element types. Invalid element types are represented by error objects.
 
 Grasshopper: `GetClassificationsOfToolDefaultsComponent`
 
@@ -6632,13 +8122,7 @@ Parameters: none.
 
 Returns:
 
-- `classificationSystems` (array of object, required): The classification systems of the project.
-  - `classificationSystemId` (ClassificationSystemId, required)
-  - `name` (string, required): The display name of the classification system.
-  - `description` (string, required): The description of the classification system.
-  - `source` (string, required): The source of the classification system (e.g. URL to a classification system standard).
-  - `version` (string, required): The version of the classification system.
-  - `date` (Date, required): The release date of the classification system's current version.
+- `classificationSystems` (array of ClassificationSystemSummary, required): The classification systems of the project.
 
 Grasshopper: `GetClassificationSystemsComponent`
 
@@ -6657,6 +8141,7 @@ Parameters:
 Returns:
 
 - `executionResults` (ExecutionResults, required)
+- `classificationSystemIds` (ClassificationSystemIdsOrErrors, required): The identifiers of the new classification systems, in the order of the input. A system that could not be created is an error item. A system whose items failed is still listed, because it was created; its execution result has the error.
 
 Grasshopper: `CreateClassificationSystemsComponent`
 
@@ -6675,6 +8160,7 @@ Parameters:
 Returns:
 
 - `executionResults` (ExecutionResults, required)
+- `classificationItemIds` (ClassificationItemIdsOrErrors, required): The identifiers of the new classification items, in the order of the input. An item that could not be created is an error item. An item whose children failed is still listed, because it was created; its execution result has the error.
 
 Grasshopper: `CreateClassificationItemsComponent`
 
@@ -6682,17 +8168,19 @@ Example: [archicad-addon/Examples/Classification/CreateClassificationItems.py](h
 
 ### DeleteClassificationSystems
 
-Deletes the given Classification Systems.
+Deletes the given Classification Systems. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each classification system that exists gets wouldDelete.
 
 Group: Classification Commands. Added in Tapir 1.5.2. Docs: https://archicad-api.com/archicad-addon/#DeleteClassificationSystems
 
 Parameters:
 
 - `classificationSystemIds` (ClassificationSystemIds, required)
+- `dryRun` (DryRun)
 
 Returns:
 
-- `executionResults` (ExecutionResults, required)
+- `dryRun` (DryRunFlag)
+- `executionResults` (DeletionExecutionResults, required): One result for each input classification system, in the order of the input. On a dry run a classification system that exists gets wouldDelete; Archicad can still refuse to delete one that exists.
 
 Grasshopper: `DeleteClassificationSystemsComponent`
 
@@ -6700,17 +8188,19 @@ Example: [archicad-addon/Examples/Classification/DeleteClassificationSystems.py]
 
 ### DeleteClassificationItems
 
-Deletes the given Classification Items.
+Deletes the given Classification Items. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and each classification item that exists gets wouldDelete.
 
 Group: Classification Commands. Added in Tapir 1.5.2. Docs: https://archicad-api.com/archicad-addon/#DeleteClassificationItems
 
 Parameters:
 
 - `classificationItemIds` (ClassificationItemIds, required)
+- `dryRun` (DryRun)
 
 Returns:
 
-- `executionResults` (ExecutionResults, required)
+- `dryRun` (DryRunFlag)
+- `executionResults` (DeletionExecutionResults, required): One result for each input classification item, in the order of the input. On a dry run a classification item that exists gets wouldDelete; Archicad can still refuse to delete one that exists.
 
 Grasshopper: `DeleteClassificationItemsComponent`
 
@@ -6764,7 +8254,7 @@ Parameters:
 
 Returns:
 
-- `classificationItemParents` (array of object or ErrorItem, required): The parent and the system of each given item, in the order of the input. A non-existing item is an error item.
+- `classificationItemParents` (array of ClassificationItemParent or ErrorItem, required): The parent and the system of each given item, in the order of the input. A non-existing item is an error item.
 
 Grasshopper: `GetClassificationItemParentsComponent`
 
@@ -6805,7 +8295,7 @@ Parameters:
 
 Returns:
 
-- `classificationItemVisibilities` (array of object or ErrorItem, required): One entry per target, in the order of the input. A non-existing element or attribute, or an invalid element type, is represented by an error object.
+- `classificationItemVisibilities` (array of ClassificationItemVisibilities or ErrorItem, required): One entry per target, in the order of the input. A non-existing element or attribute, or an invalid element type, is represented by an error object.
 
 Grasshopper: `GetClassificationItemVisibilityComponent`
 
@@ -6816,7 +8306,7 @@ Example: [archicad-addon/Examples/Classification/GetClassificationItemVisibility
 
 ### GetAttributesByType
 
-Returns the details of every attribute of the given type. From Archicad 30 an attribute that Archicad keeps a creation record of also carries creationInfo: how (method), from where (source), by whom and when it was created.
+Returns the details of every attribute of the given type, including the path of the attribute folder holding it (Archicad 26 and newer). From Archicad 30 an attribute that Archicad keeps a creation record of also carries creationInfo: how (method), from where (source), by whom and when it was created.
 
 Group: Attribute Commands. Added in Tapir 1.1.3. Docs: https://archicad-api.com/archicad-addon/#GetAttributesByType
 
@@ -6828,6 +8318,21 @@ Parameters:
 Grasshopper: `GetAttributesByTypeComponent`, `PolylinesComponent`
 
 Example: [archicad-addon/Examples/Attribute/GetAttributesByType.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Attribute/GetAttributesByType.py): Lists the index, folder and name of every Layer of the project with GetAttributesByType.
+
+### GetAttributeIndexes
+
+Reports for each given attribute type how many attributes there are, the first valid and the highest index in use, and the free indexes between them (for example those of deleted attributes). Available from Archicad 27.
+
+Group: Attribute Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetAttributeIndexes
+
+Parameters:
+
+- `attributeTypes` (array of AttributeType, required): The attribute types to report the indexes of.
+
+
+Grasshopper: `GetAttributeIndexesComponent`
+
+Example: [archicad-addon/Examples/Attribute/GetAttributeIndexes.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Attribute/GetAttributeIndexes.py): Prints how the indexes of a few attribute types are used, with GetAttributeIndexes. For each type: the number of attributes, the first valid and the highest index, and how many indexes between them are free (for example those of deleted attributes). Requires Archicad 27 or later.
 
 ### GetAttributesFromProject
 
@@ -6847,7 +8352,7 @@ Example: [archicad-addon/Examples/Attribute/GetAttributesFromProject.py](https:/
 
 ### DeleteAttributes
 
-Deletes the given attributes.
+Deletes the given attributes. Returns an execution result for each input item. With dryRun true nothing is deleted: the response has dryRun set to true, and each attribute that passes the checks made before deleting (valid attribute type, attribute exists) gets wouldDelete.
 
 Group: Attribute Commands. Added in Tapir 1.5.4. Docs: https://archicad-api.com/archicad-addon/#DeleteAttributes
 
@@ -6856,18 +8361,40 @@ Parameters:
 - `attributesToDelete` (array of object, required): Array of attributes to delete.
   - `attributeType` (AttributeType, required)
   - `attributeId` (AttributeIdArrayItem, required)
+- `dryRun` (DryRun)
 
 Returns:
 
-- `executionResults` (ExecutionResults, required)
+- `dryRun` (DryRunFlag)
+- `executionResults` (DeletionExecutionResults, required): One result for each input attribute, in the order of the input. On a dry run an attribute that passes the checks made before deleting (valid attributeType, attribute found) gets wouldDelete; Archicad can still refuse to delete an attribute that passes them.
 
 Grasshopper: `DeleteAttributesComponent`
 
 Example: [archicad-addon/Examples/Attribute/DeleteAttributes.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Attribute/DeleteAttributes.py): Creates a temporary Layer and deletes it again with DeleteAttributes, first as a dry run that deletes nothing.
 
+### ImportAttributesFromProject
+
+Imports Line, Fill, ZoneCategory, PenTable, OperationProfile, Composite, Profile and LayerCombination attributes from another project or template file into the open project, with their complete definition (symbol and percent fills included), like Append or Overwrite by name in Archicad's Attribute Manager. The lines and fills a composite or profile uses are matched by name; its building materials and surfaces, and the layers of a layer combination, keep their index only with referencesByIndex, since Archicad does not read these types from a closed file. An attribute with a reference that cannot be mapped is not imported. A new attribute gets a new guid: Archicad does not hand out the guids stored in the source file. An attribute whose name already exists is skipped, or overwritten in place with overwriteExisting. dryRun reports what would happen without changing anything. The names are the legacy 8-bit names of the source file. Available from Archicad 27.
+
+Group: Attribute Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ImportAttributesFromProject
+
+Parameters:
+
+- `projectFilePath` (string, required): The absolute path of the project or template file (for example .pln or .tpl) to import the attributes from.
+- `attributeTypes` (array of AttributeType, required): The attribute types to import, in this order. Line, Fill, ZoneCategory, PenTable, OperationProfile, Composite, Profile and LayerCombination can be imported. Layer, Surface, BuildingMaterial and MEPSystem fail with an error item: Archicad does not read them from a closed file. A Composite, Profile or LayerCombination refers to other attributes, see referencesByIndex; list Line and Fill before them to import the lines and fills they use.
+- `attributeNames` (array of string): Import only the attributes with these names. All attributes of the given types are imported when it is omitted.
+- `overwriteExisting` (boolean): What happens to an attribute whose name already exists in the open project. false (default): it is skipped and the existing attribute is kept. true: the existing attribute is overwritten with the imported definition and keeps its index and guid.
+- `dryRun` (boolean): If true, nothing is changed: the response reports what an import would do.
+- `referencesByIndex` (boolean): How the BuildingMaterial, Surface and Layer references of an imported Composite, Profile or LayerCombination are mapped. Archicad does not read these attributes from a closed file, so their names are unknown and they cannot be matched by name. false (default): an attribute with such a reference is not imported (result failed). true: the reference keeps its index and refers to the attribute with that index in the open project, which is right only when both files share these attributes at the same indexes, for example because they come from the same template. Line and Fill references are always matched by name.
+
+
+Grasshopper: `ImportAttributesFromProjectComponent`
+
+Example: [archicad-addon/Examples/Attribute/ImportAttributesFromProject.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Attribute/ImportAttributesFromProject.py): Imports the line types of another project or template file with ImportAttributesFromProject, first as a dry run. Set the TAPIR_ATTRIBUTE_SOURCE environment variable to the absolute path of a .pln or .tpl file. Line types whose name already exists in the open project are kept as they are; the others are added. The dry run also shows how the composites of the file would map their line types and building materials. Requires Archicad 27 or later.
+
 ### GetUsedAttributes
 
-Gets the attributes in use, as Archicad reports them for the usedAttributes JSON query: parsed into usedAttributes when the report is a JSON object, otherwise as text in raw. Helps to find the attributes DeleteAttributes can remove before a handover. Available from Archicad 27.
+Gets how many attributes of each type are in use (layers, lines, fills, composites, surfaces, ...), as Archicad reports them for the usedAttributes JSON query: the counts in usedAttributes, the report as text in raw. Available from Archicad 27.
 
 Group: Attribute Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#GetUsedAttributes
 
@@ -6875,8 +8402,8 @@ Parameters: none.
 
 Returns:
 
-- `usedAttributes` (object): The report parsed as a JSON object.
-- `raw` (string): The report as text, when it is not a JSON object.
+- `usedAttributes` (object): The number of attributes in use per attribute type. The keys are the attribute types of Tapir (Layer, Line, Fill, Composite, Surface, LayerCombination, ZoneCategory, Profile, MEPSystem, OperationProfile, BuildingMaterial) where they exist, otherwise Archicad's own names (e.g. City, DimStand, MarkupStyle, GraphicOverride). Archicad lists only the types it found in use. Missing when the report could not be read.
+- `raw` (string, required): The report as Archicad wrote it, e.g. 'Layer: 16, LineType: 9, Fill: 17'.
 
 Grasshopper: `GetUsedAttributesComponent`
 
@@ -6936,17 +8463,19 @@ Example: [archicad-addon/Examples/Attribute/CreateAttributeFolders.py](https://g
 
 ### DeleteAttributeFolders
 
-Deletes attribute folders, each given by attribute type and path, together with all the subfolders and deletable attributes they contain (a folder holding an attribute that cannot be deleted is kept). The root folder cannot be deleted. Available from Archicad 26.
+Deletes attribute folders, each given by attribute type and path, together with all the subfolders and deletable attributes they contain (a folder holding an attribute that cannot be deleted is kept). The root folder cannot be deleted. With dryRun true nothing is deleted: the response has dryRun set to true, and each folder that exists and is not the root folder gets wouldDelete. Available from Archicad 26.
 
 Group: Attribute Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/archicad-addon/#DeleteAttributeFolders
 
 Parameters:
 
 - `attributeFolders` (AttributeFolders, required)
+- `dryRun` (DryRun)
 
 Returns:
 
-- `executionResults` (ExecutionResults, required)
+- `dryRun` (DryRunFlag)
+- `executionResults` (DeletionExecutionResults, required): One result for each input folder, in the order of the input. On a dry run a folder that is not the root folder and exists gets wouldDelete; Archicad can still refuse to delete a folder that passes these checks.
 
 Grasshopper: `DeleteAttributeFoldersComponent`
 
@@ -6960,10 +8489,7 @@ Group: Attribute Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/
 
 Parameters:
 
-- `attributeFolders` (array of object, required): The folders to rename, each given by attribute type and path together with its new name.
-  - `attributeType` (AttributeType, required)
-  - `path` (array of string, required): The names of the folders from the root folder down to the folder to rename, the root folder itself not included.
-  - `newName` (string, required): The new name of the folder.
+- `attributeFolders` (array of AttributeFolderRename, required): The folders to rename, each given by attribute type and path together with its new name.
 
 Returns:
 
@@ -6975,7 +8501,7 @@ Example: [archicad-addon/Examples/Attribute/RenameAttributeFolders.py](https://g
 
 ### MoveAttributesAndFolders
 
-Moves attributes and attribute folders (with their contents) into the target folder, which must be of the same attribute type; an empty target path is the root folder. Returns one execution result per attribute and per folder. Available from Archicad 26.
+Moves attributes and attribute folders (with their contents) into the target folder, which must be of the same attribute type; an empty target path is the root folder. Returns one execution result per attribute and per folder; an attribute or folder that is already directly in the target folder counts as moved. Available from Archicad 26.
 
 Group: Attribute Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/archicad-addon/#MoveAttributesAndFolders
 
@@ -6993,6 +8519,151 @@ Returns:
 Grasshopper: `MoveAttributesAndFoldersComponent`
 
 Example: [archicad-addon/Examples/Attribute/MoveAttributesAndFolders.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Attribute/MoveAttributesAndFolders.py): Creates a temporary Layer and Layer folder, moves the layer into the folder with MoveAttributesAndFolders. Deleting the folder at the end deletes the layer in it too. Requires Archicad 26 or later.
+
+### ReindexLayers
+
+Moves layers to new indices. Archicad cannot renumber an attribute, so each layer is recreated at its new index (free indices below it are filled with temporary layers, which are deleted again), gets the old layer's state in every layer combination, and then every element of the old layer is moved to it, in the floor plan and in every view and layout database, with the tool defaults on that layer. Only when the old layer is empty everywhere is it deleted, and the new layer gets its name, flags and folder. If an element cannot be moved (it is locked, not reserved in Teamwork, or comes from a hotlinked module), that layer is left as it was. The new layer has a new attribute id; Favorites that use the layer are not updated. Archicad keeps the shown, locked and wireframe state of a layer per open window: the new layer gets the old one's state in the current window and in every layer combination, and starts shown and unlocked in the other open windows. The model elements that sections, elevations, interior elevations and 3D documents show of the layer come back on the new layer when those views are rebuilt (listed as viewsToRebuild). dryRun lists the elements and tool defaults on each layer without changing anything. The whole call is one undo step. Available from Archicad 27.
+
+Group: Attribute Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ReindexLayers
+
+Parameters:
+
+- `layers` (array of object, required): The layers to move to a new index, handled in the given order.
+  - `attributeId` (AttributeId, required): The layer to move.
+  - `newIndex` (integer, required): The index the layer gets. It must not be used by another layer. Index 1 (the Archicad Layer) cannot be used or moved.
+- `dryRun` (boolean): Only list what would change (the elements on each layer, the tools whose default layer it is, the elements that block the move) without changing anything. The default is false.
+- `maxPlaceholders` (integer): Every free index below newIndex is filled with a temporary layer first (about 20 ms each), so a newIndex far above the highest index in use takes long. A layer that needs more temporary layers than this is not moved. The default is 1000.
+
+Returns:
+
+- `layers` (array of object or ErrorItem, required): One item per requested layer, in the same order.
+
+Grasshopper: `ReindexLayersComponent`
+
+Example: [archicad-addon/Examples/Attribute/ReindexLayers.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Attribute/ReindexLayers.py): Creates a temporary Layer and moves it to the next free index with ReindexLayers, first as a dry run. The layer gets a new attribute id at its new index; the script deletes it at the end. Requires Archicad 27 or later.
+
+### ReindexAttributes
+
+Moves fills, line types, surfaces, building materials and zone categories to new indices, the way ReindexLayers moves layers. Archicad cannot renumber an attribute, so the attribute is recreated at its new index (free indices below it are filled with temporary attributes, which are deleted again) and every reference to the old index is rewritten to the new one: the fields of the elements in the floor plan and in every view and layout, the parameters of library part based elements, the memo data of roofs, slabs, meshes, morphs, curtain walls, beams, columns, stairs and interior elevations, the tool defaults, the Favorites (with their sub-elements: a curtain wall's frame and panel classes, a stair's structures), the other attributes that refer to it (composites, building materials, surfaces, profiles, MEP systems) and the graphic override rules. Only then is the old attribute deleted. The new attribute has a new attribute id (Archicad does not keep a given id); its name, definition and attribute folder are the old ones. Elements on a hidden or locked layer cannot be changed, so their layers are shown and unlocked for the move and put back afterwards (in the current window, as Archicad keeps these flags per window). If an element still cannot be changed (it is locked itself, or not reserved in Teamwork), everything is put back and that attribute is not moved. Elements from hotlinked modules cannot be changed and are listed; their module file has to be reindexed on its own. Indices typed into GDL scripts are not found, and the frame and panel classes of curtain wall Favorites and of the Curtain Wall tool default keep the old index (Archicad does not take them from ACAPI_Favorite_Change, so such Favorites are left as they are and named in the warnings). dryRun lists every reference without changing anything. The whole call is one undo step. Pens, layers (see ReindexLayers) and the other attribute types are not supported. Available from Archicad 27.
+
+Group: Attribute Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ReindexAttributes
+
+Parameters:
+
+- `attributeType` (string ("Fill", "Line", "Surface", "BuildingMaterial", "ZoneCategory"), required): The type of the attributes to move. Layers are moved by ReindexLayers; pens and the other attribute types cannot be moved.
+- `attributes` (array of object, required): The attributes to move to a new index, handled in the given order.
+  - `attributeId` (AttributeId, required): The attribute to move.
+  - `newIndex` (integer, required): The index the attribute gets. It must not be used by another attribute of the type.
+- `dryRun` (boolean): Only list every reference to each attribute (elements, tool defaults, Favorites, other attributes, graphic override rules, elements from hotlinked modules) without changing anything. The default is false.
+- `maxPlaceholders` (integer): Every free index below newIndex is filled with a temporary attribute first, so a newIndex far above the highest index in use takes long. An attribute that needs more temporary attributes than this is not moved. The default is 1000.
+
+Returns:
+
+- `attributes` (array of object or ErrorItem, required): One item per requested attribute, in the same order.
+
+Grasshopper: `ReindexAttributesComponent`
+
+Example: [archicad-addon/Examples/Attribute/ReindexAttributes.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Attribute/ReindexAttributes.py): Creates a temporary Line type and moves it to the next free index with ReindexAttributes, first as a dry run. The line type gets a new attribute id at its new index; the script deletes it at the end. Requires Archicad 27 or later.
+
+### DeleteAndReplaceAttributes
+
+Deletes fills, line types, surfaces or building materials and replaces each by another attribute of the same type wherever it was used, like Delete and Replace in the Attribute Manager. Every reference is rewritten to the replacement, the way ReindexAttributes rewrites them: the fields of the elements in the floor plan and in every view and layout, the parameters of library part based elements, their memo data, the tool defaults, the Favorites, the other attributes that refer to it (composites, building materials, surfaces, profiles, MEP systems) and the graphic override rules. Elements on a hidden or locked layer are changed too: their layers are shown and unlocked for the change and put back afterwards (in the current window). If an element cannot be changed (it is locked itself, or not reserved in Teamwork), everything is put back and that attribute is not deleted. Elements from hotlinked modules cannot be changed and are listed. Indices typed into GDL scripts are not found, and the frame and panel classes of curtain wall Favorites and of the Curtain Wall tool default keep the deleted attribute (named in the warnings). If a tool default, Favorite, attribute or rule cannot be rewritten to the replacement, it keeps a copy of the deleted attribute with its name and a new attribute id, named in the warnings. The whole call is one undo step. With dryRun true nothing is changed and no undo step is created: the response has dryRun set to true, and each attribute that passes the checks gets wouldDelete and lists every reference a real run would rewrite (elements, tool defaults, Favorites, other attributes, graphic override rules, elements from hotlinked modules). Available from Archicad 27.
+
+Group: Attribute Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#DeleteAndReplaceAttributes
+
+Parameters:
+
+- `attributeType` (string ("Fill", "Line", "Surface", "BuildingMaterial"), required): The type of the attributes to delete and of their replacements.
+- `attributes` (array of object, required): The attributes to delete, each with the attribute that takes its place, handled in the given order.
+  - `attributeId` (AttributeId, required): The attribute to delete.
+  - `replacementAttributeId` (AttributeId, required): The attribute of the same type that replaces it wherever it is used. It must be another attribute than the one to delete.
+- `dryRun` (DryRun)
+
+Returns:
+
+- `dryRun` (DryRunFlag)
+- `attributes` (array of object or ErrorItem, required): One item per requested attribute, in the same order.
+
+Grasshopper: `DeleteAndReplaceAttributesComponent`
+
+Example: [archicad-addon/Examples/Attribute/DeleteAndReplaceAttributes.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Attribute/DeleteAndReplaceAttributes.py): Creates two temporary Line types and deletes the first with DeleteAndReplaceAttributes, replaced by the second, first as a dry run. The script deletes the second line type at the end. Requires Archicad 27 or later.
+
+### GetUnusedAttributes
+
+Lists the unused layers, fills, surfaces, building materials, composites, profiles, line types, pen tables and zone categories (index, id and name), for the given types or all of them. The Archicad API has no function that tells which attributes are unused (only how many per type), so every reference is collected: the elements of the floor plan and of every view and layout (hotlinked ones too), with their library part parameters and memo data, the tool defaults, the Favorites, the other attributes (composites, building materials, surfaces, profiles, MEP systems) and the graphic override rules, the way ReindexAttributes finds them; for layers the layer of each element, tool default and Favorite; for composites and profiles the walls, slabs, roofs, shells, column and beam segments whose structure type uses them; for pen tables the current pen table and the drawings set to a pen table of their own. An attribute that only an unused attribute refers to counts as used. Indices typed into GDL scripts and the pen tables saved with views are not found. Each type also reports Archicad's own count of the attributes in use (archicadUsedCount, see GetUsedAttributes), so a difference shows. Read only. Available from Archicad 27.
+
+Group: Attribute Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetUnusedAttributes
+
+Parameters:
+
+- `types` (array of string ("layer", "fill", "surface", "buildingMaterial", "composite", "profile", "lineType", "penTable", "zoneCategory")): The attribute types to check. All of them when omitted.
+
+Returns:
+
+- `attributeTypes` (array of object, required): One item per checked attribute type, in the order layer, fill, surface, buildingMaterial, composite, profile, lineType, penTable, zoneCategory.
+  - `type` (string ("layer", "fill", "surface", "buildingMaterial", "composite", "profile", "lineType", "penTable", "zoneCategory"), required)
+  - `unusedAttributes` (array of object, required): The attributes of this type that no reference found by the command points at.
+  - `attributeCount` (integer, required): The number of attributes of this type in the project.
+  - `usedCount` (integer, required): attributeCount minus the unused ones.
+  - `archicadUsedCount` (integer): The number of attributes of this type in use as Archicad itself counts them, from the usedAttributes JSON query (see GetUsedAttributes). When it differs from usedCount, Archicad counts references this command does not see, or the other way round, so check the list before deleting. Missing when Archicad's report does not name the type.
+- `archicadReport` (string): Archicad's usedAttributes report as it came, e.g. 'Layer: 16, LineType: 9, Fill: 17'. Missing when the query failed.
+- `warnings` (array of string): What could not be checked. Missing when everything was checked.
+
+Grasshopper: `GetUnusedAttributesComponent`
+
+Example: [archicad-addon/Examples/Attribute/GetUnusedAttributes.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Attribute/GetUnusedAttributes.py): Lists the unused fills, line types and surfaces of the project with GetUnusedAttributes, and how many of each type Archicad itself counts as used. Leave out 'types' to check every attribute type. Nothing is changed. Requires Archicad 27 or later.
+
+### GetMissingAttributes
+
+Lists the references of placed elements to layers, fills, surfaces, building materials, composites, profiles, line types, pen tables and zone categories that do not exist in the project, for the given types or all of them, and of the tool defaults, Favorites, graphic override rules, Model View Options combinations and attributes: the structured counterpart of the missing attributes report of Archicad's GDL palette. Every element of the floor plan and of every view and layout (hotlinked ones too) is checked, and so is every tool default and Favorite (with its sub-elements): its layer, its attribute fields and memo data as ReindexAttributes finds them, its composite or profile when its structure type uses one, a drawing's own pen table, and its library part parameters of attribute types; of every graphic override rule the line type, fill and surface it overrides with; of every Model View Options combination the surfaces and line types of the stair and railing schemes and the library part settings' GDL parameters of attribute types; of every composite the building materials of its skins and the line types of its separators, of every building material its cut fill and cut surface, of every surface the fill of its vectorial hatching, of every MEP system its fill, center line type and surfaces, and of every profile the building material, surface or fill of each skin and its contour, cut end and edge line types. The sources input limits the check to elements, tool defaults, Favorites, graphic override rules, Model View Options or attributes. Each item names the source; for an element the element (and the element it is part of, for a curtain wall frame, a column segment, ...) and the story or view it sits on, for a tool default the tool, for a Favorite its name and tool, for a graphic override rule its guid and name, for a Model View Options combination its guid and name (and the library part option set), for an attribute its type, guid and name; then the attribute type, the missing index and the field or GDL parameter that holds it. Index 0 counts as no attribute. Read only. Available from Archicad 27.
+
+Group: Attribute Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetMissingAttributes
+
+Parameters:
+
+- `attributeTypes` (array of string ("layer", "fill", "surface", "buildingMaterial", "composite", "profile", "lineType", "penTable", "zoneCategory")): The attribute types to check. All of them when omitted.
+- `sources` (array of string ("element", "toolDefault", "favorite", "overrideRule", "modelViewOption", "attribute")): What to check: the placed elements (element), the tool default settings (toolDefault), the Favorites (favorite), the graphic override rules (overrideRule), the Model View Options combinations (modelViewOption) and the attributes that refer to other attributes (attribute: composites, building materials, surfaces, MEP systems and profiles). All of them when omitted.
+
+Returns:
+
+- `missingAttributes` (array of object, required): One item per reference to an attribute index that has no attribute in the project: first the placed elements in the order they were found (the floor plan first, then the views and layouts), then the tool defaults, then the Favorites, then the graphic override rules, then the Model View Options combinations, then the attributes that refer to other attributes.
+  - `source` (string ("element", "toolDefault", "favorite", "overrideRule", "modelViewOption", "attribute"), required): What refers to the missing attribute: a placed element, the default settings of a tool, a Favorite, a graphic override rule, a Model View Options combination, or another attribute.
+  - `elementId` (ElementId): The placed element. Only for source element.
+  - `elementType` (string): The element's type, as GetElementsByType names it: for a tool default or a Favorite the type of its tool. Missing for a graphic override rule, a Model View Options combination and an attribute.
+  - `overrideRuleId` (object): The graphic override rule. Only for source overrideRule.
+  - `overrideRuleName` (string): The name of the graphic override rule. Only for source overrideRule.
+  - `modelViewOptionId` (object): The Model View Options combination, the id GetModelViewOptionDetails returns. Only for source modelViewOption.
+  - `modelViewOptionName` (string): The name of the Model View Options combination. Only for source modelViewOption.
+  - `gdlOptionsName` (string): When the reference is a GDL parameter of the library part settings of a Model View Options combination, the name of that option set (the gdlOptions name GetModelViewOptionDetails returns). Missing otherwise.
+  - `ownerAttributeType` (string ("composite", "buildingMaterial", "surface", "mepSystem", "profile")): The type of the attribute that refers to the missing one. Only for source attribute.
+  - `ownerAttributeId` (AttributeId): The attribute that refers to the missing one. Only for source attribute.
+  - `ownerAttributeName` (string): The name of that attribute. Only for source attribute.
+  - `favoriteName` (string): The name of the Favorite. Only for source favorite.
+  - `subElementType` (string): When the reference is in a sub-element the Favorite keeps apart (e.g. a stair's structure), the type of that sub-element. Missing otherwise.
+  - `parentElementId` (ElementId): The element this one is part of (the curtain wall of a frame, the column of a segment, ...). Missing for an element that is not part of another one.
+  - `parentElementType` (string)
+  - `databaseId` (DatabaseId): The database the element is in, the same id GetDatabases returns. Only for source element.
+  - `databaseType` (string): The type of that database, e.g. FloorPlan, Worksheet, Details, Section, Layout. Only for source element.
+  - `storyIndex` (integer): The element's home story. Only for elements of the floor plan.
+  - `storyName` (string): The name of that story. Only for elements of the floor plan.
+  - `databaseName` (string): The name of the view or layout (e.g. the worksheet) the element is in. Missing for the floor plan.
+  - `databaseReference` (string): The reference id of that view or layout. Missing when it has none.
+  - `inHotlinkedModule` (boolean): True when the element comes from a hotlinked module: it has to be fixed in the module's file. Missing otherwise.
+  - `attributeType` (string ("layer", "fill", "surface", "buildingMaterial", "composite", "profile", "lineType", "penTable", "zoneCategory"), required)
+  - `index` (integer, required): The attribute index the element, tool default, Favorite, graphic override rule, Model View Options combination or attribute refers to, which no attribute of attributeType has.
+  - `field` (string): The element's setting that holds the index, named as in the Archicad API (e.g. layer, contLtype, cWallFrameDefaults.material); for a graphic override rule lineType, fillOverride or surfaceOverride; for a Model View Options combination the field as GetModelViewOptionDetails names it (e.g. stair.stairSchemeSurfaceIndex); for an attribute the field as GetComposites, GetBuildingMaterials, GetSurfaces, GetMEPSystems or GetProfiles names it (e.g. skins[0].buildingMaterialId, cutFillIndex). Missing when gdlParameter is given.
+  - `gdlParameter` (string): The library part parameter that holds the index, with the cell for an array parameter (e.g. gs_frame_mat, matArray[2][1]). Missing when field is given.
+- `checkedElementCount` (integer, required): The number of placed elements checked; 0 when the elements were not checked.
+- `checkedToolDefaultCount` (integer): The number of tool defaults checked. Missing when the tool defaults were not checked.
+- `checkedFavoriteCount` (integer): The number of Favorites checked. Missing when the Favorites were not checked.
+- `checkedOverrideRuleCount` (integer): The number of graphic override rules checked. Missing when the rules were not checked or could not be listed.
+- `checkedModelViewOptionCount` (integer): The number of Model View Options combinations checked. Missing when they were not checked.
+- `checkedAttributeCount` (integer): The number of composites, building materials, surfaces, MEP systems and profiles checked for references to other attributes. Missing when they were not checked.
+- `warnings` (array of string): What could not be checked. Missing when everything was checked.
+
+Grasshopper: `GetMissingAttributesComponent`
+
+Example: [archicad-addon/Examples/Attribute/GetMissingAttributes.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Attribute/GetMissingAttributes.py): Lists the references of placed elements, tool defaults, Favorites, graphic override rules, Model View Options and attributes to attributes that are not in the project with GetMissingAttributes, one line per reference, like the missing attributes report of the GDL palette. Leave out 'attributeTypes' to check every attribute type, and 'sources' to check elements, tool defaults, Favorites, graphic override rules, Model View Options and the attributes that refer to other attributes (composites, building materials, surfaces, MEP systems, profiles). Nothing is changed. Requires Archicad 27 or later.
 
 ### CreateLayers
 
@@ -7097,12 +8768,13 @@ Parameters:
   - `gradientEnd` (Coordinate2D): Gradient end point (LinearGradient/RadialGradient fills only).
   - `symbolOffset1` (Coordinate2D): First offset vector of the repeating symbol motif, X1/Y1 in the Fill Types dialog (Symbol fills only).
   - `symbolOffset2` (Coordinate2D): Second offset vector of the repeating symbol motif, X2/Y2 in the Fill Types dialog (Symbol fills only).
-  - `percent` (number): Translucency percentage [0..1] (gradient and some Solid fills).
+  - `percent` (number): Translucency percentage [0..1] (gradient and Solid fills). A Solid fill with a percent below 1 is created as a percent fill (like the 25 % fill), 1 makes it a full Solid fill.
   - `texture` (Texture): Used for Image and gradient fills. Only name, rotationAngle, xSize, ySize, mirrorX, and mirrorY are used for Fills.
   - `lineItems` (array of FillLineItem): Vectorial fill line items (Vector fills only).
   - `symbolLines` (array of FillSymbolLine): Line items of the fill's repeating symbol pattern (Symbol fills only).
   - `symbolArcs` (array of FillSymbolArc): Arc items of the fill's repeating symbol pattern (Symbol fills only).
   - `symbolHotspots` (array of Coordinate2D): Hotspot coordinates of the fill's repeating symbol pattern (Symbol fills only).
+  - `symbolSolidFills` (array of FillSymbolSolidFill): Filled polygons of the fill's repeating symbol pattern (Symbol fills only), as GetFills returns them.
 - `overwriteExisting` (boolean): Overwrite the Fill if exists with the same name, or if index is given with the same index. The default is false.
 
 Returns:
@@ -7235,6 +8907,7 @@ Parameters:
   - `handrailType` (boolean): Profile available for handrails. Defaults to the source Profile's value.
   - `otherGDLObjectType` (boolean): Profile available for other GDL based objects. Defaults to the source Profile's value.
   - `skinOverrides` (array of object): Modifications to apply to specific skins of the copied geometry, e.g. to change a skin's building material without rebuilding the profile's shape. Each skinId comes from a prior GetProfiles call's skins[].skinId on the source Profile (or, when overwriteExisting is true, on the Profile being overwritten).
+  - `moveVertices` (array of object): Moves vertices of the copied (or, when overwriting, the preserved existing) geometry in place, e.g. to change the height of a wall profile by moving its top band, without rebuilding its skins: the skins keep their skinIds, edges and edge settings, so the profileModifiers, the stretch zones and every edge flag are kept. Applied in order, after skinOverrides and before newSkins. Hotspots and fixed modifier anchors inside the region are moved too, and so is a stretch zone limit inside it: a vertical stretch zone limit (a height) when the region has no xMin/xMax, a horizontal one when it has no yMin/yMax.
   - `newSkins` (array of ProfileSkinData): AC27+ only. Adds brand-new skins built from caller-supplied polygon geometry, instead of (or in addition to) whatever was copied from sourceAttributeId. Combine with sourceAttributeId to add skins to a copied Profile, or omit sourceAttributeId to build a Profile's geometry entirely from newSkins.
   - `replaceSkins` (boolean): AC27+ only. When overwriteExisting targets an existing Profile, discard every one of its existing skins (and any sourceAttributeId geometry given alongside it) before applying newSkins, instead of adding newSkins on top of the preserved existing geometry. Use this to fully replace a Profile's cross-section with a caller-authored shape while keeping its guid and scalar fields (wallType etc.) - e.g. to sync a Profile's geometry from another project, where sourceAttributeId can't be used because it only resolves within the same file. Also discards any existing profileModifiers, since those are tied to the specific geometry being replaced. Ignored when creating a brand-new Profile (there is nothing to discard yet).
 - `overwriteExisting` (boolean): Overwrite the Profile if exists with the same name, or if index is given with the same index. The default is false.
@@ -7398,6 +9071,79 @@ Grasshopper: `GetCurrentLayerCombinationComponent`
 
 Example: [archicad-addon/Examples/Attribute/GetCurrentLayerCombination.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Attribute/GetCurrentLayerCombination.py): Gets the Layer Combination in effect in the current window with GetCurrentLayerCombination.
 
+### ActivateLayerCombination
+
+Activates the given layer combination in the current window, like choosing it in the Quick Layers palette. Saved views are not changed.
+
+Group: Attribute Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ActivateLayerCombination
+
+Parameters:
+
+- `attributeId` (AttributeId, required)
+
+
+Grasshopper: `ActivateLayerCombinationComponent`
+
+Example: [archicad-addon/Examples/Attribute/ActivateLayerCombination.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Attribute/ActivateLayerCombination.py): Activates the first Layer Combination in the current window with ActivateLayerCombination, then restores the previous one. Saved views are not changed. The previous state is only restored when it matched a layer combination.
+
+### GetLayerOfElementDefaults
+
+Returns the layer of the tool defaults of the given element types: the layer new elements of that type are placed on.
+
+Group: Attribute Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetLayerOfElementDefaults
+
+Parameters:
+
+- `elementTypes` (array of ElementType, required): The element types whose tool defaults are read.
+
+Returns:
+
+- `layersOfElementDefaults` (array of object or ErrorItem, required): One item per element type, in the input order: the layer of its tool defaults, or an error when the type is unknown or has no tool defaults.
+
+Grasshopper: `GetLayerOfElementDefaultsComponent`
+
+Example: [archicad-addon/Examples/Attribute/GetLayerOfElementDefaults.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Attribute/GetLayerOfElementDefaults.py): Gets the layer that new Walls, Slabs and Columns are placed on with GetLayerOfElementDefaults.
+
+### SetLayerOfElementDefaults
+
+Sets the layer of the tool defaults of the given element types, so new elements of that type are placed on it. Only the layer of the defaults is changed.
+
+Group: Attribute Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#SetLayerOfElementDefaults
+
+Parameters:
+
+- `layersOfElementDefaults` (array of object, required): The element types whose tool defaults get a new layer.
+  - `elementType` (ElementType, required)
+  - `layerId` (AttributeId, required): The layer new elements of this type will be placed on.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required): One result per item, in the input order.
+
+Grasshopper: `SetLayerOfElementDefaultsComponent`
+
+Example: [archicad-addon/Examples/Attribute/SetLayerOfElementDefaults.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Attribute/SetLayerOfElementDefaults.py): Places new Walls on the last Layer of the project with SetLayerOfElementDefaults, then restores the previous Layer of the Wall tool defaults.
+
+### RenameAttributes
+
+Renames attributes of any type (layers, layer combinations, composites, surfaces, ...). Each attribute keeps its index, its id and its settings. A new name that another attribute of the same type already has is refused, and so is renaming the attributes Archicad does not allow to change (the built-in Archicad Layer, the Solid and Empty fills).
+
+Group: Attribute Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#RenameAttributes
+
+Parameters:
+
+- `attributes` (array of object, required): The attributes to rename, of any type.
+  - `attributeId` (AttributeId, required)
+  - `newName` (string, required): The new name of the attribute. It must not be empty or the name of another attribute of the same type.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required): One result per attribute, in the input order.
+
+Grasshopper: `RenameAttributesComponent`
+
+Example: [archicad-addon/Examples/Attribute/RenameAttributes.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Attribute/RenameAttributes.py): Renames the last Layer of the project with RenameAttributes, then gives it back its old name. The Layer keeps its index, its id and its settings.
+
 ### GetLines
 
 Returns the details of the given Line attributes.
@@ -7531,6 +9277,24 @@ Grasshopper: `GetPensComponent`
 
 Example: [archicad-addon/Examples/Attribute/GetPens.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Attribute/GetPens.py): Reads the color, width and description of pens 1 to 3 in effect in the current window with GetPens. Requires Archicad 27 or later.
 
+### SetPens
+
+Changes the color, width and description of the given pens in effect in the current window, the pens GetPens returns, in one undo step. Only the given fields of a listed pen are changed; each pen gets its own execution result. In a Teamwork project the PenTables lockable object set must be reserved first (see ReserveLockableObjectSet). Available from Archicad 27.
+
+Group: Attribute Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#SetPens
+
+Parameters:
+
+- `pens` (array of PenData, required): The pens to change among the pens in effect in the current window, the ones GetPens returns. Only the given fields (color, width, description) of a listed pen are changed.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `SetPensComponent`
+
+Example: [archicad-addon/Examples/Attribute/SetPens.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Attribute/SetPens.py): SetPens changes the pens in effect in the current window, the ones GetPens returns, one by one with ACAPI_Attribute_ModifyPen. Only the given fields (color, width, description) of a listed pen are changed, and each pen gets its own execution result. In a Teamwork project reserve the PenTables lockable object set first (ReserveLockableObjectSet). Available from Archicad 27.
+
 ### GetProfiles
 
 Returns the details of the given Profile attributes.
@@ -7638,7 +9402,7 @@ Parameters:
 
 Returns:
 
-- `fonts` (array of object or ErrorItem, required): One item per name, in the order given: the font found, or an error when no loaded font has the name.
+- `fonts` (array of FontDetails or ErrorItem, required): One item per name, in the order given: the font found, or an error when no loaded font has the name.
 
 Grasshopper: `GetFontsByNameComponent`
 
@@ -7646,11 +9410,13 @@ Example: [archicad-addon/Examples/Attribute/GetFontsByName.py](https://github.co
 
 ### GetGraphicOverrideRules
 
-Gets all graphic override rules of the project, with their rule group, criterion and style. Available from Archicad 27.
+Gets all graphic override rules of the project, with their rule group, criterion and style. With includeCriterion the criterion also comes as structured conditions, which CreateGraphicOverrideRules and ModifyGraphicOverrideRules take back. Available from Archicad 27.
 
 Group: Attribute Commands. Added in Tapir 1.7.2. Docs: https://archicad-api.com/archicad-addon/#GetGraphicOverrideRules
 
-Parameters: none.
+Parameters:
+
+- `includeCriterion` (boolean): Also return each rule's criterion as structured conditions ('criterion'), in the shape CreateGraphicOverrideRules and ModifyGraphicOverrideRules take. Default: false.
 
 Returns:
 
@@ -7658,19 +9424,18 @@ Returns:
 
 Grasshopper: `GetGraphicOverrideRulesComponent`
 
-Example: [archicad-addon/Examples/Attribute/GetGraphicOverrideRules.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Attribute/GetGraphicOverrideRules.py): Lists every graphic override rule of the project, with its rule group, criterion and style, with GetGraphicOverrideRules. Requires Archicad 27 or later.
+Example: [archicad-addon/Examples/Attribute/GetGraphicOverrideRules.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Attribute/GetGraphicOverrideRules.py): Lists every graphic override rule of the project, with its rule group, criterion and style, with GetGraphicOverrideRules. With includeCriterion each rule also carries its criterion as structured conditions ('criterion'), which CreateGraphicOverrideRules and ModifyGraphicOverrideRules take back as they are. Conditions that are not decoded yet come as {'criterionXML': ...} leaves. Requires Archicad 27 or later.
 
 ### GetGraphicOverrideRulesByName
 
-Gets graphic override rules by name, with their rule group, criterion and style. The rule group narrows the search; without it the rule is searched in every rule group. Available from Archicad 27.
+Gets graphic override rules by name, with their rule group, criterion and style. The rule group narrows the search; without it the rule is searched in every rule group. With includeCriterion the criterion also comes as structured conditions. Available from Archicad 27.
 
 Group: Attribute Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/archicad-addon/#GetGraphicOverrideRulesByName
 
 Parameters:
 
-- `graphicOverrideRules` (array of object, required): The graphic override rules to get, by name.
-  - `name` (string, required): The name of the rule. Rule names are unique within the project.
-  - `ruleGroupName` (string): The name of the rule group to search the rule in. Left out: every rule group is searched.
+- `graphicOverrideRules` (array of GraphicOverrideRuleReference, required): The graphic override rules to get, by name.
+- `includeCriterion` (boolean): Also return each rule's criterion as structured conditions ('criterion'), in the shape CreateGraphicOverrideRules and ModifyGraphicOverrideRules take. Default: false.
 
 Returns:
 
@@ -7886,9 +9651,7 @@ Group: Attribute Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/
 
 Parameters:
 
-- `ruleGroups` (array of object, required): The rule groups to rename. Their rules and the combinations that contain them are kept.
-  - `name` (string, required): The current name of the rule group.
-  - `newName` (string, required): The new name of the rule group. It must not be empty or used by another rule group.
+- `ruleGroups` (array of GraphicOverrideRuleGroupRename, required): The rule groups to rename. Their rules and the combinations that contain them are kept.
 
 Returns:
 
@@ -7941,10 +9704,7 @@ Group: Attribute Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/
 
 Parameters:
 
-- `graphicOverrideRules` (array of object, required): The rules to move, processed in this order.
-  - `graphicOverrideRuleId` (GraphicOverrideRuleId, required)
-  - `ruleGroupName` (string, required): The rule group the rule is moved to; it can be the rule's own group to change its place there. Created when no rule group has this name.
-  - `beforeGraphicOverrideRuleId` (GraphicOverrideRuleId): The rule of the target group the moved rule is put in front of. Left out: the rule becomes the last of the group.
+- `graphicOverrideRules` (array of GraphicOverrideRuleMove, required): The rules to move, processed in this order.
 
 Returns:
 
@@ -7966,7 +9726,7 @@ Parameters:
 
 Returns:
 
-- `userDataOfAttributes` (array of object or ErrorItem, required): One item per attribute, in the input order: the pairs stored on the attribute (none when it holds no user data), or an error when the attribute was not found or holds user data in another layout.
+- `userDataOfAttributes` (array of AttributeUserData or ErrorItem, required): One item per attribute, in the input order: the pairs stored on the attribute (none when it holds no user data), or an error when the attribute was not found or holds user data in another layout.
 
 Grasshopper: `GetUserDataOfAttributesComponent`
 
@@ -7994,17 +9754,19 @@ Example: [archicad-addon/Examples/Attribute/SetUserDataOfAttributes.py](https://
 
 ### DeleteUserDataOfAttributes
 
-Removes the user data of attributes, every key at once. Archicad does not record this change as an undo step, so Undo does not revert it.
+Removes the user data of attributes, every key at once. Archicad does not record this change as an undo step, so Undo does not revert it. With dryRun true nothing is removed: the response has dryRun set to true, and each attribute that exists gets wouldDelete.
 
 Group: Attribute Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#DeleteUserDataOfAttributes
 
 Parameters:
 
 - `attributeIds` (AttributeIds, required)
+- `dryRun` (DryRun)
 
 Returns:
 
-- `executionResults` (ExecutionResults, required): One result per attribute, in the input order.
+- `dryRun` (DryRunFlag)
+- `executionResults` (DeletionExecutionResults, required): One result per attribute, in the input order. On a dry run an attribute that exists gets wouldDelete.
 
 Grasshopper: `DeleteUserDataOfAttributesComponent`
 
@@ -8015,17 +9777,19 @@ Example: [archicad-addon/Examples/Attribute/DeleteUserDataOfAttributes.py](https
 
 ### IFCFileOperation
 
-Executes an IFC file operation: opens or merges an IFC file, or saves the project as an IFC file. A save can name the export translator to use.
+Executes an IFC file operation: opens or merges an IFC file, or saves the project as an IFC file. A save can name the export translator to use, a merge the story the IFC file's first storey is placed on. With overwrite false a save refuses to replace an existing file.
 
 Group: IFC Commands. Added in Tapir 1.2.6. Docs: https://archicad-api.com/archicad-addon/#IFCFileOperation
 
 Parameters:
 
 - `method` (string ("save", "merge", "open"), required): The file operation method to use.
-- `ifcFilePath` (string, required): The target IFC file to use.
+- `ifcFilePath` (string, required): The target IFC file to use. The save method overwrites an existing file, unless overwrite is false.
+- `overwrite` (boolean): Optional, true by default. Only for the save method: false refuses to save when a file already exists at ifcFilePath, and writes nothing.
 - `fileType` (string ("ifc", "ifcxml", "ifczip", "ifcxmlzip")): The type of the IFC file. The default is 'ifc'.
 - `translatorName` (string): Only for the save method: the name of the IFC export translator to save with, as GetIFCExportTranslators lists them. Without it the save runs with the translator Archicad would offer in its own Save dialog. Needs a fileType of ifc or ifczip (ifc or ifcxml on Archicad 25 and 26).
 - `elementsToExport` (IFCElementsToExport): Only for the save method, and only together with translatorName. The default is VisibleElementsOnAllStories.
+- `storyIndex` (integer): Only for the merge method: the story the first storey of the IFC file is placed on, the IFC's other storeys follow on the stories above it. Without it Archicad uses the active story of the floor plan. The active story and the current window are restored after the merge. See GetStories for the valid story indices.
 
 
 Grasshopper: `IFCFileOperationComponent`
@@ -8034,7 +9798,7 @@ Example: [archicad-addon/Examples/IFC/IFCFileOperation.py](https://github.com/EN
 
 ### GetIFCExportTranslators
 
-Lists the IFC export translators of the project, the preview translator first. Pass one of the names to IFCFileOperation as translatorName.
+Lists the IFC export translators of the project in the order of Archicad's translator list. preview marks the first one, which the Archicad API documents as the preview translator; no API identifies the preview translator otherwise, and in some projects the IFC Translators dialog shows another one as preview. Pass one of the names to IFCFileOperation as translatorName.
 
 Group: IFC Commands. Added in Tapir 1.6.0. Docs: https://archicad-api.com/archicad-addon/#GetIFCExportTranslators
 
@@ -8042,7 +9806,7 @@ Parameters: none.
 
 Returns:
 
-- `translators` (array of IFCExportTranslator, required): The IFC export translators of the project, the preview translator first.
+- `translators` (array of IFCExportTranslator, required): The IFC export translators of the project, in the order of Archicad's translator list. The first one, which the Archicad API documents as the preview translator, has preview true.
 
 Grasshopper: `GetIFCExportTranslatorsComponent`
 
@@ -8147,10 +9911,7 @@ Group: IFC Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/archic
 
 Parameters:
 
-- `elementIFCAttributeValues` (array of object, required): The IFC attribute values to set.
-  - `elementId` (ElementId, required)
-  - `name` (string, required): The name of the IFC attribute, for example Name, Description, ObjectType or Tag. It must be one of the attributes GetIFCAttributesOfElements returns for the element.
-  - `value` (string, required): The new value of the IFC attribute.
+- `elementIFCAttributeValues` (array of ElementIFCAttributeValue, required): The IFC attribute values to set.
 
 Returns:
 
@@ -8168,12 +9929,7 @@ Group: IFC Commands. Added in Tapir 1.7.0. Docs: https://archicad-api.com/archic
 
 Parameters:
 
-- `elementIFCPropertyValues` (array of object, required): The IFC property values to set. Only single value (IfcPropertySingleValue) properties are supported.
-  - `elementId` (ElementId, required)
-  - `propertySetName` (string, required): The name of the property set, for example Pset_DoorCommon. Custom property set names are also accepted.
-  - `propertyName` (string, required): The name of the property, for example FireRating.
-  - `type` (string, required): The IFC type of the value, for example IfcLabel, IfcText, IfcIdentifier, IfcBoolean, IfcLogical, IfcInteger, IfcReal or a measure type like IfcThermalTransmittanceMeasure. A type Archicad does not know is rejected.
-  - `value` (any, required): The new value of the property. Provide a boolean for IfcBoolean and IfcLogical (IfcLogical also accepts the string Unknown), a number for the numeric types and a string for every other type.
+- `elementIFCPropertyValues` (array of ElementIFCPropertyValue, required): The IFC property values to set. Only single value (IfcPropertySingleValue) properties are supported.
 
 Returns:
 
@@ -8185,7 +9941,7 @@ Example: [archicad-addon/Examples/IFC/SetIFCPropertiesOfElements.py](https://git
 
 ### GetIFCClassificationReferencesOfElements
 
-Retrieves the IFC classification references of the given elements, subelements included: identification, name, location, description (from Archicad 29), the referenced classification (name, source, edition) and whether the reference comes from the preview translator or is stored locally. On Archicad 25, 26 and 27 the source is not given, the referenced classification also has its edition date, description and location, and storedOnly returns only the references stored on the elements.
+Retrieves the IFC classification references of the given elements, subelements included: identification, name, location, description and sort (from Archicad 29), the name of the IfcRelAssociatesClassification (from Archicad 28), the referenced classification (name, source, edition, edition date, description and location) and whether the reference comes from the preview translator or is stored locally. On Archicad 25, 26 and 27 the source is not given and storedOnly returns only the references stored on the elements.
 
 Group: IFC Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#GetIFCClassificationReferencesOfElements
 
@@ -8210,12 +9966,7 @@ Group: IFC Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archic
 
 Parameters:
 
-- `elementIFCClassificationReferences` (array of object, required): The IFC classification references to store on the elements.
-  - `elementId` (ElementId, required)
-  - `identification` (string): The identification of the classification reference, for example a classification code. Default: empty.
-  - `name` (string): The name of the classification reference. Default: empty.
-  - `location` (string): The location of the classification reference, for example a URL. Default: empty.
-  - `referencedSource` (object, required): The classification (IfcClassification) the reference belongs to.
+- `elementIFCClassificationReferences` (array of ElementIFCClassificationReferenceUpdate, required): The IFC classification references to store on the elements.
 
 Returns:
 
@@ -8227,20 +9978,19 @@ Example: [archicad-addon/Examples/IFC/SetIFCClassificationReferencesOfElements.p
 
 ### RemoveIFCClassificationReferencesOfElements
 
-Removes IFC classification references stored on elements, given by the name of their classification and optionally their identification; without identification every stored reference of that classification is removed. Available only in Archicad 25, 26 and 27 for now.
+Removes IFC classification references stored on elements, given by the name of their classification and optionally their identification; without identification every stored reference of that classification is removed. Available only in Archicad 25, 26 and 27 for now. With dryRun true nothing is removed and no undo step is created: the response has dryRun set to true, and each element that has a matching stored reference gets wouldDelete.
 
 Group: IFC Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#RemoveIFCClassificationReferencesOfElements
 
 Parameters:
 
-- `elementIFCClassificationReferences` (array of object, required): The IFC classification references to remove from the elements. Only references stored on the elements (the ones GetIFCClassificationReferencesOfElements returns with storedOnly) can be removed.
-  - `elementId` (ElementId, required)
-  - `referencedSource` (object, required): The classification (IfcClassification) the reference belongs to.
-  - `identification` (string): The identification of the classification reference to remove. When it is not given, every stored reference of the classification is removed from the element.
+- `elementIFCClassificationReferences` (array of ElementIFCClassificationReferenceRemoval, required): The IFC classification references to remove from the elements. Only references stored on the elements (the ones GetIFCClassificationReferencesOfElements returns with storedOnly) can be removed.
+- `dryRun` (DryRun)
 
 Returns:
 
-- `executionResults` (ExecutionResults, required)
+- `dryRun` (DryRunFlag)
+- `executionResults` (DeletionExecutionResults, required): One result for each input item, in the order of the input. On a dry run an element that has a stored IFC classification reference of the given classification (and identification, when given) gets wouldDelete.
 
 Grasshopper: `RemoveIFCClassificationReferencesOfElementsComponent`
 
@@ -8248,24 +9998,62 @@ Example: [archicad-addon/Examples/IFC/RemoveIFCClassificationReferencesOfElement
 
 ### RemoveIFCPropertiesOfElements
 
-Removes local IFC properties, given by property set and property name, from elements. Available only in Archicad 25, 26 and 27 for now.
+Removes local IFC properties, given by property set and property name, from elements. Available only in Archicad 25, 26 and 27 for now. With dryRun true nothing is removed and no undo step is created: the response has dryRun set to true, and each element that has the local IFC property gets wouldDelete.
 
 Group: IFC Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/archicad-addon/#RemoveIFCPropertiesOfElements
 
 Parameters:
 
-- `elementIFCProperties` (array of object, required): The local IFC properties to remove.
-  - `elementId` (ElementId, required)
-  - `propertySetName` (string, required): The name of the property set, for example Pset_DoorCommon.
-  - `propertyName` (string, required): The name of the property, for example FireRating.
+- `elementIFCProperties` (array of ElementIFCPropertyRemoval, required): The local IFC properties to remove.
+- `dryRun` (DryRun)
 
 Returns:
 
-- `executionResults` (ExecutionResults, required)
+- `dryRun` (DryRunFlag)
+- `executionResults` (DeletionExecutionResults, required): One result for each input item, in the order of the input. On a dry run an element that has the local IFC property gets wouldDelete.
 
 Grasshopper: `RemoveIFCPropertiesOfElementsComponent`
 
 Example: [archicad-addon/Examples/IFC/RemoveIFCPropertiesOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/IFC/RemoveIFCPropertiesOfElements.py): Removes a local IFC property from the first wall with RemoveIFCPropertiesOfElements. Needs at least one Wall. The removed property 'Tapir_Example / Note' is set by the script first. Available only in Archicad 25, 26 and 27.
+
+### GetIFCSpatialStructure
+
+Returns the IfcProject, IfcSite and IfcBuilding objects of the project's IFC model (hash value, IFC type and GlobalId), and for the given elements the index of the story they are assigned to in the IFC model. Available from Archicad 28.
+
+Group: IFC Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetIFCSpatialStructure
+
+Parameters:
+
+- `elements` (Elements): Elements to get the IFC story index of. Optional.
+
+Returns:
+
+- `project` (IFCObject): The IfcProject object. Left out when Archicad does not report it.
+- `site` (IFCObject): The IfcSite object. Left out when Archicad does not report it.
+- `building` (IFCObject): The IfcBuilding object. Left out when Archicad does not report it.
+- `elements` (array of IFCSpatialStructureOfElement or ErrorItem): The story of each given element in the IFC model, in the order of the input. Left out when no elements were given.
+
+Grasshopper: `GetIFCSpatialStructureComponent`
+
+Example: [archicad-addon/Examples/IFC/GetIFCSpatialStructure.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/IFC/GetIFCSpatialStructure.py): Gets the IfcProject, IfcSite and IfcBuilding of the project and the IFC story index of the first walls with GetIFCSpatialStructure. Requires Archicad 28 or later.
+
+### GetIFCAssignments
+
+Returns the IFC assignments of the project: the root IFC groups, and for each object the objects assigned to it (children) and the objects it is assigned to (parents). Each object is given by its hash value, its element where it belongs to one, its IFC type and its GlobalId. Available from Archicad 28.
+
+Group: IFC Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetIFCAssignments
+
+Parameters: none.
+
+Returns:
+
+- `rootGroups` (array of IFCObject, required): The IFC groups (e.g. IfcGroup, IfcZone, IfcSystem) that are not assigned to another group.
+- `childObjects` (array of IFCObjectWithChildren, required): Each IFC object that has objects assigned to it, with those objects.
+- `parentObjects` (array of IFCObjectWithParents, required): Each IFC object that is assigned to other objects, with those objects.
+
+Grasshopper: `GetIFCAssignmentsComponent`
+
+Example: [archicad-addon/Examples/IFC/GetIFCAssignments.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/IFC/GetIFCAssignments.py): Gets the IFC assignments of the project with GetIFCAssignments: the root IFC groups and the objects assigned to each other. Requires Archicad 28 or later.
 
 
 ## Library Commands
@@ -8326,8 +10114,7 @@ Group: Library Commands. Added in Tapir 1.6.0. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `embeddedLibraryItems` (array of object, required): A list of embedded library items to delete.
-  - `path` (string, required): The relative path of the library item inside the embedded library, the same path AddFilesToEmbeddedLibrary takes as outputPath.
+- `embeddedLibraryItems` (array of EmbeddedLibraryItem, required): A list of embedded library items to delete.
 
 Returns:
 
@@ -8345,26 +10132,12 @@ Group: Library Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `libraryParts` (array of object, required): The library parts to create in the embedded library.
-  - `name` (string, required): The name of the new library part, as shown in the library and used by CreateObjects as libraryPartName.
-  - `parentId` (string): The parent subtype of the new library part: its unique ID ('{main}-{revision}') or its main GUID, as GetAvailableLibraryParts reports it. Either parentId or parentName is required.
-  - `parentName` (string): The document name of the parent subtype, e.g. 'General Object' or 'General Label' from the Archicad Library; used when parentId is not given.
-  - `type` (LibraryPartType): Optional. The type of the new library part. By default the type of the parent found by parentName or by a parentId GUID, and Object otherwise.
-  - `path` (string): Optional. The relative path of the .gsm file inside the embedded library, the same kind of path AddFilesToEmbeddedLibrary takes as outputPath. By default '<name>.gsm'.
-  - `a` (number): Optional. The default value of the A (X size) parameter. 1.0 by default.
-  - `b` (number): Optional. The default value of the B (Y size) parameter. 1.0 by default.
-  - `masterScript` (string): Optional. The GDL master script.
-  - `script2D` (string): Optional. The GDL 2D script.
-  - `script3D` (string): Optional. The GDL 3D script.
-  - `parameterScript` (string): Optional. The GDL parameter script (value lists, locks, hiding).
-  - `uiScript` (string): Optional. The GDL user interface script.
-  - `propertiesScript` (string): Optional. The GDL properties (component listing) script.
-  - `parameters` (array of object): Optional. The parameters of the library part besides A and B, in the order they appear in the settings dialog. Only simple (non-array) parameters can be defined.
+- `libraryParts` (array of LibraryPartData, required): The library parts to create in the embedded library.
 - `overwriteExisting` (boolean): Optional. When true, an embedded library item already existing on the path of a new library part is deleted first, so the new one replaces the loaded library part. By default false: creating on an existing path fails. Requires Archicad 27 or newer.
 
 Returns:
 
-- `libraryParts` (array of object or ErrorItem, required): The created library parts, in the order of the input, or the error of each one that could not be created.
+- `libraryParts` (array of LibraryPartCreationDetails or ErrorItem, required): The created library parts, in the order of the input, or the error of each one that could not be created.
 
 Grasshopper: `CreateLibraryPartsComponent`
 
@@ -8393,8 +10166,7 @@ Group: Library Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `files` (array of object, required): The files to copy. Each keeps its file name inside the target folder.
-  - `path` (string, required): The absolute path of the file to copy.
+- `files` (array of EmbeddedLibraryFile, required): The files to copy. Each keeps its file name inside the target folder.
 - `targetFolder` (string): Optional. The folder relative to the embedded library to copy the files into, for example 'Office/Doors'. Missing folders are created. By default the root of the embedded library.
 - `overwriteIfExists` (boolean): Optional. When true, an item with the same name in the target folder is replaced. By default false.
 
@@ -8445,21 +10217,247 @@ Parameters:
 
 Returns:
 
-- `libraryParts` (array of object, required)
-  - `guid` (string)
-  - `index` (integer)
-  - `documentName` (string)
-  - `fileName` (string)
-  - `typeId` (LibraryPartType)
-  - `type` (string ("Object", "Image", "Text", "BinaryListCrit", "Other")): The kind of the library part file: a GDL object, an image, a text file, a binary list criteria file or other. Available from Archicad 28; missing when it cannot be read.
+- `libraryParts` (array of AvailableLibraryPart, required)
 - `skippedCount` (integer, required): Library parts that ACAPI_LibraryPart_Get failed to read. Non-zero means the inventory is partial.
-- `skippedSample` (array of object): First five failed indices with their ACAPI error code, for diagnostic.
-  - `index` (integer)
-  - `code` (integer)
+- `skippedSample` (array of SkippedLibraryPart): First five failed indices with their ACAPI error code, for diagnostic.
 
 Grasshopper: `GetAvailableLibraryPartsComponent`
 
 Example: [archicad-addon/Examples/Library/GetAvailableLibraryParts.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/GetAvailableLibraryParts.py): Lists the door library parts available in the project with GetAvailableLibraryParts.
+
+### GetLibraryPartSections
+
+Lists the sections of library parts given by index: their four-character type code, sub-identifier, size and whether they are text (scripts, comments) or binary (previews).
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetLibraryPartSections
+
+Parameters:
+
+- `libraryParts` (array of LibraryPartIndexAndPassword, required): The library parts to list the sections of.
+
+Returns:
+
+- `libraryParts` (array of LibraryPartSections or ErrorItem, required): One item for each given library part, in the same order.
+
+Grasshopper: `GetLibraryPartSectionsComponent`
+
+Example: [archicad-addon/Examples/Library/GetLibraryPartSections.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/GetLibraryPartSections.py): Lists the sections (type code, sub-identifier, size, text or binary) of an object library part with GetLibraryPartSections. Needs a loaded library with at least one object.
+
+### GetLibraryPartSection
+
+Reads the text of a text section (a script or the comment) of a library part given by index, without opening it in the GDL editor. Takes the password of a protected library part.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetLibraryPartSection
+
+Parameters:
+
+- `index` (integer, required): The index of a loaded library part, as GetAvailableLibraryParts returns it.
+- `sectionType` (string, required): The four-character code of the section type, as GetLibraryPartSections returns it. A shorter code is padded with spaces.
+- `subIdent` (integer): The sub-identifier of the section, as GetLibraryPartSections returns it. 0 when not given.
+- `password` (string): The password of a protected library part.
+
+Returns:
+
+- `content` (string, required): The text of the section.
+
+Grasshopper: `GetLibraryPartSectionComponent`
+
+Example: [archicad-addon/Examples/Library/GetLibraryPartSection.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/GetLibraryPartSection.py): Reads the text of the first text section (a script or the comment) of an object library part with GetLibraryPartSection. Finds the section with GetLibraryPartSections. Needs a loaded library with at least one object.
+
+### GetLibrariesOfLibParts
+
+Gets the library of each given library part (by file name or guid): display name, location, embedded/built-in/package/local/missing flags and the Library Manager tree path. Available from Archicad 29.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetLibrariesOfLibParts
+
+Parameters:
+
+- `libraryParts` (array of LibraryPartNameOrGuid, required): Library parts to look up, each given by exactly one of name and guid.
+
+Returns:
+
+- `libraries` (array of LibraryOfLibraryPart, required): One entry per input library part, in the same order.
+
+Grasshopper: `GetLibrariesOfLibPartsComponent`
+
+Example: [archicad-addon/Examples/Library/GetLibrariesOfLibParts.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/GetLibrariesOfLibParts.py): Shows which library a few object library parts come from with GetLibrariesOfLibParts. Needs a loaded library with at least one object. Requires Archicad 29 or later.
+
+### GetLibraryPartTypeDetails
+
+Returns the type details of the given library parts (ACAPI_LibraryPart_GetDetails): full unique ID and its direct parent's, type, the detail flags of objects, lamps, labels and zones, the frame and orientation settings of doors and windows, and the element type and variation of the tool that places the library part. For their path, library, GUID, license and scripts see GetLibraryPartDetails.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetLibraryPartTypeDetails
+
+Parameters:
+
+- `libraryParts` (array of LibraryPartIdentifier, required): The library parts to get the details of.
+
+Returns:
+
+- `libraryParts` (array of object or ErrorItem, required): The details of the library parts, in the order of the input, or an error for a library part that was not found.
+
+Grasshopper: `GetLibraryPartTypeDetailsComponent`
+
+Example: [archicad-addon/Examples/Library/GetLibraryPartTypeDetails.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/GetLibraryPartTypeDetails.py): Lists the type details (unique ID, parent subtype, type, creator tool) of a few object library parts with GetLibraryPartTypeDetails. Needs a loaded library with at least one object.
+
+### IsLibraryPartSubtypeOf
+
+Checks for each of the given library parts whether the given ancestor is anywhere up its subtype hierarchy (e.g. whether a part is a kind of furniture), independent of its name. A library part is not a subtype of itself. With matchAncestorByMainId any revision of the ancestor matches.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#IsLibraryPartSubtypeOf
+
+Parameters:
+
+- `libraryParts` (array of LibraryPartIdentifier, required): The library parts to check.
+- `ancestor` (LibraryPartIdentifier, required): The subtype to check against. Given by unId, it is used as it is, without checking that such a library part is loaded.
+- `matchAncestorByMainId` (boolean): Optional, false by default. When true, only the main GUID of the ancestor's unique ID is compared, so any revision of the ancestor matches; when false, the full unique ID (main and revision GUID) must match.
+
+Returns:
+
+- `ancestorUnId` (string, required): The full unique ID of the ancestor the library parts were checked against.
+- `results` (array of object or ErrorItem, required): One result for each library part, in the order of the input.
+
+Grasshopper: `IsLibraryPartSubtypeOfComponent`
+
+Example: [archicad-addon/Examples/Library/IsLibraryPartSubtypeOf.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/IsLibraryPartSubtypeOf.py): Checks with IsLibraryPartSubtypeOf which of a few object library parts are subtypes of the direct parent of the first one. Needs a loaded library with at least one object. Any revision of the parent matches.
+
+### GetGDLParametersOfLibraryParts
+
+Gets the default GDL parameters (name, display name, type, array dimensions, value, flags) of the given library parts by name, read from the library part without placing it or changing any defaults. The output is in the format of GetGDLParametersOfElements, without isLocked and possibleValues, which need a placed element. To read a part by its file name, as SetLibraryPartParameters writes it, use GetLibraryPartParameterValues.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetGDLParametersOfLibraryParts
+
+Parameters:
+
+- `libraryParts` (array of object, required): The library parts to read the default GDL parameters of.
+  - `libraryPartName` (string, required): The name of the library part, the same name CreateObjects, CreateLamps, CreateWindows and CreateDoors take as libraryPartName.
+
+Returns:
+
+- `gdlParametersOfLibraryParts` (array of object or ErrorItem, required): The default GDL parameters of each given library part, in the order of the input, or an error for a name that no loaded library part has.
+
+Grasshopper: `GetGDLParametersOfLibraryPartsComponent`
+
+Example: [archicad-addon/Examples/Library/GetGDLParametersOfLibraryParts.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/GetGDLParametersOfLibraryParts.py): Lists the default GDL parameters of an object library part, by name, with GetGDLParametersOfLibraryParts. Nothing is placed and no defaults change. Needs a loaded library with at least one object.
+
+### GetMissingLibPartNames
+
+Gets the library part name of the given placed Object, Lamp, Window or Door elements, even if the library containing the part is not loaded. Use it to find the parts of elements that are shown as dots because their library part is missing.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetMissingLibPartNames
+
+Parameters:
+
+- `elements` (Elements, required)
+
+Returns:
+
+- `libPartNames` (array of MissingLibraryPartName or ErrorItem, required): The library part name of each given element, in the order of the input, or an error.
+
+Grasshopper: `GetMissingLibPartNamesComponent`
+
+Example: [archicad-addon/Examples/Library/GetMissingLibPartNames.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/GetMissingLibPartNames.py): Gets the library part name of every Object, Lamp, Window and Door with GetMissingLibPartNames. The name is reported even when the part's library is not loaded, so elements shown as dots can be fixed.
+
+### GetUnusedLibraryParts
+
+Lists the loaded library parts that no element of the project is placed from. Read only. The Archicad API does not tell which library parts are used, so every element of the floor plan and of every view and layout is checked: objects, lamps, doors, windows, skylights, zone stamps, symbol labels, drawing titles, curtain wall parts, and the markers of doors, windows, skylights, sections, elevations, details and worksheets. A library part used only in another way (called as a macro, linked as a property object, as an interior elevation marker, in stairs and railings, in the tool defaults or in Favorites) is listed as unused. Library parts that cannot be placed (e.g. macros) are only listed with includeNotPlaceable.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetUnusedLibraryParts
+
+Parameters:
+
+- `filterByTypeId` (LibraryPartType): Optional. Only list the unused library parts of this type (the typeId of GetAvailableLibraryParts).
+- `includeNotPlaceable` (boolean): Also list the library parts that cannot be placed (macros, pictures, property objects, list schemes and the like), which are never placed on their own. Default: false.
+
+Returns:
+
+- `unusedLibraryParts` (array of UnusedLibraryPart, required): The loaded library parts that no element of the project is placed from, in index order.
+- `usedLibraryPartCount` (integer, required): The number of different loaded library parts that are placed in the project.
+- `scannedElementCount` (integer, required): The number of elements checked, in the floor plan and every view and layout database.
+- `complete` (boolean, required): False when a view or layout database or a library part could not be read (see warnings): then a listed library part may still be used.
+- `warnings` (array of string, required)
+
+Grasshopper: `GetUnusedLibraryPartsComponent`
+
+Example: [archicad-addon/Examples/Library/GetUnusedLibraryParts.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/GetUnusedLibraryParts.py): Lists the loaded library parts that are not placed in the project with GetUnusedLibraryParts. Read only: nothing is changed. A part used only by other GDL scripts, as a property object or in the Favorites is listed too.
+
+### FindLibraryParts
+
+Finds loaded library parts with the Library Manager: all of them, GDL objects, images or text files, optionally only those whose name contains a text. Returns the name, path and index of each. Available from Archicad 28.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#FindLibraryParts
+
+Parameters:
+
+- `kind` (LibraryPartKind)
+- `nameContains` (string): Optional. Only library parts whose name contains this text, ignoring case.
+- `firstOnly` (boolean): Optional. When true, only the first matching library part is returned. By default false.
+
+Returns:
+
+- `libraryParts` (array of FoundLibraryPart, required): The matching library parts.
+
+Grasshopper: `FindLibraryPartsComponent`
+
+Example: [archicad-addon/Examples/Library/FindLibraryParts.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/FindLibraryParts.py): Finds the loaded GDL objects whose name contains 'door' with FindLibraryParts. Requires Archicad 28 or later.
+
+### GetLibraryPartDetails
+
+Gets the details of loaded library parts, by name or index: path, library tree path, containing library, and for GDL objects the GUID, subtype, license, UI default flag, which scripts and pictures they have, and optionally the interface and migration scripts. Can also tell whether each one is in the subtype of another library part. Available from Archicad 28.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetLibraryPartDetails
+
+Parameters:
+
+- `libraryParts` (array of LibraryPartNameOrIndex, required): The library parts to read, each by its name or by its index.
+- `subTypeOf` (string): Optional. The name of another loaded library part, e.g. a subtype template. When given, the isInSubTypeOf field of each library part tells whether it is in that subtype.
+- `includeScripts` (boolean): Optional. When true, the interface script and the forward and backward migration scripts are returned too. By default false.
+
+Returns:
+
+- `libraryParts` (array of LibraryPartDetails or ErrorItem, required): The details of each given library part, or an error, in the order of the input. A field is omitted when Archicad cannot return it for that library part.
+
+Grasshopper: `GetLibraryPartDetailsComponent`
+
+Example: [archicad-addon/Examples/Library/GetLibraryPartDetails.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/GetLibraryPartDetails.py): Gets the details of the first loaded door library part with GetLibraryPartDetails, including its interface script. Requires Archicad 28 or later.
+
+### ModifyLibraryList
+
+Adds libraries by path and removes loaded libraries by name or path, in one change of the library list. Returns the result of each addition and removal. Available from Archicad 28.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ModifyLibraryList
+
+Parameters:
+
+- `add` (array of LibraryLocation): Library folders or container files to add, by absolute path.
+- `remove` (array of LibraryToRemove): Loaded libraries to remove, each by its name or by its path.
+
+Returns:
+
+- `addResults` (ExecutionResults, required)
+- `removeResults` (ExecutionResults, required)
+
+Grasshopper: `ModifyLibraryListComponent`
+
+Example: [archicad-addon/Examples/Library/ModifyLibraryList.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/ModifyLibraryList.py): Adds an empty temporary folder to the library list with ModifyLibraryList, then removes it again by its path. Requires Archicad 28 or later.
+
+### GetLibraryPartMetadata
+
+Returns the description, keywords, author and placeable, password protected and hierarchical pages flags of loaded library parts, given by file name. Use it to search library parts by description or keywords and to tell placeable parts from macros. Available from Archicad 28.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetLibraryPartMetadata
+
+Parameters:
+
+- `libraryParts` (array of LibraryPartName, required): The library parts to read the metadata of.
+
+Returns:
+
+- `libraryParts` (array of LibraryPartMetadataDetails or ErrorItem, required): The metadata of each given library part, or an error, in the order of the input.
+
+Grasshopper: `GetLibraryPartMetadataComponent`
+
+Example: [archicad-addon/Examples/Library/GetLibraryPartMetadata.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/GetLibraryPartMetadata.py): Reads the description, keywords, author and flags of the first five door library parts with GetLibraryPartMetadata. Requires Archicad 28 or later.
 
 ### GetLibraryPartOriginalLocations
 
@@ -8469,12 +10467,11 @@ Group: Library Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `libraryParts` (array of object, required): The library parts to look up.
-  - `index` (integer, required): The index of the library part, as returned by GetAvailableLibraryParts.
+- `libraryParts` (array of LibraryPartByIndex, required): The library parts to look up.
 
 Returns:
 
-- `locations` (array of object or ErrorItem, required): The original location of each given library part, in the order of the input.
+- `locations` (array of LibraryPartOriginalLocation or ErrorItem, required): The original location of each given library part, in the order of the input.
 
 Grasshopper: `GetLibraryPartOriginalLocationsComponent`
 
@@ -8497,6 +10494,49 @@ Returns:
 Grasshopper: `IsUsableGDLStringComponent`
 
 Example: [archicad-addon/Examples/Library/IsUsableGDLString.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/IsUsableGDLString.py): Checks with IsUsableGDLString whether a few strings can be used in GDL, e.g. before writing them into a GDL parameter.
+
+### GetGDLDate
+
+Gets the date GDL scripts see: year, month, day, hour, minute and second.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetGDLDate
+
+Parameters: none.
+
+Returns:
+
+- `date` (object, required): The date GDL scripts see.
+  - `year` (integer, required)
+  - `month` (integer, required)
+  - `day` (integer, required)
+  - `hour` (integer, required)
+  - `minute` (integer, required)
+  - `second` (integer, required)
+
+Grasshopper: `GetGDLDateComponent`
+
+Example: [archicad-addon/Examples/Library/GetGDLDate.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/GetGDLDate.py): Gets the date GDL scripts see with GetGDLDate, as year, month, day, hour, minute and second.
+
+### SetGDLDate
+
+Sets the date GDL scripts see: year, month, day, hour, minute and second, as GetGDLDate returns them. Useful to test date-dependent library parts; set the value read with GetGDLDate back to restore it.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#SetGDLDate
+
+Parameters:
+
+- `date` (object, required): The date GDL scripts should see, in the format GetGDLDate returns.
+  - `year` (integer, required)
+  - `month` (integer, required)
+  - `day` (integer, required)
+  - `hour` (integer, required)
+  - `minute` (integer, required)
+  - `second` (integer, required)
+
+
+Grasshopper: `SetGDLDateComponent`
+
+Example: [archicad-addon/Examples/Library/SetGDLDate.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/SetGDLDate.py): Sets the date GDL scripts see with SetGDLDate. Sets the value read with GetGDLDate, so the date stays unchanged; give another date (year, month, day, hour, minute and second) to test date-dependent library parts, then set the original back.
 
 ### CheckLibraries
 
@@ -8532,10 +10572,7 @@ Group: Library Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `libraryParts` (array of any or any, required): The library parts to modify, with the scripts to set and to delete in each.
-  - `name` (string, required): The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm').
-  - `scripts` (object): Optional. The scripts to set. Only the scripts given here are changed, the others are kept. An empty string makes that script section empty, it does not delete it; use deleteScripts for that.
-  - `deleteScripts` (array of string ("master", "parameter", "2d", "3d", "properties", "interface", "forwardMigration", "backwardMigration")): Optional. The script sections to delete from the library part. A script cannot be both set in scripts and deleted here.
+- `libraryParts` (array of LibraryPartScriptsUpdate, required): The library parts to modify, with the scripts to set and to delete in each.
 
 Returns:
 
@@ -8553,9 +10590,7 @@ Group: Library Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/ar
 
 Parameters:
 
-- `libraryParts` (array of object, required): The library parts to modify and the metadata to set in each.
-  - `name` (string, required): The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm').
-  - `metadata` (object, required): The metadata to set. Only the fields given here are changed, the others are kept.
+- `libraryParts` (array of LibraryPartMetadataUpdate, required): The library parts to modify and the metadata to set in each.
 
 Returns:
 
@@ -8673,6 +10708,253 @@ Grasshopper: `CreateLibraryPartComponent`
 
 Example: [archicad-addon/Examples/Library/CreateLibraryPart.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/CreateLibraryPart.py): Creates a new .gsm file of the 'General GDL Object' subtype with CreateLibraryPart. The file is created in a temporary folder that is added to the library list for the time of the script, so the new part is loaded; the folder is removed from the list at the end. Requires Archicad 28 or later.
 
+### GetLibraryPartParameterValues
+
+Returns the parameters of loaded library parts, given by their file name as GetAvailableLibraryParts returns it, with their default values and descriptions, in the format of GetGDLParametersOfElements: the read counterpart of SetLibraryPartParameters. Unlike GetGDLParametersOfLibraryParts, which finds a part by its name and also returns the index, flags and value descriptions of each parameter, it reads through the Library Manager. Available from Archicad 28.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetLibraryPartParameterValues
+
+Parameters:
+
+- `libraryParts` (array of object, required): The library parts to read.
+  - `name` (string, required): The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm').
+
+Returns:
+
+- `libraryParts` (array of LibraryPartParameterValues or ErrorItem, required): The default parameters of each given library part, in the order of the input, or an error for a library part that could not be read.
+
+Grasshopper: `GetLibraryPartParameterValuesComponent`
+
+Example: [archicad-addon/Examples/Library/GetLibraryPartParameterValues.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/GetLibraryPartParameterValues.py): Reads the parameters of the first loaded Object library part with their default values and descriptions with GetLibraryPartParameterValues. Requires Archicad 28 or later.
+
+### UpdateLibraryPartSections
+
+Replaces the text of existing sections (scripts, comment, keywords, copyright) of a loaded library part, found by its name. Each section is read back after the update, and the output has one execution result per section.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#UpdateLibraryPartSections
+
+Parameters:
+
+- `name` (string, required): The name of the loaded library part, without the file extension (a trailing '.gsm' is accepted too).
+- `sections` (array of object, required): The sections to replace. Each section must already exist in the library part; this command does not add new sections.
+  - `type` (string ("MasterScript", "2DScript", "3DScript", "ParameterScript", "UIScript", "Comment", "Keywords", "Copyright"), required): The type of the text section.
+  - `subIdent` (integer): The secondary identifier of the section, for a library part with more sections of the same type. Default value is 0.
+  - `text` (string, required): The new content of the section.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `UpdateLibraryPartSectionsComponent`
+
+Example: [archicad-addon/Examples/Library/UpdateLibraryPartSections.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/UpdateLibraryPartSections.py): Replaces the 3D script of a library part with UpdateLibraryPartSections. The library part is created in the embedded library by the script and deleted at the end. Only sections the library part already has are replaced.
+
+### GetLibraryPart2DPrimitives
+
+Gets the lines, arcs and polygons (with their holes, and whether they are fills) of the 2D symbol of a loaded library part, drawn with its default parameters or with the parameters of a placed instance.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetLibraryPart2DPrimitives
+
+Parameters:
+
+- `name` (string, required): The name of the loaded library part, without the file extension (a trailing '.gsm' is accepted too).
+- `elementId` (ElementId): Optional. A placed instance of the library part whose parameters are used for drawing the symbol. Without it the default parameters of the library part are used.
+- `gdlContext` (integer): Optional. The GDL context the 2D symbol is drawn in, the value of the GLOB_CONTEXT GDL global (2 is the floor plan). Default value is 2.
+
+Returns:
+
+- `primitives` (array of object, required): The lines, arcs and polygons of the 2D symbol, in the order Archicad draws them, in the coordinate system of the library part. Other primitives (texts, hotspots, ...) are not returned.
+  - `type` (string ("Line", "Arc", "Polygon"), required)
+  - `begCoordinate` (Coordinate2D): The start point of a Line.
+  - `endCoordinate` (Coordinate2D): The end point of a Line.
+  - `origin` (Coordinate2D): The center of an Arc.
+  - `radius` (number): The radius of an Arc.
+  - `begAngle` (number): The start angle of an Arc, in radians.
+  - `endAngle` (number): The end angle of an Arc, in radians.
+  - `isWhole` (boolean): Whether an Arc is a full circle.
+  - `isFill` (boolean): Whether a Polygon is the outline of a fill.
+  - `coordinates` (array of Coordinate2D): The outline of a Polygon.
+  - `holes` (array of object): The holes of a Polygon.
+
+Grasshopper: `GetLibraryPart2DPrimitivesComponent`
+
+Example: [archicad-addon/Examples/Library/GetLibraryPart2DPrimitives.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/GetLibraryPart2DPrimitives.py): Gets the lines, arcs and polygons of the 2D symbol of the first loaded Object library part with GetLibraryPart2DPrimitives. The symbol is drawn with the default parameters of the part; give 'elementId' of a placed instance to draw it with that instance's parameters.
+
+### SetLibraryPartPictureImages
+
+Sets the preview picture and the GDL pictures of a loaded library part from base64 encoded PNGs, and from Archicad 29 also their dark user interface variants. All pictures are set in one step; an invalid picture changes nothing. A library part that is not editable is refused and left unchanged. Available from Archicad 28.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#SetLibraryPartPictureImages
+
+Parameters:
+
+- `name` (string, required): The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm').
+- `previewPicture` (string): Optional. The new preview picture as a base64 encoded PNG.
+- `gdlPictures` (array of string): Optional. The new GDL pictures, each a base64 encoded PNG. They replace all GDL pictures of the library part.
+- `darkPreviewPicture` (string): Optional. The new preview picture for the dark user interface as a base64 encoded PNG. Requires Archicad 29 or newer.
+- `darkGdlPictures` (array of string): Optional. The new GDL pictures for the dark user interface, each a base64 encoded PNG. They replace all dark GDL pictures of the library part. Requires Archicad 29 or newer.
+
+
+Grasshopper: `SetLibraryPartPictureImagesComponent`
+
+Example: [archicad-addon/Examples/Library/SetLibraryPartPictureImages.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/SetLibraryPartPictureImages.py): Sets the preview picture of a library part to a small blue PNG with SetLibraryPartPictureImages. The library part is created in the embedded library by the script and deleted at the end. Requires Archicad 28 or later.
+
+### SetLibraryPartParameters
+
+Sets the parameter values, and optionally the parameter descriptions, of loaded library parts, in the format of SetGDLParametersOfElements. Only the given parameters are changed; with merge, the changed list is merged into the parameters of the part instead of replacing them. A library part that is not editable, or with an invalid value given, is left unchanged. Available from Archicad 28.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#SetLibraryPartParameters
+
+Parameters:
+
+- `libraryParts` (array of object, required): The library parts to modify and the parameter values to set in each.
+  - `name` (string, required): The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm').
+  - `parameters` (array of object, required): The GDL parameters to change, by name, in the format SetGDLParametersOfElements uses. The parameters left out are not changed.
+  - `descriptions` (array of string): The new descriptions of all parameters of the library part, one for each parameter in the order of its parameter list. Defaults to the current descriptions.
+  - `merge` (boolean): When true, the changed parameter list is merged into the parameters of the library part (MergeParameters of the Archicad API) instead of replacing them (SetParameters). Defaults to false.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `SetLibraryPartParametersComponent`
+
+Example: [archicad-addon/Examples/Library/SetLibraryPartParameters.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/SetLibraryPartParameters.py): Sets the A and B parameters of a library part with SetLibraryPartParameters. The library part is created in the embedded library by the script and deleted at the end. Requires Archicad 28 or later.
+
+### GetLibraryPartScripts
+
+Gets the master, parameter, 2D, 3D and properties scripts of loaded library parts, given by name or by an element placed from them, with the unique ID of each part. A script section the part does not have is reported as not present. Password protected parts need their password. Available from Archicad 28.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetLibraryPartScripts
+
+Parameters:
+
+- `libraryParts` (array of object or object, required): The library parts to read, each given by its name or by an element placed from it.
+- `scripts` (array of LibraryPartReadableScriptType): The scripts to read. All five by default.
+- `password` (string): The password of password protected library parts. Reading a script of a protected part without the right password is an error for that part.
+
+Returns:
+
+- `libraryParts` (array of LibraryPartScriptsDetails or ErrorItem, required): The scripts of the library parts in the order of the input, or an error for a library part that cannot be read.
+
+Grasshopper: `GetLibraryPartScriptsComponent`
+
+Example: [archicad-addon/Examples/Library/GetLibraryPartScripts.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/GetLibraryPartScripts.py): Reads the 2D and 3D scripts of the library part of the first door in the project with GetLibraryPartScripts. Needs at least one Door. Requires Archicad 28 or later.
+
+### GetLibraryPartFileInfo
+
+Reads library part files (.gsm) without loading them into the libraries of the project: the unique ID of the part, the unique ID of its subtype and its master, parameter, 2D, 3D and properties scripts. Password protected parts need their password. Available from Archicad 28.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetLibraryPartFileInfo
+
+Parameters:
+
+- `files` (array of string, required): The absolute paths of the library part files (.gsm) to read. The files are read without loading them into the libraries of the project.
+- `scripts` (array of LibraryPartReadableScriptType): The scripts to read. All five by default.
+- `password` (string): The password of password protected library parts. Reading a script of a protected part without the right password is an error for that file.
+
+Returns:
+
+- `files` (array of LibraryPartFileInfo or ErrorItem, required): The information of the files in the order of the input, or an error for a file that cannot be read.
+
+Grasshopper: `GetLibraryPartFileInfoComponent`
+
+Example: [archicad-addon/Examples/Library/GetLibraryPartFileInfo.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/GetLibraryPartFileInfo.py): Reads the unique IDs and the master, 2D and 3D scripts of a library part file with GetLibraryPartFileInfo. Uses the file of the first loaded GDL object whose name contains 'door'; the file is read without loading it into the project. Requires Archicad 28 or later.
+
+### CopyLibraryParts
+
+Copies loaded library parts, given by name or by an element placed from them, under a new file name into a folder, by default the embedded library. The copy gets a new unique ID unless the main GUID is kept. An existing file is never overwritten. The libraries are reloaded once afterwards, so the copies can be found by name. Available from Archicad 28.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#CopyLibraryParts
+
+Parameters:
+
+- `libraryParts` (array of LibraryPartCopyData, required): The library parts to copy, each given by its name or by an element placed from it, with the name of the copy.
+
+Returns:
+
+- `libraryParts` (array of CopiedLibraryPart or ErrorItem, required): The copies in the order of the input, or an error for a library part that was not copied.
+- `librariesReloaded` (boolean, required): Whether the libraries were reloaded after copying. False when nothing was copied or the reload failed; then the copies are not found by name until the libraries are reloaded.
+
+Grasshopper: `CopyLibraryPartsComponent`
+
+Example: [archicad-addon/Examples/Library/CopyLibraryParts.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/CopyLibraryParts.py): Copies the library part of the first object in the project into a temporary folder with CopyLibraryParts. Needs at least one Object. The copy gets a new unique ID; the temporary folder is deleted at the end. Requires Archicad 28 or later.
+
+### GetLibraryPartIdentities
+
+Gets the unique ID (main and revision GUID), the reference GUID and the Teamwork lock status of library parts given by index or file path, and whether they are in a server library.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetLibraryPartIdentities
+
+Parameters:
+
+- `libraryParts` (array of LibraryPartIndexOrPath, required): The library parts, each given by its index or by the path of its file.
+
+Returns:
+
+- `identities` (array of LibraryPartIdentity or ErrorItem, required): One item for each given library part, in the same order.
+
+Grasshopper: `GetLibraryPartIdentitiesComponent`
+
+Example: [archicad-addon/Examples/Library/GetLibraryPartIdentities.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/GetLibraryPartIdentities.py): Gets the unique ID, reference GUID and Teamwork lock status of the first five door library parts with GetLibraryPartIdentities.
+
+### CompareLibraryPartUnIds
+
+Compares two library part unique IDs with Archicad's own comparison and tells whether their main and revision GUIDs are the same.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#CompareLibraryPartUnIds
+
+Parameters:
+
+- `unId1` (string, required): A library part unique ID, '{main GUID}-{revision GUID}', as GetLibraryPartIdentities returns it.
+- `unId2` (string, required): The library part unique ID to compare unId1 with.
+
+Returns:
+
+- `apiErrorCode` (integer, required): The code ACAPI_LibraryPart_CompareLibPartUnIds returned: 0 (NoError) when Archicad reports the two unique IDs as matching, otherwise the API error code that tells how they differ.
+- `sameMainGuid` (boolean, required): True when the two unique IDs have the same main GUID, that is they are revisions of the same library part.
+- `sameRevisionGuid` (boolean, required): True when the two unique IDs have the same revision GUID.
+
+Grasshopper: `CompareLibraryPartUnIdsComponent`
+
+Example: [archicad-addon/Examples/Library/CompareLibraryPartUnIds.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/CompareLibraryPartUnIds.py): Compares the unique IDs of the first two door library parts with CompareLibraryPartUnIds. Needs at least two loaded door library parts.
+
+### GetLastValidEmbeddedLibraryPartName
+
+Gets the name and file path of the last valid library part of the embedded library.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetLastValidEmbeddedLibraryPartName
+
+Parameters: none.
+
+Returns:
+
+- `name` (string, required): The name of the last valid library part of the embedded library.
+- `path` (string, required): The path of the file of that library part.
+
+Grasshopper: `GetLastValidEmbeddedLibraryPartNameComponent`
+
+Example: [archicad-addon/Examples/Library/GetLastValidEmbeddedLibraryPartName.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/GetLastValidEmbeddedLibraryPartName.py): Gets the name and file path of the last valid library part of the embedded library with GetLastValidEmbeddedLibraryPartName.
+
+### SearchLibraryParts
+
+Finds the loaded library parts derived from an ancestor library part (by its unique ID) whose name matches a pattern with * wildcards. Archicad returns at most 50 of them.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#SearchLibraryParts
+
+Parameters:
+
+- `ancestorUnId` (string, required): The unique ID of the ancestor library part, '{main GUID}-{revision GUID}', as GetLibraryPartIdentities returns it. Only the library parts derived from it are found.
+- `pattern` (string, required): The name pattern to match, with * as wildcard, for example 'Chair*'. Use '*' to find every library part derived from the ancestor.
+
+Returns:
+
+- `libraryParts` (array of LibraryPartSearchResult, required): The library parts found. Archicad returns at most 50.
+
+Grasshopper: `SearchLibraryPartsComponent`
+
+Example: [archicad-addon/Examples/Library/SearchLibraryParts.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/SearchLibraryParts.py): Finds the loaded library parts derived from an object library part with SearchLibraryParts. Takes the unique ID of the first object from GetLibraryPartIdentities and matches every name with the pattern '*'. Needs a loaded library with at least one object.
+
 ### OpenLibraryPartInEditor
 
 Opens a loaded library part, given by its fileName or documentName as returned by GetAvailableLibraryParts, in Archicad's library part editor. Available from Archicad 27.
@@ -8687,6 +10969,87 @@ Parameters:
 Grasshopper: `OpenLibraryPartInEditorComponent`
 
 Example: [archicad-addon/Examples/Library/OpenLibraryPartInEditor.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/OpenLibraryPartInEditor.py): Opens the first loaded door library part in Archicad's library part editor with OpenLibraryPartInEditor. Opens a new window in Archicad. Requires Archicad 27 or later.
+
+### CreateLibraryPartFromElements
+
+Creates a library part in the embedded library (or in a given local library folder, which is added to the loaded libraries when needed) whose 2D symbol is a copy of the given 2D drawing elements (lines, polylines, arcs, circles, splines, fills, texts and hotspots), under the given parent subtype, with optional master, 2D, 3D and parameter scripts, comment and keywords. A and B are taken from the extent of the symbol. The elements themselves are not changed.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#CreateLibraryPartFromElements
+
+Parameters:
+
+- `name` (string, required): The name of the new library part, as shown in the library and used by CreateObjects as libraryPartName.
+- `elements` (array of ElementIdArrayItem, required): The 2D drawing elements (lines, polylines, arcs, circles, splines, fills, texts and hotspots) whose copies make up the 2D symbol of the new library part. They keep their plan coordinates, so the project origin becomes the origin of the symbol. The elements themselves are not changed.
+- `parentId` (string): The parent subtype of the new library part: its unique ID ('{main}-{revision}') or its main GUID, as GetAvailableLibraryParts reports it. Either parentId or parentName is required.
+- `parentName` (string): The document name of the parent subtype, e.g. 'General Object' or 'Model Element'; used when parentId is not given.
+- `folder` (string): Optional. The folder of the new .gsm file, relative to the embedded library (or to libraryFolder), created when missing. By default the embedded library (or libraryFolder) itself.
+- `libraryFolder` (string): Optional. The absolute path of a local library folder to create the library part in instead of the embedded library. A folder that is not one of the loaded libraries yet is added to them first, and stays added.
+- `overwrite` (boolean): Optional. When true, a library part file of the same name in the folder is overwritten. By default false: the new library part then gets a unique name, which the response returns.
+- `placeable` (boolean): Optional. Whether the new library part can be placed. True by default.
+- `scripts` (object): Optional. The GDL scripts of the new library part.
+  - `master` (string): The master script.
+  - `2D` (string): The 2D script. When it is empty, the 2D symbol is drawn; a 2D script draws it with FRAGMENT2 ALL, 0.
+  - `3D` (string): The 3D script.
+  - `parameter` (string): The parameter script.
+- `comment` (string): Optional. The comment (description) of the library part.
+- `keywords` (string): Optional. The keywords of the library part.
+
+Returns:
+
+- `name` (string, required): The name of the created library part.
+- `fileName` (string): The file name of the created library part, with its extension.
+- `unId` (string, required): The unique ID of the created library part ('{main}-{revision}').
+- `guid` (string, required): The main GUID of the created library part, as GetAvailableLibraryParts reports it.
+- `index` (integer, required): The index of the created library part in the loaded libraries.
+- `a` (number): The default A (X size) of the library part, the width of its 2D symbol.
+- `b` (number): The default B (Y size) of the library part, the depth of its 2D symbol.
+
+Grasshopper: `CreateLibraryPartFromElementsComponent`
+
+Example: [archicad-addon/Examples/Library/CreateLibraryPartFromElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/CreateLibraryPartFromElements.py): CreateLibraryPartFromElements makes a new object whose 2D symbol is a copy of 2D drawing elements of the plan. This draws a square and a circle around the project origin, turns them into an object with a simple 3D script, places it with CreateObjects, then deletes the drawn elements and the placed object again.
+
+### InterpretGDLScript3D
+
+Runs a GDL 3D script, given as text or as the master and 3D scripts of a loaded library part with its default parameters, with the settings of the GDL editor, and returns whether it ran without a GDL error, how many 3D model elements it generated and their bounding box. The API returns no GDL error message or line number.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#InterpretGDLScript3D
+
+Parameters:
+
+- `script` (string): The GDL 3D script to run. Either script or libraryPartName is required.
+- `libraryPartName` (string): A loaded library part, by its fileName (with extension) or documentName as GetAvailableLibraryParts returns them. Its default parameters are used; without script, its master script followed by its 3D script is run.
+
+Returns:
+
+- `success` (boolean, required): Whether the script ran to its end. False when the GDL interpreter stopped with an error; the API gives no message or line number of the GDL error.
+- `error` (Error): The error code the interpreter returned, when success is false.
+- `elementCount` (integer): The number of 3D model elements the script generated, when success is true; 0 for a script that generates no 3D model.
+- `boundingBox3D` (BoundingBox3D): The bounding box of the generated 3D model, in the local coordinates of the library part, when it has elements.
+
+Grasshopper: `InterpretGDLScript3DComponent`
+
+Example: [archicad-addon/Examples/Library/InterpretGDLScript3D.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/InterpretGDLScript3D.py): InterpretGDLScript3D runs a GDL 3D script like the GDL editor does and tells whether it ran to its end. A script that stops with a GDL error gives success False; the API gives no message or line number. The model's element count tells an empty output apart.
+
+### GetGDLUserGlobals
+
+Returns the current GDL global variables the GDL interpreter gets, with their names, types and values. Available from Archicad 28.
+
+Group: Library Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetGDLUserGlobals
+
+Parameters: none.
+
+Returns:
+
+- `globals` (array of object, required): The GDL parameters, in the format GetGDLParametersOfElements uses. Separators, titles and dictionary parameters have no value here and are left out.
+  - `name` (string, required): The name of the parameter.
+  - `type` (string ("Integer", "Length", "Angle", "RealNumber", "LightSwitch", "RGBColor", "Intensity", "LineType", "Material", "FillPattern", "PenColor", "String", ...), required): The type of the parameter.
+  - `dimension1` (integer): The 1st dimension of an array parameter.
+  - `dimension2` (integer): The 2nd dimension of an array parameter, 1 for a one-dimensional array.
+  - `value` (any, required): The value of the parameter as the parameter list holds it: a number, a boolean, a string, or 'On' or 'Off' for a LightSwitch. For an array parameter, a list of its dimension1 x dimension2 items, the first index outer.
+
+Grasshopper: `GetGDLUserGlobalsComponent`
+
+Example: [archicad-addon/Examples/Library/GetGDLUserGlobals.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Library/GetGDLUserGlobals.py): GetGDLUserGlobals lists the GDL global variables the GDL interpreter gets in the current context (Archicad 28 or newer). This prints how many there are and the first few.
 
 
 ## Teamwork Commands
@@ -8740,7 +11103,7 @@ Example: [archicad-addon/Examples/Teamwork/GetTeamworkProjectInfo.py](https://gi
 
 ### ReserveElements
 
-Reserves elements in Teamwork mode.
+Reserves elements in Teamwork mode. GUIDs that are not elements (navigator items, layouts, databases) cannot be reserved with it: they are returned in notElements and the execution result fails.
 
 Group: Teamwork Commands. Added in Tapir 1.1.4. Docs: https://archicad-api.com/archicad-addon/#ReserveElements
 
@@ -8751,6 +11114,7 @@ Parameters:
 Returns:
 
 - `executionResult` (ExecutionResult, required)
+- `notElements` (array of ElementIdArrayItem): The given GUIDs that are not elements, e.g. navigator items, layouts or databases. They were not reserved, and executionResult fails because of them even if the other elements were reserved. Left out when every GUID is an element.
 - `conflicts` (array of object)
   - `elementId` (ElementId, required)
   - `user` (User, required)
@@ -8761,7 +11125,7 @@ Example: [archicad-addon/Examples/Teamwork/ReserveElements.py](https://github.co
 
 ### ReleaseElements
 
-Releases elements in Teamwork mode.
+Releases elements in Teamwork mode. Fails, naming them, when any of the given GUIDs is not an element; the other elements are released.
 
 Group: Teamwork Commands. Added in Tapir 1.1.4. Docs: https://archicad-api.com/archicad-addon/#ReleaseElements
 
@@ -8776,7 +11140,7 @@ Example: [archicad-addon/Examples/Teamwork/ReleaseElements.py](https://github.co
 
 ### GetReservationStatusOfElements
 
-Returns the Teamwork reservation status of elements without reserving them: whether each element is free, reserved by the current user or reserved by another user, with the reserving user and the element's owner.
+Returns the Teamwork reservation status of elements without reserving them: whether each element is free, reserved by the current user or reserved by another user, with the reserving user. New elements stay reserved by the user who created them until they are released.
 
 Group: Teamwork Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/archicad-addon/#GetReservationStatusOfElements
 
@@ -8786,7 +11150,7 @@ Parameters:
 
 Returns:
 
-- `reservationStatuses` (array of object or ErrorItem, required): One item per input element, in the same order.
+- `reservationStatuses` (array of ElementReservationStatus or ErrorItem, required): One item per input element, in the same order.
 
 Grasshopper: `GetReservationStatusOfElementsComponent`
 
@@ -8903,11 +11267,7 @@ Returns:
 
 - `isShared` (boolean, required): Whether the opened project is a Teamwork (BIMcloud) project.
 - `isOnline` (boolean, required): Whether there is a live connection to the Teamwork server. Always false for a project that is not shared.
-- `users` (array of object): The members of the shared project. Only present when the project is shared.
-  - `userId` (number, required)
-  - `userName` (string, required): The login name of the user.
-  - `fullName` (string, required)
-  - `isConnected` (boolean, required): Whether the user has joined the project.
+- `users` (array of TeamworkUser): The members of the shared project. Only present when the project is shared.
 - `hotlinkCacheManagementOwner` (User): The user who has reserved the Hotlink and XRef management. Only present when somebody has reserved it.
 
 Grasshopper: `GetTeamworkStatusComponent`
@@ -8972,6 +11332,44 @@ Grasshopper: `RemoveLibrariesFromBIMcloudComponent`
 
 Example: [archicad-addon/Examples/Teamwork/RemoveLibrariesFromBIMcloud.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Teamwork/RemoveLibrariesFromBIMcloud.py): Removes a library from a folder of a BIMcloud server with RemoveLibrariesFromBIMcloud. Set serverUrl, parentPath and libraryName to your own server and library before running it; the values below are placeholders. Deletes the library from the server. Requires Archicad 29 or later.
 
+### GetTeamworkRightsOfObjects
+
+Returns for each given object, for example an element, whether the current Teamwork user has the right to create objects of its kind and to delete or modify it.
+
+Group: Teamwork Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetTeamworkRightsOfObjects
+
+Parameters:
+
+- `objectIds` (array of GuidId, required): The objects to check, by guid, for example element guids.
+
+Returns:
+
+- `rights` (array of object or ErrorItem, required): One item per input object, in the same order.
+
+Grasshopper: `GetTeamworkRightsOfObjectsComponent`
+
+Example: [archicad-addon/Examples/Teamwork/GetTeamworkRightsOfObjects.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Teamwork/GetTeamworkRightsOfObjects.py): Gets with GetTeamworkRightsOfObjects whether the current user may create, delete and modify the first three walls. Needs at least one Wall.
+
+### GetTeamworkAccessRights
+
+Returns whether the role of the current user has the given Teamwork access rights (API_TWAccessRights names without the API prefix, e.g. LayersCreate), all of them when no names are given.
+
+Group: Teamwork Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetTeamworkAccessRights
+
+Parameters:
+
+- `accessRights` (array of string): The names of the access rights to check, the API_TWAccessRights enumerators without the API prefix, e.g. LayersCreate or LibraryPartDeleteModify. All rights available in this Archicad version are checked when omitted.
+
+Returns:
+
+- `accessRights` (array of object, required): The rights of the current user, in the requested order.
+  - `name` (string, required)
+  - `hasRight` (boolean, required): Whether the role of the current user has this right.
+
+Grasshopper: `GetTeamworkAccessRightsComponent`
+
+Example: [archicad-addon/Examples/Teamwork/GetTeamworkAccessRights.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Teamwork/GetTeamworkAccessRights.py): Gets with GetTeamworkAccessRights whether the role of the current user has a few Teamwork access rights. Without accessRights every right of the Archicad version is returned.
+
 
 ## Navigator Commands
 
@@ -8991,6 +11389,28 @@ Parameters:
 Grasshopper: `PublishPublisherSetComponent`
 
 Example: [archicad-addon/Examples/Navigator/PublishPublisherSet.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/PublishPublisherSet.py): Publishes the first publisher set of the project with PublishPublisherSet. Needs at least one publisher set. The output goes to a new temporary folder instead of the path saved in the publisher set.
+
+### GetPublisherSets
+
+Returns the publisher sets of the project with their saved output: the local or LAN path, the Teamwork file server path, or the Internet host and directory name.
+
+Group: Navigator Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetPublisherSets
+
+Parameters: none.
+
+Returns:
+
+- `publisherSets` (array of object, required): The publisher sets of the project, in the order of the Publisher Sets map.
+  - `name` (string, required): The name of the publisher set.
+  - `rootNavigatorItemId` (NavigatorItemId, required): The navigator item ID of the root of the publisher set.
+  - `path` (string): The saved local or LAN output path, when the set is published to files. When it is also uploaded to a Teamwork file server, this is the temporary local path.
+  - `twFileServerPath` (string): The saved output path on the Teamwork file server, when the set is published to files onto a file server.
+  - `host` (string): The saved host name, when the set is published to the Internet.
+  - `dirName` (string): The saved directory name on the host, when the set is published to the Internet.
+
+Grasshopper: `GetPublisherSetsComponent`
+
+Example: [archicad-addon/Examples/Navigator/GetPublisherSets.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/GetPublisherSets.py): Lists the publisher sets of the project and where each one publishes to, with GetPublisherSets.
 
 ### UpdateDrawings
 
@@ -9019,7 +11439,7 @@ Parameters:
 
 Returns:
 
-- `contentBoxes` (array of object or ErrorItem, required): One item per input element, in the same order: the full content box of the Drawing, or an error.
+- `contentBoxes` (array of DrawingContentBox or ErrorItem, required): One item per input element, in the same order: the full content box of the Drawing, or an error.
 
 Grasshopper: `GetDrawingContentBoxesComponent`
 
@@ -9051,15 +11471,11 @@ Group: Navigator Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/
 
 Parameters:
 
-- `types` (array of string ("Section", "Elevation", "InteriorElevation", "Detail", "Worksheet", "DocumentFrom3D", "Layout", "MasterLayout")): The types of the databases to list. Optional, by default the databases of every type are listed.
+- `types` (array of DatabaseType): The types of the databases to list. Optional, by default the databases of every type are listed.
 
 Returns:
 
-- `databases` (array of object, required)
-  - `type` (string, required): The type of the database.
-  - `databaseId` (DatabaseId, required)
-  - `name` (string): The name of the database. Missing when the database info cannot be read.
-  - `referenceId` (string): The reference id of the database. Missing when the database info cannot be read.
+- `databases` (array of DatabaseDetails, required)
 
 Grasshopper: `GetDatabasesComponent`
 
@@ -9079,7 +11495,7 @@ Parameters:
 
 Returns:
 
-- `databases` (array of object or ErrorItem, required): One item per input item, in the same order.
+- `databases` (array of CreatedDatabase or ErrorItem, required): One item per input item, in the same order.
 
 Grasshopper: `CreateDetailsComponent`
 
@@ -9099,15 +11515,93 @@ Parameters:
 
 Returns:
 
-- `databases` (array of object or ErrorItem, required): One item per input item, in the same order.
+- `databases` (array of CreatedDatabase or ErrorItem, required): One item per input item, in the same order.
 
 Grasshopper: `CreateWorksheetsComponent`
 
 Example: [archicad-addon/Examples/Navigator/CreateWorksheets.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/CreateWorksheets.py): Creates an independent Worksheet with CreateWorksheets, then deletes it again.
 
+### CreateDetailMarkers
+
+Places Detail markers with their clip polygon in the current floor plan, section or elevation, each with a new Detail viewpoint, like the Detail tool. GetDetailsOfElements reads them back.
+
+Group: Navigator Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#CreateDetailMarkers
+
+Parameters:
+
+- `detailMarkersData` (array of object, required)
+  - `clipPolygon` (array of Coordinate2D, required): The boundary of the cut out area, at least 3 points, without repeating the first one.
+  - `polygonArcs` (array of PolyArc): Optional arcs of the boundary, with indices into clipPolygon.
+  - `markerCoordinate` (Coordinate2D): Where the marker symbol is placed. Default is the first point of clipPolygon.
+  - `angle` (number): Rotation of the marker symbol in radians. Default is that of the tool defaults.
+  - `name` (string): Name of the new viewpoint. Default is that of the tool defaults.
+  - `id` (string): Reference ID shown in the marker and in the Project Map. A '/' splits it between the two lines of the marker. Default is that of the tool defaults.
+  - `floorIndex` (integer): Story of the marker when it is placed on a floor plan. Default is the current story.
+
+Returns:
+
+- `elements` (ElementIdsOrErrors, required)
+
+Grasshopper: `CreateDetailMarkersComponent`
+
+Example: [archicad-addon/Examples/Navigator/CreateDetailMarkers.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/CreateDetailMarkers.py): Places a Detail marker on the current floor plan story with CreateDetailMarkers, then deletes it again. The marker cuts out a 4 x 3 m rectangle; Archicad creates a new Detail viewpoint for it, which is deleted together with the marker.
+
+### CreateWorksheetMarkers
+
+Places Worksheet markers with their clip polygon in the current floor plan, section or elevation, each with a new Worksheet viewpoint, like the Worksheet tool. GetDetailsOfElements reads them back.
+
+Group: Navigator Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#CreateWorksheetMarkers
+
+Parameters:
+
+- `worksheetMarkersData` (array of object, required)
+  - `clipPolygon` (array of Coordinate2D, required): The boundary of the cut out area, at least 3 points, without repeating the first one.
+  - `polygonArcs` (array of PolyArc): Optional arcs of the boundary, with indices into clipPolygon.
+  - `markerCoordinate` (Coordinate2D): Where the marker symbol is placed. Default is the first point of clipPolygon.
+  - `angle` (number): Rotation of the marker symbol in radians. Default is that of the tool defaults.
+  - `name` (string): Name of the new viewpoint. Default is that of the tool defaults.
+  - `id` (string): Reference ID shown in the marker and in the Project Map. A '/' splits it between the two lines of the marker. Default is that of the tool defaults.
+  - `floorIndex` (integer): Story of the marker when it is placed on a floor plan. Default is the current story.
+
+Returns:
+
+- `elements` (ElementIdsOrErrors, required)
+
+Grasshopper: `CreateWorksheetMarkersComponent`
+
+Example: [archicad-addon/Examples/Navigator/CreateWorksheetMarkers.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/CreateWorksheetMarkers.py): Places a Worksheet marker on the current floor plan story with CreateWorksheetMarkers, then deletes it again. The marker cuts out a 4 x 3 m rectangle; Archicad creates a new Worksheet viewpoint for it, which is deleted together with the marker.
+
+### ModifyDetailMarkers
+
+Changes the name, the reference ID, the clip polygon, the boundary's pen and line type, the marker symbol's angle, always-horizontal setting and pen of Detail and Worksheet markers. Not written: the base point (Archicad places it at the center of the clip polygon's bounding box when the marker is created), the viewpoint the marker refers to, and the marker symbol's other settings, which are parameters of the library part placed as the marker (markerId in GetDetailsOfElements). A value Archicad did not apply gets a failed execution result.
+
+Group: Navigator Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ModifyDetailMarkers
+
+Parameters:
+
+- `detailMarkersWithDetails` (array of object, required)
+  - `elementId` (ElementId, required): A Detail or a Worksheet marker.
+  - `name` (string): The new name of the viewpoint.
+  - `id` (string): The new reference ID, shown in the marker and in the Project Map. A '/' splits it between the two lines of the marker.
+  - `clipPolygon` (array of Coordinate2D): The new boundary of the cut out area, at least 3 points, without repeating the first one.
+  - `polygonArcs` (array of PolyArc): Optional arcs of the new boundary, with indices into clipPolygon.
+  - `penIndex` (integer): The new pen of the boundary (API_DetailType::pen).
+  - `lineTypeIndex` (integer): Attribute index of the new line type of the boundary (API_DetailType::ltypeInd).
+  - `angle` (number): The new rotation of the marker symbol, in radians (API_DetailType::angle).
+  - `isHorizontalMarker` (boolean): Whether the marker symbol is always horizontal (API_DetailType::horizontalMarker).
+  - `markerPenIndex` (integer): The new pen of the marker symbol, the library part placed as the marker (its markerId in GetDetailsOfElements).
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `ModifyDetailMarkersComponent`
+
+Example: [archicad-addon/Examples/Navigator/ModifyDetailMarkers.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/ModifyDetailMarkers.py): Changes the ID, name, clip polygon, pens and angle of a Detail marker with ModifyDetailMarkers, reads them back, then deletes it. The script places its own Detail marker on the current floor plan story first (CreateDetailMarkers). ModifyDetailMarkers works on Worksheet markers the same way. penIndex and lineTypeIndex are the boundary's pen and line type, markerPenIndex the pen of the marker symbol; angle turns the marker symbol unless isHorizontalMarker keeps it horizontal.
+
 ### CreateLayout
 
-Creates Layouts and their backing master layouts. Archicad inserts a new layout at the first place of its subset, renumbering the sheets after it; previousNavigatorItemId or position 'last' places it after an existing sheet or at the end instead. A custom layout number does not leave the layout out of the numbering; layoutParameters.doNotIncludeInNumbering does.
+Creates Layouts and their backing master layouts. Archicad inserts a new layout at the first place of its subset, renumbering the sheets after it; previousNavigatorItemId or position 'last' places it after an existing sheet or at the end instead. A custom layout number does not leave the layout out of the numbering; layoutParameters.doNotIncludeInNumbering does. A layout that was created but could not be placed is returned with both its databaseId and the error.
 
 Group: Navigator Commands. Added in Tapir 1.4.0. Docs: https://archicad-api.com/archicad-addon/#CreateLayout
 
@@ -9119,14 +11613,14 @@ Parameters:
   - `layoutName` (string, required)
   - `parentNavigatorItemId` (NavigatorItemId)
   - `previousNavigatorItemId` (NavigatorItemId): The sibling after which the new layout is placed, as in MoveNavigatorItem. It must be a child of parentNavigatorItemId (or of the Layout Book root when that is omitted). Cannot be combined with position.
-  - `position` (string ("first", "last")): Where to place the new layout under its parent. Archicad inserts new layouts at the first place, which renumbers the sheets after them; "last" appends it after the existing children instead. Cannot be combined with previousNavigatorItemId.
+  - `position` (LayoutInsertionPosition): Archicad inserts new layouts at the first place, which renumbers the sheets after them; "last" appends it after the existing children instead. Cannot be combined with previousNavigatorItemId.
   - `paperWidth` (number): Optional paper width in mm, used together with paperHeight. Sets the size of the new layout, and of the master layout when this command creates it from masterLayoutName: a new master starts with the template's default size, which layoutParameters cannot change. An existing master keeps its size. Wins over layoutParameters.horizontalSize.
   - `paperHeight` (number): Optional paper height in mm, used together with paperWidth. See paperWidth. Wins over layoutParameters.verticalSize.
   - `layoutParameters` (object)
 
 Returns:
 
-- `databases` (DatabaseIdsOrErrors, required)
+- `databases` (array of DatabaseIdArrayItem or ErrorItem or object, required)
 
 Grasshopper: `CreateLayoutComponent`
 
@@ -9173,7 +11667,7 @@ Parameters:
 
 Returns:
 
-- `subsetSettings` (array of object or ErrorItem, required): One item per input navigator item, in the same order: the subset's settings with the field names of CreateLayoutSubset, or an error.
+- `subsetSettings` (array of LayoutSubsetSettings or ErrorItem, required): One item per input navigator item, in the same order: the subset's settings with the field names of CreateLayoutSubset, or an error.
 
 Grasshopper: `GetLayoutSubsetSettingsComponent`
 
@@ -9192,12 +11686,12 @@ Parameters:
   - `layoutDatabaseId` (DatabaseId)
   - `name` (string): Custom title name of the new Drawing. Giving a name implies nameType CustomName unless nameType is set explicitly.
   - `nameType` (DrawingNameType): Defaults to CustomName when name is given, otherwise to the Drawing tool's current default.
-  - `position` (Coordinate2D, required)
+  - `position` (Coordinate2D, required): Where the Drawing is placed on the layout, in meters; this becomes its pos. Without clipPolygon it is the lower left corner of the Drawing (before rotation). With clipPolygon it is the point where the origin of the source view lands (on a floor plan the project origin): a model point (x, y) appears at position + scale * drawing scale * (x, y), rotated by angle, and the clipPolygon chooses which part is shown.
   - `scale` (number): Scale ratio applied to the drawing relative to its source view (API_DrawingType::ratio). Defaults to 1.0.
   - `angle` (number): Rotation angle of the drawing in radians. Defaults to the Drawing tool's current default.
-  - `drawingScale` (number): The nominal scale of the drawing. Defaults to the Drawing tool's current default.
-  - `modelOffset` (Coordinate2D): Offset of the model origin within the drawing. Defaults to the Drawing tool's current default.
-  - `clipPolygon` (array of Coordinate2D): Optional polygon to clip the drawing with, in layout coordinates (meters on the layout, the same coordinate system as position) - not the coordinates of the source view's model. Stored as given: position, angle, scale and modelOffset are not applied to it.
+  - `drawingScale` (number): Ignored: Archicad takes the scale from the source view (API_DrawingType::drawingScale is output only). GetDetailsOfElements returns the scale the Drawing got.
+  - `modelOffset` (Coordinate2D): Offset of the model origin within the drawing, in model meters. Archicad uses it only with clipPolygon and then adds modelOffset * drawing scale (times scale, rotated by angle) to the new Drawing's pos; without clipPolygon it is ignored. Defaults to the Drawing tool's current default.
+  - `clipPolygon` (array of Coordinate2D): Optional polygon to clip the drawing with, in layout coordinates (meters on the layout, the same coordinate system as position) - not the coordinates of the source view's model. Stored as given: position, angle, scale and modelOffset are not applied to it, and it does not move the content (see position).
 
 Returns:
 
@@ -9265,7 +11759,7 @@ Example: [archicad-addon/Examples/Navigator/GetLayoutSettings.py](https://github
 
 ### SetLayoutSettings
 
-Sets settings of layouts, including their master layout and Layout Info Panel custom data fields.
+Sets settings of layouts, including their master layout and Layout Info Panel custom data fields. In Teamwork the layout settings must be reserved first in Archicad (Layout Book > Reserve Layout Settings); the Archicad API cannot reserve them, and ReserveElements does not. GetTeamworkOwnersOfDatabases shows who holds a layout.
 
 Group: Navigator Commands. Added in Tapir 1.1.7. Docs: https://archicad-api.com/archicad-addon/#SetLayoutSettings
 
@@ -9326,11 +11820,7 @@ Parameters: none.
 
 Returns:
 
-- `lines` (array of object, required): The lines of the grid of the grid-based drawing numbering of the current layout. Only a layout that uses grid-based drawing numbering has such a grid.
-  - `begC` (Coordinate2D, required): The start point of the line, in layout coordinates.
-  - `endC` (Coordinate2D, required): The end point of the line, in layout coordinates.
-  - `penIndex` (integer, required): The index of the pen of the line.
-  - `lineTypeIndex` (integer, required): The index of the line type of the line.
+- `lines` (array of DrawingNumberingGridLine, required): The lines of the grid of the grid-based drawing numbering of the current layout. Only a layout that uses grid-based drawing numbering has such a grid.
 
 Grasshopper: `GetDrawingNumberingGridLinesComponent`
 
@@ -9355,21 +11845,19 @@ Example: [archicad-addon/Examples/Navigator/GetModelViewOptions.py](https://gith
 
 ### FindModelViewOption
 
-Finds a model view option combination by id or by name and returns its index, id, name and flags. The index is the one Archicad uses to switch the model view options of a window to the combination. Available from Archicad 27.
+Finds a model view option combination by id or by name and returns its index, id, name and flags. The index is the one SetViewOptions takes to switch the model view options of a window to the combination. Available from Archicad 27.
 
 Group: Navigator Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#FindModelViewOption
 
 Parameters:
 
-- `modelViewOptionId` (object): The identifier of the model view option combination.
-  - `guid` (Guid, required)
+- `modelViewOptionId` (ModelViewOptionId)
 - `name` (string): The name of the model view option combination, as shown in Document > Model View > Model View Options.
 
 Returns:
 
 - `index` (integer, required): The index of the model view option combination.
-- `modelViewOptionId` (object, required): The identifier of the model view option combination.
-  - `guid` (Guid, required)
+- `modelViewOptionId` (ModelViewOptionId, required)
 - `name` (string, required): The name of the model view option combination.
 - `flags` (integer, required): The flags of the model view option combination, as Archicad returns them.
 
@@ -9377,9 +11865,29 @@ Grasshopper: `FindModelViewOptionComponent`
 
 Example: [archicad-addon/Examples/Navigator/FindModelViewOption.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/FindModelViewOption.py): Finds the first named model view option combination by its name with FindModelViewOption, then by its id. Requires Archicad 27 or later.
 
+### GetModelViewOptionDetails
+
+Gets the settings stored in model view option combinations (Document > Model View > Model View Options), all of them or the ones given by id or by name: the model view options in the fields of GetViewOptions, and the options library parts add to the combination (gdlOptions) with their GDL parameter values. Read-only: the Archicad API has no function to change, rename or create a stored combination; SetViewOptions changes the options of the current window. Available from Archicad 27.
+
+Group: Navigator Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetModelViewOptionDetails
+
+Parameters:
+
+- `modelViewOptions` (array of any or any): The model view option combinations to read, each given by id or by name. When omitted, every combination of the project is returned.
+  - `modelViewOptionId` (object): The identifier of the model view option combination (see FindModelViewOption).
+  - `name` (string): The name of the model view option combination, as shown in Document > Model View > Model View Options.
+
+Returns:
+
+- `modelViewOptionDetails` (array of object or ErrorItem, required): The settings of each model view option combination, in the order of the input, or in the order of the project when no input is given.
+
+Grasshopper: `GetModelViewOptionDetailsComponent`
+
+Example: [archicad-addon/Examples/Navigator/GetModelViewOptionDetails.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/GetModelViewOptionDetails.py): Prints the settings of the first named model view option combination with GetModelViewOptionDetails, then lists the library part options of every combination. Requires Archicad 27 or later.
+
 ### GetViewOptions
 
-Gets the model view options and on-screen view options of the current plan window, and the index of the model view option combination it applies.
+Gets the model view options and on-screen view options of the current plan window, and the index and name of the model view option combination it applies.
 
 Group: Navigator Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#GetViewOptions
 
@@ -9387,10 +11895,9 @@ Parameters: none.
 
 Returns:
 
-- `modelViewOptionIndex` (integer, required): The index of the model view option combination the window applies. Matches the order of GetModelViewOptions, starting from 1.
-- `viewOptions` (object, required): The model view options and the on-screen view options, every field by its API_ViewOptions name. Values are the numeric API constants; attribute indices are plain integers.
-  - `modelViewOptions` (object, required): Fields of API_ModelViewOptions, with the curtainWall, stair and railing parts as nested objects.
-  - `onScreenViewOptions` (object, required): Fields of API_OnScreenViewOptions.
+- `modelViewOptionIndex` (integer, required): The index of the model view option combination the window applies, 0 when its options are not a stored combination (Custom). It is the index FindModelViewOption and GetModelViewOptionDetails return, which is not always the position in the list of GetModelViewOptions.
+- `modelViewOptionName` (string, required): The name of that combination, empty when there is none. Archicad may renumber the combinations when the view options of a window change, so look the index up by this name (FindModelViewOption) before switching back to it with SetViewOptions.
+- `viewOptions` (ViewOptions, required)
 
 Grasshopper: `GetViewOptionsComponent`
 
@@ -9398,16 +11905,14 @@ Example: [archicad-addon/Examples/Navigator/GetViewOptions.py](https://github.co
 
 ### SetViewOptions
 
-Switches the current plan window to a model view option combination by index, and/or changes the given model view options and on-screen view options.
+Switches the current plan window to a model view option combination by index, and/or changes the given model view options and on-screen view options. With an index, the model view options stored in the combination apply.
 
 Group: Navigator Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#SetViewOptions
 
 Parameters:
 
-- `modelViewOptionIndex` (integer): Switches the window to the model view option combination with this index (see GetModelViewOptions, starting from 1). Without viewOptions only the combination is switched.
-- `viewOptions` (object): The fields to change, named as in the response of GetViewOptions. Fields not given keep their current value.
-  - `modelViewOptions` (object)
-  - `onScreenViewOptions` (object)
+- `modelViewOptionIndex` (integer): Switches the window to the model view option combination with this index, as GetViewOptions, FindModelViewOption and GetModelViewOptionDetails return it. Archicad then applies the model view options stored in the combination: viewOptions.modelViewOptions are not applied together with an index, viewOptions.onScreenViewOptions are. Archicad may renumber the combinations when the view options of a window change, so look the index up by name with FindModelViewOption right before switching.
+- `viewOptions` (ViewOptionsUpdate)
 
 
 Grasshopper: `SetViewOptionsComponent`
@@ -9497,9 +12002,7 @@ Parameters: none.
 
 Returns:
 
-- `renovationFilters` (array of object, required): Every renovation filter of the project.
-  - `renovationFilterId` (GuidId, required): Identifier of the renovation filter. The same identifier is the renovationFilterGuid of GetViewSettings and SetViewSettings.
-  - `name` (string, required): Name of the renovation filter.
+- `renovationFilters` (array of RenovationFilterDetails, required): Every renovation filter of the project.
 - `activeRenovationFilterId` (GuidId): Identifier of the renovation filter of the current window. Absent when the current window has none or it could not be read.
 
 Grasshopper: `GetRenovationFiltersComponent`
@@ -9575,7 +12078,7 @@ Parameters: none.
 
 Returns:
 
-- `structureDisplay` (string ("EntireStructure", "CoreOnly", "WithoutFinishes", "StructureOnly"), required): The Partial Structure Display mode of the current window.
+- `structureDisplay` (PartialStructureDisplay, required)
 - `is3D` (boolean, required): True when the setting belongs to the 3D window.
 
 Grasshopper: `GetStructureDisplayComponent`
@@ -9590,7 +12093,7 @@ Group: Navigator Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/
 
 Parameters:
 
-- `structureDisplay` (string ("EntireStructure", "CoreOnly", "WithoutFinishes", "StructureOnly"), required): The Partial Structure Display mode to apply to the current window.
+- `structureDisplay` (PartialStructureDisplay, required)
 
 
 Grasshopper: `SetStructureDisplayComponent`
@@ -9704,11 +12207,7 @@ Group: Navigator Commands. Added in Tapir 1.3.1. Docs: https://archicad-api.com/
 
 Parameters:
 
-- `cutPlanes` (array of object): The cut planes. An empty array switches the 3D cut off. The side of a plane its normal vector points to is cut away and the other side is kept (to be confirmed in Archicad). pd is in meters.
-  - `pa` (number, required): Coefficient of x in the plane equation. The x coordinate of the normal vector of the plane.
-  - `pb` (number, required): Coefficient of y in the plane equation. The y coordinate of the normal vector of the plane.
-  - `pc` (number, required): Coefficient of z in the plane equation. The z coordinate of the normal vector of the plane.
-  - `pd` (number, required): Constant term in the plane equation, in meters. The distance of the plane from the origin along the normal vector.
+- `cutPlanes` (array of CutPlane): The cut planes. An empty array switches the 3D cut off. The side of a plane its normal vector points to is cut away and the other side is kept (to be confirmed in Archicad). pd is in meters.
 
 
 Grasshopper: `Set3DCutPlanesComponent`
@@ -9727,11 +12226,7 @@ Returns:
 
 - `isCutPlanes` (boolean, required): Whether the 3D cut planes are switched on.
 - `useCustom` (boolean, required): Whether the custom cut settings are used.
-- `cutPlanes` (array of object, required): The cut planes, in the form accepted by Set3DCutPlanes: pa*x + pb*y + pc*z + pd = 0, pd in meters.
-  - `pa` (number, required)
-  - `pb` (number, required)
-  - `pc` (number, required)
-  - `pd` (number, required)
+- `cutPlanes` (array of CutPlane, required): The cut planes, in the form accepted by Set3DCutPlanes: pa*x + pb*y + pc*z + pd = 0, pd in meters.
 
 Grasshopper: `Get3DCutPlanesComponent`
 
@@ -9749,7 +12244,7 @@ Parameters:
 
 Returns:
 
-- `styles` (array of object or ErrorItem, required): The details of the 3D styles, in the order of the input names.
+- `styles` (array of Style3DDetails or ErrorItem, required): The details of the 3D styles, in the order of the input names.
 
 Grasshopper: `Get3DStyleDetailsComponent`
 
@@ -9763,29 +12258,7 @@ Group: Navigator Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/
 
 Parameters:
 
-- `styles` (array of object, required): The 3D styles to create. Each starts from the current 3D style; only the given fields differ from it.
-  - `name` (string, required): The name of the 3D style, unique within the project.
-  - `engineId` (integer): The id of the 3D rendering engine (API_3DStyle.engineId).
-  - `model3D` (integer): The 3D model type: Block, Wireframe, Hidden Line or Shading, as the integer value of API_3DModelTypeID.
-  - `transparency` (boolean): Transparency in shading.
-  - `monochromeEnabled` (boolean): The model is shown in monochrome colors.
-  - `monochromeSurfaceColor` (ColorRGB): The surface color of the monochrome model.
-  - `monochromeContourColor` (ColorRGB): The contour color of the monochrome model.
-  - `backgroundAsInRendering` (boolean): The background is the same as in the rendering settings.
-  - `chainBackgroundColors` (boolean): The sky and the ground background colors are chained.
-  - `backgroundSkyColor` (ColorRGB): The sky color of the background (API_3DStyle.bkgSkyColor).
-  - `backgroundColor` (ColorRGB): The (ground) color of the background (API_3DStyle.backGroundRGB).
-  - `shadingContours` (integer): The contours in shaded mode, as the integer value of API_ShadingContoursID.
-  - `vectorialSunShadow` (integer): The vectorial sun shadow options, as the integer value of API_VectorShadowID.
-  - `vectorialHatching` (boolean): Vectorial 3D hatching is on.
-  - `contourThickness` (integer): The thickness of the contours, in pixels.
-  - `silhouetteThickness` (integer): The thickness of the silhouettes, in pixels.
-  - `vectorialHatchingThickness` (integer): The thickness of the vectorial hatching, in pixels.
-  - `shadowContourThickness` (integer): The thickness of the shadow contours, in pixels.
-  - `castShadowPercent` (integer): The intensity of the cast shadows, in percent.
-  - `shadingPercent` (integer): The intensity of the shading, in percent.
-  - `shadowElevation` (number): The elevation of the shadow plane, used by the one level vectorial sun shadow options.
-  - `show3DHotSpotsOnly` (boolean): Only the 3D hotspots are shown.
+- `styles` (array of Style3DDetails, required): The 3D styles to create. Each starts from the current 3D style; only the given fields differ from it.
 
 Returns:
 
@@ -9803,29 +12276,7 @@ Group: Navigator Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/
 
 Parameters:
 
-- `styles` (array of object, required): The 3D styles to change, identified by their name. Only the given fields change.
-  - `name` (string, required): The name of the 3D style, unique within the project.
-  - `engineId` (integer): The id of the 3D rendering engine (API_3DStyle.engineId).
-  - `model3D` (integer): The 3D model type: Block, Wireframe, Hidden Line or Shading, as the integer value of API_3DModelTypeID.
-  - `transparency` (boolean): Transparency in shading.
-  - `monochromeEnabled` (boolean): The model is shown in monochrome colors.
-  - `monochromeSurfaceColor` (ColorRGB): The surface color of the monochrome model.
-  - `monochromeContourColor` (ColorRGB): The contour color of the monochrome model.
-  - `backgroundAsInRendering` (boolean): The background is the same as in the rendering settings.
-  - `chainBackgroundColors` (boolean): The sky and the ground background colors are chained.
-  - `backgroundSkyColor` (ColorRGB): The sky color of the background (API_3DStyle.bkgSkyColor).
-  - `backgroundColor` (ColorRGB): The (ground) color of the background (API_3DStyle.backGroundRGB).
-  - `shadingContours` (integer): The contours in shaded mode, as the integer value of API_ShadingContoursID.
-  - `vectorialSunShadow` (integer): The vectorial sun shadow options, as the integer value of API_VectorShadowID.
-  - `vectorialHatching` (boolean): Vectorial 3D hatching is on.
-  - `contourThickness` (integer): The thickness of the contours, in pixels.
-  - `silhouetteThickness` (integer): The thickness of the silhouettes, in pixels.
-  - `vectorialHatchingThickness` (integer): The thickness of the vectorial hatching, in pixels.
-  - `shadowContourThickness` (integer): The thickness of the shadow contours, in pixels.
-  - `castShadowPercent` (integer): The intensity of the cast shadows, in percent.
-  - `shadingPercent` (integer): The intensity of the shading, in percent.
-  - `shadowElevation` (number): The elevation of the shadow plane, used by the one level vectorial sun shadow options.
-  - `show3DHotSpotsOnly` (boolean): Only the 3D hotspots are shown.
+- `styles` (array of Style3DDetails, required): The 3D styles to change, identified by their name. Only the given fields change.
 
 Returns:
 
@@ -9837,7 +12288,7 @@ Example: [archicad-addon/Examples/Navigator/Change3DStyles.py](https://github.co
 
 ### Get3DProjectionSettings
 
-Gets the 3D projection settings of the 3D window: whether it is perspective or axonometric, the camera and target position, view cone, roll angle, distance and azimuth of a perspective, or the transformation matrix of an axonometry.
+Gets the 3D projection settings of the 3D window: whether it is perspective or axonometric, the camera and target position, view cone, roll angle, distance and azimuth of a perspective, or the projection type, azimuth and transformation matrix of an axonometry, and the sun position of either (date and time or azimuth and altitude).
 
 Group: Navigator Commands. Added in Tapir 1.7.2. Docs: https://archicad-api.com/archicad-addon/#Get3DProjectionSettings
 
@@ -9850,7 +12301,10 @@ Returns:
 - `activeCameraSetElementId` (ElementId): The active Camera Set element. Missing when there is none.
 - `perspective` (PerspectiveProjectionParameters): The perspective parameters. Present only when isPersp is true.
 - `axonometric` (object): The parameters of an axonometric projection. Present only when isPersp is false.
+  - `projectionType` (AxonometryProjectionType, required)
+  - `azimuth` (number, required): The camera azimuth in degrees, the Azimuth of the 3D Projection Settings dialog: for a side view the direction from the model to the camera, counterclockwise from the X axis (270 looks from the south). A predefined axonometry looks from 45 degrees further on.
   - `transformationMatrix` (array of number, required): The 3x4 transformation matrix of the axonometric projection, row by row (12 numbers).
+  - `sun` (ProjectionSunSettings, required): The sun position of the axonometry.
 
 Grasshopper: `Get3DProjectionSettingsComponent`
 
@@ -9858,18 +12312,106 @@ Example: [archicad-addon/Examples/Navigator/Get3DProjectionSettings.py](https://
 
 ### Set3DProjectionSettings
 
-Sets a perspective projection for the 3D window. Every perspective parameter is required: read a known good set with Get3DProjectionSettings and pass it back, with the values to change replaced.
+Sets a perspective or an axonometric projection for the 3D window. Every perspective parameter but sun is required: read a known good set with Get3DProjectionSettings and pass it back, with the values to change replaced. An axonometry changes only the values given: the projection type, the azimuth, the transformation matrix and the sun. The sun of either changes only the values given in it and is kept when sun is missing. The 3D window shows the change after a rebuild (RebuildView), e.g. before SaveCurrentWindowAsImage.
 
 Group: Navigator Commands. Added in Tapir 1.7.2. Docs: https://archicad-api.com/archicad-addon/#Set3DProjectionSettings
 
 Parameters:
 
-- `perspective` (PerspectiveProjectionParameters, required)
+- `perspective` (PerspectiveProjectionParameters)
+- `axonometry` (object): Makes the projection axonometric. Only the given values change, in sun too; the others are kept from the current axonometry, or from the last one when the projection is a perspective.
+  - `projectionType` (AxonometryProjectionType)
+  - `azimuth` (number): The camera azimuth in degrees, the Azimuth of the 3D Projection Settings dialog: for a side view the direction from the model to the camera, counterclockwise from the X axis (270 looks from the south). A predefined axonometry looks from 45 degrees further on.
+  - `transformationMatrix` (array of number): The 3x4 transformation matrix of the axonometric projection, row by row (12 numbers), as Get3DProjectionSettings returns it. Its 3x3 part must be invertible.
+  - `sun` (ProjectionSunSettings): The sun position of the axonometry. Only the values given change.
 
 
 Grasshopper: `Set3DProjectionSettingsComponent`
 
 Example: [archicad-addon/Examples/Navigator/Set3DProjectionSettings.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/Set3DProjectionSettings.py): Raises the camera of the 3D perspective by 1 m and puts its sun at 21 June 13:30, or turns the axonometry to isometric, with Set3DProjectionSettings. The sun of a projection only changes the values given in sun; the others are kept. Restores the original projection at the end.
+
+### GetCameras
+
+Gets the Camera Sets (camera paths) of the project with their name, whether the set is the active one, its current camera, and its cameras in path order. Each camera has its element id, whether it is active in the path, and its perspective: camera and target position, distance, azimuth, view cone, roll angle, two-point perspective and sun, in the shape Set3DProjectionSettings accepts, so passing a camera's perspective there shows its view in the 3D window. Archicad cameras are always perspective; they have no name of their own.
+
+Group: Navigator Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetCameras
+
+Parameters: none.
+
+Returns:
+
+- `cameraSets` (array of object, required): The Camera Sets (camera paths) of the project, each with its cameras.
+  - `cameraSetElementId` (ElementId, required)
+  - `name` (string, required): The name of the Camera Set, as the navigator shows it.
+  - `isActive` (boolean, required): True for the active Camera Set.
+  - `activeCameraElementId` (ElementId): The current camera of the set. Missing when the set has none.
+  - `cameras` (array of object, required): The cameras of the set, in the order of the path.
+
+Grasshopper: `GetCamerasComponent`
+
+Example: [archicad-addon/Examples/Navigator/GetCameras.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/GetCameras.py): Prints the Camera Sets of the project with their cameras with GetCameras, then shows the first camera's view in the 3D window with Set3DProjectionSettings.
+
+### Get3DStyles
+
+Gets the names of the 3D styles of the project and the name of the current one, which the 3D window uses.
+
+Group: Navigator Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#Get3DStyles
+
+Parameters: none.
+
+Returns:
+
+- `styleNames` (array of string, required): The names of the 3D styles of the project.
+- `currentStyleName` (string, required): The name of the current 3D style, the one the 3D window uses.
+
+Grasshopper: `Get3DStylesComponent`
+
+Example: [archicad-addon/Examples/Navigator/Get3DStyles.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/Get3DStyles.py): Lists the 3D styles of the project and the current one with Get3DStyles.
+
+### SetCurrent3DStyle
+
+Meant to make the given 3D style, one of the names Get3DStyles returns, the current one. Not available yet: it checks the name, then refuses, because Archicad's API function for it crashes Archicad.
+
+Group: Navigator Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#SetCurrent3DStyle
+
+Parameters:
+
+- `styleName` (string, required): The name of an existing 3D style, as Get3DStyles returns it.
+
+
+Grasshopper: `SetCurrent3DStyleComponent`
+
+Example: [archicad-addon/Examples/Navigator/SetCurrent3DStyle.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/SetCurrent3DStyle.py): SetCurrent3DStyle is meant to make one of the 3D styles Get3DStyles lists the current one. It is not available yet: Archicad's API function for it crashes Archicad, so the command checks the name, then refuses.
+
+### StoreViewSettings
+
+Stores the current view settings (action Store) and puts them back later (action Restore), for example before and after a script that changes the view. The two must be called in pairs and cannot be stacked. Restoring may rebuild the view.
+
+Group: Navigator Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#StoreViewSettings
+
+Parameters:
+
+- `action` (string ("Store", "Restore"), required): Store saves the current view settings, Restore puts the stored ones back. Call them in pairs: a second Store before a Restore is refused.
+
+
+Grasshopper: `StoreViewSettingsComponent`
+
+Example: [archicad-addon/Examples/Navigator/StoreViewSettings.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/StoreViewSettings.py): StoreViewSettings stores the current view settings (action Store) and puts them back (action Restore), for example around a script that changes the view. The two come in pairs and cannot be stacked: a second Store before a Restore fails.
+
+### ShowElementsIn3D
+
+Opens the 3D window on the given elements, as Show Selection in 3D does: they become the selection and only they are shown. Without elements it shows every element, as Show All in 3D does.
+
+Group: Navigator Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ShowElementsIn3D
+
+Parameters:
+
+- `elements` (Elements): The elements to show in 3D. They become the selection, replacing the current one. Missing or empty: every element is shown, as Show All in 3D does.
+
+
+Grasshopper: `ShowElementsIn3DComponent`
+
+Example: [archicad-addon/Examples/Navigator/ShowElementsIn3D.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/ShowElementsIn3D.py): Opens the 3D window on the first three walls of the project with ShowElementsIn3D, as Show Selection in 3D does. Needs at least one Wall. The walls become the selection.
 
 ### GetDocumentFrom3DDefaults
 
@@ -9886,28 +12428,14 @@ Returns:
 - `vect3DHatching` (boolean, required): Vectorial 3D hatching.
 - `vectSunShadow` (boolean, required): Vectorial sun shadows.
 - `mustBeTransparent` (boolean, required): Transparency of the model.
-- `intPlanConn` (string ("Online", "Offline", "Drawing")): The connection of the 3D Document to the model.
+- `intPlanConn` (Document3DPlanConnection)
 - `materialFrom3D` (boolean, required): Use the surfaces of the 3D model; when false, cMater is used for every element.
 - `contureOff` (boolean, required): Contours off.
 - `cMater` (integer, required): The index of the uniform surface (material), used when materialFrom3D is false.
-- `boundaryDisplay` (string ("UncutContours", "NoContours", "OverrideContours")): How the boundary contours are displayed.
+- `boundaryDisplay` (Document3DBoundaryDisplay)
 - `boundaryPen` (integer, required): The pen of the boundary contours, used with OverrideContours.
 - `boundaryLineType` (integer, required): The index of the line type of the boundary contours, used with OverrideContours.
-- `attributeOptions` (object, required): The uniform attribute options (cut and uncut surfaces, shading, hidden edges).
-  - `shouldUseUniformCutAttributes` (boolean): Use uniform attributes on the cut surfaces.
-  - `uniformLineType` (integer): The index of the uniform line type of the cut surfaces.
-  - `uniformFillPen` (integer): The uniform fill pen of the cut surfaces.
-  - `uniformFillBkgPen` (integer): The uniform fill background pen of the cut surfaces.
-  - `shouldUseUncutSurfaceFill` (boolean): Fill the uncut surfaces.
-  - `uncutSurfaceBkgPen` (integer): The background pen of the uncut surfaces.
-  - `shouldUseElemPen` (boolean): Use a uniform pen for the element contours.
-  - `elemPen` (integer): The uniform pen of the element contours.
-  - `shadFillPen` (integer): The pen of the shadow fill.
-  - `shadFill` (integer): The index of the shadow fill.
-  - `shadFillBkgPen` (integer): The background pen of the shadow fill.
-  - `shadContPen` (integer): The pen of the shadow contours.
-  - `hiddenEdgeLineType` (integer): The index of the line type of the hidden edges.
-  - `hiddenEdgeLinePen` (integer): The pen of the hidden edges.
+- `attributeOptions` (Document3DAttributeOptions, required)
 
 Grasshopper: `GetDocumentFrom3DDefaultsComponent`
 
@@ -9926,28 +12454,14 @@ Parameters:
 - `vect3DHatching` (boolean): Vectorial 3D hatching.
 - `vectSunShadow` (boolean): Vectorial sun shadows.
 - `mustBeTransparent` (boolean): Transparency of the model.
-- `intPlanConn` (string ("Online", "Offline", "Drawing")): The connection of the 3D Document to the model.
+- `intPlanConn` (Document3DPlanConnection)
 - `materialFrom3D` (boolean): Use the surfaces of the 3D model; when false, cMater is used for every element.
 - `contureOff` (boolean): Contours off.
 - `cMater` (integer): The index of the uniform surface (material), used when materialFrom3D is false.
-- `boundaryDisplay` (string ("UncutContours", "NoContours", "OverrideContours")): How the boundary contours are displayed.
+- `boundaryDisplay` (Document3DBoundaryDisplay)
 - `boundaryPen` (integer): The pen of the boundary contours, used with OverrideContours.
 - `boundaryLineType` (integer): The index of the line type of the boundary contours, used with OverrideContours.
-- `attributeOptions` (object): The uniform attribute options (cut and uncut surfaces, shading, hidden edges).
-  - `shouldUseUniformCutAttributes` (boolean): Use uniform attributes on the cut surfaces.
-  - `uniformLineType` (integer): The index of the uniform line type of the cut surfaces.
-  - `uniformFillPen` (integer): The uniform fill pen of the cut surfaces.
-  - `uniformFillBkgPen` (integer): The uniform fill background pen of the cut surfaces.
-  - `shouldUseUncutSurfaceFill` (boolean): Fill the uncut surfaces.
-  - `uncutSurfaceBkgPen` (integer): The background pen of the uncut surfaces.
-  - `shouldUseElemPen` (boolean): Use a uniform pen for the element contours.
-  - `elemPen` (integer): The uniform pen of the element contours.
-  - `shadFillPen` (integer): The pen of the shadow fill.
-  - `shadFill` (integer): The index of the shadow fill.
-  - `shadFillBkgPen` (integer): The background pen of the shadow fill.
-  - `shadContPen` (integer): The pen of the shadow contours.
-  - `hiddenEdgeLineType` (integer): The index of the line type of the hidden edges.
-  - `hiddenEdgeLinePen` (integer): The pen of the hidden edges.
+- `attributeOptions` (Document3DAttributeOptions)
 
 
 Grasshopper: `SetDocumentFrom3DDefaultsComponent`
@@ -10002,6 +12516,103 @@ Returns:
 Grasshopper: `Set3DWindowSettingsComponent`
 
 Example: [archicad-addon/Examples/Navigator/Set3DWindowSettings.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/Set3DWindowSettings.py): Sets the 3D window to 800 x 600 pixels with Set3DWindowSettings, then restores its original size and zoom.
+
+### Get3DDocumentSettings
+
+Gets the settings of a 3D Document, given by its navigator item: the element and story filter, the 3D cut, the projection, the window and zoom, the uniform cut and uncut surface attributes, the source and the boundary contours, with the field names of API_DocumentFrom3DType.
+
+Group: Navigator Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#Get3DDocumentSettings
+
+Parameters:
+
+- `navigatorItemId` (NavigatorItemId, required): The navigator item of the 3D Document, from the Project Map or the View Map.
+
+Returns:
+
+- `settings` (object, required): The settings of the 3D Document, with the field names of API_DocumentFrom3DType.
+  - `filterAndCutSettings` (object): Which elements and stories the 3D Document shows (API_3DFilterAndCutSettings). The marquee filter is not included.
+  - `cutSetting` (object): The 3D cut of the 3D Document (API_3DCutPlanesInfo). The cut planes themselves are not included.
+  - `cutaway3D` (boolean)
+  - `projectionSetting` (object): The projection of the 3D Document (API_3DProjectionInfo). persp is present when isPersp is true, axono otherwise. Changing isPersp starts the new projection from zero, give persp or axono with it.
+  - `floorPlanRotationOrigo` (Coordinate2D)
+  - `window3DInfo` (object): API_3DWindowInfo of the 3D Document.
+  - `hiddenLineType` (AttributeIdArrayItem): A line type. Missing when there is none.
+  - `hiddenLineLen` (integer)
+  - `effects3D` (integer)
+  - `drawRect` (object)
+  - `attributeOptions` (object): The uniform attributes of cut and uncut surfaces (API_UniformAttributeOptions). Pens and uniformLineType are indices; the enums fillCutSurfacesWith, uncutSurfaceFillType, hiddenEdgeVisibility and onCutPlaneVisibility are their integer values.
+  - `currPlanConn` (string ("Online", "Offline", "Drawing"))
+  - `intPlanConn` (string ("Online", "Offline", "Drawing"))
+  - `materialFrom3D` (boolean)
+  - `docSrc` (string ("DDD", "FloorPlan")): Whether the 3D Document comes from the 3D window or from the floor plan.
+  - `skeletonOptions` (object): API_SkeletonOptions of a 3D Document made from the floor plan. viewSrc is the integer value of API_ViewSourceID.
+  - `boundaryDisplay` (string ("UncutContours", "NoContours", "OverrideContours"))
+  - `boundaryPen` (integer)
+  - `boundaryLineType` (AttributeIdArrayItem): A line type. Missing when there is none.
+  - `transparency` (boolean)
+
+Grasshopper: `Get3DDocumentSettingsComponent`
+
+Example: [archicad-addon/Examples/Navigator/Get3DDocumentSettings.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/Get3DDocumentSettings.py): Prints the settings of the first 3D Document of the Project Map with Get3DDocumentSettings. Needs at least one 3D Document.
+
+### Set3DDocumentSettings
+
+Changes the given settings of a 3D Document, given by its navigator item, in the form Get3DDocumentSettings returns; the settings not given are kept. Returns the settings read back after the change.
+
+Group: Navigator Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#Set3DDocumentSettings
+
+Parameters:
+
+- `navigatorItemId` (NavigatorItemId, required): The navigator item of the 3D Document, from the Project Map or the View Map.
+- `settings` (object, required): The settings to change, in the form Get3DDocumentSettings returns. Only the given keys are changed; arrays other than elemTypeFilter are replaced.
+  - `filterAndCutSettings` (object): Which elements and stories the 3D Document shows (API_3DFilterAndCutSettings). The marquee filter is not included.
+  - `cutSetting` (object): The 3D cut of the 3D Document (API_3DCutPlanesInfo). The cut planes themselves are not included.
+  - `cutaway3D` (boolean)
+  - `projectionSetting` (object): The projection of the 3D Document (API_3DProjectionInfo). persp is present when isPersp is true, axono otherwise. Changing isPersp starts the new projection from zero, give persp or axono with it.
+  - `floorPlanRotationOrigo` (Coordinate2D)
+  - `window3DInfo` (object): API_3DWindowInfo of the 3D Document.
+  - `hiddenLineType` (AttributeIdArrayItem): A line type. Missing when there is none.
+  - `hiddenLineLen` (integer)
+  - `effects3D` (integer)
+  - `drawRect` (object)
+  - `attributeOptions` (object): The uniform attributes of cut and uncut surfaces (API_UniformAttributeOptions). Pens and uniformLineType are indices; the enums fillCutSurfacesWith, uncutSurfaceFillType, hiddenEdgeVisibility and onCutPlaneVisibility are their integer values.
+  - `currPlanConn` (string ("Online", "Offline", "Drawing"))
+  - `intPlanConn` (string ("Online", "Offline", "Drawing"))
+  - `materialFrom3D` (boolean)
+  - `docSrc` (string ("DDD", "FloorPlan")): Whether the 3D Document comes from the 3D window or from the floor plan.
+  - `skeletonOptions` (object): API_SkeletonOptions of a 3D Document made from the floor plan. viewSrc is the integer value of API_ViewSourceID.
+  - `boundaryDisplay` (string ("UncutContours", "NoContours", "OverrideContours"))
+  - `boundaryPen` (integer)
+  - `boundaryLineType` (AttributeIdArrayItem): A line type. Missing when there is none.
+  - `transparency` (boolean)
+
+Returns:
+
+- `settings` (object, required): The settings of the 3D Document, with the field names of API_DocumentFrom3DType.
+  - `filterAndCutSettings` (object): Which elements and stories the 3D Document shows (API_3DFilterAndCutSettings). The marquee filter is not included.
+  - `cutSetting` (object): The 3D cut of the 3D Document (API_3DCutPlanesInfo). The cut planes themselves are not included.
+  - `cutaway3D` (boolean)
+  - `projectionSetting` (object): The projection of the 3D Document (API_3DProjectionInfo). persp is present when isPersp is true, axono otherwise. Changing isPersp starts the new projection from zero, give persp or axono with it.
+  - `floorPlanRotationOrigo` (Coordinate2D)
+  - `window3DInfo` (object): API_3DWindowInfo of the 3D Document.
+  - `hiddenLineType` (AttributeIdArrayItem): A line type. Missing when there is none.
+  - `hiddenLineLen` (integer)
+  - `effects3D` (integer)
+  - `drawRect` (object)
+  - `attributeOptions` (object): The uniform attributes of cut and uncut surfaces (API_UniformAttributeOptions). Pens and uniformLineType are indices; the enums fillCutSurfacesWith, uncutSurfaceFillType, hiddenEdgeVisibility and onCutPlaneVisibility are their integer values.
+  - `currPlanConn` (string ("Online", "Offline", "Drawing"))
+  - `intPlanConn` (string ("Online", "Offline", "Drawing"))
+  - `materialFrom3D` (boolean)
+  - `docSrc` (string ("DDD", "FloorPlan")): Whether the 3D Document comes from the 3D window or from the floor plan.
+  - `skeletonOptions` (object): API_SkeletonOptions of a 3D Document made from the floor plan. viewSrc is the integer value of API_ViewSourceID.
+  - `boundaryDisplay` (string ("UncutContours", "NoContours", "OverrideContours"))
+  - `boundaryPen` (integer)
+  - `boundaryLineType` (AttributeIdArrayItem): A line type. Missing when there is none.
+  - `transparency` (boolean)
+
+Grasshopper: `Set3DDocumentSettingsComponent`
+
+Example: [archicad-addon/Examples/Navigator/Set3DDocumentSettings.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/Set3DDocumentSettings.py): Switches the transparency of the first 3D Document with Set3DDocumentSettings, then restores it. Needs at least one 3D Document.
 
 ### Get3DFilterAndCutSettings
 
@@ -10079,8 +12690,8 @@ Parameters:
   - `gridOffsX` (number): The X offset of the grid.
   - `gridOffsY` (number): The Y offset of the grid.
   - `gridOffsZ` (number): The Z offset of the grid.
-  - `backColor` (object): A color with transparency, each component from 0 to 1.
-  - `gridColor` (object): A color with transparency, each component from 0 to 1.
+  - `backColor` (object): A color with transparency, each component from 0 to 1. Archicad keeps 8 bits per component, so a value that is set is rounded to the nearest 1/255.
+  - `gridColor` (object): A color with transparency, each component from 0 to 1. Archicad keeps 8 bits per component, so a value that is set is rounded to the nearest 1/255.
 
 
 Grasshopper: `SetGridSettingsComponent`
@@ -10150,7 +12761,7 @@ Example: [archicad-addon/Examples/Navigator/ResetZoom.py](https://github.com/ENZ
 
 ### CreateSections
 
-Creates Section elements on the floor plan. A section looks to the left of its start to end direction, with its depth line that far on that side. GetDetailsOfElements reads the geometry of existing sections back.
+Creates Section elements on the floor plan. A section looks to the left of its start to end direction, with its depth line that far on that side. GetDetailsOfElements reads the geometry of existing sections back. The floor plan must be the active window: creation fails while a Section or Elevation window is active.
 
 Group: Navigator Commands. Added in Tapir 1.5.0. Docs: https://archicad-api.com/archicad-addon/#CreateSections
 
@@ -10161,7 +12772,10 @@ Parameters:
   - `endCoordinate` (Coordinate2D, required)
   - `depth` (number): The distance of the depth line from the section line, on the left of the start to end direction, which is the direction the section looks in. Default is 1.
   - `name` (string)
+  - `id` (string): The reference ID shown in the section marker and in the Project Map. A '/' splits it between the start and the end marker. Without it the section takes the ID of the Section tool defaults, or none with a favoriteName, as a Section favorite carries no ID.
+  - `favoriteName` (string): Optional name of a Section favorite to base the new section on, marker included. Its settings are applied first, then the explicitly given fields override them. The Section tool defaults are restored afterwards.
   - `floorIndex` (integer)
+  - `details` (SectionElevationSettableDetails)
 
 Returns:
 
@@ -10170,6 +12784,27 @@ Returns:
 Grasshopper: `CreateSectionsComponent`
 
 Example: [archicad-addon/Examples/Navigator/CreateSections.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/CreateSections.py): Creates a 10 m long Section on the floor plan with CreateSections, then deletes it again. The section looks to the left of its start to end direction, here to the north.
+
+### ModifySections
+
+Changes the name and the reference ID of Section and Elevation elements, which the Project Map and the markers show. GetDetailsOfElements reads those of a Section back as name and idStr.
+
+Group: Navigator Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ModifySections
+
+Parameters:
+
+- `sectionsWithDetails` (array of object, required)
+  - `elementId` (ElementId, required): A Section or an Elevation.
+  - `name` (string): The new name, shown in the Project Map.
+  - `id` (string): The new reference ID, shown in the marker and in the Project Map. A '/' splits it between the start and the end marker.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `ModifySectionsComponent`
+
+Example: [archicad-addon/Examples/Navigator/ModifySections.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/ModifySections.py): Creates a Section, changes its name and reference ID with ModifySections and reads them back. Deletes the section at the end.
 
 ### CreateInteriorElevations
 
@@ -10188,6 +12823,69 @@ Returns:
 Grasshopper: `CreateInteriorElevationsComponent`
 
 Example: [archicad-addon/Examples/Navigator/CreateInteriorElevations.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/CreateInteriorElevations.py): Creates an Interior Elevation around a 5 x 4 m room with CreateInteriorElevations, then deletes it again. Every pair of consecutive points becomes one segment with its own viewpoint; repeating the first point at the end closes the chain.
+
+### CreateElevations
+
+Creates Elevation elements on the floor plan. The floor plan must be the active window: creation fails while a Section or Elevation window is active.
+
+Group: Navigator Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#CreateElevations
+
+Parameters:
+
+- `elevationsData` (array of object, required)
+  - `startCoordinate` (Coordinate2D, required)
+  - `endCoordinate` (Coordinate2D, required)
+  - `depth` (number)
+  - `name` (string)
+  - `id` (string): The reference ID shown in the elevation marker and in the Project Map. Without it the elevation takes the ID of the Elevation tool defaults.
+  - `floorIndex` (integer)
+  - `details` (SectionElevationSettableDetails)
+
+Returns:
+
+- `elements` (ElementIdsOrErrors, required)
+
+Grasshopper: `CreateElevationsComponent`
+
+Example: [archicad-addon/Examples/Navigator/CreateElevations.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/CreateElevations.py): Creates an Elevation on the floor plan with CreateElevations, then deletes it again. The optional 'details' block takes the settings of SetSectionsAndElevationsDetails. The floor plan must be the active window, so the script switches to it first.
+
+### GetSectionsAndElevationsDetails
+
+Gets every configurable setting of the given Section and Elevation elements, with their name and reference ID.
+
+Group: Navigator Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetSectionsAndElevationsDetails
+
+Parameters:
+
+- `elements` (Elements, required)
+
+Returns:
+
+- `detailsOfElements` (array of SectionElevationDetailsOrError, required)
+
+Grasshopper: `GetSectionsAndElevationsDetailsComponent`
+
+Example: [archicad-addon/Examples/Navigator/GetSectionsAndElevationsDetails.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/GetSectionsAndElevationsDetails.py): Creates a Section and reads its settings back with GetSectionsAndElevationsDetails. Prints its name, reference ID and ranges, then deletes the section.
+
+### SetSectionsAndElevationsDetails
+
+Sets settings of the given Section and Elevation elements: pens, line types, horizontal and vertical range, model effects, story handles and markers. The name and the reference ID are changed with ModifySections.
+
+Group: Navigator Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#SetSectionsAndElevationsDetails
+
+Parameters:
+
+- `elementsWithDetails` (array of object, required)
+  - `elementId` (ElementId, required)
+  - `details` (SectionElevationSettableDetails, required)
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `SetSectionsAndElevationsDetailsComponent`
+
+Example: [archicad-addon/Examples/Navigator/SetSectionsAndElevationsDetails.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/SetSectionsAndElevationsDetails.py): Creates a Section, limits its horizontal and vertical range with SetSectionsAndElevationsDetails and reads the settings back. The name and the reference ID are changed with ModifySections instead. Deletes the section at the end.
 
 ### MoveNavigatorItem
 
@@ -10208,14 +12906,14 @@ Example: [archicad-addon/Examples/Navigator/MoveNavigatorItem.py](https://github
 
 ### RenameNavigatorItem
 
-Renames a navigator item or changes its ID. newId sets the custom layout number of a layout and the custom ID of any other item. For a Project Map section, elevation, detail or worksheet the name and ID of the element behind the viewpoint are changed, for an interior elevation those of the segment the item stands for; the change is undone when the item does not show the new name. The name and ID of other Project Map items (stories, schedules, ...) cannot be changed. Fails when Archicad refuses the change or does not apply the new name or ID. With customName false the item drops its custom name and follows its Project Map source again.
+Renames a navigator item or changes its ID. Renaming the Layout Book item of a placed Drawing also sets the custom name of the Drawing. newId sets the custom layout number of a layout and the custom ID of any other item. For a Project Map section, elevation, detail or worksheet the name and ID of the element behind the viewpoint are changed, for an interior elevation those of the segment the item stands for; the change is undone when the item does not show the new name. The name and ID of other Project Map items (stories, schedules, ...) cannot be changed. Fails when Archicad refuses the change or does not apply the new name or ID. With customName false the item drops its custom name and follows its Project Map source again.
 
 Group: Navigator Commands. Added in Tapir 1.1.7. Docs: https://archicad-api.com/archicad-addon/#RenameNavigatorItem
 
 Parameters:
 
 - `navigatorItemId` (NavigatorItemId, required)
-- `newName` (string)
+- `newName` (string): The new name of the item. On the Layout Book item of a placed Drawing it is also set as the custom name of the Drawing (nameType CustomName).
 - `newId` (string): The new ID of the item. On a layout it is the custom layout number (customLayoutNumbering is switched on); on a Project Map section, elevation, interior elevation, detail or worksheet it is the reference ID of the element behind the item; on any other item it is the custom ID of the navigator item (customUiId becomes true).
 - `customName` (boolean): Set to false to drop the custom name of the item, so that it follows the name of its Project Map source again. Cannot be combined with newName.
 
@@ -10226,13 +12924,14 @@ Example: [archicad-addon/Examples/Navigator/RenameNavigatorItem.py](https://gith
 
 ### DeleteNavigatorItems
 
-Deletes navigator items from the navigator tree: views and folders of the View Map, layouts and master layouts of the Layout Book, and independent worksheets and details of the Project Map. Layout subsets and marker-linked worksheets and details cannot be deleted. An item that Archicad refuses to delete (in a Teamwork project: it is not reserved or the user has no right to delete it) is reported as a failed execution result.
+Deletes navigator items from the navigator tree: views and folders of the View Map, layouts and master layouts of the Layout Book, and independent worksheets and details of the Project Map. Layout subsets, View Map folders that are not empty, the other Project Map items and marker-linked worksheets and details cannot be deleted; the failed execution result says which case applies. An item that Archicad refuses to delete (in a Teamwork project: it is not reserved or the user has no right to delete it) is reported as a failed execution result. dryRun reports the result of the checks made before deleting (item not found, layout subset, View Map folder that is not empty) without deleting anything.
 
 Group: Navigator Commands. Added in Tapir 1.1.7. Docs: https://archicad-api.com/archicad-addon/#DeleteNavigatorItems
 
 Parameters:
 
 - `navigatorItemIds` (NavigatorItemIds, required)
+- `dryRun` (boolean): If true, nothing is deleted: each execution result says what the deletion would do for that item, from the checks made before deleting (corrupt id, item not found, layout subset, View Map folder that is not empty). Archicad can still refuse an item that passes them: a Project Map item other than an independent worksheet, detail or viewpoint created by the Tapir Add-On, a marker-linked worksheet or detail, or in a Teamwork project an item that is not reserved. Default is false.
 
 Returns:
 
@@ -10262,6 +12961,26 @@ Grasshopper: `GetNavigatorItemTreeComponent`
 
 Example: [archicad-addon/Examples/Navigator/GetNavigatorItemTree.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/GetNavigatorItemTree.py): Prints the Layout Book as an indented tree with GetNavigatorItemTree. The other maps are ProjectMap, PublicViewMap and PublisherSets (with publisherSetName).
 
+### GetSchedules
+
+Returns the Interactive Schedules of the Project Map: navigator item id, name, ID and the folders they are in. Archicad's API does not give the rows of a schedule nor export it; to export one, put it in a publisher set with a spreadsheet format in Archicad and run PublishPublisherSet.
+
+Group: Navigator Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetSchedules
+
+Parameters: none.
+
+Returns:
+
+- `schedules` (array of object, required): The Interactive Schedules of the Project Map, in navigator order.
+  - `navigatorItemId` (NavigatorItemId, required)
+  - `name` (string, required): The name of the schedule.
+  - `uiId` (string, required): The ID of the schedule, shown before its name in the navigator.
+  - `folderPath` (array of string, required): The names of the Project Map items the schedule is in, from the top down, without the project itself (e.g. Schedules, Element). Archicad's API does not say whether a schedule lists elements, components or surfaces; the default Project Map shows it by these folders.
+
+Grasshopper: `GetSchedulesComponent`
+
+Example: [archicad-addon/Examples/Navigator/GetSchedules.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/GetSchedules.py): Lists the Interactive Schedules of the Project Map with GetSchedules. Each line shows the folders the schedule is in, its ID and its name.
+
 ### GetNavigatorParentItems
 
 Returns the parent of each given navigator item: the folder, subset or layout book item it is in. The root of a map has no parent and gets an error.
@@ -10274,7 +12993,7 @@ Parameters:
 
 Returns:
 
-- `parentItems` (array of object or ErrorItem, required): The parent of each requested navigator item, in the order of the input, or an error for an item whose parent cannot be read.
+- `parentItems` (array of NavigatorParentItem or ErrorItem, required): The parent of each requested navigator item, in the order of the input, or an error for an item whose parent cannot be read.
 
 Grasshopper: `CreateViewMapFolderComponent`, `GetNavigatorParentItemsComponent`
 
@@ -10345,7 +13064,7 @@ Parameters:
 
 Returns:
 
-- `viewpoints` (array of object or ErrorItem, required): The details of each given add-on viewpoint item, in the order of the input, or an error for an item that cannot be read.
+- `viewpoints` (array of AddOnViewpointDetails or ErrorItem, required): The details of each given add-on viewpoint item, in the order of the input, or an error for an item that cannot be read.
 
 Grasshopper: `GetAddOnViewpointsComponent`
 
@@ -10360,7 +13079,7 @@ Group: Navigator Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/
 Parameters:
 
 - `viewpoints` (array of object, required): The add-on viewpoint items to create. The identifier of a new root or group is only known from the response, so create the parents in an earlier call.
-  - `itemType` (string ("Root", "Group", "Leaf"), required): Whether to create a root, a group or a leaf node. Roots and groups can't be created in a Teamwork project.
+  - `itemType` (AddOnViewpointType, required)
   - `parentViewpointId` (object): The root or group to create the item in. Required for a group or a leaf node, ignored for a root.
   - `displayId` (string): The ID shown for the item in the Project Map.
   - `displayName` (string): The name shown for the item in the Project Map.
@@ -10383,12 +13102,7 @@ Group: Navigator Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/
 
 Parameters:
 
-- `viewpoints` (array of object, required): The add-on viewpoint items to change. Only the given fields are changed.
-  - `viewpointId` (object, required): The identifier of the add-on viewpoint item to change.
-  - `displayId` (string): The ID shown for the item in the Project Map.
-  - `displayName` (string): The name shown for the item in the Project Map.
-  - `viewSettingsFlags` (integer): The view settings flags of the item, as Archicad stores them (a bit field).
-  - `data` (string): Data to attach to the item, base64 encoded. It replaces the attached data; an empty string removes it.
+- `viewpoints` (array of AddOnViewpointModificationData, required): The add-on viewpoint items to change. Only the given fields are changed.
 
 Returns:
 
@@ -10397,6 +13111,25 @@ Returns:
 Grasshopper: `ChangeAddOnViewpointsComponent`
 
 Example: [archicad-addon/Examples/Navigator/ChangeAddOnViewpoints.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/ChangeAddOnViewpoints.py): Renames the first add-on viewpoint root with ChangeAddOnViewpoints, reads it back, then restores its name. Needs an add-on viewpoint. Roots can't be changed in a Teamwork project. Requires Archicad 27 or later.
+
+### ReorderNavigatorItems
+
+Reorders the children of a navigator item to match the given order. Works around MoveNavigatorItem being unable to reposition an item within its current parent, by bouncing it through a sibling.
+
+Group: Navigator Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ReorderNavigatorItems
+
+Parameters:
+
+- `parentNavigatorItemId` (NavigatorItemId, required): The folder whose children should be reordered.
+- `orderedNavigatorItemIds` (array of NavigatorItemIdArrayItem, required): The complete, desired order of every child of parentNavigatorItemId. Every current child must be listed.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `ReorderNavigatorItemsComponent`
+
+Example: [archicad-addon/Examples/Navigator/ReorderNavigatorItems.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Navigator/ReorderNavigatorItems.py): Creates a View Map folder with two subfolders and swaps their order with ReorderNavigatorItems. Deletes the folders at the end.
 
 
 ## Graphic Override Commands
@@ -10509,7 +13242,7 @@ Example: [archicad-addon/Examples/IssueManagement/CreateIssue.py](https://github
 
 ### DeleteIssue
 
-Deletes the specified issue.
+Deletes the specified issue. With dryRun true nothing is deleted and no undo step is created: the response has dryRun set to true, and wouldDelete when the issue exists.
 
 Group: Issue Management Commands. Added in Tapir 1.0.2. Docs: https://archicad-api.com/archicad-addon/#DeleteIssue
 
@@ -10517,7 +13250,14 @@ Parameters:
 
 - `issueId` (IssueId, required)
 - `acceptAllElements` (boolean): Accept all creation/deletion/modification of the deleted issue. By default false.
+- `dryRun` (DryRun)
 
+Returns:
+
+- `dryRun` (DryRunFlag)
+- `success` (boolean, required)
+- `error` (Error)
+- `wouldDelete` (boolean (true))
 
 Grasshopper: `DeleteIssueComponent`
 
@@ -10642,14 +13382,15 @@ Example: [archicad-addon/Examples/IssueManagement/GetElementsAttachedToIssue.py]
 
 ### ExportIssuesToBCF
 
-Exports specified issues to a BCF file.
+Exports specified issues to a BCF file. With overwrite false it refuses to replace an existing file.
 
 Group: Issue Management Commands. Added in Tapir 1.0.6. Docs: https://archicad-api.com/archicad-addon/#ExportIssuesToBCF
 
 Parameters:
 
 - `issues` (Issues): Leave it empty to export all issues.
-- `exportPath` (string, required): The os path to the bcf file, including it's name.
+- `exportPath` (string, required): The os path to the bcf file, including it's name. An existing file is overwritten, unless overwrite is false.
+- `overwrite` (boolean): Optional, true by default. false refuses to export when a file already exists at exportPath, and writes nothing.
 - `useExternalId` (boolean, required): Use external IFC ID or Archicad IFC ID as referenced in BCF topics.
 - `alignBySurveyPoint` (boolean, required): Align BCF views by Archicad Survey Point or Archicad Project Origin.
 
@@ -10763,9 +13504,7 @@ Parameters: none.
 
 Returns:
 
-- `customScheme` (array of object, required)
-  - `customSchemeKey` (string, required): The identifier of the custom field. The same key is used in the customSchemeData of the revision changes.
-  - `customSchemeName` (string, required): The name of the custom field.
+- `customScheme` (array of RevisionChangeCustomSchemeItem, required)
 
 Grasshopper: `GetRevisionChangeCustomSchemeComponent`
 
@@ -11021,9 +13760,7 @@ Group: Design Options Commands. Added in Tapir 1.7.3. Docs: https://archicad-api
 
 Parameters:
 
-- `deactivatedDesignOptionsInCombinations` (array of object, required)
-  - `designOptionCombinationId` (DesignOptionCombinationId, required)
-  - `designOptions` (array of DesignOptionIdArrayItem, required): The design options to turn off in the combination. The other options of the combination are left as they are.
+- `deactivatedDesignOptionsInCombinations` (array of DesignOptionDeactivation, required)
 
 Returns:
 
@@ -11188,6 +13925,46 @@ Grasshopper: `DeleteDesignOptionCombinationsComponent`
 
 Example: [archicad-addon/Examples/DesignOptions/DeleteDesignOptionCombinations.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/DeleteDesignOptionCombinations.py): Creates a design option combination and deletes it with DeleteDesignOptionCombinations. Requires Archicad 29 or later.
 
+### GetHotlinkDesignOptionTables
+
+Retrieves the design option table of the given hotlink nodes and placed hotlink instances: the filter mode (main model only, by options or by combination), the design option sets, options and combinations of the hotlinked module and which of them are active. Available from Archicad 29.
+
+Group: Design Options Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetHotlinkDesignOptionTables
+
+Parameters:
+
+- `hotlinks` (array of object or object, required): The hotlink nodes (hotlinkNodeId from GetHotlinks) and placed hotlink instances (elementId of a Hotlink element) to read the design option table of.
+
+Returns:
+
+- `hotlinkDesignOptionTables` (array of object or ErrorItem, required): The design option tables, in the order of the given hotlinks.
+
+Grasshopper: `GetHotlinkDesignOptionTablesComponent`
+
+Example: [archicad-addon/Examples/DesignOptions/GetHotlinkDesignOptionTables.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/GetHotlinkDesignOptionTables.py): Prints the design option table of every hotlink node and placed hotlink with GetHotlinkDesignOptionTables. Needs at least one hotlink. Requires Archicad 29 or later.
+
+### SetHotlinkDesignOptionTables
+
+Sets the filter mode, the active combination and the active option of sets in the design option table of the given placed hotlink instances. Available from Archicad 29.
+
+Group: Design Options Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#SetHotlinkDesignOptionTables
+
+Parameters:
+
+- `hotlinkInstances` (array of object, required): The placed hotlink instances to change the design option table of. Every field but elementId is optional; what is omitted keeps its current value. The changes are applied in the order filterMode, activeDesignOptionCombination, activeDesignOptions.
+  - `elementId` (ElementId, required)
+  - `filterMode` (string ("MainModelOnly", "FilterByOptions", "FilterByCombination")): Which elements of the hotlinked module are shown: only its main model, the main model and the active option of each set, or the main model and the options of the active combination.
+  - `activeDesignOptionCombination` (string): The name of the combination to activate, one of designOptionCombinations from GetHotlinkDesignOptionTables. An empty string deactivates the active combination.
+  - `activeDesignOptions` (array of object): The option to activate in each given set; the previously active option of the set is deactivated. Sets that are not listed keep their active option.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `SetHotlinkDesignOptionTablesComponent`
+
+Example: [archicad-addon/Examples/DesignOptions/SetHotlinkDesignOptionTables.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/SetHotlinkDesignOptionTables.py): Makes the first placed hotlink show only the main model with SetHotlinkDesignOptionTables, then restores its filter mode. Needs a placed hotlink. Requires Archicad 29 or later.
+
 ### SetDefaultDesignOption
 
 Sets the given design option as the default, or the Main Model when no design option is given. Available from Archicad 29.
@@ -11281,6 +14058,45 @@ Returns:
 Grasshopper: `DuplicateDesignOptionCombinationsComponent`
 
 Example: [archicad-addon/Examples/DesignOptions/DuplicateDesignOptionCombinations.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/DuplicateDesignOptionCombinations.py): Creates a design option combination and duplicates it with DuplicateDesignOptionCombinations. Deletes both combinations at the end. Requires Archicad 29 or later.
+
+### GetDesignOptionCombinationOfViews
+
+Retrieves which design option combination the given views show: only the main model, a combination, a custom set of design options or a deleted combination. Available from Archicad 27.
+
+Group: Design Options Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetDesignOptionCombinationOfViews
+
+Parameters:
+
+- `navigatorItemIds` (NavigatorItemIds, required): The navigator items of the views (View Map items).
+
+Returns:
+
+- `designOptionCombinationOfViews` (array of object or ErrorItem, required)
+
+Grasshopper: `GetDesignOptionCombinationOfViewsComponent`
+
+Example: [archicad-addon/Examples/DesignOptions/GetDesignOptionCombinationOfViews.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/GetDesignOptionCombinationOfViews.py): Prints which design option combination each View Map view shows, with GetDesignOptionCombinationOfViews. Requires Archicad 27 or later.
+
+### SetDesignOptionCombinationOfViews
+
+Sets the design option combination the given views show, or makes them show only the main model. Available from Archicad 27.
+
+Group: Design Options Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#SetDesignOptionCombinationOfViews
+
+Parameters:
+
+- `navigatorItemIdsWithCombination` (array of object, required): The views (View Map navigator items), each with either a 'designOptionCombinationId' or 'mainModelOnly': true.
+  - `navigatorItemId` (NavigatorItemId, required)
+  - `designOptionCombinationId` (DesignOptionCombinationId): The design option combination the view should show.
+  - `mainModelOnly` (boolean): Set it to true to make the view show only the main model, without any design option.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `SetDesignOptionCombinationOfViewsComponent`
+
+Example: [archicad-addon/Examples/DesignOptions/SetDesignOptionCombinationOfViews.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/DesignOptions/SetDesignOptionCombinationOfViews.py): Makes a View Map view show only the main model with SetDesignOptionCombinationOfViews, then restores its combination. Needs a View Map view that shows the main model only or a design option combination. Requires Archicad 27 or later.
 
 ### GetHotlinkDesignOptionTableDetails
 
@@ -11498,11 +14314,7 @@ Parameters: none.
 
 Returns:
 
-- `keys` (array of object, required): The project data stored by Tapir in the project.
-  - `name` (string, required): The name of the project data.
-  - `guid` (string, required): The identifier of the add-on object that stores the project data.
-  - `clientOnly` (boolean, required): True when the project data is kept on this client only and is not shared in Teamwork.
-  - `teamworkOwner` (User): The Teamwork user who has reserved the project data. Omitted when nobody has reserved it or the project is not a Teamwork project.
+- `keys` (array of ProjectDataKey, required): The project data stored by Tapir in the project.
 
 Grasshopper: `GetProjectDataKeysComponent`
 
@@ -11516,11 +14328,11 @@ Group: Project Data Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.c
 
 Parameters:
 
-- `names` (array of string, required): The names of the project data to get.
+- `names` (array of ProjectDataName, required): The names of the project data to get.
 
 Returns:
 
-- `values` (array of object or ErrorItem, required): The project data in the order of the given names, or an error for a name that has no project data.
+- `values` (array of ProjectDataValue or ErrorItem, required): The project data in the order of the given names, or an error for a name that has no project data.
 
 Grasshopper: `GetProjectDataComponent`
 
@@ -11534,11 +14346,7 @@ Group: Project Data Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.c
 
 Parameters:
 
-- `values` (array of object, required): The project data to create or to overwrite. Prefix the names with the name of your tool (for example 'my-tool/settings') so different scripts do not overwrite each other's data.
-  - `name` (string, required): The name of the project data.
-  - `content` (string, required): The content of the project data, for example a JSON string.
-  - `clientOnly` (boolean): Creates the project data on this client only, it is not shared in Teamwork. Used only when the project data is created. The default is false.
-  - `unique` (boolean): Creates the project data as a unique add-on object: in Teamwork only one can exist with its name, even when several users create it at the same time. Used only when the project data is created, and cannot be combined with clientOnly. The default is false.
+- `values` (array of ProjectDataValueData, required): The project data to create or to overwrite. Prefix the names with the name of your tool (for example 'my-tool/settings') so different scripts do not overwrite each other's data.
 
 Returns:
 
@@ -11556,7 +14364,7 @@ Group: Project Data Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.c
 
 Parameters:
 
-- `names` (array of string, required): The names of the project data to delete.
+- `names` (array of ProjectDataName, required): The names of the project data to delete.
 
 Returns:
 
@@ -11574,14 +14382,12 @@ Group: Project Data Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.c
 
 Parameters:
 
-- `names` (array of string, required): The names of the project data to reserve.
+- `names` (array of ProjectDataName, required): The names of the project data to reserve.
 
 Returns:
 
 - `executionResult` (ExecutionResult, required)
-- `conflicts` (array of object): The project data that could not be reserved because another user has reserved it.
-  - `name` (string, required): The name of the project data.
-  - `user` (User, required)
+- `conflicts` (array of ProjectDataReservationConflict): The project data that could not be reserved because another user has reserved it.
 
 Grasshopper: `ReserveProjectDataComponent`
 
@@ -11595,7 +14401,7 @@ Group: Project Data Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.c
 
 Parameters:
 
-- `names` (array of string, required): The names of the project data to release.
+- `names` (array of ProjectDataName, required): The names of the project data to release.
 
 
 Grasshopper: `ReleaseProjectDataComponent`
@@ -11610,7 +14416,7 @@ Group: Project Data Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.c
 
 Parameters:
 
-- `names` (array of string, required): The names of the project data to request from the users who have reserved them.
+- `names` (array of ProjectDataName, required): The names of the project data to request from the users who have reserved them.
 - `mailText` (string): The message sent with the request. The default is empty.
 
 
@@ -11626,7 +14432,7 @@ Group: Project Data Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.c
 
 Parameters:
 
-- `names` (array of string, required): The names of the project data, reserved by the current user, to grant.
+- `names` (array of ProjectDataName, required): The names of the project data, reserved by the current user, to grant.
 - `toUserId` (integer, required): The Teamwork user id of the user who gets the project data, for example the userId of a user returned by GetProjectDataKeys or ReserveProjectData.
 
 
@@ -11634,12 +14440,70 @@ Grasshopper: `GrantProjectDataComponent`
 
 Example: [archicad-addon/Examples/ProjectData/GrantProjectData.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ProjectData/GrantProjectData.py): Saves and reserves a project data, then grants it to another Teamwork user with GrantProjectData. Needs a Teamwork project. Set toUserId to the user to grant to, e.g. the userId of a teamworkOwner that GetProjectDataKeys lists.
 
+### GetModulData
+
+Gets the module data Tapir stored in the project with StoreModulData: the given names, or all of them, with their data version and, unless includeContent is false, their content. Module data are the custom data sections of Archicad's ModulData Manager: text saved in the project file under a name, kept apart from project data (SetProjectData).
+
+Group: Project Data Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetModulData
+
+Parameters:
+
+- `names` (array of string): The names of the module data to get; the empty name is the default section. When omitted, every module data Tapir stored in the project is returned.
+- `includeContent` (boolean): Whether the content is returned too. When false, only the names and data versions are read, without loading the data. The default is true.
+
+Returns:
+
+- `modulData` (array of object or ErrorItem, required): The module data in the order of the given names (or of the list Archicad returns), or an error for a name that has no module data.
+
+Grasshopper: `GetModulDataComponent`
+
+Example: [archicad-addon/Examples/ProjectData/GetModulData.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ProjectData/GetModulData.py): GetModulData returns the module data Tapir stored in the project (StoreModulData): every one without names, or the given names. With includeContent false only the names and data versions are read. A name without module data gets an error item.
+
+### StoreModulData
+
+Creates or overwrites module data: text (for example JSON) saved in the project under a name, with an optional data version. Prefix the names with the name of your tool (for example 'my-tool/settings') so scripts do not overwrite each other's data. Storing module data is not an undoable step.
+
+Group: Project Data Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#StoreModulData
+
+Parameters:
+
+- `modulData` (array of object, required): The module data to create or to overwrite. Prefix the names with the name of your tool (for example 'my-tool/settings') so different scripts do not overwrite each other's data.
+  - `name` (string, required): The name of the module data; the empty name is the default section.
+  - `content` (string, required): The content of the module data, for example a JSON string.
+  - `dataVersion` (integer): A version number stored with the data, returned by GetModulData, for example to tell the formats of your content apart. The default is 1.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `StoreModulDataComponent`
+
+Example: [archicad-addon/Examples/ProjectData/StoreModulData.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ProjectData/StoreModulData.py): Module data are the custom data sections of Archicad's ModulData Manager: text saved in the project file under a name, kept apart from project data (SetProjectData). StoreModulData creates or overwrites them, with an optional data version; storing is not an undoable step.
+
+### DeleteModulData
+
+Deletes the module data with the given names. Deleting module data is not an undoable step.
+
+Group: Project Data Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#DeleteModulData
+
+Parameters:
+
+- `names` (array of string, required): The names of the module data to delete; the empty name is the default section.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `DeleteModulDataComponent`
+
+Example: [archicad-addon/Examples/ProjectData/DeleteModulData.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ProjectData/DeleteModulData.py): DeleteModulData deletes the module data with the given names; a name without module data gets a failed execution result. Deleting is not an undoable step.
+
 
 ## MEP Commands
 
 ### GetMEPElements
 
-Retrieves the MEP (Mechanical, Electrical, Plumbing) elements of the project, optionally filtered by type and domain. MEP elements are ordinary elements, so the generic element commands work on them as well (for example they can be deleted with the DeleteElements command). Available from Archicad 28.
+Retrieves the MEP (Mechanical, Electrical, Plumbing) elements of the project (every element the MEP API lists, and from Archicad 30 the electrical panels and devices), optionally filtered by type and domain. MEP elements are ordinary elements, so the generic element commands work on them as well (for example they can be deleted with the DeleteElements command). Available from Archicad 28.
 
 Group: MEP Commands. Added in Tapir 1.5.6. Docs: https://archicad-api.com/archicad-addon/#GetMEPElements
 
@@ -11658,7 +14522,7 @@ Example: [archicad-addon/Examples/MEP/GetMEPElements.py](https://github.com/ENZY
 
 ### GetMEPRoutingElements
 
-Retrieves the details of the given MEP routing elements: domain, MEP system, offset from the home story, branch preference table, the ports logically connected at the route's beginning and end, the floor plan display settings (cut plane position, floor plan display option, show projection and on-story visibility, from Archicad 29), route polyline, segments with cross section data (shape, size, preference table and reference id), begin and end nodes, anchor, reference line offsets, wall thickness, flange size, connection style and rigid segments, and nodes with their incoming and outgoing segments, preferred transition placement, elbows and transitions. Available from Archicad 28.
+Retrieves the details of the given MEP routing elements: domain, MEP system, offset from the home story, branch preference table, the ports logically connected at the route's beginning and end, the floor plan display settings (cut plane position, floor plan display option, show projection and on-story visibility, from Archicad 29), route polyline, segments with cross section data (shape, size, preference table and reference id), begin and end nodes, anchor, reference line offsets, wall thickness, flange size, connection style, insulation thickness and rigid segments, and nodes with their incoming and outgoing segments, preferred transition placement, elbows and transitions. Available from Archicad 28.
 
 Group: MEP Commands. Added in Tapir 1.5.6. Docs: https://archicad-api.com/archicad-addon/#GetMEPRoutingElements
 
@@ -11676,7 +14540,7 @@ Example: [archicad-addon/Examples/MEP/GetMEPRoutingElements.py](https://github.c
 
 ### GetMEPPorts
 
-Retrieves the ports of the given MEP elements including position, shape, size, connection status and connection style (from Archicad 30), the flow direction of piping and ventilation ports, the nominal size of piping ports (from Archicad 30), and the outer diameter, wall thickness and flange size (Archicad 30) of piping and ventilation ports. Available from Archicad 28.
+Retrieves the ports of the given MEP elements including position, shape, size, connection status (Archicad 27: whether the port is connected, from Archicad 28: whether it is physically connected) and connection style (from Archicad 30), the flow direction of piping and ventilation ports (from Archicad 28), the nominal size of piping ports (from Archicad 30), and the outer diameter, wall thickness and flange size (Archicad 30) of piping and ventilation ports. Available from Archicad 27.
 
 Group: MEP Commands. Added in Tapir 1.5.6. Docs: https://archicad-api.com/archicad-addon/#GetMEPPorts
 
@@ -11694,11 +14558,13 @@ Example: [archicad-addon/Examples/MEP/GetMEPPorts.py](https://github.com/ENZYME-
 
 ### GetMEPDistributionSystems
 
-Retrieves the MEP distribution systems of the project with their domain, MEP system attribute and member elements. Available from Archicad 28.
+Retrieves the MEP distribution systems of the project with their domain, MEP system attribute, member elements, physical systems (from Archicad 29) and optionally their tree: the elements from the root element on, each with its previous and next elements and the connecting ports. Available from Archicad 28.
 
 Group: MEP Commands. Added in Tapir 1.5.6. Docs: https://archicad-api.com/archicad-addon/#GetMEPDistributionSystems
 
-Parameters: none.
+Parameters:
+
+- `includeTree` (boolean): Whether to return the tree of each system: its elements from the root element on, each with the element it is connected to on the way from the root. False when not given.
 
 Returns:
 
@@ -11717,17 +14583,7 @@ Group: MEP Commands. Added in Tapir 1.5.6. Docs: https://archicad-api.com/archic
 
 Parameters:
 
-- `routingElementsData` (array of object, required): Array of data to create MEP routing elements.
-  - `domain` (MEPDomain, required)
-  - `nodeCoordinates` (array of Coordinate3D, required): The corner points of the route polyline.
-  - `crossSectionWidth` (number): Optional cross section width applied to all segments.
-  - `crossSectionHeight` (number): Optional cross section height applied to all segments.
-  - `crossSectionShape` (MEPCrossSectionShape): Optional; applied to all segments.
-  - `crossSectionReferenceId` (integer): Optional cross section reference id of the segment preference table (used for circular cross sections). Resolved against preferenceTableId if given, otherwise against the table of the current routing tool default.
-  - `preferenceTableId` (Guid): Optional guid of the segment preference table (see GetMEPPreferenceTables) applied to all segments. Not applicable to the CableCarrier domain.
-  - `mepSystemId` (AttributeId): Optional MEP system attribute.
-  - `layerIndex` (integer): Optional layer attribute index of the routing element and all its parts (routing segments, rigid segments, elbows and transitions). Only a positive index takes effect; otherwise the routing tool default layer is used. A layer that does not exist or is locked gives an error for the item, and nothing is placed.
-  - `defaults` (object): Optional changes to the routing tool default of the domain before the route is placed. Only what is placed changes, not the routing tool's settings. A value that cannot be set gives an error for the item, and nothing is placed.
+- `routingElementsData` (array of MEPRoutingElementData, required): Array of data to create MEP routing elements.
 
 Returns:
 
@@ -11739,19 +14595,13 @@ Example: [archicad-addon/Examples/MEP/CreateMEPRoutingElements.py](https://githu
 
 ### CreateMEPElements
 
-Creates MEP elements (Terminal, Accessory, Equipment or Fitting) at the given positions, optionally with a changed insulation that applies only to what is placed. Available from Archicad 28.
+Creates MEP elements (Terminal, Accessory, Equipment or Fitting) at the given positions, optionally with another library part, size (from Archicad 30), MEP system, port sizes and shapes and a changed insulation, which apply only to what is placed. Available from Archicad 28.
 
 Group: MEP Commands. Added in Tapir 1.5.6. Docs: https://archicad-api.com/archicad-addon/#CreateMEPElements
 
 Parameters:
 
-- `elementsData` (array of object, required): Array of data to create MEP elements.
-  - `type` (MEPComponentType, required)
-  - `domain` (MEPDomain): Required for all types except Equipment.
-  - `position` (Coordinate3D, required)
-  - `orientationDirection` (Coordinate3D): Optional direction vector of the orientation. Defaults to (1, 0, 0).
-  - `orientationRotation` (Coordinate3D): Optional rotation vector of the orientation. Defaults to (0, 1, 0).
-  - `defaults` (object): Optional changes to the tool default before the element is placed. Only what is placed changes, not the tool's settings. A value that cannot be set gives an error for the item, and nothing is placed.
+- `elementsData` (array of MEPElementData, required): Array of data to create MEP elements.
 
 Returns:
 
@@ -11763,33 +14613,13 @@ Example: [archicad-addon/Examples/MEP/CreateMEPElements.py](https://github.com/E
 
 ### ModifyMEPRoutingElements
 
-Modifies the given MEP routing elements: MEP system, branch preference table, floor plan display settings (cut plane position, floor plan display option, show projection and on-story visibility, from Archicad 29), cross section data (shape, size, preference table and reference id), anchor, reference line offsets, wall thickness, flange size and connection style of all segments, preferred transition placement of all nodes, and node positions. Available from Archicad 28.
+Modifies the given MEP routing elements: MEP system, branch preference table, floor plan display settings (cut plane position, floor plan display option, show projection and on-story visibility, from Archicad 29), cross section data (shape, size, preference table and reference id), anchor, reference line offsets, wall thickness, flange size and connection style of all segments, preferred transition placement of all nodes, insulation thickness of the whole route (segments, elbows and transitions), and node positions. Available from Archicad 28.
 
 Group: MEP Commands. Added in Tapir 1.5.6. Docs: https://archicad-api.com/archicad-addon/#ModifyMEPRoutingElements
 
 Parameters:
 
-- `routingElementsData` (array of object, required): Array of data to modify MEP routing elements. Only provided fields are changed.
-  - `elementId` (ElementId, required)
-  - `mepSystemId` (AttributeId)
-  - `crossSectionWidth` (number): New cross section width applied to all segments.
-  - `crossSectionHeight` (number): New cross section height applied to all segments.
-  - `crossSectionShape` (MEPCrossSectionShape): The new shape is applied to all segments.
-  - `crossSectionReferenceId` (integer): New cross section reference id of the segment preference table applied to all segments (used for circular cross sections). Resolved against preferenceTableId if given, otherwise against the table the segments already use.
-  - `preferenceTableId` (Guid): New segment preference table (guid as returned by GetMEPPreferenceTables) applied to all segments. Not applicable to the CableCarrier domain.
-  - `branchPreferenceTableId` (Guid): New branch preference table (guid as returned by GetMEPPreferenceTables) of the routing element.
-  - `anchor` (string ("TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight")): New anchor point of the cross section, on a 3x3 grid, applied to all segments.
-  - `referenceLineOffsetX` (number): New horizontal offset of the reference line from the anchor point, applied to all segments.
-  - `referenceLineOffsetY` (number): New vertical offset of the reference line from the anchor point, applied to all segments.
-  - `wallThickness` (number): New wall thickness applied to all segments.
-  - `flangeSize` (number): New flange size applied to all segments.
-  - `connectionStyle` (MEPConnectionStyle): New connection style applied to all segments.
-  - `preferredTransitionPlacement` (MEPPreferredTransitionPlacement): New preferred transition placement applied to all nodes.
-  - `cutPlanePosition` (MEPCutPlanePosition): New cut plane position of the routing element. Available from Archicad 29.
-  - `floorPlanDisplayOption` (MEPFloorPlanDisplayOption): New floor plan display option of the routing element. Available from Archicad 29.
-  - `showProjection` (MEPShowProjection): New show projection setting of the routing element. Available from Archicad 29.
-  - `onStoryVisibility` (MEPOnStoryVisibility): New on-story visibility of the routing element. Available from Archicad 29.
-  - `nodePositions` (array of Coordinate3D): New positions of the routing nodes. The size must match the number of nodes of the route.
+- `routingElementsData` (array of MEPRoutingElementModificationData, required): Array of data to modify MEP routing elements. Only provided fields are changed.
 
 Returns:
 
@@ -11807,13 +14637,7 @@ Group: MEP Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archic
 
 Parameters:
 
-- `portsData` (array of object, required): Array of data to modify MEP ports. Only provided fields are changed.
-  - `portId` (Guid, required): The port to modify, as returned by GetMEPPorts.
-  - `shape` (MEPCrossSectionShape): New shape of the port.
-  - `connectionStyle` (MEPConnectionStyle): New connection style of the port. Available from Archicad 30.
-  - `flowDirection` (MEPFlowDirection): New flow direction of a piping or ventilation port.
-  - `outerDiameter` (number): New outer diameter of a piping port.
-  - `nominalSize` (string): New nominal size of a piping port. Available from Archicad 30.
+- `portsData` (array of MEPPortModificationData, required): Array of data to modify MEP ports. Only provided fields are changed.
 
 Returns:
 
@@ -11825,15 +14649,13 @@ Example: [archicad-addon/Examples/MEP/ModifyMEPPorts.py](https://github.com/ENZY
 
 ### ConnectMEPElements
 
-Connects MEP routing elements to other MEP elements or routes. Merges routes, splits routes or creates branch elements as needed. Archicad 27 does not report the merged, split or created elements. Available from Archicad 27.
+Connects MEP routing elements to other MEP elements or routes. Merges routes, splits routes or creates branch elements as needed. The first or last node of the 'connectToId' route must lie exactly on the 'routingElementId' route, so for a tee pass the main route as 'routingElementId' and the branch as 'connectToId'. A failed connection says which condition is not met. Archicad 27 does not report the merged, split or created elements. Available from Archicad 27.
 
 Group: MEP Commands. Added in Tapir 1.5.6. Docs: https://archicad-api.com/archicad-addon/#ConnectMEPElements
 
 Parameters:
 
-- `connectionsData` (array of object, required): Array of connections to create.
-  - `routingElementId` (ElementId, required): The routing element to connect.
-  - `connectToId` (ElementId, required): The MEP element or routing element to connect to.
+- `connectionsData` (array of MEPConnectionData, required): Array of connections to create.
 
 Returns:
 
@@ -11851,13 +14673,11 @@ Group: MEP Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archic
 
 Parameters:
 
-- `portPairs` (array of object, required): The pairs of ports to check.
-  - `portId` (Guid, required): The port to check, as returned by GetMEPPorts.
-  - `otherPortId` (Guid, required): The port to connect it to, as returned by GetMEPPorts.
+- `portPairs` (array of MEPPortPair, required): The pairs of ports to check.
 
 Returns:
 
-- `results` (array of object or ErrorItem, required): The result for each pair of ports, in the order of the input.
+- `results` (array of MEPPortConnectability or ErrorItem, required): The result for each pair of ports, in the order of the input.
 
 Grasshopper: `CheckMEPPortConnectabilityComponent`
 
@@ -11871,7 +14691,7 @@ Group: MEP Commands. Added in Tapir 1.5.7. Docs: https://archicad-api.com/archic
 
 Parameters:
 
-- `domain` (MEPPreferenceTableDomain, required)
+- `domain` (MEPPreferenceTableDomain, required): The MEP domain of the segment preference tables.
 - `includeFittingTables` (boolean): Also return the elbow, branch and transition preference tables. Defaults to false. Ignored for the CableCarrier domain.
 
 Returns:
@@ -11891,19 +14711,18 @@ Example: [archicad-addon/Examples/MEP/GetMEPPreferenceTables.py](https://github.
 
 ### ModifyMEPPreferenceTables
 
-Modifies the MEP preference tables of a domain, in the shape GetMEPPreferenceTables returns them: adds tables, changes their names, segmentation lengths (from Archicad 29) and row values and descriptions, deletes or empties rows, adds rows to the rectangular duct and cable carrier tables, deletes tables, and deletes reference ids from the reference set and angles from the angle set (from Archicad 29). Each table is changed in one undoable step. Available from Archicad 28.
+Modifies the MEP preference tables of a domain, in the shape GetMEPPreferenceTables returns them: adds tables, changes their names, segmentation lengths (from Archicad 29) and row values and descriptions, deletes or empties rows, adds rows to the rectangular duct and cable carrier tables, deletes tables, deletes reference ids from the reference set, and adds and deletes angles of the angle set (from Archicad 29). Each table is changed in one undoable step. Available from Archicad 28.
 
 Group: MEP Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#ModifyMEPPreferenceTables
 
 Parameters:
 
-- `domain` (MEPPreferenceTableDomain, required)
-- `tablesToAdd` (array of object): New tables to add to the domain, before the other changes.
-  - `type` (MEPPreferenceTableType, required)
-  - `name` (string, required)
+- `domain` (MEPPreferenceTableDomain, required): The MEP domain of the segment preference tables.
+- `tablesToAdd` (array of MEPPreferenceTableAddition): New tables to add to the domain, before the other changes.
 - `tables` (array of MEPPreferenceTableChange): The tables of the domain to change, in the shape GetMEPPreferenceTables returns them. Each table is changed in one undoable step.
 - `tablesToDelete` (array of string): The guids of the tables of the domain to delete, after the other table changes.
 - `referenceIdsToDelete` (array of integer): Reference ids to delete from the reference set of the Piping or Ventilation domain.
+- `anglesToAdd` (array of number): Angles in degrees, between 1 and 90, to add to the angle set of the Piping or Ventilation domain, so that elbow and branch rows can have them. They are added before the tables are changed. Available from Archicad 29.
 - `anglesToDelete` (array of number): Angles to delete from the angle set of the Piping or Ventilation domain, as GetMEPPreferenceTables returns them. Available from Archicad 29.
 
 Returns:
@@ -11912,6 +14731,7 @@ Returns:
 - `tables` (ExecutionResults, required): One result for each item of tables.
 - `deletedTables` (ExecutionResults, required): One result for each item of tablesToDelete.
 - `referenceSet` (ExecutionResult): Only when referenceIdsToDelete is given.
+- `addedAngles` (ExecutionResult): Only when anglesToAdd is given.
 - `angleSet` (ExecutionResult): Only when anglesToDelete is given.
 
 Grasshopper: `ModifyMEPPreferenceTablesComponent`
@@ -11942,8 +14762,7 @@ Group: MEP Commands. Added in Tapir 1.7.2. Docs: https://archicad-api.com/archic
 
 Parameters:
 
-- `systemGroupsData` (array of object, required): Array of data to create system groups.
-  - `name` (string, required)
+- `systemGroupsData` (array of MEPSystemGroupData, required): Array of data to create system groups.
 
 Returns:
 
@@ -11961,11 +14780,7 @@ Group: MEP Commands. Added in Tapir 1.7.2. Docs: https://archicad-api.com/archic
 
 Parameters:
 
-- `physicalSystemsData` (array of object, required): Array of data to create physical systems.
-  - `systemGroupId` (MEPSystemGroupId, required): The system group the new physical system belongs to.
-  - `name` (string, required)
-  - `rootElementId` (ElementId): The MEP element the system starts from. Archicad keeps it only while it is part of an MEP network: the root of a stand-alone element is cleared when the MEP networks are recalculated.
-  - `mepSystemId` (AttributeId): The MEP system attribute used as the category of the physical system.
+- `physicalSystemsData` (array of MEPPhysicalSystemData, required): Array of data to create physical systems.
 
 Returns:
 
@@ -11983,9 +14798,7 @@ Group: MEP Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/archic
 
 Parameters:
 
-- `systemGroupsData` (array of object, required): Array of data to modify system groups.
-  - `systemGroupId` (MEPSystemGroupId, required)
-  - `name` (string, required): The new name of the system group.
+- `systemGroupsData` (array of MEPSystemGroupModificationData, required): Array of data to modify system groups.
 
 Returns:
 
@@ -12003,11 +14816,7 @@ Group: MEP Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/archic
 
 Parameters:
 
-- `physicalSystemsData` (array of object, required): Array of data to modify physical systems. Only the given fields are changed.
-  - `physicalSystemId` (MEPPhysicalSystemId, required)
-  - `name` (string): The new name of the physical system.
-  - `rootElementId` (ElementId): The MEP element the system starts from. Archicad keeps it only while it is part of an MEP network: the root of a stand-alone element is cleared when the MEP networks are recalculated.
-  - `mepSystemId` (AttributeId): The MEP system attribute used as the category of the physical system.
+- `physicalSystemsData` (array of MEPPhysicalSystemModificationData, required): Array of data to modify physical systems. Only the given fields are changed.
 
 Returns:
 
@@ -12025,8 +14834,7 @@ Group: MEP Commands. Added in Tapir 1.7.3. Docs: https://archicad-api.com/archic
 
 Parameters:
 
-- `physicalSystems` (array of object, required): The physical systems to remove from their system groups. Their member elements are not deleted.
-  - `physicalSystemId` (MEPPhysicalSystemId, required)
+- `physicalSystems` (array of MEPPhysicalSystemIdArrayItem, required): The physical systems to remove from their system groups. Their member elements are not deleted.
 
 Returns:
 
@@ -12035,6 +14843,117 @@ Returns:
 Grasshopper: `DeleteMEPPhysicalSystemsComponent`
 
 Example: [archicad-addon/Examples/MEP/DeleteMEPPhysicalSystems.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/MEP/DeleteMEPPhysicalSystems.py): Creates a physical system in a new MEP system group and removes it again with DeleteMEPPhysicalSystems. Leaves the new, empty system group "Heating" in the project. Requires Archicad 29 or later.
+
+### GetMEPToolDefaults
+
+Retrieves the current settings of the MEP tools per domain, without changing them: the routing tool (MEP system, branch preference table, floor plan display settings from Archicad 29, and its segment, node, elbow (Archicad 27 and from Archicad 29) and transition defaults), its rigid segment and branch defaults, the flexible segment tool, the library part, insulation and port settings of the terminal, accessory, fitting and equipment tools, and from Archicad 30 the electrical panel tool with its number of circuit defaults. Archicad 27 gives fewer settings, and only the shape of the ports. Available from Archicad 27.
+
+Group: MEP Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetMEPToolDefaults
+
+Parameters:
+
+- `domains` (array of MEPDomain): The domains to return the tool defaults of. All three when not given.
+
+Returns:
+
+- `toolDefaults` (array of MEPDomainToolDefaults, required): The tool defaults of each requested domain, in the order requested.
+- `equipment` (MEPElementDefaultDetails): The default of the Equipment tool, which has no domain. Left out when Archicad gives none.
+- `electricalPanel` (ElectricalPanelToolDefaults)
+
+Grasshopper: `GetMEPToolDefaultsComponent`
+
+Example: [archicad-addon/Examples/MEP/GetMEPToolDefaults.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/MEP/GetMEPToolDefaults.py): Prints the current settings of the ventilation and piping MEP tools with GetMEPToolDefaults. Leave out 'domains' to get all three domains. Requires Archicad 28 or later.
+
+### TransferMEPSettings
+
+Picks up the settings of an MEP element and injects them into other MEP elements of the same type and domain, like Archicad's pick up and inject parameters. Works for routing elements, terminals, accessories, equipment, fittings, flexible segments, branches, take-offs and (from Archicad 30) electrical panels and devices. Each target is changed in its own undoable step. Available from Archicad 28.
+
+Group: MEP Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#TransferMEPSettings
+
+Parameters:
+
+- `sourceElementId` (ElementId, required): The MEP element to pick up the settings from: a routing element, terminal, accessory, equipment, fitting, flexible segment, branch, take-off, or (from Archicad 30) electrical panel or device.
+- `targetElements` (Elements, required): The MEP elements to inject the settings into. Each must be of the type and domain of the source element.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `TransferMEPSettingsComponent`
+
+Example: [archicad-addon/Examples/MEP/TransferMEPSettings.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/MEP/TransferMEPSettings.py): Copies the settings of a wide duct route onto a narrow one with TransferMEPSettings. Creates two temporary duct routes, transfers the settings, reads the target back and deletes both. Requires Archicad 28 or later.
+
+### GetMEPPhysicalSystemsOfElements
+
+Returns the physical systems each of the given MEP elements is part of. Available from Archicad 29.
+
+Group: MEP Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#GetMEPPhysicalSystemsOfElements
+
+Parameters:
+
+- `elements` (Elements, required)
+
+Returns:
+
+- `physicalSystemsOfElements` (array of MEPPhysicalSystemsOfElement, required): The physical systems of each given element, in the order of the elements.
+
+Grasshopper: `GetMEPPhysicalSystemsOfElementsComponent`
+
+Example: [archicad-addon/Examples/MEP/GetMEPPhysicalSystemsOfElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/MEP/GetMEPPhysicalSystemsOfElements.py): Prints the physical systems the first MEP elements of the project belong to with GetMEPPhysicalSystemsOfElements. Needs at least one MEP element. Requires Archicad 29 or later.
+
+### CreateMEPFlexibleSegments
+
+Creates MEP flexible segments through the given control points, or along a polyline of alternating line and spline parts (Piping), with the current settings of the Flexible Segment tool of their domain, optionally with the orientation (control points) or direction (polyline) at both ends. Available from Archicad 28.
+
+Group: MEP Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#CreateMEPFlexibleSegments
+
+Parameters:
+
+- `flexibleSegmentsData` (array of MEPFlexibleSegmentCreationData, required): Array of data to place MEP flexible segments with the current settings of the Flexible Segment tool of their domain (see GetMEPToolDefaults).
+
+Returns:
+
+- `elements` (ElementIdsOrErrors, required)
+
+Grasshopper: `CreateMEPFlexibleSegmentsComponent`
+
+Example: [archicad-addon/Examples/MEP/CreateMEPFlexibleSegments.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/MEP/CreateMEPFlexibleSegments.py): Creates a flexible duct through three control points with CreateMEPFlexibleSegments. Uses the current settings of the Flexible Segment tool. Coordinates are in meters. Requires Archicad 28 or later.
+
+### CreateMEPTakeOffs
+
+Creates MEP take-offs on the given routing segments, at a distance from the beginning of the segment (not more than its length) and optionally rotated around its axis by a multiple of 90 degrees, with the current settings of the Take-Off tool of their domain (by default the domain of the segment's routing element), optionally with their length and without insulation, which apply only to what is created. Archicad only has Ventilation take-offs. Available from Archicad 28.
+
+Group: MEP Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#CreateMEPTakeOffs
+
+Parameters:
+
+- `takeOffsData` (array of MEPTakeOffCreationData, required): Array of data to create MEP take-offs on routing segments with the current settings of the Take-Off tool of their domain.
+
+Returns:
+
+- `elements` (ElementIdsOrErrors, required)
+
+Grasshopper: `CreateMEPTakeOffsComponent`
+
+Example: [archicad-addon/Examples/MEP/CreateMEPTakeOffs.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/MEP/CreateMEPTakeOffs.py): Creates a take-off 2 m from the start of a new duct route with CreateMEPTakeOffs. Creates the duct route first; the take-off uses the current settings of the Take-Off tool of the route's domain (no 'domain' given), faces up (a quarter turn) and has no insulation. Archicad only has Ventilation take-offs. Requires Archicad 28 or later.
+
+### ModifyMEPElements
+
+Modifies placed MEP elements: the anchor point, orientation and library part of terminals, accessories, equipment, fittings and flexible segments, the control points, polyline (Piping, from Archicad 28), and width and height of flexible segments. Only the given fields are changed, in one undo step with one execution result per element; an item with a field that does not fit its element changes nothing. Archicad reports a 'libraryPartId' it does not find only after the item's other changes were made, so that item's error says which changes stayed. Available from Archicad 27.
+
+Group: MEP Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ModifyMEPElements
+
+Parameters:
+
+- `elements` (array of MEPElementModificationData, required): The MEP elements to modify, each with the fields to change. Only the given fields are changed.
+
+Returns:
+
+- `executionResults` (ExecutionResults, required)
+
+Grasshopper: `ModifyMEPElementsComponent`
+
+Example: [archicad-addon/Examples/MEP/ModifyMEPElements.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/MEP/ModifyMEPElements.py): Requires Archicad 27 or newer. On Archicad 27 this example reads the tool defaults and works on the selected MEP elements (select a flexible segment and a terminal first), because Archicad 27 has no commands to place them. From Archicad 28 it places its own elements and deletes them at the end.
 
 ### GetMEPRoutingParameters
 
@@ -12048,7 +14967,7 @@ Parameters:
 
 Returns:
 
-- `routingParameters` (array of object or ErrorItem, required): The routing parameters of the given elements, in their order.
+- `routingParameters` (array of MEPRoutingParameters or ErrorItem, required): The routing parameters of the given elements, in their order.
 
 Grasshopper: `GetMEPRoutingParametersComponent`
 
@@ -12056,18 +14975,13 @@ Example: [archicad-addon/Examples/MEP/GetMEPRoutingParameters.py](https://github
 
 ### SetMEPRoutingParameters
 
-Sets the routing parameters of placed MEP elements: the routing segment parameters (cross section and preference table) and, from Archicad 29, the routing node parameters (elbow radius factor and preference table, transition preference table) of routing elements, and the elbow and transition parameters of routing nodes (from Archicad 29). Only the given keys are changed, in one undo step with one execution result per element. Available from Archicad 28.
+Sets the routing parameters of placed MEP elements: the routing segment parameters (cross section and preference table) and, from Archicad 29, the routing node parameters (elbow radius factor and preference table, transition preference table) of routing elements, and the elbow and transition parameters of routing nodes (from Archicad 29). Only the given keys are changed, with one execution result per element. A changed preference table is also set on each of the route's segments and nodes and injected into them, because Archicad 29 can otherwise keep the old one; the item fails if they still report the old table. Available from Archicad 28.
 
 Group: MEP Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#SetMEPRoutingParameters
 
 Parameters:
 
-- `elements` (array of object, required): The routing parameters to change. Only the given keys are changed. An item gives either routingNodeParameters and/or routingSegmentParameters for a routing element, or elbowParameters and/or transitionParameters for a routing node.
-  - `elementId` (ElementId, required)
-  - `routingNodeParameters` (object): The routing node default parameters of a routing element (RoutingElement::Modifier::SetRoutingNodeDefaultParameters). Archicad 29 or newer.
-  - `routingSegmentParameters` (object): The routing segment default parameters of a routing element (RoutingElement::Modifier::SetRoutingSegmentDefaultParameters).
-  - `elbowParameters` (object): The elbow parameters of a routing node (RoutingNode::Modifier::SetElbowDefaultParameters). Archicad 29 or newer.
-  - `transitionParameters` (object): The transition parameters of a routing node (RoutingNode::Modifier::SetTransitionDefaultParameters). Archicad 29 or newer.
+- `elements` (array of ElementMEPRoutingParameters, required): The routing parameters to change. Only the given keys are changed. An item gives either routingNodeParameters and/or routingSegmentParameters for a routing element, or elbowParameters and/or transitionParameters for a routing node.
 
 Returns:
 
@@ -12143,12 +15057,8 @@ Parameters: none.
 Returns:
 
 - `voltage` (number, required): The default voltage of the project.
-- `wiringTypes` (array of object, required)
-  - `name` (string, required)
-  - `crossSectionalArea` (number, required): The cross-sectional area of the wire in square millimeters.
-- `loadClassifications` (array of object, required)
-  - `name` (string, required)
-  - `demandFactor` (number, required): The demand factor, between 0 and 1.
+- `wiringTypes` (array of ElectricalWiringType, required)
+- `loadClassifications` (array of ElectricalLoadClassification, required)
 
 Grasshopper: `GetElectricalProjectSettingsComponent`
 
@@ -12162,17 +15072,7 @@ Group: MEP Commands. Added in Tapir 1.7.2. Docs: https://archicad-api.com/archic
 
 Parameters:
 
-- `electricalPanelsData` (array of object, required): Array of data to create electrical panels. The fields that are not given are taken from the default settings of the Electrical Panel tool.
-  - `position` (Coordinate3D, required): The anchor point of the new panel.
-  - `orientation` (MEPOrientation): Defaults to the direction (1, 0, 0) and the rotation (0, 1, 0).
-  - `rotation` (number): The base rotation in radians.
-  - `isReflected` (boolean)
-  - `libraryPartId` (LibPartUnId): The library part to use, as listed by GetAvailableLibraryParts.
-  - `xSize` (number): The size along the local x axis. Some library parts calculate their own size, then the item fails.
-  - `ySize` (number): The size along the local y axis. Some library parts calculate their own size, then the item fails.
-  - `panelName` (string)
-  - `circuitNamePrefix` (string)
-  - `circuitIdStyle` (integer)
+- `electricalPanelsData` (array of ElectricalPanelData, required): Array of data to create electrical panels. The fields that are not given are taken from the default settings of the Electrical Panel tool.
 
 Returns:
 
@@ -12190,18 +15090,7 @@ Group: MEP Commands. Added in Tapir 1.7.2. Docs: https://archicad-api.com/archic
 
 Parameters:
 
-- `electricalDevicesData` (array of object, required): Array of data to create electrical devices. The fields that are not given are taken from the default settings of the Electrical Device tool.
-  - `position` (Coordinate3D, required): The anchor point of the new device.
-  - `orientation` (MEPOrientation): Defaults to the direction (1, 0, 0) and the rotation (0, 1, 0).
-  - `rotation` (number): The base rotation in radians.
-  - `isReflected` (boolean)
-  - `libraryPartId` (LibPartUnId): The library part to use, as listed by GetAvailableLibraryParts.
-  - `xSize` (number): The size along the local x axis. Some library parts calculate their own size, then the item fails.
-  - `ySize` (number): The size along the local y axis. Some library parts calculate their own size, then the item fails.
-  - `apparentPower` (integer): The apparent power in VA.
-  - `isApparentPowerEnabled` (boolean)
-  - `loadClassificationName` (string): One of the load classifications of the electrical project settings, or an empty string for none.
-  - `circuitId` (ElementId): The circuit to connect the new device to.
+- `electricalDevicesData` (array of ElectricalDeviceData, required): Array of data to create electrical devices. The fields that are not given are taken from the default settings of the Electrical Device tool.
 
 Returns:
 
@@ -12219,18 +15108,7 @@ Group: MEP Commands. Added in Tapir 1.7.2. Docs: https://archicad-api.com/archic
 
 Parameters:
 
-- `electricalPanelsData` (array of object, required): Array of data to modify electrical panels. Only the given fields are changed.
-  - `elementId` (ElementId, required)
-  - `panelName` (string)
-  - `circuitNamePrefix` (string)
-  - `circuitIdStyle` (integer)
-  - `anchorPoint` (Coordinate3D)
-  - `orientation` (MEPOrientation)
-  - `rotation` (number): The base rotation in radians.
-  - `isReflected` (boolean)
-  - `libraryPartId` (LibPartUnId): The library part to use, as listed by GetAvailableLibraryParts.
-  - `xSize` (number): The size along the local x axis. Some library parts calculate their own size, then the item fails.
-  - `ySize` (number): The size along the local y axis. Some library parts calculate their own size, then the item fails.
+- `electricalPanelsData` (array of ElectricalPanelModificationData, required): Array of data to modify electrical panels. Only the given fields are changed.
 
 Returns:
 
@@ -12248,14 +15126,7 @@ Group: MEP Commands. Added in Tapir 1.7.2. Docs: https://archicad-api.com/archic
 
 Parameters:
 
-- `electricalCircuitsData` (array of object, required): Array of data to create electrical circuits. Each item adds one circuit to the given panel.
-  - `electricalPanelId` (ElementId, required): The panel to add the new circuit to.
-  - `description` (string)
-  - `voltage` (number)
-  - `wiringTypeName` (string): One of the wiring types of the electrical project settings, or an empty string for none.
-  - `isPhaseAUsed` (boolean)
-  - `isPhaseBUsed` (boolean)
-  - `isPhaseCUsed` (boolean)
+- `electricalCircuitsData` (array of ElectricalCircuitData, required): Array of data to create electrical circuits. Each item adds one circuit to the given panel.
 
 Returns:
 
@@ -12291,14 +15162,7 @@ Group: MEP Commands. Added in Tapir 1.7.2. Docs: https://archicad-api.com/archic
 
 Parameters:
 
-- `electricalCircuitsData` (array of object, required): Array of data to modify electrical circuits. Only the given fields are changed.
-  - `elementId` (ElementId, required)
-  - `description` (string)
-  - `voltage` (number)
-  - `wiringTypeName` (string): One of the wiring types of the electrical project settings, or an empty string for none.
-  - `isPhaseAUsed` (boolean)
-  - `isPhaseBUsed` (boolean)
-  - `isPhaseCUsed` (boolean)
+- `electricalCircuitsData` (array of ElectricalCircuitModificationData, required): Array of data to modify electrical circuits. Only the given fields are changed.
 
 Returns:
 
@@ -12316,18 +15180,7 @@ Group: MEP Commands. Added in Tapir 1.7.2. Docs: https://archicad-api.com/archic
 
 Parameters:
 
-- `electricalDevicesData` (array of object, required): Array of data to modify electrical devices. Only the given fields are changed.
-  - `elementId` (ElementId, required)
-  - `apparentPower` (integer): The apparent power in VA.
-  - `isApparentPowerEnabled` (boolean)
-  - `loadClassificationName` (string): One of the load classifications of the electrical project settings, or an empty string for none.
-  - `anchorPoint` (Coordinate3D)
-  - `orientation` (MEPOrientation)
-  - `rotation` (number): The base rotation in radians.
-  - `isReflected` (boolean)
-  - `libraryPartId` (LibPartUnId): The library part to use, as listed by GetAvailableLibraryParts.
-  - `xSize` (number): The size along the local x axis. Some library parts calculate their own size, then the item fails.
-  - `ySize` (number): The size along the local y axis. Some library parts calculate their own size, then the item fails.
+- `electricalDevicesData` (array of ElectricalDeviceModificationData, required): Array of data to modify electrical devices. Only the given fields are changed.
 
 Returns:
 
@@ -12345,9 +15198,7 @@ Group: MEP Commands. Added in Tapir 1.7.2. Docs: https://archicad-api.com/archic
 
 Parameters:
 
-- `connectionsData` (array of object, required): Array of electrical devices or panels and the circuits to connect them to. A panel connected to a circuit becomes a sub-panel of the panel of that circuit.
-  - `elementId` (ElementId, required): An electrical device or an electrical panel.
-  - `circuitId` (ElementId, required): The electrical circuit to connect to.
+- `connectionsData` (array of ElectricalCircuitConnectionData, required): Array of electrical devices or panels and the circuits to connect them to. A panel connected to a circuit becomes a sub-panel of the panel of that circuit.
 
 Returns:
 
@@ -12384,7 +15235,7 @@ Example: [archicad-addon/Examples/MEP/ModifyElectricalProjectSettings.py](https:
 
 ### GetMEPElementDetails
 
-Retrieves the type-specific details of the given MEP elements: insulation thickness and routing segment of rigid segments, control points of flexible segments, radius factor, insulation thickness, preference table and routing node of elbows (from Archicad 29), angle, length and insulation thickness of branches, and offsets, wider and narrower ports, insulation thickness, routing node and (from Archicad 29) preference table of transitions. Available from Archicad 28.
+Retrieves the type-specific details of the given MEP elements: insulation thickness and routing segment of rigid segments, control points and polyline of flexible segments, radius factor, insulation thickness, preference table and routing node of elbows (from Archicad 29), angle, length and insulation thickness of branches, and offsets, wider and narrower ports, insulation thickness, routing node and (from Archicad 29) preference table of transitions. Available from Archicad 28.
 
 Group: MEP Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#GetMEPElementDetails
 
@@ -12394,7 +15245,7 @@ Parameters:
 
 Returns:
 
-- `elementDetails` (array of object or ErrorItem, required): The details of the given MEP elements, in the order of the input, or an error for an element that is not an MEP element, and in Archicad 28 for an elbow. A value that cannot be read is left out.
+- `elementDetails` (array of MEPElementDetails or ErrorItem, required): The details of the given MEP elements, in the order of the input, or an error for an element that is not an MEP element, and in Archicad 28 for an elbow. A value that cannot be read is left out.
 
 Grasshopper: `GetMEPElementDetailsComponent`
 
@@ -12411,18 +15262,8 @@ Group: MEP Commands (extended). Added in Tapir 1.8.0. Docs: https://archicad-api
 
 Parameters:
 
-- `tableId` (object, required): The guid of a preference table, as returned by GetMEPPreferenceTables (the branch, elbow and transition tables with includeFittingTables): a pipe or circular duct segment table, a branch or elbow table of the Piping or Ventilation domain, or, from Archicad 29, a transition table. Rectangular duct and cable carrier segment tables are found too, but their rows have no key. Archicad 27: any preference table, as returned by GetMEPPreferenceTableContainers.
-  - `guid` (Guid, required)
-- `keys` (array of object, required): The keys of the rows to get.
-  - `shape` (string ("Circular", "Rectangular")): Archicad 27 only: the shape whose list of values the row is in.
-  - `index` (integer): Archicad 27 only: the index of the row in the list of its shape, from 0.
-  - `referenceId` (integer)
-  - `angle` (number)
-  - `mainAxisReferenceId` (integer)
-  - `branchAxisReferenceId` (integer)
-  - `branchAxisAngle` (number)
-  - `beginReferenceId` (integer)
-  - `endReferenceId` (integer)
+- `tableId` (MEPPreferenceTableId, required): The guid of a preference table, as returned by GetMEPPreferenceTables (the branch, elbow and transition tables with includeFittingTables): a pipe or circular duct segment table, a branch or elbow table of the Piping or Ventilation domain, or, from Archicad 29, a transition table. Rectangular duct and cable carrier segment tables are found too, but their rows have no key. Archicad 27: any preference table, as returned by GetMEPPreferenceTableContainers.
+- `keys` (array of MEPPreferenceRowKey, required): The keys of the rows to get.
 
 Returns:
 
@@ -12431,7 +15272,7 @@ Returns:
 - `sizes` (object): Archicad 27 only: the number of rows of each shape.
   - `Circular` (integer)
   - `Rectangular` (integer)
-- `rows` (array of object or ErrorItem, required): The rows in the order of the keys.
+- `rows` (array of MEPPreferenceRowDetails or ErrorItem, required): The rows in the order of the keys.
 
 Grasshopper: `GetMEPPreferenceTableRowsComponent`
 
@@ -12445,15 +15286,12 @@ Group: MEP Commands (extended). Added in Tapir 1.8.0. Docs: https://archicad-api
 
 Parameters:
 
-- `tableId` (object, required): The guid of a preference table, as returned by GetMEPPreferenceTables (the branch, elbow and transition tables with includeFittingTables): a pipe or circular duct segment table, a branch or elbow table of the Piping or Ventilation domain, or, from Archicad 29, a transition table. Rectangular duct and cable carrier segment tables are found too, but their rows have no key. Archicad 27: any preference table, as returned by GetMEPPreferenceTableContainers.
-  - `guid` (Guid, required)
-- `rows` (array of object, required): The rows to change. Only the given values are set.
-  - `key` (object, required): The key of a row. Segment tables: referenceId. Elbow tables: referenceId and angle. Branch tables: mainAxisReferenceId, branchAxisReferenceId and branchAxisAngle. Transition tables: beginReferenceId and endReferenceId. The angles are as GetMEPPreferenceTables returns them; Archicad 28 finds the rows by their reference ids only and rejects a key with an angle. Archicad 27: shape and index (AddMEPPreferenceTableRows: shape only).
-  - `values` (object, required): The values of a row, lengths in meters. Segment tables: diameter, wallThickness and description. Elbow tables: diameter, radius and description. Branch tables: mainAxisDiameter, branchAxisDiameter, length, branchOffset, connectionLength and description. Pipe transition tables: beginDiameter, endDiameter, length and description. Duct transition tables: beginDiameter, endDiameter, angle and description. Archicad 27: value and description.
+- `tableId` (MEPPreferenceTableId, required): The guid of a preference table, as returned by GetMEPPreferenceTables (the branch, elbow and transition tables with includeFittingTables): a pipe or circular duct segment table, a branch or elbow table of the Piping or Ventilation domain, or, from Archicad 29, a transition table. Rectangular duct and cable carrier segment tables are found too, but their rows have no key. Archicad 27: any preference table, as returned by GetMEPPreferenceTableContainers.
+- `rows` (array of MEPPreferenceRowUpdate, required): The rows to change. Only the given values are set.
 
 Returns:
 
-- `executionResults` (array of object or FailedExecutionResult, required): One result per row, in the order of the rows.
+- `executionResults` (array of MEPPreferenceRowUpdateResult or FailedExecutionResult, required): One result per row, in the order of the rows.
 
 Grasshopper: `SetMEPPreferenceTableRowsComponent`
 
@@ -12467,15 +15305,12 @@ Group: MEP Commands (extended). Added in Tapir 1.8.0. Docs: https://archicad-api
 
 Parameters:
 
-- `tableId` (object, required): The guid of a preference table, as returned by GetMEPPreferenceTables (the branch, elbow and transition tables with includeFittingTables): a pipe or circular duct segment table, a branch or elbow table of the Piping or Ventilation domain, or, from Archicad 29, a transition table. Rectangular duct and cable carrier segment tables are found too, but their rows have no key. Archicad 27: any preference table, as returned by GetMEPPreferenceTableContainers.
-  - `guid` (Guid, required)
-- `rows` (array of object, required): The rows to add, with their key and optionally their values. Branch tables from Archicad 28, elbow and transition tables from Archicad 29. Segment tables have a row for each reference id, so no row can be added to them. Archicad 27: the key has the shape only, the table gives the index.
-  - `key` (object, required): The key of a row. Segment tables: referenceId. Elbow tables: referenceId and angle. Branch tables: mainAxisReferenceId, branchAxisReferenceId and branchAxisAngle. Transition tables: beginReferenceId and endReferenceId. The angles are as GetMEPPreferenceTables returns them; Archicad 28 finds the rows by their reference ids only and rejects a key with an angle. Archicad 27: shape and index (AddMEPPreferenceTableRows: shape only).
-  - `values` (object): The values of a row, lengths in meters. Segment tables: diameter, wallThickness and description. Elbow tables: diameter, radius and description. Branch tables: mainAxisDiameter, branchAxisDiameter, length, branchOffset, connectionLength and description. Pipe transition tables: beginDiameter, endDiameter, length and description. Duct transition tables: beginDiameter, endDiameter, angle and description. Archicad 27: value and description.
+- `tableId` (MEPPreferenceTableId, required): The guid of a preference table, as returned by GetMEPPreferenceTables (the branch, elbow and transition tables with includeFittingTables): a pipe or circular duct segment table, a branch or elbow table of the Piping or Ventilation domain, or, from Archicad 29, a transition table. Rectangular duct and cable carrier segment tables are found too, but their rows have no key. Archicad 27: any preference table, as returned by GetMEPPreferenceTableContainers.
+- `rows` (array of MEPPreferenceRowAddition, required): The rows to add, with their key and optionally their values. Branch tables from Archicad 28, elbow and transition tables from Archicad 29. Segment tables have a row for each reference id, so no row can be added to them. Archicad 27: the key has the shape only, the table gives the index.
 
 Returns:
 
-- `executionResults` (array of object or FailedExecutionResult, required): One result per row, in the order of the rows.
+- `executionResults` (array of MEPPreferenceRowAdditionResult or FailedExecutionResult, required): One result per row, in the order of the rows.
 
 Grasshopper: `AddMEPPreferenceTableRowsComponent`
 
@@ -12489,18 +15324,8 @@ Group: MEP Commands (extended). Added in Tapir 1.8.0. Docs: https://archicad-api
 
 Parameters:
 
-- `tableId` (object, required): The guid of a preference table, as returned by GetMEPPreferenceTables (the branch, elbow and transition tables with includeFittingTables): a pipe or circular duct segment table, a branch or elbow table of the Piping or Ventilation domain, or, from Archicad 29, a transition table. Rectangular duct and cable carrier segment tables are found too, but their rows have no key. Archicad 27: any preference table, as returned by GetMEPPreferenceTableContainers.
-  - `guid` (Guid, required)
-- `keys` (array of object, required): The keys of the rows to delete. Segment tables, and the elbow tables of Archicad 28, have a row for each reference id, which is emptied instead. Archicad 27: the indices are those before the call; the rows are deleted from the highest index down.
-  - `shape` (string ("Circular", "Rectangular")): Archicad 27 only: the shape whose list of values the row is in.
-  - `index` (integer): Archicad 27 only: the index of the row in the list of its shape, from 0.
-  - `referenceId` (integer)
-  - `angle` (number)
-  - `mainAxisReferenceId` (integer)
-  - `branchAxisReferenceId` (integer)
-  - `branchAxisAngle` (number)
-  - `beginReferenceId` (integer)
-  - `endReferenceId` (integer)
+- `tableId` (MEPPreferenceTableId, required): The guid of a preference table, as returned by GetMEPPreferenceTables (the branch, elbow and transition tables with includeFittingTables): a pipe or circular duct segment table, a branch or elbow table of the Piping or Ventilation domain, or, from Archicad 29, a transition table. Rectangular duct and cable carrier segment tables are found too, but their rows have no key. Archicad 27: any preference table, as returned by GetMEPPreferenceTableContainers.
+- `keys` (array of MEPPreferenceRowKey, required): The keys of the rows to delete. Segment tables, and the elbow tables of Archicad 28, have a row for each reference id, which is emptied instead. Archicad 27: the indices are those before the call; the rows are deleted from the highest index down.
 
 Returns:
 
@@ -12518,11 +15343,11 @@ Group: MEP Commands (extended). Added in Tapir 1.8.0. Docs: https://archicad-api
 
 Parameters:
 
-- `domains` (array of string ("Piping", "Ventilation", "CableCarrier")): The domains whose preference tables to list. Defaults to all three.
+- `domains` (array of MEPPreferenceTableDomain): The domains whose preference tables to list. Defaults to all three.
 
 Returns:
 
-- `containers` (array of object or ErrorItem, required): The preference table container of each domain, in the order of the domains.
+- `containers` (array of MEPPreferenceTableContainer or ErrorItem, required): The preference table container of each domain, in the order of the domains.
 
 Grasshopper: `GetMEPPreferenceTableContainersComponent`
 
@@ -12536,13 +15361,13 @@ Group: MEP Commands (extended). Added in Tapir 1.8.0. Docs: https://archicad-api
 
 Parameters:
 
-- `domain` (string ("Piping", "Ventilation", "CableCarrier"), required): The MEP domain of a preference table container.
+- `domain` (MEPPreferenceTableDomain, required): The MEP domain of a preference table container.
 - `tables` (array of object, required): The tables to add, empty, to the preference table container of the domain.
   - `name` (string, required)
 
 Returns:
 
-- `executionResults` (array of object or FailedExecutionResult, required): One result per table, in the order of the tables.
+- `executionResults` (array of MEPPreferenceTableCreationResult or FailedExecutionResult, required): One result per table, in the order of the tables.
 
 Grasshopper: `CreateMEPPreferenceTablesComponent`
 
@@ -12754,15 +15579,11 @@ Group: Analytical Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com
 
 Parameters:
 
-- `loadGroups` (array of object, required): The load groups to create.
-  - `name` (string, required)
-  - `groupType` (AnalyticalLoadGroupType, required)
-  - `relation` (AnalyticalLoadGroupRelation, required)
-  - `loadType` (string): The load type of the group as free text. Empty when it is omitted.
+- `loadGroups` (array of AnalyticalLoadGroupData, required): The load groups to create.
 
 Returns:
 
-- `loadGroupIds` (array of object or ErrorItem, required): The identifiers of the new load groups, in the order of the input. A load group that could not be created is represented by an error object.
+- `loadGroupIds` (array of AnalyticalLoadGroupIdArrayItem or ErrorItem, required): The identifiers of the new load groups, in the order of the input. A load group that could not be created is represented by an error object.
 
 Grasshopper: `CreateAnalyticalLoadGroupsComponent`
 
@@ -12776,17 +15597,11 @@ Group: Analytical Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com
 
 Parameters:
 
-- `loadCases` (array of object, required): The load cases to create.
-  - `name` (string, required)
-  - `description` (string): Empty when it is omitted.
-  - `actionType` (AnalyticalLoadCaseActionType, required)
-  - `loadGroupId` (GuidId, required): The identifier of the load group the load case belongs to.
-  - `loadType` (AnalyticalLoadCaseLoadType, required)
-  - `duration` (AnalyticalLoadCaseDuration)
+- `loadCases` (array of AnalyticalLoadCaseData, required): The load cases to create.
 
 Returns:
 
-- `loadCaseIds` (array of object or ErrorItem, required): The identifiers of the new load cases, in the order of the input. A load case that could not be created is represented by an error object.
+- `loadCaseIds` (array of AnalyticalLoadCaseIdArrayItem or ErrorItem, required): The identifiers of the new load cases, in the order of the input. A load case that could not be created is represented by an error object.
 
 Grasshopper: `CreateAnalyticalLoadCasesComponent`
 
@@ -12800,17 +15615,11 @@ Group: Analytical Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com
 
 Parameters:
 
-- `loadCombinations` (array of object, required): The load combinations to create.
-  - `name` (string, required)
-  - `description` (string): Empty when it is omitted.
-  - `category` (AnalyticalLoadCombinationCategory, required)
-  - `nationalStandard` (AnalyticalLoadCombinationNationalStandard)
-  - `type` (AnalyticalLoadCombinationType)
-  - `loadFactors` (array of AnalyticalLoadFactor): The load cases of the combination with their factors.
+- `loadCombinations` (array of AnalyticalLoadCombinationData, required): The load combinations to create.
 
 Returns:
 
-- `loadCombinationIds` (array of object or ErrorItem, required): The identifiers of the new load combinations, in the order of the input. A load combination that could not be created is represented by an error object.
+- `loadCombinationIds` (array of AnalyticalLoadCombinationIdArrayItem or ErrorItem, required): The identifiers of the new load combinations, in the order of the input. A load combination that could not be created is represented by an error object.
 
 Grasshopper: `CreateAnalyticalLoadCombinationsComponent`
 
@@ -12824,8 +15633,7 @@ Group: Analytical Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com
 
 Parameters:
 
-- `loadGroupIds` (array of object, required): The load groups to delete.
-  - `loadGroupId` (GuidId, required)
+- `loadGroupIds` (array of AnalyticalLoadGroupIdArrayItem, required): The load groups to delete.
 
 Returns:
 
@@ -12843,8 +15651,7 @@ Group: Analytical Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com
 
 Parameters:
 
-- `loadCaseIds` (array of object, required): The load cases to delete.
-  - `loadCaseId` (GuidId, required)
+- `loadCaseIds` (array of AnalyticalLoadCaseIdArrayItem, required): The load cases to delete.
 
 Returns:
 
@@ -12862,8 +15669,7 @@ Group: Analytical Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com
 
 Parameters:
 
-- `loadCombinationIds` (array of object, required): The load combinations to delete.
-  - `loadCombinationId` (GuidId, required)
+- `loadCombinationIds` (array of AnalyticalLoadCombinationIdArrayItem, required): The load combinations to delete.
 
 Returns:
 
@@ -12925,7 +15731,7 @@ Parameters:
 
 Returns:
 
-- `analyticalMembers` (array of object or object or object or ErrorItem, required): The analytical member of each element, in the order of the input. An element that is no member of the model, or whose member cannot be read, is represented by an error object.
+- `analyticalMembers` (array of AnalyticalCurveMemberDetails or AnalyticalSurfaceMemberDetails or AnalyticalSegmentedSurfaceMemberDetails or ErrorItem, required): The analytical member of each element, in the order of the input. An element that is no member of the model, or whose member cannot be read, is represented by an error object.
 
 Grasshopper: `GetAnalyticalMemberDetailsComponent`
 
@@ -12958,9 +15764,7 @@ Group: Analytical Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com
 
 Parameters:
 
-- `releases` (array of object, required): The element and its new release, as GetAnalyticalReleases returns it. The release replaces the element's release as a whole.
-  - `elementId` (ElementId, required)
-  - `release` (AnalyticalRelease, required)
+- `releases` (array of ElementAnalyticalRelease, required): The element and its new release, as GetAnalyticalReleases returns it. The release replaces the element's release as a whole.
 
 Returns:
 
@@ -12982,7 +15786,7 @@ Parameters:
 
 Returns:
 
-- `stretches` (array of object or ErrorItem, required): The custom stretch of the curve member of each element, in the order of the input. An element the stretch cannot be got for is represented by an error object.
+- `stretches` (array of AnalyticalCurveMemberStretch or ErrorItem, required): The custom stretch of the curve member of each element, in the order of the input. An element the stretch cannot be got for is represented by an error object.
 
 Grasshopper: `GetCustomCurveMemberStretchComponent`
 
@@ -12996,10 +15800,7 @@ Group: Analytical Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com
 
 Parameters:
 
-- `stretches` (array of object, required): The element of the curve member and the lengths to add to it.
-  - `elementId` (ElementId, required)
-  - `begAdditionalLength` (number, required): The length added to the curve member at its start.
-  - `endAdditionalLength` (number, required): The length added to the curve member at its end.
+- `stretches` (array of AnalyticalCurveMemberStretchUpdate, required): The element of the curve member and the lengths to add to it.
 
 Returns:
 
@@ -13017,9 +15818,7 @@ Group: Analytical Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com
 
 Parameters:
 
-- `memberParts` (array of object, required): The member parts to get the local coordinate system of.
-  - `memberPartRef` (AnalyticalMemberPartRef, required)
-  - `intersectingMemberPartRef` (AnalyticalMemberPartRef): When given, the local coordinate system of memberPartRef in its intersection with this member part is returned.
+- `memberParts` (array of AnalyticalMemberCoordinateSystemRequest, required): The member parts to get the local coordinate system of.
 
 Returns:
 
@@ -13061,7 +15860,7 @@ Parameters:
 
 Returns:
 
-- `supports` (array of object or ErrorItem, required): The support and its geometry for each element, in the order of the input. An element that is not an analytical support, or whose support cannot be got, is represented by an error object.
+- `supports` (array of AnalyticalSupportDetails or ErrorItem, required): The support and its geometry for each element, in the order of the input. An element that is not an analytical support, or whose support cannot be got, is represented by an error object.
 
 Grasshopper: `GetAnalyticalSupportsComponent`
 
@@ -13080,7 +15879,7 @@ Parameters:
 
 Returns:
 
-- `links` (array of object or ErrorItem, required): The link and its geometry for each element, in the order of the input. An element that is not an analytical link, or whose link cannot be got, is represented by an error object.
+- `links` (array of AnalyticalLinkDetails or ErrorItem, required): The link and its geometry for each element, in the order of the input. An element that is not an analytical link, or whose link cannot be got, is represented by an error object.
 
 Grasshopper: `GetAnalyticalLinksComponent`
 
@@ -13154,7 +15953,7 @@ Parameters:
 
 Returns:
 
-- `loads` (array of object or object or object or ErrorItem, required): The load of each element, in the order of the input, with its geometry in the Structural Analytical Model and, for an edge or a surface load, its custom data (the curve or contour stored with the element). An element that is not an analytical point, edge or surface load, or whose load cannot be got, is represented by an error object.
+- `loads` (array of AnalyticalPointLoadDetails or AnalyticalEdgeLoadDetails or AnalyticalSurfaceLoadDetails or ErrorItem, required): The load of each element, in the order of the input, with its geometry in the Structural Analytical Model and, for an edge or a surface load, its custom data (the curve or contour stored with the element). An element that is not an analytical point, edge or surface load, or whose load cannot be got, is represented by an error object.
 
 Grasshopper: `GetAnalyticalLoadsComponent`
 
@@ -13177,6 +15976,24 @@ Returns:
 Grasshopper: `CreateAnalyticalLoadsComponent`
 
 Example: [archicad-addon/Examples/Analytical/CreateAnalyticalLoads.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/CreateAnalyticalLoads.py): Puts a 10 kN point load and a 5 kN/m line load on the first curve member with CreateAnalyticalLoads. Needs at least one analytical curve member and one load case; the loads go into the first load case. Forces are in newtons, downward along the global z axis. Requires Archicad 27 or later (the command itself works from Archicad 26).
+
+### CreateElementsFromAnalyticalMembers
+
+Creates elements (beams, columns, walls, slabs, roofs) from the given curve, surface or segmented surface members, in the form GetAnalyticalMemberDetails returns them, optionally with the settings of a favorite, in one undo step. Returns the new elements and, from Archicad 26, the mapping of their edges and vertices to member parts.
+
+Group: Analytical Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#CreateElementsFromAnalyticalMembers
+
+Parameters:
+
+- `members` (array of ElementFromAnalyticalMemberData, required): The analytical members to create elements from, in the form GetAnalyticalMemberDetails returns them, so a member read there can be passed on as it is. The elemGuid of a member is ignored. A curve member needs analyticalMemberType and curve, a surface member (or segment) analyticalMemberType and contour; the other fields are zero when left out.
+
+Returns:
+
+- `elements` (array of ElementFromAnalyticalMember or ErrorItem, required): The new element of each member, in the order of the input. A member no element could be created from is represented by an error object.
+
+Grasshopper: `CreateElementsFromAnalyticalMembersComponent`
+
+Example: [archicad-addon/Examples/Analytical/CreateElementsFromAnalyticalMembers.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/Analytical/CreateElementsFromAnalyticalMembers.py): Creates a copy of the first curve member's element from its analytical member with CreateElementsFromAnalyticalMembers. Needs at least one analytical curve member; the member is passed on as GetAnalyticalMemberDetails returns it, so the new beam or column lies on top of the original. Reading the members of the current view requires Archicad 27 or later.
 
 
 ## Solid Element Operation Commands
@@ -13201,17 +16018,19 @@ Example: [archicad-addon/Examples/SolidElementOperation/CreateSolidElementLinks.
 
 ### RemoveSolidElementLinks
 
-Removes solid element operation links between target and operator elements.
+Removes solid element operation links between target and operator elements. With dryRun true nothing is removed and no undo step is created: the response has dryRun set to true, and each link that exists gets wouldDelete.
 
 Group: Solid Element Operation Commands. Added in Tapir 1.5.4. Docs: https://archicad-api.com/archicad-addon/#RemoveSolidElementLinks
 
 Parameters:
 
 - `solidLinks` (array of SolidLinkReference, required): List of solid element operation links to remove.
+- `dryRun` (DryRun)
 
 Returns:
 
-- `executionResults` (ExecutionResults, required)
+- `dryRun` (DryRunFlag)
+- `executionResults` (DeletionExecutionResults, required): One result for each input link, in the order of the input. On a dry run a link that exists (the operator is linked to the target) gets wouldDelete.
 
 Grasshopper: `RemoveSolidElementLinksComponent`
 
@@ -13258,14 +16077,14 @@ Example: [archicad-addon/Examples/SolidElementOperation/CreateSolidOperations.py
 
 ### TrimElements
 
-Trims construction elements with a roof or shell: the roofs and shells in the list, or one given trimming element with a trim type.
+Trims construction elements with a roof or shell: the roofs and shells in the list, or one given trimming element with a trim type. With several roofs or shells in the list Archicad decides which of them trims which element (they may also trim each other), so not every element is necessarily trimmed by each; to trim each element with each roof or shell, call it once per roof or shell with trimmingElement, and check the result with GetElementTrims.
 
 Group: Solid Element Operation Commands. Added in Tapir 1.5.9. Docs: https://archicad-api.com/archicad-addon/#TrimElements
 
 Parameters:
 
-- `elements` (Elements, required): The construction elements to trim. Without trimmingElement the roofs and shells among them do the trimming.
-- `trimmingElement` (ElementId): Optional. The roof or shell that trims every element in the list.
+- `elements` (Elements, required): The construction elements to trim. Without trimmingElement the roofs and shells among them do the trimming: Archicad decides which roof or shell trims which element and with which trim type, and may trim the roofs and shells with each other, so not every element is necessarily trimmed by every roof or shell. The call reports no result per pair; read them back with GetElementTrims. For a known result, use trimmingElement and call the command once per roof or shell.
+- `trimmingElement` (ElementId): Optional. The roof or shell that trims every element in the list, with trimType.
 - `trimType` (TrimType): Used with trimmingElement; defaults to KeepInside.
 
 
@@ -13275,19 +16094,21 @@ Example: [archicad-addon/Examples/SolidElementOperation/TrimElements.py](https:/
 
 ### RemoveElementTrims
 
-Removes the trim between an element and the roof or shell trimming it.
+Removes the trim between an element and the roof or shell trimming it. The Archicad API removes the trimming connection between the two elements, so when they trim each other (two roofs or shells) both directions are removed; trim the other direction again with TrimElements to keep it. With dryRun true nothing is removed and no undo step is created: the response has dryRun set to true, and each pair whose element is trimmed by its trimming element gets wouldDelete.
 
 Group: Solid Element Operation Commands. Added in Tapir 1.5.9. Docs: https://archicad-api.com/archicad-addon/#RemoveElementTrims
 
 Parameters:
 
-- `elementPairs` (array of object, required): The trimmed element and the roof or shell trimming it, per pair.
+- `elementPairs` (array of object, required): The trimmed element and the roof or shell trimming it, per pair. The trimming connection between the two is removed: when they trim each other, both directions are removed.
   - `elementId` (ElementId, required)
   - `trimmingElementId` (ElementId, required)
+- `dryRun` (DryRun)
 
 Returns:
 
-- `executionResults` (ExecutionResults, required)
+- `dryRun` (DryRunFlag)
+- `executionResults` (DeletionExecutionResults, required): One result for each input pair, in the order of the input. On a dry run a pair whose element is trimmed by the trimming element gets wouldDelete.
 
 Grasshopper: `RemoveElementTrimsComponent`
 
@@ -13313,7 +16134,7 @@ Example: [archicad-addon/Examples/SolidElementOperation/GetElementTrims.py](http
 
 ### MergeElements
 
-Merges the given construction elements (the Merge command of Archicad, which cleans up the junctions of slabs, beams, walls and similar elements). Undoable. The element types are not filtered: Archicad reports the ones it cannot merge.
+Merges the given construction elements (the Merge command of Archicad, which cleans up the junctions of slabs, beams, walls and similar elements). Undoable. The element types are not filtered: Archicad reports the ones it cannot merge. The merge is read back: when Archicad records no merge between the given elements (it decides which elements and type combinations it merges), the result is a failure, not a success.
 
 Group: Solid Element Operation Commands. Added in Tapir 1.8.0. Docs: https://archicad-api.com/archicad-addon/#MergeElements
 
@@ -13369,7 +16190,7 @@ Example: [archicad-addon/Examples/SolidElementOperation/GetMergedElements.py](ht
 
 ### ShowScriptUI
 
-Shows the given HTML content in a native Archicad palette (a tkinter alternative for Python scripts).
+Shows the given HTML content in a native Archicad palette (a tkinter alternative for Python scripts) and returns the uiId of its window. Each script can have its own window, picked by uiId or scriptId; without them the first window is used.
 
 Group: Script UI Commands. Added in Tapir 1.5.4. Docs: https://archicad-api.com/archicad-addon/#ShowScriptUI
 
@@ -13388,29 +16209,236 @@ Parameters:
 - `allowSelfSignedCertificates` (boolean): Only relevant if htmlContent links to a remote https:// resource with a self-signed certificate. Defaults to false.
 - `clearCookies` (boolean): Deletes all browser cookies before loading htmlContent. Defaults to false.
 - `autoHeight` (boolean): Automatically resizes the palette's height to fit the page content as it changes. Defaults to false.
+- `uiId` (integer): The window to use, as returned by ShowScriptUI (1 to 8). Takes precedence over scriptId.
+- `scriptId` (string): Any text that identifies the calling script, so it uses its own window: ShowScriptUI gives a script without a window a free one, preferring the closed windows. The Tapir palette gives each script it starts its own id in the TAPIR_SCRIPT_ID environment variable, which aclib passes here automatically; that script's window is titled with its name and is freed when it ends. Without uiId and scriptId the first window is used.
 
 
 Grasshopper: `ShowScriptUIComponent`
 
-Example: [archicad-addon/Examples/ScriptUI/ShowScriptUI.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/ShowScriptUI.py): Shows a small HTML page with a button in an Archicad palette with ShowScriptUI. The page sends its result with window.ACAPI.SubmitResult; read it with GetScriptUIResult.
+Example: [archicad-addon/Examples/ScriptUI/ShowScriptUI.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/ShowScriptUI.py): Shows a small HTML page with a button in an Archicad palette with ShowScriptUI. The response names the window (uiId). The page sends its result with window.ACAPI.SubmitResult; read it with GetScriptUIResult and that uiId.
 
 ### GetScriptUIResult
 
-Retrieves and clears the result last submitted from the Script UI palette's page (via window.ACAPI.SubmitResult), if any, and reports whether the palette is still open, so a waiting script can stop when the user closes it.
+Retrieves and clears the result last submitted from a Script UI window's page (via window.ACAPI.SubmitResult), if any, and reports whether the window is still open, so a waiting script can stop when the user closes it. The window is picked by uiId or scriptId; without them the first window is used.
 
 Group: Script UI Commands. Added in Tapir 1.5.4. Docs: https://archicad-api.com/archicad-addon/#GetScriptUIResult
 
-Parameters: none.
+Parameters:
+
+- `uiId` (integer): The window to use, as returned by ShowScriptUI (1 to 8). Takes precedence over scriptId.
+- `scriptId` (string): Any text that identifies the calling script, so it uses its own window: ShowScriptUI gives a script without a window a free one, preferring the closed windows. The Tapir palette gives each script it starts its own id in the TAPIR_SCRIPT_ID environment variable, which aclib passes here automatically; that script's window is titled with its name and is freed when it ends. Without uiId and scriptId the first window is used.
 
 Returns:
 
+- `uiId` (integer): The window the result was read from (1 to 8). Missing when scriptId was given and that script has no window.
 - `hasResult` (boolean, required): True if the Script UI page has submitted a result since the last call.
 - `result` (string): The submitted content (as passed to window.ACAPI.SubmitResult). Only present when hasResult is true.
 - `isOpen` (boolean, required): True while the Script UI palette is open. False before the first ShowScriptUI call and once the user closed the palette with its close box, the page called window.ACAPI.ClosePalette or Archicad closed it; stays true while Archicad only temporarily hides all palettes (e.g. during a modal dialog). Lets a waiting script stop polling when the user closes the palette.
 
 Grasshopper: `GetScriptUIResultComponent`
 
-Example: [archicad-addon/Examples/ScriptUI/GetScriptUIResult.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/GetScriptUIResult.py): Shows a palette with two buttons and waits for the user's choice with GetScriptUIResult. Polls until a button is clicked or the palette is closed.
+Example: [archicad-addon/Examples/ScriptUI/GetScriptUIResult.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/GetScriptUIResult.py): Shows a palette with two buttons and waits for the user's choice with GetScriptUIResult. Polls the window ShowScriptUI returned (its uiId) until a button is clicked or the palette is closed.
+
+### OpenSettingsDialog
+
+Opens Archicad's settings dialog of the selected elements or the current tool (Archicad 28 and later), or the default settings dialog of the given element type, waits for the user and reports whether the dialog was closed with OK or Cancel.
+
+Group: Script UI Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#OpenSettingsDialog
+
+Parameters:
+
+- `elementType` (ElementType): Opens the default settings dialog of this tool. Without it, Archicad 28 and later open the settings of the selected elements, or of the current tool when nothing is selected; Archicad 25 to 27 open the default settings of the current tool.
+
+Returns:
+
+- `cancelled` (boolean, required): True when the user closed the dialog with Cancel, false when with OK.
+
+Grasshopper: `OpenSettingsDialogComponent`
+
+Example: [archicad-addon/Examples/ScriptUI/OpenSettingsDialog.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/OpenSettingsDialog.py): Opens the Wall tool's default settings dialog with OpenSettingsDialog and waits for the user. The response tells whether the dialog was closed with OK or Cancel. Leave out elementType to open the settings of the selected elements (Archicad 28 and later) or of the current tool.
+
+### PickLibraryPart
+
+Opens Archicad's Object, Lamp, Window or Door Settings dialog, optionally limited to a library part subtype, lets the user pick a library part and set its parameters, and returns the chosen library part with its GDL parameters, or that the user cancelled. Places nothing.
+
+Group: Script UI Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#PickLibraryPart
+
+Parameters:
+
+- `elementType` (string ("Object", "Lamp", "Window", "Door")): Whose settings dialog to open: the Object, Lamp, Window or Door tool's. Without a subtypeUnID the dialog lists the library parts of that tool. Object by default.
+- `subtypeUnID` (string): Limits the dialog to the library parts of this subtype: the unique ID of the subtype library part, its main and revision GUID in the form {main}-{revision}.
+
+Returns:
+
+- `cancelled` (boolean, required): True when the user closed the dialog with Cancel; then nothing else is returned.
+- `libPart` (LibPartDetails): The library part the user chose. Absent when it could not be read.
+- `subtypeUnID` (string): The unique ID of the chosen library part's subtype, as Archicad returned it.
+- `parameters` (array of StoredGDLParameter): The GDL parameters of the chosen library part, with the values set in the dialog. Present when the user pressed OK.
+
+Grasshopper: `PickLibraryPartComponent`
+
+Example: [archicad-addon/Examples/ScriptUI/PickLibraryPart.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/PickLibraryPart.py): Lets the user pick a door and set its parameters in Archicad's Door Settings dialog with PickLibraryPart. The response holds the chosen library part and its GDL parameters with the values set in the dialog, or cancelled when the user pressed Cancel. Nothing is placed in the project.
+
+### PickLibraryPartFile
+
+Opens Archicad's Open Library Part dialog, waits for the user and returns the location of the chosen library part, or reports that the user cancelled.
+
+Group: Script UI Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#PickLibraryPartFile
+
+Parameters:
+
+- `generalGDLObjectsOnly` (boolean): Sets the dialog's file filter to General GDL Objects. Default: false.
+
+Returns:
+
+- `cancelled` (boolean, required): True when the user cancelled the dialog or chose no valid library part.
+- `path` (string): The location of the chosen library part. Only when cancelled is false.
+- `openedInExternalEditor` (boolean): True when Archicad opened the chosen file in an external editor (Archicad 26 and later; always false in Archicad 25). Only when cancelled is false.
+
+Grasshopper: `PickLibraryPartFileComponent`
+
+Example: [archicad-addon/Examples/ScriptUI/PickLibraryPartFile.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/PickLibraryPartFile.py): Lets the user pick a library part in Archicad's Open Library Part dialog with PickLibraryPartFile. The response tells whether the user cancelled; if not, it has the location of the chosen library part. Set generalGDLObjectsOnly to filter the dialog to General GDL Objects.
+
+### PickPictureFile
+
+Opens Archicad's Open Picture dialog (the one of the texture settings), waits for the user and returns the location of the chosen picture, or reports that the user cancelled. Archicad adds the chosen picture to the embedded library when it is not in it yet.
+
+Group: Script UI Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#PickPictureFile
+
+Parameters: none.
+
+Returns:
+
+- `cancelled` (boolean, required): True when the user cancelled the dialog or chose no valid picture.
+- `path` (string): The location of the chosen picture. Archicad adds the picture to the embedded library when it is not in it yet. Only when cancelled is false.
+
+Grasshopper: `PickPictureFileComponent`
+
+Example: [archicad-addon/Examples/ScriptUI/PickPictureFile.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/PickPictureFile.py): Lets the user pick a picture in Archicad's Open Picture dialog with PickPictureFile. The response tells whether the user cancelled; if not, it has the location of the chosen picture. Archicad adds the picture to the embedded library when it is not in it yet.
+
+### PickZoneStampOrLabelFile
+
+Opens Archicad's dialog for opening a zone stamp or label library part, waits for the user and returns the location of the chosen file, or reports that the user cancelled.
+
+Group: Script UI Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#PickZoneStampOrLabelFile
+
+Parameters:
+
+- `objectType` (string ("Label", "ZoneStamp")): The type of library part the dialog lets the user open. Default: Label.
+
+Returns:
+
+- `cancelled` (boolean, required): True when the user cancelled the dialog or chose no valid zone stamp or label.
+- `path` (string): The location of the chosen zone stamp or label. Only when cancelled is false.
+
+Grasshopper: `PickZoneStampOrLabelFileComponent`
+
+Example: [archicad-addon/Examples/ScriptUI/PickZoneStampOrLabelFile.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/PickZoneStampOrLabelFile.py): Lets the user pick a zone stamp library part with PickZoneStampOrLabelFile. The response tells whether the user cancelled; if not, it has the location of the chosen file. Leave out objectType (or give 'Label') to pick a label instead.
+
+### PickLibraryPartSaveLocation
+
+Opens Archicad's Save Library Part dialog (object, door or window), waits for the user and returns the location chosen to save the library part to, or reports that the user cancelled. Nothing is saved.
+
+Group: Script UI Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#PickLibraryPartSaveLocation
+
+Parameters:
+
+- `defaultPath` (string): The location (library folder and file name) the dialog starts from. Default: <libraryPartType>.gsm in the embedded library of the project.
+- `libraryPartType` (string ("Object", "Door", "Window")): Which Save Library Part dialog to open. Default: Object.
+- `browseForFolder` (boolean): Lets the user save outside the embedded library. Default: false.
+- `title` (string): The title of the dialog. Default: Archicad's own title.
+
+Returns:
+
+- `cancelled` (boolean, required): True when the user cancelled the dialog.
+- `path` (string): The location the user chose to save the library part to. Nothing is saved there. Only when cancelled is false.
+
+Grasshopper: `PickLibraryPartSaveLocationComponent`
+
+Example: [archicad-addon/Examples/ScriptUI/PickLibraryPartSaveLocation.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/PickLibraryPartSaveLocation.py): Asks the user where to save a door library part with PickLibraryPartSaveLocation. The dialog starts from Door.gsm in the project's embedded library (give defaultPath to start elsewhere). The response tells whether the user cancelled; if not, it has the chosen location. Nothing is saved.
+
+### PickLibraryFolder
+
+Opens Archicad's dialog for choosing or creating a library folder, waits for the user and returns the location of the folder, or reports that the user cancelled. The folder is not added to the libraries of the project.
+
+Group: Script UI Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#PickLibraryFolder
+
+Parameters:
+
+- `defaultName` (string): The default name the dialog offers for a new library folder. Default: New Library.
+
+Returns:
+
+- `cancelled` (boolean, required): True when the user cancelled the dialog.
+- `path` (string): The location of the chosen or created folder. It is not added to the libraries of the project; use AddLibraries for that. Only when cancelled is false.
+
+Grasshopper: `PickLibraryFolderComponent`
+
+Example: [archicad-addon/Examples/ScriptUI/PickLibraryFolder.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/PickLibraryFolder.py): Lets the user choose or create a library folder with PickLibraryFolder. The response tells whether the user cancelled; if not, it has the location of the folder. The folder is not added to the project's libraries; call AddLibraries with the path for that.
+
+### ShowIFCExportSettings
+
+Opens Archicad's IFC export settings dialog, where the user picks a view and an IFC export translator, waits for the user and returns the chosen view and translator, or cancelled. Available from Archicad 28.
+
+Group: Script UI Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#ShowIFCExportSettings
+
+Parameters:
+
+- `navigatorItemId` (NavigatorItemId): Optional: the view (an item of the View Map) the dialog starts with.
+- `translatorName` (string): Optional: the name of the IFC export translator the dialog starts with, as GetIFCExportTranslators lists them.
+
+Returns:
+
+- `cancelled` (boolean, required): True when the user closed the dialog with Cancel; then no other field is given.
+- `navigatorItemId` (NavigatorItemId): The view the user chose.
+- `viewName` (string): The name of the chosen view, when Archicad finds it in the navigator.
+- `translatorName` (string): The name of the IFC export translator the user chose, as IFCFileOperation's translatorName takes it.
+
+Grasshopper: `ShowIFCExportSettingsComponent`
+
+Example: [archicad-addon/Examples/ScriptUI/ShowIFCExportSettings.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/ShowIFCExportSettings.py): Opens the IFC export settings dialog with ShowIFCExportSettings and waits for the user (Archicad 28 and later). The response is the view and the IFC export translator the user chose, or cancelled. The translator's name can be passed to IFCFileOperation's translatorName to save the project as IFC with it.
+
+### PickAttribute
+
+Opens a small dialog with Archicad's attribute picker for the given attribute type (layer, building material, composite, profile or surface; fill and line from Archicad 27), waits for the user and returns the chosen attribute, or cancelled. Available from Archicad 26.
+
+Group: Script UI Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#PickAttribute
+
+Parameters:
+
+- `attributeType` (string ("Layer", "BuildingMaterial", "Composite", "Profile", "Surface", "Fill", "Line"), required): The type of the attribute to pick. Fill and Line need Archicad 27 or newer. Composite lists the composites only.
+- `attributeId` (AttributeId): The attribute selected when the dialog opens. Without it the picker starts empty and OK is enabled once the user has picked an attribute.
+- `title` (string): The title of the dialog. Default: Pick Attribute.
+
+Returns:
+
+- `cancelled` (boolean, required): True when the user closed the dialog with Cancel, false when with OK.
+- `attributeType` (AttributeType): The type of the chosen attribute, the attributeType of the input. Only when not cancelled.
+- `attributeId` (AttributeId): The chosen attribute. Only when not cancelled.
+
+Grasshopper: `PickAttributeComponent`
+
+Example: [archicad-addon/Examples/ScriptUI/PickAttribute.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/PickAttribute.py): Lets the user pick a layer with PickAttribute and waits for the user (Archicad 26 and later). A small dialog shows Archicad's attribute picker; the response is the chosen attribute, or cancelled. The attributeType can also be BuildingMaterial, Composite, Profile or Surface, and Fill or Line from Archicad 27.
+
+### PickAttributeFolder
+
+Opens a small dialog with Archicad's attribute folder picker for the given attribute type, waits for the user and returns the chosen folder as its path from the root folder, or cancelled. Available from Archicad 26.
+
+Group: Script UI Commands. Added in Tapir 2.0.0. Docs: https://archicad-api.com/archicad-addon/#PickAttributeFolder
+
+Parameters:
+
+- `attributeType` (string ("Layer", "BuildingMaterial", "Composite", "Profile", "Surface", "Fill", "Line"), required): The type of the attributes whose folders the picker lists. Fill and Line need Archicad 27 or newer.
+- `title` (string): The title of the dialog. Default: Pick Attribute Folder.
+
+Returns:
+
+- `cancelled` (boolean, required): True when the user closed the dialog with Cancel, false when with OK.
+- `attributeFolder` (AttributeFolder): The chosen folder; its path works as the targetFolder of MoveAttributesAndFolders. Only when not cancelled.
+
+Grasshopper: `PickAttributeFolderComponent`
+
+Example: [archicad-addon/Examples/ScriptUI/PickAttributeFolder.py](https://github.com/ENZYME-APD/tapir-archicad-automation/blob/main/archicad-addon/Examples/ScriptUI/PickAttributeFolder.py): Lets the user pick a layer folder with PickAttributeFolder and waits for the user (Archicad 26 and later). A small dialog shows Archicad's attribute folder picker; the response is the chosen folder as its path from the root folder (an empty path is the root folder), or cancelled. The folder can be the targetFolder of MoveAttributesAndFolders.
 
 
 ## Developer Commands
@@ -13452,6 +16480,39 @@ ElementIdArrayItem or ErrorItem: An element identifier or an error.
 
 array of ElementIdOrError: A list of element identifiers or errors.
 
+### ComponentId
+
+object: The identifier of a component (one building material skin or profile part) of an element. It identifies the component only together with its element.
+- `guid` (Guid, required)
+
+### ElementComponentId
+
+object: The identifier of a component of an element: the element and the component within it.
+- `elementId` (ElementId, required)
+- `componentId` (ComponentId, required)
+
+### ElementComponentIdArrayItem
+
+object
+- `elementComponentId` (ElementComponentId, required)
+
+### ElementComponents
+
+array of ElementComponentIdArrayItem: A list of element components.
+
+### ElementComponentsArrayItem
+
+object
+- `elementComponents` (ElementComponents, required)
+
+### ElementComponentsOrError
+
+ElementComponentsArrayItem or ErrorItem: The components of an element or an error.
+
+### ElementComponentsOrErrorArray
+
+array of ElementComponentsOrError: A list of element component lists or errors.
+
 ### ElementTrims
 
 object: The trims of one element: the roofs and shells trimming it, and the elements it trims.
@@ -13485,11 +16546,12 @@ object: The details of an MEP routing segment.
 - `preferenceTableId` (Guid): The guid of the segment preference table used by the segment (see GetMEPPreferenceTables).
 - `beginNodeId` (ElementId): The routing node at the beginning of the segment.
 - `endNodeId` (ElementId): The routing node at the end of the segment.
-- `anchor` (string ("TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight")): The anchor point of the cross section, on a 3x3 grid.
+- `anchor` (MEPRoutingAnchor)
 - `referenceLineOffsetX` (number): The horizontal offset of the reference line from the anchor point.
 - `referenceLineOffsetY` (number): The vertical offset of the reference line from the anchor point.
 - `wallThickness` (number): The wall thickness of the segment.
-- `flangeSize` (number): The flange size of the segment. Only present when the segment has flanges.
+- `flangeSize` (number): The flange size of the segment (width for Ventilation, diameter for Piping). It is used only when the connection style is Flanged; Archicad 29 also returns it for other styles.
+- `insulationThickness` (number): The insulation thickness of the rigid segments of the segment. Only present when they are insulated (never for cable carriers).
 - `connectionStyle` (MEPConnectionStyle)
 - `rigidSegments` (Elements): The rigid segments (the straight duct, pipe or cable carrier pieces) of the routing segment.
 
@@ -13510,7 +16572,8 @@ object: The details of an MEP routing node.
 object: The details of an MEP routing element.
 - `domain` (MEPDomainOrUnknown, required)
 - `mepSystemId` (AttributeId, required)
-- `offsetFromHomeStory` (number): The offset of the routing element from its home story.
+- `floorIndex` (integer): The index of the home story of the routing element (see GetStories).
+- `offsetFromHomeStory` (number): The offset of the lowest node of the routing element from the level of its home story.
 - `branchPreferenceTableId` (Guid): The guid of the branch preference table used by the routing element (see GetMEPPreferenceTables). Not present when the routing element has none.
 - `logicallyConnectedPortIdAtRouteBegin` (Guid): The port logically connected to the beginning of the route (see GetMEPPorts). Not present when nothing is connected there.
 - `logicallyConnectedPortIdAtRouteEnd` (Guid): The port logically connected to the end of the route (see GetMEPPorts). Not present when nothing is connected there.
@@ -13543,7 +16606,8 @@ object: The details of a port of an MEP element.
 - `height` (number, required)
 - `domain` (MEPDomainOrUnknown, required)
 - `mepSystemId` (AttributeId, required)
-- `isPhysicallyConnected` (boolean, required)
+- `isPhysicallyConnected` (boolean): Whether the port is physically connected to another port. Available from Archicad 28.
+- `isConnected` (boolean): Whether the port is connected to another port. Archicad 27 only; from Archicad 28 see isPhysicallyConnected.
 - `connectionStyle` (MEPConnectionStyle): The connection style of the port. Available from Archicad 30.
 - `flowDirection` (MEPFlowDirection): The flow direction of a piping or ventilation port.
 - `nominalSize` (string): The nominal size of a piping port. Available from Archicad 30.
@@ -13565,6 +16629,10 @@ MEPElementPorts or ErrorItem: The ports of an MEP element or an error.
 ### MEPElementPortsOrErrors
 
 array of MEPElementPortsOrError: A list of MEP element ports or errors.
+
+### MEPFlexibleSegmentPolyline
+
+array of object: The geometry of a polyline MEP flexible segment: its line and spline parts in order, which alternate and connect at their ends. Available from Archicad 28.
 
 ### MEPConnectionResult
 
@@ -13769,6 +16837,162 @@ object
 object: The identifier of a Project Info group. Available from Archicad 30.
 - `guid` (Guid, required)
 
+### PrinterInfo
+
+object
+- `name` (string, required): The name of the selected printer.
+- `portrait` (boolean, required): The selected orientation: true for portrait, false for landscape.
+
+### PlotterInfo
+
+object
+- `name` (string, required): The name of the selected plotter.
+- `model` (string, required): The model of the selected plotter.
+
+### WindowToClose
+
+object
+- `databaseId` (DatabaseId, required): The database shown in the window, as GetDatabases, GetContainingDatabases or GetDatabaseIdFromNavigatorItemId return it.
+- `windowType` (WindowType): Optional. When given, the window is only closed when its database is of this type.
+
+### ActionCenterCheck
+
+string ("Hotlinks", "All", "Libraries", "Drawings", "Licenses")
+
+### ProductDomain
+
+string ("Architecture", "MEP")
+
+### PolygonInputMethod
+
+string ("General", "Rect", "RotRect", "Polyline"): Polygon input method. 'General' = free polygon, 'Rect' = axis-aligned rectangle, 'RotRect' = rotated rectangle, 'Polyline' = open polyline.
+
+### ScreenPoint
+
+object
+- `h` (integer, required): Horizontal pixel position from the left edge of the view window.
+- `v` (integer, required): Vertical pixel position from the top edge of the view window.
+
+### ScreenPointInput
+
+object
+- `h` (integer, required): Horizontal pixel position from the left edge of the view window.
+- `v` (integer, required): Vertical pixel position from the top edge of the view window.
+
+### ModelViewOptionId
+
+object: The identifier of the model view option combination.
+- `guid` (Guid, required)
+
+### ViewOptions
+
+object: The model view options and the on-screen view options, every field by its API_ViewOptions name. Values are the numeric API constants; attribute indices are plain integers.
+- `modelViewOptions` (object, required): Fields of API_ModelViewOptions, with the curtainWall, stair and railing parts as nested objects.
+- `onScreenViewOptions` (object, required): Fields of API_OnScreenViewOptions.
+
+### ViewOptionsUpdate
+
+object: The fields to change, named as in the response of GetViewOptions. Fields not given keep their current value. Without an index, the window then uses Custom model view options (index 0), also when only on-screen view options are given. To keep the combination, give its index as well.
+- `modelViewOptions` (object)
+- `onScreenViewOptions` (object)
+
+### RenovationFilterDetails
+
+object
+- `renovationFilterId` (GuidId, required): Identifier of the renovation filter. The same identifier is the renovationFilterGuid of GetViewSettings and SetViewSettings.
+- `name` (string, required): Name of the renovation filter.
+
+### AddOnViewpointDetails
+
+object
+- `viewpointId` (object, required): The identifier of the add-on viewpoint item.
+  - `guid` (Guid, required)
+- `parentViewpointId` (object): The identifier of the root or group the item is in. Missing when Archicad reports no parent, as for a root.
+  - `guid` (Guid, required)
+- `itemType` (string ("Root", "Group", "Leaf", "Undefined"), required): Whether the item is a root, a group or a leaf node.
+- `displayId` (string, required): The ID shown for the item in the Project Map.
+- `displayName` (string, required): The name shown for the item in the Project Map.
+- `viewSettingsFlags` (integer, required): The view settings flags of the item, as Archicad stores them (a bit field).
+- `data` (string, required): The data the add-on attached to the item, base64 encoded. Empty when there is none.
+
+### AddOnViewpointType
+
+string ("Root", "Group", "Leaf"): Whether to create a root, a group or a leaf node. Roots and groups can't be created in a Teamwork project.
+
+### AddOnViewpointModificationData
+
+object
+- `viewpointId` (object, required): The identifier of the add-on viewpoint item to change.
+  - `guid` (Guid, required)
+- `displayId` (string): The ID shown for the item in the Project Map.
+- `displayName` (string): The name shown for the item in the Project Map.
+- `viewSettingsFlags` (integer): The view settings flags of the item, as Archicad stores them (a bit field).
+- `data` (string): Data to attach to the item, base64 encoded. It replaces the attached data; an empty string removes it.
+
+### PlaceSettingsUpdate
+
+object: The place settings to change (API_PlaceInfo), with its field names. Only the given keys are changed; an empty object changes nothing and returns the current settings.
+- `longitude` (number): Longitude in degrees.
+- `latitude` (number): Latitude in degrees.
+- `altitude` (number): Altitude in meters.
+- `north` (number): The north direction in radians.
+- `year` (integer)
+- `month` (integer)
+- `day` (integer)
+- `hour` (integer)
+- `minute` (integer)
+- `second` (integer)
+- `sumTime` (boolean): Whether summer time (+1 hour) is on.
+- `timeZoneInMinutes` (integer): The time zone, in minutes from Greenwich.
+- `timeZoneOffset` (integer): Tells apart time zones with the same timeZoneInMinutes.
+
+### NoteAutotextDetails
+
+object
+- `autotextId` (integer, required): The numeric value of the autotext's API_NoteAutotextID in the Archicad API.
+- `elementTypes` (array of ElementType, required): The element types the autotext is available for.
+
+### ProjectInfoGroupRename
+
+object
+- `projectInfoGroupId` (ProjectInfoGroupId, required)
+- `name` (string, required): The new name of the group. It must not be used by another group.
+
+### ProjectInfoGroupMove
+
+object
+- `projectInfoGroupId` (ProjectInfoGroupId, required)
+- `beforeProjectInfoGroupId` (ProjectInfoGroupId): The group to move the group before. When omitted, the group is moved to the end of the group list.
+
+### HotlinkSourceReference
+
+object
+- `location` (string, required): Absolute path of the hotlink's source file.
+
+### HotlinkSourceStatusResult
+
+object
+- `status` (string ("AuthCanceld", "SourceMissing", "SourceAvailable", "SourceNotAccessible", "SourceIncompatible", "SourceOffline"), required): The API_HotlinkSourceStatus value without its prefix (AuthCanceld is spelled as in the API).
+
+### UnitValueConversionData
+
+object
+- `value` (number, required): The value to convert, in meters, square meters, cubic meters or radians, matching the kind of the preference.
+- `preference` (string ("WorkModel", "WorkLayout", "WorkAngle", "DimLinear", "DimAngle", "DimRadial", "DimLevel", "DimElevation", "DimDoorWindow", "DimParapet", "DimArea", "CalcLength", ...), required): The Project Preference whose unit and rounding are applied: WorkModel, WorkLayout and WorkAngle are the Working Units; the Dim ones are the Dimensions (DimDoorWindow the door, window and skylight dimensions, DimParapet the sill height, DimArea the area calculations); the Calc ones are the Calculation Units & Rules.
+
+### ConvertedUnitValue
+
+object
+- `convertedValue` (string, required): The value as Archicad shows it in the unit of the preference, without the extra accuracy decimals. It may contain the unit.
+- `extraAccuracy` (string, required): The extra accuracy decimals, if any (at most two). Empty when there are none.
+- `unit` (string, required): The unit of the preference. It may be empty.
+
+### RenovationStatusName
+
+object
+- `status` (string ("Existing", "New", "Demolished"), required): The renovation status.
+- `name` (string, required): The name of the status as the running Archicad shows it (localized).
+
 ### ProjectInfoGroupIdArrayItem
 
 object
@@ -13866,6 +17090,7 @@ object: A fill attribute.
 - `symbolLines` (array of FillSymbolLine)
 - `symbolArcs` (array of FillSymbolArc)
 - `symbolHotspots` (array of Coordinate2D)
+- `symbolSolidFills` (array of FillSymbolSolidFill)
 
 ### FillAttributeOrError
 
@@ -13892,6 +17117,13 @@ object
 - `begin` (Coordinate2D, required)
 - `origin` (Coordinate2D, required)
 - `angle` (number, required): Arc angle in radians, measured CCW.
+
+### FillSymbolSolidFill
+
+object: A filled polygon of a symbol fill's pattern (sfill_SolidFills with sfill_FillCoords, sfill_SubPolys and sfill_PolyArcs), in the same form as other polygons in Tapir: closed contours, the first point repeated at the end of each contour.
+- `coordinates` (array of Coordinate2D, required)
+- `subPolygons` (array of integer, required): 1-based index of the last coordinate of each contour (the outline first, then the holes).
+- `arcs` (array of PolyArc)
 
 ### ZoneCategoryAttribute
 
@@ -14319,6 +17551,8 @@ object
 - `edgeIndex` (integer, required)
 - `pen` (integer)
 - `isVisibleLine` (boolean)
+- `isInnerLine` (boolean): Whether the edge is an inner line of the profile (GetProfiles' edges[].isInnerLine).
+- `isCutEndLine` (boolean): Whether the edge is a cut end line of the profile (GetProfiles' edges[].isCutEndLine).
 - `lineTypeId` (AttributeIdArrayItem)
 - `buildingMaterialId` (AttributeIdArrayItem)
 
@@ -14371,6 +17605,24 @@ object: Representation of an arc segment of a two dimensional polygon/polyline.
 - `endIndex` (integer, required): Node index of the other end point of the arc.
 - `arcAngle` (number, required): Angle of the arc; it is positive, if the arc is on the right-hand side of the straight segment.
 
+### SnapFilter
+
+object: Which points and lines of the elements the cursor snaps to while the designer clicks (Archicad's neig filter). Without it, the cursor snaps as usual.
+- `base` (string ("All", "None", "Edges", "Nodes")): What the cursor snaps to before include and exclude are applied: All = everything, None = nothing, Edges = only the lines and edges of the elements, Nodes = only their points (end points, vertices, hotspots). Default: None when include is given, otherwise All.
+- `include` (array of SnapType): The cursor also snaps to these.
+- `exclude` (array of SnapType): The cursor does not snap to these. Applied after include.
+
+### SnapType
+
+string ("Wall", "WallOn", "Column", "ColumnOn", "Beam", "BeamOn", "Window", "WindowOn", "Door", "DoorOn", "Object", "ObjectOn", ...): A kind of point or line the cursor can snap to. An element type name means the element's points (end points, vertices, corners, hotspots); with On it means its lines and edges (for walls the reference line). Hotspot is a hotspot element, Text the corners of a text, Label the points of a label, Dimension a dimension point and DimensionOn the dimension line.
+
+### InputConstraint
+
+object: Archicad's drawing constraint for the clicks of a Get...FromUser command: the cursor can only move along it, as when a coordinate is locked in the Tracker. It is dissolved when the command returns, also on Escape and on errors.
+- `type` (string ("X", "Y", "Z", "Angle", "Distance"), required): What is fixed: X = the X coordinate, Y = the Y coordinate, Z = the Z coordinate (3D window), Angle = the direction from the reference point (the cursor moves along a line), Distance = the distance from the reference point (the cursor moves along a circle).
+- `value` (number, required): The fixed value: a coordinate or distance in meters, or for Angle an angle in radians, counterclockwise from the X axis.
+- `fromLastPoint` (boolean): If true, the value is measured from the last clicked point (Archicad's local origin), otherwise from the project origin.
+
 ### Coordinate2D
 
 object: 2D coordinate.
@@ -14384,16 +17636,70 @@ object: 3D coordinate.
 - `y` (number, required): Y value of the coordinate.
 - `z` (number, required): Z value of the coordinate.
 
+### CoordinateSystem3D
+
+object: A coordinate system in 3D: an origin and three axes. What is left out keeps its default; give all three axes together or none.
+- `origin` (Coordinate3D): The origin of the coordinate system.
+- `xAxis` (Coordinate3D): The X axis of the coordinate system.
+- `yAxis` (Coordinate3D): The Y axis of the coordinate system.
+- `zAxis` (Coordinate3D): The Z axis of the coordinate system.
+
+### ShellEdgeTrim
+
+object: How a shell edge is cut.
+- `trimType` (string ("Vertical", "Perpendicular", "Horizontal", "CustomAngle"), required): Vertical, Perpendicular or Horizontal to the shell, or at 'angle' (CustomAngle).
+- `angle` (number): The trim angle in radians. Only CustomAngle uses it; pi/2 by default.
+
+### RoofEdgeTrim
+
+object: How an edge of a single-plane roof's polygon is cut (the edge's cut in the roof's settings).
+- `trimType` (string ("Vertical", "Perpendicular", "Horizontal", "CustomAngle", "AlignWithCut")): Vertical, Perpendicular to the roof plane, Horizontal, or at 'angle' (CustomAngle). AlignWithCut is only reported, for shell edges; it cannot be written to a roof.
+- `angle` (number): The angle of the edge cut in radians, as Archicad stores it. Only CustomAngle uses it.
+
+### ShellProfile
+
+object: A profile polyline of a shell, in the XY plane of its coordinate system.
+- `coordinates` (array of Coordinate2D, required): The points of the polyline.
+- `arcs` (array of PolyArc): Arc segments of the polyline, with indices into coordinates; index len(coordinates) is the first point again, which closes the polyline.
+- `closed` (boolean): Whether the segment from the last point back to the first one is part of the profile. False by default.
+
+### ShellCutPolygon
+
+object: A closed polygon cutting a shell: its clipping contour or a hole.
+- `coordinates` (array of Coordinate2D, required): The points of the polygon, in the XY plane of 'plane'.
+- `arcs` (array of PolyArc): Arc segments of the polygon, with indices into coordinates.
+- `plane` (CoordinateSystem3D): The plane of the polygon, in the coordinates of the shell's base plane: a hole is extruded from it along its Z axis. The base plane itself by default.
+- `depth` (number): Required for holes, ignored for the clipping contour: how far the cutting body is extruded from the polygon's plane, along its Z axis (negative values cut downwards).
+
+### AxonometryProjectionType
+
+string ("YZ", "XZ", "XY", "Frontal", "Monometric", "Isometric", "Dimetric", "Bottom", "FrontalBottom", "MonometricBottom", "IsometricBottom", "DimetricBottom", ...): The projection type of an axonometric 3D projection, the projMod of the Archicad API. Archicad works out the transformation matrix of every type but Custom from the type and the azimuth. XY is the top view and Bottom the view from below. YZ and XZ are both the side view (an elevation), looking from the azimuth. Frontal, Monometric, Isometric and Dimetric are the predefined axonometries, and FrontalBottom, MonometricBottom, IsometricBottom and DimetricBottom the same seen from below; an Isometric at azimuth 270 is the isometric from the south-east (X axis at -30 degrees, Y at 30, Z at 90). Custom keeps the transformation matrix as given. Parallel cannot be set: Archicad makes it Custom.
+
 ### PerspectiveProjectionParameters
 
 object: The parameters of a perspective projection of the 3D window.
 - `cameraPosition` (Coordinate3D, required): The position of the camera.
 - `targetPosition` (Coordinate3D, required): The position of the target point the camera looks at.
 - `distance` (number, required): The distance between the camera and the target.
-- `azimuth` (number, required): The azimuth angle of the camera.
-- `viewCone` (number, required): The view cone angle of the camera.
+- `azimuth` (number, required): The azimuth of the camera in degrees: the direction from the target to the camera, counterclockwise from the X axis. Archicad works it out from the camera and target positions, so a set value is replaced by that.
+- `viewCone` (number, required): The view cone angle of the camera in degrees.
 - `rollAngle` (number, required): The roll angle of the camera.
 - `isTwoPointPersp` (boolean, required): True for a two-point perspective (vertical edges stay vertical).
+- `sun` (ProjectionSunSettings): The sun position of the perspective. Get3DProjectionSettings always returns it; Set3DProjectionSettings changes only the values given and keeps the current sun when it is missing.
+
+### ProjectionSunSettings
+
+object: The sun position of a 3D projection, the Sun Position of the 3D Projection Settings dialog (API_SunAngleSettings). Each perspective and axonometry has its own, independent of the project's date and time (SetSunSettings). The 3D shading and shadows of the projection come from it.
+- `sunPositionOption` (string ("Angles", "DateAndTime")): Angles: the sun is at sunAzimuth and sunAltitude. DateAndTime: Archicad calculates the sun from the project location and the date and time given here.
+- `sunAzimuth` (number): The azimuth of the sun, used when sunPositionOption is Angles. In the same units Get3DProjectionSettings returns it.
+- `sunAltitude` (number): The altitude of the sun, used when sunPositionOption is Angles. In the same units Get3DProjectionSettings returns it.
+- `year` (integer): Used when sunPositionOption is DateAndTime. 0 when no date is set.
+- `month` (integer): Used when sunPositionOption is DateAndTime. 0 when no date is set.
+- `day` (integer): Used when sunPositionOption is DateAndTime. 0 when no date is set.
+- `hour` (integer)
+- `minute` (integer)
+- `second` (integer)
+- `summerTime` (boolean): True when the time is daylight saving time.
 
 ### Dimensions3D
 
@@ -14468,6 +17774,48 @@ SuccessfulExecutionResult or FailedExecutionResult: The result of the execution.
 
 array of ExecutionResult: A list of execution results.
 
+### DryRun
+
+boolean: If true, the command makes all the checks of a real run and resolves the same targets, with the same errors, but changes nothing in the project and creates no undo step. The response is that of a real run with "dryRun": true added, and says for each target what the real run would do. Default is false.
+
+### DryRunFlag
+
+boolean (true): Present, and true, only in the response of a dry run (the dryRun input was true): nothing was changed in the project.
+
+### WouldDeleteExecutionResult
+
+object: The result of a dry run for a target that passed every check: a real run would delete it.
+- `success` (boolean (true), required)
+- `wouldDelete` (boolean (true), required)
+
+### DeletionExecutionResult
+
+SuccessfulExecutionResult or WouldDeleteExecutionResult or FailedExecutionResult: The result of a deletion for one target. On a dry run a target that passed every check gets wouldDelete instead of being deleted.
+
+### DeletionExecutionResults
+
+array of DeletionExecutionResult: A list of deletion results.
+
+### WouldChange
+
+object: What a real run would change on a target. Each command says what its oldValue and newValue are; either is left out when it cannot be told cheaply.
+- `oldValue` (any): The target's value now, before the change.
+- `newValue` (any): The value a real run would write.
+
+### WouldChangeExecutionResult
+
+object: The result of a dry run for a target that passed every check: a real run would change it as wouldChange says.
+- `success` (boolean (true), required)
+- `wouldChange` (WouldChange, required)
+
+### ChangeExecutionResult
+
+SuccessfulExecutionResult or WouldChangeExecutionResult or FailedExecutionResult: The result of a change for one target. On a dry run a target that passed every check gets wouldChange instead of being changed.
+
+### ChangeExecutionResults
+
+array of ChangeExecutionResult: A list of change results.
+
 ### ElementCategoryType
 
 string ("StructuralFunction", "Position", "RenovationStatus", "RenovationFilter", "BRI"): The type of an element category. The names of the categories and of their values are localized, so scripts should select a category by this type and a value by its categoryValueId, never by name. BRI is available only in the German localized version of Archicad.
@@ -14488,7 +17836,14 @@ string ("Wall", "Column", "Beam", "Window", "Door", "Object", "Lamp", "Slab", "R
 
 ### ElementFilter
 
-string ("IsEditable", "IsVisibleByLayer", "IsVisibleByRenovation", "IsVisibleByStructureDisplay", "IsVisibleIn3D", "OnActualFloor", "OnActualLayout", "InMyWorkspace", "IsIndependent", "InCroppedView", "HasAccessRight", "IsOverriddenByRenovation", ...): A filter type for an element.
+string ("IsEditable", "IsVisibleByLayer", "IsVisibleByRenovation", "IsVisibleByStructureDisplay", "IsVisibleIn3D", "OnActualFloor", "OnActualLayout", "InMyWorkspace", "IsIndependent", "InCroppedView", "HasAccessRight", "IsOverriddenByRenovation", ...): A filter type for an element. Note: elements hidden by the design option combination of the current view (Archicad 29 or newer) fail IsVisibleByRenovation and pass IsOverriddenByRenovation even when the project has no renovation filter; use GetDesignOptionForElements and GetDesignOptionCombinationOfViews to tell them apart.
+
+### ElementTypeFloorLayerFilter
+
+object: A server-side element filter. An element matches when its type, its home story and its layer are each among the listed ones; an omitted or empty list does not filter.
+- `types` (array of ElementType): Element types to keep (e.g. ['Wall', 'Column']).
+- `floorIndices` (array of integer): Home story indices to keep (e.g. [0, 1]).
+- `layerIndices` (array of integer): Layer attribute indices to keep.
 
 ### WindowType
 
@@ -14573,6 +17928,10 @@ string ("Standard", "StandardWithAbstract", "CutOnly", "OutLinesOnly", "Abstract
 ### ViewDepthLimitation
 
 string ("ToFloorPlanRange", "ToAbsoluteLimit", "EntireElement"): Floor plan view depth limitation.
+
+### ElemProjectionMode
+
+string ("Symbolic", "Projected", "Hybrid"): Floor plan projection mode of an element part (API_ElemProjectionModesID).
 
 ### TextureProjectionType
 
@@ -14670,13 +18029,33 @@ string ("ViewOrSourceFileName", "ViewIdAndName", "CustomName"): How the drawing'
 
 string ("ByLayout", "ByViewId", "CustomNumber"): How the drawing's title ID is assigned (Identification tabpage of the Drawing Settings dialog).
 
+### DrawingPenTableUsageMode
+
+string ("OwnPenTable", "ModelPenTable", "PenTableIndex"): Which pen table the drawing uses (API_DrawingType::penTableUsageMode): its own, the one of the model, or the pen set given by penTableIndex.
+
+### DrawingColorMode
+
+string ("OriginalColors", "BlackAndWhite", "Grayscale"): How the drawing's pens are output (API_DrawingType::colorMode).
+
+### DrawingAnchorPoint
+
+string ("TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"): The node of the drawing's bounding box the drawing is placed by (API_DrawingType::anchorPoint). Used only when useOwnOriginAsAnchor is false.
+
+### DrawingStatus
+
+string ("UpToDate", "Modified", "Unknown"): The Drawing Manager's Status column: UpToDate (OK) when the drawing matches its source, Modified when the source changed since the drawing was last updated, Unknown when the status cannot be determined (e.g. a missing external source).
+
+### DrawingLinkType
+
+string ("InternalView", "ExternalView", "Drawing", "DXF_DWG", "PDF", "Image", "PlotMaker", "AddOn", "Unknown", "Other"): The kind of source a drawing is linked to (the Drawing Manager's Source column): a view of this project (InternalView), a view of another Archicad project file (ExternalView), a drawing file, a DWG/DXF file, a PDF, an image, a PlotMaker file, an Add-On generated drawing, or an unknown/other source.
+
 ### MEPCrossSectionShape
 
 string ("Rectangular", "Circular", "Oval", "UShape"): Shape of an MEP routing segment's cross section or of an MEP port.
 
 ### MEPConnectionStyle
 
-string ("SimpleBody", "Flanged", "Welded"): How the pieces of an MEP routing segment, or an MEP port, are connected.
+string ("SimpleBody", "Flanged", "Welded"): How the pieces of an MEP routing segment, or an MEP port, are connected. For pipes, the settings dialog of Archicad 29 shows SimpleBody as Welded, and Welded is refused on a pipe route.
 
 ### MEPFlowDirection
 
@@ -14702,9 +18081,59 @@ string ("ToFloorPlanRange", "ToAbsoluteDisplayLimit", "EntireElement"): How much
 
 string ("AllRelevantStories", "HomeStoryOnly"): On which stories an MEP routing element is shown. Available from Archicad 29.
 
+### MEPPortDefaultDetails
+
+object: The settings of one port of an MEP tool default. Each field is present only where the port's domain and the Archicad version have it: Archicad 27 gives only the index and the shape.
+- `index` (integer, required): The index of the port in the default.
+- `domain` (MEPDomain)
+- `name` (string)
+- `shape` (MEPCrossSectionShape)
+- `width` (number)
+- `height` (number): The height of a ventilation or cable carrier port.
+- `diameter` (number): The diameter of a piping port.
+- `wallThickness` (number): The wall thickness of a piping or ventilation port.
+- `flowDirection` (MEPFlowDirection): The flow direction of a piping or ventilation port.
+- `flangeSize` (number): The flange size of a piping or ventilation port, when it has flanges. Available from Archicad 30.
+- `connectionStyle` (MEPConnectionStyle): Available from Archicad 30.
+- `mepSystemId` (AttributeId)
+
+### MEPElementDefaultDetails
+
+object: The settings of a terminal, accessory, fitting, equipment or branch tool default.
+- `libraryPartId` (LibPartUnId, required): The library part the tool places.
+- `insulationThickness` (number): The insulation thickness, when the default has insulation.
+- `ports` (array of MEPPortDefaultDetails, required)
+
+### MEPDomainToolDefaults
+
+object: The current settings of the MEP tools of one domain. A tool whose default Archicad does not give for the domain is left out; a setting is left out where the Archicad version does not have it.
+- `domain` (MEPDomain, required)
+- `routingElement` (object): The routing tool default.
+  - `mepSystemId` (AttributeId, required)
+  - `branchPreferenceTableId` (Guid)
+  - `cutPlanePosition` (MEPCutPlanePosition)
+  - `floorPlanDisplayOption` (MEPFloorPlanDisplayOption)
+  - `showProjection` (MEPShowProjection)
+  - `onStoryVisibility` (MEPOnStoryVisibility)
+  - `routingSegment` (object, required): The segment default of the routing tool.
+  - `routingNode` (object, required): The node default of the routing tool.
+- `rigidSegment` (object): The rigid segment default of the routing tool.
+  - `shape` (MEPCrossSectionShape): Archicad 27 and 28.
+  - `width` (number): Archicad 27 and 28.
+  - `height` (number): Archicad 27 and 28.
+  - `insulationThickness` (number): The insulation thickness, when the default has insulation.
+- `branch` (MEPElementDefaultDetails): The branch default of the routing tool.
+- `flexibleSegment` (object): The flexible segment tool default. Archicad 27 has it in the Ventilation domain only.
+  - `shape` (MEPCrossSectionShape, required)
+  - `width` (number, required)
+  - `height` (number, required)
+- `terminal` (MEPElementDefaultDetails)
+- `accessory` (MEPElementDefaultDetails)
+- `fitting` (MEPElementDefaultDetails)
+
 ### MEPPreferenceTableDomain
 
-string ("Piping", "Ventilation", "CableCarrier"): The MEP domain of the segment preference tables.
+string ("Piping", "Ventilation", "CableCarrier")
 
 ### MEPPreferenceRowIndex
 
@@ -14834,9 +18263,9 @@ string ("Error", "Warning", "Info", "Unknown"): The status of an issue comment.
 
 ### AssociativeWitnessPoint
 
-object: A witness point of a dimension. Give elementId (with line, inIndex, special, nodeType, nodeStatus and nodeId as needed) for a point associated with an element, or only coordinate for a static point that is not associated with any element, like a point added by hand on empty space. A witness point takes either elementId or coordinate, not both.
+object: A witness point of a dimension. Give elementId (with line, inIndex, special, nodeType, nodeStatus and nodeId as needed) for a point associated with an element, or only coordinate for a static point that is not associated with any element, like a point added by hand on empty space. elementId together with coordinate gives an associative point at that location on the element.
 - `elementId` (ElementId)
-- `coordinate` (Coordinate2D): The position of a static (non-associative) witness point. Use it instead of elementId; the other fields are ignored for a static point.
+- `coordinate` (Coordinate2D): Without elementId: the position of a static (non-associative) witness point; the other fields are ignored for a static point. With elementId: the location of the associative point on the referenced element (written to its base location), e.g. where the dimension line crosses a long or oblique wall face; without it Archicad chooses the point, e.g. the middle of a wall edge. Whether Archicad keeps this location for every kind of base (edges with line true, or only hotspots) is not verified.
 - `line` (boolean)
 - `inIndex` (integer)
 - `special` (integer)
@@ -14848,7 +18277,7 @@ object: A witness point of a dimension. Give elementId (with line, inIndex, spec
 
 object
 - `name` (string, required): The name of the translator, as the IFC Translators dialog shows it.
-- `preview` (boolean, required): Whether this is the preview translator, the one the IFC properties of elements are previewed with.
+- `preview` (boolean, required): Whether this is the first item of Archicad's translator list, which the Archicad API documents as the preview translator (the one the IFC properties of elements are previewed with). No API identifies the preview translator otherwise, and in some projects the IFC Translators dialog shows another translator as the preview one.
 
 ### CoordinateWitnessPoint
 
@@ -14866,6 +18295,9 @@ object
 - `nodeType` (integer): Reserved by Archicad for section dimensions (API_Base node_typ).
 - `nodeStatus` (integer): Reserved by Archicad for section dimensions (API_Base node_status).
 - `nodeId` (number): Polygon vertex id of the base element, from its memo's vertexIDs, for elements with a polygon.
+- `textHeight` (number): Character height of the dimension text in mm, as the creation commands take it.
+- `textPen` (integer): Pen index of the dimension text.
+- `textFrame` (boolean): Whether the dimension text has a frame.
 
 ### FavoriteRename
 
@@ -14904,6 +18336,7 @@ object
 object
 - `projectInfoName` (string, required): Display name of the project info field.
 - `projectInfoValue` (string): Initial value of the project info field.
+- `projectInfoGroupId` (ProjectInfoGroupId): The Project Info group to create the field in. Available from Archicad 30, where the field goes to the first group when omitted; on older versions giving it is an error.
 
 ### SolidLinkData
 
@@ -14928,7 +18361,7 @@ object: A directional link from one element to another, with the flags stored on
 
 ### ElementLinksOrError
 
-object or ErrorItem: The links starting from an element, or an error.
+ElementLinks or ErrorItem: The links starting from an element, or an error.
 
 ### InteriorElevationData
 
@@ -14952,7 +18385,7 @@ object
 - `ignoreTopFloorLinks` (boolean)
 - `relinkWallOpenings` (boolean)
 - `adjustLevelDiffs` (boolean)
-- `layerIndex` (integer): Move the instance to this layer.
+- `layerIndex` (integer): Move the instance to this layer. A layerIndex that is not a layer of the project is refused.
 
 ### HotlinkInstanceCreation
 
@@ -14963,7 +18396,7 @@ object
 - `mirrored` (boolean): Optional. Reflects the module's local X axis before the rotation. Defaults to false.
 - `floorIndex` (integer): Optional story the instance is placed on. Defaults to the current story.
 - `floorDifference` (integer): Optional story offset applied to the module's stories. Defaults to the hotlink tool's current default.
-- `layerIndex` (integer): Optional layer of the instance. Defaults to the hotlink tool's current default layer.
+- `layerIndex` (integer): Optional layer of the instance. Defaults to the hotlink tool's current default layer, or to the built-in Archicad layer when that layer has been deleted. A layerIndex that is not a layer of the project is refused.
 - `skipNested` (boolean): Optional. Do not place hotlinks nested inside the module. Defaults to the hotlink tool's current default.
 - `suspendFixAngle` (boolean): Optional. Rotate fixed-angle elements with the module. Defaults to the hotlink tool's current default.
 - `ignoreTopFloorLinks` (boolean): Optional. Top-linked elements keep their height rather than their top story link. Defaults to the hotlink tool's current default.
@@ -15062,6 +18495,7 @@ object
 - `propertyId` (PropertyId, required)
 - `name` (string): New name of the property.
 - `description` (string): New description of the property.
+- `isEditable` (boolean): Whether users may edit the value of the property on elements (Property Manager: Editable).
 - `groupId` (PropertyGroupId): Move the property into this custom property group.
 - `defaultValue` (PropertyDefaultValue): New default value: a basic value or expressions. Switching between the two is allowed.
 - `expressions` (array of string): The new expression strings for the property. Only for expression-based properties.
@@ -15131,7 +18565,7 @@ object: The details of the property.
 
 ### PropertyValue
 
-object: The display string value of a property.
+object: The string value of a property, formatted according to the command's options.
 - `value` (string, required)
 
 ### PropertyValueArrayItem
@@ -15177,10 +18611,11 @@ array of PropertyIdOrError: A list of property identifiers.
 
 ### ElementPropertyValue
 
-object: A property value with the identifiers of the property and its owner element.
+any or any: A property value with the identifiers of the property and its owner element.
 - `elementId` (ElementId, required)
 - `propertyId` (PropertyId, required)
-- `propertyValue` (PropertyValue, required)
+- `propertyValue` (PropertyValue)
+- `valueStatus` (string ("Value", "Default", "UserUndefined")): Value (the default) sets propertyValue. Default removes the element's own value, so the property shows its default value (or its expression) again. UserUndefined sets the value to undefined. propertyValue is not needed and is ignored for Default and UserUndefined.
 
 ### ElementPropertyValues
 
@@ -15458,6 +18893,22 @@ object: A wrapper containing the classification identifier.
 
 ClassificationIdArrayItem or ErrorItem: A classification identifier or an error.
 
+### ClassificationSystemIdOrError
+
+ClassificationSystemIdArrayItem or ErrorItem: A classification system identifier or an error.
+
+### ClassificationSystemIdsOrErrors
+
+array of ClassificationSystemIdOrError: A list of classification system identifiers or errors.
+
+### ClassificationItemIdOrError
+
+ClassificationItemIdArrayItem or ErrorItem: A classification item identifier or an error.
+
+### ClassificationItemIdsOrErrors
+
+array of ClassificationItemIdOrError: A list of classification item identifiers or errors.
+
 ### DesignOptionIdOrError
 
 DesignOptionIdArrayItem or ErrorItem: A design option identifier or an error.
@@ -15469,6 +18920,160 @@ DesignOptionCombinationIdArrayItem or ErrorItem: A design option combination ide
 ### ClassificationIdsOrErrors
 
 array of ClassificationIdOrError: A list of element classification identifiers or errors.
+
+### ClassificationItemElements
+
+object
+- `elements` (Elements, required)
+
+### AttributeClassifications
+
+object
+- `classificationIds` (array of ClassificationId, required): The classification of the attribute in every classification system it is classified in.
+
+### AttributeClassification
+
+object
+- `attributeId` (AttributeId, required)
+- `classificationId` (ClassificationId, required): The classification to set. The item replaces the attribute's current item in the same classification system. If the classificationItemId field is omitted, the attribute becomes unclassified in the given system.
+
+### ToolDefaultClassifications
+
+object
+- `classificationIds` (array of ClassificationId, required): One item for each classification system in which the tool default is classified. Systems in which it is unclassified are left out.
+
+### ClassificationSystemSummary
+
+object
+- `classificationSystemId` (ClassificationSystemId, required)
+- `name` (string, required): The display name of the classification system.
+- `description` (string, required): The description of the classification system.
+- `source` (string, required): The source of the classification system (e.g. URL to a classification system standard).
+- `version` (string, required): The version of the classification system.
+- `date` (Date, required): The release date of the classification system's current version.
+
+### ClassificationItemParent
+
+object
+- `classificationSystemId` (ClassificationSystemId, required): The classification system the item belongs to.
+- `parentClassificationItemId` (ClassificationItemId): The parent item. Missing for a top level item of its system.
+
+### ClassificationItemVisibilities
+
+object
+- `visibilities` (array of ClassificationItemVisibility or ErrorItem, required): One entry per classification item, in the order of the input. A non-existing classification item is represented by an error object.
+
+### ClassificationItemVisibility
+
+object
+- `classificationItemId` (ClassificationItemId, required)
+- `isVisible` (boolean, required): Whether the classification item is visible (offered) for the target, as Archicad reports it. It can be true even if a parent item is not visible. It does not tell whether the target is classified with the item.
+
+### AttributeUserData
+
+object
+- `pairs` (UserDataPairs, required)
+
+### PropertyDefinitionType
+
+string ("StaticBuiltIn", "DynamicBuiltIn", "Custom")
+
+### AttributePropertyValuesResult
+
+object
+- `propertyValues` (array of PropertyValueArrayItem or AttributePropertyValueStatus or ErrorItem, required)
+
+### AttributePropertyValueStatus
+
+object: A property value with its status, returned when includeStatus is true.
+- `propertyValue` (PropertyValue): Missing when the value is not available or not evaluated.
+- `isAvailable` (boolean, required): Whether the property definition is available for the attribute.
+- `isEditable` (boolean, required): Whether the value of the property is editable for the attribute.
+- `isVisible` (boolean, required): Whether the property definition is visible for the attribute.
+
+### AttributeBuiltInPropertyValues
+
+object
+- `attributeId` (AttributeId, required)
+- `properties` (array of BuiltInPropertyValue, required)
+
+### BuiltInPropertyValue
+
+object
+- `propertyId` (PropertyId, required)
+- `propertyValue` (PropertyValue, required)
+
+### ToolDefaultPropertyFilter
+
+string ("UserDefined", "FundamentalBuiltIn", "UserLevelBuiltIn", "All"): Which property definitions to return: the user defined (custom) ones, the fundamental built-in ones, the user level built-in ones, or all of them. The default is All. From Archicad 28 the API no longer separates the two kinds of built-in properties, so there FundamentalBuiltIn and UserLevelBuiltIn both return every built-in property.
+
+### ToolDefaultProperties
+
+object
+- `properties` (array of ToolDefaultProperty, required)
+
+### ToolDefaultProperty
+
+object
+- `propertyId` (PropertyId, required)
+- `propertyName` (string, required)
+- `propertyGroupId` (PropertyGroupId, required)
+- `propertyValue` (PropertyValue): The value in the tool default, in the format of GetPropertyValuesOfElements. Only returned when includeValues is true.
+- `error` (Error): Why the value could not be read. Only returned when includeValues is true.
+
+### DefaultPropertyAvailability
+
+object
+- `available` (boolean, required): Whether the property is available for the tool default of the element type.
+- `visible` (boolean, required): Whether the property is visible for the tool default of the element type.
+
+### ElementPropertyObjects
+
+object
+- `propertyObjects` (array of ElementPropertyObject, required): The property objects (library parts of the old listing system) of the element, linked to it by criteria or individually. Empty when the element has none.
+
+### ElementPropertyObject
+
+object
+- `libraryPartIndex` (integer, required): The index of the property object's library part, the same as the index returned by GetAvailableLibraryParts.
+- `name` (string): The name of the library part. Absent when the library part cannot be read.
+- `guid` (string): The guid of the library part, the same as the guid returned by GetAvailableLibraryParts. Absent when the library part cannot be read.
+- `isIndividuallyAssigned` (boolean, required): True when the property object is assigned to the element individually, false when it is linked by criteria.
+
+### ElementDescriptors
+
+object
+- `descriptors` (array of ElementDescriptor, required): The descriptors in the property objects of the element. Empty when the element has none.
+
+### ElementDescriptor
+
+object
+- `libraryPartIndex` (integer, required): The index of the library part that declares the descriptor, the same as the index returned by GetAvailableLibraryParts.
+- `name` (string): The name of the library part. Absent when the library part cannot be read.
+- `guid` (string): The guid of the library part, the same as the guid returned by GetAvailableLibraryParts. Absent when the library part cannot be read.
+- `setIndex` (integer, required): The index of the listing database set of the descriptor. Meaningful only when status is Normal.
+- `index` (integer, required): The index of the descriptor in the listing database set when status is Normal, in the library part when status is Local.
+- `status` (ElementDescriptorStatus, required)
+
+### ElementDescriptorStatus
+
+string ("Normal", "Deleted", "Local", "Unknown"): Normal: the descriptor exists in the listing database. Deleted: it is referenced, but deleted from the database. Local: it is defined in the library part. Unknown for a value this version of Tapir does not name.
+
+### ElementLinkedPropertyObjects
+
+object
+- `linkByCriteria` (boolean, required): True when the property objects matching their criteria are linked to the element.
+- `individualLibraryPartIndex` (integer, required): The index of the library part of the individually assigned property object, the same as the index returned by GetAvailableLibraryParts. 0 when no property object is assigned individually.
+- `individualLibraryPartName` (string): The name of the individually assigned library part. Absent when there is none or it cannot be read.
+- `individualLibraryPartGuid` (string): The guid of the individually assigned library part, the same as the guid returned by GetAvailableLibraryParts. Absent when there is none or it cannot be read.
+- `criteriaPropertyObjects` (array of CriteriaPropertyObject, required): The linked property objects whose criteria match the element.
+
+### CriteriaPropertyObject
+
+object
+- `libraryPartIndex` (integer, required): The index of the property object's library part, the same as the index returned by GetAvailableLibraryParts.
+- `name` (string): The name of the library part. Absent when the library part cannot be read.
+- `guid` (string): The guid of the library part, the same as the guid returned by GetAvailableLibraryParts. Absent when the library part cannot be read.
 
 ### DesignOptionIdsOrErrors
 
@@ -15486,10 +19091,18 @@ ProjectInfoGroupIdArrayItem or ErrorItem: A Project Info group identifier or an 
 
 array of ProjectInfoGroupIdOrError: A list of Project Info group identifiers or errors.
 
+### CreatedProjectInfoFieldOrError
+
+CreatedProjectInfoField or ErrorItem: A created project info field or an error.
+
+### CreatedProjectInfoFieldsOrErrors
+
+array of CreatedProjectInfoFieldOrError: A list of created project info fields or errors, one per requested field.
+
 ### ElementClassificationItemArray
 
 object: A wrapper containing a list of element classification identifiers or errors.
-- `classificationIds` (ClassificationIdsOrErrors, required)
+- `classificationIds` (array of ClassificationId or ErrorItem, required): A list of element classification identifiers or errors, one per classification system.
 
 ### ElementClassificationOrError
 
@@ -15506,8 +19119,17 @@ object: The details of an IFC property value of an element.
 - `name` (string, required)
 - `value` (string, required): The value of the property as a string. List and enumerated values are separated by semicolons.
 - `valueType` (string): The IFC type of the value, for example IfcLabel or IfcLengthMeasure. For a table value it is the type of its defined values. Left out when the property has no value to take the type from.
-- `propertyType` (string ("SingleValue", "ListValue", "BoundedValue", "EnumeratedValue", "TableValue")): The kind of the IFC property.
-- `source` (string ("preview", "local")): Where the property comes from: preview for the properties mapped by the preview IFC export translator, local for the IFC properties stored in the element. Available from Archicad 28.
+- `propertyType` (IFCPropertyType)
+- `enumerationReference` (array of string): For an enumerated value, the values of the enumeration it refers to (IfcPropertyEnumeration), each as a string. Available from Archicad 28; left out when the property has none.
+- `source` (IFCPropertySource)
+
+### IFCObject
+
+object: An object of the IFC model of the project, as the IFC API of Archicad 28 and later identifies it.
+- `hashValue` (integer, required): The hash value of the IFC object identifier (ObjectID::GenerateHashValue), for matching the objects of one response to each other. It is not stable between sessions; use elementId or globalId to identify an object.
+- `elementId` (ElementId): The element the IFC object belongs to. Left out when Archicad reports no element for it.
+- `ifcType` (string): The IFC entity type of the object, for example IfcWall. Left out when Archicad does not report it.
+- `globalId` (string): The IFC GlobalId of the object. Left out when Archicad does not report it.
 
 ### ElementIFCProperties
 
@@ -15583,13 +19205,15 @@ object: An IFC classification reference (IfcClassificationReference) of an eleme
 - `name` (string): The name of the classification reference.
 - `location` (string): The location of the classification reference, for example a URL.
 - `description` (string): The description of the classification reference. Given from Archicad 29.
+- `sort` (string): The sort key of the classification reference (its Sort attribute). Given from Archicad 29, missing when it has no value.
+- `relAssociatesClassificationName` (string): The name of the IfcRelAssociatesClassification relationship that links the reference to the element. Given from Archicad 28, missing when it is empty.
 - `referencedSource` (object, required): The classification (IfcClassification) the reference belongs to.
   - `name` (string, required): The name of the classification.
   - `source` (string): The source of the classification. Missing when it has no value.
   - `edition` (string): The edition of the classification. Missing when it has no value.
-  - `editionDate` (string): The edition date of the classification. Given only in Archicad 25, 26 and 27, missing when it has no value.
-  - `description` (string): The description of the classification. Given only in Archicad 25, 26 and 27, missing when it has no value.
-  - `location` (string): The location of the classification, for example a URL. Given only in Archicad 25, 26 and 27, missing when it has no value.
+  - `editionDate` (string): The edition date of the classification. Missing when it has no value.
+  - `description` (string): The description of the classification. Missing when it has no value.
+  - `location` (string): The location of the classification, for example a URL. Missing when it has no value.
 - `source` (string ("preview", "local")): Where the reference comes from: preview (mapped by the preview IFC export translator) or local (stored on the element). Missing in Archicad 25, 26 and 27, where the storedOnly input chooses between the stored references and all of them.
 
 ### ElementIFCClassificationReferences
@@ -15642,6 +19266,19 @@ BoundingBox3DArrayItem or ErrorItem: A 3D bounding box or an error.
 ### BoundingBoxes3D
 
 array of BoundingBox3DOrError: A list of 3D bounding boxes.
+
+### BoundingBox2DArrayItem
+
+object: A wrapper containing a 2D bounding box.
+- `boundingBox2D` (BoundingBox2D, required)
+
+### BoundingBox2DOrError
+
+BoundingBox2DArrayItem or ErrorItem: A 2D bounding box or an error.
+
+### BoundingBoxes2D
+
+array of BoundingBox2DOrError: A list of 2D bounding boxes.
 
 ### Body3D
 
@@ -15702,6 +19339,18 @@ object
 - `domain` (MEPDomainOrUnknown, required)
 - `mepSystemId` (AttributeId)
 - `elements` (Elements, required)
+- `physicalSystemIds` (array of MEPPhysicalSystemId): The physical systems of the distribution system. From Archicad 29; missing when Archicad could not tell.
+- `tree` (array of MEPDistributionSystemTreeNode): The elements of the system from its root element on, in the order Archicad traverses them. Only returned when includeTree is true, and missing when Archicad could not traverse the system.
+
+### MEPDistributionSystemTreeNode
+
+object: An element of a distribution system tree.
+- `elementId` (ElementId, required)
+- `depth` (integer, required): The number of steps from the root element; 0 for the root element.
+- `previousElementId` (ElementId): The element before this one on the way from the root element. Missing for the root element.
+- `connectedPortIdOfPreviousElement` (string): The port of the previous element this element is connected to (see GetMEPPorts). Missing when Archicad gives none.
+- `connectedPortIdOfThisElement` (string): The port of this element that is connected to the previous element (see GetMEPPorts). Missing when Archicad gives none.
+- `nextElements` (Elements, required): The elements after this one, away from the root element.
 
 ### MEPPreferenceTable
 
@@ -15730,10 +19379,7 @@ object: A rectangular duct or cable carrier segment preference table: a list of 
 
 ### DatabaseIdAndWindowType
 
-any or any
-- `windowType` (WindowType)
-- `databaseId` (DatabaseId): The database to activate. When windowType is omitted, the window type is taken from the database; when both are given, they must match.
-- `storyIndex` (integer): Story index to activate. Only valid when windowType is 'FloorPlan'. As returned by GetStories.
+DatabaseByWindowType or DatabaseById
 
 ### WallRelations
 
@@ -15828,13 +19474,26 @@ object: The settings of a navigator view
 - `dimensionStyle` (string): The name of the dimension style. If empty, the view has custom dimension style.
 - `penSetName` (string): The name of the pen set. If empty, the view has custom pen set.
 - `graphicOverrideCombination` (string): The name of the graphic override combination. If empty, the view has custom graphic override combination.
-- `drawingScale` (integer): The drawing scale stored on the view, if enabled.
-- `saveZoom` (boolean): Whether the zoom box is stored in the view.
+- `drawingScale` (integer): The drawing scale stored on the view, if enabled (see saveFlags.drawingScale). Giving it to SetViewSettings also turns saveFlags.drawingScale on, unless that flag is given explicitly.
+- `saveZoom` (boolean): Whether the zoom box is stored in the view. The same flag as saveFlags.zoom, kept for compatibility; in SetViewSettings saveFlags.zoom wins when both are given.
 - `ignoreSavedZoom` (boolean): Whether changing to the view should ignore its stored zoom.
-- `zoom` (Zoom): Stored zoom box. Used only when saveZoom is true.
-- `rotation` (number): View rotation angle in radians. Read via GetViewSettings; use SetViewRotation to change it.
+- `zoom` (Zoom): Stored zoom box. Used only when saveZoom is true. Giving it to SetViewSettings also turns saveFlags.zoom on, unless that flag is given explicitly.
+- `saveFlags` (object): Which settings the view stores: the "stored in this view" checkboxes of the View Settings dialog. A stored setting whose name field is empty is a custom (unnamed) one; a setting that is not stored is not part of the view at all, which the name fields alone cannot tell apart. Always complete in a GetViewSettings response. In SetViewSettings every flag is optional, a flag that is not given keeps its current value, and a flag given here overrides the one implied by drawingScale, zoom, structureDisplay or saveZoom.
+  - `zoom` (boolean): Whether the zoom box is stored in the view.
+  - `displayOptions` (boolean): Whether the model view options are stored in the view (named by modelViewOptions, custom if that is empty).
+  - `layers` (boolean): Whether the layer settings are stored in the view (named by layerCombination, custom if that is empty).
+  - `drawingScale` (boolean): Whether the drawing scale is stored in the view.
+  - `dimensions` (boolean): Whether the dimension settings are stored in the view (named by dimensionStyle, custom if that is empty).
+  - `penSet` (boolean): Whether the pen set is stored in the view (named by penSetName, custom if that is empty).
+  - `structureDisplay` (boolean): Whether the structure display mode is stored in the view.
+- `rotation` (number): View rotation angle in radians, derived from transformationMatrix. Read via GetViewSettings; use SetViewRotation to change it.
+- `transformationMatrix` (array of number): The full 2D transformation of the view that rotation is derived from: the 3x4 matrix row by row (12 numbers), in the layout Get3DProjectionSettings uses. Its translation is at indices 3 and 7. Read via GetViewSettings; SetViewSettings ignores it, use rotation or SetViewRotation to change the rotation and translation to change the translation.
+- `translation` (object): SetViewSettings only: the translation part of the view transformation (indices 3 and 7 of transformationMatrix), so that view coordinates = rotation applied to model coordinates + translation. rotation leaves the translation as it is; without this field the translation is not changed. {x: 0, y: 0} clears it. Never returned by GetViewSettings (read it from transformationMatrix).
+  - `x` (number, required)
+  - `y` (number, required)
 - `structureDisplay` (string ("EntireStructure", "CoreOnly", "WithoutFinishes", "StructureOnly")): Structure display mode. One of EntireStructure, CoreOnly, WithoutFinishes, StructureOnly.
 - `renovationFilterGuid` (GuidId): Identifier of the renovation filter applied to the view.
+- `renovationFilterName` (string): Name of the renovation filter applied to the view. Read-only (GetViewSettings): present together with renovationFilterGuid when the name could be resolved; set the filter via renovationFilterGuid.
 - `d3styleName` (string): Name of the 3D style. Empty if not set.
 - `renderingSceneName` (string): Name of the rendering scene. Empty if not set.
 - `usePhotoRendering` (boolean): Whether photo rendering is used for this view.
@@ -15971,6 +19630,21 @@ object
 - `sideMaterial` (OverriddenMaterial)
 - `bottomMaterial` (OverriddenMaterial)
 - `materialsChained` (boolean): Whether the surface materials are chained.
+- `displayOption` (DisplayOption)
+- `viewDepthLimitation` (ViewDepthLimitation)
+- `isAutoOnStoryVisibility` (boolean): When true, Archicad recomputes 'visibility' and 'fillVisibility' automatically from the roof's vertical extent.
+- `visibility` (StoryVisibility): The stories the roof's contour is shown on (API_ShellBaseType::visibilityCont).
+- `fillVisibility` (StoryVisibility): The stories the roof's cover fill is shown on (API_ShellBaseType::visibilityFill).
+- `cutBodyType` (string ("Editable", "ContoursDown", "PivotLinesDown", "UpwardsExtrusion", "DownwardsExtrusion")): How the roof's body is extended for connections with other elements (API_ShellBaseType::cutBodyType, on the Model panel of Roof Settings).
+- `cutFillPen` (OverriddenPen)
+- `cutFillBackgroundPen` (OverriddenPen)
+- `sectionContourPen` (integer): Pen of the roof's contour where it is cut (API_ShellBaseType::sectContPen).
+- `sectionContourLineTypeId` (AttributeId): Line type of the roof's contour where it is cut (API_ShellBaseType::sectContLtype) - pairs with sectionContourPen.
+- `contourPen` (integer): Pen of the roof's contour (API_ShellBaseType::pen).
+- `contourLineTypeId` (AttributeId): Line type of the roof's contour (API_ShellBaseType::ltypeInd) - pairs with contourPen.
+- `aboveViewLinePen` (integer): Pen used when "Overhead All" is selected from the "Floor Plan Display" popup.
+- `aboveViewLineTypeId` (AttributeId): Line type used when "Overhead All" is selected from the "Floor Plan Display" popup - pairs with aboveViewLinePen.
+- `floorFill` (ShellBaseFloorFill)
 - `angle` (number): Single-plane: the slope in radians.
 - `pivotLine` (RoofDetailsPivotLine): For single-plane roofs.
 - `eavesOverhang` (number): Multi-plane: the eaves overhang beyond the pivot polygon.
@@ -15980,6 +19654,9 @@ object
 - `polygonArcs` (array of PolyArc)
 - `holes` (Holes2D)
 - `edgeSideMaterials` (array of OverriddenMaterial): The custom side surface of each edge of the roof's polygon: the edges of polygonOutline first, then those of each hole in order, the item i of a polygon belonging to its edge from vertex i to vertex i + 1.
+- `edgeTrims` (array of RoofEdgeTrim): Single-plane roofs only: the cut of each edge of the roof's polygon, in the order of edgeSideMaterials. ModifyRoofs takes the same list.
+- `pivotEdges` (array of object): Multi-plane roofs only: the roof planes of each edge of the pivot polygon. Item i belongs to the edge from vertex i to vertex i + 1 of pivotPolygonOutline; for a pivot polygon with holes, the edges of each hole follow, contour by contour.
+  - `levels` (array of object, required): The roof plane of the edge on each level, from the pivot polygon upwards.
 
 ### ShellDetails
 
@@ -15989,6 +19666,21 @@ object
 - `thickness` (number, required)
 - `buildingMaterialId` (AttributeId)
 - `compositeId` (AttributeId)
+- `displayOption` (DisplayOption)
+- `viewDepthLimitation` (ViewDepthLimitation)
+- `isAutoOnStoryVisibility` (boolean): When true, Archicad recomputes the story visibility automatically from the shell's vertical extent.
+- `visibility` (StoryVisibility): The stories the shell's contour is shown on (API_ShellBaseType::visibilityCont).
+- `fillVisibility` (StoryVisibility): The stories the shell's cover fill is shown on (API_ShellBaseType::visibilityFill).
+- `cutBodyType` (string ("Editable", "ContoursDown", "PivotLinesDown", "UpwardsExtrusion", "DownwardsExtrusion")): How the body is extended for connections (Model panel). A shell uses Editable, UpwardsExtrusion or DownwardsExtrusion.
+- `cutFillPen` (OverriddenPen)
+- `cutFillBackgroundPen` (OverriddenPen)
+- `sectionContourPen` (integer): Pen of the contour of the cut surfaces (API_ShellBaseType::sectContPen).
+- `sectionContourLineTypeId` (AttributeId): Line type of the contour of the cut surfaces (API_ShellBaseType::sectContLtype).
+- `contourPen` (integer): Pen of the shell's uncut contour on the floor plan (API_ShellBaseType::pen).
+- `contourLineTypeId` (AttributeId): Line type of the shell's uncut contour on the floor plan (API_ShellBaseType::ltypeInd).
+- `aboveViewLinePen` (integer): Pen used when "Overhead All" is selected from the "Floor Plan Display" popup.
+- `aboveViewLineTypeId` (AttributeId): Line type used when "Overhead All" is selected from the "Floor Plan Display" popup - pairs with aboveViewLinePen.
+- `floorFill` (ShellBaseFloorFill)
 
 ### SlabDetails
 
@@ -16049,30 +19741,39 @@ object: The surfaces of a beam segment.
 - `extrusionMaterial` (OverriddenMaterial): Available from Archicad 28.
 - `materialsChained` (boolean, required): Whether the surface materials are chained.
 
+### ColumnVeneer
+
+object: The veneer of a column segment. A thickness of 0 means no veneer. When writing, only the given fields change.
+- `type` (string ("Core", "Finish", "Other"))
+- `thickness` (number): Thickness of the veneer; 0 removes it.
+- `buildingMaterialId` (AttributeId): Building material of the veneer. Archicad uses it only for a segment whose cross section is a building material, not a profile; read back only for such segments.
+
 ### ColumnSegmentSurfaces
 
 object: The surfaces of a column segment.
 - `extrusionSurfaceMaterial` (OverriddenMaterial, required)
 - `endsMaterial` (OverriddenMaterial, required)
 - `materialsChained` (boolean, required): Whether the surface materials are chained.
+- `veneer` (ColumnVeneer)
 
 ### ColumnSegmentDetails
 
 object: Details of a ColumnSegment subelement of a Column.
 - `ownerElementId` (ElementId): The Column element the segment belongs to.
-- `structureType` (string ("Basic", "Profile"), required)
+- `structureType` (SegmentStructureType, required)
 - `width` (number, required): Cross section width of the segment.
 - `depth` (number, required): Cross section depth (height) of the segment.
 - `isWidthAndHeightLinked` (boolean, required)
 - `circleBased` (boolean, required): True for a round cross section, false for rectangular.
 - `buildingMaterialId` (AttributeId): Present when the cross section uses a building material rather than a custom profile.
 - `profileId` (AttributeId): Present when the cross section uses a custom extruded profile rather than a building material.
+- `veneer` (ColumnVeneer)
 
 ### BeamSegmentDetails
 
 object: Details of a BeamSegment subelement of a Beam.
 - `ownerElementId` (ElementId): The Beam element the segment belongs to.
-- `structureType` (string ("Basic", "Profile"), required)
+- `structureType` (SegmentStructureType, required)
 - `width` (number, required): Cross section width of the segment.
 - `height` (number, required): Cross section height of the segment.
 - `isWidthAndHeightLinked` (boolean, required)
@@ -16149,6 +19850,54 @@ object
 - `oSide` (boolean, required)
 - `reveal` (boolean, required): Whether the reveal is turned on. The same value ModifyWindows and ModifyDoors take.
 - `revealDepthOffset` (number, required): Distance the frame plane is moved across the wall thickness, along the wall normal. The same value ModifyWindows and ModifyDoors take.
+- `displayOption` (DisplayOption)
+- `pen` (integer): Pen of the opening's floor plan symbol (API_OpeningBaseType::pen); used unless useObjectPens is true.
+- `lineTypeId` (AttributeId): Line type of the opening's floor plan symbol (API_OpeningBaseType::ltypeInd); used unless useObjectLineTypes is true.
+- `cutLineTypeId` (AttributeId): Line type of the cut lines of the opening (API_OpeningBaseType::cutLineType).
+- `sectionFillId` (AttributeId): Fill of the section of the opening (API_OpeningBaseType::sectFill); used unless useObjectSectionAttributes is true.
+- `sectionFillPen` (integer): Pen of the fill of the section of the opening (API_OpeningBaseType::sectFillPen).
+- `sectionFillBackgroundPen` (integer): Background pen of the fill of the section of the opening (API_OpeningBaseType::sectBGPen).
+- `sectionContourPen` (integer): Contour pen of the fill of the section of the opening (API_OpeningBaseType::sectContPen).
+- `aboveViewLinePen` (integer): Pen used when "Overhead All" is selected from the "Floor Plan Display" popup. Corresponds to the "Overhead Line Pens" value in the Door/Window Settings dialog.
+- `aboveViewLineTypeId` (AttributeId): Line type used when "Overhead All" is selected from the "Floor Plan Display" popup. Corresponds to the "Overhead Lines" value in the Door/Window Settings dialog.
+- `belowViewLinePen` (integer): Pen of the uncut lines of the opening (API_OpeningBaseType::belowViewLinePen).
+- `belowViewLineTypeId` (AttributeId): Line type used when "OutLines Only" is selected from the "Floor Plan Display" popup. Corresponds to the "Uncut Lines" value in the Door/Window Settings dialog.
+- `useObjectPens` (boolean): Use the pens defined in the library part instead of 'pen'.
+- `useObjectLineTypes` (boolean): Use the line types defined in the library part instead of 'lineTypeId'.
+- `useObjectSectionAttributes` (boolean): Use the section attributes defined in the library part instead of 'sectionFillId'/'sectionFillPen'/'sectionFillBackgroundPen'/'sectionContourPen'.
+
+### SkylightDetails
+
+object: The details of a Skylight: the settings CreateSkylights and ModifySkylights write, plus the library part, the owner and anchorLevel, which are only read.
+- `libPart` (LibPartDetails, required)
+- `ownerElementId` (ElementId)
+- `ownerElementType` (ElementType)
+- `anchorPosition` (Coordinate2D, required): Global XY coordinates of the skylight's anchor point.
+- `anchorPoint` (string ("BottomCenter", "BottomLeft", "BottomRight", "TopCenter", "TopLeft", "TopRight")): Which point of the skylight anchorPosition places.
+- `fixMode` (string ("Horizontal", "Vertical")): What the skylight keeps when the angle or the height of its owner changes.
+- `anchorLevel` (number, required): The global Z coordinate of the anchor point. Only read; Archicad sets it from the owner.
+- `width` (number, required)
+- `height` (number, required)
+- `azimuthAngle` (number, required): Rotation angle in the horizontal plane, measured clockwise, in radians.
+- `elevationAngle` (number, required): Elevation angle of the owner's surface at the skylight, in radians.
+- `reflected` (boolean)
+- `displayOption` (DisplayOption)
+- `pen` (integer): Pen of the skylight's floor plan symbol; used unless useObjectPens is true.
+- `lineTypeId` (AttributeId): Line type of the skylight's floor plan symbol; used unless useObjectLineTypes is true.
+- `cutLineTypeId` (AttributeId): Line type of the cut lines of the skylight.
+- `sectionFillId` (AttributeId): Fill of the section of the skylight; used unless useObjectSectionAttributes is true.
+- `sectionFillPen` (integer)
+- `sectionFillBackgroundPen` (integer)
+- `sectionContourPen` (integer)
+- `aboveViewLinePen` (integer): Pen of the overhead lines.
+- `aboveViewLineTypeId` (AttributeId): Line type of the overhead lines.
+- `belowViewLinePen` (integer): Pen of the uncut lines.
+- `belowViewLineTypeId` (AttributeId): Line type of the uncut lines.
+- `surfaceId` (AttributeId): Surface of the skylight; used unless useObjectMaterials is true.
+- `useObjectPens` (boolean)
+- `useObjectLineTypes` (boolean)
+- `useObjectMaterials` (boolean)
+- `useObjectSectionAttributes` (boolean)
 
 ### PolylineDetails
 
@@ -16217,6 +19966,7 @@ object
 - `buildingMaterialId` (AttributeId): The building material attribute used, if the hatch's type is a building material hatch.
 - `roomSpecial` (integer): Special area percent in a room (negative means OFF).
 - `showArea` (boolean): True if the area text is shown.
+- `fillOrientation` (HatchOrientation): Orientation, origin and distortion of the fill pattern.
 - `zCoordinate` (number, required)
 
 ### ZoneDetails
@@ -16250,30 +20000,58 @@ object
 - `zCoordinate` (number, required): The absolute elevation of the base of the railing.
 - `height` (number, required): The segment height new segments of the railing are made with (the default segment).
 - `segmentHeights` (array of number, required): The height of each segment of the railing, in the order of the reference line.
+- `visibility` (StoryVisibility, required): The stories the railing is shown on (API_RailingType::visibility).
+- `isAutoOnStoryVisibility` (boolean, required): When true, Archicad recomputes 'visibility' automatically from the actual elevation of the railing (API_RailingType::isAutoOnStoryVisibility).
+- `referenceLinePen` (integer, required): Pen index of the railing's reference line (API_RailingType::referenceLinePen).
+- `contourPen` (integer, required): Pen index of the railing's contour line (API_RailingType::contourPen).
 
 ### CurtainWallDetails
 
 object
 - `height` (number, required): The height setting stored on the curtain wall element.
 - `actualHeight` (number): The height of the curtain wall as calculated by Archicad (ACAPI_CurtainWall_GetCWHeight). Omitted when Archicad cannot calculate it.
+- `zCoordinate` (number, required): The absolute elevation of the bottom of the curtain wall: its home story's level plus its offset from it (API_CurtainWallType::planeOffset), as CreateCurtainWalls and ModifyCurtainWalls take it.
+- `referenceLine` (array of Coordinate2D, required): The 2D coordinates of the reference line of the curtain wall on the floor plan, one more than its segments (each pair of consecutive coordinates is one segment), as CreateCurtainWalls and ModifyCurtainWalls take them in coordinates. Empty when Archicad cannot return it.
 - `flipped` (boolean, required)
 - `angle` (number, required): The rotation angle of the curtain wall in radians.
+- `displayOption` (DisplayOption, required)
+- `viewDepthLimitation` (ViewDepthLimitation, required)
+- `visibility` (StoryVisibility, required)
+- `isAutoOnStoryVisibility` (boolean, required): When true, Archicad recomputes 'visibility' automatically from the curtain wall's vertical extent.
+- `cutProjectionMode` (ElemProjectionMode, required): Projection mode of the cut part of the curtain wall on the floor plan (API_CurtainWallType::cutProjectionMode).
+- `uncutProjectionMode` (ElemProjectionMode, required): Projection mode of the uncut part (below the cut plane) of the curtain wall on the floor plan (API_CurtainWallType::uncutProjectionMode).
+- `overheadProjectionMode` (ElemProjectionMode, required): Projection mode of the overhead part (above the cut plane) of the curtain wall on the floor plan (API_CurtainWallType::overheadProjectionMode).
+- `cutFillPen` (OverriddenPen, required): Cut fill foreground pen; the building material's pen can be overridden on the element level. Before Archicad 27 always reported as not overridden.
+- `cutFillBackgroundPen` (OverriddenPen, required): Cut fill background pen; the building material's pen can be overridden on the element level. Before Archicad 27 always reported as not overridden.
+- `frameCutLinePen` (integer, required): Pen index of the cut part of the frames on the floor plan (API_CurtainWallType::frameCutLinePen).
+- `frameCutLineTypeId` (AttributeId): Line type of the cut part of the frames on the floor plan (API_CurtainWallType::frameCutLineType). Omitted when not set.
+- `panelCutLinePen` (integer, required): Pen index of the cut part of the panels on the floor plan (API_CurtainWallType::panelCutLinePen).
+- `panelCutLineTypeId` (AttributeId): Line type of the cut part of the panels on the floor plan (API_CurtainWallType::panelCutLineType). Omitted when not set.
+- `useFrameTypesAttributes` (boolean, required): The frames use the attributes of their frame types instead of frameCutLinePen/frameCutLineTypeId.
+- `usePanelTypesAttributes` (boolean, required): The panels use the attributes of their panel types instead of panelCutLinePen/panelCutLineTypeId.
+- `pen` (integer, required): The pen index of the curtain wall (API_CurtainWallType::pen).
+- `belowViewLinePen` (integer, required): Pen index of the curtain wall's view below the cut plane on the floor plan, the uncut lines (API_CurtainWallType::uncutLinePen).
+- `belowViewLineTypeId` (AttributeId): Line type of the curtain wall's view below the cut plane on the floor plan, the uncut lines (API_CurtainWallType::uncutLineType). Omitted when not set.
+- `aboveViewLinePen` (integer, required): Pen index of the curtain wall's view above the cut plane on the floor plan, the overhead lines (API_CurtainWallType::overheadLinePen).
+- `aboveViewLineTypeId` (AttributeId): Line type of the curtain wall's view above the cut plane on the floor plan, the overhead lines (API_CurtainWallType::overheadLineType). Omitted when not set.
 
 ### CurtainWallSegmentDetails
 
 object
-- `begCoordinate` (Coordinate3D, required)
-- `endCoordinate` (Coordinate3D, required)
+- `begCoordinate` (Coordinate3D, required): The start of the segment's reference line. Its z is measured from the curtain wall's home story (see homeStoryLevel), not from project zero.
+- `endCoordinate` (Coordinate3D, required): The end of the segment's reference line. Its z is measured from the curtain wall's home story (see homeStoryLevel), not from project zero.
 - `extrusionVector` (Coordinate3D, required)
-- `gridOrigin` (Coordinate3D, required)
+- `gridOrigin` (Coordinate3D, required): The origin of the segment's grid. Its z is measured from the curtain wall's home story (see homeStoryLevel), not from project zero.
 - `gridAngle` (number, required): The angle of the grid in radians.
+- `homeStoryLevel` (number): The absolute level of the curtain wall's home story: the z the other z values of this item are measured from. Add it to them for absolute coordinates.
 - `arcOrigin` (Coordinate3D)
 - `isNegativeArc` (boolean): Indicates if the arc is negative.
 
 ### CurtainWallPanelDetails
 
 object
-- `polygonCoordinates` (array of Coordinate3D, required): The 3D coordinates of the panel polygon.
+- `homeStoryLevel` (number): The absolute level of the curtain wall's home story: the z the other z values of this item are measured from. Add it to them for absolute coordinates.
+- `polygonCoordinates` (array of Coordinate3D, required): The 3D coordinates of the panel polygon. Their z is measured from the curtain wall's home story (see homeStoryLevel), not from project zero.
 - `isHidden` (boolean, required): Indicates if the panel is hidden (deleted panels remain in the database).
 - `isDegenerate` (boolean): Indicates if the panel is degenerate. Omitted when Archicad cannot tell.
 - `segmentIndex` (number, required): The index of the curtain wall segment to which this panel belongs.
@@ -16287,8 +20065,9 @@ string ("Deleted", "Division", "Corner", "Boundary", "Custom"): Enumeration of a
 ### CurtainWallFrameDetails
 
 object
-- `begCoordinate` (Coordinate3D, required)
-- `endCoordinate` (Coordinate3D, required)
+- `homeStoryLevel` (number): The absolute level of the curtain wall's home story: the z the other z values of this item are measured from. Add it to them for absolute coordinates.
+- `begCoordinate` (Coordinate3D, required): The start of the frame. Its z is measured from the curtain wall's home story (see homeStoryLevel), not from project zero.
+- `endCoordinate` (Coordinate3D, required): The end of the frame. Its z is measured from the curtain wall's home story (see homeStoryLevel), not from project zero.
 - `orientationVector` (Coordinate3D, required)
 - `panelConnectionHole` (object, required): The parameters of the panel connection hole.
   - `d` (number, required): Depth of the panel connection hole.
@@ -16354,7 +20133,7 @@ object: Per-story visibility settings (API_StoryVisibility): the home story, plu
 object: A Morph's full body geometry: an indexed vertex list plus one entry per face (polygon). Shared shape between GetDetailsOfElements' output and CreateMorphs/ModifyMorphs' input - what Get reports is what Create/Modify accept back. There is no fillet/chamfer operation in the Archicad API - a caller wanting rounded geometry must supply the already-tessellated facets here; edgeOverrides only controls how an existing straight edge is DISPLAYED (hidden/visible/smooth-shaded), not its shape.
 - `bodyType` (string ("Solid", "Surface")): Whether the body is a closed solid or an open surface shell. Reported accurately on Get; on Create/Modify this is set on the element but a confirmed Archicad SDK bug means it may not take effect (bodyType has been observed always coming back Solid regardless of what was requested - see edgeOverrides' note).
 - `isClosed` (boolean): READ-ONLY, Get output only (ignored if sent to Create/Modify). Geometrically computed (Modeler::MeshBody::IsClosedBody): true if every edge in the body has exactly two adjacent faces (a watertight/manifold volume), false if any edge borders only one face (an open shell / has holes or gaps). Distinct from bodyType, which is the caller's declared INTENT (Solid vs Surface) rather than the actual computed geometry - a body can be declared bodyType 'Solid' yet still be geometrically open if a face is missing.
-- `edgeDefault` (string ("HardVisible", "HardHidden", "SoftHidden")): Default display status for every edge that has no entry in edgeOverrides. Reported accurately on Get. On Create/Modify it takes effect from Archicad 29 on, where it is applied to every edge of the element with ACAPI_Element_ChangeMorphEdgeType right after the element is created or changed (e.g. 'HardHidden' hides all edges of a triangulated body). On Archicad 28 and earlier it is set on the element but does not take effect due to the same confirmed Archicad SDK bug as edgeOverrides (element.morph.edgeType is silently discarded by ACAPI_Element_Create/Change).
+- `edgeDefault` (string ("HardVisible", "HardHidden", "SoftHidden")): Default display status for every edge that has no entry in edgeOverrides. Reported accurately on Get. On Create/Modify it takes effect from Archicad 29 on, where it is applied to every edge of the element with ACAPI_Element_ChangeMorphEdgeType right after the element is created or changed (e.g. 'HardHidden' hides all edges of a triangulated body). The Morph's layer must be shown and unlocked: on a hidden or locked layer CreateMorphs creates no Morph and returns an error. On Archicad 28 and earlier it is set on the element but does not take effect due to the same confirmed Archicad SDK bug as edgeOverrides (element.morph.edgeType is silently discarded by ACAPI_Element_Create/Change).
 - `vertices` (array of Coordinate3D, required): Flat, indexed vertex list, local to the Morph's own placement (not world coordinates). A Solid body needs at least 4 (a tetrahedron, the minimum closed volume); a Surface body has no closedness requirement at all - the minimum is 2 vertices joined by a single wireEdge (a lone vertex with no edge at all is rejected by Archicad itself, confirmed live) - enforced with a bodyType-aware error message, not by this minItems floor alone.
 - `polygons` (array of MorphPolygon): One entry per face loop (into `vertices`), counterclockwise as seen from outside the body. Optional - a body made entirely of wireEdges (see below) needs none. Set "filled": false on an entry to create only that loop's edges (e.g. the outline of a pyramid's side faces) without an actual filled face.
 - `wireEdges` (array of object): Standalone edges that belong to no face at all (e.g. a bare rectangle outline, or a pyramid with a filled base but wireframe-only sides - set "filled": false on a polygons entry for a whole closed loop like that instead, this is for individual edges not already covered by any polygon loop). Reported accurately by GetDetailsOfElements (every edge with zero adjacent faces); accepted back by CreateMorphs/ModifyMorphs. Identifies an edge by the (unordered) pair of vertex indices it connects - reuses whatever edge already exists between those two vertices if the polygons above happen to share it.
@@ -16406,11 +20185,11 @@ object
 ### DrawingDetails
 
 object
-- `pos` (Coordinate2D, required): Position of the drawing's reference point on the layout.
+- `pos` (Coordinate2D, required): Position of the drawing on the layout, in meters. Without a clip polygon it is the lower left corner of the drawing (before rotation); with one it is where the origin of the source view lands (a modelOffset can move it by modelOffset * drawingScale).
 - `angle` (number, required): Rotation angle of the drawing in radians.
 - `ratio` (number, required): Scale ratio applied to the drawing relative to its source view.
-- `drawingScale` (number, required): The nominal scale of the drawing.
-- `modelOffset` (Coordinate2D, required): Offset of the model origin within the drawing.
+- `drawingScale` (number, required): The scale of the drawing, taken from its source view (e.g. 0.01 for 1:100).
+- `modelOffset` (Coordinate2D, required): Offset of the model origin within the drawing, in model meters. Used only by clipped drawings; Archicad then adds modelOffset * drawingScale (times ratio, rotated by angle) to pos.
 - `isCutWithFrame` (boolean, required): Whether the drawing is clipped by a custom polygon (see clipPolygon) instead of showing the full auto-fit extent.
 - `bounds` (BoundingBox2D, required): Bounds of the drawing on the layout.
 - `clipPolygon` (array of Coordinate2D): Polygon used to clip the drawing view, in layout coordinates (meters on the layout, the same coordinate system as pos and bounds - not the coordinates of the source view's model). Archicad stores it as is; pos, angle, ratio and modelOffset are not applied to it. Present only when isCutWithFrame is true.
@@ -16425,6 +20204,18 @@ object
 - `borderLineTypeIndex` (integer, required): Attribute index of the line type of the drawing's border.
 - `borderPenIndex` (integer, required): Pen index of the drawing's border.
 - `borderSize` (number, required): Border size of the drawing (API_DrawingType::borderSize), in meters.
+- `penTableUsageMode` (DrawingPenTableUsageMode, required)
+- `penTableIndex` (integer, required): Attribute index of the pen set the drawing uses when penTableUsageMode is PenTableIndex (API_DrawingType::penTableIndex).
+- `colorMode` (DrawingColorMode, required)
+- `isTransparentBackground` (boolean, required): Whether the drawing's background is transparent (API_DrawingType::isTransparentBk).
+- `rasterizeDPI` (number, required): The resolution, in dots per inch, a PDF drawing is rasterized at (API_DrawingType::rasterizeDPI).
+- `anchorPoint` (DrawingAnchorPoint, required)
+- `useOwnOriginAsAnchor` (boolean, required): Whether the drawing is placed by its own origin instead of anchorPoint (API_DrawingType::useOwnOrigoAsAnchor).
+- `manualUpdate` (boolean, required): The Drawing Manager's Update Type: true for Manual, false for Automatic. Read-only.
+- `storedInProject` (boolean, required): The Drawing Manager's Stored in Project column: whether the drawing's content is stored in the project file. Read-only.
+- `status` (DrawingStatus): The Drawing Manager's Status column. Read-only; absent when Archicad could not check the drawing.
+- `linkType` (DrawingLinkType): The Drawing Manager's Source column: what kind of source the drawing is linked to. Read-only; absent when the link could not be read.
+- `linkPath` (string): Path of the drawing's external source file (the Drawing Manager's Path column). Present only when the source is a file (external view, DWG/DXF, PDF, image, ...). Read-only.
 - `titleLibraryPartIndex` (number, required): Library part index of the drawing title (API_DrawingTitle::libInd). A negative/invalid index means no title object is instantiated; setting it to a valid index (e.g. copied from another drawing) makes Archicad create the title's own placed element.
 - `titleElementId` (ElementId): Id of the drawing title, itself a placed GDL object element (font/pen/size aside, its own settings are reachable like any other element, e.g. with GetGDLParametersOfElements/SetGDLParametersOfElements). Absent if the drawing has no title object.
 
@@ -16468,6 +20259,24 @@ object
 - `angle` (number, required): Rotation angle of the marker in radians.
 - `origin` (DimensionOrigin, required)
 
+### DimensionDetails
+
+object: The settings of a linear dimension (the Dimension tool), with the names ModifyAssociativeDimensions takes. The witness points are read with GetDimensionData.
+- `appearance` (string ("Linear", "Cumulative", "Baseline", "Elevation"), required): The dimension type, as in the Dimension Settings.
+- `elevationOrigin` (DimensionOrigin, required): The level an Elevation dimension measures from (kept for the other types too).
+- `dimensionLinePosition` (Coordinate2D, required): A point of the dimension line.
+- `direction` (Coordinate2D, required): The direction of the dimension line.
+- `witnessPointCount` (integer, required): The number of witness points.
+- `linePen` (integer, required): The pen of the dimension and witness lines.
+- `marker` (object, required): The marker at the witness points. Its size is not returned: the value the API reports did not match the marker size in the Dimension Settings for linear dimensions.
+  - `type` (string ("CrossLine", "EmptyCircle", "SlashLine60", "OpenArrow30", "ClosedArrow30", "FullArrow30", "SlashLine45", "CrossCircle", "OpenArrow90", "ClosedArrow90", "FullArrow90", "FullCircle", ...), required): The marker type, named after API_MarkerID.
+  - `pen` (integer, required): The pen of the marker.
+- `textHeight` (number, required): The text height of the dimension's settings in millimeters. Each witness point keeps its own (GetDimensionData).
+- `textPen` (integer, required): The text pen of the dimension's settings. Each witness point keeps its own (GetDimensionData).
+- `textFrame` (boolean, required): The text frame of the dimension's settings. Each witness point keeps its own (GetDimensionData).
+- `defaultWitnessForm` (string ("None", "Small", "Large", "Fix", "Unknown"), required): The witness line form of the dimension's settings; each witness point has its own witnessForm.
+- `defaultWitnessVal` (number, required): The value that goes with defaultWitnessForm, in meters. Each witness point has its own witnessVal.
+
 ### TextDetails
 
 object
@@ -16485,7 +20294,7 @@ object
 
 ### StairDetails
 
-object: The settings of a Stair element, the ones CreateStairs takes. The finishes and the structure are modeled by the Stair's subelements (risers, treads and structures), which GetSubelementsOfHierarchicalElements lists.
+object: The settings of a Stair element: the ones CreateStairs takes, and its floor plan and section display (stairDisplayType and the fields after it), which no command writes yet. The finishes and the structure are modeled by the Stair's subelements (risers, treads and structures), which GetSubelementsOfHierarchicalElements lists.
 - `stepNum` (integer, required): Number of risers (steps).
 - `riserHeight` (number, required): Height of each riser.
 - `treadDepth` (number, required): The tread depth (going) stored in the Stair's settings. Archicad does not keep it in step with the modeled treads: a placed stair can read 0 or 1 here, so take the modeled going from the geometry of its treads or risers (Get3DGeometryOfElements) instead.
@@ -16496,18 +20305,109 @@ object: The settings of a Stair element, the ones CreateStairs takes. The finish
 - `finishVisible` (boolean, required): Whether the tread/riser finishes are modeled. If false only the stair structure (e.g. a monolith) is.
 - `baseLinePoints` (array of Coordinate2D, required): The baseline polyline the stair is placed along, in model coordinates, as given to CreateStairs.
 - `baseLineArcs` (array of PolyArc): The curved segments of the baseline, present only when it has any.
+- `baseLineEdges` (array of object): The segment type of each baseline edge, one item per edge (edge i runs from baseLinePoints[i] to baseLinePoints[i + 1]), as CreateStairs takes them.
+  - `segmentType` (string ("Flight", "Landing", "DividedLanding", "Unknown"), required)
+- `baseLineVertices` (array of object): The turn at each baseline point, one item per point, as CreateStairs takes them. A stair whose turns Archicad decided itself reports Landing at every point, also at the first and last.
+  - `turnType` (string ("None", "Landing", "Winder", "DividedLanding", "Unknown"), required)
+  - `landingStartEdgeOffset` (number, required): The lead edge offset of the landing as Archicad calculated it.
+  - `landingEndEdgeOffset` (number, required): The trail edge offset of the landing as Archicad calculated it.
+  - `minLandingStartEdgeOffset` (number, required): The minimal lead edge offset.
+  - `minLandingEndEdgeOffset` (number, required): The minimal trail edge offset.
+- `stairDisplayType` (string ("Custom", "ByModelViewOptions", "Unknown")): Whether the floor plan display of the stair is set in the stair itself (Custom) or comes from the Model View Options (ByModelViewOptions) (API_StairType::stairDisplayType).
+- `floorPlanLayout` (StairLayout): The floor plan display of the stair's components (API_StairType::fpdLayout).
+- `reflectedCeilingPlanLayout` (StairLayout): The reflected ceiling plan display of the stair's components (API_StairType::rcpdLayout).
+- `structureVisibility` (boolean): Whether the structure of the stair is shown on the floor plan (API_StairType::structureVisibility).
+- `structureSymbols` (array of object): The symbol lines and fills of the stair's structure, one item per structure type and view (API_StairType::structSymbData).
+  - `structureType` (string ("UnderStructure", "Stringer", "Unknown"), required)
+  - `view` (StairSymbolView, required)
+  - `visibleLineTypeId` (AttributeId): Line type of the visible structure lines; left out when not set.
+  - `visibleLinePen` (integer, required)
+  - `hiddenLineTypeId` (AttributeId): Line type of the hidden structure lines; left out when not set.
+  - `hiddenLinePen` (integer, required)
+  - `visibleFillId` (AttributeId): Fill type of the visible structure; left out when not set.
+  - `visibleFillPen` (integer, required)
+  - `visibleFillBackgroundPen` (integer, required)
+  - `hiddenFillId` (AttributeId): Fill type of the hidden structure; left out when not set.
+  - `hiddenFillPen` (integer, required)
+  - `hiddenFillBackgroundPen` (integer, required)
+- `monolithStructureSymbols` (array of object): The symbol lines and fills of a monolithic structure, one item per view and visible or hidden part (API_StairType::monolithStructureSymbolData).
+  - `view` (StairSymbolView, required)
+  - `part` (StairSymbolPart, required)
+  - `goingLineTypeId` (AttributeId)
+  - `goingLinePen` (integer, required)
+  - `goingNosingLineTypeId` (AttributeId)
+  - `goingNosingLinePen` (integer, required)
+  - `connectionLineTypeId` (AttributeId)
+  - `connectionLinePen` (integer, required)
+  - `connectionDetailLineTypeId` (AttributeId)
+  - `connectionDetailLinePen` (integer, required)
+  - `drainingFillId` (AttributeId)
+  - `drainingFillPen` (integer, required)
+  - `drainingFillBackgroundPen` (integer, required)
+  - `contourLineTypeId` (AttributeId)
+  - `contourLinePen` (integer, required)
+- `structureVisibilityOnStories` (array of object): Which structure symbols are shown on which of the stair's relevant stories, one item per view (API_StairType::structureVisibilityOnStories).
+  - `view` (StairSymbolView, required)
+  - `uniformSymbolRepresentationEnabled` (boolean, required)
+  - `stories` (array of object, required): One item per story range relative to the stair's relevant stories (API_StairStructSymbRelevantStoriesID).
+
+### StairSymbolView
+
+string ("FloorPlan", "CeilingPlan", "Unknown"): The view a stair structure symbol setting belongs to (API_StairStructSymbViewID).
+
+### StairSymbolPart
+
+string ("Visible", "Hidden", "Unknown"): Whether a stair structure symbol setting is for the visible or the hidden part of the structure (API_StairStructSymbPartID).
+
+### StairLayout
+
+object: The floor plan or reflected ceiling plan display of a Stair's components (API_StairLayoutData).
+- `visibility` (StoryVisibility, required)
+- `isAutoOnStoryVisibility` (boolean, required)
+- `storyVisibility` (string ("HomeStoryOnly", "HomeAndOneStoryUp", "HomeAndOneStoryDown", "HomeAndOneStoryUpAndDown", "OneStoryUp", "OneStoryDown", "AllStories", "AllRelevantStories", "AllRelevantAndOneStoryUp", "AllRelevantAndOneStoryDown", "Unknown"), required): The stories the stair is shown on.
+- `gridTypeAbove` (StairGridType, required): The symbol shown on the stories above the stair's relevant stories.
+- `gridTypeTop` (StairGridType, required): The symbol shown on the top relevant story.
+- `gridTypeMiddle` (StairGridType, required): The symbol shown on the middle relevant stories.
+- `gridTypeBottom` (StairGridType, required): The symbol shown on the bottom relevant story.
+- `gridTypeBelow` (StairGridType, required): The symbol shown on the stories below the stair's relevant stories.
+- `showWalkingLine` (boolean, required)
+- `showNumbering` (boolean, required)
+- `showUpDownText` (boolean, required)
+- `showDescription` (boolean, required)
+- `showStructure` (boolean, required)
+- `breakLineAngleType` (string ("AngleToVertical", "AngleToHorizontal", "NumberOfGoings", "Unknown"), required)
+- `breakLineAngle` (number, required): The angle of the break line, used when breakLineAngleType is AngleToVertical or AngleToHorizontal.
+- `breakLineAngleNumberOfGoings` (integer, required): The number of goings the break line crosses, used when breakLineAngleType is NumberOfGoings.
+- `breakLineDistance` (number, required): The gap of the break line.
+- `breakLinePositionType` (string ("FloorPlanCutPlaneHeight", "CustomHeight", "AtNthRiser", "Unknown"), required)
+- `upperBreakLineCustomPosition` (number, required): The height of the upper break line, used when breakLinePositionType is CustomHeight.
+- `lowerBreakLineCustomPosition` (number, required): The height of the lower break line, used when breakLinePositionType is CustomHeight.
+- `upperBreakLineNthRiserPosition` (integer, required): The riser of the upper break line, used when breakLinePositionType is AtNthRiser.
+- `lowerBreakLineNthRiserPosition` (integer, required): The riser of the lower break line, used when breakLinePositionType is AtNthRiser.
+- `overrideLineType` (boolean, required): Whether lineTypeId overrides the line types of the stair's components.
+- `lineTypeId` (AttributeId): The override line type; left out when not set.
+- `overridePen` (boolean, required): Whether pen overrides the line pens of the stair's components.
+- `pen` (integer, required)
+- `overrideSymbolFill` (boolean, required): Whether symbolFillId and its pens override the symbol fills of the stair's components.
+- `symbolFillId` (AttributeId): The override symbol fill type; left out when not set.
+- `symbolFillPen` (integer, required)
+- `symbolFillBackgroundPen` (integer, required)
+
+### StairGridType
+
+string ("NotRelevant", "WithSingleBreaklineFull", "NoBreaklineFull", "BelowBreakline", "AboveBreakline", "MiddleBreakline", "MiddleBreaklineFull", "NoBreakMarkHidden", "AboveBreakMarkHidden", "BelowBreakMarkHidden", "Multistory2DAllVisible", "Multistory2DHiddenVisible", ...): How a stair's symbol is drawn on a story (API_StairGridTypeID).
 
 ### SectionDetails
 
-object: The geometry of a Section (CutPlane) marker on the floor plan, the fields CreateSections takes.
-- `name` (string, required): The name of the section.
-- `idStr` (string, required): The reference ID of the section.
-- `mainCoordinates` (array of Coordinate2D, required): The points of the section line, from start to end. More than two for a broken section line. Empty when the line cannot be read.
-- `depthCoordinates` (array of Coordinate2D, required): The points of the depth line, the far boundary of the section. Empty when it cannot be read.
-- `startCoordinate` (Coordinate2D): The first point of the section line (startCoordinate of CreateSections).
-- `endCoordinate` (Coordinate2D): The last point of the section line (endCoordinate of CreateSections).
-- `depth` (number): The distance of the first depth point from the first segment of the section line (depth of CreateSections).
-- `viewDirection` (Coordinate2D): The unit vector perpendicular to the first segment of the section line, pointing to the side of the depth line: the direction the section looks in. CreateSections puts it to the left of the start to end direction.
+object: The geometry of a Section (CutPlane) or Elevation marker on the floor plan; for sections the fields CreateSections takes. Archicad stores both the same way.
+- `name` (string, required): The name of the section or elevation.
+- `idStr` (string, required): The reference ID of the section or elevation.
+- `mainCoordinates` (array of Coordinate2D, required): The points of the section or elevation line, from start to end. More than two for a broken section line. Empty when the line cannot be read.
+- `depthCoordinates` (array of Coordinate2D, required): The points of the depth line, the far boundary of the section or elevation. Empty when it cannot be read.
+- `startCoordinate` (Coordinate2D): The first point of the section or elevation line (startCoordinate of CreateSections).
+- `endCoordinate` (Coordinate2D): The last point of the section or elevation line (endCoordinate of CreateSections).
+- `depth` (number): The distance of the first depth point from the first segment of the section or elevation line (depth of CreateSections).
+- `viewDirection` (Coordinate2D): The unit vector perpendicular to the first segment of the section or elevation line, pointing to the side of the depth line: the direction the section or elevation looks in. CreateSections puts it to the left of the start to end direction.
 
 ### NotYetSupportedElementTypeDetails
 
@@ -16516,11 +20416,15 @@ object
 
 ### TypeSpecificDetails
 
-HotlinkDetails or WallDetails or BeamDetails or SlabDetails or RoofDetails or ShellDetails or ColumnDetails or ColumnSegmentDetails or BeamSegmentDetails or DetailWorksheetDetails or WindowDoorDetails or LibPartBasedElementDetails or ObjectDetails or PolylineDetails or ZoneDetails or RailingDetails or CurtainWallDetails or CurtainWallSegmentDetails or CurtainWallPanelDetails or CurtainWallFrameDetails or MeshDetails or MorphDetails or DrawingDetails or LabelDetails or TextDetails or LevelDimensionDetails or StairDetails or SectionDetails or NotYetSupportedElementTypeDetails: Represents the complete type-specific details of an element. Used as output from GET requests
+HotlinkDetails or WallDetails or BeamDetails or SlabDetails or RoofDetails or ShellDetails or ColumnDetails or ColumnSegmentDetails or BeamSegmentDetails or DetailWorksheetDetails or WindowDoorDetails or SkylightDetails or LibPartBasedElementDetails or ObjectDetails or PolylineDetails or ZoneDetails or RailingDetails or CurtainWallDetails or CurtainWallSegmentDetails or CurtainWallPanelDetails or CurtainWallFrameDetails or MeshDetails or MorphDetails or DrawingDetails or LabelDetails or TextDetails or LevelDimensionDetails or DimensionDetails or StairDetails or SectionDetails or NotYetSupportedElementTypeDetails: Represents the complete type-specific details of an element. Used as output from GET requests
 
 ### ElementDetailsField
 
-string ("type", "id", "floorIndex", "layerIndex", "drawIndex", "details", "floorPlanPolygons", "hotlinkId"): A field of the details of an element.
+string ("elementId", "type", "id", "floorIndex", "layerIndex", "drawIndex", "details", "floorPlanPolygons", "hotlinkId"): A field of the details of an element.
+
+### ElementDetailsAdditionalField
+
+string ("infoString", "compoundInfoString", "libraryPartUnId", "creatorToolUnId"): An extra field of the details of an element, returned only when requested.
 
 ### RevisionIssueId
 
@@ -16937,15 +20841,16 @@ object: Settings for modifying a Hatch. Setting coordinates replaces the entire 
 - `buildingMaterialId` (AttributeId)
 - `roomSpecial` (integer)
 - `showArea` (boolean)
+- `fillOrientation` (HatchOrientation): Orientation, origin and distortion of the fill pattern. Omitted properties keep their current values. A given origin detaches the fill from the project origin, and a Global fill becomes Rotated unless a type is given as well. Archicad ignores the orientation of Solid fills (there is no pattern to orient).
 
 ### DrawingSettings
 
 object: Modifiable settings for a Drawing element placed on a layout.
-- `pos` (Coordinate2D): Position of the drawing's reference point on the layout.
+- `pos` (Coordinate2D): Position of the drawing on the layout, in meters. Without a clip polygon it is the lower left corner of the drawing (before rotation); with one it is where the origin of the source view lands (a modelOffset can move it by modelOffset * drawingScale).
 - `angle` (number): Rotation angle of the drawing in radians.
 - `ratio` (number): Scale ratio applied to the drawing relative to its source view.
 - `drawingScale` (number): The nominal scale of the drawing. Archicad may keep the existing value of a placed Drawing; the element's execution result is then a failure that names the value kept, although the other settings given were applied.
-- `modelOffset` (Coordinate2D): Offset of the model origin within the drawing.
+- `modelOffset` (Coordinate2D): Offset of the model origin within the drawing, in model meters. Used only by clipped drawings; Archicad then adds modelOffset * drawingScale (times ratio, rotated by angle) to pos.
 - `isCutWithFrame` (boolean): Whether the drawing is clipped by a custom polygon. Set to false to clear an existing crop and restore the drawing's full auto-fit extent. Only consulted when no clipPolygon is supplied in the same call - supplying a clipPolygon always enables clipping. Setting it to true without a clipPolygon merely re-enables the clip polygon already stored on the Drawing.
 - `clipPolygon` (array of Coordinate2D): Polygon used to clip the drawing view, in layout coordinates (meters on the layout, the same coordinate system as pos and bounds - not the coordinates of the source view's model). It is stored as given: pos, angle, ratio and modelOffset are not applied to it, so a polygon taken from the model must be transformed to the layout first. At least 3 points. Setting this also enables polygon clipping (isCutWithFrame becomes true); to remove clipping, set isCutWithFrame to false instead.
 - `nameType` (DrawingNameType)
@@ -16959,6 +20864,13 @@ object: Modifiable settings for a Drawing element placed on a layout.
 - `borderPenIndex` (integer): Pen index of the drawing's border.
 - `borderSize` (number): Border size of the drawing (API_DrawingType::borderSize), in meters.
 - `titleLibraryPartIndex` (number): Library part index of the drawing title (API_DrawingTitle::libInd). A negative/invalid index means no title object is instantiated; setting it to a valid index (e.g. copied from another drawing) makes Archicad create the title's own placed element.
+- `penTableUsageMode` (DrawingPenTableUsageMode)
+- `penTableIndex` (integer): Attribute index of the pen set the drawing uses (API_DrawingType::penTableIndex). Archicad uses it only when penTableUsageMode is PenTableIndex; give both to switch the drawing to a pen set.
+- `colorMode` (DrawingColorMode)
+- `isTransparentBackground` (boolean): Whether the drawing's background is transparent (API_DrawingType::isTransparentBk).
+- `rasterizeDPI` (number): The resolution, in dots per inch, a PDF drawing is rasterized at (API_DrawingType::rasterizeDPI).
+- `anchorPoint` (DrawingAnchorPoint)
+- `useOwnOriginAsAnchor` (boolean): Whether the drawing is placed by its own origin instead of anchorPoint (API_DrawingType::useOwnOrigoAsAnchor).
 
 ### TextSettings
 
@@ -17063,6 +20975,14 @@ object
 - `projectInfoName` (string, required): The name of the project info field visible on UI.
 - `projectInfoValue` (string, required): The value of the project info field.
 
+### CreatedProjectInfoField
+
+object
+- `projectInfoId` (string): The id of the project info field: its autotext key, as GetProjectInfoFields returns it and SetProjectInfoField takes it. On Archicad 30 it is given only when exactly one project info autotext has the name of the new field, and omitted otherwise.
+- `projectInfoFieldId` (ProjectInfoFieldId): The id of the field in the Project Info groups, as GetProjectInfoGroups returns it. Available from Archicad 30.
+- `projectInfoName` (string, required): The name of the project info field visible on UI.
+- `projectInfoValue` (string, required): The value of the project info field.
+
 ### ProjectInfoGroups
 
 array of ProjectInfoGroup: The Project Info groups in their order in the Project Info dialog. Available from Archicad 30.
@@ -17096,6 +21016,13 @@ object
 ### LibraryPartType
 
 string ("Spec", "Window", "Door", "Object", "Lamp", "Room", "Property", "PlanSign", "Label", "Macro", "Pict", "Picture", ...): Enumeration of available library part types. 'Unknown' is the schema-valid catch-all returned for any libpart whose typeID is not one of the named values (rare ACAPI sentinels and any future SDK subtype).
+
+### LibraryPartIdentifier
+
+any or any or any: Identifies a loaded library part by exactly one of: its index, its name or its unique ID.
+- `index` (integer): The index of the library part, as GetAvailableLibraryParts returns it. Indices may change when the libraries are reloaded.
+- `name` (string): The name of the library part, as GetAvailableLibraryParts returns it in documentName and GetDetailsOfElements in libPart.name.
+- `unId` (string): The full unique ID of the library part: main and revision GUID in the form '{MAIN-GUID}-{REVISION-GUID}', as GetLibraryPartDetails returns it.
 
 ### ElementsWithExecutionResults
 
@@ -17143,7 +21070,7 @@ array of object: Details of attributes.
 ### AttributeCreationInfo
 
 object: How, from where, by whom and when the attribute was created. Available from Archicad 30, and only for an attribute Archicad keeps a creation record of: legacy or imported attributes may have none, and then the field is left out. Any of the texts may be empty.
-- `method` (string ("AddOn", "Merge", "Paste", "New", "Import", "Explode", "Duplicate", "Hotlink", "XRef", "Library", "LibraryMaster", "Unspecified"), required): The creation method or workflow: AddOn (created by an Add-On), Merge (merging files), Paste (pasting from another file), New (created by the user through the UI), Import (an attribute file, IFC, DWG/DXF or another supported format), Explode (exploding a PDF or DWG), Duplicate (duplicating an attribute), Hotlink (a hotlinked file), XRef (a file attached in the Xref manager), Library (a library part), LibraryMaster (generated from GDL) or Unspecified.
+- `method` (AttributeCreationMethod, required)
 - `methodDescription` (string, required): Human-readable description of the creation method.
 - `source` (string, required): Human-readable origin, for example the name of the file or Add-On the attribute came from.
 - `creatorUserName` (string, required): The Teamwork user name, or the OS login name in a solo project, at the time of creation.
@@ -17215,7 +21142,15 @@ object: Dimension element data including witness points and geometry.
 - `elementId` (ElementId)
 - `direction` (Coordinate2D)
 - `dimensionLinePosition` (Coordinate2D)
+- `appearance` (string ("Linear", "Cumulative", "Baseline", "Elevation")): The dimension type, as in the Dimension Settings.
+- `elevationOrigin` (DimensionOrigin): The level an Elevation dimension measures from (kept for the other types too).
 - `witnessPoints` (array of CoordinateWitnessPoint): The witness points of the dimension. Besides the geometry each item carries the base element reference as CreateAssociativeDimensions takes it (API_Base: baseElementId, line, inIndex, special, nodeType, nodeStatus, nodeId): read a dimension placed by hand to learn the values an element type needs.
+- `linePen` (integer): The pen of the dimension and witness lines.
+- `marker` (object): The marker at the witness points. Its size is not returned: the value the API reports did not match the marker size in the Dimension Settings for linear dimensions.
+  - `type` (string ("CrossLine", "EmptyCircle", "SlashLine60", "OpenArrow30", "ClosedArrow30", "FullArrow30", "SlashLine45", "CrossCircle", "OpenArrow90", "ClosedArrow90", "FullArrow90", "FullCircle", ...), required): The marker type, named after API_MarkerID.
+  - `pen` (integer, required): The pen of the marker.
+- `defaultWitnessForm` (string ("None", "Small", "Large", "Fix", "Unknown")): The witness line form of the dimension's settings (None, Small, Large or Fix); each witness point has its own witnessForm.
+- `defaultWitnessVal` (number): The value that goes with defaultWitnessForm, in meters. For Fix it is the length of the witness lines (the custom witness line length of the Dimension Settings). Each witness point has its own witnessVal.
 
 ### DimensionDataOrError
 
@@ -17331,6 +21266,18 @@ object: Floor plan cover fill settings of a Slab. When modifying an element, omi
 - `backgroundPen` (integer)
 - `fillId` (AttributeId)
 - `use3DHatching` (boolean): Use Vectorial 3D Hatch patterns in Floor Plan view, taken from the top side material.
+- `orientation` (HatchOrientation): Orientation of the cover fill. On a Slab, Archicad applies only the type through the API: it resets the origin and the distortion matrix, so ModifySlabs reports a given origin or matrix that did not stick as a failure.
+
+### ShellBaseFloorFill
+
+object: Floor plan cover fill settings of a Roof or Shell (API_ShellBaseType).
+- `use` (boolean): Whether the cover fill is shown on the floor plan.
+- `foregroundPen` (integer)
+- `backgroundPen` (integer)
+- `fillId` (AttributeId)
+- `use3DHatching` (boolean): Use the fill of the surface material (Vectorial 3D Hatch) as the cover fill.
+- `useFillLocBaseLine` (boolean): Align the cover fill with the pivot line instead of the fill handle.
+- `useSlantedFill` (boolean): Distort the cover fill to show the slope as seen from above.
 - `orientation` (HatchOrientation)
 
 ### HatchOrientationType
@@ -17367,9 +21314,9 @@ object: One monostyle run of text (API_RunType). Concatenating 'text' across all
 - `penIndex` (integer): Pen attribute index. Optional; defaults to the style's penIndex.
 - `fontIndex` (integer): Font attribute index. Optional; defaults to the style's fontIndex.
 - `fontName` (string): Name of the font for this run only, resolved like the style's fontName (and taking precedence over the run's fontIndex). Optional; defaults to the style's font. Read back as the name of the font the run's fontIndex refers to, absent when no loaded font has that index.
-- `bold` (boolean)
-- `italic` (boolean)
-- `underline` (boolean)
+- `bold` (boolean): Optional; defaults to the style's bold.
+- `italic` (boolean): Optional; defaults to the style's italic.
+- `underline` (boolean): Optional; defaults to the style's underline.
 - `heightOverride` (number): Character height in mm for this run only. Optional; defaults to the style's height.
 - `effectStrikeout` (boolean): Optional; defaults to the style's effectStrikeout.
 - `effectSuperscript` (boolean): Optional; defaults to the style's effectSuperscript.
@@ -17411,7 +21358,7 @@ object: Every user-configurable style setting of a Text or a text-class Label (A
 
 ### TextStyleDetails
 
-object: Full readable style state of a Text or text-class Label: every field of TextStyleSettableDetails plus the read-only ones (lineCount, boxWidth, boxHeight).
+object: Full readable style state of a Text or text-class Label: every field of TextStyleSettableDetails plus the read-only ones (lineCount, boxWidth, boxHeight, and nonBreaking for a standalone Text).
 - `penIndex` (integer): Pen attribute index.
 - `fontIndex` (integer): Font attribute index.
 - `fontName` (string): The name of the font fontIndex refers to, as the Font attributes carry it. Absent when no loaded font has that index.
@@ -17442,8 +21389,9 @@ object: Full readable style state of a Text or text-class Label: every field of 
 - `textFrameFixedWidth` (number): Frame width in mm, when textFrameSizeFixed is true. Between 1 and 1000. Available from Archicad 28; earlier versions ignore it and read it back as 0.
 - `textFrameFixedHeight` (number): Frame height in mm, when textFrameSizeFixed is true (ignored for Circle, which uses fixedWidth as diameter). Between 1 and 1000. Available from Archicad 28; earlier versions ignore it and read it back as 0.
 - `lineCount` (integer): Read-only: number of text lines (API_TextType::nLine).
-- `boxWidth` (number): Read-only: horizontal size of the text box in mm, auto-computed by Archicad.
+- `boxWidth` (number): Read-only here: horizontal size of the text box in mm. For a Text with word wrap on (nonBreaking false) the wrap width, as CreateTexts and ModifyTexts set it with width; otherwise auto-computed by Archicad from the content.
 - `boxHeight` (number): Read-only: vertical size of the text box in mm, auto-computed by Archicad.
+- `nonBreaking` (boolean): Read-only here, standalone Texts only: true when word wrap is off ('Wrap Text' turned off), so the text box grows with the content; false when the text wraps within boxWidth. CreateTexts and ModifyTexts set it to false with their width.
 
 ### LabelLeaderLineSettableDetails
 
@@ -17890,6 +21838,1090 @@ object or ErrorItem
 
 object or ErrorItem
 
+### MEPElementDetails
+
+object
+- `elementId` (ElementId, required)
+- `type` (MEPElementType, required)
+- `domain` (string, required): The MEP domain (Ventilation, Piping or CableCarrier), empty if the element has none.
+- `insulationThickness` (number): The insulation thickness. RigidSegment, Elbow, Branch and Transition.
+- `routingSegmentId` (ElementId): The routing segment the rigid segment belongs to (see GetMEPRoutingElements). RigidSegment.
+- `routingNodeId` (ElementId): The routing node the elbow or transition belongs to (see GetMEPRoutingElements). Elbow and Transition.
+- `controlPoints` (array of Coordinate3D): The control points of the flexible segment. FlexibleSegment.
+- `polyline` (MEPFlexibleSegmentPolyline): The line and spline parts of the flexible segment, when Archicad gives them (a flexible segment placed as a polyline, see CreateMEPFlexibleSegments). FlexibleSegment.
+- `factorRadius` (number): The radius factor of the elbow (Elbow::GetFactorRadius). Elbow, from Archicad 29.
+- `preferenceTableId` (Guid): The guid of the elbow or transition preference table (see GetMEPPreferenceTables). Elbow and Transition, from Archicad 29.
+- `branchAngle` (number): The angle of the branch, as returned by Branch::GetBranchAngle. Branch.
+- `branchLength` (number): The length of the branch. Branch.
+- `offsetY` (number): The Y offset of the transition (Transition::GetOffsetY). Transition.
+- `offsetZ` (number): The Z offset of the transition (Transition::GetOffsetZ). Transition.
+- `widerPortId` (Guid): The port at the wider end of the transition (see GetMEPPorts). Transition.
+- `narrowerPortId` (Guid): The port at the narrower end of the transition (see GetMEPPorts). Transition.
+- `isControlledByPreference` (boolean): Whether the transition is controlled by its preference table. Transition, from Archicad 29.
+
+### MEPRoutingElementData
+
+object
+- `domain` (MEPDomain, required)
+- `nodeCoordinates` (array of Coordinate3D, required): The corner points of the route polyline.
+- `crossSectionWidth` (number): Optional cross section width applied to all segments.
+- `crossSectionHeight` (number): Optional cross section height applied to all segments.
+- `crossSectionShape` (MEPCrossSectionShape): Optional; applied to all segments.
+- `crossSectionReferenceId` (integer): Optional cross section reference id of the segment preference table (used for circular cross sections). Resolved against preferenceTableId if given, otherwise against the table of the current routing tool default.
+- `preferenceTableId` (Guid): Optional guid of the segment preference table (see GetMEPPreferenceTables) applied to all segments. Not applicable to the CableCarrier domain.
+- `mepSystemId` (AttributeId): Optional MEP system attribute.
+- `layerIndex` (integer): Optional layer attribute index of the routing element and all its parts (routing segments, rigid segments, elbows and transitions). Only a positive index takes effect; otherwise the routing tool default layer is used. A layer that does not exist or is locked gives an error for the item, and nothing is placed.
+- `floorIndex` (integer): Optional home story index (as returned by GetStories) of the routing element and all its parts. The node coordinates stay absolute: the route is placed at them, then moved to this home story. Without it, Archicad picks the home story, which follows the active story. A story that does not exist gives an error for the item, and nothing is placed.
+- `defaults` (object): Optional changes to the routing tool default of the domain before the route is placed. Only what is placed changes, not the routing tool's settings. A value that cannot be set gives an error for the item, and nothing is placed.
+  - `routingNode` (object): The routing node default: the elbows and transitions placed at the nodes of the route. Available from Archicad 29.
+
+### MEPPortCreationData
+
+object
+- `portIndex` (integer, required): Zero-based index of the port in the library part.
+- `mepSystemId` (AttributeId): The MEP system of the port.
+- `shape` (MEPCrossSectionShape): The shape of the port.
+- `width` (number): The width of the port.
+- `height` (number): The height of a ventilation or cable carrier port.
+- `diameter` (number): The diameter of a piping port.
+
+### MEPElementData
+
+object
+- `type` (MEPComponentType, required)
+- `domain` (MEPDomain): Required for all types except Equipment. For Equipment it only selects the ports that mepSystemId is applied to.
+- `position` (Coordinate3D, required)
+- `libraryPartId` (LibPartUnId): Optional library part to place instead of the one in the tool's settings, as listed by GetAvailableLibraryParts. Its ports replace the default ones, so 'ports' refers to the ports of this library part. Its ports keep the MEP system of the library part, which may be none, so give 'mepSystemId' with it to connect it. If it is not found, the item fails and nothing is placed.
+- `xSize` (number): Optional size along the local x axis in meters. Available from Archicad 30. Some library parts calculate their own size and keep it.
+- `ySize` (number): Optional size along the local y axis in meters. Available from Archicad 30. Some library parts calculate their own size and keep it.
+- `mepSystemId` (AttributeId): Optional MEP system of the ports of the element's domain (of every port when an Equipment item has no domain). The 'mepSystemId' of an entry of 'ports' overrides it for that port.
+- `ports` (array of MEPPortCreationData): Optional changes to single ports of the element before it is placed. The values are in meters.
+- `orientationDirection` (Coordinate3D): Optional direction vector of the orientation. Defaults to (1, 0, 0).
+- `orientationRotation` (Coordinate3D): Optional rotation vector of the orientation. Defaults to (0, 1, 0).
+- `floorIndex` (integer): Optional home story index (as returned by GetStories). The position stays absolute: the element is placed at it, then moved to this home story. Without it, Archicad picks the home story, which follows the active story. A story that does not exist gives an error for the item, and nothing is placed.
+- `defaults` (object): Optional changes to the tool default before the element is placed. Only what is placed changes, not the tool's settings. A value that cannot be set gives an error for the item, and nothing is placed.
+  - `insulationThickness` (number): The insulation thickness in meters.
+  - `removeInsulation` (boolean): If true, the element is placed without insulation. Cannot be combined with insulationThickness.
+
+### MEPRoutingElementModificationData
+
+object
+- `elementId` (ElementId, required)
+- `mepSystemId` (AttributeId)
+- `crossSectionWidth` (number): New cross section width applied to all segments.
+- `crossSectionHeight` (number): New cross section height applied to all segments.
+- `crossSectionShape` (MEPCrossSectionShape): The new shape is applied to all segments.
+- `crossSectionReferenceId` (integer): New cross section reference id of the segment preference table applied to all segments (used for circular cross sections). Resolved against preferenceTableId if given, otherwise against the table the segments already use.
+- `preferenceTableId` (Guid): New segment preference table (guid as returned by GetMEPPreferenceTables) applied to all segments. Not applicable to the CableCarrier domain.
+- `branchPreferenceTableId` (Guid): New branch preference table (guid as returned by GetMEPPreferenceTables) of the routing element.
+- `anchor` (MEPRoutingAnchor): Applied to all segments of the routing element.
+- `referenceLineOffsetX` (number): New horizontal offset of the reference line from the anchor point, applied to all segments.
+- `referenceLineOffsetY` (number): New vertical offset of the reference line from the anchor point, applied to all segments.
+- `wallThickness` (number): New wall thickness applied to all segments.
+- `flangeSize` (number): New flange size applied to all segments. Needs the Flanged connection style, which can be set in the same call.
+- `insulationThickness` (number): New insulation thickness of the route, as Insulation in its settings: applied to the rigid segments of all segments and to the elbows (bends in Archicad 28) and transitions at all nodes. 0 removes the insulation. Not applicable to the CableCarrier domain.
+- `connectionStyle` (MEPConnectionStyle): New connection style applied to all segments.
+- `preferredTransitionPlacement` (MEPPreferredTransitionPlacement): New preferred transition placement applied to all nodes.
+- `cutPlanePosition` (MEPCutPlanePosition): New cut plane position of the routing element. Available from Archicad 29.
+- `floorPlanDisplayOption` (MEPFloorPlanDisplayOption): New floor plan display option of the routing element. Available from Archicad 29.
+- `showProjection` (MEPShowProjection): New show projection setting of the routing element. Available from Archicad 29.
+- `onStoryVisibility` (MEPOnStoryVisibility): New on-story visibility of the routing element. Available from Archicad 29.
+- `nodePositions` (array of Coordinate3D): New positions of the routing nodes. The size must match the number of nodes of the route.
+
+### MEPPortModificationData
+
+object
+- `portId` (Guid, required): The port to modify, as returned by GetMEPPorts.
+- `shape` (MEPCrossSectionShape): New shape of the port.
+- `connectionStyle` (MEPConnectionStyle): New connection style of the port. Available from Archicad 30.
+- `flowDirection` (MEPFlowDirection): New flow direction of a piping or ventilation port.
+- `outerDiameter` (number): New outer diameter of a piping port.
+- `nominalSize` (string): New nominal size of a piping port. Available from Archicad 30.
+
+### MEPConnectionData
+
+object
+- `routingElementId` (ElementId, required): The routing element to connect to. When connecting two routes, the first or last node of the 'connectToId' route must lie exactly on this route (on its centerline, not within a tolerance). For a tee, this is the main route, which is split and gets the branch element.
+- `connectToId` (ElementId, required): The MEP element or routing element connected to 'routingElementId'. For a tee, this is the branch route, whose first or last node lies on the main route. Two routes must have the same domain and MEP system; an MEP element's port must match the route in domain and MEP system, lie on its first or last node and point in the opposite direction.
+
+### MEPPortPair
+
+object
+- `portId` (Guid, required): The port to check, as returned by GetMEPPorts.
+- `otherPortId` (Guid, required): The port to connect it to, as returned by GetMEPPorts.
+
+### MEPPortConnectability
+
+object
+- `isConnectable` (boolean, required): Whether the port can be connected to the other port.
+
+### MEPPreferenceTableAddition
+
+object
+- `type` (MEPPreferenceTableType, required)
+- `name` (string, required)
+
+### ElectricalLoadClassification
+
+object
+- `name` (string, required)
+- `demandFactor` (number, required): The demand factor, between 0 and 1.
+
+### ElectricalWiringType
+
+object
+- `name` (string, required)
+- `crossSectionalArea` (number, required): The cross-sectional area of the wire in square millimeters.
+
+### ElectricalPanelData
+
+object
+- `position` (Coordinate3D, required): The anchor point of the new panel.
+- `orientation` (MEPOrientation): Defaults to the direction (1, 0, 0) and the rotation (0, 1, 0).
+- `rotation` (number): The base rotation in radians.
+- `isReflected` (boolean)
+- `libraryPartId` (LibPartUnId): The library part to use, as listed by GetAvailableLibraryParts.
+- `xSize` (number): The size along the local x axis. Some library parts calculate their own size, then the item fails.
+- `ySize` (number): The size along the local y axis. Some library parts calculate their own size, then the item fails.
+- `panelName` (string)
+- `circuitNamePrefix` (string)
+- `circuitIdStyle` (integer)
+
+### ElectricalDeviceData
+
+object
+- `position` (Coordinate3D, required): The anchor point of the new device.
+- `orientation` (MEPOrientation): Defaults to the direction (1, 0, 0) and the rotation (0, 1, 0).
+- `rotation` (number): The base rotation in radians.
+- `isReflected` (boolean)
+- `libraryPartId` (LibPartUnId): The library part to use, as listed by GetAvailableLibraryParts.
+- `xSize` (number): The size along the local x axis. Some library parts calculate their own size, then the item fails.
+- `ySize` (number): The size along the local y axis. Some library parts calculate their own size, then the item fails.
+- `apparentPower` (integer): The apparent power in VA.
+- `isApparentPowerEnabled` (boolean)
+- `loadClassificationName` (string): One of the load classifications of the electrical project settings, or an empty string for none.
+- `circuitId` (ElementId): The circuit to connect the new device to.
+
+### ElectricalPanelModificationData
+
+object
+- `elementId` (ElementId, required)
+- `panelName` (string)
+- `circuitNamePrefix` (string)
+- `circuitIdStyle` (integer)
+- `anchorPoint` (Coordinate3D)
+- `orientation` (MEPOrientation)
+- `rotation` (number): The base rotation in radians.
+- `isReflected` (boolean)
+- `libraryPartId` (LibPartUnId): The library part to use, as listed by GetAvailableLibraryParts.
+- `xSize` (number): The size along the local x axis. Some library parts calculate their own size, then the item fails.
+- `ySize` (number): The size along the local y axis. Some library parts calculate their own size, then the item fails.
+
+### ElectricalCircuitData
+
+object
+- `electricalPanelId` (ElementId, required): The panel to add the new circuit to.
+- `description` (string)
+- `voltage` (number)
+- `wiringTypeName` (string): One of the wiring types of the electrical project settings, or an empty string for none.
+- `isPhaseAUsed` (boolean)
+- `isPhaseBUsed` (boolean)
+- `isPhaseCUsed` (boolean)
+
+### ElectricalCircuitModificationData
+
+object
+- `elementId` (ElementId, required)
+- `description` (string)
+- `voltage` (number)
+- `wiringTypeName` (string): One of the wiring types of the electrical project settings, or an empty string for none.
+- `isPhaseAUsed` (boolean)
+- `isPhaseBUsed` (boolean)
+- `isPhaseCUsed` (boolean)
+
+### ElectricalDeviceModificationData
+
+object
+- `elementId` (ElementId, required)
+- `apparentPower` (integer): The apparent power in VA.
+- `isApparentPowerEnabled` (boolean)
+- `loadClassificationName` (string): One of the load classifications of the electrical project settings, or an empty string for none.
+- `anchorPoint` (Coordinate3D)
+- `orientation` (MEPOrientation)
+- `rotation` (number): The base rotation in radians.
+- `isReflected` (boolean)
+- `libraryPartId` (LibPartUnId): The library part to use, as listed by GetAvailableLibraryParts.
+- `xSize` (number): The size along the local x axis. Some library parts calculate their own size, then the item fails.
+- `ySize` (number): The size along the local y axis. Some library parts calculate their own size, then the item fails.
+
+### ElectricalCircuitConnectionData
+
+object
+- `elementId` (ElementId, required): An electrical device or an electrical panel.
+- `circuitId` (ElementId, required): The electrical circuit to connect to.
+
+### MEPSystemGroupData
+
+object
+- `name` (string, required)
+
+### MEPPhysicalSystemData
+
+object
+- `systemGroupId` (MEPSystemGroupId, required): The system group the new physical system belongs to.
+- `name` (string, required)
+- `rootElementId` (ElementId): The MEP element the system starts from. Archicad keeps it only while it is part of an MEP network: the root of a stand-alone element is cleared when the MEP networks are recalculated.
+- `mepSystemId` (AttributeId): The MEP system attribute used as the category of the physical system.
+
+### MEPSystemGroupModificationData
+
+object
+- `systemGroupId` (MEPSystemGroupId, required)
+- `name` (string, required): The new name of the system group.
+
+### MEPPhysicalSystemModificationData
+
+object
+- `physicalSystemId` (MEPPhysicalSystemId, required)
+- `name` (string): The new name of the physical system.
+- `rootElementId` (ElementId): The MEP element the system starts from. Archicad keeps it only while it is part of an MEP network: the root of a stand-alone element is cleared when the MEP networks are recalculated.
+- `mepSystemId` (AttributeId): The MEP system attribute used as the category of the physical system.
+
+### MEPPhysicalSystemIdArrayItem
+
+object
+- `physicalSystemId` (MEPPhysicalSystemId, required)
+
+### ElectricalPanelToolDefaults
+
+object: The default of the Electrical Panel tool, which has no domain. Available from Archicad 30.
+- `libraryPartId` (LibPartUnId, required): The library part the tool places.
+- `panelName` (string, required)
+- `circuitNamePrefix` (string, required)
+- `circuitIdStyle` (integer, required): The index of the circuit id style.
+- `circuitDefaultCount` (integer, required): The number of circuit defaults of the panel default.
+
+### MEPPhysicalSystemsOfElement
+
+object
+- `physicalSystemIds` (array of MEPPhysicalSystemId, required): The physical systems the element is part of. Empty for an element of no physical system.
+
+### MEPFlexibleSegmentCreationData
+
+object
+- `domain` (MEPDomain, required)
+- `controlPoints` (array of Coordinate3D): The control points of the flexible segment, from its beginning to its end. Give either 'controlPoints' or 'polyline'.
+- `startOrientation` (MEPOrientation): Optional orientation at the beginning, with 'controlPoints'. Defaults to the direction from the first control point to the second one, with a horizontal rotation vector perpendicular to it.
+- `endOrientation` (MEPOrientation): Optional orientation at the end, with 'controlPoints'. Defaults to the direction from the last but one control point to the last one, with a horizontal rotation vector perpendicular to it.
+- `polyline` (MEPFlexibleSegmentPolyline): The flexible segment as alternating line and spline parts that connect at their ends, instead of 'controlPoints'. Archicad places polyline flexible segments in the Piping domain only.
+- `startDirection` (Coordinate3D): Optional direction vector at the beginning, with 'polyline'. Only when the first part is a spline.
+- `endDirection` (Coordinate3D): Optional direction vector at the end, with 'polyline'. Only when the last part is a spline.
+
+### MEPTakeOffCreationData
+
+object
+- `domain` (MEPDomain): Optional domain of the Take-Off tool whose settings are used. Defaults to the domain of the segment's routing element. Archicad currently only has Ventilation take-offs.
+- `segmentId` (ElementId, required): The routing segment to place the take-off on (the elementId of an item of 'segments' returned by GetMEPRoutingElements).
+- `distanceFromBeginning` (number, required): The distance of the take-off from the beginning of the segment, in meters. Must not be negative or more than the length of the segment.
+- `rotationAroundMainAxis` (number): Optional rotation of the take-off around the axis of the segment, in radians. Archicad places take-offs only at quarter turns, so it must be a multiple of pi/2 (negative values and full turns are allowed). Defaults to 0, which places the take-off facing left relative to the segment's direction; pi/2 faces up, pi faces right, 3*pi/2 (or -pi/2) faces down.
+- `length` (number): Optional length of the take-off in meters, set after placing it; must be positive. The length of the Take-Off tool when not given.
+- `defaults` (object): Optional changes to the settings of the Take-Off tool before the take-off is placed. Only what is placed changes, not the tool's settings. A value that cannot be set gives an error for the item, and nothing is placed. The insulation thickness of a take-off cannot be set (Archicad stops with a fatal error).
+  - `removeInsulation` (boolean): If true, the take-off is placed without insulation.
+
+### MEPElementModificationData
+
+object
+- `elementId` (ElementId, required)
+- `anchorPoint` (Coordinate3D): The new anchor point of a terminal, accessory, equipment, fitting or flexible segment.
+- `orientation` (MEPOrientation): The new orientation of a terminal, accessory, equipment, fitting or flexible segment.
+- `libraryPartId` (LibPartUnId): The library part a terminal, accessory, equipment or fitting uses, as listed by GetAvailableLibraryParts. If it is not found, the element keeps its library part and the item fails.
+- `controlPoints` (array of Coordinate3D): The new control points of a flexible segment, from its beginning to its end. Not together with 'polyline'.
+- `polyline` (MEPFlexibleSegmentPolyline): The new geometry of a Piping flexible segment as alternating line and spline parts that connect at their ends. Not together with 'controlPoints'. Available from Archicad 28.
+- `width` (number): The new width of a flexible segment.
+- `height` (number): The new height of a flexible segment.
+
+### MEPRoutingSegmentParameters
+
+object: The routing segment default parameters of the routing element (RoutingElement::GetRoutingSegmentDefaultParameters).
+- `crossSectionShape` (MEPCrossSectionShape)
+- `crossSectionWidth` (number)
+- `crossSectionHeight` (number)
+- `crossSectionReferenceId` (integer)
+- `preferenceTableId` (Guid)
+- `anchor` (string)
+- `referenceLineOffsetX` (number)
+- `referenceLineOffsetY` (number)
+- `wallThickness` (number)
+- `flangeSize` (number)
+- `connectionStyle` (string ("SimpleBody", "Flanged", "Welded"))
+
+### MEPElbowParameters
+
+object: Elbow parameters. Archicad 29 or newer.
+- `factorRadius` (number)
+- `preferenceTableId` (Guid)
+
+### MEPTransitionParameters
+
+object: Transition parameters. preferenceTableId is given from Archicad 29.
+- `angle` (number)
+- `offsetY` (number)
+- `offsetZ` (number)
+- `preferenceTableId` (Guid)
+
+### MEPRoutingNodeParameters
+
+object: The routing node default parameters of a routing element (RoutingElement::GetRoutingNodeDefaultParameters). The elbow is given from Archicad 29.
+- `preferredTransitionPlacement` (string ("SmallToLarge", "LargeToSmall"))
+- `elbow` (MEPElbowParameters)
+- `transition` (MEPTransitionParameters)
+
+### MEPRigidSegmentParameters
+
+object: The rigid segment default parameters of a routing segment (RoutingSegment::GetRigidSegmentDefaultParameters). Archicad 28 only.
+- `width` (number)
+- `height` (number)
+- `shape` (MEPCrossSectionShape)
+
+### MEPRoutingParameters
+
+object
+- `elementId` (ElementId, required)
+- `type` (string ("RoutingElement", "RoutingNode", "RoutingSegment"), required)
+- `routingNodeParameters` (MEPRoutingNodeParameters)
+- `routingSegmentParameters` (MEPRoutingSegmentParameters)
+- `elbowParameters` (MEPElbowParameters)
+- `transitionParameters` (MEPTransitionParameters)
+- `rigidSegmentParameters` (MEPRigidSegmentParameters)
+
+### MEPTransitionDefaults
+
+object: The transition parameters of a routing node (RoutingNode::Modifier::SetTransitionDefaultParameters). Archicad 29 or newer.
+- `preferenceTableId` (Guid): A transition preference table, as returned by GetMEPPreferenceTables.
+
+### MEPRoutingSegmentDefaults
+
+object: The routing segment default parameters of a routing element (RoutingElement::Modifier::SetRoutingSegmentDefaultParameters).
+- `crossSectionShape` (MEPCrossSectionShape)
+- `crossSectionWidth` (number)
+- `crossSectionHeight` (number)
+- `crossSectionReferenceId` (integer): Cross section reference id of the segment preference table. Resolved against preferenceTableId if given, otherwise against the table already set.
+- `preferenceTableId` (Guid): A segment preference table, as returned by GetMEPPreferenceTables.
+
+### MEPRoutingNodeParametersUpdate
+
+object: The routing node default parameters of a routing element (RoutingElement::Modifier::SetRoutingNodeDefaultParameters). Archicad 29 or newer.
+- `elbow` (object)
+  - `factorRadius` (number)
+  - `preferenceTableId` (Guid): An elbow preference table, as returned by GetMEPPreferenceTables.
+- `transition` (object)
+  - `preferenceTableId` (Guid): A transition preference table, as returned by GetMEPPreferenceTables.
+
+### ElementMEPRoutingParameters
+
+object
+- `elementId` (ElementId, required)
+- `routingNodeParameters` (MEPRoutingNodeParametersUpdate)
+- `routingSegmentParameters` (MEPRoutingSegmentDefaults)
+- `elbowParameters` (MEPElbowParameters): The elbow parameters of a routing node (RoutingNode::Modifier::SetElbowDefaultParameters). Archicad 29 or newer.
+- `transitionParameters` (MEPTransitionDefaults)
+
+### MEPPreferenceRowKey
+
+object: The key of a row. Segment tables: referenceId. Elbow tables: referenceId and angle. Branch tables: mainAxisReferenceId, branchAxisReferenceId and branchAxisAngle. Transition tables: beginReferenceId and endReferenceId. The angles are as GetMEPPreferenceTables returns them; Archicad 28 finds the rows by their reference ids only and rejects a key with an angle. Archicad 27: shape and index (AddMEPPreferenceTableRows: shape only).
+- `shape` (string ("Circular", "Rectangular")): Archicad 27 only: the shape whose list of values the row is in.
+- `index` (integer): Archicad 27 only: the index of the row in the list of its shape, from 0.
+- `referenceId` (integer)
+- `angle` (number)
+- `mainAxisReferenceId` (integer)
+- `branchAxisReferenceId` (integer)
+- `branchAxisAngle` (number)
+- `beginReferenceId` (integer)
+- `endReferenceId` (integer)
+
+### MEPPreferenceRowValues
+
+object: The values of a row, lengths in meters. Segment tables: diameter, wallThickness and description. Elbow tables: diameter, radius and description. Branch tables: mainAxisDiameter, branchAxisDiameter, length, branchOffset, connectionLength and description. Pipe transition tables: beginDiameter, endDiameter, length and description. Duct transition tables: beginDiameter, endDiameter, angle and description. Archicad 27: value and description.
+- `value` (number): Archicad 27 only: the value of the row.
+- `diameter` (number)
+- `wallThickness` (number)
+- `radius` (number)
+- `mainAxisDiameter` (number)
+- `branchAxisDiameter` (number)
+- `length` (number)
+- `branchOffset` (number)
+- `connectionLength` (number)
+- `beginDiameter` (number)
+- `endDiameter` (number)
+- `angle` (number)
+- `description` (string)
+
+### MEPPreferenceTableId
+
+object
+- `guid` (Guid, required)
+
+### MEPPreferenceRowDetails
+
+object
+- `key` (MEPPreferenceRowKey, required)
+- `valid` (boolean, required): Whether the row is valid. Archicad 27: whether the list of the shape has a row with the index.
+- `values` (MEPPreferenceRowValues, required)
+
+### MEPPreferenceRowUpdate
+
+object
+- `key` (MEPPreferenceRowKey, required)
+- `values` (MEPPreferenceRowValues, required)
+
+### MEPPreferenceRowAddition
+
+object
+- `key` (MEPPreferenceRowKey, required)
+- `values` (MEPPreferenceRowValues)
+
+### MEPPreferenceRowUpdateResult
+
+object
+- `success` (boolean (true), required)
+- `index` (integer): Archicad 27 only: the index of the row after the call, which can differ from the index of its key when setting a value moves rows. The keys are the indices before the call.
+
+### MEPPreferenceRowAdditionResult
+
+object
+- `success` (boolean (true), required)
+- `index` (integer, required): The index of the new row in the table. Archicad 27: in the list of its shape, after the call.
+
+### MEPPreferenceTableContainer
+
+object
+- `domain` (MEPPreferenceTableDomain, required): The MEP domain of a preference table container.
+- `exists` (boolean, required): Whether the container exists.
+- `tables` (array of object, required)
+  - `tableId` (MEPPreferenceTableId, required): The id of a preference table, for the tableId of the preference table row commands.
+  - `name` (string, required)
+  - `exists` (boolean, required)
+  - `sizes` (object, required): The number of rows of each shape.
+
+### MEPPreferenceTableCreationResult
+
+object
+- `success` (boolean (true), required)
+- `tableId` (MEPPreferenceTableId, required): The id of a preference table, for the tableId of the preference table row commands.
+
+### AnalyticalLoadGroupData
+
+object
+- `name` (string, required)
+- `groupType` (AnalyticalLoadGroupType, required)
+- `relation` (AnalyticalLoadGroupRelation, required)
+- `loadType` (string): The load type of the group as free text. Empty when it is omitted.
+
+### AnalyticalLoadGroupIdArrayItem
+
+object
+- `loadGroupId` (GuidId, required)
+
+### AnalyticalLoadCaseData
+
+object
+- `name` (string, required)
+- `description` (string): Empty when it is omitted.
+- `actionType` (AnalyticalLoadCaseActionType, required)
+- `loadGroupId` (GuidId, required): The identifier of the load group the load case belongs to.
+- `loadType` (AnalyticalLoadCaseLoadType, required)
+- `duration` (AnalyticalLoadCaseDuration)
+
+### AnalyticalLoadCaseIdArrayItem
+
+object
+- `loadCaseId` (GuidId, required)
+
+### AnalyticalLoadCombinationData
+
+object
+- `name` (string, required)
+- `description` (string): Empty when it is omitted.
+- `category` (AnalyticalLoadCombinationCategory, required)
+- `nationalStandard` (AnalyticalLoadCombinationNationalStandard)
+- `type` (AnalyticalLoadCombinationType)
+- `loadFactors` (array of AnalyticalLoadFactor): The load cases of the combination with their factors.
+
+### AnalyticalLoadCombinationIdArrayItem
+
+object
+- `loadCombinationId` (GuidId, required)
+
+### AnalyticalSegmentedSurfaceMemberDetails
+
+object
+- `segmentedSurfaceMembers` (array of AnalyticalSurfaceMember, required): The segments of the surface member.
+- `idMapping` (AnalyticalExportIdMapping)
+- `connections` (AnalyticalMemberConnections, required)
+
+### AnalyticalSurfaceMemberDetails
+
+object
+- `surfaceMember` (AnalyticalSurfaceMember, required)
+- `idMapping` (AnalyticalExportIdMapping)
+- `connections` (AnalyticalMemberConnections, required)
+
+### AnalyticalCurveMemberDetails
+
+object
+- `curveMember` (AnalyticalCurveMember, required)
+- `connections` (AnalyticalMemberConnections, required)
+
+### ElementAnalyticalRelease
+
+object
+- `elementId` (ElementId, required)
+- `release` (AnalyticalRelease, required)
+
+### AnalyticalCurveMemberStretch
+
+object
+- `begAdditionalLength` (number, required): The length added to the curve member at its start.
+- `endAdditionalLength` (number, required): The length added to the curve member at its end.
+
+### AnalyticalCurveMemberStretchUpdate
+
+object
+- `elementId` (ElementId, required)
+- `begAdditionalLength` (number, required): The length added to the curve member at its start.
+- `endAdditionalLength` (number, required): The length added to the curve member at its end.
+
+### AnalyticalMemberCoordinateSystemRequest
+
+object
+- `memberPartRef` (AnalyticalMemberPartRef, required)
+- `intersectingMemberPartRef` (AnalyticalMemberPartRef): When given, the local coordinate system of memberPartRef in its intersection with this member part is returned.
+
+### AnalyticalSupportDetails
+
+object
+- `support` (AnalyticalSupport, required)
+- `geometry` (AnalyticalSupportGeometry, required)
+
+### AnalyticalLinkDetails
+
+object
+- `link` (AnalyticalLink, required)
+- `geometry` (AnalyticalLinkGeometry, required)
+
+### AnalyticalSurfaceLoadDetails
+
+object
+- `surfaceLoad` (AnalyticalSurfaceLoad, required)
+- `customData` (AnalyticalSurfaceLoadCustomData, required)
+- `geometry` (AnalyticalSurfaceLoadCustomData, required)
+
+### AnalyticalEdgeLoadDetails
+
+object
+- `edgeLoad` (AnalyticalEdgeLoad, required)
+- `customData` (AnalyticalEdgeLoadCustomData, required)
+- `geometry` (AnalyticalEdgeLoadCustomData, required)
+
+### AnalyticalPointLoadDetails
+
+object
+- `pointLoad` (AnalyticalPointLoad, required)
+- `geometry` (object, required)
+  - `coordinate` (Coordinate3D, required)
+
+### ElementFromAnalyticalMemberData
+
+any or any or any
+- `curveMember` (AnalyticalCurveMember): A curve member, creating a beam or a column.
+- `surfaceMember` (AnalyticalSurfaceMember): A surface member, creating a wall, a slab or a roof.
+- `segmentedSurfaceMembers` (array of AnalyticalSurfaceMember): The segments of a segmented surface member (a curved wall), creating one element.
+- `favoriteName` (string): The name of the favorite whose settings the new element gets.
+
+### ElementFromAnalyticalMember
+
+object
+- `elementId` (ElementId, required)
+- `idMapping` (AnalyticalImportIdMapping)
+
+### ElementIFCPropertyValue
+
+object
+- `elementId` (ElementId, required)
+- `propertySetName` (string, required): The name of the property set, for example Pset_DoorCommon. Custom property set names are also accepted.
+- `propertyName` (string, required): The name of the property, for example FireRating.
+- `type` (string, required): The IFC type of the value, for example IfcLabel, IfcText, IfcIdentifier, IfcBoolean, IfcLogical, IfcInteger, IfcReal or a measure type like IfcThermalTransmittanceMeasure. A type Archicad does not know is rejected.
+- `value` (any, required): The new value of the property. Provide a boolean for IfcBoolean and IfcLogical (IfcLogical also accepts the string Unknown), a number for the numeric types and a string for every other type.
+
+### ElementIFCClassificationReferenceUpdate
+
+object
+- `elementId` (ElementId, required)
+- `identification` (string): The identification of the classification reference, for example a classification code. Default: empty.
+- `name` (string): The name of the classification reference. Default: empty.
+- `location` (string): The location of the classification reference, for example a URL. Default: empty.
+- `referencedSource` (object, required): The classification (IfcClassification) the reference belongs to.
+  - `name` (string, required): The name of the classification.
+  - `edition` (string): The edition of the classification. Default: empty.
+  - `editionDate` (string): The edition date of the classification. Default: empty.
+  - `description` (string): The description of the classification. Default: empty.
+  - `location` (string): The location of the classification, for example a URL. Default: empty.
+
+### ElementIFCClassificationReferenceRemoval
+
+object
+- `elementId` (ElementId, required)
+- `referencedSource` (object, required): The classification (IfcClassification) the reference belongs to.
+  - `name` (string, required): The name of the classification.
+- `identification` (string): The identification of the classification reference to remove. When it is not given, every stored reference of the classification is removed from the element.
+
+### IFCSpatialStructureOfElement
+
+object
+- `elementId` (ElementId, required)
+- `storyIndex` (integer, required): The index of the story the element is assigned to in the IFC model.
+
+### IFCObjectWithParents
+
+object
+- `object` (IFCObject, required)
+- `parents` (array of IFCObject, required)
+
+### IFCObjectWithChildren
+
+object
+- `object` (IFCObject, required)
+- `children` (array of IFCObject, required)
+
+### EmbeddedLibraryItem
+
+object
+- `path` (string, required): The relative path of the library item inside the embedded library, the same path AddFilesToEmbeddedLibrary takes as outputPath.
+
+### LibraryPartData
+
+object
+- `name` (string, required): The name of the new library part, as shown in the library and used by CreateObjects as libraryPartName.
+- `parentId` (string): The parent subtype of the new library part: its unique ID ('{main}-{revision}') or its main GUID, as GetAvailableLibraryParts reports it. Either parentId or parentName is required.
+- `parentName` (string): The document name of the parent subtype, e.g. 'General Object' or 'General Label' from the Archicad Library; used when parentId is not given.
+- `type` (LibraryPartType): Optional. The type of the new library part. By default the type of the parent found by parentName or by a parentId GUID, and Object otherwise.
+- `path` (string): Optional. The relative path of the .gsm file inside the embedded library, the same kind of path AddFilesToEmbeddedLibrary takes as outputPath. By default '<name>.gsm'.
+- `a` (number): Optional. The default value of the A (X size) parameter. 1.0 by default.
+- `b` (number): Optional. The default value of the B (Y size) parameter. 1.0 by default.
+- `masterScript` (string): Optional. The GDL master script.
+- `script2D` (string): Optional. The GDL 2D script.
+- `script3D` (string): Optional. The GDL 3D script.
+- `parameterScript` (string): Optional. The GDL parameter script (value lists, locks, hiding).
+- `uiScript` (string): Optional. The GDL user interface script.
+- `propertiesScript` (string): Optional. The GDL properties (component listing) script.
+- `parameters` (array of object): Optional. The parameters of the library part besides A and B, in the order they appear in the settings dialog. Only simple (non-array) parameters can be defined.
+  - `name` (string, required): The GDL variable name of the parameter (at most 31 characters).
+  - `type` (string ("Integer", "Length", "Angle", "RealNumber", "LightSwitch", "RGBColor", "Intensity", "LineType", "Material", "FillPattern", "PenColor", "String", ...), required): The type of the parameter, named as GetGDLParametersOfElements reports it.
+  - `value` (number or string or boolean): Optional. The default value: a number for the numeric and attribute index types, a string for String and Title, true or false for Boolean, 'On' or 'Off' for LightSwitch.
+  - `description` (string): Optional. The display name of the parameter in the settings dialog.
+  - `isHidden` (boolean): Optional. When true, the parameter is hidden from the settings dialog. False by default.
+
+### LibraryPartCreationDetails
+
+object
+- `name` (string, required): The name of the created library part.
+- `unId` (string, required): The unique ID of the created library part ('{main}-{revision}'), usable as parentId of further library parts.
+- `guid` (string, required): The main GUID of the created library part, as GetAvailableLibraryParts reports it.
+- `index` (integer, required): The index of the created library part in the loaded libraries.
+- `path` (string, required): The relative path of the .gsm file inside the embedded library; DeleteEmbeddedLibraryItems takes it as path.
+
+### AvailableLibraryPart
+
+object
+- `guid` (string)
+- `index` (integer)
+- `documentName` (string)
+- `fileName` (string)
+- `typeId` (LibraryPartType)
+- `type` (string ("Object", "Image", "Text", "BinaryListCrit", "Other")): The kind of the library part file: a GDL object, an image, a text file, a binary list criteria file or other. Available from Archicad 28; missing when it cannot be read.
+
+### SkippedLibraryPart
+
+object
+- `index` (integer)
+- `code` (integer)
+
+### LibraryPartNameOrGuid
+
+object
+- `name` (string): File name of the library part with extension (the fileName GetAvailableLibraryParts returns). Fails when it is ambiguous.
+- `guid` (string): The guid GetAvailableLibraryParts returns.
+
+### LibraryOfLibraryPart
+
+object
+- `library` (object)
+  - `displayName` (string)
+  - `path` (string)
+  - `isEmbedded` (boolean)
+  - `isBuiltIn` (boolean)
+  - `isPackage` (boolean)
+  - `isLocal` (boolean)
+  - `isMissing` (boolean)
+- `libraryTreePath` (array of string): The path in the Library Manager tree, not a physical location.
+- `error` (object)
+  - `code` (integer)
+  - `message` (string)
+
+### LibraryPartObjectDetails
+
+object: The detail flags of an Object, Lamp, Label or Room library part.
+- `fixSize` (boolean, required)
+- `autoHotspot` (boolean, required)
+
+### LibraryPartDoorWindowDetails
+
+object: The details of a Door or Window library part.
+- `mirThick` (number, required)
+- `wallInset` (number, required)
+- `leftFram` (number, required)
+- `righFram` (number, required)
+- `topFram` (number, required)
+- `botFram` (number, required)
+- `orientation` (integer, required): The orientation setting (API_Orient value) of the door or window.
+- `contours3D` (boolean, required)
+
+### MissingLibraryPartName
+
+object
+- `elementId` (ElementId, required)
+- `libPartName` (string, required): The name of the element's library part, also when the library containing it is not loaded.
+
+### UnusedLibraryPart
+
+object
+- `guid` (string, required)
+- `index` (integer, required)
+- `documentName` (string, required)
+- `fileName` (string, required)
+- `typeId` (LibraryPartType, required)
+- `isPlaceable` (boolean, required)
+
+### LibraryPartKind
+
+string ("All", "Object", "Image", "Text"): Optional. Which library parts to find: all of them (default), GDL objects, images or text files, as selected by the Library Manager's own selectors.
+
+### FoundLibraryPart
+
+object
+- `name` (string): The name of the library part.
+- `path` (string): The location of the library part file.
+- `index` (integer): The index of the library part in the loaded libraries.
+
+### LibraryPartNameOrIndex
+
+any or any
+- `name` (string): The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts or the name field of FindLibraryParts (e.g. 'Door 26.gsm').
+- `index` (integer): The index of the library part, as returned by FindLibraryParts.
+- `password` (string): Optional. The password of a password protected library part, used to read its scripts.
+
+### LibraryPartDetails
+
+object
+- `name` (string): The name of the library part.
+- `path` (string): The location of the library part file.
+- `index` (integer): The index of the library part in the loaded libraries.
+- `libraryTreePath` (object): The place of the library part in the library tree.
+  - `parts` (array of string, required): The names along the path, from the root.
+  - `lastPart` (string, required): The last name of the path.
+  - `isRoot` (boolean, required): True if the path is the root of the library tree.
+  - `parentParts` (array of string): The names along the path of the parent, from the root. Omitted for the root.
+  - `teamworkId` (string): The Teamwork identifier of the path. Omitted when Archicad has none for it, e.g. outside Teamwork.
+- `library` (object): The library containing the library part.
+  - `name` (string): The name of the library.
+  - `localizedName` (string): The localized name of the library, when it has one. Archicad 29 or newer.
+  - `path` (string): The location of the library.
+  - `isServer` (boolean): True if it is a Teamwork server library.
+  - `twServerPath` (string): The path of the library on the Teamwork server. Only for server libraries.
+  - `twServerUrl` (string): The URL of the Teamwork server. Only for server libraries.
+- `gsmObject` (object): The GDL object data. Omitted for a library part that is not a GDL object, e.g. an image.
+  - `guid` (string): The main GUID of the library part, the guid field of GetAvailableLibraryParts.
+  - `isSubType` (boolean): True if the library part is a subtype other library parts can be derived from.
+  - `subTypeGuid` (string): The main GUID of the subtype (parent) of the library part.
+  - `isInSubTypeOf` (boolean): True if the library part is in the subtype given by subTypeOf. Only when subTypeOf is given.
+  - `isUIDefault` (boolean): True if the library part is marked as the default user interface (UI default).
+  - `license` (string): The license of the library part.
+  - `licenseVersion` (string): The version of the license of the library part.
+  - `contents` (object, required): Which sections the library part has.
+  - `scripts` (object): The scripts of the library part. Only when includeScripts is true. A script is omitted when the library part has none or it cannot be read, e.g. without the right password.
+
+### LibraryToRemove
+
+any or any
+- `name` (string): The name of the library, as returned by GetLibraries.
+- `path` (string): The absolute path of the library, as returned by GetLibraries.
+
+### LibraryPartName
+
+object
+- `name` (string, required): The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'Door 26.gsm').
+
+### LibraryPartMetadataDetails
+
+object
+- `description` (string, required): The description of the library part.
+- `keywords` (string, required): The keywords of the library part as stored, usually a comma separated list used for searching.
+- `author` (string, required): The author of the library part.
+- `isPlaceable` (boolean, required): True if the library part can be placed in the plan; false e.g. for macros.
+- `isPasswordProtected` (boolean, required): True if the library part is password protected and encrypted.
+- `isHierarchicalPagesUsed` (boolean, required): True if the user interface of the library part uses hierarchical pages.
+
+### LibraryPartByIndex
+
+object
+- `index` (integer, required): The index of the library part, as returned by GetAvailableLibraryParts.
+
+### LibraryPartOriginalLocation
+
+object
+- `path` (string, required): The path of the file the library part originally came from, e.g. before it was embedded into the project.
+
+### LibraryPartIndexAndPassword
+
+object
+- `index` (integer, required): The index of a loaded library part, as GetAvailableLibraryParts returns it.
+- `password` (string): The password of a protected library part. Needed to read the size of its protected sections.
+
+### LibraryPartSections
+
+object
+- `index` (integer, required): The index of the library part.
+- `sections` (array of object, required): The sections of the library part, in the order Archicad lists them.
+  - `sectionType` (string, required): The four-character code of the section type, as GetLibraryPartSection takes it.
+  - `subIdent` (integer, required): The sub-identifier that tells apart sections of the same type.
+  - `size` (integer): The size of the section content in bytes. Missing when Archicad could not read the section, for example a protected one without its password.
+  - `isText` (boolean): True when Archicad returns the section as text (scripts, comments), which GetLibraryPartSection reads. Binary sections, such as previews, are only listed. Missing when Archicad could not read the section.
+
+### LibraryPartScripts
+
+object: Optional. The scripts to set. Only the scripts given here are changed, the others are kept. An empty string makes that script section empty, it does not delete it; use deleteScripts for that.
+- `master` (string): The master script.
+- `parameter` (string): The parameter script.
+- `2d` (string): The 2D script.
+- `3d` (string): The 3D script.
+- `properties` (string): The properties script.
+- `interface` (string): The interface (user interface) script.
+- `forwardMigration` (string): The forward migration script.
+- `backwardMigration` (string): The backward migration script.
+
+### LibraryPartScriptType
+
+string ("master", "parameter", "2d", "3d", "properties", "interface", "forwardMigration", "backwardMigration")
+
+### LibraryPartScriptsUpdate
+
+any or any
+- `name` (string, required): The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm').
+- `scripts` (LibraryPartScripts)
+- `deleteScripts` (array of LibraryPartScriptType): Optional. The script sections to delete from the library part. A script cannot be both set in scripts and deleted here.
+
+### LibraryPartMetadata
+
+object: The metadata to set. Only the fields given here are changed, the others are kept.
+- `author` (string): The author of the library part.
+- `keywords` (string): The keywords of the library part.
+- `license` (string): The license of the library part.
+- `licenseVersion` (string): The version of the license.
+- `password` (string): The new password of the library part.
+- `placeable` (boolean): Whether the library part can be placed in the project.
+- `uiDefault` (boolean): The UI Default flag of the library part.
+- `isSubtype` (boolean): Whether the library part is a subtype template.
+- `hierarchicalPagesUsed` (boolean): Whether the library part uses hierarchical pages in its user interface.
+
+### LibraryPartMetadataUpdate
+
+object
+- `name` (string, required): The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm').
+- `metadata` (LibraryPartMetadata, required)
+
+### LibraryPartReadableScriptType
+
+string ("master", "parameter", "2d", "3d", "properties")
+
+### LibraryPartScript
+
+object
+- `present` (boolean, required): Whether the library part has this script section.
+- `script` (string): The script text. Left out when the section is not present.
+
+### LibraryPartScriptsDetails
+
+object
+- `libraryPartName` (string, required): The name of the library part file with its extension.
+- `unID` (string): The unique ID of the library part, its main and revision GUID.
+- `scripts` (object, required): The requested scripts, by the keys used in the input.
+
+### LibraryPartFileInfo
+
+object
+- `path` (string, required): The path of the file, as given in the input.
+- `unID` (string): The unique ID of the library part, its main and revision GUID.
+- `subTypeUnID` (string): The unique ID of the subtype the library part belongs to.
+- `scripts` (object, required): The requested scripts, by the keys used in the input.
+
+### LibraryPartCopyData
+
+object
+- `libraryPartName` (string): The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm'). Give this or elementId.
+- `elementId` (ElementId): An object, lamp, window, door, skylight, zone or curtain wall frame, panel, junction or accessory; the library part it is placed from is copied. Give this or libraryPartName.
+- `newName` (string, required): The file name of the copy with its extension (e.g. 'My Door copy.gsm'). It must not contain a folder.
+- `targetFolder` (string): Optional. The absolute path of an existing folder to put the copy into. By default the folder of the embedded library. The copy can only be found by name after the reload when the folder belongs to a loaded library.
+- `keepMainGuid` (boolean): Optional. When true, the copy keeps the main GUID of the original. By default false: the copy gets a new unique ID.
+
+### CopiedLibraryPart
+
+object
+- `libraryPartName` (string, required): The file name of the copy with its extension.
+- `unID` (string): The unique ID of the copy, its main and revision GUID.
+- `path` (string, required): The absolute path of the copy.
+
+### LibraryPartIndexOrPath
+
+any or any
+- `index` (integer): The index of a loaded library part, as GetAvailableLibraryParts returns it.
+- `path` (string): The path of a library part file, for example a .gsm file.
+
+### LibraryPartIdentity
+
+object
+- `path` (string, required): The path of the library part file.
+- `unId` (string, required): The unique ID of the library part, '{main GUID}-{revision GUID}'.
+- `mainGuid` (Guid): The main GUID of the unique ID. It stays the same across the revisions of a library part.
+- `revisionGuid` (Guid): The revision GUID of the unique ID. It changes whenever the library part is saved.
+- `refGuid` (Guid): The reference GUID of the library part file. Missing when Archicad could not tell it.
+- `lockStatus` (string ("Free", "Editable", "Locked", "NotAvailable", "NotExist")): The Teamwork lock status of the library part file. Missing when Archicad could not tell it.
+- `isServerLibraryPart` (boolean, required): True when the library part is in a BIMcloud or Teamwork server library.
+
+### LibraryPartParameterValues
+
+object
+- `name` (string, required): The name of the library part, as given.
+- `parameters` (array of object, required): The parameters of the library part with their default values, in the format of GetGDLParametersOfElements. Separators, titles and dictionary parameters have no value here and are left out.
+  - `name` (string, required): The name of the parameter.
+  - `type` (string ("Integer", "Length", "Angle", "RealNumber", "LightSwitch", "RGBColor", "Intensity", "LineType", "Material", "FillPattern", "PenColor", "String", ...), required): The type of the parameter.
+  - `dimension1` (integer): The 1st dimension of an array parameter.
+  - `dimension2` (integer): The 2nd dimension of an array parameter, 1 for a one-dimensional array.
+  - `value` (any, required): The default value of the parameter: a number, a boolean, a string, or 'On' or 'Off' for a LightSwitch. Angles are in radians. For an array parameter, a list of its dimension1 x dimension2 items, the first index outer.
+  - `description` (string): The description of the parameter, the text shown for it in the settings dialog. Missing when Archicad gives no description for it.
+
+### LibraryPartSearchResult
+
+object
+- `index` (integer, required): The index of the library part, as GetAvailableLibraryParts returns it.
+- `name` (string, required): The name of the library part.
+- `fileName` (string): The file name of the library part.
+- `unId` (string, required): The unique ID of the library part, '{main GUID}-{revision GUID}'.
+- `parentUnId` (string): The unique ID of the parent of the library part.
+- `typeId` (LibraryPartType)
+
+### FavoriteDetails
+
+object
+- `favorite` (string, required): The name of the favorite.
+- `elementType` (string, required): The element type of the favorite, as in GetFavoritesByType.
+- `classifications` (array of ClassificationIdArrayItem, required): The classifications the favorite applies, one per classification system.
+- `properties` (array of object, required): The property values stored in the favorite.
+  - `propertyId` (PropertyId, required)
+  - `propertyName` (string, required)
+  - `status` (string ("HasValue", "NotEvaluated", "NotAvailable"), required): The evaluation status of the value. propertyValue is only present for HasValue.
+  - `isDefault` (boolean, required): True if the value is the default value of the property.
+  - `propertyValue` (PropertyValue)
+  - `error` (Error)
+- `categoryValues` (array of object, required): The element category values (e.g. Structural Function, Position, Renovation Status) stored in the favorite.
+  - `categoryId` (GuidId, required)
+  - `categoryName` (string, required)
+  - `categoryValueId` (GuidId, required)
+  - `categoryValueName` (string, required)
+
+### FavoriteFromElement
+
+object: The identifier of the element and the name of the new favorite.
+- `elementId` (ElementId, required)
+- `favorite` (string, required)
+- `folder` (array of string): Optional folder hierarchy in the Favorites palette to place the new favorite under. Empty/omitted = root.
+
+### FavoriteImportFormat
+
+string ("prefs", "xml", "legacyPRF"): The format to import from, the counterpart of the format of ExportFavorites. prefs (the default) works in every Archicad version. xml imports Favorite files from a folder, and legacyPRF a Favorites file of earlier Archicad versions; these two require Archicad 29 or newer.
+
+### FavoriteImportConflictPolicy
+
+string ("Error", "Skip", "Overwrite", "Append", "OverwriteExisting", "RenameNew"): How to resolve name conflicts. The prefs format takes Error, Skip, Overwrite or Append, default Overwrite. The xml and legacyPRF formats take Error, Skip, OverwriteExisting or RenameNew, default Error.
+
+### FavoriteToApply
+
+object: The identifier of the element and the name of the Favorite to apply to it.
+- `elementId` (ElementId, required)
+- `favorite` (string, required)
+
+### FavoriteContents
+
+object
+- `name` (string, required): The name of the Favorite.
+- `folderPath` (array of string, required): The path of the folder the Favorite is in, as Archicad gives it. Empty for the root folder.
+- `classifications` (ClassificationIdsOrErrors, required): The classifications stored with the Favorite, in the format of GetClassificationsOfElements.
+- `categoryValues` (array of object, required): The element category values stored with the Favorite, in the format of GetCategoryValuesOfElements.
+  - `type` (ElementCategoryType, required)
+  - `categoryId` (ElementCategoryId, required)
+  - `categoryValueId` (ElementCategoryValueId, required)
+  - `name` (string, required): The localized name of the value, for display only.
+- `properties` (array of object, required): The property values stored with the Favorite. Each has propertyValue, in the format of GetPropertyValuesOfElements, or an error when its value cannot be read.
+  - `propertyId` (PropertyId, required)
+  - `propertyValue` (PropertyValue)
+  - `error` (Error)
+
+### FavoriteNameAndFolder
+
+object
+- `name` (string, required): The name of the Favorite.
+- `folderPath` (array of string): The folder the Favorite is in, the folder names from the root of the Favorites palette down, in the format GetFavoriteContents returns. When given, the Favorite is only looked for directly in that folder. Omit it to find the Favorite by name anywhere.
+
+### FavoriteFileEntry
+
+object
+- `name` (string, required): The name of the Favorite.
+- `elementType` (ElementType, required)
+- `folder` (array of string, required): The folder hierarchy of the Favorite in the file or folder. Empty = root.
+
+### FavoriteSettingsSource
+
+object: Where the settings of the new Favorite come from: exactly one of favoriteName and toolDefault.
+- `favoriteName` (string): Take the settings of this Favorite.
+- `toolDefault` (string ("Opening")): Take the current settings of this tool.
+
+### FavoriteCreationConflictPolicy
+
+string ("Error", "Skip", "OverwriteExisting", "RenameNew"): What to do when a Favorite with this name already exists: Error fails, Skip leaves the existing Favorite unchanged, OverwriteExisting gives the existing Favorite the new settings (its folder does not change), RenameNew creates the Favorite with ' (2)', ' (3)', ... appended to the name. Default Error.
+
+### FavoriteCreationOutcome
+
+string ("Created", "Skipped", "Overwritten"): Created for a new Favorite (also with RenameNew), Skipped or Overwritten when a Favorite with the name already existed.
+
+### FavoriteDefaults
+
+object
+- `favorite` (string, required): The name of the Favorite.
+- `elementType` (ElementType, required)
+- `layerIndex` (integer, required): The index of the layer the Favorite places its elements on.
+- `elementId` (string): The element ID stored with the Favorite. Absent when it is empty.
+- `folder` (array of string): The folder hierarchy of the Favorite in the Favorites palette, outermost folder first. Empty for the root.
+- `libPart` (LibPartDetails): The library part of the Favorite, for the library part based types (Object, Lamp, Window, Door, Skylight, Zone). Absent otherwise or when it could not be read.
+- `parameters` (array of StoredGDLParameter, required): The GDL parameters stored with the Favorite. Empty for the types without GDL parameters.
+- `marker` (object): The marker stored with the Favorite, for the element types that have one. Absent when the Favorite has no marker - that is not an error.
+  - `elementType` (ElementType, required)
+  - `libPart` (LibPartDetails): The library part of the marker. Absent when it could not be read.
+  - `parameters` (array of StoredGDLParameter, required): The GDL parameters of the marker.
+- `subElements` (array of object, required): The sub-elements stored with the Favorite, for example the frames and panels of a Curtain Wall.
+  - `elementType` (ElementType, required)
+  - `libPart` (LibPartDetails): The library part of the sub-element. Absent when it has none or it could not be read.
+  - `parameters` (array of StoredGDLParameter, required): The GDL parameters of the sub-element.
+  - `subTypes` (array of string ("MainMarker", "SHMarker", "CommonMarker", "CWFrameClass", "CWPanelClass", "CWJunction", "CWAccessory", "StairRiser", "StairTread", "StairStructure", "StairFPDMarker", "StairRCPDMarker", ...), required): The kinds of the sub-element: the API_SubElementType flags set on it, without their APISubElement_ prefix.
+
 ### GraphicOverrideRuleId
 
 object: The identifier of a graphic override rule.
@@ -17916,17 +22948,22 @@ object
 
 ### GraphicOverrideElementType
 
-string ("Wall", "Column", "Beam", "Slab", "Roof", "Shell", "Stair", "Railing", "CurtainWall", "Opening", "Mesh", "Morph", ...): The tool an element was created with. Limited to tools that are not backed by a built-in GDL library part (Door, Window, Object, Lamp, Zone, Label, Grid and most MEP part types are intentionally excluded - their identification relies on a library part guid that was confirmed to differ across ArchiCAD builds, so it cannot be hardcoded reliably).
+string ("Wall", "Column", "Beam", "Slab", "Roof", "Shell", "Stair", "Railing", "CurtainWall", "Opening", "Mesh", "Morph", ...): The tool an element was created with. Window, Door, Zone, Label, Object, Lamp and GridElement were checked on Archicad 27 and 29 against the override Archicad applies to each element; Skylight, CornerWindow, WallEnd and the MEP parts are recognized by Archicad but were not checked on elements. Sub-elements (curtain wall panels, stair treads, railing posts, ...) and groups are not offered by the criteria editor: a rule on CurtainWall, Stair or Railing applies to the whole element.
 
 ### GraphicOverrideCriterion
 
-object: Structured conditions of a graphic override rule, turned into Archicad's criterion XML (an alternative to criterionXML). Give exactly one property. 'and'/'or' combine a flat list of other conditions (no nesting, see their description). 'elementType' filters by the tool an element was created with; 'all3DTypes'/'all2DTypes' match every 3D or 2D element. The other properties are conditions of Archicad's criteria editor: classification, layer and Model View, Construction, Positioning, Plan and Section, Surfaces and Materials, ID and Categories, Geometry, custom properties, and fields of the Wall, Column, Beam, Slab, Roof, Shell, Object/Lamp, Door/Window, Opening, Curtain Wall and Stair tools. Their identifiers were captured from rules made in the criteria editor of Archicad 29; Archicad 27 keeps the generated rules as well. Not available: the renovation status of an element, and the shape, limits and orientation of an Opening.
-- `and` (array of GraphicOverrideCriterion): Matches if all of the nested criteria match. The nested criteria must all be leaves (elementType, classification, layer*, ...) - an 'and'/'or' nested inside this array is rejected, ArchiCAD's criteria editor does not reliably support that depth of nesting.
-- `or` (array of GraphicOverrideCriterion): Matches if any of the nested criteria match. The nested criteria must all be leaves (elementType, classification, layer*, ...) - an 'and'/'or' nested inside this array is rejected, ArchiCAD's criteria editor does not reliably support that depth of nesting.
-- `elementType` (GraphicOverrideElementType): Matches elements created with this tool.
+object: Structured conditions of a graphic override rule, turned into Archicad's criterion XML (an alternative to criterionXML). Give exactly one property (classificationSystem and libraryPartSubtype go next to the condition they belong to). 'and'/'or' combine other conditions, nested at most three levels like the rows of the criteria editor (see their description). GetGraphicOverrideRules returns this shape with includeCriterion. 'elementType' filters by the tool an element was created with; 'all3DTypes'/'all2DTypes' match every 3D or 2D element. The other properties are conditions of Archicad's criteria editor: classification, layer and Model View, Construction, Positioning, Plan and Section, Surfaces and Materials, ID and Categories, Geometry, custom properties, and fields of the Wall, Column, Beam, Slab, Roof, Shell, Object/Lamp, Door/Window, Opening, Curtain Wall and Stair tools. Their identifiers were captured from rules made in the criteria editor of Archicad 29; Archicad 27 keeps the generated rules as well. Not available: text content, the line pen of a dimension, hotlinked modules and Xrefs, and the MEP system (their stored format is not decoded yet).
+- `and` (array of GraphicOverrideCriterion): Matches if all of the nested criteria match. Nesting follows the criteria editor's table, at most three levels: the top 'and' holds the rows, a row with several values is an 'or' (values joined with 'or') or an 'and' (joined with 'and'), and values joined with 'and' within an 'or' row are one more 'and'. A deeper 'and'/'or' is rejected.
+- `or` (array of GraphicOverrideCriterion): Matches if any of the nested criteria match. As a row of the criteria editor's table: the values of one condition joined with 'or'. Nested at most three levels, see 'and'.
+- `criterionXML` (string): One condition in Archicad's criterion XML: a <ClassGuid> followed by the condition's element, as GetGraphicOverrideRules returns a condition it does not decode. Written into the criterion unchanged.
+- `elementType` (GraphicOverrideElementType): Matches elements created with this tool. 'AllTypes' matches elements of every type.
+- `elementTypeNot` (GraphicOverrideElementType): Matches elements not created with this tool (the criteria editor's 'is not'). 'AllTypes' is not allowed here.
+- `libraryPartSubtype` (object): Narrows elementType or elementTypeNot to a library part subtype of the tool, as the criteria editor stores it: the subtype's main and revision guid. GetGraphicOverrideRules returns it for the tools it decodes.
+  - `mainGuid` (string, required)
+  - `revGuid` (string, required)
 - `classification` (string): Matches elements classified with this Classification System item ID (e.g. 'Slab'), or with any descendant of it in the classification tree (ArchiCAD's 'is in the branch of' operator - not a strict equality check).
 - `classificationNot` (string): Matches elements NOT classified with this Classification System item ID and not with any descendant of it in the classification tree (ArchiCAD's 'is not in the branch of' operator - not a strict inequality check).
-- `classificationSystem` (string): The classification system 'classification'/'classificationNot' refers to: its name as shown in the Classification Manager (e.g. 'Classification Archicad'), or its name and version as the criteria editor shows them (e.g. 'Classification Archicad - v 2.0'). Left out: the only classification system of the project that contains the item ID; an error when several do.
+- `classificationSystem` (string): The classification system 'classification'/'classificationNot' refers to: its name as shown in the Classification Manager (e.g. 'Classification Archicad'), or its name and version as the criteria editor shows them (e.g. 'Classification Archicad - v 2.0'). Left out: the only classification system of the project that contains the item ID (the only system at all for classificationHasValue and classificationHasNoValue); an error when several do.
 - `all3DTypes` (boolean): If true, matches every 3D model element type.
 - `all2DTypes` (boolean): If true, matches every 2D drawing element type.
 - `missingAttributes` (boolean): Matches elements whose 'Missing attributes' status equals this value.
@@ -18198,13 +23235,83 @@ object: Structured conditions of a graphic override rule, turned into Archicad's
 - `stairSlopeGreaterThan` (number)
 - `stairSlopeLessOrEqual` (number)
 - `stairSlopeGreaterOrEqual` (number)
-- `stairMaxRiserHeight` (number): Matches stairs whose maximum riser height equals this value. Only equality is supported - not exhaustively tested against every comparison operator like other numeric fields.
-- `stairMinRiserHeight` (number): Matches stairs whose minimum riser height equals this value. Only equality is supported.
-- `stairMaxGoing` (number): Matches stairs whose maximum going (tread depth) equals this value. Only equality is supported.
-- `stairMinGoing` (number): Matches stairs whose minimum going (tread depth) equals this value. Only equality is supported.
-- `stairRiserCount` (integer): Matches stairs whose number of risers equals this value. Only equality is supported.
-- `stairStepCount` (integer): Matches stairs whose number of steps equals this value. Only equality is supported.
+- `stairMaxRiserHeight` (number): Matches stairs whose maximum riser height equals this value.
+- `stairMaxRiserHeightNot` (number): Matches stairs whose maximum riser height does not equal this value.
+- `stairMaxRiserHeightLessThan` (number): Matches stairs whose maximum riser height is less than this value.
+- `stairMaxRiserHeightGreaterThan` (number): Matches stairs whose maximum riser height is greater than this value.
+- `stairMaxRiserHeightLessOrEqual` (number): Matches stairs whose maximum riser height is less than or equal to this value.
+- `stairMaxRiserHeightGreaterOrEqual` (number): Matches stairs whose maximum riser height is greater than or equal to this value.
+- `stairMinRiserHeight` (number): Matches stairs whose minimum riser height equals this value.
+- `stairMinRiserHeightNot` (number): Matches stairs whose minimum riser height does not equal this value.
+- `stairMinRiserHeightLessThan` (number): Matches stairs whose minimum riser height is less than this value.
+- `stairMinRiserHeightGreaterThan` (number): Matches stairs whose minimum riser height is greater than this value.
+- `stairMinRiserHeightLessOrEqual` (number): Matches stairs whose minimum riser height is less than or equal to this value.
+- `stairMinRiserHeightGreaterOrEqual` (number): Matches stairs whose minimum riser height is greater than or equal to this value.
+- `stairMaxGoing` (number): Matches stairs whose maximum going equals this value.
+- `stairMaxGoingNot` (number): Matches stairs whose maximum going does not equal this value.
+- `stairMaxGoingLessThan` (number): Matches stairs whose maximum going is less than this value.
+- `stairMaxGoingGreaterThan` (number): Matches stairs whose maximum going is greater than this value.
+- `stairMaxGoingLessOrEqual` (number): Matches stairs whose maximum going is less than or equal to this value.
+- `stairMaxGoingGreaterOrEqual` (number): Matches stairs whose maximum going is greater than or equal to this value.
+- `stairMinGoing` (number): Matches stairs whose minimum going equals this value.
+- `stairMinGoingNot` (number): Matches stairs whose minimum going does not equal this value.
+- `stairMinGoingLessThan` (number): Matches stairs whose minimum going is less than this value.
+- `stairMinGoingGreaterThan` (number): Matches stairs whose minimum going is greater than this value.
+- `stairMinGoingLessOrEqual` (number): Matches stairs whose minimum going is less than or equal to this value.
+- `stairMinGoingGreaterOrEqual` (number): Matches stairs whose minimum going is greater than or equal to this value.
+- `stairRiserCount` (integer): Matches stairs whose number of risers equals this value.
+- `stairRiserCountNot` (integer): Matches stairs whose number of risers does not equal this value.
+- `stairRiserCountLessThan` (integer): Matches stairs whose number of risers is less than this value.
+- `stairRiserCountGreaterThan` (integer): Matches stairs whose number of risers is greater than this value.
+- `stairRiserCountLessOrEqual` (integer): Matches stairs whose number of risers is less than or equal to this value.
+- `stairRiserCountGreaterOrEqual` (integer): Matches stairs whose number of risers is greater than or equal to this value.
+- `stairStepCount` (integer): Matches stairs whose number of steps equals this value.
+- `stairStepCountNot` (integer): Matches stairs whose number of steps does not equal this value.
+- `stairStepCountLessThan` (integer): Matches stairs whose number of steps is less than this value.
+- `stairStepCountGreaterThan` (integer): Matches stairs whose number of steps is greater than this value.
+- `stairStepCountLessOrEqual` (integer): Matches stairs whose number of steps is less than or equal to this value.
+- `stairStepCountGreaterOrEqual` (integer): Matches stairs whose number of steps is greater than or equal to this value.
 - `stairStepCountPerFlight` (integer): Matches stairs whose number of steps per flight equals this value. Only equality is supported.
+- `classificationIs` (string): Matches elements classified with exactly this Classification System item ID, not with its descendants.
+- `classificationIsNot` (string): Matches elements not classified with exactly this Classification System item ID.
+- `classificationChildOf` (string): Matches elements classified with a direct child of this Classification System item ID.
+- `classificationNotChildOf` (string): Matches elements not classified with a direct child of this Classification System item ID.
+- `classificationHasValue` (boolean): true matches elements that have any item of the classification system (classificationSystem, or the project's only system); false matches elements that have none.
+- `classificationHasNoValue` (boolean): true matches elements that have no item of the classification system; false matches elements that have one.
+- `morphBodyType` (string ("NonSolid", "Solid")): Matches morphs whose body type equals this.
+- `morphBodyTypeNot` (string ("NonSolid", "Solid")): Matches morphs whose body type does not equal this.
+- `beamCrossSectionType` (string ("Rectangular", "Profiled", "Circular")): Matches beams whose cross section equals this.
+- `hatchCategory` (string ("Drafting", "Cover", "Cut", "BuildingMaterialCut", "SurfaceColor", "SurfaceCover", "SurfaceTexture")): Matches hatches whose category equals this: drafting, cover or cut fill, building material cut fill, surface color, cover or texture fill.
+- `openingShape` (string ("Square", "Rectangle", "Circle", "Ellipse", "Polygonal")): Matches openings whose shape equals this.
+- `openingShapeNot` (string ("Square", "Rectangle", "Circle", "Ellipse", "Polygonal")): Matches openings whose shape does not equal this.
+- `openingLimits` (string ("Infinite", "BothSides", "OneSide")): Matches openings whose extrusion limits equal this: infinite, limited on both sides, limited on one side.
+- `openingLimitsNot` (string ("Infinite", "BothSides", "OneSide")): Matches openings whose extrusion limits do not equal this.
+- `openingOrientation` (string ("Vertical", "Horizontal", "Aligned", "Custom")): Matches openings whose orientation equals this.
+- `openingOrientationNot` (string ("Vertical", "Horizontal", "Aligned", "Custom")): Matches openings whose orientation does not equal this.
+- `textAlignment` (string ("Left", "Center", "Right", "Justified")): Matches texts whose alignment equals this.
+- `textStyle` (array of string ("Bold", "Italic", "Underline", "Strikethrough", "Superscript", "Subscript")): Matches texts with exactly this combination of styles (an empty list matches texts with none).
+- `textLineSpacing` (integer): Matches texts whose line spacing equals this percentage (100 is single spacing).
+- `meshEdgePen` (integer): Matches meshes whose edge pen equals this pen index.
+- `meshSkirtSurface` (string): Matches meshes whose skirt surface is this Surface attribute (by name).
+- `meshSkirtSurfaceNot` (string): Matches meshes whose skirt surface is not this Surface attribute (by name).
+- `dimensionMarkerSize` (number): Matches dimensions whose marker size equals this value.
+- `dimensionMarkerSizeNot` (number): Matches dimensions whose marker size does not equal this value.
+- `dimensionMarkerSizeLessThan` (number): Matches dimensions whose marker size is less than this value.
+- `dimensionMarkerSizeGreaterThan` (number): Matches dimensions whose marker size is greater than this value.
+- `dimensionMarkerSizeLessOrEqual` (number): Matches dimensions whose marker size is less than or equal to this value.
+- `dimensionMarkerSizeGreaterOrEqual` (number): Matches dimensions whose marker size is greater than or equal to this value.
+- `dimensionMarkerPen` (integer): Matches dimensions whose marker pen equals this pen index.
+- `dimensionMarkerPenContains` (integer): Matches dimensions whose dimension marker pens contain this pen index.
+- `dimensionPointerPenContains` (integer): Matches dimensions whose pointer pens contain this pen index.
+- `dimensionPointerLineTypeContains` (string): Matches dimensions whose pointer line types contain this Line Type attribute (by name).
+- `stairRisersPerFlight` (integer): Matches stairs whose number of risers per flight equals this value.
+- `renovationStatus` (string ("Existing", "ToBeDemolished", "New")): Matches elements whose renovation status equals this.
+- `variantSetNameContains` (string): Matches elements whose design option set name contains this text.
+- `variantNameContains` (string): Matches elements whose design option name contains this text.
+- `mepOpenConnection` (boolean): Matches MEP elements whose 'open connection' status equals this value. Archicad 29 (Archicad 27 drops it).
+- `profileParameterList` (object): Matches elements by a Complex Profile parameter that holds one value per profile component, identified by its plain name (e.g. 'Epaisseur'). The criteria editor only offers equality for it. Archicad 29 (Archicad 27 drops it).
+  - `name` (string, required)
+  - `equals` (number, required)
 - `wallGeometryType` (string ("Uniform", "Trapezoid", "Polygonal")): Matches walls whose geometry type equals this.
 - `wallGeometryTypeNot` (string ("Uniform", "Trapezoid", "Polygonal"))
 - `wallReferenceLineOffset` (number): Matches walls whose reference line offset equals this value. Uses a different underlying mechanism than every other numeric field in this schema, reverse-engineered separately - support all 6 comparison operators like the rest.
@@ -18686,6 +23793,7 @@ object: A graphic override rule with its rule group, criterion and style.
 - `name` (string, required)
 - `ruleGroupName` (string): The name of the rule group the rule belongs to.
 - `criterionXML` (string, required): The criterion of the rule, in the XML format Archicad saves override rules in. Change its values and pass it to CreateGraphicOverrideRules or ModifyGraphicOverrideRules to make similar rules.
+- `criterion` (GraphicOverrideCriterion): The criterion as structured conditions, returned with includeCriterion. It can be passed to CreateGraphicOverrideRules or ModifyGraphicOverrideRules as it is. The top 'and' holds the rows of the criteria editor's table; a row with several values is an 'or' or 'and' of them, and values joined with 'and' within an 'or' row are one more 'and'. A condition that is not decoded yet is a {"criterionXML": ...} leaf, written back unchanged. Left out when criterionXML is not in the format Archicad keeps rules in.
 - `style` (GraphicOverrideStyle, required)
 
 ### GraphicOverrideRuleOrError
@@ -19009,3 +24117,995 @@ object: The curve of an analytical edge load. CreateAnalyticalLoads needs at lea
 
 object: The contour of an analytical surface load. CreateAnalyticalLoads needs at least one curve.
 - `contour` (array of AnalyticalCurve, required)
+
+### AnalyticalImportMappingTable
+
+object
+- `items` (array of object, required)
+  - `elemPartId` (object, required)
+  - `memberPartRef` (AnalyticalMemberPartRef, required)
+
+### AnalyticalImportIdMapping
+
+object: Maps the edges and vertices of the given surface member to the parts of the new element. Archicad 26 and newer.
+- `edges` (AnalyticalImportMappingTable, required)
+- `vertices` (AnalyticalImportMappingTable, required)
+
+### FavoriteKeepField
+
+string ("id", "layerIndex", "width", "height", "sillHeight", "referenceLineLocation", "topOffset", "relativeTopStory")
+
+### AttributeCreationMethod
+
+string ("AddOn", "Merge", "Paste", "New", "Import", "Explode", "Duplicate", "Hotlink", "XRef", "Library", "LibraryMaster", "Unspecified"): The creation method or workflow: AddOn (created by an Add-On), Merge (merging files), Paste (pasting from another file), New (created by the user through the UI), Import (an attribute file, IFC, DWG/DXF or another supported format), Explode (exploding a PDF or DWG), Duplicate (duplicating an attribute), Hotlink (a hotlinked file), XRef (a file attached in the Xref manager), Library (a library part), LibraryMaster (generated from GDL) or Unspecified.
+
+### SegmentStructureType
+
+string ("Basic", "Profile")
+
+### IFCPropertyType
+
+string ("SingleValue", "ListValue", "BoundedValue", "EnumeratedValue", "TableValue"): The kind of the IFC property.
+
+### IFCPropertySource
+
+string ("preview", "local"): Where the property comes from: preview for the properties mapped by the preview IFC export translator, local for the IFC properties stored in the element. Available from Archicad 28.
+
+### FavoriteExportFormat
+
+string ("prefs", "xml", "legacyPRF"): Favorite export file format.
+
+### ViewImageSource
+
+string ("3DWindow", "RenderingWindow"): The window whose image is returned: the 3D window, or the PhotoRendering window.
+
+### ViewImageFormat
+
+string ("png", "jpg"): The image format.
+
+### DatabaseType
+
+string ("Section", "Elevation", "InteriorElevation", "Detail", "Worksheet", "DocumentFrom3D", "Layout", "MasterLayout")
+
+### HierarchicalOwnerMode
+
+string ("root", "parent"): root: the root of the hierarchical element tree, e.g. the Curtain Wall, Stair or Railing. parent: the immediate parent, which may itself be a subelement.
+
+### PrinterPrintArea
+
+string ("currentView", "entireDrawing", "marquee", "unknown"): The area Archicad prints, as set in the print settings. 'unknown' for a value this add-on does not name.
+
+### AttributePropertyDefinitionFilter
+
+string ("UserDefined", "FundamentalBuiltIn", "All"): Which property definitions to return: the user defined (custom) ones, the fundamental built-in ones, or all of them.
+
+### LayoutInsertionPosition
+
+string ("first", "last"): Position of a new layout among its parent's children.
+
+### MEPRoutingAnchor
+
+string ("TopLeft", "TopCenter", "TopRight", "MiddleLeft", "Center", "MiddleRight", "BottomLeft", "BottomCenter", "BottomRight"): The anchor point of the cross section, on a 3x3 grid.
+
+### PartialStructureDisplay
+
+string ("EntireStructure", "CoreOnly", "WithoutFinishes", "StructureOnly"): The Partial Structure Display mode of the current window.
+
+### DatabaseByWindowType
+
+object: Selects a database by window type; a database ID may also be supplied.
+- `windowType` (WindowType, required)
+- `databaseId` (DatabaseId): The database to activate. When windowType is omitted, the window type is taken from the database; when both are given, they must match.
+- `storyIndex` (integer): Story index to activate. Only valid when windowType is 'FloorPlan'. As returned by GetStories.
+
+### DatabaseById
+
+object: Selects a database by ID; a window type may also be supplied.
+- `windowType` (WindowType)
+- `databaseId` (DatabaseId, required): The database to activate. When windowType is omitted, the window type is taken from the database; when both are given, they must match.
+- `storyIndex` (integer): Story index to activate. Only valid when windowType is 'FloorPlan'. As returned by GetStories.
+
+### DetailsOfElement
+
+object: Details of an element. When the optional fields filter is given in the input, only the requested fields are present; the required list below applies to unfiltered requests.
+- `elementId` (ElementId): The identifier of the element. Returned when elementId is listed in fields, and always when no elements are given.
+- `type` (ElementType, required)
+- `id` (string, required)
+- `floorIndex` (number, required)
+- `layerIndex` (number, required)
+- `drawIndex` (number, required)
+- `hotlinkId` (ElementId): The hotlink instance this element belongs to. Present only for elements that came in through a placed hotlink; such elements are read-only.
+- `details` (TypeSpecificDetails, required)
+- `floorPlanPolygons` (array of object): Cut-fill polygons as drawn on the floor plan (wall joins resolved by ArchiCAD). Only collected for construction element types whose floor plan symbol comes from a real cut through the element - walls, columns, beams and their segments, slabs, roofs, shells, meshes, morphs, curtain walls and their segments/panels/frames, stairs and their risers/treads/structures. Absent for every other type, when the element has no cut fill, or when the floor plan database is not accessible.
+  - `coordinates` (array of Coordinate2D)
+- `infoString` (string): The element ID (info string) as Archicad shows it. Present only when requested in additionalFields.
+- `compoundInfoString` (string): The compound info string of the element, e.g. the summary of its composite or profile, as Archicad shows it. Present only when requested in additionalFields and the element has a non-empty one.
+- `libraryPartUnId` (string): The unique ID of the library part the element was placed from. Present only when requested in additionalFields and the element is library part based (e.g. object, lamp, door, window).
+- `creatorToolUnId` (string): The unique ID of the tool that created the element. Present only when requested in additionalFields and Archicad reports one for the element.
+
+### CutPlane
+
+object: Defines a 3D cut plane using the plane equation: pa*x + pb*y + pc*z + pd = 0
+- `pa` (number, required): Coefficient of x in the plane equation. The x coordinate of the normal vector of the plane.
+- `pb` (number, required): Coefficient of y in the plane equation. The y coordinate of the normal vector of the plane.
+- `pc` (number, required): Coefficient of z in the plane equation. The z coordinate of the normal vector of the plane.
+- `pd` (number, required): Constant term in the plane equation, in meters. The distance of the plane from the origin along the normal vector.
+
+### OpeningRevealOffsetData
+
+object
+- `elementId` (ElementId, required): A window or door placed in a wall.
+- `coreOffset` (number): Reveal depth offset measured from the core skin of the owner wall, to convert to the wall side reference.
+- `sideOffset` (number): Reveal depth offset measured from the side of the owner wall, to convert to the core skin reference.
+
+### EmbeddedLibraryFile
+
+object
+- `path` (string, required): The absolute path of the file to copy.
+
+### DesignOptionDeactivation
+
+object
+- `designOptionCombinationId` (DesignOptionCombinationId, required)
+- `designOptions` (array of DesignOptionIdArrayItem, required): The design options to turn off in the combination. The other options of the combination are left as they are.
+
+### FavoriteSummary
+
+object
+- `name` (string, required): The name of the Favorite.
+- `elementType` (ElementType): The element type of the Favorite. Missing when Archicad cannot read the Favorite's element settings.
+- `folder` (array of string): The names of the folders leading from the root of the Favorites palette to the Favorite's folder. Returned only by SearchFavorites, and missing for a Favorite in the root folder.
+
+### DatabaseDetails
+
+object
+- `type` (string, required): The type of the database.
+- `databaseId` (DatabaseId, required)
+- `name` (string): The name of the database. Missing when the database info cannot be read.
+- `referenceId` (string): The reference id of the database. Missing when the database info cannot be read.
+
+### ElementCategoryDetails
+
+object
+- `categoryId` (ElementCategoryId, required)
+- `type` (ElementCategoryType, required)
+- `name` (string, required): The localized name of the category, for display only.
+- `values` (array of ElementCategoryValueDetails, required): The possible values of the category.
+
+### GraphicOverrideRuleReference
+
+object
+- `name` (string, required): The name of the rule. Rule names are unique within the project.
+- `ruleGroupName` (string): The name of the rule group to search the rule in. Left out: every rule group is searched.
+
+### ProjectDataKey
+
+object
+- `name` (string, required): The name of the project data.
+- `guid` (string, required): The identifier of the add-on object that stores the project data.
+- `clientOnly` (boolean, required): True when the project data is kept on this client only and is not shared in Teamwork.
+- `teamworkOwner` (User): The Teamwork user who has reserved the project data. Omitted when nobody has reserved it or the project is not a Teamwork project.
+
+### RevisionChangeCustomSchemeItem
+
+object
+- `customSchemeKey` (string, required): The identifier of the custom field. The same key is used in the customSchemeData of the revision changes.
+- `customSchemeName` (string, required): The name of the custom field.
+
+### TeamworkUser
+
+object
+- `userId` (number, required)
+- `userName` (string, required): The login name of the user.
+- `fullName` (string, required)
+- `isConnected` (boolean, required): Whether the user has joined the project.
+
+### ElementMirrorData
+
+object
+- `elementId` (ElementId, required)
+- `mirrorAxis` (object, required): The mirror axis: the line through two points on the floor plan.
+  - `beginPoint` (Coordinate2D, required): First point of the mirror axis.
+  - `endPoint` (Coordinate2D, required): Second point of the mirror axis. Must differ from beginPoint.
+- `copy` (boolean): Optional parameter. If true, a mirrored copy of the element is created and the original is kept. By default it's false.
+
+### GraphicOverrideRuleMove
+
+object
+- `graphicOverrideRuleId` (GraphicOverrideRuleId, required)
+- `ruleGroupName` (string, required): The rule group the rule is moved to; it can be the rule's own group to change its place there. Created when no rule group has this name.
+- `beforeGraphicOverrideRuleId` (GraphicOverrideRuleId): The rule of the target group the moved rule is put in front of. Left out: the rule becomes the last of the group.
+
+### ElementIFCPropertyRemoval
+
+object
+- `elementId` (ElementId, required)
+- `propertySetName` (string, required): The name of the property set, for example Pset_DoorCommon.
+- `propertyName` (string, required): The name of the property, for example FireRating.
+
+### AttributeFolderRename
+
+object
+- `attributeType` (AttributeType, required)
+- `path` (array of string, required): The names of the folders from the root folder down to the folder to rename, the root folder itself not included.
+- `newName` (string, required): The new name of the folder.
+
+### GraphicOverrideRuleGroupRename
+
+object
+- `name` (string, required): The current name of the rule group.
+- `newName` (string, required): The new name of the rule group. It must not be empty or used by another rule group.
+
+### ProjectDataReservationConflict
+
+object
+- `name` (string, required): The name of the project data.
+- `user` (User, required)
+
+### ElementCategoryValueData
+
+object
+- `elementId` (ElementId, required)
+- `type` (ElementCategoryType, required)
+- `categoryValueId` (ElementCategoryValueId, required): A value of the category given by type, as GetElementCategories lists them.
+
+### ElementDefaultClassification
+
+object
+- `elementType` (ElementType, required)
+- `classificationId` (ClassificationId, required)
+
+### ElementIFCAttributeValue
+
+object
+- `elementId` (ElementId, required)
+- `name` (string, required): The name of the IFC attribute, for example Name, Description, ObjectType or Tag. It must be one of the attributes GetIFCAttributesOfElements returns for the element.
+- `value` (string, required): The new value of the IFC attribute.
+
+### ProjectDataValueData
+
+object
+- `name` (string, required): The name of the project data.
+- `content` (string, required): The content of the project data, for example a JSON string.
+- `clientOnly` (boolean): Creates the project data on this client only, it is not shared in Teamwork. Used only when the project data is created. The default is false.
+- `unique` (boolean): Creates the project data as a unique add-on object: in Teamwork only one can exist with its name, even when several users create it at the same time. Used only when the project data is created, and cannot be combined with clientOnly. The default is false.
+
+### StairBaselineData
+
+object: The parameters of the Stair to check. Fields that are not given come from the current Stair tool defaults, as in CreateStairs.
+- `baseLinePoints` (array of Coordinate2D, required): 2D coordinates of the stair baseline polyline. Whether the baseline runs along the left edge, the right edge or the center of the flight is the Stair tool's baseline position, taken from the Stair tool defaults: with the baseline on the left edge, the flight lies to the right of it, looking from the first point to the last. The first point is kept; the length of the flight comes from the riser count and going, so the flight does not necessarily end at the last point given. Minimum 2 points for a straight stair, 3+ for L-shaped or U-shaped stairs.
+- `zCoordinate` (number, required): The Z coordinate (absolute elevation) of the stair base.
+- `floorIndex` (integer): Optional floor index. If omitted, derived from zCoordinate.
+- `totalHeight` (number): Total height of the stair.
+- `flightWidth` (number): Width of the stair flight.
+- `stepNum` (integer): Number of risers (steps).
+- `riserHeight` (number): Height of each riser.
+- `treadDepth` (number): Depth (going) of each tread.
+- `finishVisible` (boolean): Optional. If false, the tread/riser finishes are hidden and only the stair structure (e.g. a monolith) is modeled.
+
+### OpeningRevealOffsets
+
+object
+- `coreOffset` (number, required): Reveal depth offset measured from the core skin of the owner wall.
+- `sideOffset` (number, required): Reveal depth offset measured from the side of the owner wall.
+
+### ElementLinks
+
+object
+- `links` (array of ElementLinkDetails, required): The links starting from the element.
+
+### Style3DDetails
+
+object
+- `name` (string, required): The name of the 3D style, unique within the project.
+- `engineId` (integer): The id of the 3D rendering engine (API_3DStyle.engineId).
+- `model3D` (integer): The 3D model type: Block, Wireframe, Hidden Line or Shading, as the integer value of API_3DModelTypeID.
+- `transparency` (boolean): Transparency in shading.
+- `monochromeEnabled` (boolean): The model is shown in monochrome colors.
+- `monochromeSurfaceColor` (ColorRGB): The surface color of the monochrome model.
+- `monochromeContourColor` (ColorRGB): The contour color of the monochrome model.
+- `backgroundAsInRendering` (boolean): The background is the same as in the rendering settings.
+- `chainBackgroundColors` (boolean): The sky and the ground background colors are chained.
+- `backgroundSkyColor` (ColorRGB): The sky color of the background (API_3DStyle.bkgSkyColor).
+- `backgroundColor` (ColorRGB): The (ground) color of the background (API_3DStyle.backGroundRGB).
+- `shadingContours` (integer): The contours in shaded mode, as the integer value of API_ShadingContoursID.
+- `vectorialSunShadow` (integer): The vectorial sun shadow options, as the integer value of API_VectorShadowID.
+- `vectorialHatching` (boolean): Vectorial 3D hatching is on.
+- `contourThickness` (integer): The thickness of the contours, in pixels.
+- `silhouetteThickness` (integer): The thickness of the silhouettes, in pixels.
+- `vectorialHatchingThickness` (integer): The thickness of the vectorial hatching, in pixels.
+- `shadowContourThickness` (integer): The thickness of the shadow contours, in pixels.
+- `castShadowPercent` (integer): The intensity of the cast shadows, in percent.
+- `shadingPercent` (integer): The intensity of the shading, in percent.
+- `shadowElevation` (number): The elevation of the shadow plane, used by the one level vectorial sun shadow options.
+- `show3DHotSpotsOnly` (boolean): Only the 3D hotspots are shown.
+
+### ProjectAttributes
+
+object
+- `attributesByType` (array of ProjectAttributesByType or ErrorItem, required): One item per requested attribute type, in the order of attributeTypes.
+
+### ElementCategoryValues
+
+object
+- `categoryValues` (array of ElementCategoryValue, required)
+
+### ContainingDatabase
+
+object
+- `databaseId` (DatabaseId, required)
+- `windowType` (WindowType, required)
+- `name` (string, required): The name of the database (for example the name of the layout). Empty for databases without a name, like the floor plan.
+
+### DrawingContentBox
+
+object
+- `contentBox` (BoundingBox2D, required): The full boundary box of the Drawing's content, independent of its frame, as returned by Archicad.
+
+### ElementSetsOfElement
+
+object
+- `elementSets` (array of object, required): The element sets that contain the element. Empty if the element is not part of any element set.
+  - `elementSetId` (object, required): The identifier of an element set.
+
+### ElementTypeName
+
+object
+- `elementType` (ElementType, required)
+- `name` (string, required): The name of the element type in the language of the running Archicad (for example "Wand" for Wall in German Archicad).
+
+### FavoriteSettings
+
+object
+- `favorite` (string, required): The name of the Favorite.
+- `elementType` (ElementType, required)
+- `folder` (array of string): The folder hierarchy of the Favorite in the Favorites palette. Empty for the root.
+- `libPart` (LibPartDetails): The library part of the Favorite, for the library part based types (Object, Lamp, Window, Door, Skylight, Zone). Absent otherwise or when it could not be read.
+- `parameters` (array of StoredGDLParameter, required): The GDL parameters stored with the Favorite. Empty for the types without GDL parameters.
+- `marker` (object): The marker stored with a Window or Door Favorite. Absent when the Favorite has no marker - that is not an error.
+  - `libPart` (LibPartDetails): The library part of the marker. Absent when it could not be read.
+  - `parameters` (array of StoredGDLParameter, required): The GDL parameters of the marker.
+- `subElements` (array of FavoriteSubelement, required): The sub-elements stored with the Favorite.
+
+### FontDetails
+
+object
+- `fontIndex` (integer, required): Index of the font (from 1), as Text and Label fields reference it in fontIndex.
+- `fontName` (string, required): Name of the font as Archicad carries it.
+
+### HierarchicalElementOwner
+
+object
+- `ownerElementId` (ElementId, required): The owner element. For a main element (e.g. a Curtain Wall) or an element that is not part of a hierarchical element, Archicad returns the input element itself.
+- `hierarchicalElementType` (string ("MainElement", "ChildElement", "SingleElement"), required): The classification of the input element (not of its owner): MainElement is the main element of a hierarchical element (e.g. a Curtain Wall, Stair or Railing), ChildElement is a subelement of one (e.g. a frame or a tread), SingleElement is not part of a hierarchical element.
+
+### HotlinkProxyElementTable
+
+object
+- `proxyElements` (array of HotlinkProxyElement, required): The proxy elements of the instance, in no particular order.
+
+### LayoutSubsetSettings
+
+object
+- `name` (string, required)
+- `ownPrefix` (string, required)
+- `customNumber` (string, required)
+- `numberingStyle` (string ("Undefined", "abc", "ABC", "1", "01", "001", "0001", "noID"), required)
+- `startAt` (integer, required)
+- `continueNumbering` (boolean, required)
+- `useUpperPrefix` (boolean, required)
+- `includeToIDSequence` (boolean, required)
+- `customNumbering` (boolean, required)
+- `addOwnPrefix` (boolean, required)
+
+### CreatedDatabase
+
+object
+- `databaseId` (DatabaseId, required)
+- `navigatorItemId` (NavigatorItemId): The Project Map item of the new database, for ChangeWindow or CreateDrawings. Missing when the item could not be found.
+
+### DrawingNumberingGridLine
+
+object
+- `begC` (Coordinate2D, required): The start point of the line, in layout coordinates.
+- `endC` (Coordinate2D, required): The end point of the line, in layout coordinates.
+- `penIndex` (integer, required): The index of the pen of the line.
+- `lineTypeIndex` (integer, required): The index of the line type of the line.
+
+### Document3DPlanConnection
+
+string ("Online", "Offline", "Drawing"): The connection of the 3D Document to the model.
+
+### Document3DBoundaryDisplay
+
+string ("UncutContours", "NoContours", "OverrideContours"): How the boundary contours are displayed.
+
+### Document3DAttributeOptions
+
+object: The uniform attribute options (cut and uncut surfaces, shading, hidden edges).
+- `shouldUseUniformCutAttributes` (boolean): Use uniform attributes on the cut surfaces.
+- `uniformLineType` (integer): The index of the uniform line type of the cut surfaces.
+- `uniformFillPen` (integer): The uniform fill pen of the cut surfaces.
+- `uniformFillBkgPen` (integer): The uniform fill background pen of the cut surfaces.
+- `shouldUseUncutSurfaceFill` (boolean): Fill the uncut surfaces.
+- `uncutSurfaceBkgPen` (integer): The background pen of the uncut surfaces.
+- `shouldUseElemPen` (boolean): Use a uniform pen for the element contours.
+- `elemPen` (integer): The uniform pen of the element contours.
+- `shadFillPen` (integer): The pen of the shadow fill.
+- `shadFill` (integer): The index of the shadow fill.
+- `shadFillBkgPen` (integer): The background pen of the shadow fill.
+- `shadContPen` (integer): The pen of the shadow contours.
+- `hiddenEdgeLineType` (integer): The index of the line type of the hidden edges.
+- `hiddenEdgeLinePen` (integer): The pen of the hidden edges.
+
+### DrawingPrimitive
+
+object
+- `type` (string ("Point", "Line", "Arc", "Text", "PLine", "Tri", "Poly", "Pict", "Ctrl_Beg", "Ctrl_HatchBorderBeg", "Ctrl_HatchBorderEnd", "Ctrl_HatchLinesBeg", ...), required): The API_PrimTypeID name without its API_Prim prefix and ID suffix.
+- `layer` (AttributeIdArrayItem): The layer of the element.
+- `pen` (integer, required): The pen index of the primitive.
+- `drwIndex` (integer, required)
+- `renovationStatus` (string ("Undefined", "Existing", "New", "Demolished"), required)
+- `lineType` (AttributeIdArrayItem): Line, Arc, PLine, Tri and Poly: the line type.
+- `determination` (integer): How the type of the line or fill is determined (origin, inner line, contour line).
+- `penWeight` (number)
+- `solid` (boolean)
+- `loc` (Coordinate2D): Point: the location. Text: the left baseline position.
+- `c1` (Coordinate2D)
+- `c2` (Coordinate2D)
+- `whole` (boolean)
+- `reflected` (boolean): The arc goes clockwise.
+- `orig` (Coordinate2D)
+- `r` (number)
+- `begAng` (number)
+- `endAng` (number)
+- `angle` (number)
+- `ratio` (number)
+- `font` (integer)
+- `faceBits` (integer)
+- `effectBits` (integer)
+- `anchor` (string)
+- `just` (string)
+- `heightMM` (number)
+- `widthMM` (number)
+- `widthFactor` (number)
+- `charSpaceFactor` (number)
+- `drawSegmentMode` (integer)
+- `nCoords` (integer)
+- `nSubPolys` (integer)
+- `nArcs` (integer): The number of curved segments. Their geometry is not returned.
+- `useRgb` (boolean)
+- `fillPen` (integer)
+- `rgbColor` (object)
+  - `red` (number, required)
+  - `green` (number, required)
+  - `blue` (number, required)
+- `coordinates` (array of Coordinate2D): Tri: the three corners.
+- `polygons` (array of object): Poly: the sub polygons, the first one is the outline, the others are holes.
+  - `coordinates` (array of Coordinate2D, required)
+- `rotAngle` (number)
+- `destBox` (object): Pict: the bounding box of the picture.
+  - `xMin` (number, required)
+  - `yMin` (number, required)
+  - `xMax` (number, required)
+  - `yMax` (number, required)
+- `hatchBorder` (object): Ctrl_HatchBorderBeg: the fill that follows.
+  - `doFrame` (boolean, required)
+  - `fill` (AttributeIdArrayItem)
+  - `fillPen` (integer, required)
+  - `fillbkgPen` (integer, required)
+  - `determination` (integer, required)
+- `referencedElement` (object): Ctrl_ElementRef: the element the item refers to. The drawing of a Wall ends with one such item for each Window and Door in it.
+  - `elementId` (ElementId, required)
+  - `type` (ElementType, required)
+  - `drwIndex` (integer, required): The drawing order index of the referenced element.
+
+### ElementDrawingPrimitives
+
+object
+- `primitives` (array of DrawingPrimitive, required): The primitives in the order Archicad draws them. The Ctrl_* items mark the beginning and the end of sub-parts (hatch borders, hatch lines, texts, curtain wall panels, ...).
+
+### NavigatorParentItem
+
+object
+- `navigatorItemId` (NavigatorItemId, required)
+- `type` (NavigatorItemType, required)
+- `name` (string, required): The name of the parent navigator item.
+
+### NoteAutoTextKeyword
+
+object
+- `keyword` (string, required): The keyword of the note autotext.
+
+### ProjectDataValue
+
+object
+- `name` (string, required): The name of the project data.
+- `content` (string, required): The content of the project data.
+
+### AttributePropertyIds
+
+object
+- `propertyIds` (PropertyIds, required)
+
+### ElementReservationStatus
+
+object
+- `status` (ElementReservationState, required)
+- `reservedBy` (User): The user who has reserved the element. Left out when the element is free.
+- `owner` (User): The Teamwork owner of the element. In Teamwork the owner is the user who has reserved the element, so this is the same user as reservedBy; kept for compatibility. Left out when the element is free.
+
+### ElementSurfaceQuantities
+
+object
+- `surfaces` (array of ElementSurfaceQuantity, required): The surfaces of the element as Archicad reports them: one item per surface attribute and building material pair of the element, so an element has as many items as it has distinct pairs (a basic wall with three different surfaces reports three items). Empty when Archicad reports no surface for the element, for example for an element without a 3D model.
+
+### ZoneReductions
+
+object
+- `reductions` (array of ZoneReduction, required): The reduction polygons of the Zone, as its Zone Stamp's area calculation uses them: the parts of the Zone polygon covered by Walls, Columns and reducing Fills, and the parts under a low ceiling (for example under a sloping Roof), each with the percentage it is reduced by and its area. Empty when nothing reduces the Zone's area.
+
+### TextMeasurement
+
+object
+- `length` (number, required): The length of the longest line.
+- `longestLineIndex` (integer, required): The zero-based index of the longest line (the first of them on a tie).
+- `lineLengths` (array of number, required): The length of every line, in order. An empty line is 0.
+- `capitalSizeFactor` (number): The ratio of the font's capital size to its typographic size. Absent when Archicad does not return it for the font.
+
+### RegularizedPolygons
+
+object
+- `polygons` (array of RegularizedPolygon, required): The valid polygons Archicad made of the input: none, one or more.
+
+### RegularizedPolyline
+
+object
+- `coordinates` (array of Coordinate2D, required): The 2D coordinates of the regularized polyline. Empty when nothing valid is left of it.
+- `arcs` (array of PolyArc, required): The arcs of the regularized polyline.
+- `ancestry` (PolylineAncestry): Only with withAncestry.
+
+### StairBaselineSolution
+
+object
+- `solution` (StairBaselineSolutionState, required)
+- `baseLinePoints` (array of Coordinate2D, required): The baseline polyline after the solver ran.
+- `baseLineArcs` (array of PolyArc): The arcs of the baseline after the solver ran, indexing baseLinePoints. Present only when the baseline has arcs.
+- `totalHeight` (number, required): Total height of the stair after the solver ran.
+- `flightWidth` (number, required): Width of the stair flight after the solver ran.
+- `stepNum` (integer, required): Number of risers after the solver ran.
+- `riserHeight` (number, required): Height of each riser after the solver ran.
+- `treadDepth` (number, required): Depth (going) of each tread after the solver ran.
+
+### ElementTriangulation
+
+object
+- `triangles` (array of object, required): The triangles covering the polygon of the element, holes excluded, as Archicad triangulates it.
+  - `vertices` (array of Coordinate2D, required): The 2D coordinates of the three vertices of the triangle.
+
+### ProjectAttributesByType
+
+object
+- `attributeType` (AttributeType, required)
+- `attributes` (AttributeHeaders, required)
+
+### ElementLinkDetails
+
+object
+- `elementId` (ElementId, required): The element the link points to.
+- `flags` (integer, required): The flags stored on the link by LinkElements.
+
+### ElementCategoryValueDetails
+
+object
+- `categoryValueId` (ElementCategoryValueId, required)
+- `name` (string, required): The localized name of the value, for display only.
+- `isVisibleOnUI` (boolean, required): The value is offered in the settings dialogs of Archicad.
+- `usableAsCriteria` (boolean, required): The value can be used as a criterion, for example in Find & Select and in Graphic Override rules.
+
+### ElementCategoryValue
+
+object
+- `type` (ElementCategoryType, required)
+- `categoryId` (ElementCategoryId, required)
+- `categoryValueId` (ElementCategoryValueId, required)
+- `name` (string, required): The localized name of the value, for display only.
+
+### FavoriteSubelement
+
+object
+- `subType` (FavoriteSubelementType, required)
+- `elementType` (ElementType, required)
+- `libPart` (LibPartDetails): The library part of the sub-element. Absent when it has none or it could not be read.
+- `parameters` (array of StoredGDLParameter, required): The GDL parameters of the sub-element.
+
+### HotlinkProxyElement
+
+object
+- `proxyElementId` (ElementId, required): The proxy element in the current project.
+- `sourceElementId` (ElementId, required): The element in the hotlink's source file the proxy was made from.
+
+### ElementSurfaceQuantity
+
+object
+- `surfaceId` (AttributeIdArrayItem): The surface (material) attribute of the surface. Left out when the surface is not a project attribute, for example one defined by a GDL script.
+- `buildingMaterialId` (AttributeIdArrayItem, required): The building material of the part of the element the surface belongs to.
+- `exposedArea` (number, required): The area of the surface that is not covered by any of the covering elements, in square meters.
+
+### ZoneReduction
+
+object
+- `type` (ZoneReductionType, required)
+- `percent` (number, required): The percentage by which the area of the polygon reduces the Zone area, as the DevKit reports it.
+- `area` (number, required): The area of the polygon in square meters.
+- `polygonOutline` (array of Coordinate2D, required): The 2D coordinates of the outline of the polygon in meters; the last coordinate repeats the first.
+- `polygonArcs` (array of PolyArc): The arcs of the outline, indices into polygonOutline. Absent when the outline has no arc.
+- `holes` (Holes2D, required)
+
+### PolygonRegularizationData
+
+object
+- `polygonCoordinates` (array of Coordinate2D, required): The 2D coordinates of the outline. A last coordinate equal to the first is ignored.
+- `polygonArcs` (array of PolyArc): Arcs of the outline.
+- `holes` (Holes2D)
+
+### PolylineRegularizationData
+
+object
+- `coordinates` (array of Coordinate2D, required): The 2D coordinates of the polyline.
+- `arcs` (array of PolyArc): The arcs of the polyline.
+
+### RegularizedPolygon
+
+object
+- `polygonCoordinates` (array of Coordinate2D, required): The 2D coordinates of the outline, without a closing coordinate.
+- `polygonArcs` (array of PolyArc): Arcs of the outline.
+- `holes` (Holes2D, required)
+- `ancestry` (PolygonAncestry): Only with withAncestry.
+
+### PolygonAncestry
+
+object: Read from the vertexAncestry and edgeAncestry of Archicad's API_RegularizedPoly; -1 marks a vertex or edge that Archicad created (for example at a self-intersection).
+- `contours` (array of PolygonContourAncestry, required): One item per contour of this result: the outline first, then the holes in order.
+
+### PolygonContourAncestry
+
+object
+- `vertices` (array of PolygonVertexAncestry, required): For each vertex of the contour, the input vertex it came from.
+- `edges` (array of PolygonEdgeAncestry, required): For each edge of the contour (edge i runs from vertex i to the next one), the input edge it came from.
+
+### PolygonVertexAncestry
+
+object: An input vertex or edge: the contour (0 is the outline, k the hole at index k-1 of the request) and the vertex or edge in it (edge i runs from vertex i to the next one). Both are -1 when Archicad created it.
+- `contourIndex` (integer, required)
+- `index` (integer, required)
+
+### PolygonEdgeAncestry
+
+object: An input vertex or edge: the contour (0 is the outline, k the hole at index k-1 of the request) and the vertex or edge in it (edge i runs from vertex i to the next one). Both are -1 when Archicad created it.
+- `contourIndex` (integer, required)
+- `index` (integer, required)
+
+### PolylineAncestry
+
+object: Read from the vertexAncestry and edgeAncestry of Archicad's API_RegularizedPoly; -1 marks a vertex or edge that Archicad created (for example at a self-intersection).
+- `vertices` (array of PolylineVertexAncestry, required): For each point of the result, the index of the input point it came from.
+- `edges` (array of PolylineEdgeAncestry, required): For each segment of the result (segment i runs from point i to point i+1), the index of the input segment it came from.
+
+### PolylineVertexAncestry
+
+object: An input point or segment by its index (segment i runs from point i to point i+1); -1 when Archicad created it.
+- `index` (integer, required)
+
+### PolylineEdgeAncestry
+
+object: An input point or segment by its index (segment i runs from point i to point i+1); -1 when Archicad created it.
+- `index` (integer, required)
+
+### ElementReservationState
+
+string ("Free", "Editable", "Locked"): Free: nobody has reserved the element. Editable: the current user has reserved it. Locked: another user has reserved it (see reservedBy).
+
+### ZoneReductionType
+
+string ("Rest", "Wall", "Column", "Hatch", "Gable", "Unknown"): What reduces the area in the polygon, as the DevKit's APIRoomReduction type of the polygon: Wall, Column, Hatch (a Fill set to reduce the Zone area), Gable (a low ceiling, for example the part under a sloping Roof below the low ceiling height), or Rest (the remaining polygon of the Zone). Unknown for a value this version of Tapir does not name.
+
+### StairBaselineSolutionState
+
+string ("Correct", "Solved", "NotSolved"): Correct: the baseline was already valid, nothing changed. Solved: the solver turned it into a valid baseline, returned in baseLinePoints. NotSolved: no valid baseline was found; CreateStairs is likely to fail or create an invalid stair with this input.
+
+### FavoriteSubelementType
+
+string ("MainMarker", "Other"): MainMarker for the main marker of the element; Other for any other kind of sub-element.
+
+### ProjectDataName
+
+string
+
+### AngleUnitFormat
+
+object
+- `unit` (AngleType, required)
+- `decimals` (integer, required): Number of decimals to display for angle values.
+- `accuracy` (integer, required): Accuracy for angle values.
+
+### CalculationUnitAreaFormat
+
+object
+- `unit` (AreaType, required)
+- `accuracy` (AccuracyType, required)
+- `decimals` (integer, required): Number of decimals to display for area values.
+
+### CalculationUnitVolumeFormat
+
+object
+- `unit` (VolumeType, required)
+- `accuracy` (AccuracyType, required)
+- `decimals` (integer, required): Number of decimals to display for volume values.
+
+### NameKind
+
+string ("Story", "Layer", "LayerCombination", "BuildingMaterial", "Composite", "Profile", "Surface", "Fill", "Line", "ZoneCategory", "ElementType", "Property", ...): The kind of an item of the project that ResolveNames looks a name up among: a story, an attribute of the given type, an element type (matched by its API name and, from Archicad 27, by the name the Archicad interface shows), a property (built-in or custom; matched by its name and by its group and name together), or a classification (a classification system, matched by its name and by its name and version together, or an item of any system at any depth, matched by its name, by its ID and by both together).
+
+### NameMatch
+
+object: An item of the project that a name matches, as ResolveNames returns it.
+- `kind` (NameKind, required)
+- `name` (string, required): The name of the item in the project. For an element type, the name the Archicad interface shows (from Archicad 27; the API name before). For a classification item, its name, or its ID when it has no name.
+- `match` (string ("exact", "normalized", "words", "contains", "similar"), required): How the name matches. exact: the same characters. normalized: the same except for case, accents, spacing and separators (FireRating, fire_rating, Fire Rating). words: every word of one is a word of the other, or at least half of their words are shared. contains: one contains the other. similar: a few characters differ.
+- `score` (number, required): How close the match is, from 0.6 to 1 (1 for exact and normalized matches).
+- `storyIndex` (integer): The index of the story (the floor index the commands take). Only for a story.
+- `level` (number): The level of the story, in meters. Only for a story.
+- `attributeId` (AttributeId)
+- `attributeIndex` (integer): The index of the attribute. Only for an attribute.
+- `elementType` (ElementType)
+- `propertyId` (PropertyId): The property, as GetPropertyValuesOfElements and SetPropertyValuesOfElements take it. Only for a property.
+- `propertyGroupId` (PropertyGroupId): The group of the property. Only for a property.
+- `propertyGroupName` (string): The name of the group of the property. Only for a property.
+- `propertyType` (string ("StaticBuiltIn", "DynamicBuiltIn", "Custom")): Whether the property is built in or custom. Only for a property.
+- `propertyCollectionType` (string ("Undefined", "Single", "List", "SingleChoiceEnumeration", "MultipleChoiceEnumeration")): Whether the property holds one value, a list, or one or more choices of a list of options. Only for a property.
+- `propertyValueType` (string ("Undefined", "Integer", "Real", "String", "Boolean", "Guid")): The type of the values of the property. Only for a property.
+- `propertyMeasureType` (string ("Undefined", "Default", "Length", "Area", "Volume", "Angle")): What a number value of the property measures. Only for a property; left out for the attribute index types of some built-in properties.
+- `propertyIsEditable` (boolean): Whether the value of the property can be set. Only for a property.
+- `availability` (ClassificationItemIds): The classification items the property is available for: an element has the property only when it is classified as one of them. Only for a custom property; built-in properties have no such list.
+- `classificationSystemId` (ClassificationSystemId): The classification system, or the system of the classification item. Only for a classification.
+- `classificationSystemName` (string): The name of the classification system. Only for a classification.
+- `classificationItemId` (ClassificationItemId): The classification item. Only for a classification item, not for a classification system.
+- `classificationItemCode` (string): The ID of the classification item, as Archicad shows it (for example Ss_25_10). Only for a classification item.
+
+### ElementHeaderFromOtherDatabase
+
+object: An element that is not in the current database but in another one (a layout, a section, a worksheet ...). Only the fields of its element header are returned: no id, details or floorPlanPolygons. Use GetContainingDatabases and ChangeWindow to open its database and read its full details.
+- `elementId` (ElementId)
+- `type` (ElementType)
+- `floorIndex` (number)
+- `layerIndex` (number)
+- `drawIndex` (number)
+- `hotlinkId` (ElementId): The hotlink instance this element belongs to. Present only for elements that came in through a placed hotlink.
+- `fromOtherDatabase` (boolean, required): Always true: the element is not in the current database.
+
+### ElementInfoString
+
+object
+- `elementId` (ElementId, required)
+- `infoString` (string, required): The new Element ID, as the Info Box shows it (GetDetailsOfElements returns it as id).
+
+### ElementLibraryPartTransformation
+
+object
+- `transformation` (object, required): The transformation chain of the library part instance: placement at location, rotation by angle, then scaling by xRatio and yRatio in the rotated coordinate system.
+  - `location` (Coordinate2D, required): The location of the referenced library part on the floor plan.
+  - `angle` (number, required): The rotation angle in radians.
+  - `xRatio` (number, required): The scaling along the rotated x axis.
+  - `yRatio` (number, required): The scaling along the rotated y axis.
+
+### ElementGeometry3D
+
+object
+- `bodies` (array of Body3D, required): The solid bodies of the element's 3D model, including those of its subelements for a Stair, Railing or Curtain Wall, and of its segments for a Column or Beam. Empty when the element has no solid 3D model (for example a 2D element, or one filtered out of the 3D view).
+
+### SkylightHolePolygon
+
+object
+- `polygonOutline` (array of Coordinate2D, required): The 2D coordinates of the outline of the hole, as Archicad returns them. The outline is closed implicitly (the first vertex is not repeated at the end); a curved edge is given by its end points only.
+- `holes` (Holes2D, required)
+
+### VisibleSkinStatus
+
+object
+- `hasVisibleSkin` (boolean, required): True when the element has at least one skin shown in the given Partial Structure Display mode.
+
+### ElementConvexPolygons
+
+object
+- `convexPolygons` (array of object, required): With convex: true, the convex polygons the faces of the element's 3D model are decomposed into, body by body and face by face. Empty (or an error item instead) when the element has no solid 3D model of its own (the bodies of a Stair, Railing or Curtain Wall, and of the segments of a Column or Beam, belong to their subelements, which can be given instead).
+  - `vertices` (array of Coordinate3D, required): The 3D world coordinates of the vertices of the convex polygon, in order.
+
+### Model3DCount
+
+object
+- `componentType` (string ("Body", "Pgon", "Pedg", "Edge", "Vert", "Vect", "Umat", "Lght"), required): The component type: the API_3DTypeID enumerator name without its API_ prefix and ID suffix.
+- `count` (integer, required): The number of components of this type.
+
+### ElementTextureCoordinates
+
+object
+- `bodies` (array of object or ErrorItem, required): The solid bodies of the element's own 3D model, in Archicad's order, or an error for a body without texture information. Empty (or an error item instead) when the element has no solid 3D model of its own (the bodies of a Stair, Railing or Curtain Wall, and of the segments of a Column or Beam, belong to their subelements, which can be given instead).
+
+### ElementQuantityDetails
+
+object
+- `type` (ElementType, required)
+- `quantities` (ElementQuantities, required)
+- `composites` (array of object, required): The quantities per building material, in the order Archicad reports them: one item for each skin of a composite or complex profile element, and a single item for a basic element. Empty for Zones and Morphs, for which Archicad reports no skins.
+  - `buildingMaterialId` (AttributeIdArrayItem, required)
+  - `volume` (number, required): Net volume of the skin.
+  - `projectedArea` (number, required): Projected area of the skin. Archicad reports 0 when the legacy intersection and surface calculation is turned on in the Project Preferences.
+  - `isCore` (boolean, required): The skin is marked as core.
+  - `isFinish` (boolean, required): The skin is marked as finish.
+  - `subElementId` (ElementId): The sub-element (for example a column or beam segment) the skin belongs to. Present only when Archicad attaches the skin to a sub-element.
+
+### CurtainWallAbsoluteBottom
+
+object
+- `absoluteBottom` (number, required): The absolute bottom level of the curtain wall or its subelement, as returned by ACAPI_CurtainWall_GetCWAbsoluteBottom.
+
+### TextContentChange
+
+object
+- `elementId` (ElementId, required): A Text element or a Label of the Text class.
+- `from` (integer, required): The position in the content where the replaced range starts.
+- `range` (integer, required): The number of characters to replace; 0 inserts the content at 'from'. The range may not reach over a line end into another paragraph.
+- `content` (string, required): The new content of the range; an empty string deletes the range. It must not contain line ends.
+
+### SectionElevationSettableDetails
+
+object: The settings of a Section or Elevation element (API_SectionSegment / API_CutPlaneType), apart from its name and reference ID. Shared by CreateSections, CreateElevations and SetSectionsAndElevationsDetails; all fields are optional. The name and the reference ID are the name and id fields of CreateSections and CreateElevations, and ModifySections changes them on existing elements.
+- `linePenIndex` (integer): Pen index of the section/elevation line.
+- `textPenIndex` (integer): Pen index of the marker text.
+- `lineTypeId` (AttributeId): Line type attribute of the section/elevation line.
+- `sectionLinePenIndex` (integer): Pen index used for cut contours (when useElementPens is false).
+- `sectionFillPenIndex` (integer): Pen index used for cut fills (when useElementPens is false).
+- `sectionFillBackgroundPenIndex` (integer): Background pen index of the cut fills (when useElementPens is false).
+- `horizontalRange` (string ("Infinite", "Limited", "ZeroDepth")): Horizontal range of the segment.
+- `verticalRange` (string ("Infinite", "Limited", "FitToZoneRange")): Vertical range of the segment. FitToZoneRange is for interior elevations only.
+- `verticalRangeStoryBaseNumber` (integer): The story vertMin/vertMax are relative to, when relativeToStory is true.
+- `relativeToStory` (boolean): Vertical limited range is relative to the home story (true) or absolute to project zero (false).
+- `verticalRangeMin` (number): Vertical limitation - minimum height.
+- `verticalRangeMax` (number): Vertical limitation - maximum height.
+- `markerSize` (number): Marker size.
+- `showMarkerAtBeginning` (boolean): Put marker on the beginning point.
+- `showMarkerAtEnd` (boolean): Put marker on the end point.
+- `useElementPens` (boolean): Use the pens defined in the cut elements instead of sectionLinePenIndex/sectionFillPenIndex/sectionFillBackgroundPenIndex.
+- `showLineAtBeginning` (boolean): Show line at the beginning point.
+- `showLineAtMiddle` (boolean): Show line at the middle point.
+- `showLineAtEnd` (boolean): Show line at the end point.
+- `textSize` (number): Text size [mm] of the marker text.
+- `fontIndex` (integer): Font index of the marker text.
+- `effectVectorHatch` (boolean): Create vectorial 3D hatching.
+- `effectVectorShadow` (boolean): Create vectorial Sun shadows.
+- `effectSunFrom3D` (boolean): Use the same Sun parameters as in the 3D window.
+- `shadowFillId` (AttributeId): Fill attribute of the shadow's fill.
+- `shadowFillPenIndex` (integer): Pen index of the shadow's fill.
+- `shadowFillBackgroundPenIndex` (integer): Background pen index of the shadow's fill.
+- `limitLineTypeId` (AttributeId): Line type attribute of the horizontal limit line.
+- `limitLinePenIndex` (integer): Pen index of the horizontal limit line.
+- `continuous` (boolean): Continuous line if true, otherwise segmented.
+- `sunAzimuth` (number): Custom sun azimuth relative to the cut plane.
+- `sunAltitude` (number): Custom sun altitude relative to the cut plane.
+- `useOneModelPen` (boolean): Use one pen for all elements in the Section/Elevation view (Model Effects).
+- `modelPenIndex` (integer): Foreground pen of model uncut surface fill.
+- `modelUncutSurfaceFillType` (string ("PenColor", "MaterialColorShaded", "MaterialColorNonShaded")): Method for displaying fills of uncut surfaces (Model Effects), effective if useUncutSurfaceFill is true.
+- `modelUncutSurfaceFillBackgroundPenIndex` (integer): Pencolor for uncut surface fills (Model Effects) if a uniform pencolor is selected.
+- `useUncutSurfaceFill` (boolean): Apply fills to uncut surfaces displayed in the Section/Elevation (Model Effects).
+- `transparent` (boolean): Set transparency of the Section/Elevation.
+- `markedDistantArea` (boolean): Mark distant area.
+- `useOneDistantAreaPen` (boolean): Use one pen for all elements in the distant area.
+- `distantAreaPenIndex` (integer): Pen index of elements in the distant area.
+- `distantAreaUncutSurfaceFillBackgroundPenIndex` (integer): Pencolor for uncut surface fills in the distant area if a uniform pencolor is selected.
+- `useUncutSurfaceFillInDistantArea` (boolean): Apply fills to uncut surfaces displayed in the distant area.
+- `storyHandleAppearance` (string ("None", "DisplayOnly", "All")): Options for displaying story lines on the Section/Elevation.
+- `storyHandleLineTypeId` (AttributeId): Line type attribute of the Story Level lines.
+- `storyHandleLinePenIndex` (integer): Pencolor index of the Story Level lines.
+- `storyHandleMarkerPenIndex` (integer): Pencolor index of the Story Handle Markers (when not overridden by storyHandleUseSymbolPens).
+- `storyHandleUseSymbolPens` (boolean): Use the Story Handle Marker object's own colors instead of storyHandleMarkerPenIndex.
+- `storyHandleLeftMarkerVisible` (boolean): Display the Story Handle Markers on the left side.
+- `storyHandleRightMarkerVisible` (boolean): Display the Story Handle Markers on the right side.
+- `storyHandleLineVisible` (boolean): Story handle line is on or off.
+- `storyHandleLeftMarkerOffset` (number): Offset of the Story Level line beyond the limits of the Section/Elevation, left side.
+- `storyHandleRightMarkerOffset` (number): Offset of the Story Level line beyond the limits of the Section/Elevation, right side.
+- `storyHandleMarkerFontIndex` (integer): Font index of the Story Handle Marker.
+- `storyHandleMarkerTextSize` (number): Text size [mm] of the Story Handle Marker.
+- `storyHandleMarkerSize` (number): Size [mm] of the Story Handle Marker.
+- `boundaryDisplayMode` (string ("UncutContours", "NoContours", "OverrideContours")): Boundary contour display mode.
+- `boundaryPenIndex` (integer): Boundary contour pen index.
+- `boundaryLineTypeId` (AttributeId): Line type attribute of the boundary contour.
+- `showOnStories` (string ("All", "OneStory", "InRange", "PartRange")): Which stories to show the cut plane on.
+- `storyToShowOn` (integer): Story index to show the cut plane on, if showOnStories is 'OneStory'.
+- `markerShowType` (string ("MiddleMarker", "WingMarkers")): Show side (wing) markers or a single middle marker.
+- `intendedPlanConnectivity` (string ("Online", "Offline", "Drawing")): Intended plan connectivity: whether the Section/Elevation is automatically rebuilt from the model (Online), rebuilt only on demand (Offline), or exploded into unlinked 2D drawing elements (Drawing).
+
+### SectionElevationDetails
+
+object: Full readable state of a Section or Elevation element: every field of SectionElevationSettableDetails, plus its name and reference ID and read-only/informational fields.
+- `name` (string): Name of the section/elevation, shown in the Project Map. ModifySections changes it.
+- `id` (string): The reference ID shown in the marker and in the Project Map. If it contains a '/' character, the text is split between the beginning and end marks. ModifySections changes it.
+- `linePenIndex` (integer): Pen index of the section/elevation line.
+- `textPenIndex` (integer): Pen index of the marker text.
+- `lineTypeId` (AttributeId): Line type attribute of the section/elevation line.
+- `sectionLinePenIndex` (integer): Pen index used for cut contours (when useElementPens is false).
+- `sectionFillPenIndex` (integer): Pen index used for cut fills (when useElementPens is false).
+- `sectionFillBackgroundPenIndex` (integer): Background pen index of the cut fills (when useElementPens is false).
+- `horizontalRange` (string ("Infinite", "Limited", "ZeroDepth")): Horizontal range of the segment.
+- `verticalRange` (string ("Infinite", "Limited", "FitToZoneRange")): Vertical range of the segment. FitToZoneRange is for interior elevations only.
+- `verticalRangeStoryBaseNumber` (integer): The story vertMin/vertMax are relative to, when relativeToStory is true.
+- `relativeToStory` (boolean): Vertical limited range is relative to the home story (true) or absolute to project zero (false).
+- `verticalRangeMin` (number): Vertical limitation - minimum height.
+- `verticalRangeMax` (number): Vertical limitation - maximum height.
+- `markerSize` (number): Marker size.
+- `showMarkerAtBeginning` (boolean): Put marker on the beginning point.
+- `showMarkerAtEnd` (boolean): Put marker on the end point.
+- `useElementPens` (boolean): Use the pens defined in the cut elements instead of sectionLinePenIndex/sectionFillPenIndex/sectionFillBackgroundPenIndex.
+- `showLineAtBeginning` (boolean): Show line at the beginning point.
+- `showLineAtMiddle` (boolean): Show line at the middle point.
+- `showLineAtEnd` (boolean): Show line at the end point.
+- `textSize` (number): Text size [mm] of the marker text.
+- `fontIndex` (integer): Font index of the marker text.
+- `effectVectorHatch` (boolean): Create vectorial 3D hatching.
+- `effectVectorShadow` (boolean): Create vectorial Sun shadows.
+- `effectSunFrom3D` (boolean): Use the same Sun parameters as in the 3D window.
+- `shadowFillId` (AttributeId): Fill attribute of the shadow's fill.
+- `shadowFillPenIndex` (integer): Pen index of the shadow's fill.
+- `shadowFillBackgroundPenIndex` (integer): Background pen index of the shadow's fill.
+- `limitLineTypeId` (AttributeId): Line type attribute of the horizontal limit line.
+- `limitLinePenIndex` (integer): Pen index of the horizontal limit line.
+- `continuous` (boolean): Continuous line if true, otherwise segmented.
+- `sunAzimuth` (number): Custom sun azimuth relative to the cut plane.
+- `sunAltitude` (number): Custom sun altitude relative to the cut plane.
+- `useOneModelPen` (boolean): Use one pen for all elements in the Section/Elevation view (Model Effects).
+- `modelPenIndex` (integer): Foreground pen of model uncut surface fill.
+- `modelUncutSurfaceFillType` (string ("PenColor", "MaterialColorShaded", "MaterialColorNonShaded")): Method for displaying fills of uncut surfaces (Model Effects), effective if useUncutSurfaceFill is true.
+- `modelUncutSurfaceFillBackgroundPenIndex` (integer): Pencolor for uncut surface fills (Model Effects) if a uniform pencolor is selected.
+- `useUncutSurfaceFill` (boolean): Apply fills to uncut surfaces displayed in the Section/Elevation (Model Effects).
+- `transparent` (boolean): Set transparency of the Section/Elevation.
+- `markedDistantArea` (boolean): Mark distant area.
+- `useOneDistantAreaPen` (boolean): Use one pen for all elements in the distant area.
+- `distantAreaPenIndex` (integer): Pen index of elements in the distant area.
+- `distantAreaUncutSurfaceFillBackgroundPenIndex` (integer): Pencolor for uncut surface fills in the distant area if a uniform pencolor is selected.
+- `useUncutSurfaceFillInDistantArea` (boolean): Apply fills to uncut surfaces displayed in the distant area.
+- `storyHandleAppearance` (string ("None", "DisplayOnly", "All")): Options for displaying story lines on the Section/Elevation.
+- `storyHandleLineTypeId` (AttributeId): Line type attribute of the Story Level lines.
+- `storyHandleLinePenIndex` (integer): Pencolor index of the Story Level lines.
+- `storyHandleMarkerPenIndex` (integer): Pencolor index of the Story Handle Markers (when not overridden by storyHandleUseSymbolPens).
+- `storyHandleUseSymbolPens` (boolean): Use the Story Handle Marker object's own colors instead of storyHandleMarkerPenIndex.
+- `storyHandleLeftMarkerVisible` (boolean): Display the Story Handle Markers on the left side.
+- `storyHandleRightMarkerVisible` (boolean): Display the Story Handle Markers on the right side.
+- `storyHandleLineVisible` (boolean): Story handle line is on or off.
+- `storyHandleLeftMarkerOffset` (number): Offset of the Story Level line beyond the limits of the Section/Elevation, left side.
+- `storyHandleRightMarkerOffset` (number): Offset of the Story Level line beyond the limits of the Section/Elevation, right side.
+- `storyHandleMarkerFontIndex` (integer): Font index of the Story Handle Marker.
+- `storyHandleMarkerTextSize` (number): Text size [mm] of the Story Handle Marker.
+- `storyHandleMarkerSize` (number): Size [mm] of the Story Handle Marker.
+- `boundaryDisplayMode` (string ("UncutContours", "NoContours", "OverrideContours")): Boundary contour display mode.
+- `boundaryPenIndex` (integer): Boundary contour pen index.
+- `boundaryLineTypeId` (AttributeId): Line type attribute of the boundary contour.
+- `showOnStories` (string ("All", "OneStory", "InRange", "PartRange")): Which stories to show the cut plane on.
+- `storyToShowOn` (integer): Story index to show the cut plane on, if showOnStories is 'OneStory'.
+- `markerShowType` (string ("MiddleMarker", "WingMarkers")): Show side (wing) markers or a single middle marker.
+- `intendedPlanConnectivity` (string ("Online", "Offline", "Drawing")): Intended plan connectivity: whether the Section/Elevation is automatically rebuilt from the model (Online), rebuilt only on demand (Offline), or exploded into unlinked 2D drawing elements (Drawing).
+- `distantAreaShadowFillId` (AttributeId): Read-only: fill attribute for shadow polygons in the distant area. Confirmed live on Archicad 27: this always mirrors shadowFillId and cannot be set independently through the API (ACAPI_Element_CreateExt/ACAPI_Element_Change silently ignore an explicit value here and copy it from shadowFillId instead).
+- `distantAreaShadowFillPenIndex` (integer): Read-only: fill pen index for shadow polygons in the distant area. Confirmed live on Archicad 27: always mirrors shadowFillPenIndex, cannot be set independently (see distantAreaShadowFillId).
+- `distantAreaShadowFillBackgroundPenIndex` (integer): Read-only: fill background pen index for shadow polygons in the distant area. Confirmed live on Archicad 27: always mirrors shadowFillBackgroundPenIndex, cannot be set independently (see distantAreaShadowFillId).
+- `distantAreaUncutSurfaceFillType` (string ("PenColor", "MaterialColorShaded", "MaterialColorNonShaded")): Read-only: method for displaying fills of uncut surfaces in the distant area. Confirmed live on Archicad 27: cannot be set independently through the API, always reads back as PenColor regardless of the value written (see distantAreaShadowFillId).
+- `currentPlanConnectivity` (string ("Online", "Offline", "Drawing")): Read-only: current plan connectivity state of the open Section/Elevation window.
+- `isWindowOpened` (boolean): Read-only: whether the Section/Elevation window is currently opened.
+- `isActive` (boolean): Read-only: whether the segment is turned off or active.
+- `isSourceMarker` (boolean): Read-only: whether this segment is a source marker.
+- `isInDrawingMode` (boolean): Read-only: whether the section is in drawing mode.
+- `beginMarkerElementId` (ElementIdArrayItem): Read-only: the Section Marker object at the starting point of the section line.
+- `middleMarkerElementId` (ElementIdArrayItem): Read-only: the Section Marker object at the center point of the section line.
+- `endMarkerElementId` (ElementIdArrayItem): Read-only: the Section Marker object at the end point of the section line.
+
+### SectionElevationDetailsOrError
+
+SectionElevationDetails or ErrorItem
