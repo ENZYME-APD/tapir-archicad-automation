@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 19:29 UTC",
+ "generatedAt": "2026-11-09 19:58 UTC",
  "versions": [
   25,
   26,
@@ -5764,6 +5764,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2550,
+     "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
+    },
+    {
      "number": 2546,
      "title": "[1/2] Add ModifyCurtainWallPanels: assign panel classes to curtain wall panels"
     },
@@ -6744,6 +6748,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2550,
+     "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
+    },
+    {
      "number": 2546,
      "title": "[1/2] Add ModifyCurtainWallPanels: assign panel classes to curtain wall panels"
     },
@@ -7291,6 +7299,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2550,
+     "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
+    },
+    {
+     "number": 2549,
+     "title": "[3/3] Read and write the floor plan display settings of columns"
+    },
     {
      "number": 2547,
      "title": "[2/3] Beams: read and write the floor plan display settings"
@@ -7861,6 +7877,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2550,
+     "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
+    },
     {
      "number": 2546,
      "title": "[1/2] Add ModifyCurtainWallPanels: assign panel classes to curtain wall panels"
@@ -25452,6 +25472,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2550,
+     "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
+    },
+    {
+     "number": 2549,
+     "title": "[3/3] Read and write the floor plan display settings of columns"
+    },
+    {
      "number": 2547,
      "title": "[2/3] Beams: read and write the floor plan display settings"
     },
@@ -31114,6 +31142,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2550,
+     "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
+    },
+    {
+     "number": 2549,
+     "title": "[3/3] Read and write the floor plan display settings of columns"
+    },
+    {
      "number": 2547,
      "title": "[2/3] Beams: read and write the floor plan display settings"
     },
@@ -31132,10 +31168,6 @@
     {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
-    },
-    {
-     "number": 2455,
-     "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
     {
      "number": 2452,
@@ -37573,6 +37605,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2550,
+     "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
+    },
+    {
+     "number": 2549,
+     "title": "[3/3] Read and write the floor plan display settings of columns"
+    },
     {
      "number": 2547,
      "title": "[2/3] Beams: read and write the floor plan display settings"
@@ -44277,6 +44317,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2550,
+     "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
+    },
+    {
+     "number": 2549,
+     "title": "[3/3] Read and write the floor plan display settings of columns"
+    },
+    {
      "number": 2547,
      "title": "[2/3] Beams: read and write the floor plan display settings"
     },
@@ -44295,10 +44343,6 @@
     {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
-    },
-    {
-     "number": 2455,
-     "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
     {
      "number": 2452,
@@ -47396,6 +47440,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2550,
+     "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
+    },
+    {
+     "number": 2549,
+     "title": "[3/3] Read and write the floor plan display settings of columns"
+    },
+    {
      "number": 2547,
      "title": "[2/3] Beams: read and write the floor plan display settings"
     },
@@ -47414,10 +47466,6 @@
     {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
-    },
-    {
-     "number": 2455,
-     "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
     {
      "number": 2452,
@@ -53909,6 +53957,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2550,
+     "title": "[2/2] Add ModifyCurtainWallClasses: edit curtain wall frame and panel class defaults"
+    },
     {
      "number": 2546,
      "title": "[1/2] Add ModifyCurtainWallPanels: assign panel classes to curtain wall panels"
