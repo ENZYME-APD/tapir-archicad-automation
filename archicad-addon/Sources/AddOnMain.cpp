@@ -973,7 +973,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ScaleElementsCommand> (
             elementCommands, "2.0.0",
-            "Scales elements on the floor plan or in the current 2D view by a factor around a center point with Archicad's Resize edit, in one undo step. Resize scales X and Y by the same ratio, so factorY, if given, must equal factor. Supported types: Wall, Column, Beam, Slab, Roof, Mesh, Zone, Line, PolyLine, Arc, Circle, Spline, Hatch and Hotspot. An element of another type (library parts such as objects, lamps, doors and windows, stairs, railings, curtain walls, shells, morphs, texts, subelements, dimensions, labels, ...) or one that cannot be edited gets a failed execution result naming the reason, and the other elements are still scaled."
+            "Scales elements on the floor plan or in the current 2D view by a factor around a center point with Archicad's Resize edit, in one undo step. Resize scales X and Y by the same ratio, so factorY, if given, must equal factor. Elevations are kept: a beam, whose absolute elevation Resize would scale too, gets its story and level back after the resize. Supported types: Wall, Column, Beam, Slab, Roof, Mesh, Zone, Line, PolyLine, Arc, Circle, Spline, Hatch and Hotspot. An element of another type (library parts such as objects, lamps, doors and windows, stairs, railings, curtain walls, shells, morphs, texts, subelements, dimensions, labels, ...) or one that cannot be edited gets a failed execution result naming the reason, and the other elements are still scaled."
         );
         err |= RegisterCommand<DeleteElementsCommand> (
             elementCommands, "1.2.1",
