@@ -36,6 +36,8 @@
         'Entfernen Sie den Trimm mit <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a>, das beide Richtungen entfernt, und trimmen Sie die andere Richtung danach erneut mit <a href="../archicad-addon/#TrimElements">TrimElements</a>.',
     'Read which slab or stair edge a railing is linked to, or link a railing to one':
         'Auslesen, mit welcher Decken- oder Treppenkante ein Geländer verknüpft ist, oder ein Geländer mit einer verknüpfen',
+    'Turn off the automatic story visibility of a railing, so the stories it is shown on can be set':
+        'Die automatische Geschosssichtbarkeit eines Geländers ausschalten, damit sich die Geschosse festlegen lassen, auf denen es gezeigt wird',
     'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
         'Lesen Sie den Umriss der Decke mit <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> aus und erstellen Sie mit <a href="../archicad-addon/#CreateRailings">CreateRailings</a> ein statisches Geländer entlang der Kante. Wenn sich die Decke ändert, löschen Sie das Geländer und erstellen Sie es neu.',
 
