@@ -1,6 +1,6 @@
 {
   "title": "GetDetailsOfElements reads a shell's contour and holes, ModifyShells replaces them and keeps the shell (#2431)",
-  "minTapir": "1.8.1",
+  "minTapir": "2.0.1",
   "requiresEmpty": [ "Shell" ],
   "steps": [
     {
