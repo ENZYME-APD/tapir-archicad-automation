@@ -3,7 +3,8 @@
 A command's input schema and response schema must each be only a reference to a definition
 in archicad-addon/Sources/RFIX/Images/CommonSchemaDefinitions.json, {"$ref": "#/<Name>"}
 (by convention <Command>Parameters and <Command>Response), or the command takes no input.
-Every $ref must name a definition that exists.
+Every $ref must name a definition that exists, and a command whose schemas use $ref must be a
+CommonSchema::Used one: a CommonSchema::NotUsed command gets no definitions in Archicad.
 
 The schemas that are still written inline are listed in tools/inline_schemas_baseline.json,
 which only shrinks: a command that is not in it must not have an inline schema, and a listed
@@ -17,13 +18,31 @@ python tools/generate_addon_docs.py first (the add-on build check does). Standar
 """
 
 import argparse
+import glob
 import json
 import os
+import re
 import sys
 
 ROOT = os.path.dirname (os.path.dirname (os.path.abspath (__file__)))
 DOCS_DIR = os.path.join (ROOT, 'docs', 'archicad-addon')
 BASELINE = os.path.join (ROOT, 'tools', 'inline_schemas_baseline.json')
+SOURCES = os.path.join (ROOT, 'archicad-addon', 'Sources')
+NOT_USED = re.compile (r'(\w+)::\1 \(\)\s*:\s*CommandBase \(CommonSchema::NotUsed\)')
+SCHEMA_FUNCTION = r'{}::(GetInputParametersSchema|GetResponseSchema|GetRawResponseSchema) \(\) const\s*\{{(.*?)\n\}}'
+
+
+def NotUsedWithReferences ():
+    """'<Class> <function>' of CommonSchema::NotUsed commands whose schema has a $ref."""
+    found = []
+    for path in sorted (glob.glob (os.path.join (SOURCES, '*.cpp'))):
+        with open (path, encoding='utf-8', errors='replace') as file:
+            text = file.read ()
+        for cls in NOT_USED.findall (text):
+            for function, body in re.findall (SCHEMA_FUNCTION.format (re.escape (cls)), text, re.S):
+                if '"$ref"' in body:
+                    found.append ('{} {}'.format (cls, function))
+    return found
 
 
 def ReadJsVariable (path):
@@ -74,16 +93,21 @@ def main ():
     args = parser.parse_args ()
 
     inline, unresolved = Inspect ()
+    notUsed = NotUsedWithReferences ()
     if args.write_baseline:
         with open (BASELINE, 'w', encoding='utf-8', newline='\n') as file:
-            json.dump ({'_comment': 'Command schemas still written inline; only ever remove lines (tools/check_schemas.py).',
-                        'inline': inline}, file, indent=1)
+            json.dump ({'_comment': 'Command schemas still written inline, and CommonSchema::NotUsed commands whose'
+                                    ' schemas have a $ref; only ever remove lines (tools/check_schemas.py).',
+                        'inline': inline, 'notUsedWithReferences': notUsed}, file, indent=1)
             file.write ('\n')
-        print ('{} inline schemas written to {}'.format (len (inline), os.path.relpath (BASELINE, ROOT)))
+        print ('{} inline schemas and {} NotUsed schemas with a $ref written to {}'.format (
+            len (inline), len (notUsed), os.path.relpath (BASELINE, ROOT)))
         return 0
 
     with open (BASELINE, encoding='utf-8') as file:
-        baseline = set (json.load (file)['inline'])
+        baselineFile = json.load (file)
+    baseline = set (baselineFile['inline'])
+    notUsedBaseline = set (baselineFile.get ('notUsedWithReferences', []))
     new = [entry for entry in inline if entry not in baseline]
     done = sorted (baseline - set (inline))
     problems = 0
@@ -97,10 +121,19 @@ def main ():
     for entry in unresolved:
         print ('unresolved $ref: ' + entry)
         problems += 1
+    for entry in notUsed:
+        if entry not in notUsedBaseline:
+            print ('$ref in a CommonSchema::NotUsed command: {} - make it CommonSchema::Used, or the $ref does'
+                   ' not resolve in Archicad'.format (entry))
+            problems += 1
+    for entry in sorted (notUsedBaseline - set (notUsed)):
+        print ('fixed: {} - remove it from notUsedWithReferences in tools/inline_schemas_baseline.json'.format (entry))
+        problems += 1
     if problems:
         print ('{} problem(s).'.format (problems))
         return 1
-    print ('Every command schema is a named definition, apart from the {} listed in the baseline.'.format (len (inline)))
+    print ('Every command schema is a named definition, apart from the {} listed in the baseline'
+           ' ({} NotUsed schemas with a $ref listed too).'.format (len (inline), len (notUsed)))
     return 0
 
 

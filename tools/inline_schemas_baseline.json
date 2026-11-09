@@ -1,5 +1,5 @@
 {
- "_comment": "Command schemas still written inline; only ever remove lines (tools/check_schemas.py).",
+ "_comment": "Command schemas still written inline, and CommonSchema::NotUsed commands whose schemas have a $ref; only ever remove lines (tools/check_schemas.py).",
  "inline": [
   "ActivateDesignOptionsInCombinations input",
   "ActivateDesignOptionsInCombinations response",
@@ -1355,5 +1355,33 @@
   "UploadLibrariesToBIMcloud input",
   "UploadLibrariesToBIMcloud response",
   "ZoomToElements input"
+ ],
+ "notUsedWithReferences": [
+  "QuitArchicadCommand GetRawResponseSchema",
+  "SetCurrentWindowDrawingScaleCommand GetRawResponseSchema",
+  "CloneProjectMapItemToViewMapCommand GetInputParametersSchema",
+  "CloneProjectMapItemToViewMapCommand GetRawResponseSchema",
+  "CreateViewsInViewMapCommand GetInputParametersSchema",
+  "CreateViewsInViewMapCommand GetRawResponseSchema",
+  "CreateViewMapFolderCommand GetInputParametersSchema",
+  "CreateViewMapFolderCommand GetRawResponseSchema",
+  "AddElementNotificationClientCommand GetInputParametersSchema",
+  "AddElementNotificationClientCommand GetRawResponseSchema",
+  "RemoveElementNotificationClientCommand GetRawResponseSchema",
+  "GetProjectInfoFieldsCommand GetRawResponseSchema",
+  "GetStoriesCommand GetRawResponseSchema",
+  "SetStoriesCommand GetInputParametersSchema",
+  "SetStoriesCommand GetRawResponseSchema",
+  "NewProjectCommand GetRawResponseSchema",
+  "CloseProjectCommand GetRawResponseSchema",
+  "SaveProjectCommand GetRawResponseSchema",
+  "TeamworkSendCommand GetRawResponseSchema",
+  "TeamworkReceiveCommand GetRawResponseSchema",
+  "ReleaseElementsCommand GetInputParametersSchema",
+  "ReleaseElementsCommand GetRawResponseSchema",
+  "GrantElementsCommand GetInputParametersSchema",
+  "GrantElementsCommand GetRawResponseSchema",
+  "ReleaseLockableObjectSetCommand GetRawResponseSchema",
+  "ReleaseHotlinkCacheManagementCommand GetRawResponseSchema"
  ]
 }

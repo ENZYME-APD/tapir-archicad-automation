@@ -33,7 +33,9 @@ Spec format (JSON list, or {"commands": [...]}), one object per command:
     "description": "Creates level dimensions. Available from Archicad 30.",
     "requires": 30,                        optional: Archicad version guard (ServerMainVers_3000)
     "undoable": true,                      optional: default true unless the name starts with Get
-    "commonSchema": true,                  optional: CommonSchema::Used (default) or NotUsed
+    "commonSchema": true,                  optional, and only true: the command's schemas are
+                                           definitions in CommonSchemaDefinitions.json, which a
+                                           CommonSchema::NotUsed command cannot refer to
     "version": "1.7.3",                    optional: defaults to tools/package_info.json
     "example": true,                       optional: write Examples/<GroupFolder>/<CommandName>.py (default true)
     "check": true,                         optional: write Test/checks/<snake_case>.json (default true)
@@ -653,6 +655,10 @@ def validate (cmd, i):
         raise SpecError (f'{cmd["name"]}: the name must be CamelCase')
     if not re.fullmatch (r'[A-Za-z0-9]+', cmd['file']):
         raise SpecError (f'{cmd["name"]}: "file" is a Sources file name without extension, e.g. MEPCommands')
+    if cmd.get ('commonSchema', True) is not True:
+        # Its schemas are <Name>Parameters/<Name>Response definitions (CLAUDE.md, Schemas), and a
+        # CommonSchema::NotUsed command gets no definitions in Archicad, so its $refs would not resolve.
+        raise SpecError (f'{cmd["name"]}: "commonSchema": false is not possible, the schemas are common definitions')
 
 
 def load_spec (path):

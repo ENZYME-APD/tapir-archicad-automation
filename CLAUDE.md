@@ -121,6 +121,9 @@ sandbox/                 Experiments / scratch
     when it takes no input) and its `GetResponseSchema`/`GetRawResponseSchema` only
     `{"$ref": "#/<Command>Response"}` (or a shared definition such as `ExecutionResult`). The command's
     own input and response objects are those two definitions, so every command has named client types.
+    Such a command is a `CommandBase (CommonSchema::Used)` one: a `CommonSchema::NotUsed` command gets no
+    definitions in Archicad, so its `$ref`s would not resolve, and moving the schemas of one switches it
+    to `Used`.
   - Inside a definition, an object that more than one command or definition uses, or that describes an
     element, attribute, view or other Archicad item (its details, settings, a geometry, a status), is a
     definition of its own, referred to with `$ref`, never an inline copy, so copies can't drift apart.
