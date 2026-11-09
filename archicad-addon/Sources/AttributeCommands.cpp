@@ -5,6 +5,7 @@
 #include "GSUnID.hpp"
 #include "ProfileVectorImage.hpp"
 #include "ProfileAdditionalInfo.hpp"
+#include "ProfileVectorImageOperations.hpp"
 #include "VectorImageIterator.hpp"
 #include "FileSystem.hpp"
 #include "UserDataPairs.hpp"
@@ -3547,6 +3548,118 @@ static GS::Optional<double> GetProfileModifierValue (const ProfileVectorImage& p
     return GS::NoValue;
 }
 
+// Opening reference lines of a profile (Profile Editor, "Opening Reference"): the lines on the profile image's
+// dedicated opening reference layer. Doors and windows in a wall with this profile are placed by them instead
+// of by the profile's bounding box.
+static bool IsProfileOpeningReferenceLine (const Sy_LinType& line)
+{
+    return line.sy_fragmentIdx == ProfileVectorImageOperations::GetDedicatedOpeningReferenceLineLayer ();
+}
+
+static GS::Array<Sy_LinType> GetProfileLines (const ProfileVectorImage& pvi)
+{
+    GS::Array<Sy_LinType> lines;
+    for (ConstVectorImageIterator it (pvi.GetVectorImage ()); !it.IsEOI (); ++it) {
+        if (it->item_Typ == SyLine) {
+            const Sy_LinType* line = it;
+            lines.Push (*line);
+        }
+    }
+    return lines;
+}
+
+static GS::Optional<Sy_LinType> GetFirstProfileOpeningReferenceLine (const ProfileVectorImage& pvi)
+{
+    for (const Sy_LinType& line : GetProfileLines (pvi)) {
+        if (IsProfileOpeningReferenceLine (line)) {
+            return line;
+        }
+    }
+    return GS::NoValue;
+}
+
+struct ProfileLineSegment {
+    Coord begC;
+    Coord endC;
+};
+
+// Reads CreateProfiles' openingReferenceLines. Returns false (with the reason) for a line without both ends or
+// of zero length, so nothing of the profile is changed for a wrong input.
+static bool GetProfileOpeningReferenceLineSegments (const GS::Array<GS::ObjectState>& linesOS, GS::Array<ProfileLineSegment>& outSegments, GS::UniString& error)
+{
+    for (UIndex i = 0; i < linesOS.GetSize (); ++i) {
+        GS::ObjectState begOS, endOS;
+        if (!linesOS[i].Get ("begin", begOS) || !linesOS[i].Get ("end", endOS)) {
+            error = GS::UniString::Printf ("openingReferenceLines[%u] needs begin and end.", (unsigned int) i);
+            return false;
+        }
+        API_Coord beg = Get2DCoordinateFromObjectState (begOS);
+        API_Coord end = Get2DCoordinateFromObjectState (endOS);
+        double dx = end.x - beg.x;
+        double dy = end.y - beg.y;
+        if (dx * dx + dy * dy < 1e-12) {
+            error = GS::UniString::Printf ("openingReferenceLines[%u] has zero length.", (unsigned int) i);
+            return false;
+        }
+        ProfileLineSegment segment;
+        segment.begC.x = beg.x;
+        segment.begC.y = beg.y;
+        segment.endC.x = end.x;
+        segment.endC.y = end.y;
+        outSegments.Push (segment);
+    }
+    return true;
+}
+
+// Replaces every opening reference line of the profile with the given segments (none removes them all). The
+// VectorImage can only delete its lines by type, so every line is removed and the other lines (drafting and
+// construction lines, stretch lines) are added back unchanged. The new lines copy the settings (pen, line type,
+// draw index, profile flags) of an existing opening reference line; a profile without one gets Archicad's own
+// bounding-box opening lines first to copy them from, the way the Profile Editor makes them.
+static void SetProfileOpeningReferenceLines (ProfileVectorImage& pvi, const GS::Array<ProfileLineSegment>& segments)
+{
+    GS::Optional<Sy_LinType> lineTemplate;
+    if (!segments.IsEmpty ()) {
+        lineTemplate = GetFirstProfileOpeningReferenceLine (pvi);
+        if (!lineTemplate.HasValue ()) {
+            ProfileVectorImageOperations::AddBoundingOpeningLines (pvi);
+            lineTemplate = GetFirstProfileOpeningReferenceLine (pvi);
+        }
+    }
+
+    GS::Array<Sy_LinType> keptLines;
+    for (const Sy_LinType& line : GetProfileLines (pvi)) {
+        if (!IsProfileOpeningReferenceLine (line)) {
+            keptLines.Push (line);
+        }
+    }
+
+    {
+        VectorImageAccessGuard guard (&pvi);
+        VectorImage& vi = guard;
+        vi.DeleteItemsOfType (SyLine);
+    }
+
+    for (const Sy_LinType& line : keptLines) {
+        pvi.AddLineRec (line);
+    }
+
+    for (const ProfileLineSegment& segment : segments) {
+        Sy_LinType line;
+        if (lineTemplate.HasValue ()) {
+            line = *lineTemplate;
+        } else {
+            line = Sy_LinType (VBAttr::ExtendedPen ((short) 1), FromPlainAttrIndex (1), ProfileVectorImageOperations::GetDedicatedOpeningReferenceLineLayer (), (DrawIndex) 0,
+                               segment.begC.x, segment.begC.y, segment.endC.x, segment.endC.y);
+            line.specForProfile = 1;
+        }
+        line.sy_fragmentIdx = ProfileVectorImageOperations::GetDedicatedOpeningReferenceLineLayer ();
+        line.begC = segment.begC;
+        line.endC = segment.endC;
+        pvi.AddLineRec (line);
+    }
+}
+
 GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> attributeIds;
@@ -3612,7 +3725,8 @@ GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, 
         bool wantsGeometryDerivedFields = wantsField.Wants ("width") || wantsField.Wants ("height") ||
             wantsField.Wants ("minimumWidth") || wantsField.Wants ("minimumHeight") ||
             wantsField.Wants ("widthStretchable") || wantsField.Wants ("heightStretchable") ||
-            wantsField.Wants ("hasCoreSkin") || wantsField.Wants ("profileModifiers") || wantsField.Wants ("skins");
+            wantsField.Wants ("hasCoreSkin") || wantsField.Wants ("profileModifiers") || wantsField.Wants ("skins") ||
+            wantsField.Wants ("openingReferenceLines");
         if (wantsGeometryDerivedFields) {
             API_AttributeDefExt profileDefs = {};
             if (ACAPI_Attribute_GetDefExt (API_ProfileID, attr.header.index, &profileDefs) == NoError && profileDefs.profile_vectorImageItems != nullptr) {
@@ -3640,6 +3754,16 @@ GS::ObjectState GetProfilesCommand::Execute (const GS::ObjectState& parameters, 
                 }
                 if (wantsField.Wants ("heightStretchable")) {
                     profile.Add ("heightStretchable", stretch.HasVerticalZone ());
+                }
+                if (wantsField.Wants ("openingReferenceLines")) {
+                    const auto& openingLinesList = profile.AddList<GS::ObjectState> ("openingReferenceLines");
+                    for (const Sy_LinType& line : GetProfileLines (pvi)) {
+                        if (IsProfileOpeningReferenceLine (line)) {
+                            openingLinesList (GS::ObjectState (
+                                "begin", GS::ObjectState ("x", line.begC.x, "y", line.begC.y),
+                                "end", GS::ObjectState ("x", line.endC.x, "y", line.endC.y)));
+                        }
+                    }
                 }
 
                 if (wantsField.Wants ("hasCoreSkin") || wantsField.Wants ("profileModifiers") || wantsField.Wants ("skins")) {
@@ -7605,6 +7729,13 @@ GS::Optional<GS::UniString> CreateProfilesCommand::GetInputParametersSchema () c
                         "replaceSkins": {
                             "type": "boolean",
                             "description": "AC27+ only. When overwriteExisting targets an existing Profile, discard every one of its existing skins (and any sourceAttributeId geometry given alongside it) before applying newSkins, instead of adding newSkins on top of the preserved existing geometry. Use this to fully replace a Profile's cross-section with a caller-authored shape while keeping its guid and scalar fields (wallType etc.) - e.g. to sync a Profile's geometry from another project, where sourceAttributeId can't be used because it only resolves within the same file. Also discards any existing profileModifiers, since those are tied to the specific geometry being replaced. Ignored when creating a brand-new Profile (there is nothing to discard yet)."
+                        },
+                        "openingReferenceLines": {
+                            "type": "array",
+                            "description": "Replaces every opening reference line of the Profile (Profile Editor, \"Opening Reference\"; read them with GetProfiles' openingReferenceLines) with these lines; an empty array removes them all, so doors and windows in walls with this Profile are placed by its bounding box again. Omit to keep the lines the copied or overwritten Profile has. A wall profile normally has two, one on each side. Applied after skinOverrides, moveVertices and newSkins, in their final coordinates; the new lines take the pen and line type of the Profile's existing opening reference lines.",
+                            "items": {
+                                "$ref": "#/ProfileOpeningReferenceLine"
+                            }
                         }
                     },
                     "additionalProperties": false,
@@ -7704,6 +7835,17 @@ GS::ObjectState CreateProfilesCommand::Execute (const GS::ObjectState& parameter
             continue;
         }
 #endif
+
+        GS::Array<GS::ObjectState> openingReferenceLinesOS;
+        bool setOpeningReferenceLines = profileData.Get ("openingReferenceLines", openingReferenceLinesOS);
+        GS::Array<ProfileLineSegment> openingReferenceLines;
+        if (setOpeningReferenceLines) {
+            GS::UniString error;
+            if (!GetProfileOpeningReferenceLineSegments (openingReferenceLinesOS, openingReferenceLines, error)) {
+                attributeIds (CreateErrorResponse (APIERR_BADPARS, error));
+                continue;
+            }
+        }
 
         API_AttributeDefExt sourceDefs = {};
         bool hasSourceDefs = false;
@@ -7811,6 +7953,12 @@ GS::ObjectState CreateProfilesCommand::Execute (const GS::ObjectState& parameter
             }
         }
 #endif
+
+        // After newSkins, so the bounding-box lines a profile without opening reference lines gets first fit
+        // its final shape.
+        if (setOpeningReferenceLines && profileDefs.profile_vectorImageItems != nullptr) {
+            SetProfileOpeningReferenceLines (*profileDefs.profile_vectorImageItems, openingReferenceLines);
+        }
 
         if (doesExist) {
             GSErrCode err = ACAPI_Attribute_ModifyExt (&profile, &profileDefs);
