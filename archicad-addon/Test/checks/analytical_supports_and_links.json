@@ -297,5 +297,13 @@
         { "path": "links[0].geometry.coordinates[1].y", "approx": 602.0, "tol": 0.01, "name": "end stays where it was y" }
       ]
     }
+  ],
+  "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${l1}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${l2}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${s2}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${b2}" } } ] } }
   ]
 }
