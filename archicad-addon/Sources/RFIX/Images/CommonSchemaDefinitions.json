@@ -12857,7 +12857,7 @@
             },
             "treadDepth": {
                 "type": "number",
-                "description": "The tread depth (going) stored in the Stair's settings. Archicad does not keep it in step with the modeled treads: a placed stair can read 0 or 1 here, so take the modeled going from the geometry of its treads or risers (Get3DGeometryOfElements) instead."
+                "description": "The going (the length of each tread), measured along the walking line: its length divided by the number of treads. The going stored in the Stair's settings (API_StairType::treadDepth) is not used, since Archicad does not keep it in step with the modeled treads (a placed stair reads 0 or 1 there). Not given for a stair with a landing, whose walking line runs across the landing too; take its going from the geometry of its treads or risers (Get3DGeometryOfElements)."
             },
             "flightWidth": {
                 "type": "number",
@@ -13172,7 +13172,6 @@
         "required": [
             "stepNum",
             "riserHeight",
-            "treadDepth",
             "flightWidth",
             "totalHeight",
             "level",
