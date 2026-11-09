@@ -723,12 +723,38 @@ pre .hljs-subst { color: var(--pre-text); }
         padding: 24px 16px 0;
     }
 
+    /* Only the first row stays pinned on a phone: Groups, Expand all and Collapse all on one
+       line and the search under them. The chips and the "Showing" line scroll away with the
+       list, so the pinned part keeps to about a tenth of the screen. */
+    div.toolbar {
+        display: contents;
+    }
+
+    div.toolbar > div.toolbar_row:first-child {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        padding: 0.6em 0 0.5em;
+        background: var(--bg);
+        border-bottom: 1px solid var(--line);
+    }
+
+    div.toolbar > :not(:first-child) {
+        margin-top: 0.45em;
+    }
+
+    div.toolbar > div.toolbar_status {
+        padding-bottom: 0.55em;
+        border-bottom: 1px solid var(--line);
+    }
+
     div.toolbar_row button {
         flex: 1 1 auto;
     }
 
     input.toolbar_search {
         flex-basis: 100%;
+        order: 1;
     }
 
     span.group_preview {

@@ -983,12 +983,16 @@ function RenderCommands(parentElement, commands, schemaDefinitions) {
     });
 
     function UpdateToolbarHeight() {
-        document.documentElement.style.setProperty('--toolbar-height', toolbar.offsetHeight + 'px');
+        // On phones only the first row is pinned (style.css), so only it covers the list.
+        let pinned = getComputedStyle(toolbar).display === 'contents' ? toolbarRow : toolbar;
+        document.documentElement.style.setProperty('--toolbar-height', pinned.offsetHeight + 'px');
     }
     UpdateToolbarHeight();
     // The toolbar wraps onto more rows when the window narrows.
     if ('ResizeObserver' in window) {
-        new ResizeObserver(UpdateToolbarHeight).observe(toolbar);
+        let observer = new ResizeObserver(UpdateToolbarHeight);
+        observer.observe(toolbar);
+        observer.observe(toolbarRow);
     } else {
         window.addEventListener('resize', UpdateToolbarHeight);
     }
