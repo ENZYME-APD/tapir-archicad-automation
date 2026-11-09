@@ -10476,6 +10476,42 @@
             },
             "floorFill": {
                 "$ref": "#/ShellBaseFloorFill"
+            },
+            "basePlane": {
+                "$ref": "#/CoordinateSystem3D",
+                "description": "Base plane of the shell, in project coordinates, as CreateShells takes it: the profile, the extrusion start and the extrusion vector are given in it."
+            },
+            "profile": {
+                "$ref": "#/ShellProfile",
+                "description": "Extruded only: the profile polyline, in the plane across the extrusion (x horizontal, y up), as CreateShells takes it. Only the first polyline of the profile is returned."
+            },
+            "extrusionStart": {
+                "$ref": "#/Coordinate3D",
+                "description": "Extruded only: the point the extrusion starts from, in base plane coordinates."
+            },
+            "extrusionVector": {
+                "$ref": "#/Coordinate3D",
+                "description": "Extruded only: the direction and length of the extrusion, in base plane coordinates. The end of the extrusion is extrusionStart + extrusionVector."
+            },
+            "extrusionLength": {
+                "type": "number",
+                "description": "Extruded only: the length of extrusionVector."
+            },
+            "shapePlaneTilt": {
+                "type": "number",
+                "description": "Extruded only: tilt of the profile's plane, in radians."
+            },
+            "begPlaneTilt": {
+                "type": "number",
+                "description": "Extruded only: tilt of the start plane of the extrusion, in radians."
+            },
+            "endPlaneTilt": {
+                "type": "number",
+                "description": "Extruded only: tilt of the end plane of the extrusion, in radians."
+            },
+            "slantAngle": {
+                "type": "number",
+                "description": "Extruded only: slant of the extrusion vector, in radians."
             }
         },
         "additionalProperties": false,
@@ -11636,6 +11672,20 @@
                     "type": "number"
                 }
             },
+            "segments": {
+                "type": "array",
+                "description": "The segments of the railing, in the order of the reference line: segment i runs from node i to node i + 1. ModifyRailings changes one of them by its index in this list.",
+                "items": {
+                    "$ref": "#/RailingSegmentDetails"
+                }
+            },
+            "nodes": {
+                "type": "array",
+                "description": "The nodes of the railing, one per vertex of the reference line, in its order. ModifyRailings changes one of them by its index in this list.",
+                "items": {
+                    "$ref": "#/RailingNodeDetails"
+                }
+            },
             "visibility": {
                 "$ref": "#/StoryVisibility",
                 "description": "The stories the railing is shown on (API_RailingType::visibility)."
@@ -11660,10 +11710,78 @@
             "zCoordinate",
             "height",
             "segmentHeights",
+            "segments",
+            "nodes",
             "visibility",
             "isAutoOnStoryVisibility",
             "referenceLinePen",
             "contourPen"
+        ]
+    },
+    "RailingSegmentDetails": {
+        "type": "object",
+        "description": "The settings of one segment of a railing.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "The identifier of the segment subelement (RailingSegment)."
+            },
+            "height": {
+                "type": "number",
+                "description": "The height of the segment (API_RailingSegmentType::height)."
+            },
+            "lateralOffset": {
+                "type": "number",
+                "description": "The offset of the segment from the reference line of the railing, sideways (API_RailingSegmentType::yOffset). Archicad only applies it while referenceLineLocation is Left or Right."
+            },
+            "referenceLineLocation": {
+                "$ref": "#/RailingReferenceLineLocation"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "height",
+            "lateralOffset",
+            "referenceLineLocation"
+        ]
+    },
+    "RailingReferenceLineLocation": {
+        "type": "string",
+        "description": "Where the segment lies relative to the reference line of the railing (API_RailingSegmentType::refLineLocation): Center on the line, Left or Right of it. A lateralOffset only takes effect with Left or Right. Switching between Left and Right turns the sign of lateralOffset (Archicad 29), so the segment moves to the other side of the line by the same distance.",
+        "enum": [
+            "Left",
+            "Center",
+            "Right"
+        ]
+    },
+    "RailingNodeDetails": {
+        "type": "object",
+        "description": "The settings of one node of a railing.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "The identifier of the node subelement (RailingNode)."
+            },
+            "postOffset": {
+                "type": "number",
+                "description": "The offset of the node's post from the node (API_RailingNodeType::postOffset)."
+            },
+            "elevation": {
+                "type": "number",
+                "description": "The vertical offset of the node (API_RailingNodeType::elevation)."
+            },
+            "unifyPatterns": {
+                "type": "boolean",
+                "description": "True when the pattern of the segments continues across the node, false when the segments are cropped at it (API_RailingNodeType::unifyPatterns)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "postOffset",
+            "elevation",
+            "unifyPatterns"
         ]
     },
     "CurtainWallDetails": {

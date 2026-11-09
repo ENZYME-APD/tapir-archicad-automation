@@ -10,8 +10,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         public ModifyShellsComponent()
             : base(
                 "ModifyShells",
-                "Modify the structure of Shell elements: Basic with a building material or Composite with " +
-                "a composite. Only the connected optional inputs are changed on the elements.",
+                "Modify the structure of Shell elements (Basic with a building material or Composite with " +
+                "a composite) and their Flip setting. Only the connected optional inputs are changed on the elements.",
                 GroupNames.ElementModification)
         {
         }
@@ -22,7 +22,8 @@ namespace TapirGrasshopperPlugin.Components.ElementsComponents
         {
             new Field("StructureTypes", "structureType", FieldKind.Text, "Structure type: Basic or Composite.", valueList: () => new StructureTypeValueList ()),
             new Field("BuildingMaterialGuids", "buildingMaterialId", FieldKind.AttributeGuid, "Building material attribute for Basic structure."),
-            new Field("CompositeGuids", "compositeId", FieldKind.AttributeGuid, "Composite attribute for Composite structure.")
+            new Field("CompositeGuids", "compositeId", FieldKind.AttributeGuid, "Composite attribute for Composite structure."),
+            new Field("IsFlipped", "isFlipped", FieldKind.Boolean, "Applies the thickness to the other side of the reference surface.")
         };
 
         protected override IReadOnlyList<Field> Fields => FieldDefinitions;
