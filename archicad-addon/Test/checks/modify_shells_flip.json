@@ -1,6 +1,6 @@
 {
   "title": "GetDetailsOfElements reads and ModifyShells sets the Flip of an existing shell, which moves its body to the other side (#2432)",
-  "minTapir": "1.8.1",
+  "minTapir": "2.0.1",
   "requiresEmpty": [ "Shell" ],
   "steps": [
     {
