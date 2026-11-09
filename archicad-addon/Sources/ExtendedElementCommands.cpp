@@ -5286,6 +5286,9 @@ static const char* StairSettingsSchemaProperties = R"(
                         "uniformMonolithAttributes": { "type": "boolean", "description": "Whether the monolithic structures of the flights and the landings share one set of attributes." },
                         "uniformDrainings": { "type": "boolean", "description": "Whether the flights and the landings share one draining setting." },
                         "structureVisibility": { "type": "boolean", "description": "Whether the structure of the stair is shown." },
+                        "stairDisplayType": { "type": "string", "enum": ["Custom", "ByModelViewOptions"], "description": "Whether the floor plan display of the stair is set in the stair itself (Custom) or comes from the Model View Options (ByModelViewOptions). While it is ByModelViewOptions, Archicad may show the stair by the Model View Options instead of floorPlanLayout and reflectedCeilingPlanLayout; give Custom in the same call to use them." },
+                        "floorPlanLayout": { "$ref": "#/StairLayoutSettings", "description": "The floor plan display of the stair: the stories it is shown on and its visible components. Independent of reflectedCeilingPlanLayout." },
+                        "reflectedCeilingPlanLayout": { "$ref": "#/StairLayoutSettings", "description": "The reflected ceiling plan display of the stair: the stories it is shown on and its visible components. Independent of floorPlanLayout." },
                         "treads": {
                             "type": "array",
                             "description": "The tread settings of the flights (Run) and of the landings (Landing). Only the given fields of the given parts are changed.",
@@ -6525,6 +6528,78 @@ static bool StairWalkingLinePositionFromString (const GS::UniString& str, API_Li
     return false;
 }
 
+static bool StairStoryVisibilityFromString (const GS::UniString& str, API_StairStoryVisibilityID& visibility)
+{
+    if (str == "HomeStoryOnly")              { visibility = APISSV_HomeStoryOnly;              return true; }
+    if (str == "HomeAndOneStoryUp")          { visibility = APISSV_HomeAndOneStoryUp;          return true; }
+    if (str == "HomeAndOneStoryDown")        { visibility = APISSV_HomeAndOneStoryDown;        return true; }
+    if (str == "HomeAndOneStoryUpAndDown")   { visibility = APISSV_HomeAndOneStoryUpAndDown;   return true; }
+    if (str == "OneStoryUp")                 { visibility = APISSV_OneStoryUp;                 return true; }
+    if (str == "OneStoryDown")               { visibility = APISSV_OneStoryDown;               return true; }
+    if (str == "AllStories")                 { visibility = APISSV_AllStories;                 return true; }
+    if (str == "AllRelevantStories")         { visibility = APISSV_AllRelevantStories;         return true; }
+    if (str == "AllRelevantAndOneStoryUp")   { visibility = APISSV_AllRelevantAndOneStoryUp;   return true; }
+    if (str == "AllRelevantAndOneStoryDown") { visibility = APISSV_AllRelevantAndOneStoryDown; return true; }
+    return false;
+}
+
+// The floor plan or reflected ceiling plan display of a Stair (#2530), from a StairLayoutSettings
+// object into fpdLayout or rcpdLayout, with layoutMask the same member of the mask. A storyVisibility
+// is written with the story visibility it stands for: the AllRelevant... values are worked out by
+// Archicad from the stair's vertical extent (isAutoOnStoryVisibility, which the AC25 DevKit's
+// comment on API_ObjectType::isAutoOnStoryVisibility calls "All Relevant Stories"), the others name
+// the shown stories, so visibility is set to match and the automatic visibility is turned off.
+// Whatever Archicad keeps is checked by ModifyStairs, which reads the stair back.
+static GS::Optional<GS::UniString> ApplyStairLayoutSettings (const GS::ObjectState& layoutOs, const char* name, API_StairLayoutData& layout, API_StairLayoutData& layoutMask)
+{
+    GS::UniString storyVisibility;
+    if (layoutOs.Get ("storyVisibility", storyVisibility)) {
+        if (!StairStoryVisibilityFromString (storyVisibility, layout.storyVisibility)) {
+            return GS::UniString (GS::UniString ("Invalid storyVisibility in ") + name + ".");
+        }
+        ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, storyVisibility);
+
+        const bool isRelevant = layout.storyVisibility == APISSV_AllRelevantStories ||
+                                layout.storyVisibility == APISSV_AllRelevantAndOneStoryUp ||
+                                layout.storyVisibility == APISSV_AllRelevantAndOneStoryDown;
+        layout.isAutoOnStoryVisibility = isRelevant;
+        ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, isAutoOnStoryVisibility);
+        if (!isRelevant) {
+            API_StoryVisibility& visibility = layout.visibility;
+            visibility.showOnHome = layout.storyVisibility != APISSV_OneStoryUp && layout.storyVisibility != APISSV_OneStoryDown;
+            visibility.showAllAbove = layout.storyVisibility == APISSV_AllStories;
+            visibility.showAllBelow = layout.storyVisibility == APISSV_AllStories;
+            visibility.showRelAbove = (layout.storyVisibility == APISSV_HomeAndOneStoryUp ||
+                                       layout.storyVisibility == APISSV_HomeAndOneStoryUpAndDown ||
+                                       layout.storyVisibility == APISSV_OneStoryUp) ? 1 : 0;
+            visibility.showRelBelow = (layout.storyVisibility == APISSV_HomeAndOneStoryDown ||
+                                       layout.storyVisibility == APISSV_HomeAndOneStoryUpAndDown ||
+                                       layout.storyVisibility == APISSV_OneStoryDown) ? 1 : 0;
+            ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, visibility);
+            ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, visibility.showAllAbove);
+            ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, visibility.showAllBelow);
+            ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, visibility.showRelAbove);
+            ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, visibility.showRelBelow);
+        }
+    }
+    if (layoutOs.Get ("showWalkingLine", layout.showWalkingLine)) {
+        ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, showWalkingLine);
+    }
+    if (layoutOs.Get ("showNumbering", layout.showNumbering)) {
+        ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, showNumbering);
+    }
+    if (layoutOs.Get ("showUpDownText", layout.showUpDownText)) {
+        ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, showUpDownText);
+    }
+    if (layoutOs.Get ("showDescription", layout.showDescription)) {
+        ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, showDescription);
+    }
+    if (layoutOs.Get ("showStructure", layout.showStructure)) {
+        ACAPI_ELEMENT_MASK_SET (layoutMask, API_StairLayoutData, showStructure);
+    }
+    return {};
+}
+
 // The settings CreateStairs and ModifyStairs share (StairSettingsSchemaProperties), written into
 // the Stair element and its mask (#2220). The tread, riser and structure settings are the per-part
 // defaults of the Stair (tread[role], riser[role], structure[role][side]); the DevKit's
@@ -6622,6 +6697,31 @@ static GS::Optional<GS::UniString> ApplyStairSettings (const GS::ObjectState& de
     }
     if (details.Get ("structureVisibility", stair.structureVisibility)) {
         ACAPI_ELEMENT_MASK_SET (mask, API_StairType, structureVisibility);
+    }
+    GS::UniString stairDisplayType;
+    if (details.Get ("stairDisplayType", stairDisplayType)) {
+        if (stairDisplayType == "Custom") {
+            stair.stairDisplayType = APIStairDisplay_Custom;
+        } else if (stairDisplayType == "ByModelViewOptions") {
+            stair.stairDisplayType = APIStairDisplay_ByModelViewOptions;
+        } else {
+            return GS::UniString ("Invalid stairDisplayType: it must be Custom or ByModelViewOptions.");
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, stairDisplayType);
+    }
+    GS::ObjectState floorPlanLayout;
+    if (details.Get ("floorPlanLayout", floorPlanLayout)) {
+        const GS::Optional<GS::UniString> layoutError = ApplyStairLayoutSettings (floorPlanLayout, "floorPlanLayout", stair.fpdLayout, mask.stair.fpdLayout);
+        if (layoutError.HasValue ()) {
+            return layoutError;
+        }
+    }
+    GS::ObjectState reflectedCeilingPlanLayout;
+    if (details.Get ("reflectedCeilingPlanLayout", reflectedCeilingPlanLayout)) {
+        const GS::Optional<GS::UniString> layoutError = ApplyStairLayoutSettings (reflectedCeilingPlanLayout, "reflectedCeilingPlanLayout", stair.rcpdLayout, mask.stair.rcpdLayout);
+        if (layoutError.HasValue ()) {
+            return layoutError;
+        }
     }
 
     GS::Array<GS::ObjectState> treads;
@@ -6780,6 +6880,78 @@ static GS::Optional<GS::UniString> ApplyStairSettings (const GS::ObjectState& de
     return {};
 }
 
+static GS::UniString StairLayoutNotApplied (const char* name, const API_StairLayoutData& want, const API_StairLayoutData& got, const API_StairLayoutData& layoutMask)
+{
+    static const char* storyVisibilityNames[] = {
+        "HomeStoryOnly", "HomeAndOneStoryUp", "HomeAndOneStoryDown", "HomeAndOneStoryUpAndDown", "OneStoryUp",
+        "OneStoryDown", "AllStories", "AllRelevantStories", "AllRelevantAndOneStoryUp", "AllRelevantAndOneStoryDown"
+    };
+    const auto storyVisibilityName = [&] (API_StairStoryVisibilityID visibility) -> GS::UniString {
+        const Int32 index = static_cast<Int32> (visibility);
+        if (index >= 0 && index < static_cast<Int32> (sizeof (storyVisibilityNames) / sizeof (storyVisibilityNames[0]))) {
+            return storyVisibilityNames[index];
+        }
+        return GS::UniString::Printf ("%d", static_cast<int> (index));
+    };
+    const auto boolName = [] (bool value) { return value ? "true" : "false"; };
+
+    GS::UniString notApplied;
+    if (ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, storyVisibility) && got.storyVisibility != want.storyVisibility) {
+        notApplied += GS::UniString (" ") + name + ".storyVisibility is " + storyVisibilityName (got.storyVisibility) + ".";
+    }
+    if (ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showWalkingLine) && got.showWalkingLine != want.showWalkingLine) {
+        notApplied += GS::UniString (" ") + name + ".showWalkingLine is " + boolName (got.showWalkingLine) + ".";
+    }
+    if (ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showNumbering) && got.showNumbering != want.showNumbering) {
+        notApplied += GS::UniString (" ") + name + ".showNumbering is " + boolName (got.showNumbering) + ".";
+    }
+    if (ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showUpDownText) && got.showUpDownText != want.showUpDownText) {
+        notApplied += GS::UniString (" ") + name + ".showUpDownText is " + boolName (got.showUpDownText) + ".";
+    }
+    if (ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showDescription) && got.showDescription != want.showDescription) {
+        notApplied += GS::UniString (" ") + name + ".showDescription is " + boolName (got.showDescription) + ".";
+    }
+    if (ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showStructure) && got.showStructure != want.showStructure) {
+        notApplied += GS::UniString (" ") + name + ".showStructure is " + boolName (got.showStructure) + ".";
+    }
+    return notApplied;
+}
+
+// Reads the stair back after ModifyStairs changed it and names the floor plan display settings
+// (stairDisplayType, floorPlanLayout, reflectedCeilingPlanLayout) that were given but differ now.
+// Empty when none were given or all were applied.
+static GS::UniString CheckStairDisplayApplied (const API_Element& wanted, const API_Element& mask)
+{
+    const bool hasDisplayType = ACAPI_ELEMENT_MASK_CHECK (mask, API_StairType, stairDisplayType);
+    const API_StairLayoutData& fpdMask = mask.stair.fpdLayout;
+    const API_StairLayoutData& rcpdMask = mask.stair.rcpdLayout;
+    const auto hasLayout = [] (const API_StairLayoutData& layoutMask) {
+        return ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, storyVisibility) ||
+               ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showWalkingLine) ||
+               ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showNumbering) ||
+               ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showUpDownText) ||
+               ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showDescription) ||
+               ACAPI_ELEMENT_MASK_CHECK (layoutMask, API_StairLayoutData, showStructure);
+    };
+    if (!hasDisplayType && !hasLayout (fpdMask) && !hasLayout (rcpdMask)) {
+        return {};
+    }
+
+    API_Element changed = {};
+    changed.header.guid = wanted.header.guid;
+    if (ACAPI_Element_Get (&changed) != NoError) {
+        return " the stair could not be read back after the change.";
+    }
+
+    GS::UniString notApplied;
+    if (hasDisplayType && changed.stair.stairDisplayType != wanted.stair.stairDisplayType) {
+        notApplied += changed.stair.stairDisplayType == APIStairDisplay_Custom ? " stairDisplayType is Custom." : " stairDisplayType is ByModelViewOptions.";
+    }
+    notApplied += StairLayoutNotApplied ("floorPlanLayout", wanted.stair.fpdLayout, changed.stair.fpdLayout, fpdMask);
+    notApplied += StairLayoutNotApplied ("reflectedCeilingPlanLayout", wanted.stair.rcpdLayout, changed.stair.rcpdLayout, rcpdMask);
+    return notApplied;
+}
+
 GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> stairsWithDetails;
@@ -6825,8 +6997,16 @@ GS::ObjectState ModifyStairsCommand::Execute (const GS::ObjectState& parameters,
                 executionResults (CreateFailedExecutionResult (err, "Failed to modify the stair."));
                 continue;
             }
-
             changeReporter.MarkChanged (element.header.guid);
+
+            // The floor plan display is read back (#2530): Archicad may keep its own value for a
+            // display setting without an error, which would otherwise be reported as a success.
+            const GS::UniString notApplied = CheckStairDisplayApplied (element, mask);
+            if (!notApplied.IsEmpty ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not apply every floor plan display setting:" + notApplied));
+                continue;
+            }
+
             executionResults (CreateSuccessfulExecutionResult ());
         }
         return NoError;
