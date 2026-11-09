@@ -88,7 +88,7 @@
     </div>
 
     <div class="layout">
-    <nav class="sidebar" id="sidebar" aria-label="Sections"></nav>
+    <nav class="sidebar" id="sidebar" aria-label="Groups"></nav>
     <main class="frame" id="main">
         <section class="intro">
             <p data-i18n>
@@ -163,15 +163,8 @@ print(response)</code></pre>
         <div id="commands">
             <script type="text/javascript">
                 let commandsDiv = document.getElementById ('commands');
+                // Also opens and scrolls to the command or group named in the address (#CreateWalls).
                 RenderCommands (commandsDiv, gCommands, gSchemaDefinitions);
-                function openTarget() {
-                    var hash = location.hash.substring(1);
-                    if(hash) var details = document.getElementById(hash);
-                    if(details && details.tagName.toLowerCase() === 'details') details.open = true;
-                }
-                window.addEventListener('onload', openTarget);
-                window.addEventListener('load', openTarget);
-                window.addEventListener('hashchange', openTarget);
             </script>
         </div>
     </main>

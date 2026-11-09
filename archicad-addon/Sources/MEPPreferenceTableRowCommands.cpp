@@ -988,13 +988,14 @@ GS::Optional<GS::UniString> GetMEPPreferenceTableRowsCommand::GetInputParameters
         "type": "object",
         "properties": {
             "tableId": {
-                "$ref": "#/MEPPreferenceTableId"
+                "$ref": "#/MEPPreferenceTableId",
+                "description": "The guid of a preference table, as returned by GetMEPPreferenceTables (the branch, elbow and transition tables with includeFittingTables): a pipe or circular duct segment table, a branch or elbow table of the Piping or Ventilation domain, or, from Archicad 29, a transition table. Rectangular duct and cable carrier segment tables are found too, but their rows have no key. Archicad 27: any preference table, as returned by GetMEPPreferenceTableContainers."
             },
             "keys": {
                 "type": "array",
                 "description": "The keys of the rows to get.",
                 "items": {
-                    "$ref": "#/MEPPreferenceTableRowKey"
+                    "$ref": "#/MEPPreferenceRowKey"
                 }
             }
         },
@@ -1038,7 +1039,7 @@ GS::Optional<GS::UniString> GetMEPPreferenceTableRowsCommand::GetRawResponseSche
                 "items": {
                     "oneOf": [
                         {
-                            "$ref": "#/MEPPreferenceTableRowDetails"
+                            "$ref": "#/MEPPreferenceRowDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -1140,13 +1141,14 @@ GS::Optional<GS::UniString> SetMEPPreferenceTableRowsCommand::GetInputParameters
         "type": "object",
         "properties": {
             "tableId": {
-                "$ref": "#/MEPPreferenceTableId"
+                "$ref": "#/MEPPreferenceTableId",
+                "description": "The guid of a preference table, as returned by GetMEPPreferenceTables (the branch, elbow and transition tables with includeFittingTables): a pipe or circular duct segment table, a branch or elbow table of the Piping or Ventilation domain, or, from Archicad 29, a transition table. Rectangular duct and cable carrier segment tables are found too, but their rows have no key. Archicad 27: any preference table, as returned by GetMEPPreferenceTableContainers."
             },
             "rows": {
                 "type": "array",
                 "description": "The rows to change. Only the given values are set.",
                 "items": {
-                    "$ref": "#/MEPPreferenceTableRowUpdate"
+                    "$ref": "#/MEPPreferenceRowUpdate"
                 }
             }
         },
@@ -1169,7 +1171,7 @@ GS::Optional<GS::UniString> SetMEPPreferenceTableRowsCommand::GetRawResponseSche
                 "items": {
                     "oneOf": [
                         {
-                            "$ref": "#/MEPPreferenceTableRowSetResult"
+                            "$ref": "#/MEPPreferenceRowUpdateResult"
                         },
                         {
                             "$ref": "#/FailedExecutionResult"
@@ -1261,13 +1263,14 @@ GS::Optional<GS::UniString> AddMEPPreferenceTableRowsCommand::GetInputParameters
         "type": "object",
         "properties": {
             "tableId": {
-                "$ref": "#/MEPPreferenceTableId"
+                "$ref": "#/MEPPreferenceTableId",
+                "description": "The guid of a preference table, as returned by GetMEPPreferenceTables (the branch, elbow and transition tables with includeFittingTables): a pipe or circular duct segment table, a branch or elbow table of the Piping or Ventilation domain, or, from Archicad 29, a transition table. Rectangular duct and cable carrier segment tables are found too, but their rows have no key. Archicad 27: any preference table, as returned by GetMEPPreferenceTableContainers."
             },
             "rows": {
                 "type": "array",
                 "description": "The rows to add, with their key and optionally their values. Branch tables from Archicad 28, elbow and transition tables from Archicad 29. Segment tables have a row for each reference id, so no row can be added to them. Archicad 27: the key has the shape only, the table gives the index.",
                 "items": {
-                    "$ref": "#/MEPPreferenceTableRowAddition"
+                    "$ref": "#/MEPPreferenceRowAddition"
                 }
             }
         },
@@ -1290,7 +1293,7 @@ GS::Optional<GS::UniString> AddMEPPreferenceTableRowsCommand::GetRawResponseSche
                 "items": {
                     "oneOf": [
                         {
-                            "$ref": "#/MEPPreferenceTableRowAddResult"
+                            "$ref": "#/MEPPreferenceRowAdditionResult"
                         },
                         {
                             "$ref": "#/FailedExecutionResult"
@@ -1401,13 +1404,14 @@ GS::Optional<GS::UniString> DeleteMEPPreferenceTableRowsCommand::GetInputParamet
         "type": "object",
         "properties": {
             "tableId": {
-                "$ref": "#/MEPPreferenceTableId"
+                "$ref": "#/MEPPreferenceTableId",
+                "description": "The guid of a preference table, as returned by GetMEPPreferenceTables (the branch, elbow and transition tables with includeFittingTables): a pipe or circular duct segment table, a branch or elbow table of the Piping or Ventilation domain, or, from Archicad 29, a transition table. Rectangular duct and cable carrier segment tables are found too, but their rows have no key. Archicad 27: any preference table, as returned by GetMEPPreferenceTableContainers."
             },
             "keys": {
                 "type": "array",
                 "description": "The keys of the rows to delete. Segment tables, and the elbow tables of Archicad 28, have a row for each reference id, which is emptied instead. Archicad 27: the indices are those before the call; the rows are deleted from the highest index down.",
                 "items": {
-                    "$ref": "#/MEPPreferenceTableRowKey"
+                    "$ref": "#/MEPPreferenceRowKey"
                 }
             }
         },
@@ -1531,7 +1535,8 @@ GS::Optional<GS::UniString> GetMEPPreferenceTableContainersCommand::GetInputPara
                 "type": "array",
                 "description": "The domains whose preference tables to list. Defaults to all three.",
                 "items": {
-                    "$ref": "#/MEPPreferenceTableContainerDomain"
+                    "$ref": "#/MEPPreferenceTableDomain",
+                    "description": "The MEP domain of a preference table container."
                 }
             }
         },
@@ -1629,7 +1634,8 @@ GS::Optional<GS::UniString> CreateMEPPreferenceTablesCommand::GetInputParameters
         "type": "object",
         "properties": {
             "domain": {
-                "$ref": "#/MEPPreferenceTableContainerDomain"
+                "$ref": "#/MEPPreferenceTableDomain",
+                "description": "The MEP domain of a preference table container."
             },
             "tables": {
                 "type": "array",

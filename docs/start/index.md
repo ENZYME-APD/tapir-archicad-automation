@@ -8,6 +8,8 @@ From download to your first script in about ten minutes. Steps 1 to 3 need no pr
 
 **Video** Prefer watching? The [Tapir video tutorials](https://archicad-api.com/tutorials/) walk through installing Tapir and using it.
 
+**Tutorials** Written tutorials, step by step: [properties to Excel](https://archicad-api.com/tutorials/export-properties-to-excel/), [Grasshopper](https://archicad-api.com/tutorials/connect-grasshopper-to-archicad/), [renaming views](https://archicad-api.com/tutorials/batch-rename-views/), [numbering doors and windows](https://archicad-api.com/tutorials/number-doors-and-windows-by-zone/) and [your first Python script](https://archicad-api.com/tutorials/first-python-script/).
+
 ## Install Tapir
 
 **With the installer (recommended).** It finds every Archicad version on the computer and installs the matching add-on into each, so Archicad loads it on its next start.
