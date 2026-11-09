@@ -53,8 +53,8 @@
    column 1, so it is centred at every width), and motion.js measures where it starts and ends
    (--seg-top, --seg-h) from the numbers and how far it is filled (--prog). The Standard look has none. */
 .motion .timeline { position: relative }
-:root[data-style="legacy"] .motion .timeline > li { position: relative }
-:root[data-style="legacy"] .motion .timeline > li:not(:last-child)::after { content: ""; position: absolute; grid-column: 1 / 2; grid-row: auto;
+:root[data-style="legacy"].motion .timeline > li { position: relative }
+:root[data-style="legacy"].motion .timeline > li:not(:last-child)::after { content: ""; position: absolute; grid-column: 1 / 2; grid-row: auto;
     left: 50%; top: var(--seg-top, 0); width: 2px; height: var(--seg-h, 0); transform: translateX(-50%); pointer-events: none;
     background: linear-gradient(var(--ochre), var(--ochre)) no-repeat; background-size: 2px var(--prog, 0%); opacity: .5 }
 .motion .timeline .n { transition: transform .6s var(--ease), color .4s } .motion .timeline > li.rv:not(.in) .n { transform: scale(.6) }
