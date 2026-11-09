@@ -953,6 +953,11 @@ inline GSErrCode ACAPI_Element_GetElementInfoString (const API_Guid* elementGuid
     return ACAPI_Database (APIDb_GetElementInfoStringID, (void*) elementGuid, infoString);
 }
 
+inline GSErrCode ACAPI_Element_ChangeElementInfoString (const API_Guid* elementGuid, const GS::UniString* infoString)
+{
+    return ACAPI_Database (APIDb_ChangeElementInfoStringID, (void*) elementGuid, (void*) infoString);
+}
+
 inline GSErrCode ACAPI_Element_GetCompoundInfoString (const API_Guid* elementGuid, GS::UniString* infoString)
 {
     return ACAPI_Database (APIDb_GetCompoundInfoStringID, (void*) elementGuid, infoString);

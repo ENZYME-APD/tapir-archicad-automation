@@ -5322,15 +5322,15 @@
                 "properties": {
                     "shape": {
                         "$ref": "#/MEPCrossSectionShape",
-                        "description": "Archicad 27 and 28."
+                        "description": "Archicad 27 only. Later versions give the size in routingElement.routingSegment."
                     },
                     "width": {
                         "type": "number",
-                        "description": "Archicad 27 and 28."
+                        "description": "Archicad 27 only. Later versions give the size in routingElement.routingSegment."
                     },
                     "height": {
                         "type": "number",
-                        "description": "Archicad 27 and 28."
+                        "description": "Archicad 27 only. Later versions give the size in routingElement.routingSegment."
                     },
                     "insulationThickness": {
                         "type": "number",
@@ -10394,6 +10394,10 @@
             "thickness": {
                 "type": "number"
             },
+            "isFlipped": {
+                "type": "boolean",
+                "description": "The side of the shell's reference surface the thickness is applied to (API_ShellType::isFlipped), as CreateShells and ModifyShells take it."
+            },
             "buildingMaterialId": {
                 "$ref": "#/AttributeId"
             },
@@ -12156,7 +12160,7 @@
             },
             "isClosed": {
                 "type": "boolean",
-                "description": "READ-ONLY, Get output only (ignored if sent to Create/Modify). Geometrically computed (Modeler::MeshBody::IsClosedBody): true if every edge in the body has exactly two adjacent faces (a watertight/manifold volume), false if any edge borders only one face (an open shell / has holes or gaps). Distinct from bodyType, which is the caller's declared INTENT (Solid vs Surface) rather than the actual computed geometry - a body can be declared bodyType 'Solid' yet still be geometrically open if a face is missing."
+                "description": "READ-ONLY, Get output only (ignored if sent to Create/Modify). Geometrically computed from the body's edges: true if every edge in the body has exactly two adjacent faces (a watertight/manifold volume), false if any edge borders only one face (an open shell / has holes or gaps). Distinct from bodyType, which is the caller's declared INTENT (Solid vs Surface) rather than the actual computed geometry - a body can be declared bodyType 'Solid' yet still be geometrically open if a face is missing."
             },
             "edgeDefault": {
                 "type": "string",
