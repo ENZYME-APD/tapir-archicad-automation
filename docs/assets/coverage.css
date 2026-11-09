@@ -160,3 +160,24 @@ ul.items li .detail { display: block; padding-left: 1.6em; font-size: 13.5px; co
     .tile:hover { transform: none }
     .chip-filter { transition: none }
 }
+
+/* The Standard look (see the end of site.css): the progress ramp in the accent's green, light lines,
+   8 px corners on the filters and 12 px on the tiles, labels in normal case. */
+:root:not([data-style="legacy"]) { --track: #E5E7EB; --done: #1F6B4E; --merged: #4F9A7A; --progress: #A7D3BF; --claimed: #A7D3BF }
+:root:not([data-style="legacy"])[data-theme="dark"] { --track: #232B36; --done: #4CB88A; --merged: #2F7D5C; --progress: #1E4D3A; --claimed: #1E4D3A }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-style="legacy"]):not([data-theme="light"]) { --track: #232B36; --done: #4CB88A; --merged: #2F7D5C; --progress: #1E4D3A; --claimed: #1E4D3A }
+}
+:root:not([data-style="legacy"]) .sidebar-title, :root:not([data-style="legacy"]) main th {
+    font-family: var(--body); font-weight: 600; letter-spacing: normal; text-transform: none }
+:root:not([data-style="legacy"]) .sidebar-link, :root:not([data-style="legacy"]) .option { border-radius: var(--radius-control) }
+:root:not([data-style="legacy"]) .option[aria-pressed="true"] { background: var(--accent-fill); border-color: var(--accent-fill); color: var(--on-accent) }
+:root:not([data-style="legacy"]) .tile { border: 1px solid var(--line); border-radius: var(--radius-card) }
+/* The status chips keep their tint when pressed (site.css's Standard part fills other chips with the
+   accent), so the swatch in them, which can be the accent's green, stays visible. */
+:root:not([data-style="legacy"]) .toolbar .chip[aria-pressed="true"] { background: var(--badge); border-color: var(--link); color: var(--fg) }
+:root:not([data-style="legacy"]) .toolbar input, :root:not([data-style="legacy"]) .toolbar .sections-button,
+:root:not([data-style="legacy"]) .filter-status button { border: 1px solid var(--border-strong); border-radius: var(--radius-control) }
+/* All parameters is --done; the JSON and partial marks take the ramp's lighter step, so they still differ. */
+:root:not([data-style="legacy"]) .swatch.p-json { background: var(--merged) }
+:root:not([data-style="legacy"]) .swatch.p-partial { box-shadow: inset 0 0 0 1.5px var(--merged) }

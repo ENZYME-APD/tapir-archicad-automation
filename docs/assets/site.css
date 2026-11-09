@@ -4,22 +4,26 @@
    (.dim), cards are drawn with an ink line and lift onto an ochre shadow, the scripts read like an
    Archicad schedule (.schedule) and the footer is a drawing title block (.tblock).
 
+   This drawing set is the Legacy look (data-style="legacy" on <html>); the default Standard look is
+   the last part of this file, which overrides it.
+
    Every page links it as <root>/assets/site.css, together with <root>/assets/site.js, and repeats the
    same header and footer (between the site-header and site-footer comments), and the head's
    site-assets block: the favicon, two theme-color metas that colour a phone's browser bars like the
-   header (the dark one first, as a browser takes the first that matches; both are --moss, which the
-   header keeps in dark mode):
-       <meta name="theme-color" content="#2D3A30" media="(prefers-color-scheme: dark)">
-       <meta name="theme-color" content="#2D3A30">
-   the fonts, this file, site.js and two inline scripts: the stored theme, and data-i18n-loading
-   while a translation loads (see site.js). On phones site.js turns the header's nav, language menu
-   and toggle into a menu (.has-menu, below).
+   header (the dark one first, as a browser takes the first that matches; Standard's surface colours,
+   which the head's display script changes for a stored look or mode, and site.js when it changes):
+       <meta name="theme-color" content="#11161D" media="(prefers-color-scheme: dark)">
+       <meta name="theme-color" content="#FFFFFF">
+   the fonts (Inter and JetBrains Mono; the display script adds Fraunces for Legacy only), this file,
+   site.js and two inline scripts: the stored Display settings (see site.js), and data-i18n-loading
+   while a translation loads. On phones site.js turns the header's nav, language menu and Display
+   button into a menu (.has-menu, below).
    Right after the site.js line it links <root>/assets/motion.css and <root>/assets/motion.js and
    repeats the inline splash script, which sets html.m-splash on the first page of a visit (see
    motion.css).
 
-   Light is the default. Dark applies under prefers-color-scheme: dark, unless the header's toggle
-   chose a theme: it sets data-theme="light" or "dark" on <html> (remembered in localStorage).
+   Light is the default. Dark applies under prefers-color-scheme: dark, unless the Display menu's Mode
+   chose one: it sets data-theme="light" or "dark" on <html> (remembered in localStorage).
    A page's own colours for dark mode use the same two selectors as below:
        :root[data-theme="dark"] { ... }
        @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { ... } }
@@ -131,6 +135,7 @@ main { display: block }
 .brand { display: flex; align-items: center; gap: 10px; color: var(--cream); text-decoration: none; font: 900 24px/1 var(--display) }
 .brand:hover { color: var(--cream) }
 .brand img { width: 30px; height: 30px; display: block }
+.brand img.brand-tile { display: none } /* favicon.svg, shown only by the Standard look's light header */
 .site-nav ul { display: flex; gap: 4px 22px; list-style: none; margin: 0; padding: 0; flex-wrap: wrap }
 .site-nav a { display: inline-block; padding-block: 4px; color: var(--cream); text-decoration: none; font-weight: 500; font-size: 15px; opacity: .88 }
 .site-nav a:hover { opacity: 1; color: var(--ochre-light) }
@@ -167,7 +172,7 @@ main { display: block }
 .btn-line { border-color: currentColor; color: var(--fg); background: transparent }
 .btn-line:hover { color: var(--link) }
 .btn-sm { padding: 9px 14px; font-size: 14px }
-.btn .os { font: 500 11px var(--mono); letter-spacing: .06em }
+.btn .os { font: 500 11px var(--mono); letter-spacing: .06em; text-transform: uppercase }
 .ctas { display: flex; gap: 12px; flex-wrap: wrap }
 
 /* ---------- dimension line, sections ---------- */
@@ -474,3 +479,186 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 :lang(hi) { letter-spacing: normal !important }
 /* The floor plan's labels (their font-family attribute names Inter only). */
 .plan-card svg text[data-i18n]:lang(hi) { font-family: var(--body) }
+
+/* ======================================================================================================
+   The Standard look, the default: plain white surfaces, Inter for everything (JetBrains Mono only for
+   code and command names), no grid texture or hatching, soft shadows, 8 px corners on buttons, inputs
+   and chips and 12 px on cards and panels. The Display menu (site.js) or a stored choice sets
+   data-style="legacy" on <html> for the drawing set above, which nothing in this part touches, so Legacy
+   is the site as it was. Every rule here starts with :root:not([data-style="legacy"]); each page's own
+   stylesheet ends with its own Standard part. Modes:
+       light: :root:not([data-style="legacy"])
+       dark:  :root:not([data-style="legacy"])[data-theme="dark"], and under prefers-color-scheme: dark
+              :root:not([data-style="legacy"]):not([data-theme="light"])
+   The light block comes after the Legacy dark ones and outweighs their :root[data-theme="dark"], so a
+   Standard page in dark mode only takes the values its own dark block gives.
+   Contrast (WCAG 2), every text pair at least 4.5:1: light, #111827 on #FFFFFF about 17.7:1, #4B5563 on
+   #FFFFFF about 7.5:1 (a little less on #F7F8FA), accent #1F6B4E on #FFFFFF and #FFFFFF on it about
+   6.4:1; dark, #9AA4B2 on #0B0F14 about 7.6:1, accent #4CB88A on #11161D about 7.4:1 and #0B0F14 on it
+   about 7.8:1. The code colours are the issue's, all light on #0F172A. A badge is the accent at 10 %,
+   so its text keeps nearly the contrast it has on the page.
+   ====================================================================================================== */
+:root:not([data-style="legacy"]) {
+    --standard-bg: #FFFFFF; --standard-surface: #FFFFFF; --subtle: #F7F8FA;
+    --bg: var(--standard-bg); --surface: var(--standard-surface); --fg: #111827; --muted: #4B5563;
+    --line: #E5E7EB; --border: var(--line); --border-strong: #D1D5DB; --grid: transparent;
+    --link: #1F6B4E; --link-hover: #164D38; --focus: var(--link); --accent: var(--link); --eyebrow: var(--link);
+    --accent-fill: #1F6B4E; --accent-fill-hover: #164D38; --on-accent: #FFFFFF; --button-bg: var(--accent-fill); --button-text: var(--on-accent);
+    --badge: rgba(31, 107, 78, .1); --badge-bg: var(--badge); --card-hover: var(--subtle); --warning: #B45309;
+    --code-bg: #F3F4F6; --code-fg: #111827; --pre-bg: #0F172A; --pre-text: #E2E8F0; --pre-border: transparent;
+    --pre-comment: #94A3B8; --pre-keyword: #7DD3FC; --pre-string: #86EFAC; --pre-line: rgba(226, 232, 240, .12); --pre-focus: #4CB88A;
+    --display: var(--body); --font-heading: var(--body);
+    --radius: 12px; --radius-small: 8px; --radius-card: 12px; --radius-control: 8px;
+    --texture: none; --texture-head: none; --texture-frame: none; --hatch: none;
+    --shadow-soft: 0 1px 2px rgba(17, 24, 39, .06), 0 8px 24px rgba(17, 24, 39, .06);
+    --shadow-lift: var(--shadow-soft); --shadow-lift-small: var(--shadow-soft); --shadow-press: var(--shadow-soft);
+    --shadow-term: var(--shadow-soft); --shadow-term-small: var(--shadow-soft); --shadow-term-dark: none;
+    --shadow-menu: var(--shadow-soft); --shadow-drawer: var(--shadow-soft);
+    color-scheme: light;
+}
+:root:not([data-style="legacy"])[data-theme="dark"] {
+    --standard-bg: #0B0F14; --standard-surface: #11161D; --subtle: #0E1318;
+    --fg: #E6EAF0; --muted: #9AA4B2; --line: #232B36; --border-strong: #3A4553;
+    --link: #4CB88A; --link-hover: #6FCBA3; --accent-fill: #4CB88A; --accent-fill-hover: #6FCBA3; --on-accent: #0B0F14;
+    --badge: rgba(76, 184, 138, .1); --code-bg: #1A212B; --code-fg: #E6EAF0; --pre-border: #232B36; --warning: #F59E0B;
+    --shadow-soft: none; color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"]) {
+    --standard-bg: #0B0F14; --standard-surface: #11161D; --subtle: #0E1318;
+    --fg: #E6EAF0; --muted: #9AA4B2; --line: #232B36; --border-strong: #3A4553;
+    --link: #4CB88A; --link-hover: #6FCBA3; --accent-fill: #4CB88A; --accent-fill-hover: #6FCBA3; --on-accent: #0B0F14;
+    --badge: rgba(76, 184, 138, .1); --code-bg: #1A212B; --code-fg: #E6EAF0; --pre-border: #232B36; --warning: #F59E0B;
+    --shadow-soft: none; color-scheme: dark } }
+
+/* Type: Inter headings at 700, no italics, large ones drawn tighter; labels in normal case. */
+:root:not([data-style="legacy"]) h1, :root:not([data-style="legacy"]) .h1, :root:not([data-style="legacy"]) h2 { font-weight: 700; letter-spacing: -.02em; line-height: 1.1 }
+:root:not([data-style="legacy"]) h1 em, :root:not([data-style="legacy"]) h2 em, :root:not([data-style="legacy"]) h3 em,
+:root:not([data-style="legacy"]) .h1 em { font-style: normal; font-weight: inherit; color: inherit }
+:root:not([data-style="legacy"]) .brand, :root:not([data-style="legacy"]) .figures strong, :root:not([data-style="legacy"]) .timeline .n,
+:root:not([data-style="legacy"]) .share-steps li b, :root:not([data-style="legacy"]) .tblock .proj { font-weight: 700 }
+:root:not([data-style="legacy"]) .tagline, :root:not([data-style="legacy"]) .dim, :root:not([data-style="legacy"]) .figures span,
+:root:not([data-style="legacy"]) .way .who, :root:not([data-style="legacy"]) .schedule caption, :root:not([data-style="legacy"]) .schedule th,
+:root:not([data-style="legacy"]) .schedule .id, :root:not([data-style="legacy"]) .schedule tr.area th, :root:not([data-style="legacy"]) .spec dt,
+:root:not([data-style="legacy"]) .tblock .lab, :root:not([data-style="legacy"]) .stack .wire, :root:not([data-style="legacy"]) .flow b,
+:root:not([data-style="legacy"]) .crumb, :root:not([data-style="legacy"]) .toggle, :root:not([data-style="legacy"]) .btn .os,
+:root:not([data-style="legacy"]) .term .bar, :root:not([data-style="legacy"]) .all-people span,
+:root:not([data-style="legacy"]) .schedule td[data-label]::before {
+    font-family: var(--body); font-weight: 500; letter-spacing: normal; text-transform: none }
+:root:not([data-style="legacy"]) code { color: var(--code-fg) }
+:root:not([data-style="legacy"]) .page-head code, :root:not([data-style="legacy"]) .term code, :root:not([data-style="legacy"]) .stack .box code,
+:root:not([data-style="legacy"]) pre code { color: inherit }
+
+/* Code blocks and the terminal: slate panels, the same in both modes (with a border in dark mode). */
+:root:not([data-style="legacy"]) pre { border: 1px solid var(--pre-border); border-radius: var(--radius-control) }
+:root:not([data-style="legacy"]) .term pre { border: 0; border-radius: 0 }
+:root:not([data-style="legacy"]) .term, :root:not([data-style="legacy"])[data-theme="dark"] .term {
+    background: var(--pre-bg); color: var(--pre-text); border: 1px solid var(--pre-border); border-radius: var(--radius-card); box-shadow: var(--shadow-term); --focus: var(--pre-focus) }
+@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"]) .term { border-color: var(--pre-border); box-shadow: var(--shadow-term) } }
+:root:not([data-style="legacy"]) .term .bar { color: var(--pre-comment); border-bottom-color: var(--pre-line) }
+:root:not([data-style="legacy"]) .term pre, :root:not([data-style="legacy"]) .term .o { color: var(--pre-text) }
+:root:not([data-style="legacy"]) .term .k { color: var(--pre-keyword) } :root:not([data-style="legacy"]) .term .s { color: var(--pre-string) }
+:root:not([data-style="legacy"]) .term .c { color: var(--pre-comment) }
+:root:not([data-style="legacy"]) .copy-button { background: var(--pre-bg); color: var(--pre-text); border-color: var(--pre-line); border-radius: var(--radius-control); --focus: var(--pre-focus) }
+:root:not([data-style="legacy"]) .copy-button:hover, :root:not([data-style="legacy"]) .copy-button:focus-visible { border-color: var(--pre-focus); outline-color: var(--pre-focus) }
+
+/* Header: the surface with a line under it. */
+:root:not([data-style="legacy"]) .site-header { background: var(--surface); color: var(--fg); border-bottom-color: var(--line); --focus: var(--link) }
+:root:not([data-style="legacy"]) .brand, :root:not([data-style="legacy"]) .brand:hover, :root:not([data-style="legacy"]) .site-nav a { color: var(--fg) }
+:root:not([data-style="legacy"]) .site-nav a:hover { color: var(--link) }
+:root:not([data-style="legacy"]) .site-nav a[aria-current] { color: var(--link); box-shadow: inset 0 -2px 0 var(--link) }
+/* The mark is never recoloured (#2476, 3a). On the light header it is favicon.svg, the cream mark on
+   its moss tile; in Dark (chosen, or the system's) it stays tapir_mark_cream.svg, as in Legacy. */
+:root:not([data-style="legacy"]) .site-header .brand img { display: none }
+:root:not([data-style="legacy"]) .site-header .brand img.brand-tile { display: block }
+:root:not([data-style="legacy"])[data-theme="dark"] .site-header .brand img { display: block }
+:root:not([data-style="legacy"])[data-theme="dark"] .site-header .brand img.brand-tile { display: none }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-style="legacy"]):not([data-theme="light"]) .site-header .brand img { display: block }
+    :root:not([data-style="legacy"]):not([data-theme="light"]) .site-header .brand img.brand-tile { display: none } }
+:root:not([data-style="legacy"]) .toggle, :root:not([data-style="legacy"]) .menu-button { color: var(--fg); border-color: var(--border-strong); border-radius: var(--radius-control) }
+:root:not([data-style="legacy"]) .toggle:hover, :root:not([data-style="legacy"]) .menu-button:hover { color: var(--link); border-color: var(--link) }
+:root:not([data-style="legacy"]) .lang-select option { background: var(--surface); color: var(--fg) }
+@media (max-width: 640px) {
+    :root:not([data-style="legacy"]) .has-menu .site-menu { background: var(--surface); border-bottom-color: var(--line) }
+    :root:not([data-style="legacy"]) .has-menu .site-nav li + li, :root:not([data-style="legacy"]) .has-menu .menu-tools { border-top-color: var(--line) }
+    :root:not([data-style="legacy"]) .has-menu .site-nav a[aria-current] { box-shadow: none; text-decoration-color: var(--link) }
+}
+
+/* Buttons, chips, the skip link. */
+:root:not([data-style="legacy"]) .skip-link, :root:not([data-style="legacy"]) .skip-link:focus { background: var(--accent-fill); color: var(--on-accent); border-radius: var(--radius-control) }
+:root:not([data-style="legacy"]) .btn { border-radius: var(--radius-control) }
+:root:not([data-style="legacy"]) .btn-primary, :root:not([data-style="legacy"]) .btn-primary:hover { background: var(--accent-fill); color: var(--on-accent) }
+:root:not([data-style="legacy"]) .btn-primary:hover { background: var(--accent-fill-hover) }
+:root:not([data-style="legacy"]) .btn-ghost, :root:not([data-style="legacy"]) .btn-line { border: 1px solid var(--border-strong); color: var(--fg); background: var(--surface) }
+:root:not([data-style="legacy"]) .btn-ghost:hover, :root:not([data-style="legacy"]) .btn-line:hover { border-color: var(--link); color: var(--link) }
+:root:not([data-style="legacy"]) .chip { border: 1px solid var(--border-strong); border-radius: var(--radius-control) }
+:root:not([data-style="legacy"]) .chip[aria-pressed="true"] { background: var(--accent-fill); border-color: var(--accent-fill); color: var(--on-accent) }
+:root:not([data-style="legacy"]) .pill.chg { background: var(--accent-fill); color: var(--on-accent) }
+
+/* Cards and panels: a light line instead of the ink one, 12 px corners, a soft shadow on hover. */
+:root:not([data-style="legacy"]) .figures, :root:not([data-style="legacy"]) .way, :root:not([data-style="legacy"]) .teaser,
+:root:not([data-style="legacy"]) .schedule-wrap, :root:not([data-style="legacy"]) .flow, :root:not([data-style="legacy"]) .stack .box,
+:root:not([data-style="legacy"]) .uses-grid, :root:not([data-style="legacy"]) .spec, :root:not([data-style="legacy"]) .shot,
+:root:not([data-style="legacy"]) .share-steps li, :root:not([data-style="legacy"]) .video {
+    border: 1px solid var(--line); border-radius: var(--radius-card) }
+:root:not([data-style="legacy"]) .spec, :root:not([data-style="legacy"]) .flow { overflow: hidden }
+:root:not([data-style="legacy"]) .schedule caption { border-bottom: 1px solid var(--line) }
+:root:not([data-style="legacy"]) .callout { border: 1px solid var(--line); border-left: 4px solid var(--accent-fill); border-radius: var(--radius-control) }
+:root:not([data-style="legacy"]) .shot { background: var(--subtle) }
+:root:not([data-style="legacy"]) .teaser.dark, :root:not([data-style="legacy"])[data-theme="dark"] .teaser.dark,
+:root:not([data-style="legacy"]) .teaser.dark:hover { background: var(--subtle); color: var(--fg); border-color: var(--line); --focus: var(--link) }
+@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"]) .teaser.dark { border-color: var(--line) } }
+:root:not([data-style="legacy"]) .teaser.dark p { color: var(--muted) }
+:root:not([data-style="legacy"]) .teaser.dark .go, :root:not([data-style="legacy"]) .teaser.dark .tagline { color: var(--link) }
+:root:not([data-style="legacy"]) .stack .box.addon { background: var(--accent-fill); border-color: var(--accent-fill); color: var(--on-accent) }
+:root:not([data-style="legacy"]) .stack .box.addon span { color: var(--on-accent) }
+:root:not([data-style="legacy"]) .stack .box.archicad, :root:not([data-style="legacy"])[data-theme="dark"] .stack .box.archicad {
+    background: var(--pre-bg); border-color: var(--pre-border); color: var(--pre-text) }
+@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"]) .stack .box.archicad { border-color: var(--pre-border) } }
+:root:not([data-style="legacy"]) .stack .box.archicad span { color: var(--pre-comment) }
+:root:not([data-style="legacy"]) .video .frame { background-color: var(--subtle); border-bottom: 1px solid var(--line) }
+:root:not([data-style="legacy"]) .video .frame:has(img)::after { background: none }
+:root:not([data-style="legacy"]) .video .play { background: var(--accent-fill) }
+:root:not([data-style="legacy"]) .video .play svg { color: var(--on-accent) }
+
+/* Page heads: the subtle background with a line under it; the ochre ones too, without the hatching. */
+:root:not([data-style="legacy"]) .page-head, :root:not([data-style="legacy"]) .page-head.ochre {
+    background-color: var(--subtle); color: var(--fg); border-bottom: 1px solid var(--line); --focus: var(--link) }
+:root:not([data-style="legacy"]) .page-head p, :root:not([data-style="legacy"]) .page-head.ochre p { color: var(--muted) }
+:root:not([data-style="legacy"]) .page-head h1 em, :root:not([data-style="legacy"]) .page-head .h1 em { color: inherit }
+:root:not([data-style="legacy"]) .page-head p a, :root:not([data-style="legacy"]) .crumb a,
+:root:not([data-style="legacy"]) .page-head.ochre .crumb a, :root:not([data-style="legacy"]) .page-head.ochre p a { color: var(--link) }
+:root:not([data-style="legacy"]) .crumb, :root:not([data-style="legacy"]) .page-head.ochre .crumb { color: var(--muted) }
+
+/* Footer. */
+:root:not([data-style="legacy"]) .site-footer { border-top: 1px solid var(--line) }
+:root:not([data-style="legacy"]) .tblock { border-left: 1px solid var(--line); border-right: 1px solid var(--line) }
+
+/* The Display menu (site.js): its button sits where the Dark/Light toggle was; the panel is a popover
+   under it on wide screens and a sheet from the bottom below 640 px. Both looks draw it. */
+.display-button { display: inline-flex; align-items: center; justify-content: center; min-height: 31px }
+.display-button svg { width: 16px; height: 16px; display: block }
+.display-panel { position: fixed; z-index: 70; width: min(320px, calc(100vw - 32px)); max-height: calc(100vh - 96px); overflow-y: auto;
+    background: var(--surface); color: var(--fg); border: 1px solid var(--border-strong); border-radius: 12px;
+    box-shadow: 0 1px 2px rgba(17, 24, 39, .08), 0 12px 32px rgba(17, 24, 39, .16); padding: 16px; font: 400 15px/1.4 var(--body); --focus: var(--link) }
+:root[data-style="legacy"] .display-panel { border: 1.5px solid var(--fg); border-radius: 4px; box-shadow: var(--shadow-lift) }
+.display-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px }
+.display-title { font-weight: 700; font-size: 17px }
+.display-panel fieldset { margin: 0; padding: 10px 0 12px; border: 0; border-top: 1px solid var(--line); min-width: 0 }
+.display-panel legend { float: left; width: 100%; padding: 0 0 6px; font-weight: 600; font-size: 14px; color: var(--muted) }
+.display-options { clear: both; display: flex; flex-wrap: wrap; gap: 6px }
+.display-options label { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border: 1px solid var(--border-strong); border-radius: 8px; cursor: pointer; font-size: 14px }
+.display-options label:hover { border-color: var(--link) }
+.display-options label.checked { border-color: var(--link); background: var(--badge); font-weight: 600 }
+.display-options input { margin: 0; accent-color: var(--link) }
+.display-reset, .display-done { font: 600 14px var(--body); color: var(--fg); background: transparent; border: 1px solid var(--border-strong); border-radius: 8px; padding: 7px 12px; cursor: pointer }
+.display-reset { width: 100%; margin-top: 4px }
+.display-reset:hover, .display-done:hover { border-color: var(--link); color: var(--link) }
+.display-done { display: none }
+@media (max-width: 640px) {
+    .display-panel { left: 0 !important; right: 0 !important; top: auto !important; bottom: 0; width: auto; max-height: 85vh; max-height: 85dvh;
+        border-radius: 16px 16px 0 0; padding-bottom: max(16px, env(safe-area-inset-bottom, 0px)) }
+    :root[data-style="legacy"] .display-panel { border-radius: 4px 4px 0 0 }
+    .display-done { display: inline-block }
+    .display-options label, .display-reset, .display-done { min-height: 44px }
+}

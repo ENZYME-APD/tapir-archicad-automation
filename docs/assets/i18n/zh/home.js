@@ -11,8 +11,8 @@
     'Number every door along a line. Colour the model by any property. Check a project before it goes out. Tapir adds hundreds of commands to Archicad and a palette that runs scripts in one click.':
         '沿一条线为所有门编号。按任意属性为模型着色。在项目交付前进行检查。Tapir 为 Archicad 增加了数百条命令，以及一个一键运行脚本的面板。',
     'Download the Tapir Installer': '下载 Tapir Installer',
-    'Download <span class="os">WINDOWS</span>': '下载 <span class="os">WINDOWS</span>',
-    'Download <span class="os">MACOS</span>': '下载 <span class="os">MACOS</span>',
+    'Download <span class="os">Windows</span>': '下载 <span class="os">Windows</span>',
+    'Download <span class="os">macOS</span>': '下载 <span class="os">macOS</span>',
     '100% free': '100% 免费',
     'Open source (MIT)': '开源 (MIT)',
     'Watch the tutorials': '观看教程',
