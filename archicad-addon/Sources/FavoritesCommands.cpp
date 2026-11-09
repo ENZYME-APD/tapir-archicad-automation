@@ -11,6 +11,7 @@
 #include "ACAPI/Result.hpp"
 #include "ACAPI/Favorite.hpp"
 #include "ACAPI/Element/Opening/OpeningDefault.hpp"
+#include <cmath>
 #include <optional>
 #include <vector>
 #endif
@@ -1626,6 +1627,36 @@ static GSErrCode RestoreHomeStory (const API_Element& elementBefore)
     return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
 }
 
+// Puts a Stair's flight width back to what it was before the Favorite was applied (#2528). The
+// width is part of the stair's geometry, like its baseline, which the Favorite never moves (see
+// MemoCarriesGeometry), but it lives in API_StairType, so the full mask handed to
+// ACAPI_Element_ChangeParameters applied the Favorite's width: a 1.25 m stair came out 1.10 m
+// wide on its own baseline. The target's width is already passed in with the Favorite; should
+// Archicad still have changed it, it is written back with the call ModifyStairs makes, without a
+// memo, so the baseline stays where it is.
+static GSErrCode RestoreStairFlightWidth (const API_Element& elementBefore)
+{
+    if (GetElemTypeId (elementBefore.header) != API_StairID) {
+        return NoError;
+    }
+
+    API_Element element = {};
+    element.header.guid = elementBefore.header.guid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+    if (std::abs (element.stair.flightWidth - elementBefore.stair.flightWidth) < 1e-6) {
+        return NoError;
+    }
+
+    element.stair.flightWidth = elementBefore.stair.flightWidth;
+    API_Element mask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (mask);
+    ACAPI_ELEMENT_MASK_SET (mask, API_StairType, flightWidth);
+    return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+}
+
 ApplyFavoritesToElementsCommand::ApplyFavoritesToElementsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -1662,7 +1693,7 @@ GS::Optional<GS::UniString> ApplyFavoritesToElementsCommand::GetInputParametersS
             },
             "applySettings": {
                 "type": "boolean",
-                "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc.). Geometry (position, floor, and dimensions such as a Wall's height) is never applied - the element stays on its own home story - except that a Window or Door takes the Favorite's library part and parameters, size included, while keeping its wall, marker and placement. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. A Dimension's text size, text pen and text frame are not changed (tested in Archicad 28): the dimension creation commands take textHeight, textPen and textFrame for them. Default is true."
+                "description": "Whether to apply the Favorite's settings-type parameters (structure, materials, pens, etc.). Geometry (position, floor, and dimensions such as a Wall's height) is never applied - the element stays on its own home story - except that a Window or Door takes the Favorite's library part and parameters, size included, while keeping its wall, marker and placement. A Stair keeps its own baseline and flight width. For the hierarchical types (Stair, Railing, Curtain Wall) the settings of the sub-elements are not applied, because they are inseparable from the Favorite's own geometry. A Dimension's text size, text pen and text frame are not changed (tested in Archicad 28): the dimension creation commands take textHeight, textPen and textFrame for them. Default is true."
             },
             "applyClassifications": {
                 "type": "boolean",
@@ -1791,9 +1822,18 @@ static GS::ObjectState ApplyFavoriteToElement (const API_Element& targetElement,
             favorite.element.header.floorInd = targetElement.header.floorInd;
             mask.header.floorInd = 0;
 
+            // A Stair's flight width is its geometry too, kept like its baseline (#2528).
+            if (GetElemTypeId (targetElement.header) == API_StairID) {
+                favorite.element.stair.flightWidth = targetElement.stair.flightWidth;
+                mask.stair.flightWidth = 0;
+            }
+
             err = ACAPI_Element_ChangeParameters (targetGuids, &favorite.element, memoToApply, &mask);
             if (err == NoError) {
                 err = RestoreHomeStory (targetElement);
+            }
+            if (err == NoError) {
+                err = RestoreStairFlightWidth (targetElement);
             }
         }
     }
