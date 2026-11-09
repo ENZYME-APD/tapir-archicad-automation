@@ -34,6 +34,10 @@
         'Supprimer une seule direction d\'un ajustement entre deux toits ou coques qui s\'ajustent l\'un l\'autre',
     'Remove the trim with <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a>, which removes both directions, then trim the other direction again with <a href="../archicad-addon/#TrimElements">TrimElements</a>.':
         'Supprimez l\'ajustement avec <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a>, qui supprime les deux directions, puis ajustez à nouveau l\'autre direction avec <a href="../archicad-addon/#TrimElements">TrimElements</a>.',
+    'Read which slab or stair edge a railing is linked to, or link a railing to one':
+        'Lire à quel bord de dalle ou d\'escalier un garde-corps est lié, ou lier un garde-corps à l\'un d\'eux',
+    'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
+        'Lisez le contour de la dalle avec <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> et créez un garde-corps statique le long du bord avec <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. Quand la dalle change, supprimez le garde-corps et créez-le à nouveau.',
 
     // Navigator and views
     'Navigator and views': 'Navigateur et vues',

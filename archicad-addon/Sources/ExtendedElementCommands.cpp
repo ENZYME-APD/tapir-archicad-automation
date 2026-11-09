@@ -4229,6 +4229,28 @@ GS::Optional<GS::UniString> ApplyWindowOrDoorDetails (API_Element& element, API_
     return {};
 }
 
+// The result of ModifyWindows/ModifyDoors after ACAPI_Element_Change answered NoError: a
+// success, unless the item gave a displayOption that the window or door does not have now.
+// Archicad answers NoError for every display option and keeps another one on a window or
+// door (OutLinesOnly was read back as CutOnly, #2470), so it is read back here.
+GS::ObjectState CheckWindowOrDoorDisplayOptionApplied (const API_Element& element, const GS::ObjectState& item, const char* noun)
+{
+    GS::UniString displayOptionStr;
+    if (!item.Get ("displayOption", displayOptionStr)) {
+        return CreateSuccessfulExecutionResult ();
+    }
+    API_Element changed = {};
+    changed.header.guid = element.header.guid;
+    if (ACAPI_Element_Get (&changed) != NoError) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, GS::UniString::Printf ("The %s was modified, but it could not be read back to check its displayOption.", noun));
+    }
+    if (changed.window.openingBase.displayOption != element.window.openingBase.displayOption) {
+        return CreateFailedExecutionResult (APIERR_REFUSEDPAR, GS::UniString::Printf ("Archicad did not apply displayOption '%T' to the %s, it has '%T' now; the other given fields were changed.",
+            displayOptionStr.ToPrintf (), noun, ElemDisplayOptionToString (changed.window.openingBase.displayOption).ToPrintf ()));
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
 const std::pair<const char*, API_SkylightAnchorID> SkylightAnchorPoints[] = {
     { "BottomCenter", APISkylightAnchor_BC }, { "BottomLeft", APISkylightAnchor_BL }, { "BottomRight", APISkylightAnchor_BR },
     { "TopCenter", APISkylightAnchor_TC }, { "TopLeft", APISkylightAnchor_TL }, { "TopRight", APISkylightAnchor_TR }
@@ -4658,7 +4680,16 @@ void AddMorphBodyFromMemo (const API_Element& elem, GS::ObjectState& typeSpecifi
         return;
     }
     const Modeler::MeshBody& meshBody = *memo.morphBody;
-    body.Add ("isClosed", meshBody.IsClosedBody ());
+    // Closed means every edge has two faces. This is counted from the edges, not read from
+    // MeshBody::IsClosedBody: that is a status flag, which Archicad does not set again when
+    // ModifyMorphs replaces the body, so a closed tetrahedron was reported open (#2470).
+    {
+        bool isClosed = meshBody.GetPolygonCount () > 0 && meshBody.GetEdgeCount () > 0;
+        for (ULong i = 0; isClosed && i < meshBody.GetEdgeCount (); ++i) {
+            isClosed = meshBody.GetConstEdge (i).GetPolygonCount () == 2;
+        }
+        body.Add ("isClosed", isClosed);
+    }
 
     {
         const auto& vertices = body.AddList<GS::ObjectState> ("vertices");
@@ -11555,6 +11586,15 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                         },
                         "buildingMaterialId": { "$ref": "#/AttributeId" },
                         "compositeId": { "$ref": "#/AttributeId" },
+                        "thickness": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "The new thickness of a Basic shell, in meters (or of a shell this item makes Basic with 'structureType'). The shell's reference surface (the surface its profile and base plane define) stays in place and the thickness is measured from it to the side 'isFlipped' selects, so only the opposite face moves. A Composite shell takes its thickness from its composite: the item fails, and nothing of it is written; change the skins of the composite attribute, or make the shell Basic in the same item."
+                        },
+                        "isFlipped": {
+                            "type": "boolean",
+                            "description": "The side of the reference surface the thickness is applied to, as CreateShells takes it and GetDetailsOfElements returns it. Changing it keeps the reference surface in place and moves the body to its other side."
+                        },
                         "topMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of one face of the shell (topMaterial of GetDetailsOfElements); overridden false clears the override." },
                         "sideMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the edges of the shell; overridden false clears the override." },
                         "bottomMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the other face of the shell (bottomMaterial of GetDetailsOfElements); overridden false clears the override." },
@@ -11613,6 +11653,31 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
             if (surfaceError.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, surfaceError.Get ()));
                 continue;
+            }
+
+            // The thickness of a Basic shell (#2424). Checked against the structure the shell has
+            // after this item's structure fields, so an item may make a shell Basic and give it a
+            // thickness at once. A Composite shell's thickness is the sum of its composite's skins.
+            const GS::Optional<double> thickness = GetOptionalDouble (item, "thickness");
+            if (thickness.HasValue ()) {
+                if (thickness.Get () <= 0.0) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'thickness' must be greater than 0."));
+                    continue;
+                }
+                if (element.shell.shellBase.modelElemStructureType != API_BasicStructure) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "The shell is Composite: its thickness comes from its composite attribute. Change the skins of the composite, or make the shell Basic with 'structureType' in the same item."));
+                    continue;
+                }
+                element.shell.shellBase.thickness = thickness.Get ();
+                ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.thickness);
+                changed = true;
+            }
+
+            bool isFlipped = false;
+            if (item.Get ("isFlipped", isFlipped)) {
+                element.shell.isFlipped = isFlipped;
+                ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, isFlipped);
+                changed = true;
             }
 
             if (!changed) {
@@ -12179,7 +12244,11 @@ GS::ObjectState ModifyWindowsCommand::Execute (const GS::ObjectState& parameters
             }
 
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
-            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify window."));
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to modify window."));
+                continue;
+            }
+            results.Push (CheckWindowOrDoorDisplayOptionApplied (element, item, "window"));
         }
     });
 }
@@ -12257,7 +12326,11 @@ GS::ObjectState ModifyDoorsCommand::Execute (const GS::ObjectState& parameters, 
             }
 
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
-            results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify door."));
+            if (err != NoError) {
+                results.Push (CreateFailedExecutionResult (err, "Failed to modify door."));
+                continue;
+            }
+            results.Push (CheckWindowOrDoorDisplayOptionApplied (element, item, "door"));
         }
     });
 }
@@ -12702,6 +12775,28 @@ GS::ObjectState ModifyMorphsCommand::Execute (const GS::ObjectState& parameters,
                 if (err != NoError) {
                     results.Push (CreateFailedExecutionResult (err, "Morph modified, but failed to set its edge type."));
                     continue;
+                }
+            }
+
+            // A new body comes back casting a shadow again: a morph set to cast none did after
+            // its body was replaced (#2470). The shadow settings the morph had, or the ones the
+            // item gave, are written again on their own when Archicad did not keep them.
+            if (replacingBody) {
+                API_Element changedMorph = {};
+                changedMorph.header.guid = element.header.guid;
+                if (ACAPI_Element_Get (&changedMorph) == NoError &&
+                    (changedMorph.morph.castShadow != element.morph.castShadow || changedMorph.morph.receiveShadow != element.morph.receiveShadow)) {
+                    API_Element shadowMask = {};
+                    ACAPI_ELEMENT_MASK_CLEAR (shadowMask);
+                    changedMorph.morph.castShadow = element.morph.castShadow;
+                    changedMorph.morph.receiveShadow = element.morph.receiveShadow;
+                    ACAPI_ELEMENT_MASK_SET (shadowMask, API_MorphType, castShadow);
+                    ACAPI_ELEMENT_MASK_SET (shadowMask, API_MorphType, receiveShadow);
+                    err = ACAPI_Element_Change (&changedMorph, &shadowMask, nullptr, 0, true);
+                    if (err != NoError) {
+                        results.Push (CreateFailedExecutionResult (err, "Morph modified, but failed to keep its shadow settings with the new body."));
+                        continue;
+                    }
                 }
             }
 
@@ -16267,6 +16362,26 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetInputParametersSchema () c
                         "floorIndex": {
                             "type": "integer",
                             "description": "The new home story index (as returned by GetStories). The bottom offset is kept, or set from bottomOffset when that is given too, so the railing moves with the story."
+                        },
+                        "visibility": {
+                            "$ref": "#/StoryVisibility",
+                            "description": "The stories the railing is shown on (API_RailingType::visibility), as GetDetailsOfElements returns it. Setting it without isAutoOnStoryVisibility also turns isAutoOnStoryVisibility off, as Archicad would otherwise recompute it from the elevation of the railing. The fields not given are false or 0. A combination Archicad does not take is reported as a failure."
+                        },
+                        "isAutoOnStoryVisibility": {
+                            "type": "boolean",
+                            "description": "When true, Archicad recomputes 'visibility' automatically from the actual elevation of the railing (API_RailingType::isAutoOnStoryVisibility) and ignores a visibility given together with it."
+                        },
+                        "referenceLinePen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "The new pen index of the railing's reference line (API_RailingType::referenceLinePen)."
+                        },
+                        "contourPen": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 255,
+                            "description": "The new pen index of the railing's contour line (API_RailingType::contourPen)."
                         }
                     },
                     "additionalProperties": false,
@@ -16288,9 +16403,9 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetRawResponseSchema () const
     return ModifyWallsCommand ().GetRawResponseSchema ();
 }
 
-// Only fields of the railing element itself are changed, never its memo: the reference line, nodes,
-// segments, posts and rails stay as they are. The height goes to defSegment.height, as the DevKit's
-// Element_Test (Do_Railing_Edit) changes it. The railing is read back afterwards, so a value Archicad
+// Only fields of the railing element itself are changed (heights, home story, story visibility and the
+// floor plan pens), never its memo: the reference line, nodes, segments, posts and rails stay as they
+// are. The height goes to defSegment.height, as the DevKit's Element_Test (Do_Railing_Edit) changes it. The railing is read back afterwards, so a value Archicad
 // did not take (for example a base it derives from the elevations of the reference line vertices,
 // memo.polyZCoords) is reported as a failure instead of a success.
 GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
@@ -16336,7 +16451,20 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, GS::UniString::Printf ("floorIndex %d is not a story of the project; see GetStories for the valid story indices.", static_cast<int> (floorIndex))));
                 continue;
             }
-            if (!hasHeight && !hasBottomOffset && !hasFloorIndex) {
+            GS::ObjectState visibilityOs;
+            const bool hasVisibility = item.Get ("visibility", visibilityOs);
+            bool isAutoOnStoryVisibility = false;
+            const bool hasIsAutoOnStoryVisibility = item.Get ("isAutoOnStoryVisibility", isAutoOnStoryVisibility);
+            Int32 referenceLinePen = 0;
+            const bool hasReferenceLinePen = item.Get ("referenceLinePen", referenceLinePen);
+            Int32 contourPen = 0;
+            const bool hasContourPen = item.Get ("contourPen", contourPen);
+            if ((hasReferenceLinePen && (referenceLinePen < 1 || referenceLinePen > 255)) ||
+                (hasContourPen && (contourPen < 1 || contourPen > 255))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "A pen index must be between 1 and 255."));
+                continue;
+            }
+            if (!hasHeight && !hasBottomOffset && !hasFloorIndex && !hasVisibility && !hasIsAutoOnStoryVisibility && !hasReferenceLinePen && !hasContourPen) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "No railing fields to modify."));
                 continue;
             }
@@ -16354,6 +16482,28 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
             if (hasFloorIndex) {
                 element.header.floorInd = floorIndex;
                 ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+            }
+            if (hasVisibility) {
+                element.railing.visibility = GetStoryVisibilityFromObjectState (visibilityOs);
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, visibility);
+                if (!hasIsAutoOnStoryVisibility) {
+                    // As on walls: while isAutoOnStoryVisibility is on, Archicad recomputes the
+                    // visibility from the elevation of the railing and drops the one given here.
+                    element.railing.isAutoOnStoryVisibility = false;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, isAutoOnStoryVisibility);
+                }
+            }
+            if (hasIsAutoOnStoryVisibility) {
+                element.railing.isAutoOnStoryVisibility = isAutoOnStoryVisibility;
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, isAutoOnStoryVisibility);
+            }
+            if (hasReferenceLinePen) {
+                element.railing.referenceLinePen = (short) referenceLinePen;
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, referenceLinePen);
+            }
+            if (hasContourPen) {
+                element.railing.contourPen = (short) contourPen;
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, contourPen);
             }
 
             err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
@@ -16376,6 +16526,27 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
             }
             if (std::abs (changed.railing.bottomOffset - element.railing.bottomOffset) > tolerance) {
                 notApplied += GS::UniString::Printf (" bottomOffset is %.4f instead of %.4f.", changed.railing.bottomOffset, element.railing.bottomOffset);
+            }
+            if ((hasIsAutoOnStoryVisibility || hasVisibility) && changed.railing.isAutoOnStoryVisibility != element.railing.isAutoOnStoryVisibility) {
+                notApplied += GS::UniString::Printf (" isAutoOnStoryVisibility is %s.", changed.railing.isAutoOnStoryVisibility ? "true" : "false");
+            }
+            // A visibility given together with isAutoOnStoryVisibility true is recomputed by Archicad,
+            // so it is only compared when the automatic visibility is off.
+            if (hasVisibility && !element.railing.isAutoOnStoryVisibility) {
+                const API_StoryVisibility& want = element.railing.visibility;
+                const API_StoryVisibility& got = changed.railing.visibility;
+                if (got.showOnHome != want.showOnHome || got.showAllAbove != want.showAllAbove || got.showAllBelow != want.showAllBelow ||
+                    got.showRelAbove != want.showRelAbove || got.showRelBelow != want.showRelBelow) {
+                    notApplied += GS::UniString::Printf (" visibility is showOnHome %s, showAllAbove %s, showAllBelow %s, showRelAbove %d, showRelBelow %d.",
+                        got.showOnHome ? "true" : "false", got.showAllAbove ? "true" : "false", got.showAllBelow ? "true" : "false",
+                        static_cast<int> (got.showRelAbove), static_cast<int> (got.showRelBelow));
+                }
+            }
+            if (hasReferenceLinePen && changed.railing.referenceLinePen != referenceLinePen) {
+                notApplied += GS::UniString::Printf (" referenceLinePen is %d.", static_cast<int> (changed.railing.referenceLinePen));
+            }
+            if (hasContourPen && changed.railing.contourPen != contourPen) {
+                notApplied += GS::UniString::Printf (" contourPen is %d.", static_cast<int> (changed.railing.contourPen));
             }
             if (hasHeight) {
                 API_ElementMemo memo = {};
