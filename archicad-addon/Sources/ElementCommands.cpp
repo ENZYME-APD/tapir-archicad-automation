@@ -2245,15 +2245,18 @@ static void AddShellGeometry (const API_Element& elem, GS::ObjectState& typeSpec
     }
 }
 
-// The reference line of a railing (memo.coords from index 1, one vertex per node) and the height of
-// each generated segment, which can differ from defSegment.height once a segment was edited.
+// The reference line of a railing (memo.coords from index 1, one vertex per node), the height of
+// each generated segment, which can differ from defSegment.height once a segment was edited, and
+// the settings of each segment and node that ModifyRailings can change one by one.
 static void AddRailingReferenceLineAndSegments (const API_Element& elem, GS::ObjectState& typeSpecificDetails)
 {
     API_ElementMemo memo = {};
     const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
     const auto& referenceLine = typeSpecificDetails.AddList<GS::ObjectState> ("referenceLine");
     const auto& segmentHeights = typeSpecificDetails.AddList<double> ("segmentHeights");
-    if (ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_Polygon | APIMemoMask_RailingSegment) != NoError) {
+    const auto& segments = typeSpecificDetails.AddList<GS::ObjectState> ("segments");
+    const auto& nodes = typeSpecificDetails.AddList<GS::ObjectState> ("nodes");
+    if (ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_Polygon | APIMemoMask_RailingSegment | APIMemoMask_RailingNode) != NoError) {
         return;
     }
     if (memo.coords != nullptr) {
@@ -2265,7 +2268,25 @@ static void AddRailingReferenceLineAndSegments (const API_Element& elem, GS::Obj
     }
     if (memo.railingSegments != nullptr) {
         for (UInt32 i = 0; i < elem.railing.nSegments; ++i) {
-            segmentHeights (memo.railingSegments[i].height);
+            const API_RailingSegmentType& segment = memo.railingSegments[i];
+            segmentHeights (segment.height);
+            GS::ObjectState segmentDetails;
+            segmentDetails.Add ("elementId", CreateGuidObjectState (segment.head.guid));
+            segmentDetails.Add ("height", segment.height);
+            segmentDetails.Add ("lateralOffset", segment.yOffset);
+            segmentDetails.Add ("referenceLineLocation", segment.refLineLocation == APIRLL_Left ? "Left" : (segment.refLineLocation == APIRLL_Right ? "Right" : "Center"));
+            segments (segmentDetails);
+        }
+    }
+    if (memo.railingNodes != nullptr) {
+        for (UInt32 i = 0; i < elem.railing.nNodes; ++i) {
+            const API_RailingNodeType& node = memo.railingNodes[i];
+            GS::ObjectState nodeDetails;
+            nodeDetails.Add ("elementId", CreateGuidObjectState (node.head.guid));
+            nodeDetails.Add ("postOffset", node.postOffset);
+            nodeDetails.Add ("elevation", node.elevation);
+            nodeDetails.Add ("unifyPatterns", node.unifyPatterns);
+            nodes (nodeDetails);
         }
     }
 }
