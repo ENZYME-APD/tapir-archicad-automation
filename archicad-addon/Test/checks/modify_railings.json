@@ -1,6 +1,6 @@
 {
   "title": "ModifyRailings: one segment and one node of a two-segment railing, the rest kept (#2446)",
-  "minTapir": "1.8.1",
+  "minTapir": "2.0.1",
   "steps": [
     {
       "id": "create a two-segment railing on story 0",
