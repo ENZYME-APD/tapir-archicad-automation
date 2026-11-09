@@ -1,7 +1,7 @@
 # Tapir
 
 > Tapir is a free, open-source (MIT) add-on for Graphisoft Archicad 25–30, by
-> ENZYME-APD and its community. It adds 641 JSON commands to Archicad's own JSON API, a palette
+> ENZYME-APD and its community. It adds 789 JSON commands to Archicad's own JSON API, a palette
 > that runs Python scripts in one click and a Grasshopper plugin (package `tapir` on the Rhino Package
 > Manager); community MCP servers let AI assistants drive Archicad through it. A new release ships
 > every Monday.

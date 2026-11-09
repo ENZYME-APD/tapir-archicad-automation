@@ -111,8 +111,12 @@
 <div class="toolbar" id="toolbar">
     <button type="button" class="sections-button" id="sections-button" aria-controls="sidebar">☰ Sections</button>
     <input type="search" id="search" placeholder="Search, e.g. Category or MEP::Pipe" aria-label="Search the checklist">
-    <div class="chip-filter">
-        <span class="chips-title" id="statuses-title">Show items that are:</span>
+    <button type="button" class="filters-button" id="filters-button" aria-controls="filter-sheet" aria-expanded="false">Filters</button>
+    <div class="chip-filter" id="filter-sheet">
+        <div class="sheet-head">
+            <span class="chips-title" id="statuses-title">Show items that are:</span>
+            <button type="button" class="sheet-done" id="filters-done">Done</button>
+        </div>
         <div class="chips" id="statuses" role="group" aria-labelledby="statuses-title"></div>
     </div>
     <span class="filter-status" id="filter-status" aria-live="polite"></span>
@@ -409,6 +413,7 @@ function render () {
         groups.get (item.group).push (item);
         total++;
     }
+    updateFiltersButton ();
     const status = document.getElementById ('filter-status');
     status.replaceChildren (`${plural (total, 'item')} in ${plural (groups.size, 'group')}`);
     if (groupFilter) {
@@ -486,6 +491,33 @@ function renderSidebar () {
     });
 }
 
+// Phones: the status chips are in a sheet that the Filters button opens, and the
+// "N items in M groups" line is at the top of the list instead of in the pinned bar.
+const PHONE = matchMedia ('(max-width: 640px)');
+
+function updateFiltersButton () {
+    const chips = [...document.querySelectorAll ('#statuses .chip')];
+    const on = chips.filter (c => c.getAttribute ('aria-pressed') === 'true').length;
+    document.getElementById ('filters-button').textContent = `Filters · ${on} of ${chips.length}`;
+}
+
+function setFiltersOpen (open, returnFocus) {
+    document.body.classList.toggle ('filters-open', open);
+    const button = document.getElementById ('filters-button');
+    button.setAttribute ('aria-expanded', String (open));
+    const first = document.querySelector ('#statuses .chip');
+    // The sheet is visibility: hidden until the class takes effect, so focus it a frame later.
+    if (open && first) requestAnimationFrame (() => first.focus ());
+    else if (!open && returnFocus && PHONE.matches) button.focus ();
+}
+
+function placeFilterStatus () {
+    const status = document.getElementById ('filter-status');
+    if (PHONE.matches) document.getElementById ('list').before (status);
+    else { document.getElementById ('toolbar').append (status); setFiltersOpen (false, false); }
+    updateToolbarHeight ();
+}
+
 function updateToolbarHeight () {
     document.documentElement.style.setProperty ('--toolbar-height', document.getElementById ('toolbar').offsetHeight + 'px');
 }
@@ -506,6 +538,17 @@ async function main () {
         chip.addEventListener ('click', () => { chip.setAttribute ('aria-pressed', String (chip.getAttribute ('aria-pressed') !== 'true')); render (); });
         statuses.append (chip);
     }
+    updateFiltersButton ();
+    placeFilterStatus ();
+    PHONE.addEventListener ('change', placeFilterStatus);
+    document.getElementById ('filters-button').addEventListener ('click', () => setFiltersOpen (!document.body.classList.contains ('filters-open'), false));
+    document.getElementById ('filters-done').addEventListener ('click', () => setFiltersOpen (false, true));
+    document.addEventListener ('keydown', event => {
+        if (event.key === 'Escape' && document.body.classList.contains ('filters-open')) setFiltersOpen (false, true);
+    });
+    document.addEventListener ('click', event => {
+        if (document.body.classList.contains ('filters-open') && !event.target.closest ('#filter-sheet, #filters-button')) setFiltersOpen (false, false);
+    });
     for (const url of [DATA_URL, 'api-coverage.json']) {
         try {
             const response = await fetch (url, { cache: 'no-cache' });
