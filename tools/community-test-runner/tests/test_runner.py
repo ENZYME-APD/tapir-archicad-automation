@@ -129,6 +129,21 @@ class EngineTest(unittest.TestCase):
         v = {"n": 3, "g": "G-1"}
         self.assertEqual(r.substitute({"a": "${n}", "b": "id ${g}", "c": ["${g}"]}, v), {"a": 3, "b": "id G-1", "c": ["G-1"]})
 
+    def test_expectations_use_saved_values(self):
+        fake = FakeArchicad()
+        spec = {"steps": [{"command": "CreateWalls", "params": {"wallsData": [{}]},
+                           "save": {"w": "elements[0].elementId.guid"},
+                           "expect": [{"path": "elements[0].elementId.guid", "eq": "${w}", "name": "eq"},
+                                      {"path": "elements[0].elementId.guid", "ne": "G-9999", "name": "ne"},
+                                      {"path": "elements[0].elementId.guid", "contains": "${w}", "name": "contains"},
+                                      {"path": "elements[0].elementId.guid", "eq": "${missing}", "name": "unknown"}]}]}
+        rows = {row["what"]: row for row in r.CheckRun(fake, spec).run()}
+        self.assertTrue(rows["eq"]["ok"])
+        self.assertTrue(rows["ne"]["ok"])
+        self.assertTrue(rows["contains"]["ok"])
+        self.assertFalse(rows["unknown"]["ok"])
+        self.assertIn("unknown variable", rows["unknown"]["detail"])
+
     def test_expressions_allow_arithmetic_only(self):
         self.assertAlmostEqual(r.evaluate("(${a} - ${b}) * 2", {"a": 5, "b": 1.5}), 7.0)
         for hostile in ("__import__('os')", "${a}.real", "open('x')", "[1][0]"):
