@@ -188,6 +188,9 @@
     }
   ],
   "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${line}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${s1}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${s2}" } } ] } },
     { "command": "DeleteAttributes", "params": { "attributesToDelete": [ { "attributeType": "Composite", "attributeId": { "attributeId": { "guid": "${comp}" } } } ] } },
     {
       "command": "DeleteAttributes",
