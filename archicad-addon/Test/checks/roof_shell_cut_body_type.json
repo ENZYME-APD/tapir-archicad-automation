@@ -1,6 +1,6 @@
 {
   "title": "ModifyRoofs and ModifyShells set the trimming body (cutBodyType), GetDetailsOfElements reads it back and a trim stays",
-  "minTapir": "1.8.1",
+  "minTapir": "2.0.1",
   "requiresEmpty": [],
   "steps": [
     {
