@@ -2378,8 +2378,17 @@
         "type": "object",
         "description": "One edge of a profile skin's outline.",
         "properties": {
+            "surfaceFromBuildingMaterial": {
+                "type": "boolean",
+                "description": "Whether the edge takes the surface of the skin's building material. False when the edge has a custom surface (surfaceId)."
+            },
+            "surfaceId": {
+                "$ref": "#/AttributeIdArrayItem",
+                "description": "The custom surface of the edge (Profile Manager: Apply Custom Surface or Line Type to Profile Edge). Only when surfaceFromBuildingMaterial is false and a surface is set."
+            },
             "buildingMaterialId": {
-                "$ref": "#/AttributeIdArrayItem"
+                "$ref": "#/AttributeIdArrayItem",
+                "description": "The building material stored on the edge. Only when surfaceFromBuildingMaterial is true and one is stored."
             },
             "pen": {
                 "type": "integer"
@@ -3392,7 +3401,16 @@
                 "$ref": "#/AttributeIdArrayItem"
             },
             "buildingMaterialId": {
-                "$ref": "#/AttributeIdArrayItem"
+                "$ref": "#/AttributeIdArrayItem",
+                "description": "Stores this building material on the edge and makes the edge take the surface of the skin's building material."
+            },
+            "surfaceId": {
+                "$ref": "#/AttributeIdArrayItem",
+                "description": "A custom surface for the edge (Profile Manager: Apply Custom Surface or Line Type to Profile Edge). Sets surfaceFromBuildingMaterial to false."
+            },
+            "surfaceFromBuildingMaterial": {
+                "type": "boolean",
+                "description": "True: the edge takes the surface of the skin's building material, its custom surface is no longer used. False: the edge uses its custom surface (give surfaceId if it has none yet). Applied after buildingMaterialId and surfaceId."
             }
         },
         "additionalProperties": false,
