@@ -302,6 +302,10 @@ GS::Optional<GS::UniString> ApplyColumnVeneer (const GS::ObjectState& veneer, AP
 // when no loaded font has the name, or the index none.
 GS::Optional<short> GetFontIndexFromName (const GS::UniString& fontName);
 GS::Optional<GS::UniString> GetFontNameFromIndex (short fontIndex);
+// Archicad's own font search (ACAPI_Font_SearchFont, ACAPI_Attribute_Search before Archicad 27),
+// limited to the fonts that were loaded before it: for a name no font has, Archicad can answer
+// NoError with a new index past the loaded fonts (#2470), which is refused here. NoValue then.
+GS::Optional<short> SearchLoadedFont (const GS::UniString& fontName);
 
 class DatabaseIdResolver {
 public:

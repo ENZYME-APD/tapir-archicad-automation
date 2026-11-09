@@ -3348,7 +3348,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetAnalyticalLoadGroupsCommand> (
             analyticalCommands, "1.8.0",
-            "Retrieves the structural analysis load groups of the project with all their fields."
+            "Retrieves the structural analysis load groups of the project, or the ones given by their ids, with all their fields."
         );
         err |= RegisterCommand<GetAnalyticalLoadCasesCommand> (
             analyticalCommands, "1.8.0",
@@ -3356,7 +3356,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<GetAnalyticalLoadCombinationsCommand> (
             analyticalCommands, "1.8.0",
-            "Retrieves the structural analysis load combinations of the project with all their fields and load factors."
+            "Retrieves the structural analysis load combinations of the project, or the ones given by their ids, with all their fields and load factors."
         );
         err |= RegisterCommand<CreateAnalyticalLoadGroupsCommand> (
             analyticalCommands, "1.8.0",
