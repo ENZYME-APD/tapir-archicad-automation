@@ -5,13 +5,15 @@
    phone menu's button and the Display panel), English here, translated by common.js like the rest.
 
    Display: the visitor's look (Standard or Legacy), mode (System, Light, Dark or High contrast),
-   accent (the look's own, Blue, Purple or Orange), text size (100, 115, 130 or 90 %) and font (the
-   look's own, System or Readable), kept in localStorage under tapir-display as an object of the
-   settings that differ from the default, e.g. {"style":"legacy","theme":"dark","size":"115"}, and
-   applied as data-style, data-theme, data-accent, data-size and data-font on <html> (no attribute
+   accent (the look's own, Blue, Purple or Orange), text size (100, 115, 130 or 90 %), font (the
+   look's own, System or Readable), spacing (Comfortable or Compact) and motion (System, Reduced or
+   Full), kept in localStorage under tapir-display as an object of the settings that differ from the
+   default, e.g. {"style":"legacy","theme":"dark","size":"115"}, and applied as data-style,
+   data-theme, data-accent, data-size, data-font, data-spacing and data-motion on <html> (no attribute
    for a default). High contrast is one look, the same whichever Look and Accent are chosen: with it,
    neither data-style nor data-accent is set (the stored choices stay, for the other modes), and the
-   panel's Accent is disabled; Text size and Font apply in it too. The head's inline script applies
+   panel's Accent is disabled; the other settings apply in it too. motion.js and home.js read
+   data-motion, and follow a change of it (tapir-display-change). The head's inline script applies
    them before the first paint, moves an old tapir-theme choice into tapir-display, sets the
    theme-color metas and loads Fraunces for Legacy's own font only and Atkinson Hyperlegible for
    Readable only; this script does the same when the choice changes. Keep the two in step
@@ -55,7 +57,9 @@
         { key: 'theme', attribute: 'data-theme', legend: 'Mode', inContrast: true, options: [['system', 'System'], ['light', 'Light'], ['dark', 'Dark'], ['contrast', 'High contrast']] },
         { key: 'accent', attribute: 'data-accent', legend: 'Accent', inContrast: false, options: [['look', 'Green', 'Ochre'], ['blue', 'Blue'], ['purple', 'Purple'], ['orange', 'Orange']] },
         { key: 'size', attribute: 'data-size', legend: 'Text size', inContrast: true, options: [['100', '100%'], ['115', '115%'], ['130', '130%'], ['90', '90%']] },
-        { key: 'font', attribute: 'data-font', legend: 'Font', inContrast: true, options: [['look', 'Inter', 'Fraunces & Inter'], ['system', 'System'], ['readable', 'Readable']] }
+        { key: 'font', attribute: 'data-font', legend: 'Font', inContrast: true, options: [['look', 'Inter', 'Fraunces & Inter'], ['system', 'System'], ['readable', 'Readable']] },
+        { key: 'spacing', attribute: 'data-spacing', legend: 'Spacing', inContrast: true, options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] },
+        { key: 'motion', attribute: 'data-motion', legend: 'Motion', inContrast: true, options: [['system', 'System'], ['reduced', 'Reduced'], ['full', 'Full']] }
     ];
     // The browser bar colour (the header's): [under prefers-color-scheme: dark, otherwise].
     var THEME_COLORS = { legacy: ['#2D3A30', '#2D3A30'], contrast: ['#FFFFFF', '#FFFFFF'], standard: { system: ['#11161D', '#FFFFFF'], light: ['#FFFFFF', '#FFFFFF'], dark: ['#11161D', '#11161D'] } };

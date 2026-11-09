@@ -1,6 +1,6 @@
 /* Motion prototype: the drawing set comes alive as you scroll. Everything here is gated by
-   html.motion (set by motion.js) and switched off by prefers-reduced-motion, so the page never
-   renders blank without JavaScript. */
+   html.motion (set by motion.js) and switched off by the Display menu's Motion Reduced, or by
+   prefers-reduced-motion unless Motion is Full, so the page never renders blank without JavaScript. */
 :root { --ease: cubic-bezier(.2, .8, .2, 1);
     /* The colours, textures, shadows and font drawn here (the palette is site.css's): the crosshair,
        the terminal's live dot, the header's scroll shadow, the button's sheen and the splash. */
@@ -78,10 +78,17 @@
 .motion .stack .wire { background: linear-gradient(90deg, transparent, var(--ochre), transparent) no-repeat; background-size: 30% 1px; background-position: -40% 100%; animation: m-wire 2.6s linear infinite; padding-bottom: 4px }
 @keyframes m-wire { to { background-position: 140% 100% } }
 
+/* Less motion (the Display menu's Motion, see site.css): under System when the system asks for it, unless
+   Full is chosen, and always with Reduced, which also keeps the arrows and the play button still on hover
+   (motion.js does not run then, so html.motion is not set). */
 @media (prefers-reduced-motion: reduce) {
-    .motion .rv, .motion .dim::before, .motion .dim::after, .motion .dim i, .motion .dim span, .motion .term pre .ln { opacity: 1 !important; transform: none !important }
-    .m-coords, .m-cross-x, .m-cross-y { display: none }
+    :root:not([data-motion="full"]) .motion .rv, :root:not([data-motion="full"]) .motion .dim::before, :root:not([data-motion="full"]) .motion .dim::after,
+    :root:not([data-motion="full"]) .motion .dim i, :root:not([data-motion="full"]) .motion .dim span, :root:not([data-motion="full"]) .motion .term pre .ln { opacity: 1 !important; transform: none !important }
+    :root:not([data-motion="full"]) .m-coords, :root:not([data-motion="full"]) .m-cross-x, :root:not([data-motion="full"]) .m-cross-y { display: none }
 }
+:root[data-motion="reduced"] .m-coords, :root[data-motion="reduced"] .m-cross-x, :root[data-motion="reduced"] .m-cross-y, :root[data-motion="reduced"] .btn-primary::after { display: none }
+:root[data-motion="reduced"] .way > a:hover::after, :root[data-motion="reduced"] .way .go-links a:hover::after, :root[data-motion="reduced"] .teaser:hover .go,
+:root[data-motion="reduced"] .video:hover .play { transform: none }
 
 /* 11. Splash on the first page of a visit: the Tapir mark and name wait in the middle of a moss
    screen, an ochre pen line plots under them while the page loads, then they fly into the header.

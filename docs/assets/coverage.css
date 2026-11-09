@@ -141,9 +141,16 @@ ul.items li .detail { display: block; padding-left: 1.6em; font-size: .84375rem;
     .toolbar .chip { padding: 4px 10px; gap: 5px }
     details.group > summary .bar { flex-basis: 100%; max-width: none; margin-left: 0 }
 }
+/* Less motion: Motion Reduced, or System under prefers-reduced-motion (see site.css). */
 @media (prefers-reduced-motion: reduce) {
-    .tile:hover { transform: none }
+    :root:not([data-motion="full"]) .tile:hover { transform: none }
 }
+:root[data-motion="reduced"] .tile:hover { transform: none }
+/* The Display menu's Spacing Compact (data-spacing on <html>, see site.css): the checklist's groups and
+   items about 30 % shorter, nothing else. */
+:root[data-spacing="compact"] details.group > summary { padding-top: 5px; padding-bottom: 5px }
+:root[data-spacing="compact"] ul.items { padding-bottom: 7px }
+:root[data-spacing="compact"] ul.items li { padding-top: 2px; padding-bottom: 2px }
 
 /* The Standard look (see the end of site.css): the progress ramp in the accent's green, light lines,
    8 px corners on the filters and 12 px on the tiles, labels in normal case. */

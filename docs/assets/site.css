@@ -468,11 +468,18 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
     .uses-grid, .uses-grid.three { grid-template-columns: 1fr }
     .site-header .right .btn-sm { padding: 8px 12px }
 }
+/* Less motion: the Display menu's Motion Reduced, or System (no data-motion) when the system asks for
+   it; Full keeps every animation whatever the system asks. The two blocks are the same. */
 @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation: none !important; transition: none !important }
-    html { scroll-behavior: auto }
-    .way:hover, .teaser:hover, .video:hover, .btn-primary:hover { transform: none }
+    :root:not([data-motion="full"]), :root:not([data-motion="full"]) *, :root:not([data-motion="full"])::before, :root:not([data-motion="full"])::after,
+    :root:not([data-motion="full"]) *::before, :root:not([data-motion="full"]) *::after { animation: none !important; transition: none !important }
+    :root:not([data-motion="full"]) { scroll-behavior: auto }
+    :root:not([data-motion="full"]) .way:hover, :root:not([data-motion="full"]) .teaser:hover, :root:not([data-motion="full"]) .video:hover, :root:not([data-motion="full"]) .btn-primary:hover { transform: none }
 }
+:root[data-motion="reduced"], :root[data-motion="reduced"] *, :root[data-motion="reduced"]::before, :root[data-motion="reduced"]::after,
+:root[data-motion="reduced"] *::before, :root[data-motion="reduced"] *::after { animation: none !important; transition: none !important }
+:root[data-motion="reduced"] { scroll-behavior: auto }
+:root[data-motion="reduced"] .way:hover, :root[data-motion="reduced"] .teaser:hover, :root[data-motion="reduced"] .video:hover, :root[data-motion="reduced"] .btn-primary:hover { transform: none }
 
 /* Hindi. Devanagari's vowel signs reach above its headline and below the baseline, so headings need
    more line height than Fraunces' 1.02, and letter spacing would break the headline between letters. */
@@ -797,3 +804,16 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 :root[data-font="readable"] {
     --body: "Atkinson Hyperlegible", system-ui, -apple-system, "Segoe UI", "Noto Sans Devanagari", "Kohinoor Devanagari", "Nirmala UI", sans-serif;
     --display: var(--body); --font-heading: var(--body); --font-sans: var(--body) }
+
+/* ------------------------------------------------------------------------------------------------------
+   Spacing and Motion (the Display menu's, data-spacing and data-motion on <html>), in every look and mode.
+   Spacing Compact only takes about 30 % off the vertical padding of the rows of the long lists: the
+   written tutorials here, the scripts' schedule (scripts/scripts.css), the coverage checklists
+   (coverage.css) and the command reference (archicad-addon/style.css). Nothing moves, appears or
+   disappears, and the space between sections stays.
+   Motion: see the reduced-motion rules above and motion.css; motion.js and home.js read the choice.
+   ------------------------------------------------------------------------------------------------------ */
+:root[data-spacing="compact"] section[aria-labelledby="written"] .teaser { padding-top: 20px; padding-bottom: 20px }
+@media (max-width: 640px) {
+    :root[data-spacing="compact"] section[aria-labelledby="written"] .teaser { padding-top: 15px; padding-bottom: 15px }
+}

@@ -556,3 +556,10 @@ pre .hljs-subst { color: var(--pre-text); }
 :root:not([data-style="legacy"]) details[open] summary.command_header {
     border-radius: 11px 11px 0 0;
 }
+
+/* The Display menu's Spacing Compact (see the end of ../assets/site.css): each command's row about
+   30 % shorter. */
+:root[data-spacing="compact"] summary.command_header {
+    padding-top: 0.385em;
+    padding-bottom: 0.385em;
+}
