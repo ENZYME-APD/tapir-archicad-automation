@@ -1,5 +1,6 @@
 #include "MEPCommands.hpp"
 #include "NotificationCommands.hpp"
+#include <algorithm>
 #include <cmath>
 #include <functional>
 #include <limits>
@@ -2339,7 +2340,7 @@ GS::Optional<GS::UniString> CreateMEPRoutingElementsCommand::GetInputParametersS
                 "type": "array",
                 "description": "Array of data to create MEP routing elements.",
                 "items": {
-                    "$ref": "#/MEPRoutingElementCreationData"
+                    "$ref": "#/MEPRoutingElementData"
                 }
             }
         },
@@ -2578,7 +2579,7 @@ GS::Optional<GS::UniString> CreateMEPElementsCommand::GetInputParametersSchema (
                 "type": "array",
                 "description": "Array of data to create MEP elements.",
                 "items": {
-                    "$ref": "#/MEPElementCreationData"
+                    "$ref": "#/MEPElementData"
                 }
             }
         },
@@ -3517,7 +3518,8 @@ GS::Optional<GS::UniString> GetMEPPreferenceTablesCommand::GetInputParametersSch
         "type": "object",
         "properties": {
             "domain": {
-                "$ref": "#/MEPPreferenceTableDomain"
+                "$ref": "#/MEPPreferenceTableDomain",
+                "description": "The MEP domain of the segment preference tables."
             },
             "includeFittingTables": {
                 "type": "boolean",
@@ -4009,13 +4011,14 @@ GS::Optional<GS::UniString> ModifyMEPPreferenceTablesCommand::GetInputParameters
         "type": "object",
         "properties": {
             "domain": {
-                "$ref": "#/MEPPreferenceTableDomain"
+                "$ref": "#/MEPPreferenceTableDomain",
+                "description": "The MEP domain of the segment preference tables."
             },
             "tablesToAdd": {
                 "type": "array",
                 "description": "New tables to add to the domain, before the other changes.",
                 "items": {
-                    "$ref": "#/MEPPreferenceTableToAdd"
+                    "$ref": "#/MEPPreferenceTableAddition"
                 }
             },
             "tables": {
@@ -4488,10 +4491,22 @@ static GS::ObjectState ModifyPreferenceTable (TableT& table, const GS::ObjectSta
     return CreateSuccessfulExecutionResult ();
 }
 
-// Changes the table if the id is a table of type TableT; gives nothing otherwise.
-template <typename TableT>
-static std::optional<GS::ObjectState> TryModifyPreferenceTable (const ACAPI::MEP::UniqueID& id, const GS::ObjectState& tableData)
+// Changes the table if the id is one of the container's tables and a table of type TableT; gives nothing otherwise. The
+// container is asked first: TableT::Get with the id of a table of another container, e.g. a branch table's id for
+// PipeSegmentPreferenceTable, stops Archicad 29 ("Object doesn't exist in Database!", then the fatal "Loading of the
+// object failed"). Within a container a table of the other type is fine: Get answers an error (circular and
+// rectangular duct segment tables share a container).
+template <typename TableT, typename ContainerResultT>
+static std::optional<GS::ObjectState> TryModifyPreferenceTable (const ContainerResultT& container, const ACAPI::MEP::UniqueID& id, const GS::ObjectState& tableData)
 {
+    if (container.IsErr ()) {
+        return std::nullopt;
+    }
+    const auto tableIds = container->GetPreferenceTables ();
+    const bool listed = std::any_of (tableIds.begin (), tableIds.end (), [&] (const auto& tableId) { return tableId.GetGuid () == id.GetGuid (); });
+    if (!listed) {
+        return std::nullopt;
+    }
     auto table = TableT::Get (id);
     if (table.IsErr ()) {
         return std::nullopt;
@@ -4507,34 +4522,34 @@ static GS::ObjectState ModifyPreferenceTableOfDomain (Domain domain, const GS::O
 
     std::optional<GS::ObjectState> result;
     if (domain == Domain::CableCarrier) {
-        result = TryModifyPreferenceTable<CableCarrierSegmentPreferenceTable> (id, tableData);
+        result = TryModifyPreferenceTable<CableCarrierSegmentPreferenceTable> (GetCableCarrierSegmentPreferenceTableContainer (), id, tableData);
     } else if (domain == Domain::Piping) {
-        result = TryModifyPreferenceTable<PipeSegmentPreferenceTable> (id, tableData);
+        result = TryModifyPreferenceTable<PipeSegmentPreferenceTable> (GetPipeSegmentPreferenceTableContainer (), id, tableData);
         if (!result.has_value ()) {
-            result = TryModifyPreferenceTable<PipeElbowPreferenceTable> (id, tableData);
+            result = TryModifyPreferenceTable<PipeElbowPreferenceTable> (GetPipeElbowPreferenceTableContainer (), id, tableData);
         }
         if (!result.has_value ()) {
-            result = TryModifyPreferenceTable<PipeBranchPreferenceTable> (id, tableData);
+            result = TryModifyPreferenceTable<PipeBranchPreferenceTable> (GetPipeBranchPreferenceTableContainer (), id, tableData);
         }
 #ifdef ServerMainVers_2900
         if (!result.has_value ()) {
-            result = TryModifyPreferenceTable<PipeTransitionPreferenceTable> (id, tableData);
+            result = TryModifyPreferenceTable<PipeTransitionPreferenceTable> (GetPipeTransitionPreferenceTableContainer (), id, tableData);
         }
 #endif
     } else {
-        result = TryModifyPreferenceTable<DuctCircularSegmentPreferenceTable> (id, tableData);
+        result = TryModifyPreferenceTable<DuctCircularSegmentPreferenceTable> (GetDuctSegmentPreferenceTableContainer (), id, tableData);
         if (!result.has_value ()) {
-            result = TryModifyPreferenceTable<DuctRectangularSegmentPreferenceTable> (id, tableData);
+            result = TryModifyPreferenceTable<DuctRectangularSegmentPreferenceTable> (GetDuctSegmentPreferenceTableContainer (), id, tableData);
         }
         if (!result.has_value ()) {
-            result = TryModifyPreferenceTable<DuctElbowPreferenceTable> (id, tableData);
+            result = TryModifyPreferenceTable<DuctElbowPreferenceTable> (GetDuctElbowPreferenceTableContainer (), id, tableData);
         }
         if (!result.has_value ()) {
-            result = TryModifyPreferenceTable<DuctBranchPreferenceTable> (id, tableData);
+            result = TryModifyPreferenceTable<DuctBranchPreferenceTable> (GetDuctBranchPreferenceTableContainer (), id, tableData);
         }
 #ifdef ServerMainVers_2900
         if (!result.has_value ()) {
-            result = TryModifyPreferenceTable<DuctTransitionPreferenceTable> (id, tableData);
+            result = TryModifyPreferenceTable<DuctTransitionPreferenceTable> (GetDuctTransitionPreferenceTableContainer (), id, tableData);
         }
 #endif
     }
@@ -5500,7 +5515,7 @@ GS::Optional<GS::UniString> CreateElectricalPanelsCommand::GetInputParametersSch
                 "type": "array",
                 "description": "Array of data to create electrical panels. The fields that are not given are taken from the default settings of the Electrical Panel tool.",
                 "items": {
-                    "$ref": "#/ElectricalPanelCreationData"
+                    "$ref": "#/ElectricalPanelData"
                 }
             }
         },
@@ -5629,7 +5644,7 @@ GS::Optional<GS::UniString> CreateElectricalDevicesCommand::GetInputParametersSc
                 "type": "array",
                 "description": "Array of data to create electrical devices. The fields that are not given are taken from the default settings of the Electrical Device tool.",
                 "items": {
-                    "$ref": "#/ElectricalDeviceCreationData"
+                    "$ref": "#/ElectricalDeviceData"
                 }
             }
         },
@@ -5846,7 +5861,7 @@ GS::Optional<GS::UniString> CreateElectricalCircuitsCommand::GetInputParametersS
                 "type": "array",
                 "description": "Array of data to create electrical circuits. Each item adds one circuit to the given panel.",
                 "items": {
-                    "$ref": "#/ElectricalCircuitCreationData"
+                    "$ref": "#/ElectricalCircuitData"
                 }
             }
         },
@@ -6719,7 +6734,7 @@ GS::Optional<GS::UniString> CreateMEPSystemGroupsCommand::GetInputParametersSche
                 "type": "array",
                 "description": "Array of data to create system groups.",
                 "items": {
-                    "$ref": "#/MEPSystemGroupCreationData"
+                    "$ref": "#/MEPSystemGroupData"
                 }
             }
         },
@@ -6810,7 +6825,7 @@ GS::Optional<GS::UniString> CreateMEPPhysicalSystemsCommand::GetInputParametersS
                 "type": "array",
                 "description": "Array of data to create physical systems.",
                 "items": {
-                    "$ref": "#/MEPPhysicalSystemCreationData"
+                    "$ref": "#/MEPPhysicalSystemData"
                 }
             }
         },
