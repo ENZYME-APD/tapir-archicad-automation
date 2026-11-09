@@ -11768,6 +11768,571 @@
             "unifyPatterns"
         ]
     },
+    "RailingComponentOwnerElementId": {
+        "$ref": "#/ElementId",
+        "description": "The element that owns this railing component (the owner field of its API_Railing*Type struct), for example the RailingNode of a post, the RailingSegment of a top rail or the RailingBalusterSet of a baluster; ownerElementType gives its type. Left out when the component has no owner."
+    },
+    "RailingComponentSymbolId": {
+        "$ref": "#/Guid",
+        "description": "Archicad's identifier of the symbol the component is drawn with (symbID of its API_Railing*Type struct), as Archicad stores it. Left out when it is empty."
+    },
+    "RailingComponentLibPart": {
+        "$ref": "#/LibPartDetails",
+        "description": "The library part the component is placed from: its name and unique IDs. Left out when Archicad reports no library part for the component or the library part is not in the loaded libraries."
+    },
+    "RailingVerticalPosition": {
+        "type": "object",
+        "description": "Between which rails of the segment a railing component stands (API_RailingVerticalPosData).",
+        "properties": {
+            "bottomRailIndex": {
+                "type": "integer",
+                "description": "The index of the rail at the bottom of the component (API_RailingVerticalPosData::bottomRailIndex)."
+            },
+            "topRailIndex": {
+                "type": "integer",
+                "description": "The index of the rail at the top of the component (API_RailingVerticalPosData::topRailIndex)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "bottomRailIndex",
+            "topRailIndex"
+        ]
+    },
+    "RailingHorizontalPosition": {
+        "type": "object",
+        "description": "Where along its pattern a railing component stands (API_RailingHorizontalPosData).",
+        "properties": {
+            "position": {
+                "type": "number",
+                "description": "The position of the component along the pattern (API_RailingHorizontalPosData::position)."
+            },
+            "isStretchable": {
+                "type": "boolean",
+                "description": "True when the position stretches with the length of the pattern (API_RailingHorizontalPosData::isStretchable)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "position",
+            "isStretchable"
+        ]
+    },
+    "RailingFrame": {
+        "type": "object",
+        "description": "The boundaries of a railing panel or baluster set within its pattern (API_RailingFrameData).",
+        "properties": {
+            "lateralOffset": {
+                "type": "number",
+                "description": "The sideways offset of the frame from the segment (API_RailingFrameData::yOffset)."
+            },
+            "topOffset": {
+                "type": "number",
+                "description": "The offset of the top of the frame (API_RailingFrameData::zTopOffset)."
+            },
+            "bottomOffset": {
+                "type": "number",
+                "description": "The offset of the bottom of the frame (API_RailingFrameData::zBottomOffset)."
+            },
+            "beginOffset": {
+                "type": "number",
+                "description": "The offset of the beginning of the frame (API_RailingFrameData::xBeginOffset)."
+            },
+            "endOffset": {
+                "type": "number",
+                "description": "The offset of the end of the frame (API_RailingFrameData::xEndOffset)."
+            },
+            "placeIndex": {
+                "type": "integer",
+                "description": "The index of the place of the frame in its pattern (API_RailingFrameData::placeIndex)."
+            },
+            "verticalPosition": {
+                "$ref": "#/RailingVerticalPosition"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "lateralOffset",
+            "topOffset",
+            "bottomOffset",
+            "beginOffset",
+            "endOffset",
+            "placeIndex",
+            "verticalPosition"
+        ]
+    },
+    "RailingDistribution": {
+        "type": "object",
+        "description": "How a railing pattern or baluster set is repeated along its segment (API_RailingDistributionData).",
+        "properties": {
+            "type": {
+                "type": "string",
+                "description": "The distribution method (API_DistribTypeID): a number of Divisions, a fixed PatternLength, or the BestDivisionByLength (equal divisions no longer than length).",
+                "enum": [
+                    "Divisions",
+                    "PatternLength",
+                    "BestDivisionByLength"
+                ]
+            },
+            "alignment": {
+                "type": "string",
+                "description": "How the repetitions are aligned (API_PatternAlignID).",
+                "enum": [
+                    "StartWithPattern",
+                    "StartFromCenter",
+                    "CenterAligned",
+                    "EndWithPattern"
+                ]
+            },
+            "length": {
+                "type": "number",
+                "description": "The length of one repetition (API_RailingDistributionData::length)."
+            },
+            "patternAmount": {
+                "type": "integer",
+                "description": "The number of repetitions (API_RailingDistributionData::patternAmount)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type",
+            "alignment",
+            "length",
+            "patternAmount"
+        ]
+    },
+    "RailingPostDetails": {
+        "type": "object",
+        "description": "The details of a railing post (RailingPost, API_RailingPostType).",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/RailingComponentOwnerElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
+            "symbolId": {
+                "$ref": "#/RailingComponentSymbolId"
+            },
+            "libPart": {
+                "$ref": "#/RailingComponentLibPart"
+            },
+            "verticalPosition": {
+                "$ref": "#/RailingVerticalPosition"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "verticalPosition"
+        ]
+    },
+    "RailingInnerPostDetails": {
+        "type": "object",
+        "description": "The details of an inner post of a railing pattern (RailingInnerPost, API_RailingInnerPostType).",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/RailingComponentOwnerElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
+            "symbolId": {
+                "$ref": "#/RailingComponentSymbolId"
+            },
+            "libPart": {
+                "$ref": "#/RailingComponentLibPart"
+            },
+            "doublePostOffset": {
+                "type": "number",
+                "description": "The offset between the two posts of a double inner post (API_RailingInnerPostType::doublePostOffset)."
+            },
+            "postCount": {
+                "type": "integer",
+                "description": "The number of posts in this inner post, 1 or 2 (API_RailingInnerPostType::postNum)."
+            },
+            "verticalPosition": {
+                "$ref": "#/RailingVerticalPosition"
+            },
+            "horizontalPosition": {
+                "$ref": "#/RailingHorizontalPosition"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "doublePostOffset",
+            "postCount",
+            "verticalPosition",
+            "horizontalPosition"
+        ]
+    },
+    "RailingRailDetails": {
+        "type": "object",
+        "description": "The details of a rail, top rail or handrail of a railing segment (RailingRail, RailingToprail, RailingHandrail: API_RailingRailType, API_RailingToprailType, API_RailingHandrailType). A top rail has only visible; relative is only given for rails and doubleHandrail only for handrails.",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/RailingComponentOwnerElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
+            "symbolId": {
+                "$ref": "#/RailingComponentSymbolId"
+            },
+            "libPart": {
+                "$ref": "#/RailingComponentLibPart"
+            },
+            "visible": {
+                "type": "boolean",
+                "description": "True when the rail is shown (visible of its struct)."
+            },
+            "relative": {
+                "type": "boolean",
+                "description": "Rails only: true when the height of the rail is relative (API_RailingRailType::relative)."
+            },
+            "doubleHandrail": {
+                "type": "boolean",
+                "description": "Handrails only: true for a double handrail (API_RailingHandrailType::doubleHandrail)."
+            },
+            "horizontalOffset": {
+                "type": "number",
+                "description": "Rails and handrails only: the horizontal offset of the rail from the segment (horizontalOffset of its struct)."
+            },
+            "height": {
+                "type": "number",
+                "description": "Rails and handrails only: the height of the rail (height of its struct)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "visible"
+        ]
+    },
+    "RailingBalusterDetails": {
+        "type": "object",
+        "description": "The details of a baluster of a baluster set (RailingBaluster, API_RailingBalusterType).",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/RailingComponentOwnerElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
+            "symbolId": {
+                "$ref": "#/RailingComponentSymbolId"
+            },
+            "libPart": {
+                "$ref": "#/RailingComponentLibPart"
+            },
+            "horizontalPosition": {
+                "$ref": "#/RailingHorizontalPosition"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "horizontalPosition"
+        ]
+    },
+    "RailingBalusterSetDetails": {
+        "type": "object",
+        "description": "The details of a baluster set of a railing pattern (RailingBalusterSet, API_RailingBalusterSetType). Its balusters are separate subelements (RailingBaluster).",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/RailingComponentOwnerElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
+            "frame": {
+                "$ref": "#/RailingFrame"
+            },
+            "distribution": {
+                "$ref": "#/RailingDistribution"
+            },
+            "balusterCount": {
+                "type": "integer",
+                "description": "The number of balusters in the set (API_RailingBalusterSetType::nBalusters)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "frame",
+            "distribution",
+            "balusterCount"
+        ]
+    },
+    "RailingPanelDetails": {
+        "type": "object",
+        "description": "The details of a railing panel (RailingPanel, API_RailingPanelType).",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/RailingComponentOwnerElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
+            "symbolId": {
+                "$ref": "#/RailingComponentSymbolId"
+            },
+            "libPart": {
+                "$ref": "#/RailingComponentLibPart"
+            },
+            "visible": {
+                "type": "boolean",
+                "description": "True when the panel is shown (API_RailingPanelType::visible)."
+            },
+            "frame": {
+                "$ref": "#/RailingFrame"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "visible",
+            "frame"
+        ]
+    },
+    "RailingPatternDetails": {
+        "type": "object",
+        "description": "The details of the pattern of a railing segment (RailingPattern, API_RailingPatternType). Its panels, baluster sets and inner posts are separate subelements.",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/RailingComponentOwnerElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
+            "distribution": {
+                "$ref": "#/RailingDistribution"
+            },
+            "panelCount": {
+                "type": "integer",
+                "description": "The number of panels in the pattern (API_RailingPatternType::nPanels)."
+            },
+            "balusterSetCount": {
+                "type": "integer",
+                "description": "The number of baluster sets in the pattern (API_RailingPatternType::nBalusterSets)."
+            },
+            "innerPostCount": {
+                "type": "integer",
+                "description": "The number of inner posts in the pattern (API_RailingPatternType::nInnerPosts)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "distribution",
+            "panelCount",
+            "balusterSetCount",
+            "innerPostCount"
+        ]
+    },
+    "RailingRailEndDetails": {
+        "type": "object",
+        "description": "The details of the end of a rail, top rail or handrail (RailingRailEnd, RailingToprailEnd, RailingHandrailEnd: API_RailingRailEndType).",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/RailingComponentOwnerElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
+            "symbolId": {
+                "$ref": "#/RailingComponentSymbolId"
+            },
+            "libPart": {
+                "$ref": "#/RailingComponentLibPart"
+            },
+            "endType": {
+                "type": "string",
+                "description": "The shape of the end (API_RailEndTypeID).",
+                "enum": [
+                    "Extension",
+                    "Curve",
+                    "FullReturn",
+                    "ConnectWithDuplicate"
+                ]
+            },
+            "baseConnection": {
+                "type": "string",
+                "description": "How the end connects to the rail (API_RailEndBaseConnectionID).",
+                "enum": [
+                    "Horizontal",
+                    "Tangential"
+                ]
+            },
+            "firstExtrusionOffset": {
+                "type": "number",
+                "description": "API_RailingRailEndType::firstExtrusionOffset."
+            },
+            "firstExtrusionLength": {
+                "type": "number",
+                "description": "API_RailingRailEndType::firstExtrusionLength."
+            },
+            "filletRadius": {
+                "type": "number",
+                "description": "API_RailingRailEndType::filletRadius."
+            },
+            "fixtureConnection": {
+                "type": "string",
+                "description": "The direction the end curves in (API_RailEndFixtureConnectionID).",
+                "enum": [
+                    "SegmentPlane",
+                    "HorizontalRight",
+                    "HorizontalLeft"
+                ]
+            },
+            "arcAngleMode": {
+                "type": "string",
+                "description": "Whether the arc of the end is set to vertical or has a custom angle (API_RailEndArcAngleModeID).",
+                "enum": [
+                    "SetToVertical",
+                    "CustomAngle"
+                ]
+            },
+            "arcAngle": {
+                "type": "number",
+                "description": "API_RailingRailEndType::arcAngle."
+            },
+            "arcRadius": {
+                "type": "number",
+                "description": "API_RailingRailEndType::arcRadius."
+            },
+            "secondExtrusionLength": {
+                "type": "number",
+                "description": "API_RailingRailEndType::secondExtrusionLength."
+            },
+            "thirdExtrusionLength": {
+                "type": "number",
+                "description": "API_RailingRailEndType::thirdExtrusionLength."
+            },
+            "secondExtrusionMode": {
+                "type": "string",
+                "description": "How the length of the second extrusion is set (API_RailEndExtrusionModeID).",
+                "enum": [
+                    "CustomLength",
+                    "ToReferenceLine",
+                    "ToHandrailSibling"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "endType",
+            "baseConnection",
+            "firstExtrusionOffset",
+            "firstExtrusionLength",
+            "filletRadius",
+            "fixtureConnection",
+            "arcAngleMode",
+            "arcAngle",
+            "arcRadius",
+            "secondExtrusionLength",
+            "thirdExtrusionLength",
+            "secondExtrusionMode"
+        ]
+    },
+    "RailingRailConnectionDetails": {
+        "type": "object",
+        "description": "The details of the connection of a rail, top rail or handrail at a node (RailingRailConnection, RailingToprailConnection, RailingHandrailConnection: API_RailingRailConnectionType).",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/RailingComponentOwnerElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
+            "symbolId": {
+                "$ref": "#/RailingComponentSymbolId"
+            },
+            "libPart": {
+                "$ref": "#/RailingComponentLibPart"
+            },
+            "connectionType": {
+                "type": "string",
+                "description": "The kind of connection (API_RailConnectionTypeID).",
+                "enum": [
+                    "NoRailConnection",
+                    "GooseneckRailConnection",
+                    "DirectRailConnection"
+                ]
+            },
+            "baseConnection": {
+                "type": "string",
+                "description": "How the connection meets the rail (API_RailBaseBaseConnectionID).",
+                "enum": [
+                    "Horizontal",
+                    "Tangential"
+                ]
+            },
+            "railEndOffset": {
+                "type": "number",
+                "description": "API_RailingRailConnectionType::railEndOffset."
+            },
+            "railEndFillet": {
+                "type": "number",
+                "description": "API_RailingRailConnectionType::railEndFillet."
+            },
+            "firstExtrusionLength": {
+                "type": "number",
+                "description": "API_RailingRailConnectionType::firstExtrusionLength."
+            },
+            "secondExtrusionLength": {
+                "type": "number",
+                "description": "API_RailingRailConnectionType::secondExtrusionLength."
+            },
+            "horizontalFillet": {
+                "type": "number",
+                "description": "API_RailingRailConnectionType::horizontalFillet."
+            },
+            "gooseneckFillet": {
+                "type": "number",
+                "description": "API_RailingRailConnectionType::gooseneckFillet."
+            },
+            "gooseneckOffset": {
+                "type": "number",
+                "description": "API_RailingRailConnectionType::gooseneckOffset."
+            },
+            "verticalBottomFillet": {
+                "type": "number",
+                "description": "API_RailingRailConnectionType::verticalBottomFillet."
+            },
+            "directFillet": {
+                "type": "number",
+                "description": "API_RailingRailConnectionType::directFillet."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "connectionType",
+            "baseConnection",
+            "railEndOffset",
+            "railEndFillet",
+            "firstExtrusionLength",
+            "secondExtrusionLength",
+            "horizontalFillet",
+            "gooseneckFillet",
+            "gooseneckOffset",
+            "verticalBottomFillet",
+            "directFillet"
+        ]
+    },
+    "RailingEndFinishDetails": {
+        "type": "object",
+        "description": "The details of the finish at the end of a rail (RailingEndFinish, API_RailingFinishType): its owner and library part only.",
+        "properties": {
+            "ownerElementId": {
+                "$ref": "#/RailingComponentOwnerElementId"
+            },
+            "ownerElementType": {
+                "$ref": "#/ElementType"
+            },
+            "symbolId": {
+                "$ref": "#/RailingComponentSymbolId"
+            },
+            "libPart": {
+                "$ref": "#/RailingComponentLibPart"
+            }
+        },
+        "additionalProperties": false
+    },
     "CurtainWallDetails": {
         "type": "object",
         "properties": {
@@ -13579,6 +14144,36 @@
             },
             {
                 "$ref": "#/RailingDetails"
+            },
+            {
+                "$ref": "#/RailingPostDetails"
+            },
+            {
+                "$ref": "#/RailingInnerPostDetails"
+            },
+            {
+                "$ref": "#/RailingRailDetails"
+            },
+            {
+                "$ref": "#/RailingBalusterDetails"
+            },
+            {
+                "$ref": "#/RailingBalusterSetDetails"
+            },
+            {
+                "$ref": "#/RailingPanelDetails"
+            },
+            {
+                "$ref": "#/RailingPatternDetails"
+            },
+            {
+                "$ref": "#/RailingRailEndDetails"
+            },
+            {
+                "$ref": "#/RailingRailConnectionDetails"
+            },
+            {
+                "$ref": "#/RailingEndFinishDetails"
             },
             {
                 "$ref": "#/CurtainWallDetails"

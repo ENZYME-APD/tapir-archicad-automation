@@ -2291,6 +2291,153 @@ static void AddRailingReferenceLineAndSegments (const API_Element& elem, GS::Obj
     }
 }
 
+// The components of a railing (posts, rails, panels, balusters and the rest, #2572): the element
+// that owns each one (a node, a segment, a pattern, a baluster set or a rail) and, for the ones
+// placed from a library part, that library part. The library part is looked up from the unique
+// ID Archicad reports for the component, and left out when it is not in the loaded libraries.
+static void AddRailingComponentOwnerAndSymbol (GS::ObjectState& typeSpecificDetails, const API_Elem_Head& header, const API_Guid& owner, const API_Guid* symbolId)
+{
+    if (owner != APINULLGuid) {
+        typeSpecificDetails.Add ("ownerElementId", CreateGuidObjectState (owner));
+        API_Elem_Head ownerHead = {};
+        ownerHead.guid = owner;
+        if (ACAPI_Element_GetHeader (&ownerHead) == NoError) {
+            typeSpecificDetails.Add ("ownerElementType", GetElementTypeNonLocalizedName (GetElemTypeId (ownerHead)));
+        }
+    }
+    if (symbolId == nullptr) {
+        return;
+    }
+    if (*symbolId != APINULLGuid) {
+        typeSpecificDetails.Add ("symbolId", APIGuidToString (*symbolId));
+    }
+
+    API_Elem_Head elemHead = header;
+    char unId[256] = {};
+    if (ACAPI_LibraryPart_GetElemLibPartUnId (&elemHead, unId) != NoError || unId[0] == '\0') {
+        return;
+    }
+    API_LibPart libPart = {};
+    CHTruncate (unId, libPart.ownUnID, sizeof (libPart.ownUnID));
+    const GSErrCode err = ACAPI_LibraryPart_Search (&libPart, false, false);
+    delete libPart.location;
+    if (err != NoError || libPart.index <= 0) {
+        return;
+    }
+    typeSpecificDetails.Add ("libPart", GS::ObjectState (
+        "name", GS::UniString (libPart.docu_UName),
+        "parentUnID", CreateGuidObjectState (GS::UnID (libPart.parentUnID).GetMainGuid ()),
+        "ownUnID", CreateGuidObjectState (GS::UnID (libPart.ownUnID).GetMainGuid ())));
+}
+
+static GS::ObjectState CreateRailingVerticalPositionObjectState (const API_RailingVerticalPosData& position)
+{
+    return GS::ObjectState (
+        "bottomRailIndex", static_cast<Int32> (position.bottomRailIndex),
+        "topRailIndex", static_cast<Int32> (position.topRailIndex));
+}
+
+static GS::ObjectState CreateRailingHorizontalPositionObjectState (const API_RailingHorizontalPosData& position)
+{
+    return GS::ObjectState (
+        "position", position.position,
+        "isStretchable", position.isStretchable);
+}
+
+static GS::ObjectState CreateRailingFrameObjectState (const API_RailingFrameData& frame)
+{
+    GS::ObjectState os;
+    os.Add ("lateralOffset", frame.yOffset);
+    os.Add ("topOffset", frame.zTopOffset);
+    os.Add ("bottomOffset", frame.zBottomOffset);
+    os.Add ("beginOffset", frame.xBeginOffset);
+    os.Add ("endOffset", frame.xEndOffset);
+    os.Add ("placeIndex", static_cast<Int32> (frame.placeIndex));
+    os.Add ("verticalPosition", CreateRailingVerticalPositionObjectState (frame.verticalPosition));
+    return os;
+}
+
+static GS::ObjectState CreateRailingDistributionObjectState (const API_RailingDistributionData& distribution)
+{
+    const char* type = "Divisions";
+    switch (distribution.type) {
+        case APIDT_Divisions:               type = "Divisions"; break;
+        case APIDT_PatternLength:           type = "PatternLength"; break;
+        case APIDT_BestDivisionByLength:    type = "BestDivisionByLength"; break;
+    }
+    const char* alignment = "StartWithPattern";
+    switch (distribution.alignment) {
+        case APIPA_StartWithPattern:        alignment = "StartWithPattern"; break;
+        case APIPA_StartFromCenter:         alignment = "StartFromCenter"; break;
+        case APIPA_CenterAligned:           alignment = "CenterAligned"; break;
+        case APIPA_EndWithPattern:          alignment = "EndWithPattern"; break;
+    }
+    GS::ObjectState os;
+    os.Add ("type", type);
+    os.Add ("alignment", alignment);
+    os.Add ("length", distribution.length);
+    os.Add ("patternAmount", static_cast<Int32> (distribution.patternAmount));
+    return os;
+}
+
+static void AddRailingRailEndDetails (GS::ObjectState& typeSpecificDetails, const API_RailingRailEndType& railEnd)
+{
+    AddRailingComponentOwnerAndSymbol (typeSpecificDetails, railEnd.head, railEnd.owner, &railEnd.symbID);
+    const char* type = "Extension";
+    switch (railEnd.type) {
+        case APIRE_Extension:               type = "Extension"; break;
+        case APIRE_Curve:                   type = "Curve"; break;
+        case APIRE_FullReturn:              type = "FullReturn"; break;
+        case APIRE_ConnectWithDuplicate:    type = "ConnectWithDuplicate"; break;
+    }
+    const char* fixtureConnection = "SegmentPlane";
+    switch (railEnd.fixtureConnection) {
+        case APIRC_SegmentPlane:            fixtureConnection = "SegmentPlane"; break;
+        case APIRC_HorizontalRight:         fixtureConnection = "HorizontalRight"; break;
+        case APIRC_HorizontalLeft:          fixtureConnection = "HorizontalLeft"; break;
+    }
+    const char* secondExtrusionMode = "CustomLength";
+    switch (railEnd.secondExtrusionMode) {
+        case APIEM_CustomLength:            secondExtrusionMode = "CustomLength"; break;
+        case APIEM_ToReferenceLine:         secondExtrusionMode = "ToReferenceLine"; break;
+        case APIEM_ToHandrailSibling:       secondExtrusionMode = "ToHandrailSibling"; break;
+    }
+    typeSpecificDetails.Add ("endType", type);
+    typeSpecificDetails.Add ("baseConnection", railEnd.baseConnection == APIBC_Tangential ? "Tangential" : "Horizontal");
+    typeSpecificDetails.Add ("firstExtrusionOffset", railEnd.firstExtrusionOffset);
+    typeSpecificDetails.Add ("firstExtrusionLength", railEnd.firstExtrusionLength);
+    typeSpecificDetails.Add ("filletRadius", railEnd.filletRadius);
+    typeSpecificDetails.Add ("fixtureConnection", fixtureConnection);
+    typeSpecificDetails.Add ("arcAngleMode", railEnd.arcAngleMode == APIAM_CustomAngle ? "CustomAngle" : "SetToVertical");
+    typeSpecificDetails.Add ("arcAngle", railEnd.arcAngle);
+    typeSpecificDetails.Add ("arcRadius", railEnd.arcRadius);
+    typeSpecificDetails.Add ("secondExtrusionLength", railEnd.secondExtrusionLength);
+    typeSpecificDetails.Add ("thirdExtrusionLength", railEnd.thirdExtrusionLength);
+    typeSpecificDetails.Add ("secondExtrusionMode", secondExtrusionMode);
+}
+
+static void AddRailingRailConnectionDetails (GS::ObjectState& typeSpecificDetails, const API_RailingRailConnectionType& connection)
+{
+    AddRailingComponentOwnerAndSymbol (typeSpecificDetails, connection.head, connection.owner, &connection.symbID);
+    const char* type = "NoRailConnection";
+    switch (connection.type) {
+        case APICT_NoRailConnection:        type = "NoRailConnection"; break;
+        case APICT_GooseneckRailConnection: type = "GooseneckRailConnection"; break;
+        case APICT_DirectRailConnection:    type = "DirectRailConnection"; break;
+    }
+    typeSpecificDetails.Add ("connectionType", type);
+    typeSpecificDetails.Add ("baseConnection", connection.baseConnection == APIBB_Tangential ? "Tangential" : "Horizontal");
+    typeSpecificDetails.Add ("railEndOffset", connection.railEndOffset);
+    typeSpecificDetails.Add ("railEndFillet", connection.railEndFillet);
+    typeSpecificDetails.Add ("firstExtrusionLength", connection.firstExtrusionLength);
+    typeSpecificDetails.Add ("secondExtrusionLength", connection.secondExtrusionLength);
+    typeSpecificDetails.Add ("horizontalFillet", connection.horizontalFillet);
+    typeSpecificDetails.Add ("gooseneckFillet", connection.gooseneckFillet);
+    typeSpecificDetails.Add ("gooseneckOffset", connection.gooseneckOffset);
+    typeSpecificDetails.Add ("verticalBottomFillet", connection.verticalBottomFillet);
+    typeSpecificDetails.Add ("directFillet", connection.directFillet);
+}
+
 // The fields of GetDetailsOfElements requested through additionalFields. Each one is left out
 // when Archicad reports an error or nothing for the element (e.g. libraryPartUnId on a wall),
 // so a field the element type does not have never turns the whole entry into an error.
@@ -2999,6 +3146,95 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("referenceLinePen", (Int32) elem.railing.referenceLinePen);
                 typeSpecificDetails.Add ("contourPen", (Int32) elem.railing.contourPen);
             } break;
+
+            // The components of a railing, as GetSubelementsOfHierarchicalElements lists them (#2572).
+            case API_RailingPostID: {
+                AddRailingComponentOwnerAndSymbol (typeSpecificDetails, elem.header, elem.railingPost.owner, &elem.railingPost.symbID);
+                typeSpecificDetails.Add ("verticalPosition", CreateRailingVerticalPositionObjectState (elem.railingPost.verticalPosition));
+            } break;
+
+            case API_RailingInnerPostID: {
+                AddRailingComponentOwnerAndSymbol (typeSpecificDetails, elem.header, elem.railingInnerPost.owner, &elem.railingInnerPost.symbID);
+                typeSpecificDetails.Add ("doublePostOffset", elem.railingInnerPost.doublePostOffset);
+                typeSpecificDetails.Add ("postCount", static_cast<Int32> (elem.railingInnerPost.postNum));
+                typeSpecificDetails.Add ("verticalPosition", CreateRailingVerticalPositionObjectState (elem.railingInnerPost.verticalPosition));
+                typeSpecificDetails.Add ("horizontalPosition", CreateRailingHorizontalPositionObjectState (elem.railingInnerPost.horizontalPosition));
+            } break;
+
+            case API_RailingToprailID: {
+                AddRailingComponentOwnerAndSymbol (typeSpecificDetails, elem.header, elem.railingToprail.owner, &elem.railingToprail.symbID);
+                typeSpecificDetails.Add ("visible", elem.railingToprail.visible);
+            } break;
+
+            case API_RailingHandrailID: {
+                AddRailingComponentOwnerAndSymbol (typeSpecificDetails, elem.header, elem.railingHandrail.owner, &elem.railingHandrail.symbID);
+                typeSpecificDetails.Add ("visible", elem.railingHandrail.visible);
+                typeSpecificDetails.Add ("doubleHandrail", elem.railingHandrail.doubleHandrail);
+                typeSpecificDetails.Add ("horizontalOffset", elem.railingHandrail.horizontalOffset);
+                typeSpecificDetails.Add ("height", elem.railingHandrail.height);
+            } break;
+
+            case API_RailingRailID: {
+                AddRailingComponentOwnerAndSymbol (typeSpecificDetails, elem.header, elem.railingRail.owner, &elem.railingRail.symbID);
+                typeSpecificDetails.Add ("visible", elem.railingRail.visible);
+                typeSpecificDetails.Add ("relative", elem.railingRail.relative);
+                typeSpecificDetails.Add ("horizontalOffset", elem.railingRail.horizontalOffset);
+                typeSpecificDetails.Add ("height", elem.railingRail.height);
+            } break;
+
+            case API_RailingBalusterID: {
+                AddRailingComponentOwnerAndSymbol (typeSpecificDetails, elem.header, elem.railingBaluster.owner, &elem.railingBaluster.symbID);
+                typeSpecificDetails.Add ("horizontalPosition", CreateRailingHorizontalPositionObjectState (elem.railingBaluster.horizontalPosition));
+            } break;
+
+            case API_RailingBalusterSetID: {
+                AddRailingComponentOwnerAndSymbol (typeSpecificDetails, elem.header, elem.railingBalusterSet.owner, nullptr);
+                typeSpecificDetails.Add ("frame", CreateRailingFrameObjectState (elem.railingBalusterSet.frame));
+                typeSpecificDetails.Add ("distribution", CreateRailingDistributionObjectState (elem.railingBalusterSet.distribution));
+                typeSpecificDetails.Add ("balusterCount", static_cast<Int32> (elem.railingBalusterSet.nBalusters));
+            } break;
+
+            case API_RailingPanelID: {
+                AddRailingComponentOwnerAndSymbol (typeSpecificDetails, elem.header, elem.railingPanel.owner, &elem.railingPanel.symbID);
+                typeSpecificDetails.Add ("visible", elem.railingPanel.visible);
+                typeSpecificDetails.Add ("frame", CreateRailingFrameObjectState (elem.railingPanel.frame));
+            } break;
+
+            case API_RailingPatternID: {
+                AddRailingComponentOwnerAndSymbol (typeSpecificDetails, elem.header, elem.railingPattern.owner, nullptr);
+                typeSpecificDetails.Add ("distribution", CreateRailingDistributionObjectState (elem.railingPattern.distribution));
+                typeSpecificDetails.Add ("panelCount", static_cast<Int32> (elem.railingPattern.nPanels));
+                typeSpecificDetails.Add ("balusterSetCount", static_cast<Int32> (elem.railingPattern.nBalusterSets));
+                typeSpecificDetails.Add ("innerPostCount", static_cast<Int32> (elem.railingPattern.nInnerPosts));
+            } break;
+
+            case API_RailingToprailEndID:
+                AddRailingRailEndDetails (typeSpecificDetails, elem.railingToprailEnd);
+                break;
+
+            case API_RailingHandrailEndID:
+                AddRailingRailEndDetails (typeSpecificDetails, elem.railingHandrailEnd);
+                break;
+
+            case API_RailingRailEndID:
+                AddRailingRailEndDetails (typeSpecificDetails, elem.railingRailEnd);
+                break;
+
+            case API_RailingToprailConnectionID:
+                AddRailingRailConnectionDetails (typeSpecificDetails, elem.railingToprailConnection);
+                break;
+
+            case API_RailingHandrailConnectionID:
+                AddRailingRailConnectionDetails (typeSpecificDetails, elem.railingHandrailConnection);
+                break;
+
+            case API_RailingRailConnectionID:
+                AddRailingRailConnectionDetails (typeSpecificDetails, elem.railingRailConnection);
+                break;
+
+            case API_RailingEndFinishID:
+                AddRailingComponentOwnerAndSymbol (typeSpecificDetails, elem.header, elem.railingEndFinish.owner, &elem.railingEndFinish.symbID);
+                break;
 
             case API_CurtainWallID: {
                 typeSpecificDetails.Add ("height", elem.curtainWall.height);
