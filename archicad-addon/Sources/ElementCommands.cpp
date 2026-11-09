@@ -3061,6 +3061,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 typeSpecificDetails.Add ("segmentIndex", elem.cwPanel.segmentID);
                 typeSpecificDetails.Add ("className", GS::UniString (elem.cwPanel.className));
+                typeSpecificDetails.Add ("classIndex", elem.cwPanel.classID == APICWPanelClass_Customized ? -1 : static_cast<Int32> (elem.cwPanel.classID));
                 AddCurtainWallHomeStoryLevel (elem.cwPanel.owner, stories, typeSpecificDetails);
             } break;
 
