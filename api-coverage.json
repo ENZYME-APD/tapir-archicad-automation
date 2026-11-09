@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 18:38 UTC",
+ "generatedAt": "2026-11-09 19:14 UTC",
  "versions": [
   25,
   26,
@@ -4624,7 +4624,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2540,
+     "title": "ModifyCurtainWalls: change the height through the segment contours"
+    }
+   ],
    "issues": []
   },
   {
@@ -5117,7 +5122,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2539,
+     "title": "SetLayoutSettings: rename master layouts given by database id"
+    }
+   ],
    "issues": []
   },
   {
@@ -5209,7 +5219,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2539,
+     "title": "SetLayoutSettings: rename master layouts given by database id"
+    }
+   ],
    "issues": []
   },
   {
@@ -5748,6 +5763,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2546,
+     "title": "[1/2] Add ModifyCurtainWallPanels: assign panel classes to curtain wall panels"
+    },
+    {
+     "number": 2544,
+     "title": "ModifyBeams: set the surfaces of a beam segment"
+    },
+    {
+     "number": 2540,
+     "title": "ModifyCurtainWalls: change the height through the segment contours"
+    },
     {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
@@ -6721,6 +6748,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2546,
+     "title": "[1/2] Add ModifyCurtainWallPanels: assign panel classes to curtain wall panels"
+    },
+    {
+     "number": 2542,
+     "title": "[1/3] ModifyCurtainWalls: write story visibility and floor plan display"
+    },
+    {
+     "number": 2540,
+     "title": "ModifyCurtainWalls: change the height through the segment contours"
+    },
+    {
+     "number": 2537,
+     "title": "ApplyFavoritesToElements: keep a stair's flight width"
+    },
+    {
      "number": 2522,
      "title": "ModifyRoofs: keep the side surface when the edge surfaces are written"
     },
@@ -6943,7 +6986,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2537,
+     "title": "ApplyFavoritesToElements: keep a stair's flight width"
+    }
+   ],
    "issues": []
   },
   {
@@ -6965,6 +7013,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2545,
+     "title": "Stairs: top story link, offset and Rules and Standards in GetDetailsOfElements, CreateStairs and ModifyStairs"
+    },
     {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
@@ -7243,6 +7295,26 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2547,
+     "title": "[2/3] Beams: read and write the floor plan display settings"
+    },
+    {
+     "number": 2546,
+     "title": "[1/2] Add ModifyCurtainWallPanels: assign panel classes to curtain wall panels"
+    },
+    {
+     "number": 2541,
+     "title": "ModifyStairs/CreateStairs: write the floor plan and RCP display of stairs"
+    },
+    {
+     "number": 2540,
+     "title": "ModifyCurtainWalls: change the height through the segment contours"
+    },
+    {
+     "number": 2537,
+     "title": "ApplyFavoritesToElements: keep a stair's flight width"
+    },
     {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
@@ -7793,6 +7865,18 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2546,
+     "title": "[1/2] Add ModifyCurtainWallPanels: assign panel classes to curtain wall panels"
+    },
+    {
+     "number": 2544,
+     "title": "ModifyBeams: set the surfaces of a beam segment"
+    },
+    {
+     "number": 2540,
+     "title": "ModifyCurtainWalls: change the height through the segment contours"
+    },
     {
      "number": 2455,
      "title": "ModifyShells: edit the profile of an existing extruded shell"
@@ -12513,7 +12597,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2538,
+     "title": "Library part parameters: find a part with and without .gsm in the getter and the setter"
+    }
+   ],
    "issues": []
   },
   {
@@ -20117,7 +20206,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2539,
+     "title": "SetLayoutSettings: rename master layouts given by database id"
+    }
+   ],
    "issues": []
   },
   {
@@ -25366,6 +25460,38 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2547,
+     "title": "[2/3] Beams: read and write the floor plan display settings"
+    },
+    {
+     "number": 2546,
+     "title": "[1/2] Add ModifyCurtainWallPanels: assign panel classes to curtain wall panels"
+    },
+    {
+     "number": 2545,
+     "title": "Stairs: top story link, offset and Rules and Standards in GetDetailsOfElements, CreateStairs and ModifyStairs"
+    },
+    {
+     "number": 2544,
+     "title": "ModifyBeams: set the surfaces of a beam segment"
+    },
+    {
+     "number": 2543,
+     "title": "ModifyCurtainWalls: write flipped, offset and nominalWidth"
+    },
+    {
+     "number": 2542,
+     "title": "[1/3] ModifyCurtainWalls: write story visibility and floor plan display"
+    },
+    {
+     "number": 2541,
+     "title": "ModifyStairs/CreateStairs: write the floor plan and RCP display of stairs"
+    },
+    {
+     "number": 2540,
+     "title": "ModifyCurtainWalls: change the height through the segment contours"
+    },
+    {
      "number": 2520,
      "title": "Input schemas: hand Archicad the $refs in the form it resolves, so shared definitions are validated"
     },
@@ -30139,7 +30265,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2538,
+     "title": "Library part parameters: find a part with and without .gsm in the getter and the setter"
+    }
+   ],
    "issues": []
   },
   {
@@ -30994,6 +31125,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2547,
+     "title": "[2/3] Beams: read and write the floor plan display settings"
+    },
+    {
+     "number": 2546,
+     "title": "[1/2] Add ModifyCurtainWallPanels: assign panel classes to curtain wall panels"
+    },
+    {
+     "number": 2545,
+     "title": "Stairs: top story link, offset and Rules and Standards in GetDetailsOfElements, CreateStairs and ModifyStairs"
+    },
+    {
+     "number": 2543,
+     "title": "ModifyCurtainWalls: write flipped, offset and nominalWidth"
+    },
     {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
@@ -37442,6 +37589,42 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2547,
+     "title": "[2/3] Beams: read and write the floor plan display settings"
+    },
+    {
+     "number": 2546,
+     "title": "[1/2] Add ModifyCurtainWallPanels: assign panel classes to curtain wall panels"
+    },
+    {
+     "number": 2545,
+     "title": "Stairs: top story link, offset and Rules and Standards in GetDetailsOfElements, CreateStairs and ModifyStairs"
+    },
+    {
+     "number": 2544,
+     "title": "ModifyBeams: set the surfaces of a beam segment"
+    },
+    {
+     "number": 2543,
+     "title": "ModifyCurtainWalls: write flipped, offset and nominalWidth"
+    },
+    {
+     "number": 2542,
+     "title": "[1/3] ModifyCurtainWalls: write story visibility and floor plan display"
+    },
+    {
+     "number": 2541,
+     "title": "ModifyStairs/CreateStairs: write the floor plan and RCP display of stairs"
+    },
+    {
+     "number": 2540,
+     "title": "ModifyCurtainWalls: change the height through the segment contours"
+    },
+    {
+     "number": 2538,
+     "title": "Library part parameters: find a part with and without .gsm in the getter and the setter"
+    },
     {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
@@ -44114,6 +44297,22 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2547,
+     "title": "[2/3] Beams: read and write the floor plan display settings"
+    },
+    {
+     "number": 2546,
+     "title": "[1/2] Add ModifyCurtainWallPanels: assign panel classes to curtain wall panels"
+    },
+    {
+     "number": 2545,
+     "title": "Stairs: top story link, offset and Rules and Standards in GetDetailsOfElements, CreateStairs and ModifyStairs"
+    },
+    {
+     "number": 2543,
+     "title": "ModifyCurtainWalls: write flipped, offset and nominalWidth"
+    },
+    {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
     },
@@ -47220,6 +47419,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2547,
+     "title": "[2/3] Beams: read and write the floor plan display settings"
+    },
+    {
+     "number": 2546,
+     "title": "[1/2] Add ModifyCurtainWallPanels: assign panel classes to curtain wall panels"
+    },
+    {
+     "number": 2545,
+     "title": "Stairs: top story link, offset and Rules and Standards in GetDetailsOfElements, CreateStairs and ModifyStairs"
+    },
+    {
+     "number": 2543,
+     "title": "ModifyCurtainWalls: write flipped, offset and nominalWidth"
+    },
     {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
@@ -53721,7 +53936,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2546,
+     "title": "[1/2] Add ModifyCurtainWallPanels: assign panel classes to curtain wall panels"
+    }
+   ],
    "issues": []
   },
   {
