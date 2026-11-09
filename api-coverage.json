@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 02:45 UTC",
+ "generatedAt": "2026-11-09 03:27 UTC",
  "versions": [
   25,
   26,
@@ -2902,7 +2902,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2471,
+     "title": "[1/6] Refuse inputs that five commands accepted (check catalogue on AC26/28)"
+    }
+   ],
    "issues": []
   },
   {
@@ -3713,7 +3718,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2471,
+     "title": "[1/6] Refuse inputs that five commands accepted (check catalogue on AC26/28)"
+    }
+   ],
    "issues": []
   },
   {
@@ -3826,7 +3836,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2471,
+     "title": "[1/6] Refuse inputs that five commands accepted (check catalogue on AC26/28)"
+    }
+   ],
    "issues": []
   },
   {
@@ -5745,6 +5760,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2473,
+     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
+    },
+    {
      "number": 2455,
      "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
@@ -6717,6 +6736,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2473,
+     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
+    },
+    {
      "number": 2455,
      "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
@@ -6834,7 +6857,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2473,
+     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
+    }
+   ],
    "issues": []
   },
   {
@@ -6881,7 +6909,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2473,
+     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
+    }
+   ],
    "issues": []
   },
   {
@@ -7231,6 +7264,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2473,
+     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
+    },
     {
      "number": 2450,
      "title": "Read and set single railing segments and nodes"
@@ -7618,7 +7655,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2473,
+     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
+    }
+   ],
    "issues": []
   },
   {
@@ -7729,7 +7771,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2471,
+     "title": "[1/6] Refuse inputs that five commands accepted (check catalogue on AC26/28)"
+    }
+   ],
    "issues": []
   },
   {
@@ -7772,6 +7819,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2473,
+     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
+    },
     {
      "number": 2455,
      "title": "ModifyShells: edit the profile of an existing extruded shell"
@@ -7841,7 +7892,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2474,
+     "title": "[4/6] Fix the geometry and quantity checks of the Archicad 26/28 run"
+    }
+   ],
    "issues": []
   },
   {
@@ -9151,7 +9207,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2473,
+     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
+    }
+   ],
    "issues": []
   },
   {
@@ -11665,7 +11726,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2475,
+     "title": "[5/6] Views, project and library: GDL date, 3D window zoom, library part errors (#2470)"
+    }
+   ],
    "issues": []
   },
   {
@@ -12207,7 +12273,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2475,
+     "title": "[5/6] Views, project and library: GDL date, 3D window zoom, library part errors (#2470)"
+    }
+   ],
    "issues": []
   },
   {
@@ -12509,7 +12580,12 @@
    ],
    "status": "merged",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2475,
+     "title": "[5/6] Views, project and library: GDL date, 3D window zoom, library part errors (#2470)"
+    }
+   ],
    "issues": []
   },
   {
@@ -12883,7 +12959,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2471,
+     "title": "[1/6] Refuse inputs that five commands accepted (check catalogue on AC26/28)"
+    }
+   ],
    "issues": []
   },
   {
@@ -13013,7 +13094,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2471,
+     "title": "[1/6] Refuse inputs that five commands accepted (check catalogue on AC26/28)"
+    }
+   ],
    "issues": []
   },
   {
@@ -16424,7 +16510,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2472,
+     "title": "[2/6] Properties: bogus property in tool default reads, enum nonlocalized values, reference check"
+    }
+   ],
    "issues": []
   },
   {
@@ -18980,7 +19071,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2475,
+     "title": "[5/6] Views, project and library: GDL date, 3D window zoom, library part errors (#2470)"
+    }
+   ],
    "issues": []
   },
   {
@@ -25300,6 +25396,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2473,
+     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
+    },
+    {
      "number": 2460,
      "title": "Graphic override criterion: library part element types, and an exact round trip"
     },
@@ -30940,6 +31040,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2474,
+     "title": "[4/6] Fix the geometry and quantity checks of the Archicad 26/28 run"
+    },
+    {
+     "number": 2473,
+     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
+    },
     {
      "number": 2455,
      "title": "ModifyShells: edit the profile of an existing extruded shell"
@@ -37396,6 +37504,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2473,
+     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
+    },
     {
      "number": 2459,
      "title": "Columns and beams: a width given alone also works on a linked cross section"
@@ -44076,6 +44188,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2474,
+     "title": "[4/6] Fix the geometry and quantity checks of the Archicad 26/28 run"
+    },
+    {
+     "number": 2473,
+     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
+    },
+    {
      "number": 2455,
      "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
@@ -47190,6 +47310,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2474,
+     "title": "[4/6] Fix the geometry and quantity checks of the Archicad 26/28 run"
+    },
+    {
+     "number": 2473,
+     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
+    },
     {
      "number": 2455,
      "title": "ModifyShells: edit the profile of an existing extruded shell"
