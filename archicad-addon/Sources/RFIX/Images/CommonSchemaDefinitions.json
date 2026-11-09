@@ -19294,7 +19294,8 @@
                 "type": "number"
             },
             "preferenceTableId": {
-                "$ref": "#/Guid"
+                "$ref": "#/Guid",
+                "description": "An elbow preference table, as returned by GetMEPPreferenceTables."
             }
         },
         "additionalProperties": false,

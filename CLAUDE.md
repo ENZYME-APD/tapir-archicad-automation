@@ -77,6 +77,7 @@ tools/                   Version bump scripts (update_version.py), package_info.
                          Add-On docs generator (generate_addon_docs.py),
                          expanded-schema dump and compare (expand_schemas.py),
                          command scaffolder (new_command.py),
+                         inline-schema checker (check_schemas.py, inline_schemas_baseline.json),
                          one-example-per-command checker (check_examples.py),
                          Grasshopper GUI label table checker (check_tool_settings.py),
                          API coverage generator (generate_api_coverage.py,
@@ -112,28 +113,34 @@ sandbox/                 Experiments / scratch
   helpers, story/floor-index resolution (`GetStories`, `ResolveFloorIndexAndOffset`),
   attribute lookup, and `Create*Response`/`Create*ExecutionResult` builders. Reuse these
   helpers when adding commands; match the existing style.
-- **Schemas:** input/response JSON schemas are defined per command
-  (`GetInputParametersSchema` / `GetResponseSchema`) plus shared named definitions in
+- **Schemas:** every JSON schema lives in
   [Sources/RFIX/Images/CommonSchemaDefinitions.json](archicad-addon/Sources/RFIX/Images/CommonSchemaDefinitions.json)
-  (loaded by [Sources/SchemaDefinitions.cpp](archicad-addon/Sources/SchemaDefinitions.cpp)), which a
-  schema references with `{"$ref": "#/<Name>"}`. **Shared shapes are named definitions, never inline
-  copies**, so they can't drift apart:
-  - An object shape that more than one command uses, or that describes an element, attribute,
-    view or other Archicad item (its details, settings, a geometry, a status), is a definition in
-    `CommonSchemaDefinitions.json`, and every command that uses it refers to it with `$ref`.
-  - Adding or changing a field of a shared shape changes its definition, so every command that
-    uses it gets the field. Never add the field to one inline copy.
-  - A change that touches an inline schema whose shape already has a definition (or a second
-    command's inline copy of the same shape) replaces it with the `$ref` in the same change. A new
-    command's own object shape becomes a definition as soon as a second command needs it.
-  - Only parameters that are specific to one command (its own flags, a one-off option object)
-    stay inline. Name definitions in PascalCase after what they describe (`WallDetails`,
-    `Hole2D`), and keep their descriptions as complete as the inline text was.
+  (loaded by [Sources/SchemaDefinitions.cpp](archicad-addon/Sources/SchemaDefinitions.cpp)) as a named
+  definition. **No schema is written inline in a command:**
+  - A command's `GetInputParametersSchema` returns only `{"$ref": "#/<Command>Parameters"}` (or nothing
+    when it takes no input) and its `GetResponseSchema`/`GetRawResponseSchema` only
+    `{"$ref": "#/<Command>Response"}` (or a shared definition such as `ExecutionResult`). The command's
+    own input and response objects are those two definitions, so every command has named client types.
+  - Inside a definition, an object that more than one command or definition uses, or that describes an
+    element, attribute, view or other Archicad item (its details, settings, a geometry, a status), is a
+    definition of its own, referred to with `$ref`, never an inline copy, so copies can't drift apart.
+    Adding or changing a field of such a shape changes its definition, so every user gets the field.
+  - Name definitions in PascalCase after what they describe (`WallDetails`, `Hole2D`,
+    `GetZonesParameters`), and keep their descriptions as complete as the inline text was; a
+    description that only fits one command goes next to the `$ref` (`{"$ref": ..., "description": ...}`).
+  - `python tools/check_schemas.py` (run by the add-on build check after `generate_addon_docs.py`)
+    fails on an inline command schema and on a `$ref` to a missing definition. The schemas that are still
+    inline from before this rule are listed in `tools/inline_schemas_baseline.json`, which only shrinks:
+    a change that touches a listed command moves its schemas into definitions and removes its lines,
+    and the rest are moved in parts (#2379).
   - Moving a schema into a definition must not change what the command accepts or returns. Check
     it with `python tools/generate_addon_docs.py` and then `python tools/expand_schemas.py --out`
     before and after the change, and `python tools/expand_schemas.py --compare before.json after.json`:
     the expanded schemas must be the same (the generator writes the `$ref`s as they are; only
-    `expand_schemas.py` and the docs page in the browser expand them).
+    `expand_schemas.py` and the docs page in the browser expand them). A top-level input that is a bare
+    `$ref` is new to most commands (only ChangeWindow had one), and Archicad validates inputs with its
+    own JSON schema code (#1911), so a move is also run in Archicad by the community test runner before
+    it is merged.
 - **UI:** the Add-On adds a menu + palette ([TapirPalette](archicad-addon/Sources/TapirPalette.cpp)),
   an About dialog, and an auto-update/version check ([VersionChecker](archicad-addon/Sources/VersionChecker.cpp)).
 - **Auto-update:** the update is done by the Tapir Installer (see Installation). The
@@ -166,15 +173,17 @@ sandbox/                 Experiments / scratch
 ### Adding or changing a command
 
 [tools/new_command.py](tools/new_command.py) writes the repetitive part of steps 1–5 for new
-commands from a short spec (format in its docstring): the class, schemas, an `Execute` skeleton,
-the registration, a starter example and a starter check. The Archicad API calls in `Execute`,
+commands from a short spec (format in its docstring): the class, the schemas (as `<Command>Parameters` and
+`<Command>Response` definitions), an `Execute` skeleton, the registration, a starter example and a
+starter check. The Archicad API calls in `Execute`,
 the check's real parameters and expectations, and any `Test/ExpectedOutputs/` are still written
 by hand.
 
 1. Add/modify the command class in the appropriate `Sources/*Commands.{cpp,hpp}`
    (or create a new group file and include it in `AddOnMain.cpp`).
-2. Implement input/response schemas; reuse the shared definitions (`$ref`, see *Schemas* above,
-   and add one for a shape a second command uses) and the `CommandBase` helpers.
+2. Implement input/response schemas as named definitions in `CommonSchemaDefinitions.json`
+   (`<Command>Parameters`, `<Command>Response`) that the command only refers to, reusing the
+   existing definitions with `$ref` (see *Schemas* above), and the `CommandBase` helpers.
 3. Register it in `AddOnMain.cpp` `Initialize()` with the version it is introduced in
    and a clear description.
 4. Add its example as `archicad-addon/Examples/<GroupFolder>/<CommandName>.py`: a module
