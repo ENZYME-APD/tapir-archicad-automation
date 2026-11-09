@@ -9,6 +9,12 @@ and places it into the Add-Ons folder of each Archicad installation
 (`<Archicad folder>/<Add-Ons folder>/Tapir/`), so Archicad loads it
 automatically on the next start.
 
+The window lists each Archicad version with the Tapir version installed in it
+("Installed 1.7.0"). Once the latest release is known, an installation with an
+older Tapir is marked "Update 1.6.0 → 1.7.0" and the header says for how many
+versions an update is available; Install updates the selected ones. Older
+add-ons that carry no version are shown as "Installed" and are not compared.
+
 The name of the Add-Ons folder is localized in the language versions of
 Archicad (e.g. `Extensions` in FRA, `Dodatki` in POL). The installer first
 looks for a folder with one of the localized names published by Graphisoft

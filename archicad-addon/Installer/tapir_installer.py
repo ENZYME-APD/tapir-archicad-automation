@@ -117,6 +117,7 @@ TEXTS = {
         'installerTitle' : INSTALLER_TITLE,
         'checkingRelease' : 'Checking the latest Tapir release...',
         'latestRelease' : 'Latest Tapir release: {0}',
+        'latestReleaseWithUpdates' : 'Latest Tapir release: {0} (update available for {1} Archicad version(s))',
         'sectionInstallations' : 'ARCHICAD INSTALLATIONS',
         'sectionUpdate' : 'TAPIR UPDATE',
         'detectingInstallations' : 'Detecting Archicad installations...',
@@ -137,6 +138,7 @@ TEXTS = {
         'statusNotInstalled' : 'Not installed',
         'statusInstalled' : 'Installed',
         'statusInstalledVersion' : 'Installed {0}',
+        'statusUpdateAvailable' : 'Update {0} → {1}',
         'statusReadyToUpdate' : 'Ready to update',
         'statusDownloading' : 'Downloading...',
         'statusDownloadingPercent' : 'Downloading {0}%',
@@ -1698,6 +1700,29 @@ def GetInstalledStatusText (addOnsFolderPath):
     return GetText ('statusInstalled') if version is None else GetText ('statusInstalledVersion', version)
 
 
+def ParseTapirVersion (text):
+    # The (major, minor, patch) of a Tapir version or release tag ('1.7.0',
+    # 'v1.7.0'), or None for anything else (the 'latest' fallback tag).
+    if not isinstance (text, str):
+        return None
+    match = re.fullmatch (r'v?(\d+)\.(\d+)\.(\d+)', text.strip ())
+    if match is None:
+        return None
+    return tuple (int (part) for part in match.groups ())
+
+
+def IsUpdateAvailable (installedVersion, releaseTagName):
+    # True only when both versions are known and the release is newer.
+    installed = ParseTapirVersion (installedVersion)
+    latest = ParseTapirVersion (releaseTagName)
+    return installed is not None and latest is not None and latest > installed
+
+
+def GetReleaseVersionText (releaseTagName):
+    # The release tag without its 'v', as the add-on's version is written.
+    return releaseTagName[1:] if ParseTapirVersion (releaseTagName) is not None and releaseTagName.startswith ('v') else releaseTagName
+
+
 def EnableWindowsHighDpi ():
     # Without this Windows renders the window at 96 DPI and stretches it,
     # which makes every text blurry on high resolution displays.
@@ -1863,8 +1888,11 @@ def RunGuiInstaller (args):
             self.pathLabel = tkinter.Label (textFrame, text = installation.addOnFilePath if isUpdateMode else installation.addOnsFolderPath,
                 font = app.fonts['small'], bg = COLORS['surface'], fg = COLORS['mutedText'], anchor = 'w')
             self.pathLabel.pack (fill = 'x')
-            # The update statuses are longer ("Restarting Archicad...").
-            self.statusLabel = tkinter.Label (contentFrame, font = app.fonts['badge'], width = 19 if isUpdateMode else 17, padx = Px (6), pady = Px (3))
+            # The update statuses are longer ("Restarting Archicad..."). The
+            # width counts characters; SetStatus widens it for a longer text.
+            self.statusWidth = 19 if isUpdateMode else 17
+            self.installedVersion = None
+            self.statusLabel = tkinter.Label (contentFrame, font = app.fonts['badge'], width = self.statusWidth, padx = Px (6), pady = Px (3))
             self.statusLabel.pack (side = 'right', padx = (Px (12), 0))
             # The bar is always packed, so the card does not change height when
             # it appears; it is only invisible while there is no progress.
@@ -1877,6 +1905,7 @@ def RunGuiInstaller (args):
             for widget in [self.card, contentFrame, self.checkBox, textFrame, self.titleLabel, self.pathLabel]:
                 widget.bind ('<Button-1>', lambda event : self.Toggle ())
             if IsTapirInstalled (installation.addOnsFolderPath):
+                self.installedVersion = GetInstalledTapirVersion (installation.addOnsFolderPath)
                 self.SetStatus (GetInstalledStatusText (installation.addOnsFolderPath), 'success')
             else:
                 self.SetStatus (GetText ('statusNotInstalled'), 'neutral')
@@ -1900,7 +1929,7 @@ def RunGuiInstaller (args):
 
         def SetStatus (self, statusText, kind, progressFraction = None):
             foreground, background = STATUS_COLORS[kind]
-            self.statusLabel.configure (text = statusText, fg = COLORS[foreground], bg = COLORS[background])
+            self.statusLabel.configure (text = statusText, fg = COLORS[foreground], bg = COLORS[background], width = max (self.statusWidth, len (statusText)))
             if progressFraction is None:
                 self.progressBar.configure (bg = COLORS['surface'])
                 self.progressBar.SetFraction (0.0)
@@ -1947,7 +1976,11 @@ def RunGuiInstaller (args):
                 # Keep a reference, otherwise Tk drops the image.
                 # The embedded logo is 80 pixels: halved for 40 pixels at 96 DPI,
                 # used as it is from 150% display scaling.
-                self.logoImage = tkinter.PhotoImage (data = TAPIR_LOGO_PNG_BASE64)
+                self.windowIconImage = tkinter.PhotoImage (data = TAPIR_LOGO_PNG_BASE64)
+                # The title bar and the taskbar show the Tapir logo instead of
+                # the Tk feather (the executable's own icon is set by PyInstaller).
+                self.iconphoto (True, self.windowIconImage)
+                self.logoImage = self.windowIconImage
                 if uiScale[0] < 1.5:
                     self.logoImage = self.logoImage.subsample (2, 2)
                 tkinter.Label (headerContentFrame, image = self.logoImage, bg = COLORS['surface']).pack (side = 'left', padx = (0, Px (14)))
@@ -2081,7 +2114,17 @@ def RunGuiInstaller (args):
 
         def ShowReleaseInfo (self, releaseInfo):
             self.releaseInfo = releaseInfo
-            self.releaseLabel.configure (text = GetText ('latestRelease', releaseInfo.get ('tag_name', '?')))
+            tagName = releaseInfo.get ('tag_name', '?')
+            releaseText = GetText ('latestRelease', tagName)
+            if not isUpdateMode:
+                # Marks the installations whose Tapir is older than the
+                # release; Install updates them.
+                outdatedRows = [row for row in self.rows if IsUpdateAvailable (row.installedVersion, tagName)]
+                for row in outdatedRows:
+                    row.SetStatus (GetText ('statusUpdateAvailable', row.installedVersion, GetReleaseVersionText (tagName)), 'warning')
+                if len (outdatedRows) > 0:
+                    releaseText = GetText ('latestReleaseWithUpdates', tagName, len (outdatedRows))
+            self.releaseLabel.configure (text = releaseText)
             self.UpdateButtonStates ()
             if isUpdateMode:
                 # The Add-On has already asked the user to confirm the update.
