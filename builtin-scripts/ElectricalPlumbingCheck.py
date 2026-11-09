@@ -4,6 +4,7 @@
 # ///
 
 # /// tapir
+# category = "quality-assurance"
 # changes = "read-only"
 # ///
 

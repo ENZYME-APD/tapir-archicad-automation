@@ -27279,6 +27279,364 @@
             "score"
         ]
     },
+    "ElementHeaderFromOtherDatabase": {
+        "type": "object",
+        "description": "An element that is not in the current database but in another one (a layout, a section, a worksheet ...). Only the fields of its element header are returned: no id, details or floorPlanPolygons. Use GetContainingDatabases and ChangeWindow to open its database and read its full details.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "type": {
+                "$ref": "#/ElementType"
+            },
+            "floorIndex": {
+                "type": "number"
+            },
+            "layerIndex": {
+                "type": "number"
+            },
+            "drawIndex": {
+                "type": "number"
+            },
+            "hotlinkId": {
+                "$ref": "#/ElementId",
+                "description": "The hotlink instance this element belongs to. Present only for elements that came in through a placed hotlink."
+            },
+            "fromOtherDatabase": {
+                "type": "boolean",
+                "description": "Always true: the element is not in the current database."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "fromOtherDatabase"
+        ]
+    },
+    "ElementInfoString": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "infoString": {
+                "type": "string",
+                "description": "The new Element ID, as the Info Box shows it (GetDetailsOfElements returns it as id)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "infoString"
+        ]
+    },
+    "ElementLibraryPartTransformation": {
+        "type": "object",
+        "properties": {
+            "transformation": {
+                "type": "object",
+                "description": "The transformation chain of the library part instance: placement at location, rotation by angle, then scaling by xRatio and yRatio in the rotated coordinate system.",
+                "properties": {
+                    "location": {
+                        "$ref": "#/Coordinate2D",
+                        "description": "The location of the referenced library part on the floor plan."
+                    },
+                    "angle": {
+                        "type": "number",
+                        "description": "The rotation angle in radians."
+                    },
+                    "xRatio": {
+                        "type": "number",
+                        "description": "The scaling along the rotated x axis."
+                    },
+                    "yRatio": {
+                        "type": "number",
+                        "description": "The scaling along the rotated y axis."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "location",
+                    "angle",
+                    "xRatio",
+                    "yRatio"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "transformation"
+        ]
+    },
+    "ElementGeometry3D": {
+        "type": "object",
+        "properties": {
+            "bodies": {
+                "type": "array",
+                "description": "The solid bodies of the element's 3D model, including those of its subelements for a Stair, Railing or Curtain Wall, and of its segments for a Column or Beam. Empty when the element has no solid 3D model (for example a 2D element, or one filtered out of the 3D view).",
+                "items": {
+                    "$ref": "#/Body3D"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "bodies"
+        ]
+    },
+    "SkylightHolePolygon": {
+        "type": "object",
+        "properties": {
+            "polygonOutline": {
+                "type": "array",
+                "description": "The 2D coordinates of the outline of the hole, as Archicad returns them. The outline is closed implicitly (the first vertex is not repeated at the end); a curved edge is given by its end points only.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "holes": {
+                "$ref": "#/Holes2D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "polygonOutline",
+            "holes"
+        ]
+    },
+    "VisibleSkinStatus": {
+        "type": "object",
+        "properties": {
+            "hasVisibleSkin": {
+                "type": "boolean",
+                "description": "True when the element has at least one skin shown in the given Partial Structure Display mode."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hasVisibleSkin"
+        ]
+    },
+    "ElementConvexPolygons": {
+        "type": "object",
+        "properties": {
+            "convexPolygons": {
+                "type": "array",
+                "description": "With convex: true, the convex polygons the faces of the element's 3D model are decomposed into, body by body and face by face. Empty (or an error item instead) when the element has no solid 3D model of its own (the bodies of a Stair, Railing or Curtain Wall, and of the segments of a Column or Beam, belong to their subelements, which can be given instead).",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "vertices": {
+                            "type": "array",
+                            "description": "The 3D world coordinates of the vertices of the convex polygon, in order.",
+                            "items": {
+                                "$ref": "#/Coordinate3D"
+                            },
+                            "minItems": 3
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "vertices"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "convexPolygons"
+        ]
+    },
+    "Model3DCount": {
+        "type": "object",
+        "properties": {
+            "componentType": {
+                "type": "string",
+                "description": "The component type: the API_3DTypeID enumerator name without its API_ prefix and ID suffix.",
+                "enum": [
+                    "Body",
+                    "Pgon",
+                    "Pedg",
+                    "Edge",
+                    "Vert",
+                    "Vect",
+                    "Umat",
+                    "Lght"
+                ]
+            },
+            "count": {
+                "type": "integer",
+                "description": "The number of components of this type."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "componentType",
+            "count"
+        ]
+    },
+    "ElementTextureCoordinates": {
+        "type": "object",
+        "properties": {
+            "bodies": {
+                "type": "array",
+                "description": "The solid bodies of the element's own 3D model, in Archicad's order, or an error for a body without texture information. Empty (or an error item instead) when the element has no solid 3D model of its own (the bodies of a Stair, Railing or Curtain Wall, and of the segments of a Column or Beam, belong to their subelements, which can be given instead).",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "polygons": {
+                                    "type": "array",
+                                    "description": "One item per face of the body, in Archicad's order: the texture coordinates at the first vertex of the face, or an error.",
+                                    "items": {
+                                        "oneOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "point": {
+                                                        "$ref": "#/Coordinate3D",
+                                                        "description": "The first vertex of the face, in world coordinates."
+                                                    },
+                                                    "u": {
+                                                        "type": "number",
+                                                        "description": "The u texture coordinate at the point."
+                                                    },
+                                                    "v": {
+                                                        "type": "number",
+                                                        "description": "The v texture coordinate at the point."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "point",
+                                                    "u",
+                                                    "v"
+                                                ]
+                                            },
+                                            {
+                                                "$ref": "#/ErrorItem"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "polygons"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "bodies"
+        ]
+    },
+    "ElementQuantityDetails": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "$ref": "#/ElementType"
+            },
+            "quantities": {
+                "$ref": "#/ElementQuantities"
+            },
+            "composites": {
+                "type": "array",
+                "description": "The quantities per building material, in the order Archicad reports them: one item for each skin of a composite or complex profile element, and a single item for a basic element. Empty for Zones and Morphs, for which Archicad reports no skins.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "buildingMaterialId": {
+                            "$ref": "#/AttributeIdArrayItem"
+                        },
+                        "volume": {
+                            "type": "number",
+                            "description": "Net volume of the skin."
+                        },
+                        "projectedArea": {
+                            "type": "number",
+                            "description": "Projected area of the skin. Archicad reports 0 when the legacy intersection and surface calculation is turned on in the Project Preferences."
+                        },
+                        "isCore": {
+                            "type": "boolean",
+                            "description": "The skin is marked as core."
+                        },
+                        "isFinish": {
+                            "type": "boolean",
+                            "description": "The skin is marked as finish."
+                        },
+                        "subElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The sub-element (for example a column or beam segment) the skin belongs to. Present only when Archicad attaches the skin to a sub-element."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "buildingMaterialId",
+                        "volume",
+                        "projectedArea",
+                        "isCore",
+                        "isFinish"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type",
+            "quantities",
+            "composites"
+        ]
+    },
+    "CurtainWallAbsoluteBottom": {
+        "type": "object",
+        "properties": {
+            "absoluteBottom": {
+                "type": "number",
+                "description": "The absolute bottom level of the curtain wall or its subelement, as returned by ACAPI_CurtainWall_GetCWAbsoluteBottom."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "absoluteBottom"
+        ]
+    },
+    "TextContentChange": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "A Text element or a Label of the Text class."
+            },
+            "from": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The position in the content where the replaced range starts."
+            },
+            "range": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The number of characters to replace; 0 inserts the content at 'from'. The range may not reach over a line end into another paragraph."
+            },
+            "content": {
+                "type": "string",
+                "description": "The new content of the range; an empty string deletes the range. It must not contain line ends."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "from",
+            "range",
+            "content"
+        ]
+    },
     "SectionElevationSettableDetails": {
         "type": "object",
         "description": "The settings of a Section or Elevation element (API_SectionSegment / API_CutPlaneType), apart from its name and reference ID. Shared by CreateSections, CreateElevations and SetSectionsAndElevationsDetails; all fields are optional. The name and the reference ID are the name and id fields of CreateSections and CreateElevations, and ModifySections changes them on existing elements.",

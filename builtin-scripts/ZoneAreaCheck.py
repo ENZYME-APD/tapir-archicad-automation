@@ -4,6 +4,7 @@
 # ///
 
 # /// tapir
+# category = "zones-areas"
 # changes = "files"
 # ///
 

@@ -34,6 +34,10 @@
         'Eine Richtung eines Trimms zwischen zwei Dächern oder Schalen entfernen, die sich gegenseitig trimmen',
     'Remove the trim with <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a>, which removes both directions, then trim the other direction again with <a href="../archicad-addon/#TrimElements">TrimElements</a>.':
         'Entfernen Sie den Trimm mit <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a>, das beide Richtungen entfernt, und trimmen Sie die andere Richtung danach erneut mit <a href="../archicad-addon/#TrimElements">TrimElements</a>.',
+    'Read which slab or stair edge a railing is linked to, or link a railing to one':
+        'Auslesen, mit welcher Decken- oder Treppenkante ein Geländer verknüpft ist, oder ein Geländer mit einer verknüpfen',
+    'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
+        'Lesen Sie den Umriss der Decke mit <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> aus und erstellen Sie mit <a href="../archicad-addon/#CreateRailings">CreateRailings</a> ein statisches Geländer entlang der Kante. Wenn sich die Decke ändert, löschen Sie das Geländer und erstellen Sie es neu.',
 
     // Navigator and views
     'Navigator and views': 'Navigator und Ansichten',
