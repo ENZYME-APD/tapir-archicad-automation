@@ -182,7 +182,8 @@ script runs in, so:
   [Using a marketplace script in the palette](../builtin-scripts/README.md#using-a-marketplace-script-in-the-palette)),
   copy `utilities/` and `aclib/` from `builtin-scripts/` next to the script.
 - The palette's marketplace window, when it installs a script that imports
-  them, puts copies of both folders, from `main`, next to it.
+  them, puts copies of both folders next to it, taken at the commit of `main`
+  the catalogue names for that version.
 
 So changes to `utilities` and `aclib` stay backward compatible: a function or
 argument a script uses is never removed or changed in meaning.

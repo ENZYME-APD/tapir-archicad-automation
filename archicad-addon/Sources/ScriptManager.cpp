@@ -28,9 +28,11 @@ static const char* const ScriptsPageUrl = "https://archicad-api.com/scripts/";
 static const char* const ShareScriptPageUrl = "https://archicad-api.com/scripts/share/";
 
 // A marketplace script may import the helpers of the built-in scripts (marketplace/README.md, "The helpers
-// utilities and aclib"): installing one that does puts copies of both folders, from main, next to it. These are
-// their files; a file added to either folder on main must be added here too.
-static const char* const HelpersBaseUrl = "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/main/builtin-scripts/";
+// utilities and aclib"): installing one that does puts copies of both folders next to it, taken at the commit the
+// catalogue names for that version (a commit of main, so they are the helpers the script was published with and a
+// later change on main never reaches an install unchecked). These are their files; a file added to either folder on
+// main must be added here too.
+static const char* const HelpersRepositoryUrl = "https://raw.githubusercontent.com/ENZYME-APD/tapir-archicad-automation/";
 static const char* const HelperFiles[][2] = {
     { "aclib", "__init__.py" },
     { "utilities", "__init__.py" },
@@ -426,6 +428,21 @@ static bool ImportsHelpers (const std::vector<char>& code)
         }
     }
     return false;
+}
+
+// Whether text is a full git commit hash (40 hexadecimal digits), as the catalogue writes it.
+static bool IsCommitHash (const GS::UniString& text)
+{
+    const std::string hash (text.ToCStr (CC_UTF8).Get ());
+    if (hash.size () != 40) {
+        return false;
+    }
+    for (const char c : hash) {
+        if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
+            return false;
+        }
+    }
+    return true;
 }
 
 // Whether candidate is a newer version than installed, both written as N.N.N; false when either is not.
@@ -1149,13 +1166,16 @@ bool ScriptManager::Install (const Script& script, const ScriptVersion& version)
         return false;
     }
 
-    // The helpers of the built-in scripts, from main, when the script imports them.
+    // The helpers of the built-in scripts, when the script imports them, at the version's commit. Only a catalogue
+    // written by hand for testing has a version without one; it gets them from main.
     std::vector<std::pair<IO::RelativeLocation, std::vector<char>>> helpers;
     if (ImportsHelpers (code)) {
+        const GS::UniString helpersBaseUrl = GS::UniString (HelpersRepositoryUrl) +
+            (IsCommitHash (version.commit) ? version.commit : GS::UniString ("main")) + "/builtin-scripts/";
         for (const auto& helper : HelperFiles) {
             const GS::UniString relativePath = GS::UniString (helper[0]) + "/" + helper[1];
             std::vector<char> content;
-            if (!DownloadBytes (GS::UniString (HelpersBaseUrl) + relativePath, content, error)) {
+            if (!DownloadBytes (helpersBaseUrl + relativePath, content, error)) {
                 ShowInstallError (script, isUpdate, GS::UniString::Printf (ManagerText (ID_SCRIPT_MANAGER_STRINGS_DOWNLOAD_FAILED), relativePath.ToPrintf (), error.ToPrintf ()));
                 return false;
             }
