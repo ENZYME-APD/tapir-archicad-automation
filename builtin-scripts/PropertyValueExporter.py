@@ -4,6 +4,7 @@
 # ///
 
 # /// tapir
+# category = "import-export"
 # changes = "files"
 # ///
 

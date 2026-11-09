@@ -213,6 +213,26 @@
 #define ID_EXPAND_DOWN_ICON             32530
 #define ID_EXPAND_UP_ICON               32531
 
+// The Tapir Palette's search field and favourites: icons 32520-32529 and the 'STR#' list 32100
+#define ID_STAR_BUTTON_ICON             32520
+#define ID_STARFILLED_BUTTON_ICON       32521
+#define ID_SEARCH_BUTTON_ICON           32522
+#define ID_SEARCHACTIVE_BUTTON_ICON     32523   // the search icon while a filter is applied
+
+#define ID_PALETTE_SEARCH_STRINGS       32100
+#define ID_PALETTE_SEARCH_STRINGS_ADD_FAVOURITE     1
+#define ID_PALETTE_SEARCH_STRINGS_REMOVE_FAVOURITE  2
+#define ID_PALETTE_SEARCH_STRINGS_PLACEHOLDER       3
+#define ID_PALETTE_SEARCH_STRINGS_NO_MATCH          4
+#define ID_PALETTE_SEARCH_STRINGS_FILTERED          5
+
+// The items of ID_PALETTE that are not created in the order of the bar
+#define ID_PALETTE_SEARCH_EDIT          10
+#define ID_PALETTE_FAVOURITE_BUTTON     11
+#define ID_PALETTE_SEARCH_BUTTON        12
+#define ID_PALETTE_EXPAND_BUTTON        13   // the scripts panel's expand arrow, at the bar's right end
+#define ID_PALETTE_SCRIPTS_PANEL_SEPARATOR 14
+
 #define ID_ABOUT_DIALOG                 32003
 #define ID_PALETTE                      32004
 

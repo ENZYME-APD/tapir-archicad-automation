@@ -69,6 +69,22 @@
     "ExpandUp"
 }
 
+'GICN' ID_STAR_BUTTON_ICON "Star" {
+    "Star"
+}
+
+'GICN' ID_STARFILLED_BUTTON_ICON "StarFilled" {
+    "StarFilled"
+}
+
+'GICN' ID_SEARCH_BUTTON_ICON "Search" {
+    "Search"
+}
+
+'GICN' ID_SEARCHACTIVE_BUTTON_ICON "SearchActive" {
+    "SearchActive"
+}
+
 'FILE' ID_COMMON_SCHEMA_DEFINITIONS_FILE "" {
     "CommonSchemaDefinitions.json"
 }
