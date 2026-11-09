@@ -1,5 +1,10 @@
 /* The Community page (/community/), on top of ../assets/site.css. */
 
+:root {
+    /* The growth chart's light moss (Discord messages in light mode) and its dark mode shades. */
+    --moss-pale: #B9C9BC; --moss-mist: #C7D6CA; --moss-mid: #4A6152;
+}
+
 .page-body > div > section { padding-block: 32px 32px }
 .get-involved { margin-top: 20px }
 .get-involved h3 { max-width: 22em; font-size: clamp(26px, 3.4vw, 36px) }
@@ -25,12 +30,12 @@
    is also in the table below it. */
 .activity-card { border: 1.5px solid var(--fg); background: var(--surface); padding: 20px 24px }
 .growth {
-    --layer-commits: var(--moss); --layer-github: var(--ochre); --layer-discord: #B9C9BC;
+    --layer-commits: var(--moss); --layer-github: var(--ochre); --layer-discord: var(--moss-pale);
     --members: var(--ochre-text); margin: 0 0 16px
 }
-:root[data-theme="dark"] .growth { --layer-commits: #C7D6CA; --layer-github: var(--ochre); --layer-discord: #4A6152; --members: var(--cream) }
+:root[data-theme="dark"] .growth { --layer-commits: var(--moss-mist); --layer-github: var(--ochre); --layer-discord: var(--moss-mid); --members: var(--cream) }
 @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) .growth { --layer-commits: #C7D6CA; --layer-github: var(--ochre); --layer-discord: #4A6152; --members: var(--cream) }
+    :root:not([data-theme="light"]) .growth { --layer-commits: var(--moss-mist); --layer-github: var(--ochre); --layer-discord: var(--moss-mid); --members: var(--cream) }
 }
 .growth-legend { list-style: none; margin: 0 0 12px; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 20px; font: 700 11.5px var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted) }
 .growth-legend li { display: inline-flex; align-items: center; gap: 8px }
@@ -71,3 +76,15 @@
 @media (max-width: 640px) {
     .activity-card, .contributors { padding: 16px }
 }
+
+/* The Standard look (see the end of site.css): the chart's layers in the accent's green, a slate and a
+   pale green, dark to light so they still differ in lightness; light lines, 12 px corners, labels in
+   normal case. */
+:root:not([data-style="legacy"]) .growth { --layer-commits: #1F6B4E; --layer-github: #64748B; --layer-discord: #A7D3BF; --members: #111827 }
+:root:not([data-style="legacy"])[data-theme="dark"] .growth { --layer-commits: #4CB88A; --layer-github: #94A3B8; --layer-discord: #1E4D3A; --members: #E6EAF0 }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-style="legacy"]):not([data-theme="light"]) .growth { --layer-commits: #4CB88A; --layer-github: #94A3B8; --layer-discord: #1E4D3A; --members: #E6EAF0 }
+}
+:root:not([data-style="legacy"]) .contributors, :root:not([data-style="legacy"]) .activity-card { border: 1px solid var(--line); border-radius: var(--radius-card) }
+:root:not([data-style="legacy"]) .growth-legend { font-family: var(--body); font-weight: 600; letter-spacing: normal; text-transform: none }
+:root:not([data-style="legacy"]) .contributor-list li::before, :root:not([data-style="legacy"]) .contributor-list .counts { font-family: var(--body) }

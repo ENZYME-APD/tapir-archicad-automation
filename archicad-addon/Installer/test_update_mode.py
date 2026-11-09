@@ -34,6 +34,8 @@ import time
 import types
 import unittest
 import unittest.mock
+import urllib.error
+import urllib.request
 
 sys.path.insert (0, os.path.dirname (os.path.abspath (__file__)))
 import tapir_installer
@@ -164,6 +166,7 @@ class UpdateModeTestBase (unittest.TestCase):
         self.Patch (tapir_installer, 'ARCHICAD_QUIT_TIMEOUT_SECONDS', 2)
         self.Patch (tapir_installer, 'ARCHICAD_PROCESS_EXIT_TIMEOUT_SECONDS', 10)
         self.Patch (tapir_installer, 'ARCHICAD_POLL_INTERVAL_SECONDS', 0.1)
+        self.Patch (tapir_installer, 'DOWNLOAD_RETRY_WAITS_SECONDS', (0, 0, 0))
         self.Patch (tapir_installer, 'ARCHICAD_ANSWER_TIMEOUT_SECONDS', 0.3)
         self.Patch (tapir_installer, 'REPLACE_RETRY_TIMEOUT_SECONDS', 3)
         self.Patch (tapir_installer, 'UPDATE_LOCK_WAIT_SECONDS', 0.5)
@@ -1539,6 +1542,74 @@ class ArgumentTests (UpdateModeTestBase):
         self.RunMain (['--console', '--language', 'fr-FR'])
         self.RunMain (['--console'])
         self.assertEqual (languages, ['GER', 'FRA', 'INT'])
+
+
+class DownloadRetryTests (unittest.TestCase):
+    """ A release download that fails transiently (a 5xx, a connection that ends early) is tried
+    again; one that fails for good (a 404) is not. Offline: a local server stands in for GitHub. """
+
+    def setUp (self):
+        patcher = unittest.mock.patch.object (tapir_installer, 'DOWNLOAD_RETRY_WAITS_SECONDS', (0, 0, 0))
+        patcher.start ()
+        self.addCleanup (patcher.stop)
+        self.answers = []
+        self.requests = 0
+        test = self
+
+        class Handler (http.server.BaseHTTPRequestHandler):
+            def log_message (self, *args):
+                pass
+
+            def do_GET (self):
+                test.requests += 1
+                status, body, length = test.answers.pop (0) if test.answers else (200, b'MZ new', None)
+                self.send_response (status)
+                self.send_header ('Content-Length', str (length if length is not None else len (body)))
+                self.end_headers ()
+                self.wfile.write (body)
+
+        self.server = http.server.ThreadingHTTPServer (('127.0.0.1', 0), Handler)
+        threading.Thread (target = self.server.serve_forever, daemon = True).start ()
+        self.addCleanup (self.server.server_close)
+        self.addCleanup (self.server.shutdown)
+        self.folder = tempfile.mkdtemp ()
+        self.addCleanup (shutil.rmtree, self.folder, True)
+        opener = urllib.request.build_opener (urllib.request.ProxyHandler ({}))
+        patcher = unittest.mock.patch.object (tapir_installer, 'UrlOpen', lambda request: opener.open (request, timeout = 10))
+        patcher.start ()
+        self.addCleanup (patcher.stop)
+
+    def Asset (self):
+        return { 'name' : 'TapirAddOn_AC29_Win.apx', 'browser_download_url' : 'http://127.0.0.1:{}/asset'.format (self.server.server_port) }
+
+    def testAServerErrorIsTriedAgain (self):
+        self.answers = [(504, b'Gateway Time-out', None), (502, b'Bad Gateway', None)]
+        path = tapir_installer.DownloadAsset (self.Asset (), self.folder)
+        self.assertEqual (self.requests, 3)
+        self.assertEqual (ReadBinaryFile (path), b'MZ new')
+
+    def testADownloadThatEndsEarlyIsTriedAgain (self):
+        self.answers = [(200, b'MZ n', 6)]
+        path = tapir_installer.DownloadAsset (self.Asset (), self.folder)
+        self.assertEqual (self.requests, 2)
+        self.assertEqual (ReadBinaryFile (path), b'MZ new')
+
+    def testAMissingFileIsNotTriedAgain (self):
+        self.answers = [(404, b'Not Found', None)]
+        with self.assertRaises (urllib.error.HTTPError):
+            tapir_installer.DownloadAsset (self.Asset (), self.folder)
+        self.assertEqual (self.requests, 1)
+
+    def testItGivesUpAfterTheLastWait (self):
+        self.answers = [(503, b'Unavailable', None)] * 10
+        with self.assertRaises (urllib.error.HTTPError):
+            tapir_installer.DownloadAsset (self.Asset (), self.folder)
+        self.assertEqual (self.requests, len (tapir_installer.DOWNLOAD_RETRY_WAITS_SECONDS) + 1)
+
+    def testDownloadUrlIsTriedAgain (self):
+        self.answers = [(500, b'Internal', None)]
+        self.assertEqual (tapir_installer.DownloadUrl (self.Asset ()['browser_download_url']), b'MZ new')
+        self.assertEqual (self.requests, 2)
 
 
 class LanguageTests (unittest.TestCase):

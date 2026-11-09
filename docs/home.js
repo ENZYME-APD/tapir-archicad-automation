@@ -36,9 +36,17 @@
         var timers = [];
 
         // Moss shades: the Property Highlighter only colours the view. Ochre is kept for what a
-        // script changes in the model (the door numbers) and for the check's markers.
-        function heatColor (area) {
-            return area < 15 ? '#E3E9E1' : area <= 25 ? '#B9C7B4' : '#8FA58C';
+        // script changes in the model (the door numbers) and for the check's markers. The colours
+        // are home.css's --plan-heat-* properties, given by these classes, so a zone follows the
+        // site's look when it changes without being drawn again.
+        var heatClasses = ['heat-low', 'heat-mid', 'heat-high'];
+
+        function heatClass (area) {
+            return area < 15 ? 'heat-low' : area <= 25 ? 'heat-mid' : 'heat-high';
+        }
+
+        function colourZone (zone) {
+            zone.classList.add (heatClass (Number (zone.getAttribute ('data-area'))));
         }
 
         function setStatus (name, text) {
@@ -73,9 +81,7 @@
         }
 
         function colourZones () {
-            for (var i = 0; i < zones.length; i++) {
-                zones[i].setAttribute ('fill', heatColor (Number (zones[i].getAttribute ('data-area'))));
-            }
+            Array.prototype.forEach.call (zones, colourZone);
         }
 
         function run (option) {
@@ -89,7 +95,7 @@
             plan.classList.toggle ('heat', kind === 'heat');
 
             for (var i = 0; i < zones.length; i++) {
-                zones[i].setAttribute ('fill', '#FFFFFF');
+                zones[i].classList.remove.apply (zones[i].classList, heatClasses);
             }
             for (var j = 0; j < tags.length; j++) {
                 tags[j].classList.remove ('hidden-tag');
@@ -124,9 +130,7 @@
                 });
             } else if (kind === 'heat') {
                 Array.prototype.forEach.call (zones, function (zone, index) {
-                    later (function () {
-                        zone.setAttribute ('fill', heatColor (Number (zone.getAttribute ('data-area'))));
-                    }, 200 + index * 180);
+                    later (function () { colourZone (zone); }, 200 + index * 180);
                 });
             }
             later (function () {

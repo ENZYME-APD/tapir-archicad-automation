@@ -15,8 +15,8 @@
     'Install Tapir': 'Tapir installieren',
     '<strong>With the installer (recommended).</strong> It finds every Archicad version on the computer and installs the matching add-on into each, so Archicad loads it on its next start.':
         '<strong>Mit dem Installer (empfohlen).</strong> Er findet jede Archicad-Version auf dem Computer und installiert in jede das passende Add-On, sodass Archicad es beim nächsten Start lädt.',
-    'Download <span class="os">WINDOWS</span>': 'Herunterladen <span class="os">WINDOWS</span>',
-    'Download <span class="os">MACOS</span>': 'Herunterladen <span class="os">MACOS</span>',
+    'Download <span class="os">Windows</span>': 'Herunterladen <span class="os">Windows</span>',
+    'Download <span class="os">macOS</span>': 'Herunterladen <span class="os">macOS</span>',
     '<strong>Windows:</strong> the installer asks for administrator rights, because it copies the add-on into the Archicad folder under Program Files.':
         '<strong>Windows:</strong> Der Installer fragt nach Administratorrechten, weil er das Add-On in den Archicad-Ordner unter Program Files kopiert.',
     '<strong>macOS:</strong> unzip the download and open the app.':

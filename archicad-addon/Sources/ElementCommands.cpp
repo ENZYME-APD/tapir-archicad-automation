@@ -1793,37 +1793,7 @@ GS::Optional<GS::UniString> GetDetailsOfElementsCommand::GetRawResponseSchema ()
                             "$ref": "#/DetailsOfElement"
                         },
                         {
-                            "type": "object",
-                            "description": "An element that is not in the current database but in another one (a layout, a section, a worksheet ...). Only the fields of its element header are returned: no id, details or floorPlanPolygons. Use GetContainingDatabases and ChangeWindow to open its database and read its full details.",
-                            "properties": {
-                                "elementId": {
-                                    "$ref": "#/ElementId"
-                                },
-                                "type": {
-                                    "$ref": "#/ElementType"
-                                },
-                                "floorIndex": {
-                                    "type": "number"
-                                },
-                                "layerIndex": {
-                                    "type": "number"
-                                },
-                                "drawIndex": {
-                                    "type": "number"
-                                },
-                                "hotlinkId": {
-                                    "$ref": "#/ElementId",
-                                    "description": "The hotlink instance this element belongs to. Present only for elements that came in through a placed hotlink."
-                                },
-                                "fromOtherDatabase": {
-                                    "type": "boolean",
-                                    "description": "Always true: the element is not in the current database."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "fromOtherDatabase"
-                            ]
+                            "$ref": "#/ElementHeaderFromOtherDatabase"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -2396,11 +2366,10 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
         }
 
         if (isFieldRequested ("id")) {
-            API_ElementMemo memo = {};
-            const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
-            ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_ElemInfoString);
-
-            detailsOfElement.Add ("id", memo.elemInfoString != nullptr ? *memo.elemInfoString : GS::EmptyUniString);
+            // Read the way ChangeElementId writes and checks it.
+            GS::UniString elementId;
+            GetElementId (elem.header.guid, elementId);
+            detailsOfElement.Add ("id", elementId);
         }
 
         if (!additionalFields.IsEmpty ()) {
@@ -3219,6 +3188,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 typeSpecificDetails.Add ("structureType", StructureTypeToString (base.modelElemStructureType));
                 typeSpecificDetails.Add ("thickness", base.thickness);
+                typeSpecificDetails.Add ("isFlipped", elem.shell.isFlipped);
                 if (StructureTypeToString (base.modelElemStructureType) == "Composite") {
                     typeSpecificDetails.Add ("compositeId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_CompWallID, base.composite)));
                 } else {
@@ -4379,21 +4349,7 @@ GS::Optional<GS::UniString> SetElementInfoStringsCommand::GetInputParametersSche
             "elements": {
                 "type": "array",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId"
-                        },
-                        "infoString": {
-                            "type": "string",
-                            "description": "The new Element ID, as the Info Box shows it (GetDetailsOfElements returns it as id)."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": [
-                        "elementId",
-                        "infoString"
-                    ]
+                    "$ref": "#/ElementInfoString"
                 }
             }
         },
@@ -4451,13 +4407,8 @@ GS::ObjectState SetElementInfoStringsCommand::Execute (const GS::ObjectState& pa
             }
 
             const API_Guid elemGuid = GetGuidFromObjectState (*elementId);
-#ifdef ServerMainVers_2700
+            // Before Archicad 27 MigrationHelper.hpp calls APIDb_ChangeElementInfoStringID.
             const GSErrCode err = ACAPI_Element_ChangeElementInfoString (&elemGuid, &infoString);
-#else
-            // ACAPI_Element_ChangeElementInfoString is available from AC27, before that the
-            // info string memo part is written, as SetDetailsOfElements writes the id.
-            const GSErrCode err = ChangeElementId (elemGuid, infoString);
-#endif
             if (err != NoError) {
                 executionResults (CreateFailedExecutionResult (err, "Failed to change the info string of the element"));
                 continue;
@@ -5535,6 +5486,14 @@ GS::ObjectState GetConnectedElementsCommand::Execute (const GS::ObjectState& par
         }
 
         const API_Guid ownerElemGuid = GetGuidFromObjectState (*elementId);
+
+        API_Elem_Head ownerHead = {};
+        ownerHead.guid = ownerElemGuid;
+        const GSErrCode headerErr = ACAPI_Element_GetHeader (&ownerHead);
+        if (headerErr != NoError) {
+            connectedElementsOfInputElements (CreateErrorResponse (headerErr, "Owner element not found."));
+            continue;
+        }
 
         GS::ObjectState elementsOS;
         const auto& elements = elementsOS.AddList<GS::ObjectState> ("elements");
@@ -10287,42 +10246,7 @@ GS::Optional<GS::UniString> GetLibPartTransformationsCommand::GetRawResponseSche
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "transformation": {
-                                    "type": "object",
-                                    "description": "The transformation chain of the library part instance: placement at location, rotation by angle, then scaling by xRatio and yRatio in the rotated coordinate system.",
-                                    "properties": {
-                                        "location": {
-                                            "$ref": "#/Coordinate2D",
-                                            "description": "The location of the referenced library part on the floor plan."
-                                        },
-                                        "angle": {
-                                            "type": "number",
-                                            "description": "The rotation angle in radians."
-                                        },
-                                        "xRatio": {
-                                            "type": "number",
-                                            "description": "The scaling along the rotated x axis."
-                                        },
-                                        "yRatio": {
-                                            "type": "number",
-                                            "description": "The scaling along the rotated y axis."
-                                        }
-                                    },
-                                    "additionalProperties": false,
-                                    "required": [
-                                        "location",
-                                        "angle",
-                                        "xRatio",
-                                        "yRatio"
-                                    ]
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "transformation"
-                            ]
+                            "$ref": "#/ElementLibraryPartTransformation"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -10877,20 +10801,7 @@ GS::Optional<GS::UniString> Get3DGeometryOfElementsCommand::GetRawResponseSchema
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "bodies": {
-                                    "type": "array",
-                                    "description": "The solid bodies of the element's 3D model, including those of its subelements for a Stair, Railing or Curtain Wall, and of its segments for a Column or Beam. Empty when the element has no solid 3D model (for example a 2D element, or one filtered out of the 3D view).",
-                                    "items": {
-                                        "$ref": "#/Body3D"
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "bodies"
-                            ]
+                            "$ref": "#/ElementGeometry3D"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -11044,24 +10955,7 @@ GS::Optional<GS::UniString> GetSkylightHolePolygonsCommand::GetRawResponseSchema
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "polygonOutline": {
-                                    "type": "array",
-                                    "description": "The 2D coordinates of the outline of the hole, as Archicad returns them. The outline is closed implicitly (the first vertex is not repeated at the end); a curved edge is given by its end points only.",
-                                    "items": {
-                                        "$ref": "#/Coordinate2D"
-                                    }
-                                },
-                                "holes": {
-                                    "$ref": "#/Holes2D"
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "polygonOutline",
-                                "holes"
-                            ]
+                            "$ref": "#/SkylightHolePolygon"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -11189,17 +11083,7 @@ GS::Optional<GS::UniString> GetVisibleSkinStatusCommand::GetRawResponseSchema ()
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "hasVisibleSkin": {
-                                    "type": "boolean",
-                                    "description": "True when the element has at least one skin shown in the given Partial Structure Display mode."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "hasVisibleSkin"
-                            ]
+                            "$ref": "#/VisibleSkinStatus"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -11483,6 +11367,30 @@ GS::ObjectState GetElementAtCoordinateCommand::Execute (const GS::ObjectState& p
     if (typeID == API_ZombieElemID) {
         return CreateErrorResponse (APIERR_BADPARS,
             GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ()));
+    }
+
+    // Archicad is documented to answer APIERR_REFUSEDPAR for these, but Archicad 26 and 28 answer
+    // APIERR_BADPARS, which reads as "nothing found"; types without a polygon are refused here.
+    switch (typeID) {
+        case API_WallID:
+        case API_ColumnID:
+        case API_BeamID:
+        case API_WindowID:
+        case API_DoorID:
+        case API_SkylightID:
+        case API_ObjectID:
+        case API_LampID:
+        case API_LineID:
+        case API_PolyLineID:
+        case API_ArcID:
+        case API_SplineID:
+        case API_HotspotID:
+        case API_TextID:
+        case API_LabelID:
+        case API_DimensionID:
+            return CreateErrorResponse (APIERR_REFUSEDPAR, "Only polygonal element types can be searched by coordinate (for example Slab, Roof, Mesh, Zone or Hatch).");
+        default:
+            break;
     }
 
     const GS::ObjectState* coordinate = parameters.Get ("coordinate");
@@ -12405,34 +12313,7 @@ GS::Optional<GS::UniString> TriangulatePolygonsOfElementsCommand::GetRawResponse
                             "$ref": "#/ElementTriangulation"
                         },
                         {
-                            "type": "object",
-                            "properties": {
-                                "convexPolygons": {
-                                    "type": "array",
-                                    "description": "With convex: true, the convex polygons the faces of the element's 3D model are decomposed into, body by body and face by face. Empty (or an error item instead) when the element has no solid 3D model of its own (the bodies of a Stair, Railing or Curtain Wall, and of the segments of a Column or Beam, belong to their subelements, which can be given instead).",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "vertices": {
-                                                "type": "array",
-                                                "description": "The 3D world coordinates of the vertices of the convex polygon, in order.",
-                                                "items": {
-                                                    "$ref": "#/Coordinate3D"
-                                                },
-                                                "minItems": 3
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "vertices"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "convexPolygons"
-                            ]
+                            "$ref": "#/ElementConvexPolygons"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -12561,23 +12442,7 @@ GS::Optional<GS::UniString> Get3DModelCountsCommand::GetRawResponseSchema () con
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "componentType": {
-                                    "type": "string",
-                                    "description": "The component type: the API_3DTypeID enumerator name without its API_ prefix and ID suffix.",
-                                    "enum": ["Body", "Pgon", "Pedg", "Edge", "Vert", "Vect", "Umat", "Lght"]
-                                },
-                                "count": {
-                                    "type": "integer",
-                                    "description": "The number of components of this type."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "componentType",
-                                "count"
-                            ]
+                            "$ref": "#/Model3DCount"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -12924,67 +12789,7 @@ GS::Optional<GS::UniString> GetTextureCoordinatesCommand::GetRawResponseSchema (
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "bodies": {
-                                    "type": "array",
-                                    "description": "The solid bodies of the element's own 3D model, in Archicad's order, or an error for a body without texture information. Empty (or an error item instead) when the element has no solid 3D model of its own (the bodies of a Stair, Railing or Curtain Wall, and of the segments of a Column or Beam, belong to their subelements, which can be given instead).",
-                                    "items": {
-                                        "oneOf": [
-                                            {
-                                                "type": "object",
-                                                "properties": {
-                                                    "polygons": {
-                                                        "type": "array",
-                                                        "description": "One item per face of the body, in Archicad's order: the texture coordinates at the first vertex of the face, or an error.",
-                                                        "items": {
-                                                            "oneOf": [
-                                                                {
-                                                                    "type": "object",
-                                                                    "properties": {
-                                                                        "point": {
-                                                                            "$ref": "#/Coordinate3D",
-                                                                            "description": "The first vertex of the face, in world coordinates."
-                                                                        },
-                                                                        "u": {
-                                                                            "type": "number",
-                                                                            "description": "The u texture coordinate at the point."
-                                                                        },
-                                                                        "v": {
-                                                                            "type": "number",
-                                                                            "description": "The v texture coordinate at the point."
-                                                                        }
-                                                                    },
-                                                                    "additionalProperties": false,
-                                                                    "required": [
-                                                                        "point",
-                                                                        "u",
-                                                                        "v"
-                                                                    ]
-                                                                },
-                                                                {
-                                                                    "$ref": "#/ErrorItem"
-                                                                }
-                                                            ]
-                                                        }
-                                                    }
-                                                },
-                                                "additionalProperties": false,
-                                                "required": [
-                                                    "polygons"
-                                                ]
-                                            },
-                                            {
-                                                "$ref": "#/ErrorItem"
-                                            }
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "bodies"
-                            ]
+                            "$ref": "#/ElementTextureCoordinates"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -13065,11 +12870,11 @@ GS::Optional<GS::UniString> GetQuantitiesOfElementsCommand::GetInputParametersSc
             "minOpeningSize": {
                 "type": "number",
                 "minimum": 0,
-                "description": "Optional minimum opening size in square meters. Openings smaller than this are not subtracted when the conditional values (for example volumeConditional of a Wall) are calculated. Archicad only uses it for walls. Default value is 0, so every opening is subtracted."
+                "description": "Optional minimum opening size in square meters. Openings smaller than this are not subtracted from the conditional surfaces of a Wall (referenceSideSurfaceConditional and oppositeSideSurfaceConditional). Archicad only uses it for walls; the conditional volume follows the project's calculation rules instead. Default value is 0, so every opening is subtracted."
             },
             "calculateInOneCall": {
                 "type": "boolean",
-                "description": "Optional. When true, Archicad calculates the quantities of all the supported elements in one call instead of one call per element, which can be faster for many elements. The output has the same format. If that one call fails, every supported element gets the same error. Default value is false."
+                "description": "Optional. When true, Archicad calculates the quantities of all the supported elements of one type in one call (one call per element type, because Archicad only calculates elements of the same type together) instead of one call per element, which can be faster for many elements. The output has the same format. If the call of a type fails, every element of that type gets the same error. Default value is false."
             }
         },
         "additionalProperties": false,
@@ -13091,61 +12896,7 @@ GS::Optional<GS::UniString> GetQuantitiesOfElementsCommand::GetRawResponseSchema
                     "type": "object",
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "type": {
-                                    "$ref": "#/ElementType"
-                                },
-                                "quantities": {
-                                    "$ref": "#/ElementQuantities"
-                                },
-                                "composites": {
-                                    "type": "array",
-                                    "description": "The quantities per building material, in the order Archicad reports them: one item for each skin of a composite or complex profile element, and a single item for a basic element. Empty for Zones and Morphs, for which Archicad reports no skins.",
-                                    "items": {
-                                        "type": "object",
-                                        "properties": {
-                                            "buildingMaterialId": {
-                                                "$ref": "#/AttributeIdArrayItem"
-                                            },
-                                            "volume": {
-                                                "type": "number",
-                                                "description": "Net volume of the skin."
-                                            },
-                                            "projectedArea": {
-                                                "type": "number",
-                                                "description": "Projected area of the skin. Archicad reports 0 when the legacy intersection and surface calculation is turned on in the Project Preferences."
-                                            },
-                                            "isCore": {
-                                                "type": "boolean",
-                                                "description": "The skin is marked as core."
-                                            },
-                                            "isFinish": {
-                                                "type": "boolean",
-                                                "description": "The skin is marked as finish."
-                                            },
-                                            "subElementId": {
-                                                "$ref": "#/ElementId",
-                                                "description": "The sub-element (for example a column or beam segment) the skin belongs to. Present only when Archicad attaches the skin to a sub-element."
-                                            }
-                                        },
-                                        "additionalProperties": false,
-                                        "required": [
-                                            "buildingMaterialId",
-                                            "volume",
-                                            "projectedArea",
-                                            "isCore",
-                                            "isFinish"
-                                        ]
-                                    }
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "type",
-                                "quantities",
-                                "composites"
-                            ]
+                            "$ref": "#/ElementQuantityDetails"
                         },
                         {
                             "$ref": "#/ErrorItem"
@@ -13467,10 +13218,29 @@ GS::ObjectState GetQuantitiesOfElementsCommand::Execute (const GS::ObjectState& 
         results.Push (CreateQuantitiesOfElement (typeID, elementQuantity, composites));
     }
 
-    if (!guidsInOneCall.IsEmpty ()) {
+    // ACAPI_Element_GetMoreQuantities calculates "multiple elements of the same type": given a
+    // wall, a slab and a zone together, it failed for all of them (#2470). So there is one call
+    // per element type, in the order the types first appear.
+    GS::Array<API_ElemTypeID> typesInOneCall;
+    for (API_ElemTypeID typeID : typeIDsInOneCall) {
+        if (!typesInOneCall.Contains (typeID)) {
+            typesInOneCall.Push (typeID);
+        }
+    }
+
+    for (API_ElemTypeID typeInOneCall : typesInOneCall) {
+        GS::Array<UIndex> indicesOfType;
+        GS::Array<API_Guid> guidsOfType;
+        for (UIndex i = 0; i < guidsInOneCall.GetSize (); ++i) {
+            if (typeIDsInOneCall[i] == typeInOneCall) {
+                indicesOfType.Push (i);
+                guidsOfType.Push (guidsInOneCall[i]);
+            }
+        }
+
         // Each element gets its own storage, like in the per element call above. All of it is pushed
         // before any address is taken, so no reallocation can invalidate the pointers.
-        const UIndex count = guidsInOneCall.GetSize ();
+        const UIndex count = guidsOfType.GetSize ();
         GS::Array<API_ElementQuantity> elementQuantities;
         GS::Array<GS::Array<API_CompositeQuantity>> compositesOfElements;
         for (UIndex i = 0; i < count; ++i) {
@@ -13486,14 +13256,14 @@ GS::ObjectState GetQuantitiesOfElementsCommand::Execute (const GS::ObjectState& 
             quantities.Push (quantitiesOfElement);
         }
 
-        GSErrCode err = ACAPI_Element_GetMoreQuantities (&guidsInOneCall, &quantityParams, &quantities, &mask);
+        GSErrCode err = ACAPI_Element_GetMoreQuantities (&guidsOfType, &quantityParams, &quantities, &mask);
         if (err == NoError && quantities.GetSize () != count) {
             err = APIERR_GENERAL;
         }
 
         const GS::Array<API_CompositeQuantity> noComposites;
         for (UIndex i = 0; i < count; ++i) {
-            const UIndex resultIndex = resultIndicesInOneCall[i];
+            const UIndex resultIndex = resultIndicesInOneCall[indicesOfType[i]];
             if (err != NoError) {
                 results[resultIndex] = CreateErrorResponse (err, "Failed to get the quantities of the elements");
                 continue;
@@ -13507,7 +13277,7 @@ GS::ObjectState GetQuantitiesOfElementsCommand::Execute (const GS::ObjectState& 
                 continue;
             }
 
-            results[resultIndex] = CreateQuantitiesOfElement (typeIDsInOneCall[i], *quantitiesOfElement.elements,
+            results[resultIndex] = CreateQuantitiesOfElement (typeInOneCall, *quantitiesOfElement.elements,
                 quantitiesOfElement.composites != nullptr ? *quantitiesOfElement.composites : noComposites);
         }
     }
@@ -13718,17 +13488,7 @@ GS::Optional<GS::UniString> GetCurtainWallAbsoluteBottomsCommand::GetRawResponse
                 "items": {
                     "oneOf": [
                         {
-                            "type": "object",
-                            "properties": {
-                                "absoluteBottom": {
-                                    "type": "number",
-                                    "description": "The absolute bottom level of the curtain wall or its subelement, as returned by ACAPI_CurtainWall_GetCWAbsoluteBottom."
-                                }
-                            },
-                            "additionalProperties": false,
-                            "required": [
-                                "absoluteBottom"
-                            ]
+                            "$ref": "#/CurtainWallAbsoluteBottom"
                         },
                         {
                             "$ref": "#/ErrorItem"

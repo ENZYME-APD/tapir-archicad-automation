@@ -585,8 +585,19 @@ jobs:
                  "and then re-running this workflow."
             exit 1
           fi
-          NOTES=$(gh api "repos/${{ github.repository }}/releases/generate-notes" \
-            -f tag_name="$VERSION" -f previous_tag_name="$LAST_TAG" --jq '.body')
+          gh api "repos/${{ github.repository }}/releases/generate-notes" \
+            -f tag_name="$VERSION" -f previous_tag_name="$LAST_TAG" --jq '.body' > "$RUNNER_TEMP/generated-notes.md"
+          # GitHub's notes list every merged pull request (hundreds of lines
+          # in a busy week), so the release shows a summary of them instead:
+          # new commands per group, new Grasshopper components and marketplace
+          # scripts, and who made the pull requests, ending with the compare
+          # link to the full list. A summary that cannot be written never
+          # blocks the release: GitHub's list is used then.
+          if ! NOTES=$(python3 tools/release_notes.py --previous "$LAST_TAG" --current "$VERSION" \
+               --version "$VERSION" --generated "$RUNNER_TEMP/generated-notes.md"); then
+            echo "::warning::tools/release_notes.py failed; the release notes list every pull request instead."
+            NOTES=$(cat "$RUNNER_TEMP/generated-notes.md")
+          fi
           # Most users only want the installer, so the notes start with it.
           # The links name this release's tag, not releases/latest, so they
           # stay right after the next release. The asset names are the ones
