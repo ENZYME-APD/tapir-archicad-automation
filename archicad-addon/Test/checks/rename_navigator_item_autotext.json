@@ -76,7 +76,8 @@
       "expect": [
         { "path": "navigatorItemTree.children[1].navigatorItem.name", "eq": "TapirCheck autotext folder", "name": "second item is the folder" },
         { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.customName", "eq": true },
-        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.name", "contains": "TapirCheck", "name": "renamed" }
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.name", "contains": "TapirCheck", "name": "renamed" },
+        { "path": "navigatorItemTree.children[1].navigatorItem.children[0].navigatorItem.autoTextedName", "eq": "TapirCheck <SourceItemName> view", "name": "autotext kept" }
       ]
     },
     {
