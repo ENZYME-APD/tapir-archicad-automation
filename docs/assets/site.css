@@ -23,10 +23,11 @@
    motion.css).
 
    Light is the default. Dark applies under prefers-color-scheme: dark, unless the Display menu's Mode
-   chose one: it sets data-theme="light" or "dark" on <html> (remembered in localStorage).
-   A page's own colours for dark mode use the same two selectors as below:
+   chose one: it sets data-theme="light", "dark" or "contrast" (High contrast, near the end of this
+   file) on <html> (remembered in localStorage). A page's own colours for dark mode use the same two
+   selectors as below; the second leaves out High contrast, which the system's dark mode never changes:
        :root[data-theme="dark"] { ... }
-       @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { ... } }
+       @media (prefers-color-scheme: dark) { :root:not([data-theme="light"], [data-theme="contrast"]) { ... } }
 
    Brand colours: Deep Charcoal #1C1E1F, Natural Cream #F4F1EA, Paper #FFFFFF, Jungle Moss #2D3A30,
    Earthy Ochre #BD8D53 (text on it is always charcoal), Deep Ochre #8A6235 (links on light),
@@ -79,7 +80,7 @@
     --shadow-term-dark: 12px 12px 0 var(--moss-light); --shadow-menu: 0 12px 24px var(--charcoal-25);
     color-scheme: light;
 }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"], [data-theme="contrast"]) {
     --bg: #1C1E1F; --surface: #262A2B; --fg: #F4F1EA; --muted: #97A2A6; --line: rgba(151, 162, 166, .24);
     --grid: rgba(244, 241, 234, .045); --link: #D4A876; --badge: rgba(212, 168, 118, .16); --focus: var(--ochre-light);
     --card-hover: #2E3334; --border-strong: rgba(151, 162, 166, .5); --link-hover: #E6C79E;
@@ -217,7 +218,7 @@ main { display: block }
 .teaser.dark:hover { color: var(--cream) }
 .teaser.dark p { color: var(--slate-light) } .teaser.dark .go, .teaser.dark .tagline { color: var(--ochre-light) }
 :root[data-theme="dark"] .teaser.dark { border-color: var(--cream-35) }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .teaser.dark { border-color: var(--cream-35) } }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"], [data-theme="contrast"]) .teaser.dark { border-color: var(--cream-35) } }
 div.teaser.dark .ctas { margin-top: 8px }
 .doc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px }
 .doc-grid > .wide { grid-column: 1 / -1 }
@@ -227,7 +228,7 @@ div.teaser.dark .ctas { margin-top: 8px }
 /* ---------- code panel ---------- */
 .term { background: var(--charcoal); color: var(--cream); border-radius: 6px; overflow: hidden; box-shadow: var(--shadow-term); min-width: 0; --focus: var(--ochre-light) }
 :root[data-theme="dark"] .term { box-shadow: var(--shadow-term-dark); border: 1px solid var(--cream-12) }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .term { box-shadow: var(--shadow-term-dark); border: 1px solid var(--cream-12) } }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"], [data-theme="contrast"]) .term { box-shadow: var(--shadow-term-dark); border: 1px solid var(--cream-12) } }
 .term .bar { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; font: 500 11.5px var(--mono); color: var(--slate-light); border-bottom: 1px solid var(--cream-10) }
 .term pre { margin: 0; padding: 18px; background: transparent; border-radius: 0; overflow-x: auto; font: 400 13px/1.65 var(--mono); color: var(--cream) }
 .term .k { color: var(--ochre-light) } .term .s { color: var(--sage) } .term .c { color: var(--slate-light) } .term .o { color: var(--cream); font-weight: 700 }
@@ -325,7 +326,7 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 .stack .box.archicad { background: var(--charcoal); border-color: var(--charcoal); color: var(--cream) }
 .stack .box.archicad span { color: var(--slate-pale) }
 :root[data-theme="dark"] .stack .box.archicad { border-color: var(--cream-35) }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .stack .box.archicad { border-color: var(--cream-35) } }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"], [data-theme="contrast"]) .stack .box.archicad { border-color: var(--cream-35) } }
 .stack .wire { font: 600 12.5px var(--mono); color: var(--muted); letter-spacing: .06em; text-transform: uppercase }
 
 /* ---------- use cases ---------- */
@@ -489,7 +490,9 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
    stylesheet ends with its own Standard part. Modes:
        light: :root:not([data-style="legacy"])
        dark:  :root:not([data-style="legacy"])[data-theme="dark"], and under prefers-color-scheme: dark
-              :root:not([data-style="legacy"]):not([data-theme="light"])
+              :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"])
+       high contrast: :root:not([data-style="legacy"])[data-theme="contrast"], on top of light (never
+              with data-style="legacy"; see High contrast below)
    The light block comes after the Legacy dark ones and outweighs their :root[data-theme="dark"], so a
    Standard page in dark mode only takes the values its own dark block gives.
    Contrast (WCAG 2), every text pair at least 4.5:1: light, #111827 on #FFFFFF about 17.7:1, #4B5563 on
@@ -523,12 +526,112 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
     --badge: rgba(76, 184, 138, .1); --code-bg: #1A212B; --code-fg: #E6EAF0; --pre-border: #232B36; --warning: #F59E0B;
     --shadow-soft: none; color-scheme: dark;
 }
-@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"]) {
+@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) {
     --standard-bg: #0B0F14; --standard-surface: #11161D; --subtle: #0E1318;
     --fg: #E6EAF0; --muted: #9AA4B2; --line: #232B36; --border-strong: #3A4553;
     --link: #4CB88A; --link-hover: #6FCBA3; --accent-fill: #4CB88A; --accent-fill-hover: #6FCBA3; --on-accent: #0B0F14;
     --badge: rgba(76, 184, 138, .1); --code-bg: #1A212B; --code-fg: #E6EAF0; --pre-border: #232B36; --warning: #F59E0B;
     --shadow-soft: none; color-scheme: dark } }
+
+/* ------------------------------------------------------------------------------------------------------
+   Accent (the Display menu's, data-accent on <html>): blue, purple or orange instead of the look's own
+   green (Standard) or ochre (Legacy); no attribute is the look's own. Each accent is one block of
+   --choice-* values, which the mappings below put in place of the look's accent:
+       Standard, light: links, buttons, focus, badges --choice-light (white text on buttons)
+       Standard, dark:  --choice-dark (#0B0F14 text on buttons)
+       Legacy:          --ochre (fills, charcoal text on them, the lifted shadows) --choice-legacy-fill,
+                        --ochre-text (links on cream and paper) --choice-legacy-text,
+                        --ochre-light (links on moss and in dark mode) --choice-legacy-light
+   Contrast (WCAG 2), the worst background each sits on:
+       blue    #1D4ED8 on #FFFFFF 6.7:1, on #F7F8FA 6.3:1, #FFFFFF on it 6.7:1;
+               #60A5FA on #11161D 7.1:1, #0B0F14 on it 7.6:1; Legacy: #60A5FA under charcoal 6.6:1,
+               #1D4ED8 on cream 5.9:1, #93C5FD on moss 6.6:1
+       purple  #6D28D9 on #FFFFFF 7.1:1, on #F7F8FA 6.7:1, #FFFFFF on it 7.1:1;
+               #A78BFA on #11161D 6.7:1, #0B0F14 on it 7.1:1; Legacy: #A78BFA under charcoal 6.2:1,
+               #6D28D9 on cream 6.3:1, #C4B5FD on moss 6.5:1
+       orange  #C2410C on #FFFFFF 5.2:1, on #F7F8FA 4.9:1, #FFFFFF on it 5.2:1;
+               #FB923C on #11161D 8.0:1, #0B0F14 on it 8.5:1; Legacy: #FB923C under charcoal 7.4:1,
+               #9A3412 on cream 6.5:1, #FDBA74 on moss 7.1:1
+   The hover colours are darker in light mode and lighter in dark mode, so they pass by more. High
+   contrast (below) sets no data-accent: there the accent does not apply.
+   ------------------------------------------------------------------------------------------------------ */
+:root[data-accent="blue"] {
+    --choice-light: #1D4ED8; --choice-light-hover: #1E40AF; --choice-light-10: rgba(29, 78, 216, .1);
+    --choice-light-12: rgba(29, 78, 216, .12); --choice-light-28: rgba(29, 78, 216, .28);
+    --choice-dark: #60A5FA; --choice-dark-hover: #93C5FD; --choice-dark-10: rgba(96, 165, 250, .1);
+    --choice-legacy-fill: #60A5FA; --choice-legacy-tint: rgba(96, 165, 250, .18);
+    --choice-legacy-text: #1D4ED8; --choice-legacy-text-hover: #1E40AF;
+    --choice-legacy-light: #93C5FD; --choice-legacy-light-hover: #BFDBFE;
+    --choice-legacy-light-16: rgba(147, 197, 253, .16); --choice-legacy-light-28: rgba(147, 197, 253, .28);
+}
+:root[data-accent="purple"] {
+    --choice-light: #6D28D9; --choice-light-hover: #5B21B6; --choice-light-10: rgba(109, 40, 217, .1);
+    --choice-light-12: rgba(109, 40, 217, .12); --choice-light-28: rgba(109, 40, 217, .28);
+    --choice-dark: #A78BFA; --choice-dark-hover: #C4B5FD; --choice-dark-10: rgba(167, 139, 250, .1);
+    --choice-legacy-fill: #A78BFA; --choice-legacy-tint: rgba(167, 139, 250, .18);
+    --choice-legacy-text: #6D28D9; --choice-legacy-text-hover: #5B21B6;
+    --choice-legacy-light: #C4B5FD; --choice-legacy-light-hover: #DDD6FE;
+    --choice-legacy-light-16: rgba(196, 181, 253, .16); --choice-legacy-light-28: rgba(196, 181, 253, .28);
+}
+:root[data-accent="orange"] {
+    --choice-light: #C2410C; --choice-light-hover: #9A3412; --choice-light-10: rgba(194, 65, 12, .1);
+    --choice-light-12: rgba(194, 65, 12, .12); --choice-light-28: rgba(194, 65, 12, .28);
+    --choice-dark: #FB923C; --choice-dark-hover: #FDBA74; --choice-dark-10: rgba(251, 146, 60, .1);
+    --choice-legacy-fill: #FB923C; --choice-legacy-tint: rgba(251, 146, 60, .18);
+    --choice-legacy-text: #9A3412; --choice-legacy-text-hover: #7C2D12;
+    --choice-legacy-light: #FDBA74; --choice-legacy-light-hover: #FED7AA;
+    --choice-legacy-light-16: rgba(253, 186, 116, .16); --choice-legacy-light-28: rgba(253, 186, 116, .28);
+}
+/* Each mode's mapping outweighs the mode's own block (and the light mapping comes before the dark ones,
+   which are more specific). --ochre-light-28 is motion.css's crosshair; the floor plan's tags are
+   home.css's. */
+:root[data-style="legacy"][data-accent] {
+    --ochre: var(--choice-legacy-fill); --ochre-text: var(--choice-legacy-text); --ochre-light: var(--choice-legacy-light);
+    --link: var(--ochre-text); --link-hover: var(--choice-legacy-text-hover); --badge: var(--choice-legacy-tint);
+    --ochre-light-28: var(--choice-legacy-light-28);
+}
+:root[data-style="legacy"][data-accent][data-theme="dark"] {
+    --link: var(--ochre-light); --link-hover: var(--choice-legacy-light-hover); --badge: var(--choice-legacy-light-16) }
+@media (prefers-color-scheme: dark) { :root[data-style="legacy"][data-accent]:not([data-theme="light"], [data-theme="contrast"]) {
+    --link: var(--ochre-light); --link-hover: var(--choice-legacy-light-hover); --badge: var(--choice-legacy-light-16) } }
+:root:not([data-style="legacy"])[data-accent] {
+    --link: var(--choice-light); --link-hover: var(--choice-light-hover);
+    --accent-fill: var(--choice-light); --accent-fill-hover: var(--choice-light-hover);
+    --badge: var(--choice-light-10); --pre-focus: var(--choice-dark); --ochre-light-28: var(--choice-light-28);
+}
+:root:not([data-style="legacy"])[data-accent][data-theme="dark"] {
+    --link: var(--choice-dark); --link-hover: var(--choice-dark-hover);
+    --accent-fill: var(--choice-dark); --accent-fill-hover: var(--choice-dark-hover); --badge: var(--choice-dark-10) }
+@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"])[data-accent]:not([data-theme="light"], [data-theme="contrast"]) {
+    --link: var(--choice-dark); --link-hover: var(--choice-dark-hover);
+    --accent-fill: var(--choice-dark); --accent-fill-hover: var(--choice-dark-hover); --badge: var(--choice-dark-10) } }
+
+/* ------------------------------------------------------------------------------------------------------
+   High contrast (the Display menu's Mode, data-theme="contrast"): black on white, links #0B4FA8 and
+   underlined, black borders, a 3 px focus ring, and code blocks black on white too. It is one look:
+   with it, site.js and the head's script set neither data-style nor data-accent, so the page is the
+   same whichever Look and Accent are chosen (they stay stored, and apply again in the other modes).
+   The system's dark mode does not apply to it (the :not([data-theme="light"], [data-theme="contrast"])
+   of the dark blocks). Every text at least 7:1 (WCAG AAA) on #FFFFFF: #000000 21:1, #333333 12.6:1,
+   #0B4FA8 7.8:1, #14532D 9.1:1, #7C2D12 9.4:1, #8B0000 10.0:1, #5B21B6 9.0:1 (the last two are the
+   command reference's); #0B4FA8 on a hovered card (#F7F7F7) 7.3:1. Inline code and badges hold black
+   text only.
+   ------------------------------------------------------------------------------------------------------ */
+:root:not([data-style="legacy"])[data-theme="contrast"] {
+    --standard-bg: #FFFFFF; --standard-surface: #FFFFFF; --subtle: #FFFFFF;
+    --fg: #000000; --muted: #333333; --line: #000000; --border: #000000; --border-strong: #000000;
+    --link: #0B4FA8; --link-hover: #000000; --focus: #000000;
+    --accent-fill: #000000; --accent-fill-hover: #333333; --on-accent: #FFFFFF;
+    --badge: #E6E6E6; --card-hover: #F7F7F7; --warning: #7C2D12;
+    --code-bg: #F2F2F2; --code-fg: #000000; --pre-bg: #FFFFFF; --pre-text: #000000; --pre-border: #000000;
+    --pre-comment: #333333; --pre-keyword: #0B4FA8; --pre-string: #14532D; --pre-line: #000000; --pre-focus: #000000;
+    --shadow-soft: none; --shadow-lift: none; --shadow-lift-small: none; --shadow-press: none;
+    --shadow-term: none; --shadow-term-small: none; --shadow-menu: none; --shadow-drawer: none;
+    color-scheme: light;
+}
+:root[data-theme="contrast"] a:not(.btn):not(.brand):not(.skip-link) { text-decoration: underline }
+:root[data-theme="contrast"] :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px }
+:root[data-theme="contrast"] .display-panel { border: 2px solid var(--fg); box-shadow: none }
 
 /* Type: Inter headings at 700, no italics, large ones drawn tighter; labels in normal case. */
 :root:not([data-style="legacy"]) h1, :root:not([data-style="legacy"]) .h1, :root:not([data-style="legacy"]) h2 { font-weight: 700; letter-spacing: -.02em; line-height: 1.1 }
@@ -553,7 +656,7 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 :root:not([data-style="legacy"]) .term pre { border: 0; border-radius: 0 }
 :root:not([data-style="legacy"]) .term, :root:not([data-style="legacy"])[data-theme="dark"] .term {
     background: var(--pre-bg); color: var(--pre-text); border: 1px solid var(--pre-border); border-radius: var(--radius-card); box-shadow: var(--shadow-term); --focus: var(--pre-focus) }
-@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"]) .term { border-color: var(--pre-border); box-shadow: var(--shadow-term) } }
+@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) .term { border-color: var(--pre-border); box-shadow: var(--shadow-term) } }
 :root:not([data-style="legacy"]) .term .bar { color: var(--pre-comment); border-bottom-color: var(--pre-line) }
 :root:not([data-style="legacy"]) .term pre, :root:not([data-style="legacy"]) .term .o { color: var(--pre-text) }
 :root:not([data-style="legacy"]) .term .k { color: var(--pre-keyword) } :root:not([data-style="legacy"]) .term .s { color: var(--pre-string) }
@@ -573,8 +676,8 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 :root:not([data-style="legacy"])[data-theme="dark"] .site-header .brand img { display: block }
 :root:not([data-style="legacy"])[data-theme="dark"] .site-header .brand img.brand-tile { display: none }
 @media (prefers-color-scheme: dark) {
-    :root:not([data-style="legacy"]):not([data-theme="light"]) .site-header .brand img { display: block }
-    :root:not([data-style="legacy"]):not([data-theme="light"]) .site-header .brand img.brand-tile { display: none } }
+    :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) .site-header .brand img { display: block }
+    :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) .site-header .brand img.brand-tile { display: none } }
 :root:not([data-style="legacy"]) .toggle, :root:not([data-style="legacy"]) .menu-button { color: var(--fg); border-color: var(--border-strong); border-radius: var(--radius-control) }
 :root:not([data-style="legacy"]) .toggle:hover, :root:not([data-style="legacy"]) .menu-button:hover { color: var(--link); border-color: var(--link) }
 :root:not([data-style="legacy"]) .lang-select option { background: var(--surface); color: var(--fg) }
@@ -607,14 +710,14 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 :root:not([data-style="legacy"]) .shot { background: var(--subtle) }
 :root:not([data-style="legacy"]) .teaser.dark, :root:not([data-style="legacy"])[data-theme="dark"] .teaser.dark,
 :root:not([data-style="legacy"]) .teaser.dark:hover { background: var(--subtle); color: var(--fg); border-color: var(--line); --focus: var(--link) }
-@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"]) .teaser.dark { border-color: var(--line) } }
+@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) .teaser.dark { border-color: var(--line) } }
 :root:not([data-style="legacy"]) .teaser.dark p { color: var(--muted) }
 :root:not([data-style="legacy"]) .teaser.dark .go, :root:not([data-style="legacy"]) .teaser.dark .tagline { color: var(--link) }
 :root:not([data-style="legacy"]) .stack .box.addon { background: var(--accent-fill); border-color: var(--accent-fill); color: var(--on-accent) }
 :root:not([data-style="legacy"]) .stack .box.addon span { color: var(--on-accent) }
 :root:not([data-style="legacy"]) .stack .box.archicad, :root:not([data-style="legacy"])[data-theme="dark"] .stack .box.archicad {
     background: var(--pre-bg); border-color: var(--pre-border); color: var(--pre-text) }
-@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"]) .stack .box.archicad { border-color: var(--pre-border) } }
+@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) .stack .box.archicad { border-color: var(--pre-border) } }
 :root:not([data-style="legacy"]) .stack .box.archicad span { color: var(--pre-comment) }
 :root:not([data-style="legacy"]) .video .frame { background-color: var(--subtle); border-bottom: 1px solid var(--line) }
 :root:not([data-style="legacy"]) .video .frame:has(img)::after { background: none }
@@ -651,6 +754,9 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 .display-options label:hover { border-color: var(--link) }
 .display-options label.checked { border-color: var(--link); background: var(--badge); font-weight: 600 }
 .display-options input { margin: 0; accent-color: var(--link) }
+/* Accent in High contrast, where it does not apply: dashed, not faded, so its text keeps its contrast. */
+.display-panel fieldset:disabled .display-options label { border-style: dashed; cursor: not-allowed }
+.display-panel fieldset:disabled .display-options label:hover { border-color: var(--border-strong) }
 .display-reset, .display-done { font: 600 14px var(--body); color: var(--fg); background: transparent; border: 1px solid var(--border-strong); border-radius: 8px; padding: 7px 12px; cursor: pointer }
 .display-reset { width: 100%; margin-top: 4px }
 .display-reset:hover, .display-done:hover { border-color: var(--link); color: var(--link) }

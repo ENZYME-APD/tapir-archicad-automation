@@ -790,6 +790,13 @@ pre .hljs-subst { color: var(--pre-text); }
     --shadow-sheet: var(--shadow-soft);
 }
 
+/* High contrast (see site.css): the code blocks are black on white, so their tokens are dark, each at
+   least 7:1 on #FFFFFF. */
+:root:not([data-style="legacy"])[data-theme="contrast"] {
+    --code-keyword: #8B0000; --code-title: #5B21B6; --code-attr: #0B4FA8; --code-string: #14532D;
+    --code-builtin: #7C2D12; --code-comment: #333333; --code-name: #14532D;
+}
+
 :root:not([data-style="legacy"]) div.sidebar_title,
 :root:not([data-style="legacy"]) span.chips_label,
 :root:not([data-style="legacy"]) h4.group_action_title,
