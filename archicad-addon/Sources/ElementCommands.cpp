@@ -294,6 +294,19 @@ static void AddPivotEdgesFromMemo (const API_Guid& guid, GS::ObjectState& os)
             level.Add ("angle", segment.angle);
             level.Add ("eavesOverhang", segment.eavesOverhang);
             level.Add ("angleType", segment.angleType == APIPolyRoof_SegmentAngleTypeGable ? "Gable" : "Sloped");
+            // The plane's own surfaces and cover fill (Custom Plane Settings, #2582).
+            const API_Guid topMaterial = GetAttributeGuidFromIndex (API_MaterialID, segment.topMaterial);
+            if (topMaterial != APINULLGuid) {
+                level.Add ("topMaterialId", CreateGuidObjectState (topMaterial));
+            }
+            const API_Guid bottomMaterial = GetAttributeGuidFromIndex (API_MaterialID, segment.bottomMaterial);
+            if (bottomMaterial != APINULLGuid) {
+                level.Add ("bottomMaterialId", CreateGuidObjectState (bottomMaterial));
+            }
+            const API_Guid coverFill = GetAttributeGuidFromIndex (API_FilltypeID, segment.coverFillType);
+            if (coverFill != APINULLGuid) {
+                level.Add ("coverFillId", CreateGuidObjectState (coverFill));
+            }
             levels (level);
         }
         pivotEdges (edgeOs);

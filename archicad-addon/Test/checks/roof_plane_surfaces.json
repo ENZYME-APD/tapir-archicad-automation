@@ -1,0 +1,117 @@
+{
+  "title": "ModifyRoofs writes and GetDetailsOfElements reads the own top and bottom surface and cover fill of a multi-plane roof's planes, and refuses unknown attributes (#2582)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Roof" ],
+  "steps": [
+    {
+      "id": "two surfaces of the project",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Surface" },
+      "save": {
+        "surfA": "attributes[0].attributeId.guid",
+        "surfB": "attributes[1].attributeId.guid"
+      },
+      "expect": [
+        { "path": "attributes[1].attributeId.guid", "exists": true, "name": "the project has two surfaces" }
+      ]
+    },
+    {
+      "id": "a fill of the project",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Fill" },
+      "save": { "fillA": "attributes[1].attributeId.guid" },
+      "expect": [
+        { "path": "attributes[1].attributeId.guid", "exists": true, "name": "the project has two fills" }
+      ]
+    },
+    {
+      "id": "a multi-plane roof",
+      "command": "CreateRoofs",
+      "params": {
+        "roofsData": [
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "thickness": 0.2,
+            "polygonCoordinates": [
+              { "x": 940.0, "y": 900.0 },
+              { "x": 948.0, "y": 900.0 },
+              { "x": 948.0, "y": 906.0 },
+              { "x": 940.0, "y": 906.0 }
+            ],
+            "eavesOverhang": 0.3,
+            "levels": [ { "levelHeight": 10.0, "levelAngle": 0.5 } ]
+          }
+        ]
+      },
+      "save": { "r1": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "multi-plane roof created" }
+      ]
+    },
+    {
+      "id": "the roof has four pivot edges",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.roofClass", "eq": "MultiPlane" },
+        { "path": "detailsOfElements[0].details.pivotEdges", "len": 4, "name": "one pivot edge per side" }
+      ]
+    },
+    {
+      "id": "own surfaces and cover fill of the second plane; an unknown surface is refused",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": {
+        "roofsWithDetails": [
+          {
+            "elementId": { "guid": "${r1}" },
+            "pivotEdges": [
+              {},
+              {
+                "levels": [
+                  {
+                    "topMaterialId": { "guid": "${surfA}" },
+                    "bottomMaterialId": { "guid": "${surfB}" },
+                    "coverFillId": { "guid": "${fillA}" }
+                  }
+                ]
+              },
+              {},
+              {}
+            ]
+          },
+          {
+            "elementId": { "guid": "${r1}" },
+            "pivotEdges": [
+              {},
+              {},
+              { "levels": [ { "topMaterialId": { "guid": "00000000-0000-0000-0000-00000000BEEF" } } ] },
+              {}
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "plane surfaces and cover fill written and read back" },
+        { "path": "executionResults[1].success", "eq": false, "name": "unknown surface refused" }
+      ]
+    },
+    {
+      "id": "read the planes back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r1}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.pivotEdges[1].levels[0].topMaterialId.guid", "eq": "${surfA}", "name": "top surface of the plane" },
+        { "path": "detailsOfElements[0].details.pivotEdges[1].levels[0].bottomMaterialId.guid", "eq": "${surfB}", "name": "bottom surface of the plane" },
+        { "path": "detailsOfElements[0].details.pivotEdges[1].levels[0].coverFillId.guid", "eq": "${fillA}", "name": "cover fill of the plane" },
+        { "path": "detailsOfElements[0].details.pivotEdges[1].levels[0].angleType", "eq": "Sloped", "name": "slope type kept" },
+        { "path": "detailsOfElements[0].details.pivotEdges[1].levels[0].angle", "approx": 0.5, "name": "slope kept" }
+      ]
+    }
+  ]
+}

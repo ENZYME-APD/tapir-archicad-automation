@@ -10360,7 +10360,10 @@
                                 "properties": {
                                     "angle": { "type": "number", "description": "Angle of the plane to the XY plane." },
                                     "eavesOverhang": { "type": "number", "description": "Extension of the eaves outside the pivot polygon." },
-                                    "angleType": { "type": "string", "enum": [ "Sloped", "Gable" ], "description": "Gable for a vertical gable plane, Sloped otherwise." }
+                                    "angleType": { "type": "string", "enum": [ "Sloped", "Gable" ], "description": "Gable for a vertical gable plane, Sloped otherwise." },
+                                    "topMaterialId": { "$ref": "#/AttributeId", "description": "The plane's own top surface (Custom Plane Settings). Omitted when it names no surface." },
+                                    "bottomMaterialId": { "$ref": "#/AttributeId", "description": "The plane's own bottom surface (Custom Plane Settings). Omitted when it names no surface." },
+                                    "coverFillId": { "$ref": "#/AttributeId", "description": "The plane's own cover fill (Custom Plane Settings). Omitted when it names no fill." }
                                 },
                                 "additionalProperties": false,
                                 "required": [ "angle", "eavesOverhang", "angleType" ]
