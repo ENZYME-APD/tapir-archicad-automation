@@ -5492,6 +5492,14 @@ GS::ObjectState GetConnectedElementsCommand::Execute (const GS::ObjectState& par
 
         const API_Guid ownerElemGuid = GetGuidFromObjectState (*elementId);
 
+        API_Elem_Head ownerHead = {};
+        ownerHead.guid = ownerElemGuid;
+        const GSErrCode headerErr = ACAPI_Element_GetHeader (&ownerHead);
+        if (headerErr != NoError) {
+            connectedElementsOfInputElements (CreateErrorResponse (headerErr, "Owner element not found."));
+            continue;
+        }
+
         GS::ObjectState elementsOS;
         const auto& elements = elementsOS.AddList<GS::ObjectState> ("elements");
         GS::Array<API_Guid> connectedElements;
@@ -11364,6 +11372,30 @@ GS::ObjectState GetElementAtCoordinateCommand::Execute (const GS::ObjectState& p
     if (typeID == API_ZombieElemID) {
         return CreateErrorResponse (APIERR_BADPARS,
             GS::UniString::Printf ("Invalid elementType '%T'.", elementTypeStr.ToPrintf ()));
+    }
+
+    // Archicad is documented to answer APIERR_REFUSEDPAR for these, but Archicad 26 and 28 answer
+    // APIERR_BADPARS, which reads as "nothing found"; types without a polygon are refused here.
+    switch (typeID) {
+        case API_WallID:
+        case API_ColumnID:
+        case API_BeamID:
+        case API_WindowID:
+        case API_DoorID:
+        case API_SkylightID:
+        case API_ObjectID:
+        case API_LampID:
+        case API_LineID:
+        case API_PolyLineID:
+        case API_ArcID:
+        case API_SplineID:
+        case API_HotspotID:
+        case API_TextID:
+        case API_LabelID:
+        case API_DimensionID:
+            return CreateErrorResponse (APIERR_REFUSEDPAR, "Only polygonal element types can be searched by coordinate (for example Slab, Roof, Mesh, Zone or Hatch).");
+        default:
+            break;
     }
 
     const GS::ObjectState* coordinate = parameters.Get ("coordinate");
