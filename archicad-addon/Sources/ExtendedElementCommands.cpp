@@ -1472,8 +1472,27 @@ GS::ObjectState CreateExecutionResultResponse (const GS::Array<GS::ObjectState>&
     return response;
 }
 
+// Replaces each "elementId" result whose element no longer exists with an error carrying
+// droppedMessage. Archicad can accept an element in ACAPI_Element_Create and remove it again
+// when the undoable command that created it ends, e.g. an associative dimension whose witness
+// points it cannot keep on the dimension line (#2505), so this runs after that command.
+static void ReplaceDroppedElementsWithErrors (GS::Array<GS::ObjectState>& results, const GS::UniString& droppedMessage)
+{
+    for (auto& result : results) {
+        const GS::ObjectState* elementId = result.Get ("elementId");
+        if (elementId == nullptr) {
+            continue;
+        }
+        API_Element element = {};
+        element.header.guid = GetGuidFromObjectState (*elementId);
+        if (ACAPI_Element_Get (&element) != NoError) {
+            result = CreateErrorResponse (APIERR_GENERAL, droppedMessage);
+        }
+    }
+}
+
 template<typename Func>
-GS::ObjectState ExecuteCreateWithElements (const GS::String& commandName, Func&& createFunc)
+GS::ObjectState ExecuteCreateWithElements (const GS::String& commandName, Func&& createFunc, const GS::UniString& droppedMessage = GS::UniString ())
 {
     GS::Array<GS::ObjectState> results;
 
@@ -1485,6 +1504,10 @@ GS::ObjectState ExecuteCreateWithElements (const GS::String& commandName, Func&&
         createFunc (results);
         return NoError;
     });
+
+    if (err == NoError && !droppedMessage.IsEmpty ()) {
+        ReplaceDroppedElementsWithErrors (results, droppedMessage);
+    }
 
     notification = {};
     notification.notifID = APINotifyElement_EndEvents;
@@ -9003,7 +9026,7 @@ GS::ObjectState CreateAssociativeDimensionsCommand::Execute (const GS::ObjectSta
 
             GSErrCode err = ACAPI_Element_Create (&element, &memo);
             if (err != NoError) {
-                elements.Push (CreateErrorResponse (err, "Failed to create associative dimension."));
+                elements.Push (CreateErrorResponse (err, "Failed to create associative dimension. Points on wall faces (line true) need a dimension direction perpendicular to the faces."));
                 continue;
             }
 
@@ -9019,7 +9042,12 @@ GS::ObjectState CreateAssociativeDimensionsCommand::Execute (const GS::ObjectSta
 
             elements.Push (CreateElementIdObjectState (element.header.guid));
         }
-    });
+    },
+    // Archicad removes a dimension at the end of the command when it cannot keep its witness
+    // points on the dimension line: with wall-face points (line true) a dimension slightly off
+    // the face normal is accepted by ACAPI_Element_Create and then removed (#2505).
+    "Archicad removed the dimension right after creating it, because it could not keep its witness points. "
+    "Points on wall faces (line true) only work when the dimension direction is perpendicular to the faces.");
 }
 
 CreateAssociativeDimensionsOnSectionCommand::CreateAssociativeDimensionsOnSectionCommand () :
