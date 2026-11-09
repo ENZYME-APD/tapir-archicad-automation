@@ -185,5 +185,9 @@
         { "path": "elements", "len": 2 }
       ]
     }
+  ],
+  "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${t1}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${t2}" } } ] } }
   ]
 }

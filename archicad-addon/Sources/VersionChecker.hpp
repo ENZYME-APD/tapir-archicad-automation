@@ -18,6 +18,9 @@ public:
     // Starts the lookup on a background thread. onCompleted runs on Archicad's message loop (main thread)
     // once the result is available. Does nothing when the lookup was already started.
     static void StartCheck (const std::function<void ()>& onCompleted);
+    // Called from FreeData: the checker thread posts nothing more, and what it may still use is kept alive, so
+    // that quitting Archicad while GitHub has not answered yet does not call into the unloaded add-on.
+    static void StopOnQuit ();
 
     static bool IsCheckCompleted ();
     static bool IsUsingLatestVersion ();
