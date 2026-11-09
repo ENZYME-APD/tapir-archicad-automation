@@ -9,7 +9,8 @@
 :root {
     --track: #E3DED3; --done: var(--moss); --merged: #5E7A64; --progress: #A3B8A7; --claimed: #A3B8A7;
     /* The stripes of a claimed item. A tile's lift and the drawer's shadow are site.css's
-       --shadow-lift-small and --shadow-drawer, which the command reference uses too. */
+       --shadow-lift-small and --shadow-drawer; the filter sheet's on phones is --shadow-sheet, which
+       the command reference's sidebar sheet uses too. */
     --stripes-claimed: repeating-linear-gradient(45deg, var(--claimed) 0 3px, var(--track) 3px 6px);
 }
 :root[data-theme="dark"] { --track: #3A4042; --done: #C7D6CA; --merged: #8EAA94; --progress: #557060; --claimed: #557060; }
@@ -149,7 +150,7 @@ ul.items li .detail { display: block; padding-left: 1.6em; font-size: .84375rem;
     .toolbar input[type=search] { flex: 1 1 0; padding: 5px 10px }
     .chip-filter { position: fixed; z-index: 4; left: 0; right: 0; bottom: 0; max-height: 80vh; overflow-y: auto; overscroll-behavior: contain; gap: 12px;
         padding: 14px max(16px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
-        background: var(--bg); border-top: 1.5px solid var(--fg); border-radius: 12px 12px 0 0; box-shadow: 0 -6px 24px rgba(0, 0, 0, .3);
+        background: var(--bg); border-top: 1.5px solid var(--fg); border-radius: 12px 12px 0 0; box-shadow: var(--shadow-sheet);
         transform: translateY(105%); visibility: hidden; transition: transform .2s, visibility .2s }
     body.filters-open .chip-filter { transform: none; visibility: visible }
     .chips-title { font-size: .875rem; color: var(--fg) }

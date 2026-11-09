@@ -11,7 +11,8 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
     // The Railing tool: reads and creates railings with the settings of the
     // Railing Settings dialog, from ToolSettings/Railing.json. ReferenceLine
     // defines a new railing (a polyline; only X and Y are used). Execute writes
-    // the segment height, the bottom offset and the home story of existing
+    // the segment height, the bottom offset, the home story, the story
+    // visibility and the reference line and contour pens of existing
     // railings with ModifyRailings, and their Element ID, layer and draw
     // order; the reference line can only be given on Create, as ModifyRailings
     // keeps it.
@@ -39,7 +40,8 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         // SetDetailsOfElements, which changes the same element header field.
         private static readonly ISet<string> ModifyRailingsKeys = new HashSet<string>
         {
-            "bottomOffset", "height"
+            "bottomOffset", "contourPen", "height", "isAutoOnStoryVisibility",
+            "referenceLinePen", "visibility"
         };
 
         protected override ISet<string> CreateKeys => CreateRailingsKeys;
@@ -62,8 +64,8 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
                 "Railing tool defaults, or from FavoriteName, and the given settings override them; Archicad " +
                 "generates one node per vertex and one segment per pair of consecutive vertices of the reference " +
                 "line, with the posts, rails, handrails, toprails, panels and balusters of the favorite or the " +
-                "defaults. Execute changes the segment height, the offset from the home story and the home story " +
-                "of existing railings, and ElementID, LayerIndex and DrawOrder; their reference line, nodes, " +
+                "defaults. Execute changes the segment height, the offset from the home story, the home story, the " +
+                "story visibility and the reference line and contour pens of existing railings, and ElementID, LayerIndex and DrawOrder; their reference line, nodes, " +
                 "segments, posts, rails and panels stay as they are.")
         {
         }

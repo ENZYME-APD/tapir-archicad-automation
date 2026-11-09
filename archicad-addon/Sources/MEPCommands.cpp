@@ -7441,12 +7441,9 @@ static void AddMEPToolDefault (GS::ObjectState& os, const char* fieldName, ACAPI
 static GS::ObjectState CreateRigidSegmentDefaultDetails (const RigidSegmentDefault& rigidSegmentDefault)
 {
     GS::ObjectState rigidSegmentOs;
-#ifndef ServerMainVers_2900
-    // Archicad 29 has no size getters on the rigid segment default.
-    rigidSegmentOs.Add ("shape", ConnectorShapeToString (rigidSegmentDefault.GetShape ()));
-    rigidSegmentOs.Add ("width", rigidSegmentDefault.GetWidth ());
-    rigidSegmentOs.Add ("height", rigidSegmentDefault.GetHeight ());
-#endif
+    // The shape and size are not read: Archicad 29 has no size getters on the rigid segment default,
+    // and on Archicad 28 they stop Archicad with the MEP API assertion "Unhandled shape!" (#2468);
+    // the size of a rigid segment comes from the routing segment default (routingElement.routingSegment).
     AddMEPNumber (rigidSegmentOs, "insulationThickness", rigidSegmentDefault.GetInsulationThickness ());
     return rigidSegmentOs;
 }

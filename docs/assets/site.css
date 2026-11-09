@@ -74,9 +74,9 @@
     --hatch: repeating-linear-gradient(45deg, var(--charcoal-12) 0 1px, transparent 1px 12px);
     /* Hard offset shadows: a card lifting onto ochre (and a smaller one for the coverage tiles and the
        command reference's cards), a pressed button, the code panel; the soft ones under the phone menu
-       and the sidebar drawer of the command reference and the coverage pages. */
+       and the sidebar drawer of the coverage pages and the sidebar sheet of the command reference. */
     --shadow-lift: 6px 6px 0 var(--ochre); --shadow-lift-small: 4px 4px 0 var(--ochre);
-    --shadow-drawer: 0 0 20px rgba(0, 0, 0, .3); --shadow-press: 0 6px 0 -2px var(--charcoal);
+    --shadow-drawer: 0 0 20px rgba(0, 0, 0, .3); --shadow-sheet: 0 -6px 24px rgba(0, 0, 0, .3); --shadow-press: 0 6px 0 -2px var(--charcoal);
     --shadow-term: 12px 12px 0 var(--moss); --shadow-term-small: 6px 6px 0 var(--moss);
     --shadow-term-dark: 12px 12px 0 var(--moss-light); --shadow-menu: 0 12px 24px var(--charcoal-25);
     color-scheme: light;
@@ -137,6 +137,7 @@ main { display: block }
 .brand { display: flex; align-items: center; gap: 10px; color: var(--cream); text-decoration: none; font: 900 24px/1 var(--display) }
 .brand:hover { color: var(--cream) }
 .brand img { width: 30px; height: 30px; display: block }
+.brand img.brand-tile { display: none } /* favicon.svg, shown only by the Standard look's light header */
 .site-nav ul { display: flex; gap: 4px 22px; list-style: none; margin: 0; padding: 0; flex-wrap: wrap }
 .site-nav a { display: inline-block; padding-block: 4px; color: var(--cream); text-decoration: none; font-weight: 500; font-size: .9375rem; opacity: .88 }
 .site-nav a:hover { opacity: 1; color: var(--ochre-light) }
@@ -523,7 +524,7 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
     --shadow-soft: 0 1px 2px rgba(17, 24, 39, .06), 0 8px 24px rgba(17, 24, 39, .06);
     --shadow-lift: var(--shadow-soft); --shadow-lift-small: var(--shadow-soft); --shadow-press: var(--shadow-soft);
     --shadow-term: var(--shadow-soft); --shadow-term-small: var(--shadow-soft); --shadow-term-dark: none;
-    --shadow-menu: var(--shadow-soft); --shadow-drawer: var(--shadow-soft);
+    --shadow-menu: var(--shadow-soft); --shadow-drawer: var(--shadow-soft); --shadow-sheet: var(--shadow-soft);
     color-scheme: light;
 }
 :root:not([data-style="legacy"])[data-theme="dark"] {
@@ -633,7 +634,7 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
     --code-bg: #F2F2F2; --code-fg: #000000; --pre-bg: #FFFFFF; --pre-text: #000000; --pre-border: #000000;
     --pre-comment: #333333; --pre-keyword: #0B4FA8; --pre-string: #14532D; --pre-line: #000000; --pre-focus: #000000;
     --shadow-soft: none; --shadow-lift: none; --shadow-lift-small: none; --shadow-press: none;
-    --shadow-term: none; --shadow-term-small: none; --shadow-menu: none; --shadow-drawer: none;
+    --shadow-term: none; --shadow-term-small: none; --shadow-menu: none; --shadow-drawer: none; --shadow-sheet: none;
     color-scheme: light;
 }
 :root[data-theme="contrast"] a:not(.btn):not(.brand):not(.skip-link) { text-decoration: underline }
@@ -676,10 +677,15 @@ h1:lang(hi), h2:lang(hi), h3:lang(hi), h4:lang(hi) { line-height: 1.3 }
 :root:not([data-style="legacy"]) .brand, :root:not([data-style="legacy"]) .brand:hover, :root:not([data-style="legacy"]) .site-nav a { color: var(--fg) }
 :root:not([data-style="legacy"]) .site-nav a:hover { color: var(--link) }
 :root:not([data-style="legacy"]) .site-nav a[aria-current] { color: var(--link); box-shadow: inset 0 -2px 0 var(--link) }
-/* The mark is cream (tapir_mark_cream.svg); on the white header it is drawn in ink. */
-:root:not([data-style="legacy"]) .site-header .brand img { filter: brightness(0) }
-:root:not([data-style="legacy"])[data-theme="dark"] .site-header .brand img { filter: none }
-@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) .site-header .brand img { filter: none } }
+/* The mark is never recoloured (#2476, 3a). On the light header it is favicon.svg, the cream mark on
+   its moss tile; in Dark (chosen, or the system's) it stays tapir_mark_cream.svg, as in Legacy. */
+:root:not([data-style="legacy"]) .site-header .brand img { display: none }
+:root:not([data-style="legacy"]) .site-header .brand img.brand-tile { display: block }
+:root:not([data-style="legacy"])[data-theme="dark"] .site-header .brand img { display: block }
+:root:not([data-style="legacy"])[data-theme="dark"] .site-header .brand img.brand-tile { display: none }
+@media (prefers-color-scheme: dark) {
+    :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) .site-header .brand img { display: block }
+    :root:not([data-style="legacy"]):not([data-theme="light"], [data-theme="contrast"]) .site-header .brand img.brand-tile { display: none } }
 :root:not([data-style="legacy"]) .toggle, :root:not([data-style="legacy"]) .menu-button { color: var(--fg); border-color: var(--border-strong); border-radius: var(--radius-control) }
 :root:not([data-style="legacy"]) .toggle:hover, :root:not([data-style="legacy"]) .menu-button:hover { color: var(--link); border-color: var(--link) }
 :root:not([data-style="legacy"]) .lang-select option { background: var(--surface); color: var(--fg) }

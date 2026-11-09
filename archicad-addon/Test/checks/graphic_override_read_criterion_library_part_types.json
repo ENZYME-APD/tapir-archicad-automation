@@ -1,0 +1,193 @@
+{
+  "title": "Graphic override rules: reading library part based element types back (includeCriterion)",
+  "minTapir": "1.8.1",
+  "minArchicad": "29",
+  "steps": [
+    {
+      "id": "create a rule of every library part based type",
+      "command": "CreateGraphicOverrideRules",
+      "creates": false,
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck library part types",
+            "ruleGroupName": "TapirCheck criterion library part types",
+            "criterion": {
+              "and": [
+                {
+                  "or": [
+                    {
+                      "elementType": "Window"
+                    },
+                    {
+                      "elementType": "Door"
+                    },
+                    {
+                      "elementType": "Zone"
+                    },
+                    {
+                      "elementType": "Label"
+                    },
+                    {
+                      "elementType": "Object"
+                    },
+                    {
+                      "elementType": "Lamp"
+                    },
+                    {
+                      "elementType": "GridElement"
+                    },
+                    {
+                      "elementType": "Skylight"
+                    },
+                    {
+                      "elementType": "CornerWindow"
+                    },
+                    {
+                      "elementType": "WallEnd"
+                    },
+                    {
+                      "elementType": "PipeTerminal"
+                    },
+                    {
+                      "elementType": "Equipment"
+                    }
+                  ]
+                }
+              ]
+            },
+            "style": {
+              "lineMarkerTextPen": 20
+            }
+          },
+          {
+            "name": "TapirCheck not a door",
+            "ruleGroupName": "TapirCheck criterion library part types",
+            "criterion": {
+              "and": [
+                {
+                  "elementTypeNot": "Door"
+                }
+              ]
+            },
+            "style": {
+              "lineMarkerTextPen": 20
+            }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRuleIds[0].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "type rule created"
+        },
+        {
+          "path": "graphicOverrideRuleIds[1].graphicOverrideRuleId.guid",
+          "exists": true,
+          "name": "not-a-door rule created"
+        }
+      ]
+    },
+    {
+      "id": "read the types back",
+      "command": "GetGraphicOverrideRulesByName",
+      "params": {
+        "graphicOverrideRules": [
+          {
+            "name": "TapirCheck library part types",
+            "ruleGroupName": "TapirCheck criterion library part types"
+          },
+          {
+            "name": "TapirCheck not a door",
+            "ruleGroupName": "TapirCheck criterion library part types"
+          }
+        ],
+        "includeCriterion": true
+      },
+      "expect": [
+        {
+          "path": "graphicOverrideRules[0].criterion.and[0].or[0].elementType",
+          "eq": "Window",
+          "name": "Window read back as elementType"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[0].or[1].elementType",
+          "eq": "Door",
+          "name": "Door read back as elementType"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[0].or[2].elementType",
+          "eq": "Zone",
+          "name": "Zone read back as elementType"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[0].or[3].elementType",
+          "eq": "Label",
+          "name": "Label read back as elementType"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[0].or[4].elementType",
+          "eq": "Object",
+          "name": "Object read back as elementType"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[0].or[5].elementType",
+          "eq": "Lamp",
+          "name": "Lamp read back as elementType"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[0].or[6].elementType",
+          "eq": "GridElement",
+          "name": "GridElement read back as elementType"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[0].or[7].elementType",
+          "eq": "Skylight",
+          "name": "Skylight read back as elementType"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[0].or[8].elementType",
+          "eq": "CornerWindow",
+          "name": "CornerWindow read back as elementType"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[0].or[9].elementType",
+          "eq": "WallEnd",
+          "name": "WallEnd read back as elementType"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[0].or[10].elementType",
+          "eq": "PipeTerminal",
+          "name": "PipeTerminal read back as elementType"
+        },
+        {
+          "path": "graphicOverrideRules[0].criterion.and[0].or[11].elementType",
+          "eq": "Equipment",
+          "name": "Equipment read back as elementType"
+        },
+        {
+          "path": "graphicOverrideRules[1].criterion.and[0].elementTypeNot",
+          "eq": "Door",
+          "name": "is not Door read back as elementTypeNot, without a 3D types row in front"
+        },
+        {
+          "path": "graphicOverrideRules[1].criterion.and",
+          "len": 1,
+          "name": "no injected 3D types row"
+        }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "DeleteGraphicOverrideRuleGroups",
+      "params": {
+        "ruleGroupNames": [
+          "TapirCheck criterion library part types"
+        ],
+        "deleteRules": true
+      }
+    }
+  ]
+}

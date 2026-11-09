@@ -37,7 +37,7 @@
 <script>try { var l = /[?&]lang=([A-Za-z]{2})(?:[&#]|$)/.exec (location.search); l = l ? l[1].toLowerCase () : localStorage.getItem ('tapir-lang') || (navigator.language || '').slice (0, 2).toLowerCase (); if (l && l !== 'en') { document.documentElement.setAttribute ('data-i18n-loading', ''); setTimeout (function () { document.documentElement.removeAttribute ('data-i18n-loading'); }, 2000); } } catch (e) {}</script>
 <script src="../assets/site.js" defer></script>
 <link rel="stylesheet" href="../assets/motion.css"><script src="../assets/motion.js" defer></script>
-<script>try { if ((!sessionStorage.getItem ('tapir-splash') || /[?&]splash/.test (location.search)) && !/nomotion/.test (location.search + location.hash) && 'IntersectionObserver' in window && !matchMedia ('(prefers-reduced-motion: reduce)').matches) { var h = document.documentElement; h.classList.add ('m-splash'); var f = function () { h.classList.add ('m-font'); }; setTimeout (f, 2500); if (document.fonts && document.fonts.load) { var g = function () { document.fonts.load (h.getAttribute ('data-style') === 'legacy' ? '900 56px Fraunces' : '700 56px Inter').then (f, f); }, k = document.getElementById ('font-legacy'); if (k && !k.sheet) { k.addEventListener ('load', g); k.addEventListener ('error', f); } else g (); } else f (); } } catch (e) {}</script>
+<script>try { if ((!sessionStorage.getItem ('tapir-splash') || /[?&]splash/.test (location.search)) && !/nomotion/.test (location.search + location.hash) && 'IntersectionObserver' in window && !matchMedia ('(prefers-reduced-motion: reduce)').matches) { var h = document.documentElement; h.classList.add ('m-splash'); var f = function () { h.classList.add ('m-font'); }; setTimeout (f, 2500); if (document.fonts && document.fonts.load) { var g = function () { var y = h.getAttribute ('data-font'); if (y === 'system') { f (); return; } document.fonts.load (y === 'readable' ? '700 56px "Atkinson Hyperlegible"' : h.getAttribute ('data-style') === 'legacy' ? '900 56px Fraunces' : '700 56px Inter').then (f, f); }, k = document.getElementById ('font-legacy') || document.getElementById ('font-readable'); if (k && !k.sheet) { k.addEventListener ('load', g); k.addEventListener ('error', f); } else g (); } else f (); } } catch (e) {}</script>
 <!-- /site-assets -->
 </head>
 <body>
@@ -45,7 +45,7 @@
 <a class="skip-link" href="#main">Skip to content</a>
 <header class="site-header">
     <div class="wrap nav">
-        <a class="brand" href="../"><img src="../assets/tapir_mark_cream.svg" alt="" width="30" height="30">Tapir</a>
+        <a class="brand" href="../"><img src="../assets/tapir_mark_cream.svg" alt="" width="30" height="30"><img class="brand-tile" src="../assets/favicon.svg" alt="" width="30" height="30">Tapir</a>
         <nav class="site-nav" aria-label="Site"><ul>
             <li><a href="../start/">Get started</a></li>
             <li><a href="../docs/" aria-current="page">Docs</a></li>
@@ -117,6 +117,13 @@
                             <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Read the slab's outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.</td>
                             <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_RailingType</code>, <code>API_RailingSegmentType</code> and <code>API_RailingNodeType</code> hold no host element or edge; the node has only <code>isStatic</code> (<code>APIdefs_Elements.h</code>, AC25&ndash;AC30). <code>ACAPI_Grouping_GetConnectedElements</code> and <code>ACAPI_Element_GetRelations</code> (<code>ACAPinc.h</code>) list no railing connection, and the <code>ACAPI::</code> modules have no railing API.</td>
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2445">#2445</a></td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Turn off the automatic story visibility of a railing, so the stories it is shown on can be set</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Nothing yet</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>API_RailingType</code> has <code>isAutoOnStoryVisibility</code> and <code>visibility</code> (<code>APIdefs_Elements.h</code>, AC27 and AC29), but Archicad 29 keeps <code>isAutoOnStoryVisibility</code> true after <code>ACAPI_Element_Change</code> (with and without the railing&rsquo;s memo) and <code>ACAPI_Element_ChangeParameters</code>, and then ignores <code>visibility</code>. Archicad 30 is untested.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2448">#2448</a></td>
                         </tr>
 
                         <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Navigator and views</th></tr>
