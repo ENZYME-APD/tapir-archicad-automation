@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 15:23 UTC",
+ "generatedAt": "2026-11-09 16:15 UTC",
  "counts": {
   "done": 788,
   "not applicable": 1
@@ -7548,12 +7548,12 @@
     "shellsWithDetails.buildingMaterialId",
     "shellsWithDetails.compositeId",
     "shellsWithDetails.elementId",
+    "shellsWithDetails.isFlipped",
     "shellsWithDetails.structureType",
     "shellsWithDetails.thickness"
    ],
    "missingParameters": [
-    "shellsWithDetails.cutBodyType",
-    "shellsWithDetails.isFlipped"
+    "shellsWithDetails.cutBodyType"
    ],
    "pullRequests": [],
    "issues": []

@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 15:23 UTC",
+ "generatedAt": "2026-11-09 16:15 UTC",
  "versions": [
   25,
   26,
@@ -6728,6 +6728,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2522,
+     "title": "ModifyRoofs: keep the side surface when the edge surfaces are written"
+    },
     {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
