@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 13:36 UTC",
+ "generatedAt": "2026-11-09 13:43 UTC",
  "counts": {
   "done": 788,
   "not applicable": 1
@@ -7477,7 +7477,7 @@
    "id": "ModifyRoofs",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness, structure and the top, side and bottom surface overrides apply to both; angle, pivotLine, edgeTrims (the cut of each polygon edge) and edgeSideMaterials (the custom surface of each polygon edge) only to single-plane roofs; levels, eavesOverhang and pivotEdges only to multi-plane roofs.",
+   "brief": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness, structure and the top, side and bottom surface overrides apply to both; angle, pivotLine, edgeTrims (the cut of each polygon edge) and edgeSideMaterials (the custom surface of each polygon edge) only to single-plane roofs; levels, eavesOverhang and pivotEdges only to multi-plane roofs. On a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs. level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof on its story.",
    "status": "done",
    "reason": "",
    "components": [
