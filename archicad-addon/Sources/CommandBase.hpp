@@ -225,6 +225,11 @@ void AddMorphBodyFromMemo (const API_Element& elem, GS::ObjectState& typeSpecifi
 // (ApplySkylightDetails) - defined next to them in ExtendedElementCommands.cpp.
 void AddSkylightDetails (const API_Element& elem, GS::ObjectState& typeSpecificDetails);
 
+// The GetDetailsOfElements keys of a Window or Door for its anchor, sub-floor, reveal anchor,
+// surface and plane settings (#2575), the ones ApplyWindowOrDoorDetails writes, plus the values
+// Archicad computes - defined next to them in ExtendedElementCommands.cpp.
+void AddWindowOrDoorPositioningDetails (const API_Element& elem, GS::ObjectState& typeSpecificDetails);
+
 // Shared by Morph and Wall (Get and Modify/Create) - defined in ExtendedElementCommands.cpp.
 GS::UniString ElemDisplayOptionToString (API_ElemDisplayOptionsID displayOption);
 bool ElemDisplayOptionFromString (const GS::UniString& str, API_ElemDisplayOptionsID& out);

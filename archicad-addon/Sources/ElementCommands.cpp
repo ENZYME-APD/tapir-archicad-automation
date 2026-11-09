@@ -2792,6 +2792,8 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     typeSpecificDetails.Add ("useObjectLineTypes", opening.useObjLtypes);
                     typeSpecificDetails.Add ("useObjectSectionAttributes", opening.useObjSectAttrs);
                 }
+                // Anchor, sub-floor, reveal anchor, surface and plane settings (#2575).
+                AddWindowOrDoorPositioningDetails (elem, typeSpecificDetails);
                 break;
 
             case API_SkylightID:
