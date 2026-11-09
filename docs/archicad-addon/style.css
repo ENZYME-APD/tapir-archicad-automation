@@ -5,7 +5,8 @@
    page head, links, code, headings (.sec-head.ref and .ref-sub) and footer. Everything here uses
    site.css's tokens (--fg, --muted, --surface, --line, --link, --badge, --mono), and the sidebar
    is drawn like the coverage pages' one. The page's code blocks get site.js's copy button, the
-   examples too: it watches for the code blocks renderer.js adds when an example is opened. */
+   examples and the JSON to send too: it watches for the code blocks renderer.js adds when a
+   command is opened. */
 
 :root {
     /* The one name json-schema-view-js.min.css uses, mapped onto the site's palette. */
@@ -13,6 +14,8 @@
     /* The highlight.js token colours in the code blocks (GitHub's dark theme, see below). */
     --code-keyword: #ff7b72; --code-title: #d2a8ff; --code-attr: #79c0ff; --code-string: #a5d6ff;
     --code-builtin: #ffa657; --code-comment: #8b949e; --code-name: #7ee787;
+    /* The shadow of the Groups sheet on phones. */
+    --shadow-sheet: 0 -6px 24px rgba(0, 0, 0, 0.3);
 }
 
 /* The toolbar and the sidebar stick to the top of the window, so the site header scrolls away. */
@@ -20,7 +23,7 @@
     position: static;
 }
 
-/* A sidebar of sections next to the content on wide screens. */
+/* A sidebar of groups next to the content on wide screens. */
 div.layout {
     display: grid;
     grid-template-columns: 220px minmax(0, 920px);
@@ -32,6 +35,7 @@ div.layout {
 main.frame {
     width: auto;
     max-width: none;
+    min-width: 0;
     margin: 0;
     padding: 36px 20px 0;
 }
@@ -64,6 +68,18 @@ div.call_example h3 {
 div.call_example h3 code {
     font-size: 0.9em;
 }
+
+#commands [hidden],
+#sidebar [hidden] {
+    display: none !important;
+}
+
+#commands {
+    /* Nothing in the list may make the page scroll sideways; wide tables and code scroll in place. */
+    overflow-x: clip;
+}
+
+/* ---- Sidebar ---- */
 
 nav.sidebar {
     position: sticky;
@@ -130,7 +146,8 @@ div.sidebar_versions {
     gap: 0.3em;
 }
 
-button.sidebar_version {
+button.sidebar_version,
+button.chip {
     font: 600 13px var(--body);
     color: var(--fg);
     background: transparent;
@@ -138,13 +155,16 @@ button.sidebar_version {
     border-radius: 999px;
     padding: 2px 10px;
     cursor: pointer;
+    white-space: nowrap;
 }
 
-button.sidebar_version:hover {
+button.sidebar_version:hover,
+button.chip:hover {
     background: var(--badge);
 }
 
-button.sidebar_version[aria-pressed="true"] {
+button.sidebar_version[aria-pressed="true"],
+button.chip[aria-pressed="true"] {
     background: var(--fg);
     border-color: var(--fg);
     color: var(--bg);
@@ -154,56 +174,29 @@ button.toolbar_sections {
     display: none;
 }
 
-details.command_container {
-    margin: 0.7em 0;
-    transition: box-shadow 0.15s ease;
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 4px;
-}
-
-details.command_container[open] {
-    border-color: var(--fg);
-    box-shadow: var(--shadow-lift-small);
-}
-
-details ::marker {
-    color: var(--muted);
-}
-
-section.group {
-    margin: 0;
-}
-
-section.group,
-details.command_container {
-    /* Keep the target clear of the sticky toolbar when jumping to it;
-       renderer.js sets --toolbar-height from the toolbar's real height. */
-    scroll-margin-top: calc(var(--toolbar-height, 4em) + 0.5em);
-}
-
-span.group_count {
-    color: var(--muted);
-    font-size: 0.6em;
-    font-weight: 600;
-    margin-left: 0.6em;
-}
+/* ---- Toolbar: search, buttons, chips and the "Showing" line ---- */
 
 div.toolbar {
     position: sticky;
     top: 0;
-    z-index: 1;
+    z-index: 2;
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5em;
-    padding: 0.7em 0;
+    flex-direction: column;
+    gap: 0.45em;
+    padding: 0.7em 0 0.55em;
     background: var(--bg);
     border-bottom: 1px solid var(--line);
 }
 
-div.toolbar input,
-div.toolbar button {
+div.toolbar_row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5em;
+}
+
+div.toolbar_row input,
+div.toolbar_row button {
     font: inherit;
     font-size: 0.9em;
     color: var(--fg);
@@ -236,126 +229,368 @@ button.toolbar_button:hover {
     border-color: var(--link);
 }
 
-span.toolbar_status {
-    color: var(--muted);
-    font-size: 0.9em;
+div.chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3em;
 }
 
-div.overview {
-    margin: 1.5em 0 0;
-    padding: 16px 20px;
+span.chips_label {
+    font: 700 11px/1.2 var(--mono);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--link);
+    min-width: 5.5em;
+}
+
+div.toolbar_status {
+    color: var(--muted);
+    font-size: 0.85em;
+}
+
+a.toolbar_clear {
+    margin-left: 0.8em;
+    font-weight: 600;
+}
+
+/* ---- Groups ---- */
+
+section.group {
+    margin: 0;
+    border-bottom: 1px solid var(--line);
+}
+
+section.group,
+details.command_container {
+    /* Keep the target clear of the sticky toolbar when jumping to it;
+       renderer.js sets --toolbar-height from the toolbar's real height. */
+    scroll-margin-top: calc(var(--toolbar-height, 8em) + 0.5em);
+}
+
+h3.group_heading {
+    margin: 0;
+    font: inherit;
+}
+
+button.group_toggle {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6em;
+    width: 100%;
+    min-width: 0;
+    padding: 0.7em 0.5em;
+    font: inherit;
+    text-align: left;
+    color: var(--fg);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+}
+
+button.group_toggle:hover {
+    background: var(--badge);
+}
+
+button.group_toggle::before {
+    content: "▸";
+    color: var(--muted);
+    flex: none;
+    width: 0.8em;
+    transition: transform 0.15s;
+}
+
+button.group_toggle[aria-expanded="true"]::before {
+    transform: rotate(90deg);
+}
+
+span.group_name {
+    flex: none;
+    font: 700 19px/1.2 var(--display);
+}
+
+span.group_count {
+    flex: none;
+    color: var(--muted);
+    font-size: 0.85em;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+span.group_preview {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--muted);
+    font: 400 12.5px var(--mono);
+}
+
+section.group_open span.group_preview {
+    visibility: hidden;
+}
+
+div.group_body {
+    padding: 0 0 0.9em;
+}
+
+h4.group_action_title {
+    font: 700 11px/1.2 var(--mono);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--link);
+    margin: 0.9em 0 0.35em;
+}
+
+div.group_list {
     background: var(--surface);
     border: 1px solid var(--line);
     border-radius: 4px;
 }
 
-div.overview_title {
-    font-weight: 700;
-    margin-bottom: 0.5em;
-}
+/* ---- One command: one line, opened in place ---- */
 
-table.overview_table {
-    border-collapse: collapse;
-    width: 100%;
-}
-
-table.overview_table th,
-table.overview_table td {
-    text-align: left;
-    padding: 0.3em 0.6em;
+details.command_container {
     border-bottom: 1px solid var(--line);
 }
 
-table.overview_table tr:last-child td {
+details.command_container:last-child {
     border-bottom: 0;
 }
 
-table.overview_table th {
-    color: var(--muted);
-    font-weight: 600;
-    font-size: 0.85em;
-}
-
-table.overview_table td {
-    color: var(--fg);
-}
-
-table.overview_table .number {
-    text-align: right;
-    white-space: nowrap;
-    font-variant-numeric: tabular-nums;
+details.command_container[open] {
+    box-shadow: inset 3px 0 0 var(--ochre);
 }
 
 summary.command_header {
-    padding: 0.55em 0.75em;
-    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    min-height: 36px;
+    padding: 0 0.75em;
     cursor: pointer;
-    transition: background 0.1s;
+    list-style: none;
 }
 
-details summary.command_header:hover {
-    background: var(--badge);
-}
-
-details[open] summary.command_header {
-    background: var(--badge);
-    border-bottom: 1px solid var(--line);
-    border-bottom-right-radius: 0px;
-    border-bottom-left-radius: 0px;
-}
-
-span.command_name {
-    display: inline-block;
-    word-break: break-word;
-    font-family: var(--mono);
-    font-weight: 600;
-    font-size: 0.95em;
-    color: var(--fg);
-}
-
-span.command_summary {
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    overflow: hidden;
-    color: var(--muted);
-    font-size: 0.87em;
-    line-height: 1.45em;
-    margin-top: 0.2em;
-    /* Line up with the name, after the disclosure marker. */
-    padding-left: 1.1em;
-}
-
-details[open] span.command_summary {
-    /* The full description is in the opened content. */
+summary.command_header::-webkit-details-marker {
     display: none;
 }
 
-span.command_version {
-    color: var(--link);
-    font-size: 0.7em;
-    font-weight: 700;
-    margin-left: 0.7em;
-    display: inline-block;
+summary.command_header::before {
+    content: "▸";
+    color: var(--muted);
+    flex: none;
+    font-size: 0.8em;
+    transition: transform 0.15s;
 }
 
-div.command_content {
-    padding: 0 1.0em;
-    margin: 1.0em 0.5em;
+details[open] > summary.command_header::before {
+    transform: rotate(90deg);
+}
+
+summary.command_header:hover,
+details[open] > summary.command_header {
+    background: var(--badge);
+}
+
+span.command_name {
+    flex: none;
+    max-width: 60%;
+    overflow-wrap: anywhere;
+    font-family: var(--mono);
+    font-weight: 600;
+    font-size: 0.9em;
     color: var(--fg);
 }
 
+a.command_link {
+    flex: none;
+    display: inline-flex;
+    padding: 2px;
+    color: var(--muted);
+    border-radius: 3px;
+    opacity: 0;
+}
+
+summary.command_header:hover a.command_link,
+details[open] a.command_link,
+a.command_link:focus-visible,
+a.command_link.copied {
+    opacity: 1;
+}
+
+a.command_link:hover,
+a.command_link.copied {
+    color: var(--link);
+}
+
+span.command_summary {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--muted);
+    font-size: 0.87em;
+}
+
+span.command_version {
+    flex: none;
+    margin-left: auto;
+    color: var(--link);
+    font-size: 0.75em;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+div.command_content {
+    padding: 0.4em 1em 1em;
+    color: var(--fg);
+    border-top: 1px solid var(--line);
+}
+
+div.command_description {
+    margin: 0.6em 0 0.2em;
+    max-width: var(--text-width);
+}
+
+h4.command_section_title {
+    font: 700 11px/1.2 var(--mono);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--link);
+    margin: 1.4em 0 0.5em;
+}
+
+div.command_example_body pre,
+div.command_content > pre {
+    margin: 0.5em 0;
+}
+
+p.command_example_description {
+    margin: 0.3em 0;
+}
+
+div.command_example_status {
+    color: var(--muted);
+    font-style: italic;
+}
+
 div.command_example_file {
-    margin-top: 0.8em;
-    font-size: 0.9em;
+    font-size: 0.82em;
     color: var(--muted);
 }
 
 div.command_example_file a {
     font-family: var(--mono);
-    font-size: 0.92em;
     word-break: break-all;
+}
+
+div.command_json_title {
+    margin-top: 0.9em;
+    font-size: 0.9em;
+    font-weight: 600;
+}
+
+p.command_returns_line {
+    margin: 0.4em 0;
+    color: var(--muted);
+}
+
+/* ---- Parameter tables ---- */
+
+div.params_wrapper {
+    overflow-x: auto;
+}
+
+table.params {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.87em;
+}
+
+table.params th,
+table.params td {
+    text-align: left;
+    vertical-align: top;
+    padding: 0.35em 0.6em;
+    border-bottom: 1px solid var(--line);
+}
+
+table.params th {
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.9em;
+    white-space: nowrap;
+}
+
+table.params td.params_name {
+    overflow-wrap: anywhere;
+    min-width: 8em;
+}
+
+table.params td.params_name code {
+    font-size: 0.95em;
+    background: none;
+    padding: 0;
+}
+
+span.params_option {
+    color: var(--muted);
+    font-style: italic;
+}
+
+table.params td.params_type {
+    font-family: var(--mono);
+    font-size: 0.9em;
+    color: var(--muted);
+    overflow-wrap: anywhere;
+    min-width: 7em;
+}
+
+table.params .params_required {
+    text-align: center;
+    color: var(--link);
+    font-weight: 700;
+}
+
+table.params td.params_description {
+    min-width: 14em;
+    white-space: pre-line;
+}
+
+button.params_ref {
+    font: inherit;
+    text-align: left;
+    color: var(--link);
+    background: transparent;
+    border: 0;
+    padding: 0;
+    cursor: pointer;
+    text-decoration: underline dotted;
+    text-underline-offset: 3px;
+}
+
+button.params_ref::before {
+    content: "▸ ";
+}
+
+button.params_ref[aria-expanded="true"]::before {
+    content: "▾ ";
+}
+
+/* ---- Raw schema and related commands ---- */
+
+details.command_raw {
+    margin-top: 1.2em;
+}
+
+details.command_raw > summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--muted);
+    width: fit-content;
 }
 
 div.scheme_title {
@@ -388,37 +623,17 @@ json-schema-view .description {
     color: var(--muted);
 }
 
-details.command_example {
-    margin-top: 1.0em;
+div.command_related {
+    margin-top: 1em;
+    font-size: 0.9em;
 }
 
-details.command_example > summary {
-    cursor: pointer;
-    font-weight: 700;
-    color: var(--fg);
-    width: fit-content;
+div.command_related a {
+    font-family: var(--mono);
 }
 
-div.command_example_body {
-    margin-top: 0.5em;
-}
-
-div.command_example_body pre {
-    margin: 0.5em 0;
-}
-
-p.command_example_description {
-    margin: 0.3em 0;
-}
-
-div.command_example_status {
-    color: var(--muted);
-    font-style: italic;
-}
-
-div.command_example_link {
-    font-size: 0.85em;
-    text-align: right;
+span.command_related_label {
+    font-weight: 600;
 }
 
 /* Code highlighted by highlight.js sits in the site's code blocks, which are charcoal with cream text
@@ -442,8 +657,9 @@ pre .hljs-code, pre .hljs-comment, pre .hljs-formula { color: var(--code-comment
 pre .hljs-name, pre .hljs-quote, pre .hljs-selector-pseudo, pre .hljs-selector-tag { color: var(--code-name); }
 pre .hljs-subst { color: var(--pre-text); }
 
-/* Below this width the sidebar is a drawer opened by "Sections". */
-@media only screen and (max-width: 1150px) {
+/* Below this width the sidebar is a sheet opened by "Groups", and each row of chips scrolls
+   sideways on its own. */
+@media only screen and (max-width: 900px) {
 
     div.layout {
         display: block;
@@ -458,18 +674,18 @@ pre .hljs-subst { color: var(--pre-text); }
     nav.sidebar {
         position: fixed;
         z-index: 60;
-        top: 0;
-        bottom: 0;
         left: 0;
-        width: min(300px, 85vw);
-        max-height: none;
-        padding-top: 1em;
-        /* align-self: start from the wide layout would shrink the drawer to its content. */
-        align-self: stretch;
+        right: 0;
+        bottom: 0;
+        top: auto;
+        max-height: 75vh;
+        padding: 1em 16px 24px;
         background: var(--surface);
-        border-right: 1px solid var(--line);
-        box-shadow: var(--shadow-drawer);
-        transform: translateX(-105%);
+        border: 1px solid var(--line);
+        border-radius: 12px 12px 0 0;
+        box-shadow: var(--shadow-sheet);
+        overscroll-behavior: contain;
+        transform: translateY(105%);
         visibility: hidden;
         transition: transform 0.2s, visibility 0.2s;
     }
@@ -483,6 +699,27 @@ pre .hljs-subst { color: var(--pre-text); }
         display: inline-block;
     }
 
+    div.chips {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+        /* The chips scroll; the page does not. */
+        overscroll-behavior-x: contain;
+    }
+
+    div.chips::-webkit-scrollbar {
+        display: none;
+    }
+
+    span.chips_label {
+        flex: none;
+        min-width: 0;
+    }
+
+    button.chip {
+        flex: none;
+    }
+
 }
 
 @media only screen and (max-width: 640px) {
@@ -491,12 +728,50 @@ pre .hljs-subst { color: var(--pre-text); }
         padding: 24px 16px 0;
     }
 
-    div.toolbar button {
+    /* Only the first row stays pinned on a phone: Groups, Expand all and Collapse all on one
+       line and the search under them. The chips and the "Showing" line scroll away with the
+       list, so the pinned part keeps to about a tenth of the screen. */
+    div.toolbar {
+        display: contents;
+    }
+
+    div.toolbar > div.toolbar_row:first-child {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        padding: 0.6em 0 0.5em;
+        background: var(--bg);
+        border-bottom: 1px solid var(--line);
+    }
+
+    div.toolbar > :not(:first-child) {
+        margin-top: 0.45em;
+    }
+
+    div.toolbar > div.toolbar_status {
+        padding-bottom: 0.55em;
+        border-bottom: 1px solid var(--line);
+    }
+
+    div.toolbar_row button {
         flex: 1 1 auto;
     }
 
+    input.toolbar_search {
+        flex-basis: 100%;
+        order: 1;
+    }
+
+    span.group_preview {
+        display: none;
+    }
+
     div.command_content {
-        padding: 0;
+        padding: 0.4em 0.6em 1em;
+    }
+
+    a.command_link {
+        opacity: 1;
     }
 
 }
