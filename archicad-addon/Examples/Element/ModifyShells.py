@@ -1,4 +1,5 @@
 """Makes the first shell a 0.24 m thick Basic shell of the first building material, shown in outlines with its cover fill, with ModifyShells, reads it back, then restores its structure, thickness and floor plan display.
+On an extruded shell it also sets the extrusion length to 1 m, keeping its profile and start, and then restores its extrusion vector.
 
 The shell's reference surface stays in place when the thickness changes; 'isFlipped' chooses the side the thickness goes to.
 A Composite shell takes its thickness from its composite, so a 'thickness' alone is refused on it.
@@ -32,3 +33,14 @@ if old['structureType'] == 'Basic':
 if 'floorFill' in old:
     restore['floorFill'] = {'use': old['floorFill']['use']}
 aclib.PrintJson (aclib.RunTapirCommand ('ModifyShells', {'shellsWithDetails': [restore]}))
+
+if old['shellClass'] == 'Extruded':
+    aclib.PrintJson (aclib.RunTapirCommand ('ModifyShells', {'shellsWithDetails': [{
+        'elementId': shells[0]['elementId'],
+        'extrusionLength': 1.0
+    }]}))
+    aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': shells, 'fields': ['details']})
+    aclib.PrintJson (aclib.RunTapirCommand ('ModifyShells', {'shellsWithDetails': [{
+        'elementId': shells[0]['elementId'],
+        'extrusionVector': old['extrusionVector']
+    }]}))
