@@ -1,16 +1,10 @@
-"""SetCurrent3DStyle makes one of the 3D styles Get3DStyles lists the current one, which the 3D window uses. Here
-every style is made current once, then the original one is set back.
+"""SetCurrent3DStyle is meant to make one of the 3D styles Get3DStyles lists the current one. It is not available
+yet: Archicad's API function for it crashes Archicad, so the command checks the name, then refuses.
 """
 import aclib
 
 styles = aclib.RunTapirCommand ('Get3DStyles')
-original = styles['currentStyleName']
+aclib.PrintJson (aclib.RunTapirCommand ('SetCurrent3DStyle', {'styleName': styles['currentStyleName']}))
 
-for styleName in styles['styleNames']:
-    aclib.RunTapirCommand ('SetCurrent3DStyle', {'styleName': styleName})
-    print ('Current 3D style: {}'.format (aclib.RunTapirCommand ('Get3DStyles')['currentStyleName']))
-
-# A name that is not a 3D style fails.
+# A name that is not a 3D style fails with its own error.
 aclib.PrintJson (aclib.RunTapirCommand ('SetCurrent3DStyle', {'styleName': 'No such 3D style'}))
-
-aclib.PrintJson (aclib.RunTapirCommand ('SetCurrent3DStyle', {'styleName': original}))

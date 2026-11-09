@@ -34,6 +34,10 @@
         'Rimuovere una sola direzione di un taglio tra due coperture o gusci che si tagliano a vicenda',
     'Remove the trim with <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a>, which removes both directions, then trim the other direction again with <a href="../archicad-addon/#TrimElements">TrimElements</a>.':
         'Rimuovete il taglio con <a href="../archicad-addon/#RemoveElementTrims">RemoveElementTrims</a>, che rimuove entrambe le direzioni, poi tagliate di nuovo l\'altra direzione con <a href="../archicad-addon/#TrimElements">TrimElements</a>.',
+    'Read which slab or stair edge a railing is linked to, or link a railing to one':
+        'Leggere a quale bordo di solaio o scala è collegato un parapetto, o collegare un parapetto a uno di essi',
+    'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
+        'Leggete il contorno del solaio con <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> e create un parapetto statico lungo il bordo con <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. Quando il solaio cambia, eliminate il parapetto e createlo di nuovo.',
 
     // Navigator and views
     'Navigator and views': 'Navigatore e viste',
