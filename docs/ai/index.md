@@ -65,6 +65,36 @@ Do not change anything; only read.
 Tell me which Tapir commands you used.
 ```
 
+## Check names, *don't guess.*
+
+Your words rarely match the names in the project: "fire rating" may be a property called FireRating in one template and Feuerwiderstand in another, and "level 2" may be the story "02 First Floor". An AI that guesses the name still gets an answer, only a wrong one: no values found, so "no doors have a fire rating".
+
+**01** **Look the words up first**Before a command whose parameters come from your words (a story, property, classification, layer, building material, composite, surface, zone category or element type), the AI sends those words to [ResolveNames](https://archicad-api.com/archicad-addon/#ResolveNames), with the kind of each when it knows it. It only reads.
+
+**02** **Use what it returns**found: the item named exactly so, with the ids the other commands take (story index, attribute id, elementType, propertyId, classification ids). closeMatches: only similar names, best first; the AI asks you which one you meant instead of picking one itself.
+
+**03** **Say "not in this project"**notFound: nothing in the project is close, so the project has no such item. The AI says "this project has no X" instead of guessing a name or reporting an empty result as the answer.
+
+Add these lines to your prompt, or to the instructions of your MCP server, so the AI checks the names every time. They work the same when the AI writes a script: the script sends ResolveNames first and stops with a message on notFound.
+
+Before a change, ask for a preview. The commands that delete or replace, such as [DeleteElements](https://archicad-api.com/archicad-addon/#DeleteElements), [DeleteAttributes](https://archicad-api.com/archicad-addon/#DeleteAttributes) and [DeleteAndReplaceAttributes](https://archicad-api.com/archicad-addon/#DeleteAndReplaceAttributes), take "dryRun": true: nothing changes, and the response lists what would. The command reference says which commands have it.
+
+promptadd to any request
+
+```
+Before you use a name taken from my words (a story,
+property, classification, layer, building material,
+composite, surface, zone category or element type),
+check it with the Tapir command ResolveNames.
+- found: use the ids it returns.
+- closeMatches: ask me which one I mean.
+- notFound: tell me this project has no such item.
+  Never guess a name.
+Before a command that deletes or replaces, run it with
+"dryRun": true if it has that input, and show me what
+it would change.
+```
+
 ## Describe it, *run it.*
 
 Without an MCP server, describe the task, give the AI the command list, and run the script it writes.

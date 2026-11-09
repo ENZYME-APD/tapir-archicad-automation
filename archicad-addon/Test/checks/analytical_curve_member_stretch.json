@@ -137,5 +137,8 @@
         { "path": "stretches[0].endAdditionalLength", "approx": 0.0 }
       ]
     }
+  ],
+  "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] } }
   ]
 }

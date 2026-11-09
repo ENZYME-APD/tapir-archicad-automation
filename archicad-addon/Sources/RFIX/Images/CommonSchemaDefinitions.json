@@ -5322,15 +5322,15 @@
                 "properties": {
                     "shape": {
                         "$ref": "#/MEPCrossSectionShape",
-                        "description": "Archicad 27 and 28."
+                        "description": "Archicad 27 only. Later versions give the size in routingElement.routingSegment."
                     },
                     "width": {
                         "type": "number",
-                        "description": "Archicad 27 and 28."
+                        "description": "Archicad 27 only. Later versions give the size in routingElement.routingSegment."
                     },
                     "height": {
                         "type": "number",
-                        "description": "Archicad 27 and 28."
+                        "description": "Archicad 27 only. Later versions give the size in routingElement.routingSegment."
                     },
                     "insulationThickness": {
                         "type": "number",
@@ -5382,7 +5382,6 @@
     },
     "MEPPreferenceTableDomain": {
         "type": "string",
-        "description": "The MEP domain of the segment preference tables.",
         "enum": [
             "Piping",
             "Ventilation",
@@ -10418,6 +10417,10 @@
             "thickness": {
                 "type": "number"
             },
+            "isFlipped": {
+                "type": "boolean",
+                "description": "The side of the shell's reference surface the thickness is applied to (API_ShellType::isFlipped), as CreateShells and ModifyShells take it."
+            },
             "buildingMaterialId": {
                 "$ref": "#/AttributeId"
             },
@@ -12200,7 +12203,7 @@
             },
             "isClosed": {
                 "type": "boolean",
-                "description": "READ-ONLY, Get output only (ignored if sent to Create/Modify). Geometrically computed (Modeler::MeshBody::IsClosedBody): true if every edge in the body has exactly two adjacent faces (a watertight/manifold volume), false if any edge borders only one face (an open shell / has holes or gaps). Distinct from bodyType, which is the caller's declared INTENT (Solid vs Surface) rather than the actual computed geometry - a body can be declared bodyType 'Solid' yet still be geometrically open if a face is missing."
+                "description": "READ-ONLY, Get output only (ignored if sent to Create/Modify). Geometrically computed from the body's edges: true if every edge in the body has exactly two adjacent faces (a watertight/manifold volume), false if any edge borders only one face (an open shell / has holes or gaps). Distinct from bodyType, which is the caller's declared INTENT (Solid vs Surface) rather than the actual computed geometry - a body can be declared bodyType 'Solid' yet still be geometrically open if a face is missing."
             },
             "edgeDefault": {
                 "type": "string",
@@ -18325,7 +18328,7 @@
             "domain"
         ]
     },
-    "MEPRoutingElementCreationData": {
+    "MEPRoutingElementData": {
         "type": "object",
         "properties": {
             "domain": {
@@ -18449,7 +18452,7 @@
             "portIndex"
         ]
     },
-    "MEPElementCreationData": {
+    "MEPElementData": {
         "type": "object",
         "properties": {
             "type": {
@@ -18696,7 +18699,7 @@
             "isConnectable"
         ]
     },
-    "MEPPreferenceTableToAdd": {
+    "MEPPreferenceTableAddition": {
         "type": "object",
         "properties": {
             "type": {
@@ -18746,7 +18749,7 @@
             "crossSectionalArea"
         ]
     },
-    "ElectricalPanelCreationData": {
+    "ElectricalPanelData": {
         "type": "object",
         "properties": {
             "position": {
@@ -18791,7 +18794,7 @@
             "position"
         ]
     },
-    "ElectricalDeviceCreationData": {
+    "ElectricalDeviceData": {
         "type": "object",
         "properties": {
             "position": {
@@ -18889,7 +18892,7 @@
             "elementId"
         ]
     },
-    "ElectricalCircuitCreationData": {
+    "ElectricalCircuitData": {
         "type": "object",
         "properties": {
             "electricalPanelId": {
@@ -19019,7 +19022,7 @@
             "circuitId"
         ]
     },
-    "MEPSystemGroupCreationData": {
+    "MEPSystemGroupData": {
         "type": "object",
         "properties": {
             "name": {
@@ -19031,7 +19034,7 @@
             "name"
         ]
     },
-    "MEPPhysicalSystemCreationData": {
+    "MEPPhysicalSystemData": {
         "type": "object",
         "properties": {
             "systemGroupId": {
@@ -19338,7 +19341,8 @@
                 "type": "number"
             },
             "preferenceTableId": {
-                "$ref": "#/Guid"
+                "$ref": "#/Guid",
+                "description": "An elbow preference table, as returned by GetMEPPreferenceTables."
             }
         },
         "additionalProperties": false,
@@ -19438,7 +19442,7 @@
             "type"
         ]
     },
-    "MEPTransitionParametersUpdate": {
+    "MEPTransitionDefaults": {
         "type": "object",
         "description": "The transition parameters of a routing node (RoutingNode::Modifier::SetTransitionDefaultParameters). Archicad 29 or newer.",
         "properties": {
@@ -19450,22 +19454,7 @@
         "additionalProperties": false,
         "required": []
     },
-    "MEPElbowParametersUpdate": {
-        "type": "object",
-        "description": "The elbow parameters of a routing node (RoutingNode::Modifier::SetElbowDefaultParameters). Archicad 29 or newer.",
-        "properties": {
-            "factorRadius": {
-                "type": "number"
-            },
-            "preferenceTableId": {
-                "$ref": "#/Guid",
-                "description": "An elbow preference table, as returned by GetMEPPreferenceTables."
-            }
-        },
-        "additionalProperties": false,
-        "required": []
-    },
-    "MEPRoutingSegmentParametersUpdate": {
+    "MEPRoutingSegmentDefaults": {
         "type": "object",
         "description": "The routing segment default parameters of a routing element (RoutingElement::Modifier::SetRoutingSegmentDefaultParameters).",
         "properties": {
@@ -19523,7 +19512,7 @@
         "additionalProperties": false,
         "required": []
     },
-    "MEPRoutingParametersUpdate": {
+    "ElementMEPRoutingParameters": {
         "type": "object",
         "properties": {
             "elementId": {
@@ -19533,13 +19522,14 @@
                 "$ref": "#/MEPRoutingNodeParametersUpdate"
             },
             "routingSegmentParameters": {
-                "$ref": "#/MEPRoutingSegmentParametersUpdate"
+                "$ref": "#/MEPRoutingSegmentDefaults"
             },
             "elbowParameters": {
-                "$ref": "#/MEPElbowParametersUpdate"
+                "$ref": "#/MEPElbowParameters",
+                "description": "The elbow parameters of a routing node (RoutingNode::Modifier::SetElbowDefaultParameters). Archicad 29 or newer."
             },
             "transitionParameters": {
-                "$ref": "#/MEPTransitionParametersUpdate"
+                "$ref": "#/MEPTransitionDefaults"
             }
         },
         "additionalProperties": false,
@@ -19547,7 +19537,7 @@
             "elementId"
         ]
     },
-    "MEPPreferenceTableRowKey": {
+    "MEPPreferenceRowKey": {
         "type": "object",
         "description": "The key of a row. Segment tables: referenceId. Elbow tables: referenceId and angle. Branch tables: mainAxisReferenceId, branchAxisReferenceId and branchAxisAngle. Transition tables: beginReferenceId and endReferenceId. The angles are as GetMEPPreferenceTables returns them; Archicad 28 finds the rows by their reference ids only and rejects a key with an angle. Archicad 27: shape and index (AddMEPPreferenceTableRows: shape only).",
         "properties": {
@@ -19593,7 +19583,7 @@
         },
         "additionalProperties": false
     },
-    "MEPPreferenceTableRowValues": {
+    "MEPPreferenceRowValues": {
         "type": "object",
         "description": "The values of a row, lengths in meters. Segment tables: diameter, wallThickness and description. Elbow tables: diameter, radius and description. Branch tables: mainAxisDiameter, branchAxisDiameter, length, branchOffset, connectionLength and description. Pipe transition tables: beginDiameter, endDiameter, length and description. Duct transition tables: beginDiameter, endDiameter, angle and description. Archicad 27: value and description.",
         "properties": {
@@ -19642,7 +19632,6 @@
     },
     "MEPPreferenceTableId": {
         "type": "object",
-        "description": "The guid of a preference table, as returned by GetMEPPreferenceTables (the branch, elbow and transition tables with includeFittingTables): a pipe or circular duct segment table, a branch or elbow table of the Piping or Ventilation domain, or, from Archicad 29, a transition table. Rectangular duct and cable carrier segment tables are found too, but their rows have no key. Archicad 27: any preference table, as returned by GetMEPPreferenceTableContainers.",
         "properties": {
             "guid": {
                 "$ref": "#/Guid"
@@ -19653,18 +19642,18 @@
             "guid"
         ]
     },
-    "MEPPreferenceTableRowDetails": {
+    "MEPPreferenceRowDetails": {
         "type": "object",
         "properties": {
             "key": {
-                "$ref": "#/MEPPreferenceTableRowKey"
+                "$ref": "#/MEPPreferenceRowKey"
             },
             "valid": {
                 "type": "boolean",
                 "description": "Whether the row is valid. Archicad 27: whether the list of the shape has a row with the index."
             },
             "values": {
-                "$ref": "#/MEPPreferenceTableRowValues"
+                "$ref": "#/MEPPreferenceRowValues"
             }
         },
         "additionalProperties": false,
@@ -19674,14 +19663,14 @@
             "values"
         ]
     },
-    "MEPPreferenceTableRowUpdate": {
+    "MEPPreferenceRowUpdate": {
         "type": "object",
         "properties": {
             "key": {
-                "$ref": "#/MEPPreferenceTableRowKey"
+                "$ref": "#/MEPPreferenceRowKey"
             },
             "values": {
-                "$ref": "#/MEPPreferenceTableRowValues"
+                "$ref": "#/MEPPreferenceRowValues"
             }
         },
         "additionalProperties": false,
@@ -19690,14 +19679,14 @@
             "values"
         ]
     },
-    "MEPPreferenceTableRowAddition": {
+    "MEPPreferenceRowAddition": {
         "type": "object",
         "properties": {
             "key": {
-                "$ref": "#/MEPPreferenceTableRowKey"
+                "$ref": "#/MEPPreferenceRowKey"
             },
             "values": {
-                "$ref": "#/MEPPreferenceTableRowValues"
+                "$ref": "#/MEPPreferenceRowValues"
             }
         },
         "additionalProperties": false,
@@ -19705,7 +19694,7 @@
             "key"
         ]
     },
-    "MEPPreferenceTableRowSetResult": {
+    "MEPPreferenceRowUpdateResult": {
         "type": "object",
         "properties": {
             "success": {
@@ -19724,7 +19713,7 @@
             "success"
         ]
     },
-    "MEPPreferenceTableRowAddResult": {
+    "MEPPreferenceRowAdditionResult": {
         "type": "object",
         "properties": {
             "success": {
@@ -19744,33 +19733,12 @@
             "index"
         ]
     },
-    "MEPPreferenceTableContainerDomain": {
-        "type": "string",
-        "description": "The MEP domain of a preference table container.",
-        "enum": [
-            "Piping",
-            "Ventilation",
-            "CableCarrier"
-        ]
-    },
-    "MEPPreferenceTableContainerTableId": {
-        "type": "object",
-        "description": "The id of a preference table, for the tableId of the preference table row commands.",
-        "properties": {
-            "guid": {
-                "$ref": "#/Guid"
-            }
-        },
-        "additionalProperties": false,
-        "required": [
-            "guid"
-        ]
-    },
     "MEPPreferenceTableContainer": {
         "type": "object",
         "properties": {
             "domain": {
-                "$ref": "#/MEPPreferenceTableContainerDomain"
+                "$ref": "#/MEPPreferenceTableDomain",
+                "description": "The MEP domain of a preference table container."
             },
             "exists": {
                 "type": "boolean",
@@ -19782,7 +19750,8 @@
                     "type": "object",
                     "properties": {
                         "tableId": {
-                            "$ref": "#/MEPPreferenceTableContainerTableId"
+                            "$ref": "#/MEPPreferenceTableId",
+                            "description": "The id of a preference table, for the tableId of the preference table row commands."
                         },
                         "name": {
                             "type": "string"
@@ -19831,7 +19800,8 @@
                 ]
             },
             "tableId": {
-                "$ref": "#/MEPPreferenceTableContainerTableId"
+                "$ref": "#/MEPPreferenceTableId",
+                "description": "The id of a preference table, for the tableId of the preference table row commands."
             }
         },
         "additionalProperties": false,
@@ -19840,7 +19810,7 @@
             "tableId"
         ]
     },
-    "AnalyticalLoadGroupCreationData": {
+    "AnalyticalLoadGroupData": {
         "type": "object",
         "properties": {
             "name": {
@@ -19876,7 +19846,7 @@
             "loadGroupId"
         ]
     },
-    "AnalyticalLoadCaseCreationData": {
+    "AnalyticalLoadCaseData": {
         "type": "object",
         "properties": {
             "name": {
@@ -19920,7 +19890,7 @@
             "loadCaseId"
         ]
     },
-    "AnalyticalLoadCombinationCreationData": {
+    "AnalyticalLoadCombinationData": {
         "type": "object",
         "properties": {
             "name": {
@@ -20023,7 +19993,7 @@
             "connections"
         ]
     },
-    "AnalyticalReleaseOfElement": {
+    "ElementAnalyticalRelease": {
         "type": "object",
         "properties": {
             "elementId": {
@@ -20057,7 +20027,7 @@
             "endAdditionalLength"
         ]
     },
-    "AnalyticalCurveMemberStretchOfElement": {
+    "AnalyticalCurveMemberStretchUpdate": {
         "type": "object",
         "properties": {
             "elementId": {
@@ -20079,7 +20049,7 @@
             "endAdditionalLength"
         ]
     },
-    "AnalyticalMemberPartQuery": {
+    "AnalyticalMemberCoordinateSystemRequest": {
         "type": "object",
         "properties": {
             "memberPartRef": {
@@ -20435,7 +20405,7 @@
             "path"
         ]
     },
-    "LibraryPartCreationData": {
+    "LibraryPartData": {
         "type": "object",
         "properties": {
             "name": {
@@ -20559,7 +20529,7 @@
             "name"
         ]
     },
-    "CreatedLibraryPart": {
+    "LibraryPartCreationDetails": {
         "type": "object",
         "properties": {
             "name": {
@@ -21084,7 +21054,7 @@
             "name"
         ]
     },
-    "LibraryPartMetadata": {
+    "LibraryPartMetadataDetails": {
         "type": "object",
         "properties": {
             "description": {
@@ -21122,7 +21092,7 @@
             "isHierarchicalPagesUsed"
         ]
     },
-    "LibraryPartIndex": {
+    "LibraryPartByIndex": {
         "type": "object",
         "properties": {
             "index": {
@@ -21209,6 +21179,59 @@
             "sections"
         ]
     },
+    "LibraryPartScripts": {
+        "type": "object",
+        "description": "Optional. The scripts to set. Only the scripts given here are changed, the others are kept. An empty string makes that script section empty, it does not delete it; use deleteScripts for that.",
+        "properties": {
+            "master": {
+                "type": "string",
+                "description": "The master script."
+            },
+            "parameter": {
+                "type": "string",
+                "description": "The parameter script."
+            },
+            "2d": {
+                "type": "string",
+                "description": "The 2D script."
+            },
+            "3d": {
+                "type": "string",
+                "description": "The 3D script."
+            },
+            "properties": {
+                "type": "string",
+                "description": "The properties script."
+            },
+            "interface": {
+                "type": "string",
+                "description": "The interface (user interface) script."
+            },
+            "forwardMigration": {
+                "type": "string",
+                "description": "The forward migration script."
+            },
+            "backwardMigration": {
+                "type": "string",
+                "description": "The backward migration script."
+            }
+        },
+        "additionalProperties": false,
+        "minProperties": 1
+    },
+    "LibraryPartScriptType": {
+        "type": "string",
+        "enum": [
+            "master",
+            "parameter",
+            "2d",
+            "3d",
+            "properties",
+            "interface",
+            "forwardMigration",
+            "backwardMigration"
+        ]
+    },
     "LibraryPartScriptsUpdate": {
         "type": "object",
         "properties": {
@@ -21217,60 +21240,13 @@
                 "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm')."
             },
             "scripts": {
-                "type": "object",
-                "description": "Optional. The scripts to set. Only the scripts given here are changed, the others are kept. An empty string makes that script section empty, it does not delete it; use deleteScripts for that.",
-                "properties": {
-                    "master": {
-                        "type": "string",
-                        "description": "The master script."
-                    },
-                    "parameter": {
-                        "type": "string",
-                        "description": "The parameter script."
-                    },
-                    "2d": {
-                        "type": "string",
-                        "description": "The 2D script."
-                    },
-                    "3d": {
-                        "type": "string",
-                        "description": "The 3D script."
-                    },
-                    "properties": {
-                        "type": "string",
-                        "description": "The properties script."
-                    },
-                    "interface": {
-                        "type": "string",
-                        "description": "The interface (user interface) script."
-                    },
-                    "forwardMigration": {
-                        "type": "string",
-                        "description": "The forward migration script."
-                    },
-                    "backwardMigration": {
-                        "type": "string",
-                        "description": "The backward migration script."
-                    }
-                },
-                "additionalProperties": false,
-                "minProperties": 1
+                "$ref": "#/LibraryPartScripts"
             },
             "deleteScripts": {
                 "type": "array",
                 "description": "Optional. The script sections to delete from the library part. A script cannot be both set in scripts and deleted here.",
                 "items": {
-                    "type": "string",
-                    "enum": [
-                        "master",
-                        "parameter",
-                        "2d",
-                        "3d",
-                        "properties",
-                        "interface",
-                        "forwardMigration",
-                        "backwardMigration"
-                    ]
+                    "$ref": "#/LibraryPartScriptType"
                 },
                 "minItems": 1,
                 "uniqueItems": true
@@ -21293,6 +21269,50 @@
             }
         ]
     },
+    "LibraryPartMetadata": {
+        "type": "object",
+        "description": "The metadata to set. Only the fields given here are changed, the others are kept.",
+        "properties": {
+            "author": {
+                "type": "string",
+                "description": "The author of the library part."
+            },
+            "keywords": {
+                "type": "string",
+                "description": "The keywords of the library part."
+            },
+            "license": {
+                "type": "string",
+                "description": "The license of the library part."
+            },
+            "licenseVersion": {
+                "type": "string",
+                "description": "The version of the license."
+            },
+            "password": {
+                "type": "string",
+                "description": "The new password of the library part."
+            },
+            "placeable": {
+                "type": "boolean",
+                "description": "Whether the library part can be placed in the project."
+            },
+            "uiDefault": {
+                "type": "boolean",
+                "description": "The UI Default flag of the library part."
+            },
+            "isSubtype": {
+                "type": "boolean",
+                "description": "Whether the library part is a subtype template."
+            },
+            "hierarchicalPagesUsed": {
+                "type": "boolean",
+                "description": "Whether the library part uses hierarchical pages in its user interface."
+            }
+        },
+        "additionalProperties": false,
+        "minProperties": 1
+    },
     "LibraryPartMetadataUpdate": {
         "type": "object",
         "properties": {
@@ -21301,48 +21321,7 @@
                 "description": "The name of the loaded library part file with its extension, as returned in the fileName field of GetAvailableLibraryParts (e.g. 'My Door.gsm')."
             },
             "metadata": {
-                "type": "object",
-                "description": "The metadata to set. Only the fields given here are changed, the others are kept.",
-                "properties": {
-                    "author": {
-                        "type": "string",
-                        "description": "The author of the library part."
-                    },
-                    "keywords": {
-                        "type": "string",
-                        "description": "The keywords of the library part."
-                    },
-                    "license": {
-                        "type": "string",
-                        "description": "The license of the library part."
-                    },
-                    "licenseVersion": {
-                        "type": "string",
-                        "description": "The version of the license."
-                    },
-                    "password": {
-                        "type": "string",
-                        "description": "The new password of the library part."
-                    },
-                    "placeable": {
-                        "type": "boolean",
-                        "description": "Whether the library part can be placed in the project."
-                    },
-                    "uiDefault": {
-                        "type": "boolean",
-                        "description": "The UI Default flag of the library part."
-                    },
-                    "isSubtype": {
-                        "type": "boolean",
-                        "description": "Whether the library part is a subtype template."
-                    },
-                    "hierarchicalPagesUsed": {
-                        "type": "boolean",
-                        "description": "Whether the library part uses hierarchical pages in its user interface."
-                    }
-                },
-                "additionalProperties": false,
-                "minProperties": 1
+                "$ref": "#/LibraryPartMetadata"
             }
         },
         "additionalProperties": false,
@@ -21351,7 +21330,7 @@
             "metadata"
         ]
     },
-    "LibraryPartScriptType": {
+    "LibraryPartReadableScriptType": {
         "type": "string",
         "enum": [
             "master",
@@ -27320,6 +27299,364 @@
             "name",
             "match",
             "score"
+        ]
+    },
+    "ElementHeaderFromOtherDatabase": {
+        "type": "object",
+        "description": "An element that is not in the current database but in another one (a layout, a section, a worksheet ...). Only the fields of its element header are returned: no id, details or floorPlanPolygons. Use GetContainingDatabases and ChangeWindow to open its database and read its full details.",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "type": {
+                "$ref": "#/ElementType"
+            },
+            "floorIndex": {
+                "type": "number"
+            },
+            "layerIndex": {
+                "type": "number"
+            },
+            "drawIndex": {
+                "type": "number"
+            },
+            "hotlinkId": {
+                "$ref": "#/ElementId",
+                "description": "The hotlink instance this element belongs to. Present only for elements that came in through a placed hotlink."
+            },
+            "fromOtherDatabase": {
+                "type": "boolean",
+                "description": "Always true: the element is not in the current database."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "fromOtherDatabase"
+        ]
+    },
+    "ElementInfoString": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId"
+            },
+            "infoString": {
+                "type": "string",
+                "description": "The new Element ID, as the Info Box shows it (GetDetailsOfElements returns it as id)."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "infoString"
+        ]
+    },
+    "ElementLibraryPartTransformation": {
+        "type": "object",
+        "properties": {
+            "transformation": {
+                "type": "object",
+                "description": "The transformation chain of the library part instance: placement at location, rotation by angle, then scaling by xRatio and yRatio in the rotated coordinate system.",
+                "properties": {
+                    "location": {
+                        "$ref": "#/Coordinate2D",
+                        "description": "The location of the referenced library part on the floor plan."
+                    },
+                    "angle": {
+                        "type": "number",
+                        "description": "The rotation angle in radians."
+                    },
+                    "xRatio": {
+                        "type": "number",
+                        "description": "The scaling along the rotated x axis."
+                    },
+                    "yRatio": {
+                        "type": "number",
+                        "description": "The scaling along the rotated y axis."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "location",
+                    "angle",
+                    "xRatio",
+                    "yRatio"
+                ]
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "transformation"
+        ]
+    },
+    "ElementGeometry3D": {
+        "type": "object",
+        "properties": {
+            "bodies": {
+                "type": "array",
+                "description": "The solid bodies of the element's 3D model, including those of its subelements for a Stair, Railing or Curtain Wall, and of its segments for a Column or Beam. Empty when the element has no solid 3D model (for example a 2D element, or one filtered out of the 3D view).",
+                "items": {
+                    "$ref": "#/Body3D"
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "bodies"
+        ]
+    },
+    "SkylightHolePolygon": {
+        "type": "object",
+        "properties": {
+            "polygonOutline": {
+                "type": "array",
+                "description": "The 2D coordinates of the outline of the hole, as Archicad returns them. The outline is closed implicitly (the first vertex is not repeated at the end); a curved edge is given by its end points only.",
+                "items": {
+                    "$ref": "#/Coordinate2D"
+                }
+            },
+            "holes": {
+                "$ref": "#/Holes2D"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "polygonOutline",
+            "holes"
+        ]
+    },
+    "VisibleSkinStatus": {
+        "type": "object",
+        "properties": {
+            "hasVisibleSkin": {
+                "type": "boolean",
+                "description": "True when the element has at least one skin shown in the given Partial Structure Display mode."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "hasVisibleSkin"
+        ]
+    },
+    "ElementConvexPolygons": {
+        "type": "object",
+        "properties": {
+            "convexPolygons": {
+                "type": "array",
+                "description": "With convex: true, the convex polygons the faces of the element's 3D model are decomposed into, body by body and face by face. Empty (or an error item instead) when the element has no solid 3D model of its own (the bodies of a Stair, Railing or Curtain Wall, and of the segments of a Column or Beam, belong to their subelements, which can be given instead).",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "vertices": {
+                            "type": "array",
+                            "description": "The 3D world coordinates of the vertices of the convex polygon, in order.",
+                            "items": {
+                                "$ref": "#/Coordinate3D"
+                            },
+                            "minItems": 3
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "vertices"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "convexPolygons"
+        ]
+    },
+    "Model3DCount": {
+        "type": "object",
+        "properties": {
+            "componentType": {
+                "type": "string",
+                "description": "The component type: the API_3DTypeID enumerator name without its API_ prefix and ID suffix.",
+                "enum": [
+                    "Body",
+                    "Pgon",
+                    "Pedg",
+                    "Edge",
+                    "Vert",
+                    "Vect",
+                    "Umat",
+                    "Lght"
+                ]
+            },
+            "count": {
+                "type": "integer",
+                "description": "The number of components of this type."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "componentType",
+            "count"
+        ]
+    },
+    "ElementTextureCoordinates": {
+        "type": "object",
+        "properties": {
+            "bodies": {
+                "type": "array",
+                "description": "The solid bodies of the element's own 3D model, in Archicad's order, or an error for a body without texture information. Empty (or an error item instead) when the element has no solid 3D model of its own (the bodies of a Stair, Railing or Curtain Wall, and of the segments of a Column or Beam, belong to their subelements, which can be given instead).",
+                "items": {
+                    "oneOf": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "polygons": {
+                                    "type": "array",
+                                    "description": "One item per face of the body, in Archicad's order: the texture coordinates at the first vertex of the face, or an error.",
+                                    "items": {
+                                        "oneOf": [
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "point": {
+                                                        "$ref": "#/Coordinate3D",
+                                                        "description": "The first vertex of the face, in world coordinates."
+                                                    },
+                                                    "u": {
+                                                        "type": "number",
+                                                        "description": "The u texture coordinate at the point."
+                                                    },
+                                                    "v": {
+                                                        "type": "number",
+                                                        "description": "The v texture coordinate at the point."
+                                                    }
+                                                },
+                                                "additionalProperties": false,
+                                                "required": [
+                                                    "point",
+                                                    "u",
+                                                    "v"
+                                                ]
+                                            },
+                                            {
+                                                "$ref": "#/ErrorItem"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "polygons"
+                            ]
+                        },
+                        {
+                            "$ref": "#/ErrorItem"
+                        }
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "bodies"
+        ]
+    },
+    "ElementQuantityDetails": {
+        "type": "object",
+        "properties": {
+            "type": {
+                "$ref": "#/ElementType"
+            },
+            "quantities": {
+                "$ref": "#/ElementQuantities"
+            },
+            "composites": {
+                "type": "array",
+                "description": "The quantities per building material, in the order Archicad reports them: one item for each skin of a composite or complex profile element, and a single item for a basic element. Empty for Zones and Morphs, for which Archicad reports no skins.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "buildingMaterialId": {
+                            "$ref": "#/AttributeIdArrayItem"
+                        },
+                        "volume": {
+                            "type": "number",
+                            "description": "Net volume of the skin."
+                        },
+                        "projectedArea": {
+                            "type": "number",
+                            "description": "Projected area of the skin. Archicad reports 0 when the legacy intersection and surface calculation is turned on in the Project Preferences."
+                        },
+                        "isCore": {
+                            "type": "boolean",
+                            "description": "The skin is marked as core."
+                        },
+                        "isFinish": {
+                            "type": "boolean",
+                            "description": "The skin is marked as finish."
+                        },
+                        "subElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The sub-element (for example a column or beam segment) the skin belongs to. Present only when Archicad attaches the skin to a sub-element."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "buildingMaterialId",
+                        "volume",
+                        "projectedArea",
+                        "isCore",
+                        "isFinish"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "type",
+            "quantities",
+            "composites"
+        ]
+    },
+    "CurtainWallAbsoluteBottom": {
+        "type": "object",
+        "properties": {
+            "absoluteBottom": {
+                "type": "number",
+                "description": "The absolute bottom level of the curtain wall or its subelement, as returned by ACAPI_CurtainWall_GetCWAbsoluteBottom."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "absoluteBottom"
+        ]
+    },
+    "TextContentChange": {
+        "type": "object",
+        "properties": {
+            "elementId": {
+                "$ref": "#/ElementId",
+                "description": "A Text element or a Label of the Text class."
+            },
+            "from": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The position in the content where the replaced range starts."
+            },
+            "range": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The number of characters to replace; 0 inserts the content at 'from'. The range may not reach over a line end into another paragraph."
+            },
+            "content": {
+                "type": "string",
+                "description": "The new content of the range; an empty string deletes the range. It must not contain line ends."
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elementId",
+            "from",
+            "range",
+            "content"
         ]
     },
     "SectionElevationSettableDetails": {

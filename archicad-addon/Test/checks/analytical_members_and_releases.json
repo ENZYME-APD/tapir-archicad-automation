@@ -290,5 +290,10 @@
         { "path": "releases[1].error.code", "exists": true, "name": "nonexistent element refused" }
       ]
     }
+  ],
+  "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${b1}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${b2}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${c1}" } } ] } }
   ]
 }
