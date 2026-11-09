@@ -10989,6 +10989,160 @@ static GSErrCode RestoreRoofSurfaces (const API_Guid& roofGuid, const API_ShellB
     return ACAPI_Element_Change (&roof, &mask, nullptr, 0, true);
 }
 
+// Reads an OverriddenMaterial the caller sent: an overridden surface needs the id of an
+// existing Surface attribute; one that is not overridden clears the override.
+static GS::Optional<GS::UniString> GetOverriddenMaterialChecked (const GS::ObjectState& materialOs, const GS::UniString& name, API_OverriddenAttribute& result)
+{
+    bool overridden = false;
+    if (!materialOs.Get ("overridden", overridden)) {
+        return "'" + name + "' needs 'overridden'.";
+    }
+    GS::ObjectState attributeIdOs;
+    if (overridden) {
+        if (!materialOs.Get ("attributeId", attributeIdOs)) {
+            return "'" + name + "' is overridden but has no 'attributeId'.";
+        }
+        if (GetAttributeIndexFromGuid (API_MaterialID, GetGuidFromObjectState (attributeIdOs)) == ACAPI_CreateAttributeIndex (-1)) {
+            return "No Surface attribute was found for '" + name + ".attributeId'.";
+        }
+    }
+    result = GetOverriddenMaterialFromObjectState (materialOs);
+    return {};
+}
+
+// The top, side and bottom surface overrides of a Roof or Shell (API_ShellBaseType, as
+// GetDetailsOfElements reports them) and whether they are chained (#2433). Reports in the
+// flags which fields were given, for the caller's element mask. Changes nothing on an error.
+struct ShellBaseSurfacesApplied {
+    bool top = false;
+    bool side = false;
+    bool bottom = false;
+    bool chained = false;
+};
+
+static GS::Optional<GS::UniString> ApplyShellBaseSurfaces (API_ShellBaseType& shellBase, const GS::ObjectState& details, ShellBaseSurfacesApplied& applied)
+{
+    API_OverriddenAttribute top = shellBase.topMat;
+    API_OverriddenAttribute side = shellBase.sidMat;
+    API_OverriddenAttribute bottom = shellBase.botMat;
+    ShellBaseSurfacesApplied given;
+    GS::ObjectState materialOs;
+    if (details.Get ("topMaterial", materialOs)) {
+        auto error = GetOverriddenMaterialChecked (materialOs, "topMaterial", top);
+        if (error.HasValue ()) {
+            return error;
+        }
+        given.top = true;
+    }
+    if (details.Get ("sideMaterial", materialOs)) {
+        auto error = GetOverriddenMaterialChecked (materialOs, "sideMaterial", side);
+        if (error.HasValue ()) {
+            return error;
+        }
+        given.side = true;
+    }
+    if (details.Get ("bottomMaterial", materialOs)) {
+        auto error = GetOverriddenMaterialChecked (materialOs, "bottomMaterial", bottom);
+        if (error.HasValue ()) {
+            return error;
+        }
+        given.bottom = true;
+    }
+    bool materialsChained = shellBase.materialsChained;
+    given.chained = details.Get ("materialsChained", materialsChained);
+
+    shellBase.topMat = top;
+    shellBase.sidMat = side;
+    shellBase.botMat = bottom;
+    shellBase.materialsChained = materialsChained;
+    applied = given;
+    return {};
+}
+
+static GS::Optional<GS::UniString> ApplyRoofSurfaces (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed)
+{
+    ShellBaseSurfacesApplied applied;
+    auto error = ApplyShellBaseSurfaces (element.roof.shellBase, details, applied);
+    if (error.HasValue ()) {
+        return error;
+    }
+    if (applied.top) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_RoofType, shellBase.topMat);
+        changed = true;
+    }
+    if (applied.side) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_RoofType, shellBase.sidMat);
+        changed = true;
+    }
+    if (applied.bottom) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_RoofType, shellBase.botMat);
+        changed = true;
+    }
+    if (applied.chained) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_RoofType, shellBase.materialsChained);
+        changed = true;
+    }
+    return {};
+}
+
+// Writes the given "edgeSideMaterials" (see ModifyRoofs) into memo.sideMaterials, one item per
+// edge in the order of GetPolygonEdgeIndices, which is the order GetDetailsOfElements reports
+// them in (#2433). An item that is not overridden clears the edge's custom surface, so the edge
+// shows the roof's side surface. Changes nothing on an error.
+static GS::Optional<GS::UniString> ApplyRoofEdgeSideMaterials (API_ElementMemo& memo, const GS::Array<GS::ObjectState>& edgeSideMaterials, const API_OverriddenAttribute& roofSideMaterial)
+{
+    const GS::Array<Int32> edgeIndices = GetPolygonEdgeIndices (memo);
+    if (edgeIndices.IsEmpty ()) {
+        return GS::UniString ("Failed to read the edges of the roof's polygon.");
+    }
+    if (edgeSideMaterials.GetSize () != edgeIndices.GetSize ()) {
+        return GS::UniString::Printf ("'edgeSideMaterials' must have one item per edge of the roof's polygon (%u).", (unsigned) edgeIndices.GetSize ());
+    }
+    GS::Array<API_OverriddenAttribute> newMaterials;
+    for (UIndex k = 0; k < edgeSideMaterials.GetSize (); ++k) {
+        API_OverriddenAttribute material = {};
+        auto error = GetOverriddenMaterialChecked (edgeSideMaterials[k], GS::UniString::Printf ("edgeSideMaterials[%u]", (unsigned) k), material);
+        if (error.HasValue ()) {
+            return error;
+        }
+        newMaterials.Push (material);
+    }
+
+    const Int32 nCoords = (Int32) (BMGetHandleSize ((GSHandle) memo.coords) / sizeof (API_Coord)) - 1;
+    const GSSize nSideMaterials = memo.sideMaterials == nullptr ? 0 : BMGetPtrSize ((GSPtr) memo.sideMaterials) / sizeof (API_OverriddenAttribute);
+    if (nSideMaterials < nCoords + 1) {
+        // A roof without side materials in its memo shows its own side surface on every edge,
+        // which is what AddPolyToMemo (ElementCreationCommands.cpp) writes. The ones it has are kept.
+        API_OverriddenAttribute* materials = reinterpret_cast<API_OverriddenAttribute*> (BMAllocatePtr ((nCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0));
+        if (materials == nullptr) {
+            return GS::UniString ("Failed to allocate the edge surfaces of the roof.");
+        }
+        for (Int32 i = 0; i <= nCoords; ++i) {
+            materials[i] = i < nSideMaterials ? memo.sideMaterials[i] : roofSideMaterial;
+        }
+        if (memo.sideMaterials != nullptr) {
+            BMKillPtr (reinterpret_cast<GSPtr*> (&memo.sideMaterials));
+        }
+        memo.sideMaterials = materials;
+    }
+
+    for (UIndex k = 0; k < newMaterials.GetSize (); ++k) {
+        memo.sideMaterials[edgeIndices[k]] = newMaterials[k];
+    }
+
+    // The closing vertex of each contour repeats the data of its first vertex, as AddPolyToMemo
+    // (ElementCreationCommands.cpp) writes it.
+    const Int32 nSubPolys = (Int32) (BMGetHandleSize ((GSHandle) memo.pends) / sizeof (Int32)) - 1;
+    for (Int32 subPoly = 1; subPoly <= nSubPolys; ++subPoly) {
+        const Int32 first = (*memo.pends)[subPoly - 1] + 1;
+        const Int32 closing = (*memo.pends)[subPoly];
+        if (closing <= nCoords && first < closing) {
+            memo.sideMaterials[closing] = memo.sideMaterials[first];
+        }
+    }
+    return {};
+}
+
 ModifyRoofsCommand::ModifyRoofsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -11047,6 +11201,15 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                             "items": { "$ref": "#/PolyArc" }
                         },
                         "holes": { "$ref": "#/Holes2D" },
+                        "topMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the top of the roof; overridden false clears the override." },
+                        "sideMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the sides of the roof; overridden false clears the override. Edges with a custom surface (edgeSideMaterials) keep theirs." },
+                        "bottomMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the bottom of the roof; overridden false clears the override." },
+                        "materialsChained": { "type": "boolean", "description": "Whether the surface materials are chained, as GetDetailsOfElements reports it." },
+                        "edgeSideMaterials": {
+                            "type": "array",
+                            "description": "Single-plane roofs only: the custom surface of each edge of the roof's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeSideMaterials (the outline, then each hole). An overridden item sets the edge's custom surface, overridden false clears it so the edge shows the roof's side surface. Send every edge; the other edges keep their surface when sent as read. Cannot be combined with polygonOutline.",
+                            "items": { "$ref": "#/OverriddenMaterial" }
+                        },
                         "angle": {
                             "type": "number",
                             "description": "Single-plane roofs only: the angle of the plane to the XY plane."
@@ -11154,12 +11317,12 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'levels', 'eavesOverhang' and 'pivotEdges' are only valid for multi-plane roofs."));
                 continue;
             }
-            if (!isPlaneRoof && (item.Contains ("angle") || item.Contains ("pivotLine") || item.Contains ("edgeTrims"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'angle', 'pivotLine' and 'edgeTrims' are only valid for single-plane roofs."));
+            if (!isPlaneRoof && (item.Contains ("angle") || item.Contains ("pivotLine") || item.Contains ("edgeTrims") || item.Contains ("edgeSideMaterials"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'angle', 'pivotLine', 'edgeTrims' and 'edgeSideMaterials' are only valid for single-plane roofs."));
                 continue;
             }
-            if (item.Contains ("edgeTrims") && item.Contains ("polygonOutline")) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTrims' cannot be combined with 'polygonOutline', which makes new edges."));
+            if ((item.Contains ("edgeTrims") || item.Contains ("edgeSideMaterials")) && item.Contains ("polygonOutline")) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTrims' and 'edgeSideMaterials' cannot be combined with 'polygonOutline', which makes new edges."));
                 continue;
             }
 
@@ -11177,6 +11340,15 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
             if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                 continue;
+            }
+            // Before the polygon edits below: a new edge of a single-plane outline gets the side
+            // surface given here, and a multi-plane outline restores the surfaces given here.
+            {
+                auto surfaceError = ApplyRoofSurfaces (element, mask, item, changed);
+                if (surfaceError.HasValue ()) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, surfaceError.Get ()));
+                    continue;
+                }
             }
             if (isPlaneRoof) {
                 auto planeError = ApplyPlaneRoofPivot (element, mask, item, changed);
@@ -11213,7 +11385,10 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
             }
 
             GS::Array<GS::ObjectState> edgeTrims;
-            if (item.Get ("edgeTrims", edgeTrims)) {
+            GS::Array<GS::ObjectState> edgeSideMaterials;
+            const bool hasEdgeTrims = item.Get ("edgeTrims", edgeTrims);
+            const bool hasEdgeSideMaterials = item.Get ("edgeSideMaterials", edgeSideMaterials);
+            if (hasEdgeTrims || hasEdgeSideMaterials) {
                 API_ElementMemo memo = {};
                 const GS::OnExit cleanup ([&]() {
                     ACAPI_DisposeElemMemoHdls (&memo);
@@ -11223,10 +11398,19 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     results.Push (CreateFailedExecutionResult (err != NoError ? err : APIERR_GENERAL, "Failed to read the polygon of the roof."));
                     continue;
                 }
-                auto trimError = ApplyRoofEdgeTrims (memo, edgeTrims);
-                if (trimError.HasValue ()) {
-                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, trimError.Get ()));
-                    continue;
+                if (hasEdgeTrims) {
+                    auto trimError = ApplyRoofEdgeTrims (memo, edgeTrims);
+                    if (trimError.HasValue ()) {
+                        results.Push (CreateFailedExecutionResult (APIERR_BADPARS, trimError.Get ()));
+                        continue;
+                    }
+                }
+                if (hasEdgeSideMaterials) {
+                    auto materialError = ApplyRoofEdgeSideMaterials (memo, edgeSideMaterials, element.roof.shellBase.sidMat);
+                    if (materialError.HasValue ()) {
+                        results.Push (CreateFailedExecutionResult (APIERR_BADPARS, materialError.Get ()));
+                        continue;
+                    }
                 }
                 if (changed) {
                     err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
@@ -11236,7 +11420,7 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     }
                 }
                 // Passed as the polygon edit below passes it: only the polygon handles and the edge
-                // data, unchanged but for the trims, so the side surfaces and edge types stay.
+                // data, unchanged but for the given trims and side surfaces, so the rest stays.
                 API_ElementMemo polygonMemo = {};
                 polygonMemo.coords = memo.coords;
                 polygonMemo.pends = memo.pends;
@@ -11247,7 +11431,10 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 polygonMemo.sideMaterials = memo.sideMaterials;
                 polygonMemo.roofEdgeTypes = memo.roofEdgeTypes;
                 polygonMemo.contourIDs = memo.contourIDs;
-                UInt64 memoMask = APIMemoMask_Polygon | APIMemoMask_EdgeTrims;
+                UInt64 memoMask = APIMemoMask_Polygon;
+                if (memo.edgeTrims != nullptr) {
+                    memoMask |= APIMemoMask_EdgeTrims;
+                }
                 if (memo.sideMaterials != nullptr) {
                     memoMask |= APIMemoMask_SideMaterials;
                 }
@@ -11255,7 +11442,7 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     memoMask |= APIMemoMask_RoofEdgeTypes;
                 }
                 err = ACAPI_Element_ChangeMemo (element.header.guid, memoMask, &polygonMemo);
-                results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the edge trims of the roof."));
+                results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, hasEdgeTrims ? "Failed to modify the edge trims of the roof." : "Failed to modify the edge surfaces of the roof."));
                 continue;
             }
 
