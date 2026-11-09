@@ -42,7 +42,7 @@
       },
       "expect": [
         { "path": "detailsOfElements[0].details.roofClass", "eq": "MultiPlane", "name": "the roof is multi-plane" },
-        { "path": "detailsOfElements[0].details.polygonOutline", "len": 4, "name": "contour has 4 vertices" },
+        { "path": "detailsOfElements[0].details.polygonOutline", "len": 5, "name": "contour has 4 corners and the closing point" },
         { "path": "detailsOfElements[0].details.holes", "len": 1, "name": "contour has the hole" },
         { "path": "detailsOfElements[0].details.edgeTrims", "len": 8, "name": "edgeTrims reported for the multi-plane roof: 4 contour edges, then 4 hole edges" },
         { "path": "detailsOfElements[0].details.pivotEdges", "len": 8, "name": "8 pivot edges" }
@@ -96,7 +96,7 @@
         { "expr": "${b3} - ${a3}", "approx": 0, "tol": 0.000001, "name": "contour edge 3 keeps its angle" },
         { "expr": "${b4} - ${a4}", "approx": 0, "tol": 0.000001, "name": "hole edge 4 keeps its angle" },
         { "expr": "${b7} - ${a7}", "approx": 0, "tol": 0.000001, "name": "hole edge 7 keeps its angle" },
-        { "path": "detailsOfElements[0].details.polygonOutline", "len": 4, "name": "contour keeps its 4 vertices" },
+        { "path": "detailsOfElements[0].details.polygonOutline", "len": 5, "name": "contour keeps its 4 corners and the closing point" },
         { "path": "detailsOfElements[0].details.holes", "len": 1, "name": "contour keeps its hole" },
         { "path": "detailsOfElements[0].details.pivotEdges", "len": 8, "name": "still 8 pivot edges" },
         { "expr": "${q0} - ${p0}", "approx": 0, "tol": 0.000001, "name": "pivot plane 0 keeps its slope" },
