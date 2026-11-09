@@ -247,7 +247,25 @@ GS::ObjectState SetProjectInfoFieldCommand::Execute (const GS::ObjectState& para
     // parameter." Passing an empty UniString instead does not clear it.
     const bool clearTheField = projectInfoValue.IsEmpty ();
 
-    GSErrCode err = ACAPI_AutoText_SetAnAutoText (&projectInfoId,
+    // ACAPI_AutoText_SetAnAutoText reports success for an id that is not in the project,
+    // so look the id up in the autotext list first.
+    GS::Array<GS::ArrayFB<GS::UniString, 3>> autoTexts;
+    GSErrCode err = ACAPI_AutoText_GetAutoTexts (&autoTexts, APIAutoText_All);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to retrieve project information fields.");
+    }
+    bool fieldFound = false;
+    for (const auto& autoText : autoTexts) {
+        if (autoText[1] == projectInfoId) {
+            fieldFound = true;
+            break;
+        }
+    }
+    if (!fieldFound) {
+        return CreateErrorResponse (APIERR_BADPARS, "The project information field does not exist.");
+    }
+
+    err = ACAPI_AutoText_SetAnAutoText (&projectInfoId,
                                                   clearTheField ? nullptr : &projectInfoValue);
     if (err != NoError) {
         return CreateErrorResponse (err, clearTheField

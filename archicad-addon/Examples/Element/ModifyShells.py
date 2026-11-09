@@ -1,5 +1,7 @@
-"""Makes the first shell a Basic shell of the first building material, shown in outlines with its cover fill, with ModifyShells, reads it back, then restores its structure and floor plan display.
+"""Makes the first shell a 0.24 m thick Basic shell of the first building material, shown in outlines with its cover fill, with ModifyShells, reads it back, then restores its structure, thickness and floor plan display.
 
+The shell's reference surface stays in place when the thickness changes; 'isFlipped' chooses the side the thickness goes to.
+A Composite shell takes its thickness from its composite, so a 'thickness' alone is refused on it.
 Needs at least one Shell.
 """
 import aclib
@@ -15,6 +17,7 @@ aclib.PrintJson (aclib.RunTapirCommand ('ModifyShells', {'shellsWithDetails': [{
     'elementId': shells[0]['elementId'],
     'structureType': 'Basic',
     'buildingMaterialId': buildingMaterial['attributeId'],
+    'thickness': 0.24,
     'displayOption': 'OutLinesOnly',
     'floorFill': {'use': True}
 }]}))
@@ -24,6 +27,8 @@ restore = {'elementId': shells[0]['elementId'], 'structureType': old['structureT
 for key in ['buildingMaterialId', 'compositeId', 'displayOption']:
     if key in old:
         restore[key] = old[key]
+if old['structureType'] == 'Basic':
+    restore['thickness'] = old['thickness']
 if 'floorFill' in old:
     restore['floorFill'] = {'use': old['floorFill']['use']}
 aclib.PrintJson (aclib.RunTapirCommand ('ModifyShells', {'shellsWithDetails': [restore]}))

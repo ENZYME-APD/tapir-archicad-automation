@@ -443,7 +443,9 @@
         { "path": "detailsOfElements[0].details.body.isClosed", "eq": true, "name": "closed solid" },
         { "path": "detailsOfElements[0].details.origin.x", "approx": 851.0, "name": "placement kept (x)" },
         { "path": "detailsOfElements[0].details.origin.z", "approx": 0.5, "name": "placement kept (z)" },
-        { "path": "detailsOfElements[0].details.cutLinePen", "eq": 7, "name": "pen kept" }
+        { "path": "detailsOfElements[0].details.cutLinePen", "eq": 7, "name": "pen kept" },
+        { "path": "detailsOfElements[0].details.castShadow", "eq": false, "name": "shadow setting kept with the new body" },
+        { "path": "detailsOfElements[0].details.receiveShadow", "eq": false, "name": "receive shadow setting kept with the new body" }
       ]
     },
     {

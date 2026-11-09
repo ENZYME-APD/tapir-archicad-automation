@@ -160,5 +160,10 @@
         { "path": "detailsOfElements[1].details.text", "eq": "A long line of text that does not fit into a narrow text box", "name": "width 0 keeps the content" }
       ]
     }
+  ],
+  "teardown": [
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${t0}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${t1}" } } ] } },
+    { "command": "DeleteElements", "params": { "elements": [ { "elementId": { "guid": "${t2}" } } ] } }
   ]
 }
