@@ -504,3 +504,48 @@ pre .hljs-subst { color: var(--pre-text); }
 .site-footer {
     margin-top: 48px;
 }
+
+/* The Standard look (see the end of site.css): the code colours of the issue's palette for keywords,
+   strings and comments, labels in normal case, 8 px corners on controls and 12 px on the commands. */
+:root:not([data-style="legacy"]) {
+    --code-keyword: #7DD3FC;
+    --code-string: #86EFAC;
+    --code-comment: #94A3B8;
+}
+
+:root:not([data-style="legacy"]) div.sidebar_title {
+    font-family: var(--body);
+    font-weight: 600;
+    letter-spacing: normal;
+    text-transform: none;
+}
+
+:root:not([data-style="legacy"]) a.sidebar_link,
+:root:not([data-style="legacy"]) button.sidebar_version,
+:root:not([data-style="legacy"]) div.toolbar input,
+:root:not([data-style="legacy"]) div.toolbar button {
+    border-radius: var(--radius-control);
+}
+
+:root:not([data-style="legacy"]) button.sidebar_version[aria-pressed="true"] {
+    background: var(--accent-fill);
+    border-color: var(--accent-fill);
+    color: var(--on-accent);
+}
+
+:root:not([data-style="legacy"]) details.command_container,
+:root:not([data-style="legacy"]) div.overview {
+    border-radius: var(--radius-card);
+}
+
+:root:not([data-style="legacy"]) details.command_container[open] {
+    border-color: var(--border-strong);
+}
+
+:root:not([data-style="legacy"]) summary.command_header {
+    border-radius: 11px;
+}
+
+:root:not([data-style="legacy"]) details[open] summary.command_header {
+    border-radius: 11px 11px 0 0;
+}

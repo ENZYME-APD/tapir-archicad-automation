@@ -113,3 +113,35 @@
     .hero .wrap { padding-block: 40px 48px; gap: 36px }
     .plan-card { box-shadow: var(--shadow-plan-small) }
 }
+
+/* The Standard look (see the end of site.css): the hero is a page head (the subtle background, no
+   grid), the ticker a subtle band, and the floor plan a white sheet with the accent's tags, a slate
+   palette bar and the Property Highlighter in the accent's greens. The plan stays light in dark mode. */
+:root:not([data-style="legacy"]) {
+    --texture-hero: none;
+    --plan-sheet: #F7F8FA; --plan-paper: #FFFFFF; --plan-ink: #111827; --plan-muted: #4B5563;
+    --plan-focus: #1F6B4E; --plan-line: #E5E7EB;
+    --plan-bar: #0F172A; --plan-bar-text: #E2E8F0; --plan-bar-focus: #4CB88A;
+    --plan-bar-line: rgba(226, 232, 240, .2); --plan-bar-muted: #94A3B8;
+    --plan-mark: #1F6B4E; --plan-mark-busy: #164D38; --plan-mark-tint: rgba(31, 107, 78, .12);
+    --plan-label-text: #FFFFFF;
+    --plan-heat-low: #E3F1EA; --plan-heat-mid: #B5DCC8; --plan-heat-high: #7FBFA0;
+    --shadow-plan: 0 1px 2px rgba(17, 24, 39, .06), 0 8px 24px rgba(17, 24, 39, .08); --shadow-plan-small: var(--shadow-plan);
+    --font-plan-ui: var(--body);
+}
+:root:not([data-style="legacy"])[data-theme="dark"] { --shadow-plan: none }
+@media (prefers-color-scheme: dark) { :root:not([data-style="legacy"]):not([data-theme="light"]) { --shadow-plan: none } }
+:root:not([data-style="legacy"]) .hero { background-color: var(--subtle); color: var(--fg); border-bottom: 1px solid var(--line); --focus: var(--link) }
+:root:not([data-style="legacy"]) .hero .tagline, :root:not([data-style="legacy"]) .hero .meta a { color: var(--link) }
+:root:not([data-style="legacy"]) .hero h1 em { color: inherit }
+:root:not([data-style="legacy"]) .hero h1 { line-height: 1.02 }
+:root:not([data-style="legacy"]) .hero .lead, :root:not([data-style="legacy"]) .hero .meta { color: var(--muted) }
+:root:not([data-style="legacy"]) .hero .meta { font-family: var(--body); letter-spacing: normal; text-transform: none }
+:root:not([data-style="legacy"]) .plan-card { border-radius: var(--radius-card); border: 1px solid var(--line) }
+:root:not([data-style="legacy"]) .plan-bar { border-radius: 11px 11px 0 0 }
+:root:not([data-style="legacy"]) .plan-run { color: #FFFFFF; border-radius: var(--radius-control) }
+:root:not([data-style="legacy"]) .plan-sheet, :root:not([data-style="legacy"]) .plan-status { font-family: var(--body) }
+:root:not([data-style="legacy"]) .way .accent { fill: var(--accent-fill) }
+:root:not([data-style="legacy"]) .way .accent-line { stroke: var(--accent-fill) }
+:root:not([data-style="legacy"]) .ticker { background: var(--subtle); color: var(--fg); border-block-color: var(--line) }
+:root:not([data-style="legacy"]) .ticker-track span::before { color: var(--link) }
