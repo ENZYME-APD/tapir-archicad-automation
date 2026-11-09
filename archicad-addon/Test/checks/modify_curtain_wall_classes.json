@@ -41,13 +41,48 @@
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${cw}" } } ] },
       "save": {
-        "panelClassName": "detailsOfElements[0].details.panelClasses[0].className"
+        "panelClassName": "detailsOfElements[0].details.panelClasses[0].className",
+        "frameClassName": "detailsOfElements[0].details.frameClasses[0].className"
       },
       "expect": [
         { "path": "detailsOfElements[0].details.frameClasses[0].classIndex", "eq": 4, "name": "GetDetailsOfElements lists the custom frame classes, numbered from 4" },
         { "path": "detailsOfElements[0].details.frameClasses[0].frameContour.a1", "exists": true, "name": "with their contour" },
         { "path": "detailsOfElements[0].details.panelClasses[0].classIndex", "eq": 1, "name": "and the panel classes, numbered from 1" },
         { "path": "detailsOfElements[0].details.panelClasses[0].thickness", "gt": 0.0, "name": "with their thickness" }
+      ]
+    },
+    {
+      "id": "its frames",
+      "command": "GetSubelementsOfHierarchicalElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${cw}" } } ] },
+      "save": { "f": "subelements[0].cWallFrames[0].elementId.guid" },
+      "expect": [
+        { "path": "subelements[0].cWallFrames[0].elementId.guid", "exists": true, "name": "the curtain wall has frames" }
+      ]
+    },
+    {
+      "id": "ModifyCurtainWallFrames: put a frame in frame class 4",
+      "command": "ModifyCurtainWallFrames",
+      "creates": false,
+      "params": {
+        "framesWithDetails": [
+          { "frameId": { "guid": "${f}" }, "classIndex": 4 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "frame moved to class 4" }
+      ]
+    },
+    {
+      "id": "the class-4 frame before the class change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${f}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "CurtainWallFrame", "name": "the saved subelement is a frame" },
+        { "path": "detailsOfElements[0].details.type", "eq": "Custom", "name": "the frame is in a custom class" },
+        { "path": "detailsOfElements[0].details.className", "eq": "${frameClassName}", "name": "the frame is in class 4" }
       ]
     },
     {
@@ -82,6 +117,17 @@
         { "path": "detailsOfElements[0].details.panelClasses[0].thickness", "approx": 0.035, "name": "panel class is 35 mm thick" },
         { "path": "detailsOfElements[0].details.panelClasses[0].outerSurfaceId.guid", "eq": "${surfA}", "name": "panel class has the outer surface" },
         { "path": "detailsOfElements[0].details.height", "approx": 3.0, "name": "curtain wall height unchanged" }
+      ]
+    },
+    {
+      "id": "the class-4 frame after the class change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${f}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.className", "eq": "${frameClassName}", "name": "the frame is still in class 4" },
+        { "path": "detailsOfElements[0].details.frameContour.a1", "approx": 0.03, "name": "the frame of the class takes a1 of 30 mm" },
+        { "path": "detailsOfElements[0].details.frameContour.a2", "approx": 0.03, "name": "the frame of the class takes a2 of 30 mm" }
       ]
     },
     {
