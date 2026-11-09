@@ -1500,8 +1500,11 @@ GS::ObjectState ExecuteCreateWithElements (const GS::String& commandName, Func&&
 // command, and reports the modified elements to the notification clients (#1825): modifyFunc
 // pushes one result per item, in order, and the items with a successful result are reported
 // as changed, the others only when their modification stamp changed anyway.
-template<typename Func>
-GS::ObjectState ExecuteModifyWithResults (const GS::String& commandName, const GS::Array<GS::ObjectState>& items, Func&& modifyFunc)
+// verifyFunc runs after the undoable command has ended and may replace results: some values (a
+// railing's bottomOffset) are only updated in the database once the command is over, so reading
+// them back inside it gives the old value.
+template<typename Func, typename VerifyFunc>
+GS::ObjectState ExecuteModifyWithResults (const GS::String& commandName, const GS::Array<GS::ObjectState>& items, Func&& modifyFunc, VerifyFunc&& verifyFunc)
 {
     GS::Array<GS::ObjectState> results;
 
@@ -1512,6 +1515,7 @@ GS::ObjectState ExecuteModifyWithResults (const GS::String& commandName, const G
         modifyFunc (results);
         return NoError;
     });
+    verifyFunc (results);
 
     if (results.GetSize () == items.GetSize ()) {
         for (UIndex i = 0; i < items.GetSize (); ++i) {
@@ -1525,6 +1529,12 @@ GS::ObjectState ExecuteModifyWithResults (const GS::String& commandName, const G
     changeReporter.Report ();
 
     return CreateExecutionResultResponse (results);
+}
+
+template<typename Func>
+GS::ObjectState ExecuteModifyWithResults (const GS::String& commandName, const GS::Array<GS::ObjectState>& items, Func&& modifyFunc)
+{
+    return ExecuteModifyWithResults (commandName, items, std::forward<Func> (modifyFunc), [](GS::Array<GS::ObjectState>&) {});
 }
 
 }
@@ -11099,6 +11109,45 @@ static GSErrCode RestoreRoofSurfaces (const API_Guid& roofGuid, const API_ShellB
     return ACAPI_Element_Change (&roof, &mask, nullptr, 0, true);
 }
 
+// Reads "cutBodyType" (the Trimming Body on the Model panel of Roof and Shell Settings,
+// API_ShellBaseType::cutBodyType) into cutBodyType. Only the given allowed values are
+// accepted: roofs offer ContoursDown and PivotLinesDown, shells UpwardsExtrusion and
+// DownwardsExtrusion (Editable needs an editable trimming body, which is not written here).
+// The input schemas' enums already refuse any other value for the whole call before
+// Execute runs; the checks here only guard against a schema that is loosened later.
+static GS::Optional<GS::UniString> GetShellBaseCutBodyType (
+    const GS::ObjectState& details,
+    const GS::Array<API_ShellBaseCutBodyTypeID>& allowed,
+    API_ShellBaseCutBodyTypeID& cutBodyType,
+    bool& given)
+{
+    given = false;
+    GS::UniString name;
+    if (!details.Get ("cutBodyType", name)) {
+        return {};
+    }
+    API_ShellBaseCutBodyTypeID value;
+    if (name == "Editable") {
+        value = APIShellBaseCutBody_Editable;
+    } else if (name == "ContoursDown") {
+        value = APIShellBaseCutBody_ContoursDown;
+    } else if (name == "PivotLinesDown") {
+        value = APIShellBaseCutBody_PivotLinesDown;
+    } else if (name == "UpwardsExtrusion") {
+        value = APIShellBaseCutBody_UpwardsExtrusion;
+    } else if (name == "DownwardsExtrusion") {
+        value = APIShellBaseCutBody_DownwardsExtrusion;
+    } else {
+        return "Unknown cutBodyType '" + name + "'.";
+    }
+    if (!allowed.Contains (value)) {
+        return "cutBodyType '" + name + "' cannot be set on this element.";
+    }
+    cutBodyType = value;
+    given = true;
+    return {};
+}
+
 // Reads an OverriddenMaterial the caller sent: an overridden surface needs the id of an
 // existing Surface attribute; one that is not overridden clears the override.
 static GS::Optional<GS::UniString> GetOverriddenMaterialChecked (const GS::ObjectState& materialOs, const GS::UniString& name, API_OverriddenAttribute& result)
@@ -11276,18 +11325,21 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         "elementId": { "$ref": "#/ElementId" },
                         "level": {
                             "type": "number",
-                            "description": "Absolute elevation of the roof's pivot line (the zCoordinate GetDetailsOfElements returns). The roof is put on the story floorIndex when given, else on the story at this elevation."
+                            "description": "Absolute elevation (from the project zero) of the roof's pivot line (single-plane) or pivot polygon (multi-plane): the value GetDetailsOfElements returns as zCoordinate, not its story-relative level. GetDetailsOfElements then returns level = this value minus the elevation of the roof's home story. Without floorIndex the home story is recomputed from this value: the highest story whose elevation is at or below it (the lowest story when it is below every story), so an elevation at or above the next story's moves the roof to that story. To keep the home story, send the roof's current floorIndex (from GetDetailsOfElements) with level."
                         },
                         "floorIndex": {
                             "type": "integer",
-                            "description": "Home story of the roof. With level, the roof gets this home story at the absolute elevation level; without level, it moves to this story and keeps its offset from the story."
+                            "description": "Home story of the roof. With level, the roof gets this home story and level stays an absolute elevation (the offset from the story is worked out from it); without level, it moves to this story and keeps its offset from the story."
                         },
                         "thickness": {
                             "type": "number",
                             "exclusiveMinimum": 0.0,
                             "description": "Only takes effect on a Basic (homogeneous) roof - a Composite roof takes its thickness from the composite attribute. Send structureType 'Basic' in the same call to switch a composite roof first."
                         },
-                        "eavesOverhang": { "type": "number" },
+                        "eavesOverhang": {
+                            "type": "number",
+                            "description": "Multi-plane roofs only: one eaves overhang for the whole roof, the distance of the roof's contour outside the pivot polygon. Switches the roof to an overhang offset from the pivot polygon. Per-edge overhangs are set with pivotEdges."
+                        },
                         "levels": {
                             "type": "array",
                             "minItems": 1,
@@ -11303,6 +11355,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         "compositeId": { "$ref": "#/AttributeId" },
                         "polygonOutline": {
                             "type": "array",
+                            "description": "Single-plane roofs: the roof's outline (polygonOutline of GetDetailsOfElements). Multi-plane roofs: the PIVOT polygon (pivotPolygonOutline of GetDetailsOfElements), not the contour GetDetailsOfElements returns as polygonOutline, which lies outside the pivot polygon by the eaves overhangs. ModifyRoofs cannot write a multi-plane roof's contour independently of its pivot polygon; it follows from the pivot polygon and the overhangs (eavesOverhang, or per edge with pivotEdges in a separate call, as pivotEdges cannot be combined with polygonOutline). The coordinates are plan (x, y) coordinates; the elevation is set with level.",
                             "items": { "$ref": "#/Coordinate2D" },
                             "minItems": 3
                         },
@@ -11319,6 +11372,11 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                             "type": "array",
                             "description": "Single-plane roofs only: the custom surface of each edge of the roof's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeSideMaterials (the outline, then each hole). An overridden item sets the edge's custom surface, overridden false clears it so the edge shows the roof's side surface. Send every edge; the other edges keep their surface when sent as read. Cannot be combined with polygonOutline.",
                             "items": { "$ref": "#/OverriddenMaterial" }
+                        },
+                        "cutBodyType": {
+                            "type": "string",
+                            "enum": [ "ContoursDown", "PivotLinesDown" ],
+                            "description": "The Trimming Body of the roof (Model panel of Roof Settings): Contours Down or Pivot Lines Down. GetDetailsOfElements reports it as cutBodyType."
                         },
                         "angle": {
                             "type": "number",
@@ -11450,6 +11508,18 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
             if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                 continue;
+            }
+            {
+                bool cutBodyGiven = false;
+                auto cutBodyError = GetShellBaseCutBodyType (item, { APIShellBaseCutBody_ContoursDown, APIShellBaseCutBody_PivotLinesDown }, element.roof.shellBase.cutBodyType, cutBodyGiven);
+                if (cutBodyError.HasValue ()) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, cutBodyError.Get ()));
+                    continue;
+                }
+                if (cutBodyGiven) {
+                    ACAPI_ELEMENT_MASK_SET (mask, API_RoofType, shellBase.cutBodyType);
+                    changed = true;
+                }
             }
             // Before the polygon edits below: a new edge of a single-plane outline gets the side
             // surface given here, and a multi-plane outline restores the surfaces given here.
@@ -11689,6 +11759,11 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                         "profile": {
                             "$ref": "#/ShellProfile",
                             "description": "Extruded shells only: the new profile polyline, in the format and coordinates CreateShells takes and GetDetailsOfElements returns (the plane across the extrusion, x horizontal, y up). It replaces the first profile polyline; the GUID, the base plane, the extrusion start and vector, the thickness and the cut contours are kept."
+                        },
+                        "cutBodyType": {
+                            "type": "string",
+                            "enum": [ "UpwardsExtrusion", "DownwardsExtrusion" ],
+                            "description": "The Trimming Body of the shell (Model panel of Shell Settings): Upward Extrusion or Downward Extrusion. GetDetailsOfElements reports it as cutBodyType. An Editable trimming body cannot be set yet."
                         }
                     },
                     "additionalProperties": false,
@@ -11748,6 +11823,16 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
             if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                 continue;
+            }
+            bool cutBodyGiven = false;
+            error = GetShellBaseCutBodyType (item, { APIShellBaseCutBody_UpwardsExtrusion, APIShellBaseCutBody_DownwardsExtrusion }, element.shell.shellBase.cutBodyType, cutBodyGiven);
+            if (error.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
+                continue;
+            }
+            if (cutBodyGiven) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.cutBodyType);
+                changed = true;
             }
 
             // The thickness of a Basic shell (#2424). Checked against the structure the shell has
@@ -16460,11 +16545,11 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetInputParametersSchema () c
                         },
                         "visibility": {
                             "$ref": "#/StoryVisibility",
-                            "description": "The stories the railing is shown on (API_RailingType::visibility), as GetDetailsOfElements returns it. Setting it without isAutoOnStoryVisibility also turns isAutoOnStoryVisibility off, as Archicad would otherwise recompute it from the elevation of the railing. The fields not given are false or 0. A combination Archicad does not take is reported as a failure."
+                            "description": "The stories the railing is shown on (API_RailingType::visibility), as GetDetailsOfElements returns it. Archicad only keeps it while isAutoOnStoryVisibility is false, so setting it without isAutoOnStoryVisibility also asks for that to be turned off. Confirmed on Archicad 29: Archicad keeps isAutoOnStoryVisibility true when the API turns it off (also through ACAPI_Element_ChangeParameters and with the railing's memo), so on a railing whose automatic visibility is on, as it is on a new one, the visibility is not changed and the item is reported as a failure. The fields not given are false or 0. A combination Archicad does not take is reported as a failure."
                         },
                         "isAutoOnStoryVisibility": {
                             "type": "boolean",
-                            "description": "When true, Archicad recomputes 'visibility' automatically from the actual elevation of the railing (API_RailingType::isAutoOnStoryVisibility) and ignores a visibility given together with it."
+                            "description": "When true, Archicad recomputes 'visibility' automatically from the actual elevation of the railing (API_RailingType::isAutoOnStoryVisibility) and ignores a visibility given together with it. Turning it on works; Archicad 29 does not take false and the item is reported as a failure (see visibility)."
                         },
                         "referenceLinePen": {
                             "type": "integer",
@@ -16498,11 +16583,28 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetRawResponseSchema () const
     return ModifyWallsCommand ().GetRawResponseSchema ();
 }
 
+namespace {
+
+// What ModifyRailings asked a railing for, read back once the undoable command has ended.
+struct RailingCheck {
+    UIndex      resultIndex = 0;
+    API_Element wanted = {};
+    bool        hasFloorIndex = false;
+    bool        hasBottomOffset = false;
+    bool        hasVisibility = false;
+    bool        hasIsAutoOnStoryVisibility = false;
+    bool        hasReferenceLinePen = false;
+    bool        hasContourPen = false;
+    bool        hasHeight = false;
+    double      height = 0.0;
+};
+
+}
+
 // Only fields of the railing element itself are changed (heights, home story, story visibility and the
 // floor plan pens), never its memo: the reference line, nodes, segments, posts and rails stay as they
-// are. The height goes to defSegment.height, as the DevKit's Element_Test (Do_Railing_Edit) changes it. The railing is read back afterwards, so a value Archicad
-// did not take (for example a base it derives from the elevations of the reference line vertices,
-// memo.polyZCoords) is reported as a failure instead of a success.
+// are. The height goes to defSegment.height, as the DevKit's Element_Test (Do_Railing_Edit) changes it. The railing is read back once
+// the undoable command has ended, so a value Archicad did not take is reported as a failure instead of a success.
 GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> items;
@@ -16513,6 +16615,7 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
 
     const Stories stories = GetStories ();
     const double tolerance = 1e-6;
+    GS::Array<RailingCheck> checks;
 
     return ExecuteModifyWithResults ("Modify Railings", items, [&](GS::Array<GS::ObjectState>& results) {
         for (const auto& item : items) {
@@ -16607,27 +16710,50 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
                 continue;
             }
 
-            // Read back, so a value Archicad did not take is reported instead of a success.
+            RailingCheck check;
+            check.resultIndex = results.GetSize ();
+            check.wanted = element;
+            check.hasFloorIndex = hasFloorIndex;
+            check.hasBottomOffset = hasBottomOffset;
+            check.hasVisibility = hasVisibility;
+            check.hasIsAutoOnStoryVisibility = hasIsAutoOnStoryVisibility;
+            check.hasReferenceLinePen = hasReferenceLinePen;
+            check.hasContourPen = hasContourPen;
+            check.hasHeight = hasHeight;
+            check.height = height;
+            checks.Push (check);
+            results.Push (CreateSuccessfulExecutionResult ());
+        }
+    }, [&](GS::Array<GS::ObjectState>& results) {
+        // Read back after the undoable command has ended, so a value Archicad did not take is reported
+        // instead of a success. Inside the command a railing's bottomOffset still reads as before
+        // although the railing has moved (Archicad 29).
+        for (const RailingCheck& check : checks) {
+            const API_Element& element = check.wanted;
             API_Element changed = {};
             changed.header.guid = element.header.guid;
-            err = ACAPI_Element_Get (&changed);
+            GSErrCode err = ACAPI_Element_Get (&changed);
             if (err != NoError) {
-                results.Push (CreateFailedExecutionResult (err, "Failed to read the railing back after the change."));
+                results[check.resultIndex] = CreateFailedExecutionResult (err, "Failed to read the railing back after the change.");
                 continue;
             }
             GS::UniString notApplied;
-            if (hasFloorIndex && changed.header.floorInd != floorIndex) {
+            if (check.hasFloorIndex && changed.header.floorInd != element.header.floorInd) {
                 notApplied += GS::UniString::Printf (" floorIndex is %d.", static_cast<int> (changed.header.floorInd));
             }
-            if (std::abs (changed.railing.bottomOffset - element.railing.bottomOffset) > tolerance) {
+            if (check.hasBottomOffset && std::abs (changed.railing.bottomOffset - element.railing.bottomOffset) > tolerance) {
                 notApplied += GS::UniString::Printf (" bottomOffset is %.4f instead of %.4f.", changed.railing.bottomOffset, element.railing.bottomOffset);
             }
-            if ((hasIsAutoOnStoryVisibility || hasVisibility) && changed.railing.isAutoOnStoryVisibility != element.railing.isAutoOnStoryVisibility) {
-                notApplied += GS::UniString::Printf (" isAutoOnStoryVisibility is %s.", changed.railing.isAutoOnStoryVisibility ? "true" : "false");
+            if ((check.hasIsAutoOnStoryVisibility || check.hasVisibility) && changed.railing.isAutoOnStoryVisibility != element.railing.isAutoOnStoryVisibility) {
+                if (changed.railing.isAutoOnStoryVisibility) {
+                    notApplied += " isAutoOnStoryVisibility is still true: Archicad does not turn the automatic story visibility of a railing off through the API, so the visibility cannot be set either.";
+                } else {
+                    notApplied += " isAutoOnStoryVisibility is false.";
+                }
             }
             // A visibility given together with isAutoOnStoryVisibility true is recomputed by Archicad,
             // so it is only compared when the automatic visibility is off.
-            if (hasVisibility && !element.railing.isAutoOnStoryVisibility) {
+            if (check.hasVisibility && !element.railing.isAutoOnStoryVisibility && !changed.railing.isAutoOnStoryVisibility) {
                 const API_StoryVisibility& want = element.railing.visibility;
                 const API_StoryVisibility& got = changed.railing.visibility;
                 if (got.showOnHome != want.showOnHome || got.showAllAbove != want.showAllAbove || got.showAllBelow != want.showAllBelow ||
@@ -16637,18 +16763,18 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
                         static_cast<int> (got.showRelAbove), static_cast<int> (got.showRelBelow));
                 }
             }
-            if (hasReferenceLinePen && changed.railing.referenceLinePen != referenceLinePen) {
+            if (check.hasReferenceLinePen && changed.railing.referenceLinePen != element.railing.referenceLinePen) {
                 notApplied += GS::UniString::Printf (" referenceLinePen is %d.", static_cast<int> (changed.railing.referenceLinePen));
             }
-            if (hasContourPen && changed.railing.contourPen != contourPen) {
+            if (check.hasContourPen && changed.railing.contourPen != element.railing.contourPen) {
                 notApplied += GS::UniString::Printf (" contourPen is %d.", static_cast<int> (changed.railing.contourPen));
             }
-            if (hasHeight) {
+            if (check.hasHeight) {
                 API_ElementMemo memo = {};
                 const GS::OnExit memoGuard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
                 if (ACAPI_Element_GetMemo (changed.header.guid, &memo, APIMemoMask_RailingSegment) == NoError && memo.railingSegments != nullptr) {
                     for (UInt32 i = 0; i < changed.railing.nSegments; ++i) {
-                        if (std::abs (memo.railingSegments[i].height - height) > tolerance) {
+                        if (std::abs (memo.railingSegments[i].height - check.height) > tolerance) {
                             notApplied += GS::UniString::Printf (" The height of segment %u is %.4f.", i, memo.railingSegments[i].height);
                             break;
                         }
@@ -16656,10 +16782,8 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
                 }
             }
             if (!notApplied.IsEmpty ()) {
-                results.Push (CreateFailedExecutionResult (APIERR_REFUSEDPAR, GS::UniString ("Archicad did not apply every value; the railing was changed as follows:") + notApplied));
-                continue;
+                results[check.resultIndex] = CreateFailedExecutionResult (APIERR_REFUSEDPAR, GS::UniString ("Archicad did not apply every value; the railing was changed as follows:") + notApplied);
             }
-            results.Push (CreateSuccessfulExecutionResult ());
         }
     });
 }

@@ -1,6 +1,6 @@
 {
-  "title": "ModifyRailings: story visibility and floor plan pens written, read back, 3D geometry kept",
-  "minTapir": "2.0.0",
+  "title": "ModifyRailings: bottom offset and floor plan pens written and reported as applied, 3D geometry kept",
+  "minTapir": "2.0.1",
   "steps": [
     {
       "id": "create a railing on story 0",
@@ -38,44 +38,58 @@
       ]
     },
     {
-      "id": "ModifyRailings: home and one story up, reference line pen 21",
+      "id": "ModifyRailings: bottom offset 0.5 and reference line pen 21",
       "command": "ModifyRailings",
       "creates": false,
       "params": {
         "railingsWithDetails": [
-          {
-            "elementId": { "guid": "${r}" },
-            "visibility": { "showOnHome": true, "showAllAbove": false, "showAllBelow": false, "showRelAbove": 1, "showRelBelow": 0 },
-            "referenceLinePen": 21
-          }
+          { "elementId": { "guid": "${r}" }, "bottomOffset": 0.5, "referenceLinePen": 21 }
         ]
       },
       "expect": [
-        { "path": "executionResults[0].success", "eq": true, "name": "visibility and reference line pen change accepted" }
+        { "path": "executionResults[0].success", "eq": true, "name": "bottom offset and reference line pen change reported as applied" }
       ]
     },
     {
-      "id": "railing after the visibility and reference line pen change",
+      "id": "railing after the bottom offset and reference line pen change",
       "command": "GetDetailsOfElements",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
       "expect": [
-        { "path": "detailsOfElements[0].details.isAutoOnStoryVisibility", "eq": false, "name": "automatic visibility turned off" },
-        { "path": "detailsOfElements[0].details.visibility.showOnHome", "eq": true, "name": "shown on the home story" },
-        { "path": "detailsOfElements[0].details.visibility.showRelAbove", "eq": 1, "name": "shown one story up" },
-        { "path": "detailsOfElements[0].details.visibility.showAllAbove", "eq": false, "name": "not shown on all stories above" },
-        { "path": "detailsOfElements[0].details.visibility.showRelBelow", "eq": 0, "name": "not shown below" },
+        { "path": "detailsOfElements[0].details.bottomOffset", "approx": 0.5, "name": "bottom offset changed" },
         { "path": "detailsOfElements[0].details.referenceLinePen", "eq": 21, "name": "reference line pen changed" },
         { "path": "detailsOfElements[0].details.height", "approx": 1.1, "name": "height unchanged" },
         { "path": "detailsOfElements[0].details.segmentHeights[0]", "approx": 1.1, "name": "first segment height unchanged" },
         { "path": "detailsOfElements[0].details.segmentHeights[1]", "approx": 1.1, "name": "second segment height unchanged" },
-        { "path": "detailsOfElements[0].details.bottomOffset", "approx": 0.2, "name": "bottom offset unchanged" },
         { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "home story unchanged" },
         { "path": "detailsOfElements[0].details.referenceLine", "len": 3, "name": "node count unchanged" },
         { "path": "detailsOfElements[0].details.referenceLine[0].x", "approx": 760.0, "name": "first node x unchanged" },
         { "path": "detailsOfElements[0].details.referenceLine[0].y", "approx": 760.0, "name": "first node y unchanged" },
         { "path": "detailsOfElements[0].details.referenceLine[2].x", "approx": 764.0, "name": "last node x unchanged" },
         { "path": "detailsOfElements[0].details.referenceLine[2].y", "approx": 763.0, "name": "last node y unchanged" }
+      ]
+    },
+    {
+      "id": "ModifyRailings: bottom offset 0.3",
+      "command": "ModifyRailings",
+      "creates": false,
+      "params": {
+        "railingsWithDetails": [
+          { "elementId": { "guid": "${r}" }, "bottomOffset": 0.3 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "second bottom offset change reported as applied" }
+      ]
+    },
+    {
+      "id": "railing after the second bottom offset change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.bottomOffset", "approx": 0.3, "name": "bottom offset set, not added to the previous one" },
+        { "path": "detailsOfElements[0].details.referenceLinePen", "eq": 21, "name": "reference line pen kept" }
       ]
     },
     {
@@ -99,15 +113,14 @@
       "expect": [
         { "path": "detailsOfElements[0].details.contourPen", "eq": 22, "name": "contour pen changed" },
         { "path": "detailsOfElements[0].details.referenceLinePen", "eq": 21, "name": "reference line pen kept" },
-        { "path": "detailsOfElements[0].details.visibility.showRelAbove", "eq": 1, "name": "visibility kept" },
-        { "path": "detailsOfElements[0].details.isAutoOnStoryVisibility", "eq": false, "name": "automatic visibility still off" },
+        { "path": "detailsOfElements[0].details.bottomOffset", "approx": 0.3, "name": "bottom offset kept" },
         { "path": "detailsOfElements[0].details.height", "approx": 1.1, "name": "height unchanged" },
         { "path": "detailsOfElements[0].details.referenceLine[1].x", "approx": 764.0, "name": "middle node x unchanged" },
         { "path": "detailsOfElements[0].details.referenceLine[1].y", "approx": 760.0, "name": "middle node y unchanged" }
       ]
     },
     {
-      "id": "ModifyRailings: automatic visibility back on",
+      "id": "ModifyRailings: automatic visibility on",
       "command": "ModifyRailings",
       "creates": false,
       "params": {
