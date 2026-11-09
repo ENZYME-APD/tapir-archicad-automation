@@ -4,6 +4,7 @@
 # ///
 
 # /// tapir
+# category = "navigator-views"
 # changes = "model"
 # ///
 

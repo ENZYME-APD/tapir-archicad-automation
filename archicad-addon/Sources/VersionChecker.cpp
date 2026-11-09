@@ -13,12 +13,20 @@
 #include "MessageLoopExecutor.hpp"
 
 #include <map>
+#include <mutex>
 #include <vector>
 #include <string>
 #include <cctype>
 #include <algorithm>
 
 static std::unique_ptr<VersionChecker> Intance;
+
+// The completion the checker thread posted to the message loop, and whether Archicad is closing (StopOnQuit).
+// A task still queued at quit is destroyed by Archicad after this add-on is unloaded, so StopOnQuit keeps it
+// alive on purpose, like TapirPalette::StopRunningScriptOnQuit does with the script output.
+static std::mutex       completedTaskMutex;
+static GS::RunnableTask completedTask;
+static bool             quitting = false;
 
 // Bounds how long the checker thread waits for GitHub. The lookup does not block Archicad, so the value only
 // limits how long the thread lives when GitHub accepts the connection but never answers (#798).
@@ -101,7 +109,11 @@ public:
         GetVersionFromGithub (acMainVersion, *result);
         result->completed.store (true, std::memory_order_release);
         if (onCompleted) {
-            GS::MessageLoopExecutor ().Execute (new CompletedTask (onCompleted));
+            std::lock_guard<std::mutex> lock (completedTaskMutex);
+            if (!quitting) {   // posted now, it would only run after the add-on has been unloaded
+                completedTask = new CompletedTask (onCompleted);
+                GS::MessageLoopExecutor ().Execute (completedTask);
+            }
         }
     }
 };
@@ -124,6 +136,21 @@ void VersionChecker::StartCheck (const std::function<void ()>& onCompleted)
     } catch (...) {
         // Without the thread there is no lookup: the empty result counts as "no newer version", like a failed query.
         Intance->result->completed.store (true, std::memory_order_release);
+    }
+}
+
+void VersionChecker::StopOnQuit ()
+{
+    {
+        std::lock_guard<std::mutex> lock (completedTaskMutex);
+        quitting = true;
+        if (completedTask != nullptr) {
+            new GS::RunnableTask (completedTask);   // never freed: it may still be queued
+        }
+    }
+    // A lookup still waiting for GitHub runs on in its thread: never destroy that thread's object under it.
+    if (Intance && !Intance->result->completed.load (std::memory_order_acquire)) {
+        Intance.release ();
     }
 }
 

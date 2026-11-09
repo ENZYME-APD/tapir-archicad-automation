@@ -92,9 +92,11 @@ these parts, in this order:
 
    `changes` says what running the script can change: `model` (anything in the project), `files`
    (it only writes files) or `read-only` (nothing). The palette shows it as *Changes the model*,
-   *Writes files* or *Read only*; when in doubt, write `model`. A built-in script needs only
-   `changes`. A [marketplace](#sharing-your-script) script also needs `category` (one of the
-   [marketplace's categories](../marketplace/README.md#categories)), `archicad-versions` (the
+   *Writes files* or *Read only*; when in doubt, write `model`. `category` is one of the
+   [marketplace's categories](../marketplace/README.md#categories); the palette groups the scripts
+   by it, and a script without one is listed under *Other*. A built-in script needs `changes` and
+   `category` (the category of its marketplace copy, when it has one). A
+   [marketplace](#sharing-your-script) script also needs `archicad-versions` (the
    Archicad versions it works in) and `min-tapir-version` (the newest of the versions the
    [command reference](https://archicad-api.com/archicad-addon/) shows
    for the Tapir commands it uses). [marketplace/README.md](../marketplace/README.md#the-scripts-headers)

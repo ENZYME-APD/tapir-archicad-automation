@@ -142,6 +142,14 @@
 /* [ 38] */ "The script **%T** failed when run from the Tapir Palette.\n\n- Tapir: %T\n- Archicad: %d\n\nThe last lines of its output:\n\n```\n%T\n```\n\nWhat I did before it failed:\n"
 }
 
+'STR#' ID_PALETTE_SEARCH_STRINGS "Tapir Palette Search Strings" {
+/* [  1] */ "Add to favourites"
+/* [  2] */ "Remove from favourites"
+/* [  3] */ "Search scripts"
+/* [  4] */ "No matching scripts"
+/* [  5] */ "Filtered by \"%T\" - click to change the search"
+}
+
 'STR#' ID_AUTOUPDATE_STRINGS "Tapir Update Strings" {
 /* [  1] */ "Tapir Update"
 /* [  2] */ "You are using Tapir version %s. A new version %T is available."
@@ -154,7 +162,7 @@
 /* [  9] */ "Check for Updates"
 /* [ 10] */ "Update to %T"
 /* [ 11] */ "Update Tapir to %T..."
-/* [ 12] */ "Tapir %s"
+/* [ 12] */ "%s"
 /* [ 13] */ "Tapir Update"
 /* [ 14] */ "OK"
 /* [ 15] */ "Tapir is still checking GitHub for the latest release."
@@ -252,29 +260,32 @@
 4    ""        VersionText
 }
 
-'GDLG' ID_PALETTE Palette | leftCaption | close | grow   0   0  564  28  "Tapir Palette"  {
+'GDLG' ID_PALETTE Palette | leftCaption | close | grow   0   0  620  28  "Tapir Palette"  {
 /* [  1] */ IconButton                 0   0  28  28    ID_TAPIR_LOGO_MINI noFrame
-/* [  2] */ PopupControl              28   3 260  22    80  3
-/* [  3] */ IconButton               288   0  28  28    ID_RUN_BUTTON_ICON noFrame
-/* [  4] */ IconButton               316   0  28  28    ID_OPENSCRIPT_BUTTON_ICON noFrame
-/* [  5] */ IconButton               344   0  28  28    ID_ADDSCRIPT_BUTTON_ICON noFrame
-/* [  6] */ IconButton               372   0  28  28    ID_DELSCRIPT_BUTTON_ICON noFrame
-/* [  7] */ IconButton               400   0  28  28    ID_SHORTCUTS_BUTTON_ICON noFrame
-/* [  8] */ LeftText                 434   6  72  16    SmallPlain  vCenter  "Tapir"
-/* [  9] */ IconButton               508   0  28  28    ID_CHECKFORUPDATES_BUTTON_ICON noFrame
-/* [ 10] */ IconButton               536   0  28  28    ID_EXPAND_DOWN_ICON noFrame
-/* [ 11] */ Separator                  0  28 564   2
-/* [ 12] */ TextEdit                   6  36 300  22    SmallPlain  255
-/* [ 13] */ PopupControl             312  36 246  22    80  3
-/* [ 14] */ SingleSelList              6  64 552 300    SmallPlain  PartialItems  18
-/* [ 15] */ LeftText                   6 370 552  20    LargeBold  vCenter | truncEnd  ""
-/* [ 16] */ LeftText                   6 390 552  16    LargePlain  vCenter  ""
-/* [ 17] */ LeftText                   6 408 552  84    SmallPlain  ""
-/* [ 18] */ Button                     6 498  70  24    LargePlain  "Run"
-/* [ 19] */ Button                    80 498  70  24    LargePlain  "Stop"
-/* [ 20] */ LeftText                 158 498 186  24    SmallPlain  vCenter | truncEnd  ""
-/* [ 21] */ Button                   344 498  80  24    LargePlain  "Details"
-/* [ 22] */ Button                   428 498 130  24    LargePlain  "Report a problem"
+/* [  2] */ PopupControl              56   3 320  22    80  3
+/* [  3] */ IconButton               376   0  28  28    ID_RUN_BUTTON_ICON noFrame
+/* [  4] */ IconButton               376   0  28  28    ID_OPENSCRIPT_BUTTON_ICON noFrame
+/* [  5] */ IconButton               432   0  28  28    ID_ADDSCRIPT_BUTTON_ICON noFrame
+/* [  6] */ IconButton               460   0  28  28    ID_DELSCRIPT_BUTTON_ICON noFrame
+/* [  7] */ IconButton               488   0  28  28    ID_SHORTCUTS_BUTTON_ICON noFrame
+/* [  8] */ LeftText                 552   6  40  16    SmallPlain  vCenter  ""
+/* [  9] */ IconButton               520   0  28  28    ID_CHECKFORUPDATES_BUTTON_ICON noFrame
+/* [ 10] */ TextEdit                  56   3 120  22    SmallPlain  noDelay  255
+/* [ 11] */ IconButton               404   0  28  28    ID_STAR_BUTTON_ICON noFrame
+/* [ 12] */ IconButton                28   0  28  28    ID_SEARCH_BUTTON_ICON noFrame
+/* [ 13] */ IconButton               592   0  28  28    ID_EXPAND_DOWN_ICON noFrame
+/* [ 14] */ Separator                  0  28 620   2
+/* [ 15] */ TextEdit                   6  36 356  22    SmallPlain  255
+/* [ 16] */ PopupControl             368  36 246  22    80  3
+/* [ 17] */ SingleSelList              6  64 608 300    SmallPlain  PartialItems  18
+/* [ 18] */ LeftText                   6 370 608  20    LargeBold  vCenter | truncEnd  ""
+/* [ 19] */ LeftText                   6 390 608  16    LargePlain  vCenter  ""
+/* [ 20] */ LeftText                   6 408 608  84    SmallPlain  ""
+/* [ 21] */ Button                     6 498  70  24    LargePlain  "Run"
+/* [ 22] */ Button                    80 498  70  24    LargePlain  "Stop"
+/* [ 23] */ LeftText                 158 498 242  24    SmallPlain  vCenter | truncEnd  ""
+/* [ 24] */ Button                   400 498  80  24    LargePlain  "Details"
+/* [ 25] */ Button                   484 498 130  24    LargePlain  "Report a problem"
 }
 
 'DLGH' ID_PALETTE Tapir_Palette {
@@ -287,19 +298,22 @@
 7    "Manage Shortcuts"    ManageShortcutsButton
 8    "Installed Tapir version"         InstalledVersionText
 9    "Check for Updates"               CheckForUpdatesButton
-10   "Show scripts panel"              ExpandButton
-11   ""                                ScriptsPanelSeparator
-12   "Search the scripts by name, then by what they do"   ScriptsPanelSearch
-13   "Show the scripts of one category"                   ScriptsPanelCategory
-14   ""                                ScriptsPanelList
-15   ""                                ScriptsPanelName
-16   ""                                ScriptsPanelBadge
-17   ""                                ScriptsPanelDetails
-18   "Run the selected script"         ScriptsPanelRunButton
-19   "Stop the selected script and the processes it started"   ScriptsPanelStopButton
-20   ""                                ScriptsPanelResult
-21   "Show the last lines of the script's output"              ScriptsPanelOutputButton
-22   ""                                ScriptsPanelFixButton
+10   ""        SearchEdit
+11   ""        FavouriteButton
+12   "Search scripts"      SearchButton
+13   "Show scripts panel"              ExpandButton
+14   ""                                ScriptsPanelSeparator
+15   "Search the scripts by name, then by what they do"   ScriptsPanelSearch
+16   "Show the scripts of one category"                   ScriptsPanelCategory
+17   ""                                ScriptsPanelList
+18   ""                                ScriptsPanelName
+19   ""                                ScriptsPanelBadge
+20   ""                                ScriptsPanelDetails
+21   "Run the selected script"         ScriptsPanelRunButton
+22   "Stop the selected script and the processes it started"   ScriptsPanelStopButton
+23   ""                                ScriptsPanelResult
+24   "Show the last lines of the script's output"              ScriptsPanelOutputButton
+25   ""                                ScriptsPanelFixButton
 }
 
 'GDLG' ID_SCRIPTUI_PALETTE Palette | leftCaption | close | grow   0   0  600  450  "Tapir Script UI"  {
