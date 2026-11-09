@@ -51,6 +51,26 @@
     --code-bg: rgba(112, 124, 128, .12); --pre-bg: var(--charcoal); --pre-text: var(--cream);
     --font-heading: var(--display); --font-sans: var(--body); --font-mono: var(--mono);
     --radius: 4px; --radius-small: 4px; --content-width: 1200px; --text-width: 72ch;
+
+    /* Every colour, texture and shadow the rules below draw with: they use these properties, never a
+       literal, so a look is one block of values. The -NN suffix is the opacity in percent. */
+    --slate-light: #97A2A6; --slate-pale: #C9CFD1; --sage: #B9C7B4; --moss-light: #3C4D40;
+    --cream-06: rgba(244, 241, 234, .06); --cream-07: rgba(244, 241, 234, .07); --cream-10: rgba(244, 241, 234, .1);
+    --cream-12: rgba(244, 241, 234, .12); --cream-30: rgba(244, 241, 234, .3); --cream-35: rgba(244, 241, 234, .35);
+    --cream-55: rgba(244, 241, 234, .55); --cream-72: rgba(244, 241, 234, .72); --cream-86: rgba(244, 241, 234, .86);
+    --charcoal-12: rgba(28, 30, 31, .12); --charcoal-25: rgba(28, 30, 31, .25); --charcoal-90: rgba(28, 30, 31, .9);
+    --moss-25: rgba(45, 58, 48, .25);
+    /* The 24 px drafting grid behind the page, the coarser one on the page heads and the video frames,
+       and the diagonal hatching on the ochre page heads. */
+    --texture: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    --texture-head: linear-gradient(var(--cream-06) 1px, transparent 1px), linear-gradient(90deg, var(--cream-06) 1px, transparent 1px);
+    --texture-frame: linear-gradient(var(--cream-07) 1px, transparent 1px), linear-gradient(90deg, var(--cream-07) 1px, transparent 1px);
+    --hatch: repeating-linear-gradient(45deg, var(--charcoal-12) 0 1px, transparent 1px 12px);
+    /* Hard offset shadows: a card lifting onto ochre, a pressed button, the code panel; the soft one
+       under the phone menu. */
+    --shadow-lift: 6px 6px 0 var(--ochre); --shadow-press: 0 6px 0 -2px var(--charcoal);
+    --shadow-term: 12px 12px 0 var(--moss); --shadow-term-small: 6px 6px 0 var(--moss);
+    --shadow-term-dark: 12px 12px 0 var(--moss-light); --shadow-menu: 0 12px 24px var(--charcoal-25);
     color-scheme: light;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
@@ -68,7 +88,7 @@
 html { scroll-behavior: smooth; -webkit-text-size-adjust: 100% }
 body {
     margin: 0; background: var(--bg); color: var(--fg); font: 400 16px/1.6 var(--body);
-    background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-image: var(--texture);
     background-size: 24px 24px;
     overflow-wrap: break-word;
 }
@@ -104,7 +124,7 @@ pre code { background: none; padding: 0; font-size: inherit; color: inherit; bor
 main { display: block }
 
 /* ---------- header ---------- */
-.site-header { background: var(--moss); color: var(--cream); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; border-bottom: 1px solid rgba(244, 241, 234, .12); --focus: var(--ochre-light) }
+.site-header { background: var(--moss); color: var(--cream); position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; border-bottom: 1px solid var(--cream-12); --focus: var(--ochre-light) }
 .site-header .nav { display: flex; align-items: center; gap: 8px 28px; padding-block: 12px; flex-wrap: wrap }
 .brand { display: flex; align-items: center; gap: 10px; color: var(--cream); text-decoration: none; font: 900 24px/1 var(--display) }
 .brand:hover { color: var(--cream) }
@@ -114,7 +134,7 @@ main { display: block }
 .site-nav a:hover { opacity: 1; color: var(--ochre-light) }
 .site-nav a[aria-current] { opacity: 1; color: var(--ochre-light); box-shadow: inset 0 -2px 0 var(--ochre-light) }
 .site-header .right { margin-left: auto; display: flex; gap: 10px; align-items: center }
-.toggle { background: transparent; color: var(--cream); border: 1px solid rgba(244, 241, 234, .3); border-radius: 8px; padding: 7px 11px; font: 500 12px var(--mono); cursor: pointer }
+.toggle { background: transparent; color: var(--cream); border: 1px solid var(--cream-30); border-radius: 8px; padding: 7px 11px; font: 500 12px var(--mono); cursor: pointer }
 .toggle:hover { border-color: var(--ochre-light); color: var(--ochre-light) }
 /* The language menu (site.js adds it), drawn like the toggle; the open list in the brand's colours. */
 .lang-select { max-width: 9.5em }
@@ -124,7 +144,7 @@ main { display: block }
    the nav sits in the header row as before, and the language menu and the toggle stay in .right. */
 .site-menu { display: contents }
 .menu-tools, .menu-button { display: none }
-.menu-button { align-items: center; justify-content: center; width: 40px; height: 38px; padding: 0; background: transparent; color: var(--cream); border: 1px solid rgba(244, 241, 234, .3); border-radius: 8px; cursor: pointer }
+.menu-button { align-items: center; justify-content: center; width: 40px; height: 38px; padding: 0; background: transparent; color: var(--cream); border: 1px solid var(--cream-30); border-radius: 8px; cursor: pointer }
 .menu-button:hover { border-color: var(--ochre-light); color: var(--ochre-light) }
 .menu-icon, .menu-icon::before, .menu-icon::after { display: block; width: 18px; height: 2px; border-radius: 1px; background: currentColor }
 .menu-icon { position: relative }
@@ -139,8 +159,8 @@ main { display: block }
 /* ---------- buttons ---------- */
 .btn { display: inline-flex; align-items: center; gap: 10px; border-radius: 8px; padding: 14px 22px; font: 700 15px/1 var(--body); text-decoration: none; border: 1.5px solid transparent; cursor: pointer; white-space: nowrap; transition: transform .15s ease, box-shadow .15s ease }
 .btn-primary { background: var(--ochre); color: var(--charcoal) }
-.btn-primary:hover { color: var(--charcoal); transform: translateY(-2px); box-shadow: 0 6px 0 -2px var(--charcoal) }
-.btn-ghost { border-color: rgba(244, 241, 234, .55); color: var(--cream); background: transparent }
+.btn-primary:hover { color: var(--charcoal); transform: translateY(-2px); box-shadow: var(--shadow-press) }
+.btn-ghost { border-color: var(--cream-55); color: var(--cream); background: transparent }
 .btn-ghost:hover { border-color: var(--ochre-light); color: var(--ochre-light) }
 .btn-line { border-color: currentColor; color: var(--fg); background: transparent }
 .btn-line:hover { color: var(--link) }
@@ -172,7 +192,7 @@ main { display: block }
 /* ---------- cards: ways in, teasers ---------- */
 .ways { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
 .way { background: var(--surface); border: 1.5px solid var(--fg); border-radius: 4px; padding: 26px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-content: start; position: relative; min-width: 0; transition: transform .15s ease, box-shadow .15s ease }
-.way:hover { transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--ochre) }
+.way:hover { transform: translate(-3px, -3px); box-shadow: var(--shadow-lift) }
 .way .who { font: 700 11.5px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--link) }
 .way p, .way li { color: var(--muted) }
 .way > a, .way .go-links a { font-weight: 700; text-decoration: none }
@@ -184,13 +204,13 @@ main { display: block }
 .comm .way h3 { font-size: 26px }
 .teasers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
 .teaser { display: grid; gap: 10px; align-content: start; padding: 28px; border: 1.5px solid var(--fg); border-radius: 4px; text-decoration: none; color: var(--fg); background: var(--surface); transition: transform .15s ease, box-shadow .15s ease; min-width: 0 }
-.teaser:hover { color: var(--fg); transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--ochre) }
+.teaser:hover { color: var(--fg); transform: translate(-3px, -3px); box-shadow: var(--shadow-lift) }
 .teaser h3 { font-size: 30px } .teaser p { color: var(--muted) } .teaser .go { font-weight: 700; color: var(--link) }
 .teaser.dark { background: var(--charcoal); color: var(--cream); border-color: var(--charcoal); --focus: var(--ochre-light) }
 .teaser.dark:hover { color: var(--cream) }
-.teaser.dark p { color: #97A2A6 } .teaser.dark .go, .teaser.dark .tagline { color: var(--ochre-light) }
-:root[data-theme="dark"] .teaser.dark { border-color: rgba(244, 241, 234, .35) }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .teaser.dark { border-color: rgba(244, 241, 234, .35) } }
+.teaser.dark p { color: var(--slate-light) } .teaser.dark .go, .teaser.dark .tagline { color: var(--ochre-light) }
+:root[data-theme="dark"] .teaser.dark { border-color: var(--cream-35) }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .teaser.dark { border-color: var(--cream-35) } }
 div.teaser.dark .ctas { margin-top: 8px }
 .doc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px }
 .doc-grid > .wide { grid-column: 1 / -1 }
@@ -198,16 +218,16 @@ div.teaser.dark .ctas { margin-top: 8px }
 .two > * { min-width: 0 }
 
 /* ---------- code panel ---------- */
-.term { background: #1C1E1F; color: #F4F1EA; border-radius: 6px; overflow: hidden; box-shadow: 12px 12px 0 var(--moss); min-width: 0; --focus: var(--ochre-light) }
-:root[data-theme="dark"] .term { box-shadow: 12px 12px 0 #3C4D40; border: 1px solid rgba(244, 241, 234, .12) }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .term { box-shadow: 12px 12px 0 #3C4D40; border: 1px solid rgba(244, 241, 234, .12) } }
-.term .bar { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; font: 500 11.5px var(--mono); color: #97A2A6; border-bottom: 1px solid rgba(244, 241, 234, .1) }
-.term pre { margin: 0; padding: 18px; background: transparent; border-radius: 0; overflow-x: auto; font: 400 13px/1.65 var(--mono); color: #F4F1EA }
-.term .k { color: #D4A876 } .term .s { color: #B9C7B4 } .term .c { color: #97A2A6 } .term .o { color: #F4F1EA; font-weight: 700 }
+.term { background: var(--charcoal); color: var(--cream); border-radius: 6px; overflow: hidden; box-shadow: var(--shadow-term); min-width: 0; --focus: var(--ochre-light) }
+:root[data-theme="dark"] .term { box-shadow: var(--shadow-term-dark); border: 1px solid var(--cream-12) }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .term { box-shadow: var(--shadow-term-dark); border: 1px solid var(--cream-12) } }
+.term .bar { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; font: 500 11.5px var(--mono); color: var(--slate-light); border-bottom: 1px solid var(--cream-10) }
+.term pre { margin: 0; padding: 18px; background: transparent; border-radius: 0; overflow-x: auto; font: 400 13px/1.65 var(--mono); color: var(--cream) }
+.term .k { color: var(--ochre-light) } .term .s { color: var(--sage) } .term .c { color: var(--slate-light) } .term .o { color: var(--cream); font-weight: 700 }
 /* The copy button site.js adds to every code block. */
 .code-block { position: relative }
 .code-block > pre { padding-right: 76px }
-.copy-button { position: absolute; top: 8px; right: 8px; padding: 3px 10px; border: 1px solid rgba(244, 241, 234, .35); border-radius: 6px; background: rgba(28, 30, 31, .9); color: #F4F1EA; font: 500 12.5px/1.4 var(--body); cursor: pointer; --focus: var(--ochre-light) }
+.copy-button { position: absolute; top: 8px; right: 8px; padding: 3px 10px; border: 1px solid var(--cream-35); border-radius: 6px; background: var(--charcoal-90); color: var(--cream); font: 500 12.5px/1.4 var(--body); cursor: pointer; --focus: var(--ochre-light) }
 .copy-button:hover { border-color: var(--ochre-light) }
 .copy-button:focus-visible { outline-color: var(--ochre-light) }
 
@@ -231,7 +251,7 @@ table.schedule { width: 100%; border-collapse: collapse; font-size: 14.5px }
 .schedule.limits td.evidence code { overflow-wrap: anywhere }
 a.nm { color: var(--fg); text-decoration: none } a.nm:hover { color: var(--link); text-decoration: underline }
 .pill { display: inline-block; font: 600 11.5px/1.5 var(--body); border-radius: 999px; padding: 3px 10px; white-space: nowrap; background: var(--badge); color: var(--fg) }
-.pill.chg { background: var(--ochre); color: #1C1E1F }
+.pill.chg { background: var(--ochre); color: var(--charcoal) }
 .pill.ro { background: transparent; border: 1px solid var(--border-strong); padding: 2px 9px }
 .pills { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; margin: 0; padding: 0 }
 /* About: everyone who has contributed, in columns; the GitHub name after a real name is muted. */
@@ -250,17 +270,17 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 
 /* ---------- page heads ---------- */
 .page-head { background-color: var(--moss); color: var(--cream); --focus: var(--ochre-light);
-    background-image: linear-gradient(rgba(244, 241, 234, .06) 1px, transparent 1px), linear-gradient(90deg, rgba(244, 241, 234, .06) 1px, transparent 1px);
+    background-image: var(--texture-head);
     background-size: 48px 48px }
 .page-head .wrap { padding-block: 56px 48px; display: grid; gap: 16px }
 .page-head h1, .page-head .h1 { font-size: clamp(44px, 7vw, 88px); font-weight: 900; line-height: .95; letter-spacing: -.02em }
 .page-head h1 em, .page-head .h1 em { color: var(--ochre-light); font-weight: 500 }
-.page-head p { font-size: 19px; color: rgba(244, 241, 234, .86); max-width: 36em }
+.page-head p { font-size: 19px; color: var(--cream-86); max-width: 36em }
 .page-head p a { color: var(--ochre-light) }
-.crumb { font: 500 12.5px var(--mono); color: rgba(244, 241, 234, .72) } .page-head .crumb { font-size: 12.5px } .crumb a { color: var(--ochre-light) }
-.page-head.ochre { background-color: var(--ochre); color: #1C1E1F; --focus: #1C1E1F; background-image: repeating-linear-gradient(45deg, rgba(28, 30, 31, .12) 0 1px, transparent 1px 12px) }
-.page-head.ochre p { color: #1C1E1F } .page-head.ochre h1 em, .page-head.ochre .h1 em { color: #1C1E1F }
-.page-head.ochre .crumb { color: #1C1E1F } .page-head.ochre .crumb a, .page-head.ochre p a { color: #1C1E1F }
+.crumb { font: 500 12.5px var(--mono); color: var(--cream-72) } .page-head .crumb { font-size: 12.5px } .crumb a { color: var(--ochre-light) }
+.page-head.ochre { background-color: var(--ochre); color: var(--charcoal); --focus: var(--charcoal); background-image: var(--hatch) }
+.page-head.ochre p { color: var(--charcoal) } .page-head.ochre h1 em, .page-head.ochre .h1 em { color: var(--charcoal) }
+.page-head.ochre .crumb { color: var(--charcoal) } .page-head.ochre .crumb a, .page-head.ochre p a { color: var(--charcoal) }
 .page-body { padding-block: 56px 24px }
 
 /* ---------- reference pages: the command reference, API and Grasshopper coverage ----------
@@ -293,12 +313,12 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 .stack .box { border: 1.5px solid var(--fg); border-radius: 4px; padding: 16px 14px; background: var(--surface); display: grid; gap: 4px }
 .stack .box strong { font: 700 19px/1.2 var(--display) }
 .stack .box span { color: var(--muted); font-size: 14px }
-.stack .box.addon { background: var(--ochre); border-color: var(--ochre); color: #1C1E1F }
-.stack .box.addon span { color: #1C1E1F }
-.stack .box.archicad { background: var(--charcoal); border-color: var(--charcoal); color: #F4F1EA }
-.stack .box.archicad span { color: #C9CFD1 }
-:root[data-theme="dark"] .stack .box.archicad { border-color: rgba(244, 241, 234, .35) }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .stack .box.archicad { border-color: rgba(244, 241, 234, .35) } }
+.stack .box.addon { background: var(--ochre); border-color: var(--ochre); color: var(--charcoal) }
+.stack .box.addon span { color: var(--charcoal) }
+.stack .box.archicad { background: var(--charcoal); border-color: var(--charcoal); color: var(--cream) }
+.stack .box.archicad span { color: var(--slate-pale) }
+:root[data-theme="dark"] .stack .box.archicad { border-color: var(--cream-35) }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .stack .box.archicad { border-color: var(--cream-35) } }
 .stack .wire { font: 600 12.5px var(--mono); color: var(--muted); letter-spacing: .06em; text-transform: uppercase }
 
 /* ---------- use cases ---------- */
@@ -324,7 +344,7 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 .spec .install { padding: 18px 16px; display: grid; gap: 10px; background: var(--badge) }
 .spec .install > strong { font: 700 20px/1.2 var(--display) }
 .spec .install p, .spec .install ol { color: var(--fg); font-size: 14px }
-.shot { border: 1.5px solid var(--fg); background: #F4F1EA; border-radius: 4px; overflow: hidden }
+.shot { border: 1.5px solid var(--fg); background: var(--cream); border-radius: 4px; overflow: hidden }
 .shot img, .shot svg { display: block; width: 100%; height: auto }
 .bullets { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: var(--muted) }
 .share-steps ol { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
@@ -335,14 +355,14 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
 /* ---------- videos ---------- */
 .videos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px }
 .video { display: grid; align-content: start; border: 1.5px solid var(--fg); border-radius: 4px; background: var(--surface); color: var(--fg); text-decoration: none; overflow: hidden; height: 100%; transition: transform .15s ease, box-shadow .15s ease }
-.video:hover { color: var(--fg); transform: translate(-3px, -3px); box-shadow: 6px 6px 0 var(--ochre) }
+.video:hover { color: var(--fg); transform: translate(-3px, -3px); box-shadow: var(--shadow-lift) }
 .video .frame { aspect-ratio: 16 / 9; display: grid; place-items: center; background-color: var(--moss);
-    background-image: linear-gradient(rgba(244, 241, 234, .07) 1px, transparent 1px), linear-gradient(90deg, rgba(244, 241, 234, .07) 1px, transparent 1px);
+    background-image: var(--texture-frame);
     background-size: 24px 24px; border-bottom: 1.5px solid var(--fg); position: relative; overflow: hidden }
 .video .frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block }
-.video .frame:has(img)::after { content: ""; position: absolute; inset: 0; background: rgba(45, 58, 48, .25) }
-.video .play { position: relative; z-index: 1; width: 64px; height: 64px; border-radius: 50%; background: var(--ochre); display: grid; place-items: center; box-shadow: 0 6px 0 -2px #1C1E1F }
-.video .play svg { width: 24px; height: 24px; margin-left: 4px; color: #1C1E1F }
+.video .frame:has(img)::after { content: ""; position: absolute; inset: 0; background: var(--moss-25) }
+.video .play { position: relative; z-index: 1; width: 64px; height: 64px; border-radius: 50%; background: var(--ochre); display: grid; place-items: center; box-shadow: var(--shadow-press) }
+.video .play svg { width: 24px; height: 24px; margin-left: 4px; color: var(--charcoal) }
 .video .text { padding: 18px 20px 22px; display: grid; gap: 8px }
 .video h3 { font-size: 22px }
 .video p { color: var(--muted); font-size: 14.5px }
@@ -398,17 +418,17 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
     .has-menu .menu-button { display: inline-flex }
     .has-menu .site-menu {
         display: none; position: absolute; top: 100%; left: 0; right: 0; margin-top: 1px; z-index: 20;
-        background: var(--moss); border-bottom: 1px solid rgba(244, 241, 234, .12); box-shadow: 0 12px 24px rgba(28, 30, 31, .25);
+        background: var(--moss); border-bottom: 1px solid var(--cream-12); box-shadow: var(--shadow-menu);
         padding: 4px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px));
         max-height: calc(100vh - 64px - env(safe-area-inset-top, 0px)); max-height: calc(100dvh - 64px - env(safe-area-inset-top, 0px));
         overflow-y: auto; overscroll-behavior: contain
     }
     .has-menu.menu-open .site-menu { display: block }
     .has-menu .site-nav ul { display: block }
-    .has-menu .site-nav li + li { border-top: 1px solid rgba(244, 241, 234, .12) }
+    .has-menu .site-nav li + li { border-top: 1px solid var(--cream-12) }
     .has-menu .site-nav a { display: block; padding-block: 12px; font-size: 17px }
     .has-menu .site-nav a[aria-current] { box-shadow: none; text-decoration: underline 2px var(--ochre-light); text-underline-offset: 7px }
-    .has-menu .menu-tools { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 14px; border-top: 1px solid rgba(244, 241, 234, .12) }
+    .has-menu .menu-tools { display: flex; flex-wrap: wrap; gap: 10px; padding-top: 14px; border-top: 1px solid var(--cream-12) }
     .has-menu .menu-tools .toggle { min-height: 44px; padding: 10px 14px; font-size: 14px }
     .has-menu .menu-tools .lang-select { max-width: 100% }
     .page-head .wrap { padding-block: 40px 36px }
@@ -418,7 +438,7 @@ input.chip::placeholder { color: var(--muted); opacity: 1 }
     .way, .teaser { padding: 22px }
     .teaser h3 { font-size: 26px }
     .stack .clients { grid-template-columns: 1fr }
-    .term { box-shadow: 6px 6px 0 var(--moss) }
+    .term { box-shadow: var(--shadow-term-small) }
     .term pre { font-size: 12.5px; padding: 14px }
     .spec dl { grid-template-columns: 1fr } .spec dt { border-bottom: 0; padding-bottom: 0 } .spec dd { padding-top: 2px }
     .btn { padding: 12px 18px }
