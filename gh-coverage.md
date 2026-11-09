@@ -34,7 +34,7 @@ Parameters of the 788 used commands: 🟢 747 every parameter has an input, 🟡
 | Script UI Commands | 100 % | 12 | 12 |  |  |  |  |  |  | 12 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-09 09:39 UTC.
+Updated 2026-11-09 10:27 UTC.
 
 | | Status |
 |---|---|
@@ -324,10 +324,10 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `ModifyDoors` 🟢 26/26 parameters – `DoorsComponent`, `ModifyDoorsComponent` — [#1791](https://github.com/ENZYME-APD/tapir-archicad-automation/issues/1791 "Grasshopper: Doors and Windows tool components, with their floor plan parameters")
 - ✅ `ModifyOpenings` 🟢 5/5 parameters – `ModifyOpeningsComponent`
 - ✅ `ModifyMorphs` 🟢 37/37 parameters – `ModifyMorphsComponent`, `MorphsComponent`
-- ✅ `ModifyRoofs` 🟡 20/23 parameters – `ModifyRoofsComponent`, `RoofsComponent`<br><sub>no input: `roofsWithDetails.edgeTrims`, `roofsWithDetails.edgeTrims.trimType`, `roofsWithDetails.pivotEdges.levels.angleType`</sub>
+- ✅ `ModifyRoofs` 🟡 20/28 parameters – `ModifyRoofsComponent`, `RoofsComponent`<br><sub>no input: `roofsWithDetails.bottomMaterial`, `roofsWithDetails.edgeSideMaterials`, `roofsWithDetails.edgeTrims`, `roofsWithDetails.edgeTrims.trimType`, `roofsWithDetails.materialsChained`, `roofsWithDetails.pivotEdges.levels.angleType`, `roofsWithDetails.sideMaterial`, `roofsWithDetails.topMaterial`</sub>
 - ✅ `ModifyShells` 🟡 6/7 parameters – `ModifyShellsComponent`<br><sub>no input: `shellsWithDetails.isFlipped`</sub>
 - ✅ `ModifyMeshes` 🟢 3/3 parameters – `MeshesComponent`, `ModifyMeshesComponent`
-- ✅ `ModifyRailings` 🟢 5/5 parameters – `RailingsComponent`
+- ✅ `ModifyRailings` 🟢 9/9 parameters – `RailingsComponent`
 - ✅ `ModifyObjects` 🟢 24/24 parameters – `ModifyObjectsComponent`, `ObjectsComponent`
 - ✅ `ModifyLamps` 🟢 26/26 parameters – `LampsComponent`, `ModifyLampsComponent`
 - ✅ `ModifyTexts` 🟢 8/8 parameters – `ModifyTextsComponent`, `TextsComponent`

@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 09:39 UTC",
+ "generatedAt": "2026-11-09 10:27 UTC",
  "counts": {
   "done": 788,
   "not applicable": 1
@@ -7477,7 +7477,7 @@
    "id": "ModifyRoofs",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness and structure apply to both; angle, pivotLine and edgeTrims (the cut of each polygon edge) only to single-plane roofs; levels, eavesOverhang and pivotEdges only to multi-plane roofs.",
+   "brief": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness, structure and the top, side and bottom surface overrides apply to both; angle, pivotLine, edgeTrims (the cut of each polygon edge) and edgeSideMaterials (the custom surface of each polygon edge) only to single-plane roofs; levels, eavesOverhang and pivotEdges only to multi-plane roofs.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7491,7 +7491,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 23,
+   "parameterCount": 28,
    "coveredParameters": [
     "roofsWithDetails",
     "roofsWithDetails.angle",
@@ -7515,9 +7515,14 @@
     "roofsWithDetails.thickness"
    ],
    "missingParameters": [
+    "roofsWithDetails.bottomMaterial",
+    "roofsWithDetails.edgeSideMaterials",
     "roofsWithDetails.edgeTrims",
     "roofsWithDetails.edgeTrims.trimType",
-    "roofsWithDetails.pivotEdges.levels.angleType"
+    "roofsWithDetails.materialsChained",
+    "roofsWithDetails.pivotEdges.levels.angleType",
+    "roofsWithDetails.sideMaterial",
+    "roofsWithDetails.topMaterial"
    ],
    "pullRequests": [],
    "issues": []
@@ -7583,7 +7588,7 @@
    "id": "ModifyRailings",
    "group": "Element Commands",
    "version": "2.0.0",
-   "brief": "Modifies Railing elements in place: the height of their segments, the bottom offset and the home story. The reference line, the nodes and segments, and the posts, rails and panels stay as they are. Each railing is read back after the change, and a value Archicad did not apply gets a failed execution result.",
+   "brief": "Modifies Railing elements in place: the height of their segments, the bottom offset, the home story, the story visibility (visibility, isAutoOnStoryVisibility) and the pens of the reference line and the contour. The reference line, the nodes and segments, and the posts, rails and panels stay as they are. Each railing is read back after the change, and a value Archicad did not apply gets a failed execution result.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7593,13 +7598,17 @@
     }
    ],
    "parameters": "all",
-   "parameterCount": 5,
+   "parameterCount": 9,
    "coveredParameters": [
     "railingsWithDetails",
     "railingsWithDetails.bottomOffset",
+    "railingsWithDetails.contourPen",
     "railingsWithDetails.elementId",
     "railingsWithDetails.floorIndex",
-    "railingsWithDetails.height"
+    "railingsWithDetails.height",
+    "railingsWithDetails.isAutoOnStoryVisibility",
+    "railingsWithDetails.referenceLinePen",
+    "railingsWithDetails.visibility"
    ],
    "missingParameters": [],
    "pullRequests": [],

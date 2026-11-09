@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 09:39 UTC",
+ "generatedAt": "2026-11-09 10:27 UTC",
  "versions": [
   25,
   26,
@@ -7719,7 +7719,12 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": []
+   "issues": [
+    {
+     "number": 2492,
+     "title": "GetElementsInDrawOrder returns GUIDs that no other command can resolve"
+    }
+   ]
   },
   {
    "id": "ACAPI_Element_GetHotspots",
@@ -9831,7 +9836,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2491,
+     "title": "Graphic override rules: a rule Archicad refuses gets an error, the rest of the call is kept"
+    }
+   ],
    "issues": []
   },
   {
@@ -9896,7 +9906,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2491,
+     "title": "Graphic override rules: a rule Archicad refuses gets an error, the rest of the call is kept"
+    }
+   ],
    "issues": []
   },
   {
@@ -25304,10 +25319,6 @@
      "title": "[3/3] Shells: read back and write the custom surface of individual edges"
     },
     {
-     "number": 2451,
-     "title": "ModifyRailings: write story visibility and floor plan pens"
-    },
-    {
      "number": 2450,
      "title": "Read and set single railing segments and nodes"
     },
@@ -25318,10 +25329,6 @@
     {
      "number": 2443,
      "title": "Read and write the edge types of single-plane roofs"
-    },
-    {
-     "number": 2441,
-     "title": "[1/3] ModifyRoofs: write the surface overrides and each edge's custom surface"
     },
     {
      "number": 2440,
@@ -37389,10 +37396,6 @@
      "title": "[3/3] Shells: read back and write the custom surface of individual edges"
     },
     {
-     "number": 2451,
-     "title": "ModifyRailings: write story visibility and floor plan pens"
-    },
-    {
      "number": 2450,
      "title": "Read and set single railing segments and nodes"
     },
@@ -37403,10 +37406,6 @@
     {
      "number": 2443,
      "title": "Read and write the edge types of single-plane roofs"
-    },
-    {
-     "number": 2441,
-     "title": "[1/3] ModifyRoofs: write the surface overrides and each edge's custom surface"
     },
     {
      "number": 2440,
