@@ -75,6 +75,10 @@ jobs:
       run: python -m py_compile archicad-addon/Tools/update_addon_and_restart_archicad.py
     - name: Update Mode Tests
       run: python archicad-addon/Installer/test_update_mode.py
+    # The per-user install (#2495). Skipped until its pull request adds the file.
+    - name: Per-User Install Tests
+      if: hashFiles('archicad-addon/Installer/test_per_user.py') != ''
+      run: python archicad-addon/Installer/test_per_user.py
     - name: Console Smoke Run
       run: python archicad-addon/Installer/tapir_installer.py --console --dryRun --addOnsFolder "${{ runner.temp }}" --versions 29
     # Downloads the real asset, but never contacts Archicad in a dry run.
@@ -118,7 +122,7 @@ jobs:
         if ($LASTEXITCODE -ne 0) { exit 1 }
     - name: Build Executable Windows
       if: runner.os == 'Windows'
-      run: pyinstaller --noconfirm --onefile --windowed --uac-admin --noupx --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.ico --version-file build/TapirInstaller_version.txt --distpath dist archicad-addon/Installer/tapir_installer.py
+      run: pyinstaller --noconfirm --onefile --windowed --noupx --name TapirInstaller --icon archicad-addon/Installer/Resources/TapirInstaller.ico --version-file build/TapirInstaller_version.txt --distpath dist archicad-addon/Installer/tapir_installer.py
     - name: Check Version Resource Windows
       if: runner.os == 'Windows'
       run: |

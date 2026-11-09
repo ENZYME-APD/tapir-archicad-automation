@@ -164,7 +164,7 @@ pip install -r requirements-build.txt
 
 # Windows (the version resource is required for code signing)
 python write_version_file.py build/TapirInstaller_version.txt
-pyinstaller --noconfirm --onefile --windowed --uac-admin --noupx --name TapirInstaller --icon Resources/TapirInstaller.ico --version-file build/TapirInstaller_version.txt tapir_installer.py
+pyinstaller --noconfirm --onefile --windowed --noupx --name TapirInstaller --icon Resources/TapirInstaller.ico --version-file build/TapirInstaller_version.txt tapir_installer.py
 
 # macOS (onedir .app; onefile binaries cannot be stapled after notarization).
 # universal2 needs a universal2 Python, such as the python.org installer;
