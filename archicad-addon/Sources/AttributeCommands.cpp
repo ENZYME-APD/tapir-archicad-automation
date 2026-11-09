@@ -8386,27 +8386,14 @@ GS::ObjectState GetFontsByNameCommand::Execute (const GS::ObjectState& parameter
     const auto& fonts = response.AddList<GS::ObjectState> ("fonts");
 
     for (const GS::UniString& fontName : fontNames) {
-        // Archicad searches by the name uniStringNamePtr points at and reports the index of the font
-        // it found in the head, the way ACAPI_Attribute_Search does for attributes - which fonts
-        // were before Archicad 27 (API_FontID), with their own API (ACAPI_Font_SearchFont) since.
-        GS::UniString nameToSearch = fontName;
-        short fontIndex = 0;
-#ifdef ServerMainVers_2700
-        API_FontType font = {};
-        font.head.uniStringNamePtr = &nameToSearch;
-        const GSErrCode err = ACAPI_Font_SearchFont (font);
-        fontIndex = static_cast<short> (font.head.index);
-#else
-        API_Attr_Head attrHead = {};
-        attrHead.typeID = API_FontID;
-        attrHead.uniStringNamePtr = &nameToSearch;
-        const GSErrCode err = ACAPI_Attribute_Search (&attrHead);
-        fontIndex = static_cast<short> (GetAttributeIndex (attrHead.index));
-#endif
-        if (err != NoError) {
-            fonts (CreateErrorResponse (err, GS::UniString::Printf ("No loaded font is named '%T'.", fontName.ToPrintf ())));
+        // Archicad's own font search, which also finds a family name with the script Archicad lists
+        // it with ("Arial" as "Arial Western"), limited to the loaded fonts (see SearchLoadedFont).
+        const GS::Optional<short> foundIndex = SearchLoadedFont (fontName);
+        if (!foundIndex.HasValue ()) {
+            fonts (CreateErrorResponse (APIERR_BADNAME, GS::UniString::Printf ("No loaded font is named '%T'.", fontName.ToPrintf ())));
             continue;
         }
+        const short fontIndex = *foundIndex;
 
         // The name is read back from the font found rather than echoed, so the caller sees it as
         // Archicad carries it even when the search matched a differently written name.

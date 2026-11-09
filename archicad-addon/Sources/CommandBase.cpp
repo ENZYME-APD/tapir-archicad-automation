@@ -1526,7 +1526,27 @@ GS::Optional<short> GetFontIndexFromName (const GS::UniString& fontName)
     // Last, Archicad's own font search, as GetFontsByName uses: it also resolves a family name
     // ("Century Gothic") to the font Archicad lists with its script ("Century Gothic Western", or
     // "Century Gothic Occidental" in Spanish), so scripts need not know the language's suffix
-    // (issue #1824). Fonts are their own API from Archicad 27 and attributes (API_FontID) before.
+    // (issue #1824).
+    return SearchLoadedFont (fontName);
+}
+
+static Int32 GetLoadedFontCount ()
+{
+#ifdef ServerMainVers_2700
+    return ACAPI_Font_GetFontNum ();
+#else
+    API_AttributeIndex count = 0;
+    if (ACAPI_Attribute_GetNum (API_FontID, &count) != NoError) {
+        return 0;
+    }
+    return static_cast<Int32> (count);
+#endif
+}
+
+GS::Optional<short> SearchLoadedFont (const GS::UniString& fontName)
+{
+    // Fonts are their own API from Archicad 27 and attributes (API_FontID) before.
+    const Int32 loadedFontCount = GetLoadedFontCount ();
     GS::UniString nameToSearch = fontName;
 #ifdef ServerMainVers_2700
     API_FontType font = {};
@@ -1545,8 +1565,10 @@ GS::Optional<short> GetFontIndexFromName (const GS::UniString& fontName)
     const short foundIndex = static_cast<short> (GetAttributeIndex (attrHead.index));
 #endif
 
-    // Only an index that names a loaded font is returned.
-    if (!GetFontNameFromIndex (foundIndex).HasValue ()) {
+    // Only an index of a font that was loaded before the search is returned: on Archicad 26 and 28
+    // (German) a name no font has was answered with NoError and a new index (1907, 1908), as if
+    // the search had added the font to the list (#2470).
+    if (foundIndex < 1 || foundIndex > loadedFontCount || !GetFontNameFromIndex (foundIndex).HasValue ()) {
         return GS::NoValue;
     }
     return foundIndex;
