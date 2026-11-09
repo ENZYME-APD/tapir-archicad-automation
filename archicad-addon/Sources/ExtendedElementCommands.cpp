@@ -3278,6 +3278,89 @@ static bool ApplyColumnSectionToMemo (API_Guid elemGuid, const GS::ObjectState& 
     return ACAPI_Element_ChangeMemo (elemGuid, APIMemoMask_ColumnSegment, &memo) == NoError;
 }
 
+// The segment an item of the "segments" list of ModifyBeams writes: its segmentIndex, else its
+// position in the list, so the segments GetDetailsOfElements returns can be sent back as they are.
+static Int32 GetBeamSegmentIndex (const GS::ObjectState& segmentOs, UIndex position)
+{
+    Int32 segmentIndex = static_cast<Int32> (position);
+    segmentOs.Get ("segmentIndex", segmentIndex);
+    return segmentIndex;
+}
+
+// Checks the "segments" list of a ModifyBeams item (#2535) before anything is written, so a
+// wrong segment index or an unknown surface leaves the beam as it was.
+static GS::Optional<GS::UniString> CheckBeamSegmentSurfaces (API_Guid elemGuid, const GS::ObjectState& details)
+{
+    GS::Array<GS::ObjectState> segmentSurfaces;
+    if (!details.Get ("segments", segmentSurfaces)) {
+        return {};
+    }
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_BeamSegment) != NoError || memo.beamSegments == nullptr) {
+        return GS::UniString ("Failed to read the segments of the beam.");
+    }
+    const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (memo.beamSegments)) / sizeof (API_BeamSegmentType);
+
+    for (UIndex i = 0; i < segmentSurfaces.GetSize (); ++i) {
+        const GS::ObjectState& segmentOs = segmentSurfaces[i];
+        const Int32 segmentIndex = GetBeamSegmentIndex (segmentOs, i);
+        if (segmentIndex < 0 || segmentIndex >= nSegments) {
+            return GS::UniString::Printf ("segments[%d] writes segment %d, but the beam has %d segments (segmentIndex 0 to %d).",
+                static_cast<int> (i), static_cast<int> (segmentIndex), static_cast<int> (nSegments), static_cast<int> (nSegments) - 1);
+        }
+        for (const char* key : { "leftMaterial", "topMaterial", "rightMaterial", "bottomMaterial", "endsMaterial", "extrusionMaterial" }) {
+            GS::ObjectState materialOs;
+            bool overridden = false;
+            if (segmentOs.Get (key, materialOs) && materialOs.Get ("overridden", overridden) && overridden && !materialOs.Contains ("attributeId")) {
+                return GS::UniString::Printf ("segments[%d].%s is overridden but has no attributeId.", static_cast<int> (i), key);
+            }
+        }
+#ifndef ServerMainVers_2800
+        if (segmentOs.Contains ("extrusionMaterial")) {
+            return GS::UniString ("segments[].extrusionMaterial is written from Archicad 28.");
+        }
+#endif
+        const GS::Optional<GS::UniString> idError = CheckSurfaceAndFillAttributeIds (
+            segmentOs, { "leftMaterial", "topMaterial", "rightMaterial", "bottomMaterial", "endsMaterial", "extrusionMaterial" }, "");
+        if (idError.HasValue ()) {
+            return idError;
+        }
+    }
+    return {};
+}
+
+static void ApplyBeamSegmentSurfaces (const GS::ObjectState& segmentOs, API_BeamSegmentType& segment)
+{
+    GS::ObjectState materialOs;
+    if (segmentOs.Get ("leftMaterial", materialOs)) {
+        segment.leftMaterial = GetOverriddenMaterialFromObjectState (materialOs);
+    }
+    if (segmentOs.Get ("topMaterial", materialOs)) {
+        segment.topMaterial = GetOverriddenMaterialFromObjectState (materialOs);
+    }
+    if (segmentOs.Get ("rightMaterial", materialOs)) {
+        segment.rightMaterial = GetOverriddenMaterialFromObjectState (materialOs);
+    }
+    if (segmentOs.Get ("bottomMaterial", materialOs)) {
+        segment.bottomMaterial = GetOverriddenMaterialFromObjectState (materialOs);
+    }
+    if (segmentOs.Get ("endsMaterial", materialOs)) {
+        segment.endsMaterial = GetOverriddenMaterialFromObjectState (materialOs);
+    }
+#ifdef ServerMainVers_2800
+    // not a member of API_BeamSegmentType before Archicad 28
+    if (segmentOs.Get ("extrusionMaterial", materialOs)) {
+        segment.extrusionMaterial = GetOverriddenMaterialFromObjectState (materialOs);
+    }
+#endif
+    bool materialsChained = false;
+    if (segmentOs.Get ("materialsChained", materialsChained)) {
+        segment.materialsChained = materialsChained;
+    }
+}
+
 static bool ApplyBeamSectionToMemo (API_Guid elemGuid, const GS::ObjectState& details)
 {
     auto width = GetOptionalDouble (details, "width");
@@ -3288,7 +3371,9 @@ static bool ApplyBeamSectionToMemo (API_Guid elemGuid, const GS::ObjectState& de
     const bool hasIsWidthAndHeightLinked = details.Get ("isWidthAndHeightLinked", isWidthAndHeightLinked);
     const GS::ObjectState* buildingMaterialIdOs = details.Get ("buildingMaterialId");
     const GS::ObjectState* profileIdOs = details.Get ("profileId");
-    if (!width.HasValue () && !height.HasValue () && !hasCircleBased && !hasIsWidthAndHeightLinked && buildingMaterialIdOs == nullptr && profileIdOs == nullptr) {
+    GS::Array<GS::ObjectState> segmentSurfaces;
+    const bool hasSegmentSurfaces = details.Get ("segments", segmentSurfaces);
+    if (!width.HasValue () && !height.HasValue () && !hasCircleBased && !hasIsWidthAndHeightLinked && buildingMaterialIdOs == nullptr && profileIdOs == nullptr && !hasSegmentSurfaces) {
         return true;
     }
 
@@ -3325,6 +3410,14 @@ static bool ApplyBeamSectionToMemo (API_Guid elemGuid, const GS::ObjectState& de
                 segment.profileType = APISect_Normal;
             }
             segment.buildingMaterial = GetAttributeIndexFromGuid (API_BuildingMaterialID, GetGuidFromObjectState (*buildingMaterialIdOs));
+        }
+    }
+
+    // The indices were checked by CheckBeamSegmentSurfaces (#2535).
+    for (UIndex i = 0; i < segmentSurfaces.GetSize (); ++i) {
+        const Int32 segmentIndex = GetBeamSegmentIndex (segmentSurfaces[i], i);
+        if (segmentIndex >= 0 && segmentIndex < nSegments) {
+            ApplyBeamSegmentSurfaces (segmentSurfaces[i], memo.beamSegments[segmentIndex]);
         }
     }
 
@@ -9739,6 +9832,13 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
                             "items": {
                                 "$ref": "#/BeamHoleModification"
                             }
+                        },
+                        "segments": {
+                            "type": "array",
+                            "description": "Overrides the surfaces of the beam's segments. Each item writes the segment given by its segmentIndex, else the segment at its position in this list, so the segments GetDetailsOfElements returns can be sent back as they are; segments not listed stay as they are.",
+                            "items": {
+                                "$ref": "#/BeamSegmentSurfacesModification"
+                            }
                         },)") + BeamSurfaceAndFillSchemaProperties + R"(
                     },
                     "additionalProperties": false,
@@ -9788,7 +9888,12 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, settingsError.Get ()));
                 continue;
             }
-            const bool hasSectionFields = item.Contains ("width") || item.Contains ("height") || item.Contains ("isWidthAndHeightLinked") || item.Contains ("circleBased") || item.Contains ("buildingMaterialId") || item.Contains ("profileId");
+            const GS::Optional<GS::UniString> segmentsError = CheckBeamSegmentSurfaces (element.header.guid, item);
+            if (segmentsError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, segmentsError.Get ()));
+                continue;
+            }
+            const bool hasSectionFields = item.Contains ("width") || item.Contains ("height") || item.Contains ("isWidthAndHeightLinked") || item.Contains ("circleBased") || item.Contains ("buildingMaterialId") || item.Contains ("profileId") || item.Contains ("segments");
 
             GS::Array<GS::ObjectState> holes;
             if (item.Get ("holes", holes)) {
@@ -9822,7 +9927,7 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
                 }
                 if (hasSectionFields) {
                     bool sectionOk = ApplyBeamSectionToMemo (element.header.guid, item);
-                    results.Push (sectionOk ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify beam cross section."));
+                    results.Push (sectionOk ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify beam cross section or segment surfaces."));
                     continue;
                 }
                 results.Push (CreateSuccessfulExecutionResult ());
@@ -9844,7 +9949,7 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
 
             if (hasSectionFields) {
                 bool sectionOk = ApplyBeamSectionToMemo (element.header.guid, item);
-                results.Push (sectionOk ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify beam cross section."));
+                results.Push (sectionOk ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify beam cross section or segment surfaces."));
                 continue;
             }
 

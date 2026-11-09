@@ -10678,6 +10678,46 @@
             "materialsChained"
         ]
     },
+    "BeamSegmentSurfacesModification": {
+        "type": "object",
+        "description": "The surfaces to write to one segment of a beam, in the shape of BeamSegmentSurfaces. Only the given fields change. Send overridden false to make a side take its surface from the cross section again.",
+        "properties": {
+            "segmentIndex": {
+                "type": "integer",
+                "minimum": 0,
+                "description": "The 0-based index of the segment, in the order GetDetailsOfElements lists the beam's segments. Defaults to the item's position in the segments list."
+            },
+            "leftMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "Overrides the surface of the left side of the segment."
+            },
+            "topMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "Overrides the surface of the top of the segment."
+            },
+            "rightMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "Overrides the surface of the right side of the segment."
+            },
+            "bottomMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "Overrides the surface of the bottom of the segment."
+            },
+            "endsMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "Overrides the surface of the beginning and end of the segment."
+            },
+            "extrusionMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "Overrides the surface of the extrusion of a profiled segment. Written from Archicad 28; before that it gets a failed execution result."
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surface materials are chained. Send false with surfaces that should differ from each other."
+            }
+        },
+        "additionalProperties": false
+    },
     "ColumnVeneer": {
         "type": "object",
         "description": "The veneer of a column segment. A thickness of 0 means no veneer. When writing, only the given fields change.",

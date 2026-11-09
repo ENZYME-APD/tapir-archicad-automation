@@ -1254,7 +1254,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyBeamsCommand> (
             elementCommands, "1.4.0",
-            "Modifies Beam elements based on the given parameters. CreateBeams takes the same cut fill pens and cover fill, and the same absolute zCoordinate of the reference line (with an optional floorIndex). Not written: the surfaces of the beam segments, and the cut fill pens before Archicad 27."
+            "Modifies Beam elements based on the given parameters. CreateBeams takes the same cut fill pens and cover fill, and the same absolute zCoordinate of the reference line (with an optional floorIndex). The segments list overrides the left, top, right, bottom, ends and extrusion surfaces of a given beam segment, in the shape GetDetailsOfElements returns them. Not written: the cut fill pens before Archicad 27."
         );
         err |= RegisterCommand<ModifySlabsCommand> (
             elementCommands, "1.4.0",
