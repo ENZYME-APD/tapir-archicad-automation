@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 09:24 UTC",
+ "generatedAt": "2026-11-09 09:39 UTC",
  "versions": [
   25,
   26,
@@ -5200,12 +5200,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2157,
-     "title": "Archicad 29 crashes during a read-only script after GetLayoutSettings in batches (Tapir 1.8.0)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Database_NewDatabase",
@@ -20041,12 +20036,7 @@
    "status": "done",
    "reason": "",
    "pullRequests": [],
-   "issues": [
-    {
-     "number": 2157,
-     "title": "Archicad 29 crashes during a read-only script after GetLayoutSettings in batches (Tapir 1.8.0)"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Window_GetGridSettings",
