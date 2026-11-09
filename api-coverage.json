@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-08 23:05 UTC",
+ "generatedAt": "2026-11-09 00:01 UTC",
  "versions": [
   25,
   26,
@@ -9729,10 +9729,6 @@
     {
      "number": 2413,
      "title": "[2/5] Tapir Palette: the palette grows into a scripts panel (expand arrow, menu item, remembered size)"
-    },
-    {
-     "number": 2412,
-     "title": "Tapir Palette: search field and favourites in the compact bar"
     },
     {
      "number": 2411,
