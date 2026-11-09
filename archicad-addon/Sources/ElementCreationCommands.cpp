@@ -3752,29 +3752,7 @@ GS::Optional<GS::UniString> ChangeTextContentCommand::GetInputParametersSchema (
                 "type": "array",
                 "description": "The content changes, applied in order (several changes of one element see the content as the previous one left it). Unlike ModifyTexts/ModifyLabels, the rest of the content is not rebuilt: the other runs, their styles and any autotext in them stay as they are, and the inserted piece takes the style of the character at 'from'.",
                 "items": {
-                    "type": "object",
-                    "properties": {
-                        "elementId": {
-                            "$ref": "#/ElementId",
-                            "description": "A Text element or a Label of the Text class."
-                        },
-                        "from": {
-                            "type": "integer",
-                            "minimum": 0,
-                            "description": "The position in the content where the replaced range starts."
-                        },
-                        "range": {
-                            "type": "integer",
-                            "minimum": 0,
-                            "description": "The number of characters to replace; 0 inserts the content at 'from'. The range may not reach over a line end into another paragraph."
-                        },
-                        "content": {
-                            "type": "string",
-                            "description": "The new content of the range; an empty string deletes the range. It must not contain line ends."
-                        }
-                    },
-                    "additionalProperties": false,
-                    "required": ["elementId", "from", "range", "content"]
+                    "$ref": "#/TextContentChange"
                 }
             }
         },
@@ -5005,6 +4983,27 @@ static GSErrCode SetEOL (API_ParagraphType** paragraph, UInt32 parNum, UInt32 eo
 	return NoError;
 }
 
+// Fills the eolPos array of the single paragraph that holds the whole content: one entry per line,
+// the position within the paragraph of the line's last character (the DevKit's Element_Test example
+// writes 14 for "This multistyle" and 27, 35 for a paragraph wrapped after "example "), so the
+// entries grow from line to line. They used to be each line's length minus one, which dropped as
+// soon as a line was shorter than the one before it ("abcdefghij\nx" gave 9, then 1); ModifyTexts,
+// ModifyLabels and SetDetailsOfElements then failed with "Failed to modify the Text" (#2461).
+// An empty line ends at the line break before it, which keeps the entries growing; an empty first
+// line ends at 0.
+static void SetLineEnds (API_ParagraphType** paragraph, const GS::UniString& text, Int32 nLine)
+{
+    const GS::UniChar newlineChar = GS::UniChar (char ('\n'));
+    const Int32 textLength = static_cast<Int32> (text.GetLength ());
+    Int32 lineStart = 0;
+    for (Int32 eolIndex = 0; eolIndex < nLine; ++eolIndex) {
+        const UIndex newlinePos = (lineStart < textLength) ? text.FindFirst (newlineChar, static_cast<UIndex> (lineStart)) : MaxUIndex;
+        const Int32 lineEnd = (newlinePos != MaxUIndex) ? static_cast<Int32> (newlinePos) : textLength;
+        SetEOL (paragraph, 0, static_cast<UInt32> (eolIndex), GS::Max (lineEnd - 1, static_cast<Int32> (0)));
+        lineStart = lineEnd + 1;
+    }
+}
+
 API_JustID ParseJustificationString (const GS::UniString& justification)
 {
     if (justification == "Center") {
@@ -5054,13 +5053,7 @@ void SetTextContentAndParagraphs (API_ElementMemo& memo, API_TextType& textData,
     memo.paragraphs = reinterpret_cast<API_ParagraphType**> (BMhAll (numOfParagraphs * sizeof (API_ParagraphType)));
     SetParagraph (memo.paragraphs, 0, 0, text.GetLength (), 1, 1, textData.nLine);
     SetRun (memo.paragraphs, 0, 0, 0, text.GetLength (), textData.pen, textData.faceBits, textData.font, textData.effectsBits, textData.size);
-    Int32 lastEolPos = 0;
-    for (Int32 eolIndex = 0; eolIndex < textData.nLine; ++eolIndex) {
-        Int32 eolPos = text.FindFirst (newlineChar, eolIndex == 0 ? 0 : lastEolPos + 1);
-        Int32 offset = (eolPos != MaxUIndex ? eolPos : text.GetLength ()) - lastEolPos - 1;
-        lastEolPos = eolPos;
-        SetEOL (memo.paragraphs, 0, eolIndex, offset);
-    }
+    SetLineEnds (memo.paragraphs, text, textData.nLine);
 
     textData.width = 0;
     textData.height = 0;
@@ -5506,13 +5499,7 @@ GS::Optional<GS::ObjectState> ApplyTextContent (API_ElementMemo& memo, API_TextT
         SetRun (memo.paragraphs, 0, 0, 0, text.GetLength (), textData.pen, textData.faceBits, textData.font, textData.effectsBits, textData.size);
     }
 
-    Int32 lastEolPos = 0;
-    for (Int32 eolIndex = 0; eolIndex < textData.nLine; ++eolIndex) {
-        Int32 eolPos = text.FindFirst (newlineChar, eolIndex == 0 ? 0 : lastEolPos + 1);
-        Int32 offset = (eolPos != MaxUIndex ? eolPos : text.GetLength ()) - lastEolPos - 1;
-        lastEolPos = eolPos;
-        SetEOL (memo.paragraphs, 0, eolIndex, offset);
-    }
+    SetLineEnds (memo.paragraphs, text, textData.nLine);
 
     // Auto-width: the line ends are the ones set above. A wrap width of CreateTexts/ModifyTexts
     // is written after the content, without a memo (TextLabelDetails::SetTextWrapWidth).

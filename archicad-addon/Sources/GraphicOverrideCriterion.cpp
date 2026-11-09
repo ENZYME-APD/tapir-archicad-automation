@@ -117,9 +117,11 @@ static const ElemTypeInfo kElemTypeTable[] = {
 // the ElemRegistryRefId Tapir writes: Archicad rewrites the type when it stores the rule, and the
 // criteria editor writes it that way too. The ClassIds of the tools below were read in Archicad 29
 // (build 5101) and 30 (build 3001), both giving the same values, by creating one rule per tool with
-// CreateGraphicOverrideRules and reading it back (issue #1816). The library part based tools are not
-// listed: their ClassId was not read, so a type of theirs is returned as raw criterionXML.
-struct ElemTypeClassIdInfo { const char* name; const char* classId; };
+// CreateGraphicOverrideRules and reading it back (issue #1816). The library part based tools were read
+// the same way in Archicad 29 (build 5101). A type that is a variation of another tool's element (a
+// Grid Element is an Object, a Corner Window and a Wall End are Windows) keeps that tool's ClassId and
+// its own registry code in <Variation>; every other type has Variation 0 (variation left out below).
+struct ElemTypeClassIdInfo { const char* name; const char* classId; const char* variation; };
 
 static const char* kAllTypesElemTypeName = "AllTypes";
 static const char* kZeroGuid = "00000000-0000-0000-0000-000000000000";
@@ -165,6 +167,28 @@ static const ElemTypeClassIdInfo kElemTypeClassIdTable[] = {
     { "DuctRouting",         "FCECE4C5-E4E2-4335-A976-DD7F902466A1" },
     { "CableCarrierRouting", "D5FC1FF7-9DD7-4759-8700-FD78186FCE6C" },
     { "PipeRouting",         "BD6A8805-AD79-461B-AC77-23F0325DB295" },
+    { "Window",              "93F161A0-4C4E-4DF7-A100-4FD0E8C4F1E1" },
+    { "Door",                "D8F07689-9CFA-4FBE-AEB4-0A60B8E667EE" },
+    { "Zone",                "3AD0332E-EFE2-491A-92A6-5B14BFDD7229" },
+    { "Label",               "1601B50C-A61F-447C-8B74-0F578C003D88" },
+    { "Object",              "DBEFCEC3-1BBF-4867-B8B3-C4F7C859DF61" },
+    { "Lamp",                "342A8B55-7348-486A-850B-1EB1BED031FC" },
+    { "GridElement",         "DBEFCEC3-1BBF-4867-B8B3-C4F7C859DF61", "1196574028" },
+    { "Skylight",            "54A9F06E-3E29-4830-8880-3CF85EB0AD27" },
+    { "CornerWindow",        "93F161A0-4C4E-4DF7-A100-4FD0E8C4F1E1", "1129469764" },
+    { "WallEnd",             "93F161A0-4C4E-4DF7-A100-4FD0E8C4F1E1", "1463895374" },
+    { "DuctBranch",          "321A2F01-E0BC-46DF-8109-5D86580090CF" },
+    { "DuctTerminal",        "6DF3B12C-98A3-4B9C-AF8A-39D6A621BC50" },
+    { "DuctAccessory",       "088B3F22-95D6-4590-AE2B-035F60B94C34" },
+    { "DuctFitting",         "00BA5C0D-3E12-48D1-932C-869823C6D8D3" },
+    { "DuctFlexibleSegment", "8C6E6A12-A729-433B-9842-74BC24B14AF2" },
+    { "CableCarrierBranch",  "AED9773F-E32C-4894-B33A-8D96580B998B" },
+    { "CableCarrierFitting", "128B49E0-D77D-4A00-87EC-CBCC2C26241D" },
+    { "PipeBranch",          "519B4ECE-8D98-495C-B7DD-206F2067E059" },
+    { "PipeTerminal",        "76B545B5-50AA-40F6-B672-757AAD0ABDA5" },
+    { "PipeAccessory",       "49A54CB6-DB96-4C06-ACB0-09DE86FBEE6D" },
+    { "PipeFitting",         "0F09FE24-8667-4112-83E7-40882FE112FF" },
+    { "Equipment",           "E2F2209C-3082-4710-B5C3-E2E35BC9E6E0" },
 };
 
 // User strings (values, property and group names, classification item IDs and system names) go
@@ -1528,9 +1552,10 @@ static bool TryEmitStringListField (const GS::ObjectState& node, const char* fie
     return false;
 }
 
-// A raw {"criterionXML": ...} leaf (see GraphicOverrideCriterionFromXML) that is an "is" element
-// type, model element or drawing element condition, e.g. the type of a library part based tool
-// whose ClassId is not known: it establishes the element type like elementType does.
+// A raw {"criterionXML": ...} leaf (see GraphicOverrideCriterionFromXML) that is an element type,
+// model element or drawing element condition, e.g. a type whose ClassId is not known (an element
+// type of another Archicad version): it establishes the element type like elementType does. An
+// "is not" element type does too, see IsTypeEstablishingNode.
 static bool IsTypeEstablishingRawLeaf (const GS::UniString& fragmentXML)
 {
     std::vector<CriterionXmlNode> nodes;
@@ -1541,19 +1566,23 @@ static bool IsTypeEstablishingRawLeaf (const GS::UniString& fragmentXML)
         return false;
     for (const CriterionXmlNode& child : leaf.children) {
         if (child.name == "LogicalOperator")
-            return child.text == "1";
+            return child.text == "1" || (child.text == "2" && leaf.name == "ElemTypeCriterion");
     }
     return false;
 }
 
 // A shallow check for whether a node directly establishes an element type/model-element-ness
-// (elementType, all3DTypes, all2DTypes, or a raw leaf of that kind). elementTypeNot does not: it
-// excludes a type without naming the ones that match.
+// (elementType, elementTypeNot, all3DTypes, all2DTypes, or a raw leaf of that kind). The criteria
+// editor stores an "Element Type is not ..." row without a 3D/2D types row in front of it, also
+// next to property rows, and an "or" row of "All Types" and "is not Zone" the same way (read from
+// rules made in the editor of Archicad 29); an injected "3D types" row would leave out the 2D
+// elements those rules match.
 static bool IsTypeEstablishingNode (const GS::ObjectState& node)
 {
     GS::UniString dummyStr;
     bool dummyBool = false;
     return node.Get ("elementType", dummyStr) ||
+           node.Get ("elementTypeNot", dummyStr) ||
            (node.Get ("all3DTypes", dummyBool) && dummyBool) ||
            (node.Get ("all2DTypes", dummyBool) && dummyBool) ||
            (node.Get ("criterionXML", dummyStr) && IsTypeEstablishingRawLeaf (dummyStr));
@@ -3395,16 +3424,18 @@ static bool ReadElemTypeLeaf (const CriterionXmlNode& leaf, GS::ObjectState& out
 
     const char* typeName = nullptr;
     if (typeId.name == "ElemType") {
-        // Variation holds the API_ElemVariationID of a type that has one (e.g. a Grid Element is the
-        // Object ClassId with APIVarId_GridElement); those are not decoded.
-        if (typeId.children.size () != 2 || typeId.children[0].name != "ClassId" || typeId.children[1].name != "Variation" || typeId.children[1].text != "0")
+        // Variation holds the registry code of a type that is a variation of another tool's element
+        // (e.g. a Grid Element is the Object ClassId with the Grid Element's code), else 0.
+        if (typeId.children.size () != 2 || typeId.children[0].name != "ClassId" || typeId.children[1].name != "Variation")
             return false;
         const std::string& classId = typeId.children[0].text;
+        const std::string& variation = typeId.children[1].text;
         if (SameGuid (classId, kZeroGuid)) {
-            typeName = kAllTypesElemTypeName;
+            if (variation == "0")
+                typeName = kAllTypesElemTypeName;
         } else {
             for (const ElemTypeClassIdInfo& info : kElemTypeClassIdTable) {
-                if (SameGuid (classId, info.classId)) {
+                if (SameGuid (classId, info.classId) && variation == (info.variation != nullptr ? info.variation : "0")) {
                     typeName = info.name;
                     break;
                 }
@@ -4293,7 +4324,9 @@ static GS::ObjectState ReadCriterionNode (const CriterionXmlChild& child, int de
     bool isAnd = false;
     std::vector<CriterionXmlChild> children;
     if (depth <= 2 && IsCompositeChild (child) && ReadComposite (*child.second, isAnd, children)) {
-        if (depth == 1 && children.size () == 1 && !IsCompositeChild (children[0]))
+        // A row of one condition is written back as a bare condition, which the generator wraps in
+        // an "or"; a row the editor stored as "and" keeps it, so it is written back the same way.
+        if (depth == 1 && children.size () == 1 && !IsCompositeChild (children[0]) && !isAnd)
             return ReadCriterionLeaf (*children[0].first, *children[0].second);
         GS::ObjectState group;
         const auto& groupList = group.AddList<GS::ObjectState> (isAnd ? "and" : "or");

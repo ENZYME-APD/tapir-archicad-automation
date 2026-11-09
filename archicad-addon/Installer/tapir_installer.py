@@ -31,6 +31,7 @@ import tempfile
 import threading
 import time
 import unicodedata
+import urllib.error
 import urllib.request
 
 INSTALLER_TITLE = 'Tapir Add-On Installer'
@@ -61,6 +62,10 @@ ADDONS_FOLDER_MARKER_FILE_NAME = 'XReadCfg.txt'
 ADDONS_FOLDER_MARKER_MAX_DEPTH = 2
 USER_AGENT = 'TapirInstaller'
 DOWNLOAD_TIMEOUT_SECONDS = 60
+# GitHub answers a release download with a 5xx now and then, or drops the
+# connection, for a few minutes at a time. A download that fails like that is
+# tried again after these waits (seconds); any other failure is reported at once.
+DOWNLOAD_RETRY_WAITS_SECONDS = (5, 15, 30)
 PERMISSION_DENIED_TEXT = 'Permission denied. Close Archicad if it is running, or run the installer as administrator.'
 # The first bytes of the add-on assets: the Windows add-on is a DLL, the macOS
 # one is zipped. A proxy or web filter may answer with a page of its own.
@@ -344,6 +349,10 @@ class UpdateRunningError (InstallerError):
     pass
 
 
+class IncompleteDownloadError (InstallerError):
+    pass
+
+
 class InstallerWarning (Exception):
     # Tapir was updated, but something is left to do by hand. Not an
     # InstallerError, so that it is not reported as a failure.
@@ -601,10 +610,42 @@ def UrlOpen (request):
     return urllib.request.urlopen (request, timeout = DOWNLOAD_TIMEOUT_SECONDS, context = SSL_CONTEXT)
 
 
+# A connection that timed out or was cut off. Not a refused connection or a
+# name that does not resolve: being offline does not pass in a few seconds.
+TRANSIENT_NETWORK_ERRORS = (TimeoutError, socket.timeout, ConnectionResetError, ConnectionAbortedError, BrokenPipeError)
+
+
+def IsTransientDownloadError (error):
+    """ A server error, a rate limit, a dropped connection or a download that ended early. """
+    if isinstance (error, urllib.error.HTTPError):
+        return error.code >= 500 or error.code in (408, 429)
+    if isinstance (error, urllib.error.URLError):
+        return isinstance (error.reason, TRANSIENT_NETWORK_ERRORS)
+    return isinstance (error, (IncompleteDownloadError, http.client.HTTPException) + TRANSIENT_NETWORK_ERRORS)
+
+
+def WithDownloadRetries (download):
+    """ Runs download (), and again after each of DOWNLOAD_RETRY_WAITS_SECONDS while it fails transiently. """
+    for wait in DOWNLOAD_RETRY_WAITS_SECONDS + (None,):
+        try:
+            return download ()
+        except Exception as error:
+            if wait is None or not IsTransientDownloadError (error):
+                raise
+            if sys.stdout is not None:   # None in the windowed build, which has no console
+                try:
+                    print ('Download failed ({}), trying again in {} s.'.format (error, wait), flush = True)
+                except (OSError, ValueError):
+                    pass
+            time.sleep (wait)
+
+
 def DownloadUrl (url):
-    request = urllib.request.Request (url, headers = { 'User-Agent' : USER_AGENT })
-    with UrlOpen (request) as response:
-        return response.read ()
+    def Download ():
+        request = urllib.request.Request (url, headers = { 'User-Agent' : USER_AGENT })
+        with UrlOpen (request) as response:
+            return response.read ()
+    return WithDownloadRetries (Download)
 
 
 def CreateFallbackReleaseInfo ():
@@ -649,6 +690,10 @@ def FindAssetForVersion (releaseInfo, acVersion):
 
 
 def DownloadAsset (asset, targetFolderPath, progressCallback = None):
+    return WithDownloadRetries (lambda: DownloadAssetOnce (asset, targetFolderPath, progressCallback))
+
+
+def DownloadAssetOnce (asset, targetFolderPath, progressCallback = None):
     targetPath = os.path.join (targetFolderPath, asset['name'])
     request = urllib.request.Request (asset['browser_download_url'], headers = { 'User-Agent' : USER_AGENT })
     with UrlOpen (request) as response:
@@ -666,7 +711,7 @@ def DownloadAsset (asset, targetFolderPath, progressCallback = None):
     # A connection that closes early ends the download without an error.
     for expectedSize in [totalSize, asset.get ('size') or 0]:
         if expectedSize > 0 and downloadedSize != expectedSize:
-            raise InstallerError (GetText ('downloadIncomplete', asset['name'], downloadedSize, expectedSize))
+            raise IncompleteDownloadError (GetText ('downloadIncomplete', asset['name'], downloadedSize, expectedSize))
     signature = ASSET_FILE_SIGNATURES.get (os.path.splitext (asset['name'])[1].lower ())
     if signature is not None:
         with open (targetPath, 'rb') as downloadedFile:
