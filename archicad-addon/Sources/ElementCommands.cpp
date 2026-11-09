@@ -2204,6 +2204,90 @@ static void AddCurtainWallClasses (const API_Element& elem, GS::ObjectState& typ
     }
 }
 
+// A CoordinateSystem3D as CreateShells reads it: the axes are the columns of the 3x4 row-major
+// tmx and the origin is its translation column.
+static GS::ObjectState CreateCoordinateSystem3DObjectState (const API_Tranmat& tranmat)
+{
+    const double* tmx = tranmat.tmx;
+    GS::ObjectState system;
+    system.Add ("origin", Create3DCoordinateObjectState ({ tmx[3], tmx[7], tmx[11] }));
+    system.Add ("xAxis", Create3DCoordinateObjectState ({ tmx[0], tmx[4], tmx[8] }));
+    system.Add ("yAxis", Create3DCoordinateObjectState ({ tmx[1], tmx[5], tmx[9] }));
+    system.Add ("zAxis", Create3DCoordinateObjectState ({ tmx[2], tmx[6], tmx[10] }));
+    return system;
+}
+
+// The first profile polyline of a shell as a ShellProfile, the inverse of CreateShells' FillShellShape:
+// the shape is stored as a closed polygon from index 1 whose last coordinate repeats the first, and
+// the bodyFlag of the closing edge tells whether that edge is part of the profile.
+static bool CreateShellProfileObjectState (const API_Polygon& shape, const API_ShellShapeData& shapeData, GS::ObjectState& profile)
+{
+    if (shapeData.coords == nullptr || shape.nCoords < 2) {
+        return false;
+    }
+    const Int32 nStored = static_cast<Int32> (BMGetHandleSize (reinterpret_cast<GSHandle> (shapeData.coords)) / sizeof (API_Coord)) - 1;
+    Int32 last = std::min<Int32> (shape.nCoords, nStored);
+    if (shapeData.pends != nullptr && shape.nSubPolys >= 1 && BMGetHandleSize (reinterpret_cast<GSHandle> (shapeData.pends)) / sizeof (Int32) > 1) {
+        last = std::min<Int32> (last, (*shapeData.pends)[1]);
+    }
+    if (last < 2) {
+        return false;
+    }
+    const bool repeatsFirst = IsSame2DCoordinate ((*shapeData.coords)[1], (*shapeData.coords)[last]);
+    const Int32 nPoints = repeatsFirst ? last - 1 : last;
+    bool closed = false;
+    if (repeatsFirst && shapeData.bodyFlags != nullptr && BMGetHandleSize (reinterpret_cast<GSHandle> (shapeData.bodyFlags)) / (GSSize) sizeof (bool) > nPoints) {
+        closed = (*shapeData.bodyFlags)[nPoints];
+    }
+
+    const auto& coordinates = profile.AddList<GS::ObjectState> ("coordinates");
+    for (Int32 i = 1; i <= nPoints; ++i) {
+        coordinates (Create2DCoordinateObjectState ((*shapeData.coords)[i]));
+    }
+    const auto& arcs = profile.AddList<GS::ObjectState> ("arcs");
+    if (shapeData.parcs != nullptr) {
+        const Int32 nArcs = std::min<Int32> (shape.nArcs, static_cast<Int32> (BMGetHandleSize (reinterpret_cast<GSHandle> (shapeData.parcs)) / sizeof (API_PolyArc)));
+        for (Int32 i = 0; i < nArcs; ++i) {
+            const API_PolyArc& arc = (*shapeData.parcs)[i];
+            if (arc.begIndex >= 1 && arc.endIndex >= 1 && arc.begIndex <= last && arc.endIndex <= last) {
+                arcs (CreatePolyArcObjectState (arc));
+            }
+        }
+    }
+    profile.Add ("closed", closed);
+    return true;
+}
+
+// The geometry of a shell in the fields CreateShells takes, so it can be read, changed and fed back:
+// the base plane of every shell, and the profile and extrusion of an extruded shell (#2425).
+static void AddShellGeometry (const API_Element& elem, GS::ObjectState& typeSpecificDetails)
+{
+    typeSpecificDetails.Add ("basePlane", CreateCoordinateSystem3DObjectState (elem.shell.basePlane));
+    if (elem.shell.shellClass != API_ExtrudedShellID) {
+        return;
+    }
+
+    const API_ExtrudedShellData& extruded = elem.shell.u.extrudedShell;
+    const API_Vector3D& vector = extruded.extrusionVector;
+    typeSpecificDetails.Add ("extrusionStart", Create3DCoordinateObjectState (extruded.begC));
+    typeSpecificDetails.Add ("extrusionVector", Create3DCoordinateObjectState ({ vector.x, vector.y, vector.z }));
+    typeSpecificDetails.Add ("extrusionLength", std::sqrt (vector.x * vector.x + vector.y * vector.y + vector.z * vector.z));
+    typeSpecificDetails.Add ("shapePlaneTilt", extruded.shapePlaneTilt);
+    typeSpecificDetails.Add ("begPlaneTilt", extruded.begPlaneTilt);
+    typeSpecificDetails.Add ("endPlaneTilt", extruded.endPlaneTilt);
+    typeSpecificDetails.Add ("slantAngle", extruded.slantAngle);
+
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elem.header.guid, &memo, APIMemoMask_Polygon) != NoError) {
+        return;
+    }
+    GS::ObjectState profile;
+    if (CreateShellProfileObjectState (extruded.shellShape, memo.shellShapes[0], profile)) {
+        typeSpecificDetails.Add ("profile", profile);
+    }
+}
+
 // The reference line of a railing (memo.coords from index 1, one vertex per node), the height of
 // each generated segment, which can differ from defSegment.height once a segment was edited, and
 // the settings of each segment and node that ModifyRailings can change one by one.
@@ -3261,6 +3345,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     typeSpecificDetails.Add ("buildingMaterialId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_BuildingMaterialID, base.buildingMaterial)));
                 }
                 AddShellBaseFloorPlanAndSection (base, typeSpecificDetails);
+                AddShellGeometry (elem, typeSpecificDetails);
             } break;
 
             case API_HotlinkID: {

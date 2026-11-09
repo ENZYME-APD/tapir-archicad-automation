@@ -2303,6 +2303,55 @@ GS::Optional<GS::UniString> ApplyShellStructure (
     return {};
 }
 
+// The extrusion of an existing extruded shell (#2425): only the vector changes, so the profile,
+// the base plane and the extrusion start stay where they are and only the end moves.
+GS::Optional<GS::UniString> ApplyShellExtrusion (
+    API_Element& element,
+    API_Element& mask,
+    const GS::ObjectState& details,
+    bool& changed)
+{
+    const auto extrusionVector = GetOptionalCoordinate3D (details, "extrusionVector");
+    const auto extrusionLength = GetOptionalDouble (details, "extrusionLength");
+    if (!extrusionVector.HasValue () && !extrusionLength.HasValue ()) {
+        return {};
+    }
+    if (extrusionVector.HasValue () && extrusionLength.HasValue ()) {
+        return GS::UniString ("Give either 'extrusionVector' or 'extrusionLength', not both.");
+    }
+    if (element.shell.shellClass != API_ExtrudedShellID) {
+        return GS::UniString ("'extrusionVector' and 'extrusionLength' can only be changed on an Extruded shell.");
+    }
+
+    API_Vector3D& vector = element.shell.u.extrudedShell.extrusionVector;
+    if (extrusionVector.HasValue ()) {
+        const API_Coord3D& newVector = extrusionVector.Get ();
+        if (std::sqrt (newVector.x * newVector.x + newVector.y * newVector.y + newVector.z * newVector.z) < 1e-9) {
+            return GS::UniString ("'extrusionVector' must not be a zero vector.");
+        }
+        vector.x = newVector.x;
+        vector.y = newVector.y;
+        vector.z = newVector.z;
+    } else {
+        const double newLength = extrusionLength.Get ();
+        if (newLength <= 0.0) {
+            return GS::UniString ("'extrusionLength' must be greater than 0.");
+        }
+        const double oldLength = std::sqrt (vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
+        if (oldLength < 1e-9) {
+            return GS::UniString ("The shell's extrusion vector has no direction to scale.");
+        }
+        const double scale = newLength / oldLength;
+        vector.x *= scale;
+        vector.y *= scale;
+        vector.z *= scale;
+    }
+
+    ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.extrusionVector);
+    changed = true;
+    return {};
+}
+
 } // namespace
 
 // Defined OUTSIDE the anonymous namespace: ExtendedElementCommands.hpp declares it
@@ -12190,6 +12239,15 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                             "type": "string",
                             "enum": [ "UpwardsExtrusion", "DownwardsExtrusion" ],
                             "description": "The Trimming Body of the shell (Model panel of Shell Settings): Upward Extrusion or Downward Extrusion. GetDetailsOfElements reports it as cutBodyType. An Editable trimming body cannot be set yet."
+                        },
+                        "extrusionVector": {
+                            "$ref": "#/Coordinate3D",
+                            "description": "Extruded shells only: the new direction and length of the extrusion, in base plane coordinates (as GetDetailsOfElements returns it). The profile, the base plane and the extrusion start are kept, so only the end of the shell moves. Cannot be given together with extrusionLength."
+                        },
+                        "extrusionLength": {
+                            "type": "number",
+                            "exclusiveMinimum": 0.0,
+                            "description": "Extruded shells only: the new length of the extrusion. The extrusion vector keeps its direction and is scaled to this length; the profile, the base plane and the extrusion start are kept, so only the end of the shell moves. Cannot be given together with extrusionVector."
                         }
                     },
                     "additionalProperties": false,
@@ -12237,6 +12295,9 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
             ACAPI_ELEMENT_MASK_CLEAR (mask);
             bool changed = false;
             auto error = ApplyShellStructure (element, &mask, item, changed);
+            if (!error.HasValue ()) {
+                error = ApplyShellExtrusion (element, mask, item, changed);
+            }
             if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                 continue;
