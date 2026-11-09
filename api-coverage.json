@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 08:40 UTC",
+ "generatedAt": "2026-11-09 09:03 UTC",
  "versions": [
   25,
   26,
@@ -2901,12 +2901,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2471,
-     "title": "[1/6] Refuse inputs that five commands accepted (check catalogue on AC26/28)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3169,12 +3164,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2477,
-     "title": "[6/6] Check catalogue hygiene: leaked elements, load groups of the template, fonts by name"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3542,12 +3532,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2477,
-     "title": "[6/6] Check catalogue hygiene: leaked elements, load groups of the template, fonts by name"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3727,12 +3712,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2471,
-     "title": "[1/6] Refuse inputs that five commands accepted (check catalogue on AC26/28)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -3845,12 +3825,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2471,
-     "title": "[1/6] Refuse inputs that five commands accepted (check catalogue on AC26/28)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -6741,10 +6716,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2473,
-     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
-    },
-    {
      "number": 2455,
      "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
@@ -6765,12 +6736,7 @@
      "title": "ModifyRoofs: take holes on their own, and add holes to a multi-plane roof"
     }
    ],
-   "issues": [
-    {
-     "number": 2461,
-     "title": "ModifyTexts fails with \"Failed to modify the Text\" when content contains a newline after a line longer than a few characters"
-    }
-   ]
+   "issues": []
   },
   {
    "id": "ACAPI_Element_ChangeContent",
@@ -6862,12 +6828,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2473,
-     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7265,10 +7226,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2473,
-     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
-    },
-    {
      "number": 2450,
      "title": "Read and set single railing segments and nodes"
     }
@@ -7655,12 +7612,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2473,
-     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7771,12 +7723,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2471,
-     "title": "[1/6] Refuse inputs that five commands accepted (check catalogue on AC26/28)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7819,10 +7766,6 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
-    {
-     "number": 2473,
-     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
-    },
     {
      "number": 2455,
      "title": "ModifyShells: edit the profile of an existing extruded shell"
@@ -7892,12 +7835,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2474,
-     "title": "[4/6] Fix the geometry and quantity checks of the Archicad 26/28 run"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9207,12 +9145,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2473,
-     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9439,12 +9372,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2477,
-     "title": "[6/6] Check catalogue hygiene: leaked elements, load groups of the template, fonts by name"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -9463,12 +9391,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2477,
-     "title": "[6/6] Check catalogue hygiene: leaked elements, load groups of the template, fonts by name"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -11736,12 +11659,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2475,
-     "title": "[5/6] Views, project and library: GDL date, 3D window zoom, library part errors (#2470)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12283,12 +12201,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2475,
-     "title": "[5/6] Views, project and library: GDL date, 3D window zoom, library part errors (#2470)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12590,12 +12503,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2475,
-     "title": "[5/6] Views, project and library: GDL date, 3D window zoom, library part errors (#2470)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -12969,12 +12877,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2471,
-     "title": "[1/6] Refuse inputs that five commands accepted (check catalogue on AC26/28)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -13104,12 +13007,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2471,
-     "title": "[1/6] Refuse inputs that five commands accepted (check catalogue on AC26/28)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -16520,12 +16418,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2472,
-     "title": "[2/6] Properties: bogus property in tool default reads, enum nonlocalized values, reference check"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -19081,12 +18974,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2475,
-     "title": "[5/6] Views, project and library: GDL date, 3D window zoom, library part errors (#2470)"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -20677,12 +20565,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2473,
-     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -25411,12 +25294,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2473,
-     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
-    },
-    {
-     "number": 2460,
-     "title": "Graphic override criterion: library part element types, and an exact round trip"
+     "number": 2488,
+     "title": "Graphic override criterion: the Zone Category condition (zoneCategory, zoneCategoryNot)"
     },
     {
      "number": 2459,
@@ -25469,10 +25348,6 @@
     {
      "number": 2429,
      "title": "Read and edit the extrusion of an existing extruded shell"
-    },
-    {
-     "number": 2428,
-     "title": "ModifyShells: set the thickness and the flip of a Basic shell"
     },
     {
      "number": 2400,
@@ -31056,14 +30931,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2474,
-     "title": "[4/6] Fix the geometry and quantity checks of the Archicad 26/28 run"
-    },
-    {
-     "number": 2473,
-     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
-    },
-    {
      "number": 2455,
      "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
@@ -31086,10 +30953,6 @@
     {
      "number": 2429,
      "title": "Read and edit the extrusion of an existing extruded shell"
-    },
-    {
-     "number": 2428,
-     "title": "ModifyShells: set the thickness and the flip of a Basic shell"
     }
    ],
    "issues": []
@@ -37520,10 +37383,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2473,
-     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
-    },
-    {
      "number": 2459,
      "title": "Columns and beams: a width given alone also works on a linked cross section"
     },
@@ -37574,10 +37433,6 @@
     {
      "number": 2429,
      "title": "Read and edit the extrusion of an existing extruded shell"
-    },
-    {
-     "number": 2428,
-     "title": "ModifyShells: set the thickness and the flip of a Basic shell"
     },
     {
      "number": 2400,
@@ -38270,8 +38125,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2460,
-     "title": "Graphic override criterion: library part element types, and an exact round trip"
+     "number": 2488,
+     "title": "Graphic override criterion: the Zone Category condition (zoneCategory, zoneCategoryNot)"
     }
    ],
    "issues": []
@@ -44203,14 +44058,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2474,
-     "title": "[4/6] Fix the geometry and quantity checks of the Archicad 26/28 run"
-    },
-    {
-     "number": 2473,
-     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
-    },
-    {
      "number": 2455,
      "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
@@ -44233,10 +44080,6 @@
     {
      "number": 2429,
      "title": "Read and edit the extrusion of an existing extruded shell"
-    },
-    {
-     "number": 2428,
-     "title": "ModifyShells: set the thickness and the flip of a Basic shell"
     }
    ],
    "issues": []
@@ -47326,14 +47169,6 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2474,
-     "title": "[4/6] Fix the geometry and quantity checks of the Archicad 26/28 run"
-    },
-    {
-     "number": 2473,
-     "title": "[3/6] Apply or refuse settings Archicad kept: element ids, favorites, window/door display, morph shadows"
-    },
-    {
      "number": 2455,
      "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
@@ -47356,10 +47191,6 @@
     {
      "number": 2429,
      "title": "Read and edit the extrusion of an existing extruded shell"
-    },
-    {
-     "number": 2428,
-     "title": "ModifyShells: set the thickness and the flip of a Basic shell"
     }
    ],
    "issues": []

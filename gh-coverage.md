@@ -4,14 +4,14 @@ Every JSON command of the Tapir Add-On, whether a Grasshopper component calls it
 
 **788 of 788** applicable Tapir commands have a Grasshopper component (100 %): ✅ 788 done, ➖ 1 not applicable.
 
-Parameters of the 788 used commands: 🟢 750 every parameter has an input, 🟡 36 the rest through a JSON input, 🟠 2 some parameters missing.
+Parameters of the 788 used commands: 🟢 747 every parameter has an input, 🟡 37 the rest through a JSON input, 🟠 4 some parameters missing.
 
 | Command group | Used | Applicable | ✅ | 🔀 | 🚧 | 🙋 | ⬜ | ⛔ | ➖ | 🟢 | 🟡 | 🟠 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Application Commands | 100 % | 42 | 42 |  |  |  |  |  |  | 42 |  |  |
 | Project Commands | 100 % | 66 | 66 |  |  |  |  |  |  | 66 |  |  |
 | Custom Data Commands | 100 % | 2 | 2 |  |  |  |  |  |  | 2 |  |  |
-| Element Commands | 100 % | 174 | 174 |  |  |  |  |  |  | 151 | 23 |  |
+| Element Commands | 100 % | 174 | 174 |  |  |  |  |  |  | 150 | 24 |  |
 | Element grouping Commands | 100 % | 15 | 15 |  |  |  |  |  |  | 15 |  |  |
 | Favorites Commands | 100 % | 27 | 27 |  |  |  |  |  |  | 27 |  |  |
 | Property Commands | 100 % | 31 | 31 |  |  |  |  |  |  | 31 |  |  |
@@ -29,12 +29,12 @@ Parameters of the 788 used commands: 🟢 750 every parameter has an input, 🟡
 | Project Data Commands | 100 % | 11 | 11 |  |  |  |  |  |  | 11 |  |  |
 | MEP Commands | 100 % | 40 | 40 |  |  |  |  |  |  | 39 | 1 |  |
 | MEP Commands (extended) | 100 % | 6 | 6 |  |  |  |  |  |  | 6 |  |  |
-| Analytical Commands | 100 % | 35 | 35 |  |  |  |  |  |  | 35 |  |  |
+| Analytical Commands | 100 % | 35 | 35 |  |  |  |  |  |  | 33 |  | 2 |
 | Solid Element Operation Commands | 100 % | 10 | 10 |  |  |  |  |  |  | 10 |  |  |
 | Script UI Commands | 100 % | 12 | 12 |  |  |  |  |  |  | 12 |  |  |
 | Developer Commands | 0 % | 0 |  |  |  |  |  |  | 1 |  |  |  |
 
-Updated 2026-11-09 08:40 UTC.
+Updated 2026-11-09 09:03 UTC.
 
 | | Status |
 |---|---|
@@ -325,7 +325,7 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `ModifyOpenings` 🟢 5/5 parameters – `ModifyOpeningsComponent`
 - ✅ `ModifyMorphs` 🟢 37/37 parameters – `ModifyMorphsComponent`, `MorphsComponent`
 - ✅ `ModifyRoofs` 🟡 20/23 parameters – `ModifyRoofsComponent`, `RoofsComponent`<br><sub>no input: `roofsWithDetails.edgeTrims`, `roofsWithDetails.edgeTrims.trimType`, `roofsWithDetails.pivotEdges.levels.angleType`</sub>
-- ✅ `ModifyShells` 🟢 5/5 parameters – `ModifyShellsComponent`
+- ✅ `ModifyShells` 🟡 6/7 parameters – `ModifyShellsComponent`<br><sub>no input: `shellsWithDetails.isFlipped`</sub>
 - ✅ `ModifyMeshes` 🟢 3/3 parameters – `MeshesComponent`, `ModifyMeshesComponent`
 - ✅ `ModifyRailings` 🟢 5/5 parameters – `RailingsComponent`
 - ✅ `ModifyObjects` 🟢 24/24 parameters – `ModifyObjectsComponent`, `ObjectsComponent`
@@ -856,9 +856,9 @@ A parameter counts as covered when the component's code names it (a static check
 - ✅ `GetAnalyticalVisibilitySettings` 🟢 0/0 parameters – `GetAnalyticalVisibilitySettingsComponent`
 - ✅ `SetAnalyticalVisibilitySettings` 🟢 1/1 parameters – `SetAnalyticalVisibilitySettingsComponent`
 - ✅ `GetAnalyticalMemberTypesOfElements` 🟢 1/1 parameters – `GetAnalyticalMemberTypesOfElementsComponent`
-- ✅ `GetAnalyticalLoadGroups` 🟢 0/0 parameters – `GetAnalyticalLoadGroupsComponent`
+- ✅ `GetAnalyticalLoadGroups` 🟠 0/1 parameters – `GetAnalyticalLoadGroupsComponent`<br><sub>no input: `loadGroupIds`</sub>
 - ✅ `GetAnalyticalLoadCases` 🟢 1/1 parameters – `GetAnalyticalLoadCasesComponent`
-- ✅ `GetAnalyticalLoadCombinations` 🟢 0/0 parameters – `GetAnalyticalLoadCombinationsComponent`
+- ✅ `GetAnalyticalLoadCombinations` 🟠 0/1 parameters – `GetAnalyticalLoadCombinationsComponent`<br><sub>no input: `loadCombinationIds`</sub>
 - ✅ `CreateAnalyticalLoadGroups` 🟢 1/1 parameters – `CreateAnalyticalLoadGroupsComponent`
 - ✅ `CreateAnalyticalLoadCases` 🟢 1/1 parameters – `CreateAnalyticalLoadCasesComponent`
 - ✅ `CreateAnalyticalLoadCombinations` 🟢 1/1 parameters – `CreateAnalyticalLoadCombinationsComponent`

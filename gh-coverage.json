@@ -1,13 +1,13 @@
 {
- "generatedAt": "2026-11-09 08:40 UTC",
+ "generatedAt": "2026-11-09 09:03 UTC",
  "counts": {
   "done": 788,
   "not applicable": 1
  },
  "parameters": {
-  "all": 750,
-  "json": 36,
-  "partial": 2
+  "all": 747,
+  "json": 37,
+  "partial": 4
  },
  "items": [
   {
@@ -3604,7 +3604,7 @@
    "id": "GetQuantitiesOfElements",
    "group": "Element Commands",
    "version": "1.7.2",
-   "brief": "Gets the quantities of the given elements calculated by Archicad (volumes, surfaces, lengths etc.), together with the volume and projected area per building material (one item per skin of composite and complex profile elements, one item for basic elements). Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment. Use the optional minOpeningSize parameter to control the conditional values, and calculateInOneCall to calculate all the elements in one Archicad call.",
+   "brief": "Gets the quantities of the given elements calculated by Archicad (volumes, surfaces, lengths etc.), together with the volume and projected area per building material (one item per skin of composite and complex profile elements, one item for basic elements). Supported types: Wall, Column, Beam, Slab, Roof, Shell, Morph, Zone, ColumnSegment, BeamSegment. Use the optional minOpeningSize parameter to control the conditional values, and calculateInOneCall to calculate the elements of each type in one Archicad call.",
    "status": "done",
    "reason": "",
    "components": [
@@ -4949,7 +4949,7 @@
    "id": "GetHotspotsOfElements",
    "group": "Element Commands",
    "version": "1.8.0",
-   "brief": "Gets the 2D hotspots of the given library part instances (Objects, Lamps, Windows, Doors, Skylights, Zones, Curtain Wall parts, etc.), e.g. to dimension to them.",
+   "brief": "Gets the 2D hotspots of the given library part instances (Objects, Lamps, Windows, Doors, Skylights, Zones, Curtain Wall parts, etc.), in the library part's own coordinate system. For their positions in the project use GetSnapPointsOfElements.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7526,7 +7526,7 @@
    "id": "ModifyShells",
    "group": "Element Commands",
    "version": "1.8.0",
-   "brief": "Modifies the structure (Basic or Composite, building material or composite) of Shell elements based on the given parameters.",
+   "brief": "Modifies the structure (Basic or Composite, building material or composite), the thickness of Basic shells and the side of the reference surface the thickness is applied to (isFlipped) of Shell elements based on the given parameters. The reference surface stays in place when the thickness changes; a thickness for a Composite shell is refused, as it comes from the composite.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7535,16 +7535,19 @@
      "path": "Components/ElementsComponents/ModifyShellsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 5,
+   "parameters": "json",
+   "parameterCount": 7,
    "coveredParameters": [
     "shellsWithDetails",
     "shellsWithDetails.buildingMaterialId",
     "shellsWithDetails.compositeId",
     "shellsWithDetails.elementId",
-    "shellsWithDetails.structureType"
+    "shellsWithDetails.structureType",
+    "shellsWithDetails.thickness"
    ],
-   "missingParameters": [],
+   "missingParameters": [
+    "shellsWithDetails.isFlipped"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -19144,7 +19147,7 @@
    "id": "GetAnalyticalLoadGroups",
    "group": "Analytical Commands",
    "version": "1.8.0",
-   "brief": "Retrieves the structural analysis load groups of the project with all their fields.",
+   "brief": "Retrieves the structural analysis load groups of the project, or the ones given by their ids, with all their fields.",
    "status": "done",
    "reason": "",
    "components": [
@@ -19153,10 +19156,12 @@
      "path": "Components/AnalyticalComponents/GetAnalyticalLoadGroupsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 0,
+   "parameters": "partial",
+   "parameterCount": 1,
    "coveredParameters": [],
-   "missingParameters": [],
+   "missingParameters": [
+    "loadGroupIds"
+   ],
    "pullRequests": [],
    "issues": []
   },
@@ -19186,7 +19191,7 @@
    "id": "GetAnalyticalLoadCombinations",
    "group": "Analytical Commands",
    "version": "1.8.0",
-   "brief": "Retrieves the structural analysis load combinations of the project with all their fields and load factors.",
+   "brief": "Retrieves the structural analysis load combinations of the project, or the ones given by their ids, with all their fields and load factors.",
    "status": "done",
    "reason": "",
    "components": [
@@ -19195,10 +19200,12 @@
      "path": "Components/AnalyticalComponents/GetAnalyticalLoadCombinationsComponent.cs"
     }
    ],
-   "parameters": "all",
-   "parameterCount": 0,
+   "parameters": "partial",
+   "parameterCount": 1,
    "coveredParameters": [],
-   "missingParameters": [],
+   "missingParameters": [
+    "loadCombinationIds"
+   ],
    "pullRequests": [],
    "issues": []
   },
