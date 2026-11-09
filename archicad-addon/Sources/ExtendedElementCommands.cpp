@@ -10967,6 +10967,17 @@ static bool IsSameOverriddenMaterial (const API_OverriddenAttribute& a, const AP
 #endif
 }
 
+// The surface an OverriddenMaterial overrides with, when it overrides with an existing Surface
+// attribute (not the placeholder Archicad reports for a side whose edges have different surfaces).
+static bool OverridesWithSurface (const API_OverriddenAttribute& material)
+{
+#ifdef ServerMainVers_2700
+    return material.hasValue && GetAttributeGuidFromIndex (API_MaterialID, material.value) != APINULLGuid;
+#else
+    return material.overridden && GetAttributeGuidFromIndex (API_MaterialID, material.attributeIndex) != APINULLGuid;
+#endif
+}
+
 // Changing the pivot polygon of a multi-plane roof makes Archicad turn on the roof's top and
 // bottom surface overrides (#2374), although ModifyRoofs does not write them. Writes the
 // surfaces the roof had before back when the change altered them.
@@ -11216,12 +11227,12 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         },
                         "holes": { "$ref": "#/Holes2D" },
                         "topMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the top of the roof; overridden false clears the override." },
-                        "sideMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the sides of the roof; overridden false clears the override. Edges with a custom surface (edgeSideMaterials) keep theirs." },
+                        "sideMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the sides of the roof; overridden false clears the override. It goes to every edge without a custom surface (edgeSideMaterials), which then reads back with this surface; edges with a custom surface keep theirs. Kept when edgeSideMaterials is given too." },
                         "bottomMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the bottom of the roof; overridden false clears the override." },
                         "materialsChained": { "type": "boolean", "description": "Whether the surface materials are chained, as GetDetailsOfElements reports it." },
                         "edgeSideMaterials": {
                             "type": "array",
-                            "description": "Single-plane roofs only: the custom surface of each edge of the roof's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeSideMaterials (the outline, then each hole). An overridden item sets the edge's custom surface, overridden false clears it so the edge shows the roof's side surface. Send every edge; the other edges keep their surface when sent as read. Cannot be combined with polygonOutline.",
+                            "description": "Single-plane roofs only: the custom surface of each edge of the roof's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeSideMaterials (the outline, then each hole). An overridden item sets the edge's custom surface, overridden false clears it so the edge shows the roof's side surface. Send every edge; the other edges keep their surface when sent as read. GetDetailsOfElements reports every edge with the surface it shows, so an edge that shows the roof's side surface reads back overridden with it. The roof's side surface override is kept (Archicad would otherwise drop it as soon as one edge has no surface of its own). Cannot be combined with polygonOutline.",
                             "items": { "$ref": "#/OverriddenMaterial" }
                         },
                         "angle": {
@@ -11456,6 +11467,16 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     memoMask |= APIMemoMask_RoofEdgeTypes;
                 }
                 err = ACAPI_Element_ChangeMemo (element.header.guid, memoMask, &polygonMemo);
+                if (err == NoError && hasEdgeSideMaterials && OverridesWithSurface (element.roof.shellBase.sidMat)) {
+                    // Archicad works the roof's side surface out from the edges when their surfaces
+                    // change: it drops the override as soon as one edge has none. Written again
+                    // afterwards, the side surface (the given one, else the one the roof had) goes to
+                    // the edges without a custom surface, and the custom ones keep theirs.
+                    API_Element sideMask = {};
+                    ACAPI_ELEMENT_MASK_CLEAR (sideMask);
+                    ACAPI_ELEMENT_MASK_SET (sideMask, API_RoofType, shellBase.sidMat);
+                    err = ACAPI_Element_Change (&element, &sideMask, nullptr, 0, true);
+                }
                 results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, hasEdgeTrims ? "Failed to modify the edge trims of the roof." : "Failed to modify the edge surfaces of the roof."));
                 continue;
             }
