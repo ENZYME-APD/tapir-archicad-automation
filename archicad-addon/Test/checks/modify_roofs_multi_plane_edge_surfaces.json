@@ -1,0 +1,153 @@
+{
+  "title": "ModifyRoofs sets and clears the custom surface of one contour edge of a multi-plane roof and keeps its pivot polygon and overhang (#2582)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Roof" ],
+  "steps": [
+    {
+      "id": "two surfaces of the project",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Surface" },
+      "save": {
+        "surfA": "attributes[0].attributeId.guid",
+        "surfB": "attributes[1].attributeId.guid"
+      },
+      "expect": [
+        { "path": "attributes[1].attributeId.guid", "exists": true, "name": "the project has two surfaces" }
+      ]
+    },
+    {
+      "id": "a multi-plane roof",
+      "command": "CreateRoofs",
+      "params": {
+        "roofsData": [
+          {
+            "level": 0.0,
+            "floorIndex": 0,
+            "thickness": 0.2,
+            "polygonCoordinates": [
+              { "x": 940.0, "y": 900.0 },
+              { "x": 948.0, "y": 900.0 },
+              { "x": 948.0, "y": 906.0 },
+              { "x": 940.0, "y": 906.0 }
+            ],
+            "eavesOverhang": 0.3,
+            "levels": [ { "levelHeight": 10.0, "levelAngle": 0.5 } ]
+          }
+        ]
+      },
+      "save": {
+        "r": "elements[0].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "multi-plane roof created" }
+      ]
+    },
+    {
+      "id": "the contour has four edges",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.roofClass", "eq": "MultiPlane" },
+        { "path": "detailsOfElements[0].details.edgeSideMaterials", "len": 4, "name": "one edge surface per contour edge" },
+        { "path": "detailsOfElements[0].details.edgeSideMaterials[1].overridden", "eq": false, "name": "no custom edge surface yet" }
+      ]
+    },
+    {
+      "id": "one contour edge's custom surface; refused items",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": {
+        "roofsWithDetails": [
+          {
+            "elementId": { "guid": "${r}" },
+            "edgeSideMaterials": [
+              { "overridden": false },
+              { "overridden": true, "attributeId": { "guid": "${surfB}" } },
+              { "overridden": false },
+              { "overridden": false }
+            ]
+          },
+          {
+            "elementId": { "guid": "${r}" },
+            "edgeSideMaterials": [
+              { "overridden": false },
+              { "overridden": false }
+            ]
+          },
+          {
+            "elementId": { "guid": "${r}" },
+            "pivotEdges": [ {}, {}, {}, {} ],
+            "edgeSideMaterials": [
+              { "overridden": false },
+              { "overridden": false },
+              { "overridden": false },
+              { "overridden": false }
+            ]
+          },
+          {
+            "elementId": { "guid": "${r}" },
+            "edgeTrims": [ {}, {}, {}, {} ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults", "len": 4, "name": "one result per item" },
+        { "path": "executionResults[0].success", "eq": true, "name": "edge surface written and read back" },
+        { "path": "executionResults[1].success", "eq": false, "name": "wrong edge count refused" },
+        { "path": "executionResults[2].success", "eq": false, "name": "edgeSideMaterials with pivotEdges refused" },
+        { "path": "executionResults[3].success", "eq": false, "name": "edgeTrims on a multi-plane roof still refused" }
+      ]
+    },
+    {
+      "id": "read the edge surface",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.roofClass", "eq": "MultiPlane", "name": "still a multi-plane roof" },
+        { "path": "detailsOfElements[0].details.edgeSideMaterials", "len": 4, "name": "still four contour edges" },
+        { "path": "detailsOfElements[0].details.edgeSideMaterials[1].overridden", "eq": true, "name": "edge 1 has a custom surface" },
+        { "path": "detailsOfElements[0].details.edgeSideMaterials[1].attributeId.guid", "eq": "${surfB}", "name": "edge 1 surface" },
+        { "path": "detailsOfElements[0].details.edgeSideMaterials[0].overridden", "eq": false, "name": "edge 0 has none" },
+        { "path": "detailsOfElements[0].details.edgeSideMaterials[2].overridden", "eq": false, "name": "edge 2 has none" },
+        { "path": "detailsOfElements[0].details.pivotPolygonOutline", "len": 5, "name": "pivot polygon kept" },
+        { "path": "detailsOfElements[0].details.polygonOutline", "len": 5, "name": "contour kept" },
+        { "path": "detailsOfElements[0].details.eavesOverhang", "approx": 0.3, "name": "overhang kept" },
+        { "path": "detailsOfElements[0].details.levels", "len": 1, "name": "levels kept" }
+      ]
+    },
+    {
+      "id": "clear the edge's custom surface",
+      "command": "ModifyRoofs",
+      "creates": false,
+      "params": {
+        "roofsWithDetails": [
+          {
+            "elementId": { "guid": "${r}" },
+            "edgeSideMaterials": [
+              { "overridden": false },
+              { "overridden": false },
+              { "overridden": false },
+              { "overridden": false }
+            ]
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "edge surface cleared" }
+      ]
+    },
+    {
+      "id": "read the cleared edge surface",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.edgeSideMaterials", "len": 4, "name": "still four contour edges" },
+        { "path": "detailsOfElements[0].details.edgeSideMaterials[1].overridden", "eq": false, "name": "edge 1 custom surface cleared" }
+      ]
+    }
+  ]
+}

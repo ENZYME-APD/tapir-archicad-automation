@@ -10334,7 +10334,7 @@
             },
             "edgeSideMaterials": {
                 "type": "array",
-                "description": "The custom side surface of each edge of the roof's polygon: the edges of polygonOutline first, then those of each hole in order, the item i of a polygon belonging to its edge from vertex i to vertex i + 1. ModifyRoofs takes the same list for single-plane roofs.",
+                "description": "The custom side surface of each edge of the roof's polygon: the edges of polygonOutline first, then those of each hole in order, the item i of a polygon belonging to its edge from vertex i to vertex i + 1. For a multi-plane roof these are the edges of its contour (polygonOutline), not of the pivot polygon. ModifyRoofs takes the same list for single-plane and multi-plane roofs.",
                 "items": {
                     "$ref": "#/OverriddenMaterial"
                 }

@@ -1,7 +1,8 @@
 """Creates a multi-plane and a single-plane roof, then changes both with ModifyRoofs.
 
 The multi-plane roof is raised and gets a new slope and eaves overhang. The single-plane roof gets a
-steeper angle, a new pivot line and a wider outline. Only the given fields change. Angles are in radians.
+steeper angle, a new pivot line and a wider outline. Then the first edge of the multi-plane roof's contour
+gets a custom surface. Only the given fields change. Angles are in radians.
 """
 import aclib
 import math
@@ -27,5 +28,16 @@ aclib.PrintJson (aclib.RunTapirCommand ('ModifyRoofs', {'roofsWithDetails': [{
     'angle': math.radians (25),
     'pivotLine': {'begCoordinate': {'x': 12.0, 'y': -1.0}, 'endCoordinate': {'x': 18.0, 'y': -1.0}},
     'polygonOutline': [{'x': 12.0, 'y': -1.0}, {'x': 18.0, 'y': -1.0}, {'x': 18.0, 'y': 5.0}, {'x': 12.0, 'y': 5.0}]
+}]}))
+
+# Give the first edge of the multi-plane roof's contour a custom surface and keep the other edges.
+# edgeSideMaterials takes one item per contour edge, as GetDetailsOfElements reports them.
+details = aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': roofs[:1], 'fields': ['details']})['detailsOfElements'][0]['details']
+surfaces = aclib.RunTapirCommand ('GetAttributesByType', {'attributeType': 'Surface'})['attributes']
+edgeSurfaces = details['edgeSideMaterials']
+edgeSurfaces[0] = {'overridden': True, 'attributeId': surfaces[0]['attributeId']}
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyRoofs', {'roofsWithDetails': [{
+    'elementId': roofs[0]['elementId'],
+    'edgeSideMaterials': edgeSurfaces
 }]}))
 aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': roofs, 'fields': ['details']})
