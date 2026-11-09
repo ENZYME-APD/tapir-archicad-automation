@@ -91,7 +91,26 @@ static bool GetAttributeIndexFromAttributeId (const GS::ObjectState& attributeId
     }
     DisposeAttribute (attribute);
 
-    attributeIndex = attribute.header.index;
+    // Archicad finds an attribute by its guid whatever type is asked for, so a layer's guid given as a
+    // Fill would give the layer's index, which is some other fill. Read the attribute of the asked type
+    // at that index back and accept it only when it is the same attribute.
+    const API_Guid guid = attribute.header.guid;
+    const API_AttributeIndex index = attribute.header.index;
+    if (attribute.header.typeID != attributeType) {
+        return false;
+    }
+    API_Attribute check = {};
+    check.header.typeID = attributeType;
+    check.header.index = index;
+    if (ACAPI_Attribute_Get (&check) != NoError) {
+        return false;
+    }
+    DisposeAttribute (check);
+    if (check.header.guid != guid) {
+        return false;
+    }
+
+    attributeIndex = index;
     return true;
 }
 
