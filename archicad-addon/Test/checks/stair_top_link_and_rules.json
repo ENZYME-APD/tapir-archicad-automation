@@ -1,0 +1,163 @@
+{
+  "title": "Stairs: CreateStairs and ModifyStairs write the top story link, its offset and the Rules and Standards, and GetDetailsOfElements reads them back with the locks (#2531)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "create a stair linked to the story above, 0.15 below it, with a riser limit",
+      "command": "CreateStairs",
+      "params": {
+        "stairsData": [
+          {
+            "baseLinePoints": [
+              { "x": 760.0, "y": 700.0 },
+              { "x": 766.0, "y": 700.0 }
+            ],
+            "baselinePosition": "Center",
+            "zCoordinate": 0.0,
+            "floorIndex": 0,
+            "totalHeight": 2.8,
+            "flightWidth": 1.2,
+            "relativeTopStory": 1,
+            "topOffset": -0.15,
+            "rules": {
+              "riserHeightMaxValue": 0.22,
+              "riserHeightMaxApplied": true
+            }
+          }
+        ]
+      },
+      "save": { "s": "elements[0].elementId.guid" },
+      "expect": [
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "top-linked stair created" }
+      ]
+    },
+    {
+      "id": "read the top link and the rules back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "save": {
+        "h1": "detailsOfElements[0].details.totalHeight",
+        "landing1": "detailsOfElements[0].details.rules.landingLengthMinValue"
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].details.relativeTopStory", "eq": 1, "name": "top linked to the story above" },
+        { "path": "detailsOfElements[0].details.topOffset", "approx": -0.15, "tol": 0.0001, "name": "top offset as created" },
+        { "path": "detailsOfElements[0].details.rules.riserHeightMaxValue", "approx": 0.22, "tol": 0.0001, "name": "riser limit as created" },
+        { "path": "detailsOfElements[0].details.rules.riserHeightMaxApplied", "eq": true, "name": "riser limit applied" },
+        { "path": "detailsOfElements[0].details.riserHeight", "lt": 0.2201, "name": "risers laid out within the limit" },
+        { "path": "detailsOfElements[0].details.totalHeightLocked", "exists": true, "name": "total height lock read back" },
+        { "path": "detailsOfElements[0].details.treadDepthLocked", "exists": true, "name": "going lock read back" }
+      ]
+    },
+    {
+      "id": "ModifyStairs: move the top 0.10 lower, keeping the link",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          { "elementId": { "guid": "${s}" }, "topOffset": -0.25 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "top offset change accepted" }
+      ]
+    },
+    {
+      "id": "the stair follows the new top offset",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "save": { "h2": "detailsOfElements[0].details.totalHeight" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.relativeTopStory", "eq": 1, "name": "still linked to the story above" },
+        { "path": "detailsOfElements[0].details.topOffset", "approx": -0.25, "tol": 0.0001, "name": "new top offset" },
+        { "expr": "${h1} - ${h2}", "approx": 0.10, "tol": 0.001, "name": "total height 0.10 lower, computed from the story link" }
+      ]
+    },
+    {
+      "id": "ModifyStairs: a lower riser limit and the total height lock",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          {
+            "elementId": { "guid": "${s}" },
+            "totalHeightLocked": true,
+            "rules": {
+              "riserHeightMaxValue": 0.19,
+              "riserHeightMaxApplied": true,
+              "riserHeightMinApplied": false,
+              "ruleMinApplied": false,
+              "ruleMaxApplied": false,
+              "riserPlusGoingMinApplied": false,
+              "riserPlusGoingMaxApplied": false,
+              "riserGoingRatioMinApplied": false,
+              "riserGoingRatioMaxApplied": false,
+              "stairPitchMinApplied": false,
+              "stairPitchMaxApplied": false
+            }
+          }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "rules change accepted" }
+      ]
+    },
+    {
+      "id": "the new rules and lock read back, the other rules kept",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "save": { "landing2": "detailsOfElements[0].details.rules.landingLengthMinValue" },
+      "expect": [
+        { "path": "detailsOfElements[0].details.rules.riserHeightMaxValue", "approx": 0.19, "tol": 0.0001, "name": "new riser limit" },
+        { "path": "detailsOfElements[0].details.rules.riserHeightMaxApplied", "eq": true, "name": "riser limit still applied" },
+        { "path": "detailsOfElements[0].details.rules.ruleMinApplied", "eq": false, "name": "2R+G minimum released" },
+        { "path": "detailsOfElements[0].details.rules.stairPitchMaxApplied", "eq": false, "name": "pitch maximum released" },
+        { "path": "detailsOfElements[0].details.totalHeightLocked", "eq": true, "name": "total height locked" },
+        { "path": "detailsOfElements[0].details.riserHeight", "lt": 0.1901, "name": "risers laid out again within the new limit" },
+        { "expr": "${landing1} - ${landing2}", "approx": 0.0, "tol": 0.000001, "name": "a rule not given is kept" },
+        { "path": "detailsOfElements[0].details.relativeTopStory", "eq": 1, "name": "top link kept" }
+      ]
+    },
+    {
+      "id": "ModifyStairs: unlink the top and give an explicit height",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          { "elementId": { "guid": "${s}" }, "relativeTopStory": 0, "totalHeight": 2.6 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "unlink accepted" }
+      ]
+    },
+    {
+      "id": "the stair has its own height again",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${s}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.relativeTopStory", "eq": 0, "name": "top no longer linked" },
+        { "path": "detailsOfElements[0].details.totalHeight", "approx": 2.6, "tol": 0.001, "name": "explicit height" },
+        { "path": "detailsOfElements[0].floorIndex", "eq": 0, "name": "home story unchanged" },
+        { "path": "detailsOfElements[0].details.baseLinePoints[0].x", "approx": 760.0, "name": "baseline start kept" }
+      ]
+    },
+    {
+      "id": "ModifyStairs: an unknown rule is refused by the schema",
+      "command": "ModifyStairs",
+      "creates": false,
+      "params": {
+        "stairsWithDetails": [
+          { "elementId": { "guid": "${s}" }, "rules": { "riserHeightMax": 0.18 } }
+        ]
+      },
+      "expect": [
+        { "path": "error.code", "exists": true, "name": "refused" }
+      ]
+    }
+  ]
+}

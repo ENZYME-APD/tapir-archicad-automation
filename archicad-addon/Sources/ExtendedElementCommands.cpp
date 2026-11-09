@@ -5273,6 +5273,9 @@ GS::Optional<GS::ObjectState> CreateBeamsCommand::SetTypeSpecificParameters (API
 // them all into the Stair element. The tread, riser and structure settings are the Stair's own
 // per-part defaults (tread[role], riser[role], structure[role][side]), not its subelements.
 static const char* StairSettingsSchemaProperties = R"(
+                        "relativeTopStory": { "type": "integer", "minimum": -32768, "maximum": 32767, "description": "Links the top of the stair to a story, relative to its home story (1 is the story above); 0 unlinks it. With a top link Archicad computes totalHeight from the story levels and topOffset, so a totalHeight given in the same call is not kept. GetDetailsOfElements reads it back." },
+                        "topOffset": { "type": "number", "description": "The offset of the top of the stair from the level of the linked top story (for example -0.15 for 15 cm below it). Only used when the stair's top is linked (relativeTopStory not 0)." },
+                        "rules": { "$ref": "#/StairRules", "description": "The Rules and Standards of the stair: only the given limits and applied flags are written, the others are kept. Archicad lays the steps out within the applied limits, so read the riser count and going back with GetDetailsOfElements. In CreateStairs a treadDepth pins the going limits and releases the 2R+G, R+G and R/G rules first; the rules given here are written after that." },
                         "treadDepthLocked": { "type": "boolean", "description": "Whether the going lengths are locked." },
                         "totalHeightLocked": { "type": "boolean", "description": "Whether the total height is locked." },
                         "finishVisible": { "type": "boolean", "description": "Whether the tread and riser finishes of the stair are shown; false models only the structure (e.g. a monolith). The treads and risers of each part can also be switched on and off with treads and risers." },
@@ -5547,8 +5550,28 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
         }
     }
 
+    auto treadDepth = GetOptionalDouble (parameters, "treadDepth");
+    if (treadDepth.HasValue ()) {
+        // The plain treadDepth field (written by ApplyStairSettings) is not an input: ACAPI_Element_Create lays the steps out from
+        // the stair rules, so an explicit going has to be pinned there as a min == max bound with
+        // both *Applied flags set. The standard's combined rules (2R+G, R+G, R/G) are released for
+        // this stair, otherwise they override the pinned going whenever the two conflict (#425).
+        // Pinned before ApplyStairSettings, so the rules given explicitly (#2531) are written last.
+        API_StairRulesData& rules = element.stair.rules;
+        rules.treadDepthMinValue = treadDepth.Get ();
+        rules.treadDepthMaxValue = treadDepth.Get ();
+        rules.treadDepthMinApplied = true;
+        rules.treadDepthMaxApplied = true;
+        rules.ruleMinApplied = false;
+        rules.ruleMaxApplied = false;
+        rules.riserPlusGoingMinApplied = false;
+        rules.riserPlusGoingMaxApplied = false;
+        rules.riserGoingRatioMinApplied = false;
+        rules.riserGoingRatioMaxApplied = false;
+    }
+
     // The settings ModifyStairs accepts, written the same way (#2220); ACAPI_Element_Create does
-    // not use the mask. treadDepth is also pinned in the stair rules below.
+    // not use the mask.
     API_Element unusedMask = {};
     ACAPI_ELEMENT_MASK_CLEAR (unusedMask);
     const GS::Optional<GS::UniString> settingsError = ApplyStairSettings (parameters, element, unusedMask);
@@ -5571,25 +5594,6 @@ GS::Optional<GS::ObjectState> CreateStairsCommand::SetTypeSpecificParameters (AP
     auto baselineOffset = GetOptionalDouble (parameters, "baselineOffset");
     if (baselineOffset.HasValue ()) {
         element.stair.baselineOffset = baselineOffset.Get ();
-    }
-
-    auto treadDepth = GetOptionalDouble (parameters, "treadDepth");
-    if (treadDepth.HasValue ()) {
-        // The plain treadDepth field (written by ApplyStairSettings) is not an input: ACAPI_Element_Create lays the steps out from
-        // the stair rules, so an explicit going has to be pinned there as a min == max bound with
-        // both *Applied flags set. The standard's combined rules (2R+G, R+G, R/G) are released for
-        // this stair, otherwise they override the pinned going whenever the two conflict (#425).
-        API_StairRulesData& rules = element.stair.rules;
-        rules.treadDepthMinValue = treadDepth.Get ();
-        rules.treadDepthMaxValue = treadDepth.Get ();
-        rules.treadDepthMinApplied = true;
-        rules.treadDepthMaxApplied = true;
-        rules.ruleMinApplied = false;
-        rules.ruleMaxApplied = false;
-        rules.riserPlusGoingMinApplied = false;
-        rules.riserPlusGoingMaxApplied = false;
-        rules.riserGoingRatioMinApplied = false;
-        rules.riserGoingRatioMaxApplied = false;
     }
 
     // Build the baseline polyline in the memo
@@ -6525,6 +6529,20 @@ static bool StairWalkingLinePositionFromString (const GS::UniString& str, API_Li
     return false;
 }
 
+// One limit of the stair's Rules and Standards (#2531): its value and its applied flag, each
+// written, with its mask byte (as ACAPI_ELEMENT_MASK_SET sets it), only when given.
+static void ApplyStairRule (const GS::ObjectState& rules, const char* valueName, const char* appliedName, double& value, bool& applied, double& valueMask, bool& appliedMask)
+{
+    auto givenValue = GetOptionalDouble (rules, valueName);
+    if (givenValue.HasValue ()) {
+        value = givenValue.Get ();
+        *reinterpret_cast<char*> (&valueMask) = -1;
+    }
+    if (rules.Get (appliedName, applied)) {
+        *reinterpret_cast<char*> (&appliedMask) = -1;
+    }
+}
+
 // The settings CreateStairs and ModifyStairs share (StairSettingsSchemaProperties), written into
 // the Stair element and its mask (#2220). The tread, riser and structure settings are the per-part
 // defaults of the Stair (tread[role], riser[role], structure[role][side]); the DevKit's
@@ -6567,6 +6585,42 @@ static GS::Optional<GS::UniString> ApplyStairSettings (const GS::ObjectState& de
     }
     if (details.Get ("totalHeightLocked", stair.totalHeightLocked)) {
         ACAPI_ELEMENT_MASK_SET (mask, API_StairType, totalHeightLocked);
+    }
+    // The top link (#2531), as walls and columns take it: with a non-zero relativeTopStory
+    // Archicad computes totalHeight from the story levels and topOffset.
+    Int32 relativeTopStory = 0;
+    if (details.Get ("relativeTopStory", relativeTopStory)) {
+        if (relativeTopStory < -32768 || relativeTopStory > 32767) {
+            return GS::UniString ("relativeTopStory is out of range.");
+        }
+        stair.relativeTopStory = static_cast<short> (relativeTopStory);
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, relativeTopStory);
+    }
+    auto topOffset = GetOptionalDouble (details, "topOffset");
+    if (topOffset.HasValue ()) {
+        stair.topOffset = topOffset.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_StairType, topOffset);
+    }
+    // The Rules and Standards (#2531): only the given limits and applied flags.
+    const GS::ObjectState* rulesOs = details.Get ("rules");
+    if (rulesOs != nullptr) {
+        API_StairRulesData& rules = stair.rules;
+        API_StairRulesData& rulesMask = mask.stair.rules;
+        ApplyStairRule (*rulesOs, "riserHeightMinValue", "riserHeightMinApplied", rules.riserHeightMinValue, rules.riserHeightMinApplied, rulesMask.riserHeightMinValue, rulesMask.riserHeightMinApplied);
+        ApplyStairRule (*rulesOs, "riserHeightMaxValue", "riserHeightMaxApplied", rules.riserHeightMaxValue, rules.riserHeightMaxApplied, rulesMask.riserHeightMaxValue, rulesMask.riserHeightMaxApplied);
+        ApplyStairRule (*rulesOs, "treadDepthMinValue", "treadDepthMinApplied", rules.treadDepthMinValue, rules.treadDepthMinApplied, rulesMask.treadDepthMinValue, rulesMask.treadDepthMinApplied);
+        ApplyStairRule (*rulesOs, "treadDepthMaxValue", "treadDepthMaxApplied", rules.treadDepthMaxValue, rules.treadDepthMaxApplied, rulesMask.treadDepthMaxValue, rulesMask.treadDepthMaxApplied);
+        ApplyStairRule (*rulesOs, "ruleMinValue", "ruleMinApplied", rules.ruleMinValue, rules.ruleMinApplied, rulesMask.ruleMinValue, rulesMask.ruleMinApplied);
+        ApplyStairRule (*rulesOs, "ruleMaxValue", "ruleMaxApplied", rules.ruleMaxValue, rules.ruleMaxApplied, rulesMask.ruleMaxValue, rulesMask.ruleMaxApplied);
+        ApplyStairRule (*rulesOs, "riserPlusGoingMinValue", "riserPlusGoingMinApplied", rules.riserPlusGoingMinValue, rules.riserPlusGoingMinApplied, rulesMask.riserPlusGoingMinValue, rulesMask.riserPlusGoingMinApplied);
+        ApplyStairRule (*rulesOs, "riserPlusGoingMaxValue", "riserPlusGoingMaxApplied", rules.riserPlusGoingMaxValue, rules.riserPlusGoingMaxApplied, rulesMask.riserPlusGoingMaxValue, rulesMask.riserPlusGoingMaxApplied);
+        ApplyStairRule (*rulesOs, "riserGoingRatioMinValue", "riserGoingRatioMinApplied", rules.riserGoingRatioMinValue, rules.riserGoingRatioMinApplied, rulesMask.riserGoingRatioMinValue, rulesMask.riserGoingRatioMinApplied);
+        ApplyStairRule (*rulesOs, "riserGoingRatioMaxValue", "riserGoingRatioMaxApplied", rules.riserGoingRatioMaxValue, rules.riserGoingRatioMaxApplied, rulesMask.riserGoingRatioMaxValue, rulesMask.riserGoingRatioMaxApplied);
+        ApplyStairRule (*rulesOs, "stairPitchMinValue", "stairPitchMinApplied", rules.stairPitchMinValue, rules.stairPitchMinApplied, rulesMask.stairPitchMinValue, rulesMask.stairPitchMinApplied);
+        ApplyStairRule (*rulesOs, "stairPitchMaxValue", "stairPitchMaxApplied", rules.stairPitchMaxValue, rules.stairPitchMaxApplied, rulesMask.stairPitchMaxValue, rulesMask.stairPitchMaxApplied);
+        ApplyStairRule (*rulesOs, "landingLengthMinValue", "landingLengthMinApplied", rules.landingLengthMinValue, rules.landingLengthMinApplied, rulesMask.landingLengthMinValue, rulesMask.landingLengthMinApplied);
+        ApplyStairRule (*rulesOs, "walkingLineOffsetMinValue", "walkingLineOffsetMinApplied", rules.walkingLineOffsetMinValue, rules.walkingLineOffsetMinApplied, rulesMask.walkingLineOffsetMinValue, rulesMask.walkingLineOffsetMinApplied);
+        ApplyStairRule (*rulesOs, "winderTurnOffsetMinValue", "winderTurnOffsetMinApplied", rules.winderTurnOffsetMinValue, rules.winderTurnOffsetMinApplied, rulesMask.winderTurnOffsetMinValue, rulesMask.winderTurnOffsetMinApplied);
     }
     if (details.Get ("finishVisible", stair.finishVisible)) {
         ACAPI_ELEMENT_MASK_SET (mask, API_StairType, finishVisible);

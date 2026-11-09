@@ -1057,7 +1057,7 @@ GSErrCode Initialize (void)
             elementCommands, "1.5.0",
             "Creates Stair elements based on the given baseline and parameters, optionally with the segment type of each baseline edge "
             "and the turn at each baseline point (landings and winders). Accepts the same settings as ModifyStairs: the step values with their locks, "
-            "the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser "
+            "the top link (relativeTopStory, topOffset), the Rules and Standards, the finish and structure visibility, the extra treads, the walking line, the numbering, the walking direction, and the tread, riser "
             "and structure settings of the flights and the landings; settings not given come from the Stair tool defaults or the favorite."
         );
         err |= RegisterCommand<SolveStairBaselineCommand> (
@@ -1322,11 +1322,11 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyStairsCommand> (
             elementCommands, "2.0.0",
-            "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the finish and structure visibility, "
+            "Modifies Stair elements in place, keeping their baseline and position: the flight width, total height, number of steps, riser height and going with their locks, the top link to a story with its offset, the Rules and Standards (each limit and whether it is applied), the finish and structure visibility, "
             "the extra top and bottom treads, the walking line position and offset, the step numbering, the walking direction, the uniform finish, monolith and draining settings, "
             "and for the flights and the landings the tread and riser settings (presence, thickness, offset, nosing, riser cross section and position) and the structure of each side (presence, type, underside shape and thickness). "
             "CreateStairs accepts the same settings. Only the given settings are changed. Archicad solves the stair again within its baseline, so it may adjust the step values; read them back with GetDetailsOfElements. "
-            "Not written by this command: the baseline with its landings and winders, the top link, the floor plan display (symbol and marker layout), the headroom and the stair rules; "
+            "Not written by this command: the baseline with its landings and winders, the floor plan display (symbol and marker layout) and the headroom; "
             "the subelements (treads, risers, structures) take the per-part settings above and cannot be written one by one through the API."
         );
         err |= RegisterCommand<ChangeTextContentCommand> (

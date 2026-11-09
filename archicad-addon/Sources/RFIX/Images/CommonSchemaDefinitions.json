@@ -12947,7 +12947,27 @@
             },
             "totalHeight": {
                 "type": "number",
-                "description": "Total height of the stair."
+                "description": "Total height of the stair. With a top link (relativeTopStory not 0) Archicad computes it from the story levels and topOffset."
+            },
+            "relativeTopStory": {
+                "type": "integer",
+                "description": "The story the top of the stair is linked to, relative to its home story (1 is the story above); 0 when the top is not linked and totalHeight is the height."
+            },
+            "topOffset": {
+                "type": "number",
+                "description": "The offset of the top of the stair from the level of the linked top story (for example -0.15); only used when relativeTopStory is not 0."
+            },
+            "treadDepthLocked": {
+                "type": "boolean",
+                "description": "Whether the going lengths are locked."
+            },
+            "totalHeightLocked": {
+                "type": "boolean",
+                "description": "Whether the total height is locked."
+            },
+            "rules": {
+                "$ref": "#/StairRules",
+                "description": "The Rules and Standards the stair is laid out by, as stored in the stair: every limit with whether it is applied."
             },
             "level": {
                 "type": "number",
@@ -13257,6 +13277,11 @@
             "treadDepth",
             "flightWidth",
             "totalHeight",
+            "relativeTopStory",
+            "topOffset",
+            "treadDepthLocked",
+            "totalHeightLocked",
+            "rules",
             "level",
             "zCoordinate",
             "finishVisible",
@@ -13272,6 +13297,43 @@
         "type": "string",
         "description": "Whether a stair structure symbol setting is for the visible or the hidden part of the structure (API_StairStructSymbPartID).",
         "enum": ["Visible", "Hidden", "Unknown"]
+    },
+    "StairRules": {
+        "type": "object",
+        "description": "The Rules and Standards of a Stair (API_StairRulesData): each limit as a value and whether it is applied (the check box of the rule). Archicad lays the steps out within the applied limits, so a stair can get another riser count and going than the ones given. GetDetailsOfElements returns every field; CreateStairs and ModifyStairs write only the given ones.",
+        "properties": {
+            "riserHeightMinValue": { "type": "number", "description": "Minimum riser height." },
+            "riserHeightMinApplied": { "type": "boolean", "description": "Whether the minimum riser height is applied." },
+            "riserHeightMaxValue": { "type": "number", "description": "Maximum riser height." },
+            "riserHeightMaxApplied": { "type": "boolean", "description": "Whether the maximum riser height is applied." },
+            "treadDepthMinValue": { "type": "number", "description": "Minimum going length." },
+            "treadDepthMinApplied": { "type": "boolean", "description": "Whether the minimum going length is applied." },
+            "treadDepthMaxValue": { "type": "number", "description": "Maximum going length." },
+            "treadDepthMaxApplied": { "type": "boolean", "description": "Whether the maximum going length is applied." },
+            "ruleMinValue": { "type": "number", "description": "Minimum of 2 risers + going (2R+G)." },
+            "ruleMinApplied": { "type": "boolean", "description": "Whether the minimum 2R+G is applied." },
+            "ruleMaxValue": { "type": "number", "description": "Maximum of 2 risers + going (2R+G)." },
+            "ruleMaxApplied": { "type": "boolean", "description": "Whether the maximum 2R+G is applied." },
+            "riserPlusGoingMinValue": { "type": "number", "description": "Minimum of riser height + going (R+G)." },
+            "riserPlusGoingMinApplied": { "type": "boolean", "description": "Whether the minimum R+G is applied." },
+            "riserPlusGoingMaxValue": { "type": "number", "description": "Maximum of riser height + going (R+G)." },
+            "riserPlusGoingMaxApplied": { "type": "boolean", "description": "Whether the maximum R+G is applied." },
+            "riserGoingRatioMinValue": { "type": "number", "description": "Minimum ratio of riser height to going (R/G)." },
+            "riserGoingRatioMinApplied": { "type": "boolean", "description": "Whether the minimum R/G is applied." },
+            "riserGoingRatioMaxValue": { "type": "number", "description": "Maximum ratio of riser height to going (R/G)." },
+            "riserGoingRatioMaxApplied": { "type": "boolean", "description": "Whether the maximum R/G is applied." },
+            "stairPitchMinValue": { "type": "number", "description": "Minimum stair pitch, as Archicad stores it." },
+            "stairPitchMinApplied": { "type": "boolean", "description": "Whether the minimum stair pitch is applied." },
+            "stairPitchMaxValue": { "type": "number", "description": "Maximum stair pitch, as Archicad stores it." },
+            "stairPitchMaxApplied": { "type": "boolean", "description": "Whether the maximum stair pitch is applied." },
+            "landingLengthMinValue": { "type": "number", "description": "Minimum length of an automatic landing." },
+            "landingLengthMinApplied": { "type": "boolean", "description": "Whether the minimum automatic landing length is applied." },
+            "walkingLineOffsetMinValue": { "type": "number", "description": "Minimum offset of an automatic landing (API_StairRulesData::walkingLineOffsetMinValue)." },
+            "walkingLineOffsetMinApplied": { "type": "boolean", "description": "Whether the minimum automatic landing offset is applied." },
+            "winderTurnOffsetMinValue": { "type": "number", "description": "Minimum winder width." },
+            "winderTurnOffsetMinApplied": { "type": "boolean", "description": "Whether the minimum winder width is applied." }
+        },
+        "additionalProperties": false
     },
     "StairLayout": {
         "type": "object",

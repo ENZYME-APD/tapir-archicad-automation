@@ -654,6 +654,45 @@ static void AddStairFloorPlanDetails (const API_StairType& stair, GS::ObjectStat
     }
 }
 
+// The Rules and Standards stored in the stair (#2531), in the StairRules definition: the limits
+// Archicad lays the steps out by, so a script can see why a stair got another riser count or
+// going than it asked for. CreateStairs and ModifyStairs write the same fields.
+static GS::ObjectState CreateStairRulesObjectState (const API_StairRulesData& rules)
+{
+    GS::ObjectState os;
+    os.Add ("riserHeightMinValue", rules.riserHeightMinValue);
+    os.Add ("riserHeightMinApplied", rules.riserHeightMinApplied);
+    os.Add ("riserHeightMaxValue", rules.riserHeightMaxValue);
+    os.Add ("riserHeightMaxApplied", rules.riserHeightMaxApplied);
+    os.Add ("treadDepthMinValue", rules.treadDepthMinValue);
+    os.Add ("treadDepthMinApplied", rules.treadDepthMinApplied);
+    os.Add ("treadDepthMaxValue", rules.treadDepthMaxValue);
+    os.Add ("treadDepthMaxApplied", rules.treadDepthMaxApplied);
+    os.Add ("ruleMinValue", rules.ruleMinValue);
+    os.Add ("ruleMinApplied", rules.ruleMinApplied);
+    os.Add ("ruleMaxValue", rules.ruleMaxValue);
+    os.Add ("ruleMaxApplied", rules.ruleMaxApplied);
+    os.Add ("riserPlusGoingMinValue", rules.riserPlusGoingMinValue);
+    os.Add ("riserPlusGoingMinApplied", rules.riserPlusGoingMinApplied);
+    os.Add ("riserPlusGoingMaxValue", rules.riserPlusGoingMaxValue);
+    os.Add ("riserPlusGoingMaxApplied", rules.riserPlusGoingMaxApplied);
+    os.Add ("riserGoingRatioMinValue", rules.riserGoingRatioMinValue);
+    os.Add ("riserGoingRatioMinApplied", rules.riserGoingRatioMinApplied);
+    os.Add ("riserGoingRatioMaxValue", rules.riserGoingRatioMaxValue);
+    os.Add ("riserGoingRatioMaxApplied", rules.riserGoingRatioMaxApplied);
+    os.Add ("stairPitchMinValue", rules.stairPitchMinValue);
+    os.Add ("stairPitchMinApplied", rules.stairPitchMinApplied);
+    os.Add ("stairPitchMaxValue", rules.stairPitchMaxValue);
+    os.Add ("stairPitchMaxApplied", rules.stairPitchMaxApplied);
+    os.Add ("landingLengthMinValue", rules.landingLengthMinValue);
+    os.Add ("landingLengthMinApplied", rules.landingLengthMinApplied);
+    os.Add ("walkingLineOffsetMinValue", rules.walkingLineOffsetMinValue);
+    os.Add ("walkingLineOffsetMinApplied", rules.walkingLineOffsetMinApplied);
+    os.Add ("winderTurnOffsetMinValue", rules.winderTurnOffsetMinValue);
+    os.Add ("winderTurnOffsetMinApplied", rules.winderTurnOffsetMinApplied);
+    return os;
+}
+
 // The segment type of each baseline edge and the turn of each baseline vertex (memo
 // stairBaseLine.edgeData and vertexData, plain pointers). The DevKit does not state their size;
 // on Archicad 29 both hold nPoints + 1 entries with slot 0 unused, like the coords (#1628): entry i
@@ -3252,6 +3291,12 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("treadDepth", elem.stair.treadDepth);
                 typeSpecificDetails.Add ("flightWidth", elem.stair.flightWidth);
                 typeSpecificDetails.Add ("totalHeight", elem.stair.totalHeight);
+                // The top link, the locks and the rules (#2531).
+                typeSpecificDetails.Add ("relativeTopStory", static_cast<Int32> (elem.stair.relativeTopStory));
+                typeSpecificDetails.Add ("topOffset", elem.stair.topOffset);
+                typeSpecificDetails.Add ("treadDepthLocked", elem.stair.treadDepthLocked);
+                typeSpecificDetails.Add ("totalHeightLocked", elem.stair.totalHeightLocked);
+                typeSpecificDetails.Add ("rules", CreateStairRulesObjectState (elem.stair.rules));
                 typeSpecificDetails.Add ("level", basePoint.z - GetZPos (elem.header.floorInd, 0.0, stories));
                 typeSpecificDetails.Add ("zCoordinate", basePoint.z);
                 typeSpecificDetails.Add ("finishVisible", elem.stair.finishVisible);
