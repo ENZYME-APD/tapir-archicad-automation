@@ -3380,6 +3380,108 @@ static bool ApplyBeamSectionToMemo (API_Guid elemGuid, const GS::ObjectState& de
     return ACAPI_Element_ChangeMemo (elemGuid, APIMemoMask_BeamSegment, &memo) == NoError;
 }
 
+static GS::UniString GetProfileNameForMessage (API_AttributeIndex profileIndex)
+{
+    GS::UniString name;
+    API_Attribute attr = {};
+    attr.header.typeID = API_ProfileID;
+    attr.header.index = profileIndex;
+    attr.header.uniStringNamePtr = &name;
+    const bool found = ACAPI_Attribute_Get (&attr) == NoError;
+    DisposeAttribute (attr);
+    return found && !name.IsEmpty () ? name : GS::UniString ("(unnamed)");
+}
+
+// The cross section of a segment with a custom profile (API_ProfileStructure) keeps the size of
+// the profile: Archicad ignores a nominalWidth/nominalHeight written to it and still returns
+// NoError (#2554). The segments are read back after the change, so a given width or height that
+// did not apply to a profiled segment is reported instead of a silent success. Segments that are
+// not profiled are not checked, so linked width/height and other Archicad adjustments of basic
+// and complex sections are left as they were.
+template <typename SegmentType>
+static GS::Optional<GS::UniString> GetIgnoredProfiledSectionSize (
+    const SegmentType* segments,
+    const GS::ObjectState& details,
+    const char* heightKey)
+{
+    const auto width = GetOptionalDouble (details, "width");
+    const auto height = GetOptionalDouble (details, heightKey);
+    if (segments == nullptr || (!width.HasValue () && !height.HasValue ())) {
+        return GS::NoValue;
+    }
+
+    const double tolerance = 1e-6;
+    const GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr> (const_cast<SegmentType*> (segments))) / sizeof (SegmentType);
+    for (GSSize i = 0; i < nSegments; ++i) {
+        const API_AssemblySegmentData& segment = segments[i].assemblySegmentData;
+        if (segment.modelElemStructureType != API_ProfileStructure) {
+            continue;
+        }
+        GS::Array<GS::UniString> ignored;
+        if (width.HasValue () && std::abs (segment.nominalWidth - width.Get ()) > tolerance) {
+            ignored.Push ("width");
+        }
+        // With linked width and height a different height given together with the width
+        // cannot both apply, so only the width is compared then.
+        const bool heightFollowsWidth = segment.isWidthAndHeightLinked && width.HasValue ();
+        if (height.HasValue () && !heightFollowsWidth && std::abs (segment.nominalHeight - height.Get ()) > tolerance) {
+            ignored.Push (heightKey);
+        }
+        if (ignored.IsEmpty ()) {
+            continue;
+        }
+        GS::UniString fields = ignored[0];
+        for (UIndex j = 1; j < ignored.GetSize (); ++j) {
+            fields += "/" + ignored[j];
+        }
+        const GS::UniString profileName = GetProfileNameForMessage (segment.profileAttr);
+        return GS::UniString::Printf ("%T not applied: the cross section is the profile %T, which sets the size (it stayed %g x %g). Send buildingMaterialId to switch to a basic cross section first; the other given fields were applied.",
+            fields.ToPrintf (),
+            profileName.ToPrintf (),
+            segment.nominalWidth,
+            segment.nominalHeight);
+    }
+    return GS::NoValue;
+}
+
+static GS::Optional<GS::UniString> GetIgnoredBeamSectionSize (API_Guid elemGuid, const GS::ObjectState& details)
+{
+    if (!details.Contains ("width") && !details.Contains ("height")) {
+        return GS::NoValue;
+    }
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_BeamSegment) != NoError) {
+        return GS::NoValue;
+    }
+    return GetIgnoredProfiledSectionSize (memo.beamSegments, details, "height");
+}
+
+static GS::Optional<GS::UniString> GetIgnoredColumnSectionSize (API_Guid elemGuid, const GS::ObjectState& details)
+{
+    if (!details.Contains ("width") && !details.Contains ("depth")) {
+        return GS::NoValue;
+    }
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (elemGuid, &memo, APIMemoMask_ColumnSegment) != NoError) {
+        return GS::NoValue;
+    }
+    return GetIgnoredProfiledSectionSize (memo.columnSegments, details, "depth");
+}
+
+static GS::ObjectState ApplyBeamSectionAndCheck (API_Guid elemGuid, const GS::ObjectState& details)
+{
+    if (!ApplyBeamSectionToMemo (elemGuid, details)) {
+        return CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify beam cross section.");
+    }
+    const GS::Optional<GS::UniString> ignored = GetIgnoredBeamSectionSize (elemGuid, details);
+    if (ignored.HasValue ()) {
+        return CreateFailedExecutionResult (APIERR_REFUSEDPAR, ignored.Get ());
+    }
+    return CreateSuccessfulExecutionResult ();
+}
+
 bool BuildCuboidMorphMemo (double sizeX, double sizeY, double sizeZ, API_AttributeIndex buildingMaterial, API_ElementMemo& memo, double topExpansion, API_AttributeIndex surface)
 {
     void* bodyData = nullptr;
@@ -5164,12 +5266,12 @@ GS::Optional<GS::UniString> CreateBeamsCommand::GetInputParametersSchema () cons
                         "verticalCurveHeight": { "type": "number", "description": "Optional rise of a vertically curved beam. A non-zero value makes a vertically curved beam; it wins over arcAngle." },
                         "width": {
                             "type": "number",
-                            "description": "Cross section width of the beam. Applied to all segments.",
+                            "description": "Cross section width of the beam. Applied to all segments. A custom profile (profileId, or a tool default or favorite that uses one) sets the size itself and Archicad ignores the width; give buildingMaterialId to make a basic cross section of this size.",
                             "exclusiveMinimum": 0.0
                         },
                         "height": {
                             "type": "number",
-                            "description": "Cross section height of the beam. Applied to all segments.",
+                            "description": "Cross section height of the beam. Applied to all segments. A custom profile (profileId, or a tool default or favorite that uses one) sets the size itself and Archicad ignores the height; give buildingMaterialId to make a basic cross section of this size.",
                             "exclusiveMinimum": 0.0
                         },
                         "anchorPoint": {
@@ -9776,8 +9878,8 @@ GS::Optional<GS::UniString> ModifyBeamsCommand::GetInputParametersSchema () cons
                         "isFlipped": { "type": "boolean" },
                         "profileAngle": { "type": "number" },
                         "anchorPoint": { "$ref": "#/BeamAnchorPoint" },
-                        "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section width of the beam. Applied to all segments." },
-                        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section height of the beam. Applied to all segments." },
+                        "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section width of the beam. Applied to all segments. A custom profile (profileId, or the profile the beam already has) sets the size itself and Archicad ignores the width: the item then fails with a message naming the profile, and the other given fields are still applied. Send buildingMaterialId in the same call to switch to a basic cross section first." },
+                        "height": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section height of the beam. Applied to all segments. A custom profile (profileId, or the profile the beam already has) sets the size itself and Archicad ignores the height: the item then fails with a message naming the profile, and the other given fields are still applied. Send buildingMaterialId in the same call to switch to a basic cross section first." },
                         "isWidthAndHeightLinked": { "type": "boolean", "description": "When true, Archicad keeps width and height equal and setting one changes the other - set to false first to give width/height independent values. Applied to all segments." },
                         "circleBased": { "type": "boolean", "description": "True for a round beam cross section, false for rectangular. Ignored once profileId switches the beam to a custom profile shape. Applied to all segments." },
                         "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments." },
@@ -9870,8 +9972,7 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
                     continue;
                 }
                 if (hasSectionFields) {
-                    bool sectionOk = ApplyBeamSectionToMemo (element.header.guid, item);
-                    results.Push (sectionOk ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify beam cross section."));
+                    results.Push (ApplyBeamSectionAndCheck (element.header.guid, item));
                     continue;
                 }
                 results.Push (CreateSuccessfulExecutionResult ());
@@ -9892,8 +9993,7 @@ GS::ObjectState ModifyBeamsCommand::Execute (const GS::ObjectState& parameters, 
             }
 
             if (hasSectionFields) {
-                bool sectionOk = ApplyBeamSectionToMemo (element.header.guid, item);
-                results.Push (sectionOk ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify beam cross section."));
+                results.Push (ApplyBeamSectionAndCheck (element.header.guid, item));
                 continue;
             }
 
@@ -12186,8 +12286,8 @@ GS::Optional<GS::UniString> ModifyColumnsCommand::GetInputParametersSchema () co
                         "wrapping": { "type": "boolean" },
                         "topOffset": { "type": "number" },
                         "relativeTopStory": { "type": "number", "description": "Non-zero links the column's top to another story instead of an explicit height - do not set together with 'height' in the same call, see the note on 'height' above." },
-                        "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section width of the column. Applied to all segments." },
-                        "depth": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section depth (height) of the column. Applied to all segments." },
+                        "width": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section width of the column. Applied to all segments. A custom profile (profileId, or the profile the column already has) sets the size itself and Archicad ignores the width: the item then fails with a message naming the profile, and the other given fields are still applied. Send buildingMaterialId in the same call to switch to a basic cross section first." },
+                        "depth": { "type": "number", "exclusiveMinimum": 0.0, "description": "Cross section depth (height) of the column. Applied to all segments. A custom profile (profileId, or the profile the column already has) sets the size itself and Archicad ignores the depth: the item then fails with a message naming the profile, and the other given fields are still applied. Send buildingMaterialId in the same call to switch to a basic cross section first." },
                         "isWidthAndHeightLinked": { "type": "boolean", "description": "When true, Archicad keeps width and depth equal and setting one changes the other - set to false first to give width/depth independent values. Applied to all segments." },
                         "circleBased": { "type": "boolean", "description": "True for a round column cross section, false for rectangular. Ignored once profileId switches the column to a custom profile shape. Applied to all segments." },
                         "buildingMaterialId": { "$ref": "#/AttributeId", "description": "Cross section building material (round or rectangular, per circleBased). Applied to all segments." },
@@ -12269,9 +12369,16 @@ GS::ObjectState ModifyColumnsCommand::Execute (const GS::ObjectState& parameters
             if (hasSectionFields) {
                 GS::UniString sectionError;
                 bool sectionOk = ApplyColumnSectionToMemo (element.header.guid, item, sectionError);
-                results.Push (sectionOk ? CreateSuccessfulExecutionResult () : sectionError.IsEmpty ()
-                    ? CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify column cross section.")
-                    : CreateFailedExecutionResult (APIERR_BADPARS, sectionError));
+                if (!sectionOk) {
+                    results.Push (sectionError.IsEmpty ()
+                        ? CreateFailedExecutionResult (APIERR_GENERAL, "Failed to modify column cross section.")
+                        : CreateFailedExecutionResult (APIERR_BADPARS, sectionError));
+                    continue;
+                }
+                const GS::Optional<GS::UniString> ignoredSize = GetIgnoredColumnSectionSize (element.header.guid, item);
+                results.Push (ignoredSize.HasValue ()
+                    ? CreateFailedExecutionResult (APIERR_REFUSEDPAR, ignoredSize.Get ())
+                    : CreateSuccessfulExecutionResult ());
                 continue;
             }
 

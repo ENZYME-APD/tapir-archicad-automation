@@ -347,12 +347,12 @@ GS::Optional<GS::UniString> CreateColumnsCommand::GetInputParametersSchema () co
                         },
                         "width": {
                             "type": "number",
-                            "description": "Cross section width of the column. Applied to all segments.",
+                            "description": "Cross section width of the column. Applied to all segments. A custom profile (profileId, or a tool default or favorite that uses one) sets the size itself and Archicad ignores the width; give buildingMaterialId to make a basic cross section of this size.",
                             "exclusiveMinimum": 0.0
                         },
                         "depth": {
                             "type": "number",
-                            "description": "Cross section depth (height) of the column. Applied to all segments. Only effective for rectangular columns.",
+                            "description": "Cross section depth (height) of the column. Applied to all segments. Only effective for rectangular columns. A custom profile (profileId, or a tool default or favorite that uses one) sets the size itself and Archicad ignores the depth; give buildingMaterialId to make a basic cross section of this size.",
                             "exclusiveMinimum": 0.0
                         },
                         "coreAnchor": {
