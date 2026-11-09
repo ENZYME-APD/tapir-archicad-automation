@@ -10063,6 +10063,9 @@
                 "type": "number",
                 "description": "Height of the log for log walls. 0 means a normal (non-log) wall."
             },
+            "logDetails": {
+                "$ref": "#/WallLogDetails"
+            },
             "hasWindow": {
                 "type": "boolean",
                 "description": "Whether the wall has at least one Window. Output only."
@@ -10082,6 +10085,41 @@
             "bottomOffset",
             "offset"
         ]
+    },
+    "WallLogDetails": {
+        "type": "object",
+        "description": "The settings of the Log Details dialog (Wall Settings > Model) other than the log height (logHeight), one boolean per flag of API_WallType::beamFlags. They only have an effect on a log wall (logHeight greater than 0). GetDetailsOfElements returns every field; CreateWalls and ModifyWalls change only the fields given and keep the others.",
+        "properties": {
+            "startWithHalfLog": {
+                "type": "boolean",
+                "description": "The wall starts with a half log at the bottom (APIWBeam_HalfLog)."
+            },
+            "squareLogs": {
+                "type": "boolean",
+                "description": "The logs are square (rectangular) instead of rounded (APIWBeam_QuadricLog)."
+            },
+            "roundedOnRightSide": {
+                "type": "boolean",
+                "description": "The logs are curved on the right side of the wall, looking from its start point to its end point (APIWBeam_RightLog). Together with roundedOnLeftSide this is the log shape's outside/inside/both choice; which side is the outside depends on the wall's direction and 'flipped'."
+            },
+            "roundedOnLeftSide": {
+                "type": "boolean",
+                "description": "The logs are curved on the left side of the wall, looking from its start point to its end point (APIWBeam_LeftLog)."
+            },
+            "radiusFromOppositeSide": {
+                "type": "boolean",
+                "description": "The log radius is measured from the opposite side of the wall (APIWBeam_Stretched)."
+            },
+            "referenceSideSurfaceOnHorizontalEdges": {
+                "type": "boolean",
+                "description": "The horizontal edges of the logs get the reference side surface instead of the one of the Wall Settings (APIWBeam_RefMater). Set at most one of this and oppositeSideSurfaceOnHorizontalEdges; both false means the surface of the Wall Settings."
+            },
+            "oppositeSideSurfaceOnHorizontalEdges": {
+                "type": "boolean",
+                "description": "The horizontal edges of the logs get the opposite side surface instead of the one of the Wall Settings (APIWBeam_OppMater)."
+            }
+        },
+        "additionalProperties": false
     },
     "BeamDetails": {
         "type": "object",

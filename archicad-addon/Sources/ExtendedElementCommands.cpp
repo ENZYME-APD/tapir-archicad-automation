@@ -2912,6 +2912,31 @@ bool ApplyWallDetails (API_Element& element, API_Element& mask, const GS::Object
         ACAPI_ELEMENT_MASK_SET (mask, API_WallType, logHeight);
         changed = true;
     }
+    const GS::ObjectState* logDetailsOs = details.Get ("logDetails");
+    if (logDetailsOs != nullptr) {
+        // Only the flags given change; the other bits of beamFlags are kept.
+        const std::pair<const char*, Int32> logFlags[] = {
+            { "startWithHalfLog", APIWBeam_HalfLog },
+            { "squareLogs", APIWBeam_QuadricLog },
+            { "roundedOnRightSide", APIWBeam_RightLog },
+            { "roundedOnLeftSide", APIWBeam_LeftLog },
+            { "radiusFromOppositeSide", APIWBeam_Stretched },
+            { "referenceSideSurfaceOnHorizontalEdges", APIWBeam_RefMater },
+            { "oppositeSideSurfaceOnHorizontalEdges", APIWBeam_OppMater }
+        };
+        for (const auto& logFlag : logFlags) {
+            bool value = false;
+            if (logDetailsOs->Get (logFlag.first, value)) {
+                if (value) {
+                    element.wall.beamFlags |= logFlag.second;
+                } else {
+                    element.wall.beamFlags &= ~logFlag.second;
+                }
+            }
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_WallType, beamFlags);
+        changed = true;
+    }
     return changed;
 }
 
@@ -5004,6 +5029,9 @@ GS::Optional<GS::UniString> CreateWallsCommand::GetInputParametersSchema () cons
                         "logHeight": {
                             "type": "number",
                             "description": "Height of the log for log walls. 0 means a normal (non-log) wall."
+                        },
+                        "logDetails": {
+                            "$ref": "#/WallLogDetails"
                         }
                     },
                     "additionalProperties": false,
@@ -9683,6 +9711,9 @@ GS::Optional<GS::UniString> ModifyWallsCommand::GetInputParametersSchema () cons
                         "logHeight": {
                             "type": "number",
                             "description": "Height of the log for log walls. 0 means a normal (non-log) wall."
+                        },
+                        "logDetails": {
+                            "$ref": "#/WallLogDetails"
                         }
                     },
                     "additionalProperties": false,
