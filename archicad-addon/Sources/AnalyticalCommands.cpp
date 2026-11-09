@@ -4606,6 +4606,41 @@ GS::ObjectState GetLCSOfAnalyticalMembersCommand::Execute (const GS::ObjectState
     GS::Array<GS::ObjectState> memberParts;
     parameters.Get ("memberParts", memberParts);
 
+    // Archicad stops with an access violation when the local coordinate system of an element that is not a member of
+    // the Structural Analytical Model is asked for (Archicad 29, with the guid of no element), so only members are
+    // passed on: the curve and surface members of the current model from Archicad 27, existing elements before (Archicad 26
+    // has no current model). When the members cannot be read, the command fails rather than guess.
+#ifdef ServerMainVers_2700
+    API_Guid analyticalModelGuid = APINULLGuid;
+    const GS::Optional<GS::ObjectState> modelError = GetAnalyticalModelGuidFromParameters (parameters, analyticalModelGuid);
+    if (modelError.HasValue ()) {
+        return *modelError;
+    }
+    GS::Array<API_Guid> curveElements;
+    GSErrCode membersErr = TAPIR_GetCurveElements (analyticalModelGuid, curveElements);
+    if (membersErr != NoError) {
+        return CreateErrorResponse (membersErr, "Failed to get the curve members of the Structural Analytical Model.");
+    }
+    GS::Array<API_Guid> surfaceElements;
+    membersErr = TAPIR_GetSurfaceElements (analyticalModelGuid, surfaceElements);
+    if (membersErr != NoError) {
+        return CreateErrorResponse (membersErr, "Failed to get the surface members of the Structural Analytical Model.");
+    }
+    GS::HashSet<API_Guid> members = CreateGuidSet (curveElements);
+    for (const API_Guid& guid : surfaceElements) {
+        members.Add (guid);
+    }
+    const auto isMember = [&] (const API_Guid& guid) {
+        return members.Contains (guid);
+    };
+#else
+    const auto isMember = [] (const API_Guid& guid) {
+        API_Elem_Head elemHead = {};
+        elemHead.guid = guid;
+        return ACAPI_Element_GetHeader (&elemHead) == NoError;
+    };
+#endif
+
     GS::ObjectState response;
     const auto& localCoordinateSystems = response.AddList<GS::ObjectState> ("localCoordinateSystems");
 
@@ -4621,6 +4656,10 @@ GS::ObjectState GetLCSOfAnalyticalMembersCommand::Execute (const GS::ObjectState
             localCoordinateSystems (*partRefError);
             continue;
         }
+        if (!isMember (memberPartRef.elemGuid)) {
+            localCoordinateSystems (CreateErrorResponse (APIERR_BADID, "The element is not a member of the Structural Analytical Model."));
+            continue;
+        }
 
         API_CoordinateSystem coordinateSystem;
         GSErrCode err = NoError;
@@ -4630,6 +4669,10 @@ GS::ObjectState GetLCSOfAnalyticalMembersCommand::Execute (const GS::ObjectState
             partRefError = GetAnalyticalMemberPartRefFromObjectState (*intersectingMemberPartRefOS, intersectingMemberPartRef);
             if (partRefError.HasValue ()) {
                 localCoordinateSystems (*partRefError);
+                continue;
+            }
+            if (!isMember (intersectingMemberPartRef.elemGuid)) {
+                localCoordinateSystems (CreateErrorResponse (APIERR_BADID, "The intersecting element is not a member of the Structural Analytical Model."));
                 continue;
             }
             err = TAPIR_GetLCSOfAnalyticalMemberInIntersection (memberPartRef, intersectingMemberPartRef, coordinateSystem);
