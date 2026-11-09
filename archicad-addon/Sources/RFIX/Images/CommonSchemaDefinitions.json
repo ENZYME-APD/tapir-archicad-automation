@@ -10302,6 +10302,11 @@
                 "type": "number",
                 "description": "Multi-plane: the eaves overhang beyond the pivot polygon."
             },
+            "overhangType": {
+                "type": "string",
+                "enum": [ "Offset", "Manual" ],
+                "description": "Multi-plane: how the roof's contour is made (API_PolyRoofData::overHangType, the Overhang of Roof Settings). Offset: from the pivot polygon and the eaves overhangs, which ModifyRoofs' eavesOverhang sets. Manual: the contour was edited on its own (Edit Roof Contour in Archicad, or ModifyRoofs' contourPolygon), and polygonOutline is that contour."
+            },
             "levels": {
                 "type": "array",
                 "description": "Multi-plane: the roof levels, each with its height above the previous and its slope in radians.",
@@ -10318,7 +10323,7 @@
             },
             "polygonOutline": {
                 "type": "array",
-                "description": "The roof's polygon: the plane roof's outline, the multi-plane roof's contour (the finished outline, outside the pivot polygon by the eaves overhangs). ModifyRoofs' polygonOutline writes the outline of a single-plane roof but the pivot polygon (pivotPolygonOutline) of a multi-plane roof, so a multi-plane roof's contour read here cannot be sent back as polygonOutline unchanged.",
+                "description": "The roof's polygon: the plane roof's outline, the multi-plane roof's contour (the finished outline, outside the pivot polygon by the eaves overhangs). ModifyRoofs' polygonOutline writes the outline of a single-plane roof but the pivot polygon (pivotPolygonOutline) of a multi-plane roof, so a multi-plane roof's contour read here cannot be sent back as polygonOutline unchanged; ModifyRoofs takes it, with polygonArcs and holes, as contourPolygon.",
                 "items": {
                     "$ref": "#/Coordinate2D"
                 }
