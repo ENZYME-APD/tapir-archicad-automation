@@ -10999,6 +10999,45 @@ static GSErrCode RestoreRoofSurfaces (const API_Guid& roofGuid, const API_ShellB
     return ACAPI_Element_Change (&roof, &mask, nullptr, 0, true);
 }
 
+// Reads "cutBodyType" (the Trimming Body on the Model panel of Roof and Shell Settings,
+// API_ShellBaseType::cutBodyType) into cutBodyType. Only the given allowed values are
+// accepted: roofs offer ContoursDown and PivotLinesDown, shells UpwardsExtrusion and
+// DownwardsExtrusion (Editable needs an editable trimming body, which is not written here).
+// The input schemas' enums already refuse any other value for the whole call before
+// Execute runs; the checks here only guard against a schema that is loosened later.
+static GS::Optional<GS::UniString> GetShellBaseCutBodyType (
+    const GS::ObjectState& details,
+    const GS::Array<API_ShellBaseCutBodyTypeID>& allowed,
+    API_ShellBaseCutBodyTypeID& cutBodyType,
+    bool& given)
+{
+    given = false;
+    GS::UniString name;
+    if (!details.Get ("cutBodyType", name)) {
+        return {};
+    }
+    API_ShellBaseCutBodyTypeID value;
+    if (name == "Editable") {
+        value = APIShellBaseCutBody_Editable;
+    } else if (name == "ContoursDown") {
+        value = APIShellBaseCutBody_ContoursDown;
+    } else if (name == "PivotLinesDown") {
+        value = APIShellBaseCutBody_PivotLinesDown;
+    } else if (name == "UpwardsExtrusion") {
+        value = APIShellBaseCutBody_UpwardsExtrusion;
+    } else if (name == "DownwardsExtrusion") {
+        value = APIShellBaseCutBody_DownwardsExtrusion;
+    } else {
+        return "Unknown cutBodyType '" + name + "'.";
+    }
+    if (!allowed.Contains (value)) {
+        return "cutBodyType '" + name + "' cannot be set on this element.";
+    }
+    cutBodyType = value;
+    given = true;
+    return {};
+}
+
 // Reads an OverriddenMaterial the caller sent: an overridden surface needs the id of an
 // existing Surface attribute; one that is not overridden clears the override.
 static GS::Optional<GS::UniString> GetOverriddenMaterialChecked (const GS::ObjectState& materialOs, const GS::UniString& name, API_OverriddenAttribute& result)
@@ -11176,18 +11215,21 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         "elementId": { "$ref": "#/ElementId" },
                         "level": {
                             "type": "number",
-                            "description": "Absolute elevation of the roof's pivot line (the zCoordinate GetDetailsOfElements returns). The roof is put on the story floorIndex when given, else on the story at this elevation."
+                            "description": "Absolute elevation (from the project zero) of the roof's pivot line (single-plane) or pivot polygon (multi-plane): the value GetDetailsOfElements returns as zCoordinate, not its story-relative level. GetDetailsOfElements then returns level = this value minus the elevation of the roof's home story. Without floorIndex the home story is recomputed from this value: the highest story whose elevation is at or below it (the lowest story when it is below every story), so an elevation at or above the next story's moves the roof to that story. To keep the home story, send the roof's current floorIndex (from GetDetailsOfElements) with level."
                         },
                         "floorIndex": {
                             "type": "integer",
-                            "description": "Home story of the roof. With level, the roof gets this home story at the absolute elevation level; without level, it moves to this story and keeps its offset from the story."
+                            "description": "Home story of the roof. With level, the roof gets this home story and level stays an absolute elevation (the offset from the story is worked out from it); without level, it moves to this story and keeps its offset from the story."
                         },
                         "thickness": {
                             "type": "number",
                             "exclusiveMinimum": 0.0,
                             "description": "Only takes effect on a Basic (homogeneous) roof - a Composite roof takes its thickness from the composite attribute. Send structureType 'Basic' in the same call to switch a composite roof first."
                         },
-                        "eavesOverhang": { "type": "number" },
+                        "eavesOverhang": {
+                            "type": "number",
+                            "description": "Multi-plane roofs only: one eaves overhang for the whole roof, the distance of the roof's contour outside the pivot polygon. Switches the roof to an overhang offset from the pivot polygon. Per-edge overhangs are set with pivotEdges."
+                        },
                         "levels": {
                             "type": "array",
                             "minItems": 1,
@@ -11203,6 +11245,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         "compositeId": { "$ref": "#/AttributeId" },
                         "polygonOutline": {
                             "type": "array",
+                            "description": "Single-plane roofs: the roof's outline (polygonOutline of GetDetailsOfElements). Multi-plane roofs: the PIVOT polygon (pivotPolygonOutline of GetDetailsOfElements), not the contour GetDetailsOfElements returns as polygonOutline, which lies outside the pivot polygon by the eaves overhangs. ModifyRoofs cannot write a multi-plane roof's contour independently of its pivot polygon; it follows from the pivot polygon and the overhangs (eavesOverhang, or per edge with pivotEdges in a separate call, as pivotEdges cannot be combined with polygonOutline). The coordinates are plan (x, y) coordinates; the elevation is set with level.",
                             "items": { "$ref": "#/Coordinate2D" },
                             "minItems": 3
                         },
@@ -11219,6 +11262,11 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                             "type": "array",
                             "description": "Single-plane roofs only: the custom surface of each edge of the roof's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeSideMaterials (the outline, then each hole). An overridden item sets the edge's custom surface, overridden false clears it so the edge shows the roof's side surface. Send every edge; the other edges keep their surface when sent as read. Cannot be combined with polygonOutline.",
                             "items": { "$ref": "#/OverriddenMaterial" }
+                        },
+                        "cutBodyType": {
+                            "type": "string",
+                            "enum": [ "ContoursDown", "PivotLinesDown" ],
+                            "description": "The Trimming Body of the roof (Model panel of Roof Settings): Contours Down or Pivot Lines Down. GetDetailsOfElements reports it as cutBodyType."
                         },
                         "angle": {
                             "type": "number",
@@ -11350,6 +11398,18 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
             if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                 continue;
+            }
+            {
+                bool cutBodyGiven = false;
+                auto cutBodyError = GetShellBaseCutBodyType (item, { APIShellBaseCutBody_ContoursDown, APIShellBaseCutBody_PivotLinesDown }, element.roof.shellBase.cutBodyType, cutBodyGiven);
+                if (cutBodyError.HasValue ()) {
+                    results.Push (CreateFailedExecutionResult (APIERR_BADPARS, cutBodyError.Get ()));
+                    continue;
+                }
+                if (cutBodyGiven) {
+                    ACAPI_ELEMENT_MASK_SET (mask, API_RoofType, shellBase.cutBodyType);
+                    changed = true;
+                }
             }
             // Before the polygon edits below: a new edge of a single-plane outline gets the side
             // surface given here, and a multi-plane outline restores the surfaces given here.
@@ -11576,6 +11636,11 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                         "isFlipped": {
                             "type": "boolean",
                             "description": "The side of the reference surface the thickness is applied to, as CreateShells takes it and GetDetailsOfElements returns it. Changing it keeps the reference surface in place and moves the body to its other side."
+                        },
+                        "cutBodyType": {
+                            "type": "string",
+                            "enum": [ "UpwardsExtrusion", "DownwardsExtrusion" ],
+                            "description": "The Trimming Body of the shell (Model panel of Shell Settings): Upward Extrusion or Downward Extrusion. GetDetailsOfElements reports it as cutBodyType. An Editable trimming body cannot be set yet."
                         }
                     },
                     "additionalProperties": false,
@@ -11626,6 +11691,16 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
             if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
                 continue;
+            }
+            bool cutBodyGiven = false;
+            error = GetShellBaseCutBodyType (item, { APIShellBaseCutBody_UpwardsExtrusion, APIShellBaseCutBody_DownwardsExtrusion }, element.shell.shellBase.cutBodyType, cutBodyGiven);
+            if (error.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
+                continue;
+            }
+            if (cutBodyGiven) {
+                ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.cutBodyType);
+                changed = true;
             }
 
             // The thickness of a Basic shell (#2424). Checked against the structure the shell has
@@ -16374,7 +16449,11 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetInputParametersSchema () c
                                     },
                                     "lateralOffset": {
                                         "type": "number",
-                                        "description": "The new sideways offset of this segment from the reference line (API_RailingSegmentType::yOffset)."
+                                        "description": "The new sideways offset of this segment from the reference line (API_RailingSegmentType::yOffset). Archicad only applies it while the segment's referenceLineLocation is Left or Right (confirmed on Archicad 29); with Center the offset stays 0 and the item is reported as a failure, so give referenceLineLocation with it."
+                                    },
+                                    "referenceLineLocation": {
+                                        "$ref": "#/RailingReferenceLineLocation",
+                                        "description": "The new location of this segment relative to the reference line. Applied before lateralOffset."
                                     }
                                 },
                                 "additionalProperties": false,
@@ -16436,9 +16515,10 @@ GS::Optional<GS::UniString> ModifyRailingsCommand::GetRawResponseSchema () const
 namespace {
 
 struct RailingSegmentChange {
-    UInt32                  index = 0;
-    GS::Optional<double>    height;
-    GS::Optional<double>    lateralOffset;
+    UInt32                                      index = 0;
+    GS::Optional<double>                        height;
+    GS::Optional<double>                        lateralOffset;
+    GS::Optional<API_RailingRefLineLocationID>  referenceLineLocation;
 };
 
 struct RailingNodeChange {
@@ -16472,7 +16552,19 @@ GS::Optional<GS::UniString> ReadRailingSegmentChanges (const GS::ObjectState& it
         if (entry.Get ("lateralOffset", value)) {
             change.lateralOffset = value;
         }
-        if (!change.height.HasValue () && !change.lateralOffset.HasValue ()) {
+        GS::UniString location;
+        if (entry.Get ("referenceLineLocation", location)) {
+            if (location == "Left") {
+                change.referenceLineLocation = APIRLL_Left;
+            } else if (location == "Center") {
+                change.referenceLineLocation = APIRLL_Center;
+            } else if (location == "Right") {
+                change.referenceLineLocation = APIRLL_Right;
+            } else {
+                return GS::UniString::Printf ("segments: the referenceLineLocation of segment %d must be Left, Center or Right.", static_cast<int> (index));
+            }
+        }
+        if (!change.height.HasValue () && !change.lateralOffset.HasValue () && !change.referenceLineLocation.HasValue ()) {
             return GS::UniString::Printf ("segments: no fields to modify for segment %d.", static_cast<int> (index));
         }
         changes.Push (change);
@@ -16539,6 +16631,10 @@ GSErrCode ChangeRailingSegment (const API_Guid& railingGuid, const RailingSegmen
         segment.railingSegment.height = change.height.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_RailingSegmentType, height);
     }
+    if (change.referenceLineLocation.HasValue ()) {
+        segment.railingSegment.refLineLocation = change.referenceLineLocation.Get ();
+        ACAPI_ELEMENT_MASK_SET (mask, API_RailingSegmentType, refLineLocation);
+    }
     if (change.lateralOffset.HasValue ()) {
         segment.railingSegment.yOffset = change.lateralOffset.Get ();
         ACAPI_ELEMENT_MASK_SET (mask, API_RailingSegmentType, yOffset);
@@ -16582,28 +16678,27 @@ GSErrCode ChangeRailingNode (const API_Guid& railingGuid, const RailingNodeChang
 
 // What ModifyRailings asked a railing for, read back once the undoable command has ended.
 struct RailingCheck {
-    UIndex                          resultIndex = 0;
-    API_Element                     wanted = {};
-    bool                            hasFloorIndex = false;
-    bool                            hasBottomOffset = false;
-    bool                            hasVisibility = false;
-    bool                            hasIsAutoOnStoryVisibility = false;
-    bool                            hasReferenceLinePen = false;
-    bool                            hasContourPen = false;
-    bool                            hasHeight = false;
-    double                          height = 0.0;
+    UIndex      resultIndex = 0;
+    API_Element wanted = {};
+    bool        hasFloorIndex = false;
+    bool        hasBottomOffset = false;
+    bool        hasVisibility = false;
+    bool        hasIsAutoOnStoryVisibility = false;
+    bool        hasReferenceLinePen = false;
+    bool        hasContourPen = false;
+    bool        hasHeight = false;
+    double      height = 0.0;
     GS::Array<RailingSegmentChange> segmentChanges;
     GS::Array<RailingNodeChange>    nodeChanges;
 };
 
 }
 
-// The fields of the railing element itself are changed first (heights, home story, story visibility and
-// the floor plan pens), without its memo: the reference line, posts and rails stay as they are. The
-// height goes to defSegment.height, as the DevKit's Element_Test (Do_Railing_Edit) changes it. Then
-// single segments and nodes are changed as subelements (ChangeRailingSegment, ChangeRailingNode). The
-// railing is read back once the undoable command has ended, so a value Archicad did not take is
-// reported as a failure instead of a success.
+// The fields of the railing element itself are changed first, without its memo: the reference line,
+// posts and rails stay as they are. The height goes to defSegment.height, as the DevKit's Element_Test
+// (Do_Railing_Edit) changes it, and to every segment as a subelement. Then single segments and nodes are
+// changed as subelements (ChangeRailingSegment, ChangeRailingNode). The railing is read back once the
+// undoable command has ended, so a value Archicad did not take is reported as a failure instead of a success.
 GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl&) const
 {
     GS::Array<GS::ObjectState> items;
@@ -16677,44 +16772,44 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
                 continue;
             }
 
-            if (hasRailingFields) {
-                API_Element mask = {};
-                ACAPI_ELEMENT_MASK_CLEAR (mask);
-                if (hasHeight) {
-                    element.railing.defSegment.height = height;
-                    ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, defSegment.height);
-                }
-                if (hasBottomOffset) {
-                    element.railing.bottomOffset = bottomOffset;
-                    ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, bottomOffset);
-                }
-                if (hasFloorIndex) {
-                    element.header.floorInd = floorIndex;
-                    ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
-                }
-                if (hasVisibility) {
-                    element.railing.visibility = GetStoryVisibilityFromObjectState (visibilityOs);
-                    ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, visibility);
-                    if (!hasIsAutoOnStoryVisibility) {
-                        // As on walls: while isAutoOnStoryVisibility is on, Archicad recomputes the
-                        // visibility from the elevation of the railing and drops the one given here.
-                        element.railing.isAutoOnStoryVisibility = false;
-                        ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, isAutoOnStoryVisibility);
-                    }
-                }
-                if (hasIsAutoOnStoryVisibility) {
-                    element.railing.isAutoOnStoryVisibility = isAutoOnStoryVisibility;
+            API_Element mask = {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            if (hasHeight) {
+                element.railing.defSegment.height = height;
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, defSegment.height);
+            }
+            if (hasBottomOffset) {
+                element.railing.bottomOffset = bottomOffset;
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, bottomOffset);
+            }
+            if (hasFloorIndex) {
+                element.header.floorInd = floorIndex;
+                ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+            }
+            if (hasVisibility) {
+                element.railing.visibility = GetStoryVisibilityFromObjectState (visibilityOs);
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, visibility);
+                if (!hasIsAutoOnStoryVisibility) {
+                    // As on walls: while isAutoOnStoryVisibility is on, Archicad recomputes the
+                    // visibility from the elevation of the railing and drops the one given here.
+                    element.railing.isAutoOnStoryVisibility = false;
                     ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, isAutoOnStoryVisibility);
                 }
-                if (hasReferenceLinePen) {
-                    element.railing.referenceLinePen = (short) referenceLinePen;
-                    ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, referenceLinePen);
-                }
-                if (hasContourPen) {
-                    element.railing.contourPen = (short) contourPen;
-                    ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, contourPen);
-                }
+            }
+            if (hasIsAutoOnStoryVisibility) {
+                element.railing.isAutoOnStoryVisibility = isAutoOnStoryVisibility;
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, isAutoOnStoryVisibility);
+            }
+            if (hasReferenceLinePen) {
+                element.railing.referenceLinePen = (short) referenceLinePen;
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, referenceLinePen);
+            }
+            if (hasContourPen) {
+                element.railing.contourPen = (short) contourPen;
+                ACAPI_ELEMENT_MASK_SET (mask, API_RailingType, contourPen);
+            }
 
+            if (hasRailingFields) {
                 err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
                 if (err != NoError) {
                     results.Push (CreateFailedExecutionResult (err, "Failed to modify railing."));
@@ -16722,13 +16817,29 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
                 }
             }
 
-            // Single segments and nodes come after the railing, so a segment's height overrides height.
+            // defSegment.height does not reach a segment that has a height of its own (one changed
+            // as a subelement before), so height is also given to every segment. The listed segments
+            // and nodes come after it, so a segment's own height overrides height.
             GS::UniString subelementError;
-            for (const RailingSegmentChange& change : segmentChanges) {
-                err = ChangeRailingSegment (element.header.guid, change);
-                if (err != NoError) {
-                    subelementError = GS::UniString::Printf ("Failed to modify segment %u of the railing.", static_cast<unsigned> (change.index));
-                    break;
+            if (hasHeight) {
+                for (UInt32 i = 0; i < element.railing.nSegments; ++i) {
+                    RailingSegmentChange change;
+                    change.index = i;
+                    change.height = height;
+                    err = ChangeRailingSegment (element.header.guid, change);
+                    if (err != NoError) {
+                        subelementError = GS::UniString::Printf ("Failed to set the height of segment %u of the railing.", static_cast<unsigned> (i));
+                        break;
+                    }
+                }
+            }
+            if (subelementError.IsEmpty ()) {
+                for (const RailingSegmentChange& change : segmentChanges) {
+                    err = ChangeRailingSegment (element.header.guid, change);
+                    if (err != NoError) {
+                        subelementError = GS::UniString::Printf ("Failed to modify segment %u of the railing.", static_cast<unsigned> (change.index));
+                        break;
+                    }
                 }
             }
             if (subelementError.IsEmpty ()) {
@@ -16810,6 +16921,7 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
                 // The value each segment and node must have now; the last change given for one wins.
                 std::map<UInt32, double> expectedHeights;
                 std::map<UInt32, double> expectedLateralOffsets;
+                std::map<UInt32, API_RailingRefLineLocationID> expectedLocations;
                 if (check.hasHeight) {
                     for (UInt32 i = 0; i < changed.railing.nSegments; ++i) {
                         expectedHeights[i] = check.height;
@@ -16821,6 +16933,9 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
                     }
                     if (change.lateralOffset.HasValue ()) {
                         expectedLateralOffsets[change.index] = change.lateralOffset.Get ();
+                    }
+                    if (change.referenceLineLocation.HasValue ()) {
+                        expectedLocations[change.index] = change.referenceLineLocation.Get ();
                     }
                 }
                 std::map<UInt32, double> expectedPostOffsets;
@@ -16858,7 +16973,16 @@ GS::ObjectState ModifyRailingsCommand::Execute (const GS::ObjectState& parameter
                     if (!hasSegment (expected.first)) {
                         notApplied += GS::UniString::Printf (" Segment %u is gone.", static_cast<unsigned> (expected.first));
                     } else if (std::abs (memo.railingSegments[expected.first].yOffset - expected.second) > tolerance) {
-                        notApplied += GS::UniString::Printf (" The lateral offset of segment %u is %.4f.", static_cast<unsigned> (expected.first), memo.railingSegments[expected.first].yOffset);
+                        notApplied += GS::UniString::Printf (" The lateral offset of segment %u is %.4f%s.", static_cast<unsigned> (expected.first), memo.railingSegments[expected.first].yOffset,
+                            memo.railingSegments[expected.first].refLineLocation == APIRLL_Center ? " (Archicad only offsets a segment whose referenceLineLocation is Left or Right)" : "");
+                    }
+                }
+                for (const auto& expected : expectedLocations) {
+                    if (!hasSegment (expected.first)) {
+                        notApplied += GS::UniString::Printf (" Segment %u is gone.", static_cast<unsigned> (expected.first));
+                    } else if (memo.railingSegments[expected.first].refLineLocation != expected.second) {
+                        const API_RailingRefLineLocationID got = memo.railingSegments[expected.first].refLineLocation;
+                        notApplied += GS::UniString::Printf (" The referenceLineLocation of segment %u is %s.", static_cast<unsigned> (expected.first), got == APIRLL_Left ? "Left" : (got == APIRLL_Right ? "Right" : "Center"));
                     }
                 }
                 for (const auto& expected : expectedPostOffsets) {

@@ -1,5 +1,5 @@
 {
-  "title": "ModifyRailings: one segment and one node of a two-segment railing, the rest kept (#2446)",
+  "title": "ModifyRailings: one segment and one node of a two-segment railing, the rest kept, then height for every segment (#2446)",
   "minTapir": "2.0.1",
   "steps": [
     {
@@ -53,7 +53,7 @@
         "railingsWithDetails": [
           {
             "elementId": { "guid": "${r}" },
-            "segments": [ { "index": 1, "height": 0.8, "lateralOffset": 0.05 } ],
+            "segments": [ { "index": 1, "height": 0.8, "referenceLineLocation": "Left", "lateralOffset": 0.05 } ],
             "nodes": [ { "index": 1, "postOffset": 0.1, "unifyPatterns": false } ]
           }
         ]
@@ -76,6 +76,7 @@
       "expect": [
         { "path": "detailsOfElements[0].details.segments[1].height", "approx": 0.8, "name": "second segment got its height" },
         { "path": "detailsOfElements[0].details.segments[1].lateralOffset", "approx": 0.05, "name": "second segment got its lateral offset" },
+        { "path": "detailsOfElements[0].details.segments[1].referenceLineLocation", "eq": "Left", "name": "second segment lies left of the reference line" },
         { "path": "detailsOfElements[0].details.segmentHeights[1]", "approx": 0.8, "name": "segmentHeights agrees" },
         { "path": "detailsOfElements[0].details.nodes[1].postOffset", "approx": 0.1, "name": "middle node got its post offset" },
         { "path": "detailsOfElements[0].details.nodes[1].unifyPatterns", "eq": false, "name": "pattern cropped at the middle node" },
@@ -115,6 +116,30 @@
       ]
     },
     {
+      "id": "ModifyRailings: height 1.2 for the whole railing",
+      "command": "ModifyRailings",
+      "creates": false,
+      "params": {
+        "railingsWithDetails": [
+          { "elementId": { "guid": "${r}" }, "height": 1.2 }
+        ]
+      },
+      "expect": [
+        { "path": "executionResults[0].success", "eq": true, "name": "height change reported as applied" }
+      ]
+    },
+    {
+      "id": "railing after the height change",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
+      "expect": [
+        { "path": "detailsOfElements[0].details.segments[0].height", "approx": 1.2, "name": "first segment got the height" },
+        { "path": "detailsOfElements[0].details.segments[1].height", "approx": 1.2, "name": "second segment got the height although it had its own" },
+        { "path": "detailsOfElements[0].details.segments[1].lateralOffset", "approx": 0.05, "name": "second segment lateral offset kept" }
+      ]
+    },
+    {
       "id": "ModifyRailings: bad segment and node indices",
       "command": "ModifyRailings",
       "creates": false,
@@ -137,8 +162,8 @@
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${r}" } } ] },
       "expect": [
-        { "path": "detailsOfElements[0].details.segments[0].height", "approx": 1.0, "name": "first segment height unchanged" },
-        { "path": "detailsOfElements[0].details.segments[1].height", "approx": 0.8, "name": "second segment height unchanged" },
+        { "path": "detailsOfElements[0].details.segments[0].height", "approx": 1.2, "name": "first segment height unchanged" },
+        { "path": "detailsOfElements[0].details.segments[1].height", "approx": 1.2, "name": "second segment height unchanged" },
         { "path": "detailsOfElements[0].details.nodes[1].postOffset", "approx": 0.1, "name": "middle node post offset unchanged" }
       ]
     }

@@ -2,7 +2,8 @@
 
 Only the given fields change; the reference line, posts, rails and panels, the first segment and the
 railing's GUID stay as they are. A segment or node is given by its index in the segments and nodes
-lists GetDetailsOfElements returns. GetDetailsOfElements reads the new values back.
+lists GetDetailsOfElements returns. A lateral offset only takes effect on a segment left or right of the
+reference line. GetDetailsOfElements reads the new values back.
 """
 import aclib
 
@@ -24,7 +25,7 @@ aclib.PrintJson (aclib.RunTapirCommand ('ModifyRailings', {'railingsWithDetails'
 
 aclib.PrintJson (aclib.RunTapirCommand ('ModifyRailings', {'railingsWithDetails': [{
     'elementId': railing['elementId'],
-    'segments': [{'index': 1, 'height': 0.9, 'lateralOffset': 0.05}],
+    'segments': [{'index': 1, 'height': 0.9, 'referenceLineLocation': 'Left', 'lateralOffset': 0.05}],
     'nodes': [{'index': 1, 'postOffset': 0.1, 'unifyPatterns': False}]
 }]}))
 

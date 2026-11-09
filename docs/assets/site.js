@@ -4,17 +4,21 @@
    labels are data-copy and data-copied on the <html> element), or, for the menus it builds (the
    phone menu's button and the Display panel), English here, translated by common.js like the rest.
 
-   Display: the visitor's look (Standard or Legacy), mode (System, Light, Dark or High contrast) and
-   accent (the look's own, Blue, Purple or Orange), kept in localStorage under tapir-display as an
-   object of the settings that differ from the default, e.g. {"style":"legacy","theme":"dark",
-   "accent":"blue"}, and applied as data-style, data-theme and data-accent on <html> (no attribute
+   Display: the visitor's look (Standard or Legacy), mode (System, Light, Dark or High contrast),
+   accent (the look's own, Blue, Purple or Orange), text size (100, 115, 130 or 90 %), font (the
+   look's own, System or Readable), spacing (Comfortable or Compact) and motion (System, Reduced or
+   Full), kept in localStorage under tapir-display as an object of the settings that differ from the
+   default, e.g. {"style":"legacy","theme":"dark","size":"115"}, and applied as data-style,
+   data-theme, data-accent, data-size, data-font, data-spacing and data-motion on <html> (no attribute
    for a default). High contrast is one look, the same whichever Look and Accent are chosen: with it,
    neither data-style nor data-accent is set (the stored choices stay, for the other modes), and the
-   panel's Accent is disabled. The head's inline script applies them before the first paint, moves an old
-   tapir-theme choice into tapir-display, sets the theme-color metas and loads Fraunces for Legacy
-   only; this script does the same when the choice changes. Keep the two in step (DISPLAY_SETTINGS,
-   THEME_COLORS, LEGACY_FONTS). A page that draws with colours listens for tapir-display-change on
-   document and draws again.
+   panel's Accent is disabled; the other settings apply in it too. motion.js and home.js read
+   data-motion, and follow a change of it (tapir-display-change). The head's inline script applies
+   them before the first paint, moves an old tapir-theme choice into tapir-display, sets the
+   theme-color metas and loads Fraunces for Legacy's own font only and Atkinson Hyperlegible for
+   Readable only; this script does the same when the choice changes. Keep the two in step
+   (DISPLAY_SETTINGS, THEME_COLORS, LEGACY_FONTS, READABLE_FONTS). A page that draws with colours
+   listens for tapir-display-change on document and draws again.
 
    Translations: the English stays in the HTML. In another language, the inner HTML of every element
    marked data-i18n, and the attributes an element names in data-i18n-attrs="<attribute> ...", are
@@ -51,11 +55,16 @@
     var DISPLAY_SETTINGS = [
         { key: 'style', attribute: 'data-style', legend: 'Look', inContrast: false, options: [['standard', 'Standard'], ['legacy', 'Legacy']] },
         { key: 'theme', attribute: 'data-theme', legend: 'Mode', inContrast: true, options: [['system', 'System'], ['light', 'Light'], ['dark', 'Dark'], ['contrast', 'High contrast']] },
-        { key: 'accent', attribute: 'data-accent', legend: 'Accent', inContrast: false, options: [['look', 'Green', 'Ochre'], ['blue', 'Blue'], ['purple', 'Purple'], ['orange', 'Orange']] }
+        { key: 'accent', attribute: 'data-accent', legend: 'Accent', inContrast: false, options: [['look', 'Green', 'Ochre'], ['blue', 'Blue'], ['purple', 'Purple'], ['orange', 'Orange']] },
+        { key: 'size', attribute: 'data-size', legend: 'Text size', inContrast: true, options: [['100', '100%'], ['115', '115%'], ['130', '130%'], ['90', '90%']] },
+        { key: 'font', attribute: 'data-font', legend: 'Font', inContrast: true, options: [['look', 'Inter', 'Fraunces & Inter'], ['system', 'System'], ['readable', 'Readable']] },
+        { key: 'spacing', attribute: 'data-spacing', legend: 'Spacing', inContrast: true, options: [['comfortable', 'Comfortable'], ['compact', 'Compact']] },
+        { key: 'motion', attribute: 'data-motion', legend: 'Motion', inContrast: true, options: [['system', 'System'], ['reduced', 'Reduced'], ['full', 'Full']] }
     ];
     // The browser bar colour (the header's): [under prefers-color-scheme: dark, otherwise].
     var THEME_COLORS = { legacy: ['#2D3A30', '#2D3A30'], contrast: ['#FFFFFF', '#FFFFFF'], standard: { system: ['#11161D', '#FFFFFF'], light: ['#FFFFFF', '#FFFFFF'], dark: ['#11161D', '#11161D'] } };
     var LEGACY_FONTS = 'https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,700;0,9..144,900;1,9..144,500;1,9..144,700&display=swap';
+    var READABLE_FONTS = 'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&display=swap';
     var CACHE_KEY = 'tapir-live-v1';
     var CACHE_MS = 60 * 60 * 1000;
     var REPO = 'ENZYME-APD/tapir-archicad-automation';
@@ -376,6 +385,17 @@
         } catch (e) {}
     }
 
+    function loadFonts (id, href) {
+        if (document.getElementById (id)) {
+            return;
+        }
+        var link = document.createElement ('link');
+        link.rel = 'stylesheet';
+        link.id = id;
+        link.href = href;
+        document.head.appendChild (link);
+    }
+
     function applyDisplay (settings) {
         var contrast = settings.theme === 'contrast';
         DISPLAY_SETTINGS.forEach (function (setting) {
@@ -391,13 +411,13 @@
         for (var i = 0; i < metas.length && i < colors.length; i++) {
             metas[i].setAttribute ('content', colors[i]);
         }
-        // Fraunces is only Legacy's; once loaded it stays, unused, if the visitor goes back to Standard.
-        if (legacy && !document.getElementById ('font-legacy')) {
-            var link = document.createElement ('link');
-            link.rel = 'stylesheet';
-            link.id = 'font-legacy';
-            link.href = LEGACY_FONTS;
-            document.head.appendChild (link);
+        // Fraunces is only for Legacy's own font, Atkinson Hyperlegible only for Readable; once loaded, a
+        // font stays, unused, if the visitor chooses something else.
+        if (legacy && !settings.font) {
+            loadFonts ('font-legacy', LEGACY_FONTS);
+        }
+        if (settings.font === 'readable') {
+            loadFonts ('font-readable', READABLE_FONTS);
         }
         var event;
         try {
@@ -457,7 +477,8 @@
         panel.appendChild (head);
 
         var inputs = [];
-        // The labels that differ in Legacy (the accent's own: Green or Ochre): [text node, label, Legacy's].
+        // The labels that differ in Legacy (the accent's own: Green or Ochre; the font's own: Inter or
+        // Fraunces & Inter): [text node, label, Legacy's].
         var lookLabels = [];
         // The fieldsets of the settings High contrast leaves out of the page, disabled while it is chosen.
         var notInContrast = [];
@@ -520,8 +541,10 @@
                 input.checked = input.value === current;
                 input.parentNode.classList.toggle ('checked', input.checked);
             });
+            // High contrast draws Standard's fonts whatever the Look, so the font's own is Inter there.
+            var legacyShown = settings.style === 'legacy' && settings.theme !== 'contrast';
             lookLabels.forEach (function (entry) {
-                entry[0].nodeValue = settings.style === 'legacy' ? entry[2] : entry[1];
+                entry[0].nodeValue = legacyShown ? entry[2] : entry[1];
             });
             notInContrast.forEach (function (fieldset) {
                 fieldset.disabled = settings.theme === 'contrast';

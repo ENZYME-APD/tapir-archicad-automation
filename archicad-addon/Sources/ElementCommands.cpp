@@ -2190,6 +2190,7 @@ static void AddRailingReferenceLineAndSegments (const API_Element& elem, GS::Obj
             segmentDetails.Add ("elementId", CreateGuidObjectState (segment.head.guid));
             segmentDetails.Add ("height", segment.height);
             segmentDetails.Add ("lateralOffset", segment.yOffset);
+            segmentDetails.Add ("referenceLineLocation", segment.refLineLocation == APIRLL_Left ? "Left" : (segment.refLineLocation == APIRLL_Right ? "Right" : "Center"));
             segments (segmentDetails);
         }
     }

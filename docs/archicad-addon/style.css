@@ -14,8 +14,6 @@
     /* The highlight.js token colours in the code blocks (GitHub's dark theme, see below). */
     --code-keyword: #ff7b72; --code-title: #d2a8ff; --code-attr: #79c0ff; --code-string: #a5d6ff;
     --code-builtin: #ffa657; --code-comment: #8b949e; --code-name: #7ee787;
-    /* The shadow of the Groups sheet on narrow screens, which rises from the bottom. */
-    --shadow-sheet: 0 -6px 24px rgba(0, 0, 0, 0.3);
 }
 
 /* The toolbar and the sidebar stick to the top of the window, so the site header scrolls away. */
@@ -60,7 +58,7 @@ div.call_examples {
 }
 
 div.call_example h3 {
-    font-size: 15px;
+    font-size: .9375rem;
     color: var(--fg);
     margin: 8px 0 8px;
 }
@@ -88,12 +86,12 @@ nav.sidebar {
     max-height: 100vh;
     overflow-y: auto;
     padding: 36px 8px 32px 16px;
-    font-size: 14px;
+    font-size: .875rem;
     border-right: 1px solid var(--line);
 }
 
 div.sidebar_title {
-    font: 700 12px/1.2 var(--mono);
+    font: 700 .75rem/1.2 var(--mono);
     letter-spacing: .14em;
     text-transform: uppercase;
     color: var(--link);
@@ -148,7 +146,7 @@ div.sidebar_versions {
 
 button.sidebar_version,
 button.chip {
-    font: 600 13px var(--body);
+    font: 600 .8125rem var(--body);
     color: var(--fg);
     background: transparent;
     border: 1px solid var(--border-strong);
@@ -237,7 +235,7 @@ div.chips {
 }
 
 span.chips_label {
-    font: 700 11px/1.2 var(--mono);
+    font: 700 .6875rem/1.2 var(--mono);
     letter-spacing: .12em;
     text-transform: uppercase;
     color: var(--link);
@@ -306,7 +304,7 @@ button.group_toggle[aria-expanded="true"]::before {
 
 span.group_name {
     flex: none;
-    font: 700 19px/1.2 var(--display);
+    font: 700 1.1875rem/1.2 var(--display);
 }
 
 span.group_count {
@@ -324,7 +322,7 @@ span.group_preview {
     white-space: nowrap;
     text-overflow: ellipsis;
     color: var(--muted);
-    font: 400 12.5px var(--mono);
+    font: 400 .78125rem var(--mono);
 }
 
 section.group_open span.group_preview {
@@ -336,7 +334,7 @@ div.group_body {
 }
 
 h4.group_action_title {
-    font: 700 11px/1.2 var(--mono);
+    font: 700 .6875rem/1.2 var(--mono);
     letter-spacing: .12em;
     text-transform: uppercase;
     color: var(--link);
@@ -456,7 +454,7 @@ div.command_description {
 }
 
 h4.command_section_title {
-    font: 700 11px/1.2 var(--mono);
+    font: 700 .6875rem/1.2 var(--mono);
     letter-spacing: .12em;
     text-transform: uppercase;
     color: var(--link);
@@ -615,7 +613,7 @@ json-schema-view {
 
 .json-schema-view>*,
 json-schema-view>* {
-    font-size: 13px;
+    font-size: .8125rem;
 }
 
 .json-schema-view .description,
@@ -814,18 +812,27 @@ pre .hljs-subst { color: var(--pre-text); }
     border-radius: var(--radius-control);
 }
 
-:root:not([data-style="legacy"]) button.sidebar_version[aria-pressed="true"] {
+:root:not([data-style="legacy"]) button.sidebar_version[aria-pressed="true"],
+:root:not([data-style="legacy"]) button.chip[aria-pressed="true"] {
     background: var(--accent-fill);
     border-color: var(--accent-fill);
     color: var(--on-accent);
 }
 
-/* The commands are rows of one list per group; the list clips their hover background to its corners. */
-:root:not([data-style="legacy"]) div.group_list {
+/* The commands are rows of one card per group (and the overview is one card); the card clips their hover
+   background to its corners. */
+:root:not([data-style="legacy"]) div.group_list,
+:root:not([data-style="legacy"]) div.overview {
     border-radius: var(--radius-card);
     overflow: clip;
 }
 
 :root:not([data-style="legacy"]) details.command_container[open] {
     box-shadow: inset 3px 0 0 var(--accent-fill);
+}
+
+/* The Display menu's Spacing Compact (see the end of ../assets/site.css): each command's row about
+   30 % shorter. */
+:root[data-spacing="compact"] summary.command_header {
+    min-height: 25px;
 }
