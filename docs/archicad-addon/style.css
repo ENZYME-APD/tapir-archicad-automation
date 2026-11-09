@@ -14,6 +14,8 @@
     /* The highlight.js token colours in the code blocks (GitHub's dark theme, see below). */
     --code-keyword: #ff7b72; --code-title: #d2a8ff; --code-attr: #79c0ff; --code-string: #a5d6ff;
     --code-builtin: #ffa657; --code-comment: #8b949e; --code-name: #7ee787;
+    /* The shadow of the Groups sheet on phones. */
+    --shadow-sheet: 0 -6px 24px rgba(0, 0, 0, 0.3);
 }
 
 /* The toolbar and the sidebar stick to the top of the window, so the site header scrolls away. */
