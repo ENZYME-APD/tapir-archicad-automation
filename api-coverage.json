@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-09 12:34 UTC",
+ "generatedAt": "2026-11-09 13:01 UTC",
  "versions": [
   25,
   26,
@@ -5739,6 +5739,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2510,
+     "title": "Railing segments and nodes (takes over #2450): height for every segment, segment reference line location"
+    },
+    {
      "number": 2455,
      "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
@@ -6711,6 +6715,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2510,
+     "title": "Railing segments and nodes (takes over #2450): height for every segment, segment reference line location"
+    },
+    {
      "number": 2455,
      "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
@@ -6929,12 +6937,7 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2507,
-     "title": "ModifyRailings: read back after the change, report the railing visibility limit"
-    }
-   ],
+   "pullRequests": [],
    "issues": []
   },
   {
@@ -7231,8 +7234,8 @@
    "reason": "",
    "pullRequests": [
     {
-     "number": 2507,
-     "title": "ModifyRailings: read back after the change, report the railing visibility limit"
+     "number": 2510,
+     "title": "Railing segments and nodes (takes over #2450): height for every segment, segment reference line location"
     },
     {
      "number": 2506,
@@ -7784,6 +7787,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2510,
+     "title": "Railing segments and nodes (takes over #2450): height for every segment, segment reference line location"
+    },
     {
      "number": 2455,
      "title": "ModifyShells: edit the profile of an existing extruded shell"
@@ -25361,6 +25368,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2510,
+     "title": "Railing segments and nodes (takes over #2450): height for every segment, segment reference line location"
+    },
+    {
      "number": 2506,
      "title": "CreateAssociativeDimensions: an error instead of an elementId for dimensions Archicad removes (#2505)"
     },
@@ -25403,10 +25414,6 @@
     {
      "number": 2439,
      "title": "Read and edit the clipping contour and holes of an existing shell"
-    },
-    {
-     "number": 2438,
-     "title": "Read and set the Flip of an existing shell"
     },
     {
      "number": 2437,
@@ -30998,6 +31005,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2510,
+     "title": "Railing segments and nodes (takes over #2450): height for every segment, segment reference line location"
+    },
+    {
      "number": 2455,
      "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
@@ -31012,10 +31023,6 @@
     {
      "number": 2439,
      "title": "Read and edit the clipping contour and holes of an existing shell"
-    },
-    {
-     "number": 2438,
-     "title": "Read and set the Flip of an existing shell"
     },
     {
      "number": 2429,
@@ -37450,6 +37457,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2510,
+     "title": "Railing segments and nodes (takes over #2450): height for every segment, segment reference line location"
+    },
+    {
      "number": 2506,
      "title": "CreateAssociativeDimensions: an error instead of an elementId for dimensions Archicad removes (#2505)"
     },
@@ -37488,10 +37499,6 @@
     {
      "number": 2439,
      "title": "Read and edit the clipping contour and holes of an existing shell"
-    },
-    {
-     "number": 2438,
-     "title": "Read and set the Flip of an existing shell"
     },
     {
      "number": 2437,
@@ -44129,6 +44136,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2510,
+     "title": "Railing segments and nodes (takes over #2450): height for every segment, segment reference line location"
+    },
+    {
      "number": 2455,
      "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
@@ -44143,10 +44154,6 @@
     {
      "number": 2439,
      "title": "Read and edit the clipping contour and holes of an existing shell"
-    },
-    {
-     "number": 2438,
-     "title": "Read and set the Flip of an existing shell"
     },
     {
      "number": 2429,
@@ -47240,6 +47247,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2510,
+     "title": "Railing segments and nodes (takes over #2450): height for every segment, segment reference line location"
+    },
+    {
      "number": 2455,
      "title": "ModifyShells: edit the profile of an existing extruded shell"
     },
@@ -47254,10 +47265,6 @@
     {
      "number": 2439,
      "title": "Read and edit the clipping contour and holes of an existing shell"
-    },
-    {
-     "number": 2438,
-     "title": "Read and set the Flip of an existing shell"
     },
     {
      "number": 2429,
