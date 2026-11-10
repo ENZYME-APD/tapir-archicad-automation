@@ -197,6 +197,13 @@ GS::UniString HatchOrientationTypeToString (API_HatchOrientationTypeID type);
 API_HatchOrientationTypeID HatchOrientationTypeFromString (const GS::UniString& str, API_HatchOrientationTypeID defaultValue = API_HatchGlobal);
 GS::ObjectState CreateHatchOrientationObjectState (const API_HatchOrientation& orientation);
 API_HatchOrientation GetHatchOrientationFromObjectState (const GS::ObjectState& os, const API_HatchOrientation& currentOrientation);
+// Applies the fillOrientation object of a Hatch, as SetDetailsOfElements and CreateHatches share it:
+// a given origin unsnaps the fill from the project origin and turns a Global fill into a Rotated
+// one unless a type is given as well.
+void ApplyHatchFillOrientation (const GS::ObjectState& os, API_HatchOrientation& orientation);
+// The fill category of a Hatch (API_HatchType::determination): Drafting, Cut or Cover.
+GS::UniString HatchFillCategoryToString (short determination);
+bool HatchFillCategoryFromString (const GS::UniString& str, short& determination);
 
 // ACAPI_ELEMENT_MASK_SET marks only the first byte of a field, so masking a whole
 // API_HatchOrientation would let only its type through: every member is masked on its own.

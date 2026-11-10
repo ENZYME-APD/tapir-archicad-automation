@@ -2315,14 +2315,19 @@ GS::Optional<GS::UniString> CreateHatchesCommand::GetInputParametersSchema () co
                     },
                     "contourPenIndex": {
                         "type": "integer",
-                        "description": "Optional pen index for the contour. By default the current pen is used."
+                        "description": "Optional pen index for the contour; 0 switches the contour off. By default the current pen is used."
+                    },
+                    "contourLineTypeId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Optional line type of the contour. By default the current line type is used."
                     },
                     "fillPenIndex": {
                         "type": "integer",
                         "description": "Optional pen index for the fill. By default the current pen is used."
                     },
                     "fillBackgroundPenIndex": {
-                        "type": "integer"
+                        "type": "integer",
+                        "description": "Optional pen index for the fill background; 0 makes the background transparent and -1 gives it the window background color."
                     },
                     "foregroundColor": {
                         "$ref": "#/ColorRGB",
@@ -2341,10 +2346,18 @@ GS::Optional<GS::UniString> CreateHatchesCommand::GetInputParametersSchema () co
                     },
                     "roomSpecial": {
                         "type": "integer",
-                        "description": "Special area percent in a room (negative means OFF)."
+                        "description": "The percentage (1 to 100) of the hatch's area subtracted from the area of the zone it lies in (Subtract from zone area); a negative value switches it off."
                     },
                     "showArea": {
                         "type": "boolean"
+                    },
+                    "fillOrientation": {
+                        "$ref": "#/HatchOrientation",
+                        "description": "Optional orientation, origin and distortion of the fill pattern, as SetDetailsOfElements writes it. Omitted properties keep the default ones. A given origin detaches the fill from the project origin, and a Global fill becomes Rotated unless a type is given as well. Archicad ignores the orientation of Solid fills."
+                    },
+                    "fillCategory": {
+                        "$ref": "#/HatchFillCategory",
+                        "description": "Optional fill category: Drafting, Cut or Cover. By default the current one is used."
                     }
                 },
                 "additionalProperties": false,
@@ -2434,6 +2447,18 @@ GS::Optional<GS::ObjectState> CreateHatchesCommand::SetTypeSpecificParameters (A
         element.hatch.roomSpecial = (char) roomSpecial;
     }
     parameters.Get ("showArea", element.hatch.showArea);
+    GS::ObjectState fillOrientationOs;
+    if (parameters.Get ("fillOrientation", fillOrientationOs)) {
+        ApplyHatchFillOrientation (fillOrientationOs, element.hatch.hatchOrientation);
+    }
+    GS::UniString fillCategory;
+    if (parameters.Get ("fillCategory", fillCategory)) {
+        HatchFillCategoryFromString (fillCategory, element.hatch.determination);
+    }
+    const GS::ObjectState* contourLineTypeId = parameters.Get ("contourLineTypeId");
+    if (contourLineTypeId != nullptr) {
+        element.hatch.ltypeInd = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*contourLineTypeId));
+    }
 
     return {};
 }
