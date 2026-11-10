@@ -359,6 +359,17 @@ static GS::UniString PropertyValueStatusToString (API_PropertyValueStatus status
 
 #ifdef ServerMainVers_2900
 static GSErrCode GetPathOfFavoriteFolder (const ACAPI::Favorite::FavoriteFolder& folder, GS::Array<GS::UniString>& path, GS::UniString& errorMessage);
+
+// The path of the folder the Favorite is in, the folder names from the root down; empty in the root.
+static GSErrCode GetFolderPathOfFavorite (const ACAPI::Favorite::Favorite& favorite, GS::Array<GS::UniString>& path)
+{
+    const auto parentFolder = favorite.GetParentFolder ();
+    if (parentFolder.IsErr ()) {
+        return parentFolder.UnwrapErr ().kind;
+    }
+    GS::UniString errorMessage;
+    return GetPathOfFavoriteFolder (parentFolder.Unwrap (), path, errorMessage);
+}
 #endif
 
 // ACAPI_Favorite_Get refuses (APIERR_REFUSEDCMD) a Favorite whose settings Archicad cannot hand
@@ -420,17 +431,37 @@ static GSErrCode GetFavoriteWithoutElementSettings (API_Favorite& favorite, GSEr
             favorite.elemCategoryValues->Push (categoryValue);
         }
     }
-    if (favorite.folder.HasValue ()) {
-        const auto parentFolder = source.Unwrap ().GetParentFolder ();
-        GS::UniString errorMessage;
-        if (parentFolder.IsErr () || GetPathOfFavoriteFolder (parentFolder.Unwrap (), *favorite.folder, errorMessage) != NoError) {
-            return refusedErr;
-        }
+    if (favorite.folder.HasValue () && GetFolderPathOfFavorite (source.Unwrap (), *favorite.folder) != NoError) {
+        return refusedErr;
     }
     return NoError;
 #else
     UNUSED_PARAMETER (favorite);
     return refusedErr;
+#endif
+}
+
+// Archicad 29 and later answer an empty API_Favorite::folder from ACAPI_Favorite_Get, whatever
+// folder the Favorite is in (#2641): this replaces it with the path the Favorite manager gives.
+// Keeps what ACAPI_Favorite_Get gave when the Favorite manager cannot read it, and does nothing
+// before Archicad 29.
+static void FillFolderOfFavoriteFromManager (API_Favorite& favorite)
+{
+#ifdef ServerMainVers_2900
+    if (!favorite.folder.HasValue ()) {
+        return;
+    }
+    const ACAPI::Favorite::FavoriteManager manager = ACAPI::Favorite::GetFavoriteManager ();
+    const auto source = manager.GetFavoriteByName (favorite.name);
+    if (source.IsErr ()) {
+        return;
+    }
+    GS::Array<GS::UniString> path;
+    if (GetFolderPathOfFavorite (source.Unwrap (), path) == NoError) {
+        *favorite.folder = path;
+    }
+#else
+    UNUSED_PARAMETER (favorite);
 #endif
 }
 
@@ -3311,6 +3342,7 @@ GS::ObjectState GetFavoriteSettingsCommand::Execute (const GS::ObjectState& para
             favoriteSettingsAdder (CreateErrorResponse (err, GS::UniString::Printf ("Failed to get favorite '%T'.", favoriteName.ToPrintf ())));
             continue;
         }
+        FillFolderOfFavoriteFromManager (favorite);
 
         const API_ElemTypeID elemTypeId = GetElemTypeId (favorite.element.header);
 
