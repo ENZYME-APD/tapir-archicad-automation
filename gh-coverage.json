@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-10 05:43 UTC",
+ "generatedAt": "2026-11-10 06:48 UTC",
  "counts": {
   "done": 788,
   "not applicable": 1
@@ -7477,7 +7477,7 @@
    "id": "ModifyRoofs",
    "group": "Element Commands",
    "version": "1.4.0",
-   "brief": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness, structure, trimming body (cutBodyType), the top, side and bottom surface overrides and edgeTrims (the cut of each edge of the outline or contour and its holes) apply to both; angle, pivotLine, edgeTypes (the Edge Type of each polygon edge, used by schedules) and edgeSideMaterials (the custom surface of each polygon edge) only to single-plane roofs; levels, eavesOverhang and pivotEdges only to multi-plane roofs. On a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs. level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof on its story.",
+   "brief": "Modifies single-plane and multi-plane Roof elements based on the given parameters. The plan outline, level, thickness, structure, trimming body (cutBodyType), the top, side and bottom surface overrides, edgeTrims (the cut of each edge of the outline or contour and its holes) and the floor plan and section settings (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) apply to both; angle, pivotLine, edgeTypes (the Edge Type of each polygon edge, used by schedules) and edgeSideMaterials (the custom surface of each polygon edge) only to single-plane roofs; levels, eavesOverhang and pivotEdges only to multi-plane roofs. On a multi-plane roof polygonOutline is the pivot polygon (GetDetailsOfElements' pivotPolygonOutline), not the contour, which follows from it and the eaves overhangs. level is absolute (GetDetailsOfElements' zCoordinate, not its story-relative level); without floorIndex it also picks the home story, so send the current floorIndex with it to keep the roof on its story.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7491,7 +7491,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 30,
+   "parameterCount": 44,
    "coveredParameters": [
     "roofsWithDetails",
     "roofsWithDetails.angle",
@@ -7515,16 +7515,30 @@
     "roofsWithDetails.thickness"
    ],
    "missingParameters": [
+    "roofsWithDetails.aboveViewLinePen",
+    "roofsWithDetails.aboveViewLineTypeId",
     "roofsWithDetails.bottomMaterial",
+    "roofsWithDetails.contourLineTypeId",
+    "roofsWithDetails.contourPen",
     "roofsWithDetails.cutBodyType",
+    "roofsWithDetails.cutFillBackgroundPen",
+    "roofsWithDetails.cutFillPen",
+    "roofsWithDetails.displayOption",
     "roofsWithDetails.edgeSideMaterials",
     "roofsWithDetails.edgeTrims",
     "roofsWithDetails.edgeTrims.trimType",
     "roofsWithDetails.edgeTypes",
+    "roofsWithDetails.fillVisibility",
+    "roofsWithDetails.floorFill",
+    "roofsWithDetails.isAutoOnStoryVisibility",
     "roofsWithDetails.materialsChained",
     "roofsWithDetails.pivotEdges.levels.angleType",
+    "roofsWithDetails.sectionContourLineTypeId",
+    "roofsWithDetails.sectionContourPen",
     "roofsWithDetails.sideMaterial",
-    "roofsWithDetails.topMaterial"
+    "roofsWithDetails.topMaterial",
+    "roofsWithDetails.viewDepthLimitation",
+    "roofsWithDetails.visibility"
    ],
    "pullRequests": [],
    "issues": []
@@ -7533,7 +7547,7 @@
    "id": "ModifyShells",
    "group": "Element Commands",
    "version": "1.8.0",
-   "brief": "Modifies the structure (Basic or Composite, building material or composite), the thickness of Basic shells, the side of the reference surface the thickness is applied to (isFlipped), the trimming body (cutBodyType: Upward or Downward Extrusion), the clipping contour and the holes (each with its polygon, plane and depth), the top, side (edge) and bottom surface overrides and the custom surface of individual edges (edgeMaterials) of Shell elements, and the extrusion vector or length and the profile of extruded Shells (keeping their GUID, base plane and extrusion start), based on the given parameters. The reference surface stays in place when the thickness changes; a thickness for a Composite shell is refused, as it comes from the composite.",
+   "brief": "Modifies the structure (Basic or Composite, building material or composite), the thickness of Basic shells, the side of the reference surface the thickness is applied to (isFlipped), the trimming body (cutBodyType: Upward or Downward Extrusion), the clipping contour and the holes (each with its polygon, plane and depth), the top, side (edge) and bottom surface overrides, the custom surface of individual edges (edgeMaterials) and the floor plan and section settings (floor plan display, show on stories, cut fill pens, contour pens and line types, cover fill) of Shell elements, and the extrusion vector or length and the profile of extruded Shells (keeping their GUID, base plane and extrusion start), based on the given parameters. The reference surface stays in place when the thickness changes; a thickness for a Composite shell is refused, as it comes from the composite.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7543,7 +7557,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 19,
+   "parameterCount": 33,
    "coveredParameters": [
     "shellsWithDetails",
     "shellsWithDetails.buildingMaterialId",
@@ -7555,17 +7569,31 @@
     "shellsWithDetails.thickness"
    ],
    "missingParameters": [
+    "shellsWithDetails.aboveViewLinePen",
+    "shellsWithDetails.aboveViewLineTypeId",
     "shellsWithDetails.bottomMaterial",
     "shellsWithDetails.contour",
+    "shellsWithDetails.contourLineTypeId",
+    "shellsWithDetails.contourPen",
     "shellsWithDetails.cutBodyType",
+    "shellsWithDetails.cutFillBackgroundPen",
+    "shellsWithDetails.cutFillPen",
+    "shellsWithDetails.displayOption",
     "shellsWithDetails.edgeMaterials",
     "shellsWithDetails.extrusionLength",
     "shellsWithDetails.extrusionVector",
+    "shellsWithDetails.fillVisibility",
+    "shellsWithDetails.floorFill",
+    "shellsWithDetails.isAutoOnStoryVisibility",
     "shellsWithDetails.materialsChained",
     "shellsWithDetails.profile",
     "shellsWithDetails.removeContour",
+    "shellsWithDetails.sectionContourLineTypeId",
+    "shellsWithDetails.sectionContourPen",
     "shellsWithDetails.sideMaterial",
-    "shellsWithDetails.topMaterial"
+    "shellsWithDetails.topMaterial",
+    "shellsWithDetails.viewDepthLimitation",
+    "shellsWithDetails.visibility"
    ],
    "pullRequests": [],
    "issues": []
