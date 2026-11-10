@@ -1265,7 +1265,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateLabelsCommand> (
             elementCommands, "1.2.5",
-            "Creates Label elements based on the given parameters."
+            "Creates Label elements based on the given parameters, optionally on a given layer."
         );
         err |= RegisterCommand<CreateTextsCommand> (
             elementCommands, "1.5.0",
@@ -1341,7 +1341,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<ModifyLabelsCommand> (
             elementCommands, "1.5.9",
-            "Modifies Label elements based on the given parameters."
+            "Modifies Label elements based on the given parameters: the text and its style, the symbol label's style, the leader line, and the leader line's coordinates, which move or re-point the label."
         );
         err |= RegisterCommand<ModifyCurtainWallsCommand> (
             elementCommands, "1.8.0",

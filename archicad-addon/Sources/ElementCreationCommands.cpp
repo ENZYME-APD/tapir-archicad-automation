@@ -3562,7 +3562,19 @@ GS::Optional<GS::UniString> ModifyLabelsCommand::GetInputParametersSchema () con
                         },
                         "style": { "$ref": "#/TextStyleSettableDetails" },
                         "symbolStyle": { "$ref": "#/LabelSymbolStyleSettableDetails" },
-                        "leaderLine": { "$ref": "#/LabelLeaderLineSettableDetails" }
+                        "leaderLine": { "$ref": "#/LabelLeaderLineSettableDetails" },
+                        "begCoordinate": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "The new begin coordinate of the leader line: the point the label points at (where the arrow is). Only the leader line's begin moves; the label's text or symbol stays where it is."
+                        },
+                        "midCoordinate": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "The new mid coordinate of the leader line (its break point)."
+                        },
+                        "endCoordinate": {
+                            "$ref": "#/Coordinate2D",
+                            "description": "The new end coordinate of the leader line, where the label's text or symbol sits: the text or symbol moves by as much as this point moves. To move the whole label, give all three coordinates moved by the same offset. GetDetailsOfElements returns the current ones."
+                        }
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -3649,6 +3661,38 @@ GS::ObjectState ModifyLabelsCommand::Execute (const GS::ObjectState& parameters,
                 if (leaderLineErr.HasValue ()) {
                     executionResults (CreateFailedExecutionResult (*leaderLineErr));
                     continue;
+                }
+            }
+
+            // Moving or re-pointing the label (#2666). The text or symbol sits at the end of the
+            // leader line, so it moves with endC; the DevKit's Element_Test moves a label the same
+            // way (UpdateOneLabel in Element_Tools.cpp: begC, midC, endC and u.text.loc or
+            // u.symbol.pos, changed together with one mask).
+            const GS::ObjectState* begCOS = item.Get ("begCoordinate");
+            if (begCOS != nullptr) {
+                element.label.begC = Get2DCoordinateFromObjectState (*begCOS);
+                ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, begC);
+            }
+            const GS::ObjectState* midCOS = item.Get ("midCoordinate");
+            if (midCOS != nullptr) {
+                element.label.midC = Get2DCoordinateFromObjectState (*midCOS);
+                ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, midC);
+            }
+            const GS::ObjectState* endCOS = item.Get ("endCoordinate");
+            if (endCOS != nullptr) {
+                const API_Coord newEndC = Get2DCoordinateFromObjectState (*endCOS);
+                const double dx = newEndC.x - element.label.endC.x;
+                const double dy = newEndC.y - element.label.endC.y;
+                element.label.endC = newEndC;
+                ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, endC);
+                if (element.label.labelClass == APILblClass_Text) {
+                    element.label.u.text.loc.x += dx;
+                    element.label.u.text.loc.y += dy;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.text.loc);
+                } else {
+                    element.label.u.symbol.pos.x += dx;
+                    element.label.u.symbol.pos.y += dy;
+                    ACAPI_ELEMENT_MASK_SET (mask, API_LabelType, u.symbol.pos);
                 }
             }
 
@@ -4861,6 +4905,11 @@ GS::Optional<GS::UniString> CreateLabelsCommand::GetInputParametersSchema () con
                         "type": "string",
                         "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
                     },
+                    "layerIndex": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults."
+                    },
                     "parentElementId": {
                         "$ref": "#/ElementId",
                         "description" : "The parent element if the label is an associative label."
@@ -6049,6 +6098,11 @@ static void RemoveDictionaryParameters (API_AddParType**& params)
 
 GS::Optional<GS::ObjectState> CreateLabelsCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories&, const GS::ObjectState& parameters) const
 {
+    const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (parameters, element);
+    if (layerError.HasValue ()) {
+        return layerError;
+    }
+
     parameters.Get ("floorInd", element.header.floorInd);
 
     const GS::ObjectState* begCOS = parameters.Get ("begCoordinate");
