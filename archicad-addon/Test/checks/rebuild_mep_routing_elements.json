@@ -1,0 +1,210 @@
+{
+  "title": "RebuildMEPRoutingElements adds a node to a pipe route, leaves out a collinear node, keeps the route's insulation and refuses a segment without length without changing the route",
+  "minTapir": "2.0.1",
+  "minArchicad": "28",
+  "steps": [
+    {
+      "id": "floor plan",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": {
+        "windowType": "FloorPlan",
+        "storyIndex": 0
+      }
+    },
+    {
+      "id": "pipe route with one elbow",
+      "command": "CreateMEPRoutingElements",
+      "params": {
+        "routingElementsData": [
+          {
+            "domain": "Piping",
+            "nodeCoordinates": [
+              { "x": 0.0, "y": -8.0, "z": 3.0 },
+              { "x": 4.0, "y": -8.0, "z": 3.0 },
+              { "x": 4.0, "y": -5.0, "z": 3.0 }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "pipe": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "pipe created"
+        }
+      ]
+    },
+    {
+      "id": "insulate",
+      "command": "ModifyMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "routingElementsData": [
+          { "elementId": { "guid": "${pipe}" }, "insulationThickness": 0.02 }
+        ]
+      },
+      "expect": [
+        {
+          "path": "executionResults[0].success",
+          "eq": true
+        }
+      ]
+    },
+    {
+      "id": "add a node",
+      "command": "RebuildMEPRoutingElements",
+      "params": {
+        "routingElements": [
+          {
+            "routingElementId": { "guid": "${pipe}" },
+            "nodeCoordinates": [
+              { "x": 0.0, "y": -8.0, "z": 3.0 },
+              { "x": 4.0, "y": -8.0, "z": 3.0 },
+              { "x": 4.0, "y": -5.0, "z": 3.0 },
+              { "x": 6.0, "y": -5.0, "z": 3.0 }
+            ]
+          }
+        ]
+      },
+      "save": {
+        "rebuilt": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "route rebuilt"
+        }
+      ]
+    },
+    {
+      "id": "read the added node",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${rebuilt}" } } ]
+      },
+      "expect": [
+        {
+          "path": "routingElements[0].polyline",
+          "len": 4,
+          "name": "four nodes"
+        },
+        {
+          "path": "routingElements[0].segments",
+          "len": 3,
+          "name": "three segments"
+        },
+        {
+          "path": "routingElements[0].polyline[3].x",
+          "approx": 6.0,
+          "name": "the new node is at the end"
+        },
+        {
+          "path": "routingElements[0].segments[2].insulationThickness",
+          "approx": 0.02,
+          "name": "the new segment has the route's insulation"
+        }
+      ]
+    },
+    {
+      "id": "leave out a collinear node",
+      "command": "RebuildMEPRoutingElements",
+      "params": {
+        "routingElements": [
+          {
+            "routingElementId": { "guid": "${rebuilt}" },
+            "nodeCoordinates": [
+              { "x": 0.0, "y": -8.0, "z": 3.0 },
+              { "x": 2.0, "y": -8.0, "z": 3.0 },
+              { "x": 4.0, "y": -8.0, "z": 3.0 },
+              { "x": 4.0, "y": -5.0, "z": 3.0 }
+            ],
+            "removeCollinearNodes": true
+          }
+        ]
+      },
+      "save": {
+        "purged": "elements[0].elementId.guid"
+      },
+      "expect": [
+        {
+          "path": "elements[0].elementId.guid",
+          "exists": true,
+          "name": "route rebuilt"
+        }
+      ]
+    },
+    {
+      "id": "read the purged route",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${purged}" } } ]
+      },
+      "expect": [
+        {
+          "path": "routingElements[0].polyline",
+          "len": 3,
+          "name": "the node at x 2 is left out"
+        },
+        {
+          "path": "routingElements[0].polyline[1].x",
+          "approx": 4.0,
+          "name": "the elbow node stays"
+        }
+      ]
+    },
+    {
+      "id": "a segment without length",
+      "command": "RebuildMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "routingElements": [
+          {
+            "routingElementId": { "guid": "${purged}" },
+            "nodeCoordinates": [
+              { "x": 0.0, "y": -8.0, "z": 3.0 },
+              { "x": 0.0, "y": -8.0, "z": 3.0 },
+              { "x": 4.0, "y": -8.0, "z": 3.0 }
+            ]
+          },
+          {
+            "routingElementId": { "guid": "00000000-0000-0000-0000-00000000BEEF" }
+          }
+        ]
+      },
+      "expect": [
+        {
+          "path": "elements[0].error.code",
+          "exists": true,
+          "name": "refused"
+        },
+        {
+          "path": "elements[1].error.code",
+          "exists": true,
+          "name": "a guid that is no route is refused"
+        }
+      ]
+    },
+    {
+      "id": "the refused route is unchanged",
+      "command": "GetMEPRoutingElements",
+      "creates": false,
+      "params": {
+        "elements": [ { "elementId": { "guid": "${purged}" } } ]
+      },
+      "expect": [
+        {
+          "path": "routingElements[0].polyline",
+          "len": 3,
+          "name": "still three nodes"
+        }
+      ]
+    }
+  ]
+}

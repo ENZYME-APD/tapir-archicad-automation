@@ -447,8 +447,10 @@ static API_Guid MEPUniqueIDToAPIGuid (const ACAPI::MEP::UniqueID& id)
     return GSGuid2APIGuid (id.GetGuid ());
 }
 
-// Sets the layer of one element through the classic element API; the MEP API has no layer setter.
-static GSErrCode SetLayerOfElement (const API_Guid& elemGuid, const API_AttributeIndex& layerIndex)
+// Changes header fields of one element through the classic element API, for what the MEP API has no
+// setter for. setFields sets the fields on the header and on the mask, or returns false when they
+// already have the wanted values, and then nothing is changed.
+static GSErrCode ChangeHeaderOfElement (const API_Guid& elemGuid, const std::function<bool (API_Elem_Head& header, API_Element& mask)>& setFields)
 {
     API_Element element = {};
     element.header.guid = elemGuid;
@@ -458,9 +460,19 @@ static GSErrCode SetLayerOfElement (const API_Guid& elemGuid, const API_Attribut
     }
     API_Element mask = {};
     ACAPI_ELEMENT_MASK_CLEAR (mask);
-    ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
-    element.header.layer = layerIndex;
+    if (!setFields (element.header, mask)) {
+        return NoError;
+    }
     return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+}
+
+static GSErrCode SetLayerOfElement (const API_Guid& elemGuid, const API_AttributeIndex& layerIndex)
+{
+    return ChangeHeaderOfElement (elemGuid, [&] (API_Elem_Head& header, API_Element& mask) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
+        header.layer = layerIndex;
+        return true;
+    });
 }
 
 // The layer given for a new routing element has to exist and must not be locked, since an element
@@ -483,20 +495,14 @@ static GS::Optional<GS::ObjectState> GetErrorIfLayerNotUsable (Int32 layerIndex)
 // story setter (Graphisoft's MEP_Test example changes it the same way).
 static GSErrCode SetFloorIndexOfElement (const API_Guid& elemGuid, short floorIndex)
 {
-    API_Element element = {};
-    element.header.guid = elemGuid;
-    GSErrCode err = ACAPI_Element_Get (&element);
-    if (err != NoError) {
-        return err;
-    }
-    if (element.header.floorInd == floorIndex) {
-        return NoError;
-    }
-    API_Element mask = {};
-    ACAPI_ELEMENT_MASK_CLEAR (mask);
-    ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
-    element.header.floorInd = floorIndex;
-    return ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+    return ChangeHeaderOfElement (elemGuid, [&] (API_Elem_Head& header, API_Element& mask) {
+        if (header.floorInd == floorIndex) {
+            return false;
+        }
+        ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+        header.floorInd = floorIndex;
+        return true;
+    });
 }
 
 // Calls changeElement for a routing element and for all its parts: routing segments, rigid segments,
@@ -8496,5 +8502,355 @@ GS::ObjectState ModifyMEPElementsCommand::Execute (const GS::ObjectState& parame
 #else
     UNUSED_PARAMETER (parameters);
     return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 27 or newer.");
+#endif
+}
+
+#ifdef ServerMainVers_2800
+
+// How far, in meters, an inner node of a route may lie from the straight line between the nodes
+// around it and still be left out by RebuildMEPRoutingElements' removeCollinearNodes.
+static constexpr double CollinearNodeTolerance = 0.001;
+
+static double GetDistance (const API_Coord3D& point1, const API_Coord3D& point2)
+{
+    const double dx = point1.x - point2.x;
+    const double dy = point1.y - point2.y;
+    const double dz = point1.z - point2.z;
+    return std::sqrt (dx * dx + dy * dy + dz * dz);
+}
+
+static double GetDistanceOfPointFromSegment (const API_Coord3D& point, const API_Coord3D& begin, const API_Coord3D& end)
+{
+    const API_Coord3D direction = { end.x - begin.x, end.y - begin.y, end.z - begin.z };
+    const API_Coord3D fromBegin = { point.x - begin.x, point.y - begin.y, point.z - begin.z };
+    const double lengthSquare = direction.x * direction.x + direction.y * direction.y + direction.z * direction.z;
+    const double ratio = lengthSquare > 0.0
+        ? std::clamp ((fromBegin.x * direction.x + fromBegin.y * direction.y + fromBegin.z * direction.z) / lengthSquare, 0.0, 1.0)
+        : 0.0;
+    const API_Coord3D closest = { begin.x + ratio * direction.x, begin.y + ratio * direction.y, begin.z + ratio * direction.z };
+    return GetDistance (point, closest);
+}
+
+// Leaves out the inner nodes where the route goes straight on, and the nodes on top of the previous
+// one: a node is left out when it, and every node left out since the last kept one, lies within
+// CollinearNodeTolerance of the segment from the last kept node to the next node.
+static std::vector<API_Coord3D> RemoveCollinearNodes (const std::vector<API_Coord3D>& nodes)
+{
+    if (nodes.size () < 3) {
+        return nodes;
+    }
+    std::vector<API_Coord3D> keptNodes = { nodes.front () };
+    size_t lastKeptIndex = 0;
+    for (size_t i = 1; i + 1 < nodes.size (); ++i) {
+        bool isOnStraight = true;
+        for (size_t j = lastKeptIndex + 1; j <= i && isOnStraight; ++j) {
+            isOnStraight = GetDistanceOfPointFromSegment (nodes[j], nodes[lastKeptIndex], nodes[i + 1]) <= CollinearNodeTolerance;
+        }
+        if (!isOnStraight) {
+            keptNodes.push_back (nodes[i]);
+            lastKeptIndex = i;
+        }
+    }
+    keptNodes.push_back (nodes.back ());
+    return keptNodes;
+}
+
+// What RebuildMEPRoutingElements carries over from the old route to the rebuilt one, read before
+// the old route is deleted.
+struct RoutingElementIdentity {
+    API_Elem_Head                                   header = {};
+    GS::UniString                                   elementId;
+    GS::Array<GS::Pair<API_Guid, API_Guid>>         classificationItems;
+    GS::Array<API_Property>                         customPropertyValues;
+    std::vector<ACAPI::MEP::UniqueID>               connectedElementIds;
+};
+
+static GSErrCode GetRoutingElementIdentity (RoutingElement& routingElement, const API_Guid& routingElementGuid, RoutingElementIdentity& identity)
+{
+    API_Element element = {};
+    element.header.guid = routingElementGuid;
+    GSErrCode err = ACAPI_Element_Get (&element);
+    if (err != NoError) {
+        return err;
+    }
+    identity.header = element.header;
+    GetElementId (routingElementGuid, identity.elementId);
+    ACAPI_Element_GetClassificationItems (routingElementGuid, identity.classificationItems);
+
+    // Only the values set on the element itself; the others follow from the property definitions.
+    GS::Array<API_PropertyDefinition> definitions;
+    GS::Array<API_Property> properties;
+    if (ACAPI_Element_GetPropertyDefinitions (routingElementGuid, API_PropertyDefinitionFilter_UserDefined, definitions) == NoError &&
+        ACAPI_Element_GetPropertyValues (routingElementGuid, definitions, properties) == NoError) {
+        for (const API_Property& property : properties) {
+            if (property.status == API_Property_HasValue && !property.isDefault) {
+                identity.customPropertyValues.Push (property);
+            }
+        }
+    }
+
+    for (const std::optional<ACAPI::MEP::UniqueID>& portId : { routingElement.GetLogicallyConnectedPortIdAtRouteBegin (), routingElement.GetLogicallyConnectedPortIdAtRouteEnd () }) {
+        if (!portId.has_value ()) {
+            continue;
+        }
+        ACAPI::Result<Port> port = Port::Get (portId.value ());
+        if (port.IsOk ()) {
+            identity.connectedElementIds.push_back (port->GetMEPElementId ());
+        }
+    }
+    return NoError;
+}
+
+// Gives the rebuilt route the layer, home story, renovation status, element ID, classifications and
+// property values of the old one, and connects it to the elements the old one was connected to at
+// its ends. Returns what could not be carried over.
+static std::vector<GS::UniString> CarryOverRoutingElementIdentity (const ACAPI::MEP::UniqueID& rebuiltId, const RoutingElementIdentity& identity)
+{
+    std::vector<GS::UniString> notCarriedOver;
+    const API_Guid rebuiltGuid = MEPUniqueIDToAPIGuid (rebuiltId);
+
+    const GSErrCode layerAndStatusErr = ChangeRoutingElementAndParts (rebuiltId, [&] (const API_Guid& elemGuid) {
+        return ChangeHeaderOfElement (elemGuid, [&] (API_Elem_Head& header, API_Element& mask) {
+            ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, layer);
+            ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, renovationStatus);
+            header.layer = identity.header.layer;
+            header.renovationStatus = identity.header.renovationStatus;
+            return true;
+        });
+    });
+    if (layerAndStatusErr != NoError) {
+        notCarriedOver.push_back ("the layer and renovation status");
+    }
+
+    if (SetHomeStoryOfPlacedMEPElement (rebuiltId, true, identity.header.floorInd).HasValue ()) {
+        notCarriedOver.push_back ("the home story");
+    }
+
+    if (!identity.elementId.IsEmpty () && ChangeElementId (rebuiltGuid, identity.elementId) != NoError) {
+        notCarriedOver.push_back ("the element ID");
+    }
+
+    for (const auto& systemAndItem : identity.classificationItems) {
+        if (ACAPI_Element_AddClassificationItem (rebuiltGuid, systemAndItem.second) != NoError) {
+            notCarriedOver.push_back ("a classification");
+        }
+    }
+
+    if (!identity.customPropertyValues.IsEmpty () && ACAPI_Element_SetProperties (rebuiltGuid, identity.customPropertyValues) != NoError) {
+        notCarriedOver.push_back ("the property values");
+    }
+
+    for (const ACAPI::MEP::UniqueID& connectedElementId : identity.connectedElementIds) {
+        ACAPI::Result<RoutingElement> rebuilt = RoutingElement::Get (rebuiltId);
+        bool isConnected = false;
+        if (rebuilt.IsOk ()) {
+            rebuilt->Modify ([&] (RoutingElement::Modifier& modifier) {
+                isConnected = modifier.ConnectLogically (connectedElementId).IsOk ();
+            }, "Connect MEP Elements");
+        }
+        if (!isConnected) {
+            notCarriedOver.push_back (GS::UniString::Printf ("the connection to the element with guid %T",
+                APIGuidToString (MEPUniqueIDToAPIGuid (connectedElementId)).ToPrintf ()));
+        }
+    }
+    return notCarriedOver;
+}
+
+// Rebuilds one route in RebuildMEPRoutingElements: deletes it and places it again along the given
+// nodes, from its own settings, under its own guid when Archicad allows it. Runs inside the caller's
+// undoable command. Returns the element id of the rebuilt route or an error item.
+static GS::ObjectState RebuildRoutingElement (const API_Guid& routingElementGuid, const GS::ObjectState& item)
+{
+    ACAPI::Result<RoutingElement> routingElement = RoutingElement::Get (Adapter::UniqueID (routingElementGuid));
+    if (routingElement.IsErr ()) {
+        return CreateErrorResponse (routingElement.UnwrapErr ().kind, "The 'routingElementId' is not an MEP routing element.");
+    }
+
+    std::vector<API_Coord3D> nodes;
+    GS::Array<GS::ObjectState> nodeCoordinates;
+    if (item.Get ("nodeCoordinates", nodeCoordinates)) {
+        for (const GS::ObjectState& nodeCoordinate : nodeCoordinates) {
+            nodes.push_back (Get3DCoordinateFromObjectState (nodeCoordinate));
+        }
+    } else {
+        nodes = routingElement->GetPolyLine ();
+    }
+    bool removeCollinearNodes = false;
+    if (item.Get ("removeCollinearNodes", removeCollinearNodes) && removeCollinearNodes) {
+        nodes = RemoveCollinearNodes (nodes);
+    }
+    // The route is deleted before it is placed again, so a route that cannot be placed is refused first.
+    if (nodes.size () < 2) {
+        return CreateErrorResponse (APIERR_BADPARS, "The route needs at least 2 nodes; nothing was changed.");
+    }
+    for (size_t i = 1; i < nodes.size (); ++i) {
+        if (GetDistance (nodes[i], nodes[i - 1]) <= CollinearNodeTolerance) {
+            return CreateErrorResponse (APIERR_BADPARS, GS::UniString::Printf (
+                "Node %u lies on node %u, which makes a segment without length; nothing was changed.", static_cast<UInt32> (i), static_cast<UInt32> (i - 1)));
+        }
+    }
+
+    RoutingElementIdentity identity;
+    GSErrCode err = GetRoutingElementIdentity (*routingElement, routingElementGuid, identity);
+    if (err != NoError) {
+        return CreateErrorResponse (err, "Failed to read the routing element; nothing was changed.");
+    }
+
+    // The route's own settings, with the uncustomized segment and node settings for every segment
+    // and node, so customized segments and nodes are reset.
+    RoutingElementDefault routingElementDefault = routingElement->PickUpDefault ();
+    const RoutingSegmentDefault segmentDefault = routingElement->GetRoutingSegmentDefaultParameters ();
+    const RoutingNodeDefault nodeDefault = routingElement->GetRoutingNodeDefaultParameters ();
+    routingElementDefault.Modify ([&] (RoutingElementDefault::Modifier& modifier) {
+        modifier.SetRoutingSegmentDefault (segmentDefault);
+        modifier.SetRoutingNodeDefault (nodeDefault);
+    });
+
+    err = ACAPI_Element_Delete ({ routingElementGuid });
+    if (err != NoError) {
+        const GS::UniString reason = DescribeElementEditRefusal (err, identity.header);
+        return CreateErrorResponse (err, reason.IsEmpty ()
+            ? GS::UniString ("Failed to delete the routing element to rebuild it; nothing was changed.")
+            : GS::UniString ("The routing element cannot be rebuilt because ") + reason + "; nothing was changed.");
+    }
+
+    const std::map<UInt32, RoutingSegmentRectangularCrossSectionData> noRectangularCrossSections;
+    const std::map<UInt32, RoutingSegmentCircularCrossSectionData> noCircularCrossSections;
+    std::optional<ACAPI::MEP::UniqueID> rebuiltId;
+    ACAPI::Result<ACAPI::MEP::UniqueID> placedUnderOwnGuid = routingElementDefault.Place (nodes, noRectangularCrossSections, noCircularCrossSections, routingElementGuid);
+    if (placedUnderOwnGuid.IsOk ()) {
+        rebuiltId = placedUnderOwnGuid.Unwrap ();
+    } else {
+        // Archicad may keep the guid of the deleted route; then the route gets a new one.
+        ACAPI::Result<ACAPI::MEP::UniqueID> placedUnderNewGuid = routingElementDefault.Place (nodes, noRectangularCrossSections, noCircularCrossSections);
+        if (placedUnderNewGuid.IsErr ()) {
+            return CreateErrorResponse (placedUnderNewGuid.UnwrapErr ().kind,
+                "The routing element was deleted but could not be placed again along the nodes; undo the command in Archicad to get it back.");
+        }
+        rebuiltId = placedUnderNewGuid.Unwrap ();
+    }
+
+    const std::vector<GS::UniString> notCarriedOver = CarryOverRoutingElementIdentity (rebuiltId.value (), identity);
+    const API_Guid rebuiltGuid = MEPUniqueIDToAPIGuid (rebuiltId.value ());
+    if (!notCarriedOver.empty ()) {
+        GS::UniString list;
+        for (const GS::UniString& what : notCarriedOver) {
+            if (!list.IsEmpty ()) {
+                list += ", ";
+            }
+            list += what;
+        }
+        return CreateErrorResponse (APIERR_GENERAL, GS::UniString::Printf (
+            "The routing element was rebuilt with guid %T, but %T could not be carried over.",
+            APIGuidToString (rebuiltGuid).ToPrintf (), list.ToPrintf ()));
+    }
+    return CreateElementIdObjectState (rebuiltGuid);
+}
+
+#endif
+
+RebuildMEPRoutingElementsCommand::RebuildMEPRoutingElementsCommand () :
+    CommandBase (CommonSchema::Used)
+{
+}
+
+GS::String RebuildMEPRoutingElementsCommand::GetName () const
+{
+    return "RebuildMEPRoutingElements";
+}
+
+GS::Optional<GS::UniString> RebuildMEPRoutingElementsCommand::GetInputParametersSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "routingElements": {
+                "type": "array",
+                "description": "The routing elements to rebuild.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "routingElementId": {
+                            "$ref": "#/ElementId",
+                            "description": "The routing element (duct, pipe or cable carrier route) to rebuild."
+                        },
+                        "nodeCoordinates": {
+                            "type": "array",
+                            "description": "The new corner points of the route, at least 2, absolute like the polyline GetMEPRoutingElements returns. Fewer or more points than the route has nodes remove or add nodes. Omitted: the route's current polyline.",
+                            "items": {
+                                "$ref": "#/Coordinate3D"
+                            },
+                            "minItems": 2
+                        },
+                        "removeCollinearNodes": {
+                            "type": "boolean",
+                            "description": "Leaves out every inner node that lies on the straight line between its neighbours (within 1 mm), as Purge Unused MEP Nodes does, and every node on top of the previous one. Default false."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "routingElementId"
+                    ]
+                }
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "routingElements"
+        ]
+    })";
+}
+
+GS::Optional<GS::UniString> RebuildMEPRoutingElementsCommand::GetRawResponseSchema () const
+{
+    return R"({
+        "type": "object",
+        "properties": {
+            "elements": {
+                "$ref": "#/ElementIdsOrErrors"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "elements"
+        ]
+    })";
+}
+
+GS::ObjectState RebuildMEPRoutingElementsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+#ifdef ServerMainVers_2800
+    GS::Array<GS::ObjectState> routingElements;
+    if (!parameters.Get ("routingElements", routingElements)) {
+        return CreateErrorResponse (APIERR_BADPARS, "Invalid or missing 'routingElements' parameter.");
+    }
+
+    GS::ObjectState response;
+    const auto& elements = response.AddList<GS::ObjectState> ("elements");
+
+    // The rebuilt routes are reported to the notification clients as changed, or as deleted when
+    // they got a new guid (#1825).
+    ElementChangeReporter changeReporter;
+
+    ACAPI_CallUndoableCommand ("Rebuild MEP Routing Elements", [&] () -> GSErrCode {
+        for (const GS::ObjectState& item : routingElements) {
+            const GS::ObjectState* routingElementId = item.Get ("routingElementId");
+            if (routingElementId == nullptr) {
+                elements (CreateErrorResponse (APIERR_BADPARS, "Missing 'routingElementId' parameter."));
+                continue;
+            }
+            const API_Guid routingElementGuid = GetGuidFromObjectState (*routingElementId);
+            changeReporter.Add (routingElementGuid);
+            elements (RebuildRoutingElement (routingElementGuid, item));
+        }
+        return NoError;
+    });
+
+    changeReporter.Report ();
+
+    return response;
+#else
+    UNUSED_PARAMETER (parameters);
+    return CreateErrorResponse (APIERR_NOTSUPPORTED, "This command requires Archicad 28 or newer.");
 #endif
 }
