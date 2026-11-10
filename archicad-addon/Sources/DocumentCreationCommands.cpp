@@ -227,10 +227,16 @@ void CollectLayoutSubsetGuids (API_NavigatorItem item, GS::Array<API_Guid>& subs
         return;
     }
     for (const API_NavigatorItem& child : children) {
+        // The Layout Map's root is an undefined item whose child is the Layout Book
+        // item (API_BookNavItem); the subsets are under that, so every item except
+        // layouts and master layouts, which hold no subsets, is searched
+        if (child.itemType == API_LayoutNavItem || child.itemType == API_MasterLayoutNavItem) {
+            continue;
+        }
         if (child.itemType == API_SubSetNavItem) {
             subsetGuids.Push (child.guid);
-            CollectLayoutSubsetGuids (child, subsetGuids);
         }
+        CollectLayoutSubsetGuids (child, subsetGuids);
     }
 }
 
