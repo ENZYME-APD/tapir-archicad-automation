@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-10 02:23 UTC",
+ "generatedAt": "2026-11-10 03:36 UTC",
  "counts": {
   "done": 788,
   "not applicable": 1
@@ -7532,7 +7532,7 @@
    "id": "ModifyShells",
    "group": "Element Commands",
    "version": "1.8.0",
-   "brief": "Modifies the structure (Basic or Composite, building material or composite), the thickness of Basic shells, the side of the reference surface the thickness is applied to (isFlipped) and the trimming body (cutBodyType: Upward or Downward Extrusion) of Shell elements, and the extrusion vector or length and the profile of extruded Shells (keeping their GUID, base plane and extrusion start), based on the given parameters. The reference surface stays in place when the thickness changes; a thickness for a Composite shell is refused, as it comes from the composite.",
+   "brief": "Modifies the structure (Basic or Composite, building material or composite), the thickness of Basic shells, the side of the reference surface the thickness is applied to (isFlipped), the trimming body (cutBodyType: Upward or Downward Extrusion) and the top, side (edge) and bottom surface overrides of Shell elements, and the extrusion vector or length and the profile of extruded Shells (keeping their GUID, base plane and extrusion start), based on the given parameters. The reference surface stays in place when the thickness changes; a thickness for a Composite shell is refused, as it comes from the composite.",
    "status": "done",
    "reason": "",
    "components": [
@@ -7542,7 +7542,7 @@
     }
    ],
    "parameters": "json",
-   "parameterCount": 11,
+   "parameterCount": 15,
    "coveredParameters": [
     "shellsWithDetails",
     "shellsWithDetails.buildingMaterialId",
@@ -7553,10 +7553,14 @@
     "shellsWithDetails.thickness"
    ],
    "missingParameters": [
+    "shellsWithDetails.bottomMaterial",
     "shellsWithDetails.cutBodyType",
     "shellsWithDetails.extrusionLength",
     "shellsWithDetails.extrusionVector",
-    "shellsWithDetails.profile"
+    "shellsWithDetails.materialsChained",
+    "shellsWithDetails.profile",
+    "shellsWithDetails.sideMaterial",
+    "shellsWithDetails.topMaterial"
    ],
    "pullRequests": [],
    "issues": []

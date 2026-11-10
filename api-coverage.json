@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-10 02:23 UTC",
+ "generatedAt": "2026-11-10 03:36 UTC",
  "versions": [
   25,
   26,
@@ -25940,10 +25940,6 @@
      "title": "[3/3] Shells: read back and write the custom surface of individual edges"
     },
     {
-     "number": 2444,
-     "title": "[2/3] Read back and write the surface overrides of shells"
-    },
-    {
      "number": 2443,
      "title": "Read and write the edge types of single-plane roofs"
     },
@@ -38248,10 +38244,6 @@
     {
      "number": 2452,
      "title": "[3/3] Shells: read back and write the custom surface of individual edges"
-    },
-    {
-     "number": 2444,
-     "title": "[2/3] Read back and write the surface overrides of shells"
     },
     {
      "number": 2443,
