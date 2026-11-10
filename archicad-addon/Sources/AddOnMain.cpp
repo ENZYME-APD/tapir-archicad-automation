@@ -1265,7 +1265,7 @@ GSErrCode Initialize (void)
         );
         err |= RegisterCommand<CreateLabelsCommand> (
             elementCommands, "1.2.5",
-            "Creates Label elements based on the given parameters."
+            "Creates Label elements based on the given parameters. A Symbol label can name its label library part in libraryPartName; it starts from the Symbol label settings of the Label tool default or of the favorite in favoriteName."
         );
         err |= RegisterCommand<CreateTextsCommand> (
             elementCommands, "1.5.0",

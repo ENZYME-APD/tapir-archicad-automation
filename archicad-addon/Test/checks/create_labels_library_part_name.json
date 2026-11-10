@@ -1,0 +1,26 @@
+{
+  "title": "CreateLabels takes libraryPartName for Symbol labels and refuses it where it cannot apply (#2666)",
+  "minTapir": "2.0.1",
+  "steps": [
+    {"id": "text label still created", "command": "CreateLabels",
+     "params": {"labelsData": [{"labelClass": "Text", "text": "Tapir 2666",
+                                "begCoordinate": {"x": 760, "y": 760},
+                                "midCoordinate": {"x": 761, "y": 761},
+                                "endCoordinate": {"x": 762, "y": 761}}]},
+     "save": {"t1": "elements[0].elementId.guid"},
+     "expect": [{"path": "elements[0].elementId.guid", "exists": true, "name": "text label without libraryPartName is created"}]},
+    {"id": "libraryPartName with labelClass Text", "command": "CreateLabels", "creates": false,
+     "params": {"labelsData": [{"labelClass": "Text", "text": "Tapir 2666", "libraryPartName": "Tapir no such label part 2666",
+                                "begCoordinate": {"x": 770, "y": 760}}]},
+     "expect": [{"path": "elements[0].error", "exists": true, "name": "libraryPartName contradicts labelClass Text"},
+                {"path": "elements[0].error.message", "contains": "labelClass", "name": "the message names labelClass"}]},
+    {"id": "unknown libraryPartName", "command": "CreateLabels", "creates": false,
+     "params": {"labelsData": [{"libraryPartName": "Tapir no such label part 2666",
+                                "begCoordinate": {"x": 780, "y": 760}}]},
+     "expect": [{"path": "elements[0].error", "exists": true, "name": "no label is placed for a part that is not loaded (or from Text label defaults)"}]},
+    {"id": "only the text label exists", "command": "GetElementsByType", "creates": false,
+     "params": {"elementType": "Label"},
+     "expect": [{"path": "elements", "len": 1, "name": "the refused items created nothing"},
+                {"path": "elements[0].elementId.guid", "eq": "${t1}"}]}
+  ]
+}
