@@ -1559,7 +1559,8 @@ static GSErrCode RestoreKeptSectionSizes (const API_Element& element, const API_
         CopySectionSizes (segmentsBefore.beamSegments, nBefore, memo.beamSegments, nAfter, kept.width, kept.height);
     }
 
-    return ACAPI_Element_ChangeMemo (element.header.guid, memoMask, &memo);
+    API_Guid guid = element.header.guid;
+    return ACAPI_Element_ChangeMemo (guid, memoMask, &memo);
 }
 
 // Writes the kept fields back from `elementBefore`, the target as ACAPI_Element_Get returned it
