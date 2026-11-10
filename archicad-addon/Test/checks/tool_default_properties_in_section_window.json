@@ -60,12 +60,14 @@
       ]
     },
     {
-      "id": "Label tool default values by id",
+      "id": "Label tool default values: Arrowhead Pen, which Archicad fails to compute here, and Layer Name",
       "command": "GetPropertyValuesOfElementDefaults",
       "creates": false,
-      "params": { "elementType": "Label", "properties": [ { "propertyId": { "guid": "${firstProperty}" } } ] },
+      "params": { "elementType": "Label", "properties": [ { "propertyId": { "guid": "93340406-BC23-4744-BC6C-2CF8325A9490" } }, { "propertyId": { "guid": "812CD483-40FB-4E75-966F-E76C3E68B9F7" } } ] },
       "expect": [
-        { "path": "propertyValues", "len": 1 }
+        { "path": "propertyValues", "len": 2 },
+        { "path": "propertyValues[0].error", "exists": true, "name": "Arrowhead Pen: an error item" },
+        { "path": "propertyValues[1].propertyValue.value", "exists": true, "name": "Layer Name: a value, read one by one after the other property threw" }
       ]
     }
   ],
