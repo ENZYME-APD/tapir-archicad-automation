@@ -37,7 +37,9 @@
 
     // 1. Reveal groups: each child gets a stagger delay within its parent.
     var groups = '.ways > *, .teasers > *, .videos > *, .comm > *, .doc-grid > *, .uses-grid > li, .flow > div, .figures > div, .stack .box, .timeline > li, .share-steps li, .spec dl > *';
-    var singles = '.sec-head, .term, .schedule-wrap, .tblock, .shot, .callout, main section > h2, main section > p';
+    // Not .schedule-wrap: a script fills it after the observer starts (the scripts list) and it can be far
+    // taller than a phone's screen, so it shows as soon as it is there (#2508).
+    var singles = '.sec-head, .term, .tblock, .shot, .callout, main section > h2, main section > p';
     var els = [];
     document.querySelectorAll (groups).forEach (function (el) {
         var i = Array.prototype.indexOf.call (el.parentNode.children, el);
@@ -48,14 +50,14 @@
 
     var io = new IntersectionObserver (function (entries) {
         entries.forEach (function (e) {
-            // 12% of an element, or a quarter of the screen's height of it: 12% of a tall element (the
-            // schedule on a phone, about 7,000 px) never fits in the screen at once.
-            if (!e.isIntersecting || (e.intersectionRatio < 0.12 && e.intersectionRect.height < innerHeight * 0.25)) return;
-            e.target.classList.add ('in'); io.unobserve (e.target);
-            if (e.target.matches ('.figures > div')) countUp (e.target.querySelector ('strong'));
-            if (e.target.matches ('.term')) typeOut (e.target);
+            if (!e.isIntersecting) return;
+            // An element taller than 60% of the window shows as soon as any of it is on screen: its next
+            // threshold (a few % of an element thousands of px tall) may never fit in the screen (#2508).
+            // A shorter one waits for 12% of it, or a quarter of the screen's height of it.
+            if (e.boundingClientRect.height <= innerHeight * 0.6 && e.intersectionRatio < 0.12 && e.intersectionRect.height < innerHeight * 0.25) return;
+            show (e.target);
         });
-    }, { rootMargin: '0px 0px -8% 0px', threshold: [0, 0.05, 0.12] });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: [0, 0.01, 0.02, 0.05, 0.12] });
     els.forEach (function (el) {
         // Anything already on screen at load shows at once, without a flash.
         var r = el.getBoundingClientRect ();
@@ -63,7 +65,7 @@
         else io.observe (el);
     });
 
-    function show (el) { el.classList.add ('in'); if (el.matches ('.figures > div')) countUp (el.querySelector ('strong')); if (el.matches ('.term')) typeOut (el); }
+    function show (el) { el.classList.add ('in'); io.unobserve (el); if (el.matches ('.figures > div')) countUp (el.querySelector ('strong')); if (el.matches ('.term')) typeOut (el); }
     if (splashing) {
         // The elements on screen at load stay hidden under the splash and come in as it lifts.
         held.forEach (function (el) { el.classList.remove ('in'); });
@@ -156,6 +158,20 @@
         tls.forEach (function (tl) { var r = tl.getBoundingClientRect (); var p = Math.max (0, Math.min (1, (innerHeight * 0.6 - r.top) / r.height)); tl.style.setProperty ('--prog', (p * 100).toFixed (1) + '%'); });
     }
     addEventListener ('scroll', onScroll, { passive: true }); onScroll ();
+
+    // Safety net: an element still hidden on screen 1.5 s after the last scroll (or after load, for
+    // content a script fills or moves later) is shown, whatever the observer missed (#2508).
+    var net = 0;
+    function sweep () {
+        if (root.classList.contains ('m-hold')) return arm ();  // the splash shows the held ones itself
+        els.forEach (function (el) {
+            if (el.classList.contains ('in')) return;
+            var r = el.getBoundingClientRect ();
+            if (r.top < innerHeight && r.bottom > 0 && (r.width || r.height)) show (el);
+        });
+    }
+    function arm () { clearTimeout (net); net = setTimeout (sweep, 1500); }
+    addEventListener ('scroll', arm, { passive: true }); arm ();
 
     // 4. CAD crosshair with coordinates in the page head (fine pointers only).
     if (matchMedia ('(pointer: fine)').matches) document.querySelectorAll ('.page-head').forEach (function (head) {
