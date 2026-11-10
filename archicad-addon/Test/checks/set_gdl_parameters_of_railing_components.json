@@ -38,16 +38,14 @@
       "command": "GetGDLParametersOfElements",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${toprail}" } } ] },
-      "save": {
-        "pName": "gdlParametersOfElements[0].parameters[0].name",
-        "pValue": "gdlParametersOfElements[0].parameters[0].value"
-      },
+      "save": { "aBefore": "gdlParametersOfElements[0].parameters[0].value" },
       "expect": [
-        { "path": "gdlParametersOfElements[0].parameters[0].name", "exists": true, "name": "the top rail has GDL parameters" }
+        { "path": "gdlParametersOfElements[0].parameters[0].name", "eq": "A", "name": "the top rail's first parameter is A (every library part has A and B)" },
+        { "path": "gdlParametersOfElements[0].parameters[0].value", "ne": 0.237, "name": "A does not already have the value written below" }
       ]
     },
     {
-      "id": "dry run: write the first parameter with its own value",
+      "id": "dry run: write A with a different value",
       "command": "SetGDLParametersOfElements",
       "creates": false,
       "params": {
@@ -55,26 +53,39 @@
         "elementsWithGDLParameters": [
           {
             "elementId": { "guid": "${toprail}" },
-            "gdlParameters": [ { "name": "${pName}", "value": "${pValue}" } ]
+            "gdlParameters": [ { "name": "A", "value": 0.237 } ]
           }
         ]
       },
+      "save": { "dryOldA": "executionResults[0].wouldChange.oldValue[0].value" },
       "expect": [
         { "path": "dryRun", "eq": true, "name": "answered as a dry run" },
         { "path": "executionResults", "len": 1, "name": "one result" },
         { "path": "executionResults[0].success", "eq": true, "name": "the top rail accepts the parameter (no 'Failed to open parameters')" },
-        { "path": "executionResults[0].wouldChange.newValue[0].name", "exists": true, "name": "wouldChange lists the written parameter" }
+        { "path": "executionResults[0].wouldChange.newValue[0].name", "eq": "A", "name": "wouldChange lists A" },
+        { "path": "executionResults[0].wouldChange.newValue[0].value", "approx": 0.237, "tol": 0.000001, "name": "wouldChange has the new value" },
+        { "expr": "${dryOldA} - ${aBefore}", "approx": 0.0, "tol": 0.000001, "name": "wouldChange has the value before" }
       ]
     },
     {
-      "id": "write the first parameter with its own value",
+      "id": "the dry run changed nothing",
+      "command": "GetGDLParametersOfElements",
+      "creates": false,
+      "params": { "elements": [ { "elementId": { "guid": "${toprail}" } } ] },
+      "save": { "aAfterDryRun": "gdlParametersOfElements[0].parameters[0].value" },
+      "expect": [
+        { "expr": "${aAfterDryRun} - ${aBefore}", "approx": 0.0, "tol": 0.000001, "name": "A unchanged after the dry run" }
+      ]
+    },
+    {
+      "id": "write A with a different value",
       "command": "SetGDLParametersOfElements",
       "creates": false,
       "params": {
         "elementsWithGDLParameters": [
           {
             "elementId": { "guid": "${toprail}" },
-            "gdlParameters": [ { "name": "${pName}", "value": "${pValue}" } ]
+            "gdlParameters": [ { "name": "A", "value": 0.237 } ]
           }
         ]
       },
@@ -84,13 +95,13 @@
       ]
     },
     {
-      "id": "the top rail still has its parameters",
+      "id": "read A back",
       "command": "GetGDLParametersOfElements",
       "creates": false,
       "params": { "elements": [ { "elementId": { "guid": "${toprail}" } } ] },
       "expect": [
-        { "path": "gdlParametersOfElements[0].parameters[0].name", "exists": true, "name": "parameters readable after the change" },
-        { "path": "gdlParametersOfElements[0].parameters[0].value", "exists": true, "name": "the first parameter has a value" }
+        { "path": "gdlParametersOfElements[0].parameters[0].name", "eq": "A", "name": "the first parameter is still A" },
+        { "path": "gdlParametersOfElements[0].parameters[0].value", "approx": 0.237, "tol": 0.000001, "name": "A has the written value" }
       ]
     },
     {
