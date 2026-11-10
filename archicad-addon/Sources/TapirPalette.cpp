@@ -17,6 +17,7 @@
 #include "MigrationHelper.hpp"
 #include "ScriptRequirements.hpp"
 #include "ScriptUIPalette.hpp"
+#include "ScriptManager.hpp"
 
 #include <cstdlib>
 #include <cstring>
@@ -490,6 +491,7 @@ TapirPalette::TapirPalette ()
     , searchEdit (GetReference (), ID_PALETTE_SEARCH_EDIT)
     , favouriteButton (GetReference (), ID_PALETTE_FAVOURITE_BUTTON)
     , searchButton (GetReference (), ID_PALETTE_SEARCH_BUTTON)
+    , scriptManagerButton (GetReference (), ID_PALETTE_SCRIPTMANAGER_BUTTON)
 {
     Attach (*this);
     AttachToAllItems (*this);
@@ -708,6 +710,8 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
         OpenShortcutsDialog ();
     } else if (ev.GetSource () == &checkForUpdatesButton) {
         CheckForUpdates ();
+    } else if (ev.GetSource () == &scriptManagerButton) {
+        ScriptManager::Instance ().Show ();
     } else if (ev.GetSource () == &favouriteButton) {
         ToggleFavourite ();
     } else if (ev.GetSource () == &searchButton) {

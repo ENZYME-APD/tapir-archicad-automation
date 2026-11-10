@@ -61,6 +61,10 @@
     "ScriptNotRunning"
 }
 
+'GICN' ID_SCRIPTMANAGER_BUTTON_ICON "ScriptManager" {
+    "ScriptManager"
+}
+
 'GICN' ID_STAR_BUTTON_ICON "Star" {
     "Star"
 }
