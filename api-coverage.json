@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-10 19:57 UTC",
+ "generatedAt": "2026-11-10 20:19 UTC",
  "versions": [
   25,
   26,
@@ -4218,7 +4218,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2699,
+     "title": "Add SetCategoryValuesOfDefaults: set the Renovation Status and other categories new elements get"
+    }
+   ],
    "issues": []
   },
   {
@@ -38532,6 +38537,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2699,
+     "title": "Add SetCategoryValuesOfDefaults: set the Renovation Status and other categories new elements get"
+    },
     {
      "number": 2697,
      "title": "[3/3] ModifyPictures: move, resize, rotate and mirror Picture elements"
