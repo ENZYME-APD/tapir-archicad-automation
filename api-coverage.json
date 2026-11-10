@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-10 17:50 UTC",
+ "generatedAt": "2026-11-10 18:04 UTC",
  "versions": [
   25,
   26,
@@ -6834,6 +6834,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2654,
+     "title": "ModifyCurtainWallFrames: change the frame element itself so Archicad 29 applies it"
+    },
+    {
      "number": 2644,
      "title": "CreateMorphs: keep the surfaces of a body's faces, also with a whole-morph surfaceId"
     },
@@ -7171,6 +7175,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2645,
+     "title": "[1/2] Meshes: layerIndex in CreateMeshes, building material and surfaces in ModifyMeshes and GetDetailsOfElements"
+    },
+    {
      "number": 2644,
      "title": "CreateMorphs: keep the surfaces of a body's faces, also with a whole-morph surfaceId"
     },
@@ -7268,6 +7276,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2647,
+     "title": "Create commands: refuse an item with an id on a hidden layer instead of leaving the element behind"
+    },
     {
      "number": 2589,
      "title": "CreateRoofs: accept id, layerIndex and pivotEdges"
@@ -7478,6 +7490,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2654,
+     "title": "ModifyCurtainWallFrames: change the frame element itself so Archicad 29 applies it"
+    },
     {
      "number": 2644,
      "title": "CreateMorphs: keep the surfaces of a body's faces, also with a whole-morph surfaceId"
@@ -9075,7 +9091,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2648,
+     "title": "GetElementAtCoordinate without z: find a slab whose top is above the story level"
+    }
+   ],
    "issues": [
     {
      "number": 2635,
@@ -9653,7 +9674,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2650,
+     "title": "GetFavoriteSettings: report the Favorite's folder on Archicad 29+"
+    }
+   ],
    "issues": [
     {
      "number": 2641,
@@ -10856,7 +10882,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2653,
+     "title": "Fix GetMainGroups answering APIERR_BADID on Archicad 29"
+    }
+   ],
    "issues": [
     {
      "number": 2643,
@@ -10884,7 +10915,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2653,
+     "title": "Fix GetMainGroups answering APIERR_BADID on Archicad 29"
+    }
+   ],
    "issues": [
     {
      "number": 2643,
@@ -10912,7 +10948,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2653,
+     "title": "Fix GetMainGroups answering APIERR_BADID on Archicad 29"
+    }
+   ],
    "issues": [
     {
      "number": 2643,
@@ -12286,7 +12327,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2652,
+     "title": "ChangeLibraryPartOfElements: switch wall ends between Wall End parts"
+    }
+   ],
    "issues": []
   },
   {
@@ -12502,7 +12548,12 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2651,
+     "title": "GetAvailableLibraryParts: report windows, doors, skylights and lamps by their real type"
+    }
+   ],
    "issues": []
   },
   {
@@ -12959,6 +13010,10 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2652,
+     "title": "ChangeLibraryPartOfElements: switch wall ends between Wall End parts"
+    },
     {
      "number": 2596,
      "title": "[4/5] ModifyRailings: change posts, inner posts, panels and baluster sets (#2572)"
@@ -19766,12 +19821,7 @@
    ],
    "status": "done",
    "reason": "",
-   "pullRequests": [
-    {
-     "number": 2616,
-     "title": "Set3DFilterAndCutSettings: keep MEP routes visible in 3D"
-    }
-   ],
+   "pullRequests": [],
    "issues": [
     {
      "number": 2614,
@@ -25890,6 +25940,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2654,
+     "title": "ModifyCurtainWallFrames: change the frame element itself so Archicad 29 applies it"
+    },
+    {
+     "number": 2647,
+     "title": "Create commands: refuse an item with an id on a hidden layer instead of leaving the element behind"
+    },
+    {
+     "number": 2645,
+     "title": "[1/2] Meshes: layerIndex in CreateMeshes, building material and surfaces in ModifyMeshes and GetDetailsOfElements"
+    },
+    {
      "number": 2644,
      "title": "CreateMorphs: keep the surfaces of a body's faces, also with a whole-morph surfaceId"
     },
@@ -27513,7 +27575,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2650,
+     "title": "GetFavoriteSettings: report the Favorite's folder on Archicad 29+"
+    }
+   ],
    "issues": []
   },
   {
@@ -27632,7 +27699,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2650,
+     "title": "GetFavoriteSettings: report the Favorite's folder on Archicad 29+"
+    }
+   ],
    "issues": []
   },
   {
@@ -27853,7 +27925,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2650,
+     "title": "GetFavoriteSettings: report the Favorite's folder on Archicad 29+"
+    }
+   ],
    "issues": []
   },
   {
@@ -28023,7 +28100,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2650,
+     "title": "GetFavoriteSettings: report the Favorite's folder on Archicad 29+"
+    }
+   ],
    "issues": []
   },
   {
@@ -31639,6 +31721,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2651,
+     "title": "GetAvailableLibraryParts: report windows, doors, skylights and lamps by their real type"
+    },
+    {
+     "number": 2645,
+     "title": "[1/2] Meshes: layerIndex in CreateMeshes, building material and surfaces in ModifyMeshes and GetDetailsOfElements"
+    },
     {
      "number": 2639,
      "title": "Set the ID and layer of an Opening with SetDetailsOfElements"
@@ -38175,6 +38265,22 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2654,
+     "title": "ModifyCurtainWallFrames: change the frame element itself so Archicad 29 applies it"
+    },
+    {
+     "number": 2652,
+     "title": "ChangeLibraryPartOfElements: switch wall ends between Wall End parts"
+    },
+    {
+     "number": 2647,
+     "title": "Create commands: refuse an item with an id on a hidden layer instead of leaving the element behind"
+    },
+    {
+     "number": 2645,
+     "title": "[1/2] Meshes: layerIndex in CreateMeshes, building material and surfaces in ModifyMeshes and GetDetailsOfElements"
+    },
     {
      "number": 2644,
      "title": "CreateMorphs: keep the surfaces of a body's faces, also with a whole-morph surfaceId"
@@ -44979,6 +45085,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2651,
+     "title": "GetAvailableLibraryParts: report windows, doors, skylights and lamps by their real type"
+    },
+    {
+     "number": 2645,
+     "title": "[1/2] Meshes: layerIndex in CreateMeshes, building material and surfaces in ModifyMeshes and GetDetailsOfElements"
+    },
+    {
      "number": 2639,
      "title": "Set the ID and layer of an Opening with SetDetailsOfElements"
     },
@@ -48173,6 +48287,14 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2651,
+     "title": "GetAvailableLibraryParts: report windows, doors, skylights and lamps by their real type"
+    },
+    {
+     "number": 2645,
+     "title": "[1/2] Meshes: layerIndex in CreateMeshes, building material and surfaces in ModifyMeshes and GetDetailsOfElements"
+    },
     {
      "number": 2639,
      "title": "Set the ID and layer of an Opening with SetDetailsOfElements"
