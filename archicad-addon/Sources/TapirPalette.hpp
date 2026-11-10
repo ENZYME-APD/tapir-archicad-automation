@@ -93,6 +93,7 @@ private:
     DG::IconButton manageShortcutsButton;
     DG::LeftText   installedVersionText;
     DG::IconButton checkForUpdatesButton;
+    DG::IconButton scriptManagerButton;   // opens the Script Manager (#2408)
     DG::TextEdit   searchEdit;        // filters the dropdown (BuildVisibleItems); hidden until searchButton opens it
     DG::IconButton favouriteButton;   // the star: adds the selected script to the favourites or removes it
     DG::IconButton searchButton;      // shows or hides searchEdit; highlighted while a filter is applied
