@@ -733,6 +733,14 @@ static const char* DimensionSettingsSchemaProperties = R"(
                             "type": "number",
                             "minimum": 0,
                             "description": "Optional value that goes with the witness line form, in meters (for Fix the length of the witness lines), applied to every witness point."
+                        },
+                        "staticDimension": {
+                            "type": "boolean",
+                            "description": "Optional Static dimension checkbox of the Dimension Settings (API defStaticDim). A new dimension is not static without it, whatever favoriteName or the Dimension tool defaults say. The witness points are written as given either way (by elementId or by coordinate)."
+                        },
+                        "onlyDimensionText": {
+                            "type": "boolean",
+                            "description": "Optional: show only the dimension texts, without the dimension and witness lines (API onlyDimensionText). Without it a new dimension gets the setting of favoriteName or of the Dimension tool defaults."
                         })";
 
 // Writes the settings of DimensionSettingsSchemaProperties given in data to element.dimension,
@@ -861,6 +869,22 @@ static GS::Optional<GS::ObjectState> ApplyDimensionSettings (const GS::ObjectSta
         }
     }
 
+    bool staticDimension = false;
+    if (data.Get ("staticDimension", staticDimension)) {
+        element.dimension.defStaticDim = staticDimension;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, defStaticDim);
+        }
+    }
+
+    bool onlyDimensionText = false;
+    if (data.Get ("onlyDimensionText", onlyDimensionText)) {
+        element.dimension.onlyDimensionText = onlyDimensionText;
+        if (mask != nullptr) {
+            ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, onlyDimensionText);
+        }
+    }
+
     return {};
 }
 
@@ -923,6 +947,8 @@ void AddDimensionDetails (GS::ObjectState& details, const API_Element& element)
     details.Add ("textFrame", element.dimension.defNote.frame);
     details.Add ("defaultWitnessForm", WitnessFormToString (element.dimension.defWitnessForm));
     details.Add ("defaultWitnessVal", element.dimension.defWitnessVal);
+    details.Add ("staticDimension", element.dimension.defStaticDim);
+    details.Add ("onlyDimensionText", element.dimension.onlyDimensionText);
 }
 
 namespace {
@@ -9367,6 +9393,11 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsCommand::GetInputParamete
                         "favoriteName": {
                             "type": "string",
                             "description": "Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight, textPen and textFrame for the texts. The Dimension tool defaults are left as they were."
+                        },
+                        "layerIndex": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Optional layer attribute index to place the new dimension on. It must be an existing, unlocked layer. When omitted the dimension gets the layer of the favorite or of the Dimension tool defaults."
                         },)") + DimensionSettingsSchemaProperties + R"(,
                         "referencePoint": { "$ref": "#/Coordinate2D" },
                         "direction": { "$ref": "#/Coordinate2D" },
@@ -9472,6 +9503,12 @@ GS::ObjectState CreateAssociativeDimensionsCommand::Execute (const GS::ObjectSta
                 elements.Push (settingsError.Get ());
                 continue;
             }
+            // After the favorite and the tool defaults, so an explicit layerIndex wins (#2663).
+            const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (data, element);
+            if (layerError.HasValue ()) {
+                elements.Push (*layerError);
+                continue;
+            }
 
             auto error = PopulateAssociativeDimensionMemo (witnessPoints, element, memo);
             if (error.HasValue ()) {
@@ -9523,6 +9560,11 @@ GS::Optional<GS::UniString> CreateAssociativeDimensionsOnSectionCommand::GetInpu
                         "favoriteName": {
                             "type": "string",
                             "description": "Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight, textPen and textFrame for the texts. The Dimension tool defaults are left as they were."
+                        },
+                        "layerIndex": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Optional layer attribute index to place the new dimension on. It must be an existing, unlocked layer. When omitted the dimension gets the layer of the favorite or of the Dimension tool defaults."
                         },)") + DimensionSettingsSchemaProperties + R"(,
                         "sectionElementId": {
                             "$ref": "#/ElementId",
@@ -9641,6 +9683,12 @@ GS::ObjectState CreateAssociativeDimensionsOnSectionCommand::Execute (const GS::
                 elements.Push (settingsError.Get ());
                 continue;
             }
+            // After the favorite and the tool defaults, so an explicit layerIndex wins (#2663).
+            const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (data, element);
+            if (layerError.HasValue ()) {
+                elements.Push (*layerError);
+                continue;
+            }
 
             auto error = PopulateAssociativeDimensionMemo (witnessPoints, element, memo);
 
@@ -9694,6 +9742,11 @@ GS::Optional<GS::UniString> CreateWallThicknessDimensionsCommand::GetInputParame
                         "favoriteName": {
                             "type": "string",
                             "description": "Optional name of a Dimension favorite to base the new dimension on, e.g. for its layer, line pen and markers. Its settings are applied first, then the command sets the geometry and its usual text placement. The favorite's text size, text pen and text frame are not applied (tested in Archicad 28): use textHeight, textPen and textFrame for the texts. The Dimension tool defaults are left as they were."
+                        },
+                        "layerIndex": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "Optional layer attribute index to place the new dimension on. It must be an existing, unlocked layer. When omitted the dimension gets the layer of the favorite or of the Dimension tool defaults."
                         },)") + DimensionSettingsSchemaProperties + R"(,
                         "wallId": { "$ref": "#/ElementId" },
                         "referencePoint": { "$ref": "#/Coordinate2D" },
@@ -9776,6 +9829,12 @@ GS::ObjectState CreateWallThicknessDimensionsCommand::Execute (const GS::ObjectS
             auto settingsError = ApplyDimensionSettings (data, element, nullptr);
             if (settingsError.HasValue ()) {
                 elements.Push (settingsError.Get ());
+                continue;
+            }
+            // After the favorite and the tool defaults, so an explicit layerIndex wins (#2663).
+            const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (data, element);
+            if (layerError.HasValue ()) {
+                elements.Push (*layerError);
                 continue;
             }
             element.dimension.nDimElem = 2;
@@ -9968,6 +10027,12 @@ GS::ObjectState ModifyAssociativeDimensionsCommand::Execute (const GS::ObjectSta
             }
             if (item.Contains ("defaultWitnessForm") && changed.dimension.defWitnessForm != element.dimension.defWitnessForm) {
                 notApplied += " defaultWitnessForm";
+            }
+            if (item.Contains ("staticDimension") && changed.dimension.defStaticDim != element.dimension.defStaticDim) {
+                notApplied += " staticDimension";
+            }
+            if (item.Contains ("onlyDimensionText") && changed.dimension.onlyDimensionText != element.dimension.onlyDimensionText) {
+                notApplied += " onlyDimensionText";
             }
             if (witnessPointsChanged) {
                 API_ElementMemo changedMemo = {};
@@ -12645,6 +12710,8 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
             "pen", static_cast<Int32> (element.dimension.markerData.markerPen)));
         dimensionData.Add ("defaultWitnessForm", WitnessFormToString (element.dimension.defWitnessForm));
         dimensionData.Add ("defaultWitnessVal", element.dimension.defWitnessVal);
+        dimensionData.Add ("staticDimension", element.dimension.defStaticDim);
+        dimensionData.Add ("onlyDimensionText", element.dimension.onlyDimensionText);
 
         dimensionsData (dimensionData);
     }
