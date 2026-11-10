@@ -15,6 +15,7 @@
 #include "MessageLoopExecutor.hpp"
 #include "AddOnVersion.hpp"
 #include "MigrationHelper.hpp"
+#include "ProjectCommands.hpp"
 #include "ScriptRequirements.hpp"
 #include "ScriptUIPalette.hpp"
 #include "ScriptManager.hpp"
@@ -3111,6 +3112,65 @@ private:
     Int32 percent;
 };
 
+// The installer quits Archicad with the QuitArchicad command, which closes the project without Archicad's
+// own save or send prompt, so a solo project's unsaved changes and a Teamwork project's unsent changes were
+// lost (#2494). The API cannot tell whether the project has changes, so the user is asked each time: the
+// project is saved (solo) or the changes are sent (Teamwork) here, or the update is cancelled.
+// Returns false when the update must not go on.
+static bool SaveOrSendBeforeQuit ()
+{
+    API_ProjectInfo projectInfo = {};
+    const bool hasProjectInfo = ACAPI_ProjectOperation_Project (&projectInfo) == NoError;
+
+    if (hasProjectInfo && projectInfo.teamwork) {
+        const short response = DGAlert (DG_WARNING, UpdateText (ID_AUTOUPDATE_ALERT_TITLE),
+            UpdateText (ID_AUTOUPDATE_UNSENT_TEXT1), UpdateText (ID_AUTOUPDATE_UNSENT_TEXT2),
+            UpdateText (ID_AUTOUPDATE_SEND_AND_UPDATE_BUTTON), UpdateText (ID_AUTOUPDATE_CANCEL_BUTTON),
+            UpdateText (ID_AUTOUPDATE_UPDATE_WITHOUT_SENDING));
+        if (response == DG_THIRD) {
+            return true;
+        }
+        if (response != DG_OK) {
+            return false;
+        }
+        const GSErrCode err = ACAPI_Teamwork_SendChanges ();
+        if (err != NoError) {
+            DGAlert (DG_ERROR, UpdateText (ID_AUTOUPDATE_ALERT_TITLE),
+                GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_SEND_FAILED), static_cast<int> (err)),
+                GS::EmptyUniString, UpdateText (ID_AUTOUPDATE_OK_BUTTON));
+            return false;
+        }
+        return true;
+    }
+
+    if (!hasProjectInfo || projectInfo.untitled) {
+        // An untitled project can only be saved with a file dialog: File > Save As is left to the user.
+        const short response = DGAlert (DG_WARNING, UpdateText (ID_AUTOUPDATE_ALERT_TITLE),
+            UpdateText (ID_AUTOUPDATE_UNTITLED_TEXT1), UpdateText (ID_AUTOUPDATE_UNTITLED_TEXT2),
+            UpdateText (ID_AUTOUPDATE_UPDATE_WITHOUT_SAVING), UpdateText (ID_AUTOUPDATE_CANCEL_BUTTON));
+        return response == DG_OK;
+    }
+
+    const short response = DGAlert (DG_WARNING, UpdateText (ID_AUTOUPDATE_ALERT_TITLE),
+        UpdateText (ID_AUTOUPDATE_UNSAVED_TEXT1), UpdateText (ID_AUTOUPDATE_UNSAVED_TEXT2),
+        UpdateText (ID_AUTOUPDATE_SAVE_AND_UPDATE_BUTTON), UpdateText (ID_AUTOUPDATE_CANCEL_BUTTON),
+        UpdateText (ID_AUTOUPDATE_UPDATE_WITHOUT_SAVING));
+    if (response == DG_THIRD) {
+        return true;
+    }
+    if (response != DG_OK) {
+        return false;
+    }
+    const GSErrCode err = SaveOpenProjectInPlace ();
+    if (err != NoError) {
+        DGAlert (DG_ERROR, UpdateText (ID_AUTOUPDATE_ALERT_TITLE),
+            GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_SAVE_FAILED), static_cast<int> (err)),
+            GS::EmptyUniString, UpdateText (ID_AUTOUPDATE_OK_BUTTON));
+        return false;
+    }
+    return true;
+}
+
 bool TapirPalette::UpdateAddOn ()
 {
     // A second call during the download (e.g. from the menu) returns true, so the callers do not run a script
@@ -3140,6 +3200,10 @@ bool TapirPalette::UpdateAddOn ()
     if (installerDownloadUrl.IsEmpty ()) {
         DGAlert (DG_ERROR, UpdateText (ID_AUTOUPDATE_ALERT_TITLE), UpdateText (ID_AUTOUPDATE_INSTALLER_MISSING_TEXT1),
             UpdateText (ID_AUTOUPDATE_INSTALLER_MISSING_TEXT2), UpdateText (ID_AUTOUPDATE_OK_BUTTON));
+        return false;
+    }
+
+    if (!SaveOrSendBeforeQuit ()) {
         return false;
     }
 
