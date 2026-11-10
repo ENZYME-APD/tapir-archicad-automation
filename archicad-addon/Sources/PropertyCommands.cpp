@@ -3918,6 +3918,7 @@ GS::ObjectState GetPropertyValuesOfElementDefaultsCommand::Execute (const GS::Ob
     parameters.Get ("properties", properties);
 
     GS::Array<API_Guid> propertyGuids;
+    GS::Array<API_PropertyDefinition> propertyDefinitions;
     for (const GS::ObjectState& property : properties) {
         const GS::ObjectState* propertyId = property.Get ("propertyId");
         if (propertyId != nullptr) {
@@ -3927,25 +3928,30 @@ GS::ObjectState GetPropertyValuesOfElementDefaultsCommand::Execute (const GS::Ob
             definition.guid = GetGuidFromObjectState (*propertyId);
             if (definition.guid != APINULLGuid && ACAPI_Property_GetPropertyDefinition (definition) == NoError) {
                 propertyGuids.Push (definition.guid);
+                propertyDefinitions.Push (definition);
             }
         }
     }
 
     GS::Array<API_Property> fetchedProperties;
-    GS::HashSet<API_Guid> throwingProperties;
+    GS::HashTable<API_Guid, GSErrCode> failedProperties;
     GSErrCode err = propertyGuids.IsEmpty () ? NoError :
         CatchArchicadException ([&] { return TAPIR_Element_GetPropertyValuesOfDefaultElemByGuid (elemTypeId, propertyGuids, fetchedProperties); });
     if (err == APIERR_GENERAL) {
         // One property threw: ask for them one by one, so that the others still answer.
+        // The single read leaves the definition out, which the value string needs, so the one read above is kept.
         fetchedProperties.Clear ();
         err = NoError;
-        for (const API_Guid& propertyGuid : propertyGuids) {
+        for (const API_PropertyDefinition& definition : propertyDefinitions) {
             API_Property property;
-            if (CatchArchicadException ([&] { return TAPIR_Element_GetPropertyValueOfDefaultElem (elemTypeId, propertyGuid, property); }) == APIERR_GENERAL) {
-                throwingProperties.Add (propertyGuid);
+            const GSErrCode propertyErr = CatchArchicadException ([&] { return TAPIR_Element_GetPropertyValueOfDefaultElem (elemTypeId, definition.guid, property); });
+            if (propertyErr != NoError) {
+                if (!failedProperties.ContainsKey (definition.guid)) {
+                    failedProperties.Add (definition.guid, propertyErr);
+                }
                 continue;
             }
-            property.definition.guid = propertyGuid;
+            property.definition = definition;
             fetchedProperties.Push (property);
         }
     }
@@ -3972,8 +3978,9 @@ GS::ObjectState GetPropertyValuesOfElementDefaultsCommand::Execute (const GS::Ob
 
         const API_Guid propertyGuid = GetGuidFromObjectState (*propertyId);
 
-        if (throwingProperties.Contains (propertyGuid)) {
-            propertyValues (CreateErrorResponse (APIERR_GENERAL, ToolDefaultPropertyThrewMessage));
+        if (failedProperties.ContainsKey (propertyGuid)) {
+            const GSErrCode propertyErr = failedProperties[propertyGuid];
+            propertyValues (CreateErrorResponse (propertyErr, propertyErr == APIERR_GENERAL ? ToolDefaultPropertyThrewMessage : "Failed to get the property value of the tool defaults"));
             continue;
         }
         if (!propertyMap.ContainsKey (propertyGuid)) {
