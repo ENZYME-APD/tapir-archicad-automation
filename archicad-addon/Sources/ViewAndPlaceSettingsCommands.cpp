@@ -695,24 +695,13 @@ GS::ObjectState Set3DFilterAndCutSettingsCommand::Execute (const GS::ObjectState
         return CreateErrorResponse (APIERR_BADPARS, input.GetError ());
     }
 
-    // ACAPI_View_Change3DImageSets hides the element types its map cannot name, such as the MEP
-    // elements, whatever the map holds (#2614). Only an API_ZombieElemID entry reaches them: it sets
-    // every element type. So every type is shown first, then the types that must stay hidden are
-    // hidden again by a map of only those.
-    std::map<API_ElemTypeID, bool> hiddenTypes;
-    for (const auto& entry : filter.elemTypeFilter) {
-        if (!entry.second && entry.first != API_ZombieElemID) {
-            hiddenTypes[entry.first] = false;
-        }
-    }
+    // ACAPI_View_Change3DImageSets hides the MEP elements in 3D, whatever else the map holds, even
+    // with only an API_ZombieElemID entry (#2614). MEP elements are external elements, whose element
+    // type is API_ExternalElemID, so that type is shown explicitly. An API_ZombieElemID entry would
+    // override every other entry, so it is never passed.
+    filter.elemTypeFilter.erase (API_ZombieElemID);
+    filter.elemTypeFilter[API_ExternalElemID] = true;
     err = ACAPI_CallUndoableCommand ("Set3DFilterAndCutSettingsCommand", [&] () -> GSErrCode {
-        filter.elemTypeFilter.clear ();
-        filter.elemTypeFilter[API_ZombieElemID] = true;
-        GSErrCode changeErr = ACAPI_View_Change3DImageSets (&filter, &mustConvert);
-        if (changeErr != NoError || hiddenTypes.empty ()) {
-            return changeErr;
-        }
-        filter.elemTypeFilter = hiddenTypes;
         return ACAPI_View_Change3DImageSets (&filter, &mustConvert);
     });
     if (err != NoError) {
