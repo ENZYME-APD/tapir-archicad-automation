@@ -1598,9 +1598,19 @@ GS::ObjectState ActivateLayerCombinationCommand::Execute (const GS::ObjectState&
     API_Attribute attribute = {};
     attribute.header.typeID = API_LayerCombID;
     attribute.header.guid = GetGuidFromObjectState (attributeId);
+    const API_Guid requestedGuid = attribute.header.guid;
     GSErrCode err = ACAPI_Attribute_Get (&attribute);
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Layer combination not found.");
+    }
+
+    // A lookup by guid also finds attributes of other types (the guid of a Layer returned the Layer, whose index
+    // then activated an unrelated layer combination). Reading the layer combination back by that index tells them apart.
+    API_Attribute layerComb = {};
+    layerComb.header.typeID = API_LayerCombID;
+    layerComb.header.index = attribute.header.index;
+    if (attribute.header.typeID != API_LayerCombID || ACAPI_Attribute_Get (&layerComb) != NoError || layerComb.header.guid != requestedGuid) {
+        return CreateFailedExecutionResult (APIERR_BADID, "Layer combination not found.");
     }
 
     // Applies the combination to the current window, like choosing it in the

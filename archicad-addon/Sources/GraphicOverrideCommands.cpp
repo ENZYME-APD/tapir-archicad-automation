@@ -1743,7 +1743,7 @@ GS::Optional<GS::UniString> SetGraphicOverrideRuleGroupOrderCommand::GetInputPar
         "properties": {
             "ruleGroupNames": {
                 "type": "array",
-                "description": "The names of the rule groups in their new order. The groups not listed keep their order and follow the listed ones.",
+                "description": "The names of the rule groups in their new order. The groups not listed keep their order and follow the listed ones. Built-in groups, like the Renovation group, cannot be listed and keep their place.",
                 "items": {
                     "type": "string"
                 },
@@ -1789,9 +1789,7 @@ GS::ObjectState SetGraphicOverrideRuleGroupOrderCommand::Execute (const GS::Obje
         currentNames.Push (ruleGroup.name);
     }
 
-    // The listed groups come first in the given order, then the others in their current order,
-    // so every group of the project is passed to Archicad.
-    GS::Array<API_Guid> orderedRuleGroupIds;
+    GS::Array<UIndex> listedIndices;
     for (const GS::UniString& name : ruleGroupNames) {
         UIndex index = 0;
         while (index < currentNames.GetSize () && currentNames[index] != name) {
@@ -1800,20 +1798,50 @@ GS::ObjectState SetGraphicOverrideRuleGroupOrderCommand::Execute (const GS::Obje
         if (index == currentNames.GetSize ()) {
             return CreateFailedExecutionResult (APIERR_BADNAME, "No rule group is named '" + name + "'.");
         }
-        if (orderedRuleGroupIds.Contains (ruleGroupIds[index])) {
+        if (listedIndices.Contains (index)) {
             return CreateFailedExecutionResult (APIERR_BADPARS, "The rule group '" + name + "' is listed more than once.");
         }
-        orderedRuleGroupIds.Push (ruleGroupIds[index]);
-    }
-    for (const API_Guid& ruleGroupId : ruleGroupIds) {
-        if (!orderedRuleGroupIds.Contains (ruleGroupId)) {
-            orderedRuleGroupIds.Push (ruleGroupId);
-        }
+        listedIndices.Push (index);
     }
 
+    GS::UniString builtInListedName;
     err = ACAPI_CallUndoableCommand ("Set Graphic Override Rule Group Order", [&] () -> GSErrCode {
+        // Archicad refuses to move a built-in rule group (APIERR_NOACCESSRIGHT), e.g. the Renovation group at the
+        // top, and the API has no flag for it. Renaming a group to its own name changes nothing and fails only for
+        // a built-in group, so that is how they are found. Built-in groups keep their place.
+        GS::Array<bool> isBuiltIn;
+        for (UIndex i = 0; i < ruleGroupIds.GetSize (); ++i) {
+            const API_OverrideRuleGroup ruleGroup = { ruleGroupIds[i], currentNames[i] };
+            isBuiltIn.Push (ACAPI_GraphicalOverride_ChangeOverrideRuleGroup (ruleGroup) == APIERR_NOACCESSRIGHT);
+        }
+        for (UIndex index : listedIndices) {
+            if (isBuiltIn[index]) {
+                builtInListedName = currentNames[index];
+                return APIERR_NOACCESSRIGHT;
+            }
+        }
+
+        // The listed groups come first among the movable ones in the given order, then the other movable groups in
+        // their current order. They fill the slots of the movable groups, so every group of the project is passed.
+        GS::Array<API_Guid> movableOrder;
+        for (UIndex index : listedIndices) {
+            movableOrder.Push (ruleGroupIds[index]);
+        }
+        for (UIndex i = 0; i < ruleGroupIds.GetSize (); ++i) {
+            if (!isBuiltIn[i] && !listedIndices.Contains (i)) {
+                movableOrder.Push (ruleGroupIds[i]);
+            }
+        }
+        GS::Array<API_Guid> orderedRuleGroupIds;
+        UIndex nextMovable = 0;
+        for (UIndex i = 0; i < ruleGroupIds.GetSize (); ++i) {
+            orderedRuleGroupIds.Push (isBuiltIn[i] ? ruleGroupIds[i] : movableOrder[nextMovable++]);
+        }
         return ACAPI_GraphicalOverride_SetOverrideRuleGroupOrder (orderedRuleGroupIds);
     });
+    if (!builtInListedName.IsEmpty ()) {
+        return CreateFailedExecutionResult (APIERR_NOACCESSRIGHT, "The rule group '" + builtInListedName + "' is built in and cannot be moved.");
+    }
     if (err != NoError) {
         return CreateFailedExecutionResult (err, "Failed to set the order of the graphic override rule groups.");
     }
