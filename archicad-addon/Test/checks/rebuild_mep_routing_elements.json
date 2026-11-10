@@ -437,6 +437,11 @@
           "path": "routingElements[0].segments[2].crossSectionWidth",
           "approx": 0.3,
           "name": "third segment still 0.3 wide"
+        },
+        {
+          "path": "routingElements[0].segments[3].crossSectionWidth",
+          "approx": 0.3,
+          "name": "the new end segment continues 0.3 wide, like the segment it is drawn from"
         }
       ]
     },

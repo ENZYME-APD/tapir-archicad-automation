@@ -8882,29 +8882,56 @@ static bool SetRoutingNodeSettings (const ACAPI::MEP::UniqueID& nodeId, const Ro
 }
 
 // Gives every segment of the rebuilt route the settings of the old segment it lies along most, and
-// every node those of the old node at its position. Segments and nodes without an old counterpart
-// keep the route's uncustomized settings. Returns the warnings.
+// every node those of the old node at its position. A segment along no old segment (a new end, or a
+// new path) takes the settings its nearest neighbour along the route took, the one before it first,
+// as Archicad continues a route with the size of the segment it is drawn from; only when no segment
+// lies along an old one do they keep the route's uncustomized settings. Nodes without an old
+// counterpart keep the route's uncustomized settings. Returns the warnings.
 static std::vector<GS::UniString> SetPartSettingsFromOldParts (const RoutingElement& rebuilt, const std::vector<RoutingSegmentRecord>& oldSegments, const std::vector<RoutingNodeRecord>& oldNodes)
 {
     std::vector<GS::UniString> warnings;
+    struct SegmentMatch {
+        ACAPI::MEP::UniqueID            id;
+        RoutingSegmentRecord            record;
+        std::optional<size_t>           oldIndex;
+        std::vector<size_t>             overlapped;
+    };
+    std::vector<SegmentMatch> matches;
     for (const ACAPI::MEP::UniqueID& segmentId : rebuilt.GetRoutingSegmentIds ()) {
         const std::optional<RoutingSegmentRecord> segment = GetRoutingSegmentRecord (segmentId);
         if (!segment.has_value ()) {
             continue;
         }
-        std::vector<size_t> overlapped;
-        const std::optional<size_t> oldIndex = FindOldSegmentLyingAlong (segment->begin, segment->end, oldSegments, overlapped);
-        if (!oldIndex.has_value ()) {
+        SegmentMatch match { segmentId, segment.value (), std::nullopt, {} };
+        match.oldIndex = FindOldSegmentLyingAlong (segment->begin, segment->end, oldSegments, match.overlapped);
+        matches.push_back (match);
+    }
+    std::vector<std::optional<size_t>> settingsFrom (matches.size ());
+    for (size_t i = 0; i < matches.size (); ++i) {
+        settingsFrom[i] = matches[i].oldIndex;
+        for (size_t distance = 1; !settingsFrom[i].has_value () && distance < matches.size (); ++distance) {
+            if (i >= distance && matches[i - distance].oldIndex.has_value ()) {
+                settingsFrom[i] = matches[i - distance].oldIndex;
+            } else if (i + distance < matches.size () && matches[i + distance].oldIndex.has_value ()) {
+                settingsFrom[i] = matches[i + distance].oldIndex;
+            }
+        }
+    }
+    for (size_t i = 0; i < matches.size (); ++i) {
+        if (!settingsFrom[i].has_value ()) {
             continue;
         }
-        const RoutingSegmentRecord& oldSegment = oldSegments[oldIndex.value ()];
-        const bool liesAlongOtherSizes = std::any_of (overlapped.begin (), overlapped.end (), [&] (size_t i) { return !HaveSameSize (oldSegments[i], oldSegment); });
+        const RoutingSegmentRecord* segment = &matches[i].record;
+        const ACAPI::MEP::UniqueID& segmentId = matches[i].id;
+        const std::vector<size_t>& overlapped = matches[i].overlapped;
+        const RoutingSegmentRecord& oldSegment = oldSegments[settingsFrom[i].value ()];
+        const bool liesAlongOtherSizes = std::any_of (overlapped.begin (), overlapped.end (), [&] (size_t j) { return !HaveSameSize (oldSegments[j], oldSegment); });
         if (liesAlongOtherSizes) {
             warnings.push_back (GS::UniString::Printf (
                 "Segment %T lies along old segments of different sizes; it took the size and settings of old segment %T, which it overlaps most.",
                 APIGuidToString (segment->guid).ToPrintf (), APIGuidToString (oldSegment.guid).ToPrintf ()));
         }
-        if (!SetRoutingSegmentSettings (segmentId, segment.value (), oldSegment)) {
+        if (!SetRoutingSegmentSettings (segmentId, *segment, oldSegment)) {
             warnings.push_back (GS::UniString::Printf (
                 "Not every setting of old segment %T could be given to segment %T.",
                 APIGuidToString (oldSegment.guid).ToPrintf (), APIGuidToString (segment->guid).ToPrintf ()));
@@ -9232,7 +9259,7 @@ GS::Optional<GS::UniString> RebuildMEPRoutingElementsCommand::GetInputParameters
                         },
                         "resetCustomSegments": {
                             "type": "boolean",
-                            "description": "True gives every segment and node the route's uncustomized settings, as Reset Custom Segments does. False (default) gives each new segment the size and settings of the old segment it lies along most (within 1 mm), and each new node those of the old node at its position; segments and nodes without an old counterpart take the route's uncustomized settings."
+                            "description": "True gives every segment and node the route's uncustomized settings, as Reset Custom Segments does. False (default) gives each new segment the size and settings of the old segment it lies along most (within 1 mm), and each new node those of the old node at its position; a segment along no old segment takes the settings of its nearest neighbour along the route (the one before it first), and nodes without an old counterpart take the route's uncustomized settings."
                         }
                     },
                     "additionalProperties": false,
