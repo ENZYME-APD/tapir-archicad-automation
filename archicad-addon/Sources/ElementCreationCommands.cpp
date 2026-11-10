@@ -1404,6 +1404,11 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
                         "type": "number",
                         "description" : "Optional story index of the new zone. An automatic zone (geometry.referencePosition) is found around its reference point on this story, which is made active in the floor plan while the zone is created; the previously active story is restored afterwards."
                     },
+                    "layerIndex": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults."
+                    },
                     "name": {
                         "type": "string",
                         "description" : "Name of the zone."
@@ -1486,6 +1491,11 @@ GS::Optional<GS::UniString> CreateZonesCommand::GetInputParametersSchema () cons
 GS::Optional<GS::ObjectState> CreateZonesCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& /*stories*/, const GS::ObjectState& parameters) const
 {
     parameters.Get ("floorIndex", element.header.floorInd);
+
+    const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (parameters, element);
+    if (layerError.HasValue ()) {
+        return layerError;
+    }
 
     const API_Guid categoryAttrGuid = GetGuidFromArrayItem ("categoryAttributeId", parameters);
     if (categoryAttrGuid != APINULLGuid) {
