@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-10 03:36 UTC",
+ "generatedAt": "2026-11-10 04:40 UTC",
  "versions": [
   25,
   26,
@@ -6904,10 +6904,6 @@
     {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
-    },
-    {
-     "number": 2442,
-     "title": "Read and set the cut of multi-plane roof contour and hole edges"
     },
     {
      "number": 2439,
@@ -25936,10 +25932,6 @@
      "title": "Columns and beams: a width given alone also works on a linked cross section"
     },
     {
-     "number": 2452,
-     "title": "[3/3] Shells: read back and write the custom surface of individual edges"
-    },
-    {
      "number": 2443,
      "title": "Read and write the edge types of single-plane roofs"
     },
@@ -31636,10 +31628,6 @@
     {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
-    },
-    {
-     "number": 2452,
-     "title": "[3/3] Shells: read back and write the custom surface of individual edges"
     },
     {
      "number": 2439,
@@ -38240,10 +38228,6 @@
     {
      "number": 2459,
      "title": "Columns and beams: a width given alone also works on a linked cross section"
-    },
-    {
-     "number": 2452,
-     "title": "[3/3] Shells: read back and write the custom surface of individual edges"
     },
     {
      "number": 2443,
@@ -44985,10 +44969,6 @@
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
     },
     {
-     "number": 2452,
-     "title": "[3/3] Shells: read back and write the custom surface of individual edges"
-    },
-    {
      "number": 2439,
      "title": "Read and edit the clipping contour and holes of an existing shell"
     }
@@ -48178,10 +48158,6 @@
     {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
-    },
-    {
-     "number": 2452,
-     "title": "[3/3] Shells: read back and write the custom surface of individual edges"
     },
     {
      "number": 2439,
