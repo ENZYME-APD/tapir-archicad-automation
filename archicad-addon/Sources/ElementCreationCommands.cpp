@@ -1811,7 +1811,11 @@ GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () 
                     },
                     "lineTypeIndex": {
                         "type": "integer",
-                        "description" : "Line type attribute index of the polyline contour. Optional parameter, by default the current line type is used."
+                        "description" : "Line type attribute index of the polyline contour. Optional parameter, by default the current line type is used. Ignored when lineTypeId is given."
+                    },
+                    "lineTypeId": {
+                        "$ref": "#/AttributeId",
+                        "description": "Optional line type attribute of the polyline contour, as CreateLineElements and SetDetailsOfElements take it. Takes precedence over lineTypeIndex. By default the current line type is used."
                     },
                     "penWeightMm": {
                         "type": "number",
@@ -1820,6 +1824,9 @@ GS::Optional<GS::UniString> CreatePolylinesCommand::GetInputParametersSchema () 
                     "roomSeparator": {
                         "type": "boolean",
                         "description": "Is this a zone boundary line? Optional, defaults to false."
+                    },
+                    "drawSegmentMode": {
+                        "$ref": "#/PolylineDrawSegmentMode"
                     },
                     "coordinates": {
                         "type": "array",
@@ -1896,8 +1903,11 @@ GS::Optional<GS::ObjectState> CreatePolylinesCommand::SetTypeSpecificParameters 
         element.polyLine.linePen.colorOverridePenIndex = 0;
     }
 
+    const GS::ObjectState* lineTypeId = parameters.Get ("lineTypeId");
     Int32 lineTypeIndex = 0;
-    if (parameters.Get ("lineTypeIndex", lineTypeIndex) && lineTypeIndex > 0) {
+    if (lineTypeId != nullptr) {
+        element.polyLine.ltypeInd = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (*lineTypeId));
+    } else if (parameters.Get ("lineTypeIndex", lineTypeIndex) && lineTypeIndex > 0) {
         element.polyLine.ltypeInd = ACAPI_CreateAttributeIndex (lineTypeIndex);
     }
 
@@ -1907,6 +1917,12 @@ GS::Optional<GS::ObjectState> CreatePolylinesCommand::SetTypeSpecificParameters 
     }
 
     parameters.Get ("roomSeparator", element.polyLine.roomSeparator);
+
+    GS::UniString drawSegmentMode;
+    if (parameters.Get ("drawSegmentMode", drawSegmentMode) &&
+        !PolylineDrawSegmentModeFromString (drawSegmentMode, element.polyLine.drawSegmentMode)) {
+        return CreateErrorResponse (APIERR_BADPARS, "drawSegmentMode must be SegmentBySegment or Continuous.");
+    }
 
     GS::Array<GS::ObjectState> coordinates;
     GS::Array<GS::ObjectState> arcs;
@@ -2048,6 +2064,19 @@ GS::Optional<GS::UniString> CreateArcsCommand::GetInputParametersSchema () const
                     "endAngle": {
                         "type": "number",
                         "description": "End angle of the arc in radians."
+                    },
+                    "angle": {
+                        "type": "number",
+                        "description": "Optional angle of the ellipse's 'a' axis in radians. Defaults to 0.0."
+                    },
+                    "ratio": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "description": "Optional 'a/b' ratio of the ellipse, as GetDetailsOfElements returns it. Defaults to 1.0, a circular arc."
+                    },
+                    "reflected": {
+                        "type": "boolean",
+                        "description": "Optional: is the ellipse reflected onto its smaller axis? By default the tool's (or the favorite's) setting is kept."
                     },)") + LineFamilySettingsSchemaProperties + R"(
                 },
                 "additionalProperties": false,
@@ -2087,6 +2116,9 @@ GS::Optional<GS::ObjectState> CreateArcsCommand::SetTypeSpecificParameters (API_
     parameters.Get ("radius", element.arc.r);
     element.arc.angle = 0.0;
     element.arc.ratio = 1.0;
+    parameters.Get ("angle", element.arc.angle);
+    parameters.Get ("ratio", element.arc.ratio);
+    parameters.Get ("reflected", element.arc.reflected);
     parameters.Get ("begAngle", element.arc.begAng);
     parameters.Get ("endAngle", element.arc.endAng);
 
