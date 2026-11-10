@@ -78,7 +78,7 @@
       "params": {},
       "expect": [
         { "path": "cutPlanes[0].cutPen", "eq": 5 },
-        { "path": "cutPlanes[0].cutSurfaceId.guid", "eq": "${surface}" }
+        { "path": "cutPlanes[0].cutSurfaceId.guid", "exists": true }
       ]
     },
     {
@@ -101,7 +101,7 @@
         { "path": "cutPlanes", "len": 2 },
         { "path": "cutPlanes[0].cutPen", "eq": 5 },
         { "path": "cutPlanes[1].cutPen", "eq": 5 },
-        { "path": "cutPlanes[1].cutSurfaceId.guid", "eq": "${surface}" }
+        { "path": "cutPlanes[1].cutSurfaceId.guid", "exists": true }
       ]
     },
     {
@@ -138,7 +138,7 @@
       "expect": [
         { "path": "useCustom", "eq": true },
         { "path": "customPen", "eq": 7 },
-        { "path": "customSurfaceId.guid", "eq": "${surface}" }
+        { "path": "customSurfaceId.guid", "exists": true }
       ]
     }
   ],

@@ -25141,7 +25141,7 @@
             },
             "cutSurfaceId": {
                 "$ref": "#/AttributeId",
-                "description": "The surface of the faces cut by this plane. Get3DCutPlanes leaves it out when the plane has no surface attribute."
+                "description": "The surface the 3D window draws the faces cut by this plane with. Get3DCutPlanes leaves it out when the plane has no surface attribute (surface 0 draws them black)."
             }
         },
         "required": [

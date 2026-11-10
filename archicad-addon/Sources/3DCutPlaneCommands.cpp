@@ -50,14 +50,14 @@ GS::Optional<GS::UniString> Set3DCutPlanesCommand::GetInputParametersSchema () c
     "properties": {
         "cutPlanes": {
             "type": "array",
-            "description": "The cut planes, replacing the current ones. Each cuts away the side of its plane that its normal vector (pa, pb, pc) points to; several planes cut away the union of those sides. Setting planes also turns 3D Cutaway on, without which they are not in force. An empty array switches the 3D cut off. A plane without cutPen or cutSurfaceId keeps those of the current plane in its place, or of the last current plane, or else takes customPen and customSurfaceId.",
+            "description": "The cut planes, replacing the current ones. Each cuts away the side of its plane that its normal vector (pa, pb, pc) points to; several planes cut away the union of those sides. Setting planes also turns 3D Cutaway on (off and on again when it is on), which puts them in force in the 3D window. An empty array switches the 3D cut and 3D Cutaway off. A plane without cutPen or cutSurfaceId keeps those of the current plane in its place, or of the last current plane, or else takes customPen and customSurfaceId.",
             "items": {
                 "$ref": "#/CutPlane"
             }
         },
         "useCustom": {
             "type": "boolean",
-            "description": "Whether the cut faces of the elements take customPen and customSurfaceId. Left unchanged when omitted."
+            "description": "The Custom setting of the cut faces, kept for the 3D Cutting Planes settings; in the Archicad 29 3D window the cut faces take each plane's cutSurfaceId either way. Left unchanged when omitted."
         },
         "customPen": {
             "type": "integer",
@@ -104,8 +104,7 @@ GS::ObjectState Set3DCutPlanesCommand::Execute (const GS::ObjectState& parameter
         return CreateFailedExecutionResult (APIERR_BADPARS, *inputError);
     }
 
-    // Archicad keeps the cut planes out of force while 3D Cutaway is off, and does not put them in force
-    // when it is turned on later.
+    // Planes changed while 3D Cutaway is off are dropped when it is turned on, so it is turned on first.
     if (!cutPlanes.IsEmpty ()) {
         const GSErrCode cutawayErr = Set3DCutawayEnabled (true);
         if (cutawayErr != NoError && cutawayErr != APIERR_NOTSUPPORTED) {
@@ -180,9 +179,20 @@ GS::ObjectState Set3DCutPlanesCommand::Execute (const GS::ObjectState& parameter
         return err;
     });
 
-    return err == NoError
-        ? CreateSuccessfulExecutionResult ()
-        : CreateFailedExecutionResult (err, "Failed to set 3D cut planes.");
+    if (err != NoError) {
+        return CreateFailedExecutionResult (err, "Failed to set 3D cut planes.");
+    }
+
+    // The 3D window keeps cutting with the planes in force when 3D Cutaway was last turned on, so it is
+    // turned off and on again to put the new planes in force; with no planes it stays off.
+    GSErrCode cutawayErr = Set3DCutawayEnabled (false);
+    if (cutawayErr == NoError && !cutPlanes.IsEmpty ()) {
+        cutawayErr = Set3DCutawayEnabled (true);
+    }
+    if (cutawayErr != NoError && cutawayErr != APIERR_NOTSUPPORTED) {
+        return CreateFailedExecutionResult (cutawayErr, "The cut planes were set, but 3D Cutaway could not be turned off and on to put them in force.");
+    }
+    return CreateSuccessfulExecutionResult ();
 }
 
 

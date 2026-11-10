@@ -16,7 +16,7 @@
       "creates": false,
       "params": {
         "cutPlanes": [
-          { "pa": 0, "pb": 0, "pc": 1, "pd": -2.5 }
+          { "pa": 0, "pb": 0, "pc": 1, "pd": 2.5 }
         ]
       },
       "expect": [
@@ -35,7 +35,7 @@
         { "path": "cutPlanes[0].pa", "approx": 0, "tol": 1e-6 },
         { "path": "cutPlanes[0].pb", "approx": 0, "tol": 1e-6 },
         { "path": "cutPlanes[0].pc", "approx": 1, "tol": 1e-6 },
-        { "path": "cutPlanes[0].pd", "approx": -2.5, "tol": 1e-6 }
+        { "path": "cutPlanes[0].pd", "approx": 2.5, "tol": 1e-6 }
       ]
     },
     {
@@ -104,6 +104,15 @@
       "params": {},
       "expect": [
         { "path": "isCutPlanes", "eq": false, "name": "cut off" }
+      ]
+    },
+    {
+      "id": "3D Cutaway is off",
+      "command": "Get3DCutawayStatus",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "cutawayEnabled", "eq": false }
       ]
     }
   ],
