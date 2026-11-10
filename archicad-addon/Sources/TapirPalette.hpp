@@ -96,6 +96,7 @@ private:
     DG::TextEdit   searchEdit;        // filters the dropdown (BuildVisibleItems); hidden until searchButton opens it
     DG::IconButton favouriteButton;   // the star: adds the selected script to the favourites or removes it
     DG::IconButton searchButton;      // shows or hides searchEdit; highlighted while a filter is applied
+    DG::IconButton scriptManagerButton;   // opens the Script Manager (#2408)
 
     // Return, Enter and Escape, registered only while searchEdit has the focus (0: not registered)
     short returnHotKey = 0;
