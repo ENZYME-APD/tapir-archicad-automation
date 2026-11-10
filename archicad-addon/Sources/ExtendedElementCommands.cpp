@@ -11020,6 +11020,78 @@ static GS::Optional<GS::UniString> ApplyRoofEdgeTrims (API_ElementMemo& memo, co
     return {};
 }
 
+static GS::Optional<API_RoofEdgeTypeID> RoofEdgeTypeFromString (const GS::UniString& edgeType)
+{
+    if (edgeType == "Undefined")            return APIRoofEdgeType_Undefined;
+    if (edgeType == "Ridge")                return APIRoofEdgeType_Ridge;
+    if (edgeType == "Valley")               return APIRoofEdgeType_Valley;
+    if (edgeType == "Gable")                return APIRoofEdgeType_Gable;
+    if (edgeType == "Hip")                  return APIRoofEdgeType_Hip;
+    if (edgeType == "Eaves")                return APIRoofEdgeType_Eaves;
+    if (edgeType == "Peak")                 return APIRoofEdgeType_Peak;
+    if (edgeType == "SideWall")             return APIRoofEdgeType_SideWall;
+    if (edgeType == "EndWall")              return APIRoofEdgeType_EndWall;
+    if (edgeType == "RoofTransitionDome")   return APIRoofEdgeType_RTDome;
+    if (edgeType == "RoofTransitionHollow") return APIRoofEdgeType_RTHollow;
+    return {};
+}
+
+// Writes the given "edgeTypes" (see ModifyRoofs) into memo.roofEdgeTypes, one item per edge in the
+// order of GetPolygonEdgeIndices, which is the order GetDetailsOfElements reports them in (#2436).
+// Changes nothing on an error.
+static GS::Optional<GS::UniString> ApplyRoofEdgeTypes (API_ElementMemo& memo, const GS::Array<GS::UniString>& edgeTypes)
+{
+    const GS::Array<Int32> edgeIndices = GetPolygonEdgeIndices (memo);
+    if (edgeIndices.IsEmpty ()) {
+        return GS::UniString ("Failed to read the edges of the roof's polygon.");
+    }
+    if (edgeTypes.GetSize () != edgeIndices.GetSize ()) {
+        return GS::UniString::Printf ("'edgeTypes' must have one item per edge of the roof's polygon (%u).", (unsigned) edgeIndices.GetSize ());
+    }
+    GS::Array<API_RoofEdgeTypeID> types;
+    for (UIndex k = 0; k < edgeTypes.GetSize (); ++k) {
+        const GS::Optional<API_RoofEdgeTypeID> type = RoofEdgeTypeFromString (edgeTypes[k]);
+        if (!type.HasValue ()) {
+            return "Unknown edge type '" + edgeTypes[k] + GS::UniString::Printf ("' in 'edgeTypes' item %u.", (unsigned) k);
+        }
+        types.Push (type.Get ());
+    }
+
+    const Int32 nCoords = (Int32) (BMGetHandleSize ((GSHandle) memo.coords) / sizeof (API_Coord)) - 1;
+    const GSSize nEdgeTypes = memo.roofEdgeTypes == nullptr ? 0 : BMGetPtrSize ((GSPtr) memo.roofEdgeTypes) / sizeof (API_RoofEdgeTypeID);
+    if (nEdgeTypes < nCoords + 1) {
+        // A roof whose edges were never given a type may have no edge types: its edges are
+        // Undefined (0), as GetRoofPolygonEdges reads them. The types it has are kept.
+        API_RoofEdgeTypeID* newTypes = reinterpret_cast<API_RoofEdgeTypeID*> (BMAllocatePtr ((nCoords + 1) * sizeof (API_RoofEdgeTypeID), ALLOCATE_CLEAR, 0));
+        if (newTypes == nullptr) {
+            return GS::UniString ("Failed to allocate the edge types of the roof.");
+        }
+        for (GSSize i = 0; i < nEdgeTypes; ++i) {
+            newTypes[i] = memo.roofEdgeTypes[i];
+        }
+        if (memo.roofEdgeTypes != nullptr) {
+            BMKillPtr (reinterpret_cast<GSPtr*> (&memo.roofEdgeTypes));
+        }
+        memo.roofEdgeTypes = newTypes;
+    }
+
+    for (UIndex k = 0; k < types.GetSize (); ++k) {
+        memo.roofEdgeTypes[edgeIndices[k]] = types[k];
+    }
+
+    // The closing vertex of each contour repeats the data of its first vertex, as
+    // RestoreRoofPolygonEdges writes it.
+    const Int32 nSubPolys = (Int32) (BMGetHandleSize ((GSHandle) memo.pends) / sizeof (Int32)) - 1;
+    for (Int32 subPoly = 1; subPoly <= nSubPolys; ++subPoly) {
+        const Int32 first = (*memo.pends)[subPoly - 1] + 1;
+        const Int32 closing = (*memo.pends)[subPoly];
+        if (closing <= nCoords && first < closing) {
+            memo.roofEdgeTypes[closing] = memo.roofEdgeTypes[first];
+        }
+    }
+    return {};
+}
+
 static GS::Array<Int32> GetContourPointCounts (const API_ElementMemo& memo)
 {
     GS::Array<Int32> counts;
@@ -11412,6 +11484,13 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                                 "additionalProperties": false
                             }
                         },
+                        "edgeTypes": {
+                            "type": "array",
+                            "description": "Single-plane roofs only: the Edge Type (Custom Edge Settings) of each edge of the roof's polygon, which schedules use, e.g. to list the length of the Eaves or Gable edges. One item per edge in the order GetDetailsOfElements reports them in edgeTypes and edgeTrims (the outline, then each hole); send the list read back with the items to change replaced. Changes neither the polygon nor the edge cuts. Cannot be combined with polygonOutline.",
+                            "items": {
+                                "$ref": "#/RoofEdgeType"
+                            }
+                        },
                         "pivotEdges": {
                             "type": "array",
                             "description": "Multi-plane roofs only: the roof planes of each edge of the pivot polygon, one item per edge in the order GetDetailsOfElements reports them (the outline, then each hole). Only the given fields change; an item without levels keeps its edge. Cannot be combined with polygonOutline.",
@@ -11485,12 +11564,16 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'levels', 'eavesOverhang' and 'pivotEdges' are only valid for multi-plane roofs."));
                 continue;
             }
-            if (!isPlaneRoof && (item.Contains ("angle") || item.Contains ("pivotLine") || item.Contains ("edgeSideMaterials"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'angle', 'pivotLine' and 'edgeSideMaterials' are only valid for single-plane roofs."));
+            if (!isPlaneRoof && (item.Contains ("angle") || item.Contains ("pivotLine") || item.Contains ("edgeTypes") || item.Contains ("edgeSideMaterials"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'angle', 'pivotLine', 'edgeTypes' and 'edgeSideMaterials' are only valid for single-plane roofs."));
                 continue;
             }
             if ((item.Contains ("edgeTrims") || item.Contains ("edgeSideMaterials")) && item.Contains ("polygonOutline")) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTrims' and 'edgeSideMaterials' cannot be combined with 'polygonOutline', which makes new edges."));
+                continue;
+            }
+            if (item.Contains ("edgeTypes") && item.Contains ("polygonOutline")) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTypes' cannot be combined with 'polygonOutline', which makes new edges."));
                 continue;
             }
             // The contour of a multi-plane roof follows its pivot polygon and eaves overhang, so the
@@ -11571,10 +11654,12 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
             }
 
             GS::Array<GS::ObjectState> edgeTrims;
+            GS::Array<GS::UniString> edgeTypes;
             GS::Array<GS::ObjectState> edgeSideMaterials;
             const bool hasEdgeTrims = item.Get ("edgeTrims", edgeTrims);
+            const bool hasEdgeTypes = item.Get ("edgeTypes", edgeTypes);
             const bool hasEdgeSideMaterials = item.Get ("edgeSideMaterials", edgeSideMaterials);
-            if (hasEdgeTrims || hasEdgeSideMaterials) {
+            if (hasEdgeTrims || hasEdgeTypes || hasEdgeSideMaterials) {
                 API_ElementMemo memo = {};
                 const GS::OnExit cleanup ([&]() {
                     ACAPI_DisposeElemMemoHdls (&memo);
@@ -11588,6 +11673,13 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     auto trimError = ApplyRoofEdgeTrims (memo, edgeTrims);
                     if (trimError.HasValue ()) {
                         results.Push (CreateFailedExecutionResult (APIERR_BADPARS, trimError.Get ()));
+                        continue;
+                    }
+                }
+                if (hasEdgeTypes) {
+                    auto typeError = ApplyRoofEdgeTypes (memo, edgeTypes);
+                    if (typeError.HasValue ()) {
+                        results.Push (CreateFailedExecutionResult (APIERR_BADPARS, typeError.Get ()));
                         continue;
                     }
                 }
@@ -11636,7 +11728,9 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     }
                 }
                 // Passed as the polygon edit below passes it: only the polygon handles and the edge
-                // data, unchanged but for the given trims and side surfaces, so the rest stays.
+                // data, unchanged but for the given trims, edge types and side surfaces, so the rest
+                // stays. Trims are only sent when the roof has them or they were given: edge trims
+                // sent as nullptr would be reset.
                 API_ElementMemo polygonMemo = {};
                 polygonMemo.coords = memo.coords;
                 polygonMemo.pends = memo.pends;
@@ -11658,7 +11752,7 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                     memoMask |= APIMemoMask_RoofEdgeTypes;
                 }
                 err = ACAPI_Element_ChangeMemo (element.header.guid, memoMask, &polygonMemo);
-                results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, hasEdgeTrims ? "Failed to modify the edge trims of the roof." : "Failed to modify the edge surfaces of the roof."));
+                results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, hasEdgeTrims ? "Failed to modify the edge trims of the roof." : hasEdgeTypes ? "Failed to modify the edge types of the roof." : "Failed to modify the edge surfaces of the roof."));
                 continue;
             }
 

@@ -309,6 +309,48 @@ static void AddEdgeTrimsFromMemo (const API_Guid& guid, GS::ObjectState& os)
     }
 }
 
+static GS::UniString RoofEdgeTypeToString (API_RoofEdgeTypeID edgeType)
+{
+    switch (edgeType) {
+        case APIRoofEdgeType_Ridge:     return "Ridge";
+        case APIRoofEdgeType_Valley:    return "Valley";
+        case APIRoofEdgeType_Gable:     return "Gable";
+        case APIRoofEdgeType_Hip:       return "Hip";
+        case APIRoofEdgeType_Eaves:     return "Eaves";
+        case APIRoofEdgeType_Peak:      return "Peak";
+        case APIRoofEdgeType_SideWall:  return "SideWall";
+        case APIRoofEdgeType_EndWall:   return "EndWall";
+        case APIRoofEdgeType_RTDome:    return "RoofTransitionDome";
+        case APIRoofEdgeType_RTHollow:  return "RoofTransitionHollow";
+        default:                        return "Undefined";
+    }
+}
+
+// The edge type of each edge of a Single-plane Roof's polygon (APIMemoMask_RoofEdgeTypes, the
+// Edge Type of the Custom Edge Settings, used by schedules), in the order of edgeSideMaterials and
+// edgeTrims (#2436). A roof without stored edge types has every edge Undefined.
+static void AddRoofEdgeTypesFromMemo (const API_Guid& guid, GS::ObjectState& os)
+{
+    API_ElementMemo memo = {};
+    const GS::OnExit guard ([&memo] () { ACAPI_DisposeElemMemoHdls (&memo); });
+    if (ACAPI_Element_GetMemo (guid, &memo, APIMemoMask_Polygon | APIMemoMask_RoofEdgeTypes) != NoError || memo.coords == nullptr) {
+        return;
+    }
+    const GSSize nCoords = BMhGetSize (reinterpret_cast<GSHandle> (memo.coords)) / sizeof (API_Coord);
+    const GSSize nEdgeTypes = memo.roofEdgeTypes == nullptr ? 0 : BMGetPtrSize (reinterpret_cast<GSPtr> (memo.roofEdgeTypes)) / sizeof (API_RoofEdgeTypeID);
+    const GSSize nPends = memo.pends == nullptr ? 0 : BMhGetSize (reinterpret_cast<GSHandle> (memo.pends)) / sizeof (Int32);
+
+    const auto& edgeTypes = os.AddList<GS::UniString> ("edgeTypes");
+    GSIndex iPend = 1;
+    for (GSIndex i = 1; i < nCoords - 1; ++i) {
+        if (iPend < nPends && (*memo.pends)[iPend] == i) {
+            ++iPend;
+            continue;
+        }
+        edgeTypes (RoofEdgeTypeToString (i < nEdgeTypes ? memo.roofEdgeTypes[i] : APIRoofEdgeType_Undefined));
+    }
+}
+
 // The roof planes of each edge of a Multi-plane Roof's pivot polygon (APIMemoMask_AdditionalPolygon,
 // which the DevKit calls APIMemoMask_PivotPolygon but does not define): per level the angle,
 // the eaves overhang and whether the plane is a gable (#569). The items follow
@@ -3316,6 +3358,9 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 AddRoofDetails (elem.roof, elem.header.guid, elem.header.floorInd, nullptr, stories, typeSpecificDetails);
                 AddEdgeSideMaterialsFromMemo (elem.header.guid, typeSpecificDetails);
                 AddEdgeTrimsFromMemo (elem.header.guid, typeSpecificDetails);
+                if (elem.roof.roofClass == API_PlaneRoofID) {
+                    AddRoofEdgeTypesFromMemo (elem.header.guid, typeSpecificDetails);
+                }
                 break;
 
             case API_ShellID: {
