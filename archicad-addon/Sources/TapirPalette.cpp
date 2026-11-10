@@ -17,7 +17,10 @@
 #include "MigrationHelper.hpp"
 #include "ScriptRequirements.hpp"
 #include "ScriptUIPalette.hpp"
+#include "ScriptManager.hpp"
+#include "MarketplaceInstalls.hpp"
 
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
@@ -68,6 +71,12 @@ static constexpr int RepositoryRequestTimeoutMs = 15 * 1000;
 static GS::UniString PaletteText (Int32 index)
 {
     return RSGetIndString (ID_PALETTE_STRINGS, index, ACAPI_GetOwnResModule ());
+}
+
+// The Marketplace section's texts are the Script Manager's, so ID_PALETTE_STRINGS stays as it is.
+static GS::UniString MarketplaceText (Int32 index)
+{
+    return RSGetIndString (ID_SCRIPT_MANAGER_STRINGS, index, ACAPI_GetOwnResModule ());
 }
 
 static GS::UniString SearchText (Int32 index)
@@ -490,6 +499,7 @@ TapirPalette::TapirPalette ()
     , searchEdit (GetReference (), ID_PALETTE_SEARCH_EDIT)
     , favouriteButton (GetReference (), ID_PALETTE_FAVOURITE_BUTTON)
     , searchButton (GetReference (), ID_PALETTE_SEARCH_BUTTON)
+    , scriptManagerButton (GetReference (), ID_PALETTE_SCRIPTMANAGER_BUTTON)
 {
     Attach (*this);
     AttachToAllItems (*this);
@@ -708,6 +718,8 @@ void TapirPalette::ButtonClicked (const DG::ButtonClickEvent& ev)
         OpenShortcutsDialog ();
     } else if (ev.GetSource () == &checkForUpdatesButton) {
         CheckForUpdates ();
+    } else if (ev.GetSource () == &scriptManagerButton) {
+        ScriptManager::Instance ().Show ();
     } else if (ev.GetSource () == &favouriteButton) {
         ToggleFavourite ();
     } else if (ev.GetSource () == &searchButton) {
@@ -911,7 +923,7 @@ bool TapirPalette::IsPopUpContainsFile (const IO::Location& fileLocation) const
 TapirPalette::ScriptList TapirPalette::GetAllScripts () const
 {
     ScriptList scripts;
-    for (const ScriptList* list : { &addedScripts, &customScripts, &listedScripts }) {
+    for (const ScriptList* list : { &addedScripts, &customScripts, &listedScripts, &marketplaceScripts }) {
         for (const GS::Ref<PopUpItemData>& popUpItemData : *list) {
             scripts.Push (popUpItemData);
         }
@@ -979,6 +991,19 @@ TapirPalette::VisibleItemList TapirPalette::BuildVisibleItems (bool forDropdown)
     for (const GS::Ref<PopUpItemData>& popUpItemData : listed) {
         items.Push (VisibleItem (VisibleItem::Kind::Script, popUpItemData));
         hasScript = true;
+    }
+    // The marketplace scripts last, after a separator and their "Marketplace" heading (#2408), so the items before
+    // them keep the numbers older Tapir versions saved. The section is left out while it shows no script.
+    const ScriptList marketplace = getSectionScripts (marketplaceScripts, false);
+    if (!marketplace.IsEmpty ()) {
+        if (!items.IsEmpty ()) {
+            items.Push (VisibleItem (VisibleItem::Kind::Separator));
+        }
+        items.Push (VisibleItem (VisibleItem::Kind::Heading));
+        for (const GS::Ref<PopUpItemData>& popUpItemData : marketplace) {
+            items.Push (VisibleItem (VisibleItem::Kind::Script, popUpItemData));
+            hasScript = true;
+        }
     }
 
     if (isSearching && !hasScript) {
@@ -1064,6 +1089,16 @@ void TapirPalette::RebuildScriptPopUp (const GS::Ref<PopUpItemData>& scriptToSel
                 scriptSelectionPopUp.SetItemText (DG::PopUp::BottomItem, SearchText (ID_PALETTE_SEARCH_STRINGS_NO_MATCH));
                 scriptSelectionPopUp.DisableItem (DG::PopUp::BottomItem);
                 break;
+            case VisibleItem::Kind::Heading:
+                // DG::PopUp has no section headings, so the heading is a disabled item in bold.
+            {
+                scriptSelectionPopUp.AppendItem ();
+                const short headingItem = scriptSelectionPopUp.GetItemCount ();
+                scriptSelectionPopUp.SetItemText (headingItem, MarketplaceText (ID_SCRIPT_MANAGER_STRINGS_PALETTE_SECTION));
+                scriptSelectionPopUp.SetItemFontStyle (headingItem, DG::Font::Bold);
+                scriptSelectionPopUp.DisableItem (headingItem);
+                break;
+            }
             case VisibleItem::Kind::Separator:
             default:
                 scriptSelectionPopUp.AppendSeparator ();
@@ -2575,11 +2610,58 @@ void TapirPalette::AddScriptsFromCustomScriptsFolder ()
     });
 }
 
+// The enabled scripts of installed.json, by name; one whose entry file is missing is left out. Reads only local
+// files, so installed scripts are listed offline too. "(update available)" follows the name of one the Script
+// Manager found an update for in the catalogue it fetched last.
+void TapirPalette::AddScriptsFromMarketplace ()
+{
+    marketplaceScripts.Clear ();
+
+    MarketplaceInstalls::State state = MarketplaceInstalls::Load ();
+    std::vector<MarketplaceInstalls::InstalledScript> installed;
+    for (const MarketplaceInstalls::InstalledScript& script : state.scripts) {
+        if (script.enabled) {
+            installed.push_back (script);
+        }
+    }
+    std::stable_sort (installed.begin (), installed.end (),
+        [] (const MarketplaceInstalls::InstalledScript& a, const MarketplaceInstalls::InstalledScript& b) {
+            return a.name.IsLess (b.name, CaseInsensitive);
+        });
+
+    for (const MarketplaceInstalls::InstalledScript& script : installed) {
+        IO::Location entryLoc = MarketplaceInstalls::GetVersionFolder (script.slug, script.version);
+        entryLoc.AppendToLocal (IO::Name (script.entry));
+        GS::Ref<PopUpItemData> popUpItemData = GS::NewRef<PopUpItemData> (entryLoc);
+        if (!PrepareScript (*popUpItemData)) {
+            continue;
+        }
+        popUpItemData->baseDisplayText = script.name;
+        if (MarketplaceInstalls::HasUpdate (script.slug)) {
+            popUpItemData->baseDisplayText = GS::UniString::Printf (MarketplaceText (ID_SCRIPT_MANAGER_STRINGS_UPDATE_AVAILABLE), script.name.ToPrintf ());
+        }
+        marketplaceScripts.Push (popUpItemData);
+    }
+}
+
+void TapirPalette::ReloadMarketplaceScripts ()
+{
+    const GS::Ref<PopUpItemData> selectedScript = GetSelectedScript ();
+
+    AddScriptsFromMarketplace ();
+
+    // The selected script stays selected, wherever its item is now (SelectScript finds it by its file); a removed or
+    // disabled one gives way to the first.
+    RebuildScriptPopUp (selectedScript);
+    SelectedScriptChanged ();
+}
+
 void TapirPalette::LoadScriptsToPopUp ()
 {
     addedScripts.Clear ();
     customScripts.Clear ();
     listedScripts.Clear ();
+    marketplaceScripts.Clear ();
     hasCustomScript = false;
     hasAddedScript = false;
 
@@ -2587,6 +2669,7 @@ void TapirPalette::LoadScriptsToPopUp ()
     const short savedItem = AddScriptsFromPreferences ();
     AddScriptsFromLocalFolders ();
     AddScriptsFromRepositories ();
+    AddScriptsFromMarketplace ();
 
     RebuildScriptPopUp (GetSavedSelection (savedItem));
     SetDeleteScriptButtonStatus ();
