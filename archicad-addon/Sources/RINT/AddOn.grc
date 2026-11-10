@@ -19,6 +19,11 @@
 /* [  1] */        "Tapir Palette^E3^ES^EE^EI^ED^EL^EW^ET^EM"
 }
 
+'STR#' ID_ADDON_MENU_FOR_SCRIPTS_PANEL "Add-On Menu" {
+/* [   ] */        "Tapir"
+/* [  1] */        "Scripts Panel^E3^ES^EE^EI^ED^EL^EW^ET^EM"
+}
+
 'STR#' ID_ADDON_MENU_FOR_UPDATE "Add-On Menu" {
 /* [   ] */        "Tapir"
 /* [  1] */        "Check for Updates...^E3^ES^EE^EI^ED^EL^EW^ET^EM^32510"
@@ -94,6 +99,32 @@
 /* [ 32] */ "Failed to start uv process. Ensure it is installed and executable."
 /* [ 33] */ "Failed to execute %T"
 /* [ 34] */ "Unexpected issue while executing %T"
+}
+
+'STR#' ID_SCRIPTS_PANEL_STRINGS "Tapir Scripts Panel Strings" {
+/* [  1] */ "Show scripts panel"
+/* [  2] */ "Hide scripts panel"
+/* [  3] */ "All"
+/* [  4] */ "Documentation / layouts"
+/* [  5] */ "Element data / properties"
+/* [  6] */ "Modeling / geometry"
+/* [  7] */ "Zones / areas"
+/* [  8] */ "Import / export"
+/* [  9] */ "Quality assurance"
+/* [ 10] */ "Quantities / scheduling"
+/* [ 11] */ "Libraries / objects"
+/* [ 12] */ "Navigator / views"
+/* [ 13] */ "Classification / attributes"
+/* [ 14] */ "Batch automation"
+/* [ 15] */ "Utilities"
+/* [ 16] */ "Other"
+/* [ 17] */ "Built-in"
+/* [ 18] */ "Marketplace"
+/* [ 19] */ "My scripts"
+/* [ 20] */ "By %T"
+/* [ 21] */ "Version %T"
+/* [ 22] */ "No script matches the search."
+/* [ 23] */ "Select a script to see what it does."
 }
 
 'STR#' ID_PALETTE_SEARCH_STRINGS "Tapir Palette Search Strings" {
@@ -214,7 +245,7 @@
 4    ""        VersionText
 }
 
-'GDLG' ID_PALETTE Palette | leftCaption | close   0   0  592  28  "Tapir Palette"  {
+'GDLG' ID_PALETTE Palette | leftCaption | close | grow   0   0  620  28  "Tapir Palette"  {
 /* [  1] */ IconButton                 0   0  28  28    ID_TAPIR_LOGO_MINI noFrame
 /* [  2] */ PopupControl              56   3 320  22    80  3
 /* [  3] */ IconButton               376   0  28  28    ID_RUN_BUTTON_ICON noFrame
@@ -227,6 +258,14 @@
 /* [ 10] */ TextEdit                  56   3 120  22    SmallPlain  noDelay  255
 /* [ 11] */ IconButton               404   0  28  28    ID_STAR_BUTTON_ICON noFrame
 /* [ 12] */ IconButton                28   0  28  28    ID_SEARCH_BUTTON_ICON noFrame
+/* [ 13] */ IconButton               592   0  28  28    ID_EXPAND_DOWN_ICON noFrame
+/* [ 14] */ Separator                  0  28 620   2
+/* [ 15] */ TextEdit                   6  36 402  22    SmallPlain  255
+/* [ 16] */ PopupControl             414  36 200  22    80  3
+/* [ 17] */ SingleSelList              6  64 608 300    SmallPlain  PartialItems  18
+/* [ 18] */ LeftText                   6 370 608  20    LargeBold  vCenter | truncEnd  ""
+/* [ 19] */ LeftText                   6 390 608  16    LargePlain  vCenter  ""
+/* [ 20] */ LeftText                   6 408 608 106    SmallPlain  ""
 }
 
 'DLGH' ID_PALETTE Tapir_Palette {
@@ -242,6 +281,14 @@
 10   ""        SearchEdit
 11   ""        FavouriteButton
 12   "Search scripts"      SearchButton
+13   "Show scripts panel"              ExpandButton
+14   ""                                ScriptsPanelSeparator
+15   "Search the scripts by name, then by what they do"   ScriptsPanelSearch
+16   "Show the scripts of one category"                   ScriptsPanelCategory
+17   ""                                ScriptsPanelList
+18   ""                                ScriptsPanelName
+19   ""                                ScriptsPanelBadge
+20   ""                                ScriptsPanelDetails
 }
 
 'GDLG' ID_SCRIPTUI_PALETTE Palette | leftCaption | close | grow   0   0  600  450  "Tapir Script UI"  {

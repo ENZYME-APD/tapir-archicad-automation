@@ -22,6 +22,10 @@
 #define ID_ATTRIBUTE_PICKER_DIALOG_LABEL          3
 #define ID_ATTRIBUTE_PICKER_DIALOG_PICKER         4
 
+// "Scripts Panel": opens the Tapir Palette with its scripts panel shown
+#define ID_ADDON_MENU_FOR_SCRIPTS_PANEL 32112
+#define ID_ADDON_MENU_SCRIPTS_PANEL         1
+
 #define ID_ADDON_MENU_FOR_SHORTCUTS     32026
 #define ID_ADDON_MENU_MANAGE_SHORTCUTS      1
 
@@ -85,6 +89,22 @@
 #define ID_PALETTE_STRINGS_UV_START_FAILED       32
 #define ID_PALETTE_STRINGS_EXECUTE_FAILED        33
 #define ID_PALETTE_STRINGS_EXECUTE_UNEXPECTED    34
+
+// The texts of the palette's scripts panel (ScriptsPanel)
+#define ID_SCRIPTS_PANEL_STRINGS        32111
+#define ID_SCRIPTS_PANEL_STRINGS_SHOW_PANEL      1
+#define ID_SCRIPTS_PANEL_STRINGS_HIDE_PANEL      2
+#define ID_SCRIPTS_PANEL_STRINGS_ALL             3
+// The display names of the categories, in the order of the list's groups (ScriptsPanel.cpp, Categories), then "Other"
+#define ID_SCRIPTS_PANEL_STRINGS_FIRST_CATEGORY  4
+#define ID_SCRIPTS_PANEL_STRINGS_OTHER          16
+#define ID_SCRIPTS_PANEL_STRINGS_BUILT_IN       17
+#define ID_SCRIPTS_PANEL_STRINGS_MARKETPLACE    18
+#define ID_SCRIPTS_PANEL_STRINGS_MY_SCRIPTS     19
+#define ID_SCRIPTS_PANEL_STRINGS_BY_AUTHOR      20
+#define ID_SCRIPTS_PANEL_STRINGS_VERSION        21
+#define ID_SCRIPTS_PANEL_STRINGS_NO_MATCH       22
+#define ID_SCRIPTS_PANEL_STRINGS_SELECT_SCRIPT  23
 
 #define ID_AUTOUPDATE_STRINGS           32011
 #define ID_AUTOUPDATE_NEWVERSION_ALERT_TITLE 1
@@ -199,6 +219,10 @@
 // for every other item, so that the names stay aligned.
 #define ID_SCRIPT_RUNNING_ICON          32514
 #define ID_SCRIPT_NOT_RUNNING_ICON      32515
+// The expand arrow at the palette's right end: a down chevron opens the scripts panel, an up chevron closes it.
+// The scripts panel uses the icons 32530-32539.
+#define ID_EXPAND_DOWN_ICON             32530
+#define ID_EXPAND_UP_ICON               32531
 
 // The Tapir Palette's search field and favourites: icons 32520-32529 and the 'STR#' list 32100
 #define ID_STAR_BUTTON_ICON             32520
@@ -217,6 +241,8 @@
 #define ID_PALETTE_SEARCH_EDIT          10
 #define ID_PALETTE_FAVOURITE_BUTTON     11
 #define ID_PALETTE_SEARCH_BUTTON        12
+#define ID_PALETTE_EXPAND_BUTTON        13   // the scripts panel's expand arrow
+#define ID_PALETTE_SCRIPTS_PANEL_FIRST  14   // the scripts panel's controls, 14 to 20 (ScriptsPanel)
 
 #define ID_ABOUT_DIALOG                 32003
 #define ID_PALETTE                      32004

@@ -11,6 +11,7 @@
 #include "ScriptInfo.hpp"
 #include "PaletteState.hpp"
 #include "ResourceIds.hpp"
+#include "ScriptsPanel.hpp"
 
 #include <atomic>
 #include <memory>
@@ -33,6 +34,8 @@ public:
 
     void Show ();
     void Hide ();
+    // The "Scripts Panel" menu item: shows the palette with its scripts panel open.
+    void ShowScriptsPanel ();
 
     bool UpdateAddOn ();
     void SetRunButtonIcon ();   // also called once the VersionChecker's lookup completes
@@ -96,6 +99,7 @@ private:
     DG::TextEdit   searchEdit;        // filters the dropdown (BuildVisibleItems); hidden until searchButton opens it
     DG::IconButton favouriteButton;   // the star: adds the selected script to the favourites or removes it
     DG::IconButton searchButton;      // shows or hides searchEdit; highlighted while a filter is applied
+    ScriptsPanel   scriptsPanel;      // the expand arrow and the controls below the bar
 
     // Return, Enter and Escape, registered only while searchEdit has the focus (0: not registered)
     short returnHotKey = 0;
@@ -211,6 +215,9 @@ private:
     GS::UniString GetSearchText () const;   // the search, trimmed; empty: no filter
     void SetSearchButtonIcon ();     // SearchActive while a filter is applied, else Search
     ScriptList GetAllScripts () const;   // in the order of the dropdown
+    // The scripts panel's accessor of the script list: every script of the dropdown, in its order, with what the
+    // panel shows of it.
+    GS::Array<ScriptsPanel::Script> GetPanelScripts () const;
     GS::UniString GetScriptLabel (const PopUpItemData& popUpData) const;   // the label with the "[Shortcut N]" suffix
     bool IsPopUpContainsFile (const IO::Location& fileLocation) const;
     void SaveScriptsToPreferences ();   // also writes the selection to palette.json
@@ -236,6 +243,7 @@ private:
 
     virtual void PanelCloseRequested (const DG::PanelCloseRequestEvent& ev, bool* accepted) override;
     virtual void PanelOpened (const DG::PanelOpenEvent& ev) override;
+    virtual void PanelResized (const DG::PanelResizeEvent& ev) override;
     virtual void ButtonClicked (const DG::ButtonClickEvent& ev) override;
     virtual void PopUpChanged (const DG::PopUpChangeEvent& ev) override;
     virtual void TextEditChanged (const DG::TextEditChangeEvent& ev) override;
