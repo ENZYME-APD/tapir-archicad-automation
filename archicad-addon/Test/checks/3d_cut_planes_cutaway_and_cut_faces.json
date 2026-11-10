@@ -1,0 +1,155 @@
+{
+  "title": "Set3DCutPlanes turns 3D Cutaway on, keeps a pen and surface on the cut faces, and sets them and the custom cut pen and surface as Get3DCutPlanes reads back",
+  "minTapir": "2.0.1",
+  "steps": [
+    {
+      "id": "3D window",
+      "command": "ChangeWindow",
+      "creates": false,
+      "params": { "windowType": "3DModel" }
+    },
+    {
+      "id": "3D Cutaway off",
+      "command": "Set3DCutawayStatus",
+      "creates": false,
+      "params": { "cutawayEnabled": false },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "a horizontal plane at 2.5 m while the cutaway is off",
+      "command": "Set3DCutPlanes",
+      "creates": false,
+      "params": {
+        "cutPlanes": [ { "pa": 0, "pb": 0, "pc": 1, "pd": 2.5 } ]
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "the cutaway is on",
+      "command": "Get3DCutawayStatus",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "cutawayEnabled", "eq": true, "name": "turned on by Set3DCutPlanes" }
+      ]
+    },
+    {
+      "id": "the plane is in force with a pen",
+      "command": "Get3DCutPlanes",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "isCutPlanes", "eq": true },
+        { "path": "cutPlanes", "len": 1 },
+        { "path": "cutPlanes[0].pd", "approx": 2.5, "tol": 1e-6 },
+        { "path": "cutPlanes[0].cutPen", "gt": 0, "name": "cut pen is not 0" },
+        { "path": "customPen", "gt": 0 }
+      ]
+    },
+    {
+      "id": "a surface",
+      "command": "GetAttributesByType",
+      "creates": false,
+      "params": { "attributeType": "Surface" },
+      "save": { "surface": "attributes[0].attributeId.guid" },
+      "expect": [
+        { "path": "attributes[0].attributeId.guid", "exists": true }
+      ]
+    },
+    {
+      "id": "the plane with cut pen 5 and the surface",
+      "command": "Set3DCutPlanes",
+      "creates": false,
+      "params": {
+        "cutPlanes": [ { "pa": 0, "pb": 0, "pc": 1, "pd": 2.5, "cutPen": 5, "cutSurfaceId": { "guid": "${surface}" } } ]
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the cut pen and surface",
+      "command": "Get3DCutPlanes",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "cutPlanes[0].cutPen", "eq": 5 },
+        { "path": "cutPlanes[0].cutSurfaceId.guid", "eq": "${surface}" }
+      ]
+    },
+    {
+      "id": "two planes without a pen or surface",
+      "command": "Set3DCutPlanes",
+      "creates": false,
+      "params": {
+        "cutPlanes": [ { "pa": 0, "pb": 0, "pc": 1, "pd": 2 }, { "pa": 1, "pb": 0, "pc": 0, "pd": 3 } ]
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "both keep the pen and surface of the current plane",
+      "command": "Get3DCutPlanes",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "cutPlanes", "len": 2 },
+        { "path": "cutPlanes[0].cutPen", "eq": 5 },
+        { "path": "cutPlanes[1].cutPen", "eq": 5 },
+        { "path": "cutPlanes[1].cutSurfaceId.guid", "eq": "${surface}" }
+      ]
+    },
+    {
+      "id": "bad input: cut pen 0",
+      "command": "Set3DCutPlanes",
+      "creates": false,
+      "allowEnvelopeError": true,
+      "params": {
+        "cutPlanes": [ { "pa": 0, "pb": 0, "pc": 1, "pd": 2, "cutPen": 0 } ]
+      },
+      "expect": [
+        { "path": "success", "ne": true, "name": "refused" }
+      ]
+    },
+    {
+      "id": "custom cut pen and surface",
+      "command": "Set3DCutPlanes",
+      "creates": false,
+      "params": {
+        "cutPlanes": [ { "pa": 0, "pb": 0, "pc": 1, "pd": 2 } ],
+        "useCustom": true,
+        "customPen": 7,
+        "customSurfaceId": { "guid": "${surface}" }
+      },
+      "expect": [
+        { "path": "success", "eq": true }
+      ]
+    },
+    {
+      "id": "read the custom cut pen and surface",
+      "command": "Get3DCutPlanes",
+      "creates": false,
+      "params": {},
+      "expect": [
+        { "path": "useCustom", "eq": true },
+        { "path": "customPen", "eq": 7 },
+        { "path": "customSurfaceId.guid", "eq": "${surface}" }
+      ]
+    }
+  ],
+  "teardown": [
+    {
+      "command": "Set3DCutPlanes",
+      "params": { "cutPlanes": [], "useCustom": false }
+    },
+    {
+      "command": "Set3DCutawayStatus",
+      "params": { "cutawayEnabled": false }
+    }
+  ]
+}
