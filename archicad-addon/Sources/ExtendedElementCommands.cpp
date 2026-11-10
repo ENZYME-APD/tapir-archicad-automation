@@ -671,6 +671,49 @@ static bool ParseDimensionMarkerName (const GS::UniString& markerName, API_Marke
     return false;
 }
 
+// The text placement methods of the Dimension Settings, named as the dialog names them; Classic is
+// the API's API_Legacy (#2663).
+static GS::UniString DimensionTextPlacementMethodName (API_DimLayoutID method)
+{
+    switch (method) {
+        case API_Legacy:    return "Classic";
+        case API_Flexible:  return "Flexible";
+        case API_Centered:  return "Centered";
+        case API_LayoutOff: return "Off";
+        default:            return "Unknown";
+    }
+}
+
+static bool ParseDimensionTextPlacementMethod (const GS::UniString& methodName, API_DimLayoutID& result)
+{
+    const API_DimLayoutID methods[] = { API_Legacy, API_Flexible, API_Centered, API_LayoutOff };
+    for (API_DimLayoutID method : methods) {
+        if (DimensionTextPlacementMethodName (method) == methodName) {
+            result = method;
+            return true;
+        }
+    }
+    return false;
+}
+
+// The marker and the text placement of a linear dimension as GetDetailsOfElements and
+// GetDimensionData return them (DimensionMarker, DimensionTextPlacement).
+static GS::ObjectState CreateDimensionMarkerObjectState (const API_Element& element)
+{
+    return GS::ObjectState (
+        "type", DimensionMarkerName (element.dimension.markerData.markerType),
+        "pen", static_cast<Int32> (element.dimension.markerData.markerPen),
+        "size", element.dimension.markerData.markerSize);
+}
+
+static GS::ObjectState CreateDimensionTextPlacementObjectState (const API_Element& element)
+{
+    return GS::ObjectState (
+        "method", DimensionTextPlacementMethodName (element.dimension.dimLayout),
+        "placeBelowLine", element.dimension.placeUnderEnabled,
+        "pushNeighbors", element.dimension.pushNeighborEnabled);
+}
+
 // The settings of a linear dimension that CreateAssociativeDimensions,
 // CreateAssociativeDimensionsOnSection, CreateWallThicknessDimensions and
 // ModifyAssociativeDimensions all take, written by ApplyDimensionSettings (#2220). The names are
@@ -707,22 +750,12 @@ static const char* DimensionSettingsSchemaProperties = R"(
                             "description": "Optional pen of the dimension and witness lines."
                         },
                         "marker": {
-                            "type": "object",
-                            "description": "Optional marker at the witness points; give the type, the pen or both. Its size is not written: the size the API reports did not match the marker size of the Dimension Settings for linear dimensions.",
-                            "properties": {
-                                "type": {
-                                    "type": "string",
-                                    "description": "The marker type, named after API_MarkerID.",
-                                    "enum": ["CrossLine", "EmptyCircle", "SlashLine60", "OpenArrow30", "ClosedArrow30", "FullArrow30", "SlashLine45", "CrossCircle", "OpenArrow90", "ClosedArrow90", "FullArrow90", "FullCircle", "PepitaCircle", "BandArrow", "OpenArrow60", "ClosedArrow60", "FullArrow60", "SlashLine75"]
-                                },
-                                "pen": {
-                                    "type": "integer",
-                                    "minimum": 1,
-                                    "maximum": 255,
-                                    "description": "The pen of the marker."
-                                }
-                            },
-                            "additionalProperties": false
+                            "$ref": "#/DimensionMarker",
+                            "description": "Optional marker at the witness points; give any of its type, pen and size. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
+                        },
+                        "textPlacement": {
+                            "$ref": "#/DimensionTextPlacement",
+                            "description": "Optional text placement method of the dimension texts, as in the Dimension Settings; give any of its fields. The others stay as they are (on creation: as favoriteName or the Dimension tool defaults give them)."
                         },
                         "defaultWitnessForm": {
                             "type": "string",
@@ -844,6 +877,47 @@ static GS::Optional<GS::ObjectState> ApplyDimensionSettings (const GS::ObjectSta
                 ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, markerData.markerPen);
             }
         }
+        double markerSize = 0.0;
+        if (marker->Get ("size", markerSize)) {
+            if (markerSize <= 0.0) {
+                return CreateErrorResponse (APIERR_BADPARS, "The marker 'size' must be greater than 0.");
+            }
+            element.dimension.markerData.markerSize = markerSize;
+            if (mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, markerData.markerSize);
+            }
+        }
+    }
+
+    // The text placement method of the Dimension Settings (#2663): dimLayout, with the two
+    // options the API gives for the Flexible method.
+    const GS::ObjectState* textPlacement = data.Get ("textPlacement");
+    if (textPlacement != nullptr) {
+        GS::UniString methodName;
+        if (textPlacement->Get ("method", methodName)) {
+            API_DimLayoutID method = API_Legacy;
+            if (!ParseDimensionTextPlacementMethod (methodName, method)) {
+                return CreateErrorResponse (APIERR_BADPARS, "Unknown textPlacement 'method' value: " + methodName);
+            }
+            element.dimension.dimLayout = method;
+            if (mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, dimLayout);
+            }
+        }
+        bool placeBelowLine = false;
+        if (textPlacement->Get ("placeBelowLine", placeBelowLine)) {
+            element.dimension.placeUnderEnabled = placeBelowLine;
+            if (mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, placeUnderEnabled);
+            }
+        }
+        bool pushNeighbors = false;
+        if (textPlacement->Get ("pushNeighbors", pushNeighbors)) {
+            element.dimension.pushNeighborEnabled = pushNeighbors;
+            if (mask != nullptr) {
+                ACAPI_ELEMENT_MASK_SET (*mask, API_DimensionType, pushNeighborEnabled);
+            }
+        }
     }
 
     GS::UniString witnessFormName;
@@ -939,9 +1013,8 @@ void AddDimensionDetails (GS::ObjectState& details, const API_Element& element)
     details.Add ("direction", Create2DCoordinateObjectState (element.dimension.direction));
     details.Add ("witnessPointCount", static_cast<Int32> (element.dimension.nDimElem));
     details.Add ("linePen", static_cast<Int32> (element.dimension.linPen));
-    details.Add ("marker", GS::ObjectState (
-        "type", DimensionMarkerName (element.dimension.markerData.markerType),
-        "pen", static_cast<Int32> (element.dimension.markerData.markerPen)));
+    details.Add ("marker", CreateDimensionMarkerObjectState (element));
+    details.Add ("textPlacement", CreateDimensionTextPlacementObjectState (element));
     details.Add ("textHeight", element.dimension.defNote.noteSize);
     details.Add ("textPen", static_cast<Int32> (element.dimension.defNote.notePen));
     details.Add ("textFrame", element.dimension.defNote.frame);
@@ -10028,6 +10101,22 @@ GS::ObjectState ModifyAssociativeDimensionsCommand::Execute (const GS::ObjectSta
             if (item.Contains ("defaultWitnessForm") && changed.dimension.defWitnessForm != element.dimension.defWitnessForm) {
                 notApplied += " defaultWitnessForm";
             }
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_DimensionType, markerData.markerSize) &&
+                std::abs (changed.dimension.markerData.markerSize - element.dimension.markerData.markerSize) > tolerance) {
+                notApplied += " marker.size";
+            }
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_DimensionType, dimLayout) &&
+                changed.dimension.dimLayout != element.dimension.dimLayout) {
+                notApplied += " textPlacement.method";
+            }
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_DimensionType, placeUnderEnabled) &&
+                changed.dimension.placeUnderEnabled != element.dimension.placeUnderEnabled) {
+                notApplied += " textPlacement.placeBelowLine";
+            }
+            if (ACAPI_ELEMENT_MASK_CHECK (mask, API_DimensionType, pushNeighborEnabled) &&
+                changed.dimension.pushNeighborEnabled != element.dimension.pushNeighborEnabled) {
+                notApplied += " textPlacement.pushNeighbors";
+            }
             if (item.Contains ("staticDimension") && changed.dimension.defStaticDim != element.dimension.defStaticDim) {
                 notApplied += " staticDimension";
             }
@@ -12701,13 +12790,13 @@ GS::ObjectState GetDimensionDataCommand::Execute (const GS::ObjectState& paramet
         }
 
         // The look of the dimension line, so a dimension can be redrawn or recreated as it is.
-        // markerData.markerSize is left out on purpose: on Archicad 29 it read 2.5 mm for linear
-        // dimensions whose settings dialog shows a marker size of 1.0 mm (it only matched for an
-        // elevation dimension), so it is not the size a user sets.
+        // The marker size is the API's markerData.markerSize as it is: on Archicad 29 it once read
+        // 2.5 mm for a linear dimension whose settings dialog showed 1.0 mm, and the DevKit only
+        // calls it the size at the drawing scale, so the schema says to compare it with the
+        // dialog (#2663).
         dimensionData.Add ("linePen", static_cast<Int32> (element.dimension.linPen));
-        dimensionData.Add ("marker", GS::ObjectState (
-            "type", DimensionMarkerName (element.dimension.markerData.markerType),
-            "pen", static_cast<Int32> (element.dimension.markerData.markerPen)));
+        dimensionData.Add ("marker", CreateDimensionMarkerObjectState (element));
+        dimensionData.Add ("textPlacement", CreateDimensionTextPlacementObjectState (element));
         dimensionData.Add ("defaultWitnessForm", WitnessFormToString (element.dimension.defWitnessForm));
         dimensionData.Add ("defaultWitnessVal", element.dimension.defWitnessVal);
         dimensionData.Add ("staticDimension", element.dimension.defStaticDim);
