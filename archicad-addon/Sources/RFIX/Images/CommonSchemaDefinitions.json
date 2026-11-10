@@ -12827,7 +12827,7 @@
             },
             "staticLevel": {
                 "type": "boolean",
-                "description": "The static flag as Archicad reports it. A level dimension created with a fixed 'level' and no parent keeps that value although Archicad reads this flag as false."
+                "description": "The Static checkbox as Archicad reports it; ModifyLevelDimensions switches it. A level dimension created with a fixed 'level' and no parent keeps that value although Archicad has been seen to read this flag as false for it."
             },
             "ownerElementId": {
                 "$ref": "#/ElementId",

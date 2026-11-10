@@ -6865,6 +6865,18 @@ GS::Optional<GS::UniString> ModifyLevelDimensionsCommand::GetInputParametersSche
                     "position": {
                         "$ref": "#/Coordinate2D",
                         "description": "The new location of the marker on the floor plan. An associative level dimension then shows the height of its element at the new position. Optional parameter."
+                    },
+                    "level": {
+                        "type": "number",
+                        "description": "New fixed level value in meters (absolute, from the project zero), as CreateLevelDimensions takes it. The dimension becomes static (the Static checkbox on) and shows this value; an owner element is kept, so staticLevel false later shows its height again. Cannot be given with parentElementId or with staticLevel false. Optional parameter."
+                    },
+                    "staticLevel": {
+                        "type": "boolean",
+                        "description": "The Static checkbox. true fixes the value the dimension shows now; false makes it associative again, so it shows the height of its owner element at the position, or the floor level when it has none. Optional parameter."
+                    },
+                    "parentElementId": {
+                        "$ref": "#/ElementId",
+                        "description": "The new owner element (Mesh, Slab, Roof, Shell, Morph, Beam, Column, Wall, Object, Stair ...), for example after the old one was replaced. The dimension becomes associative and shows the new owner's height at the position, so the position must lie on it (give position too when it does not). Cannot be given with level or with staticLevel true. Optional parameter."
                     },)") + LevelDimensionSettingsSchemaProperties + R"(
                 },
                 "additionalProperties": false,
@@ -6893,12 +6905,63 @@ GS::Optional<GS::UniString> ModifyLevelDimensionsCommand::GetRawResponseSchema (
     })";
 }
 
+// The static level, the Static checkbox and the owner element of an existing level dimension (#2656):
+// level makes it static with that value (the owner is kept), staticLevel switches the checkbox, and
+// parentElementId sets a new owner the way CreateLevelDimensions does and makes it associative.
+static GS::Optional<GS::ObjectState> ApplyLevelDimensionLevelAndOwner (const GS::ObjectState& item, API_Element& element, API_Element& mask)
+{
+    double level = 0.0;
+    const bool hasLevel = item.Get ("level", level);
+    bool staticLevel = false;
+    const bool hasStaticLevel = item.Get ("staticLevel", staticLevel);
+    const bool hasParent = item.Contains ("parentElementId");
+
+    if (hasLevel && hasStaticLevel && !staticLevel) {
+        return CreateErrorResponse (APIERR_BADPARS, "level makes the level dimension static, it cannot be given with staticLevel false.");
+    }
+    if (hasParent && (hasLevel || (hasStaticLevel && staticLevel))) {
+        return CreateErrorResponse (APIERR_BADPARS, "parentElementId makes the level dimension associative, it cannot be given with level or with staticLevel true.");
+    }
+
+    if (hasParent) {
+        const API_Guid parentGuid = GetGuidFromArrayItem ("parentElementId", item);
+        API_Elem_Head parentElemHead = {};
+        parentElemHead.guid = parentGuid;
+        if (parentGuid == APINULLGuid || parentGuid == element.header.guid || ACAPI_Element_GetHeader (&parentElemHead) != NoError) {
+            return CreateErrorResponse (APIERR_BADPARS, "Invalid parent element GUID");
+        }
+#ifdef ServerMainVers_2600
+        element.levelDimension.parentType = parentElemHead.type;
+#else
+        element.levelDimension.parentType = parentElemHead.typeID;
+#endif
+        element.levelDimension.parentGuid = parentGuid;
+        element.levelDimension.staticLevel = false;
+        ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, parentType);
+        ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, parentGuid);
+        ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, staticLevel);
+    }
+
+    if (hasLevel) {
+        element.levelDimension.level = level;
+        element.levelDimension.staticLevel = true;
+        ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, level);
+        ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, staticLevel);
+    } else if (hasStaticLevel) {
+        element.levelDimension.staticLevel = staticLevel;
+        ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, staticLevel);
+    }
+
+    return {};
+}
+
 // The settings go through ApplyLevelDimensionSettings, as in CreateLevelDimensions; the position
 // through loc, which ACAPI_Element_Change accepts for level dimensions (as the DevKit's Element_Test
 // does in Do_LevelDimension_Edit). The font and style go to both texts, like the text height and pen.
 // The texts' content is written with the autotext flag off, as CreateElementsCommandBase does, so an
-// Autotext key is kept as a key. The parent element and the static level are not changed. The element
-// is read back, so a value Archicad did not take is reported as a failure.
+// Autotext key is kept as a key. The static level, the Static checkbox and the owner element go through
+// ApplyLevelDimensionLevelAndOwner. The element is read back, so a value Archicad did not take is
+// reported as a failure.
 GS::ObjectState ModifyLevelDimensionsCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
     GS::Array<GS::ObjectState> itemsWithDetails;
@@ -6945,6 +7008,12 @@ GS::ObjectState ModifyLevelDimensionsCommand::Execute (const GS::ObjectState& pa
                 ACAPI_ELEMENT_MASK_SET (mask, API_LevelDimensionType, loc);
             }
 
+            auto levelError = ApplyLevelDimensionLevelAndOwner (item, element, mask);
+            if (levelError.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (levelError.Get ()));
+                continue;
+            }
+
             LevelDimensionTexts customTexts;
             auto settingsError = ApplyLevelDimensionSettings (item, element, &mask, customTexts);
             if (settingsError.HasValue ()) {
@@ -6976,6 +7045,15 @@ GS::ObjectState ModifyLevelDimensionsCommand::Execute (const GS::ObjectState& pa
                 (std::abs (changed.levelDimension.loc.x - element.levelDimension.loc.x) > tolerance ||
                  std::abs (changed.levelDimension.loc.y - element.levelDimension.loc.y) > tolerance)) {
                 notApplied += " position";
+            }
+            if (item.Contains ("level") && std::abs (changed.levelDimension.level - element.levelDimension.level) > tolerance) {
+                notApplied += " level";
+            }
+            if (item.Contains ("staticLevel") && changed.levelDimension.staticLevel != element.levelDimension.staticLevel) {
+                notApplied += " staticLevel";
+            }
+            if (item.Contains ("parentElementId") && changed.levelDimension.parentGuid != element.levelDimension.parentGuid) {
+                notApplied += " parentElementId";
             }
             if (item.Contains ("pen") && changed.levelDimension.pen != element.levelDimension.pen) {
                 notApplied += " pen";

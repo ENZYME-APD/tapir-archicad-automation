@@ -3,7 +3,9 @@
 The settings have the keys CreateLevelDimensions takes and GetDetailsOfElements returns; only the
 given ones are changed. The text height, pen, font and style apply to both texts of the marker.
 customText replaces the measured value by own text (with Autotext keys, as GetDetailsOfElements
-reads them in customText); textContent 'Measured' shows the value again.
+reads them in customText); textContent 'Measured' shows the value again. level gives a static
+dimension a new value; staticLevel switches the Static checkbox and parentElementId sets a new
+owner element.
 """
 import aclib
 
@@ -14,6 +16,7 @@ levelDimension = aclib.RunTapirCommand ('CreateLevelDimensions', {'levelDimensio
 aclib.PrintJson (aclib.RunTapirCommand ('ModifyLevelDimensions', {'levelDimensionsWithDetails': [{
     'elementId': levelDimension['elementId'],
     'position': {'x': 3.0, 'y': 2.0},
+    'level': 0.75,
     'pen': 3,
     'textHeight': 3.0,
     'textPen': 5,
