@@ -3940,6 +3940,30 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
                         "type": "boolean",
                         "description": "Optional: whether the surface overrides are chained (the chain button of the Model panel)."
                     },
+                    "visibility": {
+                        "$ref": "#/StoryVisibility",
+                        "description": "Optional: the stories the contour of the mesh is shown on. Only the given fields change."
+                    },
+                    "fillVisibility": {
+                        "$ref": "#/StoryVisibility",
+                        "description": "Optional: the stories the cover fill of the mesh is shown on. Only the given fields change."
+                    },
+                    "cutFillPen": {
+                        "$ref": "#/OverriddenPen",
+                        "description": "Optional override of the pen of the cut fill (shown on solid meshes); overridden false clears the override."
+                    },
+                    "cutFillBackgroundPen": {
+                        "$ref": "#/OverriddenPen",
+                        "description": "Optional override of the background pen of the cut fill (shown on solid meshes); overridden false clears the override."
+                    },
+                    "sectionContourPen": {
+                        "type": "integer",
+                        "description": "Optional pen of the contour of the mesh where it is cut in sections."
+                    },
+                    "floorFill": {
+                        "$ref": "#/MeshFloorFill",
+                        "description": "Optional cover fill of the mesh in the floor plan. Only the given fields change."
+                    },
                     "ridges": {
                         "$ref": "#/MeshRidges"
                     },
@@ -4077,6 +4101,13 @@ GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (AP
     const GS::Optional<GS::UniString> surfacesError = ApplyMeshStructureAndSurfaces (element, unusedMask, parameters, true, surfacesChanged);
     if (surfacesError.HasValue ()) {
         return CreateErrorResponse (APIERR_BADPARS, surfacesError.Get ());
+    }
+
+    // Floor plan and section settings, written as ModifyMeshes writes them (#2630).
+    bool floorPlanChanged = false;
+    const GS::Optional<GS::UniString> floorPlanError = ApplyMeshFloorPlanAndSection (element, unusedMask, parameters, floorPlanChanged);
+    if (floorPlanError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, floorPlanError.Get ());
     }
 
     return {};

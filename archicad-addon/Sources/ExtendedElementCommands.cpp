@@ -2909,6 +2909,123 @@ GS::Optional<GS::UniString> ApplyShellBaseFloorPlanAndSection (API_ShellBaseType
 
 } // namespace
 
+GS::Optional<GS::UniString> ApplyMeshFloorPlanAndSection (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed)
+{
+    // Checked before anything is written, so an unknown fill leaves the mesh as it was.
+    const GS::Optional<GS::UniString> idError = CheckSurfaceAndFillAttributeIds (details, {}, "floorFill");
+    if (idError.HasValue ()) {
+        return idError;
+    }
+
+    API_MeshType& mesh = element.mesh;
+
+    GS::ObjectState visibilityOs;
+    if (details.Get ("visibility", visibilityOs)) {
+        MergeStoryVisibility (visibilityOs, mesh.visibilityCont);
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, visibilityCont.showOnHome);
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, visibilityCont.showAllAbove);
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, visibilityCont.showAllBelow);
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, visibilityCont.showRelAbove);
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, visibilityCont.showRelBelow);
+        changed = true;
+    }
+    GS::ObjectState fillVisibilityOs;
+    if (details.Get ("fillVisibility", fillVisibilityOs)) {
+        MergeStoryVisibility (fillVisibilityOs, mesh.visibilityFill);
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, visibilityFill.showOnHome);
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, visibilityFill.showAllAbove);
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, visibilityFill.showAllBelow);
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, visibilityFill.showRelAbove);
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, visibilityFill.showRelBelow);
+        changed = true;
+    }
+
+    GS::ObjectState cutFillPenOs;
+    if (details.Get ("cutFillPen", cutFillPenOs)) {
+#ifdef ServerMainVers_2700
+        mesh.cutFillPen = GetOverriddenPenFromObjectState (cutFillPenOs);
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, cutFillPen);
+#else
+        bool overridden = false;
+        cutFillPenOs.Get ("overridden", overridden);
+        Int32 penIndex = 0;
+        if (overridden && cutFillPenOs.Get ("penIndex", penIndex)) {
+            mesh.penOverride.cutFillPen = static_cast<short> (penIndex);
+            ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, penOverride.cutFillPen);
+        }
+        mesh.penOverride.overrideCutFillPen = overridden;
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, penOverride.overrideCutFillPen);
+#endif
+        changed = true;
+    }
+    GS::ObjectState cutFillBackgroundPenOs;
+    if (details.Get ("cutFillBackgroundPen", cutFillBackgroundPenOs)) {
+#ifdef ServerMainVers_2700
+        mesh.cutFillBackgroundPen = GetOverriddenPenFromObjectState (cutFillBackgroundPenOs);
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, cutFillBackgroundPen);
+#else
+        bool overridden = false;
+        cutFillBackgroundPenOs.Get ("overridden", overridden);
+        Int32 penIndex = 0;
+        if (overridden && cutFillBackgroundPenOs.Get ("penIndex", penIndex)) {
+            mesh.penOverride.cutFillBackgroundPen = static_cast<short> (penIndex);
+            ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, penOverride.cutFillBackgroundPen);
+        }
+        mesh.penOverride.overrideCutFillBackgroundPen = overridden;
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, penOverride.overrideCutFillBackgroundPen);
+#endif
+        changed = true;
+    }
+
+    Int32 sectionContourPen = 0;
+    if (details.Get ("sectionContourPen", sectionContourPen)) {
+        mesh.sectContPen = static_cast<short> (sectionContourPen);
+        ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, sectContPen);
+        changed = true;
+    }
+
+    GS::ObjectState floorFillOs;
+    if (details.Get ("floorFill", floorFillOs)) {
+        bool flag = false;
+        if (floorFillOs.Get ("use", flag)) {
+            mesh.useFloorFill = flag;
+            ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, useFloorFill);
+        }
+        Int32 fillPen = 0;
+        if (floorFillOs.Get ("foregroundPen", fillPen)) {
+            mesh.floorFillPen = static_cast<short> (fillPen);
+            ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, floorFillPen);
+        }
+        if (floorFillOs.Get ("backgroundPen", fillPen)) {
+            mesh.floorFillBGPen = static_cast<short> (fillPen);
+            ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, floorFillBGPen);
+        }
+        GS::ObjectState fillIdOs;
+        if (floorFillOs.Get ("fillId", fillIdOs)) {
+            mesh.floorFillInd = GetAttributeIndexFromGuid (API_FilltypeID, GetGuidFromObjectState (fillIdOs));
+            ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, floorFillInd);
+        }
+        if (floorFillOs.Get ("useLocalOrigin", flag)) {
+            mesh.useLocalOrigo = flag;
+            ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, useLocalOrigo);
+        }
+        GS::ObjectState localOriginOs;
+        if (floorFillOs.Get ("localOrigin", localOriginOs)) {
+            mesh.locOrigo = Get2DCoordinateFromObjectState (localOriginOs);
+            // Both members are masked: ACAPI_ELEMENT_MASK_SET marks only the first byte of a field.
+            ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, locOrigo.x);
+            ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, locOrigo.y);
+        }
+        double angle = 0.0;
+        if (floorFillOs.Get ("angle", angle)) {
+            mesh.fillAngle = angle;
+            ACAPI_ELEMENT_MASK_SET (mask, API_MeshType, fillAngle);
+        }
+        changed = true;
+    }
+    return {};
+}
+
 namespace {
 
 bool ApplyWallDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details)
@@ -15368,6 +15485,12 @@ GS::ObjectState ModifyMeshesCommand::Execute (const GS::ObjectState& parameters,
             const GS::Optional<GS::UniString> surfacesError = ApplyMeshStructureAndSurfaces (elem, mask, *meshData, false, surfacesChanged);
             if (surfacesError.HasValue ()) {
                 executionResults (CreateFailedExecutionResult (APIERR_BADPARS, surfacesError.Get ()));
+                continue;
+            }
+            bool floorPlanChanged = false;
+            const GS::Optional<GS::UniString> floorPlanError = ApplyMeshFloorPlanAndSection (elem, mask, *meshData, floorPlanChanged);
+            if (floorPlanError.HasValue ()) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, floorPlanError.Get ()));
                 continue;
             }
 

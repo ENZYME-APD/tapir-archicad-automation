@@ -3331,6 +3331,39 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("sideMaterial", CreateOverriddenMaterialObjectState (elem.mesh.sideMat));
                 typeSpecificDetails.Add ("bottomMaterial", CreateOverriddenMaterialObjectState (elem.mesh.botMat));
                 typeSpecificDetails.Add ("materialsChained", elem.mesh.materialsChained);
+                typeSpecificDetails.Add ("visibility", CreateStoryVisibilityObjectState (elem.mesh.visibilityCont));
+                typeSpecificDetails.Add ("fillVisibility", CreateStoryVisibilityObjectState (elem.mesh.visibilityFill));
+#ifdef ServerMainVers_2700
+                typeSpecificDetails.Add ("cutFillPen", CreateOverriddenPenObjectState (elem.mesh.cutFillPen));
+                typeSpecificDetails.Add ("cutFillBackgroundPen", CreateOverriddenPenObjectState (elem.mesh.cutFillBackgroundPen));
+#else
+                {
+                    GS::ObjectState cutFillPenOs ("overridden", elem.mesh.penOverride.overrideCutFillPen);
+                    if (elem.mesh.penOverride.overrideCutFillPen) {
+                        cutFillPenOs.Add ("penIndex", (Int32) elem.mesh.penOverride.cutFillPen);
+                    }
+                    typeSpecificDetails.Add ("cutFillPen", cutFillPenOs);
+                    GS::ObjectState cutFillBackgroundPenOs ("overridden", elem.mesh.penOverride.overrideCutFillBackgroundPen);
+                    if (elem.mesh.penOverride.overrideCutFillBackgroundPen) {
+                        cutFillBackgroundPenOs.Add ("penIndex", (Int32) elem.mesh.penOverride.cutFillBackgroundPen);
+                    }
+                    typeSpecificDetails.Add ("cutFillBackgroundPen", cutFillBackgroundPenOs);
+                }
+#endif
+                typeSpecificDetails.Add ("sectionContourPen", (Int32) elem.mesh.sectContPen);
+                {
+                    GS::ObjectState floorFillOs;
+                    floorFillOs.Add ("use", elem.mesh.useFloorFill);
+                    floorFillOs.Add ("foregroundPen", (Int32) elem.mesh.floorFillPen);
+                    floorFillOs.Add ("backgroundPen", (Int32) elem.mesh.floorFillBGPen);
+                    if (elem.mesh.floorFillInd != APIInvalidAttributeIndex) {
+                        floorFillOs.Add ("fillId", CreateGuidObjectState (GetAttributeGuidFromIndex (API_FilltypeID, elem.mesh.floorFillInd)));
+                    }
+                    floorFillOs.Add ("useLocalOrigin", elem.mesh.useLocalOrigo);
+                    floorFillOs.Add ("localOrigin", Create2DCoordinateObjectState (elem.mesh.locOrigo));
+                    floorFillOs.Add ("angle", elem.mesh.fillAngle);
+                    typeSpecificDetails.Add ("floorFill", floorFillOs);
+                }
                 constexpr bool includeZCoords = true;
                 AddPolygonWithHolesFromMemoCoords (elem.header.guid, typeSpecificDetails, "polygonCoordinates", "polygonArcs", "holes", "polygonCoordinates", "polygonArcs", includeZCoords);
                 if (elem.mesh.levelLines.nSubLines > 0) {

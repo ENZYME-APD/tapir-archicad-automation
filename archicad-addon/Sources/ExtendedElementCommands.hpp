@@ -53,6 +53,13 @@ GS::Optional<GS::UniString> ApplySlabSurfaceAndFillSettings (API_Element& elemen
 // before anything is written, when a given attribute does not exist.
 GS::Optional<GS::UniString> ApplyMeshStructureAndSurfaces (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool isNewElement, bool& changed);
 
+// The floor plan and section settings API_MeshType has (#2630): story visibility of the contour
+// (visibility) and of the cover fill (fillVisibility), the cut fill pens (cutFillPen,
+// cutFillBackgroundPen; before Archicad 27 through penOverride), sectionContourPen and the cover
+// fill (floorFill, #/MeshFloorFill), shared by CreateMeshes and ModifyMeshes. Only the given keys
+// and fields change. Returns an error, before anything is written, when a given fill does not exist.
+GS::Optional<GS::UniString> ApplyMeshFloorPlanAndSection (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed);
+
 // The extrusion body of an Opening element, in world coordinates: the outline lies in the plane through
 // anchorPoint spanned by xAxis and yAxis, as a box from profileXMin to profileXMax along xAxis and from
 // profileYMin to profileYMax along yAxis, and is extruded along extrusionDirection from extrusionStart to

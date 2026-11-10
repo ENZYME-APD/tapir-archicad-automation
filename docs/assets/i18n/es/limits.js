@@ -38,6 +38,8 @@
         'Leer a qué borde de forjado o escalera está vinculada una barandilla, o vincular una barandilla a uno',
     'Turn off the automatic story visibility of a railing, so the stories it is shown on can be set':
         'Desactivar la visibilidad automática por plantas de una barandilla, para poder fijar las plantas en las que se muestra',
+    'Set the Floor Plan Display, Show Projection, uncut and overhead lines or the cut line type of a mesh':
+        'Fijar el Floor Plan Display, el Show Projection, las líneas no cortadas y superiores o el tipo de línea del corte de una malla',
     'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
         'Lea el contorno del forjado con <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> y cree una barandilla estática a lo largo del borde con <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. Cuando cambie el forjado, borre la barandilla y vuelva a crearla.',
 

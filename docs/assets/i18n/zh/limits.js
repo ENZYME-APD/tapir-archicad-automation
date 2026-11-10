@@ -38,6 +38,8 @@
         '读取栏杆关联到哪个楼板或楼梯的边缘，或将栏杆关联到某个边缘',
     'Turn off the automatic story visibility of a railing, so the stories it is shown on can be set':
         '关闭栏杆的自动楼层可见性，以便设置它显示在哪些楼层',
+    'Set the Floor Plan Display, Show Projection, uncut and overhead lines or the cut line type of a mesh':
+        '设置网面的 Floor Plan Display、Show Projection、未剖切线和上方线，或剖切线的线型',
     'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
         '用 <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> 读取楼板的轮廓，再用 <a href="../archicad-addon/#CreateRailings">CreateRailings</a> 沿该边缘创建静态栏杆。楼板改变时，删除栏杆并重新创建。',
 

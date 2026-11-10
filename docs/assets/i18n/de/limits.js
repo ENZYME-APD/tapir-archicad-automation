@@ -38,6 +38,8 @@
         'Auslesen, mit welcher Decken- oder Treppenkante ein Geländer verknüpft ist, oder ein Geländer mit einer verknüpfen',
     'Turn off the automatic story visibility of a railing, so the stories it is shown on can be set':
         'Die automatische Geschosssichtbarkeit eines Geländers ausschalten, damit sich die Geschosse festlegen lassen, auf denen es gezeigt wird',
+    'Set the Floor Plan Display, Show Projection, uncut and overhead lines or the cut line type of a mesh':
+        'Floor Plan Display, Show Projection, die ungeschnittenen und darüberliegenden Linien oder den Linientyp des Schnitts eines Netzes festlegen',
     'Read the slab\'s outline with <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> and create a static railing along the edge with <a href="../archicad-addon/#CreateRailings">CreateRailings</a>. When the slab changes, delete the railing and create it again.':
         'Lesen Sie den Umriss der Decke mit <a href="../archicad-addon/#GetDetailsOfElements">GetDetailsOfElements</a> aus und erstellen Sie mit <a href="../archicad-addon/#CreateRailings">CreateRailings</a> ein statisches Geländer entlang der Kante. Wenn sich die Decke ändert, löschen Sie das Geländer und erstellen Sie es neu.',
 

@@ -12223,6 +12223,30 @@
                 "type": "boolean",
                 "description": "Whether the surface overrides are chained (the chain button of the Model panel)."
             },
+            "visibility": {
+                "$ref": "#/StoryVisibility",
+                "description": "The stories the contour of the mesh is shown on. Only the given fields change."
+            },
+            "fillVisibility": {
+                "$ref": "#/StoryVisibility",
+                "description": "The stories the cover fill of the mesh is shown on. Only the given fields change."
+            },
+            "cutFillPen": {
+                "$ref": "#/OverriddenPen",
+                "description": "Overrides the pen of the cut fill (shown on solid meshes); overridden false clears the override."
+            },
+            "cutFillBackgroundPen": {
+                "$ref": "#/OverriddenPen",
+                "description": "Overrides the background pen of the cut fill (shown on solid meshes); overridden false clears the override."
+            },
+            "sectionContourPen": {
+                "type": "integer",
+                "description": "Pen of the contour of the mesh where it is cut in sections."
+            },
+            "floorFill": {
+                "$ref": "#/MeshFloorFill",
+                "description": "The cover fill of the mesh in the floor plan. Only the given fields change."
+            },
             "polygonCoordinates": {
                 "type": "array",
                 "description": "The 3D coordinates of the outline polygon of the mesh. Replaces the existing boundary entirely; the existing outline arcs are removed unless polygonArcs is also given, and the existing holes are kept unless holes is also given.",
@@ -12311,6 +12335,30 @@
             "materialsChained": {
                 "type": "boolean",
                 "description": "Whether the surface overrides are chained (the chain button of the Model panel)."
+            },
+            "visibility": {
+                "$ref": "#/StoryVisibility",
+                "description": "The stories the contour of the mesh is shown on."
+            },
+            "fillVisibility": {
+                "$ref": "#/StoryVisibility",
+                "description": "The stories the cover fill of the mesh is shown on."
+            },
+            "cutFillPen": {
+                "$ref": "#/OverriddenPen",
+                "description": "The override of the pen of the cut fill."
+            },
+            "cutFillBackgroundPen": {
+                "$ref": "#/OverriddenPen",
+                "description": "The override of the background pen of the cut fill."
+            },
+            "sectionContourPen": {
+                "type": "integer",
+                "description": "Pen of the contour of the mesh where it is cut in sections."
+            },
+            "floorFill": {
+                "$ref": "#/MeshFloorFill",
+                "description": "The cover fill of the mesh in the floor plan."
             },
             "polygonCoordinates": {
                 "type": "array",
@@ -16586,6 +16634,38 @@
             },
             "orientation": {
                 "$ref": "#/HatchOrientation"
+            }
+        },
+        "additionalProperties": false
+    },
+    "MeshFloorFill": {
+        "type": "object",
+        "description": "Floor plan cover fill settings of a Mesh (API_MeshType). When modifying a mesh, omitted properties keep their current values.",
+        "properties": {
+            "use": {
+                "type": "boolean",
+                "description": "Whether the cover fill is shown on the floor plan."
+            },
+            "foregroundPen": {
+                "type": "integer"
+            },
+            "backgroundPen": {
+                "type": "integer"
+            },
+            "fillId": {
+                "$ref": "#/AttributeId"
+            },
+            "useLocalOrigin": {
+                "type": "boolean",
+                "description": "Whether the cover fill is drawn from the mesh's own reference vector (localOrigin and angle) instead of the project origin."
+            },
+            "localOrigin": {
+                "$ref": "#/Coordinate2D",
+                "description": "Base point of the cover fill's reference vector, used when useLocalOrigin is true."
+            },
+            "angle": {
+                "type": "number",
+                "description": "Angle of the cover fill's reference vector in radians, used when useLocalOrigin is true."
             }
         },
         "additionalProperties": false
