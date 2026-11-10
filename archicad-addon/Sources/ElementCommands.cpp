@@ -972,6 +972,19 @@ static bool SetLineFamilySettingsFields (const GS::ObjectState& typeSpecificDeta
     return penChanged || ltypeChanged || roomSepChanged;
 }
 
+// Applies the "startArrow"/"endArrow" of SetDetailsOfElements to a Line/PolyLine/Arc/Spline and
+// marks them in the mask (lineMask is the same union member of the mask). Returns an error text.
+template <typename T>
+static GS::Optional<GS::UniString> SetLineArrowsFields (const GS::ObjectState& typeSpecificDetails, T& lineElem, T& lineMask)
+{
+    bool changed = false;
+    GS::Optional<GS::UniString> error = ApplyLineArrows (typeSpecificDetails, GetLineArrows (lineElem), changed);
+    if (!error.HasValue () && changed) {
+        SetLineArrowsMask (GetLineArrows (lineMask));
+    }
+    return error;
+}
+
 struct API_RoomUpdateParams {
     bool keepStampPos;
     bool undoTopTrim;
@@ -3059,6 +3072,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 AddPolygonFromMemoCoords (elem.header.guid, typeSpecificDetails, "coordinates", "arcs");
                 AddLineFamilySettingsDetails (typeSpecificDetails, elem.polyLine.linePen, elem.polyLine.ltypeInd, elem.polyLine.roomSeparator);
                 typeSpecificDetails.Add ("drawSegmentMode", PolylineDrawSegmentModeToString (elem.polyLine.drawSegmentMode));
+                AddLineArrowsDetails (typeSpecificDetails, GetLineArrows (elem.polyLine));
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
             } break;
 
@@ -3086,6 +3100,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 typeSpecificDetails.Add ("begCoordinate", Create2DCoordinateObjectState (elem.line.begC));
                 typeSpecificDetails.Add ("endCoordinate", Create2DCoordinateObjectState (elem.line.endC));
                 AddLineFamilySettingsDetails (typeSpecificDetails, elem.line.linePen, elem.line.ltypeInd, elem.line.roomSeparator);
+                AddLineArrowsDetails (typeSpecificDetails, GetLineArrows (elem.line));
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
             } break;
 
@@ -3101,6 +3116,9 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 }
                 typeSpecificDetails.Add ("reflected", elem.arc.reflected);
                 AddLineFamilySettingsDetails (typeSpecificDetails, elem.arc.linePen, elem.arc.ltypeInd, elem.arc.roomSeparator);
+                if (typeID == API_ArcID) {
+                    AddLineArrowsDetails (typeSpecificDetails, GetLineArrows (elem.arc));
+                }
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
             } break;
 
@@ -3126,6 +3144,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                 ACAPI_DisposeElemMemoHdls (&splineMemo);
                 typeSpecificDetails.Add ("closed", elem.spline.closed);
                 AddLineFamilySettingsDetails (typeSpecificDetails, elem.spline.linePen, elem.spline.ltypeInd, elem.spline.roomSeparator);
+                AddLineArrowsDetails (typeSpecificDetails, GetLineArrows (elem.spline));
                 typeSpecificDetails.Add ("zCoordinate", GetZPos (elem.header.floorInd, 0, stories));
             } break;
 
@@ -3999,6 +4018,12 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         if (penChanged) ACAPI_ELEMENT_MASK_SET (mask, API_LineType, linePen);
                         if (ltypeChanged) ACAPI_ELEMENT_MASK_SET (mask, API_LineType, ltypeInd);
                         if (roomSepChanged) ACAPI_ELEMENT_MASK_SET (mask, API_LineType, roomSeparator);
+                        const GS::Optional<GS::UniString> arrowsError = SetLineArrowsFields (*typeSpecificDetails, elem.line, mask.line);
+                        if (arrowsError.HasValue ()) {
+                            ACAPI_DisposeElemMemoHdls (&clipMemo);
+                            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, arrowsError.Get ()));
+                            continue;
+                        }
                     } break;
                     case API_ArcID:
                     case API_CircleID: {
@@ -4032,6 +4057,18 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         if (penChanged) ACAPI_ELEMENT_MASK_SET (mask, API_ArcType, linePen);
                         if (ltypeChanged) ACAPI_ELEMENT_MASK_SET (mask, API_ArcType, ltypeInd);
                         if (roomSepChanged) ACAPI_ELEMENT_MASK_SET (mask, API_ArcType, roomSeparator);
+                        if (GetElemTypeId (elem.header) == API_CircleID &&
+                            (typeSpecificDetails->Contains ("startArrow") || typeSpecificDetails->Contains ("endArrow"))) {
+                            ACAPI_DisposeElemMemoHdls (&clipMemo);
+                            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "A Circle has no ends, so it takes no startArrow or endArrow."));
+                            continue;
+                        }
+                        const GS::Optional<GS::UniString> arrowsError = SetLineArrowsFields (*typeSpecificDetails, elem.arc, mask.arc);
+                        if (arrowsError.HasValue ()) {
+                            ACAPI_DisposeElemMemoHdls (&clipMemo);
+                            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, arrowsError.Get ()));
+                            continue;
+                        }
                     } break;
                     case API_HotspotID: {
                         const GS::ObjectState* position = typeSpecificDetails->Get ("position");
@@ -4056,6 +4093,12 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                         if (penChanged) ACAPI_ELEMENT_MASK_SET (mask, API_SplineType, linePen);
                         if (ltypeChanged) ACAPI_ELEMENT_MASK_SET (mask, API_SplineType, ltypeInd);
                         if (roomSepChanged) ACAPI_ELEMENT_MASK_SET (mask, API_SplineType, roomSeparator);
+                        const GS::Optional<GS::UniString> arrowsError = SetLineArrowsFields (*typeSpecificDetails, elem.spline, mask.spline);
+                        if (arrowsError.HasValue ()) {
+                            ACAPI_DisposeElemMemoHdls (&clipMemo);
+                            executionResults (CreateFailedExecutionResult (APIERR_BADPARS, arrowsError.Get ()));
+                            continue;
+                        }
                     } break;
                     case API_DrawingID: {
                         GS::Array<GS::ObjectState> clipCoords;
@@ -4354,6 +4397,12 @@ GS::ObjectState SetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
                     }
                     ACAPI_ELEMENT_MASK_SET (mask, API_PolyLineType, drawSegmentMode);
                     hasElementChanges = true;
+                }
+                const GS::Optional<GS::UniString> arrowsError = SetLineArrowsFields (*typeSpecificDetails, elem.polyLine, mask.polyLine);
+                if (arrowsError.HasValue ()) {
+                    ACAPI_DisposeElemMemoHdls (&clipMemo);
+                    executionResults (CreateFailedExecutionResult (APIERR_BADPARS, arrowsError.Get ()));
+                    continue;
                 }
             } else if (typeSpecificDetails != nullptr && GetElemTypeId (elem.header) == API_HatchID) {
                 // The memo layout of a Hatch (closing vertices, per-contour vertex IDs) is

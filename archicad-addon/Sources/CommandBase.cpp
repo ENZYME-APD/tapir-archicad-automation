@@ -1168,6 +1168,224 @@ bool PolylineDrawSegmentModeFromString (const GS::UniString& str, short& out)
     return false;
 }
 
+// The names of API_ArrowID, in the order of the enum (the same in every DevKit from AC25).
+struct ArrowTypeName {
+    API_ArrowID arrowType;
+    const char* name;
+};
+
+static const ArrowTypeName ArrowTypeNames[] = {
+    { APIArr_EmptyCirc,      "EmptyCircle" },
+    { APIArr_CrossCircIs,    "CrossCircle" },
+    { APIArr_FullCirc,       "FullCircle" },
+    { APIArr_SlashLine15,    "SlashLine15" },
+    { APIArr_OpenArrow15,    "OpenArrow15" },
+    { APIArr_ClosArrow15,    "ClosedArrow15" },
+    { APIArr_FullArrow15,    "FullArrow15" },
+    { APIArr_SlashLine30,    "SlashLine30" },
+    { APIArr_OpenArrow30,    "OpenArrow30" },
+    { APIArr_ClosArrow30,    "ClosedArrow30" },
+    { APIArr_FullArrow30,    "FullArrow30" },
+    { APIArr_SlashLine45,    "SlashLine45" },
+    { APIArr_OpenArrow45,    "OpenArrow45" },
+    { APIArr_ClosArrow45,    "ClosedArrow45" },
+    { APIArr_FullArrow45,    "FullArrow45" },
+    { APIArr_SlashLine60,    "SlashLine60" },
+    { APIArr_OpenArrow60,    "OpenArrow60" },
+    { APIArr_ClosArrow60,    "ClosedArrow60" },
+    { APIArr_FullArrow60,    "FullArrow60" },
+    { APIArr_SlashLine90,    "SlashLine90" },
+    { APIArr_PepitaCirc,     "PepitaCircle" },
+    { APIArr_BandArrow,      "BandArrow" },
+    { APIArr_HalfArrowCcw15, "HalfArrowCcw15" },
+    { APIArr_HalfArrowCw15,  "HalfArrowCw15" },
+    { APIArr_HalfArrowCcw30, "HalfArrowCcw30" },
+    { APIArr_HalfArrowCw30,  "HalfArrowCw30" },
+    { APIArr_HalfArrowCcw45, "HalfArrowCcw45" },
+    { APIArr_HalfArrowCw45,  "HalfArrowCw45" },
+    { APIArr_HalfArrowCcw60, "HalfArrowCcw60" },
+    { APIArr_HalfArrowCw60,  "HalfArrowCw60" },
+    { APIArr_SlashLine75,    "SlashLine75" }
+};
+
+static GS::UniString ArrowTypeToString (API_ArrowID arrowType)
+{
+    for (const ArrowTypeName& entry : ArrowTypeNames) {
+        if (entry.arrowType == arrowType) {
+            return entry.name;
+        }
+    }
+    return GS::UniString::Printf ("%d", (int) arrowType);
+}
+
+static bool ArrowTypeFromString (const GS::UniString& str, API_ArrowID& out)
+{
+    for (const ArrowTypeName& entry : ArrowTypeNames) {
+        if (str == entry.name) {
+            out = entry.arrowType;
+            return true;
+        }
+    }
+    return false;
+}
+
+static GS::ObjectState CreateLineArrowObjectState (bool visible, API_ArrowID arrowType, double arrowSize, short arrowPen)
+{
+    return GS::ObjectState (
+        "visible", visible,
+        "type", ArrowTypeToString (arrowType),
+        "size", arrowSize,
+        "pen", arrowPen);
+}
+
+void AddLineArrowsDetails (GS::ObjectState& os, const LineArrows& arrows)
+{
+#ifdef ServerMainVers_2900
+    os.Add ("startArrow", CreateLineArrowObjectState (arrows.start.arrowVisibility, arrows.start.arrowType, arrows.start.arrowSize, arrows.start.arrowPen));
+    os.Add ("endArrow", CreateLineArrowObjectState (arrows.end.arrowVisibility, arrows.end.arrowType, arrows.end.arrowSize, arrows.end.arrowPen));
+#else
+    os.Add ("startArrow", CreateLineArrowObjectState (arrows.data.begArrow, arrows.data.arrowType, arrows.data.arrowSize, arrows.data.arrowPen));
+    os.Add ("endArrow", CreateLineArrowObjectState (arrows.data.endArrow, arrows.data.arrowType, arrows.data.arrowSize, arrows.data.arrowPen));
+#endif
+}
+
+namespace {
+
+// One end's requested values; a given arrow object shows its arrowhead unless visible is false.
+struct RequestedLineArrow {
+    bool                     given = false;
+    bool                     visible = true;
+    GS::Optional<API_ArrowID> type;
+    GS::Optional<double>     size;
+    GS::Optional<short>      pen;
+};
+
+}
+
+static GS::Optional<GS::UniString> ReadRequestedLineArrow (const GS::ObjectState& parameters, const char* key, RequestedLineArrow& out)
+{
+    const GS::ObjectState* arrow = parameters.Get (key);
+    if (arrow == nullptr) {
+        return {};
+    }
+    out.given = true;
+    arrow->Get ("visible", out.visible);
+    GS::UniString typeStr;
+    if (arrow->Get ("type", typeStr)) {
+        API_ArrowID arrowType = APIArr_EmptyCirc;
+        if (!ArrowTypeFromString (typeStr, arrowType)) {
+            return GS::UniString::Printf ("%s.type '%T' is not an arrowhead type.", key, typeStr.ToPrintf ());
+        }
+        out.type = arrowType;
+    }
+    double size = 0.0;
+    if (arrow->Get ("size", size)) {
+        if (size <= 0.0) {
+            return GS::UniString::Printf ("%s.size must be greater than 0.", key);
+        }
+        out.size = size;
+    }
+    Int32 pen = 0;
+    if (arrow->Get ("pen", pen)) {
+        if (pen < 1 || pen > 255) {
+            return GS::UniString::Printf ("%s.pen must be between 1 and 255.", key);
+        }
+        out.pen = (short) pen;
+    }
+    return {};
+}
+
+GS::Optional<GS::UniString> ApplyLineArrows (const GS::ObjectState& parameters, const LineArrows& arrows, bool& changed)
+{
+    RequestedLineArrow start;
+    RequestedLineArrow end;
+    GS::Optional<GS::UniString> error = ReadRequestedLineArrow (parameters, "startArrow", start);
+    if (!error.HasValue ()) {
+        error = ReadRequestedLineArrow (parameters, "endArrow", end);
+    }
+    if (error.HasValue ()) {
+        return error;
+    }
+    if (!start.given && !end.given) {
+        return {};
+    }
+
+#ifdef ServerMainVers_2900
+    const auto apply = [] (const RequestedLineArrow& requested, API_ArrowData& data) {
+        if (!requested.given) {
+            return;
+        }
+        data.arrowVisibility = requested.visible;
+        if (requested.type.HasValue ()) {
+            data.arrowType = requested.type.Get ();
+        }
+        if (requested.size.HasValue ()) {
+            data.arrowSize = requested.size.Get ();
+        }
+        if (requested.pen.HasValue ()) {
+            data.arrowPen = requested.pen.Get ();
+        }
+    };
+    apply (start, arrows.start);
+    apply (end, arrows.end);
+    // Linked ends share their size and pen in Archicad, so ends given different ones are unlinked.
+    if (arrows.start.arrowSize != arrows.end.arrowSize || arrows.start.arrowPen != arrows.end.arrowPen) {
+        arrows.linked = false;
+    }
+#else
+    // Both ends share one type, size and pen before Archicad 29.
+    if (start.type.HasValue () && end.type.HasValue () && start.type.Get () != end.type.Get ()) {
+        return GS::UniString ("Before Archicad 29 both ends of a line share one arrowhead type: startArrow.type and endArrow.type must be the same.");
+    }
+    if (start.size.HasValue () && end.size.HasValue () && start.size.Get () != end.size.Get ()) {
+        return GS::UniString ("Before Archicad 29 both ends of a line share one arrowhead size: startArrow.size and endArrow.size must be the same.");
+    }
+    if (start.pen.HasValue () && end.pen.HasValue () && start.pen.Get () != end.pen.Get ()) {
+        return GS::UniString ("Before Archicad 29 both ends of a line share one arrowhead pen: startArrow.pen and endArrow.pen must be the same.");
+    }
+    if (start.given) {
+        arrows.data.begArrow = start.visible;
+    }
+    if (end.given) {
+        arrows.data.endArrow = end.visible;
+    }
+    for (const RequestedLineArrow* requested : { &start, &end }) {
+        if (requested->type.HasValue ()) {
+            arrows.data.arrowType = requested->type.Get ();
+        }
+        if (requested->size.HasValue ()) {
+            arrows.data.arrowSize = requested->size.Get ();
+        }
+        if (requested->pen.HasValue ()) {
+            arrows.data.arrowPen = requested->pen.Get ();
+        }
+    }
+#endif
+    changed = true;
+    return {};
+}
+
+void SetLineArrowsMask (const LineArrows& maskArrows)
+{
+    // ACAPI_ELEMENT_MASK_SET marks a member by its first byte, so each member is marked by itself.
+    const auto mark = [] (auto& member) { *reinterpret_cast<char*> (&member) = -1; };
+#ifdef ServerMainVers_2900
+    for (API_ArrowData* data : { &maskArrows.start, &maskArrows.end }) {
+        mark (data->arrowType);
+        mark (data->arrowVisibility);
+        mark (data->arrowPen);
+        mark (data->arrowSize);
+    }
+    mark (maskArrows.linked);
+#else
+    mark (maskArrows.data.arrowType);
+    mark (maskArrows.data.begArrow);
+    mark (maskArrows.data.endArrow);
+    mark (maskArrows.data.arrowPen);
+    mark (maskArrows.data.arrowSize);
+#endif
+}
+
 GS::UniString GetElementTypeNonLocalizedName (API_ElemTypeID typeID)
 {
     switch (typeID) {

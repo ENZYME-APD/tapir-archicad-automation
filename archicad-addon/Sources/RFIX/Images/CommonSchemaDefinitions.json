@@ -11380,6 +11380,14 @@
             "drawSegmentMode": {
                 "$ref": "#/PolylineDrawSegmentMode"
             },
+            "startArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "The arrowhead at the start."
+            },
+            "endArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "The arrowhead at the end."
+            },
             "zCoordinate": {
                 "type": "number"
             }
@@ -11397,6 +11405,66 @@
             "SegmentBySegment",
             "Continuous"
         ]
+    },
+    "LineArrowhead": {
+        "type": "object",
+        "description": "An arrowhead at one end of a Line, Polyline, Arc or Spline. Archicad 29 and later keep a separate type, size and pen for each end (ends given a different size or pen are unlinked). Before Archicad 29 both ends share one type, size and pen: a value given for one end applies to both, two ends given different values are refused, and both ends read back the same type, size and pen.",
+        "properties": {
+            "visible": {
+                "type": "boolean",
+                "description": "Is the arrowhead shown? When the object is given without it, the arrowhead is shown."
+            },
+            "type": {
+                "type": "string",
+                "description": "The arrowhead type: circles, slash lines, open, closed (outline) and full (filled) arrows of 15, 30, 45, 60 or 90 degrees, the pepita circle, BandArrow (the double line) and the half arrows (harpoons; Ccw: barb up, Cw: barb down).",
+                "enum": [
+                    "EmptyCircle",
+                    "CrossCircle",
+                    "FullCircle",
+                    "SlashLine15",
+                    "OpenArrow15",
+                    "ClosedArrow15",
+                    "FullArrow15",
+                    "SlashLine30",
+                    "OpenArrow30",
+                    "ClosedArrow30",
+                    "FullArrow30",
+                    "SlashLine45",
+                    "OpenArrow45",
+                    "ClosedArrow45",
+                    "FullArrow45",
+                    "SlashLine60",
+                    "OpenArrow60",
+                    "ClosedArrow60",
+                    "FullArrow60",
+                    "SlashLine90",
+                    "PepitaCircle",
+                    "BandArrow",
+                    "HalfArrowCcw15",
+                    "HalfArrowCw15",
+                    "HalfArrowCcw30",
+                    "HalfArrowCw30",
+                    "HalfArrowCcw45",
+                    "HalfArrowCw45",
+                    "HalfArrowCcw60",
+                    "HalfArrowCw60",
+                    "SlashLine75"
+                ]
+            },
+            "size": {
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "description": "The arrowhead size in mm."
+            },
+            "pen": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 255,
+                "description": "The pen index of the arrowhead."
+            }
+        },
+        "additionalProperties": false,
+        "required": []
     },
     "LineDetails": {
         "type": "object",
@@ -11417,6 +11485,14 @@
             "lineTypeId": {
                 "$ref": "#/AttributeId"
             },
+            "startArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "The arrowhead at the start."
+            },
+            "endArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "The arrowhead at the end."
+            },
             "zCoordinate": {
                 "type": "number"
             }
@@ -11430,7 +11506,7 @@
     },
     "ArcDetails": {
         "type": "object",
-        "description": "Geometry of an Arc or Circle element. begAngle/endAngle are only present for Arc (a Circle spans the full 0-2*PI range implicitly).",
+        "description": "Geometry of an Arc or Circle element. begAngle/endAngle and startArrow/endArrow are only present for Arc (a Circle spans the full 0-2*PI range implicitly and has no ends).",
         "properties": {
             "origin": {
                 "$ref": "#/Coordinate2D"
@@ -11466,6 +11542,14 @@
             },
             "lineTypeId": {
                 "$ref": "#/AttributeId"
+            },
+            "startArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "The arrowhead at the start. Only present for Arc, not Circle."
+            },
+            "endArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "The arrowhead at the end. Only present for Arc, not Circle."
             },
             "zCoordinate": {
                 "type": "number"
@@ -11503,7 +11587,7 @@
     },
     "SplineDetails": {
         "type": "object",
-        "description": "Geometry of a Spline element. Geometry is read-only: Archicad's own API does not support modifying Spline geometry via ACAPI_Element_Change. The settings fields (roomSeparator/linePenIndex/lineTypeId) ARE modifiable via SET.",
+        "description": "Geometry of a Spline element. Geometry is read-only: Archicad's own API does not support modifying Spline geometry via ACAPI_Element_Change. The settings fields (roomSeparator/linePenIndex/lineTypeId/startArrow/endArrow) ARE modifiable via SET.",
         "properties": {
             "coordinates": {
                 "type": "array",
@@ -11524,6 +11608,14 @@
             },
             "lineTypeId": {
                 "$ref": "#/AttributeId"
+            },
+            "startArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "The arrowhead at the start."
+            },
+            "endArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "The arrowhead at the end."
             },
             "zCoordinate": {
                 "type": "number"
@@ -14893,6 +14985,14 @@
             },
             "lineTypeId": {
                 "$ref": "#/AttributeId"
+            },
+            "startArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "Optional arrowhead at the start. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "endArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; only the keys given are changed."
             }
         },
         "additionalProperties": false,
@@ -14900,7 +15000,7 @@
     },
     "ArcSettings": {
         "type": "object",
-        "description": "Settings for modifying an Arc or Circle. begAngle/endAngle are only applied to Arc, ignored for Circle.",
+        "description": "Settings for modifying an Arc or Circle. begAngle/endAngle are only applied to Arc, ignored for Circle. startArrow/endArrow are only for Arc: a Circle has no ends and refuses them.",
         "properties": {
             "origin": {
                 "$ref": "#/Coordinate2D"
@@ -14931,6 +15031,14 @@
             },
             "lineTypeId": {
                 "$ref": "#/AttributeId"
+            },
+            "startArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "Optional arrowhead at the start of an Arc. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "endArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "Optional arrowhead at the end of an Arc. Given, it is shown unless its visible is false; only the keys given are changed."
             }
         },
         "additionalProperties": false,
@@ -14965,6 +15073,14 @@
             },
             "lineTypeId": {
                 "$ref": "#/AttributeId"
+            },
+            "startArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "Optional arrowhead at the start. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "endArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; only the keys given are changed."
             }
         },
         "additionalProperties": false,
@@ -14998,6 +15114,14 @@
             },
             "drawSegmentMode": {
                 "$ref": "#/PolylineDrawSegmentMode"
+            },
+            "startArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "Optional arrowhead at the start. Given, it is shown unless its visible is false; only the keys given are changed."
+            },
+            "endArrow": {
+                "$ref": "#/LineArrowhead",
+                "description": "Optional arrowhead at the end. Given, it is shown unless its visible is false; only the keys given are changed."
             }
         },
         "additionalProperties": false,
