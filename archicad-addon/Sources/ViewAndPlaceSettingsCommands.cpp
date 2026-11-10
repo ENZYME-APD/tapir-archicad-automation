@@ -312,9 +312,13 @@ public:
         Check (false, "filterMode", "one of FilterByRules, FilterBySelection and FilterByMarqueeAndRules");
     }
 
-    // The listed element types are changed, the others keep their current entry.
+    // Only the listed element types are passed to ACAPI_View_Change3DImageSets, which leaves the
+    // types missing from the map as they are. The map read by ACAPI_View_Get3DImageSets is not
+    // passed back: it can only name API_ElemTypeIDs, so Archicad would hide the types it cannot
+    // name, such as the MEP elements (#2614).
     void ReadElemTypeFilter (API_3DFilterAndCutSettings& filter)
     {
+        filter.elemTypeFilter.clear ();
         GS::Array<GS::ObjectState> entries;
         if (!Has ("elemTypeFilter") || !Check (os.Get ("elemTypeFilter", entries), "elemTypeFilter", "an array")) {
             return;
