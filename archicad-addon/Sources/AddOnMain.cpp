@@ -21,6 +21,7 @@
 #include "ScriptUIPalette.hpp"
 #include "ScriptManager.hpp"
 #include "VersionChecker.hpp"
+#include "ShareDialog.hpp"
 
 #include "ApplicationCommands.hpp"
 #include "ScriptUICommands.hpp"
@@ -137,6 +138,20 @@ static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
                     break;
             }
             break;
+        case ID_ADDON_MENU_FOR_SHARE:
+            switch (menuParams->menuItemRef.itemIndex) {
+                case ID_ADDON_MENU_SHARE:
+                    ShareDialog::OpenWithFileDialog ();
+                    break;
+            }
+            break;
+        case ID_ADDON_MENU_FOR_MY_SHARES:
+            switch (menuParams->menuItemRef.itemIndex) {
+                case ID_ADDON_MENU_MY_SHARES:
+                    YourSharesDialog::Open ();
+                    break;
+            }
+            break;
         case ID_ADDON_MENU_FOR_SHORTCUTS:
             switch (menuParams->menuItemRef.itemIndex) {
                 case ID_ADDON_MENU_MANAGE_SHORTCUTS:
@@ -176,6 +191,8 @@ GSErrCode RegisterInterface (void)
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_SCRIPT_MANAGER, 0, MenuCode_UserDef, MenuFlag_Default);
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_UPDATE, 0, MenuCode_UserDef, MenuFlag_Default);
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU, 0, MenuCode_UserDef, MenuFlag_Default);
+    err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_SHARE, 0, MenuCode_UserDef, MenuFlag_SeparatorBefore);
+    err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_MY_SHARES, 0, MenuCode_UserDef, MenuFlag_Default);
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_FOR_SHORTCUTS, 0, MenuCode_UserDef, MenuFlag_SeparatorBefore);
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_RUNSCRIPT_1, 0, MenuCode_UserDef, MenuFlag_Default);
     err |= ACAPI_MenuItem_RegisterMenu (ID_ADDON_MENU_RUNSCRIPT_2, 0, MenuCode_UserDef, MenuFlag_Default);
@@ -199,6 +216,8 @@ GSErrCode Initialize (void)
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_SCRIPT_MANAGER, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_UPDATE, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU, MenuCommandHandler);
+    err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_SHARE, MenuCommandHandler);
+    err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_MY_SHARES, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_FOR_SHORTCUTS, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_RUNSCRIPT_1, MenuCommandHandler);
     err |= ACAPI_MenuItem_InstallMenuHandler (ID_ADDON_MENU_RUNSCRIPT_2, MenuCommandHandler);

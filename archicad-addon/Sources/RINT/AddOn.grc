@@ -34,6 +34,16 @@
 /* [  1] */        "Manage Script Shortcuts...^E3^ES^EE^EI^ED^EL^EW^ET^EM"
 }
 
+'STR#' ID_ADDON_MENU_FOR_SHARE "Add-On Menu" {
+/* [   ] */        "Tapir"
+/* [  1] */        "Share a Script...^E3^ES^EE^EI^ED^EL^EW^ET^EM"
+}
+
+'STR#' ID_ADDON_MENU_FOR_MY_SHARES "Add-On Menu" {
+/* [   ] */        "Tapir"
+/* [  1] */        "My Shared Scripts...^E3^ES^EE^EI^ED^EL^EW^ET^EM"
+}
+
 'STR#' ID_ADDON_MENU_RUNSCRIPT_1 "Add-On Menu" {
 /* [   ] */        "Tapir"
 /* [  1] */        "Run Script Shortcut 1^E3^ES^EE^EI^ED^EL^EW^ET^EM"
@@ -99,6 +109,40 @@
 /* [ 32] */ "Failed to start uv process. Ensure it is installed and executable."
 /* [ 33] */ "Failed to execute %T"
 /* [ 34] */ "Unexpected issue while executing %T"
+}
+
+'STR#' ID_SHARE_STRINGS "Tapir Share Strings" {
+/* [  1] */ "Share a script"
+/* [  2] */ "Select a Python Script to Share"
+/* [  3] */ "Select"
+/* [  4] */ "%T cannot be read."
+/* [  5] */ "%T is larger than 1 MB, too large to share."
+/* [  6] */ "%T is not UTF-8 text, so it cannot be shared."
+/* [  7] */ "OK"
+/* [  8] */ "Sending..."
+/* [  9] */ "Shared, waiting for review."
+/* [ 10] */ "The share service isn't available yet. You can share it on the website instead."
+/* [ 11] */ "Close"
+/* [ 12] */ "checking..."
+/* [ 13] */ "unknown"
+/* [ 14] */ "waiting for review"
+/* [ 15] */ "questions"
+/* [ 16] */ "accepted"
+/* [ 17] */ "declined"
+/* [ 18] */ "You haven't shared a script yet. Use Tapir > Share a Script... to share one."
+/* [ 19] */ "Checking the status..."
+/* [ 20] */ "The share service isn't available, so the status is unknown. The link to the issue still works."
+/* [ 21] */ "Shared, waiting for review."
+/* [ 22] */ "The reviewer has questions. Please answer them below."
+/* [ 23] */ "Accepted. The adapted script is on the issue."
+/* [ 24] */ "Declined. The issue says why."
+/* [ 25] */ "Your answer was sent."
+/* [ 26] */ "Your answer could not be sent. Please try again later."
+/* [ 27] */ "Thank you, your confirmation was sent."
+/* [ 28] */ "Your confirmation could not be sent. Please try again later."
+/* [ 29] */ "File"
+/* [ 30] */ "Shared"
+/* [ 31] */ "Status"
 }
 
 'STR#' ID_PALETTE_SEARCH_STRINGS "Tapir Palette Search Strings" {
@@ -399,6 +443,72 @@
 2    ""        CancelButton
 3    ""        PickerLabel
 4    ""        PickerPushCheck
+}
+
+/* The script's text is shown above the fields in a read-only MultiLineEdit that ShareDialog.cpp creates
+   (10, 32, 630, 330). */
+'GDLG' ID_SHARE_DIALOG Modal | noGrow    60   60  640  560  "Share a script" {
+/* [  1] */ Button       545  526   85   24    LargePlain  "Share"
+/* [  2] */ Button       450  526   85   24    LargePlain  "Cancel"
+/* [  3] */ LeftText      10   10  620   18    LargePlain  vCenter  "This is exactly what will be sent:"
+/* [  4] */ LeftText      10  344  190   22    LargePlain  vCenter  "What does it do?"
+/* [  5] */ TextEdit     205  344  425   22    LargePlain  160
+/* [  6] */ LeftText      10  374  190   22    LargePlain  vCenter  "Credit me as"
+/* [  7] */ TextEdit     205  374  425   22    LargePlain  100
+/* [  8] */ LeftText      10  404  190   22    LargePlain  vCenter  "Email for updates (optional)"
+/* [  9] */ TextEdit     205  404  425   22    LargePlain  254
+/* [ 10] */ CheckBox      10  438  620   20    LargePlain  "This script becomes public under the MIT licence"
+/* [ 11] */ LeftText      10  466  620   48    LargePlain  ""
+/* [ 12] */ Button        10  526  150   24    LargePlain  "Open the Issue"
+/* [ 13] */ Button       170  526  150   24    LargePlain  "Your Shares"
+}
+
+'DLGH' ID_SHARE_DIALOG Tapir_Share_Dialog {
+1    ""        ShareButton
+2    ""        CancelButton
+3    ""        ContentLabel
+4    ""        SummaryLabel
+5    "One sentence, at most 160 characters"        SummaryEdit
+6    ""        CreditNameLabel
+7    "The name you are credited under"        CreditNameEdit
+8    ""        EmailLabel
+9    ""        EmailEdit
+10   ""        LicenceCheck
+11   ""        StatusText
+12   ""        OpenIssueButton
+13   ""        YourSharesButton
+}
+
+/* The reviewer's questions (10, 228, 630, 318) and the answer box (10, 350, 630, 400) are MultiLineEdits that
+   ShareDialog.cpp creates. */
+'GDLG' ID_YOUR_SHARES_DIALOG Modal | noGrow    60   60  640  500  "Your shares" {
+/* [  1] */ Button        545  466   85   24    LargePlain  "Close"
+/* [  2] */ SingleSelList  10   10  620  158    LargePlain  PartialItems  18  HasHeader  20
+/* [  3] */ LeftText       10  176  620   22    LargePlain  vCenter  ""
+/* [  4] */ Button         10  466  140   24    LargePlain  "Open the Issue"
+/* [  5] */ Button        160  466  140   24    LargePlain  "Open the Listing"
+/* [  6] */ Button        310  466  100   24    LargePlain  "Refresh"
+/* [  7] */ LeftText       10  204  620   20    LargePlain  vCenter  "Questions from the reviewer:"
+/* [  8] */ LeftText       10  326  620   20    LargePlain  vCenter  "Your answer:"
+/* [  9] */ Button        505  408  125   24    LargePlain  "Send Answer"
+/* [ 10] */ LeftText       10  408  485   24    LargePlain  vCenter  ""
+/* [ 11] */ LeftText       10  436  485   24    LargePlain  vCenter  "Confirm that the adapted script still does what you meant."
+/* [ 12] */ Button        505  436  125   24    LargePlain  "Confirm"
+}
+
+'DLGH' ID_YOUR_SHARES_DIALOG Tapir_Your_Shares_Dialog {
+1    ""        CloseButton
+2    ""        SharesList
+3    ""        DetailsText
+4    ""        OpenIssueButton
+5    ""        OpenListingButton
+6    "Read the status of every share again"        RefreshButton
+7    ""        QuestionsLabel
+8    ""        AnswerLabel
+9    ""        SendAnswerButton
+10   ""        MessageText
+11   ""        ConfirmText
+12   "The adapted script still does what I meant"        ConfirmButton
 }
 
 'GDLG' ID_SHORTCUTS_DIALOG Modal | noGrow    80   80  500  270  "Script Shortcuts" {
