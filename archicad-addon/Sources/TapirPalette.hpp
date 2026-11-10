@@ -11,6 +11,7 @@
 #include "ScriptInfo.hpp"
 #include "PaletteState.hpp"
 #include "ResourceIds.hpp"
+#include "ScriptsPanel.hpp"
 
 #include <atomic>
 #include <memory>
@@ -33,6 +34,8 @@ public:
 
     void Show ();
     void Hide ();
+    // The "Scripts Panel" menu item: shows the palette with its scripts panel open.
+    void ShowScriptsPanel ();
 
     bool UpdateAddOn ();
     void SetRunButtonIcon ();   // also called once the VersionChecker's lookup completes
@@ -116,6 +119,8 @@ private:
     };
     SearchKeyHandler searchKeyHandler { *this };
     bool             searchKeyHandlerInstalled = false;
+
+    ScriptsPanel   scriptsPanel;   // the expand arrow and the controls below the bar
 
     // A script started by the palette, until it ended or was stopped. Any number of scripts run at the same time,
     // but a script at most once: Run, and its shortcut slot, stop it while it runs (issue #1819).
@@ -211,6 +216,15 @@ private:
     GS::UniString GetSearchText () const;   // the search, trimmed; empty: no filter
     void SetSearchButtonIcon ();     // SearchActive while a filter is applied, else Search
     ScriptList GetAllScripts () const;   // in the order of the dropdown
+    // The scripts panel's accessor of the script list: every script of the dropdown, in its order, with what the
+    // panel shows of it.
+    GS::Array<ScriptsPanel::Script> GetPanelScripts () const;
+    // What the scripts panel asks of the palette: the script list, and its Run and Stop, which are the palette's own.
+    ScriptsPanel::Actions GetPanelActions ();
+    // The panel's Run: starts the script of the list with this file, as the bar's Run button does, unless it runs.
+    void RunListedScript (const IO::Location& fileLocation);
+    // The panel's Stop: stops the script with the processes it started, as the bar's Run button does while it runs.
+    void StopScript (const IO::Location& fileLocation);
     GS::UniString GetScriptLabel (const PopUpItemData& popUpData) const;   // the label with the "[Shortcut N]" suffix
     bool IsPopUpContainsFile (const IO::Location& fileLocation) const;
     void SaveScriptsToPreferences ();   // also writes the selection to palette.json
@@ -236,6 +250,7 @@ private:
 
     virtual void PanelCloseRequested (const DG::PanelCloseRequestEvent& ev, bool* accepted) override;
     virtual void PanelOpened (const DG::PanelOpenEvent& ev) override;
+    virtual void PanelResized (const DG::PanelResizeEvent& ev) override;
     virtual void ButtonClicked (const DG::ButtonClickEvent& ev) override;
     virtual void PopUpChanged (const DG::PopUpChangeEvent& ev) override;
     virtual void TextEditChanged (const DG::TextEditChangeEvent& ev) override;
