@@ -2627,6 +2627,239 @@ GS::Optional<GS::UniString> ApplySlabSurfaceAndFillSettings (API_Element& elemen
 
 namespace {
 
+// The floor plan and section settings of a Roof or Shell (API_ShellBaseType) that ModifyRoofs and
+// ModifyShells write (#2434), with the keys GetDetailsOfElements reads them with (#1787). Ends the
+// item schema of both commands.
+const char* ShellBaseFloorPlanAndSectionSchemaProperties = R"(
+                        "displayOption": { "$ref": "#/DisplayOption", "description": "Floor Plan Display of the element." },
+                        "viewDepthLimitation": { "$ref": "#/ViewDepthLimitation", "description": "Show Projection: how far the element is shown on the floor plan." },
+                        "isAutoOnStoryVisibility": { "type": "boolean", "description": "When true, Archicad recomputes 'visibility' and 'fillVisibility' from the element's vertical extent and ignores values set for them. Setting 'visibility' or 'fillVisibility' without this field turns it off." },
+                        "visibility": { "$ref": "#/StoryVisibility", "description": "The stories the element's contour is shown on. Only the given fields change." },
+                        "fillVisibility": { "$ref": "#/StoryVisibility", "description": "The stories the element's cover fill is shown on. Only the given fields change." },
+                        "cutFillPen": { "$ref": "#/OverriddenPen", "description": "Overrides the pen of the cut fill." },
+                        "cutFillBackgroundPen": { "$ref": "#/OverriddenPen", "description": "Overrides the background pen of the cut fill." },
+                        "sectionContourPen": { "type": "integer", "description": "Pen of the element's contour where it is cut." },
+                        "sectionContourLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the element's contour where it is cut." },
+                        "contourPen": { "type": "integer", "description": "Pen of the element's uncut contour." },
+                        "contourLineTypeId": { "$ref": "#/AttributeId", "description": "Line type of the element's uncut contour." },
+                        "aboveViewLinePen": { "type": "integer", "description": "Pen used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup." },
+                        "aboveViewLineTypeId": { "$ref": "#/AttributeId", "description": "Line type used when \"Overhead All\" is selected from the \"Floor Plan Display\" popup." },
+                        "floorFill": { "$ref": "#/ShellBaseFloorFill", "description": "The cover fill of the element in the floor plan. Only the given fields change; read the orientation back with GetDetailsOfElements, Archicad may not apply all of it." })";
+
+// Merges the given fields into a story visibility, so omitted fields keep their values.
+void MergeStoryVisibility (const GS::ObjectState& os, API_StoryVisibility& visibility)
+{
+    os.Get ("showOnHome", visibility.showOnHome);
+    os.Get ("showAllAbove", visibility.showAllAbove);
+    os.Get ("showAllBelow", visibility.showAllBelow);
+    Int32 showRelAbove = 0;
+    if (os.Get ("showRelAbove", showRelAbove)) {
+        visibility.showRelAbove = static_cast<short> (showRelAbove);
+    }
+    Int32 showRelBelow = 0;
+    if (os.Get ("showRelBelow", showRelBelow)) {
+        visibility.showRelBelow = static_cast<short> (showRelBelow);
+    }
+}
+
+GS::Optional<GS::UniString> CheckLineTypeId (const GS::ObjectState& details, const char* key)
+{
+    GS::ObjectState idOs;
+    if (details.Get (key, idOs) &&
+        GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (idOs)) == ACAPI_CreateAttributeIndex (-1)) {
+        return GS::UniString ("No Line Type attribute was found for ") + GS::UniString (key) + ".";
+    }
+    return {};
+}
+
+// Writes ShellBaseFloorPlanAndSectionSchemaProperties into the shellBase of a Roof (ElemType
+// API_RoofType) or Shell (API_ShellType). Every attribute is checked before anything is
+// written, so an unknown one leaves the element as it was. Each member of a struct field is
+// masked on its own, because ACAPI_ELEMENT_MASK_SET marks only the first byte of a field.
+template <typename ElemType>
+GS::Optional<GS::UniString> ApplyShellBaseFloorPlanAndSection (API_ShellBaseType& base, API_Element& mask, const GS::ObjectState& details, bool& changed)
+{
+    GS::Optional<GS::UniString> idError = CheckSurfaceAndFillAttributeIds (details, {}, "floorFill");
+    for (const char* key : { "sectionContourLineTypeId", "contourLineTypeId", "aboveViewLineTypeId" }) {
+        if (!idError.HasValue ()) {
+            idError = CheckLineTypeId (details, key);
+        }
+    }
+    if (idError.HasValue ()) {
+        return idError;
+    }
+
+    GS::UniString displayOptionStr;
+    if (details.Get ("displayOption", displayOptionStr)) {
+        API_ElemDisplayOptionsID displayOption;
+        if (!ElemDisplayOptionFromString (displayOptionStr, displayOption)) {
+            return GS::UniString ("Invalid 'displayOption'.");
+        }
+        base.displayOption = displayOption;
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.displayOption);
+        changed = true;
+    }
+    GS::UniString viewDepthLimitationStr;
+    if (details.Get ("viewDepthLimitation", viewDepthLimitationStr)) {
+        API_ElemViewDepthLimitationsID viewDepthLimitation;
+        if (!ViewDepthLimitationFromString (viewDepthLimitationStr, viewDepthLimitation)) {
+            return GS::UniString ("Invalid 'viewDepthLimitation'.");
+        }
+        base.viewDepthLimitation = viewDepthLimitation;
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.viewDepthLimitation);
+        changed = true;
+    }
+
+    GS::ObjectState visibilityOs;
+    if (details.Get ("visibility", visibilityOs)) {
+        MergeStoryVisibility (visibilityOs, base.visibilityCont);
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.visibilityCont.showOnHome);
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.visibilityCont.showAllAbove);
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.visibilityCont.showAllBelow);
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.visibilityCont.showRelAbove);
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.visibilityCont.showRelBelow);
+        changed = true;
+    }
+    GS::ObjectState fillVisibilityOs;
+    if (details.Get ("fillVisibility", fillVisibilityOs)) {
+        MergeStoryVisibility (fillVisibilityOs, base.visibilityFill);
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.visibilityFill.showOnHome);
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.visibilityFill.showAllAbove);
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.visibilityFill.showAllBelow);
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.visibilityFill.showRelAbove);
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.visibilityFill.showRelBelow);
+        changed = true;
+    }
+    bool isAutoOnStoryVisibility = false;
+    if (details.Get ("isAutoOnStoryVisibility", isAutoOnStoryVisibility)) {
+        base.isAutoOnStoryVisibility = isAutoOnStoryVisibility;
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.isAutoOnStoryVisibility);
+        changed = true;
+    } else if (details.Contains ("visibility") || details.Contains ("fillVisibility")) {
+        // With the automatic story visibility on, Archicad recomputes the visibility from the
+        // element's vertical extent and discards the one just given, as on a wall.
+        base.isAutoOnStoryVisibility = false;
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.isAutoOnStoryVisibility);
+    }
+
+    GS::ObjectState cutFillPenOs;
+    if (details.Get ("cutFillPen", cutFillPenOs)) {
+#ifdef ServerMainVers_2700
+        base.cutFillPen = GetOverriddenPenFromObjectState (cutFillPenOs);
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.cutFillPen);
+#else
+        bool overridden = false;
+        cutFillPenOs.Get ("overridden", overridden);
+        Int32 penIndex = 0;
+        if (overridden && cutFillPenOs.Get ("penIndex", penIndex)) {
+            base.penOverride.cutFillPen = static_cast<short> (penIndex);
+            ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.penOverride.cutFillPen);
+        }
+        base.penOverride.overrideCutFillPen = overridden;
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.penOverride.overrideCutFillPen);
+#endif
+        changed = true;
+    }
+    GS::ObjectState cutFillBackgroundPenOs;
+    if (details.Get ("cutFillBackgroundPen", cutFillBackgroundPenOs)) {
+#ifdef ServerMainVers_2700
+        base.cutFillBackgroundPen = GetOverriddenPenFromObjectState (cutFillBackgroundPenOs);
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.cutFillBackgroundPen);
+#else
+        bool overridden = false;
+        cutFillBackgroundPenOs.Get ("overridden", overridden);
+        Int32 penIndex = 0;
+        if (overridden && cutFillBackgroundPenOs.Get ("penIndex", penIndex)) {
+            base.penOverride.cutFillBackgroundPen = static_cast<short> (penIndex);
+            ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.penOverride.cutFillBackgroundPen);
+        }
+        base.penOverride.overrideCutFillBackgroundPen = overridden;
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.penOverride.overrideCutFillBackgroundPen);
+#endif
+        changed = true;
+    }
+
+    Int32 pen = 0;
+    if (details.Get ("sectionContourPen", pen)) {
+        base.sectContPen = static_cast<short> (pen);
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.sectContPen);
+        changed = true;
+    }
+    if (details.Get ("contourPen", pen)) {
+        base.pen = static_cast<short> (pen);
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.pen);
+        changed = true;
+    }
+    if (details.Get ("aboveViewLinePen", pen)) {
+        base.aboveViewLinePen = static_cast<short> (pen);
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.aboveViewLinePen);
+        changed = true;
+    }
+    GS::ObjectState lineTypeIdOs;
+    if (details.Get ("sectionContourLineTypeId", lineTypeIdOs)) {
+        base.sectContLtype = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (lineTypeIdOs));
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.sectContLtype);
+        changed = true;
+    }
+    if (details.Get ("contourLineTypeId", lineTypeIdOs)) {
+        base.ltypeInd = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (lineTypeIdOs));
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.ltypeInd);
+        changed = true;
+    }
+    if (details.Get ("aboveViewLineTypeId", lineTypeIdOs)) {
+        base.aboveViewLineType = GetAttributeIndexFromGuid (API_LinetypeID, GetGuidFromObjectState (lineTypeIdOs));
+        ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.aboveViewLineType);
+        changed = true;
+    }
+
+    GS::ObjectState floorFillOs;
+    if (details.Get ("floorFill", floorFillOs)) {
+        bool flag = false;
+        if (floorFillOs.Get ("use", flag)) {
+            base.useFloorFill = flag;
+            ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.useFloorFill);
+        }
+        Int32 fillPen = 0;
+        if (floorFillOs.Get ("foregroundPen", fillPen)) {
+            base.floorFillPen = static_cast<short> (fillPen);
+            ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.floorFillPen);
+        }
+        if (floorFillOs.Get ("backgroundPen", fillPen)) {
+            base.floorFillBGPen = static_cast<short> (fillPen);
+            ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.floorFillBGPen);
+        }
+        GS::ObjectState fillIdOs;
+        if (floorFillOs.Get ("fillId", fillIdOs)) {
+            base.floorFillInd = GetAttributeIndexFromGuid (API_FilltypeID, GetGuidFromObjectState (fillIdOs));
+            ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.floorFillInd);
+        }
+        if (floorFillOs.Get ("use3DHatching", flag)) {
+            base.use3DHatching = flag;
+            ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.use3DHatching);
+        }
+        if (floorFillOs.Get ("useFillLocBaseLine", flag)) {
+            base.useFillLocBaseLine = flag;
+            ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.useFillLocBaseLine);
+        }
+        if (floorFillOs.Get ("useSlantedFill", flag)) {
+            base.useSlantedFill = flag;
+            ACAPI_ELEMENT_MASK_SET (mask, ElemType, shellBase.useSlantedFill);
+        }
+        GS::ObjectState orientationOs;
+        if (floorFillOs.Get ("orientation", orientationOs)) {
+            // Merged into the current orientation, so omitted fields keep their values (#662).
+            base.hatchOrientation = GetHatchOrientationFromObjectState (orientationOs, base.hatchOrientation);
+            TAPIR_MASK_SET_HATCH_ORIENTATION (mask, ElemType, shellBase.hatchOrientation);
+        }
+        changed = true;
+    }
+    return {};
+}
+
+} // namespace
+
+namespace {
+
 bool ApplyWallDetails (API_Element& element, API_Element& mask, const GS::ObjectState& details)
 {
     bool changed = false;
@@ -11541,7 +11774,7 @@ GS::String ModifyRoofsCommand::GetName () const
 
 GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "roofsWithDetails": {
@@ -11668,7 +11901,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                                 },
                                 "additionalProperties": false
                             }
-                        }
+                        },)") + ShellBaseFloorPlanAndSectionSchemaProperties + R"(
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -11757,6 +11990,11 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
             auto error = ApplyRoofDetails (element, &mask, item, stories, changed);
             if (error.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
+                continue;
+            }
+            auto floorPlanError = ApplyShellBaseFloorPlanAndSection<API_RoofType> (element.roof.shellBase, mask, item, changed);
+            if (floorPlanError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, floorPlanError.Get ()));
                 continue;
             }
             {
@@ -12133,7 +12371,7 @@ GS::String ModifyShellsCommand::GetName () const
 
 GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () const
 {
-    return R"({
+    return GS::UniString (R"({
         "type": "object",
         "properties": {
             "shellsWithDetails": {
@@ -12191,7 +12429,7 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                             "type": "string",
                             "enum": [ "UpwardsExtrusion", "DownwardsExtrusion" ],
                             "description": "The Trimming Body of the shell (Model panel of Shell Settings): Upward Extrusion or Downward Extrusion. GetDetailsOfElements reports it as cutBodyType. An Editable trimming body cannot be set yet."
-                        }
+                        },)") + ShellBaseFloorPlanAndSectionSchemaProperties + R"(
                     },
                     "additionalProperties": false,
                     "required": ["elementId"]
@@ -12277,6 +12515,11 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
             if (cutBodyGiven) {
                 ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.cutBodyType);
                 changed = true;
+            }
+            error = ApplyShellBaseFloorPlanAndSection<API_ShellType> (element.shell.shellBase, mask, item, changed);
+            if (error.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, error.Get ()));
+                continue;
             }
 
             // The thickness of a Basic shell (#2424). Checked against the structure the shell has
