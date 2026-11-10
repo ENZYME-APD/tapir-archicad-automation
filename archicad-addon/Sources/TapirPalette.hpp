@@ -11,6 +11,7 @@
 #include "ScriptInfo.hpp"
 #include "PaletteState.hpp"
 #include "ResourceIds.hpp"
+#include "ScriptsPanel.hpp"
 
 #include <atomic>
 #include <memory>
@@ -33,6 +34,8 @@ public:
 
     void Show ();
     void Hide ();
+    // The "Scripts Panel" menu item: shows the palette with its scripts panel open.
+    void ShowScriptsPanel ();
 
     bool UpdateAddOn ();
     void SetRunButtonIcon ();   // also called once the VersionChecker's lookup completes
@@ -96,6 +99,7 @@ private:
     DG::TextEdit   searchEdit;        // filters the dropdown (BuildVisibleItems); hidden until searchButton opens it
     DG::IconButton favouriteButton;   // the star: adds the selected script to the favourites or removes it
     DG::IconButton searchButton;      // shows or hides searchEdit; highlighted while a filter is applied
+    ScriptsPanel   scriptsPanel;      // the expand arrow and the controls below the bar
 
     // Return, Enter and Escape, registered only while searchEdit has the focus (0: not registered)
     short returnHotKey = 0;
@@ -236,6 +240,7 @@ private:
 
     virtual void PanelCloseRequested (const DG::PanelCloseRequestEvent& ev, bool* accepted) override;
     virtual void PanelOpened (const DG::PanelOpenEvent& ev) override;
+    virtual void PanelResized (const DG::PanelResizeEvent& ev) override;
     virtual void ButtonClicked (const DG::ButtonClickEvent& ev) override;
     virtual void PopUpChanged (const DG::PopUpChangeEvent& ev) override;
     virtual void TextEditChanged (const DG::TextEditChangeEvent& ev) override;

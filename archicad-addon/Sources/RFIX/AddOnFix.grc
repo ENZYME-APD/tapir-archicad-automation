@@ -61,6 +61,14 @@
     "ScriptNotRunning"
 }
 
+'GICN' ID_EXPAND_DOWN_ICON "ExpandDown" {
+    "ExpandDown"
+}
+
+'GICN' ID_EXPAND_UP_ICON "ExpandUp" {
+    "ExpandUp"
+}
+
 'GICN' ID_STAR_BUTTON_ICON "Star" {
     "Star"
 }
