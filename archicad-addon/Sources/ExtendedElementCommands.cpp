@@ -11837,6 +11837,34 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
     });
 }
 
+// The top, side and bottom surface overrides of a Shell and whether they are chained, as
+// GetDetailsOfElements reports them in ShellDetails (#2433). Changes nothing on an error.
+static GS::Optional<GS::UniString> ApplyShellSurfaces (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed)
+{
+    ShellBaseSurfacesApplied applied;
+    auto error = ApplyShellBaseSurfaces (element.shell.shellBase, details, applied);
+    if (error.HasValue ()) {
+        return error;
+    }
+    if (applied.top) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.topMat);
+        changed = true;
+    }
+    if (applied.side) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.sidMat);
+        changed = true;
+    }
+    if (applied.bottom) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.botMat);
+        changed = true;
+    }
+    if (applied.chained) {
+        ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.materialsChained);
+        changed = true;
+    }
+    return {};
+}
+
 ModifyShellsCommand::ModifyShellsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -11885,6 +11913,10 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                             "description": "Replaces all holes of the shell, each requiring 'depth' to extrude its cutting polygon along the Z axis of its plane; an empty array removes every hole. To change one hole, send all holes as GetDetailsOfElements returns them with that one changed. The contour and the profile are kept.",
                             "items": { "$ref": "#/ShellCutPolygon" }
                         },
+                        "topMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of one face of the shell (topMaterial of GetDetailsOfElements); overridden false clears the override." },
+                        "sideMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the edges of the shell; overridden false clears the override." },
+                        "bottomMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the other face of the shell (bottomMaterial of GetDetailsOfElements); overridden false clears the override." },
+                        "materialsChained": { "type": "boolean", "description": "Whether the surface materials are chained, as GetDetailsOfElements reports it." },
                         "extrusionVector": {
                             "$ref": "#/Coordinate3D",
                             "description": "Extruded shells only: the new direction and length of the extrusion, in base plane coordinates (as GetDetailsOfElements returns it). The profile, the base plane and the extrusion start are kept, so only the end of the shell moves. Cannot be given together with extrusionLength."
@@ -11969,6 +12001,11 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
                 continue;
             }
             changed = changed || cutPolygonsChanged;
+            auto surfaceError = ApplyShellSurfaces (element, mask, item, changed);
+            if (surfaceError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, surfaceError.Get ()));
+                continue;
+            }
             bool cutBodyGiven = false;
             error = GetShellBaseCutBodyType (item, { APIShellBaseCutBody_UpwardsExtrusion, APIShellBaseCutBody_DownwardsExtrusion }, element.shell.shellBase.cutBodyType, cutBodyGiven);
             if (error.HasValue ()) {
