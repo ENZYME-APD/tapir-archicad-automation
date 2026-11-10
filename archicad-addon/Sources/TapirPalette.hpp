@@ -56,6 +56,11 @@ public:
     void SetShortcutLabel (short slotIndex, const GS::UniString& label);   // empty resets to the default text
     void OpenShortcutsDialog ();
 
+    // Lists the enabled scripts of Documents/Tapir/marketplace/installed.json again in the Marketplace section of the
+    // script list, keeping the selected script. The Script Manager calls it after a catalogue fetch, Install, Update,
+    // Remove and a change to Enabled (#2408).
+    void ReloadMarketplaceScripts ();
+
     static GSErrCode RegisterPaletteControlCallBack ();
 
     // Called from FreeData: kills every script that is still running, with the processes it started, and waits for
@@ -96,6 +101,7 @@ private:
     DG::TextEdit   searchEdit;        // filters the dropdown (BuildVisibleItems); hidden until searchButton opens it
     DG::IconButton favouriteButton;   // the star: adds the selected script to the favourites or removes it
     DG::IconButton searchButton;      // shows or hides searchEdit; highlighted while a filter is applied
+    DG::IconButton scriptManagerButton;   // opens the Script Manager (#2408)
 
     // Return, Enter and Escape, registered only while searchEdit has the focus (0: not registered)
     short returnHotKey = 0;
@@ -138,12 +144,15 @@ private:
     GS::UInt32 startedScriptCount = 0;   // numbers the TAPIR_SCRIPT_ID of each started script
     // The script list. scriptSelectionPopUp only shows it (RebuildScriptPopUp), in this order: the favourites and a
     // separator when there is one, the scripts the user added, a separator when hasAddedScript, the scripts of the
-    // custom-scripts folder, a separator when hasCustomScript, the scripts of the local folders and repositories, a
-    // separator and "Reload scripts...". A search shows only the scripts that match it (BuildVisibleItems).
+    // custom-scripts folder, a separator when hasCustomScript, the scripts of the local folders and repositories,
+    // then, when marketplaceScripts shows a script, a separator, the disabled "Marketplace" heading and the
+    // marketplace scripts, and last a separator and "Reload scripts...". A search shows only the scripts that match
+    // it (BuildVisibleItems).
     using ScriptList = GS::Array<GS::Ref<PopUpItemData>>;
     ScriptList addedScripts;    // added with the Add button, saved in the preferences; the newest first
     ScriptList customScripts;   // Documents/Tapir/custom-scripts
     ScriptList listedScripts;   // localFolders and repositories of the config
+    ScriptList marketplaceScripts;   // the enabled scripts installed with the Script Manager, by name (#2408)
     bool hasCustomScript = false;   // the custom-scripts section and its separator are shown
     bool hasAddedScript = false;    // the added section and its separator are shown
 
@@ -151,7 +160,8 @@ private:
     // dropdown is visibleItems[i - 1], so nothing counts sections and separators to find a script.
     struct VisibleItem
     {
-        enum class Kind { Script, Separator, Reload, NoMatch };   // NoMatch: "No matching scripts", disabled
+        // NoMatch: "No matching scripts", disabled. Heading: the "Marketplace" heading, disabled and bold.
+        enum class Kind { Script, Separator, Reload, NoMatch, Heading };
         Kind kind = Kind::Separator;
         GS::Ref<PopUpItemData> script;   // set for Kind::Script only
 
@@ -184,6 +194,7 @@ private:
     void AddScriptsFromRepositories ();
     void AddScriptsFromLocalFolders ();
     void AddScriptsFromCustomScriptsFolder ();
+    void AddScriptsFromMarketplace ();   // fills marketplaceScripts from installed.json
     void LoadScriptsToPopUp ();
     // The dropdown's items for the script list. forDropdown: the favourites first, and only the scripts that match
     // the search, those whose name matches before those whose summary does. Otherwise the layout every Tapir version
