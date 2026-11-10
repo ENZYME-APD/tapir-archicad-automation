@@ -1,5 +1,5 @@
 {
- "generatedAt": "2026-11-10 18:24 UTC",
+ "generatedAt": "2026-11-10 18:56 UTC",
  "versions": [
   25,
   26,
@@ -4030,6 +4030,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2670,
+     "title": "[1/3] Cameras: CreateCameraSets and ModifyCameraSets"
+    },
+    {
      "number": 2511,
      "title": "Drawings: reliable anchorPoint, read-only offset, zone_clip placement"
     }
@@ -5786,6 +5790,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2674,
+     "title": "[1/2] CreateArcs angle/ratio/reflected, CreatePolylines lineTypeId and polyline dash mode"
+    },
+    {
+     "number": 2673,
+     "title": "[2/5] ModifyZones: change the polygon and holes of a manual zone in place"
+    },
+    {
+     "number": 2672,
+     "title": "SetDetailsOfElements: fail a Spline item that sets coordinates instead of answering success"
+    },
+    {
      "number": 2639,
      "title": "Set the ID and layer of an Opening with SetDetailsOfElements"
     },
@@ -6834,6 +6850,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2673,
+     "title": "[2/5] ModifyZones: change the polygon and holes of a manual zone in place"
+    },
+    {
+     "number": 2672,
+     "title": "SetDetailsOfElements: fail a Spline item that sets coordinates instead of answering success"
+    },
+    {
+     "number": 2670,
+     "title": "[1/3] Cameras: CreateCameraSets and ModifyCameraSets"
+    },
+    {
      "number": 2654,
      "title": "ModifyCurtainWallFrames: change the frame element itself so Archicad 29 applies it"
     },
@@ -7175,6 +7203,14 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2670,
+     "title": "[1/3] Cameras: CreateCameraSets and ModifyCameraSets"
+    },
+    {
+     "number": 2669,
+     "title": "[2/2] Meshes: floor plan and section settings in CreateMeshes, ModifyMeshes and GetDetailsOfElements"
+    },
+    {
      "number": 2645,
      "title": "[1/2] Meshes: layerIndex in CreateMeshes, building material and surfaces in ModifyMeshes and GetDetailsOfElements"
     },
@@ -7491,6 +7527,10 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2670,
+     "title": "[1/3] Cameras: CreateCameraSets and ModifyCameraSets"
+    },
+    {
      "number": 2654,
      "title": "ModifyCurtainWallFrames: change the frame element itself so Archicad 29 applies it"
     },
@@ -7799,7 +7839,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2670,
+     "title": "[1/3] Cameras: CreateCameraSets and ModifyCameraSets"
+    }
+   ],
    "issues": [
     {
      "number": 1914,
@@ -7895,7 +7940,12 @@
    "olderNames": [],
    "status": "done",
    "reason": "",
-   "pullRequests": [],
+   "pullRequests": [
+    {
+     "number": 2670,
+     "title": "[1/3] Cameras: CreateCameraSets and ModifyCameraSets"
+    }
+   ],
    "issues": []
   },
   {
@@ -25940,6 +25990,18 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2676,
+     "title": "Hatches: fillOrientation, fill category and contour line type in CreateHatches; read back in GetDetailsOfElements"
+    },
+    {
+     "number": 2675,
+     "title": "[1/5] Dimensions: layerIndex on creation, staticDimension and onlyDimensionText"
+    },
+    {
+     "number": 2669,
+     "title": "[2/2] Meshes: floor plan and section settings in CreateMeshes, ModifyMeshes and GetDetailsOfElements"
+    },
+    {
      "number": 2654,
      "title": "ModifyCurtainWallFrames: change the frame element itself so Archicad 29 applies it"
     },
@@ -31721,6 +31783,30 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2676,
+     "title": "Hatches: fillOrientation, fill category and contour line type in CreateHatches; read back in GetDetailsOfElements"
+    },
+    {
+     "number": 2675,
+     "title": "[1/5] Dimensions: layerIndex on creation, staticDimension and onlyDimensionText"
+    },
+    {
+     "number": 2674,
+     "title": "[1/2] CreateArcs angle/ratio/reflected, CreatePolylines lineTypeId and polyline dash mode"
+    },
+    {
+     "number": 2669,
+     "title": "[2/2] Meshes: floor plan and section settings in CreateMeshes, ModifyMeshes and GetDetailsOfElements"
+    },
+    {
+     "number": 2668,
+     "title": "[1/3] Level dimensions: text font and style, hide with associated element"
+    },
+    {
+     "number": 2667,
+     "title": "[1/3] GetDetailsOfElements: details of Picture elements"
+    },
     {
      "number": 2651,
      "title": "GetAvailableLibraryParts: report windows, doors, skylights and lamps by their real type"
@@ -38265,6 +38351,38 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2677,
+     "title": "[1/3] Labels: layerIndex in CreateLabels, move and re-point a label with ModifyLabels"
+    },
+    {
+     "number": 2676,
+     "title": "Hatches: fillOrientation, fill category and contour line type in CreateHatches; read back in GetDetailsOfElements"
+    },
+    {
+     "number": 2675,
+     "title": "[1/5] Dimensions: layerIndex on creation, staticDimension and onlyDimensionText"
+    },
+    {
+     "number": 2674,
+     "title": "[1/2] CreateArcs angle/ratio/reflected, CreatePolylines lineTypeId and polyline dash mode"
+    },
+    {
+     "number": 2673,
+     "title": "[2/5] ModifyZones: change the polygon and holes of a manual zone in place"
+    },
+    {
+     "number": 2670,
+     "title": "[1/3] Cameras: CreateCameraSets and ModifyCameraSets"
+    },
+    {
+     "number": 2669,
+     "title": "[2/2] Meshes: floor plan and section settings in CreateMeshes, ModifyMeshes and GetDetailsOfElements"
+    },
+    {
+     "number": 2668,
+     "title": "[1/3] Level dimensions: text font and style, hide with associated element"
+    },
     {
      "number": 2654,
      "title": "ModifyCurtainWallFrames: change the frame element itself so Archicad 29 applies it"
@@ -45085,6 +45203,30 @@
    "reason": "",
    "pullRequests": [
     {
+     "number": 2676,
+     "title": "Hatches: fillOrientation, fill category and contour line type in CreateHatches; read back in GetDetailsOfElements"
+    },
+    {
+     "number": 2675,
+     "title": "[1/5] Dimensions: layerIndex on creation, staticDimension and onlyDimensionText"
+    },
+    {
+     "number": 2674,
+     "title": "[1/2] CreateArcs angle/ratio/reflected, CreatePolylines lineTypeId and polyline dash mode"
+    },
+    {
+     "number": 2669,
+     "title": "[2/2] Meshes: floor plan and section settings in CreateMeshes, ModifyMeshes and GetDetailsOfElements"
+    },
+    {
+     "number": 2668,
+     "title": "[1/3] Level dimensions: text font and style, hide with associated element"
+    },
+    {
+     "number": 2667,
+     "title": "[1/3] GetDetailsOfElements: details of Picture elements"
+    },
+    {
      "number": 2651,
      "title": "GetAvailableLibraryParts: report windows, doors, skylights and lamps by their real type"
     },
@@ -48287,6 +48429,30 @@
    "status": "done",
    "reason": "",
    "pullRequests": [
+    {
+     "number": 2676,
+     "title": "Hatches: fillOrientation, fill category and contour line type in CreateHatches; read back in GetDetailsOfElements"
+    },
+    {
+     "number": 2675,
+     "title": "[1/5] Dimensions: layerIndex on creation, staticDimension and onlyDimensionText"
+    },
+    {
+     "number": 2674,
+     "title": "[1/2] CreateArcs angle/ratio/reflected, CreatePolylines lineTypeId and polyline dash mode"
+    },
+    {
+     "number": 2669,
+     "title": "[2/2] Meshes: floor plan and section settings in CreateMeshes, ModifyMeshes and GetDetailsOfElements"
+    },
+    {
+     "number": 2668,
+     "title": "[1/3] Level dimensions: text font and style, hide with associated element"
+    },
+    {
+     "number": 2667,
+     "title": "[1/3] GetDetailsOfElements: details of Picture elements"
+    },
     {
      "number": 2651,
      "title": "GetAvailableLibraryParts: report windows, doors, skylights and lamps by their real type"
