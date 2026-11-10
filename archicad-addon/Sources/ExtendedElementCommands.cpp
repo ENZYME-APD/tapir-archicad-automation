@@ -11520,7 +11520,7 @@ GS::Optional<GS::UniString> ModifyRoofsCommand::GetInputParametersSchema () cons
                         },
                         "edgeTrims": {
                             "type": "array",
-                            "description": "Single-plane roofs only: the cut of each edge of the roof's polygon, one item per edge in the order GetDetailsOfElements reports them in edgeTrims (the outline, then each hole). Only the given fields change; an empty item keeps its edge. Cannot be combined with polygonOutline.",
+                            "description": "The cut of each edge of the roof's polygon (polygonOutline: a single-plane roof's outline, a multi-plane roof's contour), one item per edge in the order GetDetailsOfElements reports them in edgeTrims: item i is the edge from vertex i to vertex i + 1 of polygonOutline, then the edges of each hole in the same way, hole by hole. Only the given fields change; an empty item keeps its edge, so one edge is set by sending an empty item for every other edge. On a multi-plane roof this is the cut of the finished contour edge, not its roof plane (pivotEdges). Cannot be combined with polygonOutline, nor on a multi-plane roof with pivotEdges or eavesOverhang, which move the contour.",
                             "items": {
                                 "type": "object",
                                 "properties": {
@@ -11610,12 +11610,18 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'levels', 'eavesOverhang' and 'pivotEdges' are only valid for multi-plane roofs."));
                 continue;
             }
-            if (!isPlaneRoof && (item.Contains ("angle") || item.Contains ("pivotLine") || item.Contains ("edgeTrims") || item.Contains ("edgeSideMaterials"))) {
-                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'angle', 'pivotLine', 'edgeTrims' and 'edgeSideMaterials' are only valid for single-plane roofs."));
+            if (!isPlaneRoof && (item.Contains ("angle") || item.Contains ("pivotLine") || item.Contains ("edgeSideMaterials"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'angle', 'pivotLine' and 'edgeSideMaterials' are only valid for single-plane roofs."));
                 continue;
             }
             if ((item.Contains ("edgeTrims") || item.Contains ("edgeSideMaterials")) && item.Contains ("polygonOutline")) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTrims' and 'edgeSideMaterials' cannot be combined with 'polygonOutline', which makes new edges."));
+                continue;
+            }
+            // The contour of a multi-plane roof follows its pivot polygon and eaves overhang, so the
+            // trims would be written onto a contour Archicad replaces in the same change (#2435).
+            if (item.Contains ("edgeTrims") && (item.Contains ("pivotEdges") || item.Contains ("eavesOverhang"))) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, "'edgeTrims' cannot be combined with 'pivotEdges' or 'eavesOverhang', which move the roof's contour: send them in two calls."));
                 continue;
             }
 
@@ -11716,6 +11722,36 @@ GS::ObjectState ModifyRoofsCommand::Execute (const GS::ObjectState& parameters, 
                         results.Push (CreateFailedExecutionResult (APIERR_BADPARS, materialError.Get ()));
                         continue;
                     }
+                }
+                if (!isPlaneRoof) {
+                    // A multi-plane roof's contour is the polygon of its memo. Written as the DevKit's
+                    // Do_Roof_Edit example (Element_Modify_ModelElements.cpp) writes a multi-plane roof's
+                    // edited contour: with ACAPI_Element_Change, the contour's counts in the element and
+                    // only the polygon handles and the edge data in the memo, unchanged but for the
+                    // trims, so the side surfaces, the edge types and the pivot polygon stay (#2435).
+                    element.roof.u.polyRoof.contourPolygon.nCoords = (Int32) (BMGetHandleSize ((GSHandle) memo.coords) / sizeof (API_Coord)) - 1;
+                    element.roof.u.polyRoof.contourPolygon.nSubPolys = (Int32) (BMGetHandleSize ((GSHandle) memo.pends) / sizeof (Int32)) - 1;
+                    element.roof.u.polyRoof.contourPolygon.nArcs = memo.parcs == nullptr ? 0 : (Int32) (BMGetHandleSize ((GSHandle) memo.parcs) / sizeof (API_PolyArc));
+                    API_ElementMemo contourMemo = {};
+                    contourMemo.coords = memo.coords;
+                    contourMemo.pends = memo.pends;
+                    contourMemo.parcs = memo.parcs;
+                    contourMemo.vertexIDs = memo.vertexIDs;
+                    contourMemo.edgeIDs = memo.edgeIDs;
+                    contourMemo.edgeTrims = memo.edgeTrims;
+                    contourMemo.sideMaterials = memo.sideMaterials;
+                    contourMemo.roofEdgeTypes = memo.roofEdgeTypes;
+                    contourMemo.contourIDs = memo.contourIDs;
+                    UInt64 contourMask = APIMemoMask_Polygon | APIMemoMask_EdgeTrims;
+                    if (memo.sideMaterials != nullptr) {
+                        contourMask |= APIMemoMask_SideMaterials;
+                    }
+                    if (memo.roofEdgeTypes != nullptr) {
+                        contourMask |= APIMemoMask_RoofEdgeTypes;
+                    }
+                    err = ACAPI_Element_Change (&element, &mask, &contourMemo, contourMask, true);
+                    results.Push (err == NoError ? CreateSuccessfulExecutionResult () : CreateFailedExecutionResult (err, "Failed to modify the edge trims of the roof."));
+                    continue;
                 }
                 if (changed) {
                     err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
@@ -11865,6 +11901,70 @@ static GS::Optional<GS::UniString> ApplyShellSurfaces (API_Element& element, API
     return {};
 }
 
+// The given "edgeMaterials" of a Shell (ShellEdgeMaterials, as GetDetailsOfElements reports them):
+// the custom surface of its begin and end profile edges and of the two edges along its surface
+// (#2433). Only the given edges are written; an item that is not overridden clears the edge's
+// custom surface. Changes nothing on an error.
+static GS::Optional<GS::UniString> ApplyShellEdgeMaterials (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed)
+{
+    GS::ObjectState edgeMaterialsOs;
+    if (!details.Get ("edgeMaterials", edgeMaterialsOs)) {
+        return {};
+    }
+    API_ContourEdgeData* begEdge = nullptr;
+    API_ContourEdgeData* endEdge = nullptr;
+    API_ContourEdgeData* sideEdges = nullptr;
+    switch (element.shell.shellClass) {
+        case API_ExtrudedShellID:
+            begEdge = &element.shell.u.extrudedShell.begShapeEdgeData;
+            endEdge = &element.shell.u.extrudedShell.endShapeEdgeData;
+            sideEdges = element.shell.u.extrudedShell.extrudedEdgeDatas;
+            break;
+        case API_RevolvedShellID:
+            begEdge = &element.shell.u.revolvedShell.begShapeEdgeData;
+            endEdge = &element.shell.u.revolvedShell.endShapeEdgeData;
+            sideEdges = element.shell.u.revolvedShell.revolvedEdgeDatas;
+            break;
+        case API_RuledShellID:
+            begEdge = &element.shell.u.ruledShell.begShapeEdgeData;
+            endEdge = &element.shell.u.ruledShell.endShapeEdgeData;
+            sideEdges = element.shell.u.ruledShell.ruledEdgeDatas;
+            break;
+        default:
+            return GS::UniString ("The shell class is not known, so its edges cannot be written.");
+    }
+
+    const char* names[4] = { "begShapeEdge", "endShapeEdge", "begSideEdge", "endSideEdge" };
+    API_ContourEdgeData* edges[4] = { begEdge, endEdge, &sideEdges[0], &sideEdges[1] };
+    API_OverriddenAttribute materials[4];
+    bool given[4] = { false, false, false, false };
+    for (UIndex i = 0; i < 4; ++i) {
+        materials[i] = edges[i]->sideMaterial;
+        GS::ObjectState materialOs;
+        if (!edgeMaterialsOs.Get (names[i], materialOs)) {
+            continue;
+        }
+        auto error = GetOverriddenMaterialChecked (materialOs, GS::UniString ("edgeMaterials.") + GS::UniString (names[i]), materials[i]);
+        if (error.HasValue ()) {
+            return error;
+        }
+        given[i] = true;
+    }
+
+    for (UIndex i = 0; i < 4; ++i) {
+        if (!given[i]) {
+            continue;
+        }
+        edges[i]->sideMaterial = materials[i];
+        // ACAPI_ELEMENT_MASK_SET of the same member, whichever shell class's data it is in: the
+        // mask byte at the member's offset in the element.
+        const size_t offset = (size_t) (reinterpret_cast<const char*> (&edges[i]->sideMaterial) - reinterpret_cast<const char*> (&element));
+        *(reinterpret_cast<char*> (&mask) + offset) = -1;
+        changed = true;
+    }
+    return {};
+}
+
 ModifyShellsCommand::ModifyShellsCommand () :
     CommandBase (CommonSchema::Used)
 {
@@ -11917,6 +12017,7 @@ GS::Optional<GS::UniString> ModifyShellsCommand::GetInputParametersSchema () con
                         "sideMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the edges of the shell; overridden false clears the override." },
                         "bottomMaterial": { "$ref": "#/OverriddenMaterial", "description": "Overrides the surface of the other face of the shell (bottomMaterial of GetDetailsOfElements); overridden false clears the override." },
                         "materialsChained": { "type": "boolean", "description": "Whether the surface materials are chained, as GetDetailsOfElements reports it." },
+                        "edgeMaterials": { "$ref": "#/ShellEdgeMaterials", "description": "The custom surface of individual edges of the shell, as GetDetailsOfElements reports them. Only the edges given are written; overridden false clears an edge's custom surface." },
                         "extrusionVector": {
                             "$ref": "#/Coordinate3D",
                             "description": "Extruded shells only: the new direction and length of the extrusion, in base plane coordinates (as GetDetailsOfElements returns it). The profile, the base plane and the extrusion start are kept, so only the end of the shell moves. Cannot be given together with extrusionLength."
@@ -12004,6 +12105,11 @@ GS::ObjectState ModifyShellsCommand::Execute (const GS::ObjectState& parameters,
             auto surfaceError = ApplyShellSurfaces (element, mask, item, changed);
             if (surfaceError.HasValue ()) {
                 results.Push (CreateFailedExecutionResult (APIERR_BADPARS, surfaceError.Get ()));
+                continue;
+            }
+            auto edgeError = ApplyShellEdgeMaterials (element, mask, item, changed);
+            if (edgeError.HasValue ()) {
+                results.Push (CreateFailedExecutionResult (APIERR_BADPARS, edgeError.Get ()));
                 continue;
             }
             bool cutBodyGiven = false;
