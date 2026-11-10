@@ -12864,6 +12864,30 @@
             },
             "origin": {
                 "$ref": "#/DimensionOrigin"
+            },
+            "fontIndex": {
+                "type": "integer",
+                "description": "Font attribute index of the dimension text."
+            },
+            "fontName": {
+                "type": "string",
+                "description": "The name of the font fontIndex refers to, as the Font attributes carry it. Absent when no loaded font has that index."
+            },
+            "bold": {
+                "type": "boolean",
+                "description": "Bold dimension text."
+            },
+            "italic": {
+                "type": "boolean",
+                "description": "Italic dimension text."
+            },
+            "underline": {
+                "type": "boolean",
+                "description": "Underlined dimension text."
+            },
+            "hideWithBaseElem": {
+                "type": "boolean",
+                "description": "Hide the dimension together with its associated element. Read from Archicad 29; absent on earlier versions."
             }
         },
         "additionalProperties": false,
@@ -12878,7 +12902,11 @@
             "textPen",
             "markerSize",
             "angle",
-            "origin"
+            "origin",
+            "fontIndex",
+            "bold",
+            "italic",
+            "underline"
         ]
     },
     "DimensionDetails": {
