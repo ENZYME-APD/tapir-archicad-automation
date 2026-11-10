@@ -2,7 +2,9 @@
 
 The keys are the ones the dimension creation commands take, and GetDetailsOfElements returns them,
 so the settings read from one dimension can be written to others. The text and witness line
-settings are applied to every witness point. Run it with a floor plan window active.
+settings are applied to every witness point. A second call puts the texts below the line and
+moves the text of the first segment 0.15 m down from where Archicad placed it. Run it with a
+floor plan window active.
 """
 import aclib
 
@@ -23,4 +25,11 @@ aclib.PrintJson (aclib.RunTapirCommand ('ModifyAssociativeDimensions', {'dimensi
     'defaultWitnessVal': 0.5
 }]}))
 
+aclib.PrintJson (aclib.RunTapirCommand ('ModifyAssociativeDimensions', {'dimensionsWithDetails': [{
+    'elementId': dimension['elementId'],
+    'textPlacement': 'Below',
+    'texts': [{'witnessPointIndex': 1, 'offset': {'x': 0.0, 'y': -0.15}}]
+}]}))
+
 aclib.PrintJson (aclib.RunTapirCommand ('GetDetailsOfElements', {'elements': [dimension]}))
+aclib.PrintJson (aclib.RunTapirCommand ('GetDimensionData', {'elements': [dimension]}))
