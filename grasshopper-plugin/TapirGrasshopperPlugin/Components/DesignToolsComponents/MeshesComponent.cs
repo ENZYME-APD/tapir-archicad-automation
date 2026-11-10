@@ -32,15 +32,17 @@ namespace TapirGrasshopperPlugin.Components.DesignToolsComponents
         // is written by Create, and the other way round.
         private static readonly ISet<string> CreateMeshesKeys = new HashSet<string>
         {
-            "buildingMaterialId", "contourPen", "favoriteName", "floorIndex", "holes", "id", "level",
-            "levelPen", "lineTypeIndex", "polygonArcs", "polygonCoordinates", "ridges", "showLines",
-            "skirtLevel", "skirtType", "sublines"
+            "bottomMaterial", "buildingMaterialId", "contourPen", "favoriteName", "floorIndex", "holes", "id",
+            "layerIndex", "level", "levelPen", "lineTypeIndex", "materialsChained", "polygonArcs",
+            "polygonCoordinates", "ridges", "showLines", "sideMaterial", "skirtLevel", "skirtType", "sublines",
+            "topMaterial"
         };
 
         private static readonly ISet<string> ModifyMeshesKeys = new HashSet<string>
         {
-            "contourPen", "floorIndex", "holes", "level", "levelPen", "lineTypeIndex", "polygonArcs",
-            "polygonCoordinates", "ridges", "showLines", "skirtLevel", "skirtType", "sublines"
+            "bottomMaterial", "buildingMaterialId", "contourPen", "floorIndex", "holes", "level", "levelPen",
+            "lineTypeIndex", "materialsChained", "polygonArcs", "polygonCoordinates", "ridges", "showLines",
+            "sideMaterial", "skirtLevel", "skirtType", "sublines", "topMaterial"
         };
 
         // ModifyMeshes takes the polygon, so Create updates the meshes this

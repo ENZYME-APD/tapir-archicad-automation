@@ -3901,6 +3901,11 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
                         "type": "string",
                         "description": "Optional Element ID of the new element (the ID field of the Settings dialog, shown in schedules and labels; the same string GetDetailsOfElements returns as id). When omitted the element gets the next automatic ID of its tool."
                     },
+                    "layerIndex": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Optional layer attribute index to place the new element on. It must be an existing, unlocked layer. When omitted the element gets the layer of the favorite or of the tool defaults."
+                    },
                     "floorIndex": {
                         "type": "integer"
                     },
@@ -3917,7 +3922,23 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
                     },
                     "buildingMaterialId": {
                         "$ref": "#/AttributeId",
-                        "description": "Optional building material of the mesh. Its top, side and bottom surface overrides are cleared, also one from the Mesh tool defaults, so the mesh shows the building material's own surface."
+                        "description": "Optional building material of the mesh. Its top, side and bottom surface overrides are cleared, also one from the Mesh tool defaults, so the mesh shows the building material's own surface; topMaterial, sideMaterial and bottomMaterial given in the same item are applied after that."
+                    },
+                    "topMaterial": {
+                        "$ref": "#/OverriddenMaterial",
+                        "description": "Optional override of the surface of the top of the mesh; overridden false clears the override."
+                    },
+                    "sideMaterial": {
+                        "$ref": "#/OverriddenMaterial",
+                        "description": "Optional override of the surface of the sides (skirt) of the mesh; overridden false clears the override."
+                    },
+                    "bottomMaterial": {
+                        "$ref": "#/OverriddenMaterial",
+                        "description": "Optional override of the surface of the bottom of the mesh; overridden false clears the override."
+                    },
+                    "materialsChained": {
+                        "type": "boolean",
+                        "description": "Optional: whether the surface overrides are chained (the chain button of the Model panel)."
                     },
                     "ridges": {
                         "$ref": "#/MeshRidges"
@@ -3981,6 +4002,11 @@ GS::Optional<GS::UniString> CreateMeshesCommand::GetInputParametersSchema () con
 
 GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& /*stories*/, const GS::ObjectState& parameters) const
 {
+    const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (parameters, element);
+    if (layerError.HasValue ()) {
+        return layerError;
+    }
+
     parameters.Get ("floorIndex", element.header.floorInd);
     parameters.Get ("level", element.mesh.level);
     parameters.Get ("skirtLevel", element.mesh.skirtLevel);
@@ -4041,19 +4067,16 @@ GS::Optional<GS::ObjectState> CreateMeshesCommand::SetTypeSpecificParameters (AP
     parameters.Get ("sublines", sublines);
     BuildMeshSublinesMemoFromGeometry (element, memo, sublines);
 
-    // Building material of the mesh. Its top, side and bottom surface overrides are cleared, so the
-    // mesh shows the building material's own surface and follows later changes of it; an override
-    // left in the Mesh tool defaults would otherwise keep showing the old color.
-    const GS::ObjectState* buildingMaterialIdOS = parameters.Get ("buildingMaterialId");
-    if (buildingMaterialIdOS != nullptr) {
-        API_AttributeIndex buildingMaterialIndex = APIInvalidAttributeIndex;
-        if (!ResolveAttributeIndex (*buildingMaterialIdOS, API_BuildingMaterialID, buildingMaterialIndex)) {
-            return CreateErrorResponse (APIERR_BADPARS, "Invalid mesh building material.");
-        }
-        element.mesh.buildingMaterial = buildingMaterialIndex;
-        element.mesh.topMat = API_OverriddenAttribute ();
-        element.mesh.sideMat = API_OverriddenAttribute ();
-        element.mesh.botMat = API_OverriddenAttribute ();
+    // Building material and surfaces of the mesh, written as ModifyMeshes writes them (#2630);
+    // ACAPI_Element_Create does not use the mask. A given building material clears the top, side
+    // and bottom surface overrides of the tool defaults first, so the mesh shows the building
+    // material's own surface unless the item gives its own overrides.
+    API_Element unusedMask = {};
+    ACAPI_ELEMENT_MASK_CLEAR (unusedMask);
+    bool surfacesChanged = false;
+    const GS::Optional<GS::UniString> surfacesError = ApplyMeshStructureAndSurfaces (element, unusedMask, parameters, true, surfacesChanged);
+    if (surfacesError.HasValue ()) {
+        return CreateErrorResponse (APIERR_BADPARS, surfacesError.Get ());
     }
 
     return {};

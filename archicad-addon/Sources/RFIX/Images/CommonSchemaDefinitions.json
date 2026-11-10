@@ -12203,6 +12203,26 @@
                 "type": "integer",
                 "description": "Line type attribute index for the mesh contour."
             },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "The building material of the mesh. The surface overrides are kept; send topMaterial, sideMaterial and bottomMaterial with overridden false to show the building material's own surfaces."
+            },
+            "topMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "Overrides the surface of the top of the mesh; overridden false clears the override."
+            },
+            "sideMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "Overrides the surface of the sides (skirt) of the mesh; overridden false clears the override."
+            },
+            "bottomMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "Overrides the surface of the bottom of the mesh; overridden false clears the override."
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surface overrides are chained (the chain button of the Model panel)."
+            },
             "polygonCoordinates": {
                 "type": "array",
                 "description": "The 3D coordinates of the outline polygon of the mesh. Replaces the existing boundary entirely; the existing outline arcs are removed unless polygonArcs is also given, and the existing holes are kept unless holes is also given.",
@@ -12271,6 +12291,26 @@
             "lineTypeIndex": {
                 "type": "integer",
                 "description": "Line type attribute index for the mesh contour."
+            },
+            "buildingMaterialId": {
+                "$ref": "#/AttributeId",
+                "description": "The building material of the mesh."
+            },
+            "topMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The surface override of the top of the mesh."
+            },
+            "sideMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The surface override of the sides (skirt) of the mesh."
+            },
+            "bottomMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The surface override of the bottom of the mesh."
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surface overrides are chained (the chain button of the Model panel)."
             },
             "polygonCoordinates": {
                 "type": "array",

@@ -46,6 +46,13 @@ GS::Optional<GS::UniString> ApplyColumnSurfaceAndFillSettings (API_Element& elem
 GS::Optional<GS::UniString> ApplyBeamSurfaceAndFillSettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed);
 GS::Optional<GS::UniString> ApplySlabSurfaceAndFillSettings (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool& changed);
 
+// The building material (buildingMaterialId) and the top, side and bottom surface overrides
+// (topMaterial, sideMaterial, bottomMaterial, materialsChained) of a Mesh, shared by CreateMeshes
+// and ModifyMeshes (#2630). On a new element a given building material first clears the surface
+// overrides (the given ones are written after it); ModifyMeshes keeps them. Returns an error,
+// before anything is written, when a given attribute does not exist.
+GS::Optional<GS::UniString> ApplyMeshStructureAndSurfaces (API_Element& element, API_Element& mask, const GS::ObjectState& details, bool isNewElement, bool& changed);
+
 // The extrusion body of an Opening element, in world coordinates: the outline lies in the plane through
 // anchorPoint spanned by xAxis and yAxis, as a box from profileXMin to profileXMax along xAxis and from
 // profileYMin to profileYMax along yAxis, and is extruded along extrusionDirection from extrusionStart to
