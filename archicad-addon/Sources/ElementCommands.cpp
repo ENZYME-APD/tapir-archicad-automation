@@ -279,8 +279,10 @@ static GS::UniString EdgeTrimTypeToString (API_EdgeTrimID sideType)
     }
 }
 
-// The cut of each edge of a Single-plane Roof's polygon (APIMemoMask_EdgeTrims), in the order
-// of edgeSideMaterials: edgeTrims[i] belongs to the edge from coords[i] to coords[i + 1] (#2363).
+// The cut of each edge of a Roof's polygon (APIMemoMask_EdgeTrims): the outline of a Single-plane
+// Roof, the contour of a Multi-plane Roof (#2435), whose memo.coords hold the contour polygon as the
+// DevKit's Plan_Dump example reads it. In the order of edgeSideMaterials: edgeTrims[i] belongs to
+// the edge from coords[i] to coords[i + 1] (#2363).
 static void AddEdgeTrimsFromMemo (const API_Guid& guid, GS::ObjectState& os)
 {
     API_ElementMemo memo = {};
@@ -3313,9 +3315,7 @@ GS::ObjectState GetDetailsOfElementsCommand::Execute (const GS::ObjectState& par
             case API_RoofID:
                 AddRoofDetails (elem.roof, elem.header.guid, elem.header.floorInd, nullptr, stories, typeSpecificDetails);
                 AddEdgeSideMaterialsFromMemo (elem.header.guid, typeSpecificDetails);
-                if (elem.roof.roofClass == API_PlaneRoofID) {
-                    AddEdgeTrimsFromMemo (elem.header.guid, typeSpecificDetails);
-                }
+                AddEdgeTrimsFromMemo (elem.header.guid, typeSpecificDetails);
                 break;
 
             case API_ShellID: {
