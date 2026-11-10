@@ -126,6 +126,36 @@
                             <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2448">#2448</a></td>
                         </tr>
 
+                        <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Design options</th></tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Read which design option, or the Main Model, is the default that new elements go to</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill chg" data-i18n>Workaround</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Create a temporary element, read its design option with <a href="../archicad-addon/#GetDesignOptionForElements">GetDesignOptionForElements</a>, then delete it with <a href="../archicad-addon/#DeleteElements">DeleteElements</a>. Set the default with <a href="../archicad-addon/#SetDefaultDesignOption">SetDefaultDesignOption</a>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>DesignOptionManager</code> has <code>SetDesignOptionAsDefault</code> (<code>DesignOptionsAPI/ACAPI/DesignOptionManager.hpp</code>, AC29&ndash;AC30) but no function that returns the default, and <code>DesignOption</code> (<code>DesignOption.hpp</code>) has no default flag. AC27 (<code>DesignVariantAPI</code>) and AC28 have neither; AC25&ndash;AC26 have no design options.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2693">#2693</a></td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Read or change which design options the current window shows, as the eye icons of the Design Options palette do</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill" data-i18n>Partly possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Work with saved views: read and set the combination a View Map view shows with <a href="../archicad-addon/#GetDesignOptionCombinationOfViews">GetDesignOptionCombinationOfViews</a> and <a href="../archicad-addon/#SetDesignOptionCombinationOfViews">SetDesignOptionCombinationOfViews</a>, and the options of a combination with <a href="../archicad-addon/#SetActiveDesignOptionsInCombinations">SetActiveDesignOptionsInCombinations</a>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>DesignOptionManager::GetDesignOptionCombinationSettingsOf</code> takes a <code>View</code>, which only <code>FindViewByGuid</code> (<code>ArchicadAPI/ACAPI/View.hpp</code>) returns, for a View Map item; <code>DesignOptionCombinationViewSettings</code> can only <code>SetMainModelOnly</code> and <code>SetStandardCombination</code>. No function reads or sets the options of the current window (AC27&ndash;AC30).</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2693">#2693</a></td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Duplicate a design option or a design option set, as the duplicate button of the Design Options palette does</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill chg" data-i18n>Workaround</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Create the set and its options with <a href="../archicad-addon/#CreateDesignOptionSets">CreateDesignOptionSets</a> and <a href="../archicad-addon/#CreateDesignOptions">CreateDesignOptions</a>. For the elements, list them with <a href="../archicad-addon/#GetElementsOfDesignOptions">GetElementsOfDesignOptions</a>, copy them with <a href="../archicad-addon/#CopyElements">CopyElements</a> and move the copies to the new option with <a href="../archicad-addon/#MoveElementsToDesignOptions">MoveElementsToDesignOptions</a>.</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label"><code>DesignOptionManager</code> (<code>DesignOptionsAPI/ACAPI/DesignOptionManager.hpp</code>, AC29&ndash;AC30) duplicates only a combination (<code>DuplicateDesignOptionCombination</code>); it has no function that duplicates a design option or a set. AC27&ndash;AC28 have none either.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2693">#2693</a></td>
+                        </tr>
+                        <tr>
+                            <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Lock or colour the passive elements of design options, as the Design Options palette does</td>
+                            <td data-label="Status" data-i18n-attrs="data-label"><span class="pill ro" data-i18n>Not possible</span></td>
+                            <td class="cell-wide" data-label="What to do instead" data-i18n data-i18n-attrs="data-label">Nothing yet</td>
+                            <td class="cell-wide evidence" data-label="Evidence" data-i18n-attrs="data-label">No passive-element setting in the <code>DesignOptionsAPI</code> headers or the <code>Inc</code> headers (<code>ACAPinc.h</code>, <code>APIdefs_*.h</code>) of AC27&ndash;AC30.</td>
+                            <td data-label="Issue" data-i18n-attrs="data-label"><a href="https://github.com/ENZYME-APD/tapir-archicad-automation/issues/2693">#2693</a></td>
+                        </tr>
+
                         <tr class="area"><th colspan="5" scope="colgroup" data-i18n>Navigator and views</th></tr>
                         <tr>
                             <td class="cell-script" data-label="What people want" data-i18n data-i18n-attrs="data-label">Add an item to a publisher set</td>
