@@ -944,6 +944,9 @@ static GS::Optional<GS::ObjectState> CreateLibraryPart (const GS::ObjectState& l
     }
 
     GS::Optional<GS::ObjectState> error = ResolveParentLibraryPart (libraryPartData, libPart);
+    if (!error.HasValue ()) {
+        error = CheckParentSubtypeCanBeInherited (libPart.parentUnID);
+    }
     if (error.HasValue ()) {
         return error;
     }

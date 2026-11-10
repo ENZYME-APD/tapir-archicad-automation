@@ -8,7 +8,7 @@ libraryPartName = 'Tapir Example Symbol'
 
 # The parent subtype by its GUID, found among the loaded library parts: the first of these
 # subtype templates of the Archicad Library that is loaded.
-subtypeNames = ['Model Element', 'General Object', 'General GDL Object']
+subtypeNames = ['Model Element', 'General Object']
 availableLibraryParts = aclib.RunTapirCommand ('GetAvailableLibraryParts', {
     'filterByTypeId': 'Object'
 })['libraryParts']
