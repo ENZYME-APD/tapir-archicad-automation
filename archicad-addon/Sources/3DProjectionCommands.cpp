@@ -1,6 +1,9 @@
 #include "3DProjectionCommands.hpp"
 #include "MigrationHelper.hpp"
 
+#include <cmath>
+#include <cstring>
+
 // Both commands mirror API_3DProjectionInfo (the 3D Projection Settings of the 3D window):
 // the common part (isPersp, camGuid, actCamSet) plus either the perspective parameters
 // (API_PerspPars) or the axonometric ones (API_AxonoPars: projection type, azimuth and
@@ -978,6 +981,180 @@ GS::ObjectState CreateCamerasCommand::Execute (const GS::ObjectState& parameters
                 continue;
             }
             elements (CreateElementIdObjectState (cameraGuid));
+        }
+        return NoError;
+    });
+
+    return response;
+}
+
+ModifyCamerasCommand::ModifyCamerasCommand () :
+    CommandBase (CommonSchema::Used)
+{}
+
+GS::String ModifyCamerasCommand::GetName () const
+{
+    return "ModifyCameras";
+}
+
+GS::Optional<GS::UniString> ModifyCamerasCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "cameras": {
+            "type": "array",
+            "description": "The perspective cameras to change, each with the values to change; the values not given are kept. A camera keeps its element id, its Camera Set and its place in the path.",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "cameraElementId": {
+                        "$ref": "#/ElementId",
+                        "description": "The camera, as GetCameras or CreateCameras returns it."
+                    },
+                    "cameraPosition": {
+                        "$ref": "#/Coordinate3D",
+                        "description": "The new position of the camera; z is its height."
+                    },
+                    "targetPosition": {
+                        "$ref": "#/Coordinate3D",
+                        "description": "The new position of the target point the camera looks at; z is its height. Archicad works out the distance and the azimuth of the camera from the two positions."
+                    },
+                    "viewCone": {
+                        "type": "number",
+                        "description": "The view cone angle of the camera, in the units GetCameras returns it."
+                    },
+                    "rollAngle": {
+                        "type": "number",
+                        "description": "The roll angle of the camera, in the units GetCameras returns it."
+                    },
+                    "isTwoPointPersp": {
+                        "type": "boolean",
+                        "description": "True for a two-point perspective (vertical edges stay vertical)."
+                    },
+                    "sun": {
+                        "$ref": "#/ProjectionSunSettings",
+                        "description": "The sun position of the camera's perspective, by angles or by date and time. Only the values given change; the others are kept."
+                    },
+                    "pen": {
+                        "type": "integer",
+                        "description": "The pen index of the camera's symbol on the floor plan.",
+                        "minimum": 1,
+                        "maximum": 255
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "cameraElementId"
+                ]
+            },
+            "minItems": 1
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "cameras"
+    ]
+})";
+}
+
+GS::Optional<GS::UniString> ModifyCamerasCommand::GetRawResponseSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "executionResults": {
+            "$ref": "#/ExecutionResults",
+            "description": "One result for each camera of the input, in its order."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "executionResults"
+    ]
+})";
+}
+
+static bool IsSameCameraLength (double a, double b)
+{
+    return std::abs (a - b) < 1e-6;
+}
+
+GS::ObjectState ModifyCamerasCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
+{
+    GS::Array<GS::ObjectState> cameras;
+    parameters.Get ("cameras", cameras);
+
+    static const char* const changeableFields[] = {
+        "cameraPosition", "targetPosition", "viewCone", "rollAngle", "isTwoPointPersp", "sun", "pen"
+    };
+
+    GS::ObjectState response;
+    const auto& executionResults = response.AddList<GS::ObjectState> ("executionResults");
+
+    ACAPI_CallUndoableCommand ("Modify Cameras", [&]() -> GSErrCode {
+        for (const GS::ObjectState& data : cameras) {
+            const GS::ObjectState* cameraId = data.Get ("cameraElementId");
+            if (cameraId == nullptr) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "'cameraElementId' is missing."));
+                continue;
+            }
+            bool hasChange = false;
+            for (const char* field : changeableFields) {
+                hasChange = hasChange || data.Contains (field);
+            }
+            if (!hasChange) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, "Nothing to change: give at least one of cameraPosition, targetPosition, viewCone, rollAngle, isTwoPointPersp, sun and pen."));
+                continue;
+            }
+
+            const API_Guid cameraGuid = GetGuidFromObjectState (*cameraId);
+            API_Element element {};
+            element.header.guid = cameraGuid;
+            GSErrCode err = ACAPI_Element_Get (&element);
+            if (err != NoError || GetElemTypeId (element.header) != API_CameraID) {
+                executionResults (CreateFailedExecutionResult (err != NoError ? err : APIERR_BADID, "The element is not a camera of the project."));
+                continue;
+            }
+
+            GS::UniString error;
+            if (!ApplyCameraFromObjectState (data, element.camera, error)) {
+                executionResults (CreateFailedExecutionResult (APIERR_BADPARS, error));
+                continue;
+            }
+
+            // Only the perspective and the pen are written; the Camera Set, the path links
+            // (prevCam, nextCam) and the rest of the camera are kept as they are.
+            API_Element mask {};
+            ACAPI_ELEMENT_MASK_CLEAR (mask);
+            memset (&mask.camera.perspCam.persp, 0xFF, sizeof (API_PerspPars));
+            ACAPI_ELEMENT_MASK_SET (mask, API_CameraType, perspCam.pen);
+
+            err = ACAPI_Element_Change (&element, &mask, nullptr, 0, true);
+            if (err != NoError) {
+                executionResults (CreateFailedExecutionResult (err, "Failed to change the camera."));
+                continue;
+            }
+
+            // Read back: a change Archicad accepts but does not make must not be reported as done.
+            const API_PerspPars& wanted = element.camera.perspCam.persp;
+            API_Element changed {};
+            changed.header.guid = cameraGuid;
+            if (ACAPI_Element_Get (&changed) != NoError) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "The camera could not be read back after the change."));
+                continue;
+            }
+            const API_PerspPars& stored = changed.camera.perspCam.persp;
+            if (!IsSameCameraLength (stored.pos.x, wanted.pos.x) || !IsSameCameraLength (stored.pos.y, wanted.pos.y) ||
+                !IsSameCameraLength (stored.cameraZ, wanted.cameraZ) ||
+                !IsSameCameraLength (stored.target.x, wanted.target.x) || !IsSameCameraLength (stored.target.y, wanted.target.y) ||
+                !IsSameCameraLength (stored.targetZ, wanted.targetZ) ||
+                stored.isTwoPointPersp != wanted.isTwoPointPersp ||
+                changed.camera.perspCam.pen != element.camera.perspCam.pen) {
+                executionResults (CreateFailedExecutionResult (APIERR_GENERAL, "Archicad did not make every change of the camera."));
+                continue;
+            }
+            executionResults (CreateSuccessfulExecutionResult ());
         }
         return NoError;
     });
