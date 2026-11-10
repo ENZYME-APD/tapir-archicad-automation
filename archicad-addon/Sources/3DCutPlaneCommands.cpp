@@ -229,7 +229,7 @@ GS::Optional<GS::UniString> Get3DCutPlanesCommand::GetRawResponseSchema () const
         },
         "customPen": {
             "type": "integer",
-            "description": "The pen of the cut edges when useCustom is true."
+            "description": "The pen of the cut edges when useCustom is true. Missing when it is no valid pen (0)."
         },
         "customSurfaceId": {
             "$ref": "#/AttributeId",
@@ -244,7 +244,7 @@ GS::Optional<GS::UniString> Get3DCutPlanesCommand::GetRawResponseSchema () const
         }
     },
     "additionalProperties": false,
-    "required": ["isCutPlanes", "useCustom", "customPen", "cutPlanes"]
+    "required": ["isCutPlanes", "useCustom", "cutPlanes"]
 })";
 }
 
@@ -271,7 +271,9 @@ GS::ObjectState Get3DCutPlanesCommand::Execute (const GS::ObjectState& /*paramet
     GS::ObjectState response;
     response.Add ("isCutPlanes", (bool) cutInfo.isCutPlanes);
     response.Add ("useCustom", (bool) cutInfo.useCustom);
-    response.Add ("customPen", (Int32) cutInfo.customPen);
+    if (IsPenIndex (cutInfo.customPen)) {
+        response.Add ("customPen", (Int32) cutInfo.customPen);
+    }
     AddSurfaceId (response, "customSurfaceId", cutInfo.customMater);
     const auto& cutPlanes = response.AddList<GS::ObjectState> ("cutPlanes");
     if (cutInfo.shapes != nullptr) {
@@ -281,7 +283,10 @@ GS::ObjectState Get3DCutPlanesCommand::Execute (const GS::ObjectState& /*paramet
             plane.Add ("pb", (*cutInfo.shapes)[i].pb);
             plane.Add ("pc", (*cutInfo.shapes)[i].pc);
             plane.Add ("pd", (*cutInfo.shapes)[i].pd);
-            plane.Add ("cutPen", (Int32) (*cutInfo.shapes)[i].cutPen);
+            // Pen 0, which earlier versions of Set3DCutPlanes wrote, is left out, so the planes read can be set again.
+            if (IsPenIndex ((*cutInfo.shapes)[i].cutPen)) {
+                plane.Add ("cutPen", (Int32) (*cutInfo.shapes)[i].cutPen);
+            }
             AddSurfaceId (plane, "cutSurfaceId", (*cutInfo.shapes)[i].cutMater);
             cutPlanes (plane);
         }

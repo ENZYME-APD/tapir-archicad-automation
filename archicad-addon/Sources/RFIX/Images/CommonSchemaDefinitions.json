@@ -25137,7 +25137,7 @@
             },
             "cutPen": {
                 "type": "integer",
-                "description": "The pen of the edges cut by this plane, from 1 to 255."
+                "description": "The pen of the edges cut by this plane, from 1 to 255. Get3DCutPlanes leaves it out when the plane has no valid pen (pen 0, set by earlier versions of Set3DCutPlanes)."
             },
             "cutSurfaceId": {
                 "$ref": "#/AttributeId",
