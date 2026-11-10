@@ -47,7 +47,8 @@ class FakeArchicad:
         if command == "GetElementsByType":
             return {"elements": [{"elementId": {"guid": g}} for g, e in self.elements.items() if e["kind"] == p["elementType"]]}
         if command == "CreateWalls":
-            return {"elements": [self._new("Wall") for _ in p["wallsData"]]}
+            return {"elements": [{"error": {"code": -2130313112, "message": "refused"}} if w.get("refuse") else self._new("Wall")
+                                 for w in p["wallsData"]]}
         if command == "DeleteElements":
             guids = [e["elementId"]["guid"] for e in p["elements"]]
             if self.fixed:
@@ -142,6 +143,13 @@ class EngineTest(unittest.TestCase):
         with self.assertRaises(AssertionError):
             r.CheckRun(fake, spec).run()
         self.assertEqual(fake.calls[-1], "DeleteElements")
+        self.assertEqual(fake.elements, {})
+
+    def test_elements_of_a_partly_refused_create_are_deleted(self):
+        fake = FakeArchicad()
+        spec = {"steps": [{"command": "CreateWalls", "params": {"wallsData": [{}, {"refuse": True}, {}]}}]}
+        r.CheckRun(fake, spec).run()
+        self.assertEqual(fake.calls.count("DeleteElements"), 2)
         self.assertEqual(fake.elements, {})
 
     def test_refuses_a_real_project(self):
