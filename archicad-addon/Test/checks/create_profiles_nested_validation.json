@@ -148,7 +148,7 @@
       ]
     },
     {
-      "id": "skinOverrides with an unknown key is refused and changes nothing",
+      "id": "skinOverrides with an unknown key in an edge override is refused and changes nothing",
       "command": "CreateProfiles",
       "creates": false,
       "params": {
@@ -157,14 +157,15 @@
           {
             "attributeId": {"guid": "${pA}"},
             "name": "TapirCheck Profile 2585 A",
-            "skinOverrides": [{"skinId": "${skinA}", "contourPen": 7, "contourPenn": 8}]
+            "skinOverrides": [{"skinId": "${skinA}", "contourPen": 7, "edgeOverrides": [{"edgeIndex": 0, "penn": 8}]}]
           }
         ]
       },
       "expect": [
         {"path": "attributeIds", "len": 1},
         {"path": "attributeIds[0].error", "exists": true, "name": "failed"},
-        {"path": "attributeIds[0].error.message", "contains": "#/profileDataArray/0/skinOverrides/0", "name": "the error names the path"}
+        {"path": "attributeIds[0].error.message", "contains": "penn", "name": "the error names the key"},
+        {"path": "attributeIds[0].error.message", "contains": "#/profileDataArray/0/skinOverrides/0/edgeOverrides/0", "name": "the error names the path"}
       ]
     },
     {
