@@ -88,7 +88,13 @@
           },
           {
             "elementId": { "guid": "${r}" },
-            "edgeTrims": [ {}, {}, {}, {} ]
+            "angle": 0.5,
+            "edgeSideMaterials": [
+              { "overridden": false },
+              { "overridden": false },
+              { "overridden": false },
+              { "overridden": false }
+            ]
           }
         ]
       },
@@ -97,7 +103,7 @@
         { "path": "executionResults[0].success", "eq": true, "name": "edge surface written and read back" },
         { "path": "executionResults[1].success", "eq": false, "name": "wrong edge count refused" },
         { "path": "executionResults[2].success", "eq": false, "name": "edgeSideMaterials with pivotEdges refused" },
-        { "path": "executionResults[3].success", "eq": false, "name": "edgeTrims on a multi-plane roof still refused" }
+        { "path": "executionResults[3].success", "eq": false, "name": "angle on a multi-plane roof still refused" }
       ]
     },
     {

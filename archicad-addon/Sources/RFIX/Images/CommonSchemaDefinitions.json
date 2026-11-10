@@ -3773,7 +3773,7 @@
     },
     "RoofEdgeTrim": {
         "type": "object",
-        "description": "How an edge of a single-plane roof's polygon is cut (the edge's cut in the roof's settings).",
+        "description": "How an edge of a roof's polygon (a single-plane roof's outline or a multi-plane roof's contour) is cut (the edge's cut in the roof's Custom Edge Settings).",
         "properties": {
             "trimType": {
                 "type": "string",
@@ -10341,7 +10341,7 @@
             },
             "edgeTrims": {
                 "type": "array",
-                "description": "Single-plane roofs only: the cut of each edge of the roof's polygon, in the order of edgeSideMaterials. ModifyRoofs takes the same list.",
+                "description": "The cut of each edge of the roof's polygon (polygonOutline: a single-plane roof's outline, a multi-plane roof's contour), in the order of edgeSideMaterials: item i is the edge from vertex i to vertex i + 1 of polygonOutline, then the edges of each hole in the same way, hole by hole. ModifyRoofs takes the same list.",
                 "items": {
                     "$ref": "#/RoofEdgeTrim"
                 }
@@ -10382,6 +10382,29 @@
             "polygonOutline"
         ]
     },
+    "ShellEdgeMaterials": {
+        "type": "object",
+        "description": "The custom surface of the edges of a shell (API_ContourEdgeData::sideMaterial of the shell class's edge data). An overridden edge shows its own surface; one that is not overridden shows the shell's side surface (sideMaterial).",
+        "properties": {
+            "begShapeEdge": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The edges of the profile at the begin of the shell: the start of the extrusion or revolution, or the first profile of a ruled shell (begShapeEdgeData)."
+            },
+            "endShapeEdge": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The edges of the profile at the end of the shell: the end of the extrusion or revolution, or the second profile of a ruled shell (endShapeEdgeData)."
+            },
+            "begSideEdge": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The edge along the shell's surface from the first point of the profile (extrudedEdgeDatas, revolvedEdgeDatas or ruledEdgeDatas [0])."
+            },
+            "endSideEdge": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The edge along the shell's surface from the last point of the profile (extrudedEdgeDatas, revolvedEdgeDatas or ruledEdgeDatas [1])."
+            }
+        },
+        "additionalProperties": false
+    },
     "ShellDetails": {
         "type": "object",
         "properties": {
@@ -10404,6 +10427,26 @@
             },
             "compositeId": {
                 "$ref": "#/AttributeId"
+            },
+            "topMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The surface override of one face of the shell (API_ShellBaseType::topMat). ModifyShells takes the same key."
+            },
+            "sideMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The surface override of the edges of the shell (API_ShellBaseType::sidMat). ModifyShells takes the same key."
+            },
+            "bottomMaterial": {
+                "$ref": "#/OverriddenMaterial",
+                "description": "The surface override of the other face of the shell (API_ShellBaseType::botMat). ModifyShells takes the same key."
+            },
+            "materialsChained": {
+                "type": "boolean",
+                "description": "Whether the surface materials are chained. ModifyShells takes the same key."
+            },
+            "edgeMaterials": {
+                "$ref": "#/ShellEdgeMaterials",
+                "description": "The custom surface of each edge of the shell. ModifyShells takes the same key."
             },
             "displayOption": {
                 "$ref": "#/DisplayOption"
