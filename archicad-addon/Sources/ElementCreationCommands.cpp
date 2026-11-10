@@ -4,10 +4,14 @@
 #include "ObjectState.hpp"
 #include "MigrationHelper.hpp"
 #include "NotificationCommands.hpp"
+#include "Base64Converter.hpp"
+#include "File.hpp"
+#include "Location.hpp"
 
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <cstring>
 #include <string>
 #include <utility>
 #include <vector>
@@ -2257,6 +2261,370 @@ GS::Optional<GS::ObjectState> CreateHotspotsCommand::SetTypeSpecificParameters (
     if (parameters.Get ("penIndex", penIndex)) {
         element.hotspot.pen = penIndex;
     }
+
+    return {};
+}
+
+// The image formats the Picture tool takes (API_PictureFormat), told apart by their first bytes.
+enum class PictureFileFormat { Unknown, Bitmap, GIF, TIFF, JPEG, PNG };
+
+static UInt32 ReadPictureUInt16 (const unsigned char* p, bool bigEndian)
+{
+    return bigEndian ? ((UInt32) p[0] << 8) | p[1] : ((UInt32) p[1] << 8) | p[0];
+}
+
+static UInt32 ReadPictureUInt32 (const unsigned char* p, bool bigEndian)
+{
+    return bigEndian
+        ? ((UInt32) p[0] << 24) | ((UInt32) p[1] << 16) | ((UInt32) p[2] << 8) | p[3]
+        : ((UInt32) p[3] << 24) | ((UInt32) p[2] << 16) | ((UInt32) p[1] << 8) | p[0];
+}
+
+// Reads the format and the size in pixels from the header of an image file. Returns false when
+// the data is none of PNG, JPEG, GIF, TIFF and BMP or its size cannot be found. Only the header is
+// read: the image itself is decoded by Archicad. The size is needed to keep the proportions when
+// only the width or only the height is given.
+static bool GetPictureFileInfo (const unsigned char* data, UInt64 size, PictureFileFormat& format, UInt32& width, UInt32& height)
+{
+    format = PictureFileFormat::Unknown;
+    width = 0;
+    height = 0;
+
+    static const unsigned char pngSignature[8] = { 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A };
+    if (size >= 24 && memcmp (data, pngSignature, 8) == 0) {
+        // The IHDR chunk comes first: its width and height follow the chunk length and type.
+        format = PictureFileFormat::PNG;
+        width = ReadPictureUInt32 (data + 16, true);
+        height = ReadPictureUInt32 (data + 20, true);
+    } else if (size >= 10 && (memcmp (data, "GIF87a", 6) == 0 || memcmp (data, "GIF89a", 6) == 0)) {
+        format = PictureFileFormat::GIF;
+        width = ReadPictureUInt16 (data + 6, false);
+        height = ReadPictureUInt16 (data + 8, false);
+    } else if (size >= 26 && data[0] == 'B' && data[1] == 'M') {
+        format = PictureFileFormat::Bitmap;
+        const UInt32 headerSize = ReadPictureUInt32 (data + 14, false);
+        if (headerSize == 12) {
+            // BITMAPCOREHEADER: 16-bit sizes.
+            width = ReadPictureUInt16 (data + 18, false);
+            height = ReadPictureUInt16 (data + 20, false);
+        } else {
+            // BITMAPINFOHEADER and later: signed 32-bit sizes, a negative height is a top-down bitmap.
+            const Int32 signedWidth = (Int32) ReadPictureUInt32 (data + 18, false);
+            const Int32 signedHeight = (Int32) ReadPictureUInt32 (data + 22, false);
+            width = signedWidth < 0 ? 0 : (UInt32) signedWidth;
+            height = signedHeight < 0 ? (UInt32) (-(Int64) signedHeight) : (UInt32) signedHeight;
+        }
+    } else if (size >= 4 && data[0] == 0xFF && data[1] == 0xD8) {
+        format = PictureFileFormat::JPEG;
+        // The size is in the first start-of-frame segment (SOF0-SOF15 but DHT, JPG and DAC).
+        UInt64 pos = 2;
+        while (pos + 4 <= size) {
+            if (data[pos] != 0xFF) {
+                return false;
+            }
+            const unsigned char marker = data[pos + 1];
+            if (marker == 0xFF) {
+                // Fill byte before a marker.
+                ++pos;
+                continue;
+            }
+            if (marker == 0x01 || (marker >= 0xD0 && marker <= 0xD7)) {
+                // Markers without a length.
+                pos += 2;
+                continue;
+            }
+            if (marker == 0xD9 || marker == 0xDA) {
+                // End of image or start of scan before any frame header.
+                return false;
+            }
+            const UInt32 length = ReadPictureUInt16 (data + pos + 2, true);
+            if (length < 2) {
+                return false;
+            }
+            if (marker >= 0xC0 && marker <= 0xCF && marker != 0xC4 && marker != 0xC8 && marker != 0xCC) {
+                if (pos + 9 > size) {
+                    return false;
+                }
+                height = ReadPictureUInt16 (data + pos + 5, true);
+                width = ReadPictureUInt16 (data + pos + 7, true);
+                break;
+            }
+            pos += 2 + length;
+        }
+    } else if (size >= 8 && ((data[0] == 'I' && data[1] == 'I' && data[2] == 42 && data[3] == 0) ||
+                             (data[0] == 'M' && data[1] == 'M' && data[2] == 0 && data[3] == 42))) {
+        format = PictureFileFormat::TIFF;
+        const bool bigEndian = data[0] == 'M';
+        // ImageWidth (256) and ImageLength (257) of the first image file directory.
+        const UInt64 ifdOffset = ReadPictureUInt32 (data + 4, bigEndian);
+        if (ifdOffset + 2 > size) {
+            return false;
+        }
+        const UInt32 entryCount = ReadPictureUInt16 (data + ifdOffset, bigEndian);
+        for (UInt32 i = 0; i < entryCount; ++i) {
+            const UInt64 entry = ifdOffset + 2 + (UInt64) i * 12;
+            if (entry + 12 > size) {
+                return false;
+            }
+            const UInt32 tag = ReadPictureUInt16 (data + entry, bigEndian);
+            if (tag != 256 && tag != 257) {
+                continue;
+            }
+            const UInt32 type = ReadPictureUInt16 (data + entry + 2, bigEndian);
+            UInt32 value = 0;
+            if (type == 3) {
+                value = ReadPictureUInt16 (data + entry + 8, bigEndian);
+            } else if (type == 4) {
+                value = ReadPictureUInt32 (data + entry + 8, bigEndian);
+            } else {
+                return false;
+            }
+            if (tag == 256) {
+                width = value;
+            } else {
+                height = value;
+            }
+        }
+    } else {
+        return false;
+    }
+
+    return width > 0 && height > 0;
+}
+
+static API_PictureFormat ToApiPictureFormat (PictureFileFormat format)
+{
+    switch (format) {
+        case PictureFileFormat::Bitmap: return APIPictForm_Bitmap;
+        case PictureFileFormat::GIF:    return APIPictForm_GIF;
+        case PictureFileFormat::TIFF:   return APIPictForm_TIFF;
+        case PictureFileFormat::JPEG:   return APIPictForm_JPEG;
+        case PictureFileFormat::PNG:    return APIPictForm_PNG;
+        default:                        return APIPictForm_Default;
+    }
+}
+
+CreatePicturesCommand::CreatePicturesCommand () :
+    CreateElementsCommandBase ("CreatePictures", API_PictureID, "picturesData")
+{
+}
+
+GS::Optional<GS::UniString> CreatePicturesCommand::GetInputParametersSchema () const
+{
+    return R"({
+    "type": "object",
+    "properties": {
+        "picturesData": {
+            "type": "array",
+            "description": "Array of data to create Pictures.",
+            "items": {
+                "type": "object",
+                "description": "The parameters of the new Picture. Give the image either as a file (path) or as its bytes (imageData), not both.",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "The full path of a PNG, JPEG, GIF, TIFF or BMP image file. The image is copied into the project: the picture does not change when the file changes or is deleted later."
+                    },
+                    "imageData": {
+                        "type": "string",
+                        "description": "The PNG, JPEG, GIF, TIFF or BMP image file as base64 text, instead of path."
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "Optional name of the picture. By default the file name of path, or empty for imageData."
+                    },
+                    "position": {
+                        "$ref": "#/Coordinate2D",
+                        "description": "Where the anchor point of the picture is placed, in model units (on a layout in layout units)."
+                    },
+                    "anchorPoint": {
+                        "$ref": "#/PictureAnchorPoint",
+                        "description": "The point of the picture's box that is placed at position and that the picture is rotated around. BottomLeft by default."
+                    },
+                    "width": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "description": "The width of the picture in model units. When only height is given, the width keeps the proportions of the image."
+                    },
+                    "height": {
+                        "type": "number",
+                        "exclusiveMinimum": 0,
+                        "description": "The height of the picture in model units. When only width is given, the height keeps the proportions of the image."
+                    },
+                    "angle": {
+                        "type": "number",
+                        "description": "The rotation angle of the picture in radians, around its anchor point. 0 by default."
+                    },
+                    "mirrored": {
+                        "type": "boolean",
+                        "description": "Mirror the picture to its local vertical axis. false by default."
+                    },
+                    "transparent": {
+                        "type": "boolean",
+                        "description": "Draw the white pixels of the picture transparent. false by default."
+                    },
+                    "floorInd": {
+                        "type": "number",
+                        "description": "The identifier of the floor. Optional parameter, by default the current floor is used."
+                    },
+                    "layerIndex": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Layer attribute index to place the picture on. Optional parameter, by default the layer of the Picture tool defaults is used."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "position"
+                ]
+            }
+        },
+        "databaseId": {
+            "$ref": "#/DatabaseId",
+            "description": "Optional database to create the pictures in, e.g. a worksheet, a detail or a layout (see GetDatabases, or the databaseId CreateWorksheets and CreateDetails return). The front window stays as it is: a worksheet or detail whose window was never opened is opened once on Archicad 27 and later, and the front window is brought back. Without it the pictures are created in the current database. If Archicad cannot switch to it, nothing is created and the call fails."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "picturesData"
+    ]
+})";
+}
+
+GS::Optional<GS::ObjectState> CreatePicturesCommand::SetTypeSpecificParameters (API_Element& element, API_ElementMemo& memo, const Stories& /*stories*/, const GS::ObjectState& parameters) const
+{
+    parameters.Get ("floorInd", element.header.floorInd);
+
+    const GS::Optional<GS::ObjectState> layerError = ApplyLayerIndexFromParameters (parameters, element);
+    if (layerError.HasValue ()) {
+        return layerError;
+    }
+
+    GS::UniString path;
+    GS::UniString imageData;
+    const bool hasPath = parameters.Get ("path", path) && !path.IsEmpty ();
+    const bool hasImageData = parameters.Get ("imageData", imageData) && !imageData.IsEmpty ();
+    if (hasPath == hasImageData) {
+        return CreateErrorResponse (APIERR_BADPARS, "Give the image either as path or as imageData.");
+    }
+
+    // The picture is created from the bytes of the image file, as Graphisoft's Element_Test
+    // example does it: the file content goes to memo.pictHdl and its format to storageFormat.
+    GS::Array<char> bytes;
+    GS::UniString name;
+    if (hasPath) {
+        IO::File file (IO::Location (path), IO::File::OnNotFound::Fail);
+        if (file.GetStatus () != NoError || file.Open (IO::File::ReadMode) != NoError) {
+            return CreateErrorResponse (APIERR_BADPARS, "Failed to open the image file '" + path + "'.");
+        }
+        UInt64 length = 0;
+        GSErrCode err = file.GetDataLength (&length);
+        if (err == NoError && (length == 0 || length > 0x7FFFFFFF)) {
+            err = APIERR_BADPARS;
+        }
+        if (err == NoError) {
+            bytes.SetSize ((USize) length);
+            USize read = 0;
+            err = file.ReadBin (bytes.GetContent (), (USize) length, &read);
+            if (err == NoError && read != (USize) length) {
+                err = APIERR_GENERAL;
+            }
+        }
+        file.Close ();
+        if (err != NoError) {
+            return CreateErrorResponse (err, "Failed to read the image file '" + path + "'.");
+        }
+
+        // The file name without its folder.
+        UIndex nameStart = 0;
+        for (UIndex i = 0; i < path.GetLength (); ++i) {
+            if (path[i] == GS::UniChar ('/') || path[i] == GS::UniChar ('\\')) {
+                nameStart = i + 1;
+            }
+        }
+        name = path.GetSubstring (nameStart, path.GetLength () - nameStart);
+    } else {
+        bytes = Base64Converter::Decode (imageData);
+        if (bytes.IsEmpty ()) {
+            return CreateErrorResponse (APIERR_BADPARS, "imageData is not valid base64 text.");
+        }
+    }
+    parameters.Get ("name", name);
+
+    PictureFileFormat format = PictureFileFormat::Unknown;
+    UInt32 pixelWidth = 0;
+    UInt32 pixelHeight = 0;
+    if (!GetPictureFileInfo (reinterpret_cast<const unsigned char*> (bytes.GetContent ()), bytes.GetSize (), format, pixelWidth, pixelHeight)) {
+        return CreateErrorResponse (APIERR_BADPARS, "The image is not a PNG, JPEG, GIF, TIFF or BMP file, or its size cannot be read.");
+    }
+
+    double width = 0.0;
+    double height = 0.0;
+    const bool hasWidth = parameters.Get ("width", width);
+    const bool hasHeight = parameters.Get ("height", height);
+    if (!hasWidth && !hasHeight) {
+        return CreateErrorResponse (APIERR_BADPARS, "Give the width, the height or both of the picture.");
+    }
+    if ((hasWidth && !(width > 0.0)) || (hasHeight && !(height > 0.0))) {
+        return CreateErrorResponse (APIERR_BADPARS, "The width and the height of the picture must be greater than 0.");
+    }
+    if (!hasWidth) {
+        width = height * pixelWidth / pixelHeight;
+    } else if (!hasHeight) {
+        height = width * pixelHeight / pixelWidth;
+    }
+
+    GS::ObjectState positionOS;
+    parameters.Get ("position", positionOS);
+    const API_Coord position = Get2DCoordinateFromObjectState (positionOS);
+
+    GS::UniString anchorPointString ("BottomLeft");
+    parameters.Get ("anchorPoint", anchorPointString);
+    const API_AnchorID anchorPoint = AnchorIdFromString (anchorPointString, APIAnc_LB);
+
+    // The box the picture fills, with its anchor point at position.
+    double xMin = position.x;
+    if (anchorPoint == APIAnc_MT || anchorPoint == APIAnc_MM || anchorPoint == APIAnc_MB) {
+        xMin = position.x - width / 2.0;
+    } else if (anchorPoint == APIAnc_RT || anchorPoint == APIAnc_RM || anchorPoint == APIAnc_RB) {
+        xMin = position.x - width;
+    }
+    double yMin = position.y;
+    if (anchorPoint == APIAnc_LM || anchorPoint == APIAnc_MM || anchorPoint == APIAnc_RM) {
+        yMin = position.y - height / 2.0;
+    } else if (anchorPoint == APIAnc_LT || anchorPoint == APIAnc_MT || anchorPoint == APIAnc_RT) {
+        yMin = position.y - height;
+    }
+
+    API_PictureType& picture = element.picture;
+    // With usePixelSize false Archicad takes the size from the whole destBox; the pixel sizes are
+    // ignored then, so they are only filled in (clamped to the short they are stored in).
+    picture.usePixelSize = false;
+    picture.directCreate = false;
+    picture.destBox.xMin = xMin;
+    picture.destBox.yMin = yMin;
+    picture.destBox.xMax = xMin + width;
+    picture.destBox.yMax = yMin + height;
+    picture.pixelSizeX = static_cast<short> (GS::Min<UInt32> (pixelWidth, 32767));
+    picture.pixelSizeY = static_cast<short> (GS::Min<UInt32> (pixelHeight, 32767));
+    picture.anchorPoint = anchorPoint;
+    picture.storageFormat = ToApiPictureFormat (format);
+    picture.rotAngle = 0.0;
+    parameters.Get ("angle", picture.rotAngle);
+    picture.mirrored = false;
+    parameters.Get ("mirrored", picture.mirrored);
+    picture.transparent = false;
+    parameters.Get ("transparent", picture.transparent);
+    GS::ucscpy (picture.pictName, name.ToUStr (0, GS::Min (name.GetLength (), (USize) API_UniLongNameLen - 1)).Get ());
+
+    if (memo.pictHdl != nullptr) {
+        BMKillHandle ((GSHandle*) &memo.pictHdl);
+    }
+    memo.pictHdl = BMAllocateHandle ((GSSize) bytes.GetSize (), ALLOCATE_CLEAR, 0);
+    if (memo.pictHdl == nullptr) {
+        return CreateErrorResponse (APIERR_MEMFULL, "Not enough memory for the image.");
+    }
+    memcpy (*memo.pictHdl, bytes.GetContent (), bytes.GetSize ());
 
     return {};
 }

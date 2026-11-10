@@ -1,0 +1,121 @@
+{
+  "title": "CreatePictures places images at their anchor point with the given size, keeps the proportions when one side is given, and refuses items without a readable image or size (#2659)",
+  "minTapir": "2.0.1",
+  "requiresEmpty": [ "Picture" ],
+  "steps": [
+    {
+      "id": "four pictures and three bad items",
+      "command": "CreatePictures",
+      "params": {
+        "picturesData": [
+          {
+            "imageData": "Qk1OAAAAAAAAADYAAAAoAAAABAAAAAIAAAABABgAAAAAABgAAAATCwAAEwsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "name": "CHK-PICTURE-BMP",
+            "position": { "x": 700.0, "y": 700.0 },
+            "anchorPoint": "BottomLeft",
+            "width": 4.0,
+            "floorInd": 0
+          },
+          {
+            "imageData": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+            "name": "CHK-PICTURE-PNG",
+            "position": { "x": 720.0, "y": 700.0 },
+            "anchorPoint": "Center",
+            "width": 2.0,
+            "height": 3.0,
+            "mirrored": true,
+            "transparent": true,
+            "floorInd": 0
+          },
+          {
+            "imageData": "Qk1OAAAAAAAAADYAAAAoAAAABAAAAAIAAAABABgAAAAAABgAAAATCwAAEwsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "position": { "x": 740.0, "y": 700.0 },
+            "anchorPoint": "TopRight",
+            "height": 1.0,
+            "floorInd": 0
+          },
+          {
+            "imageData": "Qk1OAAAAAAAAADYAAAAoAAAABAAAAAIAAAABABgAAAAAABgAAAATCwAAEwsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "position": { "x": 760.0, "y": 700.0 },
+            "width": 2.0,
+            "angle": 0.5,
+            "floorInd": 0
+          },
+          {
+            "position": { "x": 780.0, "y": 700.0 },
+            "width": 2.0
+          },
+          {
+            "imageData": "aGVsbG8gd29ybGQ=",
+            "position": { "x": 780.0, "y": 700.0 },
+            "width": 2.0
+          },
+          {
+            "imageData": "Qk1OAAAAAAAAADYAAAAoAAAABAAAAAIAAAABABgAAAAAABgAAAATCwAAEwsAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "position": { "x": 780.0, "y": 700.0 }
+          }
+        ]
+      },
+      "save": {
+        "p1": "elements[0].elementId.guid",
+        "p2": "elements[1].elementId.guid",
+        "p3": "elements[2].elementId.guid",
+        "p4": "elements[3].elementId.guid"
+      },
+      "expect": [
+        { "path": "elements", "len": 7 },
+        { "path": "elements[0].elementId.guid", "exists": true, "name": "BMP picture created" },
+        { "path": "elements[1].elementId.guid", "exists": true, "name": "PNG picture created" },
+        { "path": "elements[2].elementId.guid", "exists": true, "name": "picture with only a height created" },
+        { "path": "elements[3].elementId.guid", "exists": true, "name": "rotated picture created" },
+        { "path": "elements[4].error", "exists": true, "name": "an item without path or imageData is refused" },
+        { "path": "elements[5].error", "exists": true, "name": "data that is not an image is refused" },
+        { "path": "elements[6].error", "exists": true, "name": "an item without width and height is refused" }
+      ]
+    },
+    {
+      "id": "read the pictures back",
+      "command": "GetDetailsOfElements",
+      "creates": false,
+      "params": {
+        "elements": [
+          { "elementId": { "guid": "${p1}" } },
+          { "elementId": { "guid": "${p2}" } },
+          { "elementId": { "guid": "${p3}" } },
+          { "elementId": { "guid": "${p4}" } }
+        ]
+      },
+      "expect": [
+        { "path": "detailsOfElements[0].type", "eq": "Picture" },
+        { "path": "detailsOfElements[0].details.name", "eq": "CHK-PICTURE-BMP", "name": "name kept" },
+        { "path": "detailsOfElements[0].details.pixelWidth", "eq": 4, "name": "BMP is 4 pixels wide" },
+        { "path": "detailsOfElements[0].details.pixelHeight", "eq": 2, "name": "BMP is 2 pixels high" },
+        { "path": "detailsOfElements[0].details.width", "approx": 4.0, "name": "width as given" },
+        { "path": "detailsOfElements[0].details.height", "approx": 2.0, "name": "height keeps the 2:1 proportions" },
+        { "path": "detailsOfElements[0].details.box.xMin", "approx": 700.0, "name": "bottom left corner at position (x)" },
+        { "path": "detailsOfElements[0].details.box.yMin", "approx": 700.0, "name": "bottom left corner at position (y)" },
+        { "path": "detailsOfElements[0].details.anchorPoint", "eq": "BottomLeft" },
+        { "path": "detailsOfElements[0].details.angle", "approx": 0.0 },
+        { "path": "detailsOfElements[0].details.mirrored", "eq": false },
+        { "path": "detailsOfElements[0].details.transparent", "eq": false },
+        { "path": "detailsOfElements[1].type", "eq": "Picture" },
+        { "path": "detailsOfElements[1].details.pixelWidth", "eq": 1, "name": "PNG is 1 pixel wide" },
+        { "path": "detailsOfElements[1].details.width", "approx": 2.0, "name": "both sides given: width kept" },
+        { "path": "detailsOfElements[1].details.height", "approx": 3.0, "name": "both sides given: height kept" },
+        { "path": "detailsOfElements[1].details.box.xMin", "approx": 719.0, "name": "centred on position (xMin)" },
+        { "path": "detailsOfElements[1].details.box.yMin", "approx": 698.5, "name": "centred on position (yMin)" },
+        { "path": "detailsOfElements[1].details.box.xMax", "approx": 721.0, "name": "centred on position (xMax)" },
+        { "path": "detailsOfElements[1].details.box.yMax", "approx": 701.5, "name": "centred on position (yMax)" },
+        { "path": "detailsOfElements[1].details.anchorPoint", "eq": "Center" },
+        { "path": "detailsOfElements[1].details.mirrored", "eq": true, "name": "mirrored kept" },
+        { "path": "detailsOfElements[1].details.transparent", "eq": true, "name": "transparent kept" },
+        { "path": "detailsOfElements[2].details.width", "approx": 2.0, "name": "width keeps the 2:1 proportions" },
+        { "path": "detailsOfElements[2].details.height", "approx": 1.0, "name": "height as given" },
+        { "path": "detailsOfElements[2].details.box.xMax", "approx": 740.0, "name": "top right corner at position (x)" },
+        { "path": "detailsOfElements[2].details.box.yMax", "approx": 700.0, "name": "top right corner at position (y)" },
+        { "path": "detailsOfElements[2].details.anchorPoint", "eq": "TopRight" },
+        { "path": "detailsOfElements[3].details.angle", "approx": 0.5, "name": "angle kept" }
+      ]
+    }
+  ]
+}
