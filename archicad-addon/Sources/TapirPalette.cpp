@@ -18,6 +18,8 @@
 #include "ScriptRequirements.hpp"
 #include "ScriptUIPalette.hpp"
 
+#include <cerrno>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
@@ -1301,17 +1303,31 @@ void TapirPalette::ItemToolTipRequested (const DG::ItemHelpEvent& ev, GS::UniStr
     }
 
     GS::Ref<PopUpItemData> popUpItemData = GetSelectedScript ();
-    if (popUpItemData == nullptr || (isRunButton && IsScriptRunning (popUpItemData->fileLocation))) {
+    if (isRunButton && popUpItemData != nullptr && IsScriptRunning (popUpItemData->fileLocation)) {
         return;
     }
 
-    const GS::UniString description = GetScriptDescription (popUpItemData->info);
-    if (description.IsEmpty ()) {
-        return;
+    // The Run button tells about an update that waits for Archicad to close
+    GS::UniString pendingUpdateText;
+    GS::UniString pendingVersion;
+    if (isRunButton && GetPendingAddOnUpdate (pendingVersion)) {
+        pendingUpdateText = GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_PENDING_TEXT), pendingVersion.ToPrintf ());
     }
+
+    const GS::UniString description = popUpItemData != nullptr ? GetScriptDescription (popUpItemData->info) : GS::EmptyUniString;
     if (isRunButton) {
-        *toolTipText = PaletteText (ID_PALETTE_STRINGS_RUN_SCRIPT) + "\n" + description;
-    } else {
+        if (description.IsEmpty () && pendingUpdateText.IsEmpty ()) {
+            return;
+        }
+        GS::UniString text = PaletteText (ID_PALETTE_STRINGS_RUN_SCRIPT);
+        if (!description.IsEmpty ()) {
+            text += "\n" + description;
+        }
+        if (!pendingUpdateText.IsEmpty ()) {
+            text += "\n\n" + pendingUpdateText;
+        }
+        *toolTipText = text;
+    } else if (!description.IsEmpty ()) {
         *toolTipText = description;
     }
 }
@@ -2597,9 +2613,11 @@ void TapirPalette::SetRunButtonIcon ()
     // Stop while the selected script runs; other scripts may run meanwhile.
     const GS::Ref<PopUpItemData> selectedScript = GetSelectedScript ();
     short resId = ID_RUN_BUTTON_ICON;
+    GS::UniString pendingVersion;
     if (selectedScript != nullptr && IsScriptRunning (selectedScript->fileLocation)) {
         resId = ID_KILL_BUTTON_ICON;
-    } else if (VersionChecker::IsUsingLatestVersion ()) {
+    } else if (VersionChecker::IsUsingLatestVersion () || GetPendingAddOnUpdate (pendingVersion)) {
+        // An update that waits for Archicad to close is not offered again; the tooltip tells about it
         resId = ID_RUN_BUTTON_ICON;
     } else {
         resId = ID_RUNWITHUPDATE_BUTTON_ICON;
@@ -2640,7 +2658,14 @@ void TapirPalette::ApplyUpdateMenuItemState ()
 
 void TapirPalette::CheckForUpdates ()
 {
-    if (!VersionChecker::IsCheckCompleted ()) {
+    GS::UniString pendingVersion;
+    if (GetPendingAddOnUpdate (pendingVersion)) {
+        // An update waits for Archicad to close: no second download
+        DGAlert (DG_INFORMATION, UpdateText (ID_AUTOUPDATE_ALERT_TITLE),
+            GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_PENDING_TEXT), pendingVersion.ToPrintf ()),
+            GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_USING_VERSION_TEXT), ADDON_VERSION),
+            UpdateText (ID_AUTOUPDATE_OK_BUTTON));
+    } else if (!VersionChecker::IsCheckCompleted ()) {
         DGAlert (DG_INFORMATION, UpdateText (ID_AUTOUPDATE_ALERT_TITLE),
             UpdateText (ID_AUTOUPDATE_STILL_CHECKING_TEXT1),
             UpdateText (ID_AUTOUPDATE_STILL_CHECKING_TEXT2),
@@ -2932,6 +2957,8 @@ static bool StartInstaller (const IO::Location& installerFile, const IO::Locatio
 
 #endif
 
+static bool IsProcessAlive (GS::UInt64 processId);
+
 // Every update downloads the installer into a new folder, named "<creation time>_<process id>": the installer
 // of an earlier update may still be open (its window stays open after a failure), and its files must not be
 // overwritten (Windows locks the running exe) or deleted (on macOS it would go on running from deleted files).
@@ -2944,8 +2971,9 @@ static bool CreateInstallerFolder (const GS::UniString& processIdStr, IO::Locati
 
     const GS::Int64 now = static_cast<GS::Int64> (std::time (nullptr));
 
-    // Folders younger than a day are kept, their installer may still be open. Deleting may fail, e.g. for the
-    // folder of a running installer on Windows; that folder is tried again next time.
+    // Folders younger than a day are kept, their installer may still be open. So are the folders of an Archicad
+    // that still runs: an update installed when Archicad closes waits for that Archicad for as long as it runs.
+    // Deleting may fail, e.g. for the folder of a running installer on Windows; that folder is tried again next time.
     GS::Array<IO::Location> oldFolders;
     IO::Folder folder (installersFolder);
     if (folder.GetStatus () == NoError) {
@@ -2953,7 +2981,8 @@ static bool CreateInstallerFolder (const GS::UniString& processIdStr, IO::Locati
             const auto nameCStr = name.ToString ().ToCStr ();
             char* nameEnd = nullptr;
             const GS::Int64 creationTime = std::strtoll (nameCStr.Get (), &nameEnd, 10);
-            if (isFolder && nameEnd != nameCStr.Get () && *nameEnd == '_' && now - creationTime > 24 * 60 * 60) {
+            if (isFolder && nameEnd != nameCStr.Get () && *nameEnd == '_' && now - creationTime > 24 * 60 * 60 &&
+                !IsProcessAlive (std::strtoull (nameEnd + 1, nullptr, 10))) {
                 oldFolders.Push (IO::Location (installersFolder, name));
             }
         });
@@ -3028,6 +3057,151 @@ private:
     Int32 percent;
 };
 
+// "Update when Archicad closes" (#2182): Archicad loads Add-Ons only when it starts, so the installer waits for this
+// Archicad to exit (--waitForArchicadExit) and replaces the Add-On then, without starting Archicad again. While it
+// waits, a marker file in the temporary folder tells the palette and the update menu command that the update is
+// pending, also in another Archicad that runs the same Add-On file: the marker is named after a hash of the Add-On
+// file's path, not after the port. The installer deletes it however the update ends (--pendingMarker); the Add-On
+// deletes it when it is stale. Neither the installer nor the legacy update script reads it.
+struct PendingAddOnUpdate {
+    GS::UniString version;            // the version that was the latest when the update was arranged
+    GS::UniString installerPath;
+    GS::UniString addOnPath;
+    GS::UInt64    processId = 0;      // the Archicad the installer waits for
+    GS::UniString arrangedByVersion;  // the version of the Add-On that arranged the update
+};
+
+static GS::UniString GetOwnAddOnPath ()
+{
+    IO::Location addOnLocation;
+    ACAPI_GetOwnLocation (&addOnLocation);
+    GS::UniString addOnPath;
+    addOnLocation.ToPath (&addOnPath);
+    return addOnPath;
+}
+
+static IO::Location GetPendingUpdateMarkerLocation (const GS::UniString& addOnPath)
+{
+    GS::UniString normalizedPath = addOnPath;
+#if defined (WINDOWS)
+    // Windows file names are case-insensitive
+    normalizedPath.SetToLowerCase ();
+#endif
+    // FNV-1a: the same in every Archicad version and build, unlike std::hash
+    GS::UInt64 hash = 14695981039346656037ULL;
+    const auto pathCStr = normalizedPath.ToCStr (CC_UTF8);
+    for (const char* ch = pathCStr.Get (); *ch != '\0'; ++ch) {
+        hash ^= static_cast<unsigned char> (*ch);
+        hash *= 1099511628211ULL;
+    }
+    char hashText[17] = {};
+    std::snprintf (hashText, sizeof (hashText), "%016llx", static_cast<unsigned long long> (hash));
+
+    IO::Location markerLocation;
+    IO::fileSystem.GetSpecialLocation (IO::FileSystem::TemporaryFolder, &markerLocation);
+    markerLocation.AppendToLocal (IO::Name (GS::UniString ("TapirPendingUpdate_") + hashText + ".txt"));
+    return markerLocation;
+}
+
+static bool IsProcessAlive (GS::UInt64 processId)
+{
+    if (processId == 0) {
+        return false;
+    }
+#if defined (WINDOWS)
+    const HANDLE processHandle = OpenProcess (SYNCHRONIZE, FALSE, static_cast<DWORD> (processId));
+    if (processHandle == nullptr) {
+        // A process of another user (an elevated Archicad) cannot be opened, but it runs
+        return GetLastError () == ERROR_ACCESS_DENIED;
+    }
+    const bool isAlive = WaitForSingleObject (processHandle, 0) == WAIT_TIMEOUT;
+    CloseHandle (processHandle);
+    return isAlive;
+#else
+    return kill (static_cast<pid_t> (processId), 0) == 0 || errno == EPERM;
+#endif
+}
+
+static bool WritePendingUpdateMarker (const IO::Location& markerLocation, const PendingAddOnUpdate& pendingUpdate)
+{
+    const GS::UniString content = pendingUpdate.version + "\n" + pendingUpdate.installerPath + "\n" + pendingUpdate.addOnPath + "\n" +
+        GS::ValueToUniString (pendingUpdate.processId) + "\n" + pendingUpdate.arrangedByVersion + "\n";
+    const auto contentCStr = content.ToCStr (CC_UTF8);
+
+    IO::File file (markerLocation, IO::File::OnNotFound::Create);
+    if (file.GetStatus () != NoError || file.Open (IO::File::WriteEmptyMode) != NoError) {
+        return false;
+    }
+    const bool isWritten = file.WriteBin (contentCStr.Get (), static_cast<GS::USize> (strlen (contentCStr.Get ()))) == NoError;
+    file.Close ();
+    if (!isWritten) {
+        IO::fileSystem.Delete (markerLocation);
+    }
+    return isWritten;
+}
+
+// Reads the marker of this Add-On file. A marker is stale when the Archicad the installer waited for is gone (the
+// installer has run, or it gave up or crashed), when this Add-On's version is not the one that arranged the update
+// (it was installed), or when it cannot be read; a stale marker is deleted.
+static bool ReadPendingUpdateMarker (PendingAddOnUpdate& pendingUpdate)
+{
+    const GS::UniString addOnPath = GetOwnAddOnPath ();
+    const IO::Location markerLocation = GetPendingUpdateMarkerLocation (addOnPath);
+
+    std::string content;
+    {
+        IO::File file (markerLocation, IO::File::OnNotFound::Fail);
+        if (file.GetStatus () != NoError || file.Open (IO::File::ReadMode) != NoError) {
+            return false;
+        }
+        USize size = 0;
+        if (file.GetDataLength (&size) == NoError && size > 0 && size < 64 * 1024) {
+            content.resize (size);
+            USize readSize = 0;
+            if (file.ReadBin (&content[0], size, &readSize) != NoError) {
+                readSize = 0;
+            }
+            content.resize (readSize);
+        }
+        file.Close ();
+    }
+
+    std::vector<GS::UniString> lines;
+    size_t lineStart = 0;
+    for (size_t lineEnd = content.find ('\n'); lineEnd != std::string::npos; lineEnd = content.find ('\n', lineStart)) {
+        lines.push_back (GS::UniString (content.c_str () + lineStart, static_cast<GS::USize> (lineEnd - lineStart), CC_UTF8));
+        lineStart = lineEnd + 1;
+    }
+
+    bool isValid = false;
+    if (lines.size () >= 5) {
+        pendingUpdate.version = lines[0];
+        pendingUpdate.installerPath = lines[1];
+        pendingUpdate.addOnPath = lines[2];
+        pendingUpdate.processId = std::strtoull (lines[3].ToCStr ().Get (), nullptr, 10);
+        pendingUpdate.arrangedByVersion = lines[4];
+        // The path guards against a hash collision with another Add-On file
+        isValid = !pendingUpdate.version.IsEmpty () &&
+            pendingUpdate.addOnPath == addOnPath &&
+            pendingUpdate.arrangedByVersion == GS::UniString (ADDON_VERSION) &&
+            IsProcessAlive (pendingUpdate.processId);
+    }
+    if (!isValid) {
+        IO::fileSystem.Delete (markerLocation);
+    }
+    return isValid;
+}
+
+bool TapirPalette::GetPendingAddOnUpdate (GS::UniString& version)
+{
+    PendingAddOnUpdate pendingUpdate;
+    if (!ReadPendingUpdateMarker (pendingUpdate)) {
+        return false;
+    }
+    version = pendingUpdate.version;
+    return true;
+}
+
 bool TapirPalette::UpdateAddOn ()
 {
     // A second call during the download (e.g. from the menu) returns true, so the callers do not run a script
@@ -3041,17 +3215,28 @@ bool TapirPalette::UpdateAddOn ()
         return false;
     }
 
-    short response = DGAlert (DG_WARNING,
+    // An update of this Add-On file already waits for Archicad to close (also one arranged by another Archicad):
+    // no second download, and the script runs.
+    GS::UniString pendingVersion;
+    if (GetPendingAddOnUpdate (pendingVersion)) {
+        return false;
+    }
+
+    // "Update when Archicad closes" is the first, default button. The second one is the dialog's cancel button,
+    // so it is "Continue with this version": closing the dialog never quits Archicad.
+    const short response = DGAlert (DG_WARNING,
         UpdateText (ID_AUTOUPDATE_NEWVERSION_ALERT_TITLE),
         GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_NEWVERSION_ALERT_TEXT1),
             ADDON_VERSION, VersionChecker::LatestVersion ().ToPrintf ()),
         UpdateText (ID_AUTOUPDATE_NEWVERSION_ALERT_TEXT2),
-        UpdateText (ID_AUTOUPDATE_NEWVERSION_ALERT_BUTTON1),
-        UpdateText (ID_AUTOUPDATE_NEWVERSION_ALERT_BUTTON2));
+        UpdateText (ID_AUTOUPDATE_UPDATE_WHEN_CLOSED_BUTTON),
+        UpdateText (ID_AUTOUPDATE_NEWVERSION_ALERT_BUTTON2),
+        UpdateText (ID_AUTOUPDATE_NEWVERSION_ALERT_BUTTON1));
 
-    if (response != DG_OK) {
+    if (response != DG_OK && response != DG_THIRD) {
         return false;
     }
+    const bool updateWhenArchicadCloses = response == DG_OK;
 
     const GS::UniString& installerDownloadUrl = VersionChecker::LatestInstallerDownloadUrl ();
     if (installerDownloadUrl.IsEmpty ()) {
@@ -3101,13 +3286,40 @@ bool TapirPalette::UpdateAddOn ()
     GS::UniString addOnLocationStr;
     addOnLocation.ToPath (&addOnLocationStr);
 
-    // The installer quits this Archicad, replaces exactly this Add-On and starts Archicad again.
-    const GS::Array<GS::UniString> installerArguments = {
+    // The installer quits this Archicad, replaces exactly this Add-On and starts Archicad again. With
+    // --waitForArchicadExit it leaves Archicad running, replaces the Add-On once this Archicad process has exited
+    // and does not start Archicad again.
+    GS::Array<GS::UniString> installerArguments = {
         "--addOnFile", addOnLocationStr,
         "--versions", GS::ValueToUniString (VersionChecker::ArchicadMainVersion ()),
         "--archicadPort", GS::ValueToUniString (GetConnectionPort ()),
         "--archicadPid", processIdStr };
+    IO::Location markerLocation;
+    if (updateWhenArchicadCloses) {
+        // Written before the installer starts, which deletes it when the update ended
+        markerLocation = GetPendingUpdateMarkerLocation (addOnLocationStr);
+        PendingAddOnUpdate pendingUpdate;
+        pendingUpdate.version = VersionChecker::LatestVersion ();
+        installerFile.ToPath (&pendingUpdate.installerPath);
+        pendingUpdate.addOnPath = addOnLocationStr;
+        pendingUpdate.processId = static_cast<GS::UInt64> (processId);
+        pendingUpdate.arrangedByVersion = ADDON_VERSION;
+        GS::UniString markerPath;
+        markerLocation.ToPath (&markerPath);
+        if (!WritePendingUpdateMarker (markerLocation, pendingUpdate)) {
+            DGAlert (DG_ERROR, UpdateText (ID_AUTOUPDATE_ALERT_TITLE), UpdateText (ID_AUTOUPDATE_ARRANGE_FAILED),
+                GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_ERROR_CANNOT_WRITE), markerPath.ToPrintf ()), UpdateText (ID_AUTOUPDATE_OK_BUTTON));
+            return false;
+        }
+        installerArguments.Push ("--waitForArchicadExit");
+        installerArguments.Push ("--pendingMarker");
+        installerArguments.Push (markerPath);
+    }
     if (!StartInstaller (installerFile, addOnLocation, installerArguments, error)) {
+        // Nothing is pending when the installer did not start
+        if (updateWhenArchicadCloses) {
+            IO::fileSystem.Delete (markerLocation);
+        }
         const GS::UniString manualUpdateText = UpdateText (ID_AUTOUPDATE_MANUAL_UPDATE);
         if (error.IsEmpty ()) {
             // No error (Windows only): the user declined the administrator prompt, which the Add-On's folder needs.
@@ -3116,6 +3328,16 @@ bool TapirPalette::UpdateAddOn ()
         } else {
             DGAlert (DG_ERROR, UpdateText (ID_AUTOUPDATE_ALERT_TITLE), UpdateText (ID_AUTOUPDATE_INSTALLER_START_FAILED), error + "\n\n" + manualUpdateText, UpdateText (ID_AUTOUPDATE_OK_BUTTON));
         }
+        return false;
+    }
+
+    if (updateWhenArchicadCloses) {
+        SetRunButtonIcon ();
+        DGAlert (DG_INFORMATION,
+            UpdateText (ID_AUTOUPDATE_NEWVERSION_ALERT_TITLE),
+            GS::UniString::Printf (UpdateText (ID_AUTOUPDATE_UPDATE_WHEN_CLOSED_TEXT), VersionChecker::LatestVersion ().ToPrintf ()),
+            GS::EmptyUniString, UpdateText (ID_AUTOUPDATE_OK_BUTTON));
+        // Archicad keeps running, so the caller may run its script
         return false;
     }
 

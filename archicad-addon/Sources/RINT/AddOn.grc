@@ -107,7 +107,7 @@
 'STR#' ID_AUTOUPDATE_STRINGS "Tapir Update Strings" {
 /* [  1] */ "Tapir Update"
 /* [  2] */ "You are using Tapir version %s. A new version %T is available."
-/* [  3] */ "Would you like to update to the latest version for the best experience?"
+/* [  3] */ "Archicad loads Add-Ons only when it starts. Install the update when you close Archicad, without interrupting your work, or restart Archicad now."
 /* [  4] */ "Update and Restart Archicad"
 /* [  5] */ "Continue with this version"
 /* [  6] */ "Tapir Update"
@@ -145,6 +145,11 @@
 /* [ 38] */ "This Tapir Installer does not run on Macs with an Intel processor."
 /* [ 39] */ "Failed to open %T"
 /* [ 40] */ "Cannot create %T"
+/* [ 41] */ "Update when Archicad closes"
+/* [ 42] */ "Tapir %T will be installed when you close Archicad. Your work is not interrupted."
+/* [ 43] */ "Tapir %T is ready and will be installed when Archicad closes."
+/* [ 44] */ "You are using Tapir %s."
+/* [ 45] */ "Failed to arrange the update."
 }
 
 'STR#' ID_UV_STRINGS "Tapir uv Strings" {

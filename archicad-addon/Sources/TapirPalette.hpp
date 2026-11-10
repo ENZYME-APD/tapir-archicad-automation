@@ -34,10 +34,15 @@ public:
     void Show ();
     void Hide ();
 
+    // Returns true when the update quits Archicad ("Update and Restart Archicad"), so the caller must not run a
+    // script; an update installed when Archicad closes, or none, returns false.
     bool UpdateAddOn ();
+    // True, with the version to install, while an update of this Add-On file waits for Archicad to close.
+    static bool GetPendingAddOnUpdate (GS::UniString& version);
     void SetRunButtonIcon ();   // also called once the VersionChecker's lookup completes
-    // The "Check for Updates..." menu item and the palette's update button: updates when a newer version exists,
-    // otherwise tells why there is nothing to update to. Also offered when a script needs a newer Tapir.
+    // The "Check for Updates..." menu item and the palette's update button: tells about an update that waits for
+    // Archicad to close, else updates when a newer version exists, otherwise tells why there is nothing to update to.
+    // Also offered when a script needs a newer Tapir.
     void CheckForUpdates ();
     // The update button's icon: a mark on it when a newer version exists. Also called once the VersionChecker's
     // lookup completes.
